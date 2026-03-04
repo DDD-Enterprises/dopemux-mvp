@@ -1,16 +1,20 @@
-Objective: Implement strict Option A for Phase S post-tail rollout: base-step selection now, prompt content next, and no extras wiring yet.
+Objective: Implement TP-RTE-PHASED-RELIABILITY-0033 for Phase D reliability: deterministic JSON salvage, line_range enforcement, and provider preflight fail-fast.
 Scope:
 - services/repo-truth-extractor/run_extraction_v3.py
-- services/repo-truth-extractor/run_extraction_v4.py
-- services/repo-truth-extractor/prompts/phase_s/
-- services/repo-truth-extractor/tests/test_phase_s_step_selection.py
-- services/repo-truth-extractor/tests/test_phase_s_posttail_prompts.py
+- services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D*.md
+- services/repo-truth-extractor/prompts/v3/PROMPT_D*.md
+- services/repo-truth-extractor/tests/test_phase_d_json_salvage.py
+- services/repo-truth-extractor/tests/test_phase_d_line_range.py
+- services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py
+- proof/PLAN.txt
 Steps:
-1) Add --s-steps and DOPEMUX_S_STEPS for deterministic Phase S subset selection over S0-S6 only.
-2) Keep v4 as a thin shim that forwards --s-steps only.
-3) Add Phase S prompt files S7-S12 without wiring them into registry or execution.
-4) Add tests that lock out any accidental --s-extra-steps support in this packet.
+1) Add deterministic prose-plus-JSON salvage before parse_failure.
+2) Line-number Phase D partition context and tighten D prompt output rails around line_range.
+3) Enforce line_range shape in schema gating.
+4) Add a Phase D provider preflight guard that blocks fan-out when OpenRouter is unhealthy.
+5) Verify with focused tests and compileall.
 Verification:
-- python -m compileall -q services tests
-- pytest -q services/repo-truth-extractor/tests/test_phase_s_step_selection.py
-- pytest -q services/repo-truth-extractor/tests/test_phase_s_posttail_prompts.py
+- python -m compileall -q services/repo-truth-extractor tests
+- pytest -q services/repo-truth-extractor/tests/test_phase_d_json_salvage.py
+- pytest -q services/repo-truth-extractor/tests/test_phase_d_line_range.py
+- pytest -q services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py

@@ -869,6 +869,7 @@ class RunnerConfig:
     webhook_auto_continue: bool = False
     live_ok: bool = False
     selected_s_steps: Optional[Tuple[str, ...]] = None
+    provider_denylist: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -3999,6 +4000,38 @@ def run_provider_preflight(root: Path, run_id: str, cfg: RunnerConfig, phases: L
     return (not failures), payload
 
 
+def phase_requires_provider_preflight(phase: str, cfg: RunnerConfig) -> bool:
+    if str(phase or "").upper() != "D" or cfg.dry_run:
+        return False
+    routes = collect_provider_routes(phases=["D"], routing_policy=cfg.routing_policy)
+    return any(str(row.get("provider")) == "openrouter" for row in routes.values())
+
+
+def prepare_phase_provider_preflight(
+    root: Path,
+    run_id: str,
+    phase: str,
+    cfg: RunnerConfig,
+) -> RunnerConfig:
+    normalized_phase = str(phase or "").upper()
+    if not phase_requires_provider_preflight(normalized_phase, cfg):
+        return cfg
+
+    ok, payload = run_provider_preflight(root, run_id, cfg, [normalized_phase])
+    denylisted = sorted({str(provider) for provider in payload.get("failed_providers", []) if provider})
+    payload["denylisted_providers"] = list(denylisted)
+    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir.mkdir(parents=True, exist_ok=True)
+    write_json(doctor_dir / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
+    if not ok:
+        denied = ",".join(denylisted) if denylisted else "unknown"
+        raise RuntimeError(
+            f"Provider preflight blocked phase {normalized_phase}: denylisted_providers={denied}. "
+            f"See {(doctor_dir / f'PROVIDER_PREFLIGHT__{normalized_phase}.json').as_posix()}"
+        )
+    return replace(cfg, provider_denylist=tuple(denylisted))
+
+
 def _normalize_gemini_model(row: Dict[str, Any]) -> Dict[str, Any]:
     methods = row.get("supportedGenerationMethods")
     methods_list = sorted(set(str(item) for item in methods)) if isinstance(methods, list) else []
@@ -5552,16 +5585,21 @@ def call_llm_with_ladder(
     execute_attempt: Callable[[Tuple[str, str, str], int], Dict[str, Any]],
     ui: Optional[UI] = None,
 ) -> Dict[str, Any]:
+    denylist = {str(provider).strip().lower() for provider in cfg.provider_denylist}
+    if denylist:
+        ladder = [tuple(route) for route in ladder if str(route[0]).strip().lower() not in denylist]
     if not ladder:
         return {
             "response_text": "",
             "request_meta": {
                 "failure_type": "routing_empty_ladder",
-                "provider_error_reason": "No routes configured for tier.",
+                "provider_error_reason": (
+                    f"provider_denylist:{','.join(sorted(denylist))}" if denylist else "No routes configured for tier."
+                ),
             },
             "artifacts": [],
             "route": ("", "", ""),
-            "escalation_trigger": "routing_empty_ladder",
+            "escalation_trigger": "routing_all_routes_denylisted" if denylist else "routing_empty_ladder",
             "route_attempts": [],
         }
 
@@ -5891,6 +5929,38 @@ def _extract_first_fenced_json_block(text: str) -> Optional[str]:
     return block or None
 
 
+def extract_first_json_object(text: str) -> Optional[str]:
+    stripped = str(text or "").strip()
+    if not stripped:
+        return None
+
+    decoder = json.JSONDecoder()
+    matches: List[Tuple[int, int, str]] = []
+    cursor = 0
+    while cursor < len(stripped):
+        start = stripped.find("{", cursor)
+        if start < 0:
+            break
+        try:
+            parsed, consumed = decoder.raw_decode(stripped[start:])
+        except json.JSONDecodeError:
+            cursor = start + 1
+            continue
+        except Exception:
+            cursor = start + 1
+            continue
+        if not isinstance(parsed, dict):
+            cursor = start + 1
+            continue
+        end = start + consumed
+        matches.append((start, end, stripped[start:end]))
+        cursor = end
+
+    if len(matches) != 1:
+        return None
+    return matches[0][2]
+
+
 def _contains_json_anchor(text: str) -> bool:
     return ("{" in text) or ("[" in text)
 
@@ -6077,7 +6147,18 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         except Exception:
             pass
 
-    # 4) balanced repair parse (semantic EOF eligible only)
+    # 4) prose-plus-object salvage (deterministic single-object only)
+    salvaged_object = extract_first_json_object(stripped)
+    if salvaged_object and salvaged_object not in seen_candidates:
+        try:
+            return json.loads(salvaged_object)
+        except json.JSONDecodeError as exc:
+            repair_candidates.append((salvaged_object, exc))
+            seen_candidates.add(salvaged_object)
+        except Exception:
+            pass
+
+    # 5) balanced repair parse (semantic EOF eligible only)
     for candidate, decode_error in repair_candidates:
         if not _is_semantic_eof_eligible(decode_error, candidate):
             continue
@@ -6089,8 +6170,35 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         except Exception:
             continue
 
-    # 5) fail closed
+    # 6) fail closed
     return None
+
+
+def _format_line_numbered_content(content: str, file_truncate_chars: int) -> str:
+    lines = content.splitlines()
+    if not lines:
+        return ""
+
+    numbered_lines: List[str] = []
+    used_chars = 0
+    truncated = False
+    for line_no, line in enumerate(lines, start=1):
+        numbered = f"{line_no}: {line}"
+        additional = len(numbered) if not numbered_lines else len(numbered) + 1
+        if numbered_lines and used_chars + additional > file_truncate_chars:
+            truncated = True
+            break
+        if not numbered_lines and additional > file_truncate_chars:
+            prefix = f"{line_no}: "
+            available = max(0, file_truncate_chars - len(prefix) - len("...[TRUNCATED]..."))
+            numbered_lines.append(f"{prefix}{line[:available]}...[TRUNCATED]...")
+            truncated = True
+            break
+        numbered_lines.append(numbered)
+        used_chars += additional
+    if truncated:
+        numbered_lines.append("...[TRUNCATED]...")
+    return "\n".join(numbered_lines)
 
 
 def build_partition_context(
@@ -6113,11 +6221,13 @@ def build_partition_context(
 
         path = Path(path_str)
         content = safe_read(path)
-        if len(content) > file_truncate_chars:
-            content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
         if phase == "H" and home_scan_mode == "safe":
             content, hits = redact_sensitive_lines(content)
             redaction_hits += hits
+        if phase == "D":
+            content = _format_line_numbered_content(content, file_truncate_chars)
+        elif len(content) > file_truncate_chars:
+            content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
         chunk_text = f"--- FILE: {path} ---\n{content}\n"
         chunk_bytes = len(chunk_text.encode("utf-8"))
 
@@ -6258,6 +6368,15 @@ def artifacts_pass_schema_gate(
                         value = item.get(key)
                         if value in (None, "", []):
                             return False, f"schema_empty_key:{key}"
+                    line_range = item.get("line_range")
+                    if not (
+                        isinstance(line_range, list)
+                        and len(line_range) == 2
+                        and all(isinstance(value, int) for value in line_range)
+                        and int(line_range[0]) > 0
+                        and int(line_range[1]) >= int(line_range[0])
+                    ):
+                        return False, "schema_invalid_line_range"
     return True, None
 
 
@@ -11286,7 +11405,8 @@ def main() -> None:
             logger.warning("Unknown phase: %s", phase)
             continue
         try:
-            run_phase(dirs, cfg, ui=ui)
+            phase_cfg = prepare_phase_provider_preflight(root, run_id, phase, cfg)
+            run_phase(dirs, phase_cfg, ui=ui)
         except Exception as exc:
             logger.error("Phase %s failed: %s", phase, exc)
             failed_counts = gather_phase_counts(dirs[phase])
