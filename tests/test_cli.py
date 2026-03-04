@@ -59,9 +59,11 @@ class TestCLI:
         with patch("dopemux.cli.ConfigManager"):
             with patch("dopemux.cli.Path.exists", return_value=True):
                 with patch("dopemux.cli.Path.resolve", return_value=Path("/test")):
-                    with patch("dopemux.cli.ClaudeConfigurator"):
-                        with patch("dopemux.cli.ContextManager"):
-                            result = runner.invoke(cli, ["-v", "init", "."])
+                    with patch("dopemux.cli.Path.mkdir"):
+                        with patch("dopemux.cli.init_project", return_value=True):
+                            with patch("dopemux.cli.ClaudeConfigurator"):
+                                with patch("dopemux.cli.ContextManager"):
+                                    result = runner.invoke(cli, ["-v", "init", "."])
 
         # Should not fail with verbose flag
         assert result.exit_code == 0
@@ -78,7 +80,9 @@ class TestCLI:
 
         runner = CliRunner()
         with patch("dopemux.cli.Path.resolve", return_value=Path("/test/project")):
-            result = runner.invoke(cli, ["init", "."])
+            with patch("dopemux.cli.Path.mkdir"):
+                with patch("dopemux.cli.init_project", return_value=True):
+                    result = runner.invoke(cli, ["init", "."])
 
         assert result.exit_code == 0
         assert "Project Initialized" in result.output
@@ -135,7 +139,9 @@ class TestCLI:
 
         runner = CliRunner()
         with patch("dopemux.cli.Path.resolve", return_value=Path("/test/project")):
-            result = runner.invoke(cli, ["init", "--force", "."])
+            with patch("dopemux.cli.Path.mkdir"):
+                with patch("dopemux.cli.init_project", return_value=True):
+                    result = runner.invoke(cli, ["init", "--force", "."])
 
         assert result.exit_code == 0
         assert "Project Initialized" in result.output
@@ -562,8 +568,12 @@ class TestCLI:
         assert "Task 1" in result.output
         assert "Task 2" in result.output
 
-    def test_task_command_missing_description(self):
+    @patch("dopemux.cli.ConfigManager")
+    @patch("dopemux.cli.TaskDecomposer")
+    def test_task_command_missing_description(self, mock_decomposer, mock_config):
         """Test task command with missing description."""
+        mock_decomposer.return_value = Mock()
+
         runner = CliRunner()
         with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
             with patch("dopemux.cli.Path.exists", return_value=True):
@@ -672,11 +682,13 @@ class TestCLI:
         with patch("dopemux.cli.ConfigManager"):
             with patch("dopemux.cli.Path.exists", return_value=True):
                 with patch("dopemux.cli.Path.resolve", return_value=Path("/test")):
-                    with patch("dopemux.cli.ClaudeConfigurator") as mock_configurator:
-                        with patch("dopemux.cli.ContextManager"):
-                            result = runner.invoke(
-                                cli, ["init", "--template", "rust", "."]
-                            )
+                    with patch("dopemux.cli.Path.mkdir"):
+                        with patch("dopemux.cli.init_project", return_value=True):
+                            with patch("dopemux.cli.ClaudeConfigurator") as mock_configurator:
+                                with patch("dopemux.cli.ContextManager"):
+                                    result = runner.invoke(
+                                        cli, ["init", "--template", "rust", "."]
+                                    )
 
         assert result.exit_code == 0
         # Verify template was passed to configurator

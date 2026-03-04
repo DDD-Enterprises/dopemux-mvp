@@ -1,8 +1,11 @@
 """Integration tests for LiteLLMManager with CLI."""
 
+import os
 import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
+
+import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_PATH = PROJECT_ROOT / "src"
@@ -57,6 +60,7 @@ def test_manager_lifecycle(tmp_path):
 def test_environment_building(tmp_path):
     """Test building client environment variables."""
     manager = get_litellm_manager(tmp_path)
+    manager.project_root = tmp_path
     
     config_data = {
         "model_list": [
@@ -70,10 +74,11 @@ def test_environment_building(tmp_path):
         ],
     }
     
+    manager.stop_all_instances()
     with patch("subprocess.Popen") as mock_popen, \
          patch.object(manager, "_is_port_in_use", return_value=False), \
          patch.object(manager, "_wait_for_health", return_value=True):
-        
+
         mock_process = Mock()
         mock_process.poll.return_value = None
         mock_popen.return_value = mock_process
@@ -89,6 +94,8 @@ def test_environment_building(tmp_path):
         assert env_vars["ANTHROPIC_API_KEY"] == process_info.master_key
         assert env_vars["DOPEMUX_LITELLM_MASTER_KEY"] == process_info.master_key
         assert env_vars["DOPEMUX_LITELLM_PORT"] == "4000"
+
+    manager.stop_all_instances()
 
 
 def test_multiple_instances(tmp_path):
@@ -161,6 +168,7 @@ def test_health_status(tmp_path):
         
         # Start an instance
         manager.start_instance("test", 4000, config_data)
+        manager.get_instance("test").update_health(True)
         
         # Get health status
         status = manager.get_health_status()
@@ -524,6 +532,7 @@ def test_health_status_format(tmp_path):
         mock_popen.return_value = mock_process
         
         manager.start_instance("test", 4000, config_data)
+        manager.get_instance("test").update_health(True)
         
         status = manager.get_health_status()
         

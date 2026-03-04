@@ -13,6 +13,7 @@ if str(SRC_PATH) not in sys.path:
 
 sys.modules.pop("dopemux", None)
 
+import dopemux.litellm_manager as litellm_manager_module
 from dopemux.litellm_manager import (
     LiteLLMManager,
     LiteLLMManagerError,
@@ -193,6 +194,7 @@ def test_build_client_environment(tmp_path):
 
 def test_get_litellm_manager_singleton():
     """Test that get_litellm_manager returns a singleton."""
+    litellm_manager_module._litellm_manager = None
     manager1 = get_litellm_manager(Path("/test/path1"))
     manager2 = get_litellm_manager(Path("/test/path2"))
     

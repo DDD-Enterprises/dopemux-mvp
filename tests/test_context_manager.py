@@ -6,7 +6,15 @@ import json
 import sqlite3
 from unittest.mock import Mock, patch
 
+import pytest
+
 from dopemux.adhd.context_manager import ContextSnapshot
+
+
+@pytest.fixture(autouse=True)
+def suppress_context_manager_console_log():
+    with patch("dopemux.adhd.context_manager.console.log"):
+        yield
 
 
 class TestContextSnapshot:
@@ -76,12 +84,8 @@ class TestContextManager:
             assert "context_snapshots" in tables
             assert "session_metadata" in tables
 
-    @patch("dopemux.adhd.context_manager.datetime")
-    def test_save_context(self, mock_datetime, context_manager, mock_subprocess):
+    def test_save_context(self, context_manager, mock_subprocess):
         """Test saving context."""
-        # Setup mocks
-        mock_datetime.now.return_value.isoformat.return_value = "2024-01-01T12:00:00"
-
         context_manager.initialize()
 
         # Save context

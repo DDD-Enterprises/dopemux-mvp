@@ -2810,6 +2810,14 @@ def autoresponder(ctx):
     """
 
 
+def _get_autoresponder_config_manager(ctx, project_path: Path) -> ConfigManager:
+    """Use project-local config for autoresponder commands when inside a Dopemux project."""
+    if (project_path / ".dopemux").exists():
+        return ConfigManager(config_path=str(project_path / ".dopemux" / "config.yaml"))
+
+    return ctx.obj["config_manager"]
+
+
 @autoresponder.command("start")
 @click.option(
     "--terminal-scope",
@@ -2831,8 +2839,8 @@ def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
     Begins automatic confirmation of Claude Code prompts with current
     configuration settings and ADHD optimizations.
     """
-    config_manager = ctx.obj["config_manager"]
     project_path = Path.cwd()
+    config_manager = _get_autoresponder_config_manager(ctx, project_path)
 
     if not (project_path / ".dopemux").exists():
         console.logger.info("[red]No Dopemux project found in current directory[/red]")
@@ -2900,8 +2908,8 @@ def autoresponder_stop(ctx):
 
     Stops automatic confirmation and displays session statistics.
     """
-    config_manager = ctx.obj["config_manager"]
     project_path = Path.cwd()
+    config_manager = _get_autoresponder_config_manager(ctx, project_path)
 
     if not (project_path / ".dopemux").exists():
         console.logger.info("[red]No Dopemux project found in current directory[/red]")
@@ -2952,8 +2960,8 @@ def autoresponder_status(ctx):
 
     Displays current status, configuration, and performance metrics.
     """
-    config_manager = ctx.obj["config_manager"]
     project_path = Path.cwd()
+    config_manager = _get_autoresponder_config_manager(ctx, project_path)
 
     if not (project_path / ".dopemux").exists():
         console.logger.info("[red]No Dopemux project found in current directory[/red]")
@@ -3012,8 +3020,8 @@ def autoresponder_setup(ctx):
 
     Downloads and configures the ClaudeAutoResponder tool for use with Dopemux.
     """
-    config_manager = ctx.obj["config_manager"]
     project_path = Path.cwd()
+    config_manager = _get_autoresponder_config_manager(ctx, project_path)
 
     if not (project_path / ".dopemux").exists():
         console.logger.info("[red]No Dopemux project found in current directory[/red]")
@@ -4236,7 +4244,11 @@ def health(
 
 
 @autoresponder.command("config")
-@click.option("--enabled/--disabled", help="Enable or disable auto responder")
+@click.option(
+    "--enabled/--disabled",
+    default=None,
+    help="Enable or disable auto responder",
+)
 @click.option(
     "--terminal-scope",
     type=click.Choice(["current", "all", "project"]),
@@ -4244,8 +4256,16 @@ def health(
 )
 @click.option("--delay", type=float, help="Response delay in seconds (0-10)")
 @click.option("--timeout", type=int, help="Auto-stop timeout in minutes")
-@click.option("--whitelist/--no-whitelist", help="Enable/disable tool whitelisting")
-@click.option("--debug/--no-debug", help="Enable/disable debug mode")
+@click.option(
+    "--whitelist/--no-whitelist",
+    default=None,
+    help="Enable/disable tool whitelisting",
+)
+@click.option(
+    "--debug/--no-debug",
+    default=None,
+    help="Enable/disable debug mode",
+)
 @click.pass_context
 def autoresponder_config(
     ctx, enabled, terminal_scope, delay, timeout, whitelist, debug
@@ -4255,7 +4275,8 @@ def autoresponder_config(
 
     Update configuration options for Claude Auto Responder integration.
     """
-    config_manager = ctx.obj["config_manager"]
+    project_path = Path.cwd()
+    config_manager = _get_autoresponder_config_manager(ctx, project_path)
 
     updates = {}
     if enabled is not None:
@@ -4301,7 +4322,6 @@ def autoresponder_config(
             console.logger.info(f"[blue]  {key}: {value}[/blue]")
 
         # Restart if running
-        project_path = Path.cwd()
         if (project_path / ".dopemux").exists():
             from integrations.claude_autoresponder import create_autoresponder_manager
 

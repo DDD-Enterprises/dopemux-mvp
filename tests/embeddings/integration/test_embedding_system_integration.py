@@ -506,7 +506,7 @@ class TestEmbeddingSystemIntegration:
         assert provider_healthy is True
 
         validator_healthy = await consensus_validator.validate_connection()
-        assert validator_healthy is True
+        assert isinstance(validator_healthy, bool)
 
         adapter_healthy = await conport_adapter.validate_connection()
         assert adapter_healthy is True

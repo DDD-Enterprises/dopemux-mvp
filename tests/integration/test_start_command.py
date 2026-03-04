@@ -38,7 +38,7 @@ class TestStartCommandIntegration:
             # Setup context restoration
             mock_ctx.return_value.restore_latest.return_value = {"session_id": "test"}
 
-            result = runner.invoke(cli, ["start"])
+            result = runner.invoke(cli, ["start", "--no-mcp"])
 
             assert result.exit_code == 0
 
@@ -58,7 +58,9 @@ class TestStartCommandIntegration:
              patch("dopemux.cli.AttentionMonitor"), \
              patch("dopemux.cli.ContextManager"), \
              patch.dict(os.environ, {"OPENROUTER_API_KEY": "sk-test-key"}, clear=True), \
-             patch("dopemux.cli.LiteLLMProxyManager") as mock_proxy_mgr:
+             patch("dopemux.cli.LiteLLMProxyManager") as mock_proxy_mgr, \
+             patch("dopemux.cli.DopeBrainzRouterManager") as mock_router_mgr, \
+             patch("dopemux.cli._load_litellm_models", return_value=["openrouter/anthropic/claude-sonnet-4"]):
 
             # Setup proxy mock
             mock_proxy_info = MagicMock()
@@ -72,17 +74,28 @@ class TestStartCommandIntegration:
                 "DOPEMUX_CLAUDE_VIA_LITELLM": "1"
             }
 
-            result = runner.invoke(cli, ["start", "--litellm"])
+            mock_router_info = MagicMock()
+            mock_router_info.base_url = "http://127.0.0.1:3456"
+            mock_router_info.already_running = False
+            mock_router_mgr.return_value.ensure_started.return_value = mock_router_info
+            mock_router_mgr.return_value.build_client_env.return_value = {
+                "ANTHROPIC_BASE_URL": "http://127.0.0.1:3456",
+                "ANTHROPIC_API_KEY": "router-key",
+            }
+
+            result = runner.invoke(cli, ["start", "--litellm", "--no-mcp", "--background"])
 
             assert result.exit_code == 0
 
             # Verify proxy manager was initialized and started
             mock_proxy_mgr.assert_called_once()
             mock_proxy_mgr.return_value.ensure_started.assert_called_once()
+            mock_router_mgr.assert_called_once()
+            mock_router_mgr.return_value.ensure_started.assert_called_once()
 
             # Verify environment variables were set
             assert os.environ.get("DOPEMUX_CLAUDE_VIA_LITELLM") == "1"
-            assert os.environ.get("ANTHROPIC_BASE_URL") == "http://127.0.0.1:4000"
+            assert os.environ.get("ANTHROPIC_BASE_URL") == "http://127.0.0.1:3456"
 
     def test_start_dangerous_mode(self, runner, mock_project, mock_launcher):
         """Test --dangerous flag activation."""
@@ -91,7 +104,7 @@ class TestStartCommandIntegration:
              patch("dopemux.cli.ContextManager"), \
              patch("dopemux.cli.click.confirm", return_value=True):  # Auto-confirm dangerous prompts
 
-            result = runner.invoke(cli, ["start", "--dangerous"])
+            result = runner.invoke(cli, ["start", "--dangerous", "--no-mcp"])
 
             assert result.exit_code == 0
 

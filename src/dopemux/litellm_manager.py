@@ -70,22 +70,31 @@ class LiteLLMHealthMonitor:
     def __init__(self, manager: LiteLLMManager):
         self.manager = manager
         self._stop_event = threading.Event()
-        self._thread = threading.Thread(
+        self._monitor_interval = 30.0  # seconds
+        self._thread = self._create_thread()
+
+    def _create_thread(self) -> threading.Thread:
+        """Create a fresh monitor thread for each start cycle."""
+        return threading.Thread(
             target=self._monitor_loop,
             daemon=True,
             name="LiteLLMHealthMonitor"
         )
-        self._monitor_interval = 30.0  # seconds
         
     def start(self) -> None:
         """Start the health monitoring thread."""
+        if self._thread.is_alive():
+            return
+        self._stop_event.clear()
+        self._thread = self._create_thread()
         self._thread.start()
         logger.info("🔄 LiteLLM health monitor started")
     
     def stop(self) -> None:
         """Stop the health monitoring thread."""
         self._stop_event.set()
-        self._thread.join(timeout=5.0)
+        if self._thread.is_alive():
+            self._thread.join(timeout=5.0)
         logger.info("⏹️  LiteLLM health monitor stopped")
     
     def _monitor_loop(self) -> None:
@@ -308,8 +317,10 @@ class LiteLLMManager:
     def stop_all_instances(self) -> None:
         """Stop all running LiteLLM instances."""
         with self._lock:
-            for instance_id in list(self._processes.keys()):
-                self.stop_instance(instance_id)
+            instance_ids = list(self._processes.keys())
+
+        for instance_id in instance_ids:
+            self.stop_instance(instance_id)
     
     def get_instance(self, instance_id: str) -> Optional[LiteLLMProcessInfo]:
         """Get information about a running instance.

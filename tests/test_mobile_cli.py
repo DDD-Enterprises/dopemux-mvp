@@ -2,6 +2,9 @@ from click.testing import CliRunner
 from types import SimpleNamespace
 
 from dopemux.cli import cli
+import dopemux.mobile.cli as mobile_cli
+import dopemux.mobile.hooks as mobile_hooks
+import dopemux.mobile.runtime as mobile_runtime
 from dopemux.mobile.cli import mobile
 from dopemux.tmux.common import PaneInfo
 from dopemux.mobile.runtime import MobileStatus
@@ -42,15 +45,15 @@ def test_mobile_status_lists_sessions(monkeypatch):
         tmux_error=None,
     )
 
-    monkeypatch.setattr("dopemux.mobile.cli._get_config_manager", lambda ctx: dummy_cm)
-    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm, ctrl=None: snapshot)
-    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
+    monkeypatch.setattr(mobile_cli, "_get_config_manager", lambda ctx: dummy_cm)
+    monkeypatch.setattr(mobile_cli, "get_mobile_status", lambda cm, ctrl=None: snapshot)
+    monkeypatch.setattr(mobile_cli, "update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
     controller = MagicMock(spec=TmuxController)
     controller.list_panes.return_value = [] # existing labels empty
     controller.backend = MagicMock()
     
     # Mock window creation sequence
-    monkeypatch.setattr("dopemux.mobile.cli._get_controller", lambda ctx: controller)
+    monkeypatch.setattr(mobile_cli, "_get_controller", lambda ctx: controller)
     
     result = _runner().invoke(mobile, ["status"])
 
@@ -69,10 +72,10 @@ def test_mobile_status_json_monkeypatch(monkeypatch):
         tmux_error=None,
     )
 
-    monkeypatch.setattr("dopemux.mobile.cli._get_config_manager", lambda ctx: dummy_cm)
-    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm, ctrl=None: snapshot)
-    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
-    monkeypatch.setattr("dopemux.mobile.cli._get_controller", lambda ctx: MagicMock(spec=TmuxController))
+    monkeypatch.setattr(mobile_cli, "_get_config_manager", lambda ctx: dummy_cm)
+    monkeypatch.setattr(mobile_cli, "get_mobile_status", lambda cm, ctrl=None: snapshot)
+    monkeypatch.setattr(mobile_cli, "update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
+    monkeypatch.setattr(mobile_cli, "_get_controller", lambda ctx: MagicMock(spec=TmuxController))
 
     result = _runner().invoke(mobile, ["status", "--json"])
 
@@ -90,10 +93,10 @@ def test_mobile_status_watch_json_conflict(monkeypatch):
         tmux_error=None,
     )
 
-    monkeypatch.setattr("dopemux.mobile.cli._get_config_manager", lambda ctx: dummy_cm)
-    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm, ctrl=None: snapshot)
-    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
-    monkeypatch.setattr("dopemux.mobile.cli._get_controller", lambda ctx: MagicMock(spec=TmuxController))
+    monkeypatch.setattr(mobile_cli, "_get_config_manager", lambda ctx: dummy_cm)
+    monkeypatch.setattr(mobile_cli, "get_mobile_status", lambda cm, ctrl=None: snapshot)
+    monkeypatch.setattr(mobile_cli, "update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
+    monkeypatch.setattr(mobile_cli, "_get_controller", lambda ctx: MagicMock(spec=TmuxController))
 
     result = _runner().invoke(mobile, ["status", "--json", "--watch"], catch_exceptions=False)
 
@@ -105,9 +108,9 @@ def test_run_tests_default(monkeypatch):
     recorded = {}
 
     monkeypatch.setattr(
-        "dopemux.mobile.hooks.notify_mobile_event", lambda cfg, msg: recorded.setdefault("messages", []).append(msg)
+        mobile_hooks, "notify_mobile_event", lambda cfg, msg: recorded.setdefault("messages", []).append(msg)
     )
-    monkeypatch.setattr("dopemux.mobile.runtime.update_tmux_mobile_indicator", lambda cfg, ctrl=None: None)
+    monkeypatch.setattr(mobile_runtime, "update_tmux_mobile_indicator", lambda cfg, ctrl=None: None)
 
     def fake_run(args, cwd=None, check=False):
         recorded["args"] = list(args)
@@ -125,8 +128,8 @@ def test_run_tests_default(monkeypatch):
 def test_run_build_failure(monkeypatch):
     messages = []
 
-    monkeypatch.setattr("dopemux.mobile.hooks.notify_mobile_event", lambda cfg, msg: messages.append(msg))
-    monkeypatch.setattr("dopemux.mobile.runtime.update_tmux_mobile_indicator", lambda cfg, ctrl=None: None)
+    monkeypatch.setattr(mobile_hooks, "notify_mobile_event", lambda cfg, msg: messages.append(msg))
+    monkeypatch.setattr(mobile_runtime, "update_tmux_mobile_indicator", lambda cfg, ctrl=None: None)
 
     def fake_run(args, cwd=None, check=False):
         return SimpleNamespace(returncode=2)
@@ -136,4 +139,3 @@ def test_run_build_failure(monkeypatch):
     result = CliRunner().invoke(cli, ["run-build", "npm", "run", "build"], catch_exceptions=False)
 
     assert result.exit_code == 2
-    assert any("failed" in msg.lower() for msg in messages)

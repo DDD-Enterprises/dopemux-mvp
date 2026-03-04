@@ -53,11 +53,13 @@ def test_altp_skips_openrouter_gate(mock_which, mock_routing_config_cls, mock_st
     
     # Patch at the source of import
     with patch("dopemux.workspace_utils.get_workspace_root") as mock_get_root, \
+         patch("dopemux.cli._ensure_role_profile") as mock_ensure_role_profile, \
          patch("pathlib.Path.exists") as mock_exists, \
          patch("pathlib.Path.mkdir") as mock_mkdir, \
          patch("pathlib.Path.cwd") as mock_cwd:
         
         mock_get_root.return_value = MagicMock()
+        mock_ensure_role_profile.return_value = MagicMock()
         mock_exists.return_value = True
         mock_cwd.return_value = MagicMock()
         mock_mkdir.return_value = None

@@ -21,6 +21,7 @@ def test_tmux_config_validity():
     cmd = ['tmux', '-L', test_socket, '-f', str(CONFIG_FILE), 'new-session', '-d']
     try:
         subprocess.run(cmd, check=True, capture_output=True, text=True)
-        subprocess.run(['tmux', '-L', test_socket, 'kill-server'], check=True)
     except subprocess.CalledProcessError as e:
         pytest.fail(f'Tmux config invalid: {e.stderr}')
+    finally:
+        subprocess.run(['tmux', '-L', test_socket, 'kill-server'], stderr=subprocess.DEVNULL)

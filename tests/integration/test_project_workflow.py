@@ -52,7 +52,7 @@ class TestProjectInitializationWorkflow:
                                 with patch(
                                     "dopemux.cli.Path.cwd", return_value=project_path
                                 ):
-                                    result = runner.invoke(cli, ["start"])
+                                    result = runner.invoke(cli, ["start", "--no-mcp"])
                                     assert result.exit_code == 0
 
     def test_context_save_restore_workflow(self):
@@ -153,45 +153,46 @@ class TestADHDFeaturesIntegration:
         with tempfile.TemporaryDirectory() as temp_dir:
             project_path = Path(temp_dir)
 
-            # Initialize components
-            context_manager = ContextManager(project_path)
-            attention_monitor = AttentionMonitor(project_path)
+            with patch("dopemux.adhd.context_manager.console.log"):
+                # Initialize components
+                context_manager = ContextManager(project_path)
+                attention_monitor = AttentionMonitor(project_path)
 
-            context_manager.initialize()
+                context_manager.initialize()
 
-            # Simulate attention monitoring triggering context saves
-            attention_callback_called = False
+                # Simulate attention monitoring triggering context saves
+                attention_callback_called = False
 
-            def attention_callback(metrics):
-                nonlocal attention_callback_called
-                attention_callback_called = True
+                def attention_callback(metrics):
+                    nonlocal attention_callback_called
+                    attention_callback_called = True
 
-                if metrics.attention_state == "distracted":
-                    context_manager.save_context(message="Auto-save due to distraction")
+                    if metrics.attention_state == "distracted":
+                        context_manager.save_context(message="Auto-save due to distraction")
 
-            attention_monitor.add_callback(attention_callback)
+                attention_monitor.add_callback(attention_callback)
 
-            # Simulate distracted state
-            attention_monitor.simulate_activity("keystroke")
-            attention_monitor._collect_metrics()
+                # Simulate distracted state
+                attention_monitor.simulate_activity("keystroke")
+                attention_monitor._collect_metrics()
 
-            # Manually trigger callback with distracted state
-            from datetime import datetime
+                # Manually trigger callback with distracted state
+                from datetime import datetime
 
-            from dopemux.adhd.attention_monitor import AttentionMetrics, AttentionState
+                from dopemux.adhd.attention_monitor import AttentionMetrics, AttentionState
 
-            distracted_metrics = AttentionMetrics(
-                timestamp=datetime.now(),
-                keystroke_rate=0,
-                error_rate=0,
-                context_switches=0,
-                pause_duration=700,  # Long pause = distracted
-                focus_score=0.2,
-                attention_state=AttentionState.DISTRACTED,
-            )
+                distracted_metrics = AttentionMetrics(
+                    timestamp=datetime.now(),
+                    keystroke_rate=0,
+                    error_rate=0,
+                    context_switches=0,
+                    pause_duration=700,  # Long pause = distracted
+                    focus_score=0.2,
+                    attention_state=AttentionState.DISTRACTED,
+                )
 
-            attention_callback(distracted_metrics)
-            assert attention_callback_called
+                attention_callback(distracted_metrics)
+                assert attention_callback_called
 
     def test_task_decomposer_and_attention_integration(self):
         """Test integration between task decomposer and attention monitoring."""
@@ -329,13 +330,14 @@ if __name__ == "__main__":
             )
 
             # Initialize context manager
-            context_manager = ContextManager(project_path)
-            context_manager.initialize()
+            with patch("dopemux.adhd.context_manager.console.log"):
+                context_manager = ContextManager(project_path)
+                context_manager.initialize()
 
-            # Save context
-            with patch("subprocess.run") as mock_run:
-                mock_run.return_value = Mock(returncode=0, stdout="main\n")
-                session_id = context_manager.save_context(message="Test save")
+                # Save context
+                with patch("subprocess.run") as mock_run:
+                    mock_run.return_value = Mock(returncode=0, stdout="main\n")
+                    session_id = context_manager.save_context(message="Test save")
 
             assert session_id
             assert context_manager.db_path.exists()
@@ -412,21 +414,22 @@ class TestErrorHandlingIntegration:
         with tempfile.TemporaryDirectory() as temp_dir:
             project_path = Path(temp_dir)
 
-            context_manager = ContextManager(project_path)
-            context_manager.initialize()
+            with patch("dopemux.adhd.context_manager.console.log"):
+                context_manager = ContextManager(project_path)
+                context_manager.initialize()
 
-            # Simulate error during context capture
-            with patch.object(
-                context_manager,
-                "_capture_current_state",
-                side_effect=Exception("Test error"),
-            ):
-                # Should not crash and should create emergency save
-                session_id = context_manager.save_context()
+                # Simulate error during context capture
+                with patch.object(
+                    context_manager,
+                    "_capture_current_state",
+                    side_effect=Exception("Test error"),
+                ):
+                    # Should not crash and should create emergency save
+                    session_id = context_manager.save_context()
 
-                # Emergency save file should exist
-                emergency_file = context_manager.dopemux_dir / "emergency_context.json"
-                assert emergency_file.exists()
+                    # Emergency save file should exist
+                    emergency_file = context_manager.dopemux_dir / "emergency_context.json"
+                    assert emergency_file.exists()
 
     def test_attention_monitor_callback_error_handling(self):
         """Test attention monitor callback error handling."""

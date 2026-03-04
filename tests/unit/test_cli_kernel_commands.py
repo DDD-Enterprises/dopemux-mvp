@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 from click.testing import CliRunner
 
+import dopemux.cli as cli_module
 from dopemux.cli import cli
 
 
@@ -30,7 +31,7 @@ def test_kernel_commands_delegate_to_taskx(monkeypatch, command: str, extra_args
         captured["check"] = check
         return SimpleNamespace(returncode=0)
 
-    monkeypatch.setattr("dopemux.cli.subprocess.run", _fake_run)
+    monkeypatch.setattr(cli_module.subprocess, "run", _fake_run)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["kernel", command, *extra_args])
@@ -53,7 +54,7 @@ def test_kernel_command_propagates_nonzero_exit(monkeypatch) -> None:
     def _fake_run(cmd, cwd=None, check=False):
         return SimpleNamespace(returncode=23)
 
-    monkeypatch.setattr("dopemux.cli.subprocess.run", _fake_run)
+    monkeypatch.setattr(cli_module.subprocess, "run", _fake_run)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["kernel", "gate"])
