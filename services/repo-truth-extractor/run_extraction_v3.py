@@ -92,6 +92,14 @@ PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
 PROMPT_HASH_MODE = "strict"
 PROMPT_ROOT_ENV_VAR = "REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"
 LEGACY_PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
+S_PROMPTS_MODE_ENV_VAR = "DOPEMUX_S_PROMPTS"
+S_STEPS_ENV_VAR = "DOPEMUX_S_STEPS"
+S_PROMPTS_AUTO = "auto"
+S_PROMPTS_REGISTRY = "registry"
+S_PROMPTS_LEGACY = "legacy"
+S_PROMPTS_MODES = {S_PROMPTS_AUTO, S_PROMPTS_REGISTRY, S_PROMPTS_LEGACY}
+PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(7))
+PHASE_S_BASE_STEP_SET = set(PHASE_S_BASE_STEPS)
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
 COVERAGE_ROLLUP_FILENAME = "COVERAGE_ROLLUP.json"
@@ -293,6 +301,47 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
         ],
     },
+    "balanced_openrouter": {
+        "bulk": [
+            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+        "extract": [
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "synthesis": [
+            ("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "qa": [
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+        ],
+    },
+    "balanced_grok_openrouter": {
+        "bulk": [
+            ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+        "extract": [
+            ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+        "synthesis": [
+            ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+            ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+        ],
+        "qa": [
+            ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+    },
     "quality": {
         "bulk": [
             ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
@@ -348,6 +397,44 @@ ACTIVE_ROUTING_LADDERS = {
     policy: {tier: list(routes) for tier, routes in tiers.items()}
     for policy, tiers in ROUTING_LADDERS.items()
 }
+DOCS_GOVERNANCE_PHASES: Set[str] = {"A", "H", "D", "W", "B", "G"}
+PREMIUM_SYNTHESIS_PHASES: Set[str] = {"R", "X", "T", "Z", "S"}
+BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
+    ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+    ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+]
+BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
+    "bulk": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+    ],
+    "extract": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ],
+    "qa": [
+        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ],
+}
+BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
+    ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+]
+BALANCED_GROK_OPENROUTER_OPUS_ROUTE: Tuple[str, str, str] = (
+    "openrouter",
+    "anthropic/claude-opus-4-6",
+    "OPENROUTER_API_KEY",
+)
+HARD_RECONCILIATION_MARKERS: Tuple[str, ...] = (
+    "contradiction",
+    "merge_conflict",
+    "cross_doc_inconsistency",
+    "complex_reconciliation",
+)
 
 
 def _safe_key_fingerprint(value: str) -> str:
@@ -475,11 +562,101 @@ def prompt_root() -> Path:
     return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
 
 
+_ACTIVE_S_PROMPTS_MODE = S_PROMPTS_AUTO
+_VALID_PROMPT_TIERS = {"bulk", "extract", "synthesis", "qa"}
+
+
+def set_active_s_prompts_mode(mode: Optional[str]) -> None:
+    global _ACTIVE_S_PROMPTS_MODE
+    normalized = str(mode or "").strip().lower() or S_PROMPTS_AUTO
+    if normalized not in S_PROMPTS_MODES:
+        allowed = ", ".join(sorted(S_PROMPTS_MODES))
+        raise RuntimeError(f"Unsupported S prompts mode {mode!r}. Expected one of: {allowed}")
+    _ACTIVE_S_PROMPTS_MODE = normalized
+
+
+def get_active_s_prompts_mode() -> str:
+    active = str(_ACTIVE_S_PROMPTS_MODE or "").strip().lower()
+    if active in S_PROMPTS_MODES:
+        return active
+    env_mode = str(os.getenv(S_PROMPTS_MODE_ENV_VAR, "")).strip().lower()
+    if not env_mode:
+        return S_PROMPTS_AUTO
+    if env_mode not in S_PROMPTS_MODES:
+        allowed = ", ".join(sorted(S_PROMPTS_MODES))
+        raise RuntimeError(
+            f"{S_PROMPTS_MODE_ENV_VAR} must be one of {allowed}. Got: {env_mode}"
+        )
+    return env_mode
+
+
+def phase_s_registry_dir() -> Path:
+    configured = os.getenv(PROMPT_ROOT_ENV_VAR, "").strip()
+    if not configured:
+        configured = os.getenv(LEGACY_PROMPT_ROOT_ENV_VAR, "").strip()
+    if configured:
+        return Path(configured) / "phase_s"
+    return EXTRACTOR_SERVICE_DIR / "prompts" / "phase_s"
+
+
+def phase_s_registry_path() -> Path:
+    return phase_s_registry_dir() / "registry.json"
+
+
+def _legacy_phase_prompt_roots(phase: str) -> List[Path]:
+    roots = [prompt_root()]
+    if str(phase or "").upper() == "S":
+        v4_prompt_root = EXTRACTOR_SERVICE_DIR / "promptsets" / "v4" / "prompts"
+        if v4_prompt_root not in roots:
+            roots.append(v4_prompt_root)
+    return roots
+
+
 def step_sort_key(step_id: str) -> Tuple[str, int]:
     match = re.match(r"^([A-Z])(\d+)$", step_id)
     if not match:
         return (step_id[:1], 999999)
     return (match.group(1), int(match.group(2)))
+
+
+def _parse_step_csv(raw: str) -> List[str]:
+    tokens: List[str] = []
+    seen: Set[str] = set()
+    for token in str(raw or "").split(","):
+        normalized = token.strip().upper()
+        if not normalized:
+            raise RuntimeError("Step selection contains an empty token.")
+        if normalized in seen:
+            raise RuntimeError(f"Step selection contains a duplicate step: {normalized}")
+        seen.add(normalized)
+        tokens.append(normalized)
+    if not tokens:
+        raise RuntimeError("Step selection is empty.")
+    return tokens
+
+
+def _normalize_s_steps(selected: List[str]) -> List[str]:
+    return sorted(list(selected), key=step_sort_key)
+
+
+def _validate_s_steps(selected: List[str]) -> None:
+    unknown = [step_id for step_id in selected if step_id not in PHASE_S_BASE_STEP_SET]
+    if unknown:
+        raise RuntimeError(
+            "Phase S step selection only allows S0-S6. "
+            f"Unsupported steps: {', '.join(sorted(unknown, key=step_sort_key))}"
+        )
+
+
+def _get_s_step_controls(args: argparse.Namespace) -> Optional[List[str]]:
+    raw = getattr(args, "s_steps", None)
+    if raw is None:
+        raw = os.getenv(S_STEPS_ENV_VAR, "")
+    if not str(raw or "").strip():
+        return None
+    selected = _parse_step_csv(str(raw))
+    _validate_s_steps(selected)
+    return _normalize_s_steps(selected)
 
 TEXT_NAMES = {
     "Dockerfile",
@@ -593,6 +770,7 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "openai": "OPENAI_API_KEY",
     "gemini": "GEMINI_API_KEY",
     "xai": "XAI_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
 }
 REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A99"},
@@ -684,6 +862,7 @@ class RunnerConfig:
     webhook_required: bool = False
     webhook_auto_continue: bool = False
     live_ok: bool = False
+    selected_s_steps: Optional[Tuple[str, ...]] = None
 
 
 @dataclass(frozen=True)
@@ -691,6 +870,8 @@ class PromptSpec:
     step_id: str
     prompt_path: Path
     output_artifacts: Tuple[str, ...]
+    tier_override: Optional[str] = None
+    source: str = "legacy"
 
 
 @dataclass(frozen=True)
@@ -2048,7 +2229,12 @@ def refresh_run_manifest_artifacts(run_root: Path, dirs: Dict[str, Path]) -> Non
     write_json(manifest_path, payload)
 
 
-def resolve_step_tier(phase: str, step_id: str) -> str:
+def resolve_step_tier(phase: str, step_id: str, tier_override: Optional[str] = None) -> str:
+    override = str(tier_override or "").strip().lower()
+    if override:
+        if override not in _VALID_PROMPT_TIERS:
+            raise RuntimeError(f"Invalid tier override {tier_override!r}.")
+        return override
     phase_code = str(phase or "").upper()
     token = str(step_id or "").upper()
     if phase_code in {"R", "X", "T"} or (phase_code == "Z" and token in {"Z1", "Z2"}):
@@ -2060,7 +2246,15 @@ def resolve_step_tier(phase: str, step_id: str) -> str:
     return "extract"
 
 
-def classify_step_type(phase: str, step_id: str) -> str:
+def classify_step_type(phase: str, step_id: str, tier_override: Optional[str] = None) -> str:
+    override = str(tier_override or "").strip().lower()
+    if override:
+        return {
+            "bulk": "inventory",
+            "extract": "extract",
+            "synthesis": "synthesis",
+            "qa": "qa",
+        }[override]
     phase_code = str(phase or "").upper()
     token = str(step_id or "").upper()
     if phase_code == "Q" or token.endswith("9"):
@@ -2093,9 +2287,9 @@ def _parse_provider_model_env(value: str, env_name: str) -> Tuple[str, str, str]
         raise RuntimeError(
             f"{env_name} is required when {DPMX_ROUTING_ENABLE_ENV}=1 and must be provider/model."
         )
-    if raw.count("/") != 1:
+    if "/" not in raw:
         raise RuntimeError(
-            f"{env_name} must be provider/model (example: openai/gpt-5-nano). Got: {raw}"
+            f"{env_name} must be provider/model (example: openai/gpt-5-nano or openrouter/openai/gpt-5-mini). Got: {raw}"
         )
     provider_raw, model_raw = raw.split("/", 1)
     provider = provider_raw.strip().lower()
@@ -2142,11 +2336,12 @@ def choose_model_for_step(
     phase: str,
     step_id: str,
     cfg: RunnerConfig,
+    tier_override: Optional[str] = None,
 ) -> Optional[Tuple[str, str, str, str, str]]:
     del cfg
     if not _env_is_truthy(DPMX_ROUTING_ENABLE_ENV):
         return None
-    step_type = classify_step_type(phase, step_id)
+    step_type = classify_step_type(phase, step_id, tier_override=tier_override)
     routes = _resolve_env_step_type_routes()
     provider, model_id, api_key_env = routes[step_type]
     return (provider, model_id, api_key_env, step_type, "env_step_type_override")
@@ -2156,16 +2351,27 @@ def resolve_effective_step_route(
     phase: str,
     step_id: str,
     cfg: RunnerConfig,
+    tier_override: Optional[str] = None,
 ) -> Dict[str, Any]:
-    step_tier = resolve_step_tier(phase, step_id)
-    step_type = classify_step_type(phase, step_id)
-    chosen = choose_model_for_step(phase, step_id, cfg)
+    step_tier = resolve_effective_step_tier(
+        cfg.routing_policy,
+        phase,
+        step_id,
+        tier_override=tier_override,
+    )
+    step_type = classify_step_type(phase, step_id, tier_override=tier_override)
+    chosen = choose_model_for_step(phase, step_id, cfg, tier_override=tier_override)
     reason = "policy_ladder_default"
     if chosen is not None:
         provider, model_id, api_key_env, step_type, reason = chosen
         step_ladder: List[Tuple[str, str, str]] = [(provider, model_id, api_key_env)]
     else:
-        step_ladder = resolve_step_ladder(cfg.routing_policy, phase, step_id)
+        step_ladder = _resolve_step_ladder_compat(
+            cfg.routing_policy,
+            phase,
+            step_id,
+            tier_override=tier_override,
+        )
         if not step_ladder:
             step_ladder = [("openai", "gpt-5-mini", "OPENAI_API_KEY")]
         provider, model_id, api_key_env = step_ladder[0]
@@ -2514,14 +2720,50 @@ def _clone_ladders(policy: str) -> Dict[str, List[Tuple[str, str, str]]]:
     return {tier: [tuple(route) for route in routes] for tier, routes in selected.items()}
 
 
+def _balanced_grok_openrouter_routes(phase: str, step_id: str) -> Optional[List[Tuple[str, str, str]]]:
+    phase_code = str(phase or "").upper()
+    effective_tier = resolve_effective_step_tier("balanced_grok_openrouter", phase_code, step_id)
+    if phase_code in PREMIUM_SYNTHESIS_PHASES:
+        return list(BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER)
+    if phase_code in DOCS_GOVERNANCE_PHASES:
+        return list(BALANCED_GROK_OPENROUTER_DOCS_LADDER)
+    if phase_code in CODE_HEAVY_PHASES:
+        routes = BALANCED_GROK_OPENROUTER_CODE_LADDERS.get(
+            effective_tier,
+            BALANCED_GROK_OPENROUTER_CODE_LADDERS.get("extract", []),
+        )
+        return [tuple(route) for route in routes]
+    return None
+
+
+def resolve_effective_step_tier(
+    routing_policy: str,
+    phase: str,
+    step_id: str,
+    tier_override: Optional[str] = None,
+) -> str:
+    selected_policy = _normalize_routing_policy(routing_policy)
+    phase_code = str(phase or "").upper()
+    override = str(tier_override or "").strip().lower()
+    if override:
+        return resolve_step_tier(phase, step_id, tier_override=override)
+    if selected_policy == "balanced_grok_openrouter" and phase_code in PREMIUM_SYNTHESIS_PHASES:
+        return "synthesis"
+    return resolve_step_tier(phase, step_id)
+
+
+def _representative_step_id_for_phase(phase: str) -> str:
+    required_steps = sorted(list(REQUIRED_PROMPT_STEP_IDS.get(phase, set())), key=step_sort_key)
+    if required_steps:
+        return str(required_steps[0])
+    return f"{str(phase or '').upper()}0"
+
+
 def _refresh_phase_default_model_routing(policy: str) -> Dict[str, Tuple[str, str, str]]:
-    ladders = _clone_ladders(policy)
     phase_routes: Dict[str, Tuple[str, str, str]] = {}
     for phase in PHASES:
-        tier = _phase_default_tier(phase)
-        candidates = ladders.get(tier, [])
-        if not candidates:
-            candidates = ladders.get("extract", [])
+        step_id = _representative_step_id_for_phase(phase)
+        candidates = _resolve_step_ladder_compat(policy, phase, step_id)
         if not candidates:
             phase_routes[phase] = ("openai", "gpt-5-mini", "OPENAI_API_KEY")
             continue
@@ -2562,14 +2804,45 @@ def resolve_step_ladder(
     routing_policy: str,
     phase: str,
     step_id: str,
+    tier_override: Optional[str] = None,
 ) -> List[Tuple[str, str, str]]:
     selected_policy = _normalize_routing_policy(routing_policy)
+    if selected_policy == "balanced_grok_openrouter":
+        phase_routes = _balanced_grok_openrouter_routes(phase, step_id)
+        if phase_routes:
+            return phase_routes
     tiers = ACTIVE_ROUTING_LADDERS.get(selected_policy) or _clone_ladders(selected_policy)
-    step_tier = resolve_step_tier(phase, step_id)
+    step_tier = resolve_effective_step_tier(
+        selected_policy,
+        phase,
+        step_id,
+        tier_override=tier_override,
+    )
     routes = tiers.get(step_tier, [])
     if not routes:
         routes = tiers.get("extract", [])
     return [tuple(route) for route in routes]
+
+
+def _resolve_step_ladder_compat(
+    routing_policy: str,
+    phase: str,
+    step_id: str,
+    tier_override: Optional[str] = None,
+) -> List[Tuple[str, str, str]]:
+    if tier_override is None:
+        return resolve_step_ladder(routing_policy, phase, step_id)
+    try:
+        return resolve_step_ladder(
+            routing_policy,
+            phase,
+            step_id,
+            tier_override=tier_override,
+        )
+    except TypeError as exc:
+        if "tier_override" not in str(exc):
+            raise
+        return resolve_step_ladder(routing_policy, phase, step_id)
 
 
 def routing_ladders_payload() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
@@ -2645,6 +2918,7 @@ def write_run_manifest(
             "gemini_transport": args.gemini_transport,
             "openai_transport": args.openai_transport,
             "xai_transport": args.xai_transport,
+            "s_prompts": getattr(args, "s_prompts", S_PROMPTS_AUTO),
             "retry_policy": args.retry_policy,
             "retry_max_attempts": args.retry_max_attempts,
             "retry_base_seconds": args.retry_base_seconds,
@@ -2710,7 +2984,12 @@ def write_run_manifest(
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "routing_step_tiers": {
             phase: {
-                spec.step_id: resolve_step_tier(phase, spec.step_id)
+                spec.step_id: resolve_effective_step_tier(
+                    routing_policy,
+                    phase,
+                    spec.step_id,
+                    tier_override=spec.tier_override,
+                )
                 for spec in get_phase_prompts(phase)
             }
             for phase in phases
@@ -2951,27 +3230,38 @@ def _resolve_prompt_root() -> Path:
     return prompt_root()
 
 
-def get_phase_prompts(phase: str) -> List[PromptSpec]:
-    root = prompt_root()
-    prompts = sorted(root.glob(f"PROMPT_{phase}*_*.md"))
+def _legacy_phase_prompt_specs(phase: str) -> List[PromptSpec]:
     grouped: Dict[str, List[Path]] = {}
-
-    for prompt_path in prompts:
+    expected_steps = REQUIRED_PROMPT_STEP_IDS.get(phase, set())
+    primary_root = prompt_root()
+    for prompt_path in sorted(primary_root.glob(f"PROMPT_{phase}*_*.md")):
         match = re.match(r"PROMPT_([A-Z][0-9]+)_", prompt_path.name)
         if not match:
             continue
         step_id = match.group(1)
         grouped.setdefault(step_id, []).append(prompt_path)
 
+    if str(phase or "").upper() == "S":
+        missing_steps = set(expected_steps) - set(grouped.keys())
+        if missing_steps:
+            v4_prompt_root = EXTRACTOR_SERVICE_DIR / "promptsets" / "v4" / "prompts"
+            for prompt_path in sorted(v4_prompt_root.glob("PROMPT_S*_*.md")):
+                match = re.match(r"PROMPT_([A-Z][0-9]+)_", prompt_path.name)
+                if not match:
+                    continue
+                step_id = match.group(1)
+                if step_id not in missing_steps:
+                    continue
+                grouped.setdefault(step_id, []).append(prompt_path)
+
     specs: List[PromptSpec] = []
     for step_id in sorted(grouped.keys(), key=step_sort_key):
-        candidates = sorted(grouped[step_id], key=lambda p: p.name)
+        candidates = sorted(grouped[step_id], key=lambda p: str(p))
         if len(candidates) > 1:
             raise RuntimeError(
-                f"Duplicate prompts for {step_id}: {[p.name for p in candidates]}. "
+                f"Duplicate prompts for {step_id}: {[str(p) for p in candidates]}. "
                 "Resolve duplicates before running the pipeline."
             )
-
         prompt_path = candidates[0]
         prompt_text = safe_read(prompt_path)
         output_artifacts = extract_output_artifacts(prompt_text, step_id)
@@ -2983,16 +3273,119 @@ def get_phase_prompts(phase: str) -> List[PromptSpec]:
                 step_id,
             )
             output_artifacts = (f"{step_id}.json",)
-
         specs.append(
             PromptSpec(
                 step_id=step_id,
                 prompt_path=prompt_path,
                 output_artifacts=tuple(output_artifacts),
+                source="legacy",
             )
         )
-
     return specs
+
+
+def _validate_phase_s_registry(payload: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+    if not isinstance(payload, dict):
+        raise ValueError("Phase S registry must be a JSON object.")
+    if int(payload.get("version", 0)) != 1:
+        raise ValueError("Phase S registry must declare version=1.")
+    if str(payload.get("phase", "")).strip().upper() != "S":
+        raise ValueError("Phase S registry must declare phase='S'.")
+    steps = payload.get("steps")
+    if not isinstance(steps, dict):
+        raise ValueError("Phase S registry must contain an object 'steps'.")
+    expected = set(REQUIRED_PROMPT_STEP_IDS.get("S", set()))
+    observed = {str(key).strip().upper() for key in steps.keys()}
+    if observed != expected:
+        raise ValueError(
+            "Phase S registry must declare exactly steps "
+            f"{sorted(expected)}. Observed: {sorted(observed)}"
+        )
+
+    phase_s_root = phase_s_registry_dir().resolve()
+    validated: Dict[str, Dict[str, str]] = {}
+    for step_id in sorted(expected, key=step_sort_key):
+        entry = steps.get(step_id)
+        if not isinstance(entry, dict):
+            raise ValueError(f"Phase S registry step {step_id} must be an object.")
+        prompt_path = str(entry.get("prompt_path", "")).strip()
+        tier = str(entry.get("tier", "")).strip().lower()
+        if not prompt_path or Path(prompt_path).is_absolute():
+            raise ValueError(f"Phase S registry step {step_id} prompt_path must be a relative path.")
+        if tier not in _VALID_PROMPT_TIERS:
+            raise ValueError(
+                f"Phase S registry step {step_id} tier must be one of {sorted(_VALID_PROMPT_TIERS)}."
+            )
+        resolved = (phase_s_root / prompt_path).resolve()
+        if not is_within(resolved, phase_s_root):
+            raise ValueError(f"Phase S registry step {step_id} prompt_path escapes {phase_s_root}.")
+        if not resolved.exists() or not resolved.is_file():
+            raise ValueError(f"Phase S registry step {step_id} prompt file does not exist: {resolved}")
+        validated[step_id] = {
+            "prompt_path": prompt_path,
+            "tier": tier,
+        }
+    return validated
+
+
+def _load_phase_s_registry() -> Dict[str, Dict[str, str]]:
+    registry_path = phase_s_registry_path()
+    if not registry_path.exists():
+        raise FileNotFoundError(f"Phase S registry not found: {registry_path}")
+    try:
+        payload = json.loads(registry_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise ValueError(f"Failed to parse Phase S registry {registry_path}: {exc}") from exc
+    return _validate_phase_s_registry(payload)
+
+
+def _resolve_phase_s_prompts(mode: str) -> List[PromptSpec]:
+    normalized_mode = str(mode or S_PROMPTS_AUTO).strip().lower() or S_PROMPTS_AUTO
+    if normalized_mode not in S_PROMPTS_MODES:
+        allowed = ", ".join(sorted(S_PROMPTS_MODES))
+        raise RuntimeError(f"Unsupported S prompts mode {mode!r}. Expected one of: {allowed}")
+    if normalized_mode == S_PROMPTS_LEGACY:
+        return _legacy_phase_prompt_specs("S")
+
+    try:
+        registry = _load_phase_s_registry()
+    except Exception as exc:
+        if normalized_mode == S_PROMPTS_REGISTRY:
+            raise RuntimeError(f"Phase S registry mode failed: {exc}") from exc
+        logger.warning("Phase S registry unavailable; falling back to legacy prompts. reason=%s", exc)
+        return _legacy_phase_prompt_specs("S")
+
+    base = phase_s_registry_dir().resolve()
+    specs: List[PromptSpec] = []
+    for step_id in sorted(registry.keys(), key=step_sort_key):
+        prompt_path = (base / registry[step_id]["prompt_path"]).resolve()
+        prompt_text = safe_read(prompt_path)
+        output_artifacts = extract_output_artifacts(prompt_text, step_id)
+        if not output_artifacts:
+            logger.warning(
+                "Prompt %s (%s) does not declare explicit output artifacts. Falling back to %s.json.",
+                prompt_path.name,
+                step_id,
+                step_id,
+            )
+            output_artifacts = (f"{step_id}.json",)
+        specs.append(
+            PromptSpec(
+                step_id=step_id,
+                prompt_path=prompt_path,
+                output_artifacts=tuple(output_artifacts),
+                tier_override=registry[step_id]["tier"],
+                source="registry",
+            )
+        )
+    return specs
+
+
+def get_phase_prompts(phase: str) -> List[PromptSpec]:
+    phase_code = str(phase or "").upper()
+    if phase_code == "S":
+        return _resolve_phase_s_prompts(get_active_s_prompts_mode())
+    return _legacy_phase_prompt_specs(phase_code)
 
 
 def _missing_prompt_glob(step_id: str) -> str:
@@ -3195,9 +3588,19 @@ def write_run_routing_fingerprint(
         entries: List[Dict[str, Any]] = []
         step_tier_map[phase] = {}
         for prompt in prompts:
-            tier = resolve_step_tier(phase, prompt.step_id)
+            tier = resolve_effective_step_tier(
+                cfg.routing_policy,
+                phase,
+                prompt.step_id,
+                tier_override=prompt.tier_override,
+            )
             step_tier_map[phase][prompt.step_id] = tier
-            ladder = resolve_step_ladder(cfg.routing_policy, phase, prompt.step_id)
+            ladder = _resolve_step_ladder_compat(
+                cfg.routing_policy,
+                phase,
+                prompt.step_id,
+                tier_override=prompt.tier_override,
+            )
             provider, model_id, api_key_env = ladder[0] if ladder else ("openai", "gpt-5-mini", "OPENAI_API_KEY")
             endpoint_base = llm_base_url(provider, cfg)
             default_sequence = (
@@ -3372,11 +3775,13 @@ def run_doctor_checks(root: Path, dirs: Dict[str, Path], run_id: str, phase_arg:
             errors.append(f"Duplicate prompt step {step_id}: {names}")
 
     for phase in phase_list:
-        prompts = prompt_index.get(phase, {})
+        try:
+            prompts = get_phase_prompts(phase)
+        except Exception as exc:
+            errors.append(f"Prompt resolution failed for phase {phase}: {exc}")
+            continue
         if not prompts:
-            errors.append(
-                f"No prompts found for phase {phase} ({prompt_root()}/PROMPT_{phase}*)."
-            )
+            errors.append(f"No prompts found for phase {phase}.")
 
     run_root = dirs["root"]
     if not run_root.exists():
@@ -3464,7 +3869,12 @@ def collect_provider_routes(
     routes: Dict[str, Dict[str, str]] = {}
     for phase in phases:
         for prompt in get_phase_prompts(phase):
-            ladder = resolve_step_ladder(routing_policy, phase, prompt.step_id)
+            ladder = _resolve_step_ladder_compat(
+                routing_policy,
+                phase,
+                prompt.step_id,
+                tier_override=prompt.tier_override,
+            )
             for provider, model_id, api_key_env in ladder:
                 key = f"{provider}:{model_id}:{api_key_env}"
                 if key in routes:
@@ -5150,12 +5560,23 @@ def call_llm_with_ladder(
     max_hops = min(max_hops, len(ladder))
     attempts: List[Dict[str, Any]] = []
     final_payload: Optional[Dict[str, Any]] = None
+    opus_eligible: Optional[bool] = None
+    opus_block_reason: Optional[str] = None
     for hop_index in range(max_hops):
         route = tuple(ladder[hop_index])
         provider, model_id, api_key_env = route
         payload = execute_attempt(route, hop_index)
         request_meta = payload.get("request_meta") if isinstance(payload.get("request_meta"), dict) else {}
         escalation_trigger = str(payload.get("escalation_trigger") or "").strip() or None
+        escalation_class = classify_escalation_class(
+            phase=phase,
+            escalation_trigger=escalation_trigger,
+            request_meta=request_meta,
+        )
+        request_meta["escalation_class"] = escalation_class
+        request_meta.setdefault("opus_eligible", None)
+        request_meta.setdefault("opus_block_reason", None)
+        payload["request_meta"] = request_meta
         attempts.append(
             {
                 "hop_index": hop_index + 1,
@@ -5165,14 +5586,28 @@ def call_llm_with_ladder(
                 "failure_type": request_meta.get("failure_type"),
                 "status_code": request_meta.get("status_code"),
                 "escalation_trigger": escalation_trigger,
+                "escalation_class": escalation_class,
                 "ok": bool(payload.get("artifacts_ok", False)),
             }
         )
         final_payload = dict(payload)
         if not escalation_trigger or hop_index + 1 >= max_hops:
             break
+        next_route = tuple(ladder[hop_index + 1])
+        if is_break_glass_opus_route(next_route) and escalation_class != "hard_reconciliation":
+            opus_eligible = False
+            opus_block_reason = f"blocked_for_escalation_class:{escalation_class or 'none'}"
+            request_meta["opus_eligible"] = False
+            request_meta["opus_block_reason"] = opus_block_reason
+            final_payload["request_meta"] = request_meta
+            break
+        if is_break_glass_opus_route(next_route):
+            opus_eligible = True
+            opus_block_reason = None
+            request_meta["opus_eligible"] = True
+            request_meta["opus_block_reason"] = None
         if ui is not None:
-            next_provider, next_model, _ = tuple(ladder[hop_index + 1])
+            next_provider, next_model, _ = next_route
             ui.escalation_event(
                 phase=phase,
                 step_id=step_id,
@@ -5202,6 +5637,15 @@ def call_llm_with_ladder(
     final_request_meta["route_attempts"] = attempts
     final_request_meta["route_hop_index"] = int(attempts[-1]["hop_index"]) if attempts else 1
     final_request_meta["escalation_trigger"] = final_payload.get("escalation_trigger")
+    final_request_meta.setdefault("escalation_class", "none")
+    if opus_eligible is not None:
+        final_request_meta["opus_eligible"] = opus_eligible
+    else:
+        final_request_meta.setdefault("opus_eligible", None)
+    if opus_block_reason is not None:
+        final_request_meta["opus_block_reason"] = opus_block_reason
+    else:
+        final_request_meta.setdefault("opus_block_reason", None)
     final_route = tuple(final_payload.get("route") or ("", "", ""))
     final_request_meta["provider"] = final_route[0] if len(final_route) > 0 else final_request_meta.get("provider")
     final_request_meta["model_id"] = final_route[1] if len(final_route) > 1 else final_request_meta.get("model_id")
@@ -5951,6 +6395,66 @@ def should_escalate_for_failure_type(failure_type: Optional[str]) -> bool:
     }
 
 
+def classify_escalation_class(
+    *,
+    phase: str,
+    escalation_trigger: Optional[str],
+    request_meta: Dict[str, Any],
+) -> str:
+    trigger = str(escalation_trigger or "").strip()
+    failure_type = str(request_meta.get("failure_type") or "").strip()
+    provider_reason = str(request_meta.get("provider_error_reason") or "").strip()
+    schema_reason = str(request_meta.get("schema_gate_reason") or "").strip()
+    combined = " ".join(
+        token for token in [trigger, failure_type, provider_reason, schema_reason] if token
+    ).lower()
+    normalized = combined.replace("-", "_").replace(" ", "_")
+
+    if not trigger:
+        return "none"
+
+    if str(phase or "").upper() in PREMIUM_SYNTHESIS_PHASES and any(
+        marker in normalized for marker in HARD_RECONCILIATION_MARKERS
+    ):
+        return "hard_reconciliation"
+
+    if (
+        trigger.startswith("parse_failure")
+        or "invalid_json" in normalized
+        or schema_reason.startswith("schema_missing_key:")
+        or schema_reason.startswith("schema_empty_key:")
+        or schema_reason.startswith("missing_expected_artifacts:")
+    ):
+        return "schema_repair"
+
+    if (
+        schema_reason == "schema_item_not_object"
+        or schema_reason.startswith("schema_")
+        or trigger == "schema_gate_failure"
+    ):
+        return "format_violation"
+
+    if failure_type in {"payload", "payload_unshrinkable"} or "payload_unshrinkable" in normalized:
+        return "payload"
+
+    if trigger == "provider_failure" or failure_type in {
+        "provider",
+        "network",
+        "timeout",
+        "rate_limit",
+        "quota_or_billing",
+        "api_key_missing_or_invalid",
+        "permission_denied",
+    } or failure_type.startswith("auth_"):
+        return "provider_transport"
+
+    return "none"
+
+
+def is_break_glass_opus_route(route: Tuple[str, str, str]) -> bool:
+    return tuple(route) == BALANCED_GROK_OPENROUTER_OPUS_ROUTE
+
+
 def build_batch_client(
     provider: str,
     api_key: str,
@@ -6310,7 +6814,12 @@ def execute_step_for_partitions(
         }
 
     raw_dir = phase_dir / "raw"
-    route_info = resolve_effective_step_route(phase, step_id, cfg)
+    route_info = resolve_effective_step_route(
+        phase,
+        step_id,
+        cfg,
+        tier_override=prompt_spec.tier_override,
+    )
     step_tier = str(route_info["step_tier"])
     step_type = str(route_info["step_type"])
     step_ladder = [tuple(route) for route in route_info["ladder"]]
@@ -7351,50 +7860,21 @@ def execute_step_for_partitions(
                 )
             _ui_record_result(results_by_partition[partition_id])
     else:
-        # Choose executor based on configuration
+        # The dedicated process worker implementation is incomplete and currently
+        # returns empty results for non-dry-run execution. Fall back to threaded
+        # concurrency so multi-worker runs remain functional and deterministic.
         if cfg.executor == "process":
-            # Use the module-level worker function that is picklable
-            executor_cls = ProcessPoolExecutor
-            
-            # Prepare worker arguments (convert to picklable formats)
-            cfg_dict = {
-                'max_request_bytes': cfg.max_request_bytes,
-                'file_truncate_chars': cfg.file_truncate_chars,
-                'home_scan_mode': cfg.home_scan_mode,
-                'routing_policy': cfg.routing_policy,
-                'batch_mode': cfg.batch_mode,
-                'batch_provider': cfg.batch_provider,
-                'gemini_auth_mode': cfg.gemini_auth_mode,
-            }
-            
-            # Use module-level worker function
-            worker_func = _run_one_partition_worker
-            worker_args = (
-                cfg.dry_run, cfg.resume, run_id, endpoint_base, transport,
-                initial_provider, initial_model_id, routing_reason, initial_api_key_env
+            logger.warning(
+                "Executor 'process' is not safe for live extraction yet; "
+                "falling back to threaded execution for step %s",
+                step_id,
             )
-            
-        else:
-            executor_cls = ThreadPoolExecutor
-            # Use local function for thread executor (backward compatible)
-            worker_func = _run_one_partition
-            worker_args = ()  # Not used for threads
-        
+        executor_cls = ThreadPoolExecutor
+        worker_func = _run_one_partition
+        worker_args = ()  # Not used for threads
+
         with executor_cls(max_workers=workers) as executor:
-            if cfg.executor == "process":
-                # For ProcessPool: submit with all worker arguments
-                future_map = {
-                    executor.submit(
-                        worker_func, 
-                        partition, phase, step_id, prompt_path, output_artifacts,
-                        cfg_dict, str(raw_dir), step_tier, max_files, force_json_output,
-                        *worker_args
-                    ): partition 
-                    for partition in ordered_partitions
-                }
-            else:
-                # For ThreadPool: use original local function
-                future_map = {executor.submit(worker_func, partition): partition for partition in ordered_partitions}
+            future_map = {executor.submit(worker_func, partition): partition for partition in ordered_partitions}
             for future in as_completed(future_map):
                 partition = future_map[future]
                 partition_id = str(partition["id"])
@@ -7607,11 +8087,28 @@ def _run_phase_inner(
     targets: Optional[List[str]],
     precollected_items: Optional[List[Dict[str, Any]]] = None,
     ui: Optional[UI] = None,
+    selected_step_ids: Optional[Sequence[str]] = None,
 ) -> None:
     phase_started_epoch = time.time()
     logger.info("--- Phase %s ---", phase)
     phase_dir = dirs[phase]
     prompts = get_phase_prompts(phase)
+    if selected_step_ids is not None:
+        requested = tuple(selected_step_ids)
+        requested_set = set(requested)
+        prompt_map = {spec.step_id: spec for spec in prompts}
+        missing = [step_id for step_id in requested if step_id not in prompt_map]
+        if missing:
+            raise RuntimeError(
+                f"Selected steps are not resolvable for phase {phase}: {', '.join(missing)}"
+            )
+        filtered_prompts: List[PromptSpec] = []
+        for prompt_spec in prompts:
+            if prompt_spec.step_id in requested_set:
+                filtered_prompts.append(prompt_spec)
+            else:
+                logger.info("S_STEP_SKIPPED step=%s reason=not_selected", prompt_spec.step_id)
+        prompts = filtered_prompts
     if not prompts:
         raise RuntimeError(f"No prompts found for phase {phase} in {prompt_root()}/")
     prompt_report = _prompt_hash_report_for_phase(phase, prompts)
@@ -7698,7 +8195,12 @@ def _run_phase_inner(
             phase_tier_defaults[tier_name] = f"{routes[0][0]}/{routes[0][1]}"
     first_step = prompts[0] if prompts else None
     if first_step is not None:
-        first_ladder = resolve_effective_step_route(phase, first_step.step_id, cfg)["ladder"]
+        first_ladder = resolve_effective_step_route(
+            phase,
+            first_step.step_id,
+            cfg,
+            tier_override=first_step.tier_override,
+        )["ladder"]
     else:
         first_ladder = []
     provider, model_id, _ = first_ladder[0] if first_ladder else MODEL_ROUTING.get(phase, ("openai", "gpt-5-mini", "OPENAI_API_KEY"))
@@ -7744,7 +8246,12 @@ def _run_phase_inner(
 
     phase_auth_failures = 0
     for prompt_spec in prompts:
-        route_info = resolve_effective_step_route(phase, prompt_spec.step_id, cfg)
+        route_info = resolve_effective_step_route(
+            phase,
+            prompt_spec.step_id,
+            cfg,
+            tier_override=prompt_spec.tier_override,
+        )
         provider = str(route_info["provider"])
         model_id = str(route_info["model_id"])
         api_key_env = str(route_info["api_key_env"])
@@ -8201,7 +8708,12 @@ def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
         }
         entries: List[Dict[str, Any]] = []
         for spec in get_phase_prompts(phase):
-            route = resolve_effective_step_route(phase, spec.step_id, cfg)
+            route = resolve_effective_step_route(
+                phase,
+                spec.step_id,
+                cfg,
+                tier_override=spec.tier_override,
+            )
             entries.append(
                 {
                     "step_id": spec.step_id,
@@ -8242,6 +8754,8 @@ def print_phase_prompts(phases: List[str]) -> int:
                 "prompt_file": spec.prompt_path.name,
                 "prompt_path": str(spec.prompt_path.resolve()),
                 "declared_outputs": list(spec.output_artifacts),
+                "source": spec.source,
+                "tier_override": spec.tier_override,
             }
             for spec in specs
         ]
@@ -10055,6 +10569,11 @@ def run_phase_T(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
 
 
 def run_phase_S(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+    s_specs = get_phase_prompts("S")
+    effective_mode = S_PROMPTS_LEGACY
+    if s_specs and all(spec.source == "registry" for spec in s_specs):
+        effective_mode = S_PROMPTS_REGISTRY
+    logger.info("S_PROMPTS_MODE=%s", effective_mode)
     r_norm = dirs["R"] / "norm"
     input_sources: Dict[Path, str] = {}
     if r_norm.exists():
@@ -10077,7 +10596,16 @@ def run_phase_S(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
     deduped_inputs = sorted(input_sources.keys(), key=str)
     truth_pack_manifest = _write_s_truth_pack_provenance_manifest(dirs, input_sources)
     precollected_files = deduped_inputs + [truth_pack_manifest]
-    _run_phase_inner("S", dirs, cfg, None, None, precollected_items=to_items(precollected_files), ui=ui)
+    _run_phase_inner(
+        "S",
+        dirs,
+        cfg,
+        None,
+        None,
+        precollected_items=to_items(precollected_files),
+        ui=ui,
+        selected_step_ids=list(cfg.selected_s_steps) if cfg.selected_s_steps else None,
+    )
 
 
 def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
@@ -10093,7 +10621,7 @@ def main() -> None:
     except (AttributeError, ValueError):
         pass
     parser = argparse.ArgumentParser("Master Extraction Runner")
-    parser.add_argument("--phase", choices=PHASES + ["ALL"], required=False)
+    parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-files-docs", type=int, default=35)
     parser.add_argument("--max-files-code", type=int, default=20)
@@ -10117,8 +10645,20 @@ def main() -> None:
     )
     parser.add_argument(
         "--routing-policy",
-        choices=["cost", "balanced", "quality", "openrouter"],
+        choices=["cost", "balanced", "balanced_openrouter", "balanced_grok_openrouter", "quality", "openrouter"],
         default=DEFAULT_ROUTING_POLICY,
+    )
+    parser.add_argument(
+        "--s-prompts",
+        choices=sorted(S_PROMPTS_MODES),
+        default=None,
+        help="Phase S prompt resolver mode: auto, registry, or legacy.",
+    )
+    parser.add_argument(
+        "--s-steps",
+        type=str,
+        default=None,
+        help="Comma-separated subset of Phase S base steps (S0-S6) to execute.",
     )
     parser.add_argument("--disable-escalation", action="store_true")
     parser.add_argument("--escalation-max-hops", type=int, default=2)
@@ -10295,6 +10835,151 @@ def main() -> None:
         parser.error("--batch-watch cannot be combined with --batch-submit-only.")
 
     root = Path.cwd()
+    s_prompts_mode = str(args.s_prompts or os.getenv(S_PROMPTS_MODE_ENV_VAR, "")).strip().lower() or S_PROMPTS_AUTO
+    try:
+        set_active_s_prompts_mode(s_prompts_mode)
+    except Exception as exc:
+        logger.error("S prompts mode setup failed: %s", exc)
+        sys.exit(1)
+    args.s_prompts = get_active_s_prompts_mode()
+    try:
+        selected_s_steps = _get_s_step_controls(args)
+    except Exception as exc:
+        logger.error("S step selection setup failed: %s", exc)
+        sys.exit(1)
+    args.s_steps = list(selected_s_steps) if selected_s_steps is not None else None
+
+    if args.phase == "S_INT":
+        from s_int.models import ladder_for_step
+        from s_int.run_s_int import run_s_int
+        from s_int.schema_validate import validate_payload
+
+        run_id = args.run_id.strip() if args.run_id else datetime.now(timezone.utc).strftime("s_int_%Y%m%dT%H%M%SZ")
+        cfg = RunnerConfig(
+            dry_run=args.dry_run,
+            max_files_docs=args.max_files_docs,
+            max_files_code=args.max_files_code,
+            max_chars=args.max_chars,
+            max_request_bytes=args.max_request_bytes,
+            file_truncate_chars=args.file_truncate_chars,
+            home_scan_mode=args.home_scan_mode,
+            resume=args.resume,
+            fail_fast_auth=args.fail_fast_auth,
+            gemini_auth_mode=args.gemini_auth_mode,
+            gemini_transport=args.gemini_transport,
+            openai_transport=args.openai_transport,
+            xai_transport=args.xai_transport,
+            retry_policy=args.retry_policy,
+            retry_max_attempts=max(1, args.retry_max_attempts),
+            retry_base_seconds=max(0.0, args.retry_base_seconds),
+            retry_max_seconds=max(0.0, args.retry_max_seconds),
+            phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
+            partition_workers=args.partition_workers,
+            executor=args.executor,
+            debug_phase_inputs=args.debug_phase_inputs,
+            fail_fast_missing_inputs=args.fail_fast_missing_inputs,
+            routing_policy=args.routing_policy,
+            disable_escalation=bool(args.disable_escalation),
+            escalation_max_hops=args.escalation_max_hops,
+            batch_mode=bool(args.batch_mode),
+            batch_provider=args.batch_provider,
+            batch_poll_seconds=args.batch_poll_seconds,
+            batch_wait_timeout_seconds=args.batch_wait_timeout_seconds,
+            batch_max_requests_per_job=args.batch_max_requests_per_job,
+            batch_submit_only=bool(args.batch_submit_only),
+            webhook_url=os.getenv(DPMX_WEBHOOK_URL_ENV, "").strip(),
+            webhook_secret=os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip(),
+            webhook_timeout_seconds=_int_env(DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV, 5, minimum=1),
+            webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
+            webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
+            live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+        )
+
+        def _prompt_executor(step, rendered_prompt, schema, _prior_outputs):  # type: ignore[no-untyped-def]
+            ladder = ladder_for_step(step)
+
+            def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
+                provider, model_id, api_key_env = route
+                result = call_llm(
+                    provider=provider,
+                    model_id=model_id,
+                    api_key_env=api_key_env,
+                    system_prompt="Return JSON only.",
+                    user_content=rendered_prompt,
+                    cfg=cfg,
+                )
+                meta = dict(result.get("meta") or {})
+                response_text = str(result.get("text") or "")
+                payload = None
+                schema_errors: List[str] = []
+                escalation_trigger = str(meta.get("failure_type") or "").strip() or None
+                if not escalation_trigger:
+                    try:
+                        payload = json.loads(response_text)
+                    except Exception:
+                        meta["failure_type"] = "invalid_json"
+                        escalation_trigger = "invalid_json"
+                    else:
+                        schema_errors = validate_payload(payload, schema)
+                        if schema_errors:
+                            meta["failure_type"] = "schema_invalid"
+                            meta["schema_errors"] = list(schema_errors)
+                            if any("missing required key" in row for row in schema_errors):
+                                escalation_trigger = "schema_missing_key"
+                            else:
+                                escalation_trigger = "format_violation"
+                return {
+                    "response_text": response_text,
+                    "request_meta": meta,
+                    "artifacts": [payload] if isinstance(payload, dict) else [],
+                    "route": route,
+                    "artifacts_ok": isinstance(payload, dict) and not schema_errors,
+                    "escalation_trigger": escalation_trigger,
+                }
+
+            ladder_result = call_llm_with_ladder(
+                phase="S_INT",
+                step_id=step.step_id,
+                partition_id=step.step_id,
+                routing_policy=cfg.routing_policy,
+                routing_tier=step.routing_tier,
+                ladder=ladder,
+                cfg=cfg,
+                execute_attempt=_execute_attempt,
+                ui=None,
+            )
+            payload = None
+            artifacts = ladder_result.get("artifacts")
+            if isinstance(artifacts, list) and artifacts:
+                candidate = artifacts[0]
+                if isinstance(candidate, dict):
+                    payload = candidate
+            if payload is None:
+                try:
+                    payload = json.loads(str(ladder_result.get("response_text") or ""))
+                except Exception as exc:
+                    raise RuntimeError(f"S_INT step {step.step_id} returned invalid JSON.") from exc
+            errors = validate_payload(payload, schema)
+            if errors:
+                raise RuntimeError(f"S_INT step {step.step_id} failed schema validation: {'; '.join(errors[:5])}")
+            return {
+                "payload": payload,
+                "request_meta": dict(ladder_result.get("request_meta") or {}),
+            }
+
+        try:
+            summary = run_s_int(
+                root,
+                run_id,
+                dry_run=bool(args.dry_run),
+                prompt_executor=None if args.dry_run else _prompt_executor,
+            )
+        except Exception as exc:
+            logger.error("S_INT failed: %s", exc)
+            sys.exit(1)
+        print(json.dumps(summary, indent=2 if args.pretty else None, sort_keys=True))
+        sys.exit(0)
+
     try:
         allow_create_if_missing = bool(args.promptgen_scan or args.run_id or args.gemini_list_models)
         run_context = resolve_run_context(root, args, allow_create_if_missing=allow_create_if_missing)
@@ -10406,6 +11091,7 @@ def main() -> None:
         webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
         webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
         live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+        selected_s_steps=tuple(args.s_steps) if isinstance(args.s_steps, list) else None,
     )
 
     phase_sequence = resolve_phase_list(args.phase)

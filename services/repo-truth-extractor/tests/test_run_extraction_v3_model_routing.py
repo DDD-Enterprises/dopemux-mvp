@@ -65,7 +65,7 @@ def test_cost_policy_ladders_map_expected_defaults() -> None:
     runner = _load_runner_module()
     _reset_routing(runner)
     assert runner.resolve_step_ladder("cost", "A", "A0")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
-    assert runner.resolve_step_ladder("cost", "A", "A1")[0] == ("google", "gemini-2.5-flash", "GEMINI_API_KEY")
+    assert runner.resolve_step_ladder("cost", "A", "A1")[0] == ("openai", "gpt-5-mini", "OPENAI_API_KEY")
     assert runner.resolve_step_ladder("cost", "R", "R1")[0] == ("openai", "gpt-5.2", "OPENAI_API_KEY")
     assert runner.resolve_step_ladder("cost", "Q", "Q9")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
 
@@ -89,6 +89,17 @@ def test_collect_provider_routes_returns_unique_route_rows() -> None:
     assert "openai" in providers
     assert "gemini" in providers
     assert "xai" in providers
+
+
+def test_parse_provider_model_env_accepts_openrouter_model_ids_with_slashes() -> None:
+    runner = _load_runner_module()
+    provider, model_id, api_key_env = runner._parse_provider_model_env(
+        "openrouter/openai/gpt-5-mini",
+        "DPMX_MODEL_EXTRACT",
+    )
+    assert provider == "openrouter"
+    assert model_id == "openai/gpt-5-mini"
+    assert api_key_env == "OPENROUTER_API_KEY"
 
 
 def test_provider_preflight_fails_when_probe_fails(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -187,9 +198,107 @@ def test_run_manifest_records_routing_policy(tmp_path: Path) -> None:
 def test_balanced_policy_ladders_match_user_request() -> None:
     runner = _load_runner_module()
     _reset_routing(runner)
-    # Bulk should prefer gemini-2.5-flash
-    assert runner.resolve_step_ladder("balanced", "A", "A0")[0] == ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")
-    # Extract should prefer gemini-2.5-flash
-    assert runner.resolve_step_ladder("balanced", "A", "A1")[0] == ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")
-    # Synthesis should use opus-4.6
-    assert runner.resolve_step_ladder("balanced", "R", "R1")[1] == ("openrouter", "anthropic/claude-opus-4.6", "OPENROUTER_API_KEY")
+    assert runner.resolve_step_ladder("balanced", "A", "A0")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
+    assert runner.resolve_step_ladder("balanced", "A", "A1")[0] == ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+    assert runner.resolve_step_ladder("balanced", "R", "R1")[0] == ("openai", "gpt-5.2", "OPENAI_API_KEY")
+    assert runner.resolve_step_ladder("balanced", "Q", "Q9")[0] == ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+
+
+def test_balanced_openrouter_policy_preserves_balanced_tiers() -> None:
+    runner = _load_runner_module()
+    _reset_routing(runner)
+    assert runner.resolve_step_ladder("balanced_openrouter", "A", "A0")[0] == (
+        "openrouter",
+        "openai/gpt-5-nano",
+        "OPENROUTER_API_KEY",
+    )
+    assert runner.resolve_step_ladder("balanced_openrouter", "A", "A1")[0] == (
+        "openrouter",
+        "openai/gpt-5-mini",
+        "OPENROUTER_API_KEY",
+    )
+    assert runner.resolve_step_ladder("balanced_openrouter", "R", "R1")[0] == (
+        "openrouter",
+        "openai/gpt-5.2-chat",
+        "OPENROUTER_API_KEY",
+    )
+    assert runner.resolve_step_ladder("balanced_openrouter", "Q", "Q9")[0] == (
+        "openrouter",
+        "openai/gpt-5-mini",
+        "OPENROUTER_API_KEY",
+    )
+
+
+def test_balanced_grok_openrouter_policy_is_accepted_by_cli(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[3]
+    script = root / "services" / "repo-truth-extractor" / "run_extraction_v3.py"
+    run_id = "test_model_routing_grok_openrouter_print_config"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--print-config",
+            "--run-id",
+            run_id,
+            "--no-write-latest",
+            "--routing-policy",
+            "balanced_grok_openrouter",
+            "--phase",
+            "D",
+        ],
+        cwd=str(tmp_path),
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    payload = json.loads(result.stdout)
+    assert payload["cli"]["routing_policy"] == "balanced_grok_openrouter"
+    assert payload["effective_model_routing"]["D"]["provider"] == "xai"
+    assert payload["effective_model_routing"]["D"]["model_id"] == "grok-4-1-fast-non-reasoning"
+
+
+def test_balanced_grok_openrouter_docs_governance_routes_are_short_and_non_codex() -> None:
+    runner = _load_runner_module()
+    _reset_routing(runner)
+    for phase, step_id in [("A", "A1"), ("H", "H1"), ("D", "D1"), ("W", "W1"), ("B", "B1"), ("G", "G1")]:
+        routes = runner.resolve_step_ladder("balanced_grok_openrouter", phase, step_id)
+        assert routes == [
+            ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ]
+        assert all("codex" not in route[1].lower() for route in routes)
+
+
+def test_balanced_grok_openrouter_code_phases_keep_codex_variants() -> None:
+    runner = _load_runner_module()
+    _reset_routing(runner)
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "C", "C1") == [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ]
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "E", "E1") == [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ]
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "Q", "Q1") == [
+        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ]
+
+
+def test_balanced_grok_openrouter_premium_synthesis_routes_cover_r_s_and_z() -> None:
+    runner = _load_runner_module()
+    _reset_routing(runner)
+    expected = [
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+        ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+    ]
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "R", "R1") == expected
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "S", "S1") == expected
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "Z", "Z0") == expected
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "Z", "Z9") == expected
+    assert runner.resolve_effective_step_tier("balanced_grok_openrouter", "S", "S1") == "synthesis"

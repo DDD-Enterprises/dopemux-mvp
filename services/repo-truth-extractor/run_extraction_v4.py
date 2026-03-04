@@ -65,7 +65,8 @@ PHASE_DIR_NAMES: Dict[str, str] = {
     "S": "S_synthesis_trace",
 }
 
-SUPPORTED_V3_PHASES = {"A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"}
+SUPPORTED_V3_PHASES = {"A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"}
+SUPPORTED_V3_SPECIAL_PHASES = {"S_INT"}
 STEP_ID_RE = re.compile(r"^([A-Z])(\d+)$")
 RAW_STEP_FILE_RE = re.compile(r"^(?P<step>[A-Z]\d+)__(?P<partition>.+)\.json$")
 ARTIFACT_NAME_RE = re.compile(r"\b[A-Z][A-Z0-9_]+(?:\.partX)?\.(?:json|md)\b")
@@ -179,6 +180,7 @@ def build_v3_cmd(
     dry_run: bool,
     resume: bool,
     partition_workers: int,
+    executor: str,
     doctor: bool,
     doctor_auto_reprocess: bool,
     doctor_reprocess_dry_run: bool,
@@ -196,6 +198,8 @@ def build_v3_cmd(
     batch_poll_seconds: int,
     batch_wait_timeout_seconds: int,
     batch_max_requests_per_job: int,
+    s_prompts: Optional[str] = None,
+    s_steps: Optional[str] = None,
     ui: str,
     pretty: bool,
     quiet: bool,
@@ -212,7 +216,13 @@ def build_v3_cmd(
         cmd.append("--resume")
     if partition_workers > 0:
         cmd.extend(["--partition-workers", str(partition_workers)])
+    if executor.strip():
+        cmd.extend(["--executor", executor.strip()])
     cmd.extend(["--routing-policy", routing_policy])
+    if s_prompts and s_prompts.strip():
+        cmd.extend(["--s-prompts", s_prompts.strip()])
+    if s_steps and s_steps.strip():
+        cmd.extend(["--s-steps", s_steps.strip()])
     if disable_escalation:
         cmd.append("--disable-escalation")
     cmd.extend(["--escalation-max-hops", str(max(0, int(escalation_max_hops)))])
@@ -256,7 +266,7 @@ def call_v3_runner(cmd: Sequence[str], *, prompt_root: Optional[Path] = None) ->
         prompt_root_value = str(prompt_root.resolve())
         env["REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"] = prompt_root_value
         env["UPGRADES_PROMPT_ROOT"] = prompt_root_value
-    proc = subprocess.run(list(cmd), cwd=ROOT, env=env)
+    proc = subprocess.run(list(cmd), cwd=Path.cwd(), env=env)
     return proc.returncode
 
 
@@ -1203,6 +1213,7 @@ def run_pipeline(
     dry_run: bool,
     resume: bool,
     partition_workers: int,
+    executor: str,
     doctor: bool,
     doctor_auto_reprocess: bool,
     doctor_reprocess_dry_run: bool,
@@ -1221,6 +1232,8 @@ def run_pipeline(
     batch_poll_seconds: int,
     batch_wait_timeout_seconds: int,
     batch_max_requests_per_job: int,
+    s_prompts: Optional[str] = None,
+    s_steps: Optional[str] = None,
     ui: str,
     pretty: bool,
     quiet: bool,
@@ -1229,7 +1242,7 @@ def run_pipeline(
     promptset = load_promptset()
     all_phases = expected_phase_order(promptset)
     selected_phases = all_phases if (phase is None or phase == "ALL") else [phase]
-    v3_phases = [p for p in selected_phases if p in SUPPORTED_V3_PHASES]
+    v3_phases = [p for p in selected_phases if p in (SUPPORTED_V3_PHASES | SUPPORTED_V3_SPECIAL_PHASES)]
 
     if status or status_json:
         if sync and run_id and (V3_RUNS_ROOT / run_id).exists() and not (V4_RUNS_ROOT / run_id).exists():
@@ -1243,7 +1256,7 @@ def run_pipeline(
         v3_phase_arg = None
         if phase == "ALL" or phase is None:
             v3_phase_arg = "ALL"
-        elif phase in SUPPORTED_V3_PHASES:
+        elif phase in (SUPPORTED_V3_PHASES | SUPPORTED_V3_SPECIAL_PHASES):
             v3_phase_arg = phase
         cmd = build_v3_cmd(
             phase=v3_phase_arg,
@@ -1251,6 +1264,7 @@ def run_pipeline(
             dry_run=dry_run,
             resume=resume,
             partition_workers=partition_workers,
+            executor=executor,
             doctor=doctor,
             doctor_auto_reprocess=doctor_auto_reprocess,
             doctor_reprocess_dry_run=doctor_reprocess_dry_run,
@@ -1268,22 +1282,28 @@ def run_pipeline(
             batch_poll_seconds=batch_poll_seconds,
             batch_wait_timeout_seconds=batch_wait_timeout_seconds,
             batch_max_requests_per_job=batch_max_requests_per_job,
+            s_prompts=s_prompts,
+            s_steps=s_steps,
             ui=ui,
             pretty=pretty,
             quiet=quiet,
             jsonl_events=jsonl_events,
         )
-        rc = call_v3_runner(cmd, prompt_root=V4_PROMPT_ROOT)
+        shim_prompt_root = None if any(p in {"S", "S_INT"} for p in selected_phases) else V4_PROMPT_ROOT
+        rc = call_v3_runner(cmd, prompt_root=shim_prompt_root)
         if rc != 0:
             return rc
-        if not any([doctor, doctor_auth, preflight_providers, coverage_report, status, status_json]):
+        if not any([doctor, doctor_auth, preflight_providers, coverage_report, status, status_json]) and not any(
+            p in {"S", "S_INT"} for p in selected_phases
+        ):
             verify_resume_proof_prompt_paths(run_id, V4_PROMPT_ROOT)
 
     if doctor or doctor_auth or preflight_providers:
         mirror_doctor_outputs()
 
-    if sync and (v3_phases or phase in {"M", "S"} or phase == "ALL" or phase is None):
-        sync_run_to_v4(run_id, selected_phases)
+    sync_phases = [p for p in selected_phases if p != "S_INT"]
+    if sync and (sync_phases or phase in {"M"} or phase == "ALL" or phase is None):
+        sync_run_to_v4(run_id, sync_phases)
     return 0
 
 
@@ -1295,6 +1315,7 @@ def cli(
     execute: bool = typer.Option(False, "--execute", help="Execute providers (overrides dry-run)"),
     resume: bool = typer.Option(False, "--resume", help="Resume mode"),
     partition_workers: int = typer.Option(1, "--partition-workers"),
+    executor: str = typer.Option("thread", "--executor", help="Executor type: thread or process"),
     doctor: bool = typer.Option(False, "--doctor"),
     doctor_auto_reprocess: bool = typer.Option(False, "--doctor-auto-reprocess"),
     doctor_reprocess_dry_run: bool = typer.Option(False, "--doctor-reprocess-dry-run"),
@@ -1307,6 +1328,8 @@ def cli(
     promptset_audit: bool = typer.Option(False, "--promptset-audit"),
     strict_audit: bool = typer.Option(True, "--strict-audit/--no-strict-audit"),
     routing_policy: str = typer.Option(DEFAULT_ROUTING_POLICY, "--routing-policy"),
+    s_prompts: Optional[str] = typer.Option(None, "--s-prompts"),
+    s_steps: Optional[str] = typer.Option(None, "--s-steps"),
     disable_escalation: bool = typer.Option(False, "--disable-escalation"),
     escalation_max_hops: int = typer.Option(2, "--escalation-max-hops"),
     batch_mode: bool = typer.Option(False, "--batch-mode"),
@@ -1334,7 +1357,7 @@ def cli(
         phase = phase.strip().upper()
 
     # Run promptset lint before mutating operations unless explicitly disabled.
-    if promptset_audit or (phase in SUPPORTED_V3_PHASES or phase in {"ALL", "M", "S", None}):
+    if promptset_audit or (phase in SUPPORTED_V3_PHASES or phase in {"ALL", "M", None}):
         try:
             run_promptset_audit(strict=strict_audit)
         except RuntimeError as exc:
@@ -1351,6 +1374,7 @@ def cli(
         dry_run=dry_run,
         resume=resume,
         partition_workers=partition_workers,
+        executor=executor,
         doctor=doctor,
         doctor_auto_reprocess=doctor_auto_reprocess,
         doctor_reprocess_dry_run=doctor_reprocess_dry_run,
@@ -1369,6 +1393,8 @@ def cli(
         batch_poll_seconds=batch_poll_seconds,
         batch_wait_timeout_seconds=batch_wait_timeout_seconds,
         batch_max_requests_per_job=batch_max_requests_per_job,
+        s_prompts=s_prompts,
+        s_steps=s_steps,
         ui=ui,
         pretty=pretty,
         quiet=quiet,

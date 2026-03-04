@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": ["status", "findings", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["server_id", "status", "notes"],
+        "properties": {
+          "server_id": {"type": "string"},
+          "status": {"type": "string"},
+          "notes": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}

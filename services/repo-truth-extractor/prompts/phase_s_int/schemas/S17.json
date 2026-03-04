@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": ["status", "hooks", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "hooks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "term", "line"],
+        "properties": {
+          "path": {"type": "string"},
+          "term": {"type": "string"},
+          "line": {"type": "integer"}
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}
