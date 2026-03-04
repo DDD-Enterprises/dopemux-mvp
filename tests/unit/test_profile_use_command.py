@@ -2,6 +2,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+import dopemux.claude_config as claude_config_module
 from dopemux import profile_commands
 
 
@@ -73,7 +74,7 @@ class _DummyClaudeConfig:
 def _patch_runtime(monkeypatch, tmp_path: Path, manager, claude_config):
     monkeypatch.setattr(profile_commands, "detect_workspace", lambda: tmp_path)
     monkeypatch.setattr(profile_commands, "ProfileManager", lambda: manager)
-    monkeypatch.setattr("dopemux.claude_config.ClaudeConfig", lambda: claude_config)
+    monkeypatch.setattr(claude_config_module, "ClaudeConfig", lambda: claude_config)
     fake_console = _DummyConsole()
     monkeypatch.setattr(profile_commands, "console", fake_console)
     return fake_console

@@ -27,7 +27,7 @@ class TestCORSSecurity:
         try:
             # Set test environment
             env = os.environ.copy()
-            env["ALLOWED_ORIGINS"] = "http://localhost:3000,http://test.example.com"
+            env["ALLOWED_ORIGINS"] = "http://localhost:3000,http://localhost:8097"
             env["ADHD_ENGINE_API_KEY"] = "test-key-123"
 
             # Start server
@@ -98,13 +98,13 @@ class TestCORSSecurity:
         response = await client.options(
             "/api/v1/energy-level/test",
             headers={
-                "Origin": "http://test.example.com",
+                "Origin": "http://localhost:8097",
                 "Access-Control-Request-Method": "GET"
             }
         )
 
         assert "access-control-allow-origin" in response.headers
-        assert response.headers["access-control-allow-origin"] == "http://test.example.com"
+        assert response.headers["access-control-allow-origin"] == "http://localhost:8097"
 
     @pytest.mark.asyncio
     async def test_cors_rejects_unauthorized_origins(self, client):
@@ -153,7 +153,7 @@ class TestCORSSecurity:
         )
 
         assert "access-control-allow-headers" in response.headers
-        allowed_headers = response.headers["access-control-allow-headers"]
+        allowed_headers = response.headers["access-control-allow-headers"].lower()
         assert "content-type" in allowed_headers
         assert "x-api-key" in allowed_headers
         assert "authorization" in allowed_headers

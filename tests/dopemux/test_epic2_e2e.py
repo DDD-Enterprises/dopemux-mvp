@@ -145,6 +145,8 @@ def test_e2e_happy_path_create_with_migration(mock_input, git_repo):
     6. Worktree created with changes migrated
     7. Main is clean
     """
+    worktree_name = f"e2e-migrate-{uuid.uuid4().hex[:8]}"
+
     # Setup: Create uncommitted changes on main
     (git_repo / "modified.txt").write_text("Modified content")
     (git_repo / "new_file.txt").write_text("New file")
@@ -153,7 +155,7 @@ def test_e2e_happy_path_create_with_migration(mock_input, git_repo):
     # Mock user input: choose option 1, accept suggestion, migrate changes
     mock_input.side_effect = [
         "1",  # Create worktree
-        "",   # Accept first suggestion (default)
+        worktree_name,  # Use a unique name to avoid stale worktree lock collisions
         "y"   # Migrate changes (default)
     ]
 
@@ -203,13 +205,15 @@ def test_e2e_create_worktree_without_migration(mock_input, git_repo):
     5. Worktree created empty
     6. Changes remain in main
     """
+    worktree_name = f"e2e-nomigrate-{uuid.uuid4().hex[:8]}"
+
     # Setup
     (git_repo / "file.txt").write_text("Content")
 
     # Mock: create worktree, decline migration
     mock_input.side_effect = [
         "1",  # Create worktree
-        "",   # Accept suggestion
+        worktree_name,  # Use a unique name to avoid stale worktree lock collisions
         "n"   # No migration
     ]
 
@@ -316,9 +320,12 @@ def test_e2e_custom_name_with_conflict_resolution(mock_input, git_repo):
     4. System auto-resolves with suffix
     5. Worktree created successfully
     """
+    base_name = f"feature-x-{uuid.uuid4().hex[:8]}"
+    resolved_name = f"{base_name}-2"
+
     # Setup: Create existing branch
     subprocess.run(
-        ["git", "branch", "feature-x"],
+        ["git", "branch", base_name],
         cwd=git_repo,
         check=True,
         capture_output=True
@@ -330,7 +337,7 @@ def test_e2e_custom_name_with_conflict_resolution(mock_input, git_repo):
     # Mock: create worktree, enter conflicting name, no migration
     mock_input.side_effect = [
         "1",          # Create worktree
-        "feature-x",  # Custom name (conflicts!)
+        base_name,    # Custom name (conflicts!)
         "n"           # No migration
     ]
 
@@ -339,7 +346,7 @@ def test_e2e_custom_name_with_conflict_resolution(mock_input, git_repo):
     # Should succeed with resolved name
     assert result is True
 
-    # Verify worktree created with resolved name (feature-x-2)
+    # Verify worktree created with resolved name
     worktrees = subprocess.run(
         ["git", "worktree", "list", "--porcelain"],
         cwd=git_repo,
@@ -354,7 +361,7 @@ def test_e2e_custom_name_with_conflict_resolution(mock_input, git_repo):
         capture_output=True,
         text=True
     )
-    assert "feature-x-2" in branches.stdout
+    assert resolved_name in branches.stdout
 
 
 # ============================================================================

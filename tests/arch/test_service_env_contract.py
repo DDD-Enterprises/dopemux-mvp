@@ -70,10 +70,32 @@ def _resolve_service_runtime(service_info: Dict[str, Any]) -> tuple[Path | None,
     runtime_dir: Path | None = None
     dockerfile_path: Path | None = None
 
+    def _candidate_context_dirs(context_value: str) -> list[Path]:
+        """Return plausible context directories across current repo layouts."""
+        raw = Path(context_value)
+        candidates = [(REPO_ROOT / raw).resolve()]
+
+        parts = raw.parts
+        if "mcp-servers" in parts:
+            idx = parts.index("mcp-servers")
+            swapped = Path(*parts[:idx], "mcp-servers-source", *parts[idx + 1 :])
+            candidates.append((REPO_ROOT / swapped).resolve())
+        elif "mcp-servers-source" in parts:
+            idx = parts.index("mcp-servers-source")
+            swapped = Path(*parts[:idx], "mcp-servers", *parts[idx + 1 :])
+            candidates.append((REPO_ROOT / swapped).resolve())
+
+        unique: list[Path] = []
+        for candidate in candidates:
+            if candidate not in unique:
+                unique.append(candidate)
+        return unique
+
     build_cfg = compose_service.get("build")
     if isinstance(build_cfg, dict):
         context = build_cfg.get("context", ".")
-        context_dir = (REPO_ROOT / context).resolve()
+        context_candidates = _candidate_context_dirs(context)
+        context_dir = next((candidate for candidate in context_candidates if candidate.exists()), context_candidates[0])
         dockerfile = build_cfg.get("dockerfile")
         if dockerfile:
             candidate = (context_dir / dockerfile).resolve()
