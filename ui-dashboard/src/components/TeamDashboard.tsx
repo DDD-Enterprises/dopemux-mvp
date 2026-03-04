@@ -6,7 +6,8 @@ import {
   Grid,
   Avatar,
   Chip,
-  LinearProgress
+  LinearProgress,
+  Tooltip
 } from '@mui/material';
 import { Users } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
@@ -147,7 +148,10 @@ const TeamDashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3} key={member.id}>
             <Paper sx={{ p: 2, height: 220, borderRadius: 3 }} className="dopemux-panel">
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}>
+                <Avatar
+                  sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}
+                  aria-label={`Profile picture of ${member.name}`}
+                >
                   {member.avatar}
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
@@ -158,15 +162,18 @@ const TeamDashboard: React.FC = () => {
                     {member.role}
                   </Typography>
                 </Box>
-                <Chip
-                  size="small"
-                  label={member.status.toUpperCase()}
-                  sx={{
-                    bgcolor: `${statusStyles[member.status].color}22`,
-                    color: statusStyles[member.status].color,
-                    border: `1px solid ${statusStyles[member.status].color}`
-                  }}
-                />
+                <Tooltip title={statusStyles[member.status].label} arrow>
+                  <Chip
+                    size="small"
+                    label={member.status.toUpperCase()}
+                    tabIndex={0}
+                    sx={{
+                      bgcolor: `${statusStyles[member.status].color}22`,
+                      color: statusStyles[member.status].color,
+                      border: `1px solid ${statusStyles[member.status].color}`
+                    }}
+                  />
+                </Tooltip>
               </Box>
 
               <Typography variant="body2" sx={{ mb: 1 }}>
