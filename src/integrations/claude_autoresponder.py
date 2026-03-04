@@ -373,4 +373,8 @@ def create_autoresponder_manager(
     config_manager: ConfigManager, project_path: Path
 ) -> ClaudeAutoResponderManager:
     """Factory function to create auto responder manager."""
+    project_config_path = project_path / ".dopemux" / "config.yaml"
+    config_manager.paths.user_config = project_config_path
+    config_manager.paths.project_config = project_config_path
+    config_manager._config = None
     return ClaudeAutoResponderManager(config_manager, project_path)

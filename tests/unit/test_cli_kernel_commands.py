@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 from click.testing import CliRunner
 
-from dopemux.cli import cli
+import dopemux.cli as cli_module
 
 
 @pytest.mark.parametrize(
@@ -30,10 +30,10 @@ def test_kernel_commands_delegate_to_taskx(monkeypatch, command: str, extra_args
         captured["check"] = check
         return SimpleNamespace(returncode=0)
 
-    monkeypatch.setattr("dopemux.cli.subprocess.run", _fake_run)
+    monkeypatch.setattr(cli_module.subprocess, "run", _fake_run)
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["kernel", command, *extra_args])
+    result = runner.invoke(cli_module.cli, ["kernel", command, *extra_args])
 
     assert result.exit_code == 0, result.output
     cmd = captured["cmd"]
@@ -43,7 +43,7 @@ def test_kernel_commands_delegate_to_taskx(monkeypatch, command: str, extra_args
 
 def test_kernel_group_help_includes_lifecycle_commands() -> None:
     runner = CliRunner()
-    result = runner.invoke(cli, ["kernel", "--help"])
+    result = runner.invoke(cli_module.cli, ["kernel", "--help"])
     assert result.exit_code == 0, result.output
     for command_name in ["doctor", "compile", "run", "collect", "gate", "promote", "feedback", "loop"]:
         assert command_name in result.output
@@ -53,8 +53,8 @@ def test_kernel_command_propagates_nonzero_exit(monkeypatch) -> None:
     def _fake_run(cmd, cwd=None, check=False):
         return SimpleNamespace(returncode=23)
 
-    monkeypatch.setattr("dopemux.cli.subprocess.run", _fake_run)
+    monkeypatch.setattr(cli_module.subprocess, "run", _fake_run)
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["kernel", "gate"])
+    result = runner.invoke(cli_module.cli, ["kernel", "gate"])
     assert result.exit_code == 23

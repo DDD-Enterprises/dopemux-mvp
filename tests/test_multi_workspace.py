@@ -8,7 +8,6 @@ import pytest
 import os
 import tempfile
 from pathlib import Path
-from typing import List, Dict, Any
 
 # Test fixtures
 
@@ -36,13 +35,16 @@ def workspace_env(temp_workspaces):
     old_env = {}
     
     # Save old environment
-    for key in ["DEFAULT_WORKSPACE_PATH", "WORKSPACE_PATHS", "DOPEMUX_WORKSPACE_ID"]:
+    for key in ["DEFAULT_WORKSPACE_PATH", "WORKSPACE_PATHS", "DOPEMUX_WORKSPACE_ID", "DOPE_WORKSPACES"]:
         old_env[key] = os.environ.get(key)
     
     # Set test environment
     os.environ["DEFAULT_WORKSPACE_PATH"] = str(temp_workspaces["project1"])
     os.environ["WORKSPACE_PATHS"] = f"{temp_workspaces['project2']},{temp_workspaces['project3']}"
     os.environ["DOPEMUX_WORKSPACE_ID"] = str(temp_workspaces["project1"])
+    os.environ["DOPE_WORKSPACES"] = ",".join(
+        str(temp_workspaces[name]) for name in ("project1", "project2", "project3")
+    )
     
     yield temp_workspaces
     
@@ -61,16 +63,16 @@ class TestWorkspaceIsolation:
     
     def test_workspace_detection(self, workspace_env):
         """Test automatic workspace detection"""
-        from shared.workspace_utils import resolve_workspaces
+        from services.shared.workspace_utils import resolve_workspaces
         
         # Should detect from environment
-        workspaces = resolve_workspaces(auto_detect=True)
-        assert len(workspaces) > 0
-        assert workspaces[0] == os.environ["DEFAULT_WORKSPACE_PATH"]
+        workspaces = resolve_workspaces(fallback_to_current=False)
+        assert len(workspaces) == 3
+        assert workspaces[0] == Path(os.environ["DEFAULT_WORKSPACE_PATH"]).resolve()
     
     def test_workspace_identifier(self, workspace_env):
         """Test workspace to identifier conversion"""
-        from shared.workspace_utils import workspace_to_identifier
+        from services.shared.workspace_utils import workspace_to_identifier
         
         workspace = Path(workspace_env["project1"])
         identifier = workspace_to_identifier(workspace)
@@ -84,19 +86,23 @@ class TestWorkspaceIsolation:
         """Test ADHD Engine cognitive state is isolated per workspace"""
         # This test requires ADHD Engine running
         # For now, test the data model
-        from services.adhd_engine.models import ADHDState
+        from services.session_intelligence.coordinator import CognitiveState
         
-        state1 = ADHDState(
+        state1 = CognitiveState(
             user_id="test",
             energy_level="high",
             attention_state="focused",
+            last_break_timestamp=None,
+            minutes_since_break=None,
             workspace_path=str(workspace_env["project1"])
         )
         
-        state2 = ADHDState(
+        state2 = CognitiveState(
             user_id="test",
             energy_level="low",
             attention_state="scattered",
+            last_break_timestamp=None,
+            minutes_since_break=None,
             workspace_path=str(workspace_env["project2"])
         )
         
@@ -138,29 +144,37 @@ class TestCrossWorkspaceQueries:
     
     def test_aggregate_results(self):
         """Test aggregating results from multiple workspaces"""
-        from shared.workspace_utils import aggregate_multi_workspace_results
+        from services.shared.workspace_utils import aggregate_multi_workspace_results
         
-        results = {
-            "/path/to/workspace1": [{"decision": "A"}, {"decision": "B"}],
-            "/path/to/workspace2": [{"decision": "C"}],
-            "/path/to/workspace3": [],
-        }
+        workspaces = [
+            Path("/path/to/workspace1"),
+            Path("/path/to/workspace2"),
+            Path("/path/to/workspace3"),
+        ]
+        results = [
+            [{"decision": "A"}, {"decision": "B"}],
+            [{"decision": "C"}],
+            [],
+        ]
         
-        aggregated = aggregate_multi_workspace_results(results)
+        aggregated = aggregate_multi_workspace_results(results, workspaces)
         
-        # Should combine all results
-        assert len(aggregated) == 3
-        assert any(r["decision"] == "A" for r in aggregated)
-        assert any(r["decision"] == "C" for r in aggregated)
+        assert aggregated["workspace_count"] == 3
+        assert aggregated["total_results"] == 3
+        assert len(aggregated["results"]) == 3
+        assert aggregated["results"][0]["workspace"] == str(workspaces[0])
+        assert aggregated["results"][0]["result_count"] == 2
+        assert aggregated["results"][1]["workspace"] == str(workspaces[1])
+        assert aggregated["results"][1]["result_count"] == 1
     
     def test_workspace_resolution(self, workspace_env):
         """Test resolving workspace paths"""
-        from shared.workspace_utils import resolve_workspaces
+        from services.shared.workspace_utils import resolve_workspaces
         
         # Single workspace
         workspaces = resolve_workspaces(
             workspace_path=str(workspace_env["project1"]),
-            auto_detect=False
+            fallback_to_current=False,
         )
         assert len(workspaces) == 1
         
@@ -170,7 +184,7 @@ class TestCrossWorkspaceQueries:
                 str(workspace_env["project1"]),
                 str(workspace_env["project2"])
             ],
-            auto_detect=False
+            fallback_to_current=False,
         )
         assert len(workspaces) == 2
     
@@ -242,7 +256,7 @@ class TestWorkspaceCaching:
         workspace2 = str(workspace_env["project2"])
         
         # Cache keys should include workspace identifier
-        from shared.workspace_utils import workspace_to_identifier
+        from services.shared.workspace_utils import workspace_to_identifier
         
         id1 = workspace_to_identifier(Path(workspace1))
         id2 = workspace_to_identifier(Path(workspace2))
@@ -261,22 +275,23 @@ class TestWorkspacePerformance:
     
     def test_single_workspace_query_fast(self, workspace_env):
         """Test single workspace queries are fast"""
-        from shared.workspace_utils import resolve_workspaces
+        from services.shared.workspace_utils import resolve_workspaces
         import time
         
         start = time.time()
         workspaces = resolve_workspaces(
             workspace_path=str(workspace_env["project1"]),
-            auto_detect=False
+            fallback_to_current=False,
         )
         elapsed = time.time() - start
         
         # Should be very fast (< 10ms)
         assert elapsed < 0.01
+        assert workspaces == [workspace_env["project1"].resolve()]
     
     def test_multi_workspace_query_acceptable(self, workspace_env):
         """Test multi-workspace queries have acceptable performance"""
-        from shared.workspace_utils import resolve_workspaces
+        from services.shared.workspace_utils import resolve_workspaces
         import time
         
         workspaces = [
@@ -288,12 +303,17 @@ class TestWorkspacePerformance:
         start = time.time()
         resolved = resolve_workspaces(
             workspace_paths=workspaces,
-            auto_detect=False
+            fallback_to_current=False,
         )
         elapsed = time.time() - start
         
         # Should be reasonably fast (< 50ms for 3 workspaces)
         assert elapsed < 0.05
+        assert resolved == [
+            workspace_env["project1"].resolve(),
+            workspace_env["project2"].resolve(),
+            workspace_env["project3"].resolve(),
+        ]
 
 
 # Integration Tests (require services running)

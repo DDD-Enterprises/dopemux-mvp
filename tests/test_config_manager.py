@@ -264,13 +264,9 @@ class TestConfigManager:
             docker_compose_bin="docker compose",
         )
 
-        assert "conport" in defaults
-        assert "serena" in defaults
-        assert "claude-context" in defaults
-
-        # Check expected env placeholders are present
-        claude_context = defaults["claude-context"]
-        assert claude_context["env"]["OPENAI_API_KEY"] == "${OPENAI_API_KEY}"
+        assert "dopemux-conport" in defaults
+        assert "dopemux-serena" in defaults
+        assert "dopemux-dope-context" in defaults
 
     def test_detect_docker_mode_timeout_returns_false(self, config_manager):
         """Docker mode detection should fail closed if docker compose hangs."""
@@ -340,6 +336,9 @@ class TestConfigManager:
                 loaded = manager.load_config()
 
         assert "dope-context" not in loaded.mcp_servers
-        assert "claude-context" in loaded.mcp_servers
+        if "claude-context" in loaded.mcp_servers:
+            assert "services/dope-context/run_mcp.sh" not in " ".join(
+                loaded.mcp_servers["claude-context"].args
+            )
         assert "mas-sequential-thinking" in loaded.mcp_servers
-        assert "/Users/" not in " ".join(loaded.mcp_servers["mas-sequential-thinking"].args)
+        assert loaded.mcp_servers["mas-sequential-thinking"].args

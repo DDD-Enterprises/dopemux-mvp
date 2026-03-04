@@ -80,6 +80,7 @@ def test_ccr_models_env_for_altp(
  
     with patch("dopemux.cli.Path.cwd", return_value=workspace), \
          patch("dopemux.workspace_utils.get_workspace_root") as mock_get_root, \
+         patch("dopemux.cli._ensure_role_profile") as mock_ensure_role_profile, \
          patch("dopemux.auto_configurator.WorktreeAutoConfigurator") as mock_auto_config, \
          patch("dopemux.cli.os.path.isdir") as mock_isdir, \
          patch("subprocess.check_call") as mock_check_call, \
@@ -92,6 +93,7 @@ def test_ccr_models_env_for_altp(
          patch("dopemux.routing_config.RoutingConfig.load_default") as mock_routing_load_default:
 
         mock_get_root.return_value = workspace
+        mock_ensure_role_profile.return_value = MagicMock()
         mock_auto_config.return_value.configure_workspace.return_value = (True, "Mocked AutoConfig")
         mock_isdir.return_value = True
         mock_routing_config_cls.load_default.return_value.get_mode.return_value = "api"

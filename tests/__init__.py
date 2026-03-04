@@ -1,3 +1,1 @@
-"""
-Dopemux test suite.
-"""
+"""Test package markers for duplicate module-name isolation."""

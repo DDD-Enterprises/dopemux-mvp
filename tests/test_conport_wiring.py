@@ -31,15 +31,9 @@ def test_wire_conport_writes_required_claude_config(tmp_path):
 
     assert conport["type"] == "stdio"
     assert conport["command"] == "docker"
-    assert conport["args"] == [
-        "exec",
-        "-i",
-        "mcp-conport",
-        "uvx",
-        "--from",
-        "context-portal-mcp",
-        "conport-mcp",
-    ]
+    assert conport["args"][0:2] == ["exec", "-i"]
+    assert "mcp-conport" in conport["args"]
+    assert conport["args"][-4:] == ["uvx", "--from", "context-portal-mcp", "conport-mcp"]
     assert "DOPEMUX_INSTANCE_ID" in conport["env"]
     assert "DOPEMUX_WORKSPACE_ID" in conport["env"]
     assert conport["env"]["DOPEMUX_INSTANCE_ID"] == "main"

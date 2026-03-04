@@ -90,3 +90,42 @@ class MetricsCollector:
             "success_rate": success_calls / total_calls if total_calls > 0 else 0,
             "services": services,
         }
+
+    def record_sync_error(self, operation: str, error: str) -> None:
+        """Record a sync failure using the standard metric schema."""
+        self.record_api_call(
+            service="sync",
+            method=operation,
+            status="error",
+            error=error,
+        )
+
+    def record_sync_operation(self, result: Any) -> None:
+        """Record a sync operation summary."""
+        status = "success" if getattr(result, "success", False) else "error"
+        self.record_api_call(
+            service="sync",
+            method="operation",
+            status=status,
+            duration=getattr(result, "sync_duration", None),
+            synced_tasks=getattr(result, "synced_tasks", 0),
+            created_tasks=getattr(result, "created_tasks", 0),
+            updated_tasks=getattr(result, "updated_tasks", 0),
+            conflicts=getattr(result, "conflicts", 0),
+        )
+
+    def record_adhd_optimization(
+        self,
+        optimization_type: str,
+        status: str = "success",
+        duration: Optional[float] = None,
+        **metadata,
+    ) -> None:
+        """Record an ADHD optimization event."""
+        self.record_api_call(
+            service="adhd",
+            method=optimization_type,
+            status=status,
+            duration=duration,
+            **metadata,
+        )

@@ -418,12 +418,17 @@ class TestFactoryFunction:
     def test_create_autoresponder_manager(self, temp_project_dir):
         """Test factory function creates manager correctly."""
         config_manager = Mock(spec=ConfigManager)
+        config_manager.paths = Mock()
+        config_manager._config = Mock()
 
         manager = create_autoresponder_manager(config_manager, temp_project_dir)
 
         assert isinstance(manager, ClaudeAutoResponderManager)
         assert manager.config_manager == config_manager
         assert manager.project_path == temp_project_dir
+        assert config_manager.paths.user_config == temp_project_dir / ".dopemux" / "config.yaml"
+        assert config_manager.paths.project_config == temp_project_dir / ".dopemux" / "config.yaml"
+        assert config_manager._config is None
 
 
 class TestMonitorThread:
