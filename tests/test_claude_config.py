@@ -30,23 +30,23 @@ SAMPLE_CLAUDE_CONFIG = {
     },
     "alwaysThinkingEnabled": False,
     "mcpServers": {
-        "conport": {
+        "dopemux-conport": {
             "type": "stdio",
             "command": "uvx",
             "args": ["--from", "context-portal-mcp", "conport-mcp"]
         },
-        "serena": {
+        "dopemux-serena": {
             "type": "stdio",
             "command": "python3",
             "args": ["/path/to/serena/server.py"]
         },
-        "zen": {
+        "dopemux-zen": {
             "type": "stdio",
             "command": "uv",
             "args": ["run", "python", "server.py"],
             "cwd": "/path/to/zen"
         },
-        "pal": {
+        "dopemux-pal": {
             "type": "stdio",
             "command": "uvx",
             "args": [
@@ -55,7 +55,7 @@ SAMPLE_CLAUDE_CONFIG = {
                 "pal-mcp-server"
             ]
         },
-        "gpt-researcher": {
+        "dopemux-gpt-researcher": {
             "type": "stdio",
             "command": "python3",
             "args": ["/path/to/gpt-researcher/server.py"]
@@ -108,7 +108,7 @@ class TestClaudeConfig:
         assert "mcpServers" in config
         assert "env" in config
         assert config["alwaysThinkingEnabled"] is False
-        assert "conport" in config["mcpServers"]
+        assert "dopemux-conport" in config["mcpServers"]
 
     def test_read_config_not_found(self, temp_config_dir):
         """Test reading non-existent config file."""
@@ -184,9 +184,9 @@ class TestClaudeConfig:
         servers = claude_config.get_mcp_servers()
 
         assert isinstance(servers, dict)
-        assert "conport" in servers
-        assert "serena" in servers
-        assert "zen" in servers
+        assert "dopemux-conport" in servers
+        assert "dopemux-serena" in servers
+        assert "dopemux-zen" in servers
 
     def test_filter_mcp_servers_for_profile(self, claude_config):
         """Test filtering MCP servers for a profile."""
@@ -200,9 +200,9 @@ class TestClaudeConfig:
         filtered = claude_config.filter_mcp_servers_for_profile(profile)
 
         assert len(filtered) == 3
-        assert "conport" in filtered
-        assert "serena" in filtered  # Mapped from serena-v2
-        assert "zen" in filtered
+        assert "dopemux-conport" in filtered
+        assert "dopemux-serena" in filtered
+        assert "dopemux-zen" in filtered
 
     def test_filter_mcp_servers_missing(self, claude_config):
         """Test filtering with missing MCP servers."""
@@ -231,8 +231,8 @@ class TestClaudeConfig:
 
         # Should only have 2 MCP servers
         assert len(new_config["mcpServers"]) == 2
-        assert "conport" in new_config["mcpServers"]
-        assert "zen" in new_config["mcpServers"]
+        assert "dopemux-conport" in new_config["mcpServers"]
+        assert "dopemux-zen" in new_config["mcpServers"]
 
         # Should preserve other settings
         assert new_config["env"] == SAMPLE_CLAUDE_CONFIG["env"]
@@ -340,9 +340,9 @@ class TestClaudeConfig:
         servers = claude_config.get_available_mcp_servers()
 
         assert isinstance(servers, list)
-        assert "conport" in servers
-        assert "serena" in servers
-        assert "zen" in servers
+        assert "dopemux-conport" in servers
+        assert "dopemux-serena" in servers
+        assert "dopemux-zen" in servers
 
     def test_validate_profile_against_config(self, claude_config):
         """Test validating profile against config."""
@@ -373,8 +373,8 @@ class TestMCPNameMapping:
     def test_mapping_bidirectional(self):
         """Test mapping works correctly."""
         # serena-v2 maps to serena
-        assert MCP_NAME_MAPPING["serena-v2"] == "serena"
+        assert MCP_NAME_MAPPING["serena-v2"] == "dopemux-serena"
 
         # Direct mappings map to themselves
-        assert MCP_NAME_MAPPING["conport"] == "conport"
-        assert MCP_NAME_MAPPING["zen"] == "zen"
+        assert MCP_NAME_MAPPING["conport"] == "dopemux-conport"
+        assert MCP_NAME_MAPPING["zen"] == "dopemux-zen"

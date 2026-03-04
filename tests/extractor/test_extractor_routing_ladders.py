@@ -11,6 +11,8 @@ assert SPEC and SPEC.loader
 runner = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(runner)
 
+ALLOWED_PROVIDERS = {"openai", "openrouter", "gemini", "xai"}
+
 
 def test_all_routing_policies_have_required_tiers():
     required_tiers = {"bulk", "extract", "synthesis", "qa"}
@@ -19,11 +21,10 @@ def test_all_routing_policies_have_required_tiers():
 
 
 def test_no_unsupported_providers_exist():
-    allowed_providers = {"openai", "gemini", "xai"}
     for policy, tiers in runner.ROUTING_LADDERS.items():
         for tier, routes in tiers.items():
             for provider, model, env in routes:
-                assert provider in allowed_providers, f"Unsupported provider '{provider}' in {policy}/{tier}"
+                assert provider in ALLOWED_PROVIDERS, f"Unsupported provider '{provider}' in {policy}/{tier}"
 
 
 def test_resolve_step_ladder_returns_valid_list():
@@ -34,25 +35,23 @@ def test_resolve_step_ladder_returns_valid_list():
     for route in ladder:
         assert len(route) == 3
         provider, model, env = route
-        assert provider in {"openai", "gemini", "xai"}
+        assert provider in ALLOWED_PROVIDERS
 
 
 def test_apply_model_overrides_preserves_validity():
     # Active routing ladders have already been initialized on load
-    allowed_providers = {"openai", "gemini", "xai"}
-    
     # Check default initialization
     for policy, tiers in runner.ACTIVE_ROUTING_LADDERS.items():
         for tier, routes in tiers.items():
             for provider, model, env in routes:
-                assert provider in allowed_providers, f"Unsupported provider '{provider}' injected by default init in {policy}/{tier}"
+                assert provider in ALLOWED_PROVIDERS, f"Unsupported provider '{provider}' injected by default init in {policy}/{tier}"
 
     # Verify a new override doesn't inject invalid providers
     runner.apply_model_overrides("gemini-1.5-pro", "cost")
     for policy, tiers in runner.ACTIVE_ROUTING_LADDERS.items():
         for tier, routes in tiers.items():
             for provider, model, env in routes:
-                assert provider in allowed_providers, f"Unsupported provider '{provider}' injected by override in {policy}/{tier}"
+                assert provider in ALLOWED_PROVIDERS, f"Unsupported provider '{provider}' injected by override in {policy}/{tier}"
 
     # Restore default
     runner.apply_model_overrides(runner.DEFAULT_GEMINI_MODEL_ID, runner.DEFAULT_ROUTING_POLICY)

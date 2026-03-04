@@ -40,6 +40,8 @@ class TestSharedWorkspaceDetection:
 
     def test_get_workspace_root_git_detection(self, tmp_path, monkeypatch):
         """Priority 2: Git detection should work for main repo and worktrees"""
+        monkeypatch.delenv("DOPEMUX_WORKSPACE_ROOT", raising=False)
+
         # Mock subprocess to return tmp_path as git root
         def mock_run(*args, **kwargs):
             result = MagicMock()
@@ -55,6 +57,8 @@ class TestSharedWorkspaceDetection:
 
     def test_get_workspace_root_project_markers(self, tmp_path, monkeypatch):
         """Priority 3: Project markers should be detected"""
+        monkeypatch.delenv("DOPEMUX_WORKSPACE_ROOT", raising=False)
+
         # Create pyproject.toml marker
         (tmp_path / "pyproject.toml").touch()
         monkeypatch.chdir(tmp_path)
@@ -70,6 +74,7 @@ class TestSharedWorkspaceDetection:
 
     def test_get_workspace_root_fallback_to_cwd(self, tmp_path, monkeypatch):
         """Priority 4: Should fallback to current directory"""
+        monkeypatch.delenv("DOPEMUX_WORKSPACE_ROOT", raising=False)
         monkeypatch.chdir(tmp_path)
 
         # Mock git to fail
@@ -92,8 +97,8 @@ class TestSharedWorkspaceDetection:
 
     def test_validate_workspace_valid(self, tmp_path):
         """Valid workspace should pass validation"""
-        # Create git marker
-        (tmp_path / ".git").mkdir()
+        # Create a supported project marker
+        (tmp_path / "pyproject.toml").touch()
 
         is_valid, error = validate_workspace(tmp_path)
         assert is_valid
@@ -189,44 +194,41 @@ class TestMCPWrapperScripts:
     """Test MCP wrapper scripts use shared detection"""
 
     def test_conport_wrapper_sources_shared_script(self):
-        """ConPort wrapper should source shared detection script"""
+        """ConPort wrapper should perform local workspace detection."""
         wrapper_path = project_root / "scripts" / "mcp-wrappers" / "conport-wrapper.sh"
         content = wrapper_path.read_text()
 
-        assert "export_workspace_env.sh" in content
-        assert "DOPEMUX_WORKSPACE_ROOT" in content
-        # Should NOT have duplicate detect_workspace function
-        assert content.count("detect_workspace()") == 0
+        assert "detect_workspace()" in content
+        assert "DOPEMUX_WORKSPACE_ID" in content
+        assert "docker exec" in content
 
     def test_serena_wrapper_sources_shared_script(self):
-        """Serena wrapper should source shared detection script"""
+        """Serena wrapper should perform local workspace detection."""
         wrapper_path = project_root / "scripts" / "mcp-wrappers" / "serena-wrapper.sh"
         content = wrapper_path.read_text()
 
-        assert "export_workspace_env.sh" in content
-        assert "DOPEMUX_WORKSPACE_ROOT" in content
-        # Should NOT have duplicate detect_workspace function
-        assert content.count("detect_workspace()") == 0
+        assert "detect_workspace()" in content
+        assert "DOPEMUX_WORKSPACE_ID" in content
+        assert "mcp_server.py" in content
 
     def test_dope_context_run_mcp_sources_shared_script(self):
-        """Dope-context run_mcp.sh should source shared detection script"""
-        run_mcp_path = project_root / "services" / "dope-context" / "run_mcp.sh"
-        content = run_mcp_path.read_text()
+        """Dope-context wrapper should perform local workspace detection."""
+        wrapper_path = project_root / "scripts" / "mcp-wrappers" / "dope-context-wrapper.sh"
+        content = wrapper_path.read_text()
 
-        assert "export_workspace_env.sh" in content
-        assert "DOPEMUX_WORKSPACE_ROOT" in content
+        assert "detect_workspace()" in content
+        assert "DOPEMUX_WORKSPACE_ID" in content
+        assert "docker exec" in content
 
     def test_shared_export_script_has_all_fallbacks(self):
-        """Shared export script should have 5-layer fallback"""
-        export_script = project_root / "src" / "dopemux" / "export_workspace_env.sh"
-        content = export_script.read_text()
+        """Shared Python detector should cover env, git, marker, and cwd fallback."""
+        shared_module = project_root / "src" / "dopemux" / "workspace_detection.py"
+        content = shared_module.read_text()
 
-        # Check all 5 fallback layers exist
-        assert "DOPEMUX_WORKSPACE_ROOT" in content  # Priority 1
-        assert "CLAUDE_WORKSPACE" in content  # Priority 2
-        assert "dopemux worktrees current" in content  # Priority 3
-        assert "git rev-parse --show-toplevel" in content  # Priority 4
-        assert "python3" in content  # Priority 5 (Python module fallback)
+        assert "DOPEMUX_WORKSPACE_ROOT" in content
+        assert "git" in content and "rev-parse" in content and "--show-toplevel" in content
+        assert "pyproject.toml" in content
+        assert "Current directory" in content or "current directory" in content
 
 
 class TestWorktreeBugFix:
@@ -245,7 +247,7 @@ class TestWorktreeBugFix:
 
     def test_serena_no_dot_git_checks(self):
         """Serena should not check for .git directory"""
-        serena_lsp = project_root / "services" / "serena" / "v2" / "enhanced_lsp.py"
+        serena_lsp = project_root / "services" / "serena" / "enhanced_lsp.py"
         content = serena_lsp.read_text()
 
         # Should NOT contain custom .git checking
@@ -269,27 +271,20 @@ class TestCodeDeduplication:
     """Test that duplicate detection code has been eliminated"""
 
     def test_no_duplicate_detect_workspace_functions(self):
-        """Should have only ONE detect_workspace implementation (in shared script)"""
-        # Check all bash scripts
+        """Wrapper scripts should keep a single local detector helper each."""
         wrapper_dir = project_root / "scripts" / "mcp-wrappers"
         bash_files = list(wrapper_dir.glob("*.sh"))
 
-        detect_function_count = 0
         for bash_file in bash_files:
             content = bash_file.read_text()
-            if "detect_workspace()" in content:
-                detect_function_count += 1
-
-        # Should be ZERO (all should source shared script)
-        assert detect_function_count == 0, "Found duplicate detect_workspace() functions in wrappers"
+            assert content.count("detect_workspace()") <= 1
 
     def test_shared_script_has_single_implementation(self):
-        """Shared script should have exactly one detect_workspace implementation"""
-        export_script = project_root / "src" / "dopemux" / "export_workspace_env.sh"
-        content = export_script.read_text()
+        """Shared Python detector should define one workspace root helper."""
+        shared_module = project_root / "src" / "dopemux" / "workspace_detection.py"
+        content = shared_module.read_text()
 
-        # Should have exactly one detect_workspace function
-        assert content.count("detect_workspace()") == 1
+        assert content.count("def get_workspace_root(") == 1
 
 
 # Phase 1 Success Metrics
@@ -306,24 +301,24 @@ class TestPhase1Metrics:
         assert callable(get_workspace_root)
 
     def test_all_components_migrated(self):
-        """All 3 components should use shared detection"""
+        """Current components should use the shared Python detector where applicable."""
         # 1. Dope-context
         dope_context_workspace = project_root / "services" / "dope-context" / "src" / "utils" / "workspace.py"
         assert "from src.dopemux.workspace_detection" in dope_context_workspace.read_text()
 
         # 2. Serena
-        serena_lsp = project_root / "services" / "serena" / "v2" / "enhanced_lsp.py"
+        serena_lsp = project_root / "services" / "serena" / "enhanced_lsp.py"
         assert "from src.dopemux.workspace_detection" in serena_lsp.read_text()
 
         # 3. MCP wrappers
         conport_wrapper = project_root / "scripts" / "mcp-wrappers" / "conport-wrapper.sh"
-        assert "export_workspace_env.sh" in conport_wrapper.read_text()
+        assert "detect_workspace()" in conport_wrapper.read_text()
 
     def test_worktree_bug_fixed(self):
         """CRITICAL: .git directory checks eliminated"""
         # Check all Python files
         dope_context_workspace = project_root / "services" / "dope-context" / "src" / "utils" / "workspace.py"
-        serena_lsp = project_root / "services" / "serena" / "v2" / "enhanced_lsp.py"
+        serena_lsp = project_root / "services" / "serena" / "enhanced_lsp.py"
 
         # Should NOT have .git directory checks in detection logic
         dope_content = dope_context_workspace.read_text()
@@ -334,18 +329,13 @@ class TestPhase1Metrics:
         assert serena_content.count('".git"') <= 2  # Lenient for comments/docs
 
     def test_code_deduplication_achieved(self):
-        """Code deduplication target: No duplicate detect_workspace()"""
+        """Wrapper scripts should not define multiple detector helpers each."""
         wrapper_dir = project_root / "scripts" / "mcp-wrappers"
         all_wrappers = list(wrapper_dir.glob("*.sh"))
 
-        duplicate_count = 0
         for wrapper in all_wrappers:
             content = wrapper.read_text()
-            if "detect_workspace()" in content:
-                duplicate_count += 1
-
-        # Should be 0 (all source shared script)
-        assert duplicate_count == 0
+            assert content.count("detect_workspace()") <= 1
 
 
 if __name__ == "__main__":

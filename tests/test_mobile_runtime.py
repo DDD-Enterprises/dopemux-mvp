@@ -1,6 +1,7 @@
 """Unit tests for Dopemux mobile runtime helpers."""
 
 from dopemux.config.manager import MobileConfig
+import dopemux.mobile.runtime as mobile_runtime
 from dopemux.mobile.runtime import (
     LaunchOutcome,
     MobileStatus,
@@ -157,8 +158,8 @@ def test_update_tmux_mobile_indicator_sets_option(monkeypatch):
     # So we need to ensure update_tmux_mobile_indicator uses our mock controller.
     # It accepts controller argument.
     
-    monkeypatch.setattr("dopemux.mobile.runtime.get_mobile_status", lambda cfg, ctrl: snapshot)
-    monkeypatch.setattr("dopemux.mobile.runtime._persist_mobile_status", lambda cfg, status: None)
+    monkeypatch.setattr(mobile_runtime, "get_mobile_status", lambda cfg, ctrl: snapshot)
+    monkeypatch.setattr(mobile_runtime, "_persist_mobile_status", lambda cfg, status: None)
 
     update_tmux_mobile_indicator(DummyCM(), controller=controller)
     

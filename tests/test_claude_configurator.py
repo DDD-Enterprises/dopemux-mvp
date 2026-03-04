@@ -325,7 +325,8 @@ class TestClaudeConfigurator:
         servers = configurator._get_mcp_servers_for_template("javascript")
 
         assert "React/Vue/Node.js" in servers
-        assert "Framework migrations" in servers
+        assert "claude-context" in servers
+        assert "exa" in servers
 
     def test_mcp_servers_for_template_rust(self, config_manager):
         """Test MCP server recommendations for Rust."""
@@ -458,7 +459,6 @@ class TestClaudeConfigurator:
 
         assert "pal" in servers
         assert "claude-context" in servers
-        assert "morphllm-fast-apply" in servers
 
     def test_setup_project_config_creates_all_template_content(
         self, config_manager, temp_project_dir

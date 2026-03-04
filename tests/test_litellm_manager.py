@@ -193,6 +193,7 @@ def test_build_client_environment(tmp_path):
 
 def test_get_litellm_manager_singleton():
     """Test that get_litellm_manager returns a singleton."""
+    get_litellm_manager.__globals__["_litellm_manager"] = None
     manager1 = get_litellm_manager(Path("/test/path1"))
     manager2 = get_litellm_manager(Path("/test/path2"))
     

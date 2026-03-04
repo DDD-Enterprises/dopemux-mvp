@@ -24,8 +24,8 @@ def _import_server_module():
         sys.modules,
         {
             "uvicorn": MagicMock(),
-            "fastapi": MagicMock(),
             "pydantic": MagicMock(),
+            "fastapi": MagicMock(),
             "fastmcp": fastmcp_module,
         },
     ):
