@@ -14,8 +14,8 @@ from enhanced_server import EnhancedConPortServer
 
 @pytest.fixture
 def server():
-    with patch('asyncpg.create_pool'), \
-         patch('redis.asyncio.from_url'), \
+    with patch('asyncpg.create_pool', create=True), \
+         patch('redis.asyncio.from_url', create=True), \
          patch('enhanced_server.SimpleInstanceDetector'):
         srv = EnhancedConPortServer()
         # Mock dependencies

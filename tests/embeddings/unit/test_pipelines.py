@@ -553,11 +553,39 @@ class TestSyncPipeline:
         """Create mock integrations."""
         integration1 = AsyncMock(spec=ConPortAdapter)
         integration1.validate_connection.return_value = True
-        integration1.get_sync_status.return_value = {"last_sync": "2024-01-01T00:00:00"}
+        integration1.get_integration_status.return_value = {"workspace_id": "workspace-1"}
+        integration1.sync_documents.return_value = {
+            "success": True,
+            "documents_synced": 1,
+            "documents": [
+                {
+                    "id": "doc1",
+                    "content": "Document 1",
+                    "metadata": {
+                        "source": "conport",
+                        "timestamp": "2024-01-01T00:00:00",
+                    },
+                }
+            ],
+        }
 
         integration2 = AsyncMock(spec=ConPortAdapter)
         integration2.validate_connection.return_value = True
-        integration2.get_sync_status.return_value = {"last_sync": "2024-01-01T00:00:00"}
+        integration2.get_integration_status.return_value = {"workspace_id": "workspace-2"}
+        integration2.sync_documents.return_value = {
+            "success": True,
+            "documents_synced": 1,
+            "documents": [
+                {
+                    "id": "doc2",
+                    "content": "Document 2",
+                    "metadata": {
+                        "source": "conport",
+                        "timestamp": "2024-01-01T00:00:01",
+                    },
+                }
+            ],
+        }
 
         return [integration1, integration2]
 
@@ -599,42 +627,50 @@ class TestSyncPipeline:
         stage_result = await sync_pipeline._validate_stage(sync_config)
 
         assert "integration_health" in stage_result
-        assert stage_result["vector_store_ready"] is True
+        assert "vector_store_stats" in stage_result
+        assert stage_result["healthy_integrations"] == 2
 
     @pytest.mark.asyncio
     async def test_incremental_sync(self, sync_pipeline):
         """Test incremental synchronization."""
         sync_pipeline.sync_config = {"incremental": True, "since_timestamp": "2024-01-01T00:00:00"}
 
-        stage_result = await sync_pipeline._sync_stage()
+        stage_result = await sync_pipeline._sync_stage(sync_pipeline.sync_config)
 
-        assert stage_result["sync_type"] == "incremental"
-        assert "items_synced" in stage_result
+        assert stage_result["integrations_synced"] == 1
+        assert stage_result["new_documents"] == 2
 
     @pytest.mark.asyncio
     async def test_full_sync(self, sync_pipeline):
         """Test full synchronization."""
         sync_pipeline.sync_config = {"incremental": False}
 
-        stage_result = await sync_pipeline._sync_stage()
+        stage_result = await sync_pipeline._sync_stage(sync_pipeline.sync_config)
 
-        assert stage_result["sync_type"] == "full"
+        assert stage_result["integrations_synced"] == 1
+        assert stage_result["new_documents"] == 2
 
     @pytest.mark.asyncio
     async def test_conflict_resolution(self, sync_pipeline):
         """Test conflict resolution during sync."""
         # Simulate conflicts
         conflicts = [
-            {"id": "doc1", "local_version": 1, "remote_version": 2},
-            {"id": "doc2", "local_version": 3, "remote_version": 2}
+            {
+                "id": "doc1",
+                "metadata": {"source": "local", "timestamp": "2024-01-01T00:00:00"},
+            },
+            {
+                "id": "doc1",
+                "metadata": {"source": "remote", "timestamp": "2024-01-01T00:00:01"},
+            },
         ]
 
-        resolved = await sync_pipeline._resolve_conflicts(conflicts, "latest_wins")
+        sync_pipeline.new_documents = conflicts.copy()
+        await sync_pipeline._detect_sync_conflicts()
 
-        # Should resolve all conflicts
-        assert len(resolved) == 2
-        # Should pick latest versions
-        assert all(r["resolved"] for r in resolved)
+        assert len(sync_pipeline.sync_conflicts) == 1
+        assert len(sync_pipeline.new_documents) == 1
+        assert sync_pipeline.new_documents[0]["metadata"]["source"] == "remote"
 
     @pytest.mark.asyncio
     async def test_sync_pipeline_with_failures(self, sync_pipeline):
@@ -646,7 +682,7 @@ class TestSyncPipeline:
 
         # Should still succeed with partial sync
         assert result.success is True
-        assert "partial_success" in str(result.metadata)
+        assert result.metadata["integrations_synced"] == 1
 
 
 if __name__ == "__main__":

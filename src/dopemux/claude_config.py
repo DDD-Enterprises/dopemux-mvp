@@ -72,7 +72,7 @@ class ClaudeConfig:
 
         self.config_path = Path(config_path)
         self.backup_dir = self.config_path.parent / "backups"
-        self.backup_dir.mkdir(exist_ok=True)
+        self.backup_dir.mkdir(parents=True, exist_ok=True)
 
     def read_config(self) -> Dict[str, Any]:
         """Read the current Claude configuration.

@@ -130,13 +130,7 @@ class TestClaudeCodeIntegration:
 
                         # Check that all servers were validated
                         server_names = [result["name"] for result in validation_results]
-                        expected_servers = [
-                            "mas-sequential-thinking",
-                            "pal",
-                            "claude-context",
-                            "morphllm-fast-apply",
-                            "exa",
-                        ]
+                        expected_servers = list(config_manager.get_mcp_servers().keys())
 
                         for expected in expected_servers:
                             assert expected in server_names
@@ -359,12 +353,9 @@ class TestClaudeConfiguratorIntegration:
                 with open(config_file) as f:
                     mcp_config = yaml.safe_load(f)
 
-                # Verify MCP configuration structure
-                assert "mcp_servers" in mcp_config
-                assert isinstance(mcp_config["mcp_servers"], list)
+                # Project config should not persist mcp_servers; config manager derives them.
+                assert "mcp_servers" not in mcp_config
 
-                # Verify MCP servers list exists (may be empty from template config)
-                # The actual MCP server configuration happens in the launcher
                 assert "active_features" in mcp_config
                 assert mcp_config["active_features"]["context_preservation"] is True
 

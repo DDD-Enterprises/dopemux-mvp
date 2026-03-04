@@ -79,8 +79,8 @@ services:
   # MCP: ConPort knowledge graph server
   conport:
     build:
-      context: .
-      dockerfile: services/conport/Dockerfile
+      context: ./docker/mcp-servers/conport
+      dockerfile: Dockerfile
     container_name: smoke-conport
     restart: unless-stopped
     environment:

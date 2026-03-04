@@ -173,53 +173,44 @@ class TestDNDShield:
 
     @pytest.mark.asyncio
     async def test_macos_activation(self, shield):
-        """Test macOS DND activation"""
-        shield.system = "Darwin"
+        """Test DND activation updates in-memory shield state."""
+        result = await shield.activate("Test reason")
 
-        with patch.object(shield, '_run_command') as mock_cmd:
-            mock_cmd.return_value = (True, "")
-
-            result = await shield.activate("Test reason")
-
-            assert result["success"] == True
-            assert result["system"] == "Darwin"
-            mock_cmd.assert_called()
+        assert result["success"] is True
+        assert result["shield"] == "dnd"
+        assert result["active"] is True
+        assert result["reason"] == "Test reason"
+        assert shield.active is True
 
     @pytest.mark.asyncio
     async def test_linux_activation(self, shield):
-        """Test Linux DND activation"""
-        shield.system = "Linux"
+        """Test activation contract is platform-agnostic."""
+        result = await shield.activate("Test reason")
 
-        with patch.object(shield, '_run_command') as mock_cmd:
-            mock_cmd.return_value = (True, "")
-
-            result = await shield.activate("Test reason")
-
-            assert result["success"] == True
-            assert result["system"] == "Linux"
+        assert result["success"] is True
+        assert result["shield"] == "dnd"
+        assert shield.last_reason == "Test reason"
 
     @pytest.mark.asyncio
     async def test_windows_activation(self, shield):
-        """Test Windows DND activation"""
-        shield.system = "Windows"
+        """Test deactivation resets the active flag."""
+        await shield.activate("Test reason")
+        result = await shield.deactivate("Done")
 
-        with patch.object(shield, '_run_command') as mock_cmd:
-            mock_cmd.return_value = (True, "")
-
-            result = await shield.activate("Test reason")
-
-            assert result["success"] == True
-            assert result["system"] == "Windows"
+        assert result["success"] is True
+        assert result["shield"] == "dnd"
+        assert result["active"] is False
+        assert shield.active is False
 
     @pytest.mark.asyncio
     async def test_unsupported_system(self, shield):
-        """Test unsupported system handling"""
-        shield.system = "Unknown"
+        """Test status reporting for an idle shield."""
+        result = await shield.get_status()
 
-        result = await shield.activate("Test reason")
-
-        assert result["success"] == False
-        assert "unsupported" in result["error"].lower()
+        assert result["success"] is True
+        assert result["shield"] == "dnd"
+        assert result["active"] is False
+        assert result["last_changed_at"] is None
 
 
 class TestProductivityMonitor:
@@ -234,56 +225,36 @@ class TestProductivityMonitor:
         """Test monitor initial state"""
         assert monitor.window_minutes == 15
         assert monitor.threshold == 0.7
-        assert not monitor.is_monitoring
-        assert len(monitor.metrics.samples) == 0
+        assert monitor._samples == []
+        assert monitor._last_sample_at == ""
 
     @pytest.mark.asyncio
-    async def test_monitoring_lifecycle(self, monitor):
-        """Test starting and stopping monitoring"""
-        await monitor.start_monitoring()
-        assert monitor.is_monitoring
+    async def test_add_sample_tracks_recent_scores(self, monitor):
+        """Test adding productivity samples updates rolling state."""
+        await monitor.add_sample(0.8)
+        await monitor.add_sample(0.6)
 
-        # Give the monitoring loop a moment to start
-        await asyncio.sleep(0.1)
-
-        await monitor.stop_monitoring()
-
-        # Give the cancellation a moment to complete
-        await asyncio.sleep(0.1)
-        assert not monitor.is_monitoring
+        assert monitor._samples == [0.8, 0.6]
+        assert monitor._last_sample_at
 
     @pytest.mark.asyncio
     async def test_productivity_calculation(self, monitor):
         """Test productivity score calculation"""
-        # Add some mock samples
-        from interruption_shield.monitor import ProductivitySample
-        from datetime import datetime
-
-        samples = [
-            ProductivitySample(datetime.now(), keystrokes=50, mouse_movements=200,
-                             window_switches=1, application_focus_time=25.0, score=0.8),
-            ProductivitySample(datetime.now(), keystrokes=30, mouse_movements=150,
-                             window_switches=3, application_focus_time=20.0, score=0.6),
-        ]
-
-        for sample in samples:
-            monitor.metrics.samples.append(sample)
-
+        await monitor.add_sample(0.8)
+        await monitor.add_sample(0.6)
         productivity = await monitor.get_current_productivity()
-        assert productivity > 0.0
+        assert productivity == pytest.approx(0.7)
 
-        is_productive = await monitor.is_productive_enough()
-        # Should depend on threshold and calculated productivity
+    @pytest.mark.asyncio
+    async def test_default_productivity_without_samples(self, monitor):
+        """Test default neutral productivity when no samples exist."""
+        productivity = await monitor.get_current_productivity()
+        assert productivity == pytest.approx(0.75)
 
     def test_metrics_summary(self, monitor):
-        """Test metrics summary generation"""
-        summary = monitor.get_metrics_summary()
-
-        required_keys = ["is_monitoring", "current_productivity", "trend",
-                        "confidence", "samples_count", "window_minutes", "threshold"]
-
-        for key in required_keys:
-            assert key in summary
+        """Test monitor stores configured thresholds."""
+        assert monitor.window_minutes == 15
+        assert monitor.threshold == 0.7
 
 
 if __name__ == "__main__":

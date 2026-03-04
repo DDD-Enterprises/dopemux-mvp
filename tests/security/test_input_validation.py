@@ -4,17 +4,23 @@ Security Tests for Input Validation
 Tests ALLOWED_ORIGINS parsing and validation.
 """
 
-import pytest
+import importlib.util
 import os
 import subprocess
 import asyncio
-from httpx import AsyncClient
-import sys
 import signal
+from pathlib import Path
+import sys
+
+import pytest
+from httpx import AsyncClient
 
 
 class TestInputValidation:
     """Test input validation security."""
+
+    ADHD_ENGINE_DIR = Path("services/adhd_engine")
+    REPO_ROOT = Path(__file__).resolve().parents[2]
 
     @pytest.mark.parametrize("origins_input,expected_origins", [
         # Valid cases
@@ -90,6 +96,9 @@ class TestInputValidation:
     @pytest.mark.asyncio
     async def test_server_starts_with_malformed_origins(self):
         """Test that server starts safely even with malformed ALLOWED_ORIGINS."""
+        if importlib.util.find_spec("prometheus_client") is None:
+            pytest.skip("prometheus_client is required to start the ADHD Engine service")
+
         process = None
         try:
             # Test with malformed origins
@@ -99,8 +108,17 @@ class TestInputValidation:
 
             # Start server
             process = subprocess.Popen(
-                ["python", "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8097"],
-                cwd="services/adhd_engine/services/adhd_engine",
+                [
+                    "python",
+                    "-m",
+                    "uvicorn",
+                    "services.adhd_engine.main:app",
+                    "--host",
+                    "127.0.0.1",
+                    "--port",
+                    "8097",
+                ],
+                cwd=self.REPO_ROOT,
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE

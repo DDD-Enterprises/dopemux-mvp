@@ -24,6 +24,12 @@ from slash_commands import SlashCommandProcessor
 from dopemux.adhd.context_manager import ContextManager, ContextSnapshot
 
 
+@pytest.fixture(autouse=True)
+def suppress_context_manager_console_log():
+    with patch("dopemux.adhd.context_manager.console.log"):
+        yield
+
+
 class TestSessionFormatter:
     """Test SessionFormatter class."""
 

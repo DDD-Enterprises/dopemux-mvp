@@ -22,20 +22,17 @@ class TestTemplateInstallation:
         assert (tmp_path / ".claude" / "PROJECT_INSTRUCTIONS.MD").exists()
         assert (tmp_path / ".claude" / "claude.md").exists()
 
-        # Check docs/task-packets templates
-        assert (tmp_path / "docs" / "task-packets" / "README.md").exists()
-        assert (tmp_path / "docs" / "task-packets" / "STATUS.md").exists()
-        assert (tmp_path / "docs" / "task-packets" / "INDEX.md").exists()
-        assert (tmp_path / "docs" / "task-packets" / "CHECKLIST.md").exists()
-        assert (tmp_path / "docs" / "task-packets" / "TEMPLATE_TASK_PACKET.md").exists()
+        # Check repo-root task-packets templates
+        assert (tmp_path / "task-packets" / "README.md").exists()
+        assert (tmp_path / "task-packets" / "STATUS.md").exists()
+        assert (tmp_path / "task-packets" / "INDEX.md").exists()
+        assert (tmp_path / "task-packets" / "CHECKLIST.md").exists()
+        assert (tmp_path / "task-packets" / "TEMPLATE_TASK_PACKET.md").exists()
 
         # Check docs/90-adr templates
         assert (tmp_path / "docs" / "90-adr" / "TEMPLATE_ADR.md").exists()
         assert (tmp_path / "docs" / "90-adr" / "TEMPLATE_ADR_LIGHT.md").exists()
         assert (tmp_path / "docs" / "90-adr" / "TEMPLATE_ADR_RECORD.md").exists()
-
-        # Check .dopemux template
-        assert (tmp_path / ".dopemux" / "Dopemux-Architectural-Hardening-Template.md").exists()
 
     def test_install_templates_skips_existing_files(self, tmp_path):
         """Verify existing files are not overwritten."""
@@ -62,9 +59,8 @@ class TestTemplateInstallation:
 
         # Verify all directories exist
         assert (tmp_path / ".claude").is_dir()
-        assert (tmp_path / "docs" / "task-packets").is_dir()
+        assert (tmp_path / "task-packets").is_dir()
         assert (tmp_path / "docs" / "90-adr").is_dir()
-        assert (tmp_path / ".dopemux").is_dir()
 
     def test_install_templates_with_missing_template_dir(self, tmp_path, monkeypatch):
         """Verify graceful handling when template directory is missing."""
@@ -85,7 +81,7 @@ class TestTemplateInstallation:
         initializer = ProjectInitializer(tmp_path)
         initializer.install_templates()
 
-        status = (tmp_path / "docs" / "task-packets" / "STATUS.md").read_text()
+        status = (tmp_path / "task-packets" / "STATUS.md").read_text()
 
         # Should not contain project-specific subsystems
         assert "PACKET_031" not in status
@@ -100,7 +96,7 @@ class TestTemplateInstallation:
         initializer = ProjectInitializer(tmp_path)
         initializer.install_templates()
 
-        index = (tmp_path / "docs" / "task-packets" / "INDEX.md").read_text()
+        index = (tmp_path / "task-packets" / "INDEX.md").read_text()
 
         # Should be empty catalog
         assert "## Active" in index

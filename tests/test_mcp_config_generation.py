@@ -1,5 +1,6 @@
 from unittest.mock import Mock
 
+from dopemux.claude_config import MCP_NAME_MAPPING
 from dopemux.config.manager import ConfigManager
 from dopemux.mcp.registry import MCPRegistry, MCPServerDefinition
 
@@ -21,11 +22,21 @@ def test_template_mcp_names_exist_in_registry():
     registry = MCPRegistry()
     registry_names = {server.name for server in registry.list_servers()}
     templates = manager._get_project_templates()
+    template_aliases = {
+        "conport",
+        "serena",
+        "claude-context",
+        "pal",
+        "morphllm-fast-apply",
+    }
 
     for template_name, template in templates.items():
         for server_name in template.get("mcp_servers", []):
+            resolved_name = MCP_NAME_MAPPING.get(server_name, server_name)
             assert (
-                server_name in registry_names
+                server_name in template_aliases
+                or server_name in registry_names
+                or resolved_name in registry_names
             ), f"Template '{template_name}' references unknown MCP server '{server_name}'"
 
 

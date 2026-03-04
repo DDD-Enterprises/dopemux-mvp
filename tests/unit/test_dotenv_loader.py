@@ -26,8 +26,8 @@ class TestDotenvLoader:
 
         with patch.dict(sys.modules, {"dotenv": mock_dotenv}):
             # Ensure we import/reload while the mock is in place
-            import dopemux.utils.dotenv_loader
-            importlib.reload(dopemux.utils.dotenv_loader)
+            import dopemux.utils.dotenv_loader as dotenv_loader_module
+            importlib.reload(dotenv_loader_module)
             from dopemux.utils import dotenv_loader
 
             assert dotenv_loader.is_dotenv_available() is True
@@ -63,8 +63,8 @@ class TestDotenvLoader:
             sys.meta_path.insert(0, ImportBlocker())
             try:
                 # Ensure we import/reload while the blocker is in place
-                import dopemux.utils.dotenv_loader
-                importlib.reload(dopemux.utils.dotenv_loader)
+                import dopemux.utils.dotenv_loader as dotenv_loader_module
+                importlib.reload(dotenv_loader_module)
                 from dopemux.utils import dotenv_loader
 
                 assert dotenv_loader.is_dotenv_available() is False

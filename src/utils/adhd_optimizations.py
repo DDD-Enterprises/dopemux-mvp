@@ -260,7 +260,7 @@ class ADHDTaskOptimizer:
                     tm_task.tags = (tm_task.tags or []) + ["quick_win"]
 
             # Add ADHD optimization metadata
-            if not hasattr(tm_task, "ai_analysis"):
+            if not hasattr(tm_task, "ai_analysis") or tm_task.ai_analysis is None:
                 tm_task.ai_analysis = {}
 
             tm_task.ai_analysis["adhd_optimization"] = {

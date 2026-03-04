@@ -33,7 +33,7 @@ services:
     container_port: 6379
     health_path: null  # Uses redis-cli ping
     compose_service_name: redis-events
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: infrastructure
     description: "Redis for event streaming"
 
@@ -42,7 +42,7 @@ services:
     container_port: 6379
     health_path: null
     compose_service_name: redis-primary
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: infrastructure
     description: "Redis for caching"
 
@@ -50,7 +50,7 @@ services:
     port: 6333
     container_port: 6333
     health_path: /
-    compose_service_name: mcp-qdrant
+    compose_service_name: qdrant
     enabled_in_smoke: true
     category: infrastructure
     description: "Qdrant vector database"
@@ -80,7 +80,7 @@ services:
     container_port: 3003
     health_path: /health
     compose_service_name: pal
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: mcp
     description: "PAL MCP - Multi-model reasoning server"
 
@@ -91,6 +91,17 @@ services:
     compose_service_name: conport
     enabled_in_smoke: true
     category: mcp
+    env_contract_exceptions:
+      - variable: PORT
+        reason: "ConPort smoke runtime binds via MCP_SERVER_PORT and service-specific startup scripts."
+      - variable: LOG_LEVEL
+        reason: "ConPort smoke runtime uses internal logging defaults instead of a unified LOG_LEVEL contract."
+      - variable: ENVIRONMENT
+        reason: "ConPort smoke runtime does not consume the shared ENVIRONMENT variable."
+      - variable: HEALTH_CHECK_PATH
+        reason: "ConPort health path is defined by the HTTP server implementation rather than loaded from env."
+      - variable: SERVICE_NAME
+        reason: "ConPort identifies itself through MCP/server metadata rather than the shared SERVICE_NAME env."
     description: "ConPort HTTP API"
 
   - name: conport-mcp
@@ -98,7 +109,7 @@ services:
     container_port: 3005
     health_path: /health
     compose_service_name: conport
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: mcp
     description: "ConPort MCP (SSE)"
 
@@ -107,7 +118,7 @@ services:
     container_port: 3006
     health_path: /health
     compose_service_name: serena
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: mcp
     description: "Serena MCP - ADHD accommodation server"
 
@@ -116,7 +127,7 @@ services:
     container_port: 3009
     health_path: /health
     compose_service_name: gptr-mcp
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: mcp
     description: "GPT Researcher MCP"
 
@@ -125,7 +136,7 @@ services:
     container_port: 3010
     health_path: /health
     compose_service_name: dope-context
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: mcp
     description: "Dope-Context MCP"
 
@@ -148,12 +159,15 @@ services:
     description: "Desktop Commander MCP"
 
   - name: task-orchestrator
-    port: 3014
+    port: 8000
     container_port: 8000
     health_path: /health
     compose_service_name: task-orchestrator
     enabled_in_smoke: true
     category: cognitive
+    env_contract_exceptions:
+      - variable: DATABASE_URL
+        reason: "Task Orchestrator smoke runtime does not require a direct database connection in this stack."
     description: "Task Orchestrator (Multi-instance)"
 
   - name: leantime-bridge

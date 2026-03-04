@@ -1,9 +1,14 @@
 import asyncio
+import contextlib
 import json
 import os
+import socket
 import shutil
 from pathlib import Path
+
+import pytest
 from aiohttp import web
+
 from dopemux.mcp.gate import DiscoveryGate
 
 # Mock MCP Server
@@ -31,28 +36,46 @@ async def start_mock_server(port):
     await site.start()
     return runner
 
-async def test_discovery_gate():
-    project_root = Path.cwd() / "tmp_test_project"
-    project_root.mkdir(parents=True, exist_ok=True)
-    
-    # 1. Create .dopemux/mcp.instances.toml
-    dopemux_dir = project_root / ".dopemux"
-    dopemux_dir.mkdir(exist_ok=True)
-    
+
+def _find_unused_tcp_port() -> int:
+    with contextlib.closing(socket.socket(type=socket.SOCK_STREAM)) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+def _write_instances_config(dopemux_dir: Path, port: int, required_globs: list[str]) -> None:
     with open(dopemux_dir / "mcp.instances.toml", "w") as f:
-        f.write("""
+        f.write(
+            f"""
 [project]
 project_id = "test-project"
 
 [mcp.conport]
-url = "http://127.0.0.1:8099"
+url = "http://127.0.0.1:{port}"
 transport = "http"
-required_tool_globs = ["conport_*"]
-""")
+required_tool_globs = {json.dumps(required_globs)}
+"""
+        )
+
+
+async def test_discovery_gate(tmp_path):
+    project_root = tmp_path / "tmp_test_project"
+    project_root.mkdir(parents=True, exist_ok=True)
+    try:
+        port = _find_unused_tcp_port()
+    except PermissionError:
+        pytest.skip("TCP bind not permitted in this environment")
+    
+    # 1. Create .dopemux/mcp.instances.toml
+    dopemux_dir = project_root / ".dopemux"
+    dopemux_dir.mkdir(exist_ok=True)
+    _write_instances_config(dopemux_dir, port, ["conport_*"])
 
     # 2. Start mock server
-    mock_runner = await start_mock_server(8099)
-    print("Mock server started on 8099")
+    try:
+        mock_runner = await start_mock_server(port)
+    except PermissionError:
+        pytest.skip("TCP bind not permitted in this environment")
+    print(f"Mock server started on {port}")
 
     try:
         # 3. Run gate
@@ -71,16 +94,7 @@ required_tool_globs = ["conport_*"]
             print("✓ GATE_RESULT.json created")
 
         # 4. Test failure case (missing glob)
-        with open(dopemux_dir / "mcp.instances.toml", "w") as f:
-            f.write("""
-[project]
-project_id = "test-project"
-
-[mcp.conport]
-url = "http://127.0.0.1:8099"
-transport = "http"
-required_tool_globs = ["conport_*", "missing_tool_*"]
-""")
+        _write_instances_config(dopemux_dir, port, ["conport_*", "missing_tool_*"])
         
         gate2 = DiscoveryGate(project_root, run_id="test_run_fail")
         passed2 = await gate2.run()
