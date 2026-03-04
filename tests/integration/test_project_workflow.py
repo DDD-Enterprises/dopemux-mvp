@@ -35,25 +35,26 @@ class TestProjectInitializationWorkflow:
                             with patch(
                                 "dopemux.cli.AttentionMonitor"
                             ) as mock_attention:
+                                with patch("dopemux.cli.init_project", return_value=True):
                                 # Setup mocks
-                                mock_context_instance = Mock()
-                                mock_context.return_value = mock_context_instance
-                                mock_context_instance.restore_latest.return_value = None
+                                    mock_context_instance = Mock()
+                                    mock_context.return_value = mock_context_instance
+                                    mock_context_instance.restore_latest.return_value = None
 
-                                mock_launcher_instance = Mock()
-                                mock_launcher.return_value = mock_launcher_instance
-                                mock_launcher_instance.launch.return_value = Mock()
+                                    mock_launcher_instance = Mock()
+                                    mock_launcher.return_value = mock_launcher_instance
+                                    mock_launcher_instance.launch.return_value = Mock()
 
-                                # Initialize project
-                                result = runner.invoke(cli, ["init", str(project_path)])
-                                assert result.exit_code == 0
-
-                                # Start Claude Code
-                                with patch(
-                                    "dopemux.cli.Path.cwd", return_value=project_path
-                                ):
-                                    result = runner.invoke(cli, ["start", "--no-mcp"])
+                                    # Initialize project
+                                    result = runner.invoke(cli, ["init", str(project_path)])
                                     assert result.exit_code == 0
+
+                                    # Start Claude Code
+                                    with patch(
+                                        "dopemux.cli.Path.cwd", return_value=project_path
+                                    ):
+                                        result = runner.invoke(cli, ["start", "--no-mcp"])
+                                        assert result.exit_code == 0
 
     def test_context_save_restore_workflow(self):
         """Test saving and restoring context."""
