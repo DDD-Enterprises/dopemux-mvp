@@ -2514,7 +2514,7 @@ def resolve_effective_step_route(
             raise RuntimeError(
                 f"JSON-managed step {phase}:{step_id} missing primary_routes in model_map.yaml."
             )
-        if strict_required:
+            if strict_required:
             strict_ladder: List[Tuple[str, str, str]] = []
             strict_attempts: List[Dict[str, Any]] = []
             for route in primary_routes:
@@ -2541,6 +2541,13 @@ def resolve_effective_step_route(
                     "Strict-required stage has no strict-capable route before token spend: "
                     f"{phase}:{step_id} attempts={attempt_json}"
                 )
+            logger.info(
+                "STRICT_ROUTE_CHOSEN phase=%s step=%s provider=%s model=%s",
+                phase,
+                step_id,
+                provider,
+                model_id,
+            )
             provider, model_id, api_key_env = strict_ladder[0]
             return {
                 "step_tier": step_tier,
@@ -8280,10 +8287,18 @@ def execute_step_for_partitions(
                         repair_successes += 1
 
             # Sidefill missing artifacts one-at-a-time, deterministic order, one pass only.
-            missing_artifacts = _parse_missing_expected_artifacts(contract_reason)
-            if not contract_ok and contract_sidefill_enabled and missing_artifacts:
-                for missing_artifact in missing_artifacts:
-                    sidefill_invocations += 1
+        missing_artifacts = _parse_missing_expected_artifacts(contract_reason)
+        if not contract_ok and contract_sidefill_enabled and missing_artifacts:
+            for missing_artifact in missing_artifacts:
+                logger.info(
+                    "SIDE_FILL_TRIGGER phase=%s step=%s partition=%s artifact=%s reason=%s",
+                    phase,
+                    step_id,
+                    partition_id,
+                    missing_artifact,
+                    contract_reason,
+                )
+                sidefill_invocations += 1
                     sidefill_artifacts, sidefill_meta, sidefill_text, new_norm, strict_attest = _strict_contract_call(
                         artifact_names=(missing_artifact,),
                         stage="sidefill",
@@ -8322,6 +8337,14 @@ def execute_step_for_partitions(
                 and not str(contract_reason or "").startswith("missing_expected_artifacts:")
                 and contract_repair_mode in {"targeted_only", "targeted_then_envelope"}
             ):
+                logger.info(
+                    "REPAIR_TARGETED phase=%s step=%s partition=%s reason=%s artifact=%s",
+                    phase,
+                    step_id,
+                    partition_id,
+                    contract_reason,
+                    targeted_artifact or \"<all>\",
+                )
                 targeted_artifact = str((contract_context or {}).get("artifact_name") or "").strip()
                 target_names: Tuple[str, ...]
                 if targeted_artifact and targeted_artifact in set(output_artifacts):
@@ -8359,6 +8382,13 @@ def execute_step_for_partitions(
                 not contract_ok
                 and contract_repair_mode in {"targeted_then_envelope", "envelope"}
             ):
+                logger.info(
+                    "REPAIR_ENVELOPE phase=%s step=%s partition=%s reason=%s",
+                    phase,
+                    step_id,
+                    partition_id,
+                    contract_reason,
+                )
                 repair_invocations += 1
                 repaired_artifacts, repaired_meta, repaired_text, new_norm, strict_attest = _strict_contract_call(
                     artifact_names=tuple(output_artifacts),
@@ -8884,6 +8914,7 @@ def execute_step_for_partitions(
                 response_text_initial=response_text,
             )
 
+
         auth_failure = is_auth_classified_failure(request_meta.get("failure_type"))
         auth_expired = is_auth_expired_failure(request_meta.get("failure_type"))
 
@@ -9115,6 +9146,13 @@ def execute_step_for_partitions(
                     str(soft_gate_route["provider"]),
                     str(soft_gate_route["model_id"]),
                     str(soft_gate_route["api_key_env"]),
+                )
+                logger.info(
+                    "SOFT_GATE_TRIGGER phase=%s step=%s failed=%s route=%s",
+                    phase,
+                    step_id,
+                    ",".join(failed_partition_ids),
+                    fallback_tuple,
                 )
                 original_step_ladder = list(step_ladder)
                 step_ladder = [fallback_tuple]
