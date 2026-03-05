@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Box, Typography, LinearProgress, Chip } from '@mui/material';
+import { Paper, Box, Typography, LinearProgress, Chip, Tooltip } from '@mui/material';
 import { Brain, AlertTriangle, CheckCircle, XCircle, Droplet } from 'lucide-react';
 import { statusStyles } from '../theme';
 
@@ -45,16 +45,19 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
 
       {/* Status Chip */}
       <Box sx={{ mb: 2 }}>
-        <Chip
-          icon={getStatusIcon(status)}
-          label={getStatusLabel(status)}
-          sx={{
-            bgcolor: `${tone.color}22`,
-            color: tone.color,
-            border: `1px solid ${tone.color}`,
-            fontWeight: 'bold',
-          }}
-        />
+        <Tooltip title={`Recommendation: ${recommendation}`} arrow>
+          <Chip
+            icon={getStatusIcon(status)}
+            label={getStatusLabel(status)}
+            tabIndex={0}
+            sx={{
+              bgcolor: `${tone.color}22`,
+              color: tone.color,
+              border: `1px solid ${tone.color}`,
+              fontWeight: 'bold',
+            }}
+          />
+        </Tooltip>
       </Box>
 
       {/* Load Percentage */}
