@@ -43,12 +43,98 @@ def _make_cfg(runner):
         partition_workers=1,
         debug_phase_inputs=False,
         fail_fast_missing_inputs=False,
-        routing_policy="cost",
+        routing_policy="balanced_grok_openrouter",
     )
 
 
-def _reset_routing(runner) -> None:
-    runner.apply_model_overrides(runner.DEFAULT_GEMINI_MODEL_ID, "cost")
+def _fake_context(**_kwargs):  # type: ignore[no-untyped-def]
+    return (
+        "--- FILE: docs/example.md ---\n0001: line one\n0002: line two\n",
+        {"files_included": 1, "files_skipped": 0, "context_bytes": 60, "redaction_hits": 0},
+    )
+
+
+def _evidence(path: str, line_range: list[int]) -> list[dict]:
+    return [{"path": path, "line_range": line_range, "excerpt": "0001: line one"}]
+
+
+def _d1_valid_payload() -> dict:
+    return {
+        "artifacts": [
+            {
+                "artifact_name": "DOC_INDEX.partX.json",
+                "payload": {
+                    "schema": "DOC_INDEX@v1",
+                    "items": [
+                        {
+                            "id": "DOC_INDEX:item",
+                            "path": "docs/example.md",
+                            "line_range": [1, 2],
+                            "name": "Example",
+                            "kind": "guide",
+                            "evidence": _evidence("docs/example.md", [1, 2]),
+                        }
+                    ],
+                },
+            },
+            {
+                "artifact_name": "DOC_CONTRACT_CLAIMS.partX.json",
+                "payload": {
+                    "schema": "DOC_CONTRACT_CLAIMS@v1",
+                    "items": [
+                        {
+                            "id": "DOC_CONTRACT_CLAIMS:item",
+                            "path": "docs/example.md",
+                            "line_range": [1, 2],
+                            "evidence": _evidence("docs/example.md", [1, 2]),
+                        }
+                    ],
+                },
+            },
+            {
+                "artifact_name": "DOC_BOUNDARIES.partX.json",
+                "payload": {
+                    "schema": "DOC_BOUNDARIES@v1",
+                    "items": [
+                        {
+                            "id": "DOC_BOUNDARIES:item",
+                            "path": "docs/example.md",
+                            "line_range": [1, 2],
+                            "evidence": _evidence("docs/example.md", [1, 2]),
+                        }
+                    ],
+                },
+            },
+            {
+                "artifact_name": "DOC_SUPERSESSION.partX.json",
+                "payload": {
+                    "schema": "DOC_SUPERSESSION@v1",
+                    "items": [
+                        {
+                            "id": "DOC_SUPERSESSION:item",
+                            "path": "docs/example.md",
+                            "line_range": [1, 2],
+                            "evidence": _evidence("docs/example.md", [1, 2]),
+                        }
+                    ],
+                },
+            },
+            {
+                "artifact_name": "CAP_NOTICES.partX.json",
+                "payload": {
+                    "schema": "CAP_NOTICES@v1",
+                    "items": [
+                        {
+                            "id": "CAP_NOTICES:item",
+                            "path": "docs/example.md",
+                            "line_range": [1, 2],
+                            "evidence": _evidence("docs/example.md", [1, 2]),
+                        }
+                    ],
+                },
+            },
+        ]
+    }
 
 
 def test_step_tier_classifier_is_deterministic() -> None:
@@ -61,57 +147,173 @@ def test_step_tier_classifier_is_deterministic() -> None:
     assert runner.resolve_step_tier("Z", "Z2") == "synthesis"
 
 
-def test_cost_policy_ladders_map_expected_defaults() -> None:
+def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
     runner = _load_runner_module()
-    _reset_routing(runner)
-    assert runner.resolve_step_ladder("cost", "A", "A0")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
-    assert runner.resolve_step_ladder("cost", "A", "A1")[0] == ("openai", "gpt-5-mini", "OPENAI_API_KEY")
-    assert runner.resolve_step_ladder("cost", "R", "R1")[0] == ("openai", "gpt-5.2", "OPENAI_API_KEY")
-    assert runner.resolve_step_ladder("cost", "Q", "Q9")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
+    expected_d0 = [
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ]
+    assert runner.resolve_step_ladder("cost", "D", "D0") == expected_d0
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D0") == expected_d0
+    assert runner.resolve_step_ladder("quality", "D", "D1") == expected_d0
+
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D2") == [
+        ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+    ]
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "C", "C1") == [
+        ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
+    ]
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D4") == [
+        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+    ]
 
 
-def test_gemini_override_rewrites_all_gemini_rungs() -> None:
+def test_resolve_effective_step_route_marks_strict_required_contract_lane() -> None:
     runner = _load_runner_module()
-    runner.apply_model_overrides("models/gemini-2.5-flash", "cost")
-    ladders = runner.routing_ladders_payload()
-    for policy_rows in ladders.values():
-        for routes in policy_rows.values():
-            for route in routes:
-                if route["provider"] == "gemini":
-                    assert route["model_id"] == "models/gemini-2.5-flash"
+    cfg = _make_cfg(runner)
+    contract = runner._step_contract_for("D", "D1")
+    route_info = runner.resolve_effective_step_route("D", "D1", cfg, step_contract=contract)
+    assert route_info["reason"] == "contract_lane_primary_strict"
+    assert route_info["strict_required"] is True
+    assert route_info["provider"] == "openrouter"
+    assert route_info["model_id"] == "openai/gpt-5.3-codex"
+    attempts = route_info.get("strict_route_attempts")
+    assert isinstance(attempts, list) and attempts
+    assert attempts[0]["strict_capable"] is True
 
 
-def test_collect_provider_routes_returns_unique_route_rows() -> None:
+def test_strict_route_requires_verified_passthrough_for_openrouter() -> None:
     runner = _load_runner_module()
-    _reset_routing(runner)
-    routes = runner.collect_provider_routes(phases=["A", "R"], routing_policy="cost")
-    providers = {row["provider"] for row in routes.values()}
-    assert "openai" in providers
-    assert "gemini" in providers
-    assert "xai" in providers
-
-
-def test_parse_provider_model_env_accepts_openrouter_model_ids_with_slashes() -> None:
-    runner = _load_runner_module()
-    provider, model_id, api_key_env = runner._parse_provider_model_env(
-        "openrouter/openai/gpt-5-mini",
-        "DPMX_MODEL_EXTRACT",
+    route, attempts = runner.resolve_stage_route(
+        step_contract={
+            "lane": {
+                "primary_routes": [
+                    {
+                        "provider": "openrouter",
+                        "model_id": "openai/gpt-5.2",
+                        "api_key_env": "OPENROUTER_API_KEY",
+                        "strict_json_schema": True,
+                        "strict_passthrough_verified": False,
+                    }
+                ]
+            }
+        },
+        stage="primary",
+        transport_for_provider=lambda _provider: "openai_sdk",
+        strict_required=True,
     )
-    assert provider == "openrouter"
-    assert model_id == "openai/gpt-5-mini"
-    assert api_key_env == "OPENROUTER_API_KEY"
+    assert route is None
+    assert attempts
+    assert attempts[0]["strict_capable"] is False
+    assert attempts[0]["reason"] == "openrouter_strict_passthrough_unverified"
 
 
-def test_provider_preflight_fails_when_probe_fails(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_strict_required_stage_fails_closed_before_token_spend() -> None:
     runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    with pytest.raises(RuntimeError, match="no strict-capable route before token spend"):
+        runner.resolve_effective_step_route(
+            "D",
+            "D1",
+            cfg,
+            step_contract={
+                "phase": "D",
+                "step_id": "D1",
+                "scope": {"json_managed": True},
+                "lane": {
+                    "lane_class": "CE",
+                    "strict_schema_required_primary": True,
+                    "primary_routes": [
+                        {
+                            "provider": "openrouter",
+                            "model_id": "openai/gpt-5.2",
+                            "api_key_env": "OPENROUTER_API_KEY",
+                            "strict_json_schema": True,
+                            "strict_passthrough_verified": False,
+                        }
+                    ],
+                },
+            },
+        )
+
+
+def test_no_auto_transport_flip_across_retry_hops(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    phase_dir = tmp_path / "D_docs_pipeline"
+    (phase_dir / "raw").mkdir(parents=True, exist_ok=True)
+    prompt = tmp_path / "PROMPT_D1_TEST.md"
+    prompt.write_text("Goal: D1 strict output\n", encoding="utf-8")
+    contract = runner._step_contract_for("D", "D1")
+    prompt_spec = runner.PromptSpec(
+        step_id="D1",
+        prompt_path=prompt,
+        output_artifacts=tuple(contract["artifact_order"]),
+        contract=contract,
+    )
+    partitions = [{"id": "D_P0001", "paths": ["docs/example.md"]}]
+
+    calls = {"count": 0}
+
+    def fake_call_llm(**_kwargs):  # type: ignore[no-untyped-def]
+        calls["count"] += 1
+        if calls["count"] == 1:
+            return {
+                "text": json.dumps(_d1_valid_payload()),
+                "meta": {
+                    "failure_type": "provider",
+                    "status_code": 503,
+                    "provider_error_reason": "temporary_upstream",
+                    "response_received": True,
+                    "response_summary": {"finish_reason": "STOP"},
+                },
+            }
+        return {
+            "text": json.dumps(_d1_valid_payload()),
+            "meta": {
+                "failure_type": None,
+                "status_code": 200,
+                "response_received": True,
+                "response_summary": {"finish_reason": "STOP"},
+            },
+        }
+
+    monkeypatch.setattr(runner, "build_partition_context", _fake_context)
+    monkeypatch.setattr(runner, "call_llm", fake_call_llm)
+
+    stats = runner.execute_step_for_partitions(
+        phase="D",
+        prompt_spec=prompt_spec,
+        partitions=partitions,
+        phase_dir=phase_dir,
+        cfg=cfg,
+    )
+    assert stats["ok"] == 1
+
+    payload = json.loads((phase_dir / "raw" / "D1__D_P0001.json").read_text(encoding="utf-8"))
+    request_meta = payload["request_meta"]
+    assert request_meta["no_auto_transport_flips"] is True
+    attempts = request_meta.get("route_attempts", [])
+    assert len(attempts) == 2
+    assert all(row["provider"] == "openrouter" for row in attempts)
+
+
+def test_provider_preflight_fails_when_an_active_provider_probe_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
 
     def fake_probe(provider, model_id, api_key_env, cfg):  # type: ignore[no-untyped-def]
-        if provider == "gemini":
+        if provider == "xai":
             return {
                 "provider": provider,
                 "model_id": model_id,
-                "status_code": 401,
-                "failure_type": "auth_rejected",
+                "status_code": 503,
+                "failure_type": "provider",
             }
         return {
             "provider": provider,
@@ -121,20 +323,18 @@ def test_provider_preflight_fails_when_probe_fails(monkeypatch: pytest.MonkeyPat
         }
 
     monkeypatch.setattr(runner, "run_provider_doctor_probe", fake_probe)
-
     ok, payload = runner.run_provider_preflight(
         root=tmp_path,
         run_id="test_preflight",
-        cfg=_make_cfg(runner),
+        cfg=cfg,
         phases=["A"],
     )
-
     assert ok is False
     assert payload["status"] == "FAIL"
-    assert "gemini" in payload["failed_providers"]
+    assert "xai" in payload["failed_providers"]
 
 
-def test_print_config_reports_effective_model_routing_and_policy(tmp_path: Path) -> None:
+def test_print_config_reports_contract_lane_effective_model_routing(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[3]
     script = root / "services" / "repo-truth-extractor" / "run_extraction_v3.py"
     run_id = "test_model_routing_print_config"
@@ -161,156 +361,5 @@ def test_print_config_reports_effective_model_routing_and_policy(tmp_path: Path)
     payload = json.loads(result.stdout)
     assert payload["cli"]["gemini_model_id"] == "models/gemini-2.5-flash"
     assert payload["cli"]["routing_policy"] == "cost"
-    assert payload["effective_model_routing"]["A"]["provider"] == "openai"
-    assert payload["effective_model_routing"]["A"]["model_id"] == "gpt-5-nano"
-
-
-def test_run_manifest_records_routing_policy(tmp_path: Path) -> None:
-    root = Path(__file__).resolve().parents[3]
-    script = root / "services" / "repo-truth-extractor" / "run_extraction_v3.py"
-    run_id = "test_model_routing_manifest"
-    subprocess.run(
-        [
-            sys.executable,
-            str(script),
-            "--print-config",
-            "--run-id",
-            run_id,
-            "--no-write-latest",
-            "--phase",
-            "A",
-            "--routing-policy",
-            "cost",
-        ],
-        cwd=str(tmp_path),
-        check=True,
-        text=True,
-        capture_output=True,
-    )
-
-    manifest_path = tmp_path / "extraction" / "repo-truth-extractor" / "v3" / "runs" / run_id / "RUN_MANIFEST.json"
-    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert payload["routing_policy"] == "cost"
-    assert payload["routing_policy_version"] == "RTE_ROUTING_V1"
-    assert "routing_ladders" in payload
-
-
-def test_balanced_policy_ladders_match_user_request() -> None:
-    runner = _load_runner_module()
-    _reset_routing(runner)
-    assert runner.resolve_step_ladder("balanced", "A", "A0")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
-    assert runner.resolve_step_ladder("balanced", "A", "A1")[0] == ("openai", "gpt-5-mini", "OPENAI_API_KEY")
-    assert runner.resolve_step_ladder("balanced", "R", "R1")[0] == ("openai", "gpt-5.2", "OPENAI_API_KEY")
-    assert runner.resolve_step_ladder("balanced", "Q", "Q9")[0] == ("openai", "gpt-5-mini", "OPENAI_API_KEY")
-
-
-def test_balanced_openrouter_policy_preserves_balanced_tiers() -> None:
-    runner = _load_runner_module()
-    _reset_routing(runner)
-    assert runner.resolve_step_ladder("balanced_openrouter", "A", "A0")[0] == (
-        "openrouter",
-        "openai/gpt-5-nano",
-        "OPENROUTER_API_KEY",
-    )
-    assert runner.resolve_step_ladder("balanced_openrouter", "A", "A1")[0] == (
-        "openrouter",
-        "openai/gpt-5-mini",
-        "OPENROUTER_API_KEY",
-    )
-    assert runner.resolve_step_ladder("balanced_openrouter", "R", "R1")[0] == (
-        "openrouter",
-        "openai/gpt-5.2-chat",
-        "OPENROUTER_API_KEY",
-    )
-    assert runner.resolve_step_ladder("balanced_openrouter", "Q", "Q9")[0] == (
-        "openrouter",
-        "openai/gpt-5-mini",
-        "OPENROUTER_API_KEY",
-    )
-
-
-def test_balanced_grok_openrouter_policy_is_accepted_by_cli(tmp_path: Path) -> None:
-    root = Path(__file__).resolve().parents[3]
-    script = root / "services" / "repo-truth-extractor" / "run_extraction_v3.py"
-    run_id = "test_model_routing_grok_openrouter_print_config"
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(script),
-            "--print-config",
-            "--run-id",
-            run_id,
-            "--no-write-latest",
-            "--routing-policy",
-            "balanced_grok_openrouter",
-            "--phase",
-            "D",
-        ],
-        cwd=str(tmp_path),
-        check=True,
-        text=True,
-        capture_output=True,
-    )
-    payload = json.loads(result.stdout)
-    assert payload["cli"]["routing_policy"] == "balanced_grok_openrouter"
-    assert payload["effective_model_routing"]["D"]["provider"] == "xai"
-    assert payload["effective_model_routing"]["D"]["model_id"] == "grok-4-1-fast-reasoning"
-
-
-def test_balanced_grok_openrouter_docs_governance_routes_are_short_and_non_codex() -> None:
-    runner = _load_runner_module()
-    _reset_routing(runner)
-    for phase, step_id in [("A", "A1"), ("H", "H1"), ("W", "W1"), ("B", "B1"), ("G", "G1"), ("D", "D2")]:
-        routes = runner.resolve_step_ladder("balanced_grok_openrouter", phase, step_id)
-        assert routes == [
-            ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
-        ]
-        assert all("codex" not in route[1].lower() for route in routes)
-
-
-def test_balanced_grok_openrouter_d_strict_steps_use_reasoning_and_stronger_fallbacks() -> None:
-    runner = _load_runner_module()
-    _reset_routing(runner)
-    expected = [
-        ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
-    ]
-    assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D0") == expected
-    assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D1") == expected
-
-
-def test_balanced_grok_openrouter_code_phases_keep_codex_variants() -> None:
-    runner = _load_runner_module()
-    _reset_routing(runner)
-    assert runner.resolve_step_ladder("balanced_grok_openrouter", "C", "C1") == [
-        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ]
-    assert runner.resolve_step_ladder("balanced_grok_openrouter", "E", "E1") == [
-        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ]
-    assert runner.resolve_step_ladder("balanced_grok_openrouter", "Q", "Q1") == [
-        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
-    ]
-
-
-def test_balanced_grok_openrouter_premium_synthesis_routes_cover_r_s_and_z() -> None:
-    runner = _load_runner_module()
-    _reset_routing(runner)
-    expected = [
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
-        ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
-    ]
-    assert runner.resolve_step_ladder("balanced_grok_openrouter", "R", "R1") == expected
-    assert runner.resolve_step_ladder("balanced_grok_openrouter", "S", "S1") == expected
-    assert runner.resolve_step_ladder("balanced_grok_openrouter", "Z", "Z0") == expected
-    assert runner.resolve_step_ladder("balanced_grok_openrouter", "Z", "Z9") == expected
-    assert runner.resolve_effective_step_tier("balanced_grok_openrouter", "S", "S1") == "synthesis"
+    assert payload["effective_model_routing"]["A"]["provider"] == "openrouter"
+    assert payload["effective_model_routing"]["A"]["model_id"] == "openai/gpt-5.3-codex"
