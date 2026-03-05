@@ -2514,7 +2514,7 @@ def resolve_effective_step_route(
             raise RuntimeError(
                 f"JSON-managed step {phase}:{step_id} missing primary_routes in model_map.yaml."
             )
-            if strict_required:
+        if strict_required:
             strict_ladder: List[Tuple[str, str, str]] = []
             strict_attempts: List[Dict[str, Any]] = []
             for route in primary_routes:
@@ -2541,6 +2541,7 @@ def resolve_effective_step_route(
                     "Strict-required stage has no strict-capable route before token spend: "
                     f"{phase}:{step_id} attempts={attempt_json}"
                 )
+            provider, model_id, api_key_env = strict_ladder[0]
             logger.info(
                 "STRICT_ROUTE_CHOSEN phase=%s step=%s provider=%s model=%s",
                 phase,
@@ -2548,7 +2549,6 @@ def resolve_effective_step_route(
                 provider,
                 model_id,
             )
-            provider, model_id, api_key_env = strict_ladder[0]
             return {
                 "step_tier": step_tier,
                 "step_type": step_type,
