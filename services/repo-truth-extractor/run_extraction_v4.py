@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Repo Truth Extractor v4 runner.
 
-This runner keeps v3 execution intact and enforces v4 prompt/artifact contracts by:
+This runner keeps v5 execution intact and enforces v4 prompt/artifact contracts by:
 - loading v4 prompt/artifact manifests from services/repo-truth-extractor/promptsets/v4/
-- executing v3 for supported phases
+- executing v5 for supported phases
 - rebuilding deterministic v4 norm outputs under extraction/repo-truth-extractor/v4/runs/<run_id>/
 - preserving per-step normalized outputs in norm/by_step/<STEP_ID>/
 - promoting only canonical-writer artifacts to phase norm root
@@ -33,14 +33,8 @@ ROOT = Path(__file__).resolve().parents[2]
 PROMPTSET_PATH = SERVICE_ROOT / "promptsets" / "v4" / "promptset.yaml"
 ARTIFACTS_PATH = SERVICE_ROOT / "promptsets" / "v4" / "artifacts.yaml"
 V4_PROMPT_ROOT = SERVICE_ROOT / "promptsets" / "v4" / "prompts"
-V3_RUNNER = SERVICE_ROOT / "run_extraction_v3.py"
+V3_RUNNER = SERVICE_ROOT / "run_extraction_v5.py"
 SERVICES_REGISTRY = ROOT / "services" / "registry.yaml"
-COMPOSE_FILES = [
-    ROOT / "compose.yml",
-    ROOT / "docker-compose.dev.yml",
-    ROOT / "docker-compose.prod.yml",
-    ROOT / "docker-compose.smoke.yml",
-]
 V3_RUNS_ROOT = ROOT / "extraction" / "repo-truth-extractor" / "v3" / "runs"
 V4_RUNS_ROOT = ROOT / "extraction" / "repo-truth-extractor" / "v4" / "runs"
 V4_DOCTOR_ROOT = ROOT / "extraction" / "repo-truth-extractor" / "v4" / "doctor"
@@ -198,8 +192,11 @@ def build_v3_cmd(
     batch_poll_seconds: int,
     batch_wait_timeout_seconds: int,
     batch_max_requests_per_job: int,
+    step: Optional[str] = None,
     s_prompts: Optional[str] = None,
     s_steps: Optional[str] = None,
+    d0_max_files: Optional[int] = None,
+    d1_max_files: Optional[int] = None,
     ui: str,
     pretty: bool,
     quiet: bool,
@@ -219,10 +216,16 @@ def build_v3_cmd(
     if executor.strip():
         cmd.extend(["--executor", executor.strip()])
     cmd.extend(["--routing-policy", routing_policy])
+    if step and step.strip():
+        cmd.extend(["--step", step.strip()])
     if s_prompts and s_prompts.strip():
         cmd.extend(["--s-prompts", s_prompts.strip()])
     if s_steps and s_steps.strip():
         cmd.extend(["--s-steps", s_steps.strip()])
+    if d0_max_files is not None:
+        cmd.extend(["--d0-max-files", str(int(d0_max_files))])
+    if d1_max_files is not None:
+        cmd.extend(["--d1-max-files", str(int(d1_max_files))])
     if disable_escalation:
         cmd.append("--disable-escalation")
     cmd.extend(["--escalation-max-hops", str(max(0, int(escalation_max_hops)))])
@@ -547,291 +550,7 @@ def copy_phase_inputs_raw(src_phase_dir: Path, dst_phase_dir: Path) -> None:
             shutil.copytree(src, dst, dirs_exist_ok=True)
 
 
-def _depends_on_names(value: Any) -> List[str]:
-    if isinstance(value, list):
-        return sorted(str(item).strip() for item in value if str(item).strip())
-    if isinstance(value, dict):
-        return sorted(str(item).strip() for item in value.keys() if str(item).strip())
-    return []
-
-
-def _env_required_from_expr(expr: str) -> bool:
-    tokens = ENV_TOKEN_RE.findall(expr)
-    if not tokens:
-        return False
-    required_seen = False
-    for token in tokens:
-        if ":-" in token:
-            continue
-        if "-" in token and "?" not in token:
-            continue
-        required_seen = True
-    return required_seen
-
-
-def _extract_env_rows(environment: Any) -> List[Tuple[str, bool, str]]:
-    rows: List[Tuple[str, bool, str]] = []
-    if isinstance(environment, dict):
-        for key in sorted(environment.keys(), key=lambda k: str(k)):
-            name = str(key).strip()
-            if not name:
-                continue
-            raw_value = environment.get(key)
-            text = "" if raw_value is None else str(raw_value)
-            required = _env_required_from_expr(text) if text else False
-            needle = f"{name}:"
-            rows.append((name, required, needle))
-        return rows
-    if isinstance(environment, list):
-        for entry in environment:
-            text = str(entry).strip()
-            if not text:
-                continue
-            if "=" in text:
-                name, value = text.split("=", 1)
-                name = name.strip()
-                required = _env_required_from_expr(value)
-            else:
-                name = text
-                required = True
-            if not name:
-                continue
-            rows.append((name, required, text))
-    return rows
-
-
-def load_compose_surface() -> Dict[str, Dict[str, Any]]:
-    surface: Dict[str, Dict[str, Any]] = {}
-    for compose_file in COMPOSE_FILES:
-        if not compose_file.exists():
-            continue
-        payload = read_yaml(compose_file)
-        services = payload.get("services", {})
-        if not isinstance(services, dict):
-            continue
-        for compose_service_name, service_cfg in services.items():
-            if not isinstance(service_cfg, dict):
-                continue
-            name = str(compose_service_name).strip()
-            if not name:
-                continue
-            slot = surface.setdefault(
-                name,
-                {
-                    "depends_on": {},
-                    "entrypoints": {},
-                    "env_vars": {},
-                    "config_files": set(),
-                },
-            )
-            slot["config_files"].add(repo_relative(compose_file))
-
-            for dep_name in _depends_on_names(service_cfg.get("depends_on")):
-                slot["depends_on"][dep_name] = evidence_for(
-                    compose_file,
-                    dep_name,
-                    fallback_excerpt=f"depends_on: {dep_name}",
-                )
-
-            for key in ("entrypoint", "command"):
-                value = service_cfg.get(key)
-                if value in (None, "", []):
-                    continue
-                if isinstance(value, list):
-                    text = " ".join(str(item) for item in value if str(item).strip()).strip()
-                else:
-                    text = str(value).strip()
-                if not text:
-                    continue
-                entry_key = f"{key}:{text}"
-                slot["entrypoints"][entry_key] = {
-                    "type": key,
-                    "value": text,
-                    "evidence": [evidence_for(compose_file, key, fallback_excerpt=f"{key}: {text}")],
-                }
-
-            for env_name, required, needle in _extract_env_rows(service_cfg.get("environment")):
-                previous = slot["env_vars"].get(env_name)
-                evidence = evidence_for(compose_file, needle, fallback_excerpt=needle)
-                if previous is None:
-                    slot["env_vars"][env_name] = {
-                        "name": env_name,
-                        "required": bool(required),
-                        "evidence": [evidence],
-                    }
-                    continue
-                previous["required"] = bool(previous.get("required", False) or required)
-                previous["evidence"] = normalize_evidence(list(previous.get("evidence", [])) + [evidence])
-
-    return surface
-
-
-def build_service_catalog() -> Dict[str, Any]:
-    payload = read_yaml(SERVICES_REGISTRY)
-    services = payload.get("services", [])
-    compose_surface = load_compose_surface()
-    compose_to_registry: Dict[str, str] = {}
-    for row in services if isinstance(services, list) else []:
-        if not isinstance(row, dict):
-            continue
-        service_id = str(row.get("name", "")).strip()
-        if not service_id:
-            continue
-        compose_name = str(row.get("compose_service_name", "") or service_id).strip()
-        if compose_name:
-            compose_to_registry[compose_name] = service_id
-
-    items: List[Dict[str, Any]] = []
-    for row in services if isinstance(services, list) else []:
-        if not isinstance(row, dict):
-            continue
-        service_id = str(row.get("name", "")).strip()
-        if not service_id:
-            continue
-        compose_name = str(row.get("compose_service_name", "") or service_id).strip()
-        compose_info = compose_surface.get(compose_name, {})
-        locations: List[str] = []
-        for candidate in [f"services/{service_id}", f"services/{compose_name}"]:
-            if (ROOT / candidate).exists():
-                locations.append(candidate)
-
-        entrypoints = sorted(
-            compose_info.get("entrypoints", {}).values(),
-            key=lambda value: (str(value.get("type", "")), str(value.get("value", ""))),
-        )
-        if not entrypoints:
-            entrypoints = [
-                {
-                    "type": "compose_service_name",
-                    "value": compose_name,
-                    "evidence": [evidence_for(SERVICES_REGISTRY, f"name: {service_id}", fallback_excerpt=f"name: {service_id}")],
-                }
-            ]
-
-        interfaces: List[Dict[str, Any]] = []
-        health_path = row.get("health_path")
-        health_method = row.get("health_method")
-        if health_path not in (None, ""):
-            interfaces.append(
-                {
-                    "kind": "http",
-                    "method": str(health_method or "GET"),
-                    "path": str(health_path),
-                    "evidence": [evidence_for(SERVICES_REGISTRY, f"name: {service_id}", fallback_excerpt=f"name: {service_id}")],
-                }
-            )
-        port = row.get("port")
-        if port not in (None, ""):
-            interfaces.append(
-                {
-                    "kind": "tcp",
-                    "port": int(port),
-                    "evidence": [evidence_for(SERVICES_REGISTRY, f"name: {service_id}", fallback_excerpt=f"name: {service_id}")],
-                }
-            )
-        category = str(row.get("category", "")).strip() or "unknown"
-        if category == "mcp":
-            interfaces.append(
-                {
-                    "kind": "mcp",
-                    "protocol": "sse_or_stdio",
-                    "tool_names": [],
-                    "evidence": [evidence_for(SERVICES_REGISTRY, f"name: {service_id}", fallback_excerpt=f"name: {service_id}")],
-                }
-            )
-        interfaces.sort(
-            key=lambda value: (
-                str(value.get("kind", "")),
-                str(value.get("path", "")),
-                str(value.get("port", "")),
-                str(value.get("method", "")),
-            )
-        )
-
-        dependencies: List[Dict[str, Any]] = []
-        dep_map = compose_info.get("depends_on", {})
-        if isinstance(dep_map, dict):
-            for dep_compose in sorted(dep_map.keys()):
-                dependency_service = compose_to_registry.get(dep_compose, dep_compose)
-                dependency_value = {
-                    "kind": "compose_depends_on",
-                    "service_id": dependency_service,
-                    "compose_service_name": dep_compose,
-                    "evidence": [dep_map[dep_compose]],
-                }
-                dependencies.append(dependency_value)
-
-        env_vars: List[Dict[str, Any]] = []
-        env_map = compose_info.get("env_vars", {})
-        if isinstance(env_map, dict):
-            for env_name in sorted(env_map.keys()):
-                env_row = env_map[env_name]
-                env_vars.append(
-                    {
-                        "name": env_row.get("name", env_name),
-                        "required": bool(env_row.get("required", False)),
-                        "evidence": normalize_evidence(list(env_row.get("evidence", []))),
-                    }
-                )
-
-        config_files: List[Dict[str, Any]] = []
-        for config_rel in sorted(compose_info.get("config_files", set())):
-            config_path = ROOT / config_rel
-            config_files.append(
-                {
-                    "path": config_rel,
-                    "evidence": [evidence_for(config_path, compose_name, fallback_excerpt=compose_name)],
-                }
-            )
-        for local_candidate in [f"services/{service_id}/.env.example", f"services/{compose_name}/.env.example"]:
-            full = ROOT / local_candidate
-            if not full.exists():
-                continue
-            config_files.append(
-                {
-                    "path": local_candidate,
-                    "evidence": [evidence_for(full, "", fallback_excerpt=local_candidate)],
-                }
-            )
-        dedup_config: Dict[str, Dict[str, Any]] = {}
-        for row_config in config_files:
-            dedup_config[row_config["path"]] = row_config
-        config_files = [dedup_config[key] for key in sorted(dedup_config.keys())]
-
-        description = str(row.get("description", "")).strip() or f"Service {service_id} (description missing in registry)"
-
-        item = {
-            "id": f"SERVICE:{service_id}",
-            "service_id": service_id,
-            "category": category,
-            "description": description,
-            "ports": {
-                "container_port": row.get("container_port"),
-                "port": row.get("port"),
-            },
-            "health": {
-                "expected_status": row.get("health_expected_status"),
-                "method": row.get("health_method"),
-                "path": row.get("health_path"),
-                "timeout_ms": row.get("health_timeout_ms"),
-            },
-            "repo_locations": sorted(locations),
-            "entrypoints": entrypoints,
-            "interfaces": interfaces,
-            "dependencies": dependencies,
-            "config": {
-                "env_vars": env_vars,
-                "config_files": config_files,
-                "env_contract_exceptions": row.get("env_contract_exceptions", []),
-                "enabled_in_smoke": row.get("enabled_in_smoke"),
-            },
-            "evidence": [
-                evidence_for(SERVICES_REGISTRY, f"name: {service_id}", fallback_excerpt=f"name: {service_id}")
-            ],
-        }
-        items.append(item)
-    items.sort(key=lambda r: r["service_id"])
-    return {"schema": "SERVICE_CATALOG@v1", "items": items}
+from lib.service_catalog import build_service_catalog
 
 
 def build_service_coverage_payload(service_catalog: Dict[str, Any]) -> Dict[str, Any]:
@@ -1232,8 +951,11 @@ def run_pipeline(
     batch_poll_seconds: int,
     batch_wait_timeout_seconds: int,
     batch_max_requests_per_job: int,
+    step: Optional[str] = None,
     s_prompts: Optional[str] = None,
     s_steps: Optional[str] = None,
+    d0_max_files: Optional[int] = None,
+    d1_max_files: Optional[int] = None,
     ui: str,
     pretty: bool,
     quiet: bool,
@@ -1282,8 +1004,11 @@ def run_pipeline(
             batch_poll_seconds=batch_poll_seconds,
             batch_wait_timeout_seconds=batch_wait_timeout_seconds,
             batch_max_requests_per_job=batch_max_requests_per_job,
+            step=step,
             s_prompts=s_prompts,
             s_steps=s_steps,
+            d0_max_files=d0_max_files,
+            d1_max_files=d1_max_files,
             ui=ui,
             pretty=pretty,
             quiet=quiet,
@@ -1328,8 +1053,11 @@ def cli(
     promptset_audit: bool = typer.Option(False, "--promptset-audit"),
     strict_audit: bool = typer.Option(True, "--strict-audit/--no-strict-audit"),
     routing_policy: str = typer.Option(DEFAULT_ROUTING_POLICY, "--routing-policy"),
+    step: Optional[str] = typer.Option(None, "--step"),
     s_prompts: Optional[str] = typer.Option(None, "--s-prompts"),
     s_steps: Optional[str] = typer.Option(None, "--s-steps"),
+    d0_max_files: Optional[int] = typer.Option(None, "--d0-max-files"),
+    d1_max_files: Optional[int] = typer.Option(None, "--d1-max-files"),
     disable_escalation: bool = typer.Option(False, "--disable-escalation"),
     escalation_max_hops: int = typer.Option(2, "--escalation-max-hops"),
     batch_mode: bool = typer.Option(False, "--batch-mode"),
@@ -1393,8 +1121,11 @@ def cli(
         batch_poll_seconds=batch_poll_seconds,
         batch_wait_timeout_seconds=batch_wait_timeout_seconds,
         batch_max_requests_per_job=batch_max_requests_per_job,
+        step=step,
         s_prompts=s_prompts,
         s_steps=s_steps,
+        d0_max_files=d0_max_files,
+        d1_max_files=d1_max_files,
         ui=ui,
         pretty=pretty,
         quiet=quiet,
