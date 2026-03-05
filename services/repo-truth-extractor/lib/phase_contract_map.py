@@ -358,4 +358,3 @@ def write_phase_contract_map(run_root: Path, run_id: str) -> Path:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return out_path
-
