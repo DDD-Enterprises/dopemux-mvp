@@ -62,6 +62,32 @@ except ModuleNotFoundError:
     XAIBatchClient = batch_clients_module.XAIBatchClient
     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
 try:
+    from lib.phase_contract_map import get_step_contract
+except ModuleNotFoundError:
+    contract_map_path = RUNNER_SERVICE_DIR / "lib" / "phase_contract_map.py"
+    contract_map_spec = importlib.util.spec_from_file_location(
+        "repo_truth_phase_contract_map",
+        contract_map_path,
+    )
+    if not contract_map_spec or not contract_map_spec.loader:
+        raise
+    contract_map_module = importlib.util.module_from_spec(contract_map_spec)
+    contract_map_spec.loader.exec_module(contract_map_module)
+    get_step_contract = contract_map_module.get_step_contract
+try:
+    from lib.structured_output_contracts import canonicalize_artifacts
+except ModuleNotFoundError:
+    structured_contracts_path = RUNNER_SERVICE_DIR / "lib" / "structured_output_contracts.py"
+    structured_contracts_spec = importlib.util.spec_from_file_location(
+        "repo_truth_structured_output_contracts",
+        structured_contracts_path,
+    )
+    if not structured_contracts_spec or not structured_contracts_spec.loader:
+        raise
+    structured_contracts_module = importlib.util.module_from_spec(structured_contracts_spec)
+    structured_contracts_spec.loader.exec_module(structured_contracts_module)
+    canonicalize_artifacts = structured_contracts_module.canonicalize_artifacts
+try:
     from rich.console import Console
     from rich.panel import Panel
     from rich.progress import (
@@ -162,6 +188,45 @@ PROMPTGEN_DEFAULT_EXCLUDE_GLOBS = [
     "**/*.pdf",
     "**/*.zip",
 ]
+
+_D1_ARTIFACTS = [
+    "DOC_INDEX.partX.json",
+    "DOC_CONTRACT_CLAIMS.partX.json",
+    "DOC_BOUNDARIES.partX.json",
+    "DOC_SUPERSESSION.partX.json",
+    "CAP_NOTICES.partX.json",
+]
+
+
+def _d1_contract_snapshot() -> Dict[str, Any]:
+    artifacts: Dict[str, Dict[str, Any]] = {}
+    for name in _D1_ARTIFACTS:
+        base = name.split(".")[0]
+        canonical = f"{base}@v1"
+        prompt_required: List[str] = ["evidence"] if name == "CAP_NOTICES.partX.json" else []
+        artifacts[name] = {
+            "artifact_name": name,
+            "canonical_schema_id": canonical,
+            "required_fields": ["id", "path", "line_range"],
+            "prompt_required_item_fields": prompt_required,
+        }
+    return {
+        "phase": "D",
+        "step_id": "D1",
+        "expected_artifacts": list(_D1_ARTIFACTS),
+        "artifact_order": list(_D1_ARTIFACTS),
+        "artifacts": artifacts,
+    }
+
+
+def _step_contract_for(phase: str, step_id: str) -> Optional[Dict[str, Any]]:
+    try:
+        contract = get_step_contract(phase, step_id)
+    except Exception:
+        contract = None
+    if not isinstance(contract, dict) and phase.strip().upper() == "D" and step_id.strip().upper() == "D1":
+        contract = _d1_contract_snapshot()
+    return dict(contract) if isinstance(contract, dict) else None
 # mapping from phase code to directory suffix
 PHASE_DIR_NAMES: Dict[str, str] = {
     "A": "A_repo_control_plane",

@@ -80,7 +80,7 @@ class InstanceOverlayManager:
     def get_compose_project_name(self) -> str:
         # Use folder name as project_id
         project_id = self.project_root.name
-        return f"dopemux_{project_id}_{self.instance_id}"
+        return f"dopemux_{project_id}_{self.instance_id}".lower()
 
     def write_mcp_env(self) -> Path:
         env_path = self.instance_dir / "mcp.env"

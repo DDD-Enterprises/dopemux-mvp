@@ -37,10 +37,7 @@ check_prereq
 
 # Step 2: Start Docker services
 echo "Step 2: Starting Docker services..."
-docker-compose -f docker-compose.master.yml up -d || {
-    log_error "Failed to start Docker services. Trying unified compose..."
-    docker-compose -f compose.yml up -d
-}
+docker compose -f compose.yml up -d
 
 # Wait for services to start
 echo "Step 3: Waiting for services to start..."
