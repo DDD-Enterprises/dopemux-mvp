@@ -1,17 +1,17 @@
 ---
+id: universal-extractor-usage
 title: 'How to: Use the Universal Repo-Truth-Extractor'
 type: how-to
 status: active
+date: 2026-03-06
+author: dopemux-team
 prelude: Guide for running the repo-truth-extractor against any codebase using the
   sync pipeline.
 tags:
 - extractor
 - how-to
 - universal
-id: universal-extractor-usage
 owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-03-06'
 last_review: '2026-03-06'
 next_review: '2026-06-04'
 ---
