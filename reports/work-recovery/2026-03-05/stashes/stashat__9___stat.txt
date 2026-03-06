@@ -1,0 +1,4 @@
+ docker/mcp-servers/conport/Dockerfile     |  2 +-
+ docker/mcp-servers/conport/info_server.py | 14 ++++++++------
+ docker/mcp-servers/conport/server.py      |  2 +-
+ 3 files changed, 10 insertions(+), 8 deletions(-)

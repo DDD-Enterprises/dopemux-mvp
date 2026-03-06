@@ -1,0 +1,53 @@
+From 2bd74cad06c98d4f3db64c2f731d869303fad960 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 15:27:51 -0800
+Subject: [PATCH 08/36] fix(proof_bundle): make script use --tp parameter
+ correctly
+
+---
+ scripts/proof_bundle.sh | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/scripts/proof_bundle.sh b/scripts/proof_bundle.sh
+index c149f125c..473a37c18 100755
+--- a/scripts/proof_bundle.sh
++++ b/scripts/proof_bundle.sh
+@@ -5,6 +5,20 @@ set -e
+ 
+ TP_ID="TP-WORKDIR-GATE-0001"
+ OUTPUT_DIR="proof/${TP_ID}"
++
++# Parse --tp argument first
++while [ $# -gt 0 ]; do
++    if [ "$1" = "--tp" ]; then
++        shift
++        TP_ID="$1"
++        OUTPUT_DIR="proof/${TP_ID}"
++        shift
++        break
++    else
++        shift
++    fi
++done
++
+ mkdir -p "${OUTPUT_DIR}"
+ 
+ echo "=== Proof Bundle ${TP_ID} ===" > "${OUTPUT_DIR}/proof.txt"
+@@ -12,10 +26,7 @@ echo "Commands executed:" >> "${OUTPUT_DIR}/proof.txt"
+ 
+ # Run each command and capture output
+ while [ $# -gt 0 ]; do
+-    if [ "$1" = "--tp" ]; then
+-        shift
+-        continue
+-    elif [ "$1" = "--cmd" ]; then
++    if [ "$1" = "--cmd" ]; then
+         shift
+         CMD="$1"
+         shift
+-- 
+2.50.1 (Apple Git-155)
+

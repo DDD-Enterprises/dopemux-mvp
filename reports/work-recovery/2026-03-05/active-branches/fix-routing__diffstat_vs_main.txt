@@ -1,0 +1,2765 @@
+ .Jules/palette.md                                  |     6 +-
+ .claude.json                                       |    11 +-
+ .claude/claude_config.json                         |    12 +-
+ .dopemux/mcp.instances.toml                        |    25 -
+ .dopetask-pin                                      |     2 +-
+ .env.template                                      |    37 -
+ .github/workflows/ci-complete.yml                  |    31 +-
+ .pre-commit-config.yaml                            |    29 +-
+ .vibe/agents/pr-merge.toml                         |   156 -
+ .vibe/config.toml                                  |    49 +-
+ .vibe/skills/drain/SKILL.md                        |   306 -
+ AUDIT_INITIAL_FINDINGS.md                          |    64 -
+ AUDIT_RESULTS.json                                 |  2374 +--
+ CHANGELOG.md                                       |     8 -
+ CLAUDE_AUTOMATION_INSTRUCTIONS.md                  |   233 -
+ DOPE_MEMORY_INTEGRATION.md                         |   204 -
+ GEMINI.md                                          |    52 -
+ INSTALL.md                                         |     8 +-
+ MANIFEST.in                                        |     1 -
+ QUICK_START.md                                     |    13 +-
+ README.md                                          |     1 -
+ SUPERVISOR_INSTRUCTIONS_CHATGPT.md                 |    12 +-
+ compose.yml                                        |    93 +-
+ config/mobile/tmux.mobile.conf                     |    70 -
+ config/repo_hygiene/root_hygiene_policy.json       |   245 +-
+ configs/mobile/tmux.mobile.conf                    |    70 -
+ .../docs_grouped_embed.request.schema.json         |    66 -
+ contracts/dope-context/search.response.schema.json |    97 -
+ docker-compose.smoke.yml                           |     4 +-
+ .../conport/conport_mcp_stdio.py                   |   175 -
+ docker/mcp-servers-source/conport/server.py        |   177 -
+ .../mcp-servers-source/desktop-commander/server.py |   122 -
+ docker/mcp-servers-source/exa/Dockerfile           |    28 -
+ docker/mcp-servers-source/exa/requirements.txt     |     4 -
+ .../leantime-bridge/mcp_stdio.py                   |    10 -
+ .../mcp-servers-source/serena/start_with_info.sh   |    25 -
+ .../.claude/llms.md                                |     0
+ docker/mcp-servers/.env.template                   |    66 +
+ .../MCP_HEALTH_REPORT.md                           |     0
+ .../MCP_IMPROVEMENT_PROGRESS.md                    |     0
+ .../MCP_NEXT_STEPS.md                              |     0
+ .../MCP_ORCHESTRATION_SUMMARY.md                   |     0
+ .../PERFORMANCE_BASELINE.md                        |     0
+ .../PRIORITY1_COMPLETE.md                          |     0
+ .../PRIORITY2_COMPLETE.md                          |     0
+ .../PRIORITY3_COMPLETE.md                          |     0
+ .../PROFILES_GUIDE.md                              |     0
+ .../README-MULTI-INSTANCE.md                       |     0
+ .../{mcp-servers-source => mcp-servers}/README.md  |     0
+ .../SERVER_AUDIT_2026-02-05.md                     |     0
+ .../SERVER_REGISTRY.md                             |     0
+ .../SERVER_STATUS_SUMMARY.md                       |     0
+ .../claude-context/README.md                       |     0
+ docker/mcp-servers/conport-bridge/.env.example     |     7 +
+ .../conport-bridge/Dockerfile                      |     0
+ .../conport-bridge/README.md                       |     0
+ .../conport-bridge/event_schemas.py                |     0
+ .../conport-bridge/main.py                         |     0
+ .../conport-bridge/publisher.py                    |     0
+ .../conport-bridge/requirements.txt                |     0
+ .../conport-bridge/test_consumer.py                |     0
+ .../conport-bridge/test_create_decision.py         |     0
+ .../conport-bridge/watcher.py                      |     0
+ .../conport/Dockerfile                             |     6 +-
+ .../conport/backups/conport_pre_migration_007.sql  |     0
+ docker/mcp-servers/conport/conport_mcp_stdio.py    |    98 +
+ .../conport/direct_server.py                       |     0
+ .../conport/enhanced_server.py                     |   564 +-
+ .../conport/info_server.py                         |    12 +-
+ .../conport/instance_detector.py                   |     0
+ .../conport/integration_bridge_client.py           |     0
+ .../migrations/001_enhanced_decision_model.sql     |     0
+ .../migrations/002_decision_patterns_table.sql     |     0
+ .../migrations/003_multi_tenancy_foundation.sql    |     0
+ .../migrations/004_unified_query_indexes.sql       |     0
+ .../conport/migrations/007_rollback.sql            |     0
+ .../migrations/007_worktree_support_simple.sql     |     0
+ .../conport/migrations/README.md                   |     0
+ .../conport/migrations/run_migration_001.py        |     2 +-
+ .../conport/migrations/run_migration_002.py        |     2 +-
+ .../conport/migrations/test_migration_007.sh       |     0
+ .../conport/schema.sql                             |     0
+ .../conport/schema.sql.bak                         |     0
+ docker/mcp-servers/conport/server.py               |   131 +
+ .../conport/shared_monitoring.py                   |     0
+ .../conport/shared_monitoring_init.py              |     0
+ .../conport/simple_metrics_server.py               |     0
+ .../conport/start_with_info.sh                     |     4 +-
+ .../conport/test_token_limit_fix.py                |     0
+ .../conport/test_worktree_validation.py            |     2 +-
+ .../conport/tests/test_instance_detector.py        |     0
+ .../conport/tests/test_worktree_routing.py         |     0
+ .../conport/unified_queries.py                     |     0
+ .../desktop-commander/Dockerfile                   |     0
+ .../desktop-commander/README.md                    |     0
+ .../integration_bridge_connector.py                |     0
+ .../desktop-commander/requirements.txt             |     1 -
+ docker/mcp-servers/desktop-commander/server.py     |   501 +
+ .../desktop-commander/start_with_uvx.sh            |     0
+ .../docker-compose.yml.backup-20260209_020753      |     0
+ .../docker-compose.yml.bak                         |     0
+ .../docker/mcp-servers/task-master-ai/Dockerfile   |     0
+ .../docker/mcp-servers/task-master-ai/package.json |     0
+ .../docker/mcp-servers/task-master-ai/server.js    |     0
+ .../docs/OPERATIONS.md                             |     0
+ .../docs/TASK_ORCHESTRATOR_FIX.md                  |     0
+ .../docs/TROUBLESHOOTING.md                        |     0
+ docker/{mcp-servers-source => mcp-servers}/dopemux |     0
+ .../exa/README.md                                  |     0
+ .../exa/exa_server.py                              |     0
+ .../gpt-researcher/scripts/mcp_server.py           |     0
+ .../gptr-mcp/Dockerfile                            |     0
+ .../gptr-mcp/wrapper.py                            |     0
+ .../leantime-bridge/.env.backup.20251028_071653    |    44 +
+ .../leantime-bridge/Dockerfile                     |     1 -
+ .../leantime-bridge/README.md                      |     0
+ .../leantime-bridge/cookies.txt                    |     0
+ .../leantime-bridge/leantime_bridge/__init__.py    |     0
+ .../leantime-bridge/leantime_bridge/http_server.py |     0
+ .../leantime-bridge/leantime_bridge/server.py      |    14 +-
+ .../leantime-bridge/requirements.txt               |     1 -
+ .../leantime-bridge/test_contract_api_tools.py     |     0
+ .../leantime-bridge/test_info_endpoint.py          |     0
+ docker/mcp-servers/litellm/.env.example            |    16 +
+ .../litellm/Dockerfile                             |     0
+ .../litellm/README.md                              |     0
+ .../litellm/entrypoint.sh                          |     0
+ .../litellm/litellm.config.yaml                    |     0
+ .../pal/Dockerfile                                 |     0
+ .../pal/PAL_FIX.md                                 |     0
+ .../pal/PAL_TOKEN_LIMIT_FIX.md                     |     0
+ .../.claude/commands/fix-github-issue.md           |     0
+ .../pal/pal-mcp-server/.claude/settings.json       |     0
+ .../pal/pal-mcp-server/.coveragerc                 |     0
+ .../pal/pal-mcp-server/.dockerignore               |     0
+ docker/mcp-servers/pal/pal-mcp-server/.env.example |   228 +
+ .../pal/pal-mcp-server/.gitattributes              |     0
+ .../pal/pal-mcp-server/.github/FUNDING.yml         |     0
+ .../.github/ISSUE_TEMPLATE/bug_report.yml          |     0
+ .../.github/ISSUE_TEMPLATE/config.yml              |     0
+ .../.github/ISSUE_TEMPLATE/documentation.yml       |     0
+ .../.github/ISSUE_TEMPLATE/feature_request.yml     |     0
+ .../.github/ISSUE_TEMPLATE/tool_addition.yml       |     0
+ .../.github/pull_request_template.md               |     0
+ .../pal-mcp-server/.github/workflows/docker-pr.yml |     0
+ .../.github/workflows/docker-release.yml           |     0
+ .../.github/workflows/semantic-pr.yml              |     0
+ .../.github/workflows/semantic-release.yml         |     0
+ .../pal/pal-mcp-server/.github/workflows/test.yml  |     0
+ .../pal/pal-mcp-server/.gitignore                  |     0
+ .../pal/pal-mcp-server/.pre-commit-config.yaml     |     0
+ .../mcp-servers/pal/pal-mcp-server/.python-version |     1 +
+ .../pal/pal-mcp-server/AGENTS.md                   |     0
+ .../pal/pal-mcp-server/CHANGELOG.md                |     0
+ .../pal/pal-mcp-server/CLAUDE.md                   |     0
+ .../pal/pal-mcp-server/Dockerfile                  |     0
+ .../pal/pal-mcp-server/LICENSE                     |     0
+ .../pal/pal-mcp-server/README.md                   |     0
+ .../pal/pal-mcp-server/claude_config_example.json  |     0
+ .../pal/pal-mcp-server/clink/__init__.py           |     0
+ .../pal/pal-mcp-server/clink/agents/__init__.py    |     0
+ .../pal/pal-mcp-server/clink/agents/base.py        |     0
+ .../pal/pal-mcp-server/clink/agents/claude.py      |     0
+ .../pal/pal-mcp-server/clink/agents/codex.py       |     0
+ .../pal/pal-mcp-server/clink/agents/gemini.py      |     0
+ .../pal/pal-mcp-server/clink/constants.py          |     0
+ .../pal/pal-mcp-server/clink/models.py             |     0
+ .../pal/pal-mcp-server/clink/parsers/__init__.py   |     0
+ .../pal/pal-mcp-server/clink/parsers/base.py       |     0
+ .../pal/pal-mcp-server/clink/parsers/claude.py     |     0
+ .../pal/pal-mcp-server/clink/parsers/codex.py      |     0
+ .../pal/pal-mcp-server/clink/parsers/gemini.py     |     0
+ .../pal/pal-mcp-server/clink/registry.py           |     0
+ .../pal/pal-mcp-server/code_quality_checks.ps1     |     0
+ .../pal/pal-mcp-server/code_quality_checks.sh      |     0
+ .../pal-mcp-server/communication_simulator_test.py |     0
+ .../pal/pal-mcp-server/conf/__init__.py            |     0
+ .../pal/pal-mcp-server/conf/azure_models.json      |     0
+ .../conf/cli_clients/claude-main.json              |     0
+ .../conf/cli_clients/claude-test.json              |     0
+ .../pal-mcp-server/conf/cli_clients/claude-ui.json |     0
+ .../pal-mcp-server/conf/cli_clients/claude.json    |     0
+ .../pal/pal-mcp-server/conf/cli_clients/codex.json |     0
+ .../pal-mcp-server/conf/cli_clients/gemini.json    |     0
+ .../pal/pal-mcp-server/conf/custom_models.json     |     0
+ .../pal/pal-mcp-server/conf/dial_models.json       |     0
+ .../pal/pal-mcp-server/conf/gemini_models.json     |     0
+ .../pal/pal-mcp-server/conf/openai_models.json     |     0
+ .../pal/pal-mcp-server/conf/openrouter_models.json |     0
+ .../pal/pal-mcp-server/conf/xai_models.json        |     0
+ .../pal/pal-mcp-server/config.py                   |     0
+ .../pal/pal-mcp-server/docker-compose.yml          |     0
+ .../pal/pal-mcp-server/docker/README.md            |     0
+ .../pal/pal-mcp-server/docker/scripts/build.ps1    |     0
+ .../pal/pal-mcp-server/docker/scripts/build.sh     |     0
+ .../pal/pal-mcp-server/docker/scripts/deploy.ps1   |     0
+ .../pal/pal-mcp-server/docker/scripts/deploy.sh    |     0
+ .../pal-mcp-server/docker/scripts/healthcheck.py   |     0
+ .../pal/pal-mcp-server/docs/adding_providers.md    |     0
+ .../pal/pal-mcp-server/docs/adding_tools.md        |     0
+ .../pal/pal-mcp-server/docs/advanced-usage.md      |     0
+ .../pal/pal-mcp-server/docs/ai-collaboration.md    |     0
+ .../pal/pal-mcp-server/docs/ai_banter.md           |     0
+ .../pal/pal-mcp-server/docs/azure_openai.md        |     0
+ .../pal/pal-mcp-server/docs/configuration.md       |     0
+ .../pal/pal-mcp-server/docs/context-revival.md     |     0
+ .../pal/pal-mcp-server/docs/contributions.md       |     0
+ .../pal/pal-mcp-server/docs/custom_models.md       |     0
+ .../pal/pal-mcp-server/docs/docker-deployment.md   |     0
+ .../pal/pal-mcp-server/docs/gemini-setup.md        |     0
+ .../pal/pal-mcp-server/docs/getting-started.md     |     0
+ .../pal/pal-mcp-server/docs/index.md               |     0
+ .../pal-mcp-server/docs/locale-configuration.md    |     0
+ .../pal/pal-mcp-server/docs/logging.md             |     0
+ .../pal/pal-mcp-server/docs/model_ranking.md       |     0
+ .../pal/pal-mcp-server/docs/testing.md             |     0
+ .../pal/pal-mcp-server/docs/tools/analyze.md       |     0
+ .../pal/pal-mcp-server/docs/tools/apilookup.md     |     0
+ .../pal/pal-mcp-server/docs/tools/challenge.md     |     0
+ .../pal/pal-mcp-server/docs/tools/chat.md          |     0
+ .../pal/pal-mcp-server/docs/tools/clink.md         |     0
+ .../pal/pal-mcp-server/docs/tools/codereview.md    |     0
+ .../pal/pal-mcp-server/docs/tools/consensus.md     |     0
+ .../pal/pal-mcp-server/docs/tools/debug.md         |     0
+ .../pal/pal-mcp-server/docs/tools/docgen.md        |     0
+ .../pal/pal-mcp-server/docs/tools/listmodels.md    |     0
+ .../pal/pal-mcp-server/docs/tools/planner.md       |     0
+ .../pal/pal-mcp-server/docs/tools/precommit.md     |     0
+ .../pal/pal-mcp-server/docs/tools/refactor.md      |     0
+ .../pal/pal-mcp-server/docs/tools/secaudit.md      |     0
+ .../pal/pal-mcp-server/docs/tools/testgen.md       |     0
+ .../pal/pal-mcp-server/docs/tools/thinkdeep.md     |     0
+ .../pal/pal-mcp-server/docs/tools/tracer.md        |     0
+ .../pal/pal-mcp-server/docs/tools/version.md       |     0
+ .../pal/pal-mcp-server/docs/troubleshooting.md     |     0
+ .../pal/pal-mcp-server/docs/vcr-testing.md         |     0
+ .../pal/pal-mcp-server/docs/wsl-setup.md           |     0
+ .../examples/claude_config_macos.json              |     0
+ .../pal-mcp-server/examples/claude_config_wsl.json |     0
+ .../pal/pal-mcp-server/pal_http_server.py          |     0
+ .../pal/pal-mcp-server/pal_http_wrapper.py         |     0
+ .../pal/pal-mcp-server/providers/__init__.py       |     0
+ .../pal/pal-mcp-server/providers/azure_openai.py   |     0
+ .../pal/pal-mcp-server/providers/base.py           |     0
+ .../pal/pal-mcp-server/providers/custom.py         |     0
+ .../pal/pal-mcp-server/providers/dial.py           |     0
+ .../pal/pal-mcp-server/providers/gemini.py         |     0
+ .../pal/pal-mcp-server/providers/openai.py         |     0
+ .../pal-mcp-server/providers/openai_compatible.py  |     0
+ .../pal/pal-mcp-server/providers/openrouter.py     |     0
+ .../providers/registries/__init__.py               |     0
+ .../pal-mcp-server/providers/registries/azure.py   |     0
+ .../pal-mcp-server/providers/registries/base.py    |     0
+ .../pal-mcp-server/providers/registries/custom.py  |     0
+ .../pal-mcp-server/providers/registries/dial.py    |     0
+ .../pal-mcp-server/providers/registries/gemini.py  |     0
+ .../pal-mcp-server/providers/registries/openai.py  |     0
+ .../providers/registries/openrouter.py             |     0
+ .../pal/pal-mcp-server/providers/registries/xai.py |     0
+ .../pal/pal-mcp-server/providers/registry.py       |     0
+ .../providers/registry_provider_mixin.py           |     0
+ .../pal-mcp-server/providers/shared/__init__.py    |     0
+ .../providers/shared/model_capabilities.py         |     0
+ .../providers/shared/model_response.py             |     0
+ .../providers/shared/provider_type.py              |     0
+ .../pal-mcp-server/providers/shared/temperature.py |     0
+ .../pal/pal-mcp-server/providers/xai.py            |     0
+ .../pal/pal-mcp-server/pyproject.toml              |     0
+ .../pal/pal-mcp-server/pytest.ini                  |     0
+ .../pal/pal-mcp-server/requirements-dev.txt        |     0
+ .../pal/pal-mcp-server/requirements.txt            |     0
+ .../pal/pal-mcp-server/run-server.ps1              |     0
+ .../pal/pal-mcp-server/run-server.sh               |     0
+ .../pal/pal-mcp-server/run_integration_tests.ps1   |     0
+ .../pal/pal-mcp-server/run_integration_tests.sh    |     0
+ .../pal/pal-mcp-server/scripts/sync_version.py     |     0
+ .../pal/pal-mcp-server/server.py                   |     0
+ .../pal/pal-mcp-server/simulator_tests/__init__.py |     0
+ .../pal-mcp-server/simulator_tests/base_test.py    |     0
+ .../simulator_tests/conversation_base_test.py      |     0
+ .../pal-mcp-server/simulator_tests/log_utils.py    |     0
+ .../simulator_tests/test_analyze_validation.py     |     0
+ .../simulator_tests/test_basic_conversation.py     |     0
+ .../simulator_tests/test_chat_simple_validation.py |     0
+ .../simulator_tests/test_codereview_validation.py  |     0
+ .../simulator_tests/test_consensus_conversation.py |     0
+ .../simulator_tests/test_consensus_three_models.py |     0
+ .../test_consensus_workflow_accurate.py            |     0
+ .../simulator_tests/test_content_validation.py     |     0
+ .../test_conversation_chain_validation.py          |     0
+ .../test_cross_tool_comprehensive.py               |     0
+ .../test_cross_tool_continuation.py                |     0
+ .../test_debug_certain_confidence.py               |     0
+ .../simulator_tests/test_debug_validation.py       |     0
+ .../simulator_tests/test_line_number_validation.py |     0
+ .../simulator_tests/test_logs_validation.py        |     0
+ .../simulator_tests/test_model_thinking_config.py  |     0
+ .../simulator_tests/test_o3_model_selection.py     |     0
+ .../simulator_tests/test_o3_pro_expensive.py       |     0
+ .../simulator_tests/test_ollama_custom_url.py      |     0
+ .../simulator_tests/test_openrouter_fallback.py    |     0
+ .../simulator_tests/test_openrouter_models.py      |     0
+ .../simulator_tests/test_per_tool_deduplication.py |     0
+ .../test_planner_continuation_history.py           |     0
+ .../simulator_tests/test_planner_validation.py     |     0
+ .../simulator_tests/test_planner_validation_old.py |     0
+ .../test_precommitworkflow_validation.py           |     0
+ .../simulator_tests/test_prompt_size_limit_bug.py  |     0
+ .../simulator_tests/test_refactor_validation.py    |     0
+ .../simulator_tests/test_secaudit_validation.py    |     0
+ .../simulator_tests/test_testgen_validation.py     |     0
+ .../simulator_tests/test_thinkdeep_validation.py   |     0
+ .../test_token_allocation_validation.py            |     0
+ .../simulator_tests/test_vision_capability.py      |     0
+ .../simulator_tests/test_xai_models.py             |     0
+ .../pal/pal-mcp-server/systemprompts/__init__.py   |     0
+ .../pal-mcp-server/systemprompts/analyze_prompt.py |     0
+ .../pal-mcp-server/systemprompts/chat_prompt.py    |     0
+ .../systemprompts/clink/codex_codereviewer.txt     |     0
+ .../pal-mcp-server/systemprompts/clink/default.txt |     0
+ .../systemprompts/clink/default_codereviewer.txt   |     0
+ .../systemprompts/clink/default_planner.txt        |     0
+ .../systemprompts/codereview_prompt.py             |     0
+ .../systemprompts/consensus_prompt.py              |     0
+ .../pal-mcp-server/systemprompts/debug_prompt.py   |     0
+ .../pal-mcp-server/systemprompts/docgen_prompt.py  |     0
+ .../systemprompts/generate_code_prompt.py          |     0
+ .../pal-mcp-server/systemprompts/planner_prompt.py |     0
+ .../systemprompts/precommit_prompt.py              |     0
+ .../systemprompts/refactor_prompt.py               |     0
+ .../systemprompts/secaudit_prompt.py               |     0
+ .../pal-mcp-server/systemprompts/testgen_prompt.py |     0
+ .../systemprompts/thinkdeep_prompt.py              |     0
+ .../pal-mcp-server/systemprompts/tracer_prompt.py  |     0
+ .../pal/pal-mcp-server/test_token_limit_fix.py     |     0
+ .../pal-mcp-server/tests/CASSETTE_MAINTENANCE.md   |     0
+ .../pal/pal-mcp-server/tests/__init__.py           |     0
+ .../pal/pal-mcp-server/tests/conftest.py           |     0
+ .../gemini25_pro_calculator/mldev.json             |     0
+ .../step1_gemini25_flash_number/mldev.json         |     0
+ .../step2_gemini25_flash_against/mldev.json        |     0
+ .../tests/http_transport_recorder.py               |     0
+ .../pal/pal-mcp-server/tests/mock_helpers.py       |     0
+ .../chat_cross_step2_gpt5_reminder.json            |     0
+ .../openai_cassettes/chat_gpt5_continuation.json   |     0
+ .../openai_cassettes/chat_gpt5_moon_distance.json  |     0
+ .../openai_cassettes/consensus_step1_gpt5_for.json |     0
+ .../tests/openai_cassettes/o3_pro_basic_math.json  |     0
+ .../pal/pal-mcp-server/tests/pii_sanitizer.py      |     0
+ .../pal/pal-mcp-server/tests/sanitize_cassettes.py |     0
+ .../tests/test_alias_target_restrictions.py        |     0
+ .../pal/pal-mcp-server/tests/test_auto_mode.py     |     0
+ .../tests/test_auto_mode_comprehensive.py          |     0
+ .../tests/test_auto_mode_custom_provider_only.py   |     0
+ .../tests/test_auto_mode_model_listing.py          |     0
+ .../tests/test_auto_mode_provider_selection.py     |     0
+ .../tests/test_auto_model_planner_fix.py           |     0
+ .../tests/test_azure_openai_provider.py            |     0
+ .../tests/test_buggy_behavior_prevention.py        |     0
+ .../tests/test_cassette_semantic_matching.py       |     0
+ .../pal/pal-mcp-server/tests/test_challenge.py     |     0
+ .../tests/test_chat_codegen_integration.py         |     0
+ .../tests/test_chat_cross_model_continuation.py    |     0
+ .../tests/test_chat_openai_integration.py          |     0
+ .../pal/pal-mcp-server/tests/test_chat_simple.py   |     0
+ .../tests/test_clink_claude_agent.py               |     0
+ .../tests/test_clink_claude_parser.py              |     0
+ .../pal-mcp-server/tests/test_clink_codex_agent.py |     0
+ .../tests/test_clink_gemini_agent.py               |     0
+ .../tests/test_clink_gemini_parser.py              |     0
+ .../pal-mcp-server/tests/test_clink_integration.py |     0
+ .../pal/pal-mcp-server/tests/test_clink_parsers.py |     0
+ .../pal/pal-mcp-server/tests/test_clink_tool.py    |     0
+ .../pal/pal-mcp-server/tests/test_collaboration.py |     0
+ .../pal/pal-mcp-server/tests/test_config.py        |     0
+ .../pal/pal-mcp-server/tests/test_consensus.py     |     0
+ .../tests/test_consensus_integration.py            |     0
+ .../pal-mcp-server/tests/test_consensus_schema.py  |     0
+ .../test_conversation_continuation_integration.py  |     0
+ .../tests/test_conversation_field_mapping.py       |     0
+ .../tests/test_conversation_file_features.py       |     0
+ .../tests/test_conversation_memory.py              |     0
+ .../tests/test_conversation_missing_files.py       |     0
+ .../tests/test_custom_openai_temperature_fix.py    |     0
+ .../pal-mcp-server/tests/test_custom_provider.py   |     0
+ .../pal/pal-mcp-server/tests/test_debug.py         |     0
+ .../pal-mcp-server/tests/test_deploy_scripts.py    |     0
+ .../pal/pal-mcp-server/tests/test_dial_provider.py |     0
+ .../tests/test_directory_expansion_tracking.py     |     0
+ .../pal-mcp-server/tests/test_disabled_tools.py    |     0
+ .../test_docker_claude_desktop_integration.py      |     0
+ .../tests/test_docker_config_complete.py           |     0
+ .../tests/test_docker_healthcheck.py               |     0
+ .../tests/test_docker_implementation.py            |     0
+ .../tests/test_docker_mcp_validation.py            |     0
+ .../pal-mcp-server/tests/test_docker_security.py   |     0
+ .../tests/test_docker_volume_persistence.py        |     0
+ .../pal-mcp-server/tests/test_file_protection.py   |     0
+ .../tests/test_gemini_token_usage.py               |     0
+ .../tests/test_image_support_integration.py        |     0
+ .../pal-mcp-server/tests/test_image_validation.py  |     0
+ .../pal-mcp-server/tests/test_integration_utf8.py  |     0
+ .../tests/test_intelligent_fallback.py             |     0
+ .../pal-mcp-server/tests/test_issue_245_simple.py  |     0
+ .../tests/test_large_prompt_handling.py            |     0
+ .../tests/test_line_numbers_integration.py         |     0
+ .../pal/pal-mcp-server/tests/test_listmodels.py    |     0
+ .../tests/test_listmodels_restrictions.py          |     0
+ .../pal-mcp-server/tests/test_model_enumeration.py |     0
+ .../tests/test_model_metadata_continuation.py      |     0
+ .../tests/test_model_resolution_bug.py             |     0
+ .../tests/test_model_restrictions.py               |     0
+ .../tests/test_o3_pro_output_text_fix.py           |     0
+ .../tests/test_o3_temperature_fix_simple.py        |     0
+ .../tests/test_openai_compatible_token_usage.py    |     0
+ .../pal-mcp-server/tests/test_openai_provider.py   |     0
+ .../tests/test_openrouter_provider.py              |     0
+ .../tests/test_openrouter_registry.py              |     0
+ .../tests/test_parse_model_option.py               |     0
+ .../tests/test_per_tool_model_defaults.py          |     0
+ .../pal/pal-mcp-server/tests/test_pii_sanitizer.py |     0
+ .../pal-mcp-server/tests/test_pip_detection_fix.py |     0
+ .../pal/pal-mcp-server/tests/test_planner.py       |     0
+ .../tests/test_precommit_workflow.py               |     0
+ .../pal-mcp-server/tests/test_prompt_regression.py |     0
+ .../tests/test_prompt_size_limit_bug_fix.py        |     0
+ .../tests/test_provider_retry_logic.py             |     0
+ .../tests/test_provider_routing_bugs.py            |     0
+ .../pal/pal-mcp-server/tests/test_provider_utf8.py |     0
+ .../pal/pal-mcp-server/tests/test_providers.py     |     0
+ .../tests/test_rate_limit_patterns.py              |     0
+ .../pal/pal-mcp-server/tests/test_refactor.py      |     0
+ .../pal/pal-mcp-server/tests/test_secaudit.py      |     0
+ .../pal/pal-mcp-server/tests/test_server.py        |     0
+ .../tests/test_supported_models_aliases.py         |     0
+ .../pal-mcp-server/tests/test_thinking_modes.py    |     0
+ .../pal/pal-mcp-server/tests/test_tools.py         |     0
+ .../pal/pal-mcp-server/tests/test_tracer.py        |     0
+ .../pal-mcp-server/tests/test_utf8_localization.py |     0
+ .../pal/pal-mcp-server/tests/test_utils.py         |     0
+ .../tests/test_uvx_resource_packaging.py           |     0
+ .../pal/pal-mcp-server/tests/test_uvx_support.py   |     0
+ .../tests/test_workflow_file_embedding.py          |     0
+ .../pal-mcp-server/tests/test_workflow_metadata.py |     0
+ .../test_workflow_prompt_size_validation_simple.py |     0
+ .../pal/pal-mcp-server/tests/test_workflow_utf8.py |     0
+ .../pal/pal-mcp-server/tests/test_xai_provider.py  |     0
+ .../pal/pal-mcp-server/tests/transport_helpers.py  |     0
+ .../pal/pal-mcp-server/tests/triangle.png          |   Bin
+ .../pal/pal-mcp-server/tools/__init__.py           |     0
+ .../pal/pal-mcp-server/tools/analyze.py            |     0
+ .../pal/pal-mcp-server/tools/apilookup.py          |     0
+ .../pal/pal-mcp-server/tools/challenge.py          |     0
+ .../pal/pal-mcp-server/tools/chat.py               |     0
+ .../pal/pal-mcp-server/tools/clink.py              |     0
+ .../pal/pal-mcp-server/tools/codereview.py         |     0
+ .../pal/pal-mcp-server/tools/consensus.py          |     0
+ .../pal/pal-mcp-server/tools/debug.py              |     0
+ .../pal/pal-mcp-server/tools/docgen.py             |     0
+ .../pal/pal-mcp-server/tools/listmodels.py         |     0
+ .../pal/pal-mcp-server/tools/models.py             |     0
+ .../pal/pal-mcp-server/tools/planner.py            |     0
+ .../pal/pal-mcp-server/tools/precommit.py          |     0
+ .../pal/pal-mcp-server/tools/refactor.py           |     0
+ .../pal/pal-mcp-server/tools/secaudit.py           |     0
+ .../pal/pal-mcp-server/tools/shared/__init__.py    |     0
+ .../pal/pal-mcp-server/tools/shared/base_models.py |     0
+ .../pal/pal-mcp-server/tools/shared/base_tool.py   |     0
+ .../pal-mcp-server/tools/shared/schema_builders.py |     0
+ .../pal/pal-mcp-server/tools/simple/__init__.py    |     0
+ .../pal/pal-mcp-server/tools/simple/base.py        |     0
+ .../pal/pal-mcp-server/tools/testgen.py            |     0
+ .../pal/pal-mcp-server/tools/thinkdeep.py          |     0
+ .../pal/pal-mcp-server/tools/tracer.py             |     0
+ .../pal/pal-mcp-server/tools/version.py            |     0
+ .../pal/pal-mcp-server/tools/workflow/__init__.py  |     0
+ .../pal/pal-mcp-server/tools/workflow/base.py      |     0
+ .../tools/workflow/schema_builders.py              |     0
+ .../tools/workflow/workflow_mixin.py               |     0
+ .../pal/pal-mcp-server/utils/__init__.py           |     0
+ .../pal/pal-mcp-server/utils/client_info.py        |     0
+ .../pal-mcp-server/utils/conversation_memory.py    |     0
+ .../pal/pal-mcp-server/utils/env.py                |     0
+ .../pal/pal-mcp-server/utils/file_types.py         |     0
+ .../pal/pal-mcp-server/utils/file_utils.py         |     0
+ .../pal/pal-mcp-server/utils/image_utils.py        |     0
+ .../pal/pal-mcp-server/utils/model_context.py      |     0
+ .../pal/pal-mcp-server/utils/model_restrictions.py |     0
+ .../pal/pal-mcp-server/utils/security_config.py    |     0
+ .../pal/pal-mcp-server/utils/storage_backend.py    |     0
+ .../pal/pal-mcp-server/utils/token_utils.py        |     0
+ .../pal/pal-mcp-server/uv.lock                     |     0
+ .../pal/pal_http_wrapper.py                        |     0
+ .../serena/Dockerfile                              |     0
+ .../serena/README.md                               |     0
+ .../serena/info_server.py                          |     0
+ docker/mcp-servers/serena/start_with_info.sh       |    15 +
+ .../serena/wrapper.py                              |     3 +-
+ .../services/happy-cli/happy_cli.py                |     0
+ .../mcp-client-python/mcp_client/__init__.py       |     0
+ .../services/mcp-client-python/mcp_client/main.py  |     0
+ .../mcp-client-python/mcp_client/__init__.py       |     0
+ .../services/mcp-client-python/mcp_client/main.py  |     0
+ .../services/mcp-client-python/requirements.txt    |     0
+ .../services/mcp-client-python/setup.py            |     0
+ .../services/mcp-client-python/setup.py            |     0
+ .../services/mcp-client/main.py                    |     0
+ .../services/mcp-client/requirements.txt           |     0
+ .../mcp-client/services/mcp-client/main.py         |     0
+ .../services/mcp-client/requirements.txt           |     0
+ .../services/mcp-client/test_desktop_commander.py  |     0
+ .../services/task-orchestrator/Dockerfile          |     0
+ .../setup-task-orchestrator.sh                     |     0
+ .../show-network-topology.sh                       |     0
+ docker/mcp-servers/start-all-mcp-servers.sh        |   508 +
+ .../start-profile.sh                               |     0
+ .../task-master-ai/Dockerfile                      |     0
+ .../task-master-ai/README.md                       |     0
+ .../test-fixes.sh                                  |     0
+ .../verify-complete.sh                             |     0
+ docs/00-MASTER-INDEX.md                            |     8 -
+ .../dope-context/dope-context-user-guide.md        |   169 -
+ .../extraction/openai-webhook-local-setup.md       |     3 +-
+ .../extraction/run-v4-from-dopemux-cli.md          |    22 -
+ .../DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md |   165 -
+ .../DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md   |    55 -
+ docs/03-reference/governance/AUTHORITY_MAP.md      |    32 +-
+ docs/03-reference/governance/CONFLICT_LEDGER.md    |    52 +-
+ .../history/sourceFiles/.QUARANTINED.md            |    14 -
+ ...DED__commit_347e523__DEVELOPMENT_SESSION (1).md |   232 -
+ ...XPANDED__commit_347e523__DEVELOPMENT_SESSION.md |   232 -
+ ...ommit_11b6b52__docs__DMPX IMPORT__claude (1).md |   446 -
+ ...S__commit_11b6b52__docs__DMPX IMPORT__claude.md |   446 -
+ ..._docs__DMPX IMPORT__dopemux-docs__README (1).md |    67 -
+ ...b52__docs__DMPX IMPORT__dopemux-docs__README.md |    67 -
+ ...PORT__dopemux-docs__UPDATED_DOCS__README (1).md |   219 -
+ ...X IMPORT__dopemux-docs__UPDATED_DOCS__README.md |   219 -
+ ...ATED_DOCS__adhd-feature-development-spec (1).md |   428 -
+ ..._UPDATED_DOCS__adhd-feature-development-spec.md |   428 -
+ ...s__UPDATED_DOCS__deployment-architecture (1).md |   538 -
+ ...-docs__UPDATED_DOCS__deployment-architecture.md |   538 -
+ ...diagrams__ui-layouts__development-layout (1).md |   137 -
+ ...CS__diagrams__ui-layouts__development-layout.md |   137 -
+ ...rams__ui-layouts__terminal-layout-visual (1).md |   206 -
+ ...diagrams__ui-layouts__terminal-layout-visual.md |   206 -
+ ..._UPDATED_DOCS__dopemux_api_specification (1).md |   701 -
+ ...ocs__UPDATED_DOCS__dopemux_api_specification.md |   701 -
+ ...cs__UPDATED_DOCS__implementation-roadmap (1).md |   620 -
+ ...x-docs__UPDATED_DOCS__implementation-roadmap.md |   620 -
+ ...docs__UPDATED_DOCS__quality-requirements (1).md |   473 -
+ ...mux-docs__UPDATED_DOCS__quality-requirements.md |   473 -
+ ...-docs__UPDATED_DOCS__system_architecture (1).md |   233 -
+ ...emux-docs__UPDATED_DOCS__system_architecture.md |   233 -
+ ..._01-introduction__goals-and-requirements (1).md |   958 --
+ ...ure__01-introduction__goals-and-requirements.md |   958 --
+ ...re__02-constraints__business-constraints (1).md |   783 -
+ ...ecture__02-constraints__business-constraints.md |   783 -
+ ...4-solution-strategy__system-architecture (1).md |   565 -
+ ...e__04-solution-strategy__system-architecture.md |   565 -
+ ...uilding-blocks__ui__ai-assistant-windows (1).md |   483 -
+ ...05-building-blocks__ui__ai-assistant-windows.md |   483 -
+ ...e__05-building-blocks__ui__layout-system (1).md |   330 -
+ ...cture__05-building-blocks__ui__layout-system.md |   330 -
+ ...__architecture__06-runtime__runtime-view (1).md |   364 -
+ ...docs__architecture__06-runtime__runtime-view.md |   364 -
+ ...__07-deployment__deployment-architecture (1).md |   538 -
+ ...ture__07-deployment__deployment-architecture.md |   538 -
+ ...rchitecture__09-decisions__ADR-000-index (1).md |   214 -
+ ...s__architecture__09-decisions__ADR-000-index.md |   214 -
+ ...decisions__ADR-001-architecture-paradigm (1).md |   226 -
+ ..._09-decisions__ADR-001-architecture-paradigm.md |   226 -
+ ...__ADR-002-adhd-accommodation-integration (1).md |   395 -
+ ...ions__ADR-002-adhd-accommodation-integration.md |   395 -
+ ...decisions__ADR-003-editor-implementation (1).md |   228 -
+ ..._09-decisions__ADR-003-editor-implementation.md |   228 -
+ ...09-decisions__ADR-004-visual-workflow-ui (1).md |   333 -
+ ...re__09-decisions__ADR-004-visual-workflow-ui.md |   333 -
+ ...9-decisions__ADR-005-memory-architecture (1).md |   281 -
+ ...e__09-decisions__ADR-005-memory-architecture.md |   281 -
+ ...-decisions__ADR-006-mcp-server-selection (1).md |   146 -
+ ...__09-decisions__ADR-006-mcp-server-selection.md |   146 -
+ ...ions__ADR-007-routing-logic-architecture (1).md |   293 -
+ ...ecisions__ADR-007-routing-logic-architecture.md |   293 -
+ ...ons__ADR-008-task-management-integration (1).md |   390 -
+ ...cisions__ADR-008-task-management-integration.md |   390 -
+ ...__ADR-009-session-management-persistence (1).md |   341 -
+ ...ions__ADR-009-session-management-persistence.md |   341 -
+ ...sions__ADR-010-custom-agent-rnd-strategy (1).md |   374 -
+ ...decisions__ADR-010-custom-agent-rnd-strategy.md |   374 -
+ ...1-adhd-accommodation-technical-decisions (1).md |   543 -
+ ...R-011-adhd-accommodation-technical-decisions.md |   543 -
+ ...__09-decisions__ADR-011-local-first-data (1).md |    21 -
+ ...ture__09-decisions__ADR-011-local-first-data.md |    21 -
+ ..._ADR-012-mcp-server-integration-patterns (1).md |   155 -
+ ...ons__ADR-012-mcp-server-integration-patterns.md |   155 -
+ ...9-decisions__ADR-013-data-classification (1).md |    24 -
+ ...e__09-decisions__ADR-013-data-classification.md |    24 -
+ ...-security-architecture-adaptive-learning (1).md |   223 -
+ ...-013-security-architecture-adaptive-learning.md |   223 -
+ ...ADR-014-slice-based-development-workflow (1).md |   273 -
+ ...ns__ADR-014-slice-based-development-workflow.md |   273 -
+ ...-docs__architecture__09-decisions__index (1).md |   129 -
+ ...emux-docs__architecture__09-decisions__index.md |   129 -
+ ...ecture__10-quality__quality-requirements (1).md |   473 -
+ ...chitecture__10-quality__quality-requirements.md |   473 -
+ ...itecture__11-risks__risks-technical-debt (1).md |   453 -
+ ...architecture__11-risks__risks-technical-debt.md |   453 -
+ ...ocs__architecture__12-glossary__glossary (1).md |   339 -
+ ...ux-docs__architecture__12-glossary__glossary.md |   339 -
+ ...diagrams__ui-layouts__development-layout (1).md |   137 -
+ ...cs__diagrams__ui-layouts__development-layout.md |   137 -
+ ..._dopemux-docs__phase2-completion-summary (1).md |   272 -
+ ...ORT__dopemux-docs__phase2-completion-summary.md |   272 -
+ ...t__UPDATED_DOCS__terminal-app-frameworks (1).md |    85 -
+ ...oduct__UPDATED_DOCS__terminal-app-frameworks.md |    85 -
+ ...ux-docs__product__implementation-roadmap (1).md |   620 -
+ ...opemux-docs__product__implementation-roadmap.md |   620 -
+ ...dopemux-docs__tutorials__getting-started (1).md |   506 -
+ ...RT__dopemux-docs__tutorials__getting-started.md |   506 -
+ ...ure__adrs__ADR-001-architecture-paradigm (1).md |   226 -
+ ...tecture__adrs__ADR-001-architecture-paradigm.md |   226 -
+ ...__ADR-002-adhd-accommodation-integration (1).md |   395 -
+ ...adrs__ADR-002-adhd-accommodation-integration.md |   395 -
+ ...rchitecture__design__system_architecture (1).md |   565 -
+ ...s__architecture__design__system_architecture.md |   565 -
+ ...ess__strategy__dopemux_business_strategy (1).md |   783 -
+ ...usiness__strategy__dopemux_business_strategy.md |   783 -
+ ...y__adhd_informed_development_methodology (1).md |   839 --
+ ...ology__adhd_informed_development_methodology.md |   839 --
+ ...__claude-code__claude_code_customization (1).md |   617 -
+ ...tion__claude-code__claude_code_customization.md |   617 -
+ ...tation__frameworks__dependency_framework (1).md |   730 -
+ ...ementation__frameworks__dependency_framework.md |   730 -
+ ..._terminal-ide__terminal_ide_architecture (1).md |  1224 --
+ ...ion__terminal-ide__terminal_ide_architecture.md |  1224 --
+ ...__claude-flow__claude_flow_orchestration (1).md |   491 -
+ ...ions__claude-flow__claude_flow_orchestration.md |   491 -
+ ...ns__multi-llm__multi_model_orchestration (1).md |   770 -
+ ...ations__multi-llm__multi_model_orchestration.md |   770 -
+ ...oduct__prd__dopemux_product_requirements (1).md |   958 --
+ ...__product__prd__dopemux_product_requirements.md |   958 --
+ ..._schemas__api__dopemux_api_specification (1).md |  1105 --
+ ...ocs__schemas__api__dopemux_api_specification.md |  1105 --
+ ..._memory__multi_level_memory_architecture (1).md |   674 -
+ ...ems__memory__multi_level_memory_architecture.md |   674 -
+ ...erfaces__adhd_optimized_interface_design (1).md |   696 -
+ ..._interfaces__adhd_optimized_interface_design.md |   696 -
+ ...docs__ux__patterns__interaction_patterns (1).md |   542 -
+ ...inaldocs__ux__patterns__interaction_patterns.md |   542 -
+ ...lows__taskmaster__taskmaster_integration (1).md |   647 -
+ ...orkflows__taskmaster__taskmaster_integration.md |   647 -
+ ...tion Research Claude Flow vs Vlaude code (1).md |   418 -
+ ...stration Research Claude Flow vs Vlaude code.md |   418 -
+ ...p__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md |   650 -
+ ...rTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md |   650 -
+ ...__mcpOrchestratorTemp__baseDataAndDesign (1).md |  1772 ---
+ ...docs__mcpOrchestratorTemp__baseDataAndDesign.md |  1772 ---
+ ...s__mcpOrchestratorTemp__conport-strategy (1).md |   507 -
+ ..._docs__mcpOrchestratorTemp__conport-strategy.md |   507 -
+ .../sourceFiles/ARM64_VECTOR_DB_RESEARCH (1).md    |   311 -
+ .../sourceFiles/ARM64_VECTOR_DB_RESEARCH (2).md    |   311 -
+ .../sourceFiles/ARM64_VECTOR_DB_RESEARCH.md        |   311 -
+ ...__ADR-009-session-management-persistence (1).md |   341 -
+ ...DOCS__ADR-009-session-management-persistence.md |   341 -
+ .../CCDOCS__CONTEXT_PRESERVATION_SESSION (1).md    |   162 -
+ .../CCDOCS__CONTEXT_PRESERVATION_SESSION.md        |   162 -
+ .../sourceFiles/CCDOCS__DEVELOPMENT_SESSION (1).md |   232 -
+ .../sourceFiles/CCDOCS__DEVELOPMENT_SESSION.md     |   232 -
+ ...S__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md |   650 -
+ ...CDOCS__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md |   650 -
+ .../CCDOCS__MCP_DETAILED_ANALYSIS_PLAN (1).md      |   235 -
+ .../CCDOCS__MCP_DETAILED_ANALYSIS_PLAN.md          |   235 -
+ .../sourceFiles/CCDOCS__REFACTORING_PLAN (1).md    |   161 -
+ .../sourceFiles/CCDOCS__REFACTORING_PLAN.md        |   161 -
+ .../CCDOCS__SESSION_COMPLETION_STATUS (1).md       |   112 -
+ .../CCDOCS__SESSION_PERSISTENCE_ARCHIVE (1).md     |   201 -
+ .../CCDOCS__SESSION_PERSISTENCE_ARCHIVE.md         |   201 -
+ .../CCDOCS__TEST_IMPROVEMENT_SESSION (1).md        |   205 -
+ .../CCDOCS__TEST_IMPROVEMENT_SESSION.md            |   205 -
+ .../CCDOCS__leantime-integration-plan (1).md       |   211 -
+ .../CCDOCS__leantime-integration-plan.md           |   211 -
+ .../CCDOCS__semantic-search-evaluation-plan (1).md |    30 -
+ .../CCDOCS__semantic-search-evaluation-plan.md     |    30 -
+ ...session-documentation-synthesis-complete (1).md |   164 -
+ ...CS__session-documentation-synthesis-complete.md |   164 -
+ .../sourceFiles/DANGEROUS_MODE_GUIDE (1).md        |   152 -
+ .../sourceFiles/DANGEROUS_MODE_GUIDE (2).md        |   152 -
+ .../history/sourceFiles/DANGEROUS_MODE_GUIDE.md    |   152 -
+ .../sourceFiles/DOCUMENTATION_RECOVERY_STATE.md    |   107 -
+ .../sourceFiles/DOCUXTRACTOR_PLANNING_LOG (1).md   |   537 -
+ .../sourceFiles/DOCUXTRACTOR_PLANNING_LOG (2).md   |   537 -
+ .../sourceFiles/DOCUXTRACTOR_PLANNING_LOG.md       |   537 -
+ .../sourceFiles/EXA_MCP_REFACTOR_CHECKPOINT (1).md |   179 -
+ .../sourceFiles/EXA_MCP_REFACTOR_CHECKPOINT (2).md |   179 -
+ .../sourceFiles/EXA_MCP_REFACTOR_CHECKPOINT.md     |   179 -
+ .../MCP_DEPLOYMENT_SUMMARY_2025-09-24 (1).md       |   209 -
+ .../MCP_DEPLOYMENT_SUMMARY_2025-09-24 (2).md       |   209 -
+ .../MCP_DEPLOYMENT_SUMMARY_2025-09-24.md           |   209 -
+ ..._SERVER_CONNECTION_RESOLUTION_CHECKPOINT (1).md |   187 -
+ ..._SERVER_CONNECTION_RESOLUTION_CHECKPOINT (2).md |   187 -
+ .../MCP_SERVER_CONNECTION_RESOLUTION_CHECKPOINT.md |   187 -
+ .../sourceFiles/MCP_SYSTEM_AUDIT_LOG (1).md        |   201 -
+ .../sourceFiles/MCP_SYSTEM_AUDIT_LOG (2).md        |   201 -
+ .../history/sourceFiles/MCP_SYSTEM_AUDIT_LOG.md    |   201 -
+ .../history/sourceFiles/NEXT_SESSION_PLAN (1).md   |   326 -
+ .../history/sourceFiles/NEXT_SESSION_PLAN (2).md   |   326 -
+ .../history/sourceFiles/NEXT_SESSION_PLAN.md       |   326 -
+ .../history/sourceFiles/README_STANDALONE (1).md   |   247 -
+ .../history/sourceFiles/README_STANDALONE (2).md   |   247 -
+ .../history/sourceFiles/README_STANDALONE.md       |   247 -
+ .../RECOVERED_DOCS_2_ADHD_FEATURES (1).md          |   822 -
+ .../RECOVERED_DOCS_2_ADHD_FEATURES (2).md          |   822 -
+ .../sourceFiles/RECOVERED_DOCS_2_ADHD_FEATURES.md  |   822 -
+ ...VERED_DOCS_2_ADHD_OPTIMIZED_ARCHITECTURE (1).md |   424 -
+ ...VERED_DOCS_2_ADHD_OPTIMIZED_ARCHITECTURE (2).md |   424 -
+ ...RECOVERED_DOCS_2_ADHD_OPTIMIZED_ARCHITECTURE.md |   424 -
+ .../RESUME_DOCUMENTATION_RECOVERY (1).md           |    91 -
+ .../RESUME_DOCUMENTATION_RECOVERY (2).md           |    91 -
+ .../sourceFiles/RESUME_DOCUMENTATION_RECOVERY.md   |    91 -
+ .../docker__mcp-servers__.claude__claude (1).md    |    89 -
+ .../docker__mcp-servers__.claude__claude.md        |    89 -
+ ...__mcp-servers__MCP_ORCHESTRATION_SUMMARY (1).md |   153 -
+ ...cker__mcp-servers__MCP_ORCHESTRATION_SUMMARY.md |   153 -
+ ...cker__mcp-servers__README-MULTI-INSTANCE (1).md |   452 -
+ .../docker__mcp-servers__README-MULTI-INSTANCE.md  |   452 -
+ .../docker__mcp-servers__SERVER_REGISTRY (1).md    |   254 -
+ .../docker__mcp-servers__SERVER_REGISTRY.md        |   254 -
+ ...ocker__mcp-servers__SLASH-COMMANDS-SETUP (1).md |   148 -
+ .../docker__mcp-servers__SLASH-COMMANDS-SETUP.md   |   148 -
+ ...ker__mcp-servers__docrag-service__README (1).md |   242 -
+ .../docker__mcp-servers__docrag-service__README.md |   242 -
+ ...mas-sequential-thinking__.claude__claude (1).md |    89 -
+ ...ver-mas-sequential-thinking__.claude__claude.md |    89 -
+ ...rser-0.17.0.dist-info__licenses__LICENSE (1).md |    21 -
+ ...g_parser-0.17.0.dist-info__licenses__LICENSE.md |    21 -
+ ...erver-mas-sequential-thinking__CHANGELOG (1).md |   134 -
+ ...cp-server-mas-sequential-thinking__CHANGELOG.md |   134 -
+ ...p-server-mas-sequential-thinking__CLAUDE (1).md |   143 -
+ ...__mcp-server-mas-sequential-thinking__CLAUDE.md |   143 -
+ ...p-server-mas-sequential-thinking__GEMINI (1).md |     7 -
+ ...__mcp-server-mas-sequential-thinking__GEMINI.md |     7 -
+ ...s-sequential-thinking__HEALTH_MONITORING (1).md |   227 -
+ ...r-mas-sequential-thinking__HEALTH_MONITORING.md |   227 -
+ ...p-server-mas-sequential-thinking__README (1).md |   405 -
+ ...__mcp-server-mas-sequential-thinking__README.md |   405 -
+ ...er-mas-sequential-thinking__README.zh-CN (1).md |   301 -
+ ...server-mas-sequential-thinking__README.zh-CN.md |   301 -
+ ...sequential-thinking__REFACTORING_SUMMARY (1).md |   222 -
+ ...mas-sequential-thinking__REFACTORING_SUMMARY.md |   222 -
+ ...l-thinking__VALIDATION_FIX_DOCUMENTATION (1).md |   127 -
+ ...ntial-thinking__VALIDATION_FIX_DOCUMENTATION.md |   127 -
+ ...n-mcp-server__.github__pull_request_template.md |    85 -
+ ...-servers__zen__zen-mcp-server__CHANGELOG (1).md |   111 -
+ ..._mcp-servers__zen__zen-mcp-server__CHANGELOG.md |   111 -
+ ...mcp-servers__zen__zen-mcp-server__CLAUDE (1).md |   320 -
+ ...er__mcp-servers__zen__zen-mcp-server__CLAUDE.md |   320 -
+ ...mcp-servers__zen__zen-mcp-server__README (1).md |   310 -
+ ...er__mcp-servers__zen__zen-mcp-server__README.md |   310 -
+ ...ers__zen__zen-mcp-server__docker__README (1).md |   362 -
+ ...servers__zen__zen-mcp-server__docker__README.md |   362 -
+ ...__zen-mcp-server__docs__adding_providers (1).md |   314 -
+ ..._zen__zen-mcp-server__docs__adding_providers.md |   314 -
+ ..._zen__zen-mcp-server__docs__adding_tools (1).md |   137 -
+ ...ers__zen__zen-mcp-server__docs__adding_tools.md |   137 -
+ ...en__zen-mcp-server__docs__advanced-usage (1).md |   470 -
+ ...s__zen__zen-mcp-server__docs__advanced-usage.md |   470 -
+ ...__zen-mcp-server__docs__ai-collaboration (1).md |    99 -
+ ..._zen__zen-mcp-server__docs__ai-collaboration.md |    99 -
+ ...rs__zen__zen-mcp-server__docs__ai_banter (1).md |   140 -
+ ...ervers__zen__zen-mcp-server__docs__ai_banter.md |   140 -
+ ...zen__zen-mcp-server__docs__configuration (1).md |   247 -
+ ...rs__zen__zen-mcp-server__docs__configuration.md |   247 -
+ ...n__zen-mcp-server__docs__context-revival (1).md |    96 -
+ ...__zen__zen-mcp-server__docs__context-revival.md |    96 -
+ ...zen__zen-mcp-server__docs__contributions (1).md |   248 -
+ ...rs__zen__zen-mcp-server__docs__contributions.md |   248 -
+ ...zen__zen-mcp-server__docs__custom_models (1).md |   261 -
+ ...rs__zen__zen-mcp-server__docs__custom_models.md |   261 -
+ ..._zen-mcp-server__docs__docker-deployment (1).md |   500 -
+ ...zen__zen-mcp-server__docs__docker-deployment.md |   500 -
+ ..._zen__zen-mcp-server__docs__gemini-setup (1).md |    43 -
+ ...ers__zen__zen-mcp-server__docs__gemini-setup.md |    43 -
+ ...n__zen-mcp-server__docs__getting-started (1).md |   381 -
+ ...__zen__zen-mcp-server__docs__getting-started.md |   381 -
+ ...n-mcp-server__docs__locale-configuration (1).md |   186 -
+ ...__zen-mcp-server__docs__locale-configuration.md |   186 -
+ ...vers__zen__zen-mcp-server__docs__testing (1).md |   152 -
+ ...-servers__zen__zen-mcp-server__docs__testing.md |   152 -
+ ...en__zen-mcp-server__docs__tools__analyze (1).md |   199 -
+ ...s__zen__zen-mcp-server__docs__tools__analyze.md |   199 -
+ ...__zen__zen-mcp-server__docs__tools__chat (1).md |    84 -
+ ...vers__zen__zen-mcp-server__docs__tools__chat.md |    84 -
+ ..._zen-mcp-server__docs__tools__codereview (1).md |   174 -
+ ...zen__zen-mcp-server__docs__tools__codereview.md |   174 -
+ ...__zen-mcp-server__docs__tools__consensus (1).md |   145 -
+ ..._zen__zen-mcp-server__docs__tools__consensus.md |   145 -
+ ..._zen__zen-mcp-server__docs__tools__debug (1).md |   211 -
+ ...ers__zen__zen-mcp-server__docs__tools__debug.md |   211 -
+ ...zen__zen-mcp-server__docs__tools__docgen (1).md |   204 -
+ ...rs__zen__zen-mcp-server__docs__tools__docgen.md |   204 -
+ ..._zen-mcp-server__docs__tools__listmodels (1).md |   105 -
+ ...zen__zen-mcp-server__docs__tools__listmodels.md |   105 -
+ ...en__zen-mcp-server__docs__tools__planner (1).md |    83 -
+ ...s__zen__zen-mcp-server__docs__tools__planner.md |    83 -
+ ...__zen-mcp-server__docs__tools__precommit (1).md |   253 -
+ ..._zen__zen-mcp-server__docs__tools__precommit.md |   253 -
+ ...n__zen-mcp-server__docs__tools__refactor (1).md |   201 -
+ ...__zen__zen-mcp-server__docs__tools__refactor.md |   201 -
+ ...n__zen-mcp-server__docs__tools__secaudit (1).md |   222 -
+ ...__zen__zen-mcp-server__docs__tools__secaudit.md |   222 -
+ ...en__zen-mcp-server__docs__tools__testgen (1).md |   220 -
+ ...s__zen__zen-mcp-server__docs__tools__testgen.md |   220 -
+ ...__zen-mcp-server__docs__tools__thinkdeep (1).md |    97 -
+ ..._zen__zen-mcp-server__docs__tools__thinkdeep.md |    97 -
+ ...zen__zen-mcp-server__docs__tools__tracer (1).md |   170 -
+ ...rs__zen__zen-mcp-server__docs__tools__tracer.md |   170 -
+ ...en__zen-mcp-server__docs__tools__version (1).md |   127 -
+ ...s__zen__zen-mcp-server__docs__tools__version.md |   127 -
+ ...n__zen-mcp-server__docs__troubleshooting (1).md |   120 -
+ ...__zen__zen-mcp-server__docs__troubleshooting.md |   120 -
+ ...__zen__zen-mcp-server__docs__vcr-testing (1).md |   128 -
+ ...vers__zen__zen-mcp-server__docs__vcr-testing.md |   128 -
+ ...rs__zen__zen-mcp-server__docs__wsl-setup (1).md |    79 -
+ ...ervers__zen__zen-mcp-server__docs__wsl-setup.md |    79 -
+ ...vers__zen__zen-mcp-server__patch__README (1).md |    93 -
+ ...-servers__zen__zen-mcp-server__patch__README.md |    93 -
+ ...cisions__ADR-013-rag-search-architecture (1).md |   122 -
+ ...1-decisions__ADR-013-rag-search-architecture.md |   122 -
+ .../docs__01-decisions__RFC-zero-touch-sync (1).md |   163 -
+ .../docs__01-decisions__RFC-zero-touch-sync.md     |   163 -
+ .../sourceFiles/docs__01-tutorials__README (1).md  |    38 -
+ .../sourceFiles/docs__01-tutorials__README.md      |    38 -
+ ...ials__tutorial-getting-started-with-docs (1).md |    36 -
+ ...utorials__tutorial-getting-started-with-docs.md |    36 -
+ .../sourceFiles/docs__02-how-to__README (1).md     |    60 -
+ .../history/sourceFiles/docs__02-how-to__README.md |    60 -
+ ...s__02-how-to__configuration__setup-guide (1).md |   995 --
+ .../docs__02-how-to__configuration__setup-guide.md |   995 --
+ ...2-how-to__documentation-review-checklist (1).md |   247 -
+ ...s__02-how-to__documentation-review-checklist.md |   247 -
+ ...how-to__finishing-helpers-implementation (1).md |   996 --
+ ..._02-how-to__finishing-helpers-implementation.md |   996 --
+ .../docs__02-how-to__how-to-use-mcp-system (1).md  |   440 -
+ .../docs__02-how-to__how-to-use-mcp-system.md      |   440 -
+ .../docs__02-how-to__migrate-existing-adrs (1).md  |   196 -
+ .../docs__02-how-to__migrate-existing-adrs.md      |   196 -
+ ...02-how-to__rag__integrate-conport-memory (1).md |   872 --
+ ...cs__02-how-to__rag__integrate-conport-memory.md |   872 --
+ ...docs__02-how-to__rag__setup-rag-pipeline (1).md |  1591 --
+ .../docs__02-how-to__rag__setup-rag-pipeline.md    |  1591 --
+ ...ocs__02-how-to__session-management-setup (1).md |   230 -
+ .../docs__02-how-to__session-management-setup.md   |   230 -
+ ..._03-reference__COMPLETE_TOOL_DEFINITIONS (1).md |  1302 --
+ ...ocs__03-reference__COMPLETE_TOOL_DEFINITIONS.md |  1302 --
+ ...reference__MCP_SYSTEM_INTEGRATION_STATUS (1).md |   402 -
+ ...s__03-reference__MCP_TOOL_AUDIT_COMPLETE (1).md |   890 --
+ .../docs__03-reference__MCP_TOOL_AUDIT_COMPLETE.md |   890 --
+ ..._03-reference__METAMCP_INTEGRATION_GUIDE (1).md |   679 -
+ ...ocs__03-reference__METAMCP_INTEGRATION_GUIDE.md |   679 -
+ .../sourceFiles/docs__03-reference__README (1).md  |    77 -
+ .../sourceFiles/docs__03-reference__README.md      |    77 -
+ ...__03-reference__ROLE_TOOL_MAPPING_MATRIX (1).md |   391 -
+ ...docs__03-reference__ROLE_TOOL_MAPPING_MATRIX.md |   391 -
+ ...reference__TOKEN_OPTIMIZATION_STRATEGIES (1).md |   558 -
+ ..._03-reference__TOKEN_OPTIMIZATION_STRATEGIES.md |   558 -
+ ...s__03-reference__documentation-standards (1).md |   255 -
+ .../docs__03-reference__documentation-standards.md |   255 -
+ ...ntation__semantic-search-evaluation-plan (1).md |    30 -
+ ...lementation__semantic-search-evaluation-plan.md |    30 -
+ ...on__semantic-search-implementation-notes (1).md |    66 -
+ ...tation__semantic-search-implementation-notes.md |    66 -
+ ...tion__semantic-search-privacy-guidelines (1).md |    36 -
+ ...entation__semantic-search-privacy-guidelines.md |    36 -
+ ...reference__implementation__specification (1).md |  1293 --
+ ..._03-reference__implementation__specification.md |  1293 --
+ ...s__03-reference__implementation__summary (1).md |   314 -
+ .../docs__03-reference__implementation__summary.md |   314 -
+ ...docs__03-reference__mcp__tools-inventory (1).md |   330 -
+ .../docs__03-reference__mcp__tools-inventory.md    |   330 -
+ ...ocs__03-reference__mcp__workflow-mapping (1).md |   858 --
+ .../docs__03-reference__mcp__workflow-mapping.md   |   858 --
+ .../docs__03-reference__rag__api-reference (1).md  |   613 -
+ .../docs__03-reference__rag__api-reference.md      |   613 -
+ ...nce__rag__milvus-configuration-reference (1).md |   764 -
+ ...ference__rag__milvus-configuration-reference.md |   764 -
+ ...s__03-reference__rag__role-policy-schema (1).md |   690 -
+ .../docs__03-reference__rag__role-policy-schema.md |   690 -
+ ...eference__rag__voyage-models-integration (1).md |   626 -
+ ...03-reference__rag__voyage-models-integration.md |   626 -
+ .../docs__04-explanation__README (1).md            |   108 -
+ .../sourceFiles/docs__04-explanation__README.md    |   108 -
+ ...cs__04-explanation__architecture__README (1).md |   138 -
+ .../docs__04-explanation__architecture__README.md  |   138 -
+ ...on__architecture__mcp__dynamic-discovery (1).md |   654 -
+ ...nation__architecture__mcp__dynamic-discovery.md |   654 -
+ ...architecture__mcp__orchestration-roadmap (1).md |   317 -
+ ...on__architecture__mcp__orchestration-roadmap.md |   317 -
+ ...ation__architecture__mcp__routing-matrix (1).md |   495 -
+ ...planation__architecture__mcp__routing-matrix.md |   495 -
+ ...architecture__mcp__server-specifications (1).md |   585 -
+ ...on__architecture__mcp__server-specifications.md |   585 -
+ ...hitecture__metamcp-context-lean-toolsets (1).md |   492 -
+ ..._architecture__metamcp-context-lean-toolsets.md |   492 -
+ ...n__architecture__rag-search-architecture (1).md |   218 -
+ ...ation__architecture__rag-search-architecture.md |   218 -
+ ...ation__architecture__system-architecture (1).md |   664 -
+ ...planation__architecture__system-architecture.md |   664 -
+ ...nation__features__adhd-finishing-helpers (1).md |   287 -
+ ...xplanation__features__adhd-finishing-helpers.md |   287 -
+ ...xplanation__features__adhd-optimizations (1).md |   277 -
+ ...04-explanation__features__adhd-optimizations.md |   277 -
+ ...explanation__features__health-monitoring (1).md |   435 -
+ ..._04-explanation__features__health-monitoring.md |   435 -
+ ..._04-explanation__features__mcp-ecosystem (1).md |   131 -
+ ...ocs__04-explanation__features__mcp-ecosystem.md |   131 -
+ ...xplanation__features__multi-instance-mcp (1).md |   176 -
+ ...04-explanation__features__multi-instance-mcp.md |   176 -
+ ...lanation__features__work-effort-tracking (1).md |   136 -
+ ...-explanation__features__work-effort-tracking.md |   136 -
+ ...docs__90-adr__001-hub-spoke-architecture (1).md |    66 -
+ .../docs__90-adr__001-hub-spoke-architecture.md    |    66 -
+ ...s__90-adr__002-context7-first-philosophy (1).md |    72 -
+ .../docs__90-adr__002-context7-first-philosophy.md |    72 -
+ ...adr__003-multi-level-memory-architecture (1).md |   153 -
+ ..._90-adr__003-multi-level-memory-architecture.md |   153 -
+ ...-adr__035-mcp-system-integration-success (1).md |   313 -
+ ...__90-adr__035-mcp-system-integration-success.md |   313 -
+ ...__90-adr__036-adhd-simple-accommodations (1).md |   111 -
+ ...docs__90-adr__036-adhd-simple-accommodations.md |   111 -
+ ...0-adr__037-adhd-finishing-helpers-system (1).md |   125 -
+ ...s__90-adr__037-adhd-finishing-helpers-system.md |   125 -
+ ...docs__90-adr__037-status-source-leantime (1).md |    57 -
+ .../docs__90-adr__037-status-source-leantime.md    |    57 -
+ ...90-adr__038-subtask-authority-taskmaster (1).md |    58 -
+ ...cs__90-adr__038-subtask-authority-taskmaster.md |    58 -
+ ..._90-adr__039-decisions-authority-conport (1).md |    60 -
+ ...ocs__90-adr__039-decisions-authority-conport.md |    60 -
+ ...__90-adr__040-sync-mechanism-polling-mcp (1).md |    68 -
+ ...docs__90-adr__040-sync-mechanism-polling-mcp.md |    68 -
+ ...__041-conflict-resolution-lww-precedence (1).md |    98 -
+ ...-adr__041-conflict-resolution-lww-precedence.md |    98 -
+ .../docs__90-adr__101-adhd-centered-design (1).md  |   115 -
+ .../docs__90-adr__101-adhd-centered-design.md      |   115 -
+ .../docs__90-adr__102-auto-save-strategy (1).md    |   156 -
+ .../docs__90-adr__102-auto-save-strategy.md        |   156 -
+ ...-adr__103-attention-state-classification (1).md |   208 -
+ ...__90-adr__103-attention-state-classification.md |   208 -
+ .../docs__90-adr__104-gentle-error-handling (1).md |   201 -
+ .../docs__90-adr__104-gentle-error-handling.md     |   201 -
+ ...-adr__105-progressive-disclosure-pattern (1).md |   213 -
+ ...__90-adr__105-progressive-disclosure-pattern.md |   213 -
+ ...docs__90-adr__501-vector-database-milvus (1).md |   119 -
+ .../docs__90-adr__501-vector-database-milvus.md    |   119 -
+ .../docs__90-adr__502-cache-layer-redis (1).md     |   161 -
+ .../docs__90-adr__502-cache-layer-redis.md         |   161 -
+ ...0-adr__503-relational-storage-postgresql (1).md |   158 -
+ ...s__90-adr__503-relational-storage-postgresql.md |   158 -
+ .../docs__90-adr__505-conport-integration (1).md   |   154 -
+ .../docs__90-adr__505-conport-integration.md       |   154 -
+ ...docs__90-adr__506-openmemory-integration (1).md |   198 -
+ .../docs__90-adr__506-openmemory-integration.md    |   198 -
+ ...ocs__90-adr__507-hybrid-rag-architecture (1).md |   246 -
+ .../docs__90-adr__507-hybrid-rag-architecture.md   |   246 -
+ ...21-adopt-ux-phase-tracker-preset-layouts (1).md |    66 -
+ ...-09-21-adopt-ux-phase-tracker-preset-layouts.md |    66 -
+ .../sourceFiles/docs__90-adr__README (1).md        |   160 -
+ .../history/sourceFiles/docs__90-adr__README.md    |   160 -
+ ...r-0034-metamcp-role-aware-tool-brokering (1).md |   272 -
+ ...__adr-0034-metamcp-role-aware-tool-brokering.md |   272 -
+ ...__adr-007-hybrid-classification-approach (1).md |   160 -
+ ...-adr__adr-007-hybrid-classification-approach.md |   160 -
+ ...cs__90-adr__adr-008-event-driven-capture (1).md |   288 -
+ .../docs__90-adr__adr-008-event-driven-capture.md  |   288 -
+ ...s__90-adr__adr-009-context-aware-routing (1).md |   321 -
+ .../docs__90-adr__adr-009-context-aware-routing.md |   321 -
+ ..._90-adr__adr-010-progressive-enhancement (1).md |   356 -
+ ...ocs__90-adr__adr-010-progressive-enhancement.md |   356 -
+ .../docs__90-adr__adr-011-privacy-first-ai (1).md  |   387 -
+ .../docs__90-adr__adr-011-privacy-first-ai.md      |   387 -
+ .../sourceFiles/docs__91-rfc__README (1).md        |   192 -
+ .../history/sourceFiles/docs__91-rfc__README.md    |   192 -
+ ...rfc-0015-ux-phase-tracker-preset-layouts (1).md |    78 -
+ ...fc__rfc-0015-ux-phase-tracker-preset-layouts.md |    78 -
+ ...91-rfc__rfc-002-intelligent-memory-layer (1).md |   271 -
+ ...cs__91-rfc__rfc-002-intelligent-memory-layer.md |   271 -
+ ...cs__91-rfc__rfc-0042-semantic-search-mcp (1).md |    65 -
+ .../docs__91-rfc__rfc-0042-semantic-search-mcp.md  |    65 -
+ ...c__rfc-0043-metamcp-orchestration-system (1).md |   306 -
+ ...1-rfc__rfc-0043-metamcp-orchestration-system.md |   306 -
+ ...rfc__rfc-0044-knowledge-graph-rag-system (1).md |   233 -
+ ..._91-rfc__rfc-0044-knowledge-graph-rag-system.md |   233 -
+ .../sourceFiles/docs__92-runbooks__README (1).md   |   206 -
+ .../sourceFiles/docs__92-runbooks__README.md       |   206 -
+ ...92-runbooks__rag__rag-operations-runbook (1).md |   789 -
+ ...cs__92-runbooks__rag__rag-operations-runbook.md |   789 -
+ ...cs__92-runbooks__runbook-activation-plan (1).md |   122 -
+ .../docs__92-runbooks__runbook-activation-plan.md  |   122 -
+ ...__runbook-adhd-finishing-helpers-roadmap (1).md |   360 -
+ ...ooks__runbook-adhd-finishing-helpers-roadmap.md |   360 -
+ ...books__runbook-bootstrap-task-management (1).md |   146 -
+ ...-runbooks__runbook-bootstrap-task-management.md |   146 -
+ ...cs__92-runbooks__runbook-current-session (1).md |   113 -
+ .../docs__92-runbooks__runbook-current-session.md  |   113 -
+ ...s__92-runbooks__runbook-extended-roadmap (1).md |   187 -
+ .../docs__92-runbooks__runbook-extended-roadmap.md |   187 -
+ ...nbook-mcp-http-transport-troubleshooting (1).md |   234 -
+ ...__runbook-mcp-http-transport-troubleshooting.md |   234 -
+ ...runbooks__runbook-mcp-system-integration (1).md |   202 -
+ ..._92-runbooks__runbook-mcp-system-integration.md |   202 -
+ ...books__runbook-metamcp-deployment-status (1).md |   189 -
+ ...-runbooks__runbook-metamcp-deployment-status.md |   189 -
+ ...unbooks__runbook-project-analysis-backup (1).md |    73 -
+ ...92-runbooks__runbook-project-analysis-backup.md |    73 -
+ ...cs__92-runbooks__runbook-zero-touch-sync (1).md |   426 -
+ .../docs__92-runbooks__runbook-zero-touch-sync.md  |   426 -
+ .../docs__94-architecture__README (1).md           |   178 -
+ .../sourceFiles/docs__94-architecture__README.md   |   178 -
+ ...hitecture__arc42-dopemux-semantic-search (1).md |    92 -
+ ...-architecture__arc42-dopemux-semantic-search.md |    92 -
+ .../docs__94-architecture__c4-l0-context (1).md    |    21 -
+ .../docs__94-architecture__c4-l0-context.md        |    21 -
+ .../docs__94-architecture__c4-l1-container (1).md  |    21 -
+ .../docs__94-architecture__c4-l1-container.md      |    21 -
+ .../docs__94-architecture__c4-l2-component (1).md  |    21 -
+ .../docs__94-architecture__c4-l2-component.md      |    21 -
+ .../docs__94-architecture__c4-l3-code (1).md       |    22 -
+ .../docs__94-architecture__c4-l3-code.md           |    22 -
+ ..._94-architecture__cross-cutting-concerns (1).md |    26 -
+ ...ocs__94-architecture__cross-cutting-concerns.md |    26 -
+ .../docs__94-architecture__deployment-view (1).md  |    23 -
+ .../docs__94-architecture__deployment-view.md      |    23 -
+ ...chitecture__rag__hybrid-retrieval-design (1).md |   378 -
+ ...4-architecture__rag__hybrid-retrieval-design.md |   378 -
+ ...4-architecture__rag__rag-system-overview (1).md |   224 -
+ ...s__94-architecture__rag__rag-system-overview.md |   224 -
+ .../docs__94-architecture__runtime-view (1).md     |    23 -
+ .../docs__94-architecture__runtime-view.md         |    23 -
+ ...chitecture__zero-touch-sync-architecture (1).md |   371 -
+ ...4-architecture__zero-touch-sync-architecture.md |   371 -
+ .../history/sourceFiles/docs__ADHD_FEATURES (1).md |   822 -
+ .../history/sourceFiles/docs__ADHD_FEATURES.md     |   822 -
+ .../docs__ADHD_OPTIMIZED_ARCHITECTURE (1).md       |   424 -
+ .../docs__ADHD_OPTIMIZED_ARCHITECTURE.md           |   424 -
+ .../history/sourceFiles/docs__API (1).md           |   558 -
+ .../history/sourceFiles/docs__API.md               |   558 -
+ .../history/sourceFiles/docs__ARCHITECTURE (1).md  |   664 -
+ .../history/sourceFiles/docs__ARCHITECTURE.md      |   664 -
+ .../history/sourceFiles/docs__CLI_REFERENCE (1).md |  1001 --
+ .../history/sourceFiles/docs__CLI_REFERENCE.md     |  1001 --
+ .../sourceFiles/docs__CODE_ARCHIVE_COMPLETE (1).md |   277 -
+ .../sourceFiles/docs__CODE_ARCHIVE_COMPLETE.md     |   277 -
+ .../docs__COMPLETE_ARCHITECTURE_SUMMARY (1).md     |   310 -
+ .../docs__COMPLETE_ARCHITECTURE_SUMMARY.md         |   310 -
+ .../history/sourceFiles/docs__CONFIGURATION (1).md |   995 --
+ .../history/sourceFiles/docs__CONFIGURATION.md     |   995 --
+ .../docs__CONTEXT_PRESERVATION_SESSION (1).md      |   162 -
+ .../docs__CONTEXT_PRESERVATION_SESSION.md          |   162 -
+ .../sourceFiles/docs__DEVELOPMENT_SESSION (1).md   |   232 -
+ .../sourceFiles/docs__DEVELOPMENT_SESSION.md       |   232 -
+ .../sourceFiles/docs__DMPX IMPORT__claude (1).md   |   446 -
+ .../sourceFiles/docs__DMPX IMPORT__claude.md       |   446 -
+ .../docs__DMPX IMPORT__dopemux-docs__README (1).md |    67 -
+ .../docs__DMPX IMPORT__dopemux-docs__README.md     |    67 -
+ ...PORT__dopemux-docs__UPDATED_DOCS__README (1).md |   219 -
+ ...X IMPORT__dopemux-docs__UPDATED_DOCS__README.md |   219 -
+ ...ATED_DOCS__adhd-feature-development-spec (1).md |   428 -
+ ..._UPDATED_DOCS__adhd-feature-development-spec.md |   428 -
+ ...s__UPDATED_DOCS__deployment-architecture (1).md |   538 -
+ ...-docs__UPDATED_DOCS__deployment-architecture.md |   538 -
+ ...diagrams__ui-layouts__development-layout (1).md |   137 -
+ ...CS__diagrams__ui-layouts__development-layout.md |   137 -
+ ...rams__ui-layouts__terminal-layout-visual (1).md |   206 -
+ ...diagrams__ui-layouts__terminal-layout-visual.md |   206 -
+ ..._UPDATED_DOCS__dopemux_api_specification (1).md |   701 -
+ ...ocs__UPDATED_DOCS__dopemux_api_specification.md |   701 -
+ ...cs__UPDATED_DOCS__implementation-roadmap (1).md |   620 -
+ ...x-docs__UPDATED_DOCS__implementation-roadmap.md |   620 -
+ ...docs__UPDATED_DOCS__quality-requirements (1).md |   473 -
+ ...mux-docs__UPDATED_DOCS__quality-requirements.md |   473 -
+ ...-docs__UPDATED_DOCS__system_architecture (1).md |   233 -
+ ...emux-docs__UPDATED_DOCS__system_architecture.md |   233 -
+ ..._01-introduction__goals-and-requirements (1).md |   958 --
+ ...ure__01-introduction__goals-and-requirements.md |   958 --
+ ...re__02-constraints__business-constraints (1).md |   783 -
+ ...ecture__02-constraints__business-constraints.md |   783 -
+ ...4-solution-strategy__system-architecture (1).md |   565 -
+ ...e__04-solution-strategy__system-architecture.md |   565 -
+ ...uilding-blocks__ui__ai-assistant-windows (1).md |   483 -
+ ...05-building-blocks__ui__ai-assistant-windows.md |   483 -
+ ...e__05-building-blocks__ui__layout-system (1).md |   330 -
+ ...cture__05-building-blocks__ui__layout-system.md |   330 -
+ ...__architecture__06-runtime__runtime-view (1).md |   364 -
+ ...docs__architecture__06-runtime__runtime-view.md |   364 -
+ ...__07-deployment__deployment-architecture (1).md |   538 -
+ ...ture__07-deployment__deployment-architecture.md |   538 -
+ ...rchitecture__09-decisions__ADR-000-index (1).md |   214 -
+ ...s__architecture__09-decisions__ADR-000-index.md |   214 -
+ ...decisions__ADR-001-architecture-paradigm (1).md |   226 -
+ ..._09-decisions__ADR-001-architecture-paradigm.md |   226 -
+ ...__ADR-002-adhd-accommodation-integration (1).md |   395 -
+ ...ions__ADR-002-adhd-accommodation-integration.md |   395 -
+ ...decisions__ADR-003-editor-implementation (1).md |   228 -
+ ..._09-decisions__ADR-003-editor-implementation.md |   228 -
+ ...09-decisions__ADR-004-visual-workflow-ui (1).md |   333 -
+ ...re__09-decisions__ADR-004-visual-workflow-ui.md |   333 -
+ ...9-decisions__ADR-005-memory-architecture (1).md |   281 -
+ ...e__09-decisions__ADR-005-memory-architecture.md |   281 -
+ ...-decisions__ADR-006-mcp-server-selection (1).md |   146 -
+ ...__09-decisions__ADR-006-mcp-server-selection.md |   146 -
+ ...ions__ADR-007-routing-logic-architecture (1).md |   293 -
+ ...ecisions__ADR-007-routing-logic-architecture.md |   293 -
+ ...ons__ADR-008-task-management-integration (1).md |   390 -
+ ...cisions__ADR-008-task-management-integration.md |   390 -
+ ...__ADR-009-session-management-persistence (1).md |   341 -
+ ...ions__ADR-009-session-management-persistence.md |   341 -
+ ...sions__ADR-010-custom-agent-rnd-strategy (1).md |   374 -
+ ...decisions__ADR-010-custom-agent-rnd-strategy.md |   374 -
+ ...1-adhd-accommodation-technical-decisions (1).md |   543 -
+ ...R-011-adhd-accommodation-technical-decisions.md |   543 -
+ ...__09-decisions__ADR-011-local-first-data (1).md |    21 -
+ ...ture__09-decisions__ADR-011-local-first-data.md |    21 -
+ ..._ADR-012-mcp-server-integration-patterns (1).md |   155 -
+ ...ons__ADR-012-mcp-server-integration-patterns.md |   155 -
+ ...9-decisions__ADR-013-data-classification (1).md |    24 -
+ ...e__09-decisions__ADR-013-data-classification.md |    24 -
+ ...-security-architecture-adaptive-learning (1).md |   223 -
+ ...-013-security-architecture-adaptive-learning.md |   223 -
+ ...ADR-014-slice-based-development-workflow (1).md |   273 -
+ ...ns__ADR-014-slice-based-development-workflow.md |   273 -
+ ...-docs__architecture__09-decisions__index (1).md |   129 -
+ ...emux-docs__architecture__09-decisions__index.md |   129 -
+ ...ecture__10-quality__quality-requirements (1).md |   473 -
+ ...chitecture__10-quality__quality-requirements.md |   473 -
+ ...itecture__11-risks__risks-technical-debt (1).md |   453 -
+ ...architecture__11-risks__risks-technical-debt.md |   453 -
+ ...ocs__architecture__12-glossary__glossary (1).md |   339 -
+ ...ux-docs__architecture__12-glossary__glossary.md |   339 -
+ ...diagrams__ui-layouts__development-layout (1).md |   137 -
+ ...cs__diagrams__ui-layouts__development-layout.md |   137 -
+ ..._dopemux-docs__phase2-completion-summary (1).md |   272 -
+ ...ORT__dopemux-docs__phase2-completion-summary.md |   272 -
+ ...t__UPDATED_DOCS__terminal-app-frameworks (1).md |    85 -
+ ...oduct__UPDATED_DOCS__terminal-app-frameworks.md |    85 -
+ ...ux-docs__product__implementation-roadmap (1).md |   620 -
+ ...opemux-docs__product__implementation-roadmap.md |   620 -
+ ...dopemux-docs__tutorials__getting-started (1).md |   506 -
+ ...RT__dopemux-docs__tutorials__getting-started.md |   506 -
+ ...ure__adrs__ADR-001-architecture-paradigm (1).md |   226 -
+ ...tecture__adrs__ADR-001-architecture-paradigm.md |   226 -
+ ...__ADR-002-adhd-accommodation-integration (1).md |   395 -
+ ...adrs__ADR-002-adhd-accommodation-integration.md |   395 -
+ ...rchitecture__design__system_architecture (1).md |   565 -
+ ...s__architecture__design__system_architecture.md |   565 -
+ ...ess__strategy__dopemux_business_strategy (1).md |   783 -
+ ...usiness__strategy__dopemux_business_strategy.md |   783 -
+ ...y__adhd_informed_development_methodology (1).md |   839 --
+ ...ology__adhd_informed_development_methodology.md |   839 --
+ ...__claude-code__claude_code_customization (1).md |   617 -
+ ...tion__claude-code__claude_code_customization.md |   617 -
+ ...tation__frameworks__dependency_framework (1).md |   730 -
+ ...ementation__frameworks__dependency_framework.md |   730 -
+ ..._terminal-ide__terminal_ide_architecture (1).md |  1224 --
+ ...ion__terminal-ide__terminal_ide_architecture.md |  1224 --
+ ...__claude-flow__claude_flow_orchestration (1).md |   491 -
+ ...ions__claude-flow__claude_flow_orchestration.md |   491 -
+ ...ns__multi-llm__multi_model_orchestration (1).md |   770 -
+ ...ations__multi-llm__multi_model_orchestration.md |   770 -
+ ...oduct__prd__dopemux_product_requirements (1).md |   958 --
+ ...__product__prd__dopemux_product_requirements.md |   958 --
+ ..._schemas__api__dopemux_api_specification (1).md |  1105 --
+ ...ocs__schemas__api__dopemux_api_specification.md |  1105 --
+ ..._memory__multi_level_memory_architecture (1).md |   674 -
+ ...ems__memory__multi_level_memory_architecture.md |   674 -
+ ...erfaces__adhd_optimized_interface_design (1).md |   696 -
+ ..._interfaces__adhd_optimized_interface_design.md |   696 -
+ ...docs__ux__patterns__interaction_patterns (1).md |   542 -
+ ...inaldocs__ux__patterns__interaction_patterns.md |   542 -
+ ...lows__taskmaster__taskmaster_integration (1).md |   647 -
+ ...orkflows__taskmaster__taskmaster_integration.md |   647 -
+ .../sourceFiles/docs__FINAL_PROJECT_STATUS (1).md  |   202 -
+ .../sourceFiles/docs__HEALTH_MONITORING (1).md     |   435 -
+ .../history/sourceFiles/docs__HEALTH_MONITORING.md |   435 -
+ ..._HISTORICAL__CLAUDE_CODE_COMPLETE_CONFIG (1).md |  1804 ---
+ ...ocs__HISTORICAL__CLAUDE_CODE_COMPLETE_CONFIG.md |  1804 ---
+ .../docs__HISTORICAL__DMPX IMPORT__claude (1).md   |   446 -
+ .../docs__HISTORICAL__DMPX IMPORT__claude.md       |   446 -
+ ...RICAL__DMPX IMPORT__dopemux-docs__README (1).md |    67 -
+ ...ISTORICAL__DMPX IMPORT__dopemux-docs__README.md |    67 -
+ ...PORT__dopemux-docs__UPDATED_DOCS__README (1).md |   219 -
+ ...X IMPORT__dopemux-docs__UPDATED_DOCS__README.md |   219 -
+ ...ATED_DOCS__adhd-feature-development-spec (1).md |   428 -
+ ..._UPDATED_DOCS__adhd-feature-development-spec.md |   428 -
+ ...s__UPDATED_DOCS__deployment-architecture (1).md |   538 -
+ ...-docs__UPDATED_DOCS__deployment-architecture.md |   538 -
+ ...diagrams__ui-layouts__development-layout (1).md |   137 -
+ ...CS__diagrams__ui-layouts__development-layout.md |   137 -
+ ...rams__ui-layouts__terminal-layout-visual (1).md |   206 -
+ ...diagrams__ui-layouts__terminal-layout-visual.md |   206 -
+ ..._UPDATED_DOCS__dopemux_api_specification (1).md |   701 -
+ ...ocs__UPDATED_DOCS__dopemux_api_specification.md |   701 -
+ ...cs__UPDATED_DOCS__implementation-roadmap (1).md |   620 -
+ ...x-docs__UPDATED_DOCS__implementation-roadmap.md |   620 -
+ ...docs__UPDATED_DOCS__quality-requirements (1).md |   473 -
+ ...mux-docs__UPDATED_DOCS__quality-requirements.md |   473 -
+ ...-docs__UPDATED_DOCS__system_architecture (1).md |   233 -
+ ...emux-docs__UPDATED_DOCS__system_architecture.md |   233 -
+ ..._01-introduction__goals-and-requirements (1).md |   958 --
+ ...ure__01-introduction__goals-and-requirements.md |   958 --
+ ...re__02-constraints__business-constraints (1).md |   783 -
+ ...ecture__02-constraints__business-constraints.md |   783 -
+ ...4-solution-strategy__system-architecture (1).md |   565 -
+ ...e__04-solution-strategy__system-architecture.md |   565 -
+ ...uilding-blocks__ui__ai-assistant-windows (1).md |   483 -
+ ...05-building-blocks__ui__ai-assistant-windows.md |   483 -
+ ...e__05-building-blocks__ui__layout-system (1).md |   330 -
+ ...cture__05-building-blocks__ui__layout-system.md |   330 -
+ ...__architecture__06-runtime__runtime-view (1).md |   364 -
+ ...docs__architecture__06-runtime__runtime-view.md |   364 -
+ ...__07-deployment__deployment-architecture (1).md |   538 -
+ ...ture__07-deployment__deployment-architecture.md |   538 -
+ ...rchitecture__09-decisions__ADR-000-index (1).md |   214 -
+ ...s__architecture__09-decisions__ADR-000-index.md |   214 -
+ ...decisions__ADR-001-architecture-paradigm (1).md |   226 -
+ ..._09-decisions__ADR-001-architecture-paradigm.md |   226 -
+ ...__ADR-002-adhd-accommodation-integration (1).md |   395 -
+ ...ions__ADR-002-adhd-accommodation-integration.md |   395 -
+ ...decisions__ADR-003-editor-implementation (1).md |   228 -
+ ..._09-decisions__ADR-003-editor-implementation.md |   228 -
+ ...09-decisions__ADR-004-visual-workflow-ui (1).md |   333 -
+ ...re__09-decisions__ADR-004-visual-workflow-ui.md |   333 -
+ ...9-decisions__ADR-005-memory-architecture (1).md |   281 -
+ ...e__09-decisions__ADR-005-memory-architecture.md |   281 -
+ ...-decisions__ADR-006-mcp-server-selection (1).md |   146 -
+ ...__09-decisions__ADR-006-mcp-server-selection.md |   146 -
+ ...ions__ADR-007-routing-logic-architecture (1).md |   293 -
+ ...ecisions__ADR-007-routing-logic-architecture.md |   293 -
+ ...ons__ADR-008-task-management-integration (1).md |   390 -
+ ...cisions__ADR-008-task-management-integration.md |   390 -
+ ...__ADR-009-session-management-persistence (1).md |   341 -
+ ...ions__ADR-009-session-management-persistence.md |   341 -
+ ...sions__ADR-010-custom-agent-rnd-strategy (1).md |   374 -
+ ...decisions__ADR-010-custom-agent-rnd-strategy.md |   374 -
+ ...1-adhd-accommodation-technical-decisions (1).md |   543 -
+ ...R-011-adhd-accommodation-technical-decisions.md |   543 -
+ ...__09-decisions__ADR-011-local-first-data (1).md |    21 -
+ ...ture__09-decisions__ADR-011-local-first-data.md |    21 -
+ ..._ADR-012-mcp-server-integration-patterns (1).md |   155 -
+ ...ons__ADR-012-mcp-server-integration-patterns.md |   155 -
+ ...9-decisions__ADR-013-data-classification (1).md |    24 -
+ ...e__09-decisions__ADR-013-data-classification.md |    24 -
+ ...-security-architecture-adaptive-learning (1).md |   223 -
+ ...-013-security-architecture-adaptive-learning.md |   223 -
+ ...ADR-014-slice-based-development-workflow (1).md |   273 -
+ ...ns__ADR-014-slice-based-development-workflow.md |   273 -
+ ...-docs__architecture__09-decisions__index (1).md |   129 -
+ ...emux-docs__architecture__09-decisions__index.md |   129 -
+ ...ecture__10-quality__quality-requirements (1).md |   473 -
+ ...chitecture__10-quality__quality-requirements.md |   473 -
+ ...itecture__11-risks__risks-technical-debt (1).md |   453 -
+ ...architecture__11-risks__risks-technical-debt.md |   453 -
+ ...ocs__architecture__12-glossary__glossary (1).md |   339 -
+ ...ux-docs__architecture__12-glossary__glossary.md |   339 -
+ ...diagrams__ui-layouts__development-layout (1).md |   137 -
+ ...cs__diagrams__ui-layouts__development-layout.md |   137 -
+ ..._dopemux-docs__phase2-completion-summary (1).md |   272 -
+ ...ORT__dopemux-docs__phase2-completion-summary.md |   272 -
+ ...t__UPDATED_DOCS__terminal-app-frameworks (1).md |    85 -
+ ...oduct__UPDATED_DOCS__terminal-app-frameworks.md |    85 -
+ ...ux-docs__product__implementation-roadmap (1).md |   620 -
+ ...opemux-docs__product__implementation-roadmap.md |   620 -
+ ...dopemux-docs__tutorials__getting-started (1).md |   506 -
+ ...RT__dopemux-docs__tutorials__getting-started.md |   506 -
+ ...ure__adrs__ADR-001-architecture-paradigm (1).md |   226 -
+ ...tecture__adrs__ADR-001-architecture-paradigm.md |   226 -
+ ...__ADR-002-adhd-accommodation-integration (1).md |   395 -
+ ...adrs__ADR-002-adhd-accommodation-integration.md |   395 -
+ ...rchitecture__design__system_architecture (1).md |   565 -
+ ...s__architecture__design__system_architecture.md |   565 -
+ ...ess__strategy__dopemux_business_strategy (1).md |   783 -
+ ...usiness__strategy__dopemux_business_strategy.md |   783 -
+ ...y__adhd_informed_development_methodology (1).md |   839 --
+ ...ology__adhd_informed_development_methodology.md |   839 --
+ ...__claude-code__claude_code_customization (1).md |   617 -
+ ...tion__claude-code__claude_code_customization.md |   617 -
+ ...tation__frameworks__dependency_framework (1).md |   730 -
+ ...ementation__frameworks__dependency_framework.md |   730 -
+ ..._terminal-ide__terminal_ide_architecture (1).md |  1224 --
+ ...ion__terminal-ide__terminal_ide_architecture.md |  1224 --
+ ...__claude-flow__claude_flow_orchestration (1).md |   491 -
+ ...ions__claude-flow__claude_flow_orchestration.md |   491 -
+ ...ns__multi-llm__multi_model_orchestration (1).md |   770 -
+ ...ations__multi-llm__multi_model_orchestration.md |   770 -
+ ...oduct__prd__dopemux_product_requirements (1).md |   958 --
+ ...__product__prd__dopemux_product_requirements.md |   958 --
+ ..._schemas__api__dopemux_api_specification (1).md |  1105 --
+ ...ocs__schemas__api__dopemux_api_specification.md |  1105 --
+ ..._memory__multi_level_memory_architecture (1).md |   674 -
+ ...ems__memory__multi_level_memory_architecture.md |   674 -
+ ...erfaces__adhd_optimized_interface_design (1).md |   696 -
+ ..._interfaces__adhd_optimized_interface_design.md |   696 -
+ ...docs__ux__patterns__interaction_patterns (1).md |   542 -
+ ...inaldocs__ux__patterns__interaction_patterns.md |   542 -
+ ...lows__taskmaster__taskmaster_integration (1).md |   647 -
+ ...orkflows__taskmaster__taskmaster_integration.md |   647 -
+ ...s__HISTORICAL__PRD_Dopemux_Comprehensive (1).md |   407 -
+ .../docs__HISTORICAL__PRD_Dopemux_Comprehensive.md |   407 -
+ ...__HISTORICAL__README-MIGRATION-TOMBSTONE (1).md |   165 -
+ ...docs__HISTORICAL__README-MIGRATION-TOMBSTONE.md |   165 -
+ .../docs__HISTORICAL__REFACTORING_PLAN (1).md      |   161 -
+ .../docs__HISTORICAL__REFACTORING_PLAN.md          |   161 -
+ ...-iterations__ADHD_OPTIMIZED_ARCHITECTURE (1).md |   424 -
+ ...ture-iterations__ADHD_OPTIMIZED_ARCHITECTURE.md |   424 -
+ ...L__architecture-iterations__ARCHITECTURE (1).md |   664 -
+ ...RICAL__architecture-iterations__ARCHITECTURE.md |   664 -
+ ...terations__COMPLETE_ARCHITECTURE_SUMMARY (1).md |   310 -
+ ...re-iterations__COMPLETE_ARCHITECTURE_SUMMARY.md |   310 -
+ ...L__architecture-iterations__adhd-support (1).md |   585 -
+ ...RICAL__architecture-iterations__adhd-support.md |   585 -
+ ...re-iterations__leantime-integration-plan (1).md |   211 -
+ ...ecture-iterations__leantime-integration-plan.md |   211 -
+ ...itecture-iterations__master-architecture (1).md |   295 -
+ ...architecture-iterations__master-architecture.md |   295 -
+ ...session-documentation-synthesis-complete (1).md |   164 -
+ ...ns__session-documentation-synthesis-complete.md |   164 -
+ ...tion Research Claude Flow vs Vlaude code (1).md |   418 -
+ ...stration Research Claude Flow vs Vlaude code.md |   418 -
+ ...h__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md |   650 -
+ ...earch__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md |   650 -
+ ...orchestrator-research__baseDataAndDesign (1).md |  1772 ---
+ ...mcp-orchestrator-research__baseDataAndDesign.md |  1772 ---
+ ...-orchestrator-research__conport-strategy (1).md |   507 -
+ ..._mcp-orchestrator-research__conport-strategy.md |   507 -
+ ...iminary-docs-normalized__docs__.DS_Store (1).md |   Bin 6155 -> 0 bytes
+ ...preliminary-docs-normalized__docs__.DS_Store.md |   Bin 6155 -> 0 bytes
+ ...alized__docs__ADHD_Feature_Specification (1).md |   570 -
+ ...normalized__docs__ADHD_Feature_Specification.md |   570 -
+ ...lized__docs__ARCHITECTURE_Dopemux_System (1).md |   993 --
+ ...ormalized__docs__ARCHITECTURE_Dopemux_System.md |   993 --
+ ...__docs__DOPEMUX_COMPLETE_CLI_APPLICATION (1).md |   438 -
+ ...ized__docs__DOPEMUX_COMPLETE_CLI_APPLICATION.md |   438 -
+ ...DOPEMUX_COMPREHENSIVE_DETAILS_EXTRACTION (1).md |  5049 -------
+ ...cs__DOPEMUX_COMPREHENSIVE_DETAILS_EXTRACTION.md |  5049 -------
+ ...cs__DOPEMUX_CRITICAL_RESEARCH_EXTRACTION (1).md |   453 -
+ ...__docs__DOPEMUX_CRITICAL_RESEARCH_EXTRACTION.md |   453 -
+ ...docs__DOPEMUX_DESIGN_COMPARISON_ANALYSIS (1).md |   412 -
+ ...ed__docs__DOPEMUX_DESIGN_COMPARISON_ANALYSIS.md |   412 -
+ ...normalized__docs__DOPEMUX_FEATURE_DESIGN (1).md |  1285 --
+ ...ocs-normalized__docs__DOPEMUX_FEATURE_DESIGN.md |  1285 --
+ ...malized__docs__DOPEMUX_FEATURE_DESIGN_v2 (1).md |   808 -
+ ...-normalized__docs__DOPEMUX_FEATURE_DESIGN_v2.md |   808 -
+ ...s-normalized__docs__DOPEMUX_GAP_ANALYSIS (1).md |   312 -
+ ...-docs-normalized__docs__DOPEMUX_GAP_ANALYSIS.md |   312 -
+ ...d__docs__DOPEMUX_IMPLEMENTATION_GUIDE_v2 (1).md |  1833 ---
+ ...lized__docs__DOPEMUX_IMPLEMENTATION_GUIDE_v2.md |  1833 ---
+ ...__docs__DOPEMUX_LIFE_AUTOMATION_FEATURES (1).md |   528 -
+ ...ized__docs__DOPEMUX_LIFE_AUTOMATION_FEATURES.md |   528 -
+ ...inary-docs-normalized__docs__DOPEMUX_MCD (1).md |   899 --
+ ...eliminary-docs-normalized__docs__DOPEMUX_MCD.md |   899 --
+ ...lized__docs__DOPEMUX_MEMORY_ARCHITECTURE (1).md |   449 -
+ ...ormalized__docs__DOPEMUX_MEMORY_ARCHITECTURE.md |   449 -
+ ...inary-docs-normalized__docs__DOPEMUX_PRD (1).md |   516 -
+ ...eliminary-docs-normalized__docs__DOPEMUX_PRD.md |   516 -
+ ...ry-docs-normalized__docs__DOPEMUX_PRD_v2 (1).md |   455 -
+ ...minary-docs-normalized__docs__DOPEMUX_PRD_v2.md |   455 -
+ ...DOPEMUX_SOFTWARE_DEVELOPMENT_AGENT_TYPES (1).md |   235 -
+ ...cs__DOPEMUX_SOFTWARE_DEVELOPMENT_AGENT_TYPES.md |   235 -
+ ...ed__docs__DOPEMUX_TECHNICAL_ARCHITECTURE (1).md |  1327 --
+ ...alized__docs__DOPEMUX_TECHNICAL_ARCHITECTURE.md |  1327 --
+ ..._docs__DOPEMUX_TECHNICAL_ARCHITECTURE_v2 (1).md |   601 -
+ ...zed__docs__DOPEMUX_TECHNICAL_ARCHITECTURE_v2.md |   601 -
+ ..._docs__DOPEMUX_TECHNICAL_ARCHITECTURE_v3 (1).md |   372 -
+ ...zed__docs__DOPEMUX_TECHNICAL_ARCHITECTURE_v3.md |   372 -
+ ...zed__docs__IMPLEMENTATION_Dopemux_Phase1 (1).md |   737 -
+ ...malized__docs__IMPLEMENTATION_Dopemux_Phase1.md |   737 -
+ ...rmalized__docs__MCP_Integration_Patterns (1).md |   587 -
+ ...s-normalized__docs__MCP_Integration_Patterns.md |   587 -
+ ...malized__docs__PRD_Dopemux_Comprehensive (1).md |   407 -
+ ...-normalized__docs__PRD_Dopemux_Comprehensive.md |   407 -
+ ...ocs-normalized__docs__diagrams__adhd.png (1).md |   Bin 64422 -> 0 bytes
+ ...ry-docs-normalized__docs__diagrams__adhd.png.md |   Bin 64422 -> 0 bytes
+ ...ocs-normalized__docs__diagrams__adhd.svg (1).md |  1064 --
+ ...ry-docs-normalized__docs__diagrams__adhd.svg.md |  1064 --
+ ...ocs-normalized__docs__diagrams__life.png (1).md |   Bin 85705 -> 0 bytes
+ ...ry-docs-normalized__docs__diagrams__life.png.md |   Bin 85705 -> 0 bytes
+ ...ocs-normalized__docs__diagrams__life.svg (1).md |  1089 --
+ ...ry-docs-normalized__docs__diagrams__life.svg.md |  1089 --
+ ...s-normalized__docs__diagrams__memory.png (1).md |   Bin 58069 -> 0 bytes
+ ...-docs-normalized__docs__diagrams__memory.png.md |   Bin 58069 -> 0 bytes
+ ...s-normalized__docs__diagrams__memory.svg (1).md |  1064 --
+ ...-docs-normalized__docs__diagrams__memory.svg.md |  1064 --
+ ...lized__docs__diagrams__orchestration.png (1).md |   Bin 67313 -> 0 bytes
+ ...ormalized__docs__diagrams__orchestration.png.md |   Bin 67313 -> 0 bytes
+ ...lized__docs__diagrams__orchestration.svg (1).md |   890 --
+ ...ormalized__docs__diagrams__orchestration.svg.md |   890 --
+ ...ary-docs-normalized__research__.DS_Store (1).md |   Bin 8377 -> 0 bytes
+ ...iminary-docs-normalized__research__.DS_Store.md |   Bin 8377 -> 0 bytes
+ ...lized__research__architecture__.DS_Store (1).md |   Bin 6155 -> 0 bytes
+ ...ormalized__research__architecture__.DS_Store.md |   Bin 6155 -> 0 bytes
+ ...cture__DOPEMUX_ARCHITECTURE_v2_CORRECTED (1).md |   635 -
+ ...hitecture__DOPEMUX_ARCHITECTURE_v2_CORRECTED.md |   635 -
+ ...architecture__DOPEMUX_COMPLETE_SYSTEM_v3 (1).md |   813 -
+ ...ch__architecture__DOPEMUX_COMPLETE_SYSTEM_v3.md |   813 -
+ ...__architecture__DOPEMUX_CUSTOM_AGENT_RND (1).md |   840 --
+ ...arch__architecture__DOPEMUX_CUSTOM_AGENT_RND.md |   840 --
+ ...ecture__DOPEMUX_IMPLEMENTATION_BLUEPRINT (1).md |   564 -
+ ...chitecture__DOPEMUX_IMPLEMENTATION_BLUEPRINT.md |   564 -
+ ...hitecture__DOPEMUX_PHASE1_IMPLEMENTATION (1).md |   730 -
+ ..._architecture__DOPEMUX_PHASE1_IMPLEMENTATION.md |   730 -
+ ...h__architecture__DOPEMUX_QUICK_REFERENCE (1).md |   301 -
+ ...earch__architecture__DOPEMUX_QUICK_REFERENCE.md |   301 -
+ ...re__Implementation-claudecode-claudeflow (1).md |    83 -
+ ...ecture__Implementation-claudecode-claudeflow.md |    83 -
+ ...Framework- Comprehensive Technical Guide (1).md |   205 -
+ ...ory Framework- Comprehensive Technical Guide.md |   205 -
+ ...cture__claudesquad-claudeflowintegration (1).md |   426 -
+ ...hitecture__claudesquad-claudeflowintegration.md |   426 -
+ ...opemux-architecture-implementation-guide (1).md |   665 -
+ ...e__dopemux-architecture-implementation-guide.md |   665 -
+ ...__architecture__dopemux-claude-optimized (1).md |   303 -
+ ...arch__architecture__dopemux-claude-optimized.md |   303 -
+ ...ized__research__architecture__dopemuxMVP (1).md |    63 -
+ ...rmalized__research__architecture__dopemuxMVP.md |    63 -
+ ..._architecture__dopemux_CC_CF_integration (1).md |   228 -
+ ...rch__architecture__dopemux_CC_CF_integration.md |   228 -
+ ...tecture__leantime-taskmaster-integration (1).md |   243 -
+ ...rchitecture__leantime-taskmaster-integration.md |   243 -
+ ...ecture__leantime-taskmaster-integration2 (1).md |    75 -
+ ...chitecture__leantime-taskmaster-integration2.md |    75 -
+ ...chitecture__life-automation-adhd-support (1).md |   430 -
+ ...__architecture__life-automation-adhd-support.md |   430 -
+ ..._architecture__tmux_integration_research (1).md |   125 -
+ ...rch__architecture__tmux_integration_research.md |   125 -
+ ...ation \342\200\224 Detailed Design:Feat (1).md" |   389 -
+ ...estration \342\200\224 Detailed Design:Feat.md" |   389 -
+ ...__research__findings__# Dopemux from 0.1 (1).md |   146 -
+ ...ized__research__findings__# Dopemux from 0.1.md |   146 -
+ ...arch__findings__# Filth and Roast Ritual (1).md |    87 -
+ ...research__findings__# Filth and Roast Ritual.md |    87 -
+ ...ormalized__research__findings__.DS_Store (1).md |   Bin 6155 -> 0 bytes
+ ...cs-normalized__research__findings__.DS_Store.md |   Bin 6155 -> 0 bytes
+ ...Platform for Dev and Life Automation.pdf (1).md |   Bin 246873 -> 0 bytes
+ ...CLI Platform for Dev and Life Automation.pdf.md |   Bin 246873 -> 0 bytes
+ ...esearch__findings__DOPEMUX_COMPONENTS_v1 (1).md |  1023 --
+ ...d__research__findings__DOPEMUX_COMPONENTS_v1.md |  1023 --
+ ...arch__findings__DOPEMUX_CUSTOM_AGENT_RND (1).md |   840 --
+ ...research__findings__DOPEMUX_CUSTOM_AGENT_RND.md |   840 --
+ ...earch__findings__DOPEMUX_QUICK_REFERENCE (1).md |   301 -
+ ..._research__findings__DOPEMUX_QUICK_REFERENCE.md |   301 -
+ ...rch__findings__DOPEMUX_RESEARCH_FINDINGS (1).md |   250 -
+ ...esearch__findings__DOPEMUX_RESEARCH_FINDINGS.md |   250 -
+ ...__findings__Dopemux UI Spec (tmux + Ink) (1).md |   219 -
+ ...arch__findings__Dopemux UI Spec (tmux + Ink).md |   219 -
+ ...gs__Implementation-claudecode-claudeflow (1).md |    83 -
+ ...ndings__Implementation-claudecode-claudeflow.md |    83 -
+ ...__Integrating Claude Code with Codex CLI (1).md |    95 -
+ ...ings__Integrating Claude Code with Codex CLI.md |    95 -
+ ...search__findings__Uberslicer - from v0-1 (1).md |   402 -
+ ...__research__findings__Uberslicer - from v0-1.md |   402 -
+ ...alized__research__findings__adhd-support (1).md |   585 -
+ ...normalized__research__findings__adhd-support.md |   585 -
+ ...alized__research__findings__ai-doc-files (1).md |   167 -
+ ...normalized__research__findings__ai-doc-files.md |   167 -
+ ...rch__findings__ccflare-andother-monitors (1).md |    67 -
+ ...esearch__findings__ccflare-andother-monitors.md |    67 -
+ ..._findings__ccflare-monitoring-and-others (1).md |    67 -
+ ...rch__findings__ccflare-monitoring-and-others.md |    67 -
+ ...rmalized__research__findings__cf-metagpt (1).md |   123 -
+ ...s-normalized__research__findings__cf-metagpt.md |   123 -
+ ..._research__findings__chat-window-and-rag (1).md |   308 -
+ ...zed__research__findings__chat-window-and-rag.md |   308 -
+ ...arch__findings__claude-tools-integration (1).md |    71 -
+ ...research__findings__claude-tools-integration.md |    71 -
+ ...h__findings__comprehensive-adhd-features (1).md |   585 -
+ ...earch__findings__comprehensive-adhd-features.md |   585 -
+ ...arch__findings__context-bloat-management (1).md |   419 -
+ ...research__findings__context-bloat-management.md |   419 -
+ ..._findings__context-management-frameworks (1).md |   147 -
+ ...rch__findings__context-management-frameworks.md |   147 -
+ ...ndings__context-management-redis-caching (1).md |   147 -
+ ...__findings__context-management-redis-caching.md |   147 -
+ ...arch__findings__dopemux-feature-analysis (1).md |   727 -
+ ...research__findings__dopemux-feature-analysis.md |   727 -
+ ...tration_detailed_design_feature_spec_v_0 (1).md |   333 -
+ ...chestration_detailed_design_feature_spec_v_0.md |   333 -
+ ...ch__findings__dpmx-ccVsclineVScustom-pt2 (1).md |   265 -
+ ...search__findings__dpmx-ccVsclineVScustom-pt2.md |   265 -
+ ...normalized__research__findings__leantime (1).md |    67 -
+ ...rch__findings__leantime-adhd-integration (1).md |   269 -
+ ...esearch__findings__leantime-adhd-integration.md |   269 -
+ ...ocs-normalized__research__findings__leantime.md |    67 -
+ ...zed__research__findings__letta-deep-dive (1).md |   205 -
+ ...malized__research__findings__letta-deep-dive.md |   205 -
+ ...ch__findings__modern-terminal-frameworks (1).md |   105 -
+ ...dern-terminal-frameworks-and-ui-patterns (1).md |   105 -
+ ...__modern-terminal-frameworks-and-ui-patterns.md |   105 -
+ ...search__findings__modern-terminal-frameworks.md |   105 -
+ ...ch__findings__multi-agent-coding-systems (1).md |    63 -
+ ...search__findings__multi-agent-coding-systems.md |    63 -
+ ..._findings__multi-llm-chat-and-RAG-memory (1).md |   308 -
+ ...rch__findings__multi-llm-chat-and-RAG-memory.md |   308 -
+ ...ndings__superclaude and zen-mcp research (1).md |  1089 --
+ ...__findings__superclaude and zen-mcp research.md |  1089 --
+ ...ion (Features, Workflows & Benefits).pdf (1).md |   Bin 219719 -> 0 bytes
+ ...gration (Features, Workflows & Benefits).pdf.md |   Bin 219719 -> 0 bytes
+ ...tegrations__awesome-claude-code-analysis (1).md |   112 -
+ ...__integrations__awesome-claude-code-analysis.md |   112 -
+ ...s__awesome-claude-code-research-chatgpt5 (1).md |   133 -
+ ...tions__awesome-claude-code-research-chatgpt5.md |   133 -
+ ...rations__claude-flow-dopemux-integration (1).md |   228 -
+ ...ntegrations__claude-flow-dopemux-integration.md |   228 -
+ ...earch__integrations__dopemux-integration (1).md |   228 -
+ ..._research__integrations__dopemux-integration.md |   228 -
+ ...opemux_routing_logic_design_doc_spec_v_0 (1).md |   270 -
+ ...s__dopemux_routing_logic_design_doc_spec_v_0.md |   270 -
+ ...ons__multi-instance-claude-code-research (1).md |   148 -
+ ...rations__multi-instance-claude-code-research.md |   148 -
+ ..._research__integrations__tmux-app-design (1).md |   277 -
+ ...zed__research__integrations__tmux-app-design.md |   277 -
+ ...__research__patterns__optimized-patterns (1).md |   206 -
+ ...ized__research__patterns__optimized-patterns.md |   206 -
+ .../docs__IMPLEMENTATION_SPECIFICATION (1).md      |  1293 --
+ .../docs__IMPLEMENTATION_SPECIFICATION.md          |  1293 --
+ .../docs__IMPLEMENTATION_SUMMARY (1).md            |   314 -
+ .../sourceFiles/docs__IMPLEMENTATION_SUMMARY.md    |   314 -
+ .../history/sourceFiles/docs__INSTALLATION (1).md  |   252 -
+ .../history/sourceFiles/docs__INSTALLATION.md      |   252 -
+ .../docs__INTEGRATION_PACK_SUMMARY (1).md          |   251 -
+ .../sourceFiles/docs__INTEGRATION_PACK_SUMMARY.md  |   251 -
+ .../sourceFiles/docs__INTEGRATION_SUMMARY (1).md   |   223 -
+ .../sourceFiles/docs__INTEGRATION_SUMMARY.md       |   223 -
+ .../docs__INTELLIGENT_MEMORY_OVERVIEW (1).md       |   180 -
+ .../docs__INTELLIGENT_MEMORY_OVERVIEW.md           |   180 -
+ .../docs__LEANTIME_API_TROUBLESHOOTING (1).md      |   145 -
+ .../docs__LEANTIME_API_TROUBLESHOOTING.md          |   145 -
+ .../docs__LEANTIME_INTEGRATION_SUCCESS (1).md      |   192 -
+ .../docs__LEANTIME_INTEGRATION_SUCCESS.md          |   192 -
+ .../docs__LEANTIME_MCP_OFFICIAL_ANALYSIS (1).md    |   230 -
+ .../docs__LEANTIME_MCP_OFFICIAL_ANALYSIS.md        |   230 -
+ .../sourceFiles/docs__LEANTIME_POST_SETUP (1).md   |   118 -
+ .../sourceFiles/docs__LEANTIME_POST_SETUP.md       |   118 -
+ .../docs__LEANTIME_SETUP_SUMMARY (1).md            |   120 -
+ .../sourceFiles/docs__LEANTIME_SETUP_SUMMARY.md    |   120 -
+ .../docs__LEANTIME_TROUBLESHOOTING (1).md          |   318 -
+ .../sourceFiles/docs__LEANTIME_TROUBLESHOOTING.md  |   318 -
+ .../docs__MCP_COMPLETE_TOOL_ANALYSIS (1).md        |   300 -
+ .../docs__MCP_COMPLETE_TOOL_ANALYSIS.md            |   300 -
+ .../docs__MCP_DETAILED_ANALYSIS_PLAN (1).md        |   235 -
+ .../docs__MCP_DETAILED_ANALYSIS_PLAN.md            |   235 -
+ .../docs__MCP_DYNAMIC_DISCOVERY_SYSTEM (1).md      |   654 -
+ .../docs__MCP_DYNAMIC_DISCOVERY_SYSTEM.md          |   654 -
+ .../sourceFiles/docs__MCP_PROXY_QUICK_START (1).md |   128 -
+ .../sourceFiles/docs__MCP_PROXY_QUICK_START.md     |   128 -
+ .../sourceFiles/docs__MCP_PROXY_SETUP_GUIDE (1).md |   433 -
+ .../sourceFiles/docs__MCP_PROXY_SETUP_GUIDE.md     |   433 -
+ .../sourceFiles/docs__MCP_ROUTING_MATRIX (1).md    |   495 -
+ .../sourceFiles/docs__MCP_ROUTING_MATRIX.md        |   495 -
+ .../docs__MCP_SERVER_SPECIFICATIONS (1).md         |   585 -
+ .../sourceFiles/docs__MCP_SERVER_SPECIFICATIONS.md |   585 -
+ .../docs__MCP_TOOL_ANALYSIS_CONTEXT (1).md         |   217 -
+ .../sourceFiles/docs__MCP_TOOL_ANALYSIS_CONTEXT.md |   217 -
+ .../docs__MEMORY_STACK_DEPLOYMENT_SUCCESS (1).md   |   237 -
+ .../docs__MEMORY_STACK_DEPLOYMENT_SUCCESS.md       |   237 -
+ .../docs__MEMORY_SYSTEM_HTTP_API_DEMO (1).md       |   278 -
+ .../docs__MEMORY_SYSTEM_HTTP_API_DEMO.md           |   278 -
+ .../docs__MEMORY_SYSTEM_VALIDATION_REPORT (1).md   |   215 -
+ .../docs__MEMORY_SYSTEM_VALIDATION_REPORT.md       |   215 -
+ .../docs__METAMCP_CLAUDE_CODE_INTEGRATION (1).md   |   178 -
+ .../docs__METAMCP_CLAUDE_CODE_INTEGRATION.md       |   178 -
+ .../docs__METAMCP_IMPLEMENTATION_COMPLETE (1).md   |   229 -
+ .../docs__METAMCP_IMPLEMENTATION_COMPLETE.md       |   229 -
+ .../docs__METAMCP_IMPLEMENTATION_SUMMARY (1).md    |   172 -
+ .../docs__METAMCP_IMPLEMENTATION_SUMMARY.md        |   172 -
+ .../docs__METAMCP_ORCHESTRATION_ROADMAP (1).md     |   317 -
+ .../docs__METAMCP_ORCHESTRATION_ROADMAP.md         |   317 -
+ .../docs__PERSISTENT_VOLUMES_SETUP (1).md          |   112 -
+ .../sourceFiles/docs__PERSISTENT_VOLUMES_SETUP.md  |   112 -
+ .../docs__PHASE_1_COMPLETION_REPORT (1).md         |   201 -
+ .../sourceFiles/docs__PHASE_1_COMPLETION_REPORT.md |   201 -
+ .../docs__PHASE_2_TMUX_INTEGRATION (1).md          |   201 -
+ .../sourceFiles/docs__PHASE_2_TMUX_INTEGRATION.md  |   201 -
+ .../history/sourceFiles/docs__README (1).md        |   704 -
+ .../history/sourceFiles/docs__README copy (1).md   |   251 -
+ .../history/sourceFiles/docs__README copy.md       |   251 -
+ .../history/sourceFiles/docs__README.md            |   704 -
+ .../docs__SESSION_COMPLETION_STATUS (1).md         |   112 -
+ .../docs__SESSION_PERSISTENCE_ARCHIVE (1).md       |   201 -
+ .../docs__SESSION_PERSISTENCE_ARCHIVE.md           |   201 -
+ .../history/sourceFiles/docs__SETUP_GUIDE (1).md   |  1178 --
+ .../history/sourceFiles/docs__SETUP_GUIDE.md       |  1178 --
+ .../sourceFiles/docs__SLASH_COMMANDS (1).md        |   363 -
+ .../history/sourceFiles/docs__SLASH_COMMANDS.md    |   363 -
+ .../sourceFiles/docs__TEST_COVERAGE_REPORT (1).md  |   129 -
+ .../sourceFiles/docs__TEST_COVERAGE_REPORT.md      |   129 -
+ .../docs__TEST_IMPROVEMENT_SESSION (1).md          |   205 -
+ .../sourceFiles/docs__TEST_IMPROVEMENT_SESSION.md  |   205 -
+ .../docs__UNIFIED_MEMORY_IMPLEMENTATION (1).md     |   313 -
+ .../docs__UNIFIED_MEMORY_IMPLEMENTATION.md         |   313 -
+ .../history/sourceFiles/docs__USER_GUIDE (1).md    |   507 -
+ .../history/sourceFiles/docs__USER_GUIDE.md        |   507 -
+ .../history/sourceFiles/docs__adhd-support (1).md  |   585 -
+ .../history/sourceFiles/docs__adhd-support.md      |   585 -
+ ..._ADR-003-adopt-zep-conversational-memory (1).md |    36 -
+ ...adr__ADR-003-adopt-zep-conversational-memory.md |    36 -
+ ...r__ADR-004-normalize-conversation-schema (1).md |    42 -
+ ...__adr__ADR-004-normalize-conversation-schema.md |    42 -
+ ...ADR-005-orchestrator-writes-memory-first (1).md |    37 -
+ ...dr__ADR-005-orchestrator-writes-memory-first.md |    37 -
+ ...dr__ADR-006-keep-letta-agent-tier-memory (1).md |    36 -
+ ...s__adr__ADR-006-keep-letta-agent-tier-memory.md |    36 -
+ ...docs__analysis__01-architecture-overview (1).md |   180 -
+ .../docs__analysis__01-architecture-overview.md    |   180 -
+ ...nalysis__02-datastore-orchestration-raci (1).md |   270 -
+ ...s__analysis__02-datastore-orchestration-raci.md |   270 -
+ ...cs__analysis__03-tool-inventory-complete (1).md |   355 -
+ .../docs__analysis__03-tool-inventory-complete.md  |   355 -
+ ...s__analysis__04-integration-requirements (1).md |   473 -
+ .../docs__analysis__04-integration-requirements.md |   473 -
+ .../docs__analysis__05-synthesis-decisions (1).md  |   333 -
+ .../docs__analysis__05-synthesis-decisions.md      |   333 -
+ ...-memory__intelligent-memory-architecture (1).md |   717 -
+ ...gent-memory__intelligent-memory-architecture.md |   717 -
+ .../sourceFiles/docs__decisions__README (1).md     |    32 -
+ .../history/sourceFiles/docs__decisions__README.md |    32 -
+ ...decisions__adr-017-mcp-proxy-integration (1).md |   238 -
+ ...cs__decisions__adr-017-mcp-proxy-integration.md |   238 -
+ ...ory-intelligence__implementation-roadmap (1).md |   166 -
+ ..._memory-intelligence__implementation-roadmap.md |   166 -
+ .../docs__implementation__phase1-foundation (1).md |   488 -
+ .../docs__implementation__phase1-foundation.md     |   488 -
+ ...docs__implementation__phase2-integration (1).md |   740 -
+ .../docs__implementation__phase2-integration.md    |   740 -
+ ...ocs__implementation__phase3-optimization (1).md |   692 -
+ .../docs__implementation__phase3-optimization.md   |   692 -
+ .../history/sourceFiles/docs__index (1).md         |   234 -
+ .../history/sourceFiles/docs__index.md             |   234 -
+ .../docs__leantime-integration-plan (1).md         |   211 -
+ .../sourceFiles/docs__leantime-integration-plan.md |   211 -
+ .../sourceFiles/docs__master-architecture (1).md   |   295 -
+ .../sourceFiles/docs__master-architecture.md       |   295 -
+ ...estratorTemp__ACTUAL_MCP_TOOLS_INVENTORY (1).md |   298 -
+ ...OrchestratorTemp__ACTUAL_MCP_TOOLS_INVENTORY.md |   298 -
+ ...tion Research Claude Flow vs Vlaude code (1).md |   418 -
+ ...stration Research Claude Flow vs Vlaude code.md |   418 -
+ ...atorTemp__COMPLETE_TOOL_WORKFLOW_MAPPING (1).md |   858 --
+ ...estratorTemp__COMPLETE_TOOL_WORKFLOW_MAPPING.md |   858 --
+ ...p__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md |   650 -
+ ...rTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md |   650 -
+ ...__mcpOrchestratorTemp__baseDataAndDesign (1).md |  1772 ---
+ ...docs__mcpOrchestratorTemp__baseDataAndDesign.md |  1772 ---
+ ...s__mcpOrchestratorTemp__conport-strategy (1).md |   507 -
+ .../docs__mcpOrchestratorTemp__conport-strategy.md |   507 -
+ ..._research__chatgpt-deep-research-queries (1).md |   343 -
+ ...ocs__research__chatgpt-deep-research-queries.md |   343 -
+ .../docs__research__exa-research-queries (1).md    |   342 -
+ .../docs__research__exa-research-queries.md        |   342 -
+ ...__research__knowledge-graph-rag-analysis (1).md |   313 -
+ ...docs__research__knowledge-graph-rag-analysis.md |   313 -
+ ...ocs__research__research-backlog-complete (1).md |   425 -
+ .../docs__research__research-backlog-complete.md   |   425 -
+ ...arch__research-findings-01-milvus-hybrid (1).md |   232 -
+ ...research__research-findings-01-milvus-hybrid.md |   232 -
+ ...ocs__research__sequential-thinking-input (1).md |   677 -
+ .../docs__research__sequential-thinking-input.md   |   677 -
+ .../docs__rfc__RFC-001-unified-memory-graph (1).md |   139 -
+ .../docs__rfc__RFC-001-unified-memory-graph.md     |   139 -
+ ...session-documentation-synthesis-complete (1).md |   164 -
+ ...cs__session-documentation-synthesis-complete.md |   164 -
+ .../docuxtractor__IMPLEMENTATION_PLAN (1).md       |   200 -
+ .../docuxtractor__IMPLEMENTATION_PLAN.md           |   200 -
+ .../docuxtractor__RESUME_INSTRUCTIONS (1).md       |   133 -
+ .../docuxtractor__RESUME_INSTRUCTIONS.md           |   133 -
+ .../sourceFiles/docuxtractor__SESSION_STATE (1).md |   145 -
+ .../sourceFiles/docuxtractor__SESSION_STATE.md     |   145 -
+ ..._output_e2e__embedding_validation_report (1).md |    38 -
+ ...test_output_e2e__embedding_validation_report.md |    38 -
+ ...opemux-docuXtractor__ARCHITECTURE_STATUS (1).md |   172 -
+ .../dopemux-docuXtractor__CONTEXT_RESTORE (1).md   |   155 -
+ .../dopemux-docuXtractor__CONTEXT_RESTORE.md       |   155 -
+ .../dopemux-docuXtractor__CURRENT_TODO (1).md      |   140 -
+ .../dopemux-docuXtractor__CURRENT_TODO.md          |   140 -
+ ...-docuXtractor__DOCUXTRACTOR_PLANNING_LOG (1).md |   537 -
+ ...emux-docuXtractor__DOCUXTRACTOR_PLANNING_LOG.md |   537 -
+ .../dopemux-docuXtractor__PHASE_3_ROADMAP (1).md   |   200 -
+ .../dopemux-docuXtractor__PHASE_3_ROADMAP.md       |   200 -
+ .../dopemux-docuXtractor__README_STANDALONE (1).md |   247 -
+ .../dopemux-docuXtractor__README_STANDALONE.md     |   247 -
+ .../dopemux-docuXtractor__SESSION_CURRENT (1).md   |   116 -
+ .../dopemux-docuXtractor__SESSION_CURRENT.md       |   116 -
+ ...emux-docuXtractor__SESSION_RESTORE_FINAL (1).md |   177 -
+ .../dopemux-docuXtractor__SESSION_RESTORE_FINAL.md |   177 -
+ .../dopemux-docuXtractor__TODO_NEXT_SESSION (1).md |   172 -
+ .../dopemux-docuXtractor__TODO_NEXT_SESSION.md     |   172 -
+ .../dopemux-docuXtractor__session (1).md           |    82 -
+ .../sourceFiles/dopemux-docuXtractor__session.md   |    82 -
+ .../dopemux-docuXtractor__snapshot (1).md          |   189 -
+ .../sourceFiles/dopemux-docuXtractor__snapshot.md  |   189 -
+ ..._docuxtractor__templates__arc42_template (1).md |   163 -
+ ...src__docuxtractor__templates__arc42_template.md |   163 -
+ ...c__docuxtractor__templates__ard_template (1).md |   207 -
+ ...__src__docuxtractor__templates__ard_template.md |   207 -
+ ...uxtractor__templates__c4_system_template (1).md |   131 -
+ ..._docuxtractor__templates__c4_system_template.md |   131 -
+ ...r__templates__diataxis_tutorial_template (1).md |   126 -
+ ...actor__templates__diataxis_tutorial_template.md |   126 -
+ ...c__docuxtractor__templates__prd_template (1).md |   138 -
+ ...__src__docuxtractor__templates__prd_template.md |   138 -
+ ...c__docuxtractor__templates__rfc_template (1).md |   220 -
+ ...__src__docuxtractor__templates__rfc_template.md |   220 -
+ ...x-docuXtractor__technical_specifications (1).md |   772 -
+ ...pemux-docuXtractor__technical_specifications.md |   772 -
+ .../sourceFiles/dopemux-docuXtractor__todo (1).md  |    80 -
+ .../sourceFiles/dopemux-docuXtractor__todo.md      |    80 -
+ ..._claude-code__dopemux-claude-integration (1).md |   147 -
+ ...ion__claude-code__dopemux-claude-integration.md |   147 -
+ ...ration__superclaude__DOPECLAUDE_PROGRESS (1).md |   114 -
+ ...ntegration__superclaude__DOPECLAUDE_PROGRESS.md |   114 -
+ ...uperclaude__dopemux-superclaude-analysis (1).md |   156 -
+ ...n__superclaude__dopemux-superclaude-analysis.md |   156 -
+ ...uperclaude__superclaude-command-analysis (1).md |   291 -
+ ...n__superclaude__superclaude-command-analysis.md |   291 -
+ .../sourceFiles/output__SYSTEM_BIBLE (1).md        |  4913 ------
+ .../history/sourceFiles/output__SYSTEM_BIBLE.md    |  4913 ------
+ ...l_files__ADHD_Feature_Specification_docs (1).md |    53 -
+ ...idual_files__ADHD_Feature_Specification_docs.md |    53 -
+ ...ures__Workflows___Benefits__integrations (1).md |    81 -
+ ...Features__Workflows___Benefits__integrations.md |    81 -
+ ...orm_for_Dev_and_Life_Automation_findings (1).md |    69 -
+ ...latform_for_Dev_and_Life_Automation_findings.md |    69 -
+ ...X_ARCHITECTURE_v2_CORRECTED_architecture (1).md |    50 -
+ ...PEMUX_ARCHITECTURE_v2_CORRECTED_architecture.md |    50 -
+ ...s__DOPEMUX_COMPLETE_CLI_APPLICATION_docs (1).md |    84 -
+ ...files__DOPEMUX_COMPLETE_CLI_APPLICATION_docs.md |    84 -
+ ..._DOPEMUX_COMPLETE_SYSTEM_v3_architecture (1).md |    47 -
+ ...les__DOPEMUX_COMPLETE_SYSTEM_v3_architecture.md |    47 -
+ ...al_files__DOPEMUX_COMPONENTS_v1_findings (1).md |    66 -
+ ...vidual_files__DOPEMUX_COMPONENTS_v1_findings.md |    66 -
+ ...UX_COMPREHENSIVE_DETAILS_EXTRACTION_docs (1).md |    30 -
+ ...OPEMUX_COMPREHENSIVE_DETAILS_EXTRACTION_docs.md |    30 -
+ ...s__DOPEMUX_CUSTOM_AGENT_RND_architecture (1).md |    61 -
+ ...files__DOPEMUX_CUSTOM_AGENT_RND_architecture.md |    61 -
+ ...files__DOPEMUX_CUSTOM_AGENT_RND_findings (1).md |    41 -
+ ...ual_files__DOPEMUX_CUSTOM_AGENT_RND_findings.md |    41 -
+ ..._DOPEMUX_DESIGN_COMPARISON_ANALYSIS_docs (1).md |    39 -
+ ...les__DOPEMUX_DESIGN_COMPARISON_ANALYSIS_docs.md |    39 -
+ ...idual_files__DOPEMUX_FEATURE_DESIGN_docs (1).md |    71 -
+ ...ndividual_files__DOPEMUX_FEATURE_DESIGN_docs.md |    71 -
+ ...al_files__DOPEMUX_FEATURE_DESIGN_v2_docs (1).md |    62 -
+ ...vidual_files__DOPEMUX_FEATURE_DESIGN_v2_docs.md |    62 -
+ ...ividual_files__DOPEMUX_GAP_ANALYSIS_docs (1).md |    57 -
+ ..._individual_files__DOPEMUX_GAP_ANALYSIS_docs.md |    57 -
+ ...UX_IMPLEMENTATION_BLUEPRINT_architecture (1).md |    36 -
+ ...OPEMUX_IMPLEMENTATION_BLUEPRINT_architecture.md |    36 -
+ ...es__DOPEMUX_IMPLEMENTATION_GUIDE_v2_docs (1).md |    71 -
+ ..._files__DOPEMUX_IMPLEMENTATION_GUIDE_v2_docs.md |    71 -
+ ...s__DOPEMUX_LIFE_AUTOMATION_FEATURES_docs (1).md |    63 -
+ ...files__DOPEMUX_LIFE_AUTOMATION_FEATURES_docs.md |    63 -
+ ...tput__individual_files__DOPEMUX_MCD_docs (1).md |    58 -
+ .../output__individual_files__DOPEMUX_MCD_docs.md  |    58 -
+ ...PEMUX_PHASE1_IMPLEMENTATION_architecture (1).md |    63 -
+ ...__DOPEMUX_PHASE1_IMPLEMENTATION_architecture.md |    63 -
+ ...tput__individual_files__DOPEMUX_PRD_docs (1).md |    82 -
+ .../output__individual_files__DOPEMUX_PRD_docs.md  |    82 -
+ ...t__individual_files__DOPEMUX_PRD_v2_docs (1).md |    48 -
+ ...utput__individual_files__DOPEMUX_PRD_v2_docs.md |    48 -
+ ...es__DOPEMUX_QUICK_REFERENCE_architecture (1).md |    86 -
+ ..._files__DOPEMUX_QUICK_REFERENCE_architecture.md |    86 -
+ ..._files__DOPEMUX_QUICK_REFERENCE_findings (1).md |    65 -
+ ...dual_files__DOPEMUX_QUICK_REFERENCE_findings.md |    65 -
+ ...iles__DOPEMUX_RESEARCH_FINDINGS_findings (1).md |    34 -
+ ...al_files__DOPEMUX_RESEARCH_FINDINGS_findings.md |    34 -
+ ...UX_SOFTWARE_DEVELOPMENT_AGENT_TYPES_docs (1).md |    39 -
+ ...OPEMUX_SOFTWARE_DEVELOPMENT_AGENT_TYPES_docs.md |    39 -
+ ...les__DOPEMUX_TECHNICAL_ARCHITECTURE_docs (1).md |    81 -
+ ...l_files__DOPEMUX_TECHNICAL_ARCHITECTURE_docs.md |    81 -
+ ...__DOPEMUX_TECHNICAL_ARCHITECTURE_v2_docs (1).md |    59 -
+ ...iles__DOPEMUX_TECHNICAL_ARCHITECTURE_v2_docs.md |    59 -
+ ...__DOPEMUX_TECHNICAL_ARCHITECTURE_v3_docs (1).md |    87 -
+ ...iles__DOPEMUX_TECHNICAL_ARCHITECTURE_v3_docs.md |    87 -
+ ...s__Dopemux_UI_Spec__tmux___Ink__findings (1).md |    56 -
+ ...files__Dopemux_UI_Spec__tmux___Ink__findings.md |    56 -
+ ...iles__IMPLEMENTATION_Dopemux_Phase1_docs (1).md |    52 -
+ ...al_files__IMPLEMENTATION_Dopemux_Phase1_docs.md |    52 -
+ ...ation_claudecode_claudeflow_architecture (1).md |    84 -
+ ...mentation_claudecode_claudeflow_architecture.md |    84 -
+ ...ting_Claude_Code_with_Codex_CLI_findings (1).md |    85 -
+ ...egrating_Claude_Code_with_Codex_CLI_findings.md |    85 -
+ ...mprehensive_Technical_Guide_architecture (1).md |    79 -
+ ...__Comprehensive_Technical_Guide_architecture.md |    79 -
+ ...ual_files__MCP_Integration_Patterns_docs (1).md |    56 -
+ ...ividual_files__MCP_Integration_Patterns_docs.md |    56 -
+ ...al_files__PRD_Dopemux_Comprehensive_docs (1).md |    59 -
+ ...vidual_files__PRD_Dopemux_Comprehensive_docs.md |    59 -
+ ...l_files__Uberslicer___from_v0_1_findings (1).md |    74 -
+ ...idual_files__Uberslicer___from_v0_1_findings.md |    74 -
+ ...output__individual_files___DS_Store_docs (1).md |    43 -
+ .../output__individual_files___DS_Store_docs.md    |    43 -
+ ...stration___Detailed_Design_Feat_findings (1).md |    81 -
+ ...rchestration___Detailed_Design_Feat_findings.md |    81 -
+ ...idual_files____Dopemux_from_0_1_findings (1).md |    55 -
+ ...ndividual_files____Dopemux_from_0_1_findings.md |    55 -
+ ...files____Filth_and_Roast_Ritual_findings (1).md |    36 -
+ ...ual_files____Filth_and_Roast_Ritual_findings.md |    36 -
+ ..._individual_files__adhd_support_findings (1).md |    33 -
+ ...put__individual_files__adhd_support_findings.md |    33 -
+ ..._individual_files__ai_doc_files_findings (1).md |    49 -
+ ...put__individual_files__ai_doc_files_findings.md |    49 -
+ ...wesome_claude_code_analysis_integrations (1).md |    68 -
+ ...s__awesome_claude_code_analysis_integrations.md |    68 -
+ ...aude_code_research_chatgpt5_integrations (1).md |    49 -
+ ...e_claude_code_research_chatgpt5_integrations.md |    49 -
+ ...iles__ccflare_andother_monitors_findings (1).md |    47 -
+ ...al_files__ccflare_andother_monitors_findings.md |    47 -
+ ...__ccflare_monitoring_and_others_findings (1).md |    37 -
+ ...iles__ccflare_monitoring_and_others_findings.md |    37 -
+ ...t__individual_files__cf_metagpt_findings (1).md |    40 -
+ ...utput__individual_files__cf_metagpt_findings.md |    40 -
+ ...dual_files__chat_window_and_rag_findings (1).md |    37 -
+ ...dividual_files__chat_window_and_rag_findings.md |    37 -
+ ...de_flow_dopemux_integration_integrations (1).md |    39 -
+ ...claude_flow_dopemux_integration_integrations.md |    39 -
+ ...files__claude_tools_integration_findings (1).md |    74 -
+ ...ual_files__claude_tools_integration_findings.md |    74 -
+ ...squad_claudeflowintegration_architecture (1).md |    65 -
+ ...audesquad_claudeflowintegration_architecture.md |    65 -
+ ...es__comprehensive_adhd_features_findings (1).md |    47 -
+ ..._files__comprehensive_adhd_features_findings.md |    47 -
+ ...files__context_bloat_management_findings (1).md |    43 -
+ ...ual_files__context_bloat_management_findings.md |    43 -
+ ...__context_management_frameworks_findings (1).md |    35 -
+ ...iles__context_management_frameworks_findings.md |    35 -
+ ...ontext_management_redis_caching_findings (1).md |    47 -
+ ...s__context_management_redis_caching_findings.md |    47 -
+ ...ndividual_files__dopemuxMVP_architecture (1).md |    86 -
+ ...t__individual_files__dopemuxMVP_architecture.md |    86 -
+ ...__dopemux_CC_CF_integration_architecture (1).md |    52 -
+ ...iles__dopemux_CC_CF_integration_architecture.md |    52 -
+ ...ecture_implementation_guide_architecture (1).md |    69 -
+ ...chitecture_implementation_guide_architecture.md |    69 -
+ ...etailed_design_feature_spec_v_0_findings (1).md |    69 -
+ ...on_detailed_design_feature_spec_v_0_findings.md |    69 -
+ ...files__dopemux_feature_analysis_findings (1).md |    37 -
+ ...ual_files__dopemux_feature_analysis_findings.md |    37 -
+ ..._files__dopemux_integration_integrations (1).md |    63 -
+ ...dual_files__dopemux_integration_integrations.md |    63 -
+ ...les__dpmx_ccVsclineVScustom_pt2_findings (1).md |    65 -
+ ...l_files__dpmx_ccVsclineVScustom_pt2_findings.md |    65 -
+ ...iles__leantime_adhd_integration_findings (1).md |    67 -
+ ...al_files__leantime_adhd_integration_findings.md |    67 -
+ ...put__individual_files__leantime_findings (1).md |    44 -
+ .../output__individual_files__leantime_findings.md |    44 -
+ ...ime_taskmaster_integration2_architecture (1).md |    77 -
+ ...eantime_taskmaster_integration2_architecture.md |    77 -
+ ...time_taskmaster_integration_architecture (1).md |   113 -
+ ...leantime_taskmaster_integration_architecture.md |   113 -
+ ...ife_automation_adhd_support_architecture (1).md |    58 -
+ ...s__life_automation_adhd_support_architecture.md |    58 -
+ ...inal_frameworks_and_ui_patterns_findings (1).md |    37 -
+ ...terminal_frameworks_and_ui_patterns_findings.md |    37 -
+ ...les__modern_terminal_frameworks_findings (1).md |    50 -
+ ...l_files__modern_terminal_frameworks_findings.md |    50 -
+ ...les__multi_agent_coding_systems_findings (1).md |    20 -
+ ...l_files__multi_agent_coding_systems_findings.md |    20 -
+ ...stance_claude_code_research_integrations (1).md |    35 -
+ ...i_instance_claude_code_research_integrations.md |    35 -
+ ...__multi_llm_chat_and_RAG_memory_findings (1).md |    36 -
+ ...iles__multi_llm_chat_and_RAG_memory_findings.md |    36 -
+ ...idual_files__optimized_patterns_patterns (1).md |    59 -
+ ...ndividual_files__optimized_patterns_patterns.md |    59 -
+ ...uperclaude_and_zen_mcp_research_findings (1).md |    66 -
+ ...s__superclaude_and_zen_mcp_research_findings.md |    66 -
+ ...dual_files__tmux_app_design_integrations (1).md |    68 -
+ ...dividual_files__tmux_app_design_integrations.md |    68 -
+ ...__tmux_integration_research_architecture (1).md |    36 -
+ ...iles__tmux_integration_research_architecture.md |    36 -
+ .../prompts__analyze-understand-codebase (1).md    |   260 -
+ .../prompts__analyze-understand-codebase.md        |   260 -
+ .../prompts__asess-project-secutity (1).md         |   211 -
+ .../sourceFiles/prompts__asess-project-secutity.md |   211 -
+ .../prompts__asess-technical-debt (1).md           |   154 -
+ .../sourceFiles/prompts__asess-technical-debt.md   |   154 -
+ ...ts__build_feature_from_project_knowledge (1).md |   409 -
+ ...rompts__build_feature_from_project_knowledge.md |   409 -
+ .../prompts__clean-up-unused-code (1).md           |   256 -
+ .../sourceFiles/prompts__clean-up-unused-code.md   |   256 -
+ .../prompts__create-project-documentation (1).md   |   302 -
+ .../prompts__create-project-documentation.md       |   302 -
+ .../prompts__plan-migration-strategy (1).md        |   214 -
+ .../prompts__plan-migration-strategy.md            |   214 -
+ .../prompts__set-up-wordpress-environment (1).md   |    77 -
+ .../prompts__set-up-wordpress-environment.md       |    77 -
+ .../history/sourceFiles/test_doc (1).md            |    16 -
+ .../history/sourceFiles/test_doc (2).md            |    16 -
+ .../04-explanation/history/sourceFiles/test_doc.md |    16 -
+ .../sourceFiles/tmp-doc-ingest__RAGsystem (1).md   |   358 -
+ .../sourceFiles/tmp-doc-ingest__RAGsystem.md       |   358 -
+ docs/05-audit-reports/DETERMINISM_COMMANDS.md      |    80 -
+ docs/05-audit-reports/FINAL_PHASE0_COMMANDS.md     |   149 -
+ docs/05-audit-reports/INTEGRATION_TEST_RESULTS.md  |   154 -
+ .../PHASE0_DETERMINISM_IMPLEMENTATION.md           |   150 -
+ docs/05-audit-reports/PHASE0_DETERMINISM_REPORT.md |    30 -
+ .../PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md       |    30 -
+ docs/05-audit-reports/PHASE0_FINAL_SUMMARY.md      |   114 -
+ docs/05-audit-reports/PHASE0_GATE_SUMMARY.md       |   112 -
+ .../PHASE0_SERIALIZATION_REPORT.md                 |    24 -
+ .../PHASE0_SERIALIZATION_SUMMARY.md                |    93 -
+ docs/05-audit-reports/PHASE0_WORKUNIT_MAP.md       |    63 -
+ docs/05-audit-reports/PLAN.md                      |    29 -
+ docs/05-audit-reports/PLAN.txt                     |    98 -
+ docs/05-audit-reports/PROCESSPOOL_FINAL_SUMMARY.md |   114 -
+ .../PROCESSPOOL_IMPLEMENTATION_SUMMARY.md          |   150 -
+ .../PROCESSPOOL_STABILITY_REPORT.md                |   178 -
+ docs/05-audit-reports/PROJECT_DOCTOR_REPORT.md     |    12 -
+ docs/05-audit-reports/PROJECT_MODE_REPORT.md       |    11 -
+ .../TP-AUDIT-DOCS-FIXPACK-0001_PROOF.md            |   159 -
+ .../TP-EXTR-001C-PROCESSPOOL-STABILIZE-0002.json   |   249 -
+ docs/05-audit-reports/VERIFICATION_SUMMARY.md      |   175 -
+ docs/AUDIT_INITIAL_FINDINGS.md                     |    76 -
+ docs/COVERAGE_POLICY.md                            |    46 -
+ docs/DOPETASK_KERNEL_INTEGRATION.md                |    62 +-
+ docs/DOPE_MEMORY_INTEGRATION.md                    |   283 -
+ docs/GEMINI.md                                     |    66 -
+ docs/MIGRATION_TASKX_TO_DOPETASK.md                |    47 +-
+ docs/PHASE0_DETERMINISM_REPORT.md                  |    30 -
+ docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md      |    30 -
+ docs/PHASE0_SERIALIZATION_REPORT.md                |    24 -
+ docs/PROCESSPOOL_STABILITY_REPORT.md               |   178 -
+ docs/docs_index.yaml                               |     3 -
+ docs/instructions/AGENTS.md                        |    11 -
+ docs/instructions/CLAUDE.md                        |    11 -
+ docs/instructions/CODEX.md                         |    40 -
+ docs/instructions/PROJECT_INIT_REPORT.md           |    12 -
+ docs/instructions/PROJECT_INSTRUCTIONS.md          |    12 -
+ docs/instructions/PROJECT_PATCH_REPORT.md          |    12 -
+ docs/mobile/IMPLEMENTATION.md                      |    69 -
+ docs/mobile/SETUP.md                               |    76 -
+ docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md  |     2 +-
+ docs/templates/pal-pr-layout.md                    |    96 -
+ examples/github_specialist/ci_bundle.json          |    13 -
+ examples/github_specialist/pr_bundle.json          |    14 -
+ .../github_specialist/release_notes_bundle.json    |    21 -
+ examples/production_mcp_integration.py             |     4 +-
+ litellm.config.yaml                                |     3 +-
+ mcp-proxy-config.copilot.yaml                      |     2 +-
+ mcp-proxy-config.json                              |    13 +-
+ mcp-proxy-config.yaml                              |     2 +-
+ model_map_v2_tp008.yaml                            |   241 -
+ out/request_1.txt                                  |   411 -
+ out/request_10.txt                                 |   422 -
+ out/request_100.txt                                |   388 -
+ out/request_101.txt                                |   374 -
+ out/request_102.txt                                |   365 -
+ out/request_103.txt                                |   367 -
+ out/request_104.txt                                |   391 -
+ out/request_11.txt                                 |   376 -
+ out/request_12.txt                                 |   368 -
+ out/request_13.txt                                 |   369 -
+ out/request_14.txt                                 |   372 -
+ out/request_15.txt                                 |   384 -
+ out/request_16.txt                                 |   382 -
+ out/request_17.txt                                 |   377 -
+ out/request_18.txt                                 |   369 -
+ out/request_19.txt                                 |   388 -
+ out/request_2.txt                                  |   420 -
+ out/request_20.txt                                 |   391 -
+ out/request_21.txt                                 |   384 -
+ out/request_22.txt                                 |   379 -
+ out/request_23.txt                                 |   379 -
+ out/request_24.txt                                 |   379 -
+ out/request_25.txt                                 |   407 -
+ out/request_26.txt                                 |   510 -
+ out/request_27.txt                                 |   391 -
+ out/request_28.txt                                 |   402 -
+ out/request_29.txt                                 |   402 -
+ out/request_3.txt                                  |   420 -
+ out/request_30.txt                                 |   379 -
+ out/request_31.txt                                 |   435 -
+ out/request_32.txt                                 |   391 -
+ out/request_33.txt                                 |   382 -
+ out/request_34.txt                                 |   375 -
+ out/request_35.txt                                 |   374 -
+ out/request_36.txt                                 |   370 -
+ out/request_37.txt                                 |   380 -
+ out/request_38.txt                                 |   373 -
+ out/request_39.txt                                 |   374 -
+ out/request_4.txt                                  |   423 -
+ out/request_40.txt                                 |   389 -
+ out/request_41.txt                                 |   376 -
+ out/request_42.txt                                 |   368 -
+ out/request_43.txt                                 |   369 -
+ out/request_44.txt                                 |   374 -
+ out/request_45.txt                                 |   373 -
+ out/request_46.txt                                 |   385 -
+ out/request_47.txt                                 |   424 -
+ out/request_48.txt                                 |   417 -
+ out/request_49.txt                                 |   401 -
+ out/request_5.txt                                  |   420 -
+ out/request_50.txt                                 |   410 -
+ out/request_51.txt                                 |   390 -
+ out/request_52.txt                                 |   391 -
+ out/request_53.txt                                 |   393 -
+ out/request_54.txt                                 |   401 -
+ out/request_55.txt                                 |   493 -
+ out/request_56.txt                                 |   375 -
+ out/request_57.txt                                 |   374 -
+ out/request_58.txt                                 |   373 -
+ out/request_59.txt                                 |   374 -
+ out/request_6.txt                                  |   426 -
+ out/request_60.txt                                 |   375 -
+ out/request_61.txt                                 |   376 -
+ out/request_62.txt                                 |   379 -
+ out/request_63.txt                                 |   369 -
+ out/request_64.txt                                 |   367 -
+ out/request_65.txt                                 |   368 -
+ out/request_66.txt                                 |   369 -
+ out/request_67.txt                                 |   381 -
+ out/request_68.txt                                 |   377 -
+ out/request_69.txt                                 |   399 -
+ out/request_7.txt                                  |   426 -
+ out/request_70.txt                                 |   383 -
+ out/request_71.txt                                 |   384 -
+ out/request_72.txt                                 |   384 -
+ out/request_73.txt                                 |   386 -
+ out/request_74.txt                                 |   382 -
+ out/request_75.txt                                 |   383 -
+ out/request_76.txt                                 |   384 -
+ out/request_77.txt                                 |   383 -
+ out/request_78.txt                                 |   365 -
+ out/request_79.txt                                 |   362 -
+ out/request_8.txt                                  |   423 -
+ out/request_80.txt                                 |   361 -
+ out/request_81.txt                                 |   415 -
+ out/request_82.txt                                 |   424 -
+ out/request_83.txt                                 |   385 -
+ out/request_84.txt                                 |   386 -
+ out/request_85.txt                                 |   388 -
+ out/request_86.txt                                 |   390 -
+ out/request_87.txt                                 |   418 -
+ out/request_88.txt                                 |   376 -
+ out/request_89.txt                                 |   368 -
+ out/request_9.txt                                  |   529 -
+ out/request_90.txt                                 |   369 -
+ out/request_91.txt                                 |   370 -
+ out/request_92.txt                                 |   371 -
+ out/request_93.txt                                 |   372 -
+ out/request_94.txt                                 |   386 -
+ out/request_95.txt                                 |   389 -
+ out/request_96.txt                                 |   372 -
+ out/request_97.txt                                 |   373 -
+ out/request_98.txt                                 |   374 -
+ out/request_99.txt                                 |   375 -
+ out/response_0.patch                               |    13 -
+ out/response_1.patch                               |    54 -
+ out/response_10.patch                              |    30 -
+ out/response_100.patch                             |    29 -
+ out/response_101.patch                             |    29 -
+ out/response_102.patch                             |    29 -
+ out/response_103.patch                             |    29 -
+ out/response_104.patch                             |    29 -
+ out/response_11.patch                              |    29 -
+ out/response_12.patch                              |    29 -
+ out/response_13.patch                              |    29 -
+ out/response_14.patch                              |    30 -
+ out/response_15.patch                              |    29 -
+ out/response_16.patch                              |    30 -
+ out/response_17.patch                              |    32 -
+ out/response_18.patch                              |    31 -
+ out/response_19.patch                              |    31 -
+ out/response_2.patch                               |    61 -
+ out/response_20.patch                              |    31 -
+ out/response_21.patch                              |    31 -
+ out/response_22.patch                              |    30 -
+ out/response_23.patch                              |    30 -
+ out/response_24.patch                              |    30 -
+ out/response_25.patch                              |    31 -
+ out/response_26.patch                              |    30 -
+ out/response_27.patch                              |    30 -
+ out/response_28.patch                              |    30 -
+ out/response_29.patch                              |    30 -
+ out/response_3.patch                               |    31 -
+ out/response_30.patch                              |    30 -
+ out/response_31.patch                              |    30 -
+ out/response_32.patch                              |    30 -
+ out/response_33.patch                              |    29 -
+ out/response_34.patch                              |    30 -
+ out/response_35.patch                              |    29 -
+ out/response_36.patch                              |    30 -
+ out/response_37.patch                              |    29 -
+ out/response_38.patch                              |    29 -
+ out/response_39.patch                              |    30 -
+ out/response_4.patch                               |    53 -
+ out/response_4.patch.backup                        |    57 -
+ out/response_4.proper.patch                        |    53 -
+ out/response_40.patch                              |    29 -
+ out/response_41.patch                              |    29 -
+ out/response_42.patch                              |    29 -
+ out/response_43.patch                              |    29 -
+ out/response_44.patch                              |    29 -
+ out/response_45.patch                              |    29 -
+ out/response_46.patch                              |    29 -
+ out/response_47.patch                              |    29 -
+ out/response_48.patch                              |    29 -
+ out/response_49.patch                              |    29 -
+ out/response_5.patch                               |    54 -
+ out/response_50.patch                              |    29 -
+ out/response_51.patch                              |    29 -
+ out/response_52.patch                              |    29 -
+ out/response_53.patch                              |    29 -
+ out/response_54.patch                              |    29 -
+ out/response_55.patch                              |    29 -
+ out/response_56.patch                              |    29 -
+ out/response_57.patch                              |    29 -
+ out/response_58.patch                              |    29 -
+ out/response_59.patch                              |    29 -
+ out/response_6.patch                               |    32 -
+ out/response_60.patch                              |    29 -
+ out/response_61.patch                              |    29 -
+ out/response_62.patch                              |    29 -
+ out/response_63.patch                              |    29 -
+ out/response_64.patch                              |    29 -
+ out/response_65.patch                              |    29 -
+ out/response_66.patch                              |    29 -
+ out/response_67.patch                              |    29 -
+ out/response_68.patch                              |    29 -
+ out/response_69.patch                              |    29 -
+ out/response_7.patch                               |    31 -
+ out/response_70.patch                              |    29 -
+ out/response_71.patch                              |    29 -
+ out/response_72.patch                              |    29 -
+ out/response_73.patch                              |    29 -
+ out/response_74.patch                              |    29 -
+ out/response_75.patch                              |    29 -
+ out/response_76.patch                              |    29 -
+ out/response_77.patch                              |    28 -
+ out/response_78.patch                              |    28 -
+ out/response_79.patch                              |    28 -
+ out/response_8.patch                               |    30 -
+ out/response_80.patch                              |    28 -
+ out/response_81.patch                              |    29 -
+ out/response_82.patch                              |    29 -
+ out/response_83.patch                              |    29 -
+ out/response_84.patch                              |    29 -
+ out/response_85.patch                              |    29 -
+ out/response_86.patch                              |    29 -
+ out/response_87.patch                              |    29 -
+ out/response_88.patch                              |    29 -
+ out/response_89.patch                              |    29 -
+ out/response_9.patch                               |    31 -
+ out/response_90.patch                              |    29 -
+ out/response_91.patch                              |    29 -
+ out/response_92.patch                              |    29 -
+ out/response_93.patch                              |    29 -
+ out/response_94.patch                              |    29 -
+ out/response_95.patch                              |    29 -
+ out/response_96.patch                              |    29 -
+ out/response_97.patch                              |    29 -
+ out/response_98.patch                              |    29 -
+ out/response_99.patch                              |    29 -
+ package-lock.json                                  |  1910 +--
+ package.json                                       |     4 +-
+ patchit                                            |     3 -
+ proof/PLAN.txt                                     |    20 -
+ .../TP-CONPORT-MCP-TOOLS-0001/DISCOVERY_CURL.json  |   244 -
+ proof/TP-CONPORT-MCP-TOOLS-0001/ERROR_CURL.json    |     8 -
+ proof/TP-CONPORT-MCP-TOOLS-0001/RUN_MANIFEST.json  |    15 -
+ .../SERVER_LOG_SNIPPET.txt                         |     3 -
+ proof/TP-CONPORT-MCP-TOOLS-0001/TOOLCALL_CURL.json |    11 -
+ proof/TP-DOPMUX-AUTO-MCP-PROVISION-0001/.DS_Store  |   Bin 6148 -> 0 bytes
+ .../TP-DOPMUX-AUTO-MCP-PROVISION-0001/COVERAGE.txt |    14 -
+ .../GATE_RESULT.json                               |    60 -
+ .../INSTANCE_OVERLAY_A/mcp.compose.override.yml    |    20 -
+ .../INSTANCE_OVERLAY_A/mcp.env                     |    10 -
+ .../PHASE0_REPORT.json                             |    60 -
+ .../PORT_MAP.json                                  |     8 -
+ .../RUN_MANIFEST.json                              |     6 -
+ .../STACK_RESOLUTION.json                          |     6 -
+ .../TEST_OUTPUT.txt                                |   204 -
+ proof/TP-DOPMUX-COVERAGE-POLICY-0001/CI_DIFF.patch |    16 -
+ .../COVERAGE_SCOPED.txt                            |    13 -
+ .../RUN_MANIFEST.json                              |    11 -
+ .../TEST_OUTPUT_FULL.txt                           |   397 -
+ .../BASELINE_NOTES.md                              |     0
+ .../DISCOVERY_REPORT.json                          |    83 -
+ .../GATE_RESULT.json                               |    53 -
+ .../INSTANCE_PROFILE_EFFECTIVE.toml                |    24 -
+ .../INSTANCE_RESOLUTION.json                       |    45 -
+ .../PHASE0_REPORT.json                             |    53 -
+ .../RUN_MANIFEST.json                              |     1 -
+ pyproject.toml                                     |     5 +-
+ pytest.ini                                         |     6 +
+ reports/g33/env_drift_report.json                  |   234 -
+ scripts/.claude/claude_config.json                 |     2 +-
+ scripts/RUN_DETERMINISM_TEST.sh                    |    75 -
+ scripts/check_coverage.sh                          |    24 -
+ scripts/docs_frontmatter_guard.py                  |     4 -
+ scripts/docs_validator.py                          |     6 +-
+ scripts/dopetask                                   |    39 -
+ scripts/generate-claude-config.py                  |     5 +-
+ scripts/generate_mcp_proof.py                      |    20 -
+ scripts/generate_provision_proof.py                |    56 -
+ scripts/mobile/dopemux-mobile.sh                   |    69 -
+ scripts/mobile/status-dashboard.sh                 |    37 -
+ scripts/mobile/supervisor-context.sh               |    37 -
+ scripts/mobile/verify-setup.sh                     |    47 -
+ scripts/partition_function.py                      |    18 -
+ scripts/proof_bundle.sh                            |    14 +-
+ scripts/proof_conport_mcp.py                       |    74 -
+ scripts/run_processpool_stability_tests.sh         |    18 -
+ scripts/start-all-mcp-servers.sh                   |    81 -
+ scripts/submit_loop_context.py                     |    16 -
+ scripts/taskx                                      |     5 -
+ scripts/test_batch_integration.py                  |   121 -
+ scripts/update_supervisor_for_dopetask.py          |   101 +-
+ scripts/vibe_tool_dump.sh                          |    61 -
+ scripts/vibe_tool_lockdown.sh                      |   124 -
+ scripts/webhook_replay.py                          |    50 +-
+ services/adhd_engine/Dockerfile                    |     2 -
+ services/adhd_engine/core/failure_playbook.py      |   110 +-
+ services/adhd_engine/event_listener.py             |     2 +-
+ services/adhd_engine/hello_flow_implementation.py  |    58 +-
+ services/adhd_engine/main.py                       |    34 -
+ services/adhd_engine/mcp_stdio.py                  |     5 -
+ services/adhd_engine/ml/data_collector.py          |    52 +-
+ services/adhd_engine/requirements.txt              |     9 +-
+ services/dope-context/Dockerfile                   |     4 +-
+ services/dope-context/Dockerfile.fixed             |     2 +-
+ services/dope-context/README.md                    |    46 +-
+ services/dope-context/requirements.txt             |     1 -
+ .../src/embeddings/contextualized_embedder.py      |    28 -
+ services/dope-context/src/mcp/server.py            |   470 +-
+ services/dope-context/src/mcp/simple_server.py     |   278 +-
+ .../dope-context/src/pipeline/docs_pipeline.py     |    54 +-
+ .../src/preprocessing/document_processor.py        |     8 -
+ services/dope-context/src/search/hybrid_search.py  |    11 +-
+ services/dope-context/src/utils/workspace.py       |    11 -
+ .../tests/contract/test_dope_context_contracts.py  |    92 -
+ .../tests/test_docs_pipeline_invariants.py         |   215 -
+ .../dope-context/tests/test_hybrid_determinism.py  |   134 -
+ services/dope-context/tests/test_mcp_server.py     |   229 -
+ services/registry.yaml                             |   342 +-
+ services/repo-truth-extractor/audit_tp008.py       |  1327 --
+ services/repo-truth-extractor/lib/batch_clients.py |    27 -
+ .../repo-truth-extractor/lib/batch_retriever.py    |   308 -
+ .../repo-truth-extractor/lib/phase_contract_map.py |   360 -
+ .../lib/promptgen/promptpack_v1.py                 |    59 -
+ .../repo-truth-extractor/lib/reprocess_policy.py   |    50 -
+ .../repo-truth-extractor/lib/service_catalog.py    |   323 -
+ .../lib/structured_output_contracts.py             |   530 -
+ .../PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md       |     6 -
+ .../prompts/phase_s/PROMPT_S10_REDACTION_PASS.md   |    38 -
+ .../prompts/phase_s/PROMPT_S11_CONTRACT_LINTER.md  |    38 -
+ .../phase_s/PROMPT_S12_STABILITY_SIGNATURE.md      |    45 -
+ .../PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md  |     6 -
+ .../prompts/phase_s/PROMPT_S2_DECISION_DOSSIER.md  |     6 -
+ .../prompts/phase_s/PROMPT_S3_ARCH_PROOF_HOOKS.md  |     6 -
+ .../prompts/phase_s/PROMPT_S4_TRUTH_PACK_INDEX.md  |     6 -
+ .../prompts/phase_s/PROMPT_S5_DECISION_GRAPH.md    |     6 -
+ .../prompts/phase_s/PROMPT_S6_LEANTIME_ANALYSIS.md |     6 -
+ .../prompts/phase_s/PROMPT_S7_DEDUPE_SORT.md       |    43 -
+ .../prompts/phase_s/PROMPT_S8_DRIFT_CHECK.md       |    50 -
+ .../phase_s/PROMPT_S9_PROMOTION_READINESS.md       |    40 -
+ .../prompts/phase_s/registry.json                  |    13 -
+ .../prompts/phase_s_int/S16_mcp_split_validity.md  |    18 -
+ .../prompts/phase_s_int/S17_hook_surface_map.md    |    18 -
+ .../prompts/phase_s_int/S18_contract_coverage.md   |    18 -
+ .../prompts/phase_s_int/S19_gradecard.md           |    18 -
+ .../prompts/phase_s_int/S20_v1_release_plan.md     |    18 -
+ .../prompts/phase_s_int/schemas/S16.json           |    20 -
+ .../prompts/phase_s_int/schemas/S17.json           |    20 -
+ .../prompts/phase_s_int/schemas/S18.json           |    19 -
+ .../prompts/phase_s_int/schemas/S19.json           |    20 -
+ .../prompts/phase_s_int/schemas/S20.json           |    20 -
+ .../PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md   |    52 +-
+ .../prompts/v3/PROMPT_C1_SERVICE_ENTRYPOINTS.md    |    10 +-
+ .../v3/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md |    14 +-
+ .../prompts/v3/PROMPT_C3_DOPE_MEMORY_SURFACES.md   |    14 +-
+ ...MPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md |    12 +-
+ .../v3/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md     |    10 +-
+ ...ORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md |    10 +-
+ .../prompts/v3/PROMPT_C7_API___DASHBOARDS.md       |    10 +-
+ ...M___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md |    16 +-
+ .../prompts/v3/PROMPT_C9_MERGE___NORMALIZE___QA.md |    20 -
+ .../v3/PROMPT_D0_INVENTORY___PARTITION_PLAN.md     |    21 +-
+ ...PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md |    25 +-
+ .../prompts/v3/PROMPT_D2_DEEP_EXTRACTION.md        |    23 +-
+ .../v3/PROMPT_D3_CITATION___REFERENCE_GRAPH.md     |    17 +-
+ .../PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md   |    19 -
+ .../v3/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md        |    17 +-
+ .../v3/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md        |     9 -
+ .../v3/PROMPT_R10_TWO_PLANE_ARCHITECTURE_TRUTH.md  |    95 -
+ .../PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md  |    10 -
+ .../prompts/v3/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md  |     9 -
+ ...PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md |     9 -
+ .../v3/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md        |     9 -
+ .../prompts/v3/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md  |     9 -
+ ...MPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md |     9 -
+ .../prompts/v3/PROMPT_R7_CONFLICT_LEDGER.md        |     9 -
+ .../prompts/v3/PROMPT_R8_RISK_REGISTER_TOP20.md    |     9 -
+ .../v3/PROMPT_R9_LEANTIME_INTEGRATION_TRUTH.md     |    90 -
+ .../promptsets/v4/artifacts.yaml                   |   160 -
+ .../promptsets/v4/model_map.yaml                   |  3088 ----
+ ...T_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md |   130 +-
+ .../v4/prompts/PROMPT_A10_LEANTIME_SURFACE.md      |   153 -
+ .../PROMPT_A11_EDITOR_INTEGRATION_SURFACES.md      |    78 -
+ .../v4/prompts/PROMPT_A12_CLI_COMMAND_SURFACE.md   |    75 -
+ .../v4/prompts/PROMPT_A13_HOOK_CONTRACT_SURFACE.md |    81 -
+ .../v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md   |    78 +-
+ .../v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md        |    78 +-
+ .../v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md      |    78 +-
+ .../v4/prompts/PROMPT_A4_ROUTER_SURFACE.md         |    78 +-
+ .../v4/prompts/PROMPT_A5_HOOKS_SURFACE.md          |    90 +-
+ .../v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md  |    78 +-
+ .../v4/prompts/PROMPT_A7_LITELLM_SURFACE.md        |    78 +-
+ .../v4/prompts/PROMPT_A8_TASKX_SURFACE.md          |    78 +-
+ .../promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md |    86 +-
+ .../prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md   |    78 +-
+ ...ROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md |    20 +-
+ ...OUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md |    20 +-
+ ...PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md |    20 +-
+ .../PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md        |    20 +-
+ .../promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md  |    20 +-
+ .../PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md   |   112 +-
+ .../v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md  |    62 +-
+ .../PROMPT_C11_LEANTIME_INTEGRATION_SURFACES.md    |   134 -
+ .../PROMPT_C12_AGENT_ORCHESTRATION_SURFACE.md      |    59 -
+ .../v4/prompts/PROMPT_C13_ADHD_ENGINE_SURFACE.md   |    55 -
+ .../v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md    |    58 +-
+ .../PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md    |    58 +-
+ .../v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md   |    58 +-
+ ...MPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md |    58 +-
+ .../PROMPT_C5_TASKX_INTEGRATION_SURFACES.md        |    58 +-
+ ...ORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md |    58 +-
+ .../v4/prompts/PROMPT_C7_API___DASHBOARDS.md       |    58 +-
+ ...M___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md |    58 +-
+ .../v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md |    66 +-
+ .../PROMPT_D0_INVENTORY___PARTITION_PLAN.md        |    68 +-
+ ...PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md |    68 +-
+ .../v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md        |    27 +-
+ .../PROMPT_D3_CITATION___REFERENCE_GRAPH.md        |    27 +-
+ .../PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md   |    27 +-
+ .../prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md   |    27 +-
+ ...OMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md |    20 +-
+ .../PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md        |    20 +-
+ .../PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md        |    20 +-
+ .../v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md  |    20 +-
+ .../PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md      |    20 +-
+ .../PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md   |    20 +-
+ ...XECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md |    20 +-
+ .../v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md |    20 +-
+ ...MPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md |    20 +-
+ .../prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md   |    20 +-
+ ...OMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md |    20 +-
+ .../PROMPT_G3_POLICY_FILES___ENFORCEMENT.md        |    20 +-
+ ...OMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md |    20 +-
+ .../promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md  |    20 +-
+ .../PROMPT_H0_INVENTORY___PARTITION_PLAN.md        |    20 +-
+ .../v4/prompts/PROMPT_H1_KEYS___REFERENCES.md      |    20 +-
+ .../promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md |    20 +-
+ .../prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md |    20 +-
+ .../v4/prompts/PROMPT_H4_LITELLM_SURFACES.md       |    20 +-
+ .../v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md    |    20 +-
+ .../prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md   |    20 +-
+ .../PROMPT_H7_SQLITE___STATE_DB_METADATA.md        |    20 +-
+ .../promptsets/v4/prompts/PROMPT_H9_MERGE___QA.md  |    20 +-
+ .../prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md  |    20 +-
+ .../prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md   |    20 +-
+ .../v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md    |    20 +-
+ .../v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md    |    20 +-
+ .../prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md  |    20 +-
+ .../v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md |    20 +-
+ .../v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md   |    20 +-
+ .../PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md  |    20 +-
+ .../PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md |    20 +-
+ .../PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md |    20 +-
+ .../PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md      |    20 +-
+ .../promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md  |    20 +-
+ .../prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md   |    20 +-
+ .../PROMPT_R10_TWO_PLANE_ARCHITECTURE_TRUTH.md     |    95 -
+ .../PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md  |    20 +-
+ .../v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md  |    20 +-
+ ...PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md |    20 +-
+ .../prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md   |    20 +-
+ .../v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md  |    20 +-
+ ...MPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md |    20 +-
+ .../v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md        |    20 +-
+ .../v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md    |    20 +-
+ .../PROMPT_R9_LEANTIME_INTEGRATION_TRUTH.md        |    90 -
+ .../PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md       |    19 +-
+ .../PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md  |    19 +-
+ .../v4/prompts/PROMPT_S2_DECISION_DOSSIER.md       |    19 +-
+ .../prompts/PROMPT_S3_ARCHITECTURE_PROOF_HOOKS.md  |    19 +-
+ .../v4/prompts/PROMPT_S4_TWO_PLANE_ARCHITECTURE.md |    65 -
+ .../PROMPT_S5_TASK_ORCHESTRATOR_ANALYSIS.md        |    64 -
+ .../v4/prompts/PROMPT_S6_LEANTIME_ANALYSIS.md      |    62 -
+ .../PROMPT_S7_OVERSEER_AGENT_FLOW_DESIGN.md        |    23 -
+ .../v4/prompts/PROMPT_T0_TASK_PACKET_FACTORY.md    |    20 +-
+ .../prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md |    20 +-
+ .../PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md   |    20 +-
+ .../PROMPT_T3_PACKET_GENERATION___BATCHED.md       |    20 +-
+ ...ROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md |    20 +-
+ .../PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md        |    20 +-
+ .../promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md  |    20 +-
+ ...ROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md |    20 +-
+ .../PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md  |    20 +-
+ ...ROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md |    20 +-
+ ...W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md |    20 +-
+ .../PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md |    20 +-
+ ...5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md |    20 +-
+ .../promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md  |    20 +-
+ ..._X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md |    97 +-
+ .../prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md   |   106 +-
+ .../v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md    |    97 +-
+ .../v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md     |    97 +-
+ .../prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md  |    97 +-
+ .../promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md  |    97 +-
+ .../PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md      |    20 +-
+ .../v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md   |    20 +-
+ .../PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md      |    20 +-
+ .../PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md       |    20 +-
+ .../promptsets/v4/promptset.yaml                   |    97 -
+ services/repo-truth-extractor/run_extraction_v3.py |  1672 +-
+ services/repo-truth-extractor/run_extraction_v4.py |   365 +-
+ services/repo-truth-extractor/run_extraction_v5.py | 15065 -------------------
+ services/repo-truth-extractor/run_repscan.py       |     8 -
+ services/repo-truth-extractor/s_int/__init__.py    |     4 -
+ .../repo-truth-extractor/s_int/collect_input.py    |   308 -
+ services/repo-truth-extractor/s_int/models.py      |    53 -
+ .../repo-truth-extractor/s_int/report_compiler.py  |    59 -
+ services/repo-truth-extractor/s_int/run_s_int.py   |    84 -
+ services/repo-truth-extractor/s_int/s_int_paths.py |    30 -
+ .../repo-truth-extractor/s_int/schema_input.json   |    32 -
+ .../repo-truth-extractor/s_int/schema_validate.py  |    73 -
+ .../tests/test_audit_tp008_drift.py                |   183 -
+ .../tests/test_live_llm_guard.py                   |   114 -
+ .../tests/test_phase_d_contract_hardening.py       |   316 -
+ .../tests/test_phase_d_contract_map.py             |   114 -
+ .../tests/test_phase_d_json_salvage.py             |    47 -
+ .../tests/test_phase_d_line_range.py               |    75 -
+ .../tests/test_phase_d_pressure_caps.py            |   184 -
+ .../tests/test_phase_d_sidefill.py                 |   325 -
+ .../tests/test_phase_execution_step_filter.py      |   124 -
+ .../tests/test_phase_s_posttail_prompts.py         |    28 -
+ .../tests/test_phase_s_prompt_registry.py          |   189 -
+ .../tests/test_phase_s_step_selection.py           |   201 -
+ .../tests/test_promptpack_v1_v2.py                 |    40 -
+ .../tests/test_provider_preflight_openrouter.py    |   107 -
+ .../tests/test_reprocess_policy_matrix.py          |    26 -
+ .../tests/test_run_extraction_v3_batch_mode.py     |   150 -
+ .../tests/test_run_extraction_v3_escalation.py     |   168 -
+ .../tests/test_run_extraction_v3_model_routing.py  |   311 +-
+ .../tests/test_run_extraction_v3_parse_retry.py    |    94 +-
+ ...test_run_extraction_v3_partition_concurrency.py |    58 -
+ .../test_run_extraction_v3_retry_decisions.py      |     4 +-
+ .../tests/test_run_extraction_v4_core.py           |     2 -
+ .../tests/test_run_extraction_v5_rollup_reports.py |    74 -
+ .../test_run_extraction_v5_soft_gate_logging.py    |    82 -
+ .../tests/test_run_extraction_v5_ui_events.py      |   105 -
+ .../tests/test_s_int_collect_input.py              |    59 -
+ .../tests/test_s_int_prompt_contracts.py           |    16 -
+ .../tests/test_s_int_runner.py                     |    68 -
+ .../test_structured_output_schema_strictness.py    |    54 -
+ .../tools/phase0_determinism_check.py              |   320 -
+ .../tools/phase0_serialize_partitions.py           |   313 -
+ .../tools/sync_prompt_scopes.py                    |   122 -
+ services/task-orchestrator/Dockerfile              |     1 -
+ services/task-orchestrator/mcp_stdio.py            |     4 -
+ services/task-orchestrator/requirements.txt        |     1 -
+ .../task-orchestrator/task_orchestrator/app.py     |    37 -
+ services/webhook_receiver/README.md                |     4 +-
+ services/webhook_receiver/poller.py                |   239 +-
+ services/webhook_receiver/requirements.txt         |     1 -
+ services/webhook_receiver/storage.py               |     7 +-
+ services/webhook_receiver/test_server.py           |   143 -
+ services/working-memory-assistant/main.py          |    25 +-
+ src/.claude/claude.md                              |    19 +-
+ src/core/monitoring.py                             |    39 -
+ src/dopemux/adhd/attention_monitor.py              |    10 +-
+ src/dopemux/agent_orchestrator.py                  |   832 -
+ src/dopemux/claude/configurator.py                 |     4 +
+ src/dopemux/claude/launcher.py                     |     1 +
+ src/dopemux/claude_config.py                       |     4 +-
+ src/dopemux/cli.py                                 |  7058 ++++++---
+ src/dopemux/commands/autoresponder_commands.py     |   362 -
+ src/dopemux/commands/capture_group_commands.py     |   125 -
+ src/dopemux/commands/code_commands.py              |   225 -
+ src/dopemux/commands/decisions_commands.py         |  1876 ++-
+ src/dopemux/commands/dev_commands.py               |    46 -
+ src/dopemux/commands/extract_commands.py           |   772 -
+ src/dopemux/commands/extractor_commands.py         |    76 -
+ src/dopemux/commands/instances_commands.py         |   315 -
+ src/dopemux/commands/kernel_commands.py            |    89 -
+ src/dopemux/commands/mcp_commands.py               |   165 -
+ src/dopemux/commands/memory_commands.py            |   372 -
+ src/dopemux/commands/profile_commands.py           |   515 -
+ src/dopemux/commands/trigger_group_commands.py     |    72 -
+ src/dopemux/commands/update_commands.py            |   310 -
+ src/dopemux/commands/upgrades_commands.py          |    25 -
+ src/dopemux/commands/workflow_group_commands.py    |   158 -
+ src/dopemux/commands/worktrees_commands.py         |   130 -
+ src/dopemux/config/manager.py                      |     8 +-
+ src/dopemux/config_generator.py                    |     1 +
+ src/dopemux/conport/wire_project.py                |     4 -
+ src/dopemux/console.py                             |    10 -
+ src/dopemux/core_logging/packet.py                 |     2 +-
+ src/dopemux/error_handling.py                      |    40 +-
+ src/dopemux/event_bus.py                           |    25 +-
+ src/dopemux/instance_manager.py                    |    29 +-
+ src/dopemux/launchd_services.py                    |   211 +-
+ src/dopemux/litellm_manager.py                     |   538 -
+ src/dopemux/mcp/broker.py                          |    17 +-
+ src/dopemux/mcp/discovery.py                       |   196 -
+ src/dopemux/mcp/gate.py                            |   113 -
+ src/dopemux/mcp/instance_overlay.py                |   131 -
+ src/dopemux/mcp/provision.py                       |   125 -
+ src/dopemux/mcp/registry.py                        |     5 +-
+ src/dopemux/mcp/registry.yaml                      |    85 +-
+ src/dopemux/mcp/resolver.py                        |    92 -
+ src/dopemux/mcp/server_manager.py                  |    40 +-
+ src/dopemux/mobile/main.py                         |    67 -
+ src/dopemux/port_config.py                         |     7 +-
+ src/dopemux/profile_models.py                      |     1 +
+ src/dopemux/routing_cli.py                         |    56 -
+ src/dopemux/routing_config.py                      |    52 +-
+ src/dopemux/tmux/cli.py                            |     6 +-
+ src/dopemux/tools/conport_client.py                |     2 +-
+ src/dopemux/update/health.py                       |     6 +-
+ src/dopemux/utils/dotenv_loader.py                 |    49 -
+ src/dopemux/worktree_recovery.py                   |     2 +-
+ src/dopemux_github_specialist/README.md            |    47 -
+ src/dopemux_github_specialist/__init__.py          |     0
+ src/dopemux_github_specialist/cli.py               |   104 -
+ src/dopemux_github_specialist/deterministic.py     |    25 -
+ src/dopemux_github_specialist/errors.py            |    13 -
+ src/dopemux_github_specialist/gemini/__init__.py   |     0
+ src/dopemux_github_specialist/gemini/adapter.py    |    45 -
+ src/dopemux_github_specialist/gemini/runner.py     |    31 -
+ src/dopemux_github_specialist/gemini/validate.py   |    89 -
+ src/dopemux_github_specialist/github/__init__.py   |     0
+ src/dopemux_github_specialist/github/analyze.py    |    27 -
+ src/dopemux_github_specialist/github/render.py     |    32 -
+ src/dopemux_github_specialist/prompts.py           |    27 -
+ src/dopemux_github_specialist/redaction.py         |    34 -
+ src/dopemux_github_specialist/schema.py            |    90 -
+ src/dopemux_pr_merge_specialist/__init__.py        |     0
+ src/dopemux_pr_merge_specialist/cli.py             |   136 -
+ src/dopemux_pr_merge_specialist/schema.py          |    72 -
+ src/integrations/claude_autoresponder.py           |     4 -
+ src/utils/adhd_optimizations.py                    |     2 +-
+ src/utils/security.py                              |    29 +-
+ ...tart-all-mcp-servers.sh => start-mcp-servers.sh |    41 +-
+ .../dope-context/TP-DOPECONTEXT-CTX3-0001.md       |    29 -
+ .../dope-context/TP-DOPECONTEXT-CTX3-0002.md       |    30 -
+ .../dope-context/TP-DOPECONTEXT-CTX3-0003.md       |    28 -
+ .../dope-context/TP-DOPECONTEXT-CTX3-0004.md       |    29 -
+ .../dope-context/TP-DOPECONTEXT-CTX3-0005.md       |    30 -
+ .../dope-context/TP-DOPECONTEXT-CTX3-0006.md       |    31 -
+ templates/routing.yaml                             |   114 +-
+ test_batch_integration.py                          |   120 -
+ tests/__init__.py                                  |     4 +-
+ tests/arch/test_service_env_contract.py            |    24 +-
+ tests/conftest.py                                  |   216 +-
+ tests/dopemux/__init__.py                          |     1 -
+ tests/dopemux/test_epic2_e2e.py                    |    19 +-
+ tests/dopemux/test_error_handling.py               |    63 -
+ tests/dopemux/test_event_bus.py                    |   210 -
+ tests/dopemux/test_logging_packet.py               |    12 -
+ tests/dopemux/test_task_decomposer.py              |   171 -
+ .../test_embedding_system_integration.py           |     4 +-
+ tests/embeddings/unit/test_pipelines.py            |    70 +-
+ tests/embeddings/unit/test_providers.py            |   542 +-
+ tests/embeddings/unit/test_storage_hybrid.py       |   202 +-
+ tests/extractor/conftest.py                        |    15 -
+ tests/extractor/test_extractor_routing_ladders.py  |    57 -
+ tests/github_specialist/test_cli_smoke.py          |    25 -
+ tests/github_specialist/test_redaction.py          |    26 -
+ tests/integration/test_batch_integration.py        |    63 -
+ tests/integration/test_claude_integration.py       |    15 +-
+ tests/integration/test_dope_layout.py              |    64 +-
+ .../test_leantime_taskmaster_integration.py        |   412 +-
+ tests/integration/test_project_workflow.py         |   302 +-
+ tests/integration/test_start_command.py            |   149 -
+ tests/integration/test_task_commands.py            |   130 -
+ tests/mcp/test_conport_mcp_real.py                 |   145 -
+ tests/mcp/test_discovery_gate.py                   |   110 -
+ tests/mcp/test_provision.py                        |   176 -
+ tests/mcp/test_resolver.py                         |    45 -
+ tests/security/test_cors.py                        |     8 +-
+ tests/security/test_input_validation.py            |    30 +-
+ tests/test_agent_orchestrator.py                   |  1546 --
+ tests/test_claude_config.py                        |    40 +-
+ tests/test_claude_configurator.py                  |     4 +-
+ tests/test_claude_launcher.py                      |    31 +-
+ tests/test_cli.py                                  |   155 +-
+ tests/test_cli_mcp_startup.py                      |   129 +-
+ tests/test_config_manager.py                       |    17 +-
+ tests/test_conport_wiring.py                       |    12 +-
+ tests/test_context_manager.py                      |    14 +-
+ tests/test_dope_context_workspace.py               |    37 -
+ tests/test_instance_manager_env.py                 |    38 -
+ tests/test_instance_manager_ports.py               |    31 -
+ tests/test_litellm_manager.py                      |   426 -
+ tests/test_litellm_manager_integration.py          |   595 -
+ tests/test_mcp_config_generation.py                |    13 +-
+ tests/test_mcp_registry.py                         |    12 +-
+ tests/test_mobile_cli.py                           |    43 +-
+ tests/test_mobile_env_migration.py                 |    33 -
+ tests/test_mobile_runtime.py                       |     5 +-
+ tests/test_multi_workspace.py                      |    78 +-
+ tests/test_port_config.py                          |    32 -
+ tests/test_project_init_templates.py               |    22 +-
+ tests/test_session_commands.py                     |     8 +-
+ tests/test_shield_coordinator.py                   |   119 +-
+ tests/test_workspace_detection.py                  |    92 +-
+ tests/unit/__init__.py                             |     1 -
+ tests/unit/test_altp_skips_openrouter_gate.py      |    11 +-
+ tests/unit/test_ccr_models_env_for_altp.py         |    73 +-
+ tests/unit/test_circuit_breaker.py                 |    32 -
+ tests/unit/test_claude_autoresponder.py            |     5 -
+ tests/unit/test_cli_capture_commands.py            |    11 +-
+ tests/unit/test_cli_kernel_commands.py             |    12 +-
+ tests/unit/test_desktop_commander_security.py      |   150 +-
+ tests/unit/test_dopetask_wrapper_submodule.py      |    30 +-
+ tests/unit/test_dotenv_loader.py                   |    77 -
+ tests/unit/test_error_handling.py                  |    62 +-
+ tests/unit/test_event_bus_safety.py                |    45 -
+ .../unit/test_extractor_gemini_thinking_config.py  |   146 -
+ tests/unit/test_extractor_key_hygiene.py           |   194 -
+ tests/unit/test_extractor_schema_repair.py         |   196 -
+ tests/unit/test_profile_use_command.py             |     3 +-
+ ...test_run_extraction_v3_processpool_stability.py |   281 -
+ tests/unit/test_security.py                        |    76 -
+ tests/unit/test_task_decomposer.py                 |   187 -
+ tests/unit/test_task_decomposer_enhanced.py        |   110 -
+ tmp/root-hygiene/DOP2.TXT                          |    60 -
+ tmp/root-hygiene/DOP2.TXTls                        |   556 -
+ tmp/root-hygiene/DOP3.TXT                          |  2956 ----
+ tmp/root-hygiene/DOP4.TXT                          |  2577 ----
+ tmux-dopemux-orchestrator.yaml                     |    10 +-
+ ...ICS_LIBRARY_v1.txt => HEURISTICS_LIBRARY_v1.md} |     0
+ tools/prompt_rewrite_v4/README.md                  |    12 +-
+ .../prompt_rewrite_v4/benchmark/apply_rewrites.py  |    79 -
+ tools/prompt_rewrite_v4/benchmark/gen_data.py      |   220 -
+ ...T_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md |   111 -
+ .../prompts/PROMPT_A1_INSTRUCTION_SURFACES.md      |   141 -
+ .../benchmark/prompts/PROMPT_A2_MCP_SERVER_DEFS.md |   150 -
+ .../prompts/PROMPT_A3_MCP_PROXY_SURFACE.md         |   150 -
+ .../benchmark/prompts/PROMPT_A4_ROUTER_SURFACE.md  |   153 -
+ .../benchmark/prompts/PROMPT_A5_HOOKS_SURFACE.md   |   150 -
+ .../prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md     |   156 -
+ .../benchmark/prompts/PROMPT_A7_LITELLM_SURFACE.md |   156 -
+ .../benchmark/prompts/PROMPT_A8_TASKX_SURFACE.md   |   153 -
+ .../benchmark/prompts/PROMPT_A99_MERGE___QA.md     |   259 -
+ .../prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md   |   152 -
+ ...ROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md |   107 -
+ ...OUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md |    98 -
+ ...PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md |    99 -
+ .../PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md        |   102 -
+ .../benchmark/prompts/PROMPT_B9_MERGE___QA.md      |   114 -
+ .../PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md   |   113 -
+ .../prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md     |   107 -
+ .../prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md       |    99 -
+ .../PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md    |   118 -
+ .../prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md      |   121 -
+ ...MPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md |   114 -
+ .../PROMPT_C5_TASKX_INTEGRATION_SURFACES.md        |   109 -
+ ...ORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md |   109 -
+ .../prompts/PROMPT_C7_API___DASHBOARDS.md          |   109 -
+ ...M___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md |   137 -
+ .../prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md    |   240 -
+ .../PROMPT_D0_INVENTORY___PARTITION_PLAN.md        |   115 -
+ ...PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md |   132 -
+ .../benchmark/prompts/PROMPT_D2_DEEP_EXTRACTION.md |   132 -
+ .../PROMPT_D3_CITATION___REFERENCE_GRAPH.md        |   109 -
+ .../PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md   |   165 -
+ .../prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md   |   121 -
+ ...OMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md |   113 -
+ .../PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md        |   105 -
+ .../PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md        |   104 -
+ .../prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md     |   100 -
+ .../PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md      |   110 -
+ .../PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md   |   103 -
+ ...XECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md |   104 -
+ .../prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md    |   119 -
+ ...MPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md |   107 -
+ .../prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md   |    98 -
+ ...OMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md |    99 -
+ .../PROMPT_G3_POLICY_FILES___ENFORCEMENT.md        |   104 -
+ ...OMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md |   103 -
+ .../benchmark/prompts/PROMPT_G9_MERGE___QA.md      |   115 -
+ .../PROMPT_H0_INVENTORY___PARTITION_PLAN.md        |   106 -
+ .../prompts/PROMPT_H1_KEYS___REFERENCES.md         |   147 -
+ .../benchmark/prompts/PROMPT_H2_MCP_SURFACE.md     |   131 -
+ .../prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md |   140 -
+ .../prompts/PROMPT_H4_LITELLM_SURFACES.md          |   120 -
+ .../prompts/PROMPT_H5_PROFILES___SESSIONS.md       |   121 -
+ .../prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md   |   123 -
+ .../PROMPT_H7_SQLITE___STATE_DB_METADATA.md        |   131 -
+ .../benchmark/prompts/PROMPT_H9_MERGE___QA.md      |   223 -
+ .../prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md  |   105 -
+ .../prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md   |   104 -
+ .../prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md       |   103 -
+ .../prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md       |   104 -
+ .../prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md  |   105 -
+ .../prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md    |   106 -
+ .../prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md      |   109 -
+ .../PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md  |    99 -
+ .../PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md |    97 -
+ .../PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md |    98 -
+ .../PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md      |    99 -
+ .../benchmark/prompts/PROMPT_Q9_MERGE___QA.md      |   111 -
+ .../prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md   |   107 -
+ .../PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md  |   129 -
+ .../prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md     |   113 -
+ ...PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md |   114 -
+ .../prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md   |   114 -
+ .../prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md     |   116 -
+ ...MPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md |   112 -
+ .../benchmark/prompts/PROMPT_R7_CONFLICT_LEDGER.md |   113 -
+ .../prompts/PROMPT_R8_RISK_REGISTER_TOP20.md       |   114 -
+ .../PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md       |   105 -
+ .../PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md  |    87 -
+ .../prompts/PROMPT_S2_DECISION_DOSSIER.md          |    84 -
+ .../prompts/PROMPT_S3_ARCHITECTURE_PROOF_HOOKS.md  |    83 -
+ .../prompts/PROMPT_T0_TASK_PACKET_FACTORY.md       |   145 -
+ .../prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md |   154 -
+ .../PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md   |   115 -
+ .../PROMPT_T3_PACKET_GENERATION___BATCHED.md       |   116 -
+ ...ROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md |   118 -
+ .../PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md        |   120 -
+ .../benchmark/prompts/PROMPT_T9_MERGE___QA.md      |   148 -
+ ...ROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md |   107 -
+ .../PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md  |    98 -
+ ...ROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md |    99 -
+ ...W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md |   100 -
+ .../PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md |   101 -
+ ...5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md |   102 -
+ .../benchmark/prompts/PROMPT_W9_MERGE___QA.md      |   116 -
+ ..._X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md |   120 -
+ .../prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md   |   102 -
+ .../prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md       |   103 -
+ .../prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md        |   104 -
+ .../prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md  |   105 -
+ .../benchmark/prompts/PROMPT_X9_MERGE___QA.md      |   118 -
+ .../PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md      |   104 -
+ .../prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md      |    95 -
+ .../PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md      |    97 -
+ .../PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md       |   121 -
+ .../prompt_rewrite_v4/benchmark/rewrite_data.json  |  1367 --
+ tools/prompt_rewrite_v4/clipboard_to_patch.py      |   307 -
+ tools/prompt_rewrite_v4/config.json                |     8 +-
+ tools/prompt_rewrite_v4/fix_prompts.py             |    58 -
+ tools/prompt_rewrite_v4/format_patch.py            |     0
+ tools/prompt_rewrite_v4/run_batch.py               |   266 +-
+ .../prompt_rewrite_v4/save_patch_from_clipboard.sh |    27 -
+ .../save_patch_from_clipboard_auto.sh              |    42 -
+ tools/prompt_rewrite_v4/state.json                 |  1559 +-
+ tools/prompt_rewrite_v4/validate_patch.py          |   162 +-
+ ui-dashboard/package-lock.json                     |  1372 +-
+ ui-dashboard/package.json                          |     4 +-
+ ui-dashboard/pnpm-lock.yaml                        |  1029 +-
+ ui-dashboard/src/components/CognitiveLoadGauge.tsx |     2 +-
+ ui-dashboard/src/components/PredictionPanel.tsx    |    18 +-
+ ui-dashboard/src/components/TaskSequencer.tsx      |    24 +-
+ ui-dashboard/src/components/TeamDashboard.tsx      |    29 +-
+ .../src/components/__tests__/Accessibility.test.ts |     7 +-
+ 2764 files changed, 15830 insertions(+), 598032 deletions(-)

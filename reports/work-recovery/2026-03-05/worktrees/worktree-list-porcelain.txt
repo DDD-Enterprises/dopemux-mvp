@@ -1,0 +1,24 @@
+worktree /Users/hue/code/dopemux-mvp
+HEAD 2eacae9360a8363e53cee638c624037a41c8fae7
+branch refs/heads/codex/integration-surface-registry-fix-20260305
+
+worktree /private/tmp/dopemux-merge-171-20260305_233420
+HEAD 533e3b0f4f2cc1bca5c2faa3b6fbea9333f970a4
+branch refs/heads/palette-a11y-shorthand-enhancements-7182863786433874704
+
+worktree /private/tmp/dopemux-merge-172-20260305_233345
+HEAD 2b5fef20a662a5c00b493a2e33a7a441518e90a7
+branch refs/heads/palette/team-dashboard-ux-accessibility-16026508279551229345
+
+worktree /private/tmp/dopemux-merge-173-20260305_233427
+HEAD 069bc3d5656af4e563582bee18178f9076d754b6
+branch refs/heads/codex/preplan-baseline-rte-cli-20260305
+
+worktree /Users/hue/code/dopemux-mvp-pr-ops
+HEAD 67f34270c3eca6333f69b90e0958ad993a483d6f
+branch refs/heads/codex/pr-ops
+
+worktree /Users/hue/code/fix-routing
+HEAD d792a57b14e6fcc7e7e919589a1b6ed8e5a3359a
+branch refs/heads/fix-routing
+

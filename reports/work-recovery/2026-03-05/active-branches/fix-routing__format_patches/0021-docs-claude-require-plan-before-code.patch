@@ -1,0 +1,34 @@
+From 68c3353723aa1adb5fc6629599ebe3adbdef6a3f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 16:51:07 -0800
+Subject: [PATCH 21/36] docs(claude): require plan before code
+
+---
+ .claude/claude.md | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/.claude/claude.md b/.claude/claude.md
+index 046c6b59b..5ae67c4ee 100644
+--- a/.claude/claude.md
++++ b/.claude/claude.md
+@@ -119,6 +119,14 @@ STATE AND EVIDENCE DISCIPLINE
+   - diffstat + full diff for relevant commits
+   - test/verification command outputs
+ 
++PLANNING GATE (mandatory for non-trivial changes)
++- Before editing any file, write proof/PLAN.txt containing:
++  - Objective (1-2 lines)
++  - Scope: allowed files (exact paths)
++  - Steps (numbered, <= 7)
++  - Verification commands
++- If a plan cannot be written, STOP.
++
+ DEFAULT WORKDIR
+ - Use one canonical repo directory per project.
+ - If worktrees are used, every proof must include pwd + git rev-parse --show-toplevel.
+-- 
+2.50.1 (Apple Git-155)
+

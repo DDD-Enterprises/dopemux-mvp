@@ -1,0 +1,17 @@
+diff --git a/src/dopemux/cli.py b/src/dopemux/cli.py
+index a9a6dd8f0..c9bee6793 100644
+--- a/src/dopemux/cli.py
++++ b/src/dopemux/cli.py
+@@ -35,11 +35,7 @@ except ImportError:  # pragma: no cover
+         """Fallback load_dotenv when python-dotenv is unavailable."""
+         return False
+ 
+-# Import RoutingConfig for mode-based behavior
+-try:
+-    from .routing_config import RoutingConfig
+-except ImportError:  # pragma: no cover
+-    RoutingConfig = None
++
+ 
+ from rich.live import Live
+ from rich.panel import Panel

@@ -1,0 +1,36 @@
+d792a57b1 (fix-routing) feat(prompt-rewrite): update request with real heuristics and initialize audit trail
+4d8681901 feat(prompt-rewrite): add hardening tweaks - pre-render validation and sha256 audit trail
+0839a0c1e docs(prompt-rewrite): add heuristics library v1
+1154d42c8 feat(prompt-rewrite): add v4 prompt rewrite harness with opus microbatch processing
+b5e62ff92 docs(governance): add authority map and conflict ledger
+206183ec5 docs: add supervisor instructions for chatgpt
+3299b1d5c chore(migrate): finalize config and migration doc
+7b09e1d75 fix(ci): move documentation files to proper locations per hygiene policy
+a5709d2ff chore(final): complete migration cleanup
+2c1afab39 chore(cleanup): remove legacy taskx files and add new dopetask files
+af2902531 chore(ci): update workflow for dopetask
+11c6c040d test(migrate): update tests and docs for dopetask
+f9eb7a2c0 chore(migrate): switch pins and scripts to dopetask
+51b576fe4 chore(migrate): remove taskx submodule remnants (pip-only)
+fcb64026e fix(proof_bundle): enforce plan and allow-files scope gate
+68c335372 docs(claude): require plan before code
+2e143ff57 fix(claude): set CCR env from routing mode
+f1f02e16a feat(claude): prepare environment from routing mode
+15076ca1c fix(routing): define env consistency helper before use
+085469c87 fix(routing): correct cli imports and avoid stale proxy env
+c56e71f13 feat(routing): make dopemux start respect routing mode
+74e4771b6 fix(routing): status/health read ports from routing.yaml (no defaults)
+541664a0e Update config.toml formatting for better readability
+9f001835e fix(routing): bind local services to 127.0.0.1
+e5a91aef3 docs(claude): add general implementation invariants
+73a21f178 fix(routing): harden launchd services (no docker, no hardcoded paths)
+2d0b5fdfd feat(routing): scaffold launchd services and routing CLI
+068629718 chore(repo): remove tracked proof artifacts
+2bd74cad0 fix(proof_bundle): make script use --tp parameter correctly
+2c7717b0f fix(routing): allow aliases to reference slots or models
+e4aaae013 Revert "fix(routing): allow aliases to reference slots or models"
+05e3b1347 Update config.toml
+7de528473 update vibe config
+cf05e0b9f chore(vibe): add Devstral implementer contract instructions
+8bc86ba76 chore(gitignore): ignore proof bundles and router artifacts
+210128c07 fix(routing): allow aliases to reference slots or models

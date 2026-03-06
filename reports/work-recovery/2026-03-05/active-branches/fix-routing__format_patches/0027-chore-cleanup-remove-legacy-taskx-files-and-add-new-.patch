@@ -1,0 +1,817 @@
+From 2c1afab39585db15ad869939e19630acb0c34b4d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 17:22:41 -0800
+Subject: [PATCH 27/36] chore(cleanup): remove legacy taskx files and add new
+ dopetask files
+
+---
+ .dopetaskroot                                 |   0
+ .taskx-pin                                    |   4 -
+ .taskx/instructions/AGENTS.md                 |  77 ----------
+ .taskx/instructions/CLAUDE.md                 |  77 ----------
+ .taskx/instructions/CODEX.md                  |  69 ---------
+ .taskx/instructions/PROJECT_INSTRUCTIONS.md   |  78 -----------
+ .taskx/instructions/PROJECT_PATCH_REPORT.md   |  35 -----
+ .../generated/PROJECT_DOCTOR_REPORT.json      |  65 ---------
+ .../generated/PROJECT_DOCTOR_REPORT.md        |  36 -----
+ .../generated/PROJECT_MODE_REPORT.md          |  17 ---
+ .taskx/project.json                           |   6 -
+ ...SIS.md => DOPETASK_INTEGRATION_ANALYSIS.md |   2 +-
+ scripts/taskx                                 |  89 ------------
+ scripts/update_supervisor_for_dopetask.py     | 132 ++++++++++++++++++
+ 14 files changed, 133 insertions(+), 554 deletions(-)
+ create mode 100644 .dopetaskroot
+ delete mode 100644 .taskx-pin
+ delete mode 100644 .taskx/instructions/AGENTS.md
+ delete mode 100644 .taskx/instructions/CLAUDE.md
+ delete mode 100644 .taskx/instructions/CODEX.md
+ delete mode 100644 .taskx/instructions/PROJECT_INSTRUCTIONS.md
+ delete mode 100644 .taskx/instructions/PROJECT_PATCH_REPORT.md
+ delete mode 100644 .taskx/instructions/generated/PROJECT_DOCTOR_REPORT.json
+ delete mode 100644 .taskx/instructions/generated/PROJECT_DOCTOR_REPORT.md
+ delete mode 100644 .taskx/instructions/generated/PROJECT_MODE_REPORT.md
+ delete mode 100644 .taskx/project.json
+ rename TASKX_INTEGRATION_ANALYSIS.md => DOPETASK_INTEGRATION_ANALYSIS.md (99%)
+ delete mode 100755 scripts/taskx
+ create mode 100755 scripts/update_supervisor_for_dopetask.py
+
+diff --git a/.dopetaskroot b/.dopetaskroot
+new file mode 100644
+index 000000000..e69de29bb
+diff --git a/.taskx-pin b/.taskx-pin
+deleted file mode 100644
+index 88cb742d8..000000000
+--- a/.taskx-pin
++++ /dev/null
+@@ -1,4 +0,0 @@
+-install=git
+-repo=https://github.com/hu3mann/taskX.git
+-ref=v0.1.2
+-commit=f5bd9e390cd485a0cd4db93f8dc5def59ef12a15
+diff --git a/.taskx/instructions/AGENTS.md b/.taskx/instructions/AGENTS.md
+deleted file mode 100644
+index 837886e88..000000000
+--- a/.taskx/instructions/AGENTS.md
++++ /dev/null
+@@ -1,77 +0,0 @@
+-# AGENTS Instructions
+-
+-## Dopemux Instruction Source of Truth
+-All agents must treat `.claude/` as authoritative:
+-
+-- `.claude/PROJECT_INSTRUCTIONS.md`
+-- `.claude/PRIMER.md`
+-
+-TaskX-managed blocks below are generic rails and may be updated by TaskX. Keep project-specific rules in `.claude/`.
+-
+-<!-- TASKX:BEGIN -->
+-<!-- directive-pack:taskx@v1 -->
+-## TaskX Directives (Base)
+-
+-1. Task packets are law.
+-2. Perform only actions explicitly authorized by the active task packet.
+-3. Scope is strict: no drive-by refactors, no opportunistic cleanup, no hidden extra work.
+-4. Treat allowlists, file scopes, and verification gates as hard requirements.
+-5. Use evidence-first reasoning for every claim.
+-6. Never fabricate command runs, outputs, file states, tests, or approvals.
+-7. If evidence is missing, mark the claim `UNKNOWN` and define a deterministic check.
+-8. Verification is mandatory for completion.
+-9. Record verification with the exact commands run and raw outputs.
+-10. Do not summarize away failing output; include failure details and exit codes.
+-11. Deterministic operation is required:
+-12. Do not claim a command was run unless its output is present in logs.
+-13. Do not claim a file changed unless the diff reflects it.
+-14. Use minimal diffs and localized edits.
+-15. Keep behavior stable unless the packet explicitly authorizes a behavior change.
+-16. Keep assumptions explicit and testable.
+-17. Do not invent requirements, contracts, schemas, or policy text.
+-18. Respect stop conditions exactly as written in the packet.
+-19. Escalate immediately when blocked by missing artifacts, permissions, or contradictory instructions.
+-20. Escalation must include:
+-21. What is blocked.
+-22. Why it is blocked.
+-23. The smallest packet change needed to proceed.
+-24. Completion requires an Implementer Report with:
+-25. Summary of changes.
+-26. Files changed and added.
+-27. Verification commands and raw outputs.
+-28. Deviations from packet instructions (if any).
+-29. Explicit stop-condition confirmation.
+-30. If any required gate was not run, report incomplete and stop.
+-<!-- TASKX:END -->
+-<!-- CHATX:BEGIN -->
+-<!-- directive-pack:chatx@v1 -->
+-## ChatX Directives (Add-on, Minimal)
+-
+-This pack is additive.
+-This pack does not override TaskX pack; if conflict, TaskX wins.
+-
+-1. Case Bundle audit mode requirements:
+-2. Perform deep audit of recent packets, runs, evidence artifacts, and repo logs.
+-3. Diagnose systemic issues, including repeated failures, policy drift, and verification gaps.
+-4. Prefer deterministic diagnosis first (counts, diffs, missing files, failed gates) before LLM inference.
+-5. Produce sequential task packets that target root causes, not symptoms.
+-6. Keep packet scopes narrow and verification steps explicit.
+-7. Supervisor must maintain these outputs:
+-8. `CASE_AUDIT_REPORT.md` for human-readable diagnosis.
+-9. `CASE_FINDINGS.json` for structured findings.
+-10. `PACKET_RECOMMENDATIONS.json` for deterministic next steps.
+-11. Packet queue sequencing:
+-12. Order recommendations so prerequisites execute before dependent fixes.
+-13. Avoid parallel packet recommendations when they touch the same ownership boundary.
+-14. Meta hygiene:
+-15. Never rewrite existing packet contract text unless explicitly authorized.
+-16. Localize changes to meta-layer guidance and audit artifacts.
+-17. Do not weaken TaskX verification and evidence requirements.
+-18. If evidence is insufficient:
+-19. Mark `UNKNOWN`.
+-20. List missing artifacts.
+-21. Recommend deterministic bundle re-export requirements.
+-22. Optional prompt-pack output is allowed only as additive guidance with no contract override.
+-<!-- CHATX:END -->
+-
+-Agent-specific rules are inserted in sentinel blocks only.
+diff --git a/.taskx/instructions/CLAUDE.md b/.taskx/instructions/CLAUDE.md
+deleted file mode 100644
+index c014b321c..000000000
+--- a/.taskx/instructions/CLAUDE.md
++++ /dev/null
+@@ -1,77 +0,0 @@
+-# CLAUDE Instructions
+-
+-## Dopemux Instruction Source of Truth
+-Follow `.claude/` as authoritative:
+-
+-- `.claude/PROJECT_INSTRUCTIONS.md`
+-- `.claude/PRIMER.md`
+-
+-The TaskX-managed blocks below are generic rails. Do not treat them as project-specific governance.
+-
+-<!-- TASKX:BEGIN -->
+-<!-- directive-pack:taskx@v1 -->
+-## TaskX Directives (Base)
+-
+-1. Task packets are law.
+-2. Perform only actions explicitly authorized by the active task packet.
+-3. Scope is strict: no drive-by refactors, no opportunistic cleanup, no hidden extra work.
+-4. Treat allowlists, file scopes, and verification gates as hard requirements.
+-5. Use evidence-first reasoning for every claim.
+-6. Never fabricate command runs, outputs, file states, tests, or approvals.
+-7. If evidence is missing, mark the claim `UNKNOWN` and define a deterministic check.
+-8. Verification is mandatory for completion.
+-9. Record verification with the exact commands run and raw outputs.
+-10. Do not summarize away failing output; include failure details and exit codes.
+-11. Deterministic operation is required:
+-12. Do not claim a command was run unless its output is present in logs.
+-13. Do not claim a file changed unless the diff reflects it.
+-14. Use minimal diffs and localized edits.
+-15. Keep behavior stable unless the packet explicitly authorizes a behavior change.
+-16. Keep assumptions explicit and testable.
+-17. Do not invent requirements, contracts, schemas, or policy text.
+-18. Respect stop conditions exactly as written in the packet.
+-19. Escalate immediately when blocked by missing artifacts, permissions, or contradictory instructions.
+-20. Escalation must include:
+-21. What is blocked.
+-22. Why it is blocked.
+-23. The smallest packet change needed to proceed.
+-24. Completion requires an Implementer Report with:
+-25. Summary of changes.
+-26. Files changed and added.
+-27. Verification commands and raw outputs.
+-28. Deviations from packet instructions (if any).
+-29. Explicit stop-condition confirmation.
+-30. If any required gate was not run, report incomplete and stop.
+-<!-- TASKX:END -->
+-<!-- CHATX:BEGIN -->
+-<!-- directive-pack:chatx@v1 -->
+-## ChatX Directives (Add-on, Minimal)
+-
+-This pack is additive.
+-This pack does not override TaskX pack; if conflict, TaskX wins.
+-
+-1. Case Bundle audit mode requirements:
+-2. Perform deep audit of recent packets, runs, evidence artifacts, and repo logs.
+-3. Diagnose systemic issues, including repeated failures, policy drift, and verification gaps.
+-4. Prefer deterministic diagnosis first (counts, diffs, missing files, failed gates) before LLM inference.
+-5. Produce sequential task packets that target root causes, not symptoms.
+-6. Keep packet scopes narrow and verification steps explicit.
+-7. Supervisor must maintain these outputs:
+-8. `CASE_AUDIT_REPORT.md` for human-readable diagnosis.
+-9. `CASE_FINDINGS.json` for structured findings.
+-10. `PACKET_RECOMMENDATIONS.json` for deterministic next steps.
+-11. Packet queue sequencing:
+-12. Order recommendations so prerequisites execute before dependent fixes.
+-13. Avoid parallel packet recommendations when they touch the same ownership boundary.
+-14. Meta hygiene:
+-15. Never rewrite existing packet contract text unless explicitly authorized.
+-16. Localize changes to meta-layer guidance and audit artifacts.
+-17. Do not weaken TaskX verification and evidence requirements.
+-18. If evidence is insufficient:
+-19. Mark `UNKNOWN`.
+-20. List missing artifacts.
+-21. Recommend deterministic bundle re-export requirements.
+-22. Optional prompt-pack output is allowed only as additive guidance with no contract override.
+-<!-- CHATX:END -->
+-
+-Agent-specific rules are inserted in sentinel blocks only.
+diff --git a/.taskx/instructions/CODEX.md b/.taskx/instructions/CODEX.md
+deleted file mode 100644
+index b4ec1aca9..000000000
+--- a/.taskx/instructions/CODEX.md
++++ /dev/null
+@@ -1,69 +0,0 @@
+-# CODEX Instructions
+-
+-<!-- TASKX:BEGIN -->
+-<!-- directive-pack:taskx@v1 -->
+-## TaskX Directives (Base)
+-
+-1. Task packets are law.
+-2. Perform only actions explicitly authorized by the active task packet.
+-3. Scope is strict: no drive-by refactors, no opportunistic cleanup, no hidden extra work.
+-4. Treat allowlists, file scopes, and verification gates as hard requirements.
+-5. Use evidence-first reasoning for every claim.
+-6. Never fabricate command runs, outputs, file states, tests, or approvals.
+-7. If evidence is missing, mark the claim `UNKNOWN` and define a deterministic check.
+-8. Verification is mandatory for completion.
+-9. Record verification with the exact commands run and raw outputs.
+-10. Do not summarize away failing output; include failure details and exit codes.
+-11. Deterministic operation is required:
+-12. Do not claim a command was run unless its output is present in logs.
+-13. Do not claim a file changed unless the diff reflects it.
+-14. Use minimal diffs and localized edits.
+-15. Keep behavior stable unless the packet explicitly authorizes a behavior change.
+-16. Keep assumptions explicit and testable.
+-17. Do not invent requirements, contracts, schemas, or policy text.
+-18. Respect stop conditions exactly as written in the packet.
+-19. Escalate immediately when blocked by missing artifacts, permissions, or contradictory instructions.
+-20. Escalation must include:
+-21. What is blocked.
+-22. Why it is blocked.
+-23. The smallest packet change needed to proceed.
+-24. Completion requires an Implementer Report with:
+-25. Summary of changes.
+-26. Files changed and added.
+-27. Verification commands and raw outputs.
+-28. Deviations from packet instructions (if any).
+-29. Explicit stop-condition confirmation.
+-30. If any required gate was not run, report incomplete and stop.
+-<!-- TASKX:END -->
+-<!-- CHATX:BEGIN -->
+-<!-- directive-pack:chatx@v1 -->
+-## ChatX Directives (Add-on, Minimal)
+-
+-This pack is additive.
+-This pack does not override TaskX pack; if conflict, TaskX wins.
+-
+-1. Case Bundle audit mode requirements:
+-2. Perform deep audit of recent packets, runs, evidence artifacts, and repo logs.
+-3. Diagnose systemic issues, including repeated failures, policy drift, and verification gaps.
+-4. Prefer deterministic diagnosis first (counts, diffs, missing files, failed gates) before LLM inference.
+-5. Produce sequential task packets that target root causes, not symptoms.
+-6. Keep packet scopes narrow and verification steps explicit.
+-7. Supervisor must maintain these outputs:
+-8. `CASE_AUDIT_REPORT.md` for human-readable diagnosis.
+-9. `CASE_FINDINGS.json` for structured findings.
+-10. `PACKET_RECOMMENDATIONS.json` for deterministic next steps.
+-11. Packet queue sequencing:
+-12. Order recommendations so prerequisites execute before dependent fixes.
+-13. Avoid parallel packet recommendations when they touch the same ownership boundary.
+-14. Meta hygiene:
+-15. Never rewrite existing packet contract text unless explicitly authorized.
+-16. Localize changes to meta-layer guidance and audit artifacts.
+-17. Do not weaken TaskX verification and evidence requirements.
+-18. If evidence is insufficient:
+-19. Mark `UNKNOWN`.
+-20. List missing artifacts.
+-21. Recommend deterministic bundle re-export requirements.
+-22. Optional prompt-pack output is allowed only as additive guidance with no contract override.
+-<!-- CHATX:END -->
+-
+-Agent-specific rules are inserted in sentinel blocks only.
+diff --git a/.taskx/instructions/PROJECT_INSTRUCTIONS.md b/.taskx/instructions/PROJECT_INSTRUCTIONS.md
+deleted file mode 100644
+index c22afffa4..000000000
+--- a/.taskx/instructions/PROJECT_INSTRUCTIONS.md
++++ /dev/null
+@@ -1,78 +0,0 @@
+-# Project Instructions
+-
+-## Authority and Routing (Dopemux)
+-**Source of truth:** The authoritative project instructions live in `.claude/`.
+-
+-- Primary: `.claude/PROJECT_INSTRUCTIONS.md`
+-- Primer: `.claude/PRIMER.md`
+-- Supporting governance/workflows live under `.claude/` (hooks, modules, workflows, etc.)
+-
+-**TaskX packs below are rails only.** They provide generic safety/determinism constraints and must not override `.claude/` project governance. If any instruction conflicts, follow `.claude/` and mark the conflict explicitly.
+-
+-<!-- TASKX:BEGIN -->
+-<!-- directive-pack:taskx@v1 -->
+-## TaskX Directives (Base)
+-
+-1. Task packets are law.
+-2. Perform only actions explicitly authorized by the active task packet.
+-3. Scope is strict: no drive-by refactors, no opportunistic cleanup, no hidden extra work.
+-4. Treat allowlists, file scopes, and verification gates as hard requirements.
+-5. Use evidence-first reasoning for every claim.
+-6. Never fabricate command runs, outputs, file states, tests, or approvals.
+-7. If evidence is missing, mark the claim `UNKNOWN` and define a deterministic check.
+-8. Verification is mandatory for completion.
+-9. Record verification with the exact commands run and raw outputs.
+-10. Do not summarize away failing output; include failure details and exit codes.
+-11. Deterministic operation is required:
+-12. Do not claim a command was run unless its output is present in logs.
+-13. Do not claim a file changed unless the diff reflects it.
+-14. Use minimal diffs and localized edits.
+-15. Keep behavior stable unless the packet explicitly authorizes a behavior change.
+-16. Keep assumptions explicit and testable.
+-17. Do not invent requirements, contracts, schemas, or policy text.
+-18. Respect stop conditions exactly as written in the packet.
+-19. Escalate immediately when blocked by missing artifacts, permissions, or contradictory instructions.
+-20. Escalation must include:
+-21. What is blocked.
+-22. Why it is blocked.
+-23. The smallest packet change needed to proceed.
+-24. Completion requires an Implementer Report with:
+-25. Summary of changes.
+-26. Files changed and added.
+-27. Verification commands and raw outputs.
+-28. Deviations from packet instructions (if any).
+-29. Explicit stop-condition confirmation.
+-30. If any required gate was not run, report incomplete and stop.
+-<!-- TASKX:END -->
+-<!-- CHATX:BEGIN -->
+-<!-- directive-pack:chatx@v1 -->
+-## ChatX Directives (Add-on, Minimal)
+-
+-This pack is additive.
+-This pack does not override TaskX pack; if conflict, TaskX wins.
+-
+-1. Case Bundle audit mode requirements:
+-2. Perform deep audit of recent packets, runs, evidence artifacts, and repo logs.
+-3. Diagnose systemic issues, including repeated failures, policy drift, and verification gaps.
+-4. Prefer deterministic diagnosis first (counts, diffs, missing files, failed gates) before LLM inference.
+-5. Produce sequential task packets that target root causes, not symptoms.
+-6. Keep packet scopes narrow and verification steps explicit.
+-7. Supervisor must maintain these outputs:
+-8. `CASE_AUDIT_REPORT.md` for human-readable diagnosis.
+-9. `CASE_FINDINGS.json` for structured findings.
+-10. `PACKET_RECOMMENDATIONS.json` for deterministic next steps.
+-11. Packet queue sequencing:
+-12. Order recommendations so prerequisites execute before dependent fixes.
+-13. Avoid parallel packet recommendations when they touch the same ownership boundary.
+-14. Meta hygiene:
+-15. Never rewrite existing packet contract text unless explicitly authorized.
+-16. Localize changes to meta-layer guidance and audit artifacts.
+-17. Do not weaken TaskX verification and evidence requirements.
+-18. If evidence is insufficient:
+-19. Mark `UNKNOWN`.
+-20. List missing artifacts.
+-21. Recommend deterministic bundle re-export requirements.
+-22. Optional prompt-pack output is allowed only as additive guidance with no contract override.
+-<!-- CHATX:END -->
+-
+-Project-level instructions are maintained in sentinel blocks above.
+diff --git a/.taskx/instructions/PROJECT_PATCH_REPORT.md b/.taskx/instructions/PROJECT_PATCH_REPORT.md
+deleted file mode 100644
+index d3da6fa05..000000000
+--- a/.taskx/instructions/PROJECT_PATCH_REPORT.md
++++ /dev/null
+@@ -1,35 +0,0 @@
+-# PROJECT_PATCH_REPORT
+-
+-- project_dir: /Users/hue/code/dopemux-mvp/.taskx/instructions
+-- operation: enable
+-- pack: chatx
+-
+-## Files Changed
+-
+-### PROJECT_INSTRUCTIONS.md
+-- status: unchanged
+-- block_added: False
+-- content_changed: False
+-- before_hash: 189ed8c56545cb50c56a72ad839c5c382b4d38084e7e5ab6aa704bbc2b1a8650
+-- after_hash: 189ed8c56545cb50c56a72ad839c5c382b4d38084e7e5ab6aa704bbc2b1a8650
+-
+-### CLAUDE.md
+-- status: unchanged
+-- block_added: False
+-- content_changed: False
+-- before_hash: 10dd318fda4eaf49fc031080d77f1c6d9a54087a7d71b5e350a8f1e5cf130ead
+-- after_hash: 10dd318fda4eaf49fc031080d77f1c6d9a54087a7d71b5e350a8f1e5cf130ead
+-
+-### CODEX.md
+-- status: unchanged
+-- block_added: False
+-- content_changed: False
+-- before_hash: ae8f6a9931fa9c64b4074748786fad24202adf965beaad9e48b88b4265f18c5e
+-- after_hash: ae8f6a9931fa9c64b4074748786fad24202adf965beaad9e48b88b4265f18c5e
+-
+-### AGENTS.md
+-- status: unchanged
+-- block_added: False
+-- content_changed: False
+-- before_hash: b4d82ccec1938c128907f9f89adebc84a139195b9041cf73be56825798cc7621
+-- after_hash: b4d82ccec1938c128907f9f89adebc84a139195b9041cf73be56825798cc7621
+diff --git a/.taskx/instructions/generated/PROJECT_DOCTOR_REPORT.json b/.taskx/instructions/generated/PROJECT_DOCTOR_REPORT.json
+deleted file mode 100644
+index 2700f4235..000000000
+--- a/.taskx/instructions/generated/PROJECT_DOCTOR_REPORT.json
++++ /dev/null
+@@ -1,65 +0,0 @@
+-{
+-  "actions_taken": [
+-    "mode_applied:both",
+-    "supervisor_prompt_generated:SUPERVISOR_PRIMING_PROMPT.txt"
+-  ],
+-  "applied_mode": "both",
+-  "checks": [
+-    {
+-      "files": [],
+-      "id": "files_present",
+-      "message": "All required project instruction files are present",
+-      "status": "pass"
+-    },
+-    {
+-      "files": [
+-        "AGENTS.md",
+-        "CLAUDE.md",
+-        "CODEX.md",
+-        "PROJECT_INSTRUCTIONS.md"
+-      ],
+-      "id": "sentinel_integrity",
+-      "message": "TaskX/ChatX sentinel blocks are present and well-formed",
+-      "status": "pass"
+-    },
+-    {
+-      "files": [
+-        "AGENTS.md",
+-        "CLAUDE.md",
+-        "CODEX.md",
+-        "PROJECT_INSTRUCTIONS.md"
+-      ],
+-      "id": "pack_status_consistency",
+-      "message": "Pack status is consistent (mode=both)",
+-      "status": "pass"
+-    },
+-    {
+-      "files": [
+-        "/Users/hue/code/dopemux-mvp/.taskx/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt"
+-      ],
+-      "id": "supervisor_prompt",
+-      "message": "Supervisor prompt matches mode 'both'",
+-      "status": "pass"
+-    }
+-  ],
+-  "detected_mode": "both",
+-  "per_file_status": {
+-    "AGENTS.md": {
+-      "chatx": "enabled",
+-      "taskx": "enabled"
+-    },
+-    "CLAUDE.md": {
+-      "chatx": "enabled",
+-      "taskx": "enabled"
+-    },
+-    "CODEX.md": {
+-      "chatx": "enabled",
+-      "taskx": "enabled"
+-    },
+-    "PROJECT_INSTRUCTIONS.md": {
+-      "chatx": "enabled",
+-      "taskx": "enabled"
+-    }
+-  },
+-  "status": "pass"
+-}
+\ No newline at end of file
+diff --git a/.taskx/instructions/generated/PROJECT_DOCTOR_REPORT.md b/.taskx/instructions/generated/PROJECT_DOCTOR_REPORT.md
+deleted file mode 100644
+index 59071fe6f..000000000
+--- a/.taskx/instructions/generated/PROJECT_DOCTOR_REPORT.md
++++ /dev/null
+@@ -1,36 +0,0 @@
+-# PROJECT_DOCTOR_REPORT
+-
+-- project_dir: /Users/hue/code/dopemux-mvp/.taskx/instructions
+-- status: pass
+-- detected_mode: both
+-
+-## Checks
+-
+-- id: files_present
+-  - status: pass
+-  - message: All required project instruction files are present
+-  - files: (none)
+-- id: sentinel_integrity
+-  - status: pass
+-  - message: TaskX/ChatX sentinel blocks are present and well-formed
+-  - files: AGENTS.md, CLAUDE.md, CODEX.md, PROJECT_INSTRUCTIONS.md
+-- id: pack_status_consistency
+-  - status: pass
+-  - message: Pack status is consistent (mode=both)
+-  - files: AGENTS.md, CLAUDE.md, CODEX.md, PROJECT_INSTRUCTIONS.md
+-- id: supervisor_prompt
+-  - status: pass
+-  - message: Supervisor prompt matches mode 'both'
+-  - files: /Users/hue/code/dopemux-mvp/.taskx/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt
+-
+-## Per-file Status
+-
+-- AGENTS.md: taskx=enabled chatx=enabled
+-- CLAUDE.md: taskx=enabled chatx=enabled
+-- CODEX.md: taskx=enabled chatx=enabled
+-- PROJECT_INSTRUCTIONS.md: taskx=enabled chatx=enabled
+-
+-## Actions Taken
+-
+-- mode_applied:both
+-- supervisor_prompt_generated:SUPERVISOR_PRIMING_PROMPT.txt
+diff --git a/.taskx/instructions/generated/PROJECT_MODE_REPORT.md b/.taskx/instructions/generated/PROJECT_MODE_REPORT.md
+deleted file mode 100644
+index 594655966..000000000
+--- a/.taskx/instructions/generated/PROJECT_MODE_REPORT.md
++++ /dev/null
+@@ -1,17 +0,0 @@
+-# PROJECT_MODE_REPORT
+-
+-- project_dir: /Users/hue/code/dopemux-mvp/.taskx/instructions
+-- selected_mode: both
+-- taskx_changed_files: 0
+-- chatx_changed_files: 0
+-
+-## Per-file Pack Status
+-
+-- AGENTS.md: taskx=enabled chatx=enabled
+-- CLAUDE.md: taskx=enabled chatx=enabled
+-- CODEX.md: taskx=enabled chatx=enabled
+-- PROJECT_INSTRUCTIONS.md: taskx=enabled chatx=enabled
+-
+-## Files Changed
+-
+-- (none)
+diff --git a/.taskx/project.json b/.taskx/project.json
+deleted file mode 100644
+index c9d4f469e..000000000
+--- a/.taskx/project.json
++++ /dev/null
+@@ -1,6 +0,0 @@
+-{
+-  "project_id": "dopemux-mvp",
+-  "project_slug": "dopemux-mvp",
+-  "repo_remote_hint": "",
+-  "packet_required_header": true
+-}
+diff --git a/TASKX_INTEGRATION_ANALYSIS.md b/DOPETASK_INTEGRATION_ANALYSIS.md
+similarity index 99%
+rename from TASKX_INTEGRATION_ANALYSIS.md
+rename to DOPETASK_INTEGRATION_ANALYSIS.md
+index 4e3c2e188..542781b7c 100644
+--- a/TASKX_INTEGRATION_ANALYSIS.md
++++ b/DOPETASK_INTEGRATION_ANALYSIS.md
+@@ -1,4 +1,4 @@
+-# TaskX Integration Analysis
++# dopeTask Integration Analysis
+ ## Comprehensive Architecture Review: Task Packets → Orchestrator Bridge → ADHD Task Enablement
+ 
+ **Analysis Date**: 2026-02-16
+diff --git a/scripts/taskx b/scripts/taskx
+deleted file mode 100755
+index e92b35c13..000000000
+--- a/scripts/taskx
++++ /dev/null
+@@ -1,89 +0,0 @@
+-#!/usr/bin/env bash
+-set -euo pipefail
+-
+-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+-EXPECTED_PROJECT_ID="dopemux-mvp"
+-
+-if [[ ! -f "$REPO_ROOT/.taskxroot" ]]; then
+-  echo "Refusing: .taskxroot missing in repo root: $REPO_ROOT" >&2
+-  exit 2
+-fi
+-
+-if [[ ! -f "$REPO_ROOT/.repo_id" ]]; then
+-  echo "Refusing: .repo_id missing in repo root: $REPO_ROOT" >&2
+-  exit 2
+-fi
+-
+-REPO_PROJECT_ID="$(sed -n 's/^project=//p' "$REPO_ROOT/.repo_id" | head -n 1)"
+-if [[ "$REPO_PROJECT_ID" != "$EXPECTED_PROJECT_ID" ]]; then
+-  echo "Refusing: wrong repo_id project. expected=$EXPECTED_PROJECT_ID got=${REPO_PROJECT_ID:-<missing>}" >&2
+-  exit 2
+-fi
+-
+-if [[ ! -f "$REPO_ROOT/.taskx/project.json" ]]; then
+-  echo "Refusing: .taskx/project.json missing in repo root." >&2
+-  exit 2
+-fi
+-
+-TASKX_PROJECT_ID="$(python3 - "$REPO_ROOT/.taskx/project.json" <<'PY'
+-import json
+-import sys
+-
+-path = sys.argv[1]
+-try:
+-    with open(path, "r", encoding="utf-8") as fh:
+-        payload = json.load(fh)
+-except Exception:
+-    print("")
+-    raise SystemExit(0)
+-
+-print(str(payload.get("project_id", "")).strip())
+-PY
+-)"
+-if [[ "$TASKX_PROJECT_ID" != "$EXPECTED_PROJECT_ID" ]]; then
+-  echo "Refusing: .taskx/project.json project_id mismatch. expected=$EXPECTED_PROJECT_ID got=${TASKX_PROJECT_ID:-<missing>}" >&2
+-  exit 2
+-fi
+-
+-TASKX_SOURCE_DIR="$REPO_ROOT/vendor/taskx"
+-if [[ ! -d "$TASKX_SOURCE_DIR" ]]; then
+-  echo "Refusing: TaskX submodule missing at $TASKX_SOURCE_DIR" >&2
+-  echo "Run: git submodule update --init --recursive vendor/taskx" >&2
+-  exit 2
+-fi
+-if [[ ! -f "$TASKX_SOURCE_DIR/pyproject.toml" ]]; then
+-  echo "Refusing: invalid TaskX submodule; pyproject.toml missing at $TASKX_SOURCE_DIR" >&2
+-  exit 2
+-fi
+-
+-TASKX_COMMIT="$(git -C "$TASKX_SOURCE_DIR" rev-parse HEAD 2>/dev/null || true)"
+-if [[ -z "$TASKX_COMMIT" ]]; then
+-  echo "Refusing: unable to resolve TaskX submodule commit at $TASKX_SOURCE_DIR" >&2
+-  exit 2
+-fi
+-
+-VENV="$REPO_ROOT/.taskx_venv"
+-if [[ ! -d "$VENV" ]]; then
+-  python3 -m venv "$VENV"
+-fi
+-
+-TASKX_COMMIT_FILE="$VENV/.taskx_submodule_commit"
+-INSTALLED_COMMIT=""
+-if [[ -f "$TASKX_COMMIT_FILE" ]]; then
+-  INSTALLED_COMMIT="$(cat "$TASKX_COMMIT_FILE" 2>/dev/null || true)"
+-fi
+-
+-ensure_taskx_installed() {
+-  source "$VENV/bin/activate"
+-  pip install --quiet --upgrade pip
+-  pip install --quiet --upgrade -e "$TASKX_SOURCE_DIR[dopemux]"
+-  printf '%s\n' "$TASKX_COMMIT" > "$TASKX_COMMIT_FILE"
+-}
+-
+-if [[ ! -x "$VENV/bin/taskx" || "$INSTALLED_COMMIT" != "$TASKX_COMMIT" ]]; then
+-  ensure_taskx_installed
+-else
+-  source "$VENV/bin/activate"
+-fi
+-
+-exec "$VENV/bin/taskx" "$@"
+diff --git a/scripts/update_supervisor_for_dopetask.py b/scripts/update_supervisor_for_dopetask.py
+new file mode 100755
+index 000000000..6ec702f0a
+--- /dev/null
++++ b/scripts/update_supervisor_for_dopetask.py
+@@ -0,0 +1,132 @@
++#!/usr/bin/env python3
++"""
++Script to update supervisor configurations for dopeTask migration.
++This script helps automate the transition from taskX to dopeTask in supervisor setups.
++"""
++
++import os
++import re
++import sys
++from pathlib import Path
++from typing import List, Tuple
++
++
++def find_files_with_patterns(root_dir: str, patterns: List[str]) -> List[Path]:
++    """Find files containing any of the specified patterns."""
++    matches = []
++    root_path = Path(root_dir)
++    
++    for pattern in patterns:
++        # Use grep to find files efficiently
++        try:
++            result = subprocess.run(
++                ["grep", "-rl", pattern, str(root_path)],
++                capture_output=True,
++                text=True,
++                check=True
++            )
++            for line in result.stdout.strip().split('\n'):
++                if line:
++                    file_path = Path(line)
++                    if file_path not in matches:
++                        matches.append(file_path)
++        except subprocess.CalledProcessError:
++            # grep returned no matches, continue
++            pass
++    
++    return matches
++
++
++def update_file_content(file_path: Path, replacements: List[Tuple[str, str]]) -> bool:
++    """Update file content with specified replacements."""
++    try:
++        content = file_path.read_text(encoding='utf-8')
++        original_content = content
++        
++        for old, new in replacements:
++            content = content.replace(old, new)
++        
++        if content != original_content:
++            file_path.write_text(content, encoding='utf-8')
++            return True
++        return False
++    except Exception as e:
++        print(f"Error updating {file_path}: {e}")
++        return False
++
++
++def main():
++    """Main migration function."""
++    print("🚀 dopeTask Supervisor Migration Script")
++    print("=" * 50)
++    
++    # Define search patterns and replacements
++    search_patterns = [
++        "taskx",
++        ".taskx_venv",
++        "vendor/taskx",
++        "TASKX_",
++        "taskX"
++    ]
++    
++    replacements = [
++        ("taskx", "dopetask"),
++        (".taskx_venv", ".dopetask_venv"),
++        ("vendor/taskx", "vendor/dopetask"),
++        ("TASKX_", "DOPETASK_"),
++        ("taskX", "dopeTask"),
++        ("TaskX", "dopeTask"),
++    ]
++    
++    # Find files that need updating
++    print("🔍 Searching for files to update...")
++    files_to_update = find_files_with_patterns(".", search_patterns)
++    
++    if not files_to_update:
++        print("✅ No files found needing migration!")
++        return 0
++    
++    print(f"📁 Found {len(files_to_update)} files that may need updating:")
++    for i, file_path in enumerate(files_to_update, 1):
++        print(f"  {i}. {file_path}")
++    
++    # Ask for confirmation
++    confirm = input("\n🔧 Proceed with updates? (y/n): ").strip().lower()
++    if confirm != 'y':
++        print("🎭 Migration cancelled.")
++        return 0
++    
++    # Perform updates
++    updated_count = 0
++    for file_path in files_to_update:
++        if update_file_content(file_path, replacements):
++            print(f"✅ Updated: {file_path}")
++            updated_count += 1
++        else:
++            print(f"⚠️  No changes needed: {file_path}")
++    
++    print(f"\n🎉 Migration complete!")
++    print(f"📊 Updated {updated_count}/{len(files_to_update)} files")
++    
++    # Generate migration report
++    report_path = Path("dopetask_migration_report.txt")
++    with report_path.open('w', encoding='utf-8') as f:
++        f.write("dopeTask Migration Report\n")
++        f.write("=" * 40 + "\n\n")
++        f.write(f"Files processed: {len(files_to_update)}\n")
++        f.write(f"Files updated: {updated_count}\n")
++        f.write(f"Files unchanged: {len(files_to_update) - updated_count}\n\n")
++        
++        f.write("Updated files:\n")
++        for file_path in files_to_update:
++            status = "UPDATED" if update_file_content(file_path, replacements) else "CHECKED"
++            f.write(f"  [{status}] {file_path}\n")
++    
++    print(f"📄 Migration report saved to: {report_path}")
++    
++    return 0
++
++
++if __name__ == "__main__":
++    import subprocess
++    sys.exit(main())
+-- 
+2.50.1 (Apple Git-155)
+

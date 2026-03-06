@@ -1,0 +1,214 @@
+From 3299b1d5ce6fcee678901b3a493044594563770e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 17:53:45 -0800
+Subject: [PATCH 30/36] chore(migrate): finalize config and migration doc
+
+---
+ .vibe/config.toml              |   2 +-
+ MIGRATION_TASKX_TO_DOPETASK.md | 178 ---------------------------------
+ 2 files changed, 1 insertion(+), 179 deletions(-)
+ delete mode 100644 MIGRATION_TASKX_TO_DOPETASK.md
+
+diff --git a/.vibe/config.toml b/.vibe/config.toml
+index 0c76a1d96..95932adb2 100644
+--- a/.vibe/config.toml
++++ b/.vibe/config.toml
+@@ -56,7 +56,7 @@ RESPONSE FORMAT
+     - git log -5 --oneline
+     - and the full contents of 00_context.txt, 01_git.txt, 02_checks.txt from the proof bundle.
+ No extra commentary unless a STOP condition triggers.
+-"""
++ """
+ 
+ # NOTE:
+ # Start with tools OFF to confirm the model+key are good.
+diff --git a/MIGRATION_TASKX_TO_DOPETASK.md b/MIGRATION_TASKX_TO_DOPETASK.md
+deleted file mode 100644
+index cfb636aeb..000000000
+--- a/MIGRATION_TASKX_TO_DOPETASK.md
++++ /dev/null
+@@ -1,178 +0,0 @@
+-# TaskX to dopeTask Migration Guide
+-
+-## Summary
+-
+-✅ **MIGRATION COMPLETE** - This document outlines the completed migration from taskX to dopeTask in the dopemux-mvp codebase.
+-
+-**Status**: Fully migrated to dopeTask 0.1.4 via pip installation
+-**Date**: 2024
+-**Approach**: Comprehensive cleanup with documentation updates
+-
+-## Changes Made
+-
+-### 1. Package Migration
+-- **Before**: taskX 0.1.0 (git submodule)
+-- **After**: dopetask 0.1.4 (pip package)
+-- **Action**: Uninstalled taskX, using dopetask pip package
+-
+-### 2. Configuration Files Updated
+-
+-#### `.taskx-pin` → `.dopetask-pin`
+-```diff
+-- install=git
+-- repo=https://github.com/hu3mann/taskX.git
+-- ref=v0.1.2
+-- commit=f5bd9e390cd485a0cd4db93f8dc5def59ef12a15
+-+ install=pip
+-+ dep=dopetask
+-+ version=0.1.4
+-```
+-
+-#### `.gitmodules`
+-```diff
+-- [submodule "vendor/taskx"]
+-- 	path = vendor/taskx
+-- 	url = https://github.com/hu3mann/taskX.git
+-+ [submodule "vendor/dopetask"]
+-+ 	path = vendor/dopetask
+-+ 	url = https://github.com/hu3mann/dopetask.git
+-```
+-
+-### 3. Script Updates
+-
+-#### `scripts/taskx` → `scripts/dopetask`
+-- Updated all references from taskX to dopeTask
+-- Changed environment variable names (TASKX_* → DOPETASK_*)
+-- Updated executable name from `taskx` to `dopetask`
+-
+-### 4. Directory Structure Changes
+-
+-```diff
+-- .taskxroot
+-- .taskx/
+-- .taskx_venv/
+-- vendor/taskx/
+-+ .dopetaskroot
+-+ .dopetask/
+-+ .dopetask_venv/
+-+ vendor/dopetask/
+-```
+-
+-### 5. Documentation Updates
+-
+-#### `docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md` → `docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md`
+-- Updated all references from TaskX to dopeTask
+-- Updated invariant IDs (INV-TX-001 → INV-DT-001)
+-- Updated code examples and file paths
+-
+-### 6. Test Updates
+-
+-#### `tests/arch/test_taskx_submodule_contract.py` → `tests/arch/test_dopetask_submodule_contract.py`
+-- Updated test names and assertions
+-- Changed file paths from taskx to dopetask
+-
+-#### `tests/unit/test_taskx_wrapper_submodule.py` → `tests/unit/test_dopetask_wrapper_submodule.py`
+-- Updated test functions and assertions
+-- Changed all taskx references to dopetask
+-
+-## Migration Steps for Supervisors
+-
+-### 1. Update Environment
+-```bash
+-# Remove old taskX
+-pip uninstall taskx -y
+-
+-# Ensure dopetask is installed
+-pip install dopetask==0.1.4
+-```
+-
+-### 2. Update File References
+-- Replace all `taskx` command calls with `dopetask`
+-- Update any scripts that reference `.taskx_venv` to use `.dopetask_venv`
+-- Update configuration files to reference `vendor/dopetask` instead of `vendor/taskx`
+-
+-### 3. Verify Installation
+-```bash
+-# Check dopetask is available
+-dopetask --version
+-
+-# Should output: 0.1.4
+-```
+-
+-## Backward Compatibility
+-
+-The migration maintains the same core functionality:
+-- Deterministic task execution kernel
+-- One-way call direction (Supervisor → dopeTask)
+-- File artifact communication
+-- Same CLI interface and arguments
+-
+-## LLM Integration Updates
+-
+-For LLM configurations and prompts:
+-
+-1. **Update command references**:
+-   ```diff
+-   - "Run: taskx execute --plan=..."
+-   + "Run: dopetask execute --plan=..."
+-   ```
+-
+-2. **Update tool descriptions**:
+-   ```diff
+-   - "taskX: deterministic task execution engine"
+-   + "dopetask: deterministic task execution engine"
+-   ```
+-
+-3. **Update file path references**:
+-   ```diff
+-   - ".taskx_venv/bin/taskx"
+-   + ".dopetask_venv/bin/dopetask"
+-   ```
+-
+-## Supervisor Instructions Update
+-
+-### Updated Workflow
+-1. **Task Execution**: Use `dopetask execute` instead of `taskx execute`
+-2. **Plan Validation**: Use `dopetask validate` instead of `taskx validate`
+-3. **Environment Setup**: Ensure `.dopetaskroot` exists instead of `.taskxroot`
+-
+-### Command Reference
+-
+-| Old Command | New Command |
+-|-------------|-------------|
+-| `taskx --version` | `dopetask --version` |
+-| `taskx execute --plan=plan.yaml` | `dopetask execute --plan=plan.yaml` |
+-| `taskx validate --plan=plan.yaml` | `dopetask validate --plan=plan.yaml` |
+-
+-## Verification Checklist
+-
+-- [x] dopetask package installed (0.1.4)
+-- [x] taskX package uninstalled
+-- [x] Configuration files updated
+-- [x] Scripts updated
+-- [x] Documentation updated
+-- [x] Tests updated
+-- [ ] CI/CD pipeline updated (if applicable)
+-- [ ] Supervisor configurations updated
+-- [ ] LLM prompt templates updated
+-
+-## Rollback Procedure
+-
+-If issues arise, rollback using:
+-```bash
+-# Reinstall taskX
+-pip install taskx==0.1.0
+-
+-# Revert configuration files from git
+-git checkout .taskx-pin .gitmodules
+-
+-# Restore original scripts
+-git checkout scripts/taskx
+-```
+-
+-## Support
+-
+-For migration issues, refer to:
+-- dopeTask documentation: https://github.com/hu3mann/dopetask
+-- dopemux-mvp integration docs: `docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md`
+-- Test suites: `tests/arch/test_dopetask_submodule_contract.py`
+-- 
+2.50.1 (Apple Git-155)
+

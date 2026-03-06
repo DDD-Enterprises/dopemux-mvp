@@ -1,0 +1,426 @@
+diff --git a/src/dopemux/cli.py b/src/dopemux/cli.py
+index cfacb51b3..d26510542 100644
+--- a/src/dopemux/cli.py
++++ b/src/dopemux/cli.py
+@@ -682,6 +682,27 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
+     is_flag=True,
+     help="🎯 Tier-matched routing: opus→GPT-5.2-Codex, sonnet→GPT-5-Mini, haiku→Grok Code Fast 1",
+ )
++@click.option(
++    "--no-routing-repair",
++    is_flag=True,
++    help="Disable automatic routing repair loop (health check only)",
++)
++@click.option(
++    "--routing-repair-max",
++    type=int,
++    default=3,
++    help="Maximum number of repair attempts (default: 3)",
++)
++@click.option(
++    "--routing-repair-no-sync-keys",
++    is_flag=True,
++    help="Do not attempt API key syncing during repair (default: no sync)",
++)
++@click.option(
++    "--routing-fallback-subscription",
++    is_flag=True,
++    help="Fall back to subscription mode if routing repair fails (opt-in)",
++)
+ @click.pass_context
+ def start(
+     ctx,
+@@ -700,6 +721,10 @@ def start(
+     use_grok: bool,
+     use_codex: bool,
+     use_altp: bool,
++    no_routing_repair: bool,
++    routing_repair_max: int,
++    routing_repair_no_sync_keys: bool,
++    routing_fallback_subscription: bool,
+     **legacy_kwargs,
+ ):
+     """
+@@ -781,36 +806,81 @@ def start(
+     if routing_mode == "api" and not deprecated_flags_used:
+         console.logger.info("[blue]🔄 Routing mode 'api': Starting services and configuring proxy[/blue]")
+         
+-        # Ensure services are installed and running
++        # Run health check and repair if needed
+         try:
+             from .launchd_services import LaunchdServiceManager
+             service_manager = LaunchdServiceManager.get_instance()
+             
+-            # Check if services are running, start if not
+-            status = service_manager.get_service_status()
+-            litellm_running = status.get("litellm", {}).get("status") == "running"
+-            ccr_running = status.get("ccr", {}).get("status") == "running"
+-            
+-            if not litellm_running or not ccr_running:
+-                console.logger.info("[blue]🚀 Ensuring routing services are running...[/blue]")
+-                service_manager.install_services()
+-                service_manager.start_services()
+-                time.sleep(2)  # Give services time to start
+-            
+-            # Verify services are healthy
++            # Check health first
++            console.logger.info("[blue]🏥 Checking routing service health...[/blue]")
+             health = service_manager.check_health()
++            
++            # Check if services are healthy
+             litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
+             ccr_healthy = health.get("ccr", {}).get("status") == "healthy"
+             
+-            if not litellm_healthy or not ccr_healthy:
+-                error_msg = []
+-                if not litellm_healthy:
+-                    error_msg.append(f"LiteLLM unhealthy: {health.get('litellm', {}).get('error', 'unknown')}")
+-                if not ccr_healthy:
+-                    error_msg.append(f"CCR unhealthy: {health.get('ccr', {}).get('error', 'unknown')}")
+-                raise click.ClickException(f"Routing services not healthy: {', '.join(error_msg)}")
++            if litellm_healthy and ccr_healthy:
++                console.logger.info("[green]✅ Routing services healthy[/green]")
++            else:
++                # Services are unhealthy - attempt repair
++                if no_routing_repair:
++                    console.logger.info("[yellow]⚠️  Routing services unhealthy, repair disabled[/yellow]")
++                    error_msg = []
++                    if not litellm_healthy:
++                        error_msg.append(f"LiteLLM: {health.get('litellm', {}).get('error', 'unhealthy')}")
++                    if not ccr_healthy:
++                        error_msg.append(f"CCR: {health.get('ccr', {}).get('error', 'unhealthy')}")
++                    raise click.ClickException(f"Routing services unhealthy: {', '.join(error_msg)}")
++                
++                console.logger.info("[yellow]⚠️  Routing services unhealthy - attempting repair[/yellow]")
++                
++                # Run repair loop
++                allow_sync_keys = not routing_repair_no_sync_keys
++                repair_result = service_manager.repair(
++                    max_passes=routing_repair_max,
++                    allow_sync_keys=allow_sync_keys
++                )
+                 
+-            console.logger.info("[green]✅ Routing services healthy[/green]")
++                # Check if repair was successful
++                if repair_result.get("healthy", False):
++                    console.logger.info("[green]✅ Routing services repaired successfully[/green]")
++                    health = repair_result["health"]
++                    litellm_healthy = True
++                    ccr_healthy = True
++                else:
++                    # Repair failed - provide diagnostics
++                    console.logger.error("[red]❌ Failed to repair routing services[/red]")
++                    
++                    # Show repair attempts
++                    console.logger.info("[yellow]Repair attempts:[/yellow]")
++                    for attempt in repair_result.get("attempts", []):
++                        console.logger.info(f"  Pass {attempt['pass']}: {attempt['action']}")
++                    
++                    # Show log paths
++                    log_paths = service_manager._get_log_paths()
++                    console.logger.info("[yellow]Check logs for details:[/yellow]")
++                    console.logger.info(f"  LiteLLM launchd: {log_paths['litellm_launchd']}")
++                    console.logger.info(f"  CCR launchd: {log_paths['ccr_launchd']}")
++                    console.logger.info(f"  LiteLLM latest: {log_paths['litellm_latest']}")
++                    
++                    # Show diagnostic commands
++                    console.logger.info("[yellow]Diagnostic commands:[/yellow]")
++                    console.logger.info("  dopemux routing health")
++                    console.logger.info("  dopemux routing status")
++                    console.logger.info("  tail -f ~/.dopemux/logs/litellm_launchd.log")
++                    
++                    # Determine if we should fall back to subscription mode
++                    if routing_fallback_subscription:
++                        console.logger.info("[yellow]🔄 Falling back to subscription mode as requested[/yellow]")
++                        routing_mode = "subscription"
++                        _ensure_env_consistent_with_mode(routing_mode)
++                    else:
++                        error_msg = []
++                        if not litellm_healthy:
++                            error_msg.append(f"LiteLLM: {health.get('litellm', {}).get('error', 'unhealthy')}")
++                        if not ccr_healthy:
++                            error_msg.append(f"CCR: {health.get('ccr', {}).get('error', 'unhealthy')}")
++                        raise click.ClickException(f"Routing services unhealthy after repair: {', '.join(error_msg)}")
+             
+         except Exception as e:
+             console.logger.error(f"[red]❌ Failed to start routing services: {e}[/red]")
+diff --git a/src/dopemux/launchd_services.py b/src/dopemux/launchd_services.py
+index 4c0751c91..2e1508564 100644
+--- a/src/dopemux/launchd_services.py
++++ b/src/dopemux/launchd_services.py
+@@ -517,6 +517,189 @@ exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
+                 "details": str(e),
+             }
+ 
++    def kickstart(self, service: Optional[str] = None) -> Dict[str, Any]:
++        """Restart services using launchctl kickstart.
++        
++        Args:
++            service: Specific service to kickstart ('litellm', 'ccr'), or None for all
++            
++        Returns:
++            Dictionary with results for each service
++        """
++        results = {}
++        services_to_kick = []
++        
++        if service is None or service == "litellm":
++            services_to_kick.append(self.LITELLM_SERVICE_NAME)
++        if service is None or service == "ccr":
++            services_to_kick.append(self.CCR_SERVICE_NAME)
++        
++        for svc_name in services_to_kick:
++            try:
++                result = subprocess.run(
++                    ["launchctl", "kickstart", "-k", f"gui/{os.getuid()}/{svc_name}"],
++                    capture_output=True,
++                    text=True,
++                    check=False
++                )
++                results[svc_name] = {
++                    "ok": result.returncode == 0,
++                    "exit_code": result.returncode,
++                    "stderr_snippet": result.stderr[:200] if result.stderr else None
++                }
++                logger.info(f"Kickstarted service {svc_name}: {'ok' if result.returncode == 0 else 'failed'}")
++            except Exception as e:
++                results[svc_name] = {
++                    "ok": False,
++                    "exit_code": 1,
++                    "stderr_snippet": str(e)[:200]
++                }
++                logger.error(f"Failed to kickstart service {svc_name}: {e}")
++        
++        return results
++    
++    def _regenerate_configs(self) -> None:
++        """Regenerate configuration files for both services."""
++        logger.info("🔄 Regenerating configuration files...")
++        self._generate_litellm_config()
++        self._generate_ccr_config()
++        logger.info("✅ Configuration files regenerated")
++    
++    def _get_log_paths(self) -> Dict[str, str]:
++        """Get paths to relevant log files for diagnostics.
++        
++        Returns:
++            Dictionary with log file paths (names only, no sensitive content)
++        """
++        return {
++            "litellm_launchd": str(self.LOGS_DIR / "litellm_launchd.log"),
++            "ccr_launchd": str(self.LOGS_DIR / "ccr_launchd.log"),
++            "litellm_latest": self._get_latest_litellm_log()
++        }
++    
++    def _get_latest_litellm_log(self) -> str:
++        """Find the newest LiteLLM log file."""
++        try:
++            logs = list(self.LOGS_DIR.glob("litellm_*.log"))
++            if logs:
++                return str(max(logs, key=lambda f: f.stat().st_mtime))
++        except Exception:
++            pass
++        return "N/A (no logs found)"
++    
++    def repair(self, max_passes: int = 3, allow_sync_keys: bool = False) -> Dict[str, Any]:
++        """Attempt to repair routing services through multiple passes.
++        
++        Args:
++            max_passes: Maximum number of repair attempts (default 3)
++            allow_sync_keys: Whether to attempt key syncing in pass 3 (default False)
++            
++        Returns:
++            Dictionary with repair results and final health status
++        """
++        attempts = []
++        final_health = {}
++        
++        # Ensure we have the routing config loaded
++        try:
++            if not self.routing_config._loaded:
++                self.routing_config.load()
++        except Exception as e:
++            return {
++                "healthy": False,
++                "attempts": [],
++                "health": {
++                    "config": {
++                        "status": "unhealthy",
++                        "error": f"Cannot load routing config: {e}"
++                    }
++                }
++            }
++        
++        # Pass 1: Kickstart both services
++        logger.info("🔧 Repair Pass 1/3: Kickstarting services...")
++        pass1_result = self.kickstart()
++        attempts.append({
++            "pass": 1,
++            "action": "kickstart",
++            "result": pass1_result
++        })
++        
++        # Check health after pass 1
++        health = self.check_health()
++        if self._is_healthy(health):
++            final_health = health
++            logger.info("✅ Services healthy after pass 1")
++            return {"healthy": True, "attempts": attempts, "health": final_health}
++        
++        # Pass 2: Regenerate configs and kickstart
++        if max_passes >= 2:
++            logger.info("🔧 Repair Pass 2/3: Regenerating configs and kickstarting...")
++            self._regenerate_configs()
++            pass2_result = self.kickstart()
++            attempts.append({
++                "pass": 2,
++                "action": "regenerate_configs + kickstart",
++                "result": pass2_result
++            })
++            
++            # Check health after pass 2
++            health = self.check_health()
++            if self._is_healthy(health):
++                final_health = health
++                logger.info("✅ Services healthy after pass 2")
++                return {"healthy": True, "attempts": attempts, "health": final_health}
++        
++        # Pass 3: Sync keys and kickstart (if allowed)
++        if max_passes >= 3 and allow_sync_keys:
++            logger.info("🔧 Repair Pass 3/3: Syncing keys and kickstarting...")
++            try:
++                self.sync_keys_from_environment()
++                pass3_result = self.kickstart()
++                attempts.append({
++                    "pass": 3,
++                    "action": "sync_keys + kickstart",
++                    "result": pass3_result
++                })
++                
++                # Check health after pass 3
++                health = self.check_health()
++                if self._is_healthy(health):
++                    final_health = health
++                    logger.info("✅ Services healthy after pass 3")
++                    return {"healthy": True, "attempts": attempts, "health": final_health}
++            except Exception as e:
++                logger.error(f"Pass 3 failed: {e}")
++                attempts.append({
++                    "pass": 3,
++                    "action": "sync_keys + kickstart",
++                    "result": {"error": str(e)}
++                })
++        
++        # Final health check
++        final_health = self.check_health()
++        logger.info("❌ Services still unhealthy after all repair attempts")
++        return {"healthy": False, "attempts": attempts, "health": final_health}
++    
++    def _is_healthy(self, health: Dict[str, Any]) -> bool:
++        """Check if health status indicates all services are healthy."""
++        if "config" in health and health["config"]["status"] == "unhealthy":
++            return False
++        
++        # In subscription mode, we don't need services running
++        try:
++            mode = self.routing_config.config.get('mode', 'subscription')
++            if mode == 'subscription':
++                return True
++        except Exception:
++            pass
++        
++        # Check both services are healthy
++        litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
++        ccr_healthy = health.get("ccr", {}).get("status") == "healthy"
++        
++        return litellm_healthy and ccr_healthy
++    
+     def check_health(self) -> Dict[str, Any]:
+         """Check health of running services."""
+         health = {}
+@@ -532,6 +715,18 @@ exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
+             }
+             return health
+         
++        # In subscription mode, services are not required
++        try:
++            mode = self.routing_config.config.get('mode', 'subscription')
++            if mode == 'subscription':
++                health["mode"] = {
++                    "status": "healthy",
++                    "message": "subscription mode - no services required"
++                }
++                return health
++        except Exception:
++            pass
++        
+         # Check LiteLLM health
+         try:
+             import requests
+diff --git a/src/dopemux/routing_cli.py b/src/dopemux/routing_cli.py
+index 64b953d21..e5d021c8c 100644
+--- a/src/dopemux/routing_cli.py
++++ b/src/dopemux/routing_cli.py
+@@ -255,6 +255,62 @@ def sync_keys():
+         raise
+ 
+ 
++@routing.command()
++@click.option("--max-passes", type=int, default=3, help="Maximum repair attempts (default: 3)")
++@click.option("--allow-sync-keys", is_flag=True, help="Allow API key syncing during repair")
++def repair(max_passes: int, allow_sync_keys: bool):
++    """Attempt to repair routing services."""
++    try:
++        manager = LaunchdServiceManager.get_instance()
++        click.echo("🔧 Attempting to repair routing services...")
++        
++        # Run repair
++        repair_result = manager.repair(
++            max_passes=max_passes,
++            allow_sync_keys=allow_sync_keys
++        )
++        
++        # Show results
++        if repair_result.get("healthy", False):
++            click.echo("✅ Routing services repaired successfully!")
++            
++            # Show final health
++            health = repair_result["health"]
++            click.echo("\n🏥 Final Health Status:")
++            for service, info in health.items():
++                if service == "mode":
++                    continue
++                status_emoji = "✅" if info.get("status") == "healthy" else "❌"
++                click.echo(f"  {status_emoji} {service}: {info.get('status')}")
++        else:
++            click.echo("❌ Failed to repair routing services")
++            
++            # Show repair attempts
++            click.echo("\n📋 Repair Attempts:")
++            for attempt in repair_result.get("attempts", []):
++                status = "✅" if attempt.get("result", {}).get("ok") else "❌"
++                click.echo(f"  {status} Pass {attempt['pass']}: {attempt['action']}")
++            
++            # Show diagnostics
++            click.echo("\n🔍 Diagnostics:")
++            log_paths = manager._get_log_paths()
++            click.echo(f"  LiteLLM launchd log: {log_paths['litellm_launchd']}")
++            click.echo(f"  CCR launchd log: {log_paths['ccr_launchd']}")
++            click.echo(f"  Latest LiteLLM log: {log_paths['litellm_latest']}")
++            
++            click.echo("\n💡 Next steps:")
++            click.echo("  • Check logs with: tail -f ~/.dopemux/logs/litellm_launchd.log")
++            click.echo("  • Run health check: dopemux routing health")
++            click.echo("  • Check service status: dopemux routing status")
++            
++            raise SystemExit(1)
++            
++    except Exception as e:
++        logger.error(f"Failed to repair services: {e}")
++        click.echo(f"❌ Error: {e}", err=True)
++        raise
++
++
+ def register_routing_commands(cli_group):
+     """Register routing commands with the main CLI."""
+     cli_group.add_command(routing, "routing")
