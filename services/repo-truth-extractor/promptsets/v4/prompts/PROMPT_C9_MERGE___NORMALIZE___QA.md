@@ -69,6 +69,13 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - `IDEMPOTENCY_RISK_LOCATIONS.json`
 - `CONCURRENCY_RISK_LOCATIONS.json`
 - `SECRETS_RISK_LOCATIONS.json`
+- `AGENT_ORCHESTRATION_SURFACE.json`
+- `ADHD_ENGINE_SURFACE.json`
+- `PYTHON_API_SURFACE.json`
+- `SERVICE_ENDPOINT_SURFACE.json`
+- `MODULE_DEPENDENCY_GRAPH.json`
+- `SERVICE_DEPENDENCY_GRAPH.json`
+- `COGNITIVE_FEATURES_SURFACE.json`
 - Runner context artifacts:
   - `extraction/*/inputs/INVENTORY.json`
   - `extraction/*/inputs/PARTITIONS.json`
@@ -94,6 +101,13 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - `CONCURRENCY_RISK_LOCATIONS.json`
 - `CODE_SURFACES_QA.json`
 - `SERVICE_CATALOG.json`
+- `AGENT_ORCHESTRATION_SURFACE.json`
+- `ADHD_ENGINE_SURFACE.json`
+- `PYTHON_API_SURFACE.json`
+- `SERVICE_ENDPOINT_SURFACE.json`
+- `MODULE_DEPENDENCY_GRAPH.json`
+- `SERVICE_DEPENDENCY_GRAPH.json`
+- `COGNITIVE_FEATURES_SURFACE.json`
 
 ## Schema
 - Use deterministic containers only:
@@ -211,6 +225,55 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `canonical_writer_step_id`: `C9`
     - `id_rule`: `CODE_SURFACES_QA:<stable-hash(path|symbol|name)>`
     - `required_item_fields`: `id, status, checks, issues, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+  - `AGENT_ORCHESTRATION_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `C9`
+    - `id_rule`: `AGENT_ORCHESTRATION_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+  - `ADHD_ENGINE_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `C9`
+    - `id_rule`: `ADHD_ENGINE_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+  - `PYTHON_API_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `C9`
+    - `id_rule`: `PYTHON_API_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+  - `SERVICE_ENDPOINT_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `C9`
+    - `id_rule`: `SERVICE_ENDPOINT_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+  - `MODULE_DEPENDENCY_GRAPH.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `C9`
+    - `id_rule`: `MODULE_DEPENDENCY_GRAPH:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+  - `SERVICE_DEPENDENCY_GRAPH.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `C9`
+    - `id_rule`: `SERVICE_DEPENDENCY_GRAPH:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+  - `COGNITIVE_FEATURES_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `C9`
+    - `id_rule`: `COGNITIVE_FEATURES_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `SERVICE_CATALOG.json`
     - `kind`: `json_item_list`
