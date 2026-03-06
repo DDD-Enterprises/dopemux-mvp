@@ -62,6 +62,31 @@ except ModuleNotFoundError:
     XAIBatchClient = batch_clients_module.XAIBatchClient
     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
 try:
+    from lib.phase_contract_map import get_step_contract
+except ModuleNotFoundError:
+    contract_map_path = RUNNER_SERVICE_DIR / "lib" / "phase_contract_map.py"
+    contract_map_spec = importlib.util.spec_from_file_location(
+        "repo_truth_phase_contract_map", contract_map_path
+    )
+    if not contract_map_spec or not contract_map_spec.loader:
+        raise
+    contract_map_module = importlib.util.module_from_spec(contract_map_spec)
+    contract_map_spec.loader.exec_module(contract_map_module)
+    get_step_contract = contract_map_module.get_step_contract
+try:
+    from lib.structured_output_contracts import canonicalize_artifacts
+except ModuleNotFoundError:
+    structured_contracts_path = RUNNER_SERVICE_DIR / "lib" / "structured_output_contracts.py"
+    structured_contracts_spec = importlib.util.spec_from_file_location(
+        "repo_truth_structured_output_contracts",
+        structured_contracts_path,
+    )
+    if not structured_contracts_spec or not structured_contracts_spec.loader:
+        raise
+    structured_contracts_module = importlib.util.module_from_spec(structured_contracts_spec)
+    structured_contracts_spec.loader.exec_module(structured_contracts_module)
+    canonicalize_artifacts = structured_contracts_module.canonicalize_artifacts
+try:
     from rich.console import Console
     from rich.panel import Panel
     from rich.progress import (
@@ -2323,6 +2348,48 @@ def _parse_provider_model_env(value: str, env_name: str) -> Tuple[str, str, str]
     if not model_id:
         raise RuntimeError(f"{env_name} model id is required in provider/model value. Got: {raw}")
     return (provider, model_id, PROVIDER_API_KEY_ENV[provider])
+
+
+def _step_contract_for(phase: str, step_id: str) -> Optional[Dict[str, Any]]:
+    try:
+        contract = get_step_contract(phase, step_id)
+    except Exception:
+        contract = None
+    if isinstance(contract, dict):
+        return dict(contract)
+
+    # Backward-compatible fallback for branches that do not persist phase contracts.
+    phase_code = str(phase or "").upper()
+    step_code = str(step_id or "").upper()
+    try:
+        prompt_specs = get_phase_prompts(phase_code)
+    except Exception:
+        return None
+    for spec in prompt_specs:
+        if str(spec.step_id).upper() != step_code:
+            continue
+        expected_artifacts: List[str] = []
+        artifacts: Dict[str, Dict[str, Any]] = {}
+        for artifact_name in spec.output_artifacts:
+            name = str(artifact_name).strip()
+            if not name:
+                continue
+            stem = Path(name).name
+            if stem.endswith(".json"):
+                stem = stem[:-5]
+            stem = stem.replace(".partX", "")
+            canonical_schema_id = f"{stem}@v1"
+            expected_artifacts.append(name)
+            artifacts[name] = {"canonical_schema_id": canonical_schema_id}
+        return {
+            "phase": phase_code,
+            "step_id": step_code,
+            "expected_artifacts": expected_artifacts,
+            "artifact_order": expected_artifacts,
+            "artifacts": artifacts,
+            "strict_schema_required_primary": False,
+        }
+    return None
 
 
 def _resolve_env_step_type_routes() -> Dict[str, Tuple[str, str, str]]:
