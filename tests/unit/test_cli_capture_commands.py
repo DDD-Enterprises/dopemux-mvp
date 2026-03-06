@@ -3,7 +3,8 @@ from types import SimpleNamespace
 
 from click.testing import CliRunner
 
-import dopemux.cli as cli_module
+import dopemux.commands.capture_group_commands as capture_module
+import dopemux.commands.trigger_group_commands as trigger_module
 from dopemux.cli import cli
 from dopemux.memory import CaptureError
 
@@ -30,7 +31,7 @@ def test_capture_emit_invokes_capture_client(monkeypatch):
         calls["emit_event_bus"] = emit_event_bus
         return _capture_result(event_type=event.get("event_type", "unknown"), mode=mode)
 
-    monkeypatch.setattr(cli_module, "emit_capture_event", _fake_emit)
+    monkeypatch.setattr(capture_module, "emit_capture_event", _fake_emit)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -68,7 +69,7 @@ def test_capture_note_builds_manual_note_payload(monkeypatch):
         calls["emit_event_bus"] = emit_event_bus
         return _capture_result(event_type=event.get("event_type", "unknown"), mode=mode)
 
-    monkeypatch.setattr(cli_module, "emit_capture_event", _fake_emit)
+    monkeypatch.setattr(capture_module, "emit_capture_event", _fake_emit)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -96,7 +97,7 @@ def test_trigger_shell_command_parses_invalid_json_as_raw_context(monkeypatch):
         calls["mode"] = mode
         return _capture_result(event_type=event.get("event_type", "unknown"), mode=mode)
 
-    monkeypatch.setattr(cli_module, "emit_capture_event", _fake_emit)
+    monkeypatch.setattr(trigger_module, "emit_capture_event", _fake_emit)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -120,7 +121,7 @@ def test_trigger_command_done_returns_nonzero_on_capture_failure(monkeypatch):
     def _raise_capture_error(*args, **kwargs):
         raise CaptureError("boom")
 
-    monkeypatch.setattr(cli_module, "emit_capture_event", _raise_capture_error)
+    monkeypatch.setattr(trigger_module, "emit_capture_event", _raise_capture_error)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["trigger", "command-done", "--quiet"])
