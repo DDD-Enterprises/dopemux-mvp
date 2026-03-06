@@ -59,49 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Release Phase A - Extractor and Routing Cutover (2026-02-20 to 2026-02-22)
-#### Added
-- Repo Truth Extractor cutover with hardened Phase S synthesis flows, async webhook batch handling, and richer extraction observability.
-- Canonical v4 upgrades CLI namespace with improved batch UX and prompt routing proof flows.
-- Deterministic routing and manual pro prompt controls for more predictable provider behavior.
-- Cloudflare tunnel + webhook receiver Option B flow for resilient external event ingestion.
-- Global routing configuration template and `RoutingConfig` support.
+### Added
+- Pending items for the next patch release.
 
-#### Fixed
-- Repo Truth Extractor OpenAI routing now uses `gpt-5.2` and `gpt-5.2-pro` model IDs.
-- OpenAI GPT-5 requests no longer send unsupported temperature values.
-- Webhook storage migration and compose service-path mismatches were corrected.
-- MCP server wrappers now handle container naming variance more reliably.
-
-### Release Phase B - Platform Hardening and MCP Reliability (2026-02-23 to 2026-02-26)
-#### Added
-- MCP stack hardening with auto-provisioning, multi-instance isolation, and real tool-server wiring.
-- Mobile-first tmux integration and connectivity stabilization improvements.
-- Infrastructure consolidation and migration cleanup across task tooling and compose setup.
-
-#### Fixed
-- Serena Docker path mapping mismatches affecting project discovery inside containers.
-- ConPort wiring and stdio integration mismatches across compose and tool wrappers.
-- Root hygiene and pre-commit guardrails updated to reflect intentional repository structure.
-
-### Release Phase C - Dashboard UX and Accessibility (2026-02-23 to 2026-03-03)
-#### Added
-- Task selection and detail drill-down in Dopemux dashboard, replacing hardcoded task targeting.
-- Accessibility improvements across Team Dashboard and task UI components, including better labels, tooltip context, and keyboard support.
-- Improved status visibility and micro-UX polish for live indicators and shorthand metrics.
-
-#### Fixed
-- Dashboard endpoint and integration issues that blocked consistent task data display.
-- Accessibility test gaps to ensure regressions are caught in CI.
-
-### Release Phase D - Security and Safety Hardening (2026-03-02 onward)
-#### Added
-- Stronger safety mandates and audit instrumentation in extraction workflows (including TP-008 tooling and repair lanes).
-
-#### Fixed
-- Removed hardcoded database credentials from ConPort memory defaults and enforced environment-driven DB configuration.
-- Closed CLI wiring regression for autoresponder config command placement.
-- Corrected strict route handling in `run_extraction_v3` and restored missing promptset model-map source.
+## [0.6.0] - Target: 2026-04-09
 
 ### Release Phase E - Quality, Test Coverage, and Reliability
 #### Added
@@ -117,13 +78,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Repo Truth Extractor operator docs (user guide + batch quickstart + runbook cross-links).
 - Derived Memory Pipeline CLI interface documentation and dopeTask upgrade notes across migration and supervisor docs.
 
-### Planned
-- Windows support (chocolatey package)
-- GitHub Actions CI/CD pipeline
-- Multi-Python version testing (3.8, 3.9, 3.10, 3.11, 3.12)
-- Enhanced documentation
-- Integration tests
-- Performance optimizations
+## [0.5.0] - Target: 2026-04-02
+
+### Release Phase D - Security and Safety Hardening (2026-03-02 onward)
+#### Added
+- Stronger safety mandates and audit instrumentation in extraction workflows (including TP-008 tooling and repair lanes).
+
+#### Fixed
+- Removed hardcoded database credentials from ConPort memory defaults and enforced environment-driven DB configuration.
+- Closed CLI wiring regression for autoresponder config command placement.
+- Corrected strict route handling in `run_extraction_v3` and restored missing promptset model-map source.
+
+## [0.4.0] - Target: 2026-03-26
+
+### Release Phase C - Dashboard UX and Accessibility (2026-02-23 to 2026-03-03)
+#### Added
+- Task selection and detail drill-down in Dopemux dashboard, replacing hardcoded task targeting.
+- Accessibility improvements across Team Dashboard and task UI components, including better labels, tooltip context, and keyboard support.
+- Improved status visibility and micro-UX polish for live indicators and shorthand metrics.
+
+#### Fixed
+- Dashboard endpoint and integration issues that blocked consistent task data display.
+- Accessibility test gaps to ensure regressions are caught in CI.
+
+## [0.3.0] - Target: 2026-03-19
+
+### Release Phase B - Platform Hardening and MCP Reliability (2026-02-23 to 2026-02-26)
+#### Added
+- MCP stack hardening with auto-provisioning, multi-instance isolation, and real tool-server wiring.
+- Mobile-first tmux integration and connectivity stabilization improvements.
+- Infrastructure consolidation and migration cleanup across task tooling and compose setup.
+
+#### Fixed
+- Serena Docker path mapping mismatches affecting project discovery inside containers.
+- ConPort wiring and stdio integration mismatches across compose and tool wrappers.
+- Root hygiene and pre-commit guardrails updated to reflect intentional repository structure.
+
+## [0.2.0] - Target: 2026-03-12
+
+### Release Phase A - Extractor and Routing Cutover (2026-02-20 to 2026-02-22)
+#### Added
+- Repo Truth Extractor cutover with hardened Phase S synthesis flows, async webhook batch handling, and richer extraction observability.
+- Canonical v4 upgrades CLI namespace with improved batch UX and prompt routing proof flows.
+- Deterministic routing and manual pro prompt controls for more predictable provider behavior.
+- Cloudflare tunnel + webhook receiver Option B flow for resilient external event ingestion.
+- Global routing configuration template and `RoutingConfig` support.
+
+#### Fixed
+- Repo Truth Extractor OpenAI routing now uses `gpt-5.2` and `gpt-5.2-pro` model IDs.
+- OpenAI GPT-5 requests no longer send unsupported temperature values.
+- Webhook storage migration and compose service-path mismatches were corrected.
+- MCP server wrappers now handle container naming variance more reliably.
 
 ---
 
