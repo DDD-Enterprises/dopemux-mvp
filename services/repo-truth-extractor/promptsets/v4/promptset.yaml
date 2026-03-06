@@ -45,7 +45,29 @@ phases:
     - A12
     - A13
     - A99
+    - A13
+    - A12
+    - A11
     steps:
+    - step_id: A11
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A11_EDITOR_INTEGRATION_SURFACES.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - EDITOR_INTEGRATION_SURFACE.json
+    - step_id: A12
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A12_CLI_COMMAND_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - CLI_COMMAND_SURFACE.json
+    - step_id: A13
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A13_HOOK_CONTRACT_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - HOOK_CONTRACT_SURFACE.json
+      - EVENT_FLOW_GRAPH.json
     - step_id: A0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md
       coverage_targets:
@@ -311,6 +333,18 @@ phases:
     - C16
     - C17
     steps:
+    - step_id: C12
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C12_AGENT_ORCHESTRATION_SURFACE.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - AGENT_ORCHESTRATION_SURFACE.json
+    - step_id: C13
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C13_ADHD_ENGINE_SURFACE.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - ADHD_ENGINE_SURFACE.json
     - step_id: C0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md
       coverage_targets:
@@ -988,6 +1022,12 @@ phases:
     - S10
     - S11
     steps:
+    - step_id: S7
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S7_OVERSEER_AGENT_FLOW_DESIGN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - S7_OVERSEER_AGENT_FLOW_DESIGN.md
     - step_id: S0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md
       coverage_targets:

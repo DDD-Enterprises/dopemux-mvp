@@ -1,0 +1,113 @@
+From 085469c87f9362cad06cafffd8f74e8627000fb3 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 16:32:12 -0800
+Subject: [PATCH 17/36] fix(routing): correct cli imports and avoid stale proxy
+ env
+
+---
+ src/dopemux/cli.py | 57 ++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 40 insertions(+), 17 deletions(-)
+
+diff --git a/src/dopemux/cli.py b/src/dopemux/cli.py
+index da00579aa..27249756f 100644
+--- a/src/dopemux/cli.py
++++ b/src/dopemux/cli.py
+@@ -28,21 +28,18 @@ import click
+ try:
+     from dotenv import load_dotenv
+     _DOTENV_AVAILABLE = True
+-except ImportError:
++except ImportError:  # pragma: no cover
+     _DOTENV_AVAILABLE = False
+ 
++    def load_dotenv(*args, **kwargs):  # type: ignore[override]
++        """Fallback load_dotenv when python-dotenv is unavailable."""
++        return False
++
+ # Import RoutingConfig for mode-based behavior
+ try:
+     from .routing_config import RoutingConfig
+-except ImportError:
+-    # Fallback for when routing_config is not available
++except ImportError:  # pragma: no cover
+     RoutingConfig = None
+-except ImportError:  # pragma: no cover - optional dependency
+-    _DOTENV_AVAILABLE = False
+-
+-    def load_dotenv(*args, **kwargs):  # type: ignore[override]
+-        """Fallback load_dotenv when python-dotenv is unavailable."""
+-        return False
+ 
+ from rich.live import Live
+ from rich.panel import Panel
+@@ -790,6 +787,8 @@ def start(
+             console.logger.error(f"[red]❌ Failed to start routing services: {e}[/red]")
+             console.logger.info("[yellow]Falling back to direct Anthropic connection[/yellow]")
+             routing_mode = "subscription"
++            # Ensure env vars are cleaned up immediately
++            _ensure_env_consistent_with_mode(routing_mode)
+         
+         # Configure environment for API mode
+         if routing_mode == "api":
+@@ -800,6 +799,8 @@ def start(
+             os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{ccr_port}"
+             if ccr_api_key:
+                 os.environ["ANTHROPIC_API_KEY"] = ccr_api_key
++                # Mark that we set this key so we can clean it up if needed
++                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
+                 console.logger.info(f"[dim]✓ CCR API key configured[/dim]")
+             else:
+                 console.logger.warning("[yellow]⚠️  DOPEMUX_CCR_API_KEY not set in routing.env[/yellow]")
+@@ -813,16 +814,38 @@ def start(
+     elif routing_mode == "subscription" and not deprecated_flags_used:
+         console.logger.info("[blue]📋 Routing mode 'subscription': Direct Anthropic connection[/blue]")
+         
+-        # Ensure we don't have proxy env vars set
+-        env_vars_to_unset = ["ANTHROPIC_BASE_URL", "DOPEMUX_ROUTING_MODE"]
+-        for var in env_vars_to_unset:
+-            if var in os.environ:
+-                del os.environ[var]
+-                console.logger.info(f"[dim]✓ Unset {var} (direct connection)[/dim]")
+-        
+-        # Let Anthropic OAuth/subscription flow work normally
++        # Ensure env vars are consistent with subscription mode
++        _ensure_env_consistent_with_mode(routing_mode)
+         console.logger.info("[dim]✓ Claude Code → Anthropic (direct)[/dim]")
+     
++    def _ensure_env_consistent_with_mode(final_mode: str) -> None:
++        """Ensure environment variables are consistent with routing mode.
++        
++        Prevents stale proxy env vars when falling back to subscription mode.
++        """
++        if final_mode == "subscription":
++            # Unset proxy variables to ensure direct connection
++            env_vars_to_unset = ["ANTHROPIC_BASE_URL", "DOPEMUX_ROUTING_MODE"]
++            for var in env_vars_to_unset:
++                if var in os.environ:
++                    del os.environ[var]
++            
++            # Only unset ANTHROPIC_API_KEY if we set it (marked by DOPEMUX_SET_ANTHROPIC_API_KEY)
++            if os.environ.get("DOPEMUX_SET_ANTHROPIC_API_KEY") == "1":
++                if "ANTHROPIC_API_KEY" in os.environ:
++                    del os.environ["ANTHROPIC_API_KEY"]
++                if "DOPEMUX_SET_ANTHROPIC_API_KEY" in os.environ:
++                    del os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"]
++                    
++        elif final_mode == "api":
++            # Ensure API mode variables are set
++            if "DOPEMUX_ROUTING_MODE" not in os.environ:
++                os.environ["DOPEMUX_ROUTING_MODE"] = "api"
++            
++            # Mark that we're managing the API key
++            if "ANTHROPIC_API_KEY" in os.environ:
++                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
++
+     # ── Handle --grok / --codex / --altp provider routing ───────────────
+     provider_proxy_started = False
+     _provider_flags = sum([use_grok, use_codex, use_altp])
+-- 
+2.50.1 (Apple Git-155)
+
