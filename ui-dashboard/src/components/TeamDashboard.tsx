@@ -9,7 +9,7 @@ import {
   LinearProgress,
   Tooltip
 } from '@mui/material';
-import { Users } from 'lucide-react';
+import { Users, Info } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
 
 interface TeamMember {
@@ -100,7 +100,7 @@ const TeamDashboard: React.FC = () => {
         <Typography variant="h6" sx={{ letterSpacing: '0.15em' }}>
           Team Cognitive Status
         </Typography>
-        <Tooltip title="Average cognitive load across all team members" arrow>
+        <Tooltip title="Aggregated cognitive load across all team members" arrow>
           <Chip
             label={`${(teamLoadAvg * 100).toFixed(0)}% Average Load`}
             tabIndex={0}
@@ -200,7 +200,7 @@ const TeamDashboard: React.FC = () => {
               />
 
               <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                <Tooltip title="Current energy level" arrow>
+                <Tooltip title="Current energy reserve based on biometric data" arrow>
                   <Chip
                     size="small"
                     label={`${(member.energy * 100).toFixed(0)}% Energy`}
@@ -214,7 +214,7 @@ const TeamDashboard: React.FC = () => {
                     }}
                   />
                 </Tooltip>
-                <Tooltip title="Current attention focus" arrow>
+                <Tooltip title="Real-time focus and attention span metrics" arrow>
                   <Chip
                     size="small"
                     label={`${(member.attention * 100).toFixed(0)}% Attention`}
@@ -241,7 +241,8 @@ const TeamDashboard: React.FC = () => {
       </Grid>
 
       {/* Team Coordination Notes */}
-      <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
+      <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1, display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+        <Info size={16} style={{ marginTop: 2, color: brandTokens.colors.ritualCyan }} aria-hidden="true" />
         <Typography variant="caption">
           <strong>Team Coordination:</strong> David (Data Engineer) is in critical load - consider
           reassigning tasks or scheduling a team break. Team average load is optimal for collaborative work.
