@@ -9,6 +9,11 @@ from .fingerprint import deterministic_generated_at
 from .hashing import sha256_file, sha256_text
 from .io import read_json, write_json
 
+try:
+    from lib.phase_contract_map import get_step_contract
+except Exception:  # pragma: no cover - fallback for limited import contexts
+    get_step_contract = None  # type: ignore[assignment]
+
 PROMPTPACK_V1_FILENAME = "PROMPTPACK.v1.json"
 PROMPTPACK_V1_HASH_FILENAME = "PROMPTPACK.v1.sha256.json"
 PROMPTPACK_V1_DIRNAME = "PROMPTPACK.v1"
@@ -112,10 +117,12 @@ def _render_prompt_text(
     budgets: Dict[str, int],
     overlay_text: str,
     contracts: Dict[str, Any],
+    contract_metadata: Dict[str, Any],
 ) -> str:
     targets_json = json.dumps(targets, ensure_ascii=True)
     budgets_json = json.dumps(budgets, ensure_ascii=True, sort_keys=True)
     contracts_json = json.dumps(contracts, ensure_ascii=True, sort_keys=True)
+    contract_metadata_json = json.dumps(contract_metadata, ensure_ascii=True, sort_keys=True)
     metadata_block = (
         "\n\n## PROMPTGEN_POLICY\n"
         f"- profile_id: {profile_id}\n"
@@ -125,10 +132,49 @@ def _render_prompt_text(
         f"- targets: {targets_json}\n"
         f"- budgets: {budgets_json}\n"
         f"- contracts: {contracts_json}\n"
+        f"- contract_map: {contract_metadata_json}\n"
         "\n## PROMPTGEN_OVERLAY\n"
         f"{overlay_text or 'NONE'}\n"
     )
     return source_text.rstrip() + metadata_block + "\n"
+
+
+def _contract_metadata_for_step(phase: str, step_id: str) -> Dict[str, Any]:
+    if get_step_contract is None:
+        return {}
+    try:
+        row = get_step_contract(phase, step_id)
+    except Exception:
+        row = None
+    if not isinstance(row, dict):
+        return {}
+    lane = row.get("lane") if isinstance(row.get("lane"), dict) else {}
+    primary_routes = lane.get("primary_routes") if isinstance(lane.get("primary_routes"), list) else []
+    primary_route = primary_routes[0] if primary_routes and isinstance(primary_routes[0], dict) else {}
+    return {
+        "phase": str(row.get("phase") or phase),
+        "step_id": str(row.get("step_id") or step_id),
+        "expected_artifacts": list(row.get("expected_artifacts") or []),
+        "artifact_order": list(row.get("artifact_order") or []),
+        "runner_minimum_required_keys": list(row.get("runner_minimum_required_keys") or []),
+        "lane": {
+            "lane": str(lane.get("lane_class") or lane.get("lane") or ""),
+            "lane_class": str(lane.get("lane_class") or lane.get("lane") or ""),
+            "provider": str(primary_route.get("provider") or ""),
+            "model_id": str(primary_route.get("model_id") or ""),
+            "api_key_env": str(primary_route.get("api_key_env") or ""),
+            "strict_schema_required": bool(
+                lane.get("strict_schema_required_primary")
+                if "strict_schema_required_primary" in lane
+                else lane.get("strict_schema_required", False)
+            ),
+            "sidefill_enabled": bool(lane.get("sidefill_enabled", False)),
+            "repair_mode": str(lane.get("repair_mode") or ""),
+            "primary_routes": list(primary_routes),
+            "repair_routes": list(lane.get("repair_routes") or []),
+            "sidefill_routes": list(lane.get("sidefill_routes") or []),
+        },
+    }
 
 
 def compile_promptpack_v1(
@@ -166,6 +212,7 @@ def compile_promptpack_v1(
             _profile_overlay(profile_payload, f"step:{step_id}"),
         ]
         overlay_text = "\n".join(part for part in overlay_parts if part)
+        contract_metadata = _contract_metadata_for_step(phase, step_id)
         rendered = _render_prompt_text(
             source_text=str(row["prompt_text"]),
             profile_id=profile_id,
@@ -176,6 +223,7 @@ def compile_promptpack_v1(
             budgets=budgets,
             overlay_text=overlay_text,
             contracts=contracts,
+            contract_metadata=contract_metadata,
         )
         rendered_path.write_text(rendered, encoding="utf-8")
 
@@ -191,6 +239,17 @@ def compile_promptpack_v1(
                 "variant": variant,
                 "targets": targets,
                 "budgets": budgets,
+                "contract_metadata": contract_metadata,
+                "contract_lane": (
+                    (contract_metadata.get("lane") or {}).get("lane")
+                    if isinstance(contract_metadata.get("lane"), dict)
+                    else None
+                ),
+                "strict_schema_required": bool(
+                    ((contract_metadata.get("lane") or {}).get("strict_schema_required"))
+                    if isinstance(contract_metadata.get("lane"), dict)
+                    else False
+                ),
             }
         )
         rendered_hashes.append({"file": str(rendered_path.resolve()), "sha256": sha})

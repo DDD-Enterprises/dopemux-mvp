@@ -7,6 +7,12 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 PHASE_CODES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
 DOCTOR_REPROCESS_PLAN_FILENAME = "DOCTOR_REPROCESS_PLAN.json"
+STRICT_CONTRACT_STEPS = {("D", "D0"), ("D", "D1")}
+
+try:
+    from lib.phase_contract_map import get_step_contract
+except Exception:  # pragma: no cover - keep policy usable in isolated contexts
+    get_step_contract = None  # type: ignore[assignment]
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -28,6 +34,20 @@ def _phase_dirs_from_run(run_dir: Path) -> Dict[str, Path]:
         if phase in PHASE_CODES and phase not in phase_dirs:
             phase_dirs[phase] = entry
     return phase_dirs
+
+
+def _is_strict_contract_step(phase: str, step_id: str) -> bool:
+    phase_code = str(phase or "").strip().upper()
+    step_code = str(step_id or "").strip().upper()
+    if get_step_contract is not None:
+        try:
+            row = get_step_contract(phase_code, step_code)
+        except Exception:
+            row = None
+        if isinstance(row, dict):
+            lane = row.get("lane") if isinstance(row.get("lane"), dict) else {}
+            return bool(lane.get("strict_schema_required"))
+    return (phase_code, step_code) in STRICT_CONTRACT_STEPS
 
 
 def _shape_map(parse_shapes_payload: Dict[str, Any]) -> Dict[Tuple[str, str], Dict[str, Any]]:
@@ -67,10 +87,17 @@ def decide_action(
     final_failure_type: str,
     parse_shape: Optional[str],
     parse_shape_row: Optional[Dict[str, Any]] = None,
+    phase: Optional[str] = None,
+    step_id: Optional[str] = None,
+    schema_reason: Optional[str] = None,
 ) -> Dict[str, Any]:
     failure = str(final_failure_type or "unknown_failure")
     shape = str(parse_shape or "unknown")
     shape_row = parse_shape_row if isinstance(parse_shape_row, dict) else {}
+    phase_code = str(phase or "").strip().upper()
+    step_code = str(step_id or "").strip().upper()
+    schema_token = str(schema_reason or "").strip()
+    is_strict_contract_step = _is_strict_contract_step(phase_code, step_code)
     if failure in {"auth", "auth_rejected", "api_key_missing_or_invalid"}:
         return {
             "action": "manual_auth_fix",
@@ -129,6 +156,22 @@ def decide_action(
             "notes": "Regenerate success artifact and clean stale sidecars.",
         }
     if failure in {"schema", "contract_violation"}:
+        # NOTE: This logic is tightly coupled to the error message format.
+        # If the schema validation reason for missing artifacts changes, this check must be updated.
+        if is_strict_contract_step and "missing_expected_artifacts:" in schema_token:
+            return {
+                "action": "sidefill_missing_artifacts",
+                "rerun": True,
+                "partition_workers": 1,
+                "notes": "Run strict sidefill for missing expected artifacts before full rerun.",
+            }
+        if is_strict_contract_step:
+            return {
+                "action": "strict_contract_rerun",
+                "rerun": True,
+                "partition_workers": 1,
+                "notes": "Rerun strict contract emitter with targeted repair lane.",
+            }
         return {
             "action": "rerun_once_then_manual",
             "rerun": True,
@@ -174,10 +217,16 @@ def build_phase_reprocess_plan(phase: str, phase_dir: Path, run_id: str) -> Dict
         final_failure_type = final_failure_by_partition.get((step_id, partition_id), fallback_failure)
         shape_row = shape_by_partition.get((step_id, partition_id), {})
         shape = str(shape_row.get("shape") or "other") if isinstance(shape_row, dict) else None
+        schema_reason = str(failure_row.get("validation_reason") or "").strip()
+        if not schema_reason and isinstance(shape_row, dict):
+            schema_reason = str(shape_row.get("schema_gate_reason") or "").strip()
         action = decide_action(
             final_failure_type=final_failure_type,
             parse_shape=shape,
             parse_shape_row=shape_row,
+            phase=phase,
+            step_id=step_id,
+            schema_reason=schema_reason,
         )
         row = {
             "phase": phase,
@@ -185,6 +234,7 @@ def build_phase_reprocess_plan(phase: str, phase_dir: Path, run_id: str) -> Dict
             "partition_id": partition_id,
             "final_failure_type": final_failure_type,
             "parse_shape": shape,
+            "schema_reason": schema_reason or None,
             **action,
         }
         rows.append(row)

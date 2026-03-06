@@ -509,6 +509,7 @@ services:
       - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
     volumes:
       - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
+      - ${SERENA_CONFIG_DIR:-/tmp/serena-config}:/root/.serena:rw
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4006/health || exit 1"]
       timeout: 10s

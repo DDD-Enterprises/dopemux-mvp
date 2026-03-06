@@ -24,6 +24,7 @@ from lib.promptgen.promptpack_v2 import (
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "promptgen"
 PROMPT_ROOT = FIXTURES / "v1" / "prompts"
 PROFILES_DIR = SERVICE_DIR / "lib" / "promptgen" / "profiles"
+V4_PROMPT_ROOT = SERVICE_DIR / "promptsets" / "v4" / "prompts"
 
 
 def _profile_payload(profile_id: str) -> dict:
@@ -119,3 +120,42 @@ def test_promptpack_v2_adjustments_are_deterministic(tmp_path: Path) -> None:
     assert RULE_REDUCE_MAX_FILES_ON_PARSE_OR_EMPTY in rules
     assert RULE_ENABLE_STRICT_ENVELOPE_ON_PARSE in rules
     assert RULE_SPLIT_STEP_ON_MISSING_ARTIFACTS in rules
+
+
+def test_promptpack_v1_carries_contract_metadata_for_d0_d1(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    (repo_root / "README.md").write_text("fixture\n", encoding="utf-8")
+
+    promptpack_root = tmp_path / "promptpacks"
+    profile = _profile_payload("P00_GENERIC")
+    profile_selection = {"selected_profile_id": "P00_GENERIC", "selected_profile_version": "1.0.0"}
+    archetypes = {"contracts_present": {"event_taxonomy": True}}
+
+    result = compile_promptpack_v1(
+        run_id="promptpack_contract_metadata",
+        root=repo_root,
+        prompt_root=V4_PROMPT_ROOT,
+        promptpack_root=promptpack_root,
+        phases=["D"],
+        profile_selection=profile_selection,
+        profile_payload=profile,
+        archetypes_payload=archetypes,
+    )
+
+    phase_rows = result["payload"]["phases"]["D"]
+    d1_row = next(row for row in phase_rows if row["step_id"] == "D1")
+    assert d1_row["contract_lane"] == "CE"
+    assert d1_row["strict_schema_required"] is True
+    contract_metadata = d1_row["contract_metadata"]
+    assert contract_metadata["lane"]["provider"] == "openrouter"
+    assert contract_metadata["lane"]["strict_schema_required"] is True
+    assert contract_metadata["lane"]["lane_class"] == "CE"
+    assert contract_metadata["lane"]["primary_routes"][0]["strict_json_schema"] is True
+    assert contract_metadata["lane"]["primary_routes"][0]["strict_passthrough_verified"] is True
+    assert "CAP_NOTICES.partX.json" in contract_metadata["expected_artifacts"]
+
+    rendered_path = Path(d1_row["rendered_prompt"])
+    rendered_text = rendered_path.read_text(encoding="utf-8")
+    assert "contract_map" in rendered_text
+    assert "CE" in rendered_text

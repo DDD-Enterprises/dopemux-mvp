@@ -6,13 +6,69 @@ Capture only implementation facts that are directly evidenced in source and conf
 
 ## Inputs
 - Source scope (scan these roots first):
-  - `services/leantime-bridge/**`
-  - `config/**`
-  - `compose.yml`
-  - `docker-compose*.yml`
-  - `src/dopemux/**`
-  - `.claude.json`
-  - `README.md`
+- `.vibe/**`
+- `.claude/**`
+- `.dopemux/**`
+- `.github/**`
+- `.githooks/**`
+- `.taskx/**`
+- `mcp-proxy-config.copilot.yaml`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `docker/**`
+- `scripts/**`
+- `tools/**`
+
+- `services/leantime-bridge/**`
+- `config/**`
+- `compose.yml`
+- `docker-compose*.yml`
+- `src/dopemux/**`
+- `.claude.json`
+- `README.md`
+- `.vibe/**`
+- `.claude/**`
+- `.dopemux/**`
+- `.github/**`
+- `.githooks/**`
+- `.taskx/**`
+- `mcp-proxy-config.copilot.yaml`
+- `compose/**`
+- `configs/**`
+- `docker/**`
+- `installers/**`
+- `ops/**`
+- `scripts/**`
+- `tools/**`
+
+- `.vibe/**`
+- `.claude/**`
+- `.dopemux/**`
+- `.github/**`
+- `.githooks/**`
+- `.taskx/**`
+- `mcp-proxy-config.copilot.yaml`
+- `compose/**`
+- `configs/**`
+- `docker/**`
+- `installers/**`
+- `ops/**`
+- `scripts/**`
+- `tools/**`
+
+- `.vibe/**`
+- `.claude/**`
+- `mcp-proxy-config.copilot.yaml`
+
+- `.vibe/**`
+- `.claude/**`
+- `mcp-proxy-config.copilot.yaml`
+
+- `.vibe/**`
+- `.claude/**`
+- `mcp-proxy-config.copilot.yaml`
+
 - Upstream normalized artifacts available to this step:
   - `REPOCTRL_INVENTORY.json`
   - `REPOCTRL_PARTITIONS.json`
