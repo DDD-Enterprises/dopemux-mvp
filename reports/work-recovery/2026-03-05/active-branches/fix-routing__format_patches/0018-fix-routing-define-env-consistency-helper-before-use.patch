@@ -1,0 +1,90 @@
+From 15076ca1c59bff99eaabd50833cbc68341f81075 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 16:35:24 -0800
+Subject: [PATCH 18/36] fix(routing): define env consistency helper before use
+
+---
+ src/dopemux/cli.py | 57 +++++++++++++++++++++++-----------------------
+ 1 file changed, 29 insertions(+), 28 deletions(-)
+
+diff --git a/src/dopemux/cli.py b/src/dopemux/cli.py
+index 27249756f..cfacb51b3 100644
+--- a/src/dopemux/cli.py
++++ b/src/dopemux/cli.py
+@@ -712,6 +712,35 @@ def start(
+         Automatically detects running instances and creates isolated worktrees
+         for parallel ADHD-optimized development workflows.
+     """
++    
++    def _ensure_env_consistent_with_mode(final_mode: str) -> None:
++        """Ensure environment variables are consistent with routing mode.
++        
++        Prevents stale proxy env vars when falling back to subscription mode.
++        """
++        if final_mode == "subscription":
++            # Unset proxy variables to ensure direct connection
++            env_vars_to_unset = ["ANTHROPIC_BASE_URL", "DOPEMUX_ROUTING_MODE"]
++            for var in env_vars_to_unset:
++                if var in os.environ:
++                    del os.environ[var]
++            
++            # Only unset ANTHROPIC_API_KEY if we set it (marked by DOPEMUX_SET_ANTHROPIC_API_KEY)
++            if os.environ.get("DOPEMUX_SET_ANTHROPIC_API_KEY") == "1":
++                if "ANTHROPIC_API_KEY" in os.environ:
++                    del os.environ["ANTHROPIC_API_KEY"]
++                if "DOPEMUX_SET_ANTHROPIC_API_KEY" in os.environ:
++                    del os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"]
++                    
++        elif final_mode == "api":
++            # Ensure API mode variables are set
++            if "DOPEMUX_ROUTING_MODE" not in os.environ:
++                os.environ["DOPEMUX_ROUTING_MODE"] = "api"
++            
++            # Mark that we're managing the API key
++            if "ANTHROPIC_API_KEY" in os.environ:
++                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
++    
+     legacy_value = legacy_kwargs.get("claude_router")
+     if legacy_value is not None:
+         use_claude_router = legacy_value
+@@ -817,34 +846,6 @@ def start(
+         # Ensure env vars are consistent with subscription mode
+         _ensure_env_consistent_with_mode(routing_mode)
+         console.logger.info("[dim]✓ Claude Code → Anthropic (direct)[/dim]")
+-    
+-    def _ensure_env_consistent_with_mode(final_mode: str) -> None:
+-        """Ensure environment variables are consistent with routing mode.
+-        
+-        Prevents stale proxy env vars when falling back to subscription mode.
+-        """
+-        if final_mode == "subscription":
+-            # Unset proxy variables to ensure direct connection
+-            env_vars_to_unset = ["ANTHROPIC_BASE_URL", "DOPEMUX_ROUTING_MODE"]
+-            for var in env_vars_to_unset:
+-                if var in os.environ:
+-                    del os.environ[var]
+-            
+-            # Only unset ANTHROPIC_API_KEY if we set it (marked by DOPEMUX_SET_ANTHROPIC_API_KEY)
+-            if os.environ.get("DOPEMUX_SET_ANTHROPIC_API_KEY") == "1":
+-                if "ANTHROPIC_API_KEY" in os.environ:
+-                    del os.environ["ANTHROPIC_API_KEY"]
+-                if "DOPEMUX_SET_ANTHROPIC_API_KEY" in os.environ:
+-                    del os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"]
+-                    
+-        elif final_mode == "api":
+-            # Ensure API mode variables are set
+-            if "DOPEMUX_ROUTING_MODE" not in os.environ:
+-                os.environ["DOPEMUX_ROUTING_MODE"] = "api"
+-            
+-            # Mark that we're managing the API key
+-            if "ANTHROPIC_API_KEY" in os.environ:
+-                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
+ 
+     # ── Handle --grok / --codex / --altp provider routing ───────────────
+     provider_proxy_started = False
+-- 
+2.50.1 (Apple Git-155)
+

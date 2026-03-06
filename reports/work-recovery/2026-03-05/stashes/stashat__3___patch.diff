@@ -1,0 +1,608 @@
+diff --git a/.claude/claude_config.json b/.claude/claude_config.json
+index b9a26d92e..1a50378c5 100644
+--- a/.claude/claude_config.json
++++ b/.claude/claude_config.json
+@@ -132,6 +132,14 @@
+       ],
+       "env": {},
+       "type": "stdio"
++    },
++    "docker-mcp-gateway": {
++      "type": "sse",
++      "url": "http://localhost:3020/mcp",
++      "env": {
++        "DOPEMUX_INSTANCE_ID": "main",
++        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
++      }
+     }
+   }
+ }
+diff --git a/.vibe/config.toml b/.vibe/config.toml
+index 95932adb2..755b07ba3 100644
+--- a/.vibe/config.toml
++++ b/.vibe/config.toml
+@@ -1,120 +1,35 @@
+-# =========================
+-# Core
+-# =========================
+ active_model = "devstral-2"
+-
+ include_project_context = true
+ include_prompt_detail = false
+ include_commit_signature = false
+ include_model_info = false
+-instructions = """
+-You are an implementer. Follow Task Packets exactly and execute steps strictly in order.
+-
+-HARD GATES (STOP conditions)
+-1) Never simulate outputs or "analyze what would happen". If you cannot run a command, write UNKNOWN and STOP.
+-2) Before any edits, print these commands verbatim and do not proceed unless they match the Task Packet:
+-   - pwd
+-   - git rev-parse --show-toplevel
+-   - git rev-parse --abbrev-ref HEAD
+-   - git rev-parse HEAD
+-   - git worktree list
+-3) Before any edits, git status --porcelain MUST be empty. If not empty, STOP and paste it.
+-4) After finishing work and after generating the proof bundle, git status --porcelain MUST be empty. If not empty, STOP and paste it.
+-5) Never leave untracked files. Any new file must be either:
+-   - committed, or
+-   - intentionally ignored via .gitignore with a narrow rule, committed in a separate commit.
+-   If unsure, STOP.
+-
+-PROOF BUNDLE RULES
+-6) Every Task Packet requires a proof bundle created with scripts/proof_bundle.sh. Manual bundles are not accepted.
+-7) The proof bundle MUST include verbatim outputs for:
+-   - pwd
+-   - git rev-parse --show-toplevel
+-   - git rev-parse --abbrev-ref HEAD
+-   - git rev-parse HEAD
+-   - git status --porcelain
+-   - git diff --stat HEAD~1..HEAD
+-   - git diff HEAD~1..HEAD
+-   - git log -5 --oneline
+-   - and every TP verification command
+-8) If the proof bundle is missing any required output, STOP and regenerate it.
+-9) Do not add "echo SUCCESS" in place of real commands.
+-
+-BRANCH AND MAIN SYNC
+-10) Always start from main and sync it before creating/using a feature branch:
+-    - git checkout main
+-    - git pull --ff-only
+-11) If working on a feature branch, merge main into it before producing the final proof bundle:
+-    - git checkout <branch>
+-    - git merge main
+-    Then ensure status is clean.
+-
+-RESPONSE FORMAT
+-12) Your response must contain:
+-    - git diff --stat
+-    - git diff
+-    - git log -5 --oneline
+-    - and the full contents of 00_context.txt, 01_git.txt, 02_checks.txt from the proof bundle.
+-No extra commentary unless a STOP condition triggers.
+- """
+-
+-# NOTE:
+-# Start with tools OFF to confirm the model+key are good.
+-# After that, flip ENABLE_TOOLS to true and restart vibe.
++instructions = "You are an implementer. Follow Task Packets exactly and execute steps strictly in order.\n\nHARD GATES (STOP conditions)\n1) Never simulate outputs or \"analyze what would happen\". If you cannot run a command, write UNKNOWN and STOP.\n2) Before any edits, print these commands verbatim and do not proceed unless they match the Task Packet:\n   - pwd\n   - git rev-parse --show-toplevel\n   - git rev-parse --abbrev-ref HEAD\n   - git rev-parse HEAD\n   - git worktree list\n3) Before any edits, git status --porcelain MUST be empty. If not empty, STOP and paste it.\n4) After finishing work and after generating the proof bundle, git status --porcelain MUST be empty. If not empty, STOP and paste it.\n5) Never leave untracked files. Any new file must be either:\n   - committed, or\n   - intentionally ignored via .gitignore with a narrow rule, committed in a separate commit.\n   If unsure, STOP.\n\nPROOF BUNDLE RULES\n6) Every Task Packet requires a proof bundle created with scripts/proof_bundle.sh. Manual bundles are not accepted.\n7) The proof bundle MUST include verbatim outputs for:\n   - pwd\n   - git rev-parse --show-toplevel\n   - git rev-parse --abbrev-ref HEAD\n   - git rev-parse HEAD\n   - git status --porcelain\n   - git diff --stat HEAD~1..HEAD\n   - git diff HEAD~1..HEAD\n   - git log -5 --oneline\n   - and every TP verification command\n8) If the proof bundle is missing any required output, STOP and regenerate it.\n9) Do not add \"echo SUCCESS\" in place of real commands.\n\nBRANCH AND MAIN SYNC\n10) Always start from main and sync it before creating/using a feature branch:\n    - git checkout main\n    - git pull --ff-only\n11) If working on a feature branch, merge main into it before producing the final proof bundle:\n    - git checkout <branch>\n    - git merge main\n    Then ensure status is clean.\n\nRESPONSE FORMAT\n12) Your response must contain:\n    - git diff --stat\n    - git diff\n    - git log -5 --oneline\n    - and the full contents of 00_context.txt, 01_git.txt, 02_checks.txt from the proof bundle.\nNo extra commentary unless a STOP condition triggers.\n "
+ ENABLE_TOOLS = false
+-
+-# Tools: keep defined, but gated by ENABLE_TOOLS.
+ enabled_tools = [
+-  "bash",
+-  "grep",
+-  "read_file",
+-  "write_file",
+-  "search_replace",
+-  "mcp_*",
++    "bash",
++    "grep",
++    "read_file",
++    "write_file",
++    "search_replace",
++    "mcp_*",
+ ]
+-
+-# Do NOT disable MCP if you want MCP.
+ disabled_tools = []
+-
+-autocopy_to_clipboard = true
+-
+-# =========================
+-# Models
+-# =========================
++autocopy_to_clipboard = false
+ models = [
+-  # Official-ish id format (no "+2")
+-  { name = "devstral-2512", provider = "mistral", alias = "devstral-2", temperature = 0.2 },
++    { name = "devstral-2512", provider = "mistral", alias = "devstral-2", temperature = 0.2 },
+ ]
++mcp_servers = [
++    { name = "conport", transport = "http", url = "http://localhost:3004" },
++    { name = "serena", transport = "http", url = "http://localhost:3006" },
++    { name = "dope_context", transport = "http", url = "http://localhost:3010" },
++    { name = "pal", transport = "http", url = "http://localhost:3003" },
++    { name = "docker_mcp_gateway", transport = "http", url = "http://localhost:3020" },
++]
++file_watcher_for_autocomplete = true
+ 
+-# =========================
+-# Project context
+-# =========================
+ [project_context]
+ max_chars = 8000
+ max_doc_bytes = 16384
+ default_commit_count = 0
+ max_depth = 2
+ max_files = 200
+-
+-# =========================
+-# MCP Servers
+-# =========================
+-[[mcp_servers]]
+-name = "conport"
+-transport = "http"
+-url = "http://localhost:3004"
+-
+-[[mcp_servers]]
+-name = "serena"
+-transport = "http"
+-url = "http://localhost:3006"
+-
+-[[mcp_servers]]
+-name = "dope_context"
+-transport = "http"
+-url = "http://localhost:3010"
+-
+-[[mcp_servers]]
+-name = "pal"
+-transport = "http"
+-url = "http://localhost:3003"
+\ No newline at end of file
+diff --git a/proof/PLAN.txt b/proof/PLAN.txt
+index deb0101c4..e9b26fb7c 100644
+--- a/proof/PLAN.txt
++++ b/proof/PLAN.txt
+@@ -1,98 +1,33 @@
+-# ProcessPool Stability Fix - Implementation Plan
+-
+-## Problem Analysis
+-- **Root Cause**: KeyError on `op["kind"]` in `_apply_write_ops` function
+-- **Trigger**: Concurrent execution with workers=4 changes timing/ordering, exposing missing "kind" field
+-- **Impact**: Phase A aborts early at partition 21 instead of processing all 252 partitions
+-- **Current Behavior**: Single bad operation kills entire phase (raw_total=21, raw_failed=0)
+-
+-## Solution Design
+-
+-### 1. Make "kind" Access Defensive
+-**File**: `services/repo-truth-extractor/run_extraction_v3.py`
+-**Function**: `_apply_write_ops` (line ~6178)
+-**Change**: Replace `op["kind"]` with `op.get("kind")` and add null check
+-
+-### 2. Improve Future Processing Error Handling
+-**File**: `services/repo-truth-extractor/run_extraction_v3.py`
+-**Function**: `execute_step_for_partitions` (line ~7179)
+-**Change**: Add logging to track which partition is being processed and enhance error diagnostics
+-
+-### 3. Add Write Operations Validation
+-**File**: `services/repo-truth-extractor/run_extraction_v3.py`
+-**Function**: `execute_step_for_partitions` (line ~7259)
+-**Change**: Validate write_ops before applying them, add defensive defaults
+-
+-## Implementation Checklist
+-
+-- [x] ✅ Replace direct `op["kind"]` access with defensive `op.get("kind")`
+-- [x] ✅ Add try-catch block around write operation processing
+-- [x] ✅ Add logging for missing "kind" fields
+-- [x] ✅ Add partition ID logging in future processing loop
+-- [x] ✅ Enhance exception logging with full stack traces
+-- [x] ✅ Add write_ops pre-validation with defensive defaults
+-- [x] ✅ Maintain backward compatibility
+-- [x] ✅ Ensure "no silent drop" invariant
+-
+-## Verification Plan
+-
+-### Manual Verification
+-```bash
+-# Check defensive kind access
+-rg -n "kind = op.get" services/repo-truth-extractor/run_extraction_v3.py
+-
+-# Check per-partition logging
+-rg -n "Processing completed future" services/repo-truth-extractor/run_extraction_v3.py
+-
+-# Check write_ops validation
+-rg -n "Validate write_ops" services/repo-truth-extractor/run_extraction_v3.py
+-```
+-
+-### Expected Results
+-1. Line 6183: `kind = op.get("kind")` with null check
+-2. Line 7185: `logger.info("Processing completed future for partition %s", partition_id)`
+-3. Line 7259: `# Validate write_ops before applying them` comment with validation loop
+-
+-### Runtime Testing
+-```bash
+-# Run with workers=4
+-python services/repo-truth-extractor/run_extraction_v3.py --phase A --workers 4
+-
+-# Expected output:
+-# - All 252 partitions processed
+-# - raw_total=252
+-# - raw_ok + raw_failed = 252
+-# - Any individual failures logged with partition IDs
+-```
+-
+-## Success Criteria
+-
+-✅ **Primary**: Phase A completes with workers=4 (no early abort)
+-✅ **Secondary**: All 252 partitions accounted for (raw_total=252)
+-✅ **Tertiary**: Individual partition failures logged with IDs
+-✅ **Quality**: No silent drops - raw_ok + raw_failed = raw_total
+-
+-## Risk Mitigation
+-
+-**Low Risk**: All changes are defensive additions that:
+-- Only affect error paths that previously caused crashes
+-- Add validation and logging without changing core logic
+-- Provide backward-compatible behavior
+-
+-**Rollback**: Simple removal of added validation/logging blocks if needed
+-
+-## Documentation
+-
+-- Proof bundle: `proof/PROCESSPOOL_STABILITY_REPORT.md`
+-- Implementation details: This file (`proof/PLAN.txt`)
+-- Code changes: Committed to `services/repo-truth-extractor/run_extraction_v3.py`
+-
+-## Next Steps
+-
+-1. ✅ Implement code changes
+-2. ✅ Create proof bundle
+-3. ⏳ Test with workers=4
+-4. ⏳ Verify all 252 partitions processed
+-5. ⏳ Confirm acceptance criteria met
+-
+-**Status**: Implementation complete, ready for testing
+\ No newline at end of file
++Objective: TP-EXTRACTOR-RUNTIME-RATE-LIMIT-WIRING-0004
++
++Scope:
++- services/repo-truth-extractor/lib/routing_config_loader.py
++- services/repo-truth-extractor/lib/model_key_resolver.py (only if needed)
++- services/repo-truth-extractor/lib/rate_limit_governor.py (only if needed)
++- services/repo-truth-extractor/run_extraction_v3.py (single real LLM call site wrapper)
++- docs/03-reference/rate-limiting.md
++- proof/PLAN.txt
++- proof/RUNTIME_THROTTLE_EVIDENCE.md
++
++Invariants:
++1) routing.yaml is the source of truth for models/aliases/rate_limits/rate_limit_policy.
++2) Canonical model key is derived from the normalized models mapping key.
++3) Unknown model conservative policy defaults to max_concurrency=1 via default canonical fallback.
++4) Runtime logs do not print API keys or prompt contents.
++5) Evidence must include acquire requested/acquired/released plus waiting log lines.
++
++Plan:
++1) Identify one real LLM call site via rg and wire admission in that path.
++2) Load routing config once per process from DOPEMUX_ROUTING_YAML or ~/.dopemux/routing.yaml.
++3) Build ModelKeyResolver + RateLimitGovernor singleton and initialize at run start.
++4) Wrap provider request execution with governor.acquire(model_id, est_tokens=...).
++5) Gate debug logs with DOPEMUX_RATE_LIMIT_DEBUG=1.
++6) Capture runtime throttle evidence into proof/RUNTIME_THROTTLE_EVIDENCE.md.
++
++Verification commands:
++1) python -m compileall -q services tests
++2) pytest --no-cov -q tests/unit/test_rate_limit_governor_tpm.py tests/unit/test_rate_limit_governor_rpm.py tests/unit/test_rate_limit_governor_integration.py
++3) DOPEMUX_RATE_LIMIT_DEBUG=1 DOPEMUX_ROUTING_YAML=/tmp/dopemux-throttle-routing.yaml DOPEMUX_RATE_LIMIT_TIMEOUT_SECONDS=0.1 OPENAI_API_KEY=dummy GEMINI_API_KEY=dummy XAI_API_KEY=dummy python services/repo-truth-extractor/run_extraction_v3.py --phase A --preflight-providers > /tmp/dopemux_throttle_runtime.log 2>&1 || true
++
++Proof command:
++- scripts/proof_bundle.sh --allow-dirty --tp TP-EXTRACTOR-RUNTIME-RATE-LIMIT-WIRING-0004 ...
+diff --git a/services/registry.yaml b/services/registry.yaml
+index 943a9ad0f..c682359ec 100644
+--- a/services/registry.yaml
++++ b/services/registry.yaml
+@@ -169,6 +169,19 @@ services:
+     spec_version: "v1"
+     spec_path: "docs/spec/dope-memory/v1/"
+ 
++  # Docker MCP Gateway
++  - name: docker-mcp-gateway
++    port: 3021
++    container_port: 3021
++    health_path: /health
++    health_method: GET
++    health_timeout_ms: 10000
++    health_expected_status: 200
++    compose_service_name: docker-mcp-gateway
++    enabled_in_smoke: true
++    category: mcp
++    description: "Docker MCP Gateway - Unified gateway for MCP server routing"
++
+   - name: desktop-commander
+     port: 3012
+     container_port: 3012
+diff --git a/services/repo-truth-extractor/run_extraction_v3.py b/services/repo-truth-extractor/run_extraction_v3.py
+index 3aabce59c..f8e73304b 100644
+--- a/services/repo-truth-extractor/run_extraction_v3.py
++++ b/services/repo-truth-extractor/run_extraction_v3.py
+@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_compl
+ import fnmatch
+ import hashlib
+ import hmac
++import threading
+ import json
+ import logging
+ import os
+@@ -60,6 +61,40 @@ except ModuleNotFoundError:
+     OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
+     XAIBatchClient = batch_clients_module.XAIBatchClient
+     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
++try:
++    from lib.model_key_resolver import ModelKeyResolver
++    from lib.rate_limit_governor import RateLimitGovernor
++    from lib.routing_config_loader import load_runtime_rate_limit_config
++except ModuleNotFoundError:
++    model_key_resolver_path = RUNNER_SERVICE_DIR / "lib" / "model_key_resolver.py"
++    model_key_resolver_spec = importlib.util.spec_from_file_location(
++        "repo_truth_model_key_resolver", model_key_resolver_path
++    )
++    if not model_key_resolver_spec or not model_key_resolver_spec.loader:
++        raise
++    model_key_resolver_module = importlib.util.module_from_spec(model_key_resolver_spec)
++    model_key_resolver_spec.loader.exec_module(model_key_resolver_module)
++    ModelKeyResolver = model_key_resolver_module.ModelKeyResolver
++
++    rate_limit_governor_path = RUNNER_SERVICE_DIR / "lib" / "rate_limit_governor.py"
++    rate_limit_governor_spec = importlib.util.spec_from_file_location(
++        "repo_truth_rate_limit_governor", rate_limit_governor_path
++    )
++    if not rate_limit_governor_spec or not rate_limit_governor_spec.loader:
++        raise
++    rate_limit_governor_module = importlib.util.module_from_spec(rate_limit_governor_spec)
++    rate_limit_governor_spec.loader.exec_module(rate_limit_governor_module)
++    RateLimitGovernor = rate_limit_governor_module.RateLimitGovernor
++
++    routing_loader_path = RUNNER_SERVICE_DIR / "lib" / "routing_config_loader.py"
++    routing_loader_spec = importlib.util.spec_from_file_location(
++        "repo_truth_routing_config_loader", routing_loader_path
++    )
++    if not routing_loader_spec or not routing_loader_spec.loader:
++        raise
++    routing_loader_module = importlib.util.module_from_spec(routing_loader_spec)
++    routing_loader_spec.loader.exec_module(routing_loader_module)
++    load_runtime_rate_limit_config = routing_loader_module.load_runtime_rate_limit_config
+ try:
+     from rich.console import Console
+     from rich.panel import Panel
+@@ -514,6 +549,8 @@ DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV = "DPMX_WEBHOOK_TIMEOUT_SECONDS"
+ DPMX_WEBHOOK_REQUIRED_ENV = "DPMX_WEBHOOK_REQUIRED"
+ DPMX_WEBHOOK_AUTO_CONTINUE_ENV = "DPMX_WEBHOOK_AUTO_CONTINUE"
+ DPMX_LIVE_OK_ENV = "DPMX_LIVE_OK"
++DOPEMUX_RATE_LIMIT_DEBUG_ENV = "DOPEMUX_RATE_LIMIT_DEBUG"
++DOPEMUX_RATE_LIMIT_TIMEOUT_SECONDS_ENV = "DOPEMUX_RATE_LIMIT_TIMEOUT_SECONDS"
+ DPMX_WEBHOOK_SCHEMA = "DPMX_WEBHOOK_V1"
+ DPMX_WEBHOOK_EVENT = "batch.completed"
+ STEP_TYPE_MODEL_ENV_VARS: Dict[str, str] = {
+@@ -554,6 +591,9 @@ logging.basicConfig(
+ )
+ logger = logging.getLogger("extract_runner")
+ _RUN_FILE_HANDLER: Optional[logging.Handler] = None
++_RATE_LIMIT_GOVERNOR_LOCK = threading.Lock()
++_RUNTIME_RATE_LIMIT_GOVERNOR: Optional[Any] = None
++_RUNTIME_RATE_LIMIT_CONFIG: Optional[Dict[str, Any]] = None
+ 
+ 
+ def configure_run_file_logger(run_root: Path) -> Path:
+@@ -4605,6 +4645,7 @@ def should_retry(
+     if (
+         failure_type.startswith("auth_")
+         or failure_type in {"quota_or_billing", "api_key_missing_or_invalid", "permission_denied"}
++        or failure_type == "rate_limit"
+     ):
+         return False
+     if status_code in {408, 429, 500, 502, 503, 504}:
+@@ -4625,6 +4666,72 @@ def backoff_seconds(attempt: int, base_seconds: float, max_seconds: float) -> fl
+     return min(delay, max_seconds)
+ 
+ 
++def _rate_limit_debug_enabled() -> bool:
++    return _env_is_truthy(DOPEMUX_RATE_LIMIT_DEBUG_ENV)
++
++
++def _rate_limit_timeout_seconds() -> Optional[float]:
++    raw = os.getenv(DOPEMUX_RATE_LIMIT_TIMEOUT_SECONDS_ENV, "").strip()
++    if not raw:
++        return None
++    try:
++        return max(0.0, float(raw))
++    except Exception as exc:
++        raise RuntimeError(
++            f"{DOPEMUX_RATE_LIMIT_TIMEOUT_SECONDS_ENV} must be a number. Got: {raw}"
++        ) from exc
++
++
++def _estimate_request_tokens(system_prompt: str, user_content: str) -> int:
++    combined = f"{system_prompt or ''}\n{user_content or ''}"
++    return max(1, (len(combined) + 3) // 4)
++
++
++def _governor_debug_log(message: str) -> None:
++    if _rate_limit_debug_enabled():
++        logger.info("RATE_LIMIT %s", message)
++
++
++def _load_runtime_rate_limit_governor() -> Any:
++    config = load_runtime_rate_limit_config()
++    resolver = ModelKeyResolver(
++        {
++            "models": config.get("models", {}),
++            "aliases": config.get("aliases", {}),
++        }
++    )
++    policy = str((config.get("rate_limit_policy") or {}).get("unknown_model", "conservative"))
++    governor = RateLimitGovernor(
++        resolver=resolver,
++        rate_limits=config.get("rate_limits", {}),
++        unknown_policy=policy,
++        debug=_rate_limit_debug_enabled(),
++        debug_fn=_governor_debug_log if _rate_limit_debug_enabled() else None,
++    )
++    logger.info(
++        "Rate limit governor initialized source=%s loaded=%s policy=%s models=%s limits=%s",
++        config.get("source_path"),
++        bool(config.get("loaded")),
++        policy,
++        len(config.get("models") or {}),
++        len(config.get("rate_limits") or {}),
++    )
++    return governor, config
++
++
++def get_runtime_rate_limit_governor() -> Any:
++    global _RUNTIME_RATE_LIMIT_GOVERNOR
++    global _RUNTIME_RATE_LIMIT_CONFIG
++
++    if _RUNTIME_RATE_LIMIT_GOVERNOR is None:
++        with _RATE_LIMIT_GOVERNOR_LOCK:
++            if _RUNTIME_RATE_LIMIT_GOVERNOR is None:
++                governor, config = _load_runtime_rate_limit_governor()
++                _RUNTIME_RATE_LIMIT_GOVERNOR = governor
++                _RUNTIME_RATE_LIMIT_CONFIG = config
++    return _RUNTIME_RATE_LIMIT_GOVERNOR
++
++
+ def call_llm(
+     provider: str,
+     model_id: str,
+@@ -4676,6 +4783,9 @@ def call_llm(
+         headers = make_headers(provider, api_key, cfg, effective_mode)
+         sent_header_keys = sorted(list(headers.keys()))
+         auth_flags = build_auth_present_flags(headers, provider == "gemini" and effective_mode == "query_key")
++    rate_limit_timeout = _rate_limit_timeout_seconds()
++    est_tokens = _estimate_request_tokens(system_prompt, user_content)
++    governor = get_runtime_rate_limit_governor()
+ 
+     if not api_key:
+         logger.error("Missing API key env var: %s", api_key_env)
+@@ -4753,30 +4863,36 @@ def call_llm(
+         provider_error_reason = None
+         try:
+             response_json: Optional[Dict[str, Any]] = None
+-            if transport == "openai_compat_http":
+-                headers = make_headers(provider, api_key, cfg, effective_mode)
+-                endpoint_url = make_url(provider, base_url, cfg, api_key, effective_mode)
+-                auth_flags = build_auth_present_flags(headers, provider == "gemini" and effective_mode == "query_key")
+-                sent_header_keys = sorted(list(headers.keys()))
+-                response = requests.post(endpoint_url, headers=headers, data=body, timeout=180)
+-                response.raise_for_status()
+-                status_code = response.status_code
+-                response_json = response.json()
+-                response_text = response_json["choices"][0]["message"]["content"]
+-            elif provider == "gemini":
+-                client = get_gemini_client(api_key)
+-                response = client.models.generate_content(
+-                    model=model_id,
+-                    contents=user_content,
+-                    config={
+-                        "temperature": 0.1,
+-                        "system_instruction": system_prompt,
+-                        **({"response_mime_type": "application/json"} if force_json_output else {}),
+-                    },
+-                )
+-                status_code = 200
+-                response_text = extract_text_from_gemini_response(response)
+-            else:
++
++            def _invoke_provider_call() -> Tuple[Any, Optional[Dict[str, Any]], int, str]:
++                nonlocal endpoint_url
++                nonlocal auth_flags
++                nonlocal sent_header_keys
++                if transport == "openai_compat_http":
++                    headers = make_headers(provider, api_key, cfg, effective_mode)
++                    endpoint_url = make_url(provider, base_url, cfg, api_key, effective_mode)
++                    auth_flags = build_auth_present_flags(
++                        headers, provider == "gemini" and effective_mode == "query_key"
++                    )
++                    sent_header_keys = sorted(list(headers.keys()))
++                    response_obj = requests.post(endpoint_url, headers=headers, data=body, timeout=180)
++                    response_obj.raise_for_status()
++                    response_status_code = int(response_obj.status_code)
++                    response_json_obj = response_obj.json()
++                    response_text_value = response_json_obj["choices"][0]["message"]["content"]
++                    return response_obj, response_json_obj, response_status_code, response_text_value
++                if provider == "gemini":
++                    response_obj = get_gemini_client(api_key).models.generate_content(
++                        model=model_id,
++                        contents=user_content,
++                        config={
++                            "temperature": 0.1,
++                            "system_instruction": system_prompt,
++                            **({"response_mime_type": "application/json"} if force_json_output else {}),
++                        },
++                    )
++                    return response_obj, None, 200, extract_text_from_gemini_response(response_obj)
++
+                 if provider == "xai":
+                     client = get_xai_client(api_key)
+                 elif provider == "openrouter":
+@@ -4791,9 +4907,24 @@ def call_llm(
+                     chat_kwargs["temperature"] = payload["temperature"]
+                 if "response_format" in payload:
+                     chat_kwargs["response_format"] = payload["response_format"]
+-                response = client.chat.completions.create(**chat_kwargs)
+-                status_code = 200
+-                response_text = extract_text_from_chat_completion(response)
++                response_obj = client.chat.completions.create(**chat_kwargs)
++                return response_obj, None, 200, extract_text_from_chat_completion(response_obj)
++
++            if _rate_limit_debug_enabled():
++                logger.info(
++                    "RATE_LIMIT acquire requested model=%s est_tokens=%s timeout=%s",
++                    model_id,
++                    est_tokens,
++                    rate_limit_timeout,
++                )
++            with governor.acquire(model_id=model_id, est_tokens=est_tokens, timeout=rate_limit_timeout):
++                if _rate_limit_debug_enabled():
++                    logger.info("RATE_LIMIT acquired model=%s est_tokens=%s", model_id, est_tokens)
++                try:
++                    response, response_json, status_code, response_text = _invoke_provider_call()
++                finally:
++                    if _rate_limit_debug_enabled():
++                        logger.info("RATE_LIMIT released model=%s", model_id)
+ 
+             response_summary = summarize_llm_response(
+                 provider=provider,
+@@ -4852,8 +4983,10 @@ def call_llm(
+         except Exception as exc:
+             status_code = exception_status_code(exc)
+             response_body = exception_response_text(exc)[:1200]
+-            failure_type = classify_failure_type(status_code, response_body, str(exc))
++            failure_type = "rate_limit" if isinstance(exc, TimeoutError) else classify_failure_type(status_code, response_body, str(exc))
+             provider_error_reason = extract_provider_error_reason(response_body)
++            if failure_type == "rate_limit" and not provider_error_reason:
++                provider_error_reason = "RATE_LIMIT_TIMEOUT"
+             safe_exc = sanitize_error_text(str(exc))
+             safe_body = sanitize_error_text(response_body)
+             exception_info = capture_exception_metadata(exc)
+@@ -10239,6 +10372,7 @@ def main() -> None:
+             int(prompt_report.get("prompt_failures_count", 0)),
+         )
+         sys.exit(PROMPTSET_BLOCKED_EXIT_CODE)
++
+     if args.doctor_auth:
+         sys.exit(run_auth_doctor(root, args, cfg))
+     if args.preflight_providers:
+@@ -10261,6 +10395,12 @@ def main() -> None:
+         verify_targets = PHASES if args.verify_phase_output == "ALL" else [args.verify_phase_output]
+         sys.exit(verify_phase_output(dirs, verify_targets, ui=ui))
+ 
++    try:
++        get_runtime_rate_limit_governor()
++    except Exception as exc:
++        logger.error("Rate limit governor initialization failed: %s", exc)
++        sys.exit(1)
++
+     if args.doctor:
+         targets = phase_sequence if phase_sequence else PHASES
+         sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg))

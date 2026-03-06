@@ -1,0 +1,11 @@
+stash@{0}: WIP on fix/pr-161-drain-20260302-1857: 01a0e2026 chore: re-trigger CI for PR 165 (avoiding cancellation)
+stash@{1}: WIP on fix/pr-161-drain-20260302-1857: 611cb9de5 fix: replace absolute paths with portable relative paths in claude_config.json
+stash@{2}: WIP on fix/pr-161-drain-20260302-1857: 9f3f91858 ci-fix: resolve pre-commit hygiene and linting failures (drain/drain-20260302-1857)
+stash@{3}: On main: pre-tp-clean-rate-limit-wiring-0005-20260227_060026
+stash@{4}: WIP on feat/routing-auto-repair-clean: 6f2dc4538 TP-EXTR-001C-PROCESSPOOL-STABILIZE-0002: Stabilize ProcessPoolExecutor\n\n- Fix KeyError in _apply_write_ops with defensive op.get('kind')\n- Add per-partition logging and error containment in future processing\n- Add write_ops pre-validation with defensive defaults\n- Add 8 comprehensive regression tests preventing bug reintroduction\n- Complete proof bundle with integration test results\n\nFixes Phase A aborts with workers=4, enabling reliable concurrent processing.\nAll acceptance criteria met: 252 partitions processed, no silent drops,\npartition-level logging active, deterministic behavior maintained.
+stash@{5}: WIP on feat/v4-extractor-infra: fd494faf5 fix: add console warning
+stash@{6}: WIP on feat/v4-extractor-infra: fd494faf5 fix: add console warning
+stash@{7}: WIP on main: 0c82a9a5a Fix false ConPort unavailable warning in worktree recovery
+stash@{8}: WIP on fix-serena-path-mapping-15094612915900490894: a4c132b44 Fix Serena ProjectNotFoundError via Path Mapping and stabilize doc frontmatter
+stash@{9}: WIP on feat/v4-governance-ci: c5a7556aa fix(prompts): add explicit OUTPUTS to legacy v3 C/D/R prompts
+stash@{10}: WIP on chore/batch-rewrite-benchmark-prompts: 1d464bb99 chore: batch rewrite all benchmark prompts with domain-specific extraction procedures
