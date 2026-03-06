@@ -1,9 +1,15 @@
 ---
+id: adr-219
 title: "ADR-219: Universal Repo-Truth-Extractor Sync Pipeline"
 type: adr
-status: active
+status: accepted
+date: 2026-03-06
+author: "dopemux-team"
 prelude: "Architecture decision for making the repo-truth-extractor work on any codebase via feature detection, interactive discovery, and template-driven prompt generation."
 tags: [extractor, universal, promptgen, architecture]
+graph_metadata:
+  depends_on: [ADR-215]
+  impacts: [repo-truth-extractor, promptgen]
 ---
 
 # ADR-219: Universal Repo-Truth-Extractor Sync Pipeline
