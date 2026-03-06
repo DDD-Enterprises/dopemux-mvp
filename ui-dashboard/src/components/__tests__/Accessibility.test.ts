@@ -27,6 +27,9 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars', () =
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
   expect(content).toContain('<Tooltip title={statusStyles[member.status].label}');
+  expect(content).toContain('<Tooltip title="Aggregated cognitive load across all team members"');
+  expect(content).toContain('<Tooltip title="Current energy reserve based on biometric data"');
+  expect(content).toContain('<Tooltip title="Real-time focus and attention span metrics"');
   expect(content).toContain('tabIndex={0}');
 });
 
