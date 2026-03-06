@@ -7,8 +7,11 @@ owner: pm-plane
 author: dopemux-pm
 date: 2026-03-06
 updated: 2026-03-06
+last_review: '2026-03-06'
+next_review: '2026-06-04'
+prelude: Dopemux Master Strategy (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # Dopemux Master Strategy
 
 ## Document status
