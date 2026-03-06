@@ -6,6 +6,64 @@ Focus on concrete, machine-verifiable implementation facts.
 
 ## Inputs
 - Source scope (scan these roots first):
+- `.vibe/**`
+- `.claude/**`
+- `.dopemux/**`
+- `.github/**`
+- `.githooks/**`
+- `.taskx/**`
+- `mcp-proxy-config.copilot.yaml`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `docker/**`
+- `scripts/**`
+- `tools/**`
+
+- `.vibe/**`
+- `.claude/**`
+- `.dopemux/**`
+- `.github/**`
+- `.githooks/**`
+- `.taskx/**`
+- `mcp-proxy-config.copilot.yaml`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `docker/**`
+- `installers/**`
+- `ops/**`
+- `scripts/**`
+- `tools/**`
+
+- `.vibe/**`
+- `.claude/**`
+- `.dopemux/**`
+- `.github/**`
+- `.githooks/**`
+- `.taskx/**`
+- `mcp-proxy-config.copilot.yaml`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `docker/**`
+- `installers/**`
+- `ops/**`
+- `scripts/**`
+- `tools/**`
+
+- `.vibe/**`
+- `.claude/**`
+- `mcp-proxy-config.copilot.yaml`
+
+- `.vibe/**`
+- `.claude/**`
+- `mcp-proxy-config.copilot.yaml`
+
+- `.vibe/**`
+- `.claude/**`
+- `mcp-proxy-config.copilot.yaml`
+
 - `.claude/**`
 - `.github/**`
 - `.taskx/**`

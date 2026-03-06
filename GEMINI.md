@@ -1,5 +1,11 @@
 # Gemini CLI - Workspace Configuration & MCP Usage
 
+## ⚠️ CRITICAL SAFETY & COST SAFEGUARD
+- **NO LIVE RUNNER EXECUTION:** Never execute `run_extraction_v*.py` scripts, even with `--dry-run`. These scripts trigger expensive provider preflight probes that consume significant credits.
+- **OFFLINE VALIDATION ONLY:** All verification of promptsets, registries, or routing maps must be performed via local file inspection, YAML syntax checks, and static analysis.
+- **HISTORY:** A single accidental run cost $10 in March 2026. This mandate is absolute.
+
+
 This workspace integrates custom MCP servers inherited from the `dopemux-mvp` project. These tools power a **Two-Plane Architecture** combining Project Management (PM Plane) with Cognitive accommodations (Cognitive Plane). Below are detailed instructions on how to use them implicitly during tasks:
 
 ## Core Components & Architecture

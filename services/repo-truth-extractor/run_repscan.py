@@ -46,6 +46,7 @@ from lib.promptgen import (
 from lib.promptgen.fingerprint import DEFAULT_EXCLUDE_GLOBS, DEFAULT_INCLUDE_GLOBS, ScanConfig
 from lib.promptgen.hashing import sha256_file, sha256_text
 from lib.promptgen.io import write_json
+from lib.phase_contract_map import CONTRACT_MAP_FILENAME as PHASE_CONTRACT_MAP_FILENAME, write_phase_contract_map
 
 PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
 PHASE_DIR_NAMES: Dict[str, str] = {
@@ -209,6 +210,9 @@ def _write_run_promptpack_fingerprint(
         "profile_id": (profile_selection or {}).get("selected_profile_id") if profile_selection else None,
         "profile_version": (profile_selection or {}).get("selected_profile_version") if profile_selection else None,
         "stage_artifact_sha256": stage_artifact_digests or {},
+        "phase_contract_map": str((run_root / PHASE_CONTRACT_MAP_FILENAME).resolve())
+        if (run_root / PHASE_CONTRACT_MAP_FILENAME).exists()
+        else None,
     }
     write_json(run_root / RUN_PROMPTPACK_FINGERPRINT_FILENAME, payload)
     return payload
@@ -321,6 +325,10 @@ def main() -> int:
     run_root.mkdir(parents=True, exist_ok=True)
     inputs_root.mkdir(parents=True, exist_ok=True)
     promptpack_root.mkdir(parents=True, exist_ok=True)
+    try:
+        write_phase_contract_map(run_root, run_id)
+    except Exception as exc:
+        print(f"warning: failed to write {PHASE_CONTRACT_MAP_FILENAME}: {exc}", file=sys.stderr)
 
     phases = _phase_list(args.phase)
     phase_value = args.phase or "ALL"

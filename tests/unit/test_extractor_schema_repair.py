@@ -174,3 +174,23 @@ def test_repair_counters_increment():
     repair(arts, "schema_missing_key:path", ["src/z.py"])
     assert runner._REPAIR_COUNTERS["attempted"] == before_attempted + 1
     assert runner._REPAIR_COUNTERS["succeeded"] == before_succeeded + 1
+
+
+def test_contract_schema_id_case_drift_is_normalized_for_d1():
+    contract = runner._step_contract_for("D", "D1")
+    assert contract is not None
+    artifacts = [
+        {
+            "artifact_name": "DOC_INDEX.partX.json",
+            "payload": {"schema": "doc_index@v1", "items": []},
+        }
+    ]
+    normalized, changes = runner.canonicalize_artifacts(artifacts, contract)
+    assert normalized[0]["payload"]["schema"] == "DOC_INDEX@v1"
+    assert changes == [
+        {
+            "artifact_name": "DOC_INDEX.partX.json",
+            "from": "doc_index@v1",
+            "to": "DOC_INDEX@v1",
+        }
+    ]

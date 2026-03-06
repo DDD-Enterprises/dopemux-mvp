@@ -1,0 +1,241 @@
+version: "2.0"
+policy: "TP-008"
+# AUTHORITY: This is the Single Source of Truth for model assignments across all phases.
+# Overrides any local model_lanes.yaml or model_map.yaml files.
+
+global_settings:
+  no_auto_transport_flips: true
+  bulk_repair_threshold_percent: 15
+  escalation_order: ["sidefill", "repair"]
+
+lanes:
+  contract_emitter:
+    primary:
+      provider: "openai_direct"
+      model_id: "gpt-5.3-codex"
+      strict: true
+    fallback:
+      provider: "openai_direct"
+      model_id: "gpt-5.2"
+      strict: true
+  bulk_docs:
+    primary:
+      provider: "xai"
+      model_id: "grok-4-1-fast"
+      strict: false
+    fallback:
+      provider: "openai_direct"
+      model_id: "gpt-5.2"
+      strict: true
+  bulk_code:
+    primary:
+      provider: "xai"
+      model_id: "grok-code-fast-1"
+      strict: false
+    fallback:
+      provider: "openai_direct"
+      model_id: "gpt-5.2"
+      strict: true
+  aggregator:
+    primary:
+      provider: "openai_direct"
+      model_id: "gpt-5-mini"
+      strict: true
+    fallback:
+      provider: "openai_direct"
+      model_id: "gpt-5.2"
+      strict: true
+
+steps:
+  # Phase D (Docs)
+  - phase: D
+    step_id: D0
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    max_files_cap: 15
+  - phase: D
+    step_id: D1
+    lane: contract_emitter
+    sidefill_enabled: false # Partitioned steps must have sidefill disabled to prevent leakage
+    repair_mode: targeted_then_envelope
+    max_files_cap: 15
+  - phase: D
+    step_id: D2
+    lane: contract_emitter # Precision required for multi-artifact extraction
+    sidefill_enabled: false # Partitioned
+    repair_mode: targeted_then_envelope
+  - phase: D
+    step_id: D3
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: D
+    step_id: D4
+    lane: aggregator
+    sidefill_enabled: true # Aggregators require context visibility
+    repair_mode: envelope
+  - phase: D
+    step_id: D5
+    lane: aggregator
+    sidefill_enabled: true
+    repair_mode: envelope
+
+  # Phase C (Code)
+  - phase: C
+    step_id: C0
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C1
+    lane: contract_emitter # Corrected: designated as contract_heavy in truth map
+    sidefill_enabled: false
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C2
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C3
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C4
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C5
+    lane: contract_emitter
+    sidefill_enabled: false
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C6
+    lane: contract_emitter
+    sidefill_enabled: false
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C7
+    lane: contract_emitter
+    sidefill_enabled: false
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C8
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C9
+    lane: aggregator
+    sidefill_enabled: true
+    repair_mode: envelope
+  - phase: C
+    step_id: C10
+    lane: contract_emitter
+    sidefill_enabled: false
+    repair_mode: targeted_then_envelope
+  - phase: C
+    step_id: C11
+    lane: contract_emitter
+    sidefill_enabled: false
+    repair_mode: targeted_then_envelope
+
+  # Phase A
+  - phase: A
+    step_id: A0
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: A
+    step_id: A1
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: A
+    step_id: A2
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: A
+    step_id: A99
+    lane: aggregator
+    sidefill_enabled: true
+    repair_mode: envelope
+
+  # Phase B
+  - phase: B
+    step_id: B0
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: B
+    step_id: B9
+    lane: aggregator
+    sidefill_enabled: true
+    repair_mode: envelope
+
+  # Phase G
+  - phase: G
+    step_id: G0
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: G
+    step_id: G9
+    lane: aggregator
+    sidefill_enabled: true # Corrected: Aggregators must have sidefill enabled
+    repair_mode: envelope
+
+  # Phase H
+  - phase: H
+    step_id: H0
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: H
+    step_id: H9
+    lane: aggregator
+    sidefill_enabled: true
+    repair_mode: envelope
+
+  # Phase Q
+  - phase: Q
+    step_id: Q0
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: Q
+    step_id: Q9
+    lane: aggregator
+    sidefill_enabled: true # Corrected
+    repair_mode: envelope
+
+  # Mixed Steps (R, T, Z)
+  - phase: R
+    step_id: R1
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: T
+    step_id: T0
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: T
+    step_id: T9
+    lane: aggregator
+    sidefill_enabled: true
+    repair_mode: envelope
+  - phase: Z
+    step_id: Z0
+    lane: contract_emitter
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+  - phase: Z
+    step_id: Z9
+    lane: aggregator
+    sidefill_enabled: true
+    repair_mode: envelope

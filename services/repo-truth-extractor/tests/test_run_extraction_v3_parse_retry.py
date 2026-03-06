@@ -118,24 +118,38 @@ def test_parse_retry_succeeds_on_second_attempt(monkeypatch: pytest.MonkeyPatch,
     assert not (phase_dir / "raw" / "A0__A_P0001.FAILED.json").exists()
 
 
-def test_parse_retry_not_used_when_finish_reason_not_max_tokens(
+def test_parse_retry_used_for_json_contract_failures_even_without_max_tokens(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     runner = _load_runner_module()
     phase_dir, prompt_spec, partitions = _prepare_step(runner, tmp_path)
     calls = {"count": 0}
-
-    def fake_call_llm(**kwargs):  # type: ignore[no-untyped-def]
-        calls["count"] += 1
-        return {
-            "text": '{"artifacts":[{"artifact_name":"OUT.json","payload":"',
-            "meta": {
+    responses = [
+        (
+            '{"artifacts":[{"artifact_name":"OUT.json","payload":"',
+            {
                 "failure_type": None,
                 "status_code": 200,
                 "response_received": True,
                 "response_summary": {"finish_reason": "STOP"},
             },
-        }
+        ),
+        (
+            json.dumps({"artifacts": [{"artifact_name": "OUT.json", "payload": {"ok": True}}]}),
+            {
+                "failure_type": None,
+                "status_code": 200,
+                "response_received": True,
+                "response_summary": {"finish_reason": "STOP"},
+            },
+        ),
+    ]
+
+    def fake_call_llm(**kwargs):  # type: ignore[no-untyped-def]
+        calls["count"] += 1
+        idx = min(calls["count"] - 1, len(responses) - 1)
+        text, meta = responses[idx]
+        return {"text": text, "meta": dict(meta)}
 
     monkeypatch.setattr(runner, "build_partition_context", _fake_context)
     monkeypatch.setattr(runner, "call_llm", fake_call_llm)
@@ -148,35 +162,49 @@ def test_parse_retry_not_used_when_finish_reason_not_max_tokens(
         cfg=_make_cfg(runner),
     )
 
-    assert calls["count"] == 1
-    assert stats["ok"] == 0
-    assert stats["failed"] == 1
-    failed = json.loads((phase_dir / "raw" / "A0__A_P0001.FAILED.json").read_text(encoding="utf-8"))
-    request_meta = failed["request_meta"]
-    assert request_meta["parse_retry_attempted"] is False
-    assert request_meta["parse_retry_attempts"] == 0
-    assert request_meta["parse_retry_reason"] is None
-    assert len(request_meta["parse_retry_trace"]) == 1
+    assert calls["count"] == 2
+    assert stats["ok"] == 1
+    assert stats["failed"] == 0
+    payload = json.loads((phase_dir / "raw" / "A0__A_P0001.json").read_text(encoding="utf-8"))
+    request_meta = payload["request_meta"]
+    assert request_meta["parse_retry_attempted"] is True
+    assert request_meta["parse_retry_attempts"] == 1
+    assert request_meta["parse_retry_reason"] == "json_contract_parse_failure"
+    assert len(request_meta["parse_retry_trace"]) == 2
 
 
-def test_parse_retry_not_used_for_mid_body_corruption(
+def test_parse_retry_used_for_mid_body_corruption(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     runner = _load_runner_module()
     phase_dir, prompt_spec, partitions = _prepare_step(runner, tmp_path)
     calls = {"count": 0}
-
-    def fake_call_llm(**kwargs):  # type: ignore[no-untyped-def]
-        calls["count"] += 1
-        return {
-            "text": '{"artifacts":[{"artifact_name":"OUT.json","payload":"bad\\q"}]}',
-            "meta": {
+    responses = [
+        (
+            '{"artifacts":[{"artifact_name":"OUT.json","payload":"bad\\q"}]}',
+            {
                 "failure_type": None,
                 "status_code": 200,
                 "response_received": True,
                 "response_summary": {"finish_reason": "MAX_TOKENS"},
             },
-        }
+        ),
+        (
+            json.dumps({"artifacts": [{"artifact_name": "OUT.json", "payload": {"ok": True}}]}),
+            {
+                "failure_type": None,
+                "status_code": 200,
+                "response_received": True,
+                "response_summary": {"finish_reason": "STOP"},
+            },
+        ),
+    ]
+
+    def fake_call_llm(**kwargs):  # type: ignore[no-untyped-def]
+        calls["count"] += 1
+        idx = min(calls["count"] - 1, len(responses) - 1)
+        text, meta = responses[idx]
+        return {"text": text, "meta": dict(meta)}
 
     monkeypatch.setattr(runner, "build_partition_context", _fake_context)
     monkeypatch.setattr(runner, "call_llm", fake_call_llm)
@@ -189,14 +217,14 @@ def test_parse_retry_not_used_for_mid_body_corruption(
         cfg=_make_cfg(runner),
     )
 
-    assert calls["count"] == 1
-    assert stats["ok"] == 0
-    assert stats["failed"] == 1
-    failed = json.loads((phase_dir / "raw" / "A0__A_P0001.FAILED.json").read_text(encoding="utf-8"))
-    request_meta = failed["request_meta"]
-    assert request_meta["parse_retry_attempted"] is False
-    assert request_meta["parse_retry_attempts"] == 0
-    assert request_meta["parse_retry_reason"] is None
+    assert calls["count"] == 2
+    assert stats["ok"] == 1
+    assert stats["failed"] == 0
+    payload = json.loads((phase_dir / "raw" / "A0__A_P0001.json").read_text(encoding="utf-8"))
+    request_meta = payload["request_meta"]
+    assert request_meta["parse_retry_attempted"] is True
+    assert request_meta["parse_retry_attempts"] == 1
+    assert request_meta["parse_retry_reason"] == "json_contract_parse_failure"
     assert request_meta["parse_retry_trace"][0]["strict_string_literal_error"] is True
     assert request_meta["parse_retry_trace"][0]["strict_semantic_eof_eligible"] is False
 

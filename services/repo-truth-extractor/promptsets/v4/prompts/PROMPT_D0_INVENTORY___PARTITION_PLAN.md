@@ -24,6 +24,54 @@ Focus on concrete, machine-verifiable implementation facts.
 - `DOC_PARTITIONS.json`
 - `DOC_TODO_QUEUE.json`
 
+## Hard Output Contract
+- Output JSON only. No prose, markdown fences, commentary, or multiple JSON objects.
+- Treat the runner context as line-numbered evidence. Every cited `line_range` MUST use the line numbers shown in the provided excerpt.
+- Every `items[]` entry MUST include `id`, `path`, and `line_range`.
+- Every evidence object MUST include repo-relative `path`, integer `line_range`, and exact `excerpt`.
+- If a value cannot be grounded from the provided excerpt, return valid JSON with `UNKNOWN` or fail-closed placeholders; never invent line numbers.
+
+## Hard Requirements
+- Every `payload.items[]` row MUST include:
+  - `id` as a string
+  - `path` as a repo-relative string
+  - `line_range` as `[start, end]` with exactly two integers where `start > 0` and `end >= start`
+- For every emitted row, `evidence[0].path` and `evidence[0].line_range` MUST match the row's `path` and `line_range`.
+- Treat the provided excerpts as line-numbered evidence. Cite only those excerpt-local line numbers.
+- If you cannot determine a real `line_range` from the provided evidence, do not guess.
+- Instead, emit a valid artifact envelope with `"items": []` for that artifact.
+- Output exactly one JSON object. No markdown, no prose, no code fences.
+
+## Minimal Example
+```json
+{
+  "artifacts": [
+    {
+      "artifact_name": "DOC_INVENTORY.json",
+      "payload": {
+        "schema": "DOC_INVENTORY@v1",
+        "items": [
+          {
+            "id": "DOC_INVENTORY:example",
+            "path": "docs/example.md",
+            "line_range": [4, 6],
+            "kind": "guide",
+            "summary": "Example inventory row.",
+            "evidence": [
+              {
+                "path": "docs/example.md",
+                "line_range": [4, 6],
+                "excerpt": "0004: Example heading"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
 ## Schema
 - Use deterministic containers only:
   - `ItemList`: `{"schema":"<schema_id>@v1","items":[...]}`

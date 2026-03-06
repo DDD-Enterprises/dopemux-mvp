@@ -1,0 +1,3088 @@
+version: "2.0"
+policy:
+  no_auto_transport_flips: true
+  scope: "json_managed_only"
+  strict_required_behavior: "fail_closed"
+steps:
+  - phase: A
+    step_id: A0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A1
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A3
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A4
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A5
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A6
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A7
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A8
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A9
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A10
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: A
+    step_id: A99
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: B
+    step_id: B0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: B
+    step_id: B1
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: B
+    step_id: B2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: B
+    step_id: B3
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: B
+    step_id: B9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C1
+    lane_class: BULK_CODE_HEAVY
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-code-fast-1
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C2
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C3
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C4
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C5
+    lane_class: BULK_CODE_HEAVY
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-code-fast-1
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C6
+    lane_class: BULK_CODE_HEAVY
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-code-fast-1
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C7
+    lane_class: BULK_CODE_HEAVY
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-code-fast-1
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C8
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C10
+    lane_class: BULK_CODE_HEAVY
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-code-fast-1
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: C
+    step_id: C11
+    lane_class: BULK_CODE_HEAVY
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-code-fast-1
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: D
+    step_id: D0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: D
+    step_id: D1
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: D
+    step_id: D2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: D
+    step_id: D3
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: D
+    step_id: D4
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: D
+    step_id: D5
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: E
+    step_id: E0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: E
+    step_id: E1
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: E
+    step_id: E2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: E
+    step_id: E3
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: E
+    step_id: E4
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: E
+    step_id: E5
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: E
+    step_id: E6
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: E
+    step_id: E9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: G
+    step_id: G0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: G
+    step_id: G1
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: G
+    step_id: G2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: G
+    step_id: G3
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: G
+    step_id: G4
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: G
+    step_id: G9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: H
+    step_id: H0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: H
+    step_id: H1
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: H
+    step_id: H2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: H
+    step_id: H3
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: H
+    step_id: H4
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: H
+    step_id: H5
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: H
+    step_id: H6
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: H
+    step_id: H7
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: H
+    step_id: H9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: M
+    step_id: M0
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: M
+    step_id: M1
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: M
+    step_id: M2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: M
+    step_id: M3
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: M
+    step_id: M4
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: M
+    step_id: M5
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: M
+    step_id: M6
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: Q
+    step_id: Q0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: Q
+    step_id: Q1
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: Q
+    step_id: Q2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: Q
+    step_id: Q3
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: Q
+    step_id: Q9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R1
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R2
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R3
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R4
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R5
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R6
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R7
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R8
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R9
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: R
+    step_id: R10
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: S
+    step_id: S0
+    lane_class: SYNTHESIS
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: S
+    step_id: S1
+    lane_class: SYNTHESIS
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: S
+    step_id: S2
+    lane_class: SYNTHESIS
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: S
+    step_id: S3
+    lane_class: SYNTHESIS
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: S
+    step_id: S4
+    lane_class: SYNTHESIS
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: S
+    step_id: S5
+    lane_class: SYNTHESIS
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: S
+    step_id: S6
+    lane_class: SYNTHESIS
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: S
+    step_id: S7
+    lane_class: SYNTHESIS
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4-6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: T
+    step_id: T0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: T
+    step_id: T1
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: T
+    step_id: T2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: T
+    step_id: T3
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: T
+    step_id: T4
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: T
+    step_id: T5
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: true
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: T
+    step_id: T9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: W
+    step_id: W0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: W
+    step_id: W1
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: W
+    step_id: W2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: W
+    step_id: W3
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: W
+    step_id: W4
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: W
+    step_id: W5
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: W
+    step_id: W9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: X
+    step_id: X0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: X
+    step_id: X1
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: X
+    step_id: X2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: X
+    step_id: X3
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: X
+    step_id: X4
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: X
+    step_id: X9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: Z
+    step_id: Z0
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: Z
+    step_id: Z1
+    lane_class: CE
+    strict_schema_required_primary: true
+    sidefill_enabled: true
+    repair_mode: targeted_then_envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: Z
+    step_id: Z2
+    lane_class: BULK_DOCS_GENERAL
+    strict_schema_required_primary: false
+    sidefill_enabled: false
+    repair_mode: targeted_only
+    primary_routes:
+      - provider: xai
+        model_id: grok-4-1-fast-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+      - provider: xai
+        model_id: grok-4-1-fast-non-reasoning
+        api_key_env: XAI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+  - phase: Z
+    step_id: Z9
+    lane_class: AGG
+    strict_schema_required_primary: true
+    sidefill_enabled: false
+    repair_mode: envelope
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5-mini
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    repair_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+    sidefill_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.2
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true

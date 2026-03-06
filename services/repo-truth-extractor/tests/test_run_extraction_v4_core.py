@@ -127,6 +127,7 @@ def test_build_v3_cmd_passes_routing_and_batch_flags() -> None:
         dry_run=True,
         resume=True,
         partition_workers=2,
+        executor="process",
         doctor=False,
         doctor_auto_reprocess=False,
         doctor_reprocess_dry_run=False,
@@ -151,6 +152,7 @@ def test_build_v3_cmd_passes_routing_and_batch_flags() -> None:
     )
     cmd_text = " ".join(cmd)
     assert "--routing-policy cost" in cmd_text
+    assert "--executor process" in cmd_text
     assert "--disable-escalation" in cmd_text
     assert "--escalation-max-hops 3" in cmd_text
     assert "--batch-mode" in cmd_text

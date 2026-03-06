@@ -1894,3 +1894,77 @@ artifacts:
   allow_timestamp_keys: false
   merge_strategy: markdown_concat
   required_fields: []
+- phase: A
+  artifact_name: EDITOR_INTEGRATION_SURFACE.json
+  canonical_writer_step_id: A11
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: A
+  artifact_name: CLI_COMMAND_SURFACE.json
+  canonical_writer_step_id: A12
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: A
+  artifact_name: HOOK_CONTRACT_SURFACE.json
+  canonical_writer_step_id: A13
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: A
+  artifact_name: EVENT_FLOW_GRAPH.json
+  canonical_writer_step_id: A13
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: C
+  artifact_name: AGENT_ORCHESTRATION_SURFACE.json
+  canonical_writer_step_id: C12
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: C
+  artifact_name: ADHD_ENGINE_SURFACE.json
+  canonical_writer_step_id: C13
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: S
+  artifact_name: S7_OVERSEER_AGENT_FLOW_DESIGN.md
+  canonical_writer_step_id: S7
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []

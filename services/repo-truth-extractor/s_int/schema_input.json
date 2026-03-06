@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "repo_root",
+    "repo_layout",
+    "cli_clients",
+    "mcp_servers",
+    "services",
+    "hook_surfaces"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "enum": ["S_INT_INPUT_V1"]},
+    "run_id": {"type": "string"},
+    "repo_root": {"type": "string"},
+    "repo_layout": {
+      "type": "object",
+      "required": ["services_root", "docker_root", "claude_root", "vibe_root"],
+      "properties": {
+        "services_root": {"type": "string"},
+        "docker_root": {"type": "string"},
+        "claude_root": {"type": "string"},
+        "vibe_root": {"type": "string"}
+      }
+    },
+    "cli_clients": {"type": "array"},
+    "mcp_servers": {"type": "array"},
+    "services": {"type": "array"},
+    "hook_surfaces": {"type": "array"}
+  }
+}

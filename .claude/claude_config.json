@@ -18,7 +18,7 @@
       ],
       "env": {
         "DOPEMUX_INSTANCE_ID": "${DOPEMUX_INSTANCE_ID:-main}",
-        "DOPEMUX_WORKSPACE_ID": "."
+        "DOPEMUX_WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID:-.}"
       }
     },
     "gpt-researcher_wrapped": {

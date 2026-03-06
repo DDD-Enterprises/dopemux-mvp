@@ -1,0 +1,13 @@
+{
+  "phase": "S",
+  "steps": {
+    "S0": {"prompt_path": "PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md", "tier": "synthesis"},
+    "S1": {"prompt_path": "PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md", "tier": "synthesis"},
+    "S2": {"prompt_path": "PROMPT_S2_DECISION_DOSSIER.md", "tier": "synthesis"},
+    "S3": {"prompt_path": "PROMPT_S3_ARCH_PROOF_HOOKS.md", "tier": "synthesis"},
+    "S4": {"prompt_path": "PROMPT_S4_TRUTH_PACK_INDEX.md", "tier": "synthesis"},
+    "S5": {"prompt_path": "PROMPT_S5_DECISION_GRAPH.md", "tier": "synthesis"},
+    "S6": {"prompt_path": "PROMPT_S6_LEANTIME_ANALYSIS.md", "tier": "synthesis"}
+  },
+  "version": 1
+}

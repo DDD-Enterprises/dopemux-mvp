@@ -11,7 +11,21 @@
 ```
 src/dopemux/
 ├── __init__.py
-├── cli.py              # CLI entry points
+├── cli.py              # CLI entry point — registers groups via cli.add_command()
+├── commands/           # CLI command groups (one file per group)
+│   ├── autoresponder_commands.py
+│   ├── capture_group_commands.py  # also exports _workflow_request()
+│   ├── code_commands.py
+│   ├── decisions_commands.py
+│   ├── dev_commands.py
+│   ├── extract_commands.py
+│   ├── extractor_commands.py      # exports _run_extractor_runner, _run_repscan_runner
+│   ├── memory_commands.py
+│   ├── profile_commands.py
+│   ├── trigger_group_commands.py
+│   ├── update_commands.py
+│   ├── upgrades_commands.py
+│   └── workflow_group_commands.py
 ├── event_bus.py        # Event-driven communication
 ├── mcp/                # MCP tooling
 ├── embeddings/         # Embedding utilities
@@ -19,6 +33,9 @@ src/dopemux/
 ├── claude_tools/       # Claude-specific tooling
 └── config/             # Configuration management
 ```
+
+> **CLI convention**: command files use `@click.group()` (not `@cli.group()`).
+> Imports within `commands/` use `..module` (parent package) not `.module`.
 
 ---
 

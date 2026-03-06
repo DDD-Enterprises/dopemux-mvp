@@ -57,3 +57,29 @@ def test_policy_matrix_parse_other_unbalanced_routes_to_shrink_lane() -> None:
     )
     assert action["action"] == "rerun_shrink_on_malformed"
     assert action["rerun"] is True
+
+
+def test_policy_matrix_d1_missing_expected_artifacts_routes_to_sidefill() -> None:
+    module = _load_module()
+    action = module.decide_action(
+        final_failure_type="schema",
+        parse_shape=None,
+        phase="D",
+        step_id="D1",
+        schema_reason="missing_expected_artifacts:CAP_NOTICES.partX.json",
+    )
+    assert action["action"] == "sidefill_missing_artifacts"
+    assert action["rerun"] is True
+
+
+def test_policy_matrix_d0_schema_failure_routes_to_strict_contract_rerun() -> None:
+    module = _load_module()
+    action = module.decide_action(
+        final_failure_type="contract_violation",
+        parse_shape=None,
+        phase="D",
+        step_id="D0",
+        schema_reason="schema_missing_key:line_range",
+    )
+    assert action["action"] == "strict_contract_rerun"
+    assert action["rerun"] is True

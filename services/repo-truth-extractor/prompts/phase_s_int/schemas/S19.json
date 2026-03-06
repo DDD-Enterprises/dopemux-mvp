@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": ["status", "categories", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["category", "grade", "notes"],
+        "properties": {
+          "category": {"type": "string"},
+          "grade": {"type": "string"},
+          "notes": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}

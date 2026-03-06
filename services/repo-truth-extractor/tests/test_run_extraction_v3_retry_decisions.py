@@ -44,7 +44,7 @@ def _make_cfg(runner):
     )
 
 
-def test_parse_retry_reason_returns_none_when_not_eligible() -> None:
+def test_parse_retry_reason_returns_generic_contract_reason_for_jsonish_parse_failures() -> None:
     runner = _load_runner_module()
     response_text = '{"artifacts":[{"artifact_name":"OUT.json","payload":"unterminated'
     exc = runner._strict_decode_error(response_text)
@@ -58,7 +58,7 @@ def test_parse_retry_reason_returns_none_when_not_eligible() -> None:
         },
         exc,
     )
-    assert reason is None
+    assert reason == "json_contract_parse_failure"
 
 
 def test_execute_step_emits_failed_sidecar_for_unparseable_output(

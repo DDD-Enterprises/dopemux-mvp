@@ -449,9 +449,7 @@ def _start_minimal_session(
             context=context,
         )
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.error(f"Error launching Claude Code: {e}")
     if not background:
         console.logger.info("[green]✨ Claude Code is running (minimal mode)\n[/green]")
 
@@ -715,14 +713,6 @@ def start(
     routing_fallback_subscription: bool,
     **legacy_kwargs,
 ):
-    # Track original flag values for subscription mode warnings
-    original_grok = use_grok
-    original_codex = use_codex
-    original_altp = use_altp
-    original_litellm = use_litellm
-    global RoutingConfig
-    provider = None
-
     """
     🚀 Start Claude Code with ADHD-optimized configuration
 
@@ -733,6 +723,13 @@ def start(
         Automatically detects running instances and creates isolated worktrees
         for parallel ADHD-optimized development workflows.
     """
+    # Track original flag values for subscription mode warnings
+    original_grok = use_grok
+    original_codex = use_codex
+    original_altp = use_altp
+    original_litellm = use_litellm
+    global RoutingConfig
+    provider = None
     
     def _ensure_env_consistent_with_mode(final_mode: str) -> None:
         """Ensure environment variables are consistent with routing mode.
@@ -2118,326 +2115,9 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
         console.logger.info("[red]❌ No context found to restore[/red]")
 
 
-@cli.group()
-def instances():
-    """
-    🏗️  Manage multiple Dopemux instances and worktrees
+from .commands.instances_commands import instances
+cli.add_command(instances, "instances")
 
-    Commands for managing parallel ADHD-optimized development workflows
-    with isolated worktrees and shared database.
-    """
-    pass
-
-
-@instances.command("list")
-@click.pass_context
-def instances_list(ctx):
-    """
-    📋 List all running instances and worktrees
-
-    Shows currently active instances with their ports, branches, and paths.
-    Automatically detects and reports orphaned instances (crashed).
-    """
-    project_path = Path.cwd()
-    workspace_id = str(project_path.resolve())
-
-    instance_manager = InstanceManager(project_path)
-    running_instances = detect_instances_sync(project_path)
-
-    # Detect orphaned instances (automatic crash detection)
-    orphaned_instances = detect_orphaned_instances_sync(
-        project_path,
-        workspace_id,
-        conport_port=3004  # Always query via instance A's ConPort
-    )
-
-    # Show running instances
-    if running_instances:
-        console.logger.info(f"\n[green]✅ Found {len(running_instances)} running instance(s)[/green]\n")
-
-        table = Table(title="Running Instances")
-        table.add_column("Instance", style="cyan", no_wrap=True)
-        table.add_column("Port", style="magenta", no_wrap=True)
-        table.add_column("Branch", style="green")
-        table.add_column("Current Worktree", style="blue")
-        table.add_column("Status", style="green")
-
-        for inst in running_instances:
-            status = "✅ Healthy" if inst.is_healthy else "⚠️  Unknown"
-            table.add_row(
-                inst.instance_id,
-                str(inst.port_base),
-                inst.git_branch or "unknown",
-                str(inst.worktree_path) if inst.worktree_path else "main",
-                status
-            )
-
-        console.logger.info(table)
-    else:
-        console.logger.info("[yellow]No running instances found[/yellow]")
-
-    # Show orphaned instances (automatic crash detection)
-    if orphaned_instances:
-        console.logger.info(f"\n[red]⚠️  Found {len(orphaned_instances)} orphaned instance(s)[/red]")
-        console.logger.info("[dim]Orphaned instances have crashed but their worktrees still exist[/dim]\n")
-
-        orphan_table = Table(title="Orphaned Instances (Crashed)")
-        orphan_table.add_column("Instance", style="red", no_wrap=True)
-        orphan_table.add_column("Branch", style="yellow")
-        orphan_table.add_column("Last Active", style="dim")
-        orphan_table.add_column("Last Focus", style="cyan")
-        orphan_table.add_column("Action", style="green")
-
-        from datetime import datetime
-        for orphan in orphaned_instances:
-            # Calculate time since last active
-            if isinstance(orphan['last_active'], str):
-                last_active = datetime.fromisoformat(orphan['last_active'])
-            else:
-                last_active = orphan['last_active']
-
-            time_diff = datetime.now() - last_active
-            if time_diff.days > 0:
-                time_ago = f"{time_diff.days}d ago"
-            elif time_diff.seconds > 3600:
-                time_ago = f"{time_diff.seconds // 3600}h ago"
-            else:
-                time_ago = f"{time_diff.seconds // 60}m ago"
-
-            orphan_table.add_row(
-                orphan['instance_id'],
-                orphan['git_branch'],
-                time_ago,
-                orphan.get('last_focus_context', 'N/A')[:40] or "N/A",
-                f"dopemux instances resume {orphan['instance_id']}"
-            )
-
-        console.logger.info(orphan_table)
-        console.logger.info("\n[dim]💡 Tip: Use 'dopemux instances resume <id>' to restart an orphaned instance[/dim]")
-        console.logger.info("[dim]     Or use 'dopemux instances cleanup <id>' to remove the worktree[/dim]")
-
-    # Show git worktrees
-    console.logger.info("\n[bold]Git Worktrees:[/bold]")
-    worktrees = instance_manager.list_worktrees()
-
-    if worktrees:
-        worktree_table = Table()
-        worktree_table.add_column("ID", style="cyan")
-        worktree_table.add_column("Path", style="dim")
-        worktree_table.add_column("Branch", style="green")
-
-        for wt_id, wt_path, wt_branch in worktrees:
-            worktree_table.add_row(wt_id, str(wt_path), wt_branch)
-
-        console.logger.info(worktree_table)
-    else:
-        console.logger.info("[dim]No worktrees found[/dim]")
-
-
-@instances.command("resume")
-@click.argument("instance_id")
-@click.option("--restore-context", "-r", is_flag=True, help="Restore working directory and focus context")
-@click.pass_context
-def instances_resume(ctx, instance_id: str, restore_context: bool):
-    """
-    🔄 Resume an orphaned instance (one-click crash recovery)
-
-    Restarts services for an orphaned instance, optionally restoring
-    the last working directory and focus context.
-
-    \b
-    Examples:
-        dopemux instances resume B              # Restart instance B
-        dopemux instances resume B --restore-context  # Restart and restore context
-
-    \b
-    ADHD Benefit:
-        Zero-friction recovery from crashes. Resume exactly where you left off
-        with preserved mental model and context continuity.
-    """
-    project_path = Path.cwd()
-    workspace_id = str(project_path.resolve())
-
-    # Load orphaned instance state
-    from .instance_state import load_instance_state_sync
-
-    state = load_instance_state_sync(instance_id, workspace_id, conport_port=3004)
-
-    if not state:
-        console.logger.info(f"[red]❌ No saved state found for instance {instance_id}[/red]")
-        console.logger.info("[dim]Tip: Use 'dopemux instances list' to see available instances[/dim]")
-        sys.exit(1)
-
-    if state.status != 'orphaned':
-        console.logger.info(f"[yellow]⚠️  Instance {instance_id} is not orphaned (status: {state.status})[/yellow]")
-        if state.status == 'active':
-            console.logger.info(f"[dim]Instance is already running on port {state.port_base}[/dim]")
-        sys.exit(1)
-
-    # Check if worktree still exists
-    worktree_path = Path(state.worktree_path)
-    if not worktree_path.exists():
-        console.logger.info(f"[red]❌ Worktree not found at {worktree_path}[/red]")
-        console.logger.info("[dim]The worktree may have been deleted. Use 'dopemux instances cleanup' to remove state[/dim]")
-        sys.exit(1)
-
-    console.logger.info(f"\n[cyan]🔄 Resuming instance {instance_id}...[/cyan]")
-    console.logger.info(f"   Branch: {state.git_branch}")
-    console.logger.info(f"   Worktree: {worktree_path}")
-    console.logger.info(f"   Port base: {state.port_base}")
-
-    if state.last_focus_context:
-        console.logger.info(f"   Last focus: [dim]{state.last_focus_context}[/dim]")
-
-    # Show context restoration info
-    if restore_context and state.last_working_directory:
-        console.logger.info(f"\n[green]✨ Context restoration enabled:[/green]")
-        console.logger.info(f"   Working directory: {state.last_working_directory}")
-        if state.last_focus_context:
-            console.logger.info(f"   Focus context: {state.last_focus_context}")
-
-    # Start instance
-    console.logger.info(f"\n[yellow]💡 Starting instance {instance_id} on port {state.port_base}...[/yellow]")
-
-    # Set environment variables for this process
-    env = os.environ.copy()
-    env.update({
-        "DOPEMUX_INSTANCE_ID": instance_id,
-        "DOPEMUX_WORKSPACE_ID": workspace_id,
-        "DOPEMUX_PORT_BASE": str(state.port_base),
-        "TASK_MASTER_PORT": str(state.port_base + 5),
-        "SERENA_PORT": str(state.port_base + 6),
-        "CONPORT_PORT": str(state.port_base + 7),
-        "INTEGRATION_BRIDGE_PORT": str(state.port_base + 16),
-    })
-
-    # Change to worktree directory if restoring context
-    original_cwd = os.getcwd()
-    if restore_context and state.last_working_directory:
-        try:
-            os.chdir(state.last_working_directory)
-            console.logger.info(f"[green]✅ Changed to working directory: {state.last_working_directory}[/green]")
-        except Exception as e:
-            console.logger.info(f"[yellow]⚠️  Could not change to working directory: {e}[/yellow]")
-            console.logger.info("[dim]Staying in current directory[/dim]")
-
-    console.logger.info(f"\n[green]✅ Instance {instance_id} resumed successfully![/green]")
-    console.logger.info(f"[dim]Services are starting on port {state.port_base}...[/dim]")
-
-    if restore_context:
-        console.logger.info("\n[cyan]📍 Context Restored:[/cyan]")
-        console.logger.info(f"   You were working on: {state.last_focus_context or 'N/A'}")
-        console.logger.info(f"   In directory: {os.getcwd()}")
-
-    console.logger.info(f"\n[dim]💡 Tip: Instance will be marked as 'active' when dopemux start completes[/dim]")
-    console.logger.info(f"[dim]     Run: cd {worktree_path} && dopemux start[/dim]")
-
-    # Mark as active (optimistic - actual start command will confirm)
-    from .instance_state import save_instance_state_sync
-    state.status = 'active'
-    from datetime import datetime
-    state.last_active = datetime.now()
-    save_instance_state_sync(state, workspace_id, conport_port=3004)
-
-
-@instances.command("cleanup")
-@click.argument("instance_id", required=False)
-@click.option("--all", "-a", is_flag=True, help="Clean up all stopped instances")
-@click.option("--force", "-f", is_flag=True, help="Force cleanup without confirmation")
-@click.pass_context
-def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
-    """
-    🧹 Clean up stopped instance worktrees
-
-    Removes git worktrees for stopped instances to free up disk space.
-
-    \b
-    Examples:
-        dopemux instances cleanup B          # Remove instance B worktree
-        dopemux instances cleanup --all      # Remove all stopped instances
-    """
-    project_path = Path.cwd()
-    instance_manager = InstanceManager(project_path)
-
-    if not instance_id and not all:
-        console.logger.info("[red]❌ Specify instance ID or use --all flag[/red]")
-        console.logger.info("[dim]Usage: dopemux instances cleanup <ID> or --all[/dim]")
-        sys.exit(1)
-
-    if all:
-        # Get all worktrees
-        worktrees = instance_manager.list_worktrees()
-        running_instances = detect_instances_sync(project_path)
-        running_ids = {inst.instance_id for inst in running_instances}
-
-        # Find stopped instances
-        stopped_instances = [
-            (wt_id, wt_path) for wt_id, wt_path, _ in worktrees
-            if wt_id not in running_ids and wt_id != 'A'
-        ]
-
-        if not stopped_instances:
-            console.logger.info("[green]✅ No stopped instances to clean up[/green]")
-            return
-
-        console.logger.info(f"\n[yellow]⚠️  Found {len(stopped_instances)} stopped instance(s) to clean:[/yellow]")
-        for wt_id, wt_path in stopped_instances:
-            console.logger.info(f"  • Instance {wt_id}: {wt_path}")
-
-        if not force and not click.confirm("\nProceed with cleanup?"):
-            console.logger.info("[yellow]Cleanup cancelled[/yellow]")
-            return
-
-        # Clean up each stopped instance
-        from .instance_state import cleanup_instance_state_sync
-        workspace_id = str(project_path.resolve())
-
-        for wt_id, _ in stopped_instances:
-            if instance_manager.cleanup_worktree(wt_id):
-                console.logger.info(f"[green]✅ Removed worktree for instance {wt_id}[/green]")
-
-                # Also remove instance state from ConPort
-                if cleanup_instance_state_sync(wt_id, workspace_id, conport_port=3004):
-                    console.logger.info(f"[dim]✅ Removed instance state for {wt_id}[/dim]")
-            else:
-                console.logger.error(f"[red]❌ Failed to remove worktree for instance {wt_id}[/red]")
-
-    else:
-        # Clean up specific instance
-        if instance_id == 'A':
-            console.logger.info("[red]❌ Cannot clean up main worktree (instance A)[/red]")
-            sys.exit(1)
-
-        # Check if instance is running
-        running_instances = detect_instances_sync(project_path)
-        if any(inst.instance_id == instance_id for inst in running_instances):
-            console.logger.info(f"[red]❌ Instance {instance_id} is still running[/red]")
-            console.logger.info("[dim]Stop the instance before cleaning up its worktree[/dim]")
-            sys.exit(1)
-
-        worktree_path = instance_manager._get_worktree_path(instance_id)
-        if not worktree_path or not worktree_path.exists():
-            console.logger.info(f"[yellow]⚠️  No worktree found for instance {instance_id}[/yellow]")
-            return
-
-        console.logger.info(f"\n[yellow]⚠️  Removing worktree for instance {instance_id}[/yellow]")
-        console.logger.info(f"[dim]Path: {worktree_path}[/dim]")
-
-        if not force and not click.confirm("Proceed?"):
-            console.logger.info("[yellow]Cleanup cancelled[/yellow]")
-            return
-
-        if instance_manager.cleanup_worktree(instance_id):
-            console.logger.info(f"[green]✅ Removed worktree for instance {instance_id}[/green]")
-
-            # Also remove instance state from ConPort
-            from .instance_state import cleanup_instance_state_sync
-            workspace_id = str(project_path.resolve())
-
-            if cleanup_instance_state_sync(instance_id, workspace_id, conport_port=3004):
-                console.logger.info(f"[dim]✅ Removed instance state from ConPort[/dim]")
-        else:
-            console.logger.error(f"[red]❌ Failed to remove worktree for instance {instance_id}[/red]")
 
 
 @cli.command()
@@ -2632,79 +2312,8 @@ def run_build(ctx, command: Sequence[str], cwd: Optional[str], label: str):
     update_tmux_mobile_indicator(cfg_manager)
 
 
-def _run_taskx_kernel(base_args: Sequence[str], taskx_args: Sequence[str]) -> None:
-    """Delegate kernel lifecycle commands to scripts/taskx."""
-    repo_root = Path(__file__).resolve().parents[2]
-    wrapper = repo_root / "scripts" / "taskx"
-    if not wrapper.exists():
-        console.logger.error(f"[red]TaskX wrapper missing: {wrapper}[/red]")
-        sys.exit(1)
-
-    cmd = [str(wrapper), *base_args, *taskx_args]
-    result = subprocess.run(cmd, cwd=repo_root, check=False)
-    if result.returncode != 0:
-        sys.exit(result.returncode)
-
-
-@cli.group("kernel")
-def kernel() -> None:
-    """TaskX kernel lifecycle commands delegated through scripts/taskx."""
-
-
-@kernel.command("doctor", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("taskx_args", nargs=-1, type=click.UNPROCESSED)
-def kernel_doctor(taskx_args: Sequence[str]) -> None:
-    """Run TaskX doctor."""
-    _run_taskx_kernel(["doctor"], taskx_args)
-
-
-@kernel.command("compile", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("taskx_args", nargs=-1, type=click.UNPROCESSED)
-def kernel_compile(taskx_args: Sequence[str]) -> None:
-    """Run TaskX Dopemux compile lifecycle step."""
-    _run_taskx_kernel(["dopemux", "compile"], taskx_args)
-
-
-@kernel.command("run", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("taskx_args", nargs=-1, type=click.UNPROCESSED)
-def kernel_run(taskx_args: Sequence[str]) -> None:
-    """Run TaskX Dopemux run lifecycle step."""
-    _run_taskx_kernel(["dopemux", "run"], taskx_args)
-
-
-@kernel.command("collect", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("taskx_args", nargs=-1, type=click.UNPROCESSED)
-def kernel_collect(taskx_args: Sequence[str]) -> None:
-    """Run TaskX Dopemux collect lifecycle step."""
-    _run_taskx_kernel(["dopemux", "collect"], taskx_args)
-
-
-@kernel.command("gate", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("taskx_args", nargs=-1, type=click.UNPROCESSED)
-def kernel_gate(taskx_args: Sequence[str]) -> None:
-    """Run TaskX Dopemux gate lifecycle step."""
-    _run_taskx_kernel(["dopemux", "gate"], taskx_args)
-
-
-@kernel.command("promote", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("taskx_args", nargs=-1, type=click.UNPROCESSED)
-def kernel_promote(taskx_args: Sequence[str]) -> None:
-    """Run TaskX Dopemux promote lifecycle step."""
-    _run_taskx_kernel(["dopemux", "promote"], taskx_args)
-
-
-@kernel.command("feedback", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("taskx_args", nargs=-1, type=click.UNPROCESSED)
-def kernel_feedback(taskx_args: Sequence[str]) -> None:
-    """Run TaskX Dopemux feedback lifecycle step."""
-    _run_taskx_kernel(["dopemux", "feedback"], taskx_args)
-
-
-@kernel.command("loop", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("taskx_args", nargs=-1, type=click.UNPROCESSED)
-def kernel_loop(taskx_args: Sequence[str]) -> None:
-    """Run TaskX Dopemux loop lifecycle step."""
-    _run_taskx_kernel(["dopemux", "loop"], taskx_args)
+from .commands.kernel_commands import kernel
+cli.add_command(kernel)
 
 
 @cli.command()
@@ -2801,1009 +2410,78 @@ def task(
     console.logger.info(f"[cyan]🎯 Priority: {priority}[/cyan]")
 
 
-@cli.group()
-@click.pass_context
-def autoresponder(ctx):
-    """
-    🤖 Manage Claude Auto Responder integration
-
-    Automatic confirmation responses for Claude Code prompts with
-    ADHD-optimized controls and attention-aware features.
-    """
+from .commands.autoresponder_commands import autoresponder
+cli.add_command(autoresponder)
 
 
-def _get_autoresponder_config_manager(ctx, project_path: Path) -> ConfigManager:
-    """Use project-local config for autoresponder commands when inside a Dopemux project."""
-    if (project_path / ".dopemux").exists():
-        return ConfigManager(config_path=str(project_path / ".dopemux" / "config.yaml"))
 
-    return ctx.obj["config_manager"]
+from .commands.extract_commands import extract
+cli.add_command(extract, "extract")
 
 
-@autoresponder.command("start")
-@click.option(
-    "--terminal-scope",
-    "-t",
-    type=click.Choice(["current", "all", "project"]),
-    help="Terminal scope for monitoring",
-)
-@click.option("--delay", "-d", type=float, help="Response delay in seconds (0-10)")
-@click.option("--timeout", type=int, help="Auto-stop timeout in minutes")
-@click.option(
-    "--whitelist/--no-whitelist", default=None, help="Enable/disable tool whitelisting"
-)
-@click.option("--debug/--no-debug", default=None, help="Enable/disable debug mode")
-@click.pass_context
-def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
-    """
-    🚀 Start Claude Auto Responder
 
-    Begins automatic confirmation of Claude Code prompts with current
-    configuration settings and ADHD optimizations.
-    """
-    project_path = Path.cwd()
-    config_manager = _get_autoresponder_config_manager(ctx, project_path)
-
-    if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
-        sys.exit(1)
-
-    # Update configuration if options provided
-    updates = {}
-    if terminal_scope:
-        updates["terminal_scope"] = terminal_scope
-    if delay is not None:
-        updates["response_delay"] = delay
-    if timeout:
-        updates["timeout_minutes"] = timeout
-    if whitelist is not None:
-        updates["whitelist_tools"] = whitelist
-    if debug is not None:
-        updates["debug_mode"] = debug
-
-    if updates:
-        config_manager.update_claude_autoresponder(**updates)
-
-    from integrations.claude_autoresponder import create_autoresponder_manager
-
-    autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
-
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("Starting auto responder...", total=None)
-
-        success = autoresponder_manager.start()
-
-        if success:
-            progress.update(
-                task, description="Auto responder started! 🤖", completed=True
-            )
-            console.logger.info("[green]✅ Claude Auto Responder is now active[/green]")
-            console.print(
-                "[blue]🎯 Monitoring for Claude Code confirmation prompts[/blue]"
-            )
-
-            config = config_manager.get_claude_autoresponder_config()
-            console.logger.info(f"[yellow]📡 Scope: {config.terminal_scope}[/yellow]")
-            if config.response_delay > 0:
-                console.logger.info(f"[cyan]⏱️ Delay: {config.response_delay}s[/cyan]")
-            console.print(
-                f"[dim]💤 Auto-stop after {config.timeout_minutes} minutes of inactivity[/dim]"
-            )
-        else:
-            progress.update(task, description="Failed to start", completed=True)
-            console.logger.error("[red]❌ Failed to start auto responder[/red]")
-            console.print(
-                "[yellow]💡 Try running 'dopemux autoresponder setup' first[/yellow]"
-            )
-            sys.exit(1)
+from .commands.update_commands import update
+cli.add_command(update)
 
 
-@autoresponder.command("stop")
-@click.pass_context
-def autoresponder_stop(ctx):
-    """
-    ⏹️ Stop Claude Auto Responder
-
-    Stops automatic confirmation and displays session statistics.
-    """
-    project_path = Path.cwd()
-    config_manager = _get_autoresponder_config_manager(ctx, project_path)
-
-    if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
-        sys.exit(1)
-
-    from integrations.claude_autoresponder import create_autoresponder_manager
-
-    autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
-
-    if not autoresponder_manager.is_running():
-        console.logger.info("[yellow]Auto responder is not running[/yellow]")
-        return
-
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("Stopping auto responder...", total=None)
-
-        # Get stats before stopping
-        status = autoresponder_manager.get_status()
-
-        success = autoresponder_manager.stop()
-
-        if success:
-            progress.update(task, description="Auto responder stopped", completed=True)
-            console.logger.info("[green]✅ Claude Auto Responder stopped[/green]")
-
-            # Show session stats
-            console.logger.info(f"[blue]📊 Session Statistics:[/blue]")
-            console.logger.info(f"  ⏱️ Uptime: {status['uptime_minutes']:.1f} minutes")
-            console.logger.info(f"  ✅ Responses sent: {status['responses_sent']}")
-            if status["responses_sent"] > 0:
-                console.print(
-                    f"  📈 Rate: {status['responses_per_minute']:.1f} responses/min"
-                )
-        else:
-            progress.update(task, description="Error stopping", completed=True)
-            console.logger.error("[red]❌ Error stopping auto responder[/red]")
-
-
-@autoresponder.command("status")
-@click.pass_context
-def autoresponder_status(ctx):
-    """
-    📊 Show auto responder status
-
-    Displays current status, configuration, and performance metrics.
-    """
-    project_path = Path.cwd()
-    config_manager = _get_autoresponder_config_manager(ctx, project_path)
-
-    if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
-        sys.exit(1)
-
-    from integrations.claude_autoresponder import create_autoresponder_manager
-
-    autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
-    status = autoresponder_manager.get_status()
-
-    # Status overview
-    status_color = "green" if status["running"] else "yellow"
-    status_emoji = "🟢" if status["running"] else "🟡"
-
-    table = Table(title="🤖 Claude Auto Responder Status")
-    table.add_column("Property", style="cyan")
-    table.add_column("Value", style=status_color)
-
-    table.add_row("Status", f"{status_emoji} {status['status'].title()}")
-    table.add_row("Running", "Yes" if status["running"] else "No")
-
-    if status["running"]:
-        table.add_row("Uptime", f"{status['uptime_minutes']:.1f} minutes")
-        table.add_row("Responses Sent", str(status["responses_sent"]))
-        table.add_row("Response Rate", f"{status['responses_per_minute']:.1f}/min")
-        table.add_row("Attention State", status["attention_state"])
-
-        if status["last_response"]:
-            table.add_row("Last Response", status["last_response"])
-
-    console.logger.info(table)
-
-    # Configuration table
-    config_table = Table(title="⚙️ Configuration")
-    config_table.add_column("Setting", style="cyan")
-    config_table.add_column("Value", style="green")
-
-    config = status["config"]
-    config_table.add_row("Enabled", "Yes" if config["enabled"] else "No")
-    config_table.add_row("Terminal Scope", config["terminal_scope"])
-    config_table.add_row("Response Delay", f"{config['response_delay']}s")
-    config_table.add_row("Timeout", f"{config['timeout_minutes']} minutes")
-    config_table.add_row(
-        "Whitelist Tools", "Yes" if config["whitelist_tools"] else "No"
-    )
-    config_table.add_row("Debug Mode", "Yes" if config["debug_mode"] else "No")
-
-    console.logger.info(config_table)
-
-
-@autoresponder.command("setup")
-@click.pass_context
-def autoresponder_setup(ctx):
-    """
-    🔧 Setup Claude Auto Responder
-
-    Downloads and configures the ClaudeAutoResponder tool for use with Dopemux.
-    """
-    project_path = Path.cwd()
-    config_manager = _get_autoresponder_config_manager(ctx, project_path)
-
-    if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
-        sys.exit(1)
-
-    from integrations.claude_autoresponder import create_autoresponder_manager
-
-    autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
-
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("Setting up ClaudeAutoResponder...", total=None)
-
-        success = autoresponder_manager.setup_autoresponder()
-
-        if success:
-            progress.update(task, description="Setup complete! 🎉", completed=True)
-            console.logger.info("[green]✅ ClaudeAutoResponder setup complete[/green]")
-            console.logger.info("[blue]🚀 Run 'dopemux autoresponder start' to begin[/blue]")
-        else:
-            progress.update(task, description="Setup failed", completed=True)
-            console.logger.error("[red]❌ Setup failed[/red]")
-            console.logger.info("[yellow]Check logs for details[/yellow]")
-            sys.exit(1)
-
-
-@cli.group()
-@click.pass_context
-def extract(ctx):
-    """
-    📄 Document extraction with ADHD-optimized patterns
-
-    Extract entities, configurations, and patterns from documentation
-    using specialized extractors for markdown, YAML, and ADHD content.
-    """
+from .commands.profile_commands import profile
+cli.add_command(profile)
+try:
+    from .profile_commands import use_profile as _use_profile
+    cli.add_command(_use_profile, "switch")
+except ImportError:
     pass
 
 
-@extract.command("docs")
-@click.argument("directory", default=".")
-@click.option(
-    "--mode", "-m",
-    type=click.Choice(["basic", "detailed", "adhd"]),
-    default="basic",
-    help="Extraction mode: basic (key-value), detailed (all patterns), adhd (ADHD-specific)"
-)
-@click.option(
-    "--format", "-f",
-    type=click.Choice(["json", "csv", "markdown", "yaml"]),
-    default="json",
-    help="Output format for extracted entities"
-)
-@click.option("--output", "-o", help="Output file path (default: print to stdout)")
-@click.option("--confidence", "-c", type=float, default=0.5, help="Minimum confidence threshold (0.0-1.0)")
-@click.option("--extensions", help="File extensions to process (default: .md,.yaml,.yml)")
-@click.option("--adhd-profile", "-p", is_flag=True, help="Extract ADHD accommodation profile")
-@click.pass_context
-def extract_docs(
-    ctx,
-    directory: str,
-    mode: str,
-    format: str,
-    output: Optional[str],
-    confidence: float,
-    extensions: Optional[str],
-    adhd_profile: bool
-):
-    """
-    📄 Extract entities from documentation files
+from .commands.decisions_commands import decisions
+cli.add_command(decisions)
 
-    Process markdown and YAML files to extract structured information
-    using ADHD-optimized patterns and confidence scoring.
-    """
-    with mobile_task_notification(
-        ctx,
-        "Documentation extraction",
-        success_message="✅ Documentation extraction complete",
-        failure_message="❌ Documentation extraction failed",
-    ):
-        _run_extract_docs(
-            ctx,
-            directory,
-            mode,
-            format,
-            output,
-            confidence,
-            extensions,
-            adhd_profile,
-        )
 
+from .commands.dev_commands import dev
+cli.add_command(dev)
+cli.add_command(mobile_commands, "mobile")
+cli.add_command(mobile_env_commands, "mobile-env")
+if genetic_group:
+    cli.add_command(genetic_group, "genetic")
 
-def _run_extract_docs(
-    ctx,
-    directory: str,
-    mode: str,
-    format: str,
-    output: Optional[str],
-    confidence: float,
-    extensions: Optional[str],
-    adhd_profile: bool,
-) -> None:
-    import json
-    import csv
-    from io import StringIO
 
-    # Add extraction package to path
-    sys.path.append(str(Path(__file__).parent.parent.parent / "extraction"))
+from .commands.code_commands import code
+cli.add_command(code)
+cli.add_command(tmux_commands, "tmux")
+from .claude_tools.cli import register_commands
+register_commands(cli)
 
-    try:
-        from document_classifier import DocumentClassifier, extract_from_directory
-    except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import extraction modules: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
-        sys.exit(1)
 
-    source_path = Path(directory).resolve()
-    if not source_path.exists():
-        console.logger.info(f"[red]❌ Directory does not exist: {source_path}[/red]")
-        sys.exit(1)
+from .commands.memory_commands import memory
+cli.add_command(memory)
 
-    if not extensions:
-        extensions = ".md,.yaml,.yml,.json"
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task(f"Extracting entities in {mode} mode...", total=None)
+from .commands.trigger_group_commands import trigger_group
+cli.add_command(trigger_group, "trigger")
 
-        try:
-            results = extract_from_directory(str(source_path))
 
-            progress.update(task, description="Processing results...", total=None)
+from .commands.capture_group_commands import capture_group
+cli.add_command(capture_group, "capture")
 
-            filtered_entities = {}
-            total_entities = 0
-            filtered_count = 0
 
-            for entity_type, entity_list in results.get('all_entities', {}).items():
-                filtered_list = []
-                for entity in entity_list:
-                    total_entities += 1
-                    entity_confidence = entity.get('confidence', 0.0)
-                    if entity_confidence >= confidence:
-                        filtered_list.append(entity)
-                        filtered_count += 1
+from .commands.workflow_group_commands import workflow_group
+cli.add_command(workflow_group, "workflow")
 
-                if filtered_list:
-                    filtered_entities[entity_type] = filtered_list
 
-            if mode == "basic":
-                basic_types = ['section_header', 'project_metadata', 'yaml_properties', 'markdown_headers']
-                filtered_entities = {k: v for k, v in filtered_entities.items() if k in basic_types}
-            elif mode == "adhd":
-                adhd_keywords = ['adhd', 'focus', 'break', 'attention', 'cognitive', 'accommodation']
-                adhd_types = [
-                    k
-                    for k in filtered_entities.keys()
-                    if any(keyword in k.lower() for keyword in adhd_keywords)
-                ]
-                filtered_entities = {k: v for k, v in filtered_entities.items() if k in adhd_types}
+from .commands.upgrades_commands import upgrades
+cli.add_command(upgrades)
 
-            progress.update(task, description="Formatting output...", total=None)
 
-            output_data = {
-                'extraction_summary': {
-                    'mode': mode,
-                    'source_directory': str(source_path),
-                    'documents_processed': results.get('documents_processed', 0),
-                    'total_entities_found': total_entities,
-                    'entities_above_threshold': filtered_count,
-                    'confidence_threshold': confidence,
-                    'entity_types': list(filtered_entities.keys()),
-                },
-                'entities': filtered_entities,
-            }
+from .commands.extractor_commands import extractor, _run_extractor_runner, _run_repscan_runner
+cli.add_command(extractor)
 
-            if adhd_profile and results.get('metadata', {}).get('adhd_documents'):
-                sys.path.append(str(Path(__file__).parent.parent.parent / "extraction"))
-                from adhd_entities import ADHDEntityExtractor
 
-                extractor = ADHDEntityExtractor()
-                for doc_info in results.get('document_types', {}).get('markdown', []):
-                    if doc_info['filename'] in results['metadata']['adhd_documents']:
-                        output_data['adhd_profile'] = {
-                            'accommodation_categories': ['attention_management', 'energy_management'],
-                            'confidence_note': 'Profile extraction requires document content access',
-                        }
-                        break
 
-            progress.update(task, description="Complete! ✅", completed=True)
+# ============================================================
+# Commands extracted back from submodules (use @cli.command)
+# ============================================================
 
-        except Exception as e:
-            progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Extraction failed: {e}[/red]")
-            if ctx.obj.get("verbose"):
-                import traceback
-                traceback.print_exc()
-            sys.exit(1)
-
-    if format == "json":
-        output_text = json.dumps(output_data, indent=2, ensure_ascii=False)
-    elif format == "yaml":
-        try:
-            import yaml
-
-            output_text = yaml.dump(output_data, default_flow_style=False, allow_unicode=True)
-        except ImportError:
-            console.logger.info("[yellow]⚠️ PyYAML not available, falling back to JSON[/yellow]")
-            output_text = json.dumps(output_data, indent=2, ensure_ascii=False)
-    elif format == "csv":
-        output_buffer = StringIO()
-        writer = csv.writer(output_buffer)
-        writer.writerow(['entity_type', 'content', 'value', 'confidence', 'source_file'])
-
-        for entity_type, entity_list in filtered_entities.items():
-            for entity in entity_list:
-                writer.writerow(
-                    [
-                        entity_type,
-                        entity.get('content', ''),
-                        entity.get('value', ''),
-                        entity.get('confidence', 0.0),
-                        entity.get('source_file', ''),
-                    ]
-                )
-        output_text = output_buffer.getvalue()
-    elif format == "markdown":
-        lines = [f"# Extraction Results - {mode.title()} Mode\n"]
-        lines.append(f"**Source**: {source_path}")
-        lines.append(f"**Documents**: {output_data['extraction_summary']['documents_processed']}")
-        lines.append(f"**Entities**: {filtered_count}/{total_entities} (confidence ≥ {confidence})\n")
-
-        for entity_type, entity_list in filtered_entities.items():
-            lines.append(f"## {entity_type.replace('_', ' ').title()}\n")
-            for entity in entity_list:
-                lines.append(f"- **{entity.get('content', 'N/A')}**")
-                if entity.get('value'):
-                    lines.append(f": {entity['value']}")
-                lines.append(f" _(confidence: {entity.get('confidence', 0.0):.2f})_")
-                lines.append("")
-
-        output_text = "\n".join(lines)
-    else:
-        output_text = json.dumps(output_data, indent=2, ensure_ascii=False)
-
-    if output:
-        output_path = Path(output)
-        output_path.write_text(output_text, encoding='utf-8')
-        console.logger.info(f"[green]✅ Results written to {output_path}[/green]")
-    else:
-        console.logger.info(output_text)
-
-    console.print(
-        Panel(
-            f"🎯 Extraction Summary:\n\n"
-            f"• Mode: {mode}\n"
-            f"• Documents: {results.get('documents_processed', 0)}\n"
-            f"• Entities: {filtered_count}/{total_entities}\n"
-            f"• Entity types: {len(filtered_entities)}\n"
-            f"• Format: {format}",
-            title="📊 Results",
-            border_style="green",
-        )
-    )
-
-
-@extract.command("pipeline")
-@click.argument("directory", default=".")
-@click.option("--output", "-o", help="Output directory for pipeline results", default="./output")
-@click.option(
-    "--adhd/--no-adhd",
-    default=True,
-    help="Enable/disable ADHD-specific extraction patterns"
-)
-@click.option(
-    "--multi-angle/--no-multi-angle",
-    default=True,
-    help="Enable/disable multi-angle entity extraction"
-)
-@click.option(
-    "--embeddings/--no-embeddings",
-    default=True,
-    help="Enable/disable vector embedding generation"
-)
-@click.option(
-    "--tsv/--no-tsv",
-    default=True,
-    help="Enable/disable TSV registry generation"
-)
-@click.option(
-    "--confidence", "-c",
-    type=float,
-    default=0.5,
-    help="Minimum confidence threshold for entities (0.0-1.0)"
-)
-@click.option(
-    "--embedding-model", "-m",
-    default="voyage-context-3",
-    help="Embedding model to use"
-)
-@click.option("--milvus-uri", help="Milvus database URI for vector storage")
-@click.option("--extensions", help="File extensions to process (default: .md,.yaml,.yml,.json,.txt)")
-@click.option(
-    "--format", "-f",
-    type=click.Choice(["json", "csv", "markdown"]),
-    default="json",
-    help="Output format for extraction results"
-)
-@click.option(
-    "--synthesis/--no-synthesis",
-    default=True,
-    help="Enable/disable document synthesis generation"
-)
-@click.option(
-    "--synthesis-types",
-    multiple=True,
-    type=click.Choice(["executive", "adhd", "technical", "all"]),
-    default=["executive", "adhd"],
-    help="Types of synthesis to generate (can specify multiple)"
-)
-@click.option(
-    "--synthesis-format",
-    type=click.Choice(["markdown", "json", "both"]),
-    default="markdown",
-    help="Output format for synthesis results"
-)
-@click.pass_context
-def extract_pipeline(
-    ctx,
-    directory: str,
-    output: str,
-    adhd: bool,
-    multi_angle: bool,
-    embeddings: bool,
-    tsv: bool,
-    confidence: float,
-    embedding_model: str,
-    milvus_uri: Optional[str],
-    extensions: Optional[str],
-    format: str,
-    synthesis: bool,
-    synthesis_types: tuple,
-    synthesis_format: str
-):
-    """
-    🚀 Complete document processing pipeline
-
-    Run the full unified pipeline including multi-layer extraction,
-    atomic unit normalization, TSV registry generation, and vector
-    embeddings. Integrates all extraction systems into a single workflow.
-    """
-    with mobile_task_notification(
-        ctx,
-        "Extraction pipeline",
-        success_message="✅ Extraction pipeline complete",
-        failure_message="❌ Extraction pipeline failed",
-    ):
-        _run_extract_pipeline(
-            ctx,
-            directory,
-            output,
-            adhd,
-            multi_angle,
-            embeddings,
-            tsv,
-            confidence,
-            embedding_model,
-            milvus_uri,
-            extensions,
-            format,
-            synthesis,
-            synthesis_types,
-            synthesis_format,
-        )
-
-
-def _run_extract_pipeline(
-    ctx,
-    directory: str,
-    output: str,
-    adhd: bool,
-    multi_angle: bool,
-    embeddings: bool,
-    tsv: bool,
-    confidence: float,
-    embedding_model: str,
-    milvus_uri: Optional[str],
-    extensions: Optional[str],
-    format: str,
-    synthesis: bool,
-    synthesis_types: tuple,
-    synthesis_format: str,
-) -> None:
-
-    try:
-        from .extraction import UnifiedDocumentPipeline, PipelineConfig
-    except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import pipeline modules: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure the extraction package is properly installed[/yellow]")
-        sys.exit(1)
-
-    source_path = Path(directory).resolve()
-    output_path = Path(output).resolve()
-
-    if not source_path.exists():
-        console.logger.info(f"[red]❌ Source directory does not exist: {source_path}[/red]")
-        sys.exit(1)
-
-    file_extensions = None
-    if extensions:
-        file_extensions = [ext.strip() for ext in extensions.split(',')]
-        if not all(ext.startswith('.') for ext in file_extensions):
-            file_extensions = ['.' + ext.lstrip('.') for ext in file_extensions]
-
-    synthesis_types_list = list(synthesis_types)
-    if "all" in synthesis_types_list:
-        synthesis_types_list = ["executive", "adhd", "technical"]
-
-    config = PipelineConfig(
-        source_directory=source_path,
-        output_directory=output_path,
-        enable_adhd_extraction=adhd,
-        enable_multi_angle=multi_angle,
-        file_extensions=file_extensions,
-        confidence_threshold=confidence,
-        generate_tsv_registries=tsv,
-        generate_embeddings=embeddings,
-        embedding_model=embedding_model,
-        milvus_uri=milvus_uri,
-        export_json=(format == "json"),
-        export_csv=(format == "csv"),
-        export_markdown=(format == "markdown"),
-        enable_synthesis=synthesis,
-        synthesis_types=synthesis_types_list,
-        synthesis_format=synthesis_format,
-    )
-
-    console.logger.info(f"[blue]🚀 Starting unified document pipeline...[/blue]")
-    console.logger.info(f"[blue]📁 Source: {source_path}[/blue]")
-    console.logger.info(f"[blue]📤 Output: {output_path}[/blue]")
-
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("Initializing pipeline...", total=None)
-
-        try:
-            pipeline = UnifiedDocumentPipeline(config)
-            result = pipeline.process_documents()
-
-            if result.success:
-                progress.update(task, description="Pipeline completed successfully! ✅", completed=True)
-
-                console.print(
-                    Panel(
-                        f"🎯 Pipeline Results:\n\n"
-                        f"• Processing time: {result.processing_time:.2f}s\n"
-                        f"• Documents processed: {result.document_count}\n"
-                        f"• Total entities extracted: {result.total_entities}\n"
-                        f"• TSV registries: {len(result.registry_files or {})}\n"
-                        f"• Vector embeddings: {result.vector_count}\n"
-                        f"• Output files: {len(result.output_files or [])}\n\n"
-                        f"📊 Configuration:\n"
-                        f"• ADHD extraction: {'✅' if adhd else '❌'}\n"
-                        f"• Multi-angle extraction: {'✅' if multi_angle else '❌'}\n"
-                        f"• TSV registries: {'✅' if tsv else '❌'}\n"
-                        f"• Vector embeddings: {'✅' if embeddings else '❌'}\n"
-                        f"• Confidence threshold: {confidence}",
-                        title="🚀 Pipeline Complete",
-                        border_style="green",
-                    )
-                )
-
-                if result.output_files:
-                    console.logger.info("\n[green]📤 Generated files:[/green]")
-                    for file_path in result.output_files:
-                        console.logger.info(f"  • {file_path}")
-
-                if result.registry_files:
-                    console.logger.info("\n[green]📊 TSV registries:[/green]")
-                    for name, path in result.registry_files.items():
-                        count = result.registry_counts.get(name, 0) if result.registry_counts else 0
-                        console.logger.info(f"  • {name}: {path} ({count} entries)")
-
-                if result.embedding_summary:
-                    console.logger.info("\n[green]🔍 Embeddings:[/green]")
-                    console.logger.info(f"  • Model: {result.embedding_summary.get('model', 'N/A')}")
-                    console.logger.info(f"  • Vectors: {result.vector_count}")
-
-            else:
-                progress.update(task, description="Pipeline failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Pipeline failed: {result.error_message}[/red]")
-                sys.exit(1)
-
-        except Exception as e:
-            progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Pipeline execution failed: {e}[/red]")
-            if ctx.obj.get("verbose"):
-                import traceback
-                traceback.print_exc()
-            sys.exit(1)
-
-
-@extract.command("cleanup")
-@click.argument("directory", default=".")
-@click.option(
-    "--dry-run/--execute",
-    default=True,
-    help="Preview cleanup without removing files (default: dry-run)"
-)
-@click.option(
-    "--cleanup-types",
-    multiple=True,
-    type=click.Choice(["temporary", "cache", "outputs", "interim", "all"]),
-    default=["temporary", "cache", "interim"],
-    help="Types of files to clean (can specify multiple)"
-)
-@click.option(
-    "--include-outputs/--preserve-outputs",
-    default=False,
-    help="Include output files in cleanup (default: preserve)"
-)
-@click.option(
-    "--report-format",
-    type=click.Choice(["table", "json", "detailed"]),
-    default="detailed",
-    help="Format for cleanup report"
-)
-@click.option("--report-file", help="Save cleanup report to file")
-@click.pass_context
-def extract_cleanup(
-    ctx,
-    directory: str,
-    dry_run: bool,
-    cleanup_types: tuple,
-    include_outputs: bool,
-    report_format: str,
-    report_file: Optional[str]
-):
-    """
-    🧹 Clean pipeline files and generate activity report
-
-    Remove temporary, cache, and interim files created during pipeline processing.
-    Provides detailed reporting on files removed, created, changed, and output.
-
-    Default behavior preserves output files and runs in dry-run mode for safety.
-    """
-    with mobile_task_notification(
-        ctx,
-        "Pipeline cleanup",
-        success_message="✅ Pipeline cleanup complete",
-        failure_message="❌ Pipeline cleanup failed",
-    ):
-        _run_extract_cleanup(
-            ctx,
-            directory,
-            dry_run,
-            cleanup_types,
-            include_outputs,
-            report_format,
-            report_file,
-        )
-
-
-def _run_extract_cleanup(
-    ctx,
-    directory: str,
-    dry_run: bool,
-    cleanup_types: tuple,
-    include_outputs: bool,
-    report_format: str,
-    report_file: Optional[str],
-) -> None:
-    import json
-    from datetime import datetime
-
-    # Import cleanup modules
-    try:
-        from .extraction.cleanup import PipelineCleanup, CleanupConfig
-    except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import cleanup modules: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure the extraction package is properly installed[/yellow]")
-        sys.exit(1)
-
-    target_path = Path(directory).resolve()
-
-    if not target_path.exists():
-        console.logger.info(f"[red]❌ Target directory does not exist: {target_path}[/red]")
-        sys.exit(1)
-
-    # Configure cleanup
-    cleanup_types_list = list(cleanup_types)
-    if "all" in cleanup_types_list:
-        cleanup_types_list = ["temporary", "cache", "outputs", "interim"]
-    elif include_outputs and "outputs" not in cleanup_types_list:
-        cleanup_types_list.append("outputs")
-
-    config = CleanupConfig(
-        cleanup_types=cleanup_types_list,
-        dry_run=dry_run,
-        preserve_recent_hours=0,  # Clean all matching files
-        include_hidden=False,
-        backup_before_delete=False  # For safety in dry-run mode
-    )
-
-    console.logger.info(f"[blue]🧹 {'Previewing' if dry_run else 'Executing'} pipeline cleanup...[/blue]")
-    console.logger.info(f"[blue]📁 Target: {target_path}[/blue]")
-    console.logger.info(f"[blue]🎯 Cleanup types: {', '.join(cleanup_types_list)}[/blue]")
-
-    if dry_run:
-        console.logger.info("[yellow]⚠️  DRY RUN: No files will actually be removed[/yellow]")
-
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("Scanning for cleanup candidates...", total=None)
-
-        try:
-            # Create cleanup system and generate mock activity report
-            cleanup = PipelineCleanup(config)
-
-            # For cleanup command, we simulate an activity report for the target directory
-            mock_activity_report = {
-                "operation_summary": {
-                    "start_time": datetime.now().isoformat(),
-                    "end_time": datetime.now().isoformat(),
-                    "total_operations": 0,
-                    "directories_scanned": [str(target_path)]
-                },
-                "file_operations": {
-                    "created": [],
-                    "modified": [],
-                    "deleted": [],
-                    "moved": []
-                },
-                "size_tracking": {
-                    "total_bytes_created": 0,
-                    "total_bytes_modified": 0,
-                    "total_bytes_deleted": 0
-                },
-                "categorization": {
-                    "by_extension": {},
-                    "by_operation": {},
-                    "by_directory": {}
-                }
-            }
-
-            progress.update(task, description="Performing cleanup analysis...")
-
-            # Perform cleanup
-            result = cleanup.cleanup_pipeline_files(mock_activity_report, target_path)
-
-            if result.success:
-                progress.update(task, description=f"Cleanup {'preview' if dry_run else 'execution'} completed! ✅", completed=True)
-
-                # Generate detailed report
-                if report_format == "detailed":
-                    console.print(
-                        Panel(
-                            f"🧹 Cleanup Results:\n\n"
-                            f"• Files removed: {result.files_removed}\n"
-                            f"• Space freed: {result.space_freed / (1024*1024):.2f} MB\n"
-                            f"• Processing time: {result.processing_time:.2f}s\n"
-                            f"• Errors: {len(result.errors)}\n\n"
-                            f"📊 File Types Cleaned:\n"
-                            + "\n".join([f"• {category}: {count} files"
-                                       for category, count in result.files_by_category.items()]),
-                            title=f"🧹 Cleanup {'Preview' if dry_run else 'Complete'}",
-                            border_style="green" if result.success else "red",
-                        )
-                    )
-
-                    # Show detailed file lists
-                    if result.removed_files:
-                        console.logger.info(f"\n[green]{'📋 Files to be removed:' if dry_run else '🗑️  Files removed:'}[/green]")
-                        for file_path in result.removed_files[:20]:  # Show first 20
-                            file_size = file_path.stat().st_size if file_path.exists() else 0
-                            size_str = f"({file_size / 1024:.1f} KB)" if file_size > 0 else ""
-                            console.logger.info(f"  • {file_path.relative_to(target_path)} {size_str}")
-
-                        if len(result.removed_files) > 20:
-                            console.logger.info(f"  ... and {len(result.removed_files) - 20} more files")
-
-                    # Show errors if any
-                    if result.errors:
-                        console.logger.error(f"\n[red]⚠️  Errors encountered:[/red]")
-                        for error in result.errors[:5]:  # Show first 5 errors
-                            console.logger.error(f"  • {error}")
-                        if len(result.errors) > 5:
-                            console.logger.error(f"  ... and {len(result.errors) - 5} more errors")
-
-                elif report_format == "table":
-                    # Create a summary table
-                    from rich.table import Table
-
-                    table = Table(title=f"Cleanup {'Preview' if dry_run else 'Results'}")
-                    table.add_column("Category", style="cyan")
-                    table.add_column("Files", justify="right", style="magenta")
-                    table.add_column("Size", justify="right", style="green")
-
-                    for category, count in result.files_by_category.items():
-                        # Calculate size for this category
-                        category_size = sum(
-                            f.stat().st_size if f.exists() else 0
-                            for f in result.removed_files
-                            if category.lower() in str(f).lower()
-                        )
-                        size_mb = category_size / (1024 * 1024)
-                        table.add_row(category, str(count), f"{size_mb:.2f} MB")
-
-                    console.logger.info(table)
-
-                elif report_format == "json":
-                    # JSON summary
-                    json_result = {
-                        "cleanup_summary": {
-                            "dry_run": dry_run,
-                            "success": result.success,
-                            "files_removed": result.files_removed,
-                            "space_freed_mb": result.space_freed / (1024*1024),
-                            "processing_time": result.processing_time,
-                            "target_directory": str(target_path),
-                            "cleanup_types": cleanup_types_list
-                        },
-                        "file_categories": result.files_by_category,
-                        "removed_files": [str(f) for f in result.removed_files],
-                        "errors": result.errors,
-                        "timestamp": datetime.now().isoformat()
-                    }
-                    console.logger.info(json.dumps(json_result, indent=2))
-
-                # Save report to file if requested
-                if report_file:
-                    report_path = Path(report_file)
-                    report_data = {
-                        "cleanup_summary": {
-                            "dry_run": dry_run,
-                            "success": result.success,
-                            "files_removed": result.files_removed,
-                            "space_freed_mb": result.space_freed / (1024*1024),
-                            "processing_time": result.processing_time,
-                            "target_directory": str(target_path),
-                            "cleanup_types": cleanup_types_list,
-                            "timestamp": datetime.now().isoformat()
-                        },
-                        "detailed_results": {
-                            "file_categories": result.files_by_category,
-                            "removed_files": [str(f) for f in result.removed_files],
-                            "errors": result.errors
-                        }
-                    }
-
-                    with open(report_path, 'w') as f:
-                        json.dump(report_data, f, indent=2)
-
-                    console.logger.info(f"\n[green]📄 Report saved to: {report_path}[/green]")
-
-            else:
-                progress.update(task, description="Cleanup failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Cleanup failed: {result.error_message}[/red]")
-                sys.exit(1)
-
-        except Exception as e:
-            progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Cleanup execution failed: {e}[/red]")
-            if ctx.obj.get("verbose"):
-                import traceback
-                traceback.print_exc()
-            sys.exit(1)
-
-
+# from src/dopemux/commands/extract_commands.py
 @cli.command()
 @click.argument("directory", default=".")
 @click.option("--output", "-o", help="Output directory for analysis results")
@@ -3917,152 +2595,10 @@ def analyze(
         sys.exit(1)
 
 
-@cli.group()
-def mcp():
-    """Manage MCP Docker servers (start/stop/status/logs)."""
+from .commands.mcp_commands import mcp, servers
+cli.add_command(mcp)
+cli.add_command(servers)
 
-
-@mcp.command("up")
-@click.option("--all", "all_services", is_flag=True, help="Start all MCP servers")
-@click.option("--services", "services", help="Comma-separated services to start")
-def mcp_up_cmd(all_services: bool, services: str):
-    """Start MCP servers via docker-compose."""
-    try:
-        # Resolve script path
-        script_dir = Path(__file__).parent.parent.parent / "scripts"
-        script_path = script_dir / "start-all-mcp-servers.sh"
-        
-        if all_services or not services:
-            cmd = f"bash {script_path}"
-        else:
-            svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
-            cmd = f"docker compose -f compose.yml up -d --build {svc_list}"
-        console.logger.info(f"[blue]🔌 {cmd}[/blue]")
-        subprocess.run(["bash","-lc", cmd], check=True)
-        console.logger.info("[green]✅ MCP servers started[/green]")
-    except CalledProcessError:
-        console.logger.error("[red]❌ Failed to start MCP servers[/red]")
-        sys.exit(1)
-
-
-@mcp.command("down")
-def mcp_down_cmd():
-    """Stop all MCP servers."""
-    try:
-        # Stop and remove only the MCP-related services
-        mcp_services = ["conport", "pal", "litellm", "dope-context", "serena", "gptr-mcp", "desktop-commander", "leantime-bridge"]
-        subprocess.run(["docker", "compose", "-f", "compose.yml", "rm", "-f", "-s", "-v"] + mcp_services, check=True)
-        console.logger.info("[green]✅ MCP servers stopped[/green]")
-    except CalledProcessError:
-        console.logger.error("[red]❌ Failed to stop MCP servers[/red]")
-        sys.exit(1)
-
-
-@mcp.command("status")
-def mcp_status_cmd():
-    """Show docker-compose status for MCP servers."""
-    try:
-        subprocess.run(["docker","compose","-f","compose.yml","ps"], check=False)
-    except CalledProcessError:
-        sys.exit(1)
-
-
-@mcp.command("logs")
-@click.option("--service", "service", help="Service to tail logs for")
-def mcp_logs_cmd(service: str):
-    """Tail logs for an MCP service or all."""
-    try:
-        if service:
-            cmd = f"docker compose -f compose.yml logs -f {service}"
-        else:
-            cmd = "docker compose -f compose.yml logs -f"
-        console.logger.info(f"[blue]📄 {cmd}[/blue]")
-        subprocess.run(["bash","-lc", cmd], check=False)
-    except CalledProcessError:
-        sys.exit(1)
-
-
-@mcp.command("start-all")
-@click.option("--verify", "-v", is_flag=True, help="Verify service health after starting")
-def mcp_start_all_cmd(verify: bool):
-    """
-    🚀 Start complete Dopemux stack (MCP servers + application services)
-
-    Starts all services including:
-    - MCP servers (ConPort, Zen, Serena, etc.)
-    - Integration Bridge (event processing, pattern detection)
-    - Task Orchestrator (ADHD task coordination)
-    - All infrastructure (PostgreSQL, Redis, Qdrant)
-
-    \b
-    Examples:
-        dopemux mcp start-all           # Start everything
-        dopemux mcp start-all --verify  # Start + verify health
-
-    \b
-    ADHD Benefit:
-        One command to start the complete event-driven intelligence system.
-        No need to remember which services to start manually.
-    """
-    try:
-        # Run the start-all.sh script
-        script_path = Path(__file__).parent.parent.parent / "scripts" / "start-all.sh"
-
-        if not script_path.exists():
-            console.logger.info(f"[red]❌ start-all.sh not found at {script_path}[/red]")
-            console.logger.info("[yellow]Falling back to manual startup...[/yellow]")
-
-            # Fallback: manual startup
-            console.logger.info("[blue]Starting MCP servers...[/blue]")
-            subprocess.run(["docker","compose","-f","compose.yml","up","-d"], check=True)
-
-            console.logger.info("[blue]Starting Integration Bridge...[/blue]")
-            subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"], check=True)
-
-            console.logger.info("[blue]Starting Task Orchestrator...[/blue]")
-            subprocess.run(["docker","compose","-f","compose.yml","--profile","manual","up","-d","task-orchestrator"], check=True)
-
-            console.logger.info("[green]✅ All services started[/green]")
-        else:
-            # Use the script
-            cmd = ["bash", str(script_path)]
-            if verify:
-                cmd.append("--verify")
-
-            subprocess.run(cmd, check=True)
-
-    except CalledProcessError:
-        console.logger.error("[red]❌ Failed to start all services[/red]")
-        console.logger.info("[yellow]💡 Try: docker ps to see running containers[/yellow]")
-        sys.exit(1)
-
-
-@cli.group()
-def servers():
-    """Alias for 'dopemux mcp' commands."""
-
-
-@servers.command("up")
-@click.option("--all", "all_services", is_flag=True, help="Start all MCP servers")
-@click.option("--services", "services", help="Comma-separated services to start")
-def servers_up_cmd(all_services: bool, services: str):
-    mcp_up_cmd(all_services, services)
-
-
-@servers.command("down")
-def servers_down_cmd():
-    mcp_down_cmd()
-
-
-@servers.command("status")
-def servers_status_cmd():
-    mcp_status_cmd()
-
-
-@servers.command("logs")
-@click.option("--service", "service", help="Service to tail logs for")
-def servers_logs_cmd(service: str):
-    mcp_logs_cmd(service)
 
 
 @cli.command()
@@ -4244,101 +2780,6 @@ def health(
     if critical_count > 0:
         sys.exit(1)
 
-
-@autoresponder.command("config")
-@click.option(
-    "--enabled/--disabled",
-    default=None,
-    help="Enable or disable auto responder",
-)
-@click.option(
-    "--terminal-scope",
-    type=click.Choice(["current", "all", "project"]),
-    help="Terminal monitoring scope",
-)
-@click.option("--delay", type=float, help="Response delay in seconds (0-10)")
-@click.option("--timeout", type=int, help="Auto-stop timeout in minutes")
-@click.option(
-    "--whitelist/--no-whitelist",
-    default=None,
-    help="Enable/disable tool whitelisting",
-)
-@click.option(
-    "--debug/--no-debug",
-    default=None,
-    help="Enable/disable debug mode",
-)
-@click.pass_context
-def autoresponder_config(
-    ctx, enabled, terminal_scope, delay, timeout, whitelist, debug
-):
-    """
-    ⚙️ Configure auto responder settings
-
-    Update configuration options for Claude Auto Responder integration.
-    """
-    project_path = Path.cwd()
-    config_manager = _get_autoresponder_config_manager(ctx, project_path)
-
-    updates = {}
-    if enabled is not None:
-        updates["enabled"] = enabled
-    if terminal_scope:
-        updates["terminal_scope"] = terminal_scope
-    if delay is not None:
-        updates["response_delay"] = delay
-    if timeout:
-        updates["timeout_minutes"] = timeout
-    if whitelist is not None:
-        updates["whitelist_tools"] = whitelist
-    if debug is not None:
-        updates["debug_mode"] = debug
-
-    if not updates:
-        # Show current config
-        current_config = config_manager.get_claude_autoresponder_config()
-
-        table = Table(title="🤖 Auto Responder Configuration")
-        table.add_column("Setting", style="cyan")
-        table.add_column("Value", style="green")
-
-        table.add_row("Enabled", "Yes" if current_config.enabled else "No")
-        table.add_row("Terminal Scope", current_config.terminal_scope)
-        table.add_row("Response Delay", f"{current_config.response_delay}s")
-        table.add_row("Timeout", f"{current_config.timeout_minutes} minutes")
-        table.add_row(
-            "Whitelist Tools", "Yes" if current_config.whitelist_tools else "No"
-        )
-        table.add_row("Debug Mode", "Yes" if current_config.debug_mode else "No")
-
-        console.logger.info(table)
-        return
-
-    # Apply updates
-    try:
-        config_manager.update_claude_autoresponder(**updates)
-        console.logger.info("[green]✅ Configuration updated[/green]")
-
-        # Show what changed
-        for key, value in updates.items():
-            console.logger.info(f"[blue]  {key}: {value}[/blue]")
-
-        # Restart if running
-        if (project_path / ".dopemux").exists():
-            from integrations.claude_autoresponder import create_autoresponder_manager
-
-            autoresponder_manager = create_autoresponder_manager(
-                config_manager, project_path
-            )
-            if autoresponder_manager.is_running():
-                console.print(
-                    "[yellow]🔄 Restarting auto responder with new settings...[/yellow]"
-                )
-                autoresponder_manager.restart()
-
-    except ValueError as e:
-        console.logger.error(f"[red]❌ Configuration error: {e}[/red]")
-        sys.exit(1)
 
 
 def _get_attention_emoji(state: Optional[str]) -> str:
@@ -5175,2545 +3616,7 @@ def _run_extract_pro(
             sys.exit(1)
 
 
-@cli.group()
-def update():
-    """🔄 Update and upgrade dopemux system components."""
-    pass
-
-
-@update.command()
-@click.option(
-    "--check",
-    is_flag=True,
-    help="Check for updates without applying them (dry run)"
-)
-@click.option(
-    "--minimal",
-    is_flag=True,
-    help="Skip Docker rebuilds if possible (faster update)"
-)
-@click.option(
-    "--skip-backups",
-    is_flag=True,
-    help="Skip backup creation (not recommended)"
-)
-@click.option(
-    "--skip-docker",
-    is_flag=True,
-    help="Skip Docker image updates"
-)
-@click.option(
-    "--timeout",
-    type=int,
-    default=30,
-    help="Timeout in minutes for update operations"
-)
-@click.pass_context
-def run(ctx, check: bool, minimal: bool, skip_backups: bool, skip_docker: bool, timeout: int):
-    """
-    🚀 Run comprehensive system update
-
-    Updates all dopemux components including:
-    - Git repository (with local change preservation)
-    - Docker containers and images
-    - Python and Node.js dependencies
-    - Database migrations
-    - Configuration updates
-
-    Includes automatic backup, rollback capability, and ADHD-friendly progress tracking.
-    """
-    import asyncio
-    from .update import UpdateManager, UpdateConfig
-
-    try:
-        # Configure update
-        config = UpdateConfig(
-            dry_run=check,
-            minimal=minimal,
-            skip_backups=skip_backups,
-            skip_docker=skip_docker,
-            timeout_minutes=timeout
-        )
-
-        # Create update manager
-        manager = UpdateManager(config=config, project_root=Path.cwd())
-
-        if check:
-            console.logger.info("[cyan]🔍 Checking for available updates...[/cyan]")
-            # Run dry run
-            plan = asyncio.run(manager.dry_run())
-
-            # Display update plan
-            _show_update_plan(plan)
-
-        else:
-            # Run actual update
-            console.logger.info("[cyan]🚀 Starting dopemux update...[/cyan]")
-            result = asyncio.run(manager.run_update())
-
-            # Show result
-            if result.value == "success":
-                console.logger.info("[green]✅ Update completed successfully![/green]")
-            elif result.value == "rolled_back":
-                console.logger.error("[yellow]🔄 Update failed but rollback successful[/yellow]")
-            elif result.value == "interrupted":
-                console.logger.info("[yellow]⏸️ Update interrupted - resume with 'dopemux update resume'[/yellow]")
-            else:
-                console.logger.error("[red]❌ Update failed[/red]")
-                sys.exit(1)
-
-    except Exception as e:
-        console.logger.error(f"[red]❌ Update command failed: {e}[/red]")
-        if ctx.obj and ctx.obj.get('verbose'):
-            import traceback
-            traceback.print_exc()
-        sys.exit(1)
-
-
-@update.command()
-@click.pass_context
-def resume(ctx):
-    """
-    ▶️ Resume interrupted update from last checkpoint
-
-    Continues an update that was interrupted by user or system failure.
-    Uses automatic checkpointing to resume from the exact point of interruption.
-    """
-    import asyncio
-    from .update import UpdateManager, UpdateConfig
-
-    try:
-        # Create manager with resume configuration
-        config = UpdateConfig(checkpoint_saves=True)
-        manager = UpdateManager(config=config, project_root=Path.cwd())
-
-        console.logger.info("[cyan]🔄 Resuming interrupted update...[/cyan]")
-        result = asyncio.run(manager.run_update())
-
-        if result.value == "success":
-            console.logger.info("[green]✅ Update resumed and completed successfully![/green]")
-        else:
-            console.logger.error(f"[red]❌ Update resume failed: {result.value}[/red]")
-            sys.exit(1)
-
-    except Exception as e:
-        console.logger.error(f"[red]❌ Resume command failed: {e}[/red]")
-        if ctx.obj and ctx.obj.get('verbose'):
-            import traceback
-            traceback.print_exc()
-        sys.exit(1)
-
-
-@update.command()
-@click.option(
-    "--backup-name",
-    help="Specific backup to rollback to (interactive selection if not provided)"
-)
-@click.option(
-    "--list-backups",
-    is_flag=True,
-    help="List available backups and exit"
-)
-@click.pass_context
-def rollback(ctx, backup_name: Optional[str], list_backups: bool):
-    """
-    ⏪ Rollback to previous system state
-
-    Safely restore the system to a previous working state using automatic backups.
-    Includes database restoration, configuration rollback, and service restart.
-    """
-    import asyncio
-    from .update import RollbackManager
-
-    try:
-        manager = RollbackManager(project_root=Path.cwd())
-
-        if list_backups:
-            # List available backups
-            backups = manager.list_available_backups()
-
-            if not backups:
-                console.logger.info("[yellow]No backups available[/yellow]")
-                return
-
-            console.logger.info("\n[bold]Available Backups:[/bold]")
-            table = Table(show_header=True, header_style="bold magenta")
-            table.add_column("Name", style="cyan")
-            table.add_column("Created", style="dim")
-            table.add_column("Version", style="green")
-            table.add_column("Size", style="blue")
-
-            for backup in backups:
-                backup_path = Path(backup['path'])
-                created = backup['created_at'][:19].replace('T', ' ')
-                version = backup.get('version_from', 'unknown')
-                size = backup.get('size', 'unknown')
-
-                table.add_row(backup_path.name, created, version, size)
-
-            console.logger.info(table)
-            return
-
-        # Perform rollback
-        console.logger.info("[yellow]🔄 Initiating system rollback...[/yellow]")
-        success = asyncio.run(manager.manual_rollback(backup_name))
-
-        if success:
-            console.logger.info("[green]✅ Rollback completed successfully![/green]")
-        else:
-            console.logger.error("[red]❌ Rollback failed[/red]")
-            sys.exit(1)
-
-    except Exception as e:
-        console.logger.error(f"[red]❌ Rollback command failed: {e}[/red]")
-        if ctx.obj and ctx.obj.get('verbose'):
-            import traceback
-            traceback.print_exc()
-        sys.exit(1)
-
-
-@update.command()
-@click.pass_context
-def update_status_cmd(ctx):
-    """
-    📊 Show system update status and health
-
-    Displays current version, available updates, system health,
-    and update history.
-    """
-    import asyncio
-    from .update import UpdateManager
-    from .update.health import HealthChecker
-
-    try:
-        manager = UpdateManager(project_root=Path.cwd())
-        health_checker = HealthChecker(project_root=Path.cwd())
-
-        console.logger.info("[cyan]📊 Dopemux System Status[/cyan]\n")
-
-        # Version information
-        version_info = manager.check_for_updates()
-        console.logger.info(f"[bold]Current Version:[/bold] {version_info.current}")
-        console.logger.info(f"[bold]Latest Version:[/bold] {version_info.target}")
-
-        if version_info.current != version_info.target:
-            console.logger.info(f"[yellow]📦 Update available: {version_info.current} → {version_info.target}[/yellow]")
-        else:
-            console.logger.info("[green]✅ System is up to date[/green]")
-
-        # Health status
-        console.logger.info("\n[bold]System Health:[/bold]")
-        health_results = asyncio.run(health_checker.check_all_services())
-
-        healthy_count = sum(health_results.values())
-        total_count = len(health_results)
-
-        if healthy_count == total_count:
-            console.logger.info(f"[green]✅ All services healthy ({healthy_count}/{total_count})[/green]")
-        else:
-            console.logger.info(f"[yellow]⚠️ {total_count - healthy_count} services need attention ({healthy_count}/{total_count})[/yellow]")
-
-            # Show unhealthy services
-            unhealthy = [service for service, healthy in health_results.items() if not healthy]
-            for service in unhealthy:
-                console.logger.info(f"  [red]❌ {service}[/red]")
-
-    except Exception as e:
-        console.logger.error(f"[red]❌ Status command failed: {e}[/red]")
-        if ctx.obj and ctx.obj.get('verbose'):
-            import traceback
-            traceback.print_exc()
-        sys.exit(1)
-
-
-def _show_update_plan(plan):
-    """Show update plan in user-friendly format."""
-    version_info = plan['version_info']
-
-    console.logger.info(f"\n[bold]📋 Update Plan: v{version_info['current']} → v{version_info['target']}[/bold]")
-
-    if version_info['current'] == version_info['target']:
-        console.logger.info("[green]✅ Already up to date![/green]")
-        return
-
-    # Show what will be updated
-    table = Table(show_header=True, header_style="bold cyan")
-    table.add_column("Component", style="cyan")
-    table.add_column("Action", style="yellow")
-    table.add_column("Details")
-
-    table.add_row("Code", "🔄 Update", "Pull latest changes from git")
-    table.add_row("Dependencies", "📦 Update", "Python and Node.js packages")
-    table.add_row("Docker", "🐳 Rebuild", "Update container images")
-    table.add_row("Configuration", "⚙️ Merge", "Preserve local customizations")
-
-    if version_info.get('requires_migration'):
-        table.add_row("Database", "🔄 Migrate", "Apply schema changes")
-
-    console.logger.info(table)
-
-    # Show estimates
-    console.logger.info(f"\n[dim]⏱️ Estimated time: {plan.get('estimated_time', '15-20 minutes')}[/dim]")
-    console.logger.info(f"[dim]💾 Backup size: {plan.get('backup_size', '~250 MB')}[/dim]")
-
-    # Show phases
-    phases = plan.get('phases', [])
-    if phases:
-        console.logger.info(f"\n[bold]Phases:[/bold] {' → '.join(phases)}")
-
-
-# =============================================================================
-# Profile Management Commands (Epic 1)
-# =============================================================================
-
-@cli.group()
-def profile():
-    """📋 Manage MCP profiles for context-aware tool selection."""
-    pass
-
-
-@profile.command("list")
-@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
-@click.pass_context
-def profile_list_cmd(ctx, profile_dir: Optional[str]):
-    """📋 List all available profiles.
-
-    Shows all profiles with their MCP server counts and descriptions.
-    Profiles can be applied with: dopemux profile apply <name>
-    """
-    try:
-        # Get profiles directory
-        from .profile_commands import get_profiles_directory
-        profiles_directory = Path(profile_dir) if profile_dir else get_profiles_directory()
-
-        # Parse all profiles in directory
-        parser = ProfileParser(validate_mcps=False)
-        profile_set = parser.parse_directory(profiles_directory, pattern="*.yaml")
-
-        if not profile_set.profiles:
-            console.logger.info("[yellow]⚠️  No valid profiles found[/yellow]")
-            console.logger.info(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
-            console.logger.info("\n[cyan]💡 Get started:[/cyan]")
-            console.logger.info(f"   • Create personalized profile: [white]dopemux profile init[/white]")
-            console.logger.info(f"   • See examples: [white]dopemux profile --help[/white]")
-            console.logger.info(f"   • Read guide: [white]docs/guides/PROFILE_USER_GUIDE.md[/white]")
-            sys.exit(1)
-
-        # Display profiles in a rich table
-        table = Table(title="📋 Available Profiles", show_header=True, header_style="bold cyan")
-        table.add_column("Name", style="green")
-        table.add_column("Display Name", style="cyan")
-        table.add_column("MCPs", style="yellow")
-        table.add_column("Description", style="white", no_wrap=False)
-
-        for p in profile_set.profiles:
-            mcp_count = len(p.mcps)
-            table.add_row(
-                p.name,
-                p.display_name,
-                f"{mcp_count} servers",
-                p.description
-            )
-
-        console.logger.info(table)
-        console.logger.info(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
-        console.logger.info(f"[dim]Total profiles: {len(profile_set.profiles)}[/dim]")
-
-        # Add helpful tips
-        console.logger.info(f"\n[cyan]💡 Quick Tips:[/cyan]")
-        console.logger.info(f"   • View details: [white]dopemux profile show <name>[/white]")
-        console.logger.info(f"   • Apply profile: [white]dopemux profile apply <name>[/white]")
-        console.logger.info(f"   • Create custom: [white]dopemux profile init[/white]")
-
-    except FileNotFoundError as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
-        sys.exit(1)
-    except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
-        if ctx.obj.get("verbose"):
-            raise
-        sys.exit(1)
-
-
-@profile.command("init")
-@click.argument("profile_name", required=False)
-@click.option("--output-dir", "-o", help="Output directory for profile", type=click.Path())
-@click.pass_context
-def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]):
-    """✨ Create a personalized profile using git history analysis."""
-    try:
-        from .profile_wizard import ProfileWizard
-
-        # Initialize wizard
-        wizard = ProfileWizard()
-
-        # Run interactive wizard
-        output_path = Path(output_dir) if output_dir else None
-        result_file = wizard.run(profile_name=profile_name, output_dir=output_path)
-
-        if result_file:
-            sys.exit(0)
-        else:
-            sys.exit(1)
-
-    except KeyboardInterrupt:
-        console.logger.info("\n[yellow]❌ Profile creation cancelled[/yellow]")
-        sys.exit(1)
-    except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
-        if ctx.obj.get("verbose"):
-            raise
-        sys.exit(1)
-
-
-@profile.command("auto-enable")
-@click.option("--check-interval", "-i", type=int, help="Check interval in seconds (default: 300)")
-@click.option("--threshold", "-t", type=float, help="Confidence threshold (default: 0.85)")
-@click.pass_context
-def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optional[float]):
-    """🔍 Enable auto-detection with gentle profile suggestions."""
-    try:
-        from .auto_detection_service import AutoDetectionService, create_default_settings
-
-        # Create default config if it doesn't exist
-        config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
-        if not config_file.exists():
-            create_default_settings(config_file)
-
-        # Load and update config
-        service = AutoDetectionService(config_file=config_file)
-
-        if check_interval:
-            service.config.check_interval_seconds = check_interval
-        if threshold:
-            service.config.confidence_threshold = threshold
-
-        service.config.enabled = True
-        service.config.save(config_file)
-
-        console.logger.info("[green]✅ Auto-detection enabled[/green]")
-        console.logger.info(f"   Check interval: {service.config.check_interval_seconds}s ({service.config.check_interval_seconds // 60} min)")
-        console.logger.info(f"   Confidence threshold: {service.config.confidence_threshold:.0%}")
-        console.logger.info(f"   Quiet hours: {service.config.quiet_hours_start}-{service.config.quiet_hours_end}")
-        console.logger.info(f"\n[dim]💡 Service will suggest profile switches when confidence >{service.config.confidence_threshold:.0%}[/dim]")
-        console.logger.info(f"[dim]💡 Edit settings: {config_file}[/dim]")
-
-    except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
-        if ctx.obj.get("verbose"):
-            raise
-        sys.exit(1)
-
-
-@profile.command("auto-disable")
-@click.pass_context
-def profile_auto_disable_cmd(ctx):
-    """⏸️  Disable auto-detection suggestions."""
-    try:
-        config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
-
-        if not config_file.exists():
-            console.logger.info("[yellow]Auto-detection not configured[/yellow]")
-            return
-
-        from .auto_detection_service import AutoDetectionConfig
-
-        config = AutoDetectionConfig(config_file)
-        config.enabled = False
-        config.save(config_file)
-
-        console.logger.info("[green]✅ Auto-detection disabled[/green]")
-
-    except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
-        sys.exit(1)
-
-
-@profile.command("auto-status")
-@click.pass_context
-def profile_auto_status_cmd(ctx):
-    """📊 Show auto-detection configuration and status."""
-    try:
-        config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
-
-        if not config_file.exists():
-            console.logger.info("[yellow]Auto-detection not configured[/yellow]")
-            console.logger.info(f"\n[dim]Run 'dopemux profile auto-enable' to set up[/dim]")
-            return
-
-        from .auto_detection_service import AutoDetectionConfig
-
-        config = AutoDetectionConfig(config_file)
-
-        status = "[green]Enabled[/green]" if config.enabled else "[red]Disabled[/red]"
-        console.logger.info(f"\n[bold]Auto-Detection Status:[/bold] {status}")
-        console.logger.info(f"\n[cyan]Settings:[/cyan]")
-        console.logger.info(f"   Check interval: {config.check_interval_seconds}s ({config.check_interval_seconds // 60} min)")
-        console.logger.info(f"   Confidence threshold: {config.confidence_threshold:.0%}")
-        console.logger.info(f"   Debounce period: {config.debounce_minutes} min")
-        console.logger.info(f"   Quiet hours: {config.quiet_hours_start}-{config.quiet_hours_end}")
-
-        if config.never_suggest:
-            console.logger.info(f"\n[yellow]Never Suggest:[/yellow]")
-            for profile in sorted(config.never_suggest):
-                console.logger.info(f"   • {profile}")
-
-        console.logger.info(f"\n[dim]Config file: {config_file}[/dim]")
-
-    except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
-        sys.exit(1)
-
-
-@profile.command("stats")
-@click.option("--days", "-d", type=int, default=30, help="Days of history to analyze (default: 30)")
-@click.pass_context
-def profile_stats_cmd(ctx, days: int):
-    """📊 Show profile usage analytics and trends."""
-    try:
-        from .profile_analytics import get_stats_sync, display_stats
-
-        workspace_id = str(Path.cwd())
-
-        # Get stats from ConPort
-        console.logger.info(f"[cyan]📊 Analyzing profile usage (last {days} days)...[/cyan]\n")
-        stats = get_stats_sync(workspace_id, days_back=days)
-
-        # Display with visual dashboard
-        display_stats(stats, days_back=days)
-
-        # Optimization suggestions (if enough data)
-        if stats.total_switches >= 10:
-            console.logger.info(f"\n[bold]💡 Optimization Suggestions:[/bold]")
-
-            # Suggest based on patterns
-            if stats.switch_accuracy < 70:
-                console.logger.info(f"   • [yellow]Low accuracy ({stats.switch_accuracy:.0f}%)[/yellow]: Consider refining auto-detection rules")
-
-            if stats.auto_switches == 0 and stats.total_switches > 20:
-                console.logger.info(f"   • [cyan]All manual switches[/cyan]: Try 'dopemux profile auto-enable' for suggestions")
-
-            if stats.suggestion_declined > stats.suggestion_accepted * 2:
-                console.logger.info(f"   • [yellow]Many declined suggestions[/yellow]: Lower confidence threshold or adjust profile rules")
-
-            # Suggest creating a new profile for common patterns
-            if stats.most_used_profile and stats.usage_by_profile.get(stats.most_used_profile, 0) > stats.total_switches * 0.7:
-                console.logger.info(f"   • [green]Stable workflow detected[/green]: Your '{stats.most_used_profile}' profile is well-matched!")
-
-    except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
-        if ctx.obj.get("verbose"):
-            raise
-        sys.exit(1)
-
-
-@profile.command("analyze-usage")
-@click.option("--days", "days_back", type=click.IntRange(1), default=90, show_default=True, help="Days of git history to analyze")
-@click.option(
-    "--max-commits",
-    type=click.IntRange(1),
-    default=500,
-    show_default=True,
-    help="Maximum commits to scan",
-)
-@click.option(
-    "--repo-path",
-    type=click.Path(exists=True, file_okay=False, path_type=Path),
-    default=None,
-    help="Repository path (defaults to current directory)",
-)
-@click.pass_context
-def profile_analyze_usage_cmd(ctx, days_back: int, max_commits: int, repo_path: Optional[Path]):
-    """Analyze git usage patterns to suggest profile defaults."""
-    try:
-        from .profile_analyzer import GitHistoryAnalyzer
-
-        analyzer = GitHistoryAnalyzer(repo_path=repo_path or Path.cwd())
-        analysis = analyzer.analyze(days_back=days_back, max_commits=max_commits)
-        analyzer.display_analysis(analysis)
-    except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
-        if ctx.obj.get("verbose"):
-            raise
-        sys.exit(1)
-
-
-@profile.command("show")
-@click.argument("profile_name")
-@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
-@click.option("--raw", "-r", is_flag=True, help="Show raw YAML content")
-@click.pass_context
-def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bool):
-    """📄 Show detailed profile information."""
-    try:
-        parser = ProfileParser(Path(profile_dir) if profile_dir else None)
-        profile_paths = parser.discover_profiles()
-
-        # Find matching profile
-        profile_path = None
-        for path in profile_paths:
-            if path.stem == profile_name:
-                profile_path = path
-                break
-
-        if not profile_path:
-            console.logger.info(f"[red]Profile '{profile_name}' not found[/red]")
-            console.logger.info(f"\nAvailable profiles in {parser.profile_dir}:")
-            for path in profile_paths:
-                console.logger.info(f"  • {path.stem}")
-            sys.exit(1)
-
-        # Show raw YAML if requested
-        if raw:
-            console.logger.info(f"\n[cyan]Profile: {profile_name}[/cyan]")
-            console.logger.info(f"[dim]Path: {profile_path}[/dim]\n")
-            with open(profile_path, 'r') as f:
-                console.logger.info(f.read())
-            return
-
-        # Load and validate profile
-        p = parser.load_profile(profile_path)
-
-        # Display formatted profile info
-        console.logger.info(f"\n[bold cyan]Profile: {p.display_name}[/bold cyan]")
-        console.logger.info(f"[dim]Name: {p.name}[/dim]")
-        console.logger.info(f"[dim]File: {profile_path}[/dim]\n")
-
-        console.logger.info(f"[bold]Description:[/bold] {p.description}\n")
-
-        # MCP Servers
-        console.logger.info("[bold]MCP Servers:[/bold]")
-        for mcp in p.mcps:
-            console.logger.info(f"  • {mcp}")
-
-        # ADHD Config (if present)
-        if p.adhd_config:
-            console.logger.info("\n[bold]ADHD Configuration:[/bold]")
-            console.logger.info(f"  Energy preference: {p.adhd_config.energy_preference}")
-            console.logger.info(f"  Attention mode: {p.adhd_config.attention_mode}")
-            console.logger.info(f"  Session duration: {p.adhd_config.session_duration} minutes")
-
-        # Auto-detection rules (if present)
-        if p.auto_detection:
-            console.logger.info("\n[bold]Auto-Detection Rules:[/bold]")
-            if p.auto_detection.git_branches:
-                console.logger.info("  Git branches:")
-                for branch in p.auto_detection.git_branches:
-                    console.logger.info(f"    • {branch}")
-            if p.auto_detection.directories:
-                console.logger.info("  Directories:")
-                for dir in p.auto_detection.directories:
-                    console.logger.info(f"    • {dir}")
-            if p.auto_detection.file_patterns:
-                console.logger.info("  File patterns:")
-                for pattern in p.auto_detection.file_patterns:
-                    console.logger.info(f"    • {pattern}")
-            if p.auto_detection.time_windows:
-                console.logger.info("  Time windows:")
-                for window in p.auto_detection.time_windows:
-                    console.logger.info(f"    • {window}")
-
-        console.logger.info(f"\n[green]✓ Profile is valid[/green]")
-
-    except ProfileValidationError as e:
-        console.logger.error(f"[red]Validation Error:[/red] {e.reason}")
-        if e.fix_suggestion:
-            console.logger.info(f"[yellow]Suggestion:[/yellow] {e.fix_suggestion}")
-        sys.exit(1)
-    except FileNotFoundError as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
-        sys.exit(1)
-    except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
-        if ctx.obj.get("verbose"):
-            raise
-        sys.exit(1)
-
-
-@profile.command("validate")
-@click.argument("profile_name", required=False)
-@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
-@click.option("--all", "-a", is_flag=True, help="Validate all profiles")
-@click.pass_context
-def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional[str], all: bool):
-    """✅ Validate profile YAML and configuration."""
-    try:
-        parser = ProfileParser(Path(profile_dir) if profile_dir else None)
-
-        if all:
-            # Validate all profiles
-            console.logger.info("[cyan]Validating all profiles...[/cyan]\n")
-            profile_set = parser.load_all_profiles(fail_fast=False)
-
-            # Show results
-            table = Table(title="Validation Results", show_header=True, header_style="bold cyan")
-            table.add_column("Profile", style="cyan")
-            table.add_column("Status", style="white")
-            table.add_column("Message", style="white", no_wrap=False)
-
-            for p in profile_set.profiles:
-                table.add_row(p.name, "[green]✓ Valid[/green]", f"{len(p.mcps)} MCP servers")
-
-            for path, error in profile_set.errors:
-                error_msg = str(error)
-                if isinstance(error, ProfileValidationError):
-                    error_msg = f"{error.reason}"
-                table.add_row(path.stem, "[red]✗ Invalid[/red]", error_msg)
-
-            console.logger.info(table)
-
-            # Summary
-            total = len(profile_set.profiles) + len(profile_set.errors)
-            valid = len(profile_set.profiles)
-            console.logger.info(f"\n[bold]Summary:[/bold] {valid}/{total} profiles valid")
-
-            if profile_set.errors:
-                sys.exit(1)
-
-        else:
-            # Validate single profile
-            if not profile_name:
-                console.logger.error("[red]Error: Provide a profile name or use --all[/red]")
-                console.logger.info("Usage: dopemux profile validate <profile_name>")
-                console.logger.info("   or: dopemux profile validate --all")
-                sys.exit(1)
-
-            profile_paths = parser.discover_profiles()
-            profile_path = None
-            for path in profile_paths:
-                if path.stem == profile_name:
-                    profile_path = path
-                    break
-
-            if not profile_path:
-                console.logger.info(f"[red]Profile '{profile_name}' not found[/red]")
-                sys.exit(1)
-
-            console.logger.info(f"[cyan]Validating profile: {profile_name}[/cyan]\n")
-
-            # Load and validate
-            p = parser.load_profile(profile_path)
-
-            console.logger.info(f"[green]✓ YAML syntax is valid[/green]")
-            console.logger.info(f"[green]✓ Profile schema is valid[/green]")
-            console.logger.info(f"[green]✓ All {len(p.mcps)} MCP servers are configured[/green]")
-            if p.adhd_config:
-                console.logger.info(f"[green]✓ ADHD configuration is valid[/green]")
-            if p.auto_detection:
-                console.logger.info(f"[green]✓ Auto-detection rules are valid[/green]")
-
-            console.logger.info(f"\n[bold green]Profile '{profile_name}' is valid ✓[/bold green]")
-
-    except ProfileValidationError as e:
-        console.logger.error(f"[red]✗ Validation failed:[/red] {e.reason}")
-        if e.fix_suggestion:
-            console.logger.info(f"[yellow]💡 Suggestion:[/yellow] {e.fix_suggestion}")
-        sys.exit(1)
-    except FileNotFoundError as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
-        sys.exit(1)
-    except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
-        if ctx.obj.get("verbose"):
-            raise
-        sys.exit(1)
-
-
-@profile.command("copy")
-@click.argument("source_name")
-@click.argument("target_name")
-def profile_copy_cmd(source_name: str, target_name: str):
-    """Copy profile command placeholder."""
-    raise click.ClickException("profile copy is not implemented yet")
-
-
-@profile.command("edit")
-@click.argument("profile_name")
-def profile_edit_cmd(profile_name: str):
-    """Edit profile command placeholder."""
-    raise click.ClickException("profile edit is not implemented yet")
-
-
-@profile.command("delete")
-@click.argument("profile_name")
-def profile_delete_cmd(profile_name: str):
-    """Delete profile command placeholder."""
-    raise click.ClickException("profile delete is not implemented yet")
-
-
-@profile.command("current")
-def profile_current_cmd():
-    """Show current active profile placeholder."""
-    raise click.ClickException("profile current is not implemented yet")
-
-
-# Register additional profile commands from modules
-try:
-    from .profile_commands import (
-        use_profile,
-        create_profile
-    )
-
-    # Note: 'list' and 'show' are already defined above as inline commands.
-    # We only add unique commands from the module to avoiding conflicts.
-    profile.add_command(use_profile, "use")
-    profile.add_command(create_profile, "create")
-    profile.add_command(use_profile, "apply")
-    cli.add_command(use_profile, "switch")
-
-except ImportError:
-    pass  # Profile commands not available
-
-
-# Worktree Management Commands (Epic 3)
-# =============================================================================
-
-@cli.group()
-def worktrees():
-    """🌳 Manage git worktrees for parallel development."""
-    pass
-
-
-@worktrees.command("list")
-@click.pass_context
-def worktrees_list_cmd(ctx):
-    """📋 List all git worktrees with status."""
-    from .worktree_commands import list_worktrees
-    list_worktrees()
-
-
-@worktrees.command("current")
-@click.option("--no-cache", is_flag=True, help="Skip cache and detect fresh")
-@click.pass_context
-def worktrees_current_cmd(ctx, no_cache: bool):
-    """📍 Get current worktree path (cached for MCP efficiency)."""
-    from .worktree_commands import get_current_worktree
-    path = get_current_worktree(use_cache=not no_cache, quiet=False)
-    if path:
-        # Print just the path for easy shell scripting
-        logger.info(path)
-    else:
-        sys.exit(1)
-
-
-@worktrees.command("switch-path")
-@click.argument("branch")
-@click.pass_context
-def worktrees_switch_path_cmd(ctx, branch: str):
-    """📁 Output worktree path for shell integration (use with shell function)."""
-    from .worktree_commands import get_worktree_path
-
-    path = get_worktree_path(branch)
-
-    if path:
-        # Auto-configure MCP servers for target worktree (Phase 2: Zero manual steps)
-        from .auto_configurator import WorktreeAutoConfigurator
-
-        auto_config = WorktreeAutoConfigurator()
-        success, message = auto_config.configure_workspace(Path(path))
-
-        # Show auto-config status to stderr (doesn't pollute path output)
-        if success:
-            click.echo("✅ MCP auto-configuration complete", err=True)
-        else:
-            click.echo(f"⚠️ MCP auto-configuration: {message}", err=True)
-
-        # Machine-readable output for shell integration (to stdout)
-        click.echo(path)
-        ctx.exit(0)
-    else:
-        # Error output to stderr
-        click.echo(f"Error: Worktree not found for branch '{branch}'", err=True)
-        click.echo("\nAvailable worktrees:", err=True)
-        # Show list for user
-        from .worktree_commands import list_worktrees
-        list_worktrees()
-        ctx.exit(1)
-
-
-@worktrees.command("switch")
-@click.argument("branch")
-@click.option("--no-fuzzy", is_flag=True, help="Disable fuzzy matching")
-@click.pass_context
-def worktrees_switch_cmd(ctx, branch: str, no_fuzzy: bool):
-    """[DEPRECATED] Use shell integration instead - see 'dopemux shell-setup'."""
-    click.secho("\n⚠️  WARNING: This command cannot change your shell's directory", fg="yellow", bold=True)
-    click.secho("This is a fundamental POSIX limitation, not a bug.\n", fg="yellow")
-
-    click.secho("Why it doesn't work:", fg="cyan")
-    click.echo("  • Python runs in a subprocess")
-    click.echo("  • Subprocesses cannot modify the parent shell's working directory")
-    click.echo("  • This affects ALL programming languages, not just Python\n")
-
-    # Offer automated shell integration installation (Phase 3: UX Polish)
-    click.secho("✅ Solution: Install shell integration", fg="green", bold=True)
-
-    from .shell_integration_installer import ShellIntegrationInstaller
-
-    installer = ShellIntegrationInstaller()
-
-    if installer.is_supported() and not installer.is_installed():
-        click.echo("\n[Option 1] Automated installation (recommended):")
-        click.echo("  We can install shell integration automatically right now!")
-
-        if click.confirm("  Install automatically?", default=True):
-            success, message = installer.install(auto_confirm=True)
-
-            if success:
-                click.secho(f"\n🎉 {message}", fg="green", bold=True)
-                click.echo(f"\nActivate now: source ~/{'.' + installer.shell_name + 'rc'}")
-                click.echo(f"Then try: dwt {branch}\n")
-                ctx.exit(0)
-            else:
-                click.secho(f"\n❌ {message}", fg="red")
-                click.echo("Falling back to manual instructions...\n")
-        else:
-            click.echo("\n[Option 2] Manual installation:")
-    else:
-        click.echo("\n[Manual installation]:")
-
-    click.echo("  1. Run: dopemux shell-setup bash >> ~/.bashrc")
-    click.echo("  2. Run: source ~/.bashrc")
-    click.echo(f"  3. Use: dwt {branch}\n")
-
-    click.secho("Alternative: Use the workaround command", fg="cyan")
-    click.echo(f"  cd $(dopemux worktrees switch-path {branch})\n")
-
-    ctx.exit(1)
-
-
-@worktrees.command("cleanup")
-@click.option("--force", "-f", is_flag=True, help="Remove dirty worktrees")
-@click.option("--dry-run", "-n", is_flag=True, help="Preview without removing")
-@click.pass_context
-def worktrees_cleanup_cmd(ctx, force: bool, dry_run: bool):
-    """🧹 Clean up unused worktrees."""
-    from .worktree_commands import cleanup_worktrees
-    workspace = Path.cwd()
-    cleanup_worktrees(workspace, force=force, dry_run=dry_run)
-
-
-# Shell Integration Command
-# =============================================================================
-
-@cli.command("shell-setup")
-@click.argument("shell_type", type=click.Choice(["bash", "zsh"], case_sensitive=False))
-@click.pass_context
-def shell_setup_cmd(ctx, shell_type: str):
-    """🐚 Output shell integration code for worktree switching.
-
-    This command outputs shell functions that enable proper worktree switching.
-    Python subprocesses cannot change the parent shell's directory, so we provide
-    shell functions that execute 'cd' in the shell's context.
-
-    Usage:
-        dopemux shell-setup bash >> ~/.bashrc && source ~/.bashrc
-        dopemux shell-setup zsh >> ~/.zshrc && source ~/.zshrc
-
-    Then use:
-        dwt <branch>   # Switch to worktree with fuzzy matching
-        dwtls          # List all worktrees
-        dwtcur         # Show current worktree
-    """
-    import importlib.resources
-
-    # Read the shell integration script
-    script_path = Path(__file__).parent.parent.parent / "scripts" / "shell_integration.sh"
-
-    if not script_path.exists():
-        click.secho(f"❌ Shell integration script not found: {script_path}", fg="red", err=True)
-        ctx.exit(1)
-
-    try:
-        content = script_path.read_text()
-
-        # Output header
-        click.echo(f"\n# Dopemux Shell Integration ({shell_type})")
-        click.echo(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        click.echo("# Source: dopemux shell-setup\n")
-
-        # Output the integration code
-        click.echo(content)
-
-        # Usage instructions to stderr so they don't pollute the output
-        click.echo("\n# Installation complete! Restart your shell or run:", err=True)
-        if shell_type == "bash":
-            click.echo("#   source ~/.bashrc", err=True)
-        else:
-            click.echo("#   source ~/.zshrc", err=True)
-        click.echo("#", err=True)
-        click.echo("# Then use:", err=True)
-        click.echo("#   dwt <branch>   - Switch to worktree", err=True)
-        click.echo("#   dwtls          - List worktrees", err=True)
-        click.echo("#   dwtcur         - Current worktree", err=True)
-
-    except Exception as e:
-        click.secho(f"❌ Error reading shell integration: {e}", fg="red", err=True)
-        ctx.exit(1)
-
-
-        logger.error(f"Error: {e}")
-# Worktree Diagnostics Command
-# =============================================================================
-
-@cli.command("doctor")
-@click.option("--worktree", is_flag=True, help="Run worktree-specific diagnostics")
-@click.option("--verbose", "-v", is_flag=True, help="Show detailed information")
-@click.pass_context
-def doctor_cmd(ctx, worktree: bool, verbose: bool):
-    """🏥 Run system diagnostics and health checks.
-
-    Comprehensive health check for Dopemux configuration, workspace detection,
-    MCP servers, and worktree system.
-
-    Examples:
-        dopemux doctor                # General health check
-        dopemux doctor --worktree     # Worktree system check
-        dopemux doctor --worktree -v  # Detailed worktree diagnostics
-    """
-    if worktree:
-        # Phase 1-3 worktree diagnostics
-        from .worktree_diagnostics import run_diagnostics
-
-        success = run_diagnostics(verbose=verbose)
-        sys.exit(0 if success else 1)
-    else:
-        # General Dopemux health check
-        console.logger.info("\n[bold cyan]🏥 Dopemux System Diagnostics[/bold cyan]\n")
-        console.logger.info("[yellow]Use --worktree flag for worktree-specific checks[/yellow]\n")
-
-        # Basic checks
-        checks = []
-
-        config_manager: ConfigManager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
-        mobile_cfg = config_manager.get_mobile_config()
-
-        # 1. Check if dopemux is initialized
-        workspace = Path.cwd()
-        dopemux_dir = workspace / ".dopemux"
-        checks.append(("Dopemux initialized", dopemux_dir.exists()))
-
-        # 2. Check environment variables
-        checks.append(("ANTHROPIC_API_KEY set", bool(os.getenv("ANTHROPIC_API_KEY"))))
-        checks.append(("VOYAGE_API_KEY set", bool(os.getenv("VOYAGE_API_KEY"))))
-
-        # 3. Check Docker (for MCP servers)
-        try:
-            subprocess.run(["docker", "version"], capture_output=True, check=True, timeout=5)
-            checks.append(("Docker available", True))
-        except Exception as e:
-            checks.append(("Docker available", False))
-
-            logger.error(f"Error: {e}")
-        # 4. Mobile prerequisites
-        happy_present = shutil.which("happy") is not None
-        checks.append(("Happy CLI available", happy_present))
-
-        claude_present = shutil.which("claude") is not None
-        checks.append(("Claude CLI available", claude_present))
-
-        if mobile_cfg.happy_server_url:
-            parsed = urlparse(mobile_cfg.happy_server_url)
-            host = parsed.hostname
-            port = parsed.port or (443 if parsed.scheme == "https" else 80)
-            reachable = False
-            if host:
-                try:
-                    with socket.create_connection((host, port), timeout=3):
-                        reachable = True
-                except Exception as e:
-                    reachable = False
-                    logger.error(f"Error: {e}")
-            checks.append((f"Happy relay reachable ({mobile_cfg.happy_server_url})", reachable))
-
-        # 5. TaskX rails check
-        taskx_script = workspace / "scripts" / "taskx"
-        taskx_doctor_ok = False
-        taskx_label = "TaskX doctor deterministic"
-        if taskx_script.exists():
-            try:
-                taskx_proc = subprocess.run(
-                    [str(taskx_script), "doctor", "--timestamp-mode", "deterministic"],
-                    capture_output=True,
-                    text=True,
-                    timeout=60,
-                )
-                taskx_doctor_ok = taskx_proc.returncode == 0
-                if verbose and taskx_proc.stdout:
-                    console.logger.info(taskx_proc.stdout.strip())
-                if not taskx_doctor_ok and verbose:
-                    taskx_error = taskx_proc.stderr.strip() or "TaskX doctor failed"
-                    console.logger.error(taskx_error)
-            except Exception as e:
-                if verbose:
-                    console.logger.error(f"TaskX doctor error: {e}")
-                taskx_doctor_ok = False
-        else:
-            taskx_label = "TaskX doctor deterministic (scripts/taskx missing)"
-        checks.append((taskx_label, taskx_doctor_ok))
-
-        # Print results
-        from rich.table import Table
-        table = Table(show_header=False)
-        table.add_column("Check", style="bold")
-        table.add_column("Status")
-
-        passed = 0
-        for check_name, result in checks:
-            status = "[green]✅ Pass[/green]" if result else "[red]❌ Fail[/red]"
-            table.add_row(check_name, status)
-            if result:
-                passed += 1
-
-        console.logger.info(table)
-
-        # Summary
-        console.logger.info(f"\n[bold]Result:[/bold] {passed}/{len(checks)} checks passed")
-
-        if passed == len(checks):
-            console.logger.info("[green]🎉 System healthy![/green]")
-        else:
-            console.logger.error("[yellow]⚠️  Some checks failed. See above for details.[/yellow]")
-
-        sys.exit(0 if passed == len(checks) else 1)
-
-
-# ============================================================================
-# Decision Management Commands (ConPort Enhancement Quick Wins)
-# ============================================================================
-
-@cli.group()
-def decisions():
-    """
-    📊 Decision tracking and analytics
-
-    Manage and analyze decisions logged in ConPort with ADHD-optimized
-    visualizations and review workflows.
-
-    \b
-    Quick Win Commands:
-        review    - Review decisions pending attention
-        stats     - Show decision statistics with charts
-        energy    - Energy level tracking commands
-
-    Part of ConPort Enhancement roadmap (Phase 1-5).
-    """
-    pass
-
-
-@decisions.group()
-def energy():
-    """
-    ⚡ Energy level tracking (ADHD optimization)
-
-    Track your energy levels throughout the day to discover patterns
-    and optimize decision-making timing.
-    """
-    pass
-
-
-@decisions.group()
-def patterns():
-    """
-    🔍 Pattern detection and learning (Phase 3)
-
-    Auto-detect decision patterns from history:
-    - Tag clustering (co-occurring tags)
-    - Decision chains (sequential patterns)
-    - Timing patterns (time-of-day, duration)
-    - Energy correlation (energy vs quality)
-    """
-    pass
-
-
-# Import and register decision commands
-try:
-    from .commands.decisions_commands import (
-        review_decisions,
-        decision_stats,
-        log_energy,
-        energy_status,
-        show_decision,
-        list_decisions,
-        energy_analytics,
-        graph_decision,
-        update_outcome,
-        enhanced_stats,
-        query_decisions,
-        pattern_tags
-    )
-
-    # Decision management commands
-    decisions.add_command(review_decisions, "review")
-    decisions.add_command(decision_stats, "stats")
-    decisions.add_command(show_decision, "show")
-    decisions.add_command(list_decisions, "list")
-    decisions.add_command(graph_decision, "graph")
-    decisions.add_command(update_outcome, "update-outcome")
-    decisions.add_command(enhanced_stats, "stats-enhanced")
-    decisions.add_command(query_decisions, "query")
-
-    # Energy tracking commands
-    energy.add_command(log_energy, "log")
-    energy.add_command(energy_status, "status")
-    energy.add_command(energy_analytics, "analytics")
-
-    # Pattern detection commands (Phase 3)
-    patterns.add_command(pattern_tags, "tags")
-
-except ImportError as e:
-    # Graceful degradation if dependencies not installed
-    pass  # Commands won't be available but CLI still works
-
-
-
-
-# ============================================================================
-# Development Mode Commands (Contributor Support)
-# ============================================================================
-
-@cli.group()
-def dev():
-    """
-    🔧 Development mode (for contributors)
-
-    Auto-detects local checkouts of MCP servers (Zen, ConPort, etc.)
-    and uses them instead of production versions. Enables hot reload
-    and test database isolation.
-
-    Components checked:
-    - ~/code/zen-mcp-server (Zen MCP development)
-    - ~/code/conport-mcp (ConPort development)
-    - ~/code/serena-lsp (Serena development)
-    """
-    pass
-
-
-# Import and register dev commands
-try:
-    from .dev_commands import dev_status, dev_enable, dev_paths
-
-    dev.add_command(dev_status, "status")
-    dev.add_command(dev_enable, "enable")
-    dev.add_command(dev_paths, "paths")
-
-except ImportError as e:
-    pass  # Dev commands not available
-
-
-# Register mobile integration commands
-cli.add_command(mobile_commands, "mobile")
-cli.add_command(mobile_env_commands, "mobile-env")
-
-# Register extract command group
-cli.add_command(extract, "extract")
-
-# Add genetic agent CLI group
-if genetic_group:
-    cli.add_command(genetic_group, "genetic")
-
-
-# Code command group - dedicated vanilla agent interface
-@cli.group()
-@click.pass_context
-def code(ctx):
-    """
-    🧠 AI Code Repair - Vanilla Agent
-
-    Quick and reliable code fixes using traditional LLM-based iterative repair.
-    Best for straightforward bugs and rapid development cycles.
-
-    Examples:
-        dopemux code repair "undefined variable error" --file script.py
-        dopemux code analyze "null pointer issue" --file app.py
-        dopemux code status
-    """
-    pass
-
-
-@code.command()
-@click.argument('bug_description')
-@click.option('--file', '-f', 'file_path', help='Path to file containing the bug')
-@click.option('--line', '-l', type=int, help='Line number where bug occurs')
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
-@click.option('--dry-run', is_flag=True, help='Show what would be done without making changes')
-@click.pass_context
-def repair(ctx, bug_description, file_path, line, verbose, dry_run):
-    """
-    Repair code using the vanilla agent.
-
-    BUG_DESCRIPTION: Description of the bug to fix
-
-    Examples:
-        dopemux code repair "variable not defined" --file script.py --line 42
-        dopemux code repair "null pointer exception" --file app.py --verbose
-    """
-    # Import here to avoid circular dependencies
-    try:
-        # Add services to Python path if needed
-        services_path = Path(__file__).resolve().parent.parent / 'services'
-        if str(services_path) not in sys.path:
-            sys.path.insert(0, str(services_path))
-
-        from genetic_agent.vanilla.vanilla_agent import VanillaAgent
-        from genetic_agent.core.config import AgentConfig
-        import asyncio
-
-        async def run_repair():
-            config = AgentConfig()
-            agent = VanillaAgent(config)
-
-            task = {
-                "bug_description": bug_description,
-                "file_path": file_path or "",
-                "line_number": line or 0
-            }
-
-            if dry_run:
-                console.logger.info("[yellow]🔍 Dry run mode - analyzing bug without repair[/yellow]")
-                analysis = await agent._analyze_bug(bug_description, file_path or "", line or 0)
-                console.logger.info("Analysis Results:")
-                console.logger.info(f"  Description: {analysis.get('description', 'N/A')}")
-                console.logger.info(f"  Complexity: {analysis.get('complexity', {}).get('score', 'N/A')}")
-                console.logger.info(f"  Similar patterns: {len(analysis.get('similar_patterns', {}).get('results', []))}")
-                return
-
-            result = await agent.process_task(task)
-
-            if result.get('success'):
-                console.logger.info("[green]✅ Repair successful![/green]")
-                console.logger.info(f"Confidence: {result.get('confidence', 0):.2f}")
-                console.logger.info(f"Iterations: {result.get('iterations', 0)}")
-                if result.get('repair'):
-                    console.logger.info("\n[blue]Generated Repair:[/blue]")
-                    console.logger.info(result['repair'])
-                if result.get('explanation'):
-                    console.logger.info(f"\n[yellow]Explanation:[/yellow] {result['explanation']}")
-            else:
-                console.logger.error("[red]❌ Repair failed[/red]")
-                console.logger.error(f"Reason: {result.get('explanation', 'Unknown error')}")
-                if verbose:
-                    console.logger.debug(f"Debug: Iterations attempted: {result.get('iterations', 0)}")
-
-        asyncio.run(run_repair())
-
-    except Exception as e:
-        console.logger.error(f"[red]❌ Code repair failed: {e}[/red]")
-        if verbose:
-            import traceback
-            traceback.print_exc()
-
-
-@code.command()
-@click.argument('bug_description')
-@click.option('--file', '-f', 'file_path', help='Path to file to analyze')
-@click.option('--line', '-l', type=int, help='Line number to analyze')
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
-@click.pass_context
-def analyze(ctx, bug_description, file_path, line, verbose):
-    """
-    Analyze a bug without attempting repair.
-
-    Provides insights, complexity assessment, and repair strategy recommendations.
-    """
-    try:
-        services_path = Path(__file__).resolve().parent.parent / 'services'
-        if str(services_path) not in sys.path:
-            sys.path.insert(0, str(services_path))
-
-        from genetic_agent.vanilla.vanilla_agent import VanillaAgent
-        from genetic_agent.core.config import AgentConfig
-        import asyncio
-
-        async def run_analysis():
-            config = AgentConfig()
-            agent = VanillaAgent(config)
-
-            analysis = await agent._analyze_bug(bug_description, file_path or "", line or 0)
-
-            console.logger.info("[blue]🔍 Bug Analysis Complete[/blue]")
-            console.logger.info(f"Description: {analysis.get('description', 'N/A')}")
-            console.logger.info(f"Complexity Score: {analysis.get('complexity', {}).get('score', 'N/A')}")
-            console.logger.info(f"Similar Patterns Found: {len(analysis.get('similar_patterns', {}).get('results', []))}")
-
-            if verbose:
-                if analysis.get('complexity', {}).get('details'):
-                    console.logger.info("Complexity Details:")
-                    for key, value in analysis['complexity']['details'].items():
-                        console.logger.info(f"  {key}: {value}")
-
-        asyncio.run(run_analysis())
-
-    except Exception as e:
-        console.logger.error(f"[red]❌ Analysis failed: {e}[/red]")
-        if verbose:
-            import traceback
-            traceback.print_exc()
-
-
-@code.command()
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
-@click.pass_context
-def code_agent_status_cmd(ctx, verbose):
-    """
-    Show code agent status and configuration.
-    """
-    try:
-        services_path = Path(__file__).resolve().parent.parent / 'services'
-        if str(services_path) not in sys.path:
-            sys.path.insert(0, str(services_path))
-
-        from genetic_agent.core.config import AgentConfig
-        import asyncio
-
-        async def show_status():
-            config = AgentConfig()
-
-            console.logger.info("[blue]🧠 Vanilla Code Agent Status[/blue]")
-            console.logger.info(f"Container Zen URL: {config.zen_url}")
-            console.logger.info(f"Container ConPort URL: {config.conport_url}")
-            console.logger.info(f"Container Serena URL: {config.serena_url}")
-            console.logger.info(f"Container Dope-Context URL: {config.dope_context_url}")
-            console.logger.info(f"Max Iterations: {config.max_iterations}")
-            console.logger.info(f"Confidence Threshold: {config.confidence_threshold}")
-            console.logger.info(f"Workspace: {config.workspace_id}")
-
-            # Test MCP connectivity from host (localhost URLs)
-            console.logger.info("\n[yellow]Host MCP Service Status (localhost):[/yellow]")
-            host_urls = {
-                "Zen": "http://localhost:3003",
-                "ConPort": "http://localhost:3004",
-                "Serena": "http://localhost:3006",
-                "Dope-Context": "http://localhost:3010"
-            }
-
-            timeout = aiohttp.ClientTimeout(total=3.0)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                for service, url in host_urls.items():
-                    reachable = False
-                    error_msg = ""
-
-                    try:
-                        health_url = f"{url.rstrip('/')}/health"
-                        async with session.get(health_url) as response:
-                            if response.status == 200:
-                                reachable = True
-                            else:
-                                error_msg = f"Health check failed with status {response.status}"
-                    except Exception as e:
-                        error_msg = f"Connection failed: {str(e)}"
-
-                        logger.error(f"Error: {e}")
-                    status_icon = "✅" if reachable else "❌"
-                    console.logger.info(f"  {status_icon} {service}")
-                    if not reachable:
-                        console.logger.error(f"    Error: {error_msg}")
-
-            console.logger.info("\n[dim]Note: Container uses Docker network names, host uses localhost[/dim]")
-
-        asyncio.run(show_status())
-
-    except Exception as e:
-        console.logger.error(f"[red]❌ Status check failed: {e}[/red]")
-        if verbose:
-            import traceback
-            traceback.print_exc()
-
-# Ensure tmux commands group exists
-if not hasattr(tmux_commands, 'commands'):
-    # If tmux_commands is not a Click group, create one
-    @cli.group()
-    def tmux():
-        """Manage tmux sessions and panes for Dopemux."""
-        pass
-    tmux_commands = tmux
-
-cli.add_command(tmux_commands, "tmux")
-
-# Register Claude-Code-Tools commands
-from .claude_tools.cli import register_commands
-register_commands(cli)
-
-
-# ============================================================================
-# Memory Capture & Global Rollup Commands
-# ============================================================================
-
-@cli.group()
-def memory():
-    """🧠 Memory capture and global rollup operations."""
-    pass
-
-
-@memory.group()
-def rollup():
-    """📊 Global rollup index operations."""
-    pass
-
-
-@rollup.command()
-@click.option(
-    "--projects-file",
-    type=click.Path(exists=True, path_type=Path),
-    help="File containing list of project roots (newline or JSON)",
-)
-@click.option(
-    "--index-path",
-    type=click.Path(path_type=Path),
-    help="Global index path (default: ~/.dopemux/global_index.sqlite)",
-)
-def build(projects_file: Optional[Path], index_path: Optional[Path]):
-    """Build global rollup index from project ledgers (read-only)."""
-    from dopemux.memory.global_rollup import (
-        GlobalRollupIndexer,
-        resolve_rollup_projects,
-        GlobalRollupError,
-    )
-
-    try:
-        roots = resolve_rollup_projects(projects_file=projects_file)
-        console.logger.info(f"[cyan]Resolved {len(roots)} project(s)[/cyan]")
-
-        indexer = GlobalRollupIndexer(index_path=index_path)
-        result = indexer.build(roots)
-
-        console.logger.info(f"[green]✓[/green] Projects registered: {result['projects_registered']}")
-        console.logger.info(f"[green]✓[/green] Pointers indexed: {result['pointers_upserted']}")
-        console.logger.info(f"[green]✓[/green] Index: {result['index_path']}")
-
-    except GlobalRollupError as e:
-        console.logger.error(f"[red]✗ Rollup error:[/red] {e}")
-        raise click.Abort()
-
-
-@rollup.command()
-@click.option(
-    "--index-path",
-    type=click.Path(path_type=Path),
-    help="Global index path (default: ~/.dopemux/global_index.sqlite)",
-)
-def list(index_path: Optional[Path]):
-    """List registered projects in global rollup index."""
-    from dopemux.memory.global_rollup import GlobalRollupIndexer
-    from rich.table import Table
-
-    indexer = GlobalRollupIndexer(index_path=index_path)
-
-    projects = indexer.list_projects()
-
-    if not projects:
-        console.logger.info("[yellow]No projects registered in global index[/yellow]")
-        return
-
-    table = Table(title="Registered Projects")
-    table.add_column("Project ID", style="cyan")
-    table.add_column("Repo Root", style="green")
-    table.add_column("Last Seen", style="yellow")
-
-    for proj in projects:
-        table.add_row(
-            proj["project_id"],
-            proj["repo_root"],
-            proj["last_seen_at"],
-        )
-
-    console.logger.info(table)
-
-
-@rollup.command()
-@click.argument("query")
-@click.option(
-    "--limit",
-    type=int,
-    default=10,
-    help="Max results (default: 10, max: 100)",
-)
-@click.option(
-    "--index-path",
-    type=click.Path(path_type=Path),
-    help="Global index path (default: ~/.dopemux/global_index.sqlite)",
-)
-def search(query: str, limit: int, index_path: Optional[Path]):
-    """Search global rollup index for promoted work log entries."""
-    from dopemux.memory.global_rollup import GlobalRollupIndexer
-    from rich.table import Table
-
-    indexer = GlobalRollupIndexer(index_path=index_path)
-
-    results = indexer.search(query, limit=limit)
-
-    if not results:
-        console.logger.info(f"[yellow]No results for: {query}[/yellow]")
-        return
-
-    table = Table(title=f"Search Results: {query}")
-    table.add_column("Timestamp", style="cyan")
-    table.add_column("Type", style="yellow")
-    table.add_column("Summary", style="green")
-    table.add_column("Project", style="blue", overflow="fold")
-
-    for row in results:
-        table.add_row(
-            row["ts_utc"],
-            row["event_type"],
-            row["summary"][:80] + ("..." if len(row["summary"]) > 80 else ""),
-            row["project_id"][-40:],  # Last 40 chars of path
-        )
-
-    console.logger.info(table)
-    console.logger.info(f"\n[dim]Showing {len(results)} of up to {limit} results[/dim]")
-
-
-@memory.group()
-def capture():
-    """📥 Capture CLI tool events (Copilot, Codex, etc.)"""
-    pass
-
-
-@capture.command()
-@click.option(
-    "--event",
-    type=str,
-    required=True,
-    help="Event JSON string (required)",
-)
-@click.option(
-    "--mode",
-    type=click.Choice(["plugin", "cli", "mcp", "auto"]),
-    default="auto",
-    help="Capture mode (default: auto)",
-)
-@click.option(
-    "--quiet",
-    is_flag=True,
-    help="Suppress output (for hook usage)",
-)
-@click.option(
-    "--repo-root",
-    type=click.Path(exists=True, path_type=Path),
-    default=None,
-    help="Project repository root (default: auto-detect)",
-)
-@click.option(
-    "--lane",
-    type=str,
-    default=None,
-    help="Lane identifier for policy enforcement (e.g., agent:primary)",
-)
-def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path], lane: Optional[str]):
-    """
-    Emit a capture event to Chronicle.
-
-    Writes event to per-project Chronicle ledger with content-addressed
-    deduplication. Designed for hook and adapter usage.
-
-    Examples:
-
-        dopemux memory capture emit --event '{"event_type":"file.written","payload":{"path":"src/app.py"}}'
-
-        dopemux memory capture emit --mode plugin --quiet --event '{"event_type":"task.completed","payload":{"task":"T-001"}}'
-    """
-    from dopemux.memory.capture_client import emit_capture_event, CaptureError
-    import json
-
-    try:
-        # Parse event JSON
-        try:
-            event_data = json.loads(event)
-        except json.JSONDecodeError as e:
-            if not quiet:
-                console.logger.error(f"[red]✗ Invalid JSON:[/red] {e}")
-            raise click.Abort()
-
-        # Validate event structure
-        if not isinstance(event_data, dict):
-            if not quiet:
-                console.logger.error("[red]✗ Event must be a JSON object[/red]")
-            raise click.Abort()
-
-        if "event_type" not in event_data:
-            if not quiet:
-                console.logger.error("[red]✗ Event must have 'event_type' field[/red]")
-            raise click.Abort()
-
-        # Emit to Chronicle
-        result = emit_capture_event(
-            event_data,
-            mode=mode,
-            repo_root=repo_root,
-            emit_event_bus=False,  # Don't emit to event bus for manual captures
-            lane=lane,
-        )
-
-        # Output result
-        if not quiet:
-            if result.inserted:
-                console.logger.info(f"[green]✓[/green] Event captured: {result.event_id[:16]}...")
-                console.logger.info(f"  Event type: {event_data.get('event_type')}")
-                console.logger.info(f"  Mode: {mode}")
-            else:
-                console.logger.info(f"[yellow]✓[/yellow] Event already exists (deduplicated): {result.event_id[:16]}...")
-
-        # Exit code 0 on success
-        sys.exit(0)
-
-    except CaptureError as e:
-        if not quiet:
-            console.logger.error(f"[red]✗ Capture error:[/red] {e}")
-        sys.exit(1)
-    except Exception as e:
-        if not quiet:
-            console.logger.error(f"[red]✗ Unexpected error:[/red] {e}")
-        sys.exit(1)
-
-
-@capture.command()
-@click.argument("session_id")
-@click.option(
-    "--since",
-    type=str,
-    default=None,
-    help="Only ingest events after this ISO timestamp",
-)
-@click.option(
-    "--repo-root",
-    type=click.Path(exists=True, path_type=Path),
-    default=None,
-    help="Project repository root (default: auto-detect)",
-)
-def copilot(session_id: str, since: Optional[str], repo_root: Optional[Path]):
-    """
-    Ingest Copilot CLI session transcript into Chronicle.
-
-    Parses JSONL events from ~/.copilot/session-state/{SESSION_ID}/events.jsonl
-    and emits to Chronicle via content-addressed deduplication.
-
-    Examples:
-
-        dopemux memory capture copilot 550e8400-e29b-41d4-a716-446655440000
-
-        dopemux memory capture copilot SESSION_ID --since 2025-02-12T10:30:00Z
-
-        dopemux memory capture copilot SESSION_ID --repo-root /path/to/project
-    """
-    from dopemux.memory.adapters import CopilotCaptureAdapter
-    from datetime import datetime
-
-    try:
-        # Parse since timestamp if provided
-        since_dt = None
-        if since:
-            try:
-                since_dt = datetime.fromisoformat(since.rstrip("Z"))
-            except ValueError as e:
-                console.logger.error(f"[red]✗ Invalid timestamp format:[/red] {e}")
-                console.logger.info("[dim]Expected ISO 8601 format: 2025-02-12T10:30:00Z[/dim]")
-                raise click.Abort()
-
-        # Initialize adapter
-        adapter = CopilotCaptureAdapter(repo_root=repo_root)
-
-        # Ingest session
-        console.logger.info(f"[cyan]📥 Ingesting Copilot session: {session_id}[/cyan]")
-        if since:
-            console.logger.info(f"[dim]Filtering events after: {since}[/dim]")
-
-        stats = adapter.ingest_session(session_id, since=since_dt)
-
-        # Display results
-        console.logger.info(f"\n[green]✓[/green] Ingestion complete:")
-        console.logger.info(f"  Total events parsed: {stats['total']}")
-        console.logger.info(f"  Successfully inserted: {stats['inserted']}")
-        console.logger.info(f"  Deduplicated (already exist): {stats['deduplicated']}")
-        console.logger.info(f"  Skipped (unmapped types): {stats['skipped']}")
-
-        if stats["inserted"] == 0 and stats["total"] > 0:
-            console.logger.info("\n[yellow]💡 All events already ingested (idempotent)[/yellow]")
-
-    except FileNotFoundError as e:
-        console.logger.error(f"[red]✗ Session not found:[/red] {e}")
-        console.logger.info("[dim]Use 'dopemux memory capture copilot-list' to see available sessions[/dim]")
-        raise click.Abort()
-    except Exception as e:
-        console.logger.error(f"[red]✗ Ingestion failed:[/red] {e}")
-        raise click.Abort()
-
-
-@capture.command("copilot-list")
-@click.option(
-    "--limit",
-    type=int,
-    default=20,
-    help="Max sessions to display (default: 20)",
-)
-def copilot_list(limit: int):
-    """
-    List available Copilot CLI sessions.
-
-    Shows sessions from ~/.copilot/session-state/ with event counts and timestamps.
-
-    Examples:
-
-        dopemux memory capture copilot-list
-
-        dopemux memory capture copilot-list --limit 50
-    """
-    from dopemux.memory.adapters import CopilotCaptureAdapter
-    from rich.table import Table
-
-    adapter = CopilotCaptureAdapter()
-    sessions = adapter.list_sessions()
-
-    if not sessions:
-        console.logger.info("[yellow]No Copilot sessions found in ~/.copilot/session-state/[/yellow]")
-        return
-
-    # Limit results
-    display_sessions = sessions[:limit]
-
-    table = Table(title=f"Available Copilot Sessions (showing {len(display_sessions)} of {len(sessions)})")
-    table.add_column("Session ID", style="cyan", width=36)
-    table.add_column("Events", style="green", justify="right")
-    table.add_column("Started", style="yellow")
-
-    for session in display_sessions:
-        table.add_row(
-            session["session_id"],
-            str(session["event_count"]),
-            session.get("start_timestamp") or "unknown",
-        )
-
-    console.logger.info(table)
-
-    if len(sessions) > limit:
-        console.logger.info(f"\n[dim]💡 Showing {limit} of {len(sessions)} sessions. Use --limit to see more.[/dim]")
-
-
-# ============================================================================
-# 🚀 EASY LAUNCH SHORTCUTS - Quick commands for common workflows
-# ============================================================================
-
-@cli.command("launch")
-@click.option(
-    "--preset",
-    type=click.Choice(["minimal", "standard", "full", "dope-muted", "dope-neon", "dope-house"]),
-    default="standard",
-    help="Launch preset configuration"
-)
-@click.option("--attach/--no-attach", default=True, help="Attach to session after creation")
-@click.pass_context
-def launch(ctx, preset: str, attach: bool):
-    """
-    🚀 Quick launch with opinionated presets.
-    
-    Presets:
-    
-      minimal     - Just Claude Code, no tmux
-      standard    - Medium layout with default theme
-      full        - DOPE layout with all features
-      dope-muted  - DOPE layout + muted theme (recommended)
-      dope-neon   - DOPE layout + neon theme
-      dope-house  - DOPE layout + house theme
-    
-    Examples:
-    
-      dopemux launch                    # Standard setup
-      dopemux launch --preset full      # Full DOPE layout
-      dopemux launch --preset dope-muted  # DOPE with muted colors
-    """
-    from .tmux.controller import TmuxController
-    import subprocess
-    import time
-    
-    console.logger.info(f"[cyan]🚀 Launching Dopemux with '{preset}' preset...[/cyan]\n")
-    
-    if preset == "minimal":
-        # Just start Claude Code, no tmux
-        console.logger.info("[dim]Starting Claude Code without tmux...[/dim]")
-        ctx.invoke(cli.commands['start'])
-        return
-    
-    # Parse preset into layout and theme
-    layout_map = {
-        "standard": ("medium", None),
-        "full": ("dope", None),
-        "dope-muted": ("dope", "muted"),
-        "dope-neon": ("dope", "neon"),
-        "dope-house": ("dope", "house"),
-    }
-    
-    layout, theme = layout_map[preset]
-    
-    # Start tmux with layout
-    console.logger.info(f"[blue]📐 Creating {layout} layout...[/blue]")
-    
-    tmux_start_args = [
-        "dopemux", "tmux", "start",
-        "--layout", layout,
-        "--bootstrap",
-    ]
-    
-    if not attach:
-        tmux_start_args.append("--no-attach")
-    
-    # Start the session
-    subprocess.run(tmux_start_args, check=True)
-
-    autoindex_result = _trigger_dope_context_autoindex_startup(Path.cwd())
-    if autoindex_result and autoindex_result.get("status") in {"started", "already_running"}:
-        console.logger.info("[dim]✅ Dope-context autoindex bootstrap triggered[/dim]")
-
-    # Apply theme if specified
-    if theme:
-        console.logger.info(f"\n[magenta]🎨 Applying {theme} theme...[/magenta]")
-        time.sleep(1)  # Give tmux time to initialize
-        subprocess.run(["dopemux", "tmux", "theme", theme, "--apply"], check=True)
-        console.logger.info(f"[green]✨ {preset} preset ready![/green]")
-    else:
-        console.logger.info(f"[green]✨ {preset} preset ready![/green]")
-
-
-@cli.command("dope")
-@click.option(
-    "--theme",
-    type=click.Choice(["muted", "neon", "house"]),
-    default="muted",
-    help="Visual theme to apply"
-)
-@click.option("--attach/--no-attach", default=True, help="Attach to session")
-@click.pass_context
-def dope(ctx, theme: str, attach: bool):
-    """
-    🔥 Launch full DOPE layout (shortcut for: launch --preset dope-{theme})
-    
-    This is the complete Dopemux experience:
-      ✓ Full DOPE layout with all monitors
-      ✓ Orchestrator + dual agents
-      ✓ Dashboard panels
-      ✓ Auto-bootstrap services
-      ✓ Your choice of theme
-    
-    Examples:
-    
-      dopemux dope              # DOPE with muted theme (default)
-      dopemux dope --theme neon # DOPE with neon theme
-      dopemux dope --theme house # DOPE with house theme
-    """
-    preset = f"dope-{theme}"
-    ctx.invoke(launch, preset=preset, attach=attach)
-
-
-@cli.command("quick")
-@click.pass_context
-def quick(ctx):
-    """
-    ⚡ Fastest start - medium layout, no bells and whistles.
-    
-    Perfect for:
-      • Quick coding sessions
-      • Testing something fast
-      • Don't need full monitoring
-    
-    Equivalent to: dopemux tmux start --layout medium
-    """
-    console.print("[cyan]⚡ Quick start - medium layout[/cyan]\n")
-    import subprocess
-    subprocess.run([
-        "dopemux", "tmux", "start",
-        "--layout", "medium",
-    ], check=True)
-
-
-@cli.group("trigger")
-def trigger_group():
-    """Internal hook triggers."""
-    pass
-
-@trigger_group.command("command-done")
-@click.option("--async", "_async", is_flag=True, help="No-op")
-@click.option("--quiet", is_flag=True, help="Suppress output")
-def trigger_command_done(_async: bool, quiet: bool):
-    if _async and not quiet:
-        quiet = True
-    try:
-        emit_capture_event(
-            {"event_type": "command.done", "payload": {}},
-            mode="auto",
-            emit_event_bus=False,
-        )
-    except CaptureError:
-        sys.exit(1)
-    if not quiet:
-        console.print("[dim]command-done trigger received[/dim]")
-    return 0
-
-@trigger_group.command("shell-command")
-@click.option("--context", type=str, help="JSON context", default="")
-@click.option("--async", "_async", is_flag=True, help="No-op")
-@click.option("--quiet", is_flag=True, help="Suppress output")
-def trigger_shell_command(context: str, _async: bool, quiet: bool):
-    import json
-
-    if _async and not quiet:
-        quiet = True
-    payload: dict = {}
-    if context:
-        try:
-            parsed_context = json.loads(context)
-            payload = parsed_context if isinstance(parsed_context, dict) else {"context": parsed_context}
-        except json.JSONDecodeError:
-            payload = {"raw_context": context}
-    try:
-        emit_capture_event(
-            {"event_type": "shell.command", "payload": payload},
-            mode="auto",
-            emit_event_bus=False,
-        )
-    except CaptureError:
-        sys.exit(1)
-    if not quiet:
-        console.print("[dim]shell-command trigger received[/dim]")
-    return 0
-
-
-@cli.group("capture")
-def capture_group():
-    """Capture events into Chronicle."""
-    pass
-
-
-@capture_group.command("emit")
-@click.option("--event", type=str, required=True, help="Event JSON object")
-@click.option(
-    "--mode",
-    type=click.Choice(["plugin", "cli", "mcp", "auto"]),
-    default="auto",
-    help="Capture mode",
-)
-@click.option("--repo-root", type=click.Path(exists=True, path_type=Path), default=None)
-def capture_emit(event: str, mode: str, repo_root: Optional[Path]):
-    import json
-
-    try:
-        event_data = json.loads(event)
-    except json.JSONDecodeError as exc:
-        raise click.ClickException(f"Invalid JSON: {exc}")
-
-    if not isinstance(event_data, dict):
-        raise click.ClickException("event must decode to an object")
-
-    emit_capture_event(
-        event_data,
-        mode=mode,
-        repo_root=repo_root,
-        emit_event_bus=False,
-    )
-
-
-@capture_group.command("note", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("tokens", nargs=-1, type=click.UNPROCESSED)
-def capture_note(tokens: Sequence[str]):
-    if not tokens:
-        raise click.ClickException("summary is required")
-
-    summary = tokens[0]
-    mode = "auto"
-    tags: List[str] = []
-    session_id: Optional[str] = None
-    source = "cli"
-
-    i = 1
-    while i < len(tokens):
-        arg = tokens[i]
-        if arg == "--mode":
-            i += 1
-            if i >= len(tokens):
-                raise click.ClickException("--mode requires a value")
-            mode = tokens[i]
-        elif arg == "--tag":
-            i += 1
-            if i >= len(tokens):
-                raise click.ClickException("--tag requires a value")
-            tags.append(tokens[i])
-        elif arg == "--session-id":
-            i += 1
-            if i >= len(tokens):
-                raise click.ClickException("--session-id requires a value")
-            session_id = tokens[i]
-        elif arg == "--source":
-            i += 1
-            if i >= len(tokens):
-                raise click.ClickException("--source requires a value")
-            source = tokens[i]
-        else:
-            raise click.ClickException(f"Unknown option: {arg}")
-        i += 1
-
-    event = {
-        "event_type": "manual.note",
-        "source": source,
-        "payload": {
-            "summary": summary,
-            "tags": tags,
-        },
-    }
-    if session_id:
-        event["session_id"] = session_id
-
-    emit_capture_event(
-        event,
-        mode=mode,
-        emit_event_bus=False,
-    )
-
-
-def _workflow_api_base_url() -> str:
-    return os.getenv("DOPEMUX_WORKFLOW_API_URL", "http://localhost:8000").rstrip("/")
-
-
-def _workflow_request(method: str, path: str, *, json_payload=None, params=None):
-    import requests
-
-    url = f"{_workflow_api_base_url()}{path}"
-    response = requests.request(method, url, json=json_payload, params=params, timeout=30)
-    if response.status_code >= 400:
-        raise click.ClickException(f"Workflow API error {response.status_code}: {response.text}")
-    return response
-
-
-@cli.group("workflow")
-def workflow_group():
-    """Workflow planning commands."""
-    pass
-
-
-@workflow_group.group("ideas")
-def workflow_ideas_group():
-    """Workflow idea management."""
-    pass
-
-
-@workflow_ideas_group.command("add", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("tokens", nargs=-1, type=click.UNPROCESSED)
-def workflow_ideas_add(tokens: Sequence[str]):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    source = "manual"
-    creator = "cli"
-    tags: List[str] = []
-
-    i = 0
-    while i < len(tokens):
-        arg = tokens[i]
-        if arg == "--title":
-            i += 1
-            title = tokens[i] if i < len(tokens) else None
-        elif arg == "--description":
-            i += 1
-            description = tokens[i] if i < len(tokens) else None
-        elif arg == "--source":
-            i += 1
-            source = tokens[i] if i < len(tokens) else source
-        elif arg == "--creator":
-            i += 1
-            creator = tokens[i] if i < len(tokens) else creator
-        elif arg == "--tag":
-            i += 1
-            if i >= len(tokens):
-                raise click.ClickException("--tag requires a value")
-            tags.append(tokens[i])
-        else:
-            raise click.ClickException(f"Unknown option: {arg}")
-        i += 1
-
-    if not title:
-        raise click.ClickException("--title is required")
-    if not description:
-        raise click.ClickException("--description is required")
-
-    payload = {
-        "title": title,
-        "description": description,
-        "source": source,
-        "creator": creator,
-        "tags": tags,
-    }
-    _workflow_request("POST", "/api/workflow/ideas", json_payload=payload)
-
-
-@workflow_ideas_group.command("promote", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("idea_id")
-@click.argument("tokens", nargs=-1, type=click.UNPROCESSED)
-def workflow_ideas_promote(
-    idea_id: str,
-    tokens: Sequence[str],
-):
-    sync_leantime = True
-    priority: Optional[str] = None
-    business_value: Optional[str] = None
-    criteria: List[str] = []
-    tags: List[str] = []
-
-    i = 0
-    while i < len(tokens):
-        arg = tokens[i]
-        if arg == "--sync-leantime":
-            sync_leantime = True
-        elif arg == "--no-sync-leantime":
-            sync_leantime = False
-        elif arg == "--priority":
-            i += 1
-            if i >= len(tokens):
-                raise click.ClickException("--priority requires a value")
-            priority = tokens[i]
-        elif arg == "--business-value":
-            i += 1
-            if i >= len(tokens):
-                raise click.ClickException("--business-value requires a value")
-            business_value = tokens[i]
-        elif arg == "--criterion":
-            i += 1
-            if i >= len(tokens):
-                raise click.ClickException("--criterion requires a value")
-            criteria.append(tokens[i])
-        elif arg == "--tag":
-            i += 1
-            if i >= len(tokens):
-                raise click.ClickException("--tag requires a value")
-            tags.append(tokens[i])
-        else:
-            raise click.ClickException(f"Unknown option: {arg}")
-        i += 1
-
-    payload = {
-        "sync_to_leantime": sync_leantime,
-        "acceptance_criteria": criteria,
-        "tags": tags,
-    }
-    if priority:
-        payload["priority"] = priority
-    if business_value:
-        payload["business_value"] = business_value
-
-    _workflow_request("POST", f"/api/workflow/ideas/{idea_id}/promote", json_payload=payload)
-
-
-@workflow_group.group("epics")
-def workflow_epics_group():
-    """Workflow epic management."""
-    pass
-
-
-@workflow_epics_group.command("list")
-@click.option("--status", default=None, help="Filter by status")
-@click.option("--priority", default=None, help="Filter by priority")
-@click.option("--tag", default=None, help="Filter by single tag")
-@click.option("--limit", type=int, default=20, show_default=True)
-def workflow_epics_list(status: Optional[str], priority: Optional[str], tag: Optional[str], limit: int):
-    params = {"limit": limit}
-    if status:
-        params["status"] = status
-    if priority:
-        params["priority"] = priority
-    if tag:
-        params["tag"] = tag
-
-    _workflow_request("GET", "/api/workflow/epics", params=params)
-
-
-@cli.command("layouts")
-def layouts():
-    """
-    📐 Show available layouts and themes with examples.
-    
-    Educational command to learn what's available.
-    """
-    from rich.markdown import Markdown
-    
-    help_text = """
-# Dopemux Layouts & Themes Guide
-
-## 🏗️ Layouts (Structure)
-
-Layouts control **pane arrangement** - where things go in your tmux session.
-
-| Layout       | Description | Use When |
-|--------------|-------------|----------|
-| `low`        | Minimal: main + agent | You want simplicity |
-| `medium`     | Standard split panes | General development |
-| `high`       | More monitoring panes | Need more visibility |
-| `orchestrator` | Full orchestrator + monitors | Managing multiple tasks |
-| `dope`       | Complete DOPE experience | You want it all! 🔥 |
-
-## 🎨 Themes (Appearance)
-
-Themes control **colors and styling** - how things look.
-
-| Theme  | Style | Best For |
-|--------|-------|----------|
-| `muted` | Soft, low contrast | Long sessions, reduced eye strain |
-| `neon`  | Bright, vibrant | High energy, clear distinctions |
-| `house` | Balanced, professional | General use |
-
-## 🚀 Easy Commands
-
-Instead of memorizing complex tmux commands, use these shortcuts:
-
-```bash
-# Quick start commands
-dopemux quick                    # Fast medium layout
-dopemux dope                     # Full DOPE with muted theme
-dopemux dope --theme neon        # Full DOPE with neon theme
-dopemux launch --preset full     # Full DOPE, default theme
-
-# Full control
-dopemux launch --preset dope-muted  # Explicit preset
-
-# Traditional (if you prefer)
-dopemux tmux start --layout dope --bootstrap
-dopemux tmux theme muted --apply
-```
-
-## 📋 Presets Reference
-
-| Preset | Layout | Theme | Description |
-|--------|--------|-------|-------------|
-| `minimal` | none | none | Just Claude Code |
-| `standard` | medium | default | Basic split panes |
-| `full` | dope | default | Everything enabled |
-| `dope-muted` | dope | muted | Recommended! 🌟 |
-| `dope-neon` | dope | neon | Bright & vibrant |
-| `dope-house` | dope | house | Professional |
-
-## 💡 Tips
-
-- **First time?** Try: `dopemux dope`
-- **Long session?** Use: `dopemux launch --preset dope-muted`
-- **Quick test?** Use: `dopemux quick`
-- **Learning?** Start with: `dopemux launch --preset standard`
-
-## 🔧 Advanced Usage
-
-```bash
-# Manual control (traditional way)
-dopemux tmux start --layout dope --bootstrap --alt-routing
-dopemux tmux theme neon --apply
-
-# List current panes
-dopemux tmux list
-
-# Preview a theme without applying
-dopemux tmux theme neon
-```
-"""
-    
-    console.logger.info(Markdown(help_text))
-
-
-# Register routing commands
-def _register_routing_commands():
-    try:
-        from .routing_cli import routing
-        cli.add_command(routing, "routing")
-    except Exception as e:
-        # Graceful degradation if routing module has issues
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.warning(f"Failed to register routing commands: {e}")
-
-_register_routing_commands()
-
-
-def main():
-    """Main entry point."""
-    try:
-        cli()
-    except KeyboardInterrupt:
-        console.logger.info("\n[yellow]⏸️ Interrupted by user[/yellow]")
-        sys.exit(1)
-    except Exception as e:
-        error_text = Text("❌ Error: ", style="red") + Text(str(e))
-        console.logger.error(error_text)
-        if "--debug" in sys.argv:
-            raise
-        sys.exit(1)
-
-
-@cli.command("hooks")
-@click.option("--setup", is_flag=True, help="Start monitoring Claude Code activity")
-@click.option("--teardown", is_flag=True, help="Stop monitoring")
-@click.option("--status", is_flag=True, help="Show current hook status")
-@click.option("--enable", help="Enable specific hook type (session-start, file-change, shell-command, git-commit)")
-@click.option("--disable", help="Disable specific hook type (session-start, file-change, shell-command, git-commit)")
-@click.option("--shell-scripts", is_flag=True, help="Generate shell hook scripts")
-@click.option("--install-shell-hooks", is_flag=True, help="Install shell hooks in shell config")
-@click.option("--uninstall-shell-hooks", is_flag=True, help="Uninstall shell hooks from shell config")
-@click.option("--workspace", type=click.Path(exists=True, file_okay=False, dir_okay=True), help="Set workspace to monitor")
-@click.option("--force", is_flag=True, help="Force operations (e.g., reinstall)")
-@click.pass_context
-def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, install_shell_hooks, uninstall_shell_hooks, workspace, force):
-    """
-    Manage Dopemux hook system for Claude Code integration.
-
-    Provides external monitoring and triggering of Dopemux workflows
-    based on Claude Code activity without interfering with the CLI.
-    """
-    try:
-        from .hooks.claude_code_hooks import claude_hooks, get_shell_hook_scripts
-
-        if setup:
-            claude_hooks.start_monitoring(workspace)
-            console.logger.info("[green]✅ Claude Code hooks started[/green]")
-            console.logger.info(f"   Monitoring paths: {[str(p) for p in claude_hooks.watched_paths]}")
-
-        elif teardown:
-            claude_hooks.stop_monitoring()
-            console.logger.info("[green]✅ Claude Code hooks stopped[/green]")
-
-        elif status:
-            hook_status = claude_hooks.get_status()
-            console.logger.info("[bold]Claude Code Hook Status:[/bold]")
-            console.logger.info(f"   Monitoring active: {hook_status['monitoring_active']}")
-            console.logger.info(f"   Quiet mode: {hook_status['quiet_mode']}")
-            console.logger.info(f"   Watched paths: {hook_status['watched_paths']}")
-            console.logger.info("\n[bold]Hook Types:[/bold]")
-            for hook_type, enabled in hook_status['active_hooks'].items():
-                status_icon = "[green]✓[/green]" if enabled else "[red]✗[/red]"
-                console.logger.info(f"   {status_icon} {hook_type}")
-
-        elif enable:
-            claude_hooks.enable_hook(enable)
-            console.logger.info(f"[green]✅ Hook enabled: {enable}[/green]")
-
-        elif disable:
-            claude_hooks.disable_hook(disable)
-            console.logger.info(f"[green]✅ Hook disabled: {disable}[/green]")
-
-        elif shell_scripts:
-            scripts = get_shell_hook_scripts()
-            console.logger.info("[bold]Shell Hook Scripts:[/bold]")
-            console.logger.info("\n[dim]Add these to your ~/.bashrc or ~/.zshrc:[/dim]\n")
-
-            console.logger.info("[bold cyan]For Bash:[/bold cyan]")
-            console.logger.info(scripts['bash_preexec'])
-            console.logger.info(scripts['bash_precmd'])
-
-            console.logger.info("\n[bold cyan]For Zsh:[/bold cyan]")
-            console.logger.info(scripts['zsh_hooks'])
-
-        elif install_shell_hooks:
-            from .hooks.shell_hook_installer import install_shell_hooks as installer
-            success, message = installer(force=force)
-            if success:
-                console.logger.info(f"[green]{message}[/green]")
-            else:
-                console.logger.info(f"[red]{message}[/red]")
-                sys.exit(1)
-
-        elif uninstall_shell_hooks:
-            from .hooks.shell_hook_installer import uninstall_shell_hooks as uninstaller
-            success, message = uninstaller()
-            if success:
-                console.logger.info(f"[green]{message}[/green]")
-            else:
-                console.logger.info(f"[red]{message}[/red]")
-                sys.exit(1)
-
-        else:
-            # Default: show help
-            console.logger.info("[bold]Dopemux Hook System[/bold]")
-            console.logger.info("Manage external hooks for Claude Code integration.\n")
-            console.logger.info("[bold]Commands:[/bold]")
-            console.logger.info("   --setup               Start monitoring Claude Code activity")
-            console.logger.info("   --teardown            Stop monitoring")
-            console.logger.info("   --status              Show current hook status")
-            console.logger.info("   --enable HOOK         Enable specific hook type")
-            console.logger.info("   --disable HOOK        Disable specific hook type")
-            console.logger.info("   --shell-scripts       Generate shell hook scripts")
-            console.logger.info("   --install-shell-hooks Install shell hooks in shell config")
-            console.logger.info("   --uninstall-shell-hooks Remove shell hooks from shell config")
-            console.logger.info("   --workspace PATH      Set workspace to monitor")
-            console.logger.info("   --force               Force operations (e.g., reinstall)\n")
-            console.logger.info("[bold]Hook Types:[/bold]")
-            console.logger.info("   session-start    Monitor Claude Code process start")
-            console.logger.info("   file-change      Monitor file modifications")
-            console.logger.info("   shell-command    Monitor shell commands")
-            console.logger.info("   git-commit       Monitor git operations (disabled by default)")
-
-    except Exception as e:
-        console.logger.error(f"[red]❌ Hook command failed: {e}[/red]")
-        if ctx.obj.get("verbose"):
-            raise
-        sys.exit(1)
-
-_PIPELINE_VERSION_CHOICES = ["v4", "v3"]
-
-
-@cli.group()
-def upgrades():
-    """Canonical Repo Truth Extractor commands (v4 default, v3 fallback)."""
-    pass
-
-
-@cli.group()
-@click.pass_context
-def extractor(ctx):
-    """Legacy alias for `dopemux upgrades`."""
-    if ctx.invoked_subcommand:
-        console.logger.info("[yellow]⚠ `dopemux extractor` is legacy. Use `dopemux upgrades`.[/yellow]")
-
-
-def _resolve_extractor_repo_root(start: Path) -> Path:
-    for candidate in [start, *start.parents]:
-        if (candidate / "services" / "repo-truth-extractor").is_dir():
-            return candidate
-    return start
-
-
-def _extractor_runner_path(repo_root: Path, pipeline_version: str) -> Path:
-    base = repo_root / "services" / "repo-truth-extractor"
-    if pipeline_version == "v4":
-        return base / "run_extraction_v4.py"
-    return base / "run_extraction_v3.py"
-
-
-def _run_extractor_runner(
-    *,
-    pipeline_version: str,
-    args: List[str],
-    repo_root: Optional[Path] = None,
-) -> None:
-    resolved_root = _resolve_extractor_repo_root(repo_root or Path.cwd())
-    runner = _extractor_runner_path(resolved_root, pipeline_version)
-    if not runner.exists():
-        raise click.ClickException(f"Runner not found: {runner}")
-    cmd = [sys.executable, str(runner), *args]
-    proc = subprocess.run(cmd, cwd=resolved_root)
-    if proc.returncode != 0:
-        raise click.ClickException(
-            f"Repo Truth Extractor {pipeline_version} runner failed with exit code {proc.returncode}"
-        )
-
-
-def _repscan_runner_path(repo_root: Path) -> Path:
-    return repo_root / "services" / "repo-truth-extractor" / "run_repscan.py"
-
-
-def _run_repscan_runner(
-    *,
-    args: List[str],
-    repo_root: Optional[Path] = None,
-) -> None:
-    resolved_root = _resolve_extractor_repo_root(repo_root or Path.cwd())
-    runner = _repscan_runner_path(resolved_root)
-    if not runner.exists():
-        raise click.ClickException(f"RepoScan runner not found: {runner}")
-    cmd = [sys.executable, str(runner), *args]
-    proc = subprocess.run(cmd, cwd=resolved_root)
-    if proc.returncode != 0:
-        raise click.ClickException(f"RepoScan runner failed with exit code {proc.returncode}")
-
-
+# from src/dopemux/commands/extractor_commands.py
 @cli.command("repscan", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
 @click.option("--phase", type=click.Choice(["ALL", "A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]))
 @click.option("--run-id", type=str)
@@ -7754,6 +3657,9 @@ def repscan_passthrough(
     if legacy_runner:
         forwarded.extend(["--legacy-runner", legacy_runner])
     _run_repscan_runner(args=forwarded)
+
+
+_PIPELINE_VERSION_CHOICES = ["v4", "v3"]
 
 
 def _pipeline_version_options(command_fn: Callable) -> Callable:
@@ -8052,5 +3958,555 @@ def extractor_promptset_group():
 
 
 extractor_promptset_group.add_command(extractor_promptset_audit, "audit")
+
+# from src/dopemux/commands/memory_commands.py
+@cli.command("launch")
+@click.option(
+    "--preset",
+    type=click.Choice(["minimal", "standard", "full", "dope-muted", "dope-neon", "dope-house"]),
+    default="standard",
+    help="Launch preset configuration"
+)
+@click.option("--attach/--no-attach", default=True, help="Attach to session after creation")
+@click.pass_context
+def launch(ctx, preset: str, attach: bool):
+    """
+    🚀 Quick launch with opinionated presets.
+    
+    Presets:
+    
+      minimal     - Just Claude Code, no tmux
+      standard    - Medium layout with default theme
+      full        - DOPE layout with all features
+      dope-muted  - DOPE layout + muted theme (recommended)
+      dope-neon   - DOPE layout + neon theme
+      dope-house  - DOPE layout + house theme
+    
+    Examples:
+    
+      dopemux launch                    # Standard setup
+      dopemux launch --preset full      # Full DOPE layout
+      dopemux launch --preset dope-muted  # DOPE with muted colors
+    """
+    from .tmux.controller import TmuxController
+    import subprocess
+    import time
+    
+    console.logger.info(f"[cyan]🚀 Launching Dopemux with '{preset}' preset...[/cyan]\n")
+    
+    if preset == "minimal":
+        # Just start Claude Code, no tmux
+        console.logger.info("[dim]Starting Claude Code without tmux...[/dim]")
+        ctx.invoke(cli.commands['start'])
+        return
+    
+    # Parse preset into layout and theme
+    layout_map = {
+        "standard": ("medium", None),
+        "full": ("dope", None),
+        "dope-muted": ("dope", "muted"),
+        "dope-neon": ("dope", "neon"),
+        "dope-house": ("dope", "house"),
+    }
+    
+    layout, theme = layout_map[preset]
+    
+    # Start tmux with layout
+    console.logger.info(f"[blue]📐 Creating {layout} layout...[/blue]")
+    
+    tmux_start_args = [
+        "dopemux", "tmux", "start",
+        "--layout", layout,
+        "--bootstrap",
+    ]
+    
+    if not attach:
+        tmux_start_args.append("--no-attach")
+    
+    # Start the session
+    subprocess.run(tmux_start_args, check=True)
+
+    autoindex_result = _trigger_dope_context_autoindex_startup(Path.cwd())
+    if autoindex_result and autoindex_result.get("status") in {"started", "already_running"}:
+        console.logger.info("[dim]✅ Dope-context autoindex bootstrap triggered[/dim]")
+
+    # Apply theme if specified
+    if theme:
+        console.logger.info(f"\n[magenta]🎨 Applying {theme} theme...[/magenta]")
+        time.sleep(1)  # Give tmux time to initialize
+        subprocess.run(["dopemux", "tmux", "theme", theme, "--apply"], check=True)
+        console.logger.info(f"[green]✨ {preset} preset ready![/green]")
+    else:
+        console.logger.info(f"[green]✨ {preset} preset ready![/green]")
+
+
+@cli.command("dope")
+@click.option(
+    "--theme",
+    type=click.Choice(["muted", "neon", "house"]),
+    default="muted",
+    help="Visual theme to apply"
+)
+@click.option("--attach/--no-attach", default=True, help="Attach to session")
+@click.pass_context
+def dope(ctx, theme: str, attach: bool):
+    """
+    🔥 Launch full DOPE layout (shortcut for: launch --preset dope-{theme})
+    
+    This is the complete Dopemux experience:
+      ✓ Full DOPE layout with all monitors
+      ✓ Orchestrator + dual agents
+      ✓ Dashboard panels
+      ✓ Auto-bootstrap services
+      ✓ Your choice of theme
+    
+    Examples:
+    
+      dopemux dope              # DOPE with muted theme (default)
+      dopemux dope --theme neon # DOPE with neon theme
+      dopemux dope --theme house # DOPE with house theme
+    """
+    preset = f"dope-{theme}"
+    ctx.invoke(launch, preset=preset, attach=attach)
+
+
+@cli.command("quick")
+@click.pass_context
+def quick(ctx):
+    """
+    ⚡ Fastest start - medium layout, no bells and whistles.
+    
+    Perfect for:
+      • Quick coding sessions
+      • Testing something fast
+      • Don't need full monitoring
+    
+    Equivalent to: dopemux tmux start --layout medium
+    """
+    console.print("[cyan]⚡ Quick start - medium layout[/cyan]\n")
+    import subprocess
+    subprocess.run([
+        "dopemux", "tmux", "start",
+        "--layout", "medium",
+    ], check=True)
+
+
+
+# from src/dopemux/commands/profile_commands.py
+@cli.command("shell-setup")
+@click.argument("shell_type", type=click.Choice(["bash", "zsh"], case_sensitive=False))
+@click.pass_context
+def shell_setup_cmd(ctx, shell_type: str):
+    """🐚 Output shell integration code for worktree switching.
+
+    This command outputs shell functions that enable proper worktree switching.
+    Python subprocesses cannot change the parent shell's directory, so we provide
+    shell functions that execute 'cd' in the shell's context.
+
+    Usage:
+        dopemux shell-setup bash >> ~/.bashrc && source ~/.bashrc
+        dopemux shell-setup zsh >> ~/.zshrc && source ~/.zshrc
+
+    Then use:
+        dwt <branch>   # Switch to worktree with fuzzy matching
+        dwtls          # List all worktrees
+        dwtcur         # Show current worktree
+    """
+    import importlib.resources
+
+    # Read the shell integration script
+    script_path = Path(__file__).parent.parent.parent / "scripts" / "shell_integration.sh"
+
+    if not script_path.exists():
+        click.secho(f"❌ Shell integration script not found: {script_path}", fg="red", err=True)
+        ctx.exit(1)
+
+    try:
+        content = script_path.read_text()
+
+        # Output header
+        click.echo(f"\n# Dopemux Shell Integration ({shell_type})")
+        click.echo(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        click.echo("# Source: dopemux shell-setup\n")
+
+        # Output the integration code
+        click.echo(content)
+
+        # Usage instructions to stderr so they don't pollute the output
+        click.echo("\n# Installation complete! Restart your shell or run:", err=True)
+        if shell_type == "bash":
+            click.echo("#   source ~/.bashrc", err=True)
+        else:
+            click.echo("#   source ~/.zshrc", err=True)
+        click.echo("#", err=True)
+        click.echo("# Then use:", err=True)
+        click.echo("#   dwt <branch>   - Switch to worktree", err=True)
+        click.echo("#   dwtls          - List worktrees", err=True)
+        click.echo("#   dwtcur         - Current worktree", err=True)
+
+    except Exception as e:
+        click.secho(f"❌ Error reading shell integration: {e}", fg="red", err=True)
+        ctx.exit(1)
+
+
+        logger.error(f"Error: {e}")
+# Worktree Diagnostics Command
+# =============================================================================
+
+@cli.command("doctor")
+@click.option("--worktree", is_flag=True, help="Run worktree-specific diagnostics")
+@click.option("--verbose", "-v", is_flag=True, help="Show detailed information")
+@click.pass_context
+def doctor_cmd(ctx, worktree: bool, verbose: bool):
+    """🏥 Run system diagnostics and health checks.
+
+    Comprehensive health check for Dopemux configuration, workspace detection,
+    MCP servers, and worktree system.
+
+    Examples:
+        dopemux doctor                # General health check
+        dopemux doctor --worktree     # Worktree system check
+        dopemux doctor --worktree -v  # Detailed worktree diagnostics
+    """
+    if worktree:
+        # Phase 1-3 worktree diagnostics
+        from .worktree_diagnostics import run_diagnostics
+
+        success = run_diagnostics(verbose=verbose)
+        sys.exit(0 if success else 1)
+    else:
+        # General Dopemux health check
+        console.logger.info("\n[bold cyan]🏥 Dopemux System Diagnostics[/bold cyan]\n")
+        console.logger.info("[yellow]Use --worktree flag for worktree-specific checks[/yellow]\n")
+
+        # Basic checks
+        checks = []
+
+        config_manager: ConfigManager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
+        mobile_cfg = config_manager.get_mobile_config()
+
+        # 1. Check if dopemux is initialized
+        workspace = Path.cwd()
+        dopemux_dir = workspace / ".dopemux"
+        checks.append(("Dopemux initialized", dopemux_dir.exists()))
+
+        # 2. Check environment variables
+        checks.append(("ANTHROPIC_API_KEY set", bool(os.getenv("ANTHROPIC_API_KEY"))))
+        checks.append(("VOYAGE_API_KEY set", bool(os.getenv("VOYAGE_API_KEY"))))
+
+        # 3. Check Docker (for MCP servers)
+        try:
+            subprocess.run(["docker", "version"], capture_output=True, check=True, timeout=5)
+            checks.append(("Docker available", True))
+        except Exception as e:
+            checks.append(("Docker available", False))
+
+            logger.error(f"Error: {e}")
+        # 4. Mobile prerequisites
+        happy_present = shutil.which("happy") is not None
+        checks.append(("Happy CLI available", happy_present))
+
+        claude_present = shutil.which("claude") is not None
+        checks.append(("Claude CLI available", claude_present))
+
+        if mobile_cfg.happy_server_url:
+            parsed = urlparse(mobile_cfg.happy_server_url)
+            host = parsed.hostname
+            port = parsed.port or (443 if parsed.scheme == "https" else 80)
+            reachable = False
+            if host:
+                try:
+                    with socket.create_connection((host, port), timeout=3):
+                        reachable = True
+                except Exception as e:
+                    reachable = False
+                    logger.error(f"Error: {e}")
+            checks.append((f"Happy relay reachable ({mobile_cfg.happy_server_url})", reachable))
+
+        # 5. TaskX rails check
+        taskx_script = workspace / "scripts" / "taskx"
+        taskx_doctor_ok = False
+        taskx_label = "TaskX doctor deterministic"
+        if taskx_script.exists():
+            try:
+                taskx_proc = subprocess.run(
+                    [str(taskx_script), "doctor", "--timestamp-mode", "deterministic"],
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                )
+                taskx_doctor_ok = taskx_proc.returncode == 0
+                if verbose and taskx_proc.stdout:
+                    console.logger.info(taskx_proc.stdout.strip())
+                if not taskx_doctor_ok and verbose:
+                    taskx_error = taskx_proc.stderr.strip() or "TaskX doctor failed"
+                    console.logger.error(taskx_error)
+            except Exception as e:
+                if verbose:
+                    console.logger.error(f"TaskX doctor error: {e}")
+                taskx_doctor_ok = False
+        else:
+            taskx_label = "TaskX doctor deterministic (scripts/taskx missing)"
+        checks.append((taskx_label, taskx_doctor_ok))
+
+        # Print results
+        from rich.table import Table
+        table = Table(show_header=False)
+        table.add_column("Check", style="bold")
+        table.add_column("Status")
+
+        passed = 0
+        for check_name, result in checks:
+            status = "[green]✅ Pass[/green]" if result else "[red]❌ Fail[/red]"
+            table.add_row(check_name, status)
+            if result:
+                passed += 1
+
+        console.logger.info(table)
+
+        # Summary
+        console.logger.info(f"\n[bold]Result:[/bold] {passed}/{len(checks)} checks passed")
+
+        if passed == len(checks):
+            console.logger.info("[green]🎉 System healthy![/green]")
+        else:
+            console.logger.error("[yellow]⚠️  Some checks failed. See above for details.[/yellow]")
+
+        sys.exit(0 if passed == len(checks) else 1)
+
+
+# ============================================================================
+# Decision Management Commands (ConPort Enhancement Quick Wins)
+# ============================================================================
+
+
+# from src/dopemux/commands/workflow_group_commands.py
+@cli.command("layouts")
+def layouts():
+    """
+    📐 Show available layouts and themes with examples.
+    
+    Educational command to learn what's available.
+    """
+    from rich.markdown import Markdown
+    
+    help_text = """
+# Dopemux Layouts & Themes Guide
+
+## 🏗️ Layouts (Structure)
+
+Layouts control **pane arrangement** - where things go in your tmux session.
+
+| Layout       | Description | Use When |
+|--------------|-------------|----------|
+| `low`        | Minimal: main + agent | You want simplicity |
+| `medium`     | Standard split panes | General development |
+| `high`       | More monitoring panes | Need more visibility |
+| `orchestrator` | Full orchestrator + monitors | Managing multiple tasks |
+| `dope`       | Complete DOPE experience | You want it all! 🔥 |
+
+## 🎨 Themes (Appearance)
+
+Themes control **colors and styling** - how things look.
+
+| Theme  | Style | Best For |
+|--------|-------|----------|
+| `muted` | Soft, low contrast | Long sessions, reduced eye strain |
+| `neon`  | Bright, vibrant | High energy, clear distinctions |
+| `house` | Balanced, professional | General use |
+
+## 🚀 Easy Commands
+
+Instead of memorizing complex tmux commands, use these shortcuts:
+
+```bash
+# Quick start commands
+dopemux quick                    # Fast medium layout
+dopemux dope                     # Full DOPE with muted theme
+dopemux dope --theme neon        # Full DOPE with neon theme
+dopemux launch --preset full     # Full DOPE, default theme
+
+# Full control
+dopemux launch --preset dope-muted  # Explicit preset
+
+# Traditional (if you prefer)
+dopemux tmux start --layout dope --bootstrap
+dopemux tmux theme muted --apply
+```
+
+## 📋 Presets Reference
+
+| Preset | Layout | Theme | Description |
+|--------|--------|-------|-------------|
+| `minimal` | none | none | Just Claude Code |
+| `standard` | medium | default | Basic split panes |
+| `full` | dope | default | Everything enabled |
+| `dope-muted` | dope | muted | Recommended! 🌟 |
+| `dope-neon` | dope | neon | Bright & vibrant |
+| `dope-house` | dope | house | Professional |
+
+## 💡 Tips
+
+- **First time?** Try: `dopemux dope`
+- **Long session?** Use: `dopemux launch --preset dope-muted`
+- **Quick test?** Use: `dopemux quick`
+- **Learning?** Start with: `dopemux launch --preset standard`
+
+## 🔧 Advanced Usage
+
+```bash
+# Manual control (traditional way)
+dopemux tmux start --layout dope --bootstrap --alt-routing
+dopemux tmux theme neon --apply
+
+# List current panes
+dopemux tmux list
+
+# Preview a theme without applying
+dopemux tmux theme neon
+```
+"""
+    
+    console.logger.info(Markdown(help_text))
+
+
+# Register routing commands
+def _register_routing_commands():
+    try:
+        from .routing_cli import routing
+        cli.add_command(routing, "routing")
+    except Exception as e:
+        # Graceful degradation if routing module has issues
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to register routing commands: {e}")
+
+_register_routing_commands()
+
+
+def main():
+    """Main entry point."""
+    try:
+        cli()
+    except KeyboardInterrupt:
+        console.logger.info("\n[yellow]⏸️ Interrupted by user[/yellow]")
+        sys.exit(1)
+    except Exception as e:
+        error_text = Text("❌ Error: ", style="red") + Text(str(e))
+        console.logger.error(error_text)
+        if "--debug" in sys.argv:
+            raise
+        sys.exit(1)
+
+
+@cli.command("hooks")
+@click.option("--setup", is_flag=True, help="Start monitoring Claude Code activity")
+@click.option("--teardown", is_flag=True, help="Stop monitoring")
+@click.option("--status", is_flag=True, help="Show current hook status")
+@click.option("--enable", help="Enable specific hook type (session-start, file-change, shell-command, git-commit)")
+@click.option("--disable", help="Disable specific hook type (session-start, file-change, shell-command, git-commit)")
+@click.option("--shell-scripts", is_flag=True, help="Generate shell hook scripts")
+@click.option("--install-shell-hooks", is_flag=True, help="Install shell hooks in shell config")
+@click.option("--uninstall-shell-hooks", is_flag=True, help="Uninstall shell hooks from shell config")
+@click.option("--workspace", type=click.Path(exists=True, file_okay=False, dir_okay=True), help="Set workspace to monitor")
+@click.option("--force", is_flag=True, help="Force operations (e.g., reinstall)")
+@click.pass_context
+def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, install_shell_hooks, uninstall_shell_hooks, workspace, force):
+    """
+    Manage Dopemux hook system for Claude Code integration.
+
+    Provides external monitoring and triggering of Dopemux workflows
+    based on Claude Code activity without interfering with the CLI.
+    """
+    try:
+        from .hooks.claude_code_hooks import claude_hooks, get_shell_hook_scripts
+
+        if setup:
+            claude_hooks.start_monitoring(workspace)
+            console.logger.info("[green]✅ Claude Code hooks started[/green]")
+            console.logger.info(f"   Monitoring paths: {[str(p) for p in claude_hooks.watched_paths]}")
+
+        elif teardown:
+            claude_hooks.stop_monitoring()
+            console.logger.info("[green]✅ Claude Code hooks stopped[/green]")
+
+        elif status:
+            hook_status = claude_hooks.get_status()
+            console.logger.info("[bold]Claude Code Hook Status:[/bold]")
+            console.logger.info(f"   Monitoring active: {hook_status['monitoring_active']}")
+            console.logger.info(f"   Quiet mode: {hook_status['quiet_mode']}")
+            console.logger.info(f"   Watched paths: {hook_status['watched_paths']}")
+            console.logger.info("\n[bold]Hook Types:[/bold]")
+            for hook_type, enabled in hook_status['active_hooks'].items():
+                status_icon = "[green]✓[/green]" if enabled else "[red]✗[/red]"
+                console.logger.info(f"   {status_icon} {hook_type}")
+
+        elif enable:
+            claude_hooks.enable_hook(enable)
+            console.logger.info(f"[green]✅ Hook enabled: {enable}[/green]")
+
+        elif disable:
+            claude_hooks.disable_hook(disable)
+            console.logger.info(f"[green]✅ Hook disabled: {disable}[/green]")
+
+        elif shell_scripts:
+            scripts = get_shell_hook_scripts()
+            console.logger.info("[bold]Shell Hook Scripts:[/bold]")
+            console.logger.info("\n[dim]Add these to your ~/.bashrc or ~/.zshrc:[/dim]\n")
+
+            console.logger.info("[bold cyan]For Bash:[/bold cyan]")
+            console.logger.info(scripts['bash_preexec'])
+            console.logger.info(scripts['bash_precmd'])
+
+            console.logger.info("\n[bold cyan]For Zsh:[/bold cyan]")
+            console.logger.info(scripts['zsh_hooks'])
+
+        elif install_shell_hooks:
+            from .hooks.shell_hook_installer import install_shell_hooks as installer
+            success, message = installer(force=force)
+            if success:
+                console.logger.info(f"[green]{message}[/green]")
+            else:
+                console.logger.info(f"[red]{message}[/red]")
+                sys.exit(1)
+
+        elif uninstall_shell_hooks:
+            from .hooks.shell_hook_installer import uninstall_shell_hooks as uninstaller
+            success, message = uninstaller()
+            if success:
+                console.logger.info(f"[green]{message}[/green]")
+            else:
+                console.logger.info(f"[red]{message}[/red]")
+                sys.exit(1)
+
+        else:
+            # Default: show help
+            console.logger.info("[bold]Dopemux Hook System[/bold]")
+            console.logger.info("Manage external hooks for Claude Code integration.\n")
+            console.logger.info("[bold]Commands:[/bold]")
+            console.logger.info("   --setup               Start monitoring Claude Code activity")
+            console.logger.info("   --teardown            Stop monitoring")
+            console.logger.info("   --status              Show current hook status")
+            console.logger.info("   --enable HOOK         Enable specific hook type")
+            console.logger.info("   --disable HOOK        Disable specific hook type")
+            console.logger.info("   --shell-scripts       Generate shell hook scripts")
+            console.logger.info("   --install-shell-hooks Install shell hooks in shell config")
+            console.logger.info("   --uninstall-shell-hooks Remove shell hooks from shell config")
+            console.logger.info("   --workspace PATH      Set workspace to monitor")
+            console.logger.info("   --force               Force operations (e.g., reinstall)\n")
+            console.logger.info("[bold]Hook Types:[/bold]")
+            console.logger.info("   session-start    Monitor Claude Code process start")
+            console.logger.info("   file-change      Monitor file modifications")
+            console.logger.info("   shell-command    Monitor shell commands")
+            console.logger.info("   git-commit       Monitor git operations (disabled by default)")
+
+    except Exception as e:
+        console.logger.error(f"[red]❌ Hook command failed: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
+
+
+
 if __name__ == "__main__":
     main()

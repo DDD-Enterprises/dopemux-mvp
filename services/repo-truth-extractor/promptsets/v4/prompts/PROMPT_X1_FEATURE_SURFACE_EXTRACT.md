@@ -6,6 +6,92 @@ Focus on concrete, machine-verifiable implementation facts.
 
 ## Inputs
 - Source scope (scan these roots first):
+- `components/**`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `contracts/**`
+- `dashboard/**`
+- `docker/**`
+- `docs/**`
+- `examples/**`
+- `installers/**`
+- `interruption_shield/**`
+- `ops/**`
+- `plugins/**`
+- `profiles/**`
+- `review_artifacts/**`
+- `scripts/**`
+- `services/**`
+- `shared/**`
+- `src/**`
+- `SYSTEM_ARCHIVE/**`
+- `task-packets/**`
+- `templates/**`
+- `tests/**`
+- `tools/**`
+- `ui-dashboard/**`
+- `ui-dashboard-backend/**`
+- `UPGRADES/**`
+- `vendor/**`
+
+- `components/**`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `contracts/**`
+- `dashboard/**`
+- `docker/**`
+- `docs/**`
+- `examples/**`
+- `installers/**`
+- `ops/**`
+- `plugins/**`
+- `scripts/**`
+- `services/**`
+- `src/**`
+- `task-packets/**`
+- `templates/**`
+- `tests/**`
+- `tools/**`
+- `ui-dashboard/**`
+- `ui-dashboard-backend/**`
+- `UPGRADES/**`
+
+- `components/**`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `contracts/**`
+- `dashboard/**`
+- `docker/**`
+- `docs/**`
+- `examples/**`
+- `extraction/**`
+- `installers/**`
+- `ops/**`
+- `plugins/**`
+- `reports/**`
+- `scripts/**`
+- `services/**`
+- `src/**`
+- `SYSTEM_ARCHIVE/**`
+- `task-packets/**`
+- `templates/**`
+- `tests/**`
+- `tools/**`
+- `ui-dashboard/**`
+- `UPGRADES/**`
+
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+
 - `src/**`
 - `services/**`
 - `docs/**`

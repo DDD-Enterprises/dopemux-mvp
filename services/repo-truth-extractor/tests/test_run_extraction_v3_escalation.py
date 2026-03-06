@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -193,3 +194,170 @@ def test_disable_escalation_forces_single_hop(monkeypatch: pytest.MonkeyPatch, t
     assert stats["failed"] == 1
     payload = json.loads((phase_dir / "raw" / "A1__A_P0001.FAILED.json").read_text(encoding="utf-8"))
     assert payload["request_meta"]["route_hop_total"] == 1
+
+
+def _premium_synthesis_ladder():
+    return [
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+        ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+    ]
+
+
+def test_synthesis_schema_failure_blocks_opus() -> None:
+    runner = _load_runner_module()
+    cfg = replace(_make_cfg(runner), routing_policy="balanced_grok_openrouter")
+
+    def execute_attempt(route, hop_index):  # type: ignore[no-untyped-def]
+        return {
+            "response_text": "",
+            "request_meta": {
+                "failure_type": None,
+                "status_code": 200,
+                "schema_gate_reason": "schema_missing_key:id",
+            },
+            "artifacts": [],
+            "route": route,
+            "artifacts_ok": False,
+            "escalation_trigger": "schema_missing_key:id",
+        }
+
+    payload = runner.call_llm_with_ladder(
+        phase="R",
+        step_id="R1",
+        partition_id="R_P0001",
+        routing_policy="balanced_grok_openrouter",
+        routing_tier="synthesis",
+        ladder=_premium_synthesis_ladder(),
+        cfg=cfg,
+        execute_attempt=execute_attempt,
+    )
+
+    meta = payload["request_meta"]
+    assert meta["route_hop_total"] == 2
+    assert meta["provider"] == "openrouter"
+    assert meta["model_id"] == "openai/gpt-5.2"
+    assert meta["escalation_class"] == "schema_repair"
+    assert meta["opus_eligible"] is False
+    assert meta["opus_block_reason"] == "blocked_for_escalation_class:schema_repair"
+
+
+def test_synthesis_invalid_json_blocks_opus() -> None:
+    runner = _load_runner_module()
+    cfg = replace(_make_cfg(runner), routing_policy="balanced_grok_openrouter")
+
+    def execute_attempt(route, hop_index):  # type: ignore[no-untyped-def]
+        return {
+            "response_text": "",
+            "request_meta": {
+                "failure_type": None,
+                "status_code": 200,
+                "provider_error_reason": "invalid_json",
+            },
+            "artifacts": [],
+            "route": route,
+            "artifacts_ok": False,
+            "escalation_trigger": "parse_failure",
+        }
+
+    payload = runner.call_llm_with_ladder(
+        phase="S",
+        step_id="S1",
+        partition_id="S_P0001",
+        routing_policy="balanced_grok_openrouter",
+        routing_tier="synthesis",
+        ladder=_premium_synthesis_ladder(),
+        cfg=cfg,
+        execute_attempt=execute_attempt,
+    )
+
+    meta = payload["request_meta"]
+    assert meta["route_hop_total"] == 2
+    assert meta["model_id"] == "openai/gpt-5.2"
+    assert meta["escalation_class"] == "schema_repair"
+    assert meta["opus_eligible"] is False
+
+
+def test_synthesis_provider_transport_failure_blocks_opus() -> None:
+    runner = _load_runner_module()
+    cfg = replace(_make_cfg(runner), routing_policy="balanced_grok_openrouter")
+
+    def execute_attempt(route, hop_index):  # type: ignore[no-untyped-def]
+        return {
+            "response_text": "",
+            "request_meta": {
+                "failure_type": "rate_limit",
+                "status_code": 429,
+            },
+            "artifacts": [],
+            "route": route,
+            "artifacts_ok": False,
+            "escalation_trigger": "provider_failure",
+        }
+
+    payload = runner.call_llm_with_ladder(
+        phase="T",
+        step_id="T1",
+        partition_id="T_P0001",
+        routing_policy="balanced_grok_openrouter",
+        routing_tier="synthesis",
+        ladder=_premium_synthesis_ladder(),
+        cfg=cfg,
+        execute_attempt=execute_attempt,
+    )
+
+    meta = payload["request_meta"]
+    assert meta["route_hop_total"] == 2
+    assert meta["model_id"] == "openai/gpt-5.2"
+    assert meta["escalation_class"] == "provider_transport"
+    assert meta["opus_eligible"] is False
+
+
+def test_synthesis_hard_reconciliation_unlocks_opus() -> None:
+    runner = _load_runner_module()
+    cfg = replace(_make_cfg(runner), routing_policy="balanced_grok_openrouter")
+
+    def execute_attempt(route, hop_index):  # type: ignore[no-untyped-def]
+        if hop_index < 2:
+            return {
+                "response_text": "",
+                "request_meta": {
+                    "failure_type": "provider",
+                    "status_code": 500,
+                    "provider_error_reason": "merge_conflict",
+                },
+                "artifacts": [],
+                "route": route,
+                "artifacts_ok": False,
+                "escalation_trigger": "provider_failure",
+            }
+        return {
+            "response_text": json.dumps({"artifacts": [{"artifact_name": "OUT.json", "payload": {"items": []}}]}),
+            "request_meta": {
+                "failure_type": None,
+                "status_code": 200,
+            },
+            "artifacts": [{"artifact_name": "OUT.json", "payload": {"items": []}}],
+            "route": route,
+            "artifacts_ok": True,
+            "escalation_trigger": None,
+        }
+
+    payload = runner.call_llm_with_ladder(
+        phase="R",
+        step_id="R1",
+        partition_id="R_P0001",
+        routing_policy="balanced_grok_openrouter",
+        routing_tier="synthesis",
+        ladder=_premium_synthesis_ladder(),
+        cfg=cfg,
+        execute_attempt=execute_attempt,
+    )
+
+    meta = payload["request_meta"]
+    assert meta["route_hop_total"] == 3
+    assert meta["provider"] == "openrouter"
+    assert meta["model_id"] == "anthropic/claude-opus-4-6"
+    assert meta["opus_eligible"] is True
+    assert meta["opus_block_reason"] is None
+    assert meta["route_attempts"][1]["escalation_class"] == "hard_reconciliation"

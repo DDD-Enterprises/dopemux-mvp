@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "required": ["status", "contracts", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["contract_id", "coverage"],
+        "properties": {
+          "contract_id": {"type": "string"},
+          "coverage": {"type": "string"}
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}

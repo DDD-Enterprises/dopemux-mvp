@@ -237,6 +237,64 @@ def test_partition_workers_one_still_writes_in_stable_order(
     assert write_order == ["A0__A_P0001.json", "A0__A_P0002.json", "A0__A_P0003.json"]
 
 
+def test_process_executor_falls_back_to_threaded_execution(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "A_repo_control_plane"
+    (phase_dir / "raw").mkdir(parents=True, exist_ok=True)
+
+    prompt = tmp_path / "PROMPT_A0_TEST.md"
+    prompt.write_text("Goal: OUT.json\n", encoding="utf-8")
+    prompt_spec = runner.PromptSpec(step_id="A0", prompt_path=prompt, output_artifacts=("OUT.json",))
+
+    partitions = [
+        {"id": "A_P0002", "paths": ["/tmp/p2"]},
+        {"id": "A_P0001", "paths": ["/tmp/p1"]},
+    ]
+
+    def fake_build_partition_context(**kwargs):  # type: ignore[no-untyped-def]
+        path = str(kwargs["partition_paths"][0])
+        return (
+            f"PARTITION_PATH={path}",
+            {"files_included": 1, "files_skipped": 0, "context_bytes": 10, "redaction_hits": 0},
+        )
+
+    def fake_call_llm(**kwargs):  # type: ignore[no-untyped-def]
+        user_content = str(kwargs["user_content"])
+        match = re.search(r"PARTITION_PATH=.*/p(\d)", user_content)
+        assert match is not None
+        part_num = match.group(1)
+        payload = {
+            "artifacts": [
+                {
+                    "artifact_name": "OUT.json",
+                    "payload": {"partition": f"A_P000{part_num}"},
+                }
+            ]
+        }
+        return {"text": json.dumps(payload), "meta": {"failure_type": None, "status_code": 200}}
+
+    monkeypatch.setattr(runner, "build_partition_context", fake_build_partition_context)
+    monkeypatch.setattr(runner, "call_llm", fake_call_llm)
+
+    cfg = runner.replace(_make_cfg(runner, workers=2), executor="process")
+    stats = runner.execute_step_for_partitions(
+        phase="A",
+        prompt_spec=prompt_spec,
+        partitions=partitions,
+        phase_dir=phase_dir,
+        cfg=cfg,
+    )
+
+    assert stats["ok"] == 2
+    assert stats["failed"] == 0
+    assert sorted(path.name for path in (phase_dir / "raw").glob("A0__*.json")) == [
+        "A0__A_P0001.json",
+        "A0__A_P0002.json",
+    ]
+
+
 def test_partition_worker_exception_synthesizes_failure(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     runner = _load_runner_module()
     phase_dir = tmp_path / "A_repo_control_plane"

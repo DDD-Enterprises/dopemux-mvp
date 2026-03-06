@@ -6,6 +6,76 @@ Focus on concrete, machine-verifiable implementation facts.
 
 ## Inputs
 - Source scope (scan these roots first):
+- `.vibe/**`
+- `.claude/**`
+- `.dopemux/**`
+- `.github/**`
+- `.githooks/**`
+- `.taskx/**`
+- `mcp-proxy-config.copilot.yaml`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `docker/**`
+- `scripts/**`
+- `tools/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/mcp/hooks.py`
+
+- `.vibe/**`
+- `.claude/**`
+- `.dopemux/**`
+- `.github/**`
+- `.githooks/**`
+- `.taskx/**`
+- `mcp-proxy-config.copilot.yaml`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `docker/**`
+- `installers/**`
+- `ops/**`
+- `scripts/**`
+- `tools/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/mcp/hooks.py`
+
+- `.vibe/**`
+- `.claude/**`
+- `.dopemux/**`
+- `.github/**`
+- `.githooks/**`
+- `.taskx/**`
+- `mcp-proxy-config.copilot.yaml`
+- `compose/**`
+- `config/**`
+- `configs/**`
+- `docker/**`
+- `installers/**`
+- `ops/**`
+- `scripts/**`
+- `tools/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/mcp/hooks.py`
+
+- `.vibe/**`
+- `.claude/**`
+- `mcp-proxy-config.copilot.yaml`
+- `src/dopemux/hooks/**`
+- `src/dopemux/mcp/hooks.py`
+
+- `.vibe/**`
+- `.claude/**`
+- `mcp-proxy-config.copilot.yaml`
+- `src/dopemux/hooks/**`
+- `src/dopemux/mcp/hooks.py`
+
+- `.vibe/**`
+- `.claude/**`
+- `mcp-proxy-config.copilot.yaml`
+- `src/dopemux/hooks/**`
+- `src/dopemux/mcp/hooks.py`
+
 - `.claude/**`
 - `.github/**`
 - `.taskx/**`
