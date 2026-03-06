@@ -1,0 +1,58 @@
+From 9f001835ea3287ff28b5cf485686b944d4045e60 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 16:07:56 -0800
+Subject: [PATCH 13/36] fix(routing): bind local services to 127.0.0.1
+
+---
+ scripts/proof_bundle.sh         | 14 +++++++++++---
+ src/dopemux/launchd_services.py |  2 +-
+ 2 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/scripts/proof_bundle.sh b/scripts/proof_bundle.sh
+index 473a37c18..a0a4f2248 100755
+--- a/scripts/proof_bundle.sh
++++ b/scripts/proof_bundle.sh
+@@ -33,13 +33,21 @@ while [ $# -gt 0 ]; do
+         
+         echo "" >> "${OUTPUT_DIR}/proof.txt"
+         echo "Command: ${CMD}" >> "${OUTPUT_DIR}/proof.txt"
++        
++        # Execute command and capture output verbatim
++        OUTPUT_FILE="${OUTPUT_DIR}/$(echo "${CMD}" | tr -s '[:space:]' '_' | sed 's/[^a-zA-Z0-9_]//g').txt"
++        eval "${CMD}" > "${OUTPUT_FILE}" 2>&1
++        EXIT_CODE=$?
++        
+         echo "Output:" >> "${OUTPUT_DIR}/proof.txt"
++        cat "${OUTPUT_FILE}" >> "${OUTPUT_DIR}/proof.txt"
++        echo "" >> "${OUTPUT_DIR}/proof.txt"
++        echo "[exit=${EXIT_CODE}]" >> "${OUTPUT_DIR}/proof.txt"
+         
+-        # Execute command and capture output
+-        if eval "${CMD}" 2>&1 | tee -a "${OUTPUT_DIR}/proof.txt"; then
++        if [ ${EXIT_CODE} -eq 0 ]; then
+             echo "✅ Command succeeded" >> "${OUTPUT_DIR}/proof.txt"
+         else
+-            echo "❌ Command failed with exit code $?" >> "${OUTPUT_DIR}/proof.txt"
++            echo "❌ Command failed with exit code ${EXIT_CODE}" >> "${OUTPUT_DIR}/proof.txt"
+         fi
+     else
+         shift
+diff --git a/src/dopemux/launchd_services.py b/src/dopemux/launchd_services.py
+index 6b2378394..f31cf4aaf 100644
+--- a/src/dopemux/launchd_services.py
++++ b/src/dopemux/launchd_services.py
+@@ -177,7 +177,7 @@ echo "📝 Logging to: $LOG_FILE"
+ # Start LiteLLM directly (no docker)
+ exec "{litellm_bin}" --config "{home_dir}/.dopemux/litellm/litellm.config.yaml" \\
+     --port "$LITELLM_PORT" \\
+-    --host 0.0.0.0 \\
++    --host 127.0.0.1 \\
+     >> "$LOG_FILE" 2>&1
+ """
+         
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,6 @@
+ .claude/claude_config.json                         |   8 +
+ .vibe/config.toml                                  | 119 ++-----------
+ proof/PLAN.txt                                     | 131 ++++----------
+ services/registry.yaml                             |  13 ++
+ services/repo-truth-extractor/run_extraction_v3.py | 196 ++++++++++++++++++---
+ 5 files changed, 239 insertions(+), 228 deletions(-)

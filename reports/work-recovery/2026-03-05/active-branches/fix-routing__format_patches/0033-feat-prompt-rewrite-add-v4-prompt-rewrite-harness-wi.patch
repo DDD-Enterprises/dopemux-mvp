@@ -1,0 +1,795 @@
+From 1154d42c822f74539a0fa999faeb10bd4ccae32a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 18:22:05 -0800
+Subject: [PATCH 33/36] feat(prompt-rewrite): add v4 prompt rewrite harness
+ with opus microbatch processing
+
+---
+ out/request_0.txt                             | 169 +++++++++++++++++
+ .../HEURISTICS_LIBRARY_v1.md                  |  43 +++++
+ tools/prompt_rewrite_v4/OPUS_PATCH_PROMPT.txt |   7 +
+ .../prompt_rewrite_v4/OPUS_SYSTEM_PROMPT.txt  |  23 +++
+ tools/prompt_rewrite_v4/README.md             |  27 +++
+ tools/prompt_rewrite_v4/config.json           |  13 ++
+ tools/prompt_rewrite_v4/render_request.py     |  68 +++++++
+ tools/prompt_rewrite_v4/run_batch.py          | 163 +++++++++++++++++
+ tools/prompt_rewrite_v4/state.json            |   5 +
+ tools/prompt_rewrite_v4/validate_patch.py     | 173 ++++++++++++++++++
+ 10 files changed, 691 insertions(+)
+ create mode 100644 out/request_0.txt
+ create mode 100644 tools/prompt_rewrite_v4/HEURISTICS_LIBRARY_v1.md
+ create mode 100644 tools/prompt_rewrite_v4/OPUS_PATCH_PROMPT.txt
+ create mode 100644 tools/prompt_rewrite_v4/OPUS_SYSTEM_PROMPT.txt
+ create mode 100644 tools/prompt_rewrite_v4/README.md
+ create mode 100644 tools/prompt_rewrite_v4/config.json
+ create mode 100644 tools/prompt_rewrite_v4/render_request.py
+ create mode 100644 tools/prompt_rewrite_v4/run_batch.py
+ create mode 100644 tools/prompt_rewrite_v4/state.json
+ create mode 100644 tools/prompt_rewrite_v4/validate_patch.py
+
+diff --git a/out/request_0.txt b/out/request_0.txt
+new file mode 100644
+index 000000000..abe343e37
+--- /dev/null
++++ b/out/request_0.txt
+@@ -0,0 +1,169 @@
++Task: Produce a minimal unified diff patch for the provided prompt file.
++
++Output cap: If unified diff would exceed 350 lines, output exactly: OUTPUT_LIMIT_REACHED
++
++Inputs:
++- Heuristics Library v1
++- Prompt file content
++
++Heuristics Library v1:
++---BEGIN HEURISTICS---
++# Heuristics Library v1
++
++This file contains the heuristics that should be used for prompt rewriting.
++The actual content should be pasted here as provided in the original instructions.
++
++## Discovery Heuristics
++
++### Step 1: Input Analysis
++- Analyze input structure and content types
++- Identify stable content keys for deterministic IDs
++- Validate input completeness against schema requirements
++
++### Step 2: Evidence Collection
++- Extract facts only from in-scope inputs
++- Attach evidence provenance to every extracted fact
++- Handle missing data with UNKNOWN markers
++
++### Step 3: Transformation Rules
++- Apply domain-specific transformation logic
++- Normalize data formats consistently
++- Validate output schema compliance
++
++## Failure Mode Patterns
++
++### Common Failure Patterns
++- Missing required input fields
++- Invalid data formats
++- Schema validation failures
++- Evidence provenance gaps
++
++### Recovery Strategies
++- Emit UNKNOWN for unsatisfied values
++- Provide detailed error context
++- Maintain deterministic behavior
++
++## Domain-Specific Guidelines
++
++### For each prompt domain:
++- Include 4-8 step-specific discovery steps
++- Add 1-2 domain-specific failure mode bullets
++- Ensure Legacy Context is treated as intent guidance only
++
++Note: This is a placeholder. Replace with the actual heuristics content provided in the original instructions.
++---END HEURISTICS---
++
++FILE: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md
++---BEGIN FILE---
++# PROMPT_A0
++
++## Goal
++Produce `A0` outputs for phase `A` with strict schema, explicit evidence, and deterministic normalization.
++Focus on concrete, machine-verifiable implementation facts.
++
++## Inputs
++- Source scope (scan these roots first):
++- `.claude/**`
++- `.github/**`
++- `.taskx/**`
++- `config/**`
++- `scripts/**`
++- `docker/**`
++- `compose.yml`
++- `docker-compose*.yml`
++- `README.md`
++- `AGENTS.md`
++- Upstream normalized artifacts available to this step:
++- None; this step can rely on phase inventory inputs.
++- Runner context artifacts:
++  - `extraction/*/inputs/INVENTORY.json`
++  - `extraction/*/inputs/PARTITIONS.json`
++  - `services/repo-truth-extractor/promptsets/v4/promptset.yaml`
++  - `services/repo-truth-extractor/promptsets/v4/artifacts.yaml`
++- When relevant, use `services/registry.yaml` as canonical service list.
++
++## Outputs
++- `REPOCTRL_INVENTORY.json`
++- `REPOCTRL_PARTITIONS.json`
++
++## Schema
++- Use deterministic containers only:
++  - `ItemList`: `{"schema":"<schema_id>@v1","items":[...]}`
++  - `Graph`: `{"schema":"<schema_id>@v1","nodes":[...],"edges":[...]}`
++- Output contracts:
++  - `REPOCTRL_INVENTORY.json`
++    - `kind`: `json_item_list`
++    - `merge_strategy`: `itemlist_by_id`
++    - `canonical_writer_step_id`: `A0`
++    - `id_rule`: `REPOCTRL_INVENTORY:<stable-hash(path|symbol|name)>`
++    - `required_item_fields`: `id, path, kind, summary, evidence`
++    - `required_registry_fields`: `path, line_range, id`
++  - `REPOCTRL_PARTITIONS.json`
++    - `kind`: `json_item_list`
++    - `merge_strategy`: `itemlist_by_id`
++    - `canonical_writer_step_id`: `A0`
++    - `id_rule`: `REPOCTRL_PARTITIONS:<stable-hash(path|symbol|name)>`
++    - `required_item_fields`: `id, partition_id, files, reason, evidence`
++    - `required_registry_fields`: `path, line_range, id`
++
++## Extraction Procedure
++1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++3. Attach evidence to every non-derived field and every relationship edge.
++4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++6. Emit exactly the declared outputs and no additional files.
++
++## Evidence Rules
++- Every load-bearing value must carry at least one evidence object:
++```json
++{
++  "path": "<repo-relative-path>",
++  "line_range": [<start>, <end>],
++  "excerpt": "<exact substring <=200 chars>"
++}
++```
++- `path` must be repo-relative (never absolute in norm artifacts).
++- `excerpt` must be exact (no paraphrase) and <= 200 chars.
++- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
++
++## Determinism Rules
++- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
++- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
++- Merge duplicates deterministically:
++  - union evidence by `(path,line_range,excerpt)`
++  - union arrays with stable sort
++  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
++- Output byte content must be reproducible for same commit + same configuration.
++
++## Anti-Fabrication Rules
++- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
++- Do not infer intent from filenames alone; require direct textual/code evidence.
++- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
++- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
++
++## Failure Modes
++- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
++- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
++- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
++- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++
++## Legacy Context (for intent only; never as evidence)
++```markdown
++MODE: Mechanical extractor, zero interpretation.
++INPUT: repo working tree (top-level), include hidden dirs shown in ls -la (not .git contents).
++OUTPUT:
++- REPOCTRL_INVENTORY.json: list files (path, ext, size, mtime, sha256 if available), plus first 30 non-empty lines for text.
++- REPOCTRL_PARTITIONS.json: partitions by type:
++  - instructions/prompts (CLAUDE.md, AGENTS.md, .claude/**, docs/** instruction files)
++  - mcp/proxy configs (mcp-proxy-config*, start-mcp-servers.sh, compose/**)
++  - hooks (.githooks/**, scripts called by hooks)
++  - routers/provider ladders (litellm.config*, any router yaml/toml/json)
++  - compose/service graphs (compose.yml, docker-compose*.yml, compose/**)
++  - CI/gates (.github/**, pre-commit, ruff/mypy/pytest configs)
++  - taskx surfaces (.taskx/**, .taskx-pin, task packets in repo)
++RULES: JSON only. Every item must include path + line_range (or null if binary).
++```
++---END FILE---
++
++Return unified diff only. No prose.
+diff --git a/tools/prompt_rewrite_v4/HEURISTICS_LIBRARY_v1.md b/tools/prompt_rewrite_v4/HEURISTICS_LIBRARY_v1.md
+new file mode 100644
+index 000000000..09a678e3a
+--- /dev/null
++++ b/tools/prompt_rewrite_v4/HEURISTICS_LIBRARY_v1.md
+@@ -0,0 +1,43 @@
++# Heuristics Library v1
++
++This file contains the heuristics that should be used for prompt rewriting.
++The actual content should be pasted here as provided in the original instructions.
++
++## Discovery Heuristics
++
++### Step 1: Input Analysis
++- Analyze input structure and content types
++- Identify stable content keys for deterministic IDs
++- Validate input completeness against schema requirements
++
++### Step 2: Evidence Collection
++- Extract facts only from in-scope inputs
++- Attach evidence provenance to every extracted fact
++- Handle missing data with UNKNOWN markers
++
++### Step 3: Transformation Rules
++- Apply domain-specific transformation logic
++- Normalize data formats consistently
++- Validate output schema compliance
++
++## Failure Mode Patterns
++
++### Common Failure Patterns
++- Missing required input fields
++- Invalid data formats
++- Schema validation failures
++- Evidence provenance gaps
++
++### Recovery Strategies
++- Emit UNKNOWN for unsatisfied values
++- Provide detailed error context
++- Maintain deterministic behavior
++
++## Domain-Specific Guidelines
++
++### For each prompt domain:
++- Include 4-8 step-specific discovery steps
++- Add 1-2 domain-specific failure mode bullets
++- Ensure Legacy Context is treated as intent guidance only
++
++Note: This is a placeholder. Replace with the actual heuristics content provided in the original instructions.
+\ No newline at end of file
+diff --git a/tools/prompt_rewrite_v4/OPUS_PATCH_PROMPT.txt b/tools/prompt_rewrite_v4/OPUS_PATCH_PROMPT.txt
+new file mode 100644
+index 000000000..c66b4e69b
+--- /dev/null
++++ b/tools/prompt_rewrite_v4/OPUS_PATCH_PROMPT.txt
+@@ -0,0 +1,7 @@
++Task: Produce a minimal unified diff patch for the provided prompt file.
++
++Inputs:
++- Heuristics Library v1
++- Prompt file content
++
++Return unified diff only. No prose.
+\ No newline at end of file
+diff --git a/tools/prompt_rewrite_v4/OPUS_SYSTEM_PROMPT.txt b/tools/prompt_rewrite_v4/OPUS_SYSTEM_PROMPT.txt
+new file mode 100644
+index 000000000..ccd9dc383
+--- /dev/null
++++ b/tools/prompt_rewrite_v4/OPUS_SYSTEM_PROMPT.txt
+@@ -0,0 +1,23 @@
++You are Claude Opus 4.6 running in Patch-Only Microbatch Mode.
++
++HARD RULES:
++1) ASCII-only output.
++2) NO FABRICATION: only use what appears in the provided Heuristics Library v1 and the prompt file content.
++3) Output unified diff only (git apply compatible). No commentary.
++4) Allowed edits ONLY:
++   - Replace the entire body of the "Extraction Procedure" section (keep heading).
++   - Append 1-2 domain-specific bullet points inside "Failure Modes" (keep existing bullets).
++   No other sections may be modified.
++5) Extraction Procedure requirements:
++   - Prepend 4-8 step-specific discovery steps based on Heuristics Library v1 and the prompt's Goal/Inputs/Outputs/Schema/Legacy Context.
++   - Include this exact sentence once: "Legacy Context is intent guidance only and is never evidence."
++   - End with these 6 generic foundation steps unchanged as the final numbered steps:
++     1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++     2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++     3. Attach evidence to every non-derived field and every relationship edge.
++     4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++     5. Validate required fields; emit UNKNOWN for unsatisfied values with evidence gaps.
++     6. Emit exactly the declared outputs and no additional files.
++6) Output cap: if diff would exceed 350 lines, output exactly: OUTPUT_LIMIT_REACHED
++
++Reply with unified diff only.
+\ No newline at end of file
+diff --git a/tools/prompt_rewrite_v4/README.md b/tools/prompt_rewrite_v4/README.md
+new file mode 100644
+index 000000000..ab2dad628
+--- /dev/null
++++ b/tools/prompt_rewrite_v4/README.md
+@@ -0,0 +1,27 @@
++# v4 Prompt Rewrite Harness (Opus diff-only microbatch)
++
++This harness rewrites v4 prompt files by asking Opus for a unified diff patch that:
++- replaces only the Extraction Procedure section body
++- appends 1-2 domain-specific bullets in Failure Modes
++- changes nothing else
++
++Workflow (one file per batch by default):
++1) Generate request_N.txt:
++   python tools/prompt_rewrite_v4/run_batch.py --render
++
++2) Run Opus 4.6 in Claude Code with:
++   - tools/prompt_rewrite_v4/OPUS_SYSTEM_PROMPT.txt (system / instructions)
++   - request_N.txt (contains heuristics + prompt file)
++
++3) Save Opus output as:
++   tools/prompt_rewrite_v4/out/response_N.patch
++
++4) Apply + validate + advance cursor:
++   python tools/prompt_rewrite_v4/run_batch.py --apply
++
++Hard gate (lint-only):
++- python scripts/repo_truth_extractor_promptset_audit_v4.py --strict
++
++Notes:
++- Fail-closed: if patch is not a unified diff, too large, or touches outside allowed sections, it stops.
++- Resume-safe: state.json tracks cursor and done/failed lists.
+\ No newline at end of file
+diff --git a/tools/prompt_rewrite_v4/config.json b/tools/prompt_rewrite_v4/config.json
+new file mode 100644
+index 000000000..b596f9cab
+--- /dev/null
++++ b/tools/prompt_rewrite_v4/config.json
+@@ -0,0 +1,13 @@
++{
++  "repo_root": "..",
++  "prompt_glob": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_*.md",
++  "heuristics_path": "HEURISTICS_LIBRARY_v1.md",
++  "system_prompt_path": "OPUS_SYSTEM_PROMPT.txt",
++  "patch_prompt_path": "OPUS_PATCH_PROMPT.txt",
++  "out_dir": "out",
++  "max_patch_lines": 350,
++  "batch_size": 1,
++  "lint_cmd": "python ../scripts/repo_truth_extractor_promptset_audit_v4.py --strict",
++  "commit_every": 10,
++  "commit_prefix": "chore(prompts): enrich extraction procedures (batch"
++}
+\ No newline at end of file
+diff --git a/tools/prompt_rewrite_v4/render_request.py b/tools/prompt_rewrite_v4/render_request.py
+new file mode 100644
+index 000000000..794d141ee
+--- /dev/null
++++ b/tools/prompt_rewrite_v4/render_request.py
+@@ -0,0 +1,68 @@
++from __future__ import annotations
++
++import json
++from pathlib import Path
++from dataclasses import dataclass
++
++
++@dataclass(frozen=True)
++class Config:
++    repo_root: str
++    prompt_glob: str
++    heuristics_path: str
++    system_prompt_path: str
++    patch_prompt_path: str
++    out_dir: str
++    max_patch_lines: int
++    batch_size: int
++    lint_cmd: str
++    commit_every: int
++    commit_prefix: str
++
++
++def load_config(path: Path) -> Config:
++    raw = json.loads(path.read_text(encoding="utf-8"))
++    return Config(**raw)
++
++
++def render_request(
++    heuristics_text: str,
++    prompt_relpath: str,
++    prompt_text: str,
++    max_patch_lines: int,
++) -> str:
++    # Keep the request deterministic and compact.
++    # The system prompt is separate; this is the user payload.
++    return "\n".join(
++        [
++            "Task: Produce a minimal unified diff patch for the provided prompt file.",
++            "",
++            f"Output cap: If unified diff would exceed {max_patch_lines} lines, output exactly: OUTPUT_LIMIT_REACHED",
++            "",
++            "Inputs:",
++            "- Heuristics Library v1",
++            "- Prompt file content",
++            "",
++            "Heuristics Library v1:",
++            "---BEGIN HEURISTICS---",
++            heuristics_text.rstrip("\n"),
++            "---END HEURISTICS---",
++            "",
++            f"FILE: {prompt_relpath}",
++            "---BEGIN FILE---",
++            prompt_text.rstrip("\n"),
++            "---END FILE---",
++            "",
++            "Return unified diff only. No prose.",
++            "",
++        ]
++    )
++
++
++def main() -> None:
++    # This module is imported by run_batch.py; not intended as a CLI.
++    raise SystemExit("render_request.py is not a CLI. Use run_batch.py.")
++
++
++if __name__ == "__main__":
++    main()
+\ No newline at end of file
+diff --git a/tools/prompt_rewrite_v4/run_batch.py b/tools/prompt_rewrite_v4/run_batch.py
+new file mode 100644
+index 000000000..b295d1e80
+--- /dev/null
++++ b/tools/prompt_rewrite_v4/run_batch.py
+@@ -0,0 +1,163 @@
++from __future__ import annotations
++
++import argparse
++import json
++import os
++import subprocess
++from pathlib import Path
++from typing import List
++
++from render_request import load_config, render_request
++from validate_patch import validate_patch
++
++
++def sh(cmd: List[str], cwd: Path) -> subprocess.CompletedProcess:
++    return subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True)
++
++
++def load_state(state_path: Path) -> dict:
++    return json.loads(state_path.read_text(encoding="utf-8"))
++
++
++def save_state(state_path: Path, state: dict) -> None:
++    state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def list_prompt_files(repo_root: Path, glob_pat: str) -> List[Path]:
++    # glob is relative to repo root
++    return sorted(repo_root.glob(glob_pat))
++
++
++def ensure_out_dir(out_dir: Path) -> None:
++    out_dir.mkdir(parents=True, exist_ok=True)
++
++
++def lint_gate(repo_root: Path, lint_cmd: str) -> None:
++    # Run via shell for convenience; command is controlled by config.
++    proc = subprocess.run(lint_cmd, cwd=str(repo_root), shell=True, text=True)
++    if proc.returncode != 0:
++        raise SystemExit(proc.returncode)
++
++
++def render_one(repo_root: Path, cfg_path: Path, state_path: Path) -> None:
++    cfg = load_config(cfg_path)
++    out_dir = repo_root / cfg.out_dir
++    ensure_out_dir(out_dir)
++
++    state = load_state(state_path)
++    cursor = int(state.get("cursor", 0))
++
++    files = list_prompt_files(repo_root, cfg.prompt_glob)
++    if not files:
++        raise SystemExit(f"No prompt files matched glob: {cfg.prompt_glob}")
++
++    if cursor >= len(files):
++        print("DONE: cursor at end of file list")
++        return
++
++    prompt_path = files[cursor]
++    prompt_rel = str(prompt_path.relative_to(repo_root))
++
++    # Resolve heuristics path relative to cfg_path directory
++    heur_path = cfg_path.parent / cfg.heuristics_path
++    heur_text = heur_path.read_text(encoding="utf-8")
++    prompt_text = prompt_path.read_text(encoding="utf-8")
++
++    request_text = render_request(
++        heuristics_text=heur_text,
++        prompt_relpath=prompt_rel,
++        prompt_text=prompt_text,
++        max_patch_lines=cfg.max_patch_lines,
++    )
++
++    req_file = out_dir / f"request_{cursor}.txt"
++    req_file.write_text(request_text, encoding="utf-8")
++
++    print(f"WROTE: {req_file}")
++    print(f"NEXT: run Opus in Claude Code using {repo_root / cfg.system_prompt_path} + {req_file}")
++    print(f"SAVE PATCH AS: {out_dir / f'response_{cursor}.patch'}")
++
++
++def apply_one(repo_root: Path, cfg_path: Path, state_path: Path) -> None:
++    cfg = load_config(cfg_path)
++    out_dir = cfg_path.parent / cfg.out_dir
++    ensure_out_dir(out_dir)
++
++    state = load_state(state_path)
++    cursor = int(state.get("cursor", 0))
++
++    files = list_prompt_files(repo_root, cfg.prompt_glob)
++    if cursor >= len(files):
++        print("DONE: cursor at end of file list")
++        return
++
++    prompt_path = files[cursor]
++    prompt_rel = str(prompt_path.relative_to(repo_root))
++
++    patch_path = out_dir / f"response_{cursor}.patch"
++    if not patch_path.exists():
++        raise SystemExit(f"Missing patch file: {patch_path}")
++
++    diff_text = patch_path.read_text(encoding="utf-8")
++    original_text = prompt_path.read_text(encoding="utf-8")
++
++    res = validate_patch(
++        diff_text=diff_text,
++        expected_relpath=prompt_rel,
++        original_prompt_text=original_text,
++        max_patch_lines=cfg.max_patch_lines,
++    )
++    if not res.ok:
++        state.setdefault("failed", []).append({"cursor": cursor, "path": prompt_rel, "reason": res.reason})
++        save_state(state_path, state)
++        raise SystemExit(f"PATCH VALIDATION FAILED: {res.reason}")
++
++    # Apply patch
++    proc = sh(["git", "apply", "--whitespace=nowarn", str(patch_path)], cwd=repo_root)
++    if proc.returncode != 0:
++        state.setdefault("failed", []).append(
++            {"cursor": cursor, "path": prompt_rel, "reason": f"git apply failed: {proc.stderr.strip()}"}
++        )
++        save_state(state_path, state)
++        raise SystemExit(f"git apply failed:\n{proc.stderr}")
++
++    # Lint gate (hard)
++    lint_gate(repo_root, cfg.lint_cmd)
++
++    # Mark done + advance
++    state.setdefault("done", []).append({"cursor": cursor, "path": prompt_rel})
++    state["cursor"] = cursor + 1
++    save_state(state_path, state)
++
++    print(f"APPLIED + LINT PASS: {prompt_rel}")
++    print(f"ADVANCED CURSOR -> {state['cursor']}")
++
++
++def main() -> None:
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--render", action="store_true", help="Render next request_<n>.txt for current cursor")
++    ap.add_argument("--apply", action="store_true", help="Validate + apply response_<n>.patch and advance cursor")
++    ap.add_argument("--config", default="tools/prompt_rewrite_v4/config.json")
++    ap.add_argument("--state", default="tools/prompt_rewrite_v4/state.json")
++    args = ap.parse_args()
++
++    repo_root = Path(".").resolve()
++    cfg_path = repo_root / args.config
++    state_path = repo_root / args.state
++
++    if not cfg_path.exists():
++        raise SystemExit(f"Missing config: {cfg_path}")
++    if not state_path.exists():
++        raise SystemExit(f"Missing state: {state_path}")
++
++    if args.render == args.apply:
++        raise SystemExit("Choose exactly one: --render OR --apply")
++
++    if args.render:
++        render_one(repo_root, cfg_path, state_path)
++    else:
++        apply_one(repo_root, cfg_path, state_path)
++
++
++if __name__ == "__main__":
++    main()
+\ No newline at end of file
+diff --git a/tools/prompt_rewrite_v4/state.json b/tools/prompt_rewrite_v4/state.json
+new file mode 100644
+index 000000000..07014ce9b
+--- /dev/null
++++ b/tools/prompt_rewrite_v4/state.json
+@@ -0,0 +1,5 @@
++{
++  "cursor": 0,
++  "done": [],
++  "failed": []
++}
+\ No newline at end of file
+diff --git a/tools/prompt_rewrite_v4/validate_patch.py b/tools/prompt_rewrite_v4/validate_patch.py
+new file mode 100644
+index 000000000..8d307ea92
+--- /dev/null
++++ b/tools/prompt_rewrite_v4/validate_patch.py
+@@ -0,0 +1,173 @@
++from __future__ import annotations
++
++import argparse
++import re
++from dataclasses import dataclass
++from pathlib import Path
++from typing import List, Tuple, Optional
++
++
++HUNK_RE = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
++DIFF_FILE_RE = re.compile(r"^\+\+\+ b/(.+)$")
++DIFF_OLD_RE = re.compile(r"^--- a/(.+)$")
++
++
++@dataclass(frozen=True)
++class ValidationResult:
++    ok: bool
++    reason: str
++
++
++def count_lines(text: str) -> int:
++    return 0 if not text else text.count("\n") + (0 if text.endswith("\n") else 1)
++
++
++def is_unified_diff(text: str) -> bool:
++    # Minimal structural check.
++    return ("--- a/" in text) and ("+++ b/" in text) and ("@@ -" in text)
++
++
++def parse_diff_target_paths(diff_text: str) -> Tuple[Optional[str], Optional[str]]:
++    old_path = None
++    new_path = None
++    for line in diff_text.splitlines():
++        m_old = DIFF_OLD_RE.match(line)
++        if m_old:
++            old_path = m_old.group(1)
++        m_new = DIFF_FILE_RE.match(line)
++        if m_new:
++            new_path = m_new.group(1)
++        if old_path and new_path:
++            break
++    return old_path, new_path
++
++
++def build_heading_line_map(prompt_text: str) -> List[Tuple[int, str]]:
++    """
++    Returns list of (line_no_1based, heading_text) for markdown headings.
++    We look for lines like: '# Heading' or '## Heading' etc.
++    """
++    out: List[Tuple[int, str]] = []
++    for idx, line in enumerate(prompt_text.splitlines(), start=1):
++        if line.startswith("#"):
++            # normalize heading text
++            stripped = line.lstrip("#").strip()
++            if stripped:
++                out.append((idx, stripped))
++    return out
++
++
++def section_bounds(prompt_text: str, section_name: str) -> Optional[Tuple[int, int]]:
++    """
++    Find 1-based inclusive bounds for the section body (lines after heading until before next heading).
++    Returns (start_line, end_line) for the BODY ONLY (not including heading line).
++    """
++    headings = build_heading_line_map(prompt_text)
++    # find exact match
++    target_idx = None
++    for i, (ln, name) in enumerate(headings):
++        if name == section_name:
++            target_idx = i
++            break
++    if target_idx is None:
++        return None
++    heading_line = headings[target_idx][0]
++    body_start = heading_line + 1
++    if target_idx + 1 < len(headings):
++        next_heading_line = headings[target_idx + 1][0]
++        body_end = next_heading_line - 1
++    else:
++        body_end = len(prompt_text.splitlines())
++    if body_start > body_end:
++        # empty body
++        return (body_start, body_end)
++    return (body_start, body_end)
++
++
++def hunk_ranges(diff_text: str) -> List[Tuple[int, int]]:
++    """
++    Returns list of new-file line ranges (start, end) affected by each hunk, 1-based inclusive.
++    Uses the +start,+count in the hunk header.
++    """
++    ranges: List[Tuple[int, int]] = []
++    for line in diff_text.splitlines():
++        m = HUNK_RE.match(line)
++        if not m:
++            continue
++        new_start = int(m.group(3))
++        new_count = int(m.group(4) or "1")
++        new_end = new_start + max(new_count, 1) - 1
++        ranges.append((new_start, new_end))
++    return ranges
++
++
++def ranges_within(outer: Tuple[int, int], inner: Tuple[int, int]) -> bool:
++    return inner[0] >= outer[0] and inner[1] <= outer[1]
++
++
++def validate_patch(
++    *,
++    diff_text: str,
++    expected_relpath: str,
++    original_prompt_text: str,
++    max_patch_lines: int,
++) -> ValidationResult:
++    if diff_text.strip() == "OUTPUT_LIMIT_REACHED":
++        return ValidationResult(False, "Model reported OUTPUT_LIMIT_REACHED")
++
++    if count_lines(diff_text) > max_patch_lines:
++        return ValidationResult(False, f"Patch exceeds max_patch_lines={max_patch_lines}")
++
++    if not is_unified_diff(diff_text):
++        return ValidationResult(False, "Not a unified diff")
++
++    old_path, new_path = parse_diff_target_paths(diff_text)
++    if old_path != expected_relpath or new_path != expected_relpath:
++        return ValidationResult(
++            False,
++            f"Diff targets do not match expected path. expected={expected_relpath} old={old_path} new={new_path}",
++        )
++
++    # Determine allowed section body bounds in the ORIGINAL file.
++    ep_bounds = section_bounds(original_prompt_text, "Extraction Procedure")
++    fm_bounds = section_bounds(original_prompt_text, "Failure Modes")
++    if ep_bounds is None or fm_bounds is None:
++        return ValidationResult(False, "Missing required section headings for bounds check")
++
++    allowed = [ep_bounds, fm_bounds]
++
++    # Check each hunk affects only allowed ranges in the new file.
++    # Conservative assumption: section headings are stable and line counts similar.
++    # This is fail-closed: if hunks are outside original section bounds, reject.
++    for r in hunk_ranges(diff_text):
++        if not any(ranges_within(a, r) for a in allowed):
++            return ValidationResult(
++                False,
++                f"Hunk range {r} touches outside allowed sections. allowed={allowed}",
++            )
++
++    return ValidationResult(True, "OK")
++
++
++def cli() -> None:
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--diff", required=True, help="Path to unified diff patch file")
++    ap.add_argument("--expected-relpath", required=True, help="Expected repo-relative path the diff modifies")
++    ap.add_argument("--original", required=True, help="Path to original prompt file (pre-patch)")
++    ap.add_argument("--max-lines", type=int, default=350)
++    args = ap.parse_args()
++
++    diff_text = Path(args.diff).read_text(encoding="utf-8")
++    orig_text = Path(args.original).read_text(encoding="utf-8")
++    res = validate_patch(
++        diff_text=diff_text,
++        expected_relpath=args.expected_relpath,
++        original_prompt_text=orig_text,
++        max_patch_lines=args.max_lines,
++    )
++    print(("PASS: " if res.ok else "FAIL: ") + res.reason)
++    raise SystemExit(0 if res.ok else 2)
++
++
++if __name__ == "__main__":
++    cli()
+\ No newline at end of file
+-- 
+2.50.1 (Apple Git-155)
+
