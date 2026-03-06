@@ -9,7 +9,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 import yaml
 
@@ -89,6 +89,12 @@ def parse_args() -> argparse.Namespace:
         "--strict",
         action="store_true",
         help="Exit non-zero on any lint failure",
+    )
+    parser.add_argument(
+        "--model-map",
+        type=Path,
+        default=Path("services/repo-truth-extractor/promptsets/v4/model_map.yaml"),
+        help="Path to model_map yaml relative to repo root",
     )
     return parser.parse_args()
 
@@ -267,6 +273,103 @@ def _phase_step_order_issues(promptset_payload: Dict[str, Any]) -> List[str]:
     return issues
 
 
+def _model_map_cross_check(
+    promptset_payload: Dict[str, Any],
+    model_map_payload: Dict[str, Any],
+) -> List[str]:
+    """Every step_id in promptset.yaml must have a matching entry in model_map.yaml.
+
+    Steps in optional_phases with exclude_from_validation are skipped.
+    """
+    issues: List[str] = []
+    optional_phases = set(promptset_payload.get("optional_phases", []))
+    phases = promptset_payload.get("phases", {})
+
+    # Collect model_map step_ids
+    mm_step_ids: set = set()
+    for entry in model_map_payload.get("steps", []):
+        if isinstance(entry, dict):
+            sid = str(entry.get("step_id", "")).strip()
+            if sid:
+                mm_step_ids.add(sid)
+
+    for phase, phase_payload in phases.items():
+        if not isinstance(phase_payload, dict):
+            continue
+        # Skip optional phases if explicitly excluded
+        if phase in optional_phases and phase_payload.get("exclude_from_validation", False):
+            continue
+        steps = phase_payload.get("steps", [])
+        if not isinstance(steps, list):
+            continue
+        for row in steps:
+            if not isinstance(row, dict):
+                continue
+            step_id = str(row.get("step_id", "")).strip()
+            if step_id and step_id not in mm_step_ids:
+                issues.append(f"step_id {step_id} in promptset.yaml has no model_map entry")
+    return issues
+
+
+def _artifact_output_cross_check(
+    promptset_payload: Dict[str, Any],
+    artifact_index: Dict[Tuple[str, str], Dict[str, Any]],
+) -> List[str]:
+    """Every output in a promptset step must have an artifacts.yaml entry."""
+    issues: List[str] = []
+    phases = promptset_payload.get("phases", {})
+    for phase, phase_payload in phases.items():
+        if not isinstance(phase_payload, dict):
+            continue
+        steps = phase_payload.get("steps", [])
+        if not isinstance(steps, list):
+            continue
+        for row in steps:
+            if not isinstance(row, dict):
+                continue
+            step_id = str(row.get("step_id", "")).strip()
+            for output in row.get("outputs", []):
+                output_name = str(output).strip()
+                if not output_name:
+                    continue
+                # Check across all phases for the artifact
+                found = False
+                for p in phases:
+                    if (p, output_name) in artifact_index:
+                        found = True
+                        break
+                if not found:
+                    issues.append(
+                        f"step {step_id} output {output_name} has no artifacts.yaml entry"
+                    )
+    return issues
+
+
+def _prompt_file_existence_check(
+    repo_root: Path,
+    promptset_payload: Dict[str, Any],
+) -> List[str]:
+    """Verify all prompt_file paths in promptset resolve to real files."""
+    issues: List[str] = []
+    phases = promptset_payload.get("phases", {})
+    for _phase, phase_payload in phases.items():
+        if not isinstance(phase_payload, dict):
+            continue
+        steps = phase_payload.get("steps", [])
+        if not isinstance(steps, list):
+            continue
+        for row in steps:
+            if not isinstance(row, dict):
+                continue
+            step_id = str(row.get("step_id", "")).strip()
+            prompt_file = str(row.get("prompt_file", "")).strip()
+            if prompt_file and not (repo_root / prompt_file).exists():
+                issues.append(
+                    f"step {step_id} prompt_file does not exist: {prompt_file}"
+                )
+    return issues
+
+
 def _prompt_file_coverage_issues(repo_root: Path, promptset_payload: Dict[str, Any]) -> List[str]:
     phases = promptset_payload.get("phases", {})
     if not isinstance(phases, dict):
@@ -378,9 +481,11 @@ def _audit_rows(
                     notes.append(f"lint:schema_missing_output:{artifact_name}")
 
             evidence_body = sections.get("Evidence Rules", "")
-            for required_key in ("path", "line_range", "excerpt"):
-                if required_key not in evidence_body:
-                    notes.append(f"lint:evidence_missing_key:{required_key}")
+            # Skip source-code evidence check for synthesis prompts (Phase S) as they use artifact#section format
+            if phase != "S":
+                for required_key in ("path", "line_range", "excerpt"):
+                    if required_key not in evidence_body:
+                        notes.append(f"lint:evidence_missing_key:{required_key}")
 
             determinism_body = sections.get("Determinism Rules", "")
             if not any(token in determinism_body for token in ("generated_at", "run_id", "timestamp")):
@@ -502,6 +607,7 @@ def run_audit(
     repo_root: Path,
     promptset_path: Path,
     artifacts_path: Path,
+    model_map_path: Path | None = None,
 ) -> Dict[str, Any]:
     promptset_payload = _read_yaml(promptset_path)
     artifacts_payload = _read_yaml(artifacts_path)
@@ -513,6 +619,12 @@ def run_audit(
     global_issues.extend(_forbidden_norm_key_issues(artifacts_payload))
     global_issues.extend(_phase_step_order_issues(promptset_payload))
     global_issues.extend(_prompt_file_coverage_issues(repo_root, promptset_payload))
+    global_issues.extend(_prompt_file_existence_check(repo_root, promptset_payload))
+    global_issues.extend(_artifact_output_cross_check(promptset_payload, artifact_index))
+
+    if model_map_path and model_map_path.exists():
+        model_map_payload = _read_yaml(model_map_path)
+        global_issues.extend(_model_map_cross_check(promptset_payload, model_map_payload))
 
     rows = _audit_rows(repo_root, promptset_payload, artifact_index)
     summary = _summary(rows, global_issues)
@@ -531,8 +643,9 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     promptset_path = (repo_root / args.promptset).resolve()
     artifacts_path = (repo_root / args.artifacts).resolve()
+    model_map_path = (repo_root / args.model_map).resolve()
 
-    payload = run_audit(repo_root, promptset_path, artifacts_path)
+    payload = run_audit(repo_root, promptset_path, artifacts_path, model_map_path)
     print(json.dumps(payload["summary"], indent=2, sort_keys=True))
 
     if args.json_out:

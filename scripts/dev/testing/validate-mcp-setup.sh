@@ -172,6 +172,6 @@ else
     echo "🔧 To fix issues, run:"
     echo "   ./scripts/start-mcp-servers.sh"
     echo "   # or"
-    echo "   docker-compose -f docker-compose.master.yml up -d"
+    echo "   docker compose -f compose.yml up -d"
     exit 1
 fi

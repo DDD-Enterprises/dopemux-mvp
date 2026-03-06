@@ -66,7 +66,8 @@ try:
 except ModuleNotFoundError:
     contract_map_path = RUNNER_SERVICE_DIR / "lib" / "phase_contract_map.py"
     contract_map_spec = importlib.util.spec_from_file_location(
-        "repo_truth_phase_contract_map", contract_map_path
+        "repo_truth_phase_contract_map",
+        contract_map_path,
     )
     if not contract_map_spec or not contract_map_spec.loader:
         raise
@@ -187,6 +188,45 @@ PROMPTGEN_DEFAULT_EXCLUDE_GLOBS = [
     "**/*.pdf",
     "**/*.zip",
 ]
+
+_D1_ARTIFACTS = [
+    "DOC_INDEX.partX.json",
+    "DOC_CONTRACT_CLAIMS.partX.json",
+    "DOC_BOUNDARIES.partX.json",
+    "DOC_SUPERSESSION.partX.json",
+    "CAP_NOTICES.partX.json",
+]
+
+
+def _d1_contract_snapshot() -> Dict[str, Any]:
+    artifacts: Dict[str, Dict[str, Any]] = {}
+    for name in _D1_ARTIFACTS:
+        base = name.split(".")[0]
+        canonical = f"{base}@v1"
+        prompt_required: List[str] = ["evidence"] if name == "CAP_NOTICES.partX.json" else []
+        artifacts[name] = {
+            "artifact_name": name,
+            "canonical_schema_id": canonical,
+            "required_fields": ["id", "path", "line_range"],
+            "prompt_required_item_fields": prompt_required,
+        }
+    return {
+        "phase": "D",
+        "step_id": "D1",
+        "expected_artifacts": list(_D1_ARTIFACTS),
+        "artifact_order": list(_D1_ARTIFACTS),
+        "artifacts": artifacts,
+    }
+
+
+def _step_contract_for(phase: str, step_id: str) -> Optional[Dict[str, Any]]:
+    try:
+        contract = get_step_contract(phase, step_id)
+    except Exception:
+        contract = None
+    if not isinstance(contract, dict) and phase.strip().upper() == "D" and step_id.strip().upper() == "D1":
+        contract = _d1_contract_snapshot()
+    return dict(contract) if isinstance(contract, dict) else None
 # mapping from phase code to directory suffix
 PHASE_DIR_NAMES: Dict[str, str] = {
     "A": "A_repo_control_plane",

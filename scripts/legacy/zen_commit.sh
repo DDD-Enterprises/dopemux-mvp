@@ -39,7 +39,7 @@ echo ""
 
 # 3. Commit Path C (EventBus)
 echo "📦 Step 3: Committing Path C (EventBus)..."
-git add docker/mcp-servers/ docker/leantime/ docker-compose.staging.yml
+git add docker/mcp-servers/ docker/leantime/
 git commit -m "feat(event-bridge): Complete Path C EventBus system
 
 - Redis Streams event publishing

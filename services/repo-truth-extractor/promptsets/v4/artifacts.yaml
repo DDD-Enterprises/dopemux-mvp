@@ -1960,9 +1960,96 @@ artifacts:
   - path
   - line_range
   - id
+- phase: C
+  artifact_name: PYTHON_API_SURFACE.json
+  canonical_writer_step_id: C14
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: C
+  artifact_name: SERVICE_ENDPOINT_SURFACE.json
+  canonical_writer_step_id: C15
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: C
+  artifact_name: MODULE_DEPENDENCY_GRAPH.json
+  canonical_writer_step_id: C16
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: C
+  artifact_name: SERVICE_DEPENDENCY_GRAPH.json
+  canonical_writer_step_id: C16
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: C
+  artifact_name: COGNITIVE_FEATURES_SURFACE.json
+  canonical_writer_step_id: C17
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
 - phase: S
   artifact_name: S7_OVERSEER_AGENT_FLOW_DESIGN.md
   canonical_writer_step_id: S7
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
+  artifact_name: S8_ARCHITECTURE_DIAGRAMS.md
+  canonical_writer_step_id: S8
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
+  artifact_name: S9_DEPENDENCY_GRAPH_SUMMARY.md
+  canonical_writer_step_id: S9
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
+  artifact_name: S10_API_SURFACE_REFERENCE.md
+  canonical_writer_step_id: S10
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
+  artifact_name: S11_DOCUMENTATION_GENERATION.md
+  canonical_writer_step_id: S11
   kind: markdown
   norm_artifact: true
   allow_timestamp_keys: false
