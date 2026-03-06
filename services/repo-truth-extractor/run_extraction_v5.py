@@ -14281,7 +14281,25 @@ def main() -> None:
     promptgen_group.add_argument(
         "--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR
     )
+    parser.add_argument(
+        "--promptset-root",
+        type=str,
+        default=None,
+        help=(
+            "Override prompt root directory. Points to a generated promptset "
+            "directory (from `dopemux extractor init`) or any directory containing "
+            "prompt files. Equivalent to setting REPO_TRUTH_EXTRACTOR_PROMPT_ROOT."
+        ),
+    )
     args = parser.parse_args()
+    # --promptset-root: wire into env var so prompt_root() picks it up
+    if args.promptset_root:
+        psr = Path(args.promptset_root).resolve()
+        # If the path has a prompts/ subdir, use it; otherwise use as-is
+        if (psr / "prompts").is_dir():
+            os.environ[PROMPT_ROOT_ENV_VAR] = str(psr / "prompts")
+        else:
+            os.environ[PROMPT_ROOT_ENV_VAR] = str(psr)
     if args.sync:
         run_sync_scopes()
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
