@@ -1,11 +1,25 @@
 ---
-title: "ADR-219: Universal Repo-Truth-Extractor Sync Pipeline"
+title: 'ADR-219: Universal Repo-Truth-Extractor Sync Pipeline'
 type: adr
 status: active
-prelude: "Architecture decision for making the repo-truth-extractor work on any codebase via feature detection, interactive discovery, and template-driven prompt generation."
-tags: [extractor, universal, promptgen, architecture]
+prelude: Architecture decision for making the repo-truth-extractor work on any codebase
+  via feature detection, interactive discovery, and template-driven prompt generation.
+tags:
+- extractor
+- universal
+- promptgen
+- architecture
+id: ADR-219-universal-extractor-sync-pipeline
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-06'
+last_review: '2026-03-06'
+next_review: '2026-06-04'
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
-
 # ADR-219: Universal Repo-Truth-Extractor Sync Pipeline
 
 ## Status
