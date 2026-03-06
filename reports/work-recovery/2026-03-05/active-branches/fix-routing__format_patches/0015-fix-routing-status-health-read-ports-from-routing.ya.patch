@@ -1,0 +1,250 @@
+From 74e4771b6562ca2db13908fc382a6a6eafa8e064 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 16:22:57 -0800
+Subject: [PATCH 15/36] fix(routing): status/health read ports from
+ routing.yaml (no defaults)
+
+---
+ src/dopemux/launchd_services.py | 46 +++++++++++++++++-----------
+ src/dopemux/routing_cli.py      | 53 ++++++++++++++++++++++++++++++++-
+ src/dopemux/routing_config.py   | 41 +++++++++++++++++++++++++
+ 3 files changed, 121 insertions(+), 19 deletions(-)
+
+diff --git a/src/dopemux/launchd_services.py b/src/dopemux/launchd_services.py
+index f31cf4aaf..4c0751c91 100644
+--- a/src/dopemux/launchd_services.py
++++ b/src/dopemux/launchd_services.py
+@@ -231,12 +231,10 @@ LOG_FILE="$LOG_DIR/ccr_$(date +%Y%m%d_%H%M%S).log"
+ echo "🚀 Starting CCR on port $CCR_PORT..."
+ echo "📝 Logging to: $LOG_FILE"
+ 
+-# Start CCR directly (no docker)
+-exec "{ccr_bin}" --config "{home_dir}/.dopemux/ccr/config.json" \\
+-    --port "$CCR_PORT" \\
+-    --litellm-url "$LITELLM_URL" \\
+-    --litellm-key "$DOPEMUX_LITELLM_MASTER_KEY" \\
+-    >> "$LOG_FILE" 2>&1
++# Start CCR using the correct command format
++# CCR expects 'ccr start' rather than direct flags
++cd "{home_dir}/.dopemux/ccr"
++exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
+ """
+         
+         with open(script_path, "w") as f:
+@@ -523,37 +521,49 @@ exec "{ccr_bin}" --config "{home_dir}/.dopemux/ccr/config.json" \\
+         """Check health of running services."""
+         health = {}
+         
+-        # Ensure config is loaded
+-        if not self.routing_config._loaded:
+-            self.routing_config.load()
++        # Ensure config is loaded - fail closed if not available
++        try:
++            if not self.routing_config._loaded:
++                self.routing_config.load()
++        except Exception as e:
++            health["config"] = {
++                "status": "unhealthy",
++                "error": f"routing.yaml missing or invalid; cannot determine ports; refusing to guess: {e}",
++            }
++            return health
+         
+         # Check LiteLLM health
+         try:
+             import requests
+-            litellm_url = f"http://localhost:{self.routing_config.config['ports']['litellm']}/health/readiness"
++            litellm_port = self.routing_config.config['ports']['litellm']
++            litellm_url = f"http://localhost:{litellm_port}/health/readiness"
+             response = requests.get(litellm_url, timeout=5)
+             health["litellm"] = {
+                 "status": "healthy" if response.status_code == 200 else "unhealthy",
++                "port": litellm_port,
+                 "response": response.text,
+             }
+         except Exception as e:
+             health["litellm"] = {
+                 "status": "unhealthy",
++                "port": self.routing_config.config['ports']['litellm'],
+                 "error": str(e),
+             }
+         
+-        # Check CCR health
++        # Check CCR health using TCP connect (no HTTP endpoint assumptions)
+         try:
+-            ccr_url = f"http://localhost:{self.routing_config.config['ports']['ccr']}/health"
+-            response = requests.get(ccr_url, timeout=5)
+-            health["ccr"] = {
+-                "status": "healthy" if response.status_code == 200 else "unhealthy",
+-                "response": response.text,
+-            }
++            import socket
++            ccr_port = self.routing_config.config['ports']['ccr']
++            with socket.create_connection(("127.0.0.1", ccr_port), timeout=1.0):
++                health["ccr"] = {
++                    "status": "healthy",
++                    "port": ccr_port,
++                }
+         except Exception as e:
+             health["ccr"] = {
+                 "status": "unhealthy",
+-                "error": str(e),
++                "port": self.routing_config.config['ports']['ccr'],
++                "error": f"connection failed: {str(e)}",
+             }
+         
+         return health
+diff --git a/src/dopemux/routing_cli.py b/src/dopemux/routing_cli.py
+index 815c8a8d5..64b953d21 100644
+--- a/src/dopemux/routing_cli.py
++++ b/src/dopemux/routing_cli.py
+@@ -119,12 +119,22 @@ def status():
+         
+         # Check health if services are running
+         health = manager.check_health()
++        
++        # Check for config errors first
++        if "config" in health:
++            click.echo("\n🏥 Service Health:")
++            click.echo("-" * 50)
++            click.echo(f"❌ config: {health['config']['status']}")
++            click.echo(f"   Error: {health['config']['error']}")
++            return
++        
+         click.echo("\n🏥 Service Health:")
+         click.echo("-" * 50)
+         
+         for service_name, health_info in health.items():
+             status_emoji = "✅" if health_info['status'] == 'healthy' else "❌"
+-            click.echo(f"{status_emoji} {service_name}: {health_info['status']}")
++            port_info = f" (127.0.0.1:{health_info.get('port', 'unknown')})" if health_info.get('port') else ""
++            click.echo(f"{status_emoji} {service_name}: {health_info['status']}{port_info}")
+             if health_info.get('error'):
+                 click.echo(f"   Error: {health_info['error']}")
+         
+@@ -134,6 +144,47 @@ def status():
+         raise
+ 
+ 
++@routing.command()
++def health():
++    """Check service health and exit with appropriate status code."""
++    try:
++        manager = LaunchdServiceManager.get_instance()
++        health = manager.check_health()
++        
++        # Check for config errors first
++        if "config" in health:
++            click.echo(f"❌ {health['config']['error']}", err=True)
++            raise SystemExit(2)
++        
++        # Check if we're in subscription mode
++        try:
++            mode = manager.routing_config.config.get('mode', 'subscription')
++            if mode == 'subscription':
++                click.echo("ℹ️  Routing mode is 'subscription' - service health checks not applicable")
++                raise SystemExit(0)
++        except Exception:
++            # If we can't determine mode, assume we need to check services
++            pass
++        
++        # Check service health
++        unhealthy_services = []
++        for service_name, health_info in health.items():
++            if health_info['status'] != 'healthy':
++                unhealthy_services.append(service_name)
++                click.echo(f"❌ {service_name}: {health_info.get('error', 'unhealthy')}", err=True)
++        
++        if unhealthy_services:
++            raise SystemExit(1)
++        else:
++            click.echo("✅ All services healthy")
++            raise SystemExit(0)
++            
++    except Exception as e:
++        logger.error(f"Failed to check service health: {e}")
++        click.echo(f"❌ Error: {e}", err=True)
++        raise SystemExit(2)
++
++
+ @routing.command()
+ def config():
+     """Show current routing configuration."""
+diff --git a/src/dopemux/routing_config.py b/src/dopemux/routing_config.py
+index 5ce20d902..dccb0d458 100644
+--- a/src/dopemux/routing_config.py
++++ b/src/dopemux/routing_config.py
+@@ -32,6 +32,7 @@ class RoutingConfig:
+         self.config_path = config_path or self.DEFAULT_CONFIG_PATH
+         self.config: Dict[str, Any] = {}
+         self._loaded = False
++        self._ports: Optional[Dict[str, int]] = None
+ 
+     def load(self) -> Dict[str, Any]:
+         """Load and validate the routing configuration.
+@@ -77,6 +78,23 @@ class RoutingConfig:
+         except Exception as e:
+             raise RoutingConfigError(f"Failed to copy template: {e}") from e
+ 
++    @property
++    def ports(self) -> Dict[str, int]:
++        """Get the validated ports configuration.
++
++        Returns:
++            Dictionary with 'litellm' and 'ccr' ports
++
++        Raises:
++            RoutingConfigError: If ports are not available
++        """
++        if self._ports is None:
++            if not self._loaded:
++                raise RoutingConfigError("Configuration not loaded. Call load() first.")
++            # Try to validate if not already done
++            self.validate()
++        return self._ports
++
+     def validate(self) -> None:
+         """Validate the loaded configuration.
+ 
+@@ -119,6 +137,18 @@ class RoutingConfig:
+         if "litellm" not in ports or "ccr" not in ports:
+             raise RoutingConfigError("Ports section must contain 'litellm' and 'ccr'")
+ 
++        # Validate port values are integers in valid range
++        try:
++            litellm_port = int(ports["litellm"])
++            ccr_port = int(ports["ccr"])
++            if not (1 <= litellm_port <= 65535):
++                raise RoutingConfigError(f"litellm port {litellm_port} must be between 1-65535")
++            if not (1 <= ccr_port <= 65535):
++                raise RoutingConfigError(f"ccr port {ccr_port} must be between 1-65535")
++            self._ports = {"litellm": litellm_port, "ccr": ccr_port}
++        except ValueError as e:
++            raise RoutingConfigError(f"Port values must be integers: {e}") from e
++
+         # Validate providers
+         providers = self.config.get("providers", [])
+         if not isinstance(providers, list) or len(providers) == 0:
+@@ -339,6 +369,17 @@ class RoutingConfig:
+         config.load()
+         return config
+ 
++    def get_ports(self) -> Dict[str, int]:
++        """Get ports as a dictionary with 'litellm' and 'ccr' keys.
++
++        Returns:
++            Dictionary containing litellm and ccr ports
++
++        Raises:
++            RoutingConfigError: If ports are not available
++        """
++        return self.ports
++
+     @classmethod
+     def get_mode(cls) -> str:
+         """Get the current routing mode."""
+-- 
+2.50.1 (Apple Git-155)
+

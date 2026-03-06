@@ -1,0 +1,492 @@
+From 11c6c040d43e088e7af143d1d723961be538f82b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 17:22:14 -0800
+Subject: [PATCH 25/36] test(migrate): update tests and docs for dopetask
+
+---
+ AGENTS.md                                     |  8 +-
+ AUDIT_RESULTS.json                            | 12 +--
+ QUICK_START.md                                |  7 +-
+ README.md                                     | 15 ++--
+ ...TION.md => DOPETASK_KERNEL_INTEGRATION.md} |  0
+ ...EGRATION.md => 07_DOPETASK_INTEGRATION.md} | 38 ++++----
+ .../arch/test_dopetask_submodule_contract.py  | 25 ++++++
+ tests/arch/test_taskx_submodule_contract.py   | 26 ------
+ tests/unit/test_dopetask_wrapper_submodule.py | 75 ++++++++++++++++
+ tests/unit/test_taskx_wrapper_submodule.py    | 89 -------------------
+ 10 files changed, 139 insertions(+), 156 deletions(-)
+ rename docs/{TASKX_KERNEL_INTEGRATION.md => DOPETASK_KERNEL_INTEGRATION.md} (100%)
+ rename docs/planes/pm/dopemux/{07_TASKX_INTEGRATION.md => 07_DOPETASK_INTEGRATION.md} (93%)
+ create mode 100644 tests/arch/test_dopetask_submodule_contract.py
+ delete mode 100644 tests/arch/test_taskx_submodule_contract.py
+ create mode 100644 tests/unit/test_dopetask_wrapper_submodule.py
+ delete mode 100644 tests/unit/test_taskx_wrapper_submodule.py
+
+diff --git a/AGENTS.md b/AGENTS.md
+index 63d4f2801..cb6c6c27d 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -242,10 +242,10 @@ MCP servers are configured in `.claude.json`. Active servers:
+ 
+ ---
+ 
+-## TaskX Rails (Repo Identity)
+-This repo includes TaskX-style identity rails:
++## dopeTask Rails (Repo Identity)
++This repo includes dopeTask-style identity rails:
+ 
+-- `.taskxroot` (repo marker)
+-- `.taskx/project.json` (repo identity, packet header requirement)
++- `.dopetaskroot` (repo marker)
++- `.dopetask/project.json` (repo identity, packet header requirement)
+ 
+ Any task-packet-driven automation should validate identity before executing.
+diff --git a/AUDIT_RESULTS.json b/AUDIT_RESULTS.json
+index b69f1b555..e9801d582 100644
+--- a/AUDIT_RESULTS.json
++++ b/AUDIT_RESULTS.json
+@@ -14,7 +14,7 @@
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md\n  Stubs: [('Outputs', 2)]",
++    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_DOPETASK_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md\n  Stubs: [('Outputs', 4)]",
+@@ -29,7 +29,7 @@
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md\n  Stubs: [('Outputs', 4)]",
+-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md\n  Stubs: [('Outputs', 2)]",
++    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_DOPETASK_INTEGRATION_SURFACES.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md\n  Stubs: [('Outputs', 3)]",
+@@ -67,7 +67,7 @@
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md\n  Stubs: [('Outputs', 2)]",
+-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md\n  Stubs: [('Outputs', 2)]",
++    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_DOPETASK_INTEGRATION_TRUTH.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md\n  Stubs: [('Outputs', 2)]",
+     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md\n  Stubs: [('Outputs', 2)]",
+@@ -152,7 +152,7 @@
+       ]
+     },
+     {
+-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md",
++      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_DOPETASK_SURFACE.md",
+       "missing": [],
+       "stubs": [
+         "Outputs"
+@@ -297,7 +297,7 @@
+       ]
+     },
+     {
+-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
++      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_DOPETASK_INTEGRATION_SURFACES.md",
+       "missing": [],
+       "stubs": [
+         "Outputs"
+@@ -578,7 +578,7 @@
+       ]
+     },
+     {
+-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md",
++      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_DOPETASK_INTEGRATION_TRUTH.md",
+       "missing": [],
+       "stubs": [
+         "Outputs"
+diff --git a/QUICK_START.md b/QUICK_START.md
+index 4f4135388..20aa1b252 100644
+--- a/QUICK_START.md
++++ b/QUICK_START.md
+@@ -43,16 +43,15 @@ export ANTHROPIC_API_KEY='<REDACTED_LITELLM_MASTER_KEY>'
+ dopemux start
+ ```
+ 
+-### Step 4: Verify TaskX Kernel Wiring
++### Step 4: Verify dopeTask Kernel Wiring
+ 
+ ```bash
+-git submodule update --init --recursive vendor/taskx
+-scripts/taskx --version
++scripts/dopetask --version
+ dopemux kernel doctor --timestamp-mode deterministic
+ ```
+ 
+ Use `dopemux kernel --help` for full lifecycle commands (`compile`, `run`, `collect`, `gate`, `promote`, `feedback`, `loop`).
+-`.taskx-pin` is deprecated for runtime and CI behavior.
++`.dopetask-pin` is used for runtime and CI behavior.
+ 
+ ## Verify It's Working
+ 
+diff --git a/README.md b/README.md
+index b3b0218a1..aadee9201 100644
+--- a/README.md
++++ b/README.md
+@@ -10,7 +10,7 @@
+ - [Why Dopemux?](#why-dopemux)
+ - [Project Name and Description](#project-name-and-description)
+ - [Quick Start](#quick-start)
+-- [TaskX Kernel Integration](#taskx-kernel-integration)
++- [dopeTask Kernel Integration](#dopetask-kernel-integration)
+ - [Technology Stack](#technology-stack)
+ - [Project Architecture](#project-architecture)
+ - [Project Structure](#project-structure)
+@@ -80,21 +80,20 @@ See [docs/04-installation.md](docs/04-installation.md), [INSTALL.md](INSTALL.md)
+ 
+ ---
+ 
+-## TaskX Kernel Integration
++## dopeTask Kernel Integration
+ 
+-Dopemux consumes TaskX via a vendored submodule (`vendor/taskx`) and wrapper (`scripts/taskx`).
++Dopemux consumes dopeTask via pip installation and wrapper (`scripts/dopetask`).
+ 
+ ```bash
+-git submodule update --init --recursive vendor/taskx
+-scripts/taskx --version
++scripts/dopetask --version
+ dopemux kernel doctor --timestamp-mode deterministic
+ ```
+ 
+-- Runtime and CI are submodule-first.
+-- `.taskx-pin` is deprecated for runtime/CI behavior.
++- Runtime and CI use pip installation.
++- `.dopetask-pin` is used for runtime/CI behavior.
+ - Use `dopemux kernel <lifecycle-command>` for kernel lifecycle operations.
+ 
+-See [docs/TASKX_KERNEL_INTEGRATION.md](docs/TASKX_KERNEL_INTEGRATION.md) for the full contract and update/rollback process.
++See [docs/DOPETASK_KERNEL_INTEGRATION.md](docs/DOPETASK_KERNEL_INTEGRATION.md) for the full contract and update/rollback process.
+ 
+ ---
+ 
+diff --git a/docs/TASKX_KERNEL_INTEGRATION.md b/docs/DOPETASK_KERNEL_INTEGRATION.md
+similarity index 100%
+rename from docs/TASKX_KERNEL_INTEGRATION.md
+rename to docs/DOPETASK_KERNEL_INTEGRATION.md
+diff --git a/docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md b/docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md
+similarity index 93%
+rename from docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md
+rename to docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md
+index 851fe9ebb..3e03fe49c 100644
+--- a/docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md
++++ b/docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md
+@@ -1,50 +1,50 @@
+ ---
+-title: TaskX Integration
++title: dopeTask Integration
+ plane: pm
+ component: dopemux
+ status: proposed
+-id: 07_TASKX_INTEGRATION
++id: 07_DOPETASK_INTEGRATION
+ type: explanation
+ owner: '@hu3mann'
+ author: '@hu3mann'
+ date: '2026-02-16'
+ last_review: '2026-02-16'
+ next_review: '2026-05-17'
+-prelude: TaskX Integration (explanation) for dopemux documentation and developer workflows.
++prelude: dopeTask Integration (explanation) for dopemux documentation and developer workflows.
+ ---
+-# TaskX Integration Contract
++# dopeTask Integration Contract
+ 
+ ## Purpose
+-The seam between deterministic engine and stateful runtime. This defines the API between Supervisor (Brain) and TaskX (Muscle).
++The seam between deterministic engine and stateful runtime. This defines the API between Supervisor (Brain) and dopeTask (Muscle).
+ 
+ ## Scope
+-- The command-line interface to TaskX.
++- The command-line interface to dopeTask.
+ - The artifact directory structure and schema.
+ - The separation of concerns (Policy vs Execution).
+-- The boundary between task-orchestrator (coordination layer) and TaskX (deterministic engine).
++- The boundary between task-orchestrator (coordination layer) and dopeTask (deterministic engine).
+ 
+ ---
+ 
+ ## Non-negotiable invariants
+ 
+-### INV-TX-001: One-Way Call Direction
++### INV-DT-001: One-Way Call Direction
+ 
+-**INV-ID**: INV-TX-001
+-**Statement**: Supervisor calls TaskX. TaskX NEVER calls Supervisor API. The call direction is strictly Supervisor → TaskX. TaskX communicates back ONLY via file artifacts.
++**INV-ID**: INV-DT-001
++**Statement**: Supervisor calls dopeTask. dopeTask NEVER calls Supervisor API. The call direction is strictly Supervisor → dopeTask. dopeTask communicates back ONLY via file artifacts.
+ **Scope**: per-run
+ **Owner**: Architecture (boundary contract)
+ **Enforcement Surface**:
+-- `scripts/taskx` is a shell wrapper that `exec taskx "$@"` — it accepts arguments, it does not make HTTP calls back.
+-- TaskX is invoked as a subprocess. It has no knowledge of Supervisor endpoints.
+-- No Supervisor URL or callback endpoint is passed to TaskX in any argument or environment variable.
+-**Violation Mode**: Bidirectional coupling — TaskX starts making decisions that belong to Supervisor (policy leak).
++- `scripts/dopetask` is a shell wrapper that `exec dopetask "$@"` — it accepts arguments, it does not make HTTP calls back.
++- dopeTask is invoked as a subprocess. It has no knowledge of Supervisor endpoints.
++- No Supervisor URL or callback endpoint is passed to dopeTask in any argument or environment variable.
++**Violation Mode**: Bidirectional coupling — dopeTask starts making decisions that belong to Supervisor (policy leak).
+ **Detection Method**:
+-- Code audit: TaskX codebase must contain zero HTTP client calls to Supervisor or task-orchestrator endpoints.
+-- `grep -r "localhost:8000\|SUPERVISOR_URL\|callback" .taskx_venv/` must return zero matches in TaskX code.
+-**Recovery Strategy**: If bidirectional call detected, it is a design violation. Remove the call path. TaskX must communicate only via artifacts.
++- Code audit: dopeTask codebase must contain zero HTTP client calls to Supervisor or task-orchestrator endpoints.
++- `grep -r "localhost:8000\|SUPERVISOR_URL\|callback" .dopetask_venv/` must return zero matches in dopeTask code.
++**Recovery Strategy**: If bidirectional call detected, it is a design violation. Remove the call path. dopeTask must communicate only via artifacts.
+ **Evidence**:
+-- `scripts/taskx` (lines 1-23): Pure wrapper. Activates venv, execs `taskx` binary. No callbacks.
+-- `.taskx-pin`: `install=git repo=https://github.com/hu3mann/taskX.git ref=v0.1.2` — external repo, separate codebase.
++- `scripts/dopetask` (lines 1-23): Pure wrapper. Activates venv, execs `dopetask` binary. No callbacks.
++- `.dopetask-pin`: `install=pip dep=dopetask version=0.1.4` — pip package, separate codebase.
+ 
+ ---
+ 
+diff --git a/tests/arch/test_dopetask_submodule_contract.py b/tests/arch/test_dopetask_submodule_contract.py
+new file mode 100644
+index 000000000..0b00655b5
+--- /dev/null
++++ b/tests/arch/test_dopetask_submodule_contract.py
+@@ -0,0 +1,25 @@
++from __future__ import annotations
++
++from pathlib import Path
++
++
++REPO_ROOT = Path(__file__).resolve().parents[2]
++
++
++def test_gitmodules_has_no_dopetask_submodule() -> None:
++    gitmodules = (REPO_ROOT / ".gitmodules").read_text(encoding="utf-8")
++    assert '[submodule "vendor/dopetask"]' not in gitmodules
++    assert "path = vendor/dopetask" not in gitmodules
++
++
++def test_ci_workflow_uses_dopetask_pin_not_submodule() -> None:
++    workflow = (REPO_ROOT / ".github" / "workflows" / "ci-complete.yml").read_text(encoding="utf-8")
++    assert ".dopetask-pin" in workflow
++    assert "vendor/dopetask" not in workflow
++
++
++def test_dopetask_wrapper_uses_pip_not_submodule() -> None:
++    wrapper = (REPO_ROOT / "scripts" / "dopetask").read_text(encoding="utf-8")
++    assert 'DOPETASK_PIN="$REPO_ROOT/.dopetask-pin"' in wrapper
++    assert 'install=pip' in wrapper
++    assert "DOPETASK_SOURCE_DIR=\"$REPO_ROOT/vendor/dopetask\"" not in wrapper
+diff --git a/tests/arch/test_taskx_submodule_contract.py b/tests/arch/test_taskx_submodule_contract.py
+deleted file mode 100644
+index e2161988f..000000000
+--- a/tests/arch/test_taskx_submodule_contract.py
++++ /dev/null
+@@ -1,26 +0,0 @@
+-from __future__ import annotations
+-
+-from pathlib import Path
+-
+-
+-REPO_ROOT = Path(__file__).resolve().parents[2]
+-
+-
+-def test_gitmodules_declares_taskx_submodule() -> None:
+-    gitmodules = (REPO_ROOT / ".gitmodules").read_text(encoding="utf-8")
+-    assert '[submodule "vendor/taskx"]' in gitmodules
+-    assert "path = vendor/taskx" in gitmodules
+-    assert "url = https://github.com/hu3mann/taskX.git" in gitmodules
+-
+-
+-def test_ci_workflow_uses_submodule_not_taskx_pin() -> None:
+-    workflow = (REPO_ROOT / ".github" / "workflows" / "ci-complete.yml").read_text(encoding="utf-8")
+-    assert "submodules: recursive" in workflow
+-    assert "vendor/taskx" in workflow
+-    assert ".taskx-pin" not in workflow
+-
+-
+-def test_taskx_wrapper_requires_vendor_submodule() -> None:
+-    wrapper = (REPO_ROOT / "scripts" / "taskx").read_text(encoding="utf-8")
+-    assert "TASKX_SOURCE_DIR=\"$REPO_ROOT/vendor/taskx\"" in wrapper
+-    assert ".taskx-pin" not in wrapper
+diff --git a/tests/unit/test_dopetask_wrapper_submodule.py b/tests/unit/test_dopetask_wrapper_submodule.py
+new file mode 100644
+index 000000000..df6f46104
+--- /dev/null
++++ b/tests/unit/test_dopetask_wrapper_submodule.py
+@@ -0,0 +1,75 @@
++from __future__ import annotations
++
++import json
++import subprocess
++from pathlib import Path
++
++
++REPO_ROOT = Path(__file__).resolve().parents[2]
++WRAPPER_SOURCE = REPO_ROOT / "scripts" / "dopetask"
++
++
++def _write_wrapper(repo_root: Path) -> Path:
++    scripts_dir = repo_root / "scripts"
++    scripts_dir.mkdir(parents=True, exist_ok=True)
++    wrapper_path = scripts_dir / "dopetask"
++    wrapper_path.write_text(WRAPPER_SOURCE.read_text(encoding="utf-8"), encoding="utf-8")
++    wrapper_path.chmod(0o755)
++    return wrapper_path
++
++
++def _write_identity_rails(repo_root: Path, *, project_id: str = "dopemux-mvp") -> None:
++    (repo_root / ".dopetaskroot").write_text("", encoding="utf-8")
++    (repo_root / ".repo_id").write_text(f"project={project_id}\n", encoding="utf-8")
++    dopetask_dir = repo_root / ".dopetask"
++    dopetask_dir.mkdir(parents=True, exist_ok=True)
++    (dopetask_dir / "project.json").write_text(json.dumps({"project_id": project_id}), encoding="utf-8")
++
++
++def _run_wrapper(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
++    wrapper = repo_root / "scripts" / "dopetask"
++    return subprocess.run(
++        [str(wrapper), *args],
++        cwd=repo_root,
++        capture_output=True,
++        text=True,
++        check=False,
++    )
++
++
++def test_wrapper_refuses_when_pin_missing(tmp_path: Path) -> None:
++    _write_identity_rails(tmp_path)
++    _write_wrapper(tmp_path)
++
++    result = _run_wrapper(tmp_path, "--version")
++    assert result.returncode == 2
++    assert ".dopetask-pin missing" in result.stderr
++
++
++def test_wrapper_refuses_when_identity_is_invalid(tmp_path: Path) -> None:
++    _write_wrapper(tmp_path)
++    (tmp_path / ".dopetaskroot").write_text("", encoding="utf-8")
++
++    result = _run_wrapper(tmp_path, "--version")
++    assert result.returncode == 2
++    assert ".repo_id missing" in result.stderr
++
++
++def test_wrapper_executes_when_pin_and_venv_are_ready(tmp_path: Path) -> None:
++    _write_identity_rails(tmp_path)
++    _write_wrapper(tmp_path)
++    
++    # Create .dopetask-pin
++    (tmp_path / ".dopetask-pin").write_text("install=pip\ndep=dopetask\nversion=0.1.4\n", encoding="utf-8")
++
++    venv_bin = tmp_path / ".dopetask_venv" / "bin"
++    venv_bin.mkdir(parents=True, exist_ok=True)
++    (tmp_path / ".dopetask_venv" / ".dopetask_version").write_text("0.1.4\n", encoding="utf-8")
++    (venv_bin / "activate").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
++    stub_dopetask = venv_bin / "dopetask"
++    stub_dopetask.write_text("#!/usr/bin/env bash\necho STUB_DOPETASK_OK\n", encoding="utf-8")
++    stub_dopetask.chmod(0o755)
++
++    result = _run_wrapper(tmp_path, "--version")
++    assert result.returncode == 0
++    assert "STUB_DOPETASK_OK" in result.stdout
+diff --git a/tests/unit/test_taskx_wrapper_submodule.py b/tests/unit/test_taskx_wrapper_submodule.py
+deleted file mode 100644
+index 7f9491055..000000000
+--- a/tests/unit/test_taskx_wrapper_submodule.py
++++ /dev/null
+@@ -1,89 +0,0 @@
+-from __future__ import annotations
+-
+-import json
+-import subprocess
+-from pathlib import Path
+-
+-
+-REPO_ROOT = Path(__file__).resolve().parents[2]
+-WRAPPER_SOURCE = REPO_ROOT / "scripts" / "taskx"
+-
+-
+-def _write_wrapper(repo_root: Path) -> Path:
+-    scripts_dir = repo_root / "scripts"
+-    scripts_dir.mkdir(parents=True, exist_ok=True)
+-    wrapper_path = scripts_dir / "taskx"
+-    wrapper_path.write_text(WRAPPER_SOURCE.read_text(encoding="utf-8"), encoding="utf-8")
+-    wrapper_path.chmod(0o755)
+-    return wrapper_path
+-
+-
+-def _write_identity_rails(repo_root: Path, *, project_id: str = "dopemux-mvp") -> None:
+-    (repo_root / ".taskxroot").write_text("", encoding="utf-8")
+-    (repo_root / ".repo_id").write_text(f"project={project_id}\n", encoding="utf-8")
+-    taskx_dir = repo_root / ".taskx"
+-    taskx_dir.mkdir(parents=True, exist_ok=True)
+-    (taskx_dir / "project.json").write_text(json.dumps({"project_id": project_id}), encoding="utf-8")
+-
+-
+-def _run_wrapper(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+-    wrapper = repo_root / "scripts" / "taskx"
+-    return subprocess.run(
+-        [str(wrapper), *args],
+-        cwd=repo_root,
+-        capture_output=True,
+-        text=True,
+-        check=False,
+-    )
+-
+-
+-def test_wrapper_refuses_when_submodule_missing(tmp_path: Path) -> None:
+-    _write_identity_rails(tmp_path)
+-    _write_wrapper(tmp_path)
+-
+-    result = _run_wrapper(tmp_path, "--version")
+-    assert result.returncode == 2
+-    assert "TaskX submodule missing" in result.stderr
+-
+-
+-def test_wrapper_refuses_when_identity_is_invalid(tmp_path: Path) -> None:
+-    _write_wrapper(tmp_path)
+-    (tmp_path / ".taskxroot").write_text("", encoding="utf-8")
+-
+-    result = _run_wrapper(tmp_path, "--version")
+-    assert result.returncode == 2
+-    assert ".repo_id missing" in result.stderr
+-
+-
+-def test_wrapper_executes_when_submodule_and_venv_are_ready(tmp_path: Path) -> None:
+-    _write_identity_rails(tmp_path)
+-    _write_wrapper(tmp_path)
+-
+-    vendor_taskx = tmp_path / "vendor" / "taskx"
+-    vendor_taskx.mkdir(parents=True, exist_ok=True)
+-    (vendor_taskx / "pyproject.toml").write_text("[project]\nname='taskx-kernel'\nversion='0.0.0'\n", encoding="utf-8")
+-
+-    subprocess.run(["git", "init"], cwd=vendor_taskx, check=True, capture_output=True, text=True)
+-    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=vendor_taskx, check=True, capture_output=True, text=True)
+-    subprocess.run(["git", "config", "user.name", "Test User"], cwd=vendor_taskx, check=True, capture_output=True, text=True)
+-    subprocess.run(["git", "add", "."], cwd=vendor_taskx, check=True, capture_output=True, text=True)
+-    subprocess.run(["git", "commit", "-m", "init"], cwd=vendor_taskx, check=True, capture_output=True, text=True)
+-    commit = subprocess.run(
+-        ["git", "rev-parse", "HEAD"],
+-        cwd=vendor_taskx,
+-        check=True,
+-        capture_output=True,
+-        text=True,
+-    ).stdout.strip()
+-
+-    venv_bin = tmp_path / ".taskx_venv" / "bin"
+-    venv_bin.mkdir(parents=True, exist_ok=True)
+-    (tmp_path / ".taskx_venv" / ".taskx_submodule_commit").write_text(f"{commit}\n", encoding="utf-8")
+-    (venv_bin / "activate").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+-    stub_taskx = venv_bin / "taskx"
+-    stub_taskx.write_text("#!/usr/bin/env bash\necho STUB_TASKX_OK\n", encoding="utf-8")
+-    stub_taskx.chmod(0o755)
+-
+-    result = _run_wrapper(tmp_path, "--version")
+-    assert result.returncode == 0
+-    assert "STUB_TASKX_OK" in result.stdout
+-- 
+2.50.1 (Apple Git-155)
+

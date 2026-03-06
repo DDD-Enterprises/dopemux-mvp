@@ -1,0 +1,135 @@
+From c56e71f13231b1058910c727c8f016e8d4104ed2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 16:28:55 -0800
+Subject: [PATCH 16/36] feat(routing): make dopemux start respect routing mode
+
+---
+ src/dopemux/cli.py | 102 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 102 insertions(+)
+
+diff --git a/src/dopemux/cli.py b/src/dopemux/cli.py
+index fcaf65423..da00579aa 100644
+--- a/src/dopemux/cli.py
++++ b/src/dopemux/cli.py
+@@ -28,6 +28,15 @@ import click
+ try:
+     from dotenv import load_dotenv
+     _DOTENV_AVAILABLE = True
++except ImportError:
++    _DOTENV_AVAILABLE = False
++
++# Import RoutingConfig for mode-based behavior
++try:
++    from .routing_config import RoutingConfig
++except ImportError:
++    # Fallback for when routing_config is not available
++    RoutingConfig = None
+ except ImportError:  # pragma: no cover - optional dependency
+     _DOTENV_AVAILABLE = False
+ 
+@@ -721,6 +730,99 @@ def start(
+     except Exception as e:
+         console.logger.warning(f"Agent validation warning: {e}")
+ 
++    # ── Routing mode from config (replaces legacy flags) ───────────────
++    routing_mode = None
++    routing_ports = None
++    routing_config = None
++    
++    if RoutingConfig is not None:
++        try:
++            routing_config = RoutingConfig.load_default()
++            routing_mode = routing_config.get_mode()
++            routing_ports = routing_config.get_ports()
++            console.logger.info(f"[blue]📋 Routing mode: {routing_mode}[/blue]")
++        except Exception as e:
++            console.logger.warning(f"[yellow]⚠️  Could not load routing config: {e}[/yellow]")
++            console.logger.info("[dim]Falling back to legacy flag behavior[/dim]")
++    
++    # Warn about deprecated flags when routing mode is available
++    deprecated_flags_used = any([use_grok, use_codex, use_altp, use_alt_routing, use_claude_router])
++    if deprecated_flags_used and routing_mode is not None:
++        console.logger.warning("[yellow]⚠️  Deprecated flags detected (--grok/--codex/--altp/--alt-routing/--claude-router)[/yellow]")
++        console.logger.info("[dim]Prefer: dopemux routing mode api|subscription[/dim]")
++
++    # ── Handle routing mode: api (proxy through CCR/LiteLLM) ─────────
++    if routing_mode == "api" and not deprecated_flags_used:
++        console.logger.info("[blue]🔄 Routing mode 'api': Starting services and configuring proxy[/blue]")
++        
++        # Ensure services are installed and running
++        try:
++            from .launchd_services import LaunchdServiceManager
++            service_manager = LaunchdServiceManager.get_instance()
++            
++            # Check if services are running, start if not
++            status = service_manager.get_service_status()
++            litellm_running = status.get("litellm", {}).get("status") == "running"
++            ccr_running = status.get("ccr", {}).get("status") == "running"
++            
++            if not litellm_running or not ccr_running:
++                console.logger.info("[blue]🚀 Ensuring routing services are running...[/blue]")
++                service_manager.install_services()
++                service_manager.start_services()
++                time.sleep(2)  # Give services time to start
++            
++            # Verify services are healthy
++            health = service_manager.check_health()
++            litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
++            ccr_healthy = health.get("ccr", {}).get("status") == "healthy"
++            
++            if not litellm_healthy or not ccr_healthy:
++                error_msg = []
++                if not litellm_healthy:
++                    error_msg.append(f"LiteLLM unhealthy: {health.get('litellm', {}).get('error', 'unknown')}")
++                if not ccr_healthy:
++                    error_msg.append(f"CCR unhealthy: {health.get('ccr', {}).get('error', 'unknown')}")
++                raise click.ClickException(f"Routing services not healthy: {', '.join(error_msg)}")
++                
++            console.logger.info("[green]✅ Routing services healthy[/green]")
++            
++        except Exception as e:
++            console.logger.error(f"[red]❌ Failed to start routing services: {e}[/red]")
++            console.logger.info("[yellow]Falling back to direct Anthropic connection[/yellow]")
++            routing_mode = "subscription"
++        
++        # Configure environment for API mode
++        if routing_mode == "api":
++            ccr_port = routing_ports["ccr"]
++            ccr_api_key = os.getenv("DOPEMUX_CCR_API_KEY")
++            
++            # Set environment variables for Claude Code to use CCR
++            os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{ccr_port}"
++            if ccr_api_key:
++                os.environ["ANTHROPIC_API_KEY"] = ccr_api_key
++                console.logger.info(f"[dim]✓ CCR API key configured[/dim]")
++            else:
++                console.logger.warning("[yellow]⚠️  DOPEMUX_CCR_API_KEY not set in routing.env[/yellow]")
++            
++            console.logger.info(f"[dim]✓ Claude Code → CCR (127.0.0.1:{ccr_port}) → LiteLLM[/dim]")
++            
++            # Mark that we're using routing
++            os.environ["DOPEMUX_ROUTING_MODE"] = "api"
++            
++    # ── Handle routing mode: subscription (direct to Anthropic) ──────
++    elif routing_mode == "subscription" and not deprecated_flags_used:
++        console.logger.info("[blue]📋 Routing mode 'subscription': Direct Anthropic connection[/blue]")
++        
++        # Ensure we don't have proxy env vars set
++        env_vars_to_unset = ["ANTHROPIC_BASE_URL", "DOPEMUX_ROUTING_MODE"]
++        for var in env_vars_to_unset:
++            if var in os.environ:
++                del os.environ[var]
++                console.logger.info(f"[dim]✓ Unset {var} (direct connection)[/dim]")
++        
++        # Let Anthropic OAuth/subscription flow work normally
++        console.logger.info("[dim]✓ Claude Code → Anthropic (direct)[/dim]")
++    
+     # ── Handle --grok / --codex / --altp provider routing ───────────────
+     provider_proxy_started = False
+     _provider_flags = sum([use_grok, use_codex, use_altp])
+-- 
+2.50.1 (Apple Git-155)
+

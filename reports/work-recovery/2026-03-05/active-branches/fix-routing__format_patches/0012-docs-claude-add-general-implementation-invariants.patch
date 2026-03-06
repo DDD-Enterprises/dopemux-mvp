@@ -1,0 +1,58 @@
+From e5a91aef3e8d7096eeca0bd85b61055e3cda5f78 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 16:06:51 -0800
+Subject: [PATCH 12/36] docs(claude): add general implementation invariants
+
+---
+ .claude/claude.md | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/.claude/claude.md b/.claude/claude.md
+index 063ab634e..046c6b59b 100644
+--- a/.claude/claude.md
++++ b/.claude/claude.md
+@@ -87,3 +87,38 @@ You are working on a **python project** with Dopemux ADHD optimizations enabled.
+ **Focus**: python development with ADHD accommodations
+ **Goal**: Maintain productivity while respecting neurodivergent needs
+ **Style**: Supportive, clear, action-oriented
++
++## General Implementation Invariants (all work)
++
++SERVICE MANAGEMENT (platform native)
++- Prefer the OS-native service manager for long-running daemons:
++  - macOS: launchd (LaunchAgents/LaunchDaemons)
++  - Linux: systemd
++  - Windows: SCM
++- Do not start critical daemons via subprocess.Popen from a CLI unless the Task Packet explicitly requires it.
++- Do not use Docker as a supervisor for local host services unless the Task Packet explicitly requires it.
++- Do not hardcode machine-specific paths (/Users/..., $HOME/code/...). Resolve paths dynamically.
++- Service configs must be generated from a single source of truth and must be rebuildable (idempotent).
++- Secrets must never be stored in service definition files (plists/unit files). Secrets must be loaded from a dedicated env/secret file or OS key store.
++If any of the above would be violated, STOP and request guidance.
++
++SHELL SAFETY
++- Avoid giant inline strings in shell commands. Use --body-file, heredocs, or temp files.
++- Never rely on eval for command execution. Prefer bash -lc "<cmd>" if a string must be executed.
++- When a command contains quotes/newlines/pipes, prefer a heredoc or a script file over escaping.
++- Always record exit codes for verification commands.
++If a shell command fails due to quoting, rewrite it using a file or heredoc, not more escaping.
++
++STATE AND EVIDENCE DISCIPLINE
++- Before work: git status --porcelain must be empty. If not, STOP.
++- After work: git status --porcelain must be empty. No untracked files allowed.
++- Any new file must be either committed or intentionally ignored via a narrow .gitignore rule committed separately.
++- Never simulate command output. If a command cannot be run, write UNKNOWN and STOP.
++- Evidence must be produced via the repo harness (if available) and must contain verbatim outputs including:
++  - repo identity (pwd, git rev-parse --show-toplevel, branch, sha)
++  - diffstat + full diff for relevant commits
++  - test/verification command outputs
++
++DEFAULT WORKDIR
++- Use one canonical repo directory per project.
++- If worktrees are used, every proof must include pwd + git rev-parse --show-toplevel.
+-- 
+2.50.1 (Apple Git-155)
+
