@@ -25,6 +25,12 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars', () =
   const content = fs.readFileSync(path.join(componentsDir, 'TeamDashboard.tsx'), 'utf8');
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
+  expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
+  expect(content).toContain('<Tooltip title={statusStyles[member.status].label}');
+  expect(content).toContain('<Tooltip title="Aggregated cognitive load across all team members"');
+  expect(content).toContain('<Tooltip title="Current energy reserve based on biometric data"');
+  expect(content).toContain('<Tooltip title="Real-time focus and attention span metrics"');
+  expect(content).toContain('tabIndex={0}');
 });
 
 test('TaskSequencer.tsx has contextual aria-labels for buttons', () => {
