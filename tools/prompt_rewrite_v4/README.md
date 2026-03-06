@@ -35,3 +35,11 @@ Hard gate (lint-only):
 Notes:
 - Fail-closed: if patch is not a unified diff, too large, or touches outside allowed sections, it stops.
 - Resume-safe: state.json tracks cursor and done/failed lists.
+
+Benchmark helpers (single-prompt loop):
+1) Prepare isolated benchmark input:
+   python tools/prompt_rewrite_v4/benchmark_setup.py
+2) Save Opus patch at:
+   tools/prompt_rewrite_v4/benchmark/response_opus.patch
+3) Validate + apply benchmark patch:
+   python tools/prompt_rewrite_v4/benchmark_apply.py
