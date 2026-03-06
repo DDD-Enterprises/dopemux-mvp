@@ -18,6 +18,7 @@ import signal
 import platform
 import subprocess
 import sys
+import threading
 import time
 import importlib.util
 from collections import Counter, defaultdict
@@ -484,7 +485,7 @@ ACTIVE_ROUTING_LADDERS = {
     for policy, tiers in ROUTING_LADDERS.items()
 }
 DOCS_GOVERNANCE_PHASES: Set[str] = {"A", "H", "D", "W", "B", "G"}
-PREMIUM_SYNTHESIS_PHASES: Set[str] = {"R", "X", "T", "Z", "S"}
+PREMIUM_SYNTHESIS_PHASES: Set[str] = {"R", "X", "T", "Z", "S", "M"}
 BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
     ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
@@ -657,6 +658,10 @@ def prompt_root() -> Path:
         configured = os.getenv(LEGACY_PROMPT_ROOT_ENV_VAR, "").strip()
     if configured:
         return Path(configured)
+    v4_path = EXTRACTOR_SERVICE_DIR / "promptsets" / "v4" / "prompts"
+    if v4_path.exists():
+        return v4_path
+    return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
     return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
 
 
@@ -877,6 +882,11 @@ OUTPUT_SECTION_STOP_PREFIXES = (
 DEFAULT_OUTPUT_BY_STEP = {
     "T1": ("TP_BACKLOG_TOPN.json",),
 }
+REPO_SCAN_EXCLUDES = [
+    "extraction",
+    "reports",
+    "services/repo-truth-extractor",
+]
 DPMX_ROUTING_ENABLE_ENV = "DPMX_ROUTING_ENABLE"
 DPMX_MODEL_INVENTORY_ENV = "DPMX_MODEL_INVENTORY"
 DPMX_MODEL_EXTRACT_ENV = "DPMX_MODEL_EXTRACT"
@@ -888,6 +898,8 @@ DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV = "DPMX_WEBHOOK_TIMEOUT_SECONDS"
 DPMX_WEBHOOK_REQUIRED_ENV = "DPMX_WEBHOOK_REQUIRED"
 DPMX_WEBHOOK_AUTO_CONTINUE_ENV = "DPMX_WEBHOOK_AUTO_CONTINUE"
 DPMX_LIVE_OK_ENV = "DPMX_LIVE_OK"
+RTE_DISABLE_LIVE_LLM_IN_TESTS_ENV = "RTE_DISABLE_LIVE_LLM_IN_TESTS"
+RTE_ALLOW_LIVE_LLM_IN_TESTS_ENV = "RTE_ALLOW_LIVE_LLM_IN_TESTS"
 DPMX_WEBHOOK_SCHEMA = "DPMX_WEBHOOK_V1"
 DPMX_WEBHOOK_EVENT = "batch.completed"
 STEP_TYPE_MODEL_ENV_VARS: Dict[str, str] = {
@@ -1497,7 +1509,15 @@ class UI:
             "fallback_started": "strict_fallback_batch_started",
             "fallback_done": "strict_fallback_batch_done",
         }
-        event_type = event_type_map.get(status_token, "soft_gate_triggered")
+        event_type = event_type_map.get(status_token)
+        if event_type is None:
+            logging.getLogger(__name__).warning(
+                "soft_gate_event: unknown status %r for phase=%s step=%s; emitting soft_gate_triggered",
+                status_token,
+                phase,
+                step_id,
+            )
+            event_type = "soft_gate_triggered"
         payload = {
             "type": event_type,
             "phase": phase,
@@ -1981,10 +2001,15 @@ def write_json(path: Path, payload: Any) -> None:
     )
 
 
+_JSONL_WRITE_LOCK: threading.Lock = threading.Lock()
+_TELEMETRY_SNAPSHOT_LOCK: threading.Lock = threading.Lock()
+
+
 def _append_jsonl(path: Path, payload: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(payload, ensure_ascii=True, sort_keys=True) + "\n")
+    with _JSONL_WRITE_LOCK:
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, ensure_ascii=True, sort_keys=True) + "\n")
 
 
 def _load_json_object(path: Path) -> Dict[str, Any]:
@@ -2008,17 +2033,18 @@ def write_step_metrics_snapshot(
     metrics: Dict[str, Any],
 ) -> Dict[str, Any]:
     target = _telemetry_path(run_root, STEP_METRICS_FILENAME)
-    payload = _load_json_object(target)
-    steps = payload.get("steps")
-    if not isinstance(steps, dict):
-        steps = {}
-    steps[f"{phase}:{step_id}"] = dict(metrics)
-    snapshot = {
-        "generated_at": now_iso(),
-        "run_id": run_root.name,
-        "steps": dict(sorted(steps.items())),
-    }
-    write_json(target, snapshot)
+    with _TELEMETRY_SNAPSHOT_LOCK:
+        payload = _load_json_object(target)
+        steps = payload.get("steps")
+        if not isinstance(steps, dict):
+            steps = {}
+        steps[f"{phase}:{step_id}"] = dict(metrics)
+        snapshot = {
+            "generated_at": now_iso(),
+            "run_id": run_root.name,
+            "steps": dict(sorted(steps.items())),
+        }
+        write_json(target, snapshot)
     return snapshot
 
 
@@ -2030,47 +2056,48 @@ def write_failure_index_snapshot(
     first_failure: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     target = _telemetry_path(run_root, FAILURE_INDEX_FILENAME)
-    payload = _load_json_object(target)
-    steps = payload.get("steps")
-    if not isinstance(steps, dict):
-        steps = {}
-    ordered_hist = dict(
-        sorted(
-            (
-                (str(key), int(value))
-                for key, value in (failure_histogram or {}).items()
-                if int(value) > 0
-            ),
-            key=lambda row: (-row[1], row[0]),
+    with _TELEMETRY_SNAPSHOT_LOCK:
+        payload = _load_json_object(target)
+        steps = payload.get("steps")
+        if not isinstance(steps, dict):
+            steps = {}
+        ordered_hist = dict(
+            sorted(
+                (
+                    (str(key), int(value))
+                    for key, value in (failure_histogram or {}).items()
+                    if int(value) > 0
+                ),
+                key=lambda row: (-row[1], row[0]),
+            )
         )
-    )
-    steps[f"{phase}:{step_id}"] = {
-        "failure_histogram": ordered_hist,
-        "first_failure": dict(first_failure) if isinstance(first_failure, dict) else None,
-    }
+        steps[f"{phase}:{step_id}"] = {
+            "failure_histogram": ordered_hist,
+            "first_failure": dict(first_failure) if isinstance(first_failure, dict) else None,
+        }
 
-    global_hist = Counter()
-    for row in steps.values():
-        if not isinstance(row, dict):
-            continue
-        hist = row.get("failure_histogram")
-        if not isinstance(hist, dict):
-            continue
-        for key, value in hist.items():
-            try:
-                global_hist[str(key)] += int(value)
-            except Exception:
+        global_hist = Counter()
+        for row in steps.values():
+            if not isinstance(row, dict):
                 continue
+            hist = row.get("failure_histogram")
+            if not isinstance(hist, dict):
+                continue
+            for key, value in hist.items():
+                try:
+                    global_hist[str(key)] += int(value)
+                except Exception:
+                    continue
 
-    snapshot = {
-        "generated_at": now_iso(),
-        "run_id": run_root.name,
-        "steps": dict(sorted(steps.items())),
-        "global_failure_histogram": dict(
-            sorted(global_hist.items(), key=lambda row: (-row[1], row[0]))
-        ),
-    }
-    write_json(target, snapshot)
+        snapshot = {
+            "generated_at": now_iso(),
+            "run_id": run_root.name,
+            "steps": dict(sorted(steps.items())),
+            "global_failure_histogram": dict(
+                sorted(global_hist.items(), key=lambda row: (-row[1], row[0]))
+            ),
+        }
+        write_json(target, snapshot)
     return snapshot
 
 
@@ -2900,6 +2927,20 @@ def classify_step_type(
 
 def _env_is_truthy(name: str) -> bool:
     return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_is_falsy(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"0", "false", "no", "off"}
+
+
+def _live_llm_calls_blocked_for_tests() -> bool:
+    if _env_is_truthy(RTE_ALLOW_LIVE_LLM_IN_TESTS_ENV):
+        return False
+    if _env_is_truthy(RTE_DISABLE_LIVE_LLM_IN_TESTS_ENV):
+        return True
+    if _env_is_falsy(RTE_DISABLE_LIVE_LLM_IN_TESTS_ENV):
+        return False
+    return bool(os.getenv("PYTEST_CURRENT_TEST", "").strip())
 
 
 def _int_env(name: str, default: int, minimum: int = 1) -> int:
@@ -6197,6 +6238,13 @@ def call_llm(
     response_format_override: Optional[Dict[str, Any]] = None,
     structured_output_override: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
+    if _live_llm_calls_blocked_for_tests():
+        message = (
+            f"Live LLM call blocked in test context provider={provider} model={model_id}. "
+            f"Set {RTE_ALLOW_LIVE_LLM_IN_TESTS_ENV}=1 to override."
+        )
+        logger.error(message)
+        raise RuntimeError(message)
     base_url = llm_base_url(provider, cfg)
     transport = transport_for_provider(provider, cfg)
     api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
@@ -9528,6 +9576,9 @@ def execute_step_for_partitions(
                 )
                 and contract_repair_mode in {"targeted_only", "targeted_then_envelope"}
             ):
+                targeted_artifact = str(
+                    (contract_context or {}).get("artifact_name") or ""
+                ).strip()
                 logger.info(
                     "REPAIR_TARGETED phase=%s step=%s partition=%s reason=%s artifact=%s",
                     phase,
@@ -9536,9 +9587,6 @@ def execute_step_for_partitions(
                     contract_reason,
                     targeted_artifact or "<all>",
                 )
-                targeted_artifact = str(
-                    (contract_context or {}).get("artifact_name") or ""
-                ).strip()
                 target_names: Tuple[str, ...]
                 if targeted_artifact and targeted_artifact in set(output_artifacts):
                     target_names = (targeted_artifact,)
@@ -13157,6 +13205,19 @@ def _selected_execution_step_ids_for_phase(
     return [selected]
 
 
+def _merge_scan_excludes(*groups: List[str]) -> List[str]:
+    merged: List[str] = []
+    seen: Set[str] = set()
+    for group in groups:
+        for token in group:
+            key = str(token).strip()
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            merged.append(key)
+    return merged
+
+
 def run_phase_A(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
@@ -13176,7 +13237,7 @@ def run_phase_A(
         "SYSTEM_ARCHIVE",
         "*.zip",
     ]
-    collector = Collector(Path.cwd(), excludes)
+    collector = Collector(Path.cwd(), _merge_scan_excludes(excludes, REPO_SCAN_EXCLUDES))
     targets = [
         ".claude",
         ".dopemux",
@@ -13248,7 +13309,11 @@ def run_phase_C(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
     collector = Collector(
-        Path.cwd(), [".git", "node_modules", "venv", ".venv", "docs", "test-results"]
+        Path.cwd(),
+        _merge_scan_excludes(
+            [".git", "node_modules", "venv", ".venv", "docs", "test-results"],
+            REPO_SCAN_EXCLUDES,
+        ),
     )
     targets = ["src", "services", "shared", "plugins", "tools", "scripts", "tests"]
     _run_phase_inner(
@@ -13265,7 +13330,7 @@ def run_phase_C(
 def run_phase_D(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(Path.cwd(), [".git"])
+    collector = Collector(Path.cwd(), _merge_scan_excludes([".git"], REPO_SCAN_EXCLUDES))
     _run_phase_inner(
         "D",
         dirs,
@@ -13280,7 +13345,10 @@ def run_phase_D(
 def run_phase_E(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(Path.cwd(), [".git", "node_modules", "docs"])
+    collector = Collector(
+        Path.cwd(),
+        _merge_scan_excludes([".git", "node_modules", "docs"], REPO_SCAN_EXCLUDES),
+    )
     targets = ["scripts", "tools", "compose", ".github", "Makefile", "package.json"]
     _run_phase_inner(
         "E",
@@ -13296,7 +13364,9 @@ def run_phase_E(
 def run_phase_W(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(Path.cwd(), [".git", "node_modules"])
+    collector = Collector(
+        Path.cwd(), _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES)
+    )
     _run_phase_inner(
         "W",
         dirs,
@@ -13311,7 +13381,9 @@ def run_phase_W(
 def run_phase_B(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(Path.cwd(), [".git", "node_modules"])
+    collector = Collector(
+        Path.cwd(), _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES)
+    )
     _run_phase_inner(
         "B",
         dirs,
@@ -13326,7 +13398,9 @@ def run_phase_B(
 def run_phase_G(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(Path.cwd(), [".git", "node_modules"])
+    collector = Collector(
+        Path.cwd(), _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES)
+    )
     _run_phase_inner(
         "G",
         dirs,
@@ -14004,6 +14078,18 @@ def run_phase_Z(
     )
 
 
+def run_sync_scopes() -> None:
+    """Synchronize prompt source scopes with modern architecture."""
+    try:
+        from tools.sync_prompt_scopes import main as sync_main
+        logger.info("Starting prompt scope synchronization...")
+        sync_main()
+    except ImportError:
+        logger.error("sync_prompt_scopes tool not found in tools/")
+    except Exception as exc:
+        logger.error("Synchronization failed: %s", exc)
+
+
 # --- Master Orchestrator ---
 
 
@@ -14013,6 +14099,7 @@ def main() -> None:
     except (AttributeError, ValueError):
         pass
     parser = argparse.ArgumentParser("Master Extraction Runner")
+    parser.add_argument("--sync", action="store_true", help="Synchronize prompt source scopes with modern architecture.")
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-files-docs", type=int, default=35)
@@ -14195,6 +14282,8 @@ def main() -> None:
         "--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR
     )
     args = parser.parse_args()
+    if args.sync:
+        run_sync_scopes()
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
     if args.pretty and args.ui == "auto":
         args.ui = "rich"

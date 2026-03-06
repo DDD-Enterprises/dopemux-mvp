@@ -6,13 +6,49 @@ This step maps implementation truth, not intended architecture.
 
 ## Inputs
 - Source scope (scan these roots first):
-  - `services/leantime-bridge/**`
-  - `src/dopemux/**`
-  - `services/**`
-  - `config/**`
-  - `compose.yml`
-  - `docker-compose*.yml`
-  - `services/registry.yaml`
+- `src/**`
+- `services/**`
+- `components/**`
+- `dashboard/**`
+- `plugins/**`
+- `ui-dashboard/**`
+- `ui-dashboard-backend/**`
+
+- `services/leantime-bridge/**`
+- `src/dopemux/**`
+- `services/**`
+- `config/**`
+- `compose.yml`
+- `docker-compose*.yml`
+- `services/registry.yaml`
+- `src/**`
+- `components/**`
+- `dashboard/**`
+- `plugins/**`
+- `ui-dashboard/**`
+- `ui-dashboard-backend/**`
+
+- `src/**`
+- `components/**`
+- `dashboard/**`
+- `plugins/**`
+- `ui-dashboard/**`
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/agent_orchestrator.py`
+
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/agent_orchestrator.py`
+
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/agent_orchestrator.py`
+
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/agent_orchestrator.py`
+
 - Upstream normalized artifacts:
   - `CODE_INVENTORY.json`
   - `CODE_PARTITIONS.json`

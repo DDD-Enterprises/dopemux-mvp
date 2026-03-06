@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PROMPTSET_PATH = SERVICE_ROOT / "promptsets" / "v4" / "promptset.yaml"
 ARTIFACTS_PATH = SERVICE_ROOT / "promptsets" / "v4" / "artifacts.yaml"
 V4_PROMPT_ROOT = SERVICE_ROOT / "promptsets" / "v4" / "prompts"
-V3_RUNNER = SERVICE_ROOT / "run_extraction_v5.py"
+V5_RUNNER = SERVICE_ROOT / "run_extraction_v5.py"
 SERVICES_REGISTRY = ROOT / "services" / "registry.yaml"
 V3_RUNS_ROOT = ROOT / "extraction" / "repo-truth-extractor" / "v3" / "runs"
 V4_RUNS_ROOT = ROOT / "extraction" / "repo-truth-extractor" / "v4" / "runs"
@@ -202,7 +202,7 @@ def build_v3_cmd(
     quiet: bool,
     jsonl_events: bool,
 ) -> List[str]:
-    cmd = [sys.executable, str(V3_RUNNER)]
+    cmd = [sys.executable, str(V5_RUNNER)]
     if phase:
         cmd.extend(["--phase", phase])
     if run_id:

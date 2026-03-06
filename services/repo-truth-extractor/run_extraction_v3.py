@@ -764,6 +764,8 @@ DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV = "DPMX_WEBHOOK_TIMEOUT_SECONDS"
 DPMX_WEBHOOK_REQUIRED_ENV = "DPMX_WEBHOOK_REQUIRED"
 DPMX_WEBHOOK_AUTO_CONTINUE_ENV = "DPMX_WEBHOOK_AUTO_CONTINUE"
 DPMX_LIVE_OK_ENV = "DPMX_LIVE_OK"
+RTE_DISABLE_LIVE_LLM_IN_TESTS_ENV = "RTE_DISABLE_LIVE_LLM_IN_TESTS"
+RTE_ALLOW_LIVE_LLM_IN_TESTS_ENV = "RTE_ALLOW_LIVE_LLM_IN_TESTS"
 DPMX_WEBHOOK_SCHEMA = "DPMX_WEBHOOK_V1"
 DPMX_WEBHOOK_EVENT = "batch.completed"
 STEP_TYPE_MODEL_ENV_VARS: Dict[str, str] = {
@@ -2275,6 +2277,20 @@ def classify_step_type(phase: str, step_id: str, tier_override: Optional[str] = 
 
 def _env_is_truthy(name: str) -> bool:
     return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_is_falsy(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"0", "false", "no", "off"}
+
+
+def _live_llm_calls_blocked_for_tests() -> bool:
+    if _env_is_truthy(RTE_ALLOW_LIVE_LLM_IN_TESTS_ENV):
+        return False
+    if _env_is_truthy(RTE_DISABLE_LIVE_LLM_IN_TESTS_ENV):
+        return True
+    if _env_is_falsy(RTE_DISABLE_LIVE_LLM_IN_TESTS_ENV):
+        return False
+    return bool(os.getenv("PYTEST_CURRENT_TEST", "").strip())
 
 
 def _int_env(name: str, default: int, minimum: int = 1) -> int:
@@ -5184,6 +5200,13 @@ def call_llm(
     cfg: RunnerConfig,
     force_json_output: bool = False,
 ) -> Dict[str, Any]:
+    if _live_llm_calls_blocked_for_tests():
+        message = (
+            f"Live LLM call blocked in test context provider={provider} model={model_id}. "
+            f"Set {RTE_ALLOW_LIVE_LLM_IN_TESTS_ENV}=1 to override."
+        )
+        logger.error(message)
+        raise RuntimeError(message)
     base_url = llm_base_url(provider, cfg)
     transport = transport_for_provider(provider, cfg)
     api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)

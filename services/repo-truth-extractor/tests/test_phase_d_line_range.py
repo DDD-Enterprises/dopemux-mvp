@@ -33,9 +33,9 @@ def test_build_partition_context_numbers_lines_for_phase_d(tmp_path: Path) -> No
 
     assert stats["files_included"] == 1
     assert "--- FILE:" in context
-    assert "1: alpha" in context
-    assert "2: beta" in context
-    assert "3: gamma" in context
+    assert "0001: alpha" in context
+    assert "0002: beta" in context
+    assert "0003: gamma" in context
 
 
 def test_artifacts_schema_gate_rejects_missing_line_range() -> None:

@@ -11,8 +11,18 @@ GENERIC_ITEM_VALUE_SCHEMA: Dict[str, Any] = {
         {"type": "number"},
         {"type": "integer"},
         {"type": "boolean"},
-        {"type": "array"},
-        {"type": "object"},
+        {
+            "type": "array",
+            "items": {
+                "anyOf": [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {"type": "integer"},
+                    {"type": "boolean"},
+                    {"type": "null"},
+                ]
+            },
+        },
         {"type": "null"},
     ]
 }
@@ -215,7 +225,7 @@ def _generic_item_schema(artifact_meta: Dict[str, Any]) -> Dict[str, Any]:
                     "excerpt": {"type": "string"},
                 },
                 "required": ["path", "line_range", "excerpt"],
-                "additionalProperties": True,
+                "additionalProperties": False,
             },
         },
     }
@@ -225,7 +235,7 @@ def _generic_item_schema(artifact_meta: Dict[str, Any]) -> Dict[str, Any]:
         "type": "object",
         "required": required_keys,
         "properties": properties,
-        "additionalProperties": True,
+        "additionalProperties": False,
     }
 
 
@@ -248,7 +258,7 @@ def build_openai_response_format(
                 "items": {"type": "array", "items": _generic_item_schema(artifact_meta)},
             },
             "required": ["schema", "items"],
-            "additionalProperties": True,
+            "additionalProperties": False,
         }
         any_of_rows.append(
             {
@@ -518,4 +528,3 @@ def merge_artifacts_by_name(
 
 def dump_response_format_json(response_format: Dict[str, Any]) -> str:
     return json.dumps(response_format, indent=2, sort_keys=True, ensure_ascii=True)
-

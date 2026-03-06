@@ -35,6 +35,47 @@ Focus on concrete, machine-verifiable implementation facts.
 - Every evidence object MUST include repo-relative `path`, integer `line_range`, and exact `excerpt`.
 - If a value cannot be grounded from the provided excerpt, return valid JSON with `UNKNOWN` or fail-closed placeholders; never invent line numbers.
 
+## Hard Requirements
+- Every `payload.items[]` row MUST include:
+  - `id` as a string
+  - `path` as a repo-relative string
+  - `line_range` as `[start, end]` with exactly two integers where `start > 0` and `end >= start`
+- For every emitted row, `evidence[0].path` and `evidence[0].line_range` MUST match the row's `path` and `line_range`.
+- Treat the provided excerpts as line-numbered evidence. Cite only those excerpt-local line numbers.
+- If you cannot determine a real `line_range` from the provided evidence, do not guess.
+- Instead, emit a valid artifact envelope with `"items": []` for that artifact.
+- Output exactly one JSON object. No markdown, no prose, no code fences.
+
+## Minimal Example
+```json
+{
+  "artifacts": [
+    {
+      "artifact_name": "DOC_INDEX.partX.json",
+      "payload": {
+        "schema": "DOC_INDEX@v1",
+        "items": [
+          {
+            "id": "DOC_INDEX:example",
+            "path": "docs/example.md",
+            "line_range": [7, 9],
+            "name": "Example doc",
+            "kind": "contract",
+            "evidence": [
+              {
+                "path": "docs/example.md",
+                "line_range": [7, 9],
+                "excerpt": "0007: Example contract statement"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
 ## Schema
 - Use deterministic containers only:
   - `ItemList`: `{"schema":"<schema_id>@v1","items":[...]}`

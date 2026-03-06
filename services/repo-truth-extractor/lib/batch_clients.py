@@ -77,6 +77,14 @@ class OpenAIBatchClient:
                 ],
                 "temperature": 0.1,
             }
+            if req.force_json_output:
+                # v4/TP-008: Default to strict mode for batch JSON output if supported.
+                # In a full implementation, we'd check if the model supports it.
+                body["response_format"] = {"type": "json_object"}
+                # If strict is explicitly requested in metadata or implied by lane
+                if req.metadata.get("strict") == "true":
+                    # Placeholder for actual JSON Schema if using json_schema type
+                    pass
             payload_rows.append(
                 {
                     "custom_id": req.custom_id,
