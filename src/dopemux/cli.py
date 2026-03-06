@@ -3958,8 +3958,6 @@ def extractor_promptset_group():
 
 
 extractor_promptset_group.add_command(extractor_promptset_audit, "audit")
-if __name__ == "__main__":
-    main()
 
 # from src/dopemux/commands/memory_commands.py
 @cli.command("launch")
@@ -4509,3 +4507,6 @@ def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, inst
         sys.exit(1)
 
 
+
+if __name__ == "__main__":
+    main()
