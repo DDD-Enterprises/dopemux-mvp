@@ -1,0 +1,367 @@
+From 7b09e1d75d8f84918e4e9932f459912ebe7dc7d0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 17:41:47 -0800
+Subject: [PATCH 29/36] fix(ci): move documentation files to proper locations
+ per hygiene policy
+
+---
+ .../generated/PROJECT_DOCTOR_REPORT.json      |  65 -------
+ .../PROJECT_DOCTOR_REPORT.md                  |   0
+ .../05-audit-reports}/PROJECT_MODE_REPORT.md  |   0
+ docs/MIGRATION_TASKX_TO_DOPETASK.md           | 178 ++++++++++++++++++
+ {.dopetask => docs}/instructions/AGENTS.md    |   0
+ {.dopetask => docs}/instructions/CLAUDE.md    |   0
+ {.dopetask => docs}/instructions/CODEX.md     |   0
+ docs/instructions/PROJECT_INIT_REPORT.md      |  36 ++++
+ .../instructions/PROJECT_INSTRUCTIONS.md      |   0
+ .../instructions/PROJECT_PATCH_REPORT.md      |   0
+ .../instructions/taskx_bundle.yaml            |   0
+ 11 files changed, 214 insertions(+), 65 deletions(-)
+ delete mode 100644 .dopetask/instructions/generated/PROJECT_DOCTOR_REPORT.json
+ rename {.dopetask/instructions/generated => docs/05-audit-reports}/PROJECT_DOCTOR_REPORT.md (100%)
+ rename {.dopetask/instructions/generated => docs/05-audit-reports}/PROJECT_MODE_REPORT.md (100%)
+ create mode 100644 docs/MIGRATION_TASKX_TO_DOPETASK.md
+ rename {.dopetask => docs}/instructions/AGENTS.md (100%)
+ rename {.dopetask => docs}/instructions/CLAUDE.md (100%)
+ rename {.dopetask => docs}/instructions/CODEX.md (100%)
+ create mode 100644 docs/instructions/PROJECT_INIT_REPORT.md
+ rename {.dopetask => docs}/instructions/PROJECT_INSTRUCTIONS.md (100%)
+ rename {.dopetask => docs}/instructions/PROJECT_PATCH_REPORT.md (100%)
+ rename {.dopetask => docs}/instructions/taskx_bundle.yaml (100%)
+
+diff --git a/.dopetask/instructions/generated/PROJECT_DOCTOR_REPORT.json b/.dopetask/instructions/generated/PROJECT_DOCTOR_REPORT.json
+deleted file mode 100644
+index 2700f4235..000000000
+--- a/.dopetask/instructions/generated/PROJECT_DOCTOR_REPORT.json
++++ /dev/null
+@@ -1,65 +0,0 @@
+-{
+-  "actions_taken": [
+-    "mode_applied:both",
+-    "supervisor_prompt_generated:SUPERVISOR_PRIMING_PROMPT.txt"
+-  ],
+-  "applied_mode": "both",
+-  "checks": [
+-    {
+-      "files": [],
+-      "id": "files_present",
+-      "message": "All required project instruction files are present",
+-      "status": "pass"
+-    },
+-    {
+-      "files": [
+-        "AGENTS.md",
+-        "CLAUDE.md",
+-        "CODEX.md",
+-        "PROJECT_INSTRUCTIONS.md"
+-      ],
+-      "id": "sentinel_integrity",
+-      "message": "TaskX/ChatX sentinel blocks are present and well-formed",
+-      "status": "pass"
+-    },
+-    {
+-      "files": [
+-        "AGENTS.md",
+-        "CLAUDE.md",
+-        "CODEX.md",
+-        "PROJECT_INSTRUCTIONS.md"
+-      ],
+-      "id": "pack_status_consistency",
+-      "message": "Pack status is consistent (mode=both)",
+-      "status": "pass"
+-    },
+-    {
+-      "files": [
+-        "/Users/hue/code/dopemux-mvp/.taskx/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt"
+-      ],
+-      "id": "supervisor_prompt",
+-      "message": "Supervisor prompt matches mode 'both'",
+-      "status": "pass"
+-    }
+-  ],
+-  "detected_mode": "both",
+-  "per_file_status": {
+-    "AGENTS.md": {
+-      "chatx": "enabled",
+-      "taskx": "enabled"
+-    },
+-    "CLAUDE.md": {
+-      "chatx": "enabled",
+-      "taskx": "enabled"
+-    },
+-    "CODEX.md": {
+-      "chatx": "enabled",
+-      "taskx": "enabled"
+-    },
+-    "PROJECT_INSTRUCTIONS.md": {
+-      "chatx": "enabled",
+-      "taskx": "enabled"
+-    }
+-  },
+-  "status": "pass"
+-}
+\ No newline at end of file
+diff --git a/.dopetask/instructions/generated/PROJECT_DOCTOR_REPORT.md b/docs/05-audit-reports/PROJECT_DOCTOR_REPORT.md
+similarity index 100%
+rename from .dopetask/instructions/generated/PROJECT_DOCTOR_REPORT.md
+rename to docs/05-audit-reports/PROJECT_DOCTOR_REPORT.md
+diff --git a/.dopetask/instructions/generated/PROJECT_MODE_REPORT.md b/docs/05-audit-reports/PROJECT_MODE_REPORT.md
+similarity index 100%
+rename from .dopetask/instructions/generated/PROJECT_MODE_REPORT.md
+rename to docs/05-audit-reports/PROJECT_MODE_REPORT.md
+diff --git a/docs/MIGRATION_TASKX_TO_DOPETASK.md b/docs/MIGRATION_TASKX_TO_DOPETASK.md
+new file mode 100644
+index 000000000..cfb636aeb
+--- /dev/null
++++ b/docs/MIGRATION_TASKX_TO_DOPETASK.md
+@@ -0,0 +1,178 @@
++# TaskX to dopeTask Migration Guide
++
++## Summary
++
++✅ **MIGRATION COMPLETE** - This document outlines the completed migration from taskX to dopeTask in the dopemux-mvp codebase.
++
++**Status**: Fully migrated to dopeTask 0.1.4 via pip installation
++**Date**: 2024
++**Approach**: Comprehensive cleanup with documentation updates
++
++## Changes Made
++
++### 1. Package Migration
++- **Before**: taskX 0.1.0 (git submodule)
++- **After**: dopetask 0.1.4 (pip package)
++- **Action**: Uninstalled taskX, using dopetask pip package
++
++### 2. Configuration Files Updated
++
++#### `.taskx-pin` → `.dopetask-pin`
++```diff
++- install=git
++- repo=https://github.com/hu3mann/taskX.git
++- ref=v0.1.2
++- commit=f5bd9e390cd485a0cd4db93f8dc5def59ef12a15
+++ install=pip
+++ dep=dopetask
+++ version=0.1.4
++```
++
++#### `.gitmodules`
++```diff
++- [submodule "vendor/taskx"]
++- 	path = vendor/taskx
++- 	url = https://github.com/hu3mann/taskX.git
+++ [submodule "vendor/dopetask"]
+++ 	path = vendor/dopetask
+++ 	url = https://github.com/hu3mann/dopetask.git
++```
++
++### 3. Script Updates
++
++#### `scripts/taskx` → `scripts/dopetask`
++- Updated all references from taskX to dopeTask
++- Changed environment variable names (TASKX_* → DOPETASK_*)
++- Updated executable name from `taskx` to `dopetask`
++
++### 4. Directory Structure Changes
++
++```diff
++- .taskxroot
++- .taskx/
++- .taskx_venv/
++- vendor/taskx/
+++ .dopetaskroot
+++ .dopetask/
+++ .dopetask_venv/
+++ vendor/dopetask/
++```
++
++### 5. Documentation Updates
++
++#### `docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md` → `docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md`
++- Updated all references from TaskX to dopeTask
++- Updated invariant IDs (INV-TX-001 → INV-DT-001)
++- Updated code examples and file paths
++
++### 6. Test Updates
++
++#### `tests/arch/test_taskx_submodule_contract.py` → `tests/arch/test_dopetask_submodule_contract.py`
++- Updated test names and assertions
++- Changed file paths from taskx to dopetask
++
++#### `tests/unit/test_taskx_wrapper_submodule.py` → `tests/unit/test_dopetask_wrapper_submodule.py`
++- Updated test functions and assertions
++- Changed all taskx references to dopetask
++
++## Migration Steps for Supervisors
++
++### 1. Update Environment
++```bash
++# Remove old taskX
++pip uninstall taskx -y
++
++# Ensure dopetask is installed
++pip install dopetask==0.1.4
++```
++
++### 2. Update File References
++- Replace all `taskx` command calls with `dopetask`
++- Update any scripts that reference `.taskx_venv` to use `.dopetask_venv`
++- Update configuration files to reference `vendor/dopetask` instead of `vendor/taskx`
++
++### 3. Verify Installation
++```bash
++# Check dopetask is available
++dopetask --version
++
++# Should output: 0.1.4
++```
++
++## Backward Compatibility
++
++The migration maintains the same core functionality:
++- Deterministic task execution kernel
++- One-way call direction (Supervisor → dopeTask)
++- File artifact communication
++- Same CLI interface and arguments
++
++## LLM Integration Updates
++
++For LLM configurations and prompts:
++
++1. **Update command references**:
++   ```diff
++   - "Run: taskx execute --plan=..."
++   + "Run: dopetask execute --plan=..."
++   ```
++
++2. **Update tool descriptions**:
++   ```diff
++   - "taskX: deterministic task execution engine"
++   + "dopetask: deterministic task execution engine"
++   ```
++
++3. **Update file path references**:
++   ```diff
++   - ".taskx_venv/bin/taskx"
++   + ".dopetask_venv/bin/dopetask"
++   ```
++
++## Supervisor Instructions Update
++
++### Updated Workflow
++1. **Task Execution**: Use `dopetask execute` instead of `taskx execute`
++2. **Plan Validation**: Use `dopetask validate` instead of `taskx validate`
++3. **Environment Setup**: Ensure `.dopetaskroot` exists instead of `.taskxroot`
++
++### Command Reference
++
++| Old Command | New Command |
++|-------------|-------------|
++| `taskx --version` | `dopetask --version` |
++| `taskx execute --plan=plan.yaml` | `dopetask execute --plan=plan.yaml` |
++| `taskx validate --plan=plan.yaml` | `dopetask validate --plan=plan.yaml` |
++
++## Verification Checklist
++
++- [x] dopetask package installed (0.1.4)
++- [x] taskX package uninstalled
++- [x] Configuration files updated
++- [x] Scripts updated
++- [x] Documentation updated
++- [x] Tests updated
++- [ ] CI/CD pipeline updated (if applicable)
++- [ ] Supervisor configurations updated
++- [ ] LLM prompt templates updated
++
++## Rollback Procedure
++
++If issues arise, rollback using:
++```bash
++# Reinstall taskX
++pip install taskx==0.1.0
++
++# Revert configuration files from git
++git checkout .taskx-pin .gitmodules
++
++# Restore original scripts
++git checkout scripts/taskx
++```
++
++## Support
++
++For migration issues, refer to:
++- dopeTask documentation: https://github.com/hu3mann/dopetask
++- dopemux-mvp integration docs: `docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md`
++- Test suites: `tests/arch/test_dopetask_submodule_contract.py`
+diff --git a/.dopetask/instructions/AGENTS.md b/docs/instructions/AGENTS.md
+similarity index 100%
+rename from .dopetask/instructions/AGENTS.md
+rename to docs/instructions/AGENTS.md
+diff --git a/.dopetask/instructions/CLAUDE.md b/docs/instructions/CLAUDE.md
+similarity index 100%
+rename from .dopetask/instructions/CLAUDE.md
+rename to docs/instructions/CLAUDE.md
+diff --git a/.dopetask/instructions/CODEX.md b/docs/instructions/CODEX.md
+similarity index 100%
+rename from .dopetask/instructions/CODEX.md
+rename to docs/instructions/CODEX.md
+diff --git a/docs/instructions/PROJECT_INIT_REPORT.md b/docs/instructions/PROJECT_INIT_REPORT.md
+new file mode 100644
+index 000000000..67e393d04
+--- /dev/null
++++ b/docs/instructions/PROJECT_INIT_REPORT.md
+@@ -0,0 +1,36 @@
++# PROJECT_INIT_REPORT
++
++- output_dir: .taskx/instructions
++- preset: both
++
++## Files
++
++### PROJECT_INSTRUCTIONS.md
++- status: created
++- after_hash: 305986b1dbeab193c672b8608d82d67787408177d318924a1a9d365e1f1bd338
++- taskx_block: added=False content_changed=True
++- chatx_block: added=False content_changed=True
++
++### CLAUDE.md
++- status: created
++- after_hash: d0c5f77b7f5e8a510b129648280973ab50640cd7404c5b302d8cd5b0364870a8
++- taskx_block: added=False content_changed=True
++- chatx_block: added=False content_changed=True
++
++### CODEX.md
++- status: created
++- after_hash: ae8f6a9931fa9c64b4074748786fad24202adf965beaad9e48b88b4265f18c5e
++- taskx_block: added=False content_changed=True
++- chatx_block: added=False content_changed=True
++
++### AGENTS.md
++- status: created
++- after_hash: a96eeeb9df1c5fc36220734790a71a467701292b1dc32ef16e0329e7da0882dc
++- taskx_block: added=False content_changed=True
++- chatx_block: added=False content_changed=True
++
++## Bundle
++
++- file: taskx_bundle.yaml
++- status: created
++- after_hash: 98ea66ff74126513ecdc48aa31d9c43967346a074c0652d7625fa918ca9a348d
+diff --git a/.dopetask/instructions/PROJECT_INSTRUCTIONS.md b/docs/instructions/PROJECT_INSTRUCTIONS.md
+similarity index 100%
+rename from .dopetask/instructions/PROJECT_INSTRUCTIONS.md
+rename to docs/instructions/PROJECT_INSTRUCTIONS.md
+diff --git a/.dopetask/instructions/PROJECT_PATCH_REPORT.md b/docs/instructions/PROJECT_PATCH_REPORT.md
+similarity index 100%
+rename from .dopetask/instructions/PROJECT_PATCH_REPORT.md
+rename to docs/instructions/PROJECT_PATCH_REPORT.md
+diff --git a/.dopetask/instructions/taskx_bundle.yaml b/docs/instructions/taskx_bundle.yaml
+similarity index 100%
+rename from .dopetask/instructions/taskx_bundle.yaml
+rename to docs/instructions/taskx_bundle.yaml
+-- 
+2.50.1 (Apple Git-155)
+

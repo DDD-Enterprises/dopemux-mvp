@@ -1,0 +1,310 @@
+diff --git a/AUDIT_INITIAL_FINDINGS.md b/AUDIT_INITIAL_FINDINGS.md
+deleted file mode 100644
+index 4cdafca53..000000000
+--- a/AUDIT_INITIAL_FINDINGS.md
++++ /dev/null
+@@ -1,64 +0,0 @@
+-# Initial Audit Findings - Dopemux-MVP Codebase
+-
+-## Summary of Preliminary Analysis
+-This document contains the initial findings from a surface-level review using PAL MCP server tools. This is NOT a comprehensive audit but rather a starting point for discussion.
+-
+-## Tools Used in Initial Pass
+-- `thinkdeep`: Strategic planning
+-- `planner`: Execution planning  
+-- `analyze`: Architectural analysis
+-- `codereview`: Code quality assessment
+-- `consensus`: Findings validation
+-
+-## Preliminary Findings
+-
+-### Architecture (Surface Level)
+-- 51 services registered in event-driven architecture
+-- Dopecon-bridge acts as central coordinator
+-- Multiple MCP servers (PAL, Zen, Conport) with specialization
+-- Event bus pattern for inter-service communication
+-
+-### Code Quality (Sampling Only)
+-- Core packages show good separation of concerns
+-- Some utility functions lack documentation
+-- Basic error handling patterns observed
+-- No deep pattern analysis completed
+-
+-### Security (High Level)
+-- Rate limiting concern identified in dopecon-bridge
+-- No penetration testing or vulnerability scanning performed
+-- Authentication mechanisms not deeply analyzed
+-
+-### Performance (Observational)
+-- No profiling or benchmarking conducted
+-- Architecture appears scalable by design
+-- No query analysis or bottleneck identification
+-
+-### Documentation (Structural)
+-- Diátaxis structure followed
+-- Service registry well-documented
+-- Code-level documentation not comprehensively reviewed
+-
+-## What This IS NOT
+-- ✅ Not a line-by-line code review
+-- ✅ Not a security penetration test
+-- ✅ Not performance profiling
+-- ✅ Not comprehensive documentation audit
+-- ✅ Not architectural deep dive
+-- ✅ Not dependency analysis
+-- ✅ Not test coverage analysis
+-
+-## Next Steps for TRUE Comprehensive Audit
+-This initial pass identifies surface-level patterns. A comprehensive audit would require:
+-1. Deep architectural analysis with sequence diagrams
+-2. Complete code review with static analysis tools
+-3. Security vulnerability scanning
+-4. Performance profiling and benchmarking
+-5. Dependency tree analysis
+-6. Test coverage assessment
+-7. Documentation completeness verification
+-8. Integration pattern validation
+-9. Error handling and resilience testing
+-10. Configuration management review
+-
+-Let's discuss what "comprehensive" truly means for this codebase.
+\ No newline at end of file
+diff --git a/docs/PHASE0_DETERMINISM_REPORT.md b/docs/PHASE0_DETERMINISM_REPORT.md
+index 281a6c72f..f3601c1f3 100644
+--- a/docs/PHASE0_DETERMINISM_REPORT.md
++++ b/docs/PHASE0_DETERMINISM_REPORT.md
+@@ -1,3 +1,15 @@
++---
++id: PHASE0_DETERMINISM_REPORT
++title: Phase0 Determinism Report
++type: explanation
++owner: '@hu3mann'
++author: '@hu3mann'
++date: '2026-03-02'
++last_review: '2026-03-02'
++next_review: '2026-05-31'
++prelude: Phase0 Determinism Report (explanation) for dopemux documentation and developer
++  workflows.
++---
+ # Phase 0C Determinism Report
+ 
+ **Generated**: 2026-02-26 19:12:44
+diff --git a/docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md b/docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md
+index a8fe898e3..2a1f1a637 100644
+--- a/docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md
++++ b/docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md
+@@ -1,3 +1,15 @@
++---
++id: PHASE0_DETERMINISM_REPORT_PROCESSPOOL
++title: Phase0 Determinism Report Processpool
++type: explanation
++owner: '@hu3mann'
++author: '@hu3mann'
++date: '2026-03-02'
++last_review: '2026-03-02'
++next_review: '2026-05-31'
++prelude: Phase0 Determinism Report Processpool (explanation) for dopemux documentation
++  and developer workflows.
++---
+ # Phase 0C Determinism Report
+ 
+ **Generated**: 2026-02-26 19:19:22
+diff --git a/docs/PHASE0_SERIALIZATION_REPORT.md b/docs/PHASE0_SERIALIZATION_REPORT.md
+index 85019201f..cfc65b1e6 100644
+--- a/docs/PHASE0_SERIALIZATION_REPORT.md
++++ b/docs/PHASE0_SERIALIZATION_REPORT.md
+@@ -1,3 +1,15 @@
++---
++id: PHASE0_SERIALIZATION_REPORT
++title: Phase0 Serialization Report
++type: explanation
++owner: '@hu3mann'
++author: '@hu3mann'
++date: '2026-03-02'
++last_review: '2026-03-02'
++next_review: '2026-05-31'
++prelude: Phase0 Serialization Report (explanation) for dopemux documentation and developer
++  workflows.
++---
+ # Phase 0B Serialization Report
+ 
+ **Generated**: 2026-02-26 19:02:42
+@@ -9,4 +21,4 @@
+ - **Pass Count**: 1054
+ - **Fail Count**: 0
+ 
+-✅ **All partitions are pickle-safe!**
+\ No newline at end of file
++✅ **All partitions are pickle-safe!**
+diff --git a/docs/PROCESSPOOL_STABILITY_REPORT.md b/docs/PROCESSPOOL_STABILITY_REPORT.md
+index 0b0b3df30..e764fd933 100644
+--- a/docs/PROCESSPOOL_STABILITY_REPORT.md
++++ b/docs/PROCESSPOOL_STABILITY_REPORT.md
+@@ -1,3 +1,15 @@
++---
++id: PROCESSPOOL_STABILITY_REPORT
++title: Processpool Stability Report
++type: explanation
++owner: '@hu3mann'
++author: '@hu3mann'
++date: '2026-03-02'
++last_review: '2026-03-02'
++next_review: '2026-05-31'
++prelude: Processpool Stability Report (explanation) for dopemux documentation and
++  developer workflows.
++---
+ # ProcessPool Stability Fix - Proof Bundle
+ 
+ ## TP-EXTR-001C-PROCESSPOOL-STABILIZE-0002
+@@ -61,7 +73,7 @@ for future in as_completed(future_map):
+         results_by_partition[partition_id] = _worker_exception_result(...)
+ ```
+ 
+-**Impact**: 
++**Impact**:
+ - Identifies exactly which partition is being processed
+ - Provides success confirmation for each partition
+ - Full stack trace logging on failures
+@@ -90,7 +102,7 @@ for i, op in enumerate(result.write_ops):
+ _apply_write_ops(result.write_ops)  # Now safe to call
+ ```
+ 
+-**Impact**: 
++**Impact**:
+ - Catches malformed write operations before they cause crashes
+ - Provides defensive defaults to ensure processing can continue
+ - Logs detailed information about problematic operations
+@@ -163,4 +175,4 @@ The implementation successfully addresses the root cause of the ProcessPool inst
+ 3. Providing comprehensive diagnostics for debugging
+ 4. Maintaining the "no silent drop" invariant
+ 
+-The fix enables `workers=4` to complete Phase A processing reliably while providing better visibility into any individual partition issues.
+\ No newline at end of file
++The fix enables `workers=4` to complete Phase A processing reliably while providing better visibility into any individual partition issues.
+diff --git a/test_batch_integration.py b/test_batch_integration.py
+deleted file mode 100644
+index 7d67e055e..000000000
+--- a/test_batch_integration.py
++++ /dev/null
+@@ -1,121 +0,0 @@
+-#!/usr/bin/env python3
+-"""
+-Test script to verify the OpenAI batch retrieval integration.
+-"""
+-
+-import os
+-import sys
+-import tempfile
+-from pathlib import Path
+-
+-# Add the services directory to the path
+-sys.path.insert(0, str(Path(__file__).parent / "services"))
+-
+-def test_batch_retriever_import():
+-    """Test that the batch retriever can be imported."""
+-    try:
+-        # Import directly from the file path
+-        sys.path.insert(0, str(Path(__file__).parent / "services" / "repo-truth-extractor"))
+-        from lib.batch_retriever import retrieve_openai_batch, retrieve_openai_batches
+-        print("✓ Batch retriever imports successfully")
+-        return True
+-    except ImportError as e:
+-        print(f"✗ Failed to import batch retriever: {e}")
+-        return False
+-
+-def test_batch_clients_import():
+-    """Test that the batch clients can be imported."""
+-    try:
+-        sys.path.insert(0, str(Path(__file__).parent / "services" / "repo-truth-extractor"))
+-        from lib.batch_clients import OpenAIBatchClient
+-        print("✓ Batch clients import successfully")
+-        return True
+-    except ImportError as e:
+-        print(f"✗ Failed to import batch clients: {e}")
+-        return False
+-
+-def test_batch_retriever_functionality():
+-    """Test the batch retriever with mock data."""
+-    try:
+-        sys.path.insert(0, str(Path(__file__).parent / "services" / "repo-truth-extractor"))
+-        from lib.batch_retriever import retrieve_openai_batch
+-        
+-        # Test with a fake batch ID (should fail gracefully)
+-        with tempfile.TemporaryDirectory() as tmpdir:
+-            output_dir = Path(tmpdir)
+-            
+-            # This should fail because we don't have a real API key or batch ID
+-            # but it should fail gracefully
+-            success, result = retrieve_openai_batch(
+-                api_key="fake_key",
+-                batch_id="fake_batch_id",
+-                output_dir=output_dir
+-            )
+-            
+-            # Should return False (not successful) but should not crash
+-            if not success and "error" in result:
+-                print("✓ Batch retriever handles errors gracefully")
+-                return True
+-            else:
+-                print("✗ Batch retriever should have failed with fake credentials")
+-                return False
+-                
+-    except Exception as e:
+-        print(f"✗ Batch retriever test failed: {e}")
+-        return False
+-
+-def test_main_script_arguments():
+-    """Test that the main script accepts the new arguments."""
+-    try:
+-        # Test that help works
+-        import subprocess
+-        result = subprocess.run([
+-            sys.executable, "services/repo-truth-extractor/run_extraction_v3.py",
+-            "--help"
+-        ], capture_output=True, text=True, cwd=Path(__file__).parent)
+-        
+-        if "--batch-retrieve" in result.stdout:
+-            print("✓ Main script accepts --batch-retrieve argument")
+-            return True
+-        else:
+-            print("✗ Main script doesn't show --batch-retrieve in help")
+-            return False
+-            
+-    except Exception as e:
+-        print(f"✗ Failed to test main script arguments: {e}")
+-        return False
+-
+-def main():
+-    """Run all tests."""
+-    print("Testing OpenAI Batch Retrieval Integration...")
+-    print("=" * 50)
+-    
+-    tests = [
+-        test_batch_retriever_import,
+-        test_batch_clients_import,
+-        test_batch_retriever_functionality,
+-        test_main_script_arguments,
+-    ]
+-    
+-    passed = 0
+-    total = len(tests)
+-    
+-    for test in tests:
+-        try:
+-            if test():
+-                passed += 1
+-        except Exception as e:
+-            print(f"✗ Test {test.__name__} failed with exception: {e}")
+-    
+-    print("=" * 50)
+-    print(f"Tests passed: {passed}/{total}")
+-    
+-    if passed == total:
+-        print("🎉 All tests passed!")
+-        return 0
+-    else:
+-        print("❌ Some tests failed")
+-        return 1
+-
+-if __name__ == "__main__":
+-    sys.exit(main())

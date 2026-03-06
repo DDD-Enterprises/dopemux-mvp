@@ -1,0 +1,30 @@
+From 8bc86ba76464777effe32f9064596648b566366b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 15:10:53 -0800
+Subject: [PATCH 02/36] chore(gitignore): ignore proof bundles and router
+ artifacts
+
+---
+ .gitignore | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/.gitignore b/.gitignore
+index a4d3059b5..05f6f9b66 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -324,3 +324,9 @@ docs/planes/pm/_evidence/**.outputs/
+ # Local/transient output
+ pbcopy
+ vibeOut.txt
++
++# Proof bundles
++proof/
++
++# Router artifacts
++services/router/
+-- 
+2.50.1 (Apple Git-155)
+

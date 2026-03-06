@@ -1,0 +1,135 @@
+From af29025311777482a946e2ae46058de6ea4f7930 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 17:22:19 -0800
+Subject: [PATCH 26/36] chore(ci): update workflow for dopetask
+
+---
+ .dockerignore                     |  4 ++++
+ .github/workflows/ci-complete.yml | 33 ++++++++++++-------------------
+ .gitignore                        | 16 +++++++++++++--
+ 3 files changed, 31 insertions(+), 22 deletions(-)
+
+diff --git a/.dockerignore b/.dockerignore
+index 2ec39fe50..d536a7e8e 100644
+--- a/.dockerignore
++++ b/.dockerignore
+@@ -48,6 +48,7 @@ build/
+ *.egg
+ .eggs/
+ .venv-taskx
++.dopetask_venv
+ .venv-*
+ 
+ # Node specific
+@@ -82,6 +83,9 @@ temp/
+ .taskx
+ .taskx-pin
+ .taskxroot
++.dopetask
++.dopetask-pin
++.dopetaskroot
+ 
+ # Project specific
+ SYSTEM_ARCHIVE/
+diff --git a/.github/workflows/ci-complete.yml b/.github/workflows/ci-complete.yml
+index 1f26052a4..74d6376d3 100644
+--- a/.github/workflows/ci-complete.yml
++++ b/.github/workflows/ci-complete.yml
+@@ -165,32 +165,25 @@ jobs:
+           pip install -r requirements.txt
+           pip install -e .[dev]
+ 
+-      - name: 📦 Setup TaskX venv from submodule
++      - name: 📦 Setup dopeTask venv from pip
+         run: |
+-          if [ ! -d .taskx_venv ]; then
+-            python -m venv .taskx_venv
++          if [ ! -d .dopetask_venv ]; then
++            python -m venv .dopetask_venv
+           fi
+-          .taskx_venv/bin/pip install --upgrade pip
+-          .taskx_venv/bin/pip install --upgrade -e ./vendor/taskx
++          .dopetask_venv/bin/pip install --upgrade pip
++          .dopetask_venv/bin/pip install --upgrade dopetask==0.1.4
+ 
+-      - name: ✅ Verify TaskX wiring
++      - name: ✅ Verify dopeTask wiring
+         run: |
+-          test -f .gitmodules
+-          test -d vendor/taskx
+-          test -f vendor/taskx/pyproject.toml
+-          SUBMODULE_STATUS="$(git submodule status -- vendor/taskx)"
+-          echo "$SUBMODULE_STATUS"
+-          if [[ "$SUBMODULE_STATUS" == -* || "$SUBMODULE_STATUS" == +* ]]; then
+-            echo "TaskX submodule is not in the pinned clean state."
+-            exit 1
+-          fi
+-          test -f .taskxroot
+-          test -d .taskx_venv
+-          test -x scripts/taskx
++          test -f .dopetask-pin
++          test -f .dopetaskroot
++          test -d .dopetask_venv
++          test -x scripts/dopetask
++          .dopetask_venv/bin/dopetask --version | grep -q "0.1.4"
+ 
+-      - name: 🧠 TaskX doctor
++      - name: 🧠 dopeTask doctor
+         run: |
+-          scripts/taskx doctor --timestamp-mode deterministic
++          scripts/dopetask doctor --timestamp-mode deterministic
+ 
+       - name: ▶️ Run Pytest (unit suite)
+         run: |
+diff --git a/.gitignore b/.gitignore
+index 5b64583a7..ed7202b0e 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -104,6 +104,7 @@ celerybeat.pid
+ .env.conport
+ .venv
+ .taskx_venv
++.dopetask_venv
+ .venv-litellm
+ env/
+ venv/
+@@ -305,16 +306,26 @@ reports/g34/*.txt
+ reports/g33/baseline_*.txt
+ reports/g33/post_*.txt
+ 
+-# TaskX generated outputs
++# TaskX generated outputs (legacy)
+ out/taskx_doctor/
+ out/taskx_project_shell/
+ out/taskx_project_upgrade/
+ 
+-# TaskX instruction generation artifacts
++# dopeTask generated outputs
++out/dopetask_doctor/
++out/dopetask_project_shell/
++out/dopetask_project_upgrade/
++
++# TaskX instruction generation artifacts (legacy)
+ .taskx/instructions/PROJECT_INIT_REPORT.md
+ .taskx/instructions/taskx_bundle.yaml
+ .taskx/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt
+ 
++# dopeTask instruction generation artifacts
++.dopetask/instructions/PROJECT_INIT_REPORT.md
++.dopetask/instructions/dopetask_bundle.yaml
++.dopetask/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt
++
+ # Local backups
+ .claude/*.bak_*
+ 
+@@ -334,3 +345,4 @@ services/router/
+ # Generated proof artifacts
+ proof/
+ .taskx/proof/
++.dopetask/proof/
+-- 
+2.50.1 (Apple Git-155)
+
