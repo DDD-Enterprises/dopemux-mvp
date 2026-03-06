@@ -1,3 +1,15 @@
+---
+id: HEURISTICS_LIBRARY_v1
+title: Heuristics Library V1
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-06'
+last_review: '2026-03-06'
+next_review: '2026-06-04'
+prelude: Heuristics Library V1 (reference) for dopemux documentation and developer
+  workflows.
+---
 # Heuristics Library v1
 
 **Purpose**: Domain-agnostic discovery and extraction patterns for deterministic prompt engineering.

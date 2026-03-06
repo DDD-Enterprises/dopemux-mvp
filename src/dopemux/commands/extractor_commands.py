@@ -317,3 +317,55 @@ def _resolve_extractor_root(start: Path) -> Optional[Path]:
         if (candidate / "services" / "repo-truth-extractor").is_dir():
             return candidate
     return None
+
+
+def _extractor_runner_path(repo_root: Path, pipeline_version: str) -> Path:
+    base = repo_root / "services" / "repo-truth-extractor"
+    if pipeline_version == "v4":
+        return base / "run_extraction_v4.py"
+    return base / "run_extraction_v3.py"
+
+
+def _run_extractor_runner(
+    *,
+    pipeline_version: str,
+    args: List[str],
+    repo_root: Optional[Path] = None,
+) -> None:
+    resolved_root = _resolve_extractor_root(repo_root or Path.cwd())
+    if resolved_root is None:
+        raise click.ClickException(
+            "Cannot find repo-truth-extractor. "
+            "Make sure you're in a dopemux workspace or pass --repo."
+        )
+
+    runner = _extractor_runner_path(resolved_root, pipeline_version)
+    if not runner.exists():
+        raise click.ClickException(f"Runner not found: {runner}")
+
+    proc = subprocess.run([sys.executable, str(runner), *args], cwd=resolved_root)
+    if proc.returncode != 0:
+        raise click.ClickException(
+            f"Repo Truth Extractor {pipeline_version} runner failed with exit code {proc.returncode}"
+        )
+
+
+def _run_repscan_runner(
+    *,
+    args: List[str],
+    repo_root: Optional[Path] = None,
+) -> None:
+    resolved_root = _resolve_extractor_root(repo_root or Path.cwd())
+    if resolved_root is None:
+        raise click.ClickException(
+            "Cannot find repo-truth-extractor. "
+            "Make sure you're in a dopemux workspace or pass --repo."
+        )
+
+    runner = resolved_root / "services" / "repo-truth-extractor" / "run_repscan.py"
+    if not runner.exists():
+        raise click.ClickException(f"RepoScan runner not found: {runner}")
+
+    proc = subprocess.run([sys.executable, str(runner), *args], cwd=resolved_root)
+    if proc.returncode != 0:
+        raise click.ClickException(f"RepoScan runner failed with exit code {proc.returncode}")
