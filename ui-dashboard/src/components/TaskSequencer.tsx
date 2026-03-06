@@ -288,6 +288,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             <React.Fragment key={task.id}>
               <ListItem
                 alignItems="flex-start"
+                aria-current={isCurrent ? 'step' : undefined}
                 sx={{
                   bgcolor: isCurrent ? 'rgba(125, 251, 246, 0.08)' : 'transparent',
                   borderRadius: 2,
