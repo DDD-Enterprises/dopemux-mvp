@@ -1,0 +1,199 @@
+From fcb64026e3a4ece86c9a4a7caddb8132e5f68aaa Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?DDD-Enterprises=20=28DJ=20Daddy=20Dom=20=26=20the=20Depart?=
+ =?UTF-8?q?ment=20of=E2=80=A6=20Don=E2=80=99t=20ask=2C=20Don=E2=80=99t=20t?=
+ =?UTF-8?q?ell=2C=20Don=E2=80=99t=20stop=2C=20Don=E2=80=99t=20you=20dare?=
+ =?UTF-8?q?=E2=80=A6=29?= <167156098+hu3mann@users.noreply.github.com>
+Date: Mon, 23 Feb 2026 16:52:45 -0800
+Subject: [PATCH 22/36] fix(proof_bundle): enforce plan and allow-files scope
+ gate
+
+---
+ scripts/proof_bundle.sh | 154 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 118 insertions(+), 36 deletions(-)
+
+diff --git a/scripts/proof_bundle.sh b/scripts/proof_bundle.sh
+index a0a4f2248..4090809f7 100755
+--- a/scripts/proof_bundle.sh
++++ b/scripts/proof_bundle.sh
+@@ -1,60 +1,142 @@
+ #!/bin/bash
+-# Simple proof bundle script for verification
++# Proof bundle script with plan and scope enforcement
+ 
+ set -e
+ 
++# Default settings
++REQUIRE_PLAN=true
++ALLOW_DIRTY=false
++ALLOW_FILES=""
+ TP_ID="TP-WORKDIR-GATE-0001"
+ OUTPUT_DIR="proof/${TP_ID}"
+ 
+-# Parse --tp argument first
++# Parse arguments first
++COMMANDS=()
+ while [ $# -gt 0 ]; do
+-    if [ "$1" = "--tp" ]; then
+-        shift
+-        TP_ID="$1"
+-        OUTPUT_DIR="proof/${TP_ID}"
+-        shift
+-        break
+-    else
+-        shift
+-    fi
++    case "$1" in
++        --tp)
++            shift
++            TP_ID="$1"
++            OUTPUT_DIR="proof/${TP_ID}"
++            shift
++            ;;
++        --no-plan)
++            REQUIRE_PLAN=false
++            shift
++            ;;
++        --allow-dirty)
++            ALLOW_DIRTY=true
++            shift
++            ;;
++        --allow-files)
++            shift
++            ALLOW_FILES="$1"
++            shift
++            ;;
++        --cmd)
++            shift
++            COMMANDS+=("$1")
++            shift
++            ;;
++        --*)
++            echo "Unknown option: $1"
++            exit 1
++            ;;
++        *)
++            break
++            ;;
++    esac
+ done
+ 
++# Clean-start gate: ensure repo is clean unless explicitly allowed
++if [ "${ALLOW_DIRTY}" = false ]; then
++    if [ -n "$(git status --porcelain)" ]; then
++        echo "❌ Clean-start gate failed: repository has uncommitted changes"
++        echo "Run 'git status' to see changes, or use --allow-dirty to bypass"
++        exit 2
++    fi
++fi
++
++# Plan gate: ensure plan exists unless explicitly bypassed
++if [ "${REQUIRE_PLAN}" = true ]; then
++    if [ ! -f "proof/PLAN.txt" ]; then
++        echo "❌ Plan gate failed: proof/PLAN.txt not found"
++        echo "Create a plan file first, or use --no-plan to bypass"
++        exit 3
++    fi
++fi
++
+ mkdir -p "${OUTPUT_DIR}"
+ 
+ echo "=== Proof Bundle ${TP_ID} ===" > "${OUTPUT_DIR}/proof.txt"
++echo "Configuration:" >> "${OUTPUT_DIR}/proof.txt"
++echo "  Require Plan: ${REQUIRE_PLAN}" >> "${OUTPUT_DIR}/proof.txt"
++echo "  Allow Dirty: ${ALLOW_DIRTY}" >> "${OUTPUT_DIR}/proof.txt"
++echo "  Allow Files: ${ALLOW_FILES}" >> "${OUTPUT_DIR}/proof.txt"
++echo "" >> "${OUTPUT_DIR}/proof.txt"
+ echo "Commands executed:" >> "${OUTPUT_DIR}/proof.txt"
+ 
+ # Run each command and capture output
+-while [ $# -gt 0 ]; do
+-    if [ "$1" = "--cmd" ]; then
+-        shift
+-        CMD="$1"
+-        shift
+-        
+-        echo "" >> "${OUTPUT_DIR}/proof.txt"
+-        echo "Command: ${CMD}" >> "${OUTPUT_DIR}/proof.txt"
+-        
+-        # Execute command and capture output verbatim
+-        OUTPUT_FILE="${OUTPUT_DIR}/$(echo "${CMD}" | tr -s '[:space:]' '_' | sed 's/[^a-zA-Z0-9_]//g').txt"
+-        eval "${CMD}" > "${OUTPUT_FILE}" 2>&1
+-        EXIT_CODE=$?
+-        
+-        echo "Output:" >> "${OUTPUT_DIR}/proof.txt"
+-        cat "${OUTPUT_FILE}" >> "${OUTPUT_DIR}/proof.txt"
+-        echo "" >> "${OUTPUT_DIR}/proof.txt"
+-        echo "[exit=${EXIT_CODE}]" >> "${OUTPUT_DIR}/proof.txt"
+-        
+-        if [ ${EXIT_CODE} -eq 0 ]; then
+-            echo "✅ Command succeeded" >> "${OUTPUT_DIR}/proof.txt"
+-        else
+-            echo "❌ Command failed with exit code ${EXIT_CODE}" >> "${OUTPUT_DIR}/proof.txt"
+-        fi
++for CMD in "${COMMANDS[@]}"; do
++    echo "" >> "${OUTPUT_DIR}/proof.txt"
++    echo "Command: ${CMD}" >> "${OUTPUT_DIR}/proof.txt"
++    
++    # Execute command and capture output verbatim
++    OUTPUT_FILE="${OUTPUT_DIR}/$(echo "${CMD}" | tr -s '[:space:]' '_' | sed 's/[^a-zA-Z0-9_]//g').txt"
++    eval "${CMD}" > "${OUTPUT_FILE}" 2>&1
++    EXIT_CODE=$?
++    
++    echo "Output:" >> "${OUTPUT_DIR}/proof.txt"
++    cat "${OUTPUT_FILE}" >> "${OUTPUT_DIR}/proof.txt"
++    echo "" >> "${OUTPUT_DIR}/proof.txt"
++    echo "[exit=${EXIT_CODE}]" >> "${OUTPUT_DIR}/proof.txt"
++    
++    if [ ${EXIT_CODE} -eq 0 ]; then
++        echo "✅ Command succeeded" >> "${OUTPUT_DIR}/proof.txt"
+     else
+-        shift
++        echo "❌ Command failed with exit code ${EXIT_CODE}" >> "${OUTPUT_DIR}/proof.txt"
+     fi
+ done
+ 
+ echo "" >> "${OUTPUT_DIR}/proof.txt"
++
++# Scope gate: enforce allowlist if provided
++if [ -n "${ALLOW_FILES}" ]; then
++    echo "Enforcing scope gate with allowed files: ${ALLOW_FILES}" >> "${OUTPUT_DIR}/proof.txt"
++    
++    # Get list of changed files
++    CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD 2>/dev/null || git diff --name-only HEAD 2>/dev/null || echo "")
++    
++    if [ -n "${CHANGED_FILES}" ]; then
++        echo "Changed files:" >> "${OUTPUT_DIR}/proof.txt"
++        for file in ${CHANGED_FILES}; do
++            echo "  - ${file}" >> "${OUTPUT_DIR}/proof.txt"
++        done
++        
++        # Check each changed file against allowlist
++        IFS=',' read -ra ALLOWED <<< "${ALLOW_FILES}"
++        for file in ${CHANGED_FILES}; do
++            ALLOWED_FILE=false
++            for allowed in "${ALLOWED[@]}"; do
++                if [ "${file}" = "${allowed}" ]; then
++                    ALLOWED_FILE=true
++                    break
++                fi
++            done
++            
++            if [ "${ALLOWED_FILE}" = false ]; then
++                echo "❌ Scope gate failed: ${file} not in allowed files list" >> "${OUTPUT_DIR}/proof.txt"
++                echo "Allowed files: ${ALLOW_FILES}"
++                exit 4
++            fi
++        done
++        
++        echo "✅ All changed files are in allowed scope" >> "${OUTPUT_DIR}/proof.txt"
++    else
++        echo "No changed files detected" >> "${OUTPUT_DIR}/proof.txt"
++    fi
++fi
++
+ echo "=== Proof Bundle Complete ===" >> "${OUTPUT_DIR}/proof.txt"
+ echo "Generated: $(date)" >> "${OUTPUT_DIR}/proof.txt"
+ 
+-- 
+2.50.1 (Apple Git-155)
+
