@@ -6,54 +6,20 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 
 ## Inputs
 - Source scope (scan these roots first):
-- `src/**`
-- `services/**`
-- `components/**`
-- `dashboard/**`
-- `plugins/**`
-- `ui-dashboard/**`
-- `ui-dashboard-backend/**`
-- `services/agents/**`
-- `src/dopemux/agent_orchestrator.py`
-
-- `src/**`
-- `services/**`
-- `components/**`
-- `dashboard/**`
-- `plugins/**`
-- `ui-dashboard/**`
-- `ui-dashboard-backend/**`
-- `services/agents/**`
-- `src/dopemux/agent_orchestrator.py`
-
-- `src/**`
-- `services/**`
-- `components/**`
-- `dashboard/**`
-- `plugins/**`
-- `ui-dashboard/**`
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
-
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
-
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
-
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
-
-- `src/**`
-- `services/**`
-- `docker/**`
-- `compose.yml`
-- `docker-compose*.yml`
-- `services/registry.yaml`
+  - `src/**`
+  - `services/**`
+  - `services/agents/**`
+  - `components/**`
+  - `dashboard/**`
+  - `plugins/**`
+  - `ui-dashboard/**`
+  - `ui-dashboard-backend/**`
+  - `src/dopemux/agent_orchestrator.py`
+  - `src/dopemux/hooks/**`
+  - `docker/**`
+  - `compose.yml`
+  - `docker-compose*.yml`
+  - `services/registry.yaml`
 - Upstream normalized artifacts available to this step:
 - `CODE_INVENTORY.json`
 - `CODE_PARTITIONS.json`

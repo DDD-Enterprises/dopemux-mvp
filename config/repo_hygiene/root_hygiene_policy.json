@@ -120,6 +120,7 @@
     ".dopetask-pin",
     "TASKX_INTEGRATION_ANALYSIS.md",
     "MODELS_INDEX.json",
+    "model_map_v2_tp008.yaml",
     "Makefile",
     "dopemux.rb",
     "ADHD-DASHBOARD-SESSION-SUMMARY.md",
@@ -149,7 +150,6 @@
     "mcp-proxy-config.copilot.yaml",
     "audit_prompts.py",
     "mcp-proxy-config*.yaml",
-    "model_map_v2_tp008.yaml",
     "CHECKLIST.md",
     ".dockerignore"
   ],
