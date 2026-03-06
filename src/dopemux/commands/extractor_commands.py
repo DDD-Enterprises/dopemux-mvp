@@ -30,7 +30,8 @@ from ..console import console
 @click.pass_context
 def extractor(ctx):
     """Universal Repo-Truth-Extractor — analyze any codebase."""
-    pass
+    if ctx.invoked_subcommand:
+        click.echo("`dopemux extractor` is legacy. Use `dopemux upgrades`.")
 
 
 # ---- Init command ----
