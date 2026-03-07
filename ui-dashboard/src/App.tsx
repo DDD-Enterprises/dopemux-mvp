@@ -130,24 +130,28 @@ function App() {
       label: 'Energy Level',
       value: cognitiveState.energy,
       icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
+      tooltip: 'Current energy reserve based on biometric data',
       roast: "You're sipping ambition like it's lukewarm coffee.",
     },
     {
       label: 'Attention Focus',
       value: cognitiveState.attention,
       icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
+      tooltip: 'Real-time focus and attention span metrics',
       roast: "Focus is flirting with you; stop ghosting it.",
     },
     {
       label: 'Cognitive Load',
       value: cognitiveState.load,
       icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
+      tooltip: 'Average cognitive load across all team members',
       roast: "Load creeping up like a brat testing limits.",
     },
     {
       label: '15-min Prediction',
       value: cognitiveState.prediction ?? null,
       icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
+      tooltip: 'AI-driven prediction of cognitive state for the next 15 minutes',
       roast: "Future you is pacing. Hydrate before they mutiny.",
     },
   ];
@@ -278,7 +282,11 @@ function App() {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  {metric.icon}
+                  <Tooltip title={metric.tooltip} arrow>
+                    <Box tabIndex={0} sx={{ display: 'flex', alignItems: 'center', outline: 'none', '&:focus-visible': { borderRadius: 1, boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}` } }}>
+                      {metric.icon}
+                    </Box>
+                  </Tooltip>
                   <Box>
                     <Typography variant="h6">{metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}</Typography>
                     <Typography variant="body2" color="text.secondary">{metric.label}</Typography>
