@@ -283,7 +283,22 @@ function App() {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Tooltip title={metric.tooltip} arrow>
-                    <Box tabIndex={0} sx={{ display: 'flex', alignItems: 'center', outline: 'none', '&:focus-visible': { borderRadius: 1, boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}` } }}>
+                    <Box
+                      tabIndex={0}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        outline: 'none',
+                        '&:focus': {
+                          borderRadius: 1,
+                          boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+                        },
+                        '&:focus-visible': {
+                          borderRadius: 1,
+                          boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+                        },
+                      }}
+                    >
                       {metric.icon}
                     </Box>
                   </Tooltip>
