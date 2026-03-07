@@ -32,7 +32,10 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('<Tooltip title="Aggregated cognitive load across all team members"');
   expect(content).toContain('<Tooltip title="Current energy reserve based on biometric data"');
   expect(content).toContain('<Tooltip title="Real-time focus and attention span metrics"');
-  expect(content).toContain('tabIndex={0}');
+  // Ensure the energy metric tooltip wraps a keyboard-focusable chip
+  expect(content).toMatch(/<Tooltip title="Current energy reserve based on biometric data"[\s\S]*tabIndex=\{0\}/);
+  // Ensure the attention metric tooltip wraps a keyboard-focusable chip
+  expect(content).toMatch(/<Tooltip title="Real-time focus and attention span metrics"[\s\S]*tabIndex=\{0\}/);
 });
 
 test('TaskSequencer.tsx has contextual aria-labels and current step indicator', () => {
