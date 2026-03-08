@@ -66,3 +66,11 @@ test('TaskSequencer.tsx has accessible timer with pluralization', () => {
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   expect(content).toContain('const getTimerAriaLabel = (seconds: number): string =>');
 });
+
+test('App.tsx has accessible header chips and skip link', () => {
+  const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
+  expect(appContent).toContain('href="#main-dashboard"');
+  expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
+  expect(appContent).toContain('<Tooltip title="AI-generated recommendation based on current load" arrow>');
+  expect(appContent).toContain('tabIndex={0}');
+});
