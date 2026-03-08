@@ -243,22 +243,28 @@ function App() {
           </Typography>
           <Divider sx={{ my: 2, borderColor: 'rgba(125, 251, 246, 0.3)' }} />
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Chip
-              label={`${statusMeta.label} • ${(cognitiveState.load * 100).toFixed(0)}% load`}
-              sx={{
-                backgroundColor: `${statusMeta.color}1A`,
-                color: statusMeta.color,
-                border: `1px solid ${statusMeta.color}`,
-              }}
-            />
-            <Chip
-              label={`Recommendation: ${cognitiveState.recommendation}`}
-              sx={{
-                backgroundColor: 'rgba(32, 50, 72, 0.65)',
-                color: brandTokens.colors.serumMint,
-                border: '1px solid rgba(148, 250, 219, 0.35)',
-              }}
-            />
+            <Tooltip title="Current cognitive status and load percentage" arrow>
+              <Chip
+                label={`${statusMeta.label} • ${(cognitiveState.load * 100).toFixed(0)}% load`}
+                tabIndex={0}
+                sx={{
+                  backgroundColor: `${statusMeta.color}1A`,
+                  color: statusMeta.color,
+                  border: `1px solid ${statusMeta.color}`,
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="AI-generated recommendation based on current load" arrow>
+              <Chip
+                label={`Recommendation: ${cognitiveState.recommendation}`}
+                tabIndex={0}
+                sx={{
+                  backgroundColor: 'rgba(32, 50, 72, 0.65)',
+                  color: brandTokens.colors.serumMint,
+                  border: '1px solid rgba(148, 250, 219, 0.35)',
+                }}
+              />
+            </Tooltip>
           </Box>
         </Box>
 

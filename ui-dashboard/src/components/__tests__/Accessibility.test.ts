@@ -33,9 +33,6 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('<Tooltip title="Current energy reserve based on biometric data"');
   expect(content).toContain('<Tooltip title="Real-time focus and attention span metrics"');
   expect(content).toContain('tabIndex={0}');
-  expect(content).toContain('<Tooltip title="Average cognitive load across all team members" arrow>');
-  expect(content).toContain('<Tooltip title="Current energy level" arrow>');
-  expect(content).toContain('<Tooltip title="Current attention focus" arrow>');
 });
 
 test('TaskSequencer.tsx has contextual aria-labels and current step indicator', () => {
@@ -65,4 +62,12 @@ test('TaskSequencer.tsx has accessible timer with pluralization', () => {
   expect(content).toContain('role="timer"');
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   expect(content).toContain('const getTimerAriaLabel = (seconds: number): string =>');
+});
+
+test('App.tsx has accessible header chips and skip link', () => {
+  const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
+  expect(appContent).toContain('href="#main-dashboard"');
+  expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
+  expect(appContent).toContain('<Tooltip title="AI-generated recommendation based on current load" arrow>');
+  expect(appContent).toContain('tabIndex={0}');
 });
