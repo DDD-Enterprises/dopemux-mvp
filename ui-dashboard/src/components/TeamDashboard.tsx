@@ -100,7 +100,7 @@ const TeamDashboard: React.FC = () => {
         <Typography variant="h6" sx={{ letterSpacing: '0.15em' }}>
           Team Cognitive Status
         </Typography>
-        <Tooltip title="Aggregated cognitive load across all team members" arrow>
+        <Tooltip title="Average cognitive load across all team members" arrow>
           <Chip
             label={`${(teamLoadAvg * 100).toFixed(0)}% Average Load`}
             tabIndex={0}
@@ -200,7 +200,7 @@ const TeamDashboard: React.FC = () => {
               />
 
               <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                <Tooltip title="Current energy reserve based on biometric data" arrow>
+                <Tooltip title="Current energy level" arrow>
                   <Chip
                     size="small"
                     label={`${(member.energy * 100).toFixed(0)}% Energy`}
@@ -214,7 +214,7 @@ const TeamDashboard: React.FC = () => {
                     }}
                   />
                 </Tooltip>
-                <Tooltip title="Real-time focus and attention span metrics" arrow>
+                <Tooltip title="Current attention focus" arrow>
                   <Chip
                     size="small"
                     label={`${(member.attention * 100).toFixed(0)}% Attention`}

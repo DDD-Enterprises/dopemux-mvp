@@ -132,6 +132,7 @@ function App() {
       icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
       tooltip: 'Current energy reserve based on biometric data',
       roast: "You're sipping ambition like it's lukewarm coffee.",
+      tooltip: "Your current biometric energy reserve based on activity and sleep data",
     },
     {
       label: 'Attention Focus',
@@ -139,6 +140,7 @@ function App() {
       icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
       tooltip: 'Real-time focus and attention span metrics',
       roast: "Focus is flirting with you; stop ghosting it.",
+      tooltip: "Real-time attention state: scattered, focused, or hyperfocused",
     },
     {
       label: 'Cognitive Load',
@@ -146,6 +148,7 @@ function App() {
       icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
       tooltip: 'Average cognitive load across all team members',
       roast: "Load creeping up like a brat testing limits.",
+      tooltip: "Total mental effort being exerted on current tasks",
     },
     {
       label: '15-min Prediction',
@@ -153,6 +156,7 @@ function App() {
       icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
       tooltip: 'AI-driven prediction of cognitive state for the next 15 minutes',
       roast: "Future you is pacing. Hydrate before they mutiny.",
+      tooltip: "AI-driven forecast of your cognitive state for the next 15 minutes",
     },
   ];
 
