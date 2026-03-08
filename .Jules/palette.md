@@ -21,3 +21,7 @@
 ## 2026-03-07 - [Refining Progress and Tooltip Consistency]
 **Learning:** In Material UI, `LinearProgress` defaults `aria-valuemin` to 0 and `aria-valuemax` to 100, making explicit attributes redundant. Additionally, consistent use of the `arrow` prop on `Tooltip` components provides a more polished and directed visual cue for users interacting with dense dashboard metrics.
 **Action:** Omit redundant ARIA defaults for MUI progress bars and consistently apply the `arrow` prop to Tooltips for improved directional feedback.
+
+## 2026-03-10 - [Metric Card Keyboard Discoverability]
+**Learning:** Core dashboard metrics (Energy, Attention, Load) are often purely visual. By adding `tabIndex={0}` and descriptive Tooltips, these cards become accessible to keyboard users and provide "hidden" context that might not fit in the compact visual layout. Using `cursor: 'help'` also signals to mouse users that more info is available.
+**Action:** Enhance visual-only metric displays with `tabIndex={0}` and `Tooltip` to support keyboard navigation and provide supplemental context without cluttering the UI.
