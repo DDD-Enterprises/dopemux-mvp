@@ -230,7 +230,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-valuetext={`${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`}
           />
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'}>
+            <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
               <Button
                 size="small"
                 variant="contained"
@@ -241,7 +241,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 {isTimerRunning ? 'Pause' : 'Start'}
               </Button>
             </Tooltip>
-            <Tooltip title="Complete and Proceed">
+            <Tooltip title="Complete and Proceed" arrow>
               <Button
                 size="small"
                 variant="outlined"
@@ -252,7 +252,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 Complete
               </Button>
             </Tooltip>
-            <Tooltip title="Skip for Now">
+            <Tooltip title="Skip for Now" arrow>
               <Button
                 size="small"
                 variant="text"
@@ -311,7 +311,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                       <Typography variant="body2" sx={{ flexGrow: 1 }}>
                         {task.title}
                       </Typography>
-                      <Tooltip title={`Complexity: ${Math.round(task.complexity * 100)}% - used for ritual sequencing`}>
+                      <Tooltip title={`Complexity: ${Math.round(task.complexity * 100)}% - used for ritual sequencing`} arrow>
                         <Chip
                           size="small"
                           label={`${Math.round(task.complexity * 100)}% complex`}
