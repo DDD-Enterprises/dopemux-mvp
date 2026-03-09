@@ -20,7 +20,7 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('Prediction Loading...');
   // Indeterminate LinearProgress in loading state
   expect(content).toContain('aria-label="Loading prediction data"');
-  expect(content).toContain('<Tooltip title="Predictive LSTM model running on edge device"');
+  expect(content).toContain('<Tooltip title="Predictive LSTM model running on edge device" arrow>');
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
@@ -28,14 +28,15 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
-  expect(content).toContain('<Tooltip title={statusStyles[member.status].label}');
-  expect(content).toContain('<Tooltip title="Aggregated cognitive load across all team members"');
-  expect(content).toContain('<Tooltip title="Current energy reserve based on biometric data"');
-  expect(content).toContain('<Tooltip title="Real-time focus and attention span metrics"');
+  expect(content).toContain('<Tooltip title={statusStyles[member.status].label} arrow>');
+  expect(content).toContain('<Tooltip title="Average cognitive load across all team members" arrow>');
+  expect(content).toContain('<Tooltip title="Current energy level" arrow>');
+  expect(content).toContain('<Tooltip title="Current attention focus" arrow>');
+  expect(content).toContain('tabIndex={0}');
   // Ensure the energy metric tooltip wraps a keyboard-focusable chip
-  expect(content).toMatch(/<Tooltip title="Current energy reserve based on biometric data"[\s\S]*tabIndex=\{0\}/);
+  expect(content).toMatch(/<Tooltip title="Current energy level"[\s\S]*tabIndex=\{0\}/);
   // Ensure the attention metric tooltip wraps a keyboard-focusable chip
-  expect(content).toMatch(/<Tooltip title="Real-time focus and attention span metrics"[\s\S]*tabIndex=\{0\}/);
+  expect(content).toMatch(/<Tooltip title="Current attention focus"[\s\S]*tabIndex=\{0\}/);
 });
 
 test('TaskSequencer.tsx has contextual aria-labels and current step indicator', () => {
@@ -48,7 +49,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label="Current task progress"');
   // Timer accessibility
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
-  expect(content).toContain('<Tooltip title="Real-time task synchronization active"');
+  expect(content).toContain('<Tooltip title="Real-time task synchronization active" arrow>');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
 });
 
