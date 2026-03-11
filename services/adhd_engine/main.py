@@ -138,10 +138,37 @@ class _FallbackADHDEngine:
         self.startup_error = startup_error
         self.user_profiles = {}
         self.current_energy_levels = {}
+        self.current_attention_states = {}
         self.predictive_engine = None
+        self.is_fallback_engine = True
 
     async def close(self) -> None:
         return None
+
+    async def _calculate_system_cognitive_load(self) -> float:
+        return 0.35
+
+    async def get_energy_level(self, user_id: str):
+        class _EnergyState:
+            def __init__(self, level: str = "medium", score: float = 0.5):
+                self.level = level
+                self.score = score
+
+        energy = self.current_energy_levels.get(user_id, "medium")
+        energy_text = energy.value if hasattr(energy, "value") else str(energy)
+        return _EnergyState(level=energy_text, score=0.5)
+
+    async def get_attention_state(self, user_id: str):
+        class _AttentionSnapshot:
+            def __init__(self, state: str = "focused"):
+                self.state = state
+
+        state = self.current_attention_states.get(user_id, "focused")
+        state_text = state.value if hasattr(state, "value") else str(state)
+        return _AttentionSnapshot(state=state_text)
+
+    async def get_cognitive_load(self, user_id: str) -> float:
+        return await self._calculate_system_cognitive_load()
 
     async def get_accommodation_health(self) -> dict:
         return {
@@ -193,6 +220,25 @@ class _FallbackADHDEngine:
                 "context_switch_impact": "medium",
             },
         }
+
+    async def assess_task(self, title: str, description: str = ""):
+        class _Assessment:
+            def __init__(self, payload: dict):
+                self._payload = payload
+
+            def dict(self) -> dict:
+                return self._payload
+
+        payload = await self.assess_task_suitability(
+            user_id="default",
+            task_data={
+                "title": title,
+                "description": description,
+                "complexity_score": 0.5,
+                "estimated_minutes": 30,
+            },
+        )
+        return _Assessment(payload)
 
 
 @asynccontextmanager

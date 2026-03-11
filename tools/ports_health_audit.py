@@ -103,11 +103,43 @@ except Exception:
         CONTAINER_EXITED = "CONTAINER_EXITED"
         CONTAINER_UNHEALTHY = "CONTAINER_UNHEALTHY"
 
-    def classify_health_response(http_ok: bool, json_ok: bool, shape_ok: bool) -> HealthCheckStatus:
-        if not http_ok:
+    def classify_health_response(
+        http_ok: Optional[bool] = None,
+        json_ok: Optional[bool] = None,
+        shape_ok: Optional[bool] = None,
+        *,
+        http_status: Optional[int] = None,
+        response_body: Optional[str] = None,
+        error_msg: Optional[str] = None,
+    ) -> HealthCheckStatus:
+        # Compatibility mode: support the historical boolean-based signature.
+        if http_ok is not None or json_ok is not None or shape_ok is not None:
+            resolved_http_ok = bool(http_ok)
+            resolved_json_ok = bool(json_ok)
+            resolved_shape_ok = bool(shape_ok)
+            if not resolved_http_ok:
+                return HealthCheckStatus.RUNTIME_DOWN
+            if not resolved_json_ok or not resolved_shape_ok:
+                return HealthCheckStatus.SHAPE_FAIL
+            return HealthCheckStatus.HEALTHY
+
+        if error_msg or http_status is None or http_status < 200 or http_status >= 300:
             return HealthCheckStatus.RUNTIME_DOWN
-        if not json_ok or not shape_ok:
+        if response_body is None:
             return HealthCheckStatus.SHAPE_FAIL
+
+        try:
+            parsed = json.loads(response_body)
+        except Exception:
+            return HealthCheckStatus.SHAPE_FAIL
+
+        if not isinstance(parsed, dict):
+            return HealthCheckStatus.SHAPE_FAIL
+
+        required_keys = {"status", "service", "ts"}
+        if not required_keys.issubset(parsed.keys()):
+            return HealthCheckStatus.SHAPE_FAIL
+
         return HealthCheckStatus.HEALTHY
 
     def classify_docker_status(container_status: Optional[str], health_status: Optional[str]) -> HealthCheckStatus:

@@ -192,8 +192,30 @@ class ContainerStabilityChecker:
             if result.returncode != 0 or not result.stdout.strip():
                 return False, "not_found", 0
 
-            raw_line = result.stdout.strip().splitlines()[0]
-            ps_data = json.loads(raw_line)
+            stdout = result.stdout.strip()
+            ps_data = None
+            try:
+                parsed = json.loads(stdout)
+                if isinstance(parsed, list):
+                    ps_data = parsed[0] if parsed else {}
+                elif isinstance(parsed, dict):
+                    ps_data = parsed
+            except json.JSONDecodeError:
+                for line in stdout.splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        parsed = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if isinstance(parsed, dict):
+                        ps_data = parsed
+                        break
+
+            if not isinstance(ps_data, dict) or not ps_data:
+                return False, "not_found", 0
+
             status = str(ps_data.get('State', 'unknown')).lower()
             container_name = ps_data.get('Name')
 
