@@ -306,6 +306,8 @@ phases:
     - C11
     - C13
     - C12
+    - C14
+    - C15
     steps:
     - step_id: C12
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C12_AGENT_ORCHESTRATION_SURFACE.md
@@ -319,6 +321,18 @@ phases:
       - code_surfaces
       outputs:
       - ADHD_ENGINE_SURFACE.json
+    - step_id: C14
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C14_CODE_HEALTH_SURFACE.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - CODE_HEALTH_SURFACE.json
+    - step_id: C15
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C15_DEAD_CODE_INVENTORY.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - DEAD_CODE_INVENTORY.json
     - step_id: C0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md
       coverage_targets:
