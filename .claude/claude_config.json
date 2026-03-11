@@ -10,14 +10,14 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport",
+        "mcp-conport_fix/litellm-build-and-mcp-context",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "main",
+        "DOPEMUX_INSTANCE_ID": "fix/litellm-build-and-mcp-context",
         "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
       }
     },

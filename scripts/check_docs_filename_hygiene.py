@@ -122,19 +122,29 @@ def classify_filename(rel_path: str, policy: Dict[str, Any]) -> FilenameRecord:
     return FilenameRecord(path=rel_path, zone=zone, status="needs_rename", target_path=target, reason="kebab-required")
 
 
-def iter_docs(repo_root: Path, docs_root: str) -> Iterable[Path]:
+def iter_docs(repo_root: Path, docs_root: str, requested_paths: Optional[List[str]] = None) -> Iterable[Path]:
+    if requested_paths:
+        paths = []
+        for p in requested_paths:
+            path = repo_root / _normalize_relpath(p)
+            if path.exists() and path.is_file() and path.suffix == ".md":
+                paths.append(path)
+        return sorted(paths)
     base = repo_root / _normalize_relpath(docs_root)
     if not base.exists():
         return []
     return sorted(base.rglob("*.md"))
 
 
-def build_records(repo_root: Path, policy: Dict[str, Any]) -> List[FilenameRecord]:
+def build_records(repo_root: Path, policy: Dict[str, Any], requested_paths: Optional[List[str]] = None) -> List[FilenameRecord]:
     records: List[FilenameRecord] = []
     docs_root = _normalize_relpath(str(policy["docs_root"]))
-    for path in iter_docs(repo_root=repo_root, docs_root=docs_root):
-        rel = _normalize_relpath(str(path.relative_to(repo_root)))
-        records.append(classify_filename(rel_path=rel, policy=policy))
+    for path in iter_docs(repo_root=repo_root, docs_root=docs_root, requested_paths=requested_paths):
+        try:
+            rel = _normalize_relpath(str(path.relative_to(repo_root)))
+            records.append(classify_filename(rel_path=rel, policy=policy))
+        except ValueError:
+            continue
     return records
 
 
@@ -284,20 +294,23 @@ def _rewrite_plain_path_refs(repo_root: Path, path_map: Dict[str, str]) -> int:
     return updated
 
 
-def run_audit(repo_root: Path, policy: Dict[str, Any], audit_path: Path) -> int:
-    records = build_records(repo_root=repo_root, policy=policy)
+def run_audit(repo_root: Path, policy: Dict[str, Any], audit_path: Path, requested_paths: Optional[List[str]] = None) -> int:
+    records = build_records(repo_root=repo_root, policy=policy, requested_paths=requested_paths)
     write_audit(path=audit_path, records=records)
     _print_summary(records)
     print(f"docs-filename-hygiene: wrote audit -> {audit_path}")
     return 0
 
 
-def run_check(repo_root: Path, policy: Dict[str, Any]) -> int:
-    records = build_records(repo_root=repo_root, policy=policy)
+def run_check(repo_root: Path, policy: Dict[str, Any], requested_paths: Optional[List[str]] = None) -> int:
+    records = build_records(repo_root=repo_root, policy=policy, requested_paths=requested_paths)
     _print_summary(records)
     violations = [record for record in records if record.zone == "active" and record.status == "needs_rename"]
     if not violations:
-        print("docs-filename-hygiene: OK")
+        if requested_paths:
+            print(f"docs-filename-hygiene: checked {len(records)} files, OK")
+        else:
+            print("docs-filename-hygiene: OK")
         return 0
     print("docs-filename-hygiene: FAILED")
     for idx, record in enumerate(violations, start=1):
@@ -311,8 +324,8 @@ def run_check(repo_root: Path, policy: Dict[str, Any]) -> int:
     return 1
 
 
-def run_apply(repo_root: Path, policy: Dict[str, Any], audit_path: Path) -> int:
-    records = build_records(repo_root=repo_root, policy=policy)
+def run_apply(repo_root: Path, policy: Dict[str, Any], audit_path: Path, requested_paths: Optional[List[str]] = None) -> int:
+    records = build_records(repo_root=repo_root, policy=policy, requested_paths=requested_paths)
     _print_summary(records)
     violations = [record for record in records if record.zone == "active" and record.status == "needs_rename"]
     if not violations:
@@ -344,7 +357,7 @@ def run_apply(repo_root: Path, policy: Dict[str, Any], audit_path: Path) -> int:
 
     plain_ref_updates = _rewrite_plain_path_refs(repo_root=repo_root, path_map=old_to_final)
 
-    final_records = build_records(repo_root=repo_root, policy=policy)
+    final_records = build_records(repo_root=repo_root, policy=policy, requested_paths=requested_paths)
     write_audit(path=audit_path, records=final_records)
     print(
         "docs-filename-hygiene: apply complete "
@@ -379,7 +392,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--all-files",
         action="store_true",
-        help="Accepted for CI/pre-commit parity; scan is already full docs tree.",
+        help="Accepted for CI/pre-commit parity; if not set, positional args are checked.",
+    )
+    parser.add_argument(
+        "filenames",
+        nargs="*",
+        help="Specific files to check (ignored if --all-files is set).",
     )
     return parser.parse_args()
 
@@ -395,13 +413,14 @@ def main() -> int:
         return 2
 
     audit_path = (repo_root / args.audit_out).resolve()
+    requested_paths = None if args.all_files else args.filenames
 
     if args.audit:
-        return run_audit(repo_root=repo_root, policy=policy, audit_path=audit_path)
+        return run_audit(repo_root=repo_root, policy=policy, audit_path=audit_path, requested_paths=requested_paths)
     if args.check:
-        return run_check(repo_root=repo_root, policy=policy)
+        return run_check(repo_root=repo_root, policy=policy, requested_paths=requested_paths)
     if args.apply:
-        return run_apply(repo_root=repo_root, policy=policy, audit_path=audit_path)
+        return run_apply(repo_root=repo_root, policy=policy, audit_path=audit_path, requested_paths=requested_paths)
     return 2
 
 
