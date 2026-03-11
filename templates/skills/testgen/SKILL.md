@@ -47,14 +47,16 @@ Run these phases in order and fail closed on ambiguity.
 
 ## Output Contract
 
-Return all sections:
+Return these core sections:
 
 1. `traceability_matrix`
 2. `layer_plan` (unit/smoke/integration/e2e/regression)
 3. `coverage_gate` (target, measured, status)
 4. `na_layers` with rationale and evidence
-5. `test_artifacts` list by file and layer
 
+Optional sections (when available):
+
+- `test_artifacts` list by file and layer
 Detailed output and heuristics are defined in:
 
 - `references/output_contract.md`
