@@ -3660,6 +3660,16 @@ def repscan_passthrough(
 
 
 _PIPELINE_VERSION_CHOICES = ["v5", "v4", "v3"]
+_ROUTING_POLICY_CHOICES = [
+    "cost",
+    "balanced",
+    "balanced_openrouter",
+    "balanced_grok_openrouter",
+    "quality",
+    "openrouter",
+]
+_LEGACY_DEFAULT_ROUTING_POLICY = "cost"
+_V5_DEFAULT_ROUTING_POLICY = "balanced_openrouter"
 
 
 def _pipeline_version_options(command_fn: Callable) -> Callable:
@@ -3722,9 +3732,10 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
 @click.option("--partition-workers", type=int, default=1, show_default=True)
 @click.option(
     "--routing-policy",
-    type=click.Choice(["cost", "balanced", "quality"]),
-    default="cost",
-    show_default=True,
+    type=click.Choice(_ROUTING_POLICY_CHOICES),
+    default=None,
+    show_default=False,
+    help="Routing policy (default: balanced_openrouter for v5; cost for v4/v3).",
 )
 @click.option("--disable-escalation", is_flag=True, default=False, show_default=True)
 @click.option("--escalation-max-hops", type=int, default=2, show_default=True)
@@ -3758,7 +3769,7 @@ def extractor_run(
     dry_run: bool,
     resume: bool,
     partition_workers: int,
-    routing_policy: str,
+    routing_policy: Optional[str],
     disable_escalation: bool,
     escalation_max_hops: int,
     batch_mode: bool,
@@ -3777,11 +3788,16 @@ def extractor_run(
 
     \b
     Examples:
-      dopemux upgrades run --pipeline-version v4 --phase A --run-id local_a --dry-run --resume
-      dopemux upgrades run --pipeline-version v4 --phase ALL --run-id full_001 --execute --resume
-      dopemux upgrades run --pipeline-version v4 --phase C --execute --batch-mode --ui rich
+      dopemux upgrades run --pipeline-version v5 --phase A --run-id local_a --dry-run --resume
+      dopemux upgrades run --pipeline-version v5 --phase ALL --run-id full_001 --execute --resume
+      dopemux upgrades run --pipeline-version v5 --phase C --execute --batch-mode --ui rich
     """
     effective_version = _resolved_pipeline_version(pipeline_version, engine_version_legacy)
+    effective_routing_policy = routing_policy or (
+        _V5_DEFAULT_ROUTING_POLICY
+        if effective_version == "v5"
+        else _LEGACY_DEFAULT_ROUTING_POLICY
+    )
     args: List[str] = []
     if phase:
         args.extend(["--phase", phase])
@@ -3792,7 +3808,7 @@ def extractor_run(
     if resume:
         args.append("--resume")
     args.extend(["--partition-workers", str(partition_workers)])
-    args.extend(["--routing-policy", routing_policy])
+    args.extend(["--routing-policy", effective_routing_policy])
     if disable_escalation:
         args.append("--disable-escalation")
     args.extend(["--escalation-max-hops", str(max(0, int(escalation_max_hops)))])
