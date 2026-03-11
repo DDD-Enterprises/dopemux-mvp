@@ -62,6 +62,48 @@ except ModuleNotFoundError:
     XAIBatchClient = batch_clients_module.XAIBatchClient
     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
 try:
+    from lib.phase_contract_map import get_step_contract
+except ModuleNotFoundError:
+    contract_map_path = RUNNER_SERVICE_DIR / "lib" / "phase_contract_map.py"
+    contract_map_spec = importlib.util.spec_from_file_location(
+        "repo_truth_phase_contract_map",
+        contract_map_path,
+    )
+    if not contract_map_spec or not contract_map_spec.loader:
+        raise
+    contract_map_module = importlib.util.module_from_spec(contract_map_spec)
+    contract_map_spec.loader.exec_module(contract_map_module)
+    get_step_contract = contract_map_module.get_step_contract
+try:
+    from lib.structured_output_contracts import (
+        artifacts_pass_contract_gate,
+        build_openai_response_format,
+        canonicalize_artifacts,
+        is_json_managed_step,
+        is_strict_contract_step,
+        resolve_stage_route,
+        route_entries_for_stage,
+    )
+except ModuleNotFoundError:
+    structured_contracts_path = RUNNER_SERVICE_DIR / "lib" / "structured_output_contracts.py"
+    structured_contracts_spec = importlib.util.spec_from_file_location(
+        "repo_truth_structured_output_contracts",
+        structured_contracts_path,
+    )
+    if not structured_contracts_spec or not structured_contracts_spec.loader:
+        raise
+    structured_contracts_module = importlib.util.module_from_spec(
+        structured_contracts_spec
+    )
+    structured_contracts_spec.loader.exec_module(structured_contracts_module)
+    artifacts_pass_contract_gate = structured_contracts_module.artifacts_pass_contract_gate
+    build_openai_response_format = structured_contracts_module.build_openai_response_format
+    canonicalize_artifacts = structured_contracts_module.canonicalize_artifacts
+    is_json_managed_step = structured_contracts_module.is_json_managed_step
+    is_strict_contract_step = structured_contracts_module.is_strict_contract_step
+    resolve_stage_route = structured_contracts_module.resolve_stage_route
+    route_entries_for_stage = structured_contracts_module.route_entries_for_stage
+try:
     from rich.console import Console
     from rich.panel import Panel
     from rich.progress import (
@@ -881,6 +923,7 @@ class PromptSpec:
     output_artifacts: Tuple[str, ...]
     tier_override: Optional[str] = None
     source: str = "legacy"
+    contract: Optional[Dict[str, Any]] = None
 
 
 @dataclass(frozen=True)
@@ -2325,6 +2368,14 @@ def _parse_provider_model_env(value: str, env_name: str) -> Tuple[str, str, str]
     return (provider, model_id, PROVIDER_API_KEY_ENV[provider])
 
 
+def _step_contract_for(phase: str, step_id: str) -> Optional[Dict[str, Any]]:
+    try:
+        contract = get_step_contract(phase, step_id)
+    except Exception:
+        return None
+    return dict(contract) if isinstance(contract, dict) else None
+
+
 def _resolve_env_step_type_routes() -> Dict[str, Tuple[str, str, str]]:
     routes: Dict[str, Tuple[str, str, str]] = {}
     for step_type, env_name in STEP_TYPE_MODEL_ENV_VARS.items():
@@ -2375,6 +2426,7 @@ def resolve_effective_step_route(
     step_id: str,
     cfg: RunnerConfig,
     tier_override: Optional[str] = None,
+    step_contract: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     step_tier = resolve_effective_step_tier(
         cfg.routing_policy,
@@ -2383,6 +2435,74 @@ def resolve_effective_step_route(
         tier_override=tier_override,
     )
     step_type = classify_step_type(phase, step_id, tier_override=tier_override)
+    contract = (
+        dict(step_contract)
+        if isinstance(step_contract, dict)
+        else _step_contract_for(phase, step_id)
+    )
+    if is_json_managed_step(contract):
+        strict_required = is_strict_contract_step(contract)
+        primary_routes = route_entries_for_stage(contract, "primary")
+        if not primary_routes:
+            raise RuntimeError(
+                f"JSON-managed step {phase}:{step_id} missing primary_routes in model_map.yaml."
+            )
+        if strict_required:
+            strict_ladder: List[Tuple[str, str, str]] = []
+            strict_attempts: List[Dict[str, Any]] = []
+            for route in primary_routes:
+                selected_route, attempts = resolve_stage_route(
+                    step_contract={"lane": {"primary_routes": [route]}},
+                    stage="primary",
+                    transport_for_provider=lambda provider: transport_for_provider(
+                        provider, cfg
+                    ),
+                    strict_required=True,
+                )
+                strict_attempts.extend(attempts)
+                if selected_route:
+                    strict_ladder.append(
+                        (
+                            str(selected_route["provider"]),
+                            str(selected_route["model_id"]),
+                            str(selected_route["api_key_env"]),
+                        )
+                    )
+            if not strict_ladder:
+                raise RuntimeError(
+                    f"JSON-managed step {phase}:{step_id} has no strict-capable route before token spend."
+                )
+            provider, model_id, api_key_env = strict_ladder[0]
+            return {
+                "step_tier": step_tier,
+                "step_type": step_type,
+                "ladder": strict_ladder,
+                "provider": provider,
+                "model_id": model_id,
+                "api_key_env": api_key_env,
+                "reason": "contract_lane_primary_strict",
+                "strict_required": True,
+                "strict_route_attempts": strict_attempts,
+            }
+        contract_ladder = [
+            (
+                str(route["provider"]),
+                str(route["model_id"]),
+                str(route["api_key_env"]),
+            )
+            for route in primary_routes
+        ]
+        provider, model_id, api_key_env = contract_ladder[0]
+        return {
+            "step_tier": step_tier,
+            "step_type": step_type,
+            "ladder": contract_ladder,
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env": api_key_env,
+            "reason": "contract_lane_primary",
+            "strict_required": False,
+        }
     chosen = choose_model_for_step(phase, step_id, cfg, tier_override=tier_override)
     reason = "policy_ladder_default"
     if chosen is not None:
@@ -2832,6 +2952,21 @@ def resolve_step_ladder(
     step_id: str,
     tier_override: Optional[str] = None,
 ) -> List[Tuple[str, str, str]]:
+    contract = _step_contract_for(phase, step_id)
+    if is_json_managed_step(contract):
+        primary_routes = route_entries_for_stage(contract, "primary")
+        if not primary_routes:
+            raise RuntimeError(
+                f"JSON-managed step {phase}:{step_id} missing primary_routes in model_map.yaml."
+            )
+        return [
+            (
+                str(route["provider"]),
+                str(route["model_id"]),
+                str(route["api_key_env"]),
+            )
+            for route in primary_routes
+        ]
     selected_policy = _normalize_routing_policy(routing_policy)
     if selected_policy == "balanced_grok_openrouter":
         phase_routes = _balanced_grok_openrouter_routes(phase, step_id)
@@ -6949,6 +7084,11 @@ def execute_step_for_partitions(
     step_id = prompt_spec.step_id
     prompt_path = prompt_spec.prompt_path
     output_artifacts = prompt_spec.output_artifacts
+    step_contract = (
+        dict(prompt_spec.contract)
+        if isinstance(prompt_spec.contract, dict)
+        else _step_contract_for(phase, step_id)
+    )
     prompt_text = safe_read(prompt_path)
     if not prompt_text:
         logger.error("Could not read prompt: %s", prompt_path)
@@ -6968,6 +7108,7 @@ def execute_step_for_partitions(
         step_id,
         cfg,
         tier_override=prompt_spec.tier_override,
+        step_contract=step_contract,
     )
     step_tier = str(route_info["step_tier"])
     step_type = str(route_info["step_type"])
@@ -6976,6 +7117,15 @@ def execute_step_for_partitions(
     initial_model_id = str(route_info["model_id"])
     initial_api_key_env = str(route_info["api_key_env"])
     routing_reason = str(route_info["reason"])
+    contract_lane_name = str(
+        ((step_contract or {}).get("lane") or {}).get("lane_class") or ""
+    )
+    strict_contract_required = bool(route_info.get("strict_required", False))
+    strict_route_attempts = (
+        list(route_info.get("strict_route_attempts"))
+        if isinstance(route_info.get("strict_route_attempts"), list)
+        else []
+    )
     provider, model_id, _ = initial_provider, initial_model_id, initial_api_key_env
     endpoint_base = llm_base_url(initial_provider, cfg)
     transport = transport_for_provider(initial_provider, cfg)
@@ -7916,6 +8066,13 @@ def execute_step_for_partitions(
         request_meta["batch_provider"] = request_meta.get("batch_provider") or None
         request_meta["batch_job_id"] = request_meta.get("batch_job_id") or None
         request_meta["route_attempts"] = request_meta.get("route_attempts") or []
+        request_meta["contract_lane"] = request_meta.get("contract_lane") or contract_lane_name
+        request_meta["no_auto_transport_flips"] = True
+        if strict_route_attempts and "strict_primary_route_attempts" not in request_meta:
+            request_meta["strict_primary_route_attempts"] = strict_route_attempts
+        request_meta["strict_schema_required"] = bool(
+            request_meta.get("strict_schema_required", strict_contract_required)
+        )
         if len(request_meta.get("route_attempts", [])) > 1:
             request_meta["escalation_trigger"] = request_meta.get("escalation_trigger") or "gated_retry"
         else:
