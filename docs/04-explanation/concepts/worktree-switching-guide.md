@@ -14,4 +14,4 @@ prelude: Worktree Switching Guide (explanation) for dopemux documentation and de
 
 This guide has moved to keep concepts grouped under `04-explanation`.
 
-See [Worktree Switching Guide](worktree-switching-guide.md).
+See [Worktree Switching Guide](worktree-comprehensive-guide.md#switching-between-worktrees).
