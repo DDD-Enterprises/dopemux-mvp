@@ -379,14 +379,29 @@ def evaluate_touched_coverage(
 
     for path in touched_files:
         normalized = _normalize_repo_path(path)
-        match_key = None
+        match_key: Optional[str] = None
         if normalized in stats:
             match_key = normalized
         else:
-            for candidate in stats:
-                if candidate.endswith(normalized) or normalized.endswith(candidate):
-                    match_key = candidate
-                    break
+            # Collect all candidate coverage entries that could plausibly
+            # correspond to this touched path, then resolve deterministically.
+            candidates = [
+                candidate
+                for candidate in stats
+                if candidate.endswith(normalized) or normalized.endswith(candidate)
+            ]
+            if candidates:
+                min_len = min(len(candidate) for candidate in candidates)
+                shortest = sorted(
+                    [candidate for candidate in candidates if len(candidate) == min_len]
+                )
+                if len(shortest) == 1:
+                    match_key = shortest[0]
+                else:
+                    raise CoverageResolutionError(
+                        "Ambiguous coverage entries for touched path "
+                        f"'{normalized}': " + ", ".join(shortest)
+                    )
         if match_key is None:
             missing.append(normalized)
             continue
