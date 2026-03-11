@@ -14,4 +14,4 @@ prelude: Deployment Ready Summary (reference) for dopemux documentation and deve
 
 This report is mirrored in the audit reports directory.
 
-See [docs/05-audit-reports/deployment-ready-summary-2.md](deployment-ready-summary-2.md).
+See [Final Audit Report](final-audit-report-2.md).
