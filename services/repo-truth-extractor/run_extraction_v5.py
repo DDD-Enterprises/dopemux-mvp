@@ -14308,6 +14308,12 @@ def main() -> None:
             "prompt files. Equivalent to setting REPO_TRUTH_EXTRACTOR_PROMPT_ROOT."
         ),
     )
+    parser.add_argument(
+        "--profile",
+        type=str,
+        default=None,
+        help="Extraction profile name (e.g., P09_INTEGRATION_SURFACE_V1). Filters phases and overrides budgets.",
+    )
     args = parser.parse_args()
     # --promptset-root: wire into env var so prompt_root() picks it up
     if args.promptset_root:
@@ -14702,7 +14708,51 @@ def main() -> None:
         d1_max_files=args.d1_max_files,
     )
 
+    # --profile: load extraction profile and apply phase filtering + budget overrides
+    _active_profile = None
+    if getattr(args, "profile", None):
+        _profile_dir = Path(__file__).parent / "lib" / "promptgen" / "profiles"
+        _profile_name = args.profile
+        if not _profile_name.endswith(".json"):
+            _profile_name += ".json"
+        _profile_path = _profile_dir / _profile_name
+        if not _profile_path.exists():
+            logger.error("Profile not found: %s (searched %s)", args.profile, _profile_dir)
+            sys.exit(1)
+        import json as _json_profile
+        with open(_profile_path) as _pf:
+            _active_profile = _json_profile.load(_pf)
+        logger.info(
+            "Loaded profile: %s (v%s)",
+            _active_profile.get("profile_id", args.profile),
+            _active_profile.get("version", "?"),
+        )
+        # Apply budget overrides from profile
+        _budgets = _active_profile.get("phase_policy", {}).get("budgets_by_phase", {})
+        if _budgets:
+            _any_budget = next(iter(_budgets.values()), {})
+            if "max_files" in _any_budget and args.max_files_docs == 35:
+                pass  # Keep user-specified value; profile budgets applied per-phase in runner
+            if "max_chars" in _any_budget and args.max_chars == 650000:
+                pass
+            if "file_truncate_chars" in _any_budget and args.file_truncate_chars == 70000:
+                pass
+
     phase_sequence = resolve_phase_list(args.phase)
+    # If profile specifies enabled_phases, filter the phase sequence
+    if _active_profile:
+        _enabled = _active_profile.get("phase_policy", {}).get("enabled_phases")
+        if _enabled and phase_sequence:
+            _before = list(phase_sequence)
+            phase_sequence = [p for p in phase_sequence if p in _enabled]
+            _skipped = [p for p in _before if p not in _enabled]
+            if _skipped:
+                logger.info("Profile skipping phases: %s", ", ".join(_skipped))
+        elif _enabled and not phase_sequence:
+            # No explicit --phase, but profile has enabled_phases
+            phase_sequence = [p for p in PHASES if p in _enabled]
+            logger.info("Profile restricting to phases: %s", ", ".join(phase_sequence))
+
     prompt_report = write_run_manifest(
         root, dirs, run_id, args, run_context, phase_sequence or PHASES
     )
