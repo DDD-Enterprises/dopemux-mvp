@@ -54,9 +54,9 @@ src/dopemux/cli.py:5463:            console.logger.info(f"  Attention mode: {p.a
 src/dopemux/cli.py:5464:            console.logger.info(f"  Session duration: {p.adhd_config.session_duration} minutes")
 src/dopemux/cli.py:5570:            if p.adhd_config:
 src/dopemux/adhd/task_decomposer.py:85:    The original TaskDecomposer class lived under ``dopemux.adhd`` and stored
-docs/planes/pm/PM_PHASE0_ACTION_ITEMS.md:34:  - File: `src/dopemux/adhd/task_decomposer.py:40-81`
-docs/planes/pm/PM_PHASE0_ACTION_ITEMS.md:95:  - File: `src/dopemux/adhd/task_decomposer.py`
-docs/planes/pm/PM_PHASE0_ACTION_ITEMS.md:270:  - Category: `adhd_attention_state`
+docs/planes/pm/pm-phase0-action-items.md:34:  - File: `src/dopemux/adhd/task_decomposer.py:40-81`
+docs/planes/pm/pm-phase0-action-items.md:95:  - File: `src/dopemux/adhd/task_decomposer.py`
+docs/planes/pm/pm-phase0-action-items.md:270:  - Category: `adhd_attention_state`
 services/adhd_engine/integration_bridge_connector.py:30:        from integrations.adhd_engine import ADHDEngineIntegrationManager
 services/adhd_engine/integration_bridge_connector.py:63:        attention_state: focused/scattered/transitioning
 src/dopemux/adhd/attention_monitor.py:36:    focus_score: float  # Calculated focus score (0-1)
@@ -107,7 +107,7 @@ src/dopemux/adhd/attention_monitor.py:427:                    "You've been in de
 src/dopemux/adhd/attention_monitor.py:433:        elif current_metrics["focus_score"] < 0.5:
 src/dopemux/adhd/attention_monitor.py:436:                    "Low focus detected - try the Pomodoro technique",
 src/dopemux/adhd/attention_monitor.py:468:            "focus_score": 0.5,
-docs/planes/pm/SUPERVISOR.md:24:- ADHD-first: default outputs minimal, progressive disclosure only.
+docs/planes/pm/supervisor-2.md:24:- ADHD-first: default outputs minimal, progressive disclosure only.
 services/adhd_engine/workspace_watcher.py:83:        # Track unchanged files for hyperfocus detection
 services/adhd_engine/workspace_watcher.py:168:        """Check for files unchanged for extended periods (hyperfocus indicator)."""
 services/adhd_engine/workspace_watcher.py:175:                    # File unchanged for >30 min - possible hyperfocus
@@ -237,53 +237,53 @@ src/dopemux/adhd/workflow_manager.py:337:    return adhd_workflow.suggest_break(
 src/dopemux/adhd/workflow_manager.py:342:    adhd_workflow.update_cognitive_load(load, context)
 src/dopemux/adhd/workflow_manager.py:347:    return adhd_workflow.get_context_snapshot()
 src/dopemux/adhd/workflow_manager.py:352:    return adhd_workflow.restore_context(snapshot)
-docs/planes/pm/HUB.md:39:### Phase 1 (Friction + signal)
+docs/planes/pm/hub-2.md:39:### Phase 1 (Friction + signal)
 src/dopemux/adhd/__init__.py:14:# Archived code available in: /src/dopemux/adhd/archived/attention_manager.py.archived
 services/task-orchestrator/test_conport_sync.py:144:        adhd_state = {"energy": "medium", "attention": "focused", "load": 0.3}
 services/task-orchestrator/test_conport_sync.py:146:        result = await coordinator.coordinate_tasks(sample_tasks, adhd_state)
-docs/planes/pm/PM_FRICTION_MAP.md:25:| Evidence search noise inflates PM triage | Friction evidence scans contain binary `__pycache__` matches and non-PM `HealthStatus` hits that match status regex but describe monitoring, not task lifecycle. | Attention fragmentation during audit. Analyst must mentally filter noise before extracting PM signal. Weakens confidence in evidence quality. | Low | Scan hit | `30_memory_burden_search.txt L2,L9-L11` (binary cache); `20_friction_search.txt L81-L96` (health.py HealthStatus) |
-docs/planes/pm/PM_FRICTION_MAP.md:26:| Taskmaster has zero tests at any depth | Full recursive search finds no `test_*.py` or `*_test.py` files in `services/taskmaster/`. The service has exactly 2 Python files (`server.py`, `bridge_adapter.py`) and zero tests. | Lower confidence for safe PM changes touching taskmaster. Fear of breakage suppresses refactoring motivation. | Medium | Scan hit | `41_taskmaster_root_tests.txt` (empty); `42_taskmaster_full_test_discovery.txt` (confirms zero at all depths, 2 .py files total) |
-docs/planes/pm/PM_FRICTION_MAP.md:37:Evidence search noise was lowered from Medium to **Low** because it affects PM auditors during evidence triage, not developers during normal task operations.
-docs/planes/pm/PM_FRICTION_MAP.md:51:**Violation**: Manual conflict evidence originates from Memory adapter/sync artifacts (`sync.py` manual resolution queue), but the friction surface is PM — the user encounters conflict prompts during PM task operations.
-docs/planes/pm/PM_FRICTION_MAP.md:75:### What ratio of scan output is actionable PM signal after suppression?
-docs/planes/pm/PM_FRICTION_MAP.md:77:UNKNOWN. Evidence needed: filtered/unfiltered counts on the same evidence set with explicit suppression rules applied.
-docs/planes/pm/README.md:47:- Phase 1 telemetry evidence: `docs/planes/pm/_evidence/PM-TELEM-01.outputs/`
-docs/planes/pm/README.md:60:Verifies: friction evidence bundle, telemetry evidence bundle, and citation presence in Phase 1 docs.
-docs/planes/pm/PM_ARCHITECTURE.md:29:  - ADHD engine focus gating
-docs/planes/pm/PM_OUTPUT_BOUNDARIES.md:22:- Split of signals across planes:
-docs/planes/pm/PM_OUTPUT_BOUNDARIES.md:24:- "Never by default" list (noise, duplicates, or trust risks)
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:10:prelude: ADHD-first event classification for PM plane distinguishing actionable signals from cognitive noise.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:23:| Task status transitions (`in_progress`, `completed`, `blocked`) | Coordinator routes these values to dedicated handlers. `blocked` triggers focus-suggestion emission to help user pivot. | Direct code | `nl_...event_coordinator.py.txt L400-L407` (status routing); `nl_...event_coordinator.py.txt L674-L683` (blocked handler emits focus suggestion) |
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:24:| High and critical priorities under deep-focus gating | Deep-focus mode explicitly passes only CRITICAL and HIGH events. Non-critical interruptions blocked. | Direct code | `nl_...event_coordinator.py.txt L48-L55` (EventPriority enum: CRITICAL=1 through BACKGROUND=5); `nl_...event_coordinator.py.txt L331-L338` (deep focus filter) |
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:27:| Energy-level gating of high-cognitive-load events | When `current_energy_level == "low"`, coordinator suppresses events with `cognitive_load > 0.7`. This is an active signal rule — its activation changes what the developer sees. | Direct code | `nl_...event_coordinator.py.txt L340-L344` (energy-level filter) |
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:40:| Routine worktree operations | `created`, `removed`, `cleaned` confirm user-initiated actions. Only `switched` is signal (triggers context recovery). | Direct code | `nl_...events_types.py.txt L36-L50` (WorktreeEvent actions) |
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:49:### Rule 2: Deep-focus gating (when `current_focus_mode == "deep"`)
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:56:Suppress events with `cognitive_load > 0.7` to prevent overwhelm during low-energy states.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:61:When >10 similar events fire within one minute, log flood warning and suppress duplicates.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:67:Evidence: `[Direct code] nl_...event_bus.py.txt L34-L38` (ADHDMetadata: interruption_allowed, focus_required, time_sensitive, can_batch).
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:69:### Rule 6: Evidence audit noise suppression
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:71:During PM evidence triage, suppress binary-cache grep rows and non-PM status matches unless running an explicit cross-plane audit.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:82:- Event-rate reduction is now directly measurable as `suppression_rate_pct`, with `signal_noise_ratio` computed from pass/receive counts.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:83:Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L889-L912`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L293-L310`.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:85:- PM can attribute suppression volume to six concrete rules (`custom_filter`, `deep_focus_priority`, `deep_focus_interrupt`, `energy_level`, `flood`, `expiry`).
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:86:Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L104-L110`; `L914-L921`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L282-L289`.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:88:- PM can segment suppression by event type and priority (received vs suppressed) for current runtime.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:91:- PM can read telemetry through both periodic logs and health endpoint payloads.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:92:Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L254-L271`; `L957-L972`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L349-L362`.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:96:- Long-horizon suppression trends (hourly/daily), historical baselines, and persisted telemetry history are not yet implemented and remain listed as future work.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:99:- Per-worker suppression attribution is not yet implemented.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:102:- Multi-cause suppression overlap is not measurable because suppression is short-circuited at first matching rule.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:103:Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L403-L433`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L327-L345`.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:107:### PM-owned signal rules
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:109:Task lifecycle orchestration (status routing, blocked-task intervention) and deep-focus/energy event gating logic.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:110:Evidence: `[Direct code] nl_...event_coordinator.py.txt L400-L407` (status routing); `nl_...event_coordinator.py.txt L331-L344` (focus + energy gating).
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:117:### Search-owned noise artifacts
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:124:### What is the measured event-rate reduction after these suppression rules?
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:126:Partially resolved (runtime-only). The report now exposes `suppression_rate_pct` and `signal_noise_ratio`, but historical trend telemetry is still future work.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:129:### Which suppressed event classes are still needed for incident recovery?
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:131:UNKNOWN. Evidence needed: user validation and incident replay after suppression is applied.
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:133:### Which PM notifications must stay visible in deep-focus mode by policy?
-docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md:135:UNKNOWN. Evidence needed: explicit PM policy document mapping event classes to focus-mode behavior. Current code implements CRITICAL+HIGH passthrough but no policy rationale is documented.
+docs/planes/pm/pm-friction-map.md:25:| Evidence search noise inflates PM triage | Friction evidence scans contain binary `__pycache__` matches and non-PM `HealthStatus` hits that match status regex but describe monitoring, not task lifecycle. | Attention fragmentation during audit. Analyst must mentally filter noise before extracting PM signal. Weakens confidence in evidence quality. | Low | Scan hit | `30_memory_burden_search.txt L2,L9-L11` (binary cache); `20_friction_search.txt L81-L96` (health.py HealthStatus) |
+docs/planes/pm/pm-friction-map.md:26:| Taskmaster has zero tests at any depth | Full recursive search finds no `test_*.py` or `*_test.py` files in `services/taskmaster/`. The service has exactly 2 Python files (`server.py`, `bridge_adapter.py`) and zero tests. | Lower confidence for safe PM changes touching taskmaster. Fear of breakage suppresses refactoring motivation. | Medium | Scan hit | `41_taskmaster_root_tests.txt` (empty); `42_taskmaster_full_test_discovery.txt` (confirms zero at all depths, 2 .py files total) |
+docs/planes/pm/pm-friction-map.md:37:Evidence search noise was lowered from Medium to **Low** because it affects PM auditors during evidence triage, not developers during normal task operations.
+docs/planes/pm/pm-friction-map.md:51:**Violation**: Manual conflict evidence originates from Memory adapter/sync artifacts (`sync.py` manual resolution queue), but the friction surface is PM — the user encounters conflict prompts during PM task operations.
+docs/planes/pm/pm-friction-map.md:75:### What ratio of scan output is actionable PM signal after suppression?
+docs/planes/pm/pm-friction-map.md:77:UNKNOWN. Evidence needed: filtered/unfiltered counts on the same evidence set with explicit suppression rules applied.
+docs/planes/pm/readme-2.md:47:- Phase 1 telemetry evidence: `docs/planes/pm/_evidence/PM-TELEM-01.outputs/`
+docs/planes/pm/readme-2.md:60:Verifies: friction evidence bundle, telemetry evidence bundle, and citation presence in Phase 1 docs.
+docs/planes/pm/pm-architecture.md:29:  - ADHD engine focus gating
+docs/planes/pm/pm-output-boundaries.md:22:- Split of signals across planes:
+docs/planes/pm/pm-output-boundaries.md:24:- "Never by default" list (noise, duplicates, or trust risks)
+docs/planes/pm/signal-vs-noise-analysis.md:10:prelude: ADHD-first event classification for PM plane distinguishing actionable signals from cognitive noise.
+docs/planes/pm/signal-vs-noise-analysis.md:23:| Task status transitions (`in_progress`, `completed`, `blocked`) | Coordinator routes these values to dedicated handlers. `blocked` triggers focus-suggestion emission to help user pivot. | Direct code | `nl_...event_coordinator.py.txt L400-L407` (status routing); `nl_...event_coordinator.py.txt L674-L683` (blocked handler emits focus suggestion) |
+docs/planes/pm/signal-vs-noise-analysis.md:24:| High and critical priorities under deep-focus gating | Deep-focus mode explicitly passes only CRITICAL and HIGH events. Non-critical interruptions blocked. | Direct code | `nl_...event_coordinator.py.txt L48-L55` (EventPriority enum: CRITICAL=1 through BACKGROUND=5); `nl_...event_coordinator.py.txt L331-L338` (deep focus filter) |
+docs/planes/pm/signal-vs-noise-analysis.md:27:| Energy-level gating of high-cognitive-load events | When `current_energy_level == "low"`, coordinator suppresses events with `cognitive_load > 0.7`. This is an active signal rule — its activation changes what the developer sees. | Direct code | `nl_...event_coordinator.py.txt L340-L344` (energy-level filter) |
+docs/planes/pm/signal-vs-noise-analysis.md:40:| Routine worktree operations | `created`, `removed`, `cleaned` confirm user-initiated actions. Only `switched` is signal (triggers context recovery). | Direct code | `nl_...events_types.py.txt L36-L50` (WorktreeEvent actions) |
+docs/planes/pm/signal-vs-noise-analysis.md:49:### Rule 2: Deep-focus gating (when `current_focus_mode == "deep"`)
+docs/planes/pm/signal-vs-noise-analysis.md:56:Suppress events with `cognitive_load > 0.7` to prevent overwhelm during low-energy states.
+docs/planes/pm/signal-vs-noise-analysis.md:61:When >10 similar events fire within one minute, log flood warning and suppress duplicates.
+docs/planes/pm/signal-vs-noise-analysis.md:67:Evidence: `[Direct code] nl_...event_bus.py.txt L34-L38` (ADHDMetadata: interruption_allowed, focus_required, time_sensitive, can_batch).
+docs/planes/pm/signal-vs-noise-analysis.md:69:### Rule 6: Evidence audit noise suppression
+docs/planes/pm/signal-vs-noise-analysis.md:71:During PM evidence triage, suppress binary-cache grep rows and non-PM status matches unless running an explicit cross-plane audit.
+docs/planes/pm/signal-vs-noise-analysis.md:82:- Event-rate reduction is now directly measurable as `suppression_rate_pct`, with `signal_noise_ratio` computed from pass/receive counts.
+docs/planes/pm/signal-vs-noise-analysis.md:83:Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L889-L912`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L293-L310`.
+docs/planes/pm/signal-vs-noise-analysis.md:85:- PM can attribute suppression volume to six concrete rules (`custom_filter`, `deep_focus_priority`, `deep_focus_interrupt`, `energy_level`, `flood`, `expiry`).
+docs/planes/pm/signal-vs-noise-analysis.md:86:Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L104-L110`; `L914-L921`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L282-L289`.
+docs/planes/pm/signal-vs-noise-analysis.md:88:- PM can segment suppression by event type and priority (received vs suppressed) for current runtime.
+docs/planes/pm/signal-vs-noise-analysis.md:91:- PM can read telemetry through both periodic logs and health endpoint payloads.
+docs/planes/pm/signal-vs-noise-analysis.md:92:Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L254-L271`; `L957-L972`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L349-L362`.
+docs/planes/pm/signal-vs-noise-analysis.md:96:- Long-horizon suppression trends (hourly/daily), historical baselines, and persisted telemetry history are not yet implemented and remain listed as future work.
+docs/planes/pm/signal-vs-noise-analysis.md:99:- Per-worker suppression attribution is not yet implemented.
+docs/planes/pm/signal-vs-noise-analysis.md:102:- Multi-cause suppression overlap is not measurable because suppression is short-circuited at first matching rule.
+docs/planes/pm/signal-vs-noise-analysis.md:103:Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L403-L433`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L327-L345`.
+docs/planes/pm/signal-vs-noise-analysis.md:107:### PM-owned signal rules
+docs/planes/pm/signal-vs-noise-analysis.md:109:Task lifecycle orchestration (status routing, blocked-task intervention) and deep-focus/energy event gating logic.
+docs/planes/pm/signal-vs-noise-analysis.md:110:Evidence: `[Direct code] nl_...event_coordinator.py.txt L400-L407` (status routing); `nl_...event_coordinator.py.txt L331-L344` (focus + energy gating).
+docs/planes/pm/signal-vs-noise-analysis.md:117:### Search-owned noise artifacts
+docs/planes/pm/signal-vs-noise-analysis.md:124:### What is the measured event-rate reduction after these suppression rules?
+docs/planes/pm/signal-vs-noise-analysis.md:126:Partially resolved (runtime-only). The report now exposes `suppression_rate_pct` and `signal_noise_ratio`, but historical trend telemetry is still future work.
+docs/planes/pm/signal-vs-noise-analysis.md:129:### Which suppressed event classes are still needed for incident recovery?
+docs/planes/pm/signal-vs-noise-analysis.md:131:UNKNOWN. Evidence needed: user validation and incident replay after suppression is applied.
+docs/planes/pm/signal-vs-noise-analysis.md:133:### Which PM notifications must stay visible in deep-focus mode by policy?
+docs/planes/pm/signal-vs-noise-analysis.md:135:UNKNOWN. Evidence needed: explicit PM policy document mapping event classes to focus-mode behavior. Current code implements CRITICAL+HIGH passthrough but no policy rationale is documented.
 src/dopemux/adhd/context_manager.py:43:        self.focus_duration = kwargs.get("focus_duration", 0)
 src/dopemux/adhd/context_manager.py:64:            "focus_duration": self.focus_duration,
 src/dopemux/adhd/context_manager.py:215:                    focus_score REAL DEFAULT 0.0,
@@ -295,10 +295,10 @@ src/dopemux/adhd/context_manager.py:567:            tags.append("focused")
 src/dopemux/adhd/context_manager.py:568:        elif focus_duration > 0:
 src/dopemux/adhd/context_manager.py:683:                    "focus_duration": data.get("focus_duration", 0),
 src/dopemux/adhd/context_manager.py:713:            focus_duration=0,  # Would come from attention monitor
-docs/planes/pm/_handoff/PM-FRIC-01_HANDOFF.md:29:- Evidence search noise in PM triage
-docs/planes/pm/_handoff/PM-FRIC-01_HANDOFF.md:36:- What fraction of PM triage output is actionable vs noise?
-docs/planes/pm/_handoff/PM-FRIC-01_HANDOFF.md:37:- What is the observed event-rate reduction after suppression rules?
-docs/planes/pm/_handoff/PM-FRIC-01_HANDOFF.md:38:- Which suppressed classes should remain visible for recovery workflows?
+docs/planes/pm/_handoff/pm-fric-01-handoff.md:29:- Evidence search noise in PM triage
+docs/planes/pm/_handoff/pm-fric-01-handoff.md:36:- What fraction of PM triage output is actionable vs noise?
+docs/planes/pm/_handoff/pm-fric-01-handoff.md:37:- What is the observed event-rate reduction after suppression rules?
+docs/planes/pm/_handoff/pm-fric-01-handoff.md:38:- Which suppressed classes should remain visible for recovery workflows?
 services/adhd_engine/adhd_metrics_server.py:16:    service_name="adhd-engine",
 services/adhd_engine/adhd_metrics_server.py:32:    return web.json_response({"status": "healthy", "service": "adhd-engine-metrics"})
 services/adhd_engine/services/adhd-dashboard/main.py:56:            "/api/adhd-state",
@@ -307,9 +307,9 @@ services/adhd_engine/services/adhd-dashboard/main.py:79:async def get_adhd_state
 services/adhd_engine/services/adhd-dashboard/main.py:82:        "attention_state": "focused",
 services/adhd_engine/services/adhd-dashboard/main.py:143:        "service": "adhd-dashboard",
 services/adhd_engine/locustfile.py:8:    def test_adhd_engine_health(self):
-docs/planes/pm/PM_ADHD_REQUIREMENTS.md:23:- Required PM signals (minimal)
-docs/planes/pm/PM_ADHD_REQUIREMENTS.md:24:- Suppressed signals (noise by default)
-docs/planes/pm/PM_ADHD_REQUIREMENTS.md:25:- Proactive surfacing rules (gated by focus state)
+docs/planes/pm/pm-adhd-requirements.md:23:- Required PM signals (minimal)
+docs/planes/pm/pm-adhd-requirements.md:24:- Suppressed signals (noise by default)
+docs/planes/pm/pm-adhd-requirements.md:25:- Proactive surfacing rules (gated by focus state)
 services/adhd_engine/cli/adhd.py:12:    adhd status              Show current ADHD state
 services/adhd_engine/cli/adhd.py:13:    adhd break [--duration]  Suggest or start a break
 services/adhd_engine/cli/adhd.py:14:    adhd focus [--task]      Start focus session
@@ -338,9 +338,9 @@ services/adhd_engine/cli/adhd.py:312:    parser_focus = subparsers.add_parser("f
 services/adhd_engine/cli/adhd.py:313:    parser_focus.add_argument("--task", "-t", help="Task description")
 services/adhd_engine/cli/adhd.py:314:    parser_focus.add_argument("--duration", "-d", type=int, default=25, help="Target minutes")
 services/adhd_engine/cli/adhd.py:315:    parser_focus.set_defaults(func=cmd_focus)
-docs/planes/pm/_evidence/PM-INV-01_TASK_SCHEMA_ANALYSIS.md:188:**Location**: `src/dopemux/adhd/task_decomposer.py:40-78`
-docs/planes/pm/_evidence/PM-INV-01_TASK_SCHEMA_ANALYSIS.md:462:adhd_metadata: Optional[ADHDMetadata] = None  # Backwards-compatible
-docs/planes/pm/_evidence/PM-INV-01_TASK_SCHEMA_ANALYSIS.md:571:**File**: `src/dopemux/adhd/task_decomposer.py`
+docs/planes/pm/_evidence/pm-inv-01-task-schema-analysis.md:188:**Location**: `src/dopemux/adhd/task_decomposer.py:40-78`
+docs/planes/pm/_evidence/pm-inv-01-task-schema-analysis.md:462:adhd_metadata: Optional[ADHDMetadata] = None  # Backwards-compatible
+docs/planes/pm/_evidence/pm-inv-01-task-schema-analysis.md:571:**File**: `src/dopemux/adhd/task_decomposer.py`
 services/adhd_engine/conport_client.py:46:        Returns current work context, session info, and focus state
 services/adhd_engine/metrics.py:11:REQUEST_COUNT = Counter('adhd_requests_total', 'Total number of requests', ['method', 'endpoint'])
 services/adhd_engine/metrics.py:12:REQUEST_LATENCY = Histogram('adhd_request_duration_seconds', 'Request duration in seconds', ['method', 'endpoint'])

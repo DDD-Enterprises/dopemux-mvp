@@ -15,7 +15,7 @@ Tutorials are for first-time or guided learning flows.
 
 ## Core Tutorials
 
-- [Start Here](START-HERE.md)
+- [Start Here](start-here-2.md)
 - [Profile User Guide](profile-user-guide.md)
 - [Profile Migration Guide](profile-migration-guide.md)
 
