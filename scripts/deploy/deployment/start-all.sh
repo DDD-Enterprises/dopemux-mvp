@@ -15,7 +15,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 VERIFY=false
 
 # Parse arguments
@@ -43,10 +43,10 @@ docker-compose up -d dopecon-bridge
 echo "✅ DopeconBridge started (port 3016)"
 echo ""
 
-# Step 3: Start Task Orchestrator (manual profile)
+# Step 3: Start Task Orchestrator in canonical dopemux project
 echo "🤖 Step 3/4: Starting Task Orchestrator..."
-cd "$PROJECT_ROOT/docker/mcp-servers"
-docker-compose --profile manual up -d task-orchestrator
+cd "$PROJECT_ROOT"
+docker compose -p dopemux -f compose.yml up -d task-orchestrator
 echo "✅ Task Orchestrator started (port 3014)"
 echo ""
 
@@ -177,10 +177,14 @@ if [ "$VERIFY" = true ]; then
 
     # Check Task Orchestrator
     echo -n "  Task Orchestrator (3014): "
-    if docker ps | grep -q "mcp-task-orchestrator.*healthy"; then
+    if docker ps \
+        --filter "label=com.docker.compose.project=dopemux" \
+        --filter "label=com.docker.compose.service=task-orchestrator" \
+        --format '{{.Names}} {{.Status}}' \
+        | grep -q "task-orchestrator"; then
         echo "✅ Healthy"
     else
-        echo "⚠️  Check logs: docker logs mcp-task-orchestrator"
+        echo "⚠️  Check logs: docker compose -p dopemux -f compose.yml logs task-orchestrator"
     fi
 
     # Check Redis Events

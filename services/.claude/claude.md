@@ -71,8 +71,7 @@ async def health():
 
 - Use `docker/` for Dockerfiles
 - Add to appropriate compose file:
-  - `docker-compose.smoke.yml` - Core services
-  - `docker-compose.master.yml` - Full stack
+  - `compose.yml` - Canonical stack (use `scripts/smoke_up.sh` for core smoke subset)
 - Include HEALTHCHECK in Dockerfile
 
 ---

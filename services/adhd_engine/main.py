@@ -14,11 +14,12 @@ Features:
 
 import os
 import asyncio
+import importlib.util
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
-from prometheus_client import make_asgi_app
+PROMETHEUS_AVAILABLE = importlib.util.find_spec("prometheus_client") is not None
 
 try:
     from dopemux.logging import configure_logging, RequestIDMiddleware
@@ -39,7 +40,21 @@ from .api import routes
 from .config import settings
 from .middleware.rate_limit import RateLimitMiddleware
 from .core.error_handling import with_error_handling
-from fastmcp import FastMCP
+try:
+    from fastmcp import FastMCP
+except ImportError:  # pragma: no cover - optional dependency for local test envs
+    class FastMCP:  # type: ignore[override]
+        """Minimal FastMCP fallback so API can boot without MCP extras."""
+
+        def __init__(self, name: str):
+            self.name = name
+            self.http_app = FastAPI(title=f"{name} MCP Fallback")
+
+        def tool(self):
+            def decorator(func):
+                return func
+
+            return decorator
 
 # Initialize FastMCP
 mcp = FastMCP("ADHD-Engine")
@@ -116,6 +131,116 @@ workspace_watcher = None
 output_dispatcher = None
 
 
+class _FallbackADHDEngine:
+    """Lightweight engine used when test-mode startup must proceed without infra."""
+
+    def __init__(self, startup_error: str):
+        self.startup_error = startup_error
+        self.user_profiles = {}
+        self.current_energy_levels = {}
+        self.current_attention_states = {}
+        self.predictive_engine = None
+        self.is_fallback_engine = True
+
+    async def close(self) -> None:
+        return None
+
+    async def _calculate_system_cognitive_load(self) -> float:
+        return 0.35
+
+    async def get_energy_level(self, user_id: str):
+        class _EnergyState:
+            def __init__(self, level: str = "medium", score: float = 0.5):
+                self.level = level
+                self.score = score
+
+        energy = self.current_energy_levels.get(user_id, "medium")
+        energy_text = energy.value if hasattr(energy, "value") else str(energy)
+        return _EnergyState(level=energy_text, score=0.5)
+
+    async def get_attention_state(self, user_id: str):
+        class _AttentionSnapshot:
+            def __init__(self, state: str = "focused"):
+                self.state = state
+
+        state = self.current_attention_states.get(user_id, "focused")
+        state_text = state.value if hasattr(state, "value") else str(state)
+        return _AttentionSnapshot(state=state_text)
+
+    async def get_cognitive_load(self, user_id: str) -> float:
+        return await self._calculate_system_cognitive_load()
+
+    async def get_accommodation_health(self) -> dict:
+        return {
+            "overall_status": "🟡 Degraded",
+            "service": "adhd-engine",
+            "mode": "fallback",
+            "startup_error": self.startup_error,
+        }
+
+    async def assess_task_suitability(self, user_id: str, task_data: dict) -> dict:
+        complexity = float(task_data.get("complexity_score", 0.5))
+        estimated_minutes = int(task_data.get("estimated_minutes", 30))
+        suitability_score = max(0.0, min(1.0, 1.0 - (complexity * 0.5)))
+        cognitive_load = max(0.0, min(1.0, complexity * 0.8 + (estimated_minutes / 180.0)))
+
+        if cognitive_load < 0.2:
+            load_level = "minimal"
+        elif cognitive_load < 0.4:
+            load_level = "low"
+        elif cognitive_load < 0.6:
+            load_level = "moderate"
+        elif cognitive_load < 0.8:
+            load_level = "high"
+        else:
+            load_level = "extreme"
+
+        return {
+            "suitability_score": suitability_score,
+            "energy_match": max(0.0, min(1.0, 1.0 - complexity)),
+            "attention_compatibility": max(0.0, min(1.0, 1.0 - (complexity * 0.7))),
+            "cognitive_load": cognitive_load,
+            "cognitive_load_level": load_level,
+            "recommendations": [
+                {
+                    "accommodation_type": "task_chunking",
+                    "urgency": "soon",
+                    "message": "Break this task into smaller steps",
+                    "action_required": False,
+                    "suggested_actions": ["Split into 15-minute chunks"],
+                    "cognitive_benefit": "Reduces overwhelm",
+                    "implementation_effort": "low",
+                }
+            ],
+            "accommodations_needed": ["task_chunking"],
+            "optimal_timing": {"recommended_window": "now", "reason": "fallback_engine"},
+            "adhd_insights": {
+                "hyperfocus_risk": "low",
+                "distraction_risk": "medium",
+                "context_switch_impact": "medium",
+            },
+        }
+
+    async def assess_task(self, title: str, description: str = ""):
+        class _Assessment:
+            def __init__(self, payload: dict):
+                self._payload = payload
+
+            def dict(self) -> dict:
+                return self._payload
+
+        payload = await self.assess_task_suitability(
+            user_id="default",
+            task_data={
+                "title": title,
+                "description": description,
+                "complexity_score": 0.5,
+                "estimated_minutes": 30,
+            },
+        )
+        return _Assessment(payload)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -147,13 +272,17 @@ async def lifespan(app: FastAPI):
 
     try:
         # Initialize monitoring
-        monitoring = DopemuxMonitoring(
-            service_name="adhd-engine",
-            workspace_id=os.getenv("WORKSPACE_ID"),
-            instance_id=os.getenv("INSTANCE_ID"),
-            version=os.getenv("SERVICE_VERSION", "1.0.0")
-        )
-        logger.info("✅ Monitoring initialized")
+        if DopemuxMonitoring is not None:
+            monitoring = DopemuxMonitoring(
+                service_name="adhd-engine",
+                workspace_id=os.getenv("WORKSPACE_ID"),
+                instance_id=os.getenv("INSTANCE_ID"),
+                version=os.getenv("SERVICE_VERSION", "1.0.0")
+            )
+            logger.info("✅ Monitoring initialized")
+        else:
+            monitoring = None
+            logger.info("ℹ️ Monitoring disabled (shared.monitoring unavailable)")
         # Initialize error handler and circuit breakers
         error_handler = GlobalErrorHandler("adhd_engine")
 
@@ -192,7 +321,17 @@ async def lifespan(app: FastAPI):
 
         # Initialize engine
         engine = ADHDAccommodationEngine()
-        await engine.initialize()
+        try:
+            await engine.initialize()
+        except Exception as startup_error:
+            degraded_mode = os.getenv("ADHD_ENGINE_ALLOW_DEGRADED_STARTUP", "0").lower() in {"1", "true", "yes"}
+            if not degraded_mode:
+                raise
+            logger.warning(
+                "⚠️ Engine startup failed, continuing in degraded mode for local/test workflows: %s",
+                startup_error,
+            )
+            engine = _FallbackADHDEngine(str(startup_error))
 
         # Initialize ADHD Event Listener for implicit triggers (Phase 6)
         try:
@@ -381,12 +520,14 @@ app.include_router(routes.router, prefix="/api/v1", tags=["adhd"])
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint"""
-    if monitoring:
+    if monitoring and PROMETHEUS_AVAILABLE:
         from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
         from starlette.responses import Response
         metrics_output = generate_latest(monitoring.registry)
         return Response(content=metrics_output, media_type=CONTENT_TYPE_LATEST)
-    return {"error": "Monitoring not initialized"}
+    if not monitoring:
+        return {"error": "Monitoring not initialized"}
+    return {"error": "prometheus_client not installed"}
 
 
 # Root endpoint

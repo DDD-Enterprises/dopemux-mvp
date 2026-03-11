@@ -28,6 +28,20 @@ NC='\033[0m' # No Color
 BUILD=true
 WAIT_TIME=10
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+COMPOSE_FILE="compose.yml"
+ENV_FILE=".env.smoke"
+SMOKE_CORE_SERVICES=(
+    postgres
+    redis-events
+    redis-primary
+    mcp-qdrant
+    conport
+    dopecon-bridge
+    dope-memory
+)
+SMOKE_NO_DEPS_SERVICES=(
+    task-orchestrator
+)
 
 # Parse args
 while [[ $# -gt 0 ]]; do
@@ -67,12 +81,19 @@ if [[ ! -f .env.smoke ]]; then
 fi
 
 # Step 2: Build + Start
+# Ensure canonical network exists (compose.yml expects an external network)
+docker network inspect dopemux-network >/dev/null 2>&1 || docker network create dopemux-network >/dev/null
+
+COMPOSE_CMD=(docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE")
+
 if [[ "$BUILD" == "true" ]]; then
     echo -e "${YELLOW}🔨 Building and starting stack...${NC}"
-    docker compose -f docker-compose.smoke.yml up -d --build
+    "${COMPOSE_CMD[@]}" up -d --build "${SMOKE_CORE_SERVICES[@]}"
+    "${COMPOSE_CMD[@]}" up -d --build --no-deps "${SMOKE_NO_DEPS_SERVICES[@]}"
 else
     echo -e "${YELLOW}🔨 Starting stack (no build)...${NC}"
-    docker compose -f docker-compose.smoke.yml up -d
+    "${COMPOSE_CMD[@]}" up -d "${SMOKE_CORE_SERVICES[@]}"
+    "${COMPOSE_CMD[@]}" up -d --no-deps "${SMOKE_NO_DEPS_SERVICES[@]}"
 fi
 
 if [[ $? -ne 0 ]]; then
@@ -103,7 +124,7 @@ if [[ $GATE_EXIT -eq 0 ]]; then
     echo -e "${GREEN}✅ Smoke stack is UP and HEALTHY${NC}"
     echo ""
     echo "Next steps:"
-    echo "  • View logs:     docker compose -f docker-compose.smoke.yml logs -f"
+    echo "  • View logs:     docker compose --env-file .env.smoke -f compose.yml logs -f"
     echo "  • Stop stack:    scripts/smoke_down.sh"
     echo "  • Manual checks: python tools/ports_health_audit.py --mode runtime"
     exit 0
@@ -113,8 +134,8 @@ else
     echo "Evidence collected in: reports/g35/"
     echo ""
     echo "Troubleshooting:"
-    echo "  • Check logs:    docker compose -f docker-compose.smoke.yml logs"
-    echo "  • Check status:  docker compose -f docker-compose.smoke.yml ps"
+    echo "  • Check logs:    docker compose --env-file .env.smoke -f compose.yml logs"
+    echo "  • Check status:  docker compose --env-file .env.smoke -f compose.yml ps"
     echo "  • View evidence: cat reports/g35/runtime_gate.md"
     echo "  • Stop stack:    scripts/smoke_down.sh"
     exit 1
