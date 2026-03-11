@@ -38,6 +38,13 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toMatch(/<Tooltip title="Real-time focus and attention span metrics"[\s\S]*tabIndex=\{0\}/);
 });
 
+test('App.tsx exposes accessible tooltips and keyboard-focusable metric icons', () => {
+  const content = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
+  expect(content).toContain('<Tooltip title={metric.tooltip} arrow>');
+  expect(content).toMatch(/<Tooltip title=\{metric\.tooltip\} arrow>[\s\S]*tabIndex=\{0\}/);
+  expect(content).toContain('&:focus-visible');
+});
+
 test('TaskSequencer.tsx has contextual aria-labels and current step indicator', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
