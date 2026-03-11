@@ -243,7 +243,12 @@ const TeamDashboard: React.FC = () => {
       {/* Team Coordination Notes */}
       <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1, display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
         <Tooltip title="AI-generated team coordination insights" arrow>
-          <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+          <Box
+            component="span"
+            tabIndex={0}
+            aria-label="AI-generated team coordination insights trigger"
+            sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}
+          >
             <Info size={16} style={{ color: brandTokens.colors.ritualCyan }} aria-hidden="true" />
           </Box>
         </Tooltip>
