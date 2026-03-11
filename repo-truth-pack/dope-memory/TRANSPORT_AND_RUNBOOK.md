@@ -28,6 +28,10 @@
 | POST | `/tools/memory_reflections` | Fetch reflection cards | None |
 | POST | `/tools/memory_trajectory` | Get trajectory state | None |
 
+### Required Security Controls
+
+The HTTP surface is unauthenticated in the service itself. For any non-local deployment, operators must front dope-memory with a trusted control plane that terminates TLS, authenticates callers, enforces workspace and instance authorization, and blocks direct access to port 3020 from untrusted networks. Direct unauthenticated exposure is only acceptable for tightly scoped local development.
+
 ### Request/Response Format
 
 - Content-Type: `application/json`
@@ -231,7 +235,7 @@ pytest tests/ -v
 pytest tests/unit/test_supersession_semantics.py -v
 
 # Repo-level integration tests
-cd /Users/hue/code/dopemux-mvp
+cd <REPO_ROOT>
 pytest tests/integration/test_canonical_ledger_convergence.py -v
 ```
 

@@ -2,7 +2,7 @@
 
 ## 1. Repo Identity Snapshot
 
-- **Repository**: `/Users/hue/code/dopemux-mvp` (local)
+- **Repository**: `<REPO_ROOT>` (local)
 - **Target Component**: ConPort MCP Server (Knowledge Graph & Context Management)
 - **Target Path**: `docker/mcp-servers-source/conport/`
 - **Analysis Timestamp**: 2026-03-09T21:04:19Z

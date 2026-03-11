@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_replay_session",
   "title": "memory_replay_session contract",
   "description": "Replay session entries chronologically. Supports replay_current (chain heads only) and replay_full (with supersession annotations). Derived from MemoryReplaySessionRequest (dope_memory_main.py:807) and DopeMemoryMCPServer.memory_replay_session (dope_memory_main.py:445).",

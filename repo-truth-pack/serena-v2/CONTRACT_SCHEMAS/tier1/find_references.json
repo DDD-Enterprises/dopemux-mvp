@@ -19,8 +19,8 @@
         },
         "column": {
           "type": "integer",
-          "minimum": 0,
-          "description": "Column number (0-based)"
+          "minimum": 1,
+          "description": "Column number (1-based, like editor display)"
         },
         "max_results": {
           "type": "integer",

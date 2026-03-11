@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| Repo path | `/Users/hue/code/dopemux-mvp` |
+| Repo path | `<REPO_ROOT>` |
 | Service path | `services/dope-context/` |
 | Package name (setup.py) | `dope-context-mcp` |
 | FastMCP server name | `"dope-context"` (server.py:90) |

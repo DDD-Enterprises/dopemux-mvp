@@ -2,7 +2,7 @@
 
 ## 1. Repo Identity Snapshot
 
-- **Repo URL:** /Users/hue/code/dopemux-mvp (local)
+- **Repo URL:** <REPO_ROOT> (local)
 - **Remote:** github.com (exact origin not inspected in this pass)
 - **Repo name:** dopemux-mvp
 - **Target service:** dope-memory
