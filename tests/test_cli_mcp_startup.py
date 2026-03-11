@@ -60,7 +60,12 @@ def test_resolve_mcp_dir_from_package_root_editable(tmp_path):
         resolved = _resolve_mcp_dir(project_path)
 
         repo_fallback = Path(__file__).resolve().parents[1] / "docker" / "mcp-servers"
-        if (repo_fallback / "start-all-mcp-servers.sh").exists():
+        if _HAS_MCP_PROVISION and (repo_fallback / "start-all-mcp-servers.sh").exists():
+            # Provisioner materializes stack into the target project path.
+            assert resolved == project_path / "docker" / "mcp-servers"
+            assert (resolved / "start-all-mcp-servers.sh").exists()
+        elif (repo_fallback / "start-all-mcp-servers.sh").exists():
+            # Legacy non-provisioning behavior.
             assert resolved == repo_fallback
         else:
             assert resolved is None

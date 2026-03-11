@@ -4,7 +4,6 @@ Security Tests for Input Validation
 Tests ALLOWED_ORIGINS parsing and validation.
 """
 
-import importlib.util
 import os
 import subprocess
 import asyncio
@@ -96,15 +95,14 @@ class TestInputValidation:
     @pytest.mark.asyncio
     async def test_server_starts_with_malformed_origins(self):
         """Test that server starts safely even with malformed ALLOWED_ORIGINS."""
-        if importlib.util.find_spec("prometheus_client") is None:
-            pytest.skip("prometheus_client is required to start the ADHD Engine service")
-
         process = None
         try:
             # Test with malformed origins
             env = os.environ.copy()
             env["ALLOWED_ORIGINS"] = "http://localhost:3000,invalid://bad-url,not-a-url"
             env["ADHD_ENGINE_API_KEY"] = "test-key-123"
+            env["ADHD_ENGINE_ALLOW_DEGRADED_STARTUP"] = "1"
+            env["ADHD_FORCE_INMEMORY_CACHE"] = "1"
 
             # Start server
             process = subprocess.Popen(
@@ -124,8 +122,22 @@ class TestInputValidation:
                 stderr=subprocess.PIPE
             )
 
-            # Wait for server to start
-            await asyncio.sleep(3)
+            # Wait for server to start with retries (startup can be slow on CI/local)
+            server_ready = False
+            for _ in range(24):
+                if process.poll() is not None:
+                    break
+                try:
+                    async with AsyncClient(base_url="http://127.0.0.1:8097", timeout=1.0) as client:
+                        response = await client.get("/health")
+                        if response.status_code == 200:
+                            server_ready = True
+                            break
+                except Exception:
+                    pass
+                await asyncio.sleep(0.25)
+
+            assert server_ready, "ADHD Engine failed to start with malformed ALLOWED_ORIGINS"
 
             # Test that server responds (should start with fallback origins)
             async with AsyncClient(base_url="http://127.0.0.1:8097") as client:
