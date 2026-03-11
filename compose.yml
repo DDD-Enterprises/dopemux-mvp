@@ -509,8 +509,8 @@ services:
       - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
     volumes:
       - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
-      - ${HOME}/.serena:/root/.serena:rw
-      - ${HOME}/code:${HOME}/code:ro
+      - ${HOME:?HOME is required}/.serena:/root/.serena:rw
+      - ${HOME:?HOME is required}/code:${HOME:?HOME is required}/code:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4006/health || exit 1"]
       timeout: 10s
