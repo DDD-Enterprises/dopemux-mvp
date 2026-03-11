@@ -13,5 +13,3 @@ prelude: Phase 2 Security Quality Complete (reference) for dopemux documentation
 # Phase 2 Security Quality Complete
 
 This report is mirrored in the audit reports directory.
-
-See [docs/05-audit-reports/phase-2-security-quality-complete.md](phase-2-security-quality-complete.md).

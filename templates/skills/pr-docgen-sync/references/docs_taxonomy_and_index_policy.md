@@ -17,6 +17,12 @@ This skill audits and reconciles active documentation only:
 - `rfc` -> `docs/91-rfc/`
 - `runbook` -> `docs/92-runbooks/`
 
+## Root Relocation and Overrides
+
+- Docs placement enforcement is policy-driven via `scripts/check_docs_hygiene.py` and `config/docs_hygiene/docs_placement_policy.yaml`.
+- Root-level legacy docs are reconciled through `root_overrides` and relocated into canonical destinations, including `docs/**/root-relocated/` where applicable.
+- Reconciliation runs must preserve this override behavior and keep `docs/docs_index.yaml` aligned with the effective target paths.
+
 ## Canonical Indexes and Lists
 
 Always reconcile these files for active-scope runs:

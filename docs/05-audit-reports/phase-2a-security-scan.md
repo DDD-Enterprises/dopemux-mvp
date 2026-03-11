@@ -13,5 +13,3 @@ prelude: Phase 2A Security Scan (reference) for dopemux documentation and develo
 # Phase 2A Security Scan
 
 This report is mirrored in the audit reports directory.
-
-See [docs/05-audit-reports/phase-2a-security-scan.md](phase-2a-security-scan.md).
