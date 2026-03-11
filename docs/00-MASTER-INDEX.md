@@ -95,8 +95,11 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [ADR-201: ConPort Security](90-adr/adr-201-conport-kg-security-hardening-2.md)
 - [ADR: PM Plane Authority Boundaries](90-adr/adr-pm-plane-authority-boundaries.md)
 - [ADR: ConPort Decision/Progress/Context Authority](90-adr/adr-conport-as-decision-progress-and-context-authority.md)
+- [ADR: dope-memory Chronicle Memory Authority](90-adr/adr-dope-memory-as-chronicle-memory-authority.md)
 - [ADR: Dopecon-Bridge Adapter-Only Scope](90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md)
 - [ADR: Leantime JSON-RPC + Plugin Integration Strategy](90-adr/adr-leantime-json-rpc-plus-plugin-integration-strategy.md)
+- [ADR: Task Orchestrator Workflow Authority](90-adr/adr-task-orchestrator-as-workflow-authority.md)
+- [ADR: Memory Trinity Authority and Interaction Model](90-adr/adr-memory-trinity-authority-and-interaction-model.md)
 
 ---
 

@@ -289,8 +289,8 @@ services:
   # LiteLLM - Model Router
   litellm:
     build:
-      context: .
-      dockerfile: docker/mcp-servers/litellm/Dockerfile
+      context: ./docker/mcp-servers/litellm
+      dockerfile: Dockerfile
     container_name: mcp-litellm
     restart: unless-stopped
     networks:
