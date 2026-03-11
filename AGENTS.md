@@ -139,7 +139,7 @@ python scripts/docs_normalize.py --apply
 
 - **Unit Tests**: `tests/` - pytest with coverage
 - **Integration Tests**: `test-integration/`
-- **Smoke Stack**: `docker-compose.smoke.yml` - core services health check
+- **Smoke Stack**: `compose.yml` (via `scripts/smoke_up.sh`) - core services health check
 - **Service Registry**: Used for health monitoring
 
 ## Architecture Highlights

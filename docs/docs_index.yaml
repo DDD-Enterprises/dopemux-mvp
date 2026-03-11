@@ -137,10 +137,7 @@ service_registry: "services/registry.yaml"
 
 # Docker & Deployment
 docker:
-  compose_master: "docker-compose.master.yml"
-  compose_smoke: "docker-compose.smoke.yml"
-  compose_staging: "docker-compose.staging.yml"
-  compose_prod: "docker-compose.prod.yml"
+  compose_canonical: "compose.yml"
 
 # Configuration
 config:
