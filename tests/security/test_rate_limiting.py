@@ -7,7 +7,7 @@ Tests rate limiting middleware functionality.
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx import AsyncClient, RequestError
 import os
 import subprocess
 import asyncio
@@ -63,7 +63,8 @@ class TestRateLimiting:
                     if response.status_code == 200:
                         server_ready = True
                         break
-                except Exception:
+                except (RequestError, OSError):
+                    # Server can reject early probes during startup; continue retry loop.
                     pass
                 await asyncio.sleep(0.25)
 

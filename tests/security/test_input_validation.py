@@ -12,7 +12,7 @@ from pathlib import Path
 import sys
 
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, RequestError
 
 
 class TestInputValidation:
@@ -133,7 +133,8 @@ class TestInputValidation:
                         if response.status_code == 200:
                             server_ready = True
                             break
-                except Exception:
+                except (RequestError, OSError):
+                    # Server may not be ready yet; retry until timeout budget is exhausted.
                     pass
                 await asyncio.sleep(0.25)
 

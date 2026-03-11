@@ -14,16 +14,12 @@ Features:
 
 import os
 import asyncio
+import importlib.util
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
-try:
-    from prometheus_client import make_asgi_app
-    PROMETHEUS_AVAILABLE = True
-except ImportError:  # pragma: no cover - optional dependency for local test envs
-    make_asgi_app = None
-    PROMETHEUS_AVAILABLE = False
+PROMETHEUS_AVAILABLE = importlib.util.find_spec("prometheus_client") is not None
 
 try:
     from dopemux.logging import configure_logging, RequestIDMiddleware

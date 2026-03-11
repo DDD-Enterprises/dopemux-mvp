@@ -10,6 +10,7 @@ from httpx import AsyncClient
 import os
 import subprocess
 import asyncio
+import logging
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -48,8 +49,8 @@ class TestCORSSecurity:
                     if response.status_code == 200:
                         server_ready = True
                         break
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logging.debug("Health check retry while ADHD Engine boots: %s", exc)
                 await asyncio.sleep(0.25)
 
             assert server_ready, "ADHD Engine server failed to start for CORS tests"
