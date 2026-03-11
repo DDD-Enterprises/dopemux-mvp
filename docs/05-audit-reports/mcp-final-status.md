@@ -84,14 +84,14 @@ After systematic diagnosis and fixes:
 - **Status**: Up 25 min (unhealthy)
 - **Port**: 3008
 - **Issue**: Missing EXA_API_KEY environment variable
-- **Fix Needed**: Add API key to docker-compose.master.yml
+- **Fix Needed**: Add API key to compose.yml
 - **Priority**: Low (neural search, has alternatives)
 
 ### 2. Dope-Context
-- **Status**: Not in master compose
+- **Status**: Not in compose.yml
 - **Port**: 3010 (expected)
-- **Issue**: Service not included in docker-compose.master.yml
-- **Fix Needed**: Add to master compose or run separately
+- **Issue**: Service not included in compose.yml
+- **Fix Needed**: Add to compose.yml or run separately
 - **Priority**: Medium (semantic code search useful but not critical)
 
 ---
