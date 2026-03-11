@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/find_symbol",
+  "title": "Find Symbol",
+  "description": "Searches for code symbols (functions, classes, variables) across the workspace with ADHD-aware result filtering.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Symbol name or pattern to search for"
+        },
+        "symbol_type": {
+          "type": "string",
+          "enum": [
+            "function",
+            "class",
+            "variable",
+            "method",
+            "module",
+            "interface",
+            "type"
+          ],
+          "description": "Optional filter by symbol kind"
+        },
+        "max_results": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 1,
+          "description": "Maximum number of results to return"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "symbol_type_filter": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "found": {
+          "type": "integer"
+        },
+        "max_results": {
+          "type": "integer"
+        },
+        "adhd_filtered": {
+          "type": "boolean"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer"
+              },
+              "complexity": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "name",
+              "kind",
+              "file",
+              "line"
+            ]
+          }
+        }
+      },
+      "required": [
+        "query",
+        "symbol_type_filter",
+        "found",
+        "max_results",
+        "adhd_filtered",
+        "symbols"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Returns empty symbols array with found=0"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 1
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": null
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": false
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}

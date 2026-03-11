@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/configure_decision_auto_indexing.request.schema.json",
+  "title": "configure_decision_auto_indexing Request",
+  "description": "MCP tool: configure_decision_auto_indexing. Derived from server.py:1962-2005.",
+  "type": "object",
+  "properties": {
+    "workspace_path": { "type": ["string", "null"] },
+    "enabled": { "type": "boolean", "default": true },
+    "bridge_url": { "type": ["string", "null"], "description": "dopecon-bridge URL" },
+    "decision_limit": { "type": "integer", "default": 3, "minimum": 1, "maximum": 10 },
+    "auto_include_in_search_all": { "type": "boolean", "default": true }
+  },
+  "additionalProperties": false
+}

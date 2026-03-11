@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/get_untracked_work_config",
+  "title": "Get Untracked Work Config",
+  "description": "Returns the current configuration for untracked work detection including thresholds and quiet hours.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "confidence_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "grace_period_minutes": {
+              "type": "integer"
+            },
+            "auto_track_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "quiet_hours": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "enabled",
+            "confidence_threshold",
+            "grace_period_minutes",
+            "auto_track_threshold",
+            "quiet_hours"
+          ]
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "config",
+        "source"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Returns default config on read failure"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 0
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": "F1"
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": true
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}

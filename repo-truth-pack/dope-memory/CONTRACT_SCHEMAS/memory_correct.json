@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-memory/memory_correct",
+  "title": "memory_correct contract",
+  "description": "Supersede an existing work log entry with a corrected version. Original entry preserved immutably. Derived from MemoryCorrectRequest (dope_memory_main.py:818) and DopeMemoryMCPServer.memory_correct (dope_memory_main.py:523).",
+  "request": {
+    "type": "object",
+    "properties": {
+      "workspace_id": { "type": "string", "default": "default" },
+      "instance_id": { "type": "string", "default": "A" },
+      "entry_id": { "type": "string", "description": "Required. ID of the entry to supersede (must be chain head)." },
+      "correction_type": {
+        "type": "string",
+        "pattern": "^(summary|tags|category|outcome|retraction)$",
+        "description": "Required. Type of correction to apply."
+      },
+      "corrected_summary": { "type": ["string", "null"], "default": null, "description": "New summary (required for summary correction)" },
+      "corrected_tags": { "type": ["array", "null"], "items": { "type": "string" }, "default": null, "description": "New tags (required for tags correction)" },
+      "corrected_category": { "type": ["string", "null"], "default": null },
+      "corrected_entry_type": { "type": ["string", "null"], "default": null },
+      "corrected_outcome": { "type": ["string", "null"], "default": null, "description": "New outcome (required for outcome correction)" },
+      "idempotency_key": { "type": ["string", "null"], "default": null, "description": "Optional key for idempotent retries" }
+    },
+    "required": ["entry_id", "correction_type"]
+  },
+  "response": {
+    "type": "object",
+    "properties": {
+      "corrected": { "type": "boolean" },
+      "new_entry_id": { "type": "string", "description": "ID of the new correcting entry" },
+      "superseded_entry_id": { "type": "string", "description": "ID of the entry that was superseded" },
+      "correction_type": { "type": "string" }
+    },
+    "required": ["corrected", "new_entry_id", "superseded_entry_id", "correction_type"]
+  },
+  "errors": {
+    "400_not_found": { "description": "Target entry not found", "body": { "corrected": false, "detail": "Target entry {id} not found." } },
+    "400_already_superseded": { "description": "Target already superseded", "body": { "corrected": false, "detail": "Target {id} is already superseded. Target head {head_id} instead." } },
+    "400_depth_limit": { "description": "Chain depth exceeded", "body": { "corrected": false, "detail": "Supersession chain depth limit exceeded (max 10)." } },
+    "400_fork": { "description": "Fork attempt rejected", "body": { "corrected": false, "detail": "Supersession fork attempt rejected." } },
+    "422": { "description": "Pydantic validation error (invalid correction_type)" },
+    "503": { "description": "MCP server not initialized" }
+  }
+}
