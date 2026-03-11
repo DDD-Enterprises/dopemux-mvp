@@ -14,7 +14,7 @@ REPO_ROOT = SERVICE_DIR.parents[1]
 PROMPTSET_PATH = SERVICE_DIR / "promptsets" / "v4" / "promptset.yaml"
 ARTIFACTS_PATH = SERVICE_DIR / "promptsets" / "v4" / "artifacts.yaml"
 MODEL_MAP_PATH = SERVICE_DIR / "promptsets" / "v4" / "model_map.yaml"
-REPO_TRUTH_MAP_PATH = REPO_ROOT / "repo_truth_map.json"
+REPO_TRUTH_MAP_PATH = REPO_ROOT / "reports" / "repo_truth_map.json"
 
 CONTRACT_MAP_FILENAME = "PHASE_CONTRACT_MAP.json"
 RUNNER_MINIMUM_REQUIRED_KEYS = ("id", "path", "line_range")
