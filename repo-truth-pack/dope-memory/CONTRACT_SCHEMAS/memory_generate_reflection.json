@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_generate_reflection",
   "title": "memory_generate_reflection contract",
   "description": "Generate a deterministic reflection card from recent work. Phase 2 tool. Derived from MemoryGenerateReflectionRequest (dope_memory_main.py:833) and DopeMemoryMCPServer.memory_generate_reflection (dope_memory_main.py:571).",

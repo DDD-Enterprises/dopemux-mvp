@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_mark_issue",
   "title": "memory_mark_issue contract",
   "description": "Mark an entry as an issue source. Derived from MemoryMarkIssueRequest (dope_memory_main.py:784) and DopeMemoryMCPServer.memory_mark_issue (dope_memory_main.py:394). NOTE: This tool currently only validates entry existence; the description/confidence/tags are accepted but not persisted.",

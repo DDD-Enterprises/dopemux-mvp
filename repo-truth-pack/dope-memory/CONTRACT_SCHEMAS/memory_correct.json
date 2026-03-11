@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_correct",
   "title": "memory_correct contract",
   "description": "Supersede an existing work log entry with a corrected version. Original entry preserved immutably. Derived from MemoryCorrectRequest (dope_memory_main.py:818) and DopeMemoryMCPServer.memory_correct (dope_memory_main.py:523).",

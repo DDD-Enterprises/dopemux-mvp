@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_trajectory",
   "title": "memory_trajectory contract",
   "description": "Get current trajectory state with time-decay boost factor. Derived from MemoryTrajectoryRequest (dope_memory_main.py:851) and DopeMemoryMCPServer.memory_trajectory (dope_memory_main.py:688).",

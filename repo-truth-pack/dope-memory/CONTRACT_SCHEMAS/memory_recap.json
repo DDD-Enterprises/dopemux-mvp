@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_recap",
   "title": "memory_recap contract",
   "description": "Get a recap of recent work with ADHD-optimized card summaries. Derived from MemoryRecapRequest (dope_memory_main.py:774) and DopeMemoryMCPServer.memory_recap (dope_memory_main.py:318).",

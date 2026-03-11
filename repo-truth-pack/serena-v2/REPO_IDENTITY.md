@@ -7,7 +7,7 @@ fe48c0a874ac25ed179b9ddb091252a6dbe9b5c2
 Branch: `codex/main-drain-20260306`
 
 ## Repository
-- **Host repository**: `/Users/hue/code/dopemux-mvp` (local)
+- **Host repository**: `<REPO_ROOT>` (local)
 - **Target path**: `services/serena/`
 - **Remote**: Local-only analysis (no remote queried)
 
@@ -65,6 +65,6 @@ From `services/registry.yaml`:
 ## Dual Codebase Warning
 Two distinct "Serena" implementations exist:
 1. **`services/serena/`** — 54K+ lines custom dopemux code, 33 MCP tools, intelligence engine
-2. **`docker/mcp-servers-source/serena/`** — Thin wrapper around `pip install git+https://github.com/oraios/serena.git` (upstream OSS)
+2. **`docker/mcp-servers-source/serena/`** — Thin wrapper around `pip install git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb` (upstream OSS)
 
 The `compose.yml` builds from (2), NOT from (1). This is a known architectural divergence.

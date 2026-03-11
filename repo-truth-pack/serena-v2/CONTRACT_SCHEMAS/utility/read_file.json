@@ -19,9 +19,9 @@
           "description": "Starting line number (0-based)"
         },
         "end_line": {
-          "type": "integer",
+          "type": ["integer", "null"],
           "minimum": 0,
-          "description": "Ending line number (exclusive, 0-based)"
+          "description": "Last line to read (optional, null = end of file)"
         }
       },
       "required": [

@@ -281,3 +281,16 @@ Progress entries filtered by `instance_id` for worktree isolation. Managed autom
 Migration 003 adds `user_id` columns, but most HTTP handlers do NOT filter by `user_id`. Only `unified_queries.py` queries use `user_id`.
 
 **No authentication or authorization enforcement exists at the API layer.** All endpoints are unauthenticated.
+
+**Current limitation:** The core service does not implement authentication or authorization at the API layer; by default, all endpoints are unauthenticated and most handlers trust caller-supplied `workspace_id` / `user_id`.
+
+#### 10.3.1 Required Security Controls
+
+For any non-trivial or multi-tenant deployment, ConPort **MUST NOT** be exposed directly to untrusted networks (including the public internet or shared internal networks) without a protecting control plane. Operators **MUST**:
+
+- Terminate TLS and authenticate callers at a trusted boundary (for example an API gateway, reverse proxy, or MCP broker) using strong service-to-service credentials such as tokens or mTLS.
+- Enforce per-user and per-workspace authorization at that boundary before forwarding requests to ConPort.
+- Avoid trusting client-supplied `user_id` / `workspace_id` values without verification; derive effective identity and tenancy from authenticated context and only pass through allowed scopes.
+- Restrict network access so ConPort's HTTP and MCP ports are reachable only from trusted control-plane components that enforce these checks.
+
+Running ConPort without these controls is only acceptable in tightly scoped local development environments with no untrusted access.

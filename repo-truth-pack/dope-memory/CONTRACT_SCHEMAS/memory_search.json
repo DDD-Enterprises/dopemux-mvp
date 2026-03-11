@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_search",
   "title": "memory_search contract",
   "description": "Search work log entries with trajectory boost. Derived from MemorySearchRequest (dope_memory_main.py:740) and DopeMemoryMCPServer.memory_search (dope_memory_main.py:137).",
