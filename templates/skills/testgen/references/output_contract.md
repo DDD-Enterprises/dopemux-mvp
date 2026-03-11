@@ -11,9 +11,12 @@ Emit a single JSON-compatible report object with these keys:
 - `coverage_gate`: target, measured percent, status, and missing-evidence diagnostics.
 - `next_actions`: ordered execution instructions.
 
-Status values:
+Status values (`coverage_gate.status`):
 
 - `pass`: coverage measured and threshold met.
 - `fail`: coverage measured and threshold missed.
-- `error`: coverage unresolved or ambiguous (fail closed).
 - `pending`: coverage not evaluated yet.
+
+If coverage cannot be resolved or is ambiguous, the workflow/CLI MUST surface this
+via a top-level error (and non-zero exit status) instead of returning a report object
+with `coverage_gate.status="error"`.
