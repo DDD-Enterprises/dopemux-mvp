@@ -76,7 +76,7 @@ except ModuleNotFoundError:
     get_step_contract = contract_map_module.get_step_contract
 try:
     from lib.structured_output_contracts import (
-        canonicalize_artifacts,
+        canonicalize_artifacts as _canonicalize_artifacts,
         is_json_managed_step,
         is_strict_contract_step,
         resolve_stage_route,
@@ -94,7 +94,7 @@ except ModuleNotFoundError:
         structured_contracts_spec
     )
     structured_contracts_spec.loader.exec_module(structured_contracts_module)
-    canonicalize_artifacts = structured_contracts_module.canonicalize_artifacts
+    _canonicalize_artifacts = structured_contracts_module.canonicalize_artifacts
     is_json_managed_step = structured_contracts_module.is_json_managed_step
     is_strict_contract_step = structured_contracts_module.is_strict_contract_step
     resolve_stage_route = structured_contracts_module.resolve_stage_route
@@ -125,6 +125,13 @@ except Exception:  # pragma: no cover - optional rich rendering
     Text = None  # type: ignore[assignment]
 
 # --- Configuration & Constants ---
+
+
+def canonicalize_artifacts(
+    artifacts: List[Dict[str, Any]],
+    step_contract: Dict[str, Any],
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    return _canonicalize_artifacts(artifacts, step_contract)
 
 PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
 PROMPT_HASH_MODE = "strict"
