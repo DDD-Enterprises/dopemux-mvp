@@ -20,6 +20,10 @@
     "codereviewer": {
       "prompt_path": "systemprompts/clink/default_codereviewer.txt",
       "role_args": []
+    },
+    "test-specialist": {
+      "prompt_path": "systemprompts/clink/default_testspecialist.txt",
+      "role_args": []
     }
   }
 }
