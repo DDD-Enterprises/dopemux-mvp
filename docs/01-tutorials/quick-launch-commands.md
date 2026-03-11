@@ -404,7 +404,7 @@ dopemux launch --preset dope-muted
 
 - [Tmux Documentation](../02-how-to/operations/) - Traditional tmux commands
 - [DOPE Layout Design](../03-reference/systems/dashboard/tmux-dashboard-design.md) - How DOPE layout works
-- [Architecture Overview](../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md) - System architecture
+- [Architecture Overview](../04-explanation/architecture/dopemux-architecture-overview-2.md) - System architecture
 
 ---
 

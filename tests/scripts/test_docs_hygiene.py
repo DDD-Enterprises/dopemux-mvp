@@ -54,7 +54,7 @@ def test_noncanonical_spec_path_maps_to_reference_spec():
     )
     assert record.status == "needs_relocation"
     assert record.rule_id == "map-spec"
-    assert record.target_path == "docs/03-reference/spec/dope-memory/v1/00_overview.md"
+    assert record.target_path == "docs/03-reference/spec/dope-memory/v1/00-overview.md"
 
 
 def test_nested_drift_archive_and_audit_reports_map_deterministically():
@@ -93,7 +93,7 @@ def test_root_allowlist_keeps_master_index_and_relocates_other_root_docs():
     assert keeper.rule_id == "root-keeper"
     assert moved.status == "needs_relocation"
     assert moved.rule_id == "root-override"
-    assert moved.target_path == "docs/02-how-to/root-relocated/CHECKLIST.md"
+    assert moved.target_path == "docs/02-how-to/root-relocated/checklist-2.md"
 
 
 def test_root_token_rule_applies_when_no_override():

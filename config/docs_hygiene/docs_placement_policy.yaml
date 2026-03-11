@@ -71,36 +71,36 @@ relocation_rules:
     to: docs/05-audit-reports/
 
 root_overrides:
-  docs/ADHD-DASHBOARD-SESSION-SUMMARY.md: docs/05-audit-reports/root-relocated/ADHD-DASHBOARD-SESSION-SUMMARY.md
-  docs/AG-master_plan.md: docs/04-explanation/root-relocated/AG-master_plan.md
-  docs/AUDIT_INITIAL_FINDINGS.md: docs/05-audit-reports/root-relocated/AUDIT_INITIAL_FINDINGS.md
-  docs/CHECKLIST.md: docs/02-how-to/root-relocated/CHECKLIST.md
-  docs/CODEX_DESKTOP_BOOTSTRAP_PROMPT.md: docs/03-reference/instructions/CODEX_DESKTOP_BOOTSTRAP_PROMPT.md
-  docs/COMPACT-DASHBOARD-COMPLETE.md: docs/05-audit-reports/root-relocated/COMPACT-DASHBOARD-COMPLETE.md
-  docs/CONTRIBUTING_ZEN.md: docs/03-reference/instructions/CONTRIBUTING_ZEN.md
-  docs/COVERAGE_POLICY.md: docs/03-reference/governance/COVERAGE_POLICY.md
-  docs/DOCKER_SETUP.md: docs/02-how-to/DOCKER_SETUP.md
-  docs/DOPEMUX_CONTINUATION_PRIMER.md: docs/04-explanation/root-relocated/DOPEMUX_CONTINUATION_PRIMER.md
-  docs/DOPETASK_KERNEL_INTEGRATION.md: docs/04-explanation/integrations/DOPETASK_KERNEL_INTEGRATION.md
-  docs/DOPE_MEMORY_INTEGRATION.md: docs/04-explanation/integrations/DOPE_MEMORY_INTEGRATION.md
-  docs/FINAL-COMPLETE-SESSION-SUMMARY.md: docs/05-audit-reports/root-relocated/FINAL-COMPLETE-SESSION-SUMMARY.md
-  docs/GEMINI.md: docs/03-reference/instructions/GEMINI.md
-  docs/MCP_STATUS_UPDATE.md: docs/05-audit-reports/root-relocated/MCP_STATUS_UPDATE.md
-  docs/MIGRATION_TASKX_TO_DOPETASK.md: docs/04-explanation/migrations/MIGRATION_TASKX_TO_DOPETASK.md
-  docs/MONITORING-DESIGN-SPRINT-SUMMARY.md: docs/05-audit-reports/root-relocated/MONITORING-DESIGN-SPRINT-SUMMARY.md
-  docs/ORCHESTRATOR-INTEGRATION-COMPLETE.md: docs/05-audit-reports/root-relocated/ORCHESTRATOR-INTEGRATION-COMPLETE.md
-  docs/PHASE0_DETERMINISM_REPORT.md: docs/05-audit-reports/root-relocated/PHASE0_DETERMINISM_REPORT.md
-  docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md: docs/05-audit-reports/root-relocated/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md
-  docs/PHASE0_SERIALIZATION_REPORT.md: docs/05-audit-reports/root-relocated/PHASE0_SERIALIZATION_REPORT.md
-  docs/PIPELINE_RELIABILITY.md: docs/03-reference/extraction/PIPELINE_RELIABILITY.md
-  docs/PIPELINE_TRANSPORT_LAYER.md: docs/03-reference/extraction/PIPELINE_TRANSPORT_LAYER.md
-  docs/PROCESSPOOL_STABILITY_REPORT.md: docs/05-audit-reports/root-relocated/PROCESSPOOL_STABILITY_REPORT.md
-  docs/STATELESS_OPERATOR_MODE_PROMPT.md: docs/03-reference/instructions/STATELESS_OPERATOR_MODE_PROMPT.md
-  docs/THREAD_PRIMER_TASKX.md: docs/04-explanation/root-relocated/THREAD_PRIMER_TASKX.md
-  docs/TP-ROUTING-GLOBAL-0001-Commit1-SUMMARY.md: docs/05-audit-reports/root-relocated/TP-ROUTING-GLOBAL-0001-Commit1-SUMMARY.md
-  docs/WORKTREE_SWITCHING_GUIDE.md: docs/04-explanation/concepts/WORKTREE_SWITCHING_GUIDE.md
-  docs/pr_description.md: docs/03-reference/templates/pr_description.md
-  docs/rgOutput.md: docs/05-audit-reports/root-relocated/rgOutput.md
+  docs/ADHD-DASHBOARD-SESSION-SUMMARY.md: docs/05-audit-reports/root-relocated/adhd-dashboard-session-summary-2.md
+  docs/AG-master_plan.md: docs/04-explanation/root-relocated/ag-master-plan.md
+  docs/AUDIT_INITIAL_FINDINGS.md: docs/05-audit-reports/root-relocated/audit-initial-findings.md
+  docs/CHECKLIST.md: docs/02-how-to/root-relocated/checklist-2.md
+  docs/CODEX_DESKTOP_BOOTSTRAP_PROMPT.md: docs/03-reference/instructions/codex-desktop-bootstrap-prompt.md
+  docs/COMPACT-DASHBOARD-COMPLETE.md: docs/05-audit-reports/root-relocated/compact-dashboard-complete-2.md
+  docs/CONTRIBUTING_ZEN.md: docs/03-reference/instructions/contributing-zen.md
+  docs/COVERAGE_POLICY.md: docs/03-reference/governance/coverage-policy.md
+  docs/DOCKER_SETUP.md: docs/02-how-to/docker-setup.md
+  docs/DOPEMUX_CONTINUATION_PRIMER.md: docs/04-explanation/root-relocated/dopemux-continuation-primer.md
+  docs/DOPETASK_KERNEL_INTEGRATION.md: docs/04-explanation/integrations/dopetask-kernel-integration.md
+  docs/DOPE_MEMORY_INTEGRATION.md: docs/04-explanation/integrations/dope-memory-integration.md
+  docs/FINAL-COMPLETE-SESSION-SUMMARY.md: docs/05-audit-reports/root-relocated/final-complete-session-summary-2.md
+  docs/GEMINI.md: docs/03-reference/instructions/gemini-2.md
+  docs/MCP_STATUS_UPDATE.md: docs/05-audit-reports/root-relocated/mcp-status-update.md
+  docs/MIGRATION_TASKX_TO_DOPETASK.md: docs/04-explanation/migrations/migration-taskx-to-dopetask.md
+  docs/MONITORING-DESIGN-SPRINT-SUMMARY.md: docs/05-audit-reports/root-relocated/monitoring-design-sprint-summary-2.md
+  docs/ORCHESTRATOR-INTEGRATION-COMPLETE.md: docs/05-audit-reports/root-relocated/orchestrator-integration-complete-2.md
+  docs/PHASE0_DETERMINISM_REPORT.md: docs/05-audit-reports/root-relocated/phase0-determinism-report.md
+  docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md: docs/05-audit-reports/root-relocated/phase0-determinism-report-processpool.md
+  docs/PHASE0_SERIALIZATION_REPORT.md: docs/05-audit-reports/root-relocated/phase0-serialization-report.md
+  docs/PIPELINE_RELIABILITY.md: docs/03-reference/extraction/pipeline-reliability-2.md
+  docs/PIPELINE_TRANSPORT_LAYER.md: docs/03-reference/extraction/pipeline-transport-layer-2.md
+  docs/PROCESSPOOL_STABILITY_REPORT.md: docs/05-audit-reports/root-relocated/processpool-stability-report.md
+  docs/STATELESS_OPERATOR_MODE_PROMPT.md: docs/03-reference/instructions/stateless-operator-mode-prompt.md
+  docs/THREAD_PRIMER_TASKX.md: docs/04-explanation/root-relocated/thread-primer-taskx.md
+  docs/TP-ROUTING-GLOBAL-0001-Commit1-SUMMARY.md: docs/05-audit-reports/root-relocated/tp-routing-global-0001-commit1-summary-2.md
+  docs/WORKTREE_SWITCHING_GUIDE.md: docs/04-explanation/concepts/worktree-switching-guide.md
+  docs/pr_description.md: docs/03-reference/templates/pr-description.md
+  docs/rgOutput.md: docs/05-audit-reports/root-relocated/rgoutput-2.md
 
 root_type_targets:
   tutorial: docs/01-tutorials/root-relocated

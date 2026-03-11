@@ -47,7 +47,7 @@ Detailed reference for Dopemux components.
 Configuration schemas and references.
 
 ### Configuration Files
-- **[Profile YAML Schema](configuration/PROFILE-YAML-SCHEMA.md)** - Complete profile configuration reference
+- **[Profile YAML Schema](configuration/profile-yaml-schema-2.md)** - Complete profile configuration reference
 
 ### MCP Configuration
 - **[MCP Tools Overview](mcp-tools-overview.md)** - MCP tool configuration and usage
@@ -68,9 +68,9 @@ Feature specifications and capabilities.
 - **[Features Index](features/features-index.md)** - Complete feature catalog
 
 ### Feature Specifications
-- **[F001: Untracked Work Detection](F001-ENHANCED-untracked-work-system.md)** - Enhanced work tracking
+- **[F001: Untracked Work Detection](f001-enhanced-untracked-work-system-2.md)** - Enhanced work tracking
 - **[F001: Basic Untracked Work (Historical)](../archive/sessions/serena/v2/f001-usage-examples.md)** - Early implementation notes
-- **[F002: Multi-Session Support](F002-multi-session-support.md)** - Multiple session handling
+- **[F002: Multi-Session Support](f002-multi-session-support-2.md)** - Multiple session handling
 
 ### Research & Background
 - **[Python Tmux Research](python-tmux-research.md)** - Technical research on tmux integration
