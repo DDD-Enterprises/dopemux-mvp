@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/find_relationships",
+  "title": "Find Relationships",
+  "description": "Discovers relationships between symbols including calls, imports, and inheritance using simplified grep-based analysis.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Symbol name to find relationships for"
+        },
+        "relationship_type": {
+          "type": "string",
+          "enum": [
+            "calls",
+            "imports",
+            "inherits",
+            "all"
+          ],
+          "default": "all",
+          "description": "Type of relationship to search for"
+        },
+        "depth": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 1,
+          "maximum": 3,
+          "description": "How many levels deep to trace relationships"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "relationship_type": {
+          "type": "string"
+        },
+        "depth": {
+          "type": "integer"
+        },
+        "found": {
+          "type": "integer"
+        },
+        "max_results": {
+          "type": "integer",
+          "const": 10
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer"
+              },
+              "context": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "file",
+              "line",
+              "context"
+            ]
+          }
+        },
+        "mode": {
+          "type": "string",
+          "const": "simplified_grep"
+        }
+      },
+      "required": [
+        "symbol",
+        "relationship_type",
+        "depth",
+        "found",
+        "max_results",
+        "relationships",
+        "mode"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Returns empty relationships array with found=0"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 3
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": null
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": false
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}

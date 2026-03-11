@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/search_code.response.schema.json",
+  "title": "search_code Response",
+  "description": "Response shape for search_code MCP tool. Derived from server.py:1222-1270 (reranked and unreranked paths).",
+  "oneOf": [
+    {
+      "title": "Single workspace results",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/reranked_result" },
+          { "$ref": "#/$defs/unreranked_result" },
+          { "$ref": "#/$defs/error_result" }
+        ]
+      }
+    },
+    {
+      "title": "Multi-workspace results",
+      "type": "object",
+      "properties": {
+        "workspace_count": { "type": "integer" },
+        "total_results": { "type": "integer" },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "workspace": { "type": "string" },
+              "results": { "type": "array" },
+              "result_count": { "type": "integer" }
+            },
+            "required": ["workspace", "results", "result_count"]
+          }
+        }
+      },
+      "required": ["workspace_count", "total_results", "results"]
+    }
+  ],
+  "$defs": {
+    "reranked_result": {
+      "type": "object",
+      "properties": {
+        "file_path": { "type": "string" },
+        "function_name": { "type": ["string", "null"] },
+        "language": { "type": ["string", "null"] },
+        "code": { "type": "string" },
+        "context": { "type": ["string", "null"] },
+        "relevance_score": { "type": "number" },
+        "original_rank": { "type": "integer" },
+        "reranked": { "type": "boolean", "const": true },
+        "start_line": { "type": ["integer", "null"] },
+        "end_line": { "type": ["integer", "null"] }
+      },
+      "required": ["file_path", "code", "relevance_score", "reranked"]
+    },
+    "unreranked_result": {
+      "type": "object",
+      "properties": {
+        "file_path": { "type": "string" },
+        "function_name": { "type": ["string", "null"] },
+        "language": { "type": ["string", "null"] },
+        "code": { "type": "string" },
+        "context": { "type": ["string", "null"] },
+        "score": { "type": "number" },
+        "reranked": { "type": "boolean", "const": false },
+        "start_line": { "type": ["integer", "null"] },
+        "end_line": { "type": ["integer", "null"] }
+      },
+      "required": ["file_path", "code", "score", "reranked"]
+    },
+    "error_result": {
+      "type": "object",
+      "properties": {
+        "error": { "type": "string" },
+        "help": { "type": "string" },
+        "query": { "type": "string" },
+        "workspace": { "type": "string" },
+        "collection": { "type": "string" }
+      },
+      "required": ["error"]
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-memory/memory_recap",
+  "title": "memory_recap contract",
+  "description": "Get a recap of recent work with ADHD-optimized card summaries. Derived from MemoryRecapRequest (dope_memory_main.py:774) and DopeMemoryMCPServer.memory_recap (dope_memory_main.py:318).",
+  "request": {
+    "type": "object",
+    "properties": {
+      "workspace_id": { "type": "string", "default": "default" },
+      "instance_id": { "type": "string", "default": "A" },
+      "scope": {
+        "type": "string",
+        "default": "session",
+        "pattern": "^(session|today|last_2_hours)$",
+        "description": "Scope of recap: session (current session), today, or last_2_hours"
+      },
+      "session_id": { "type": ["string", "null"], "default": null },
+      "top_k": { "type": "integer", "default": 3, "minimum": 1, "maximum": 10 }
+    },
+    "required": []
+  },
+  "response": {
+    "type": "object",
+    "properties": {
+      "trajectory": {
+        "type": "string",
+        "description": "1-sentence trajectory summary, e.g. 'Working on debugging, implementation activities'"
+      },
+      "cards": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "Card type: Decision, Activity, Blocker, Error, or Next" },
+            "summary": { "type": "string" },
+            "entry_ids": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["title", "summary", "entry_ids"]
+        },
+        "maxItems": 10,
+        "description": "Up to top_k cards. Card 1: Decision or top activity. Card 2: Blocker/Error. Card 3: Next suggestion."
+      },
+      "more_count": { "type": "integer", "minimum": 0 }
+    },
+    "required": ["trajectory", "cards", "more_count"]
+  },
+  "errors": {
+    "400": { "description": "Tool execution error" },
+    "422": { "description": "Pydantic validation error (invalid scope value)" },
+    "503": { "description": "MCP server not initialized" }
+  }
+}

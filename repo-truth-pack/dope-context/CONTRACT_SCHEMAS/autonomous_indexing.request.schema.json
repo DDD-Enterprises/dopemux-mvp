@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/autonomous_indexing.request.schema.json",
+  "title": "start_autonomous_indexing / start_autonomous_docs_indexing Request",
+  "description": "Shared request shape for autonomous indexing tools. Derived from server.py:2566-2615, 2808-2857.",
+  "type": "object",
+  "properties": {
+    "workspace_path": { "type": ["string", "null"] },
+    "workspace_paths": { "type": ["array", "null"], "items": { "type": "string" } },
+    "debounce_seconds": { "type": "number", "default": 5.0, "minimum": 0 },
+    "periodic_interval": { "type": "integer", "default": 600, "minimum": 1, "description": "Fallback check interval in seconds" }
+  },
+  "additionalProperties": false
+}

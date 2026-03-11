@@ -1,0 +1,94 @@
+# INSPECTED_FILES.txt — dope-context Phase 1 Discovery
+# Every file inspected during this discovery pass.
+
+## Root docs
+services/dope-context/README.md
+
+## Source — MCP layer
+services/dope-context/src/mcp/server.py          # 3043 lines — AUTHORITATIVE MCP surface
+services/dope-context/src/mcp/simple_server.py    # Mock/stub alternate server (3 mock tools)
+services/dope-context/src/mcp/fastmcp_stub.py     # Test-env fallback FastMCP stub
+services/dope-context/src/mcp/setup.py            # setuptools packaging stub
+
+## Source — search
+services/dope-context/src/search/hybrid_search.py
+services/dope-context/src/search/dense_search.py
+services/dope-context/src/search/docs_search.py
+
+## Source — embeddings
+services/dope-context/src/embeddings/voyage_embedder.py
+services/dope-context/src/embeddings/contextualized_embedder.py
+
+## Source — preprocessing
+services/dope-context/src/preprocessing/code_chunker.py
+services/dope-context/src/preprocessing/document_processor.py
+services/dope-context/src/preprocessing/models.py
+
+## Source — context generators
+services/dope-context/src/context/openai_generator.py
+services/dope-context/src/context/claude_generator.py
+services/dope-context/src/context/grok_generator.py
+
+## Source — reranking
+services/dope-context/src/rerank/voyage_reranker.py
+
+## Source — pipeline
+services/dope-context/src/pipeline/indexing_pipeline.py
+services/dope-context/src/pipeline/docs_pipeline.py
+
+## Source — autonomous indexing
+services/dope-context/src/autonomous/autonomous_controller.py
+services/dope-context/src/autonomous/watchdog_monitor.py
+services/dope-context/src/autonomous/indexing_worker.py
+services/dope-context/src/autonomous/periodic_sync.py
+
+## Source — sync
+services/dope-context/src/sync/file_synchronizer.py
+services/dope-context/src/sync/incremental_indexer.py
+
+## Source — utils
+services/dope-context/src/utils/workspace.py
+services/dope-context/src/utils/token_budget.py
+services/dope-context/src/utils/metrics_tracker.py
+
+## Source — enrichment
+services/dope-context/src/enrichment/code_graph_enricher.py
+services/dope-context/src/enrichment/claude_code_enricher.py
+
+## Source — integration
+services/dope-context/src/integration_bridge_connector.py
+services/dope-context/src/attention_aware_search.py
+services/dope-context/bridge_adapter.py
+
+## Source — package init
+services/dope-context/src/__init__.py
+
+## Tests
+services/dope-context/tests/test_mcp_server.py
+services/dope-context/tests/test_hybrid_determinism.py
+services/dope-context/tests/test_autonomous_controller.py
+services/dope-context/tests/test_docs_pipeline_invariants.py
+services/dope-context/tests/contract/test_dope_context_contracts.py
+
+## Build / runtime
+services/dope-context/Dockerfile
+services/dope-context/Dockerfile.fixed
+services/dope-context/requirements.txt
+services/dope-context/.dockerignore
+services/dope-context/config/multi_index_config.yaml
+
+## Compose
+compose.yml (lines 316-349, dope-context service block)
+
+## Wrappers
+scripts/mcp-wrappers/dope-context-wrapper.sh
+
+## Contracts (JSON Schema)
+contracts/dope-context/docs_grouped_embed.request.schema.json
+contracts/dope-context/search.response.schema.json
+
+## Phase 2 — Additional Inspections
+# All files from Phase 1 re-inspected at full depth during Phase 2.
+# server.py read in its entirety (3043 lines, 11 view calls).
+# All source modules re-read via explore agents for dataclass field extraction.
+# All test files, build files, and compose blocks re-read via explore agents.

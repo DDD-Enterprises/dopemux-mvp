@@ -1,0 +1,66 @@
+# SEARCH_PATTERNS — dope-memory Phase 1 Discovery
+
+## File Name Patterns
+*dope*memory*
+*dope_memory*
+*dopememory*
+
+## Content Grep Patterns
+dope.memory
+dope_memory
+DopeMemory
+DOPE_MEMORY
+dope-memory
+
+## Structural Patterns (grep on .py files)
+def \|class \|@app\.\|@server\.\|register\|tool\|route\|endpoint
+def memory_
+def test_\|class Test
+
+## Specific Symbol Patterns
+DopeMemoryMCPServer
+ChronicleStore
+CanonicalLedgerError
+resolve_canonical_ledger
+PromotionEngine
+Redactor
+ReflectionGenerator
+TrajectoryManager
+EventBusConsumer
+SessionTracker
+PostgresMirrorSync
+WorkingMemoryBridgeAdapter
+CacheManager
+TriggerManager
+PredictiveContextRestoration
+
+## Transport/Config Patterns
+MCP\|mcp\|SSE\|sse\|stdio\|streamable
+DOPE_MEMORY_PORT
+PORT
+REDIS_URL
+POSTGRES_URL
+DOPEMUX_CAPTURE_LEDGER_PATH
+
+## Deprecated/Legacy Patterns
+deprecated\|legacy\|DEPRECATED\|LEGACY
+phase2_demo\|verify_phase2\|verify_refactoring
+
+## Phase 2 Additional Patterns
+# Full contract extraction patterns
+class MemorySearchRequest\|class MemoryStoreRequest\|class MemoryRecapRequest
+class MemoryMarkIssueRequest\|class MemoryLinkResolutionRequest
+class MemoryReplaySessionRequest\|class MemoryCorrectRequest
+class MemoryGenerateReflectionRequest\|class MemoryReflectionsRequest\|class MemoryTrajectoryRequest
+@app.post\|@app.get
+ToolResponse
+PROMOTABLE_EVENT_TYPES
+MAX_CHAIN_DEPTH
+DENYLIST_PATH_PREFIXES\|SENSITIVE_KEY_NAMES\|SECRET_PATTERNS
+HIGH_SIGNAL_EVENTS\|HEARTBEAT_EVENTS
+insert_work_log_entry\|insert_corrected_work_log_entry\|correct_entry\|retract_entry
+search_work_log\|replay_work_log\|count_work_log
+insert_reflection_card\|get_reflection_cards
+upsert_trajectory_state\|get_trajectory_state
+_get_chain_depth\|_resolve_chain_head\|_is_entry_superseded\|_compute_chain_annotations
+run_retention_job\|cleanup_expired_raw_events

@@ -1,0 +1,173 @@
+# Inspected Files — Serena v2 Phase 1 Discovery
+
+## Root-level Service Files (services/serena/)
+services/serena/__init__.py                     # Package init, version 2.0.0
+services/serena/mcp_server.py                   # PRIMARY ENTRY: 5378 lines, 32 MCP tools, SerenaV2MCPServer class
+services/serena/http_server.py                  # HTTP API (FastAPI), port 8003, /health, metrics endpoints
+services/serena/adhd_features.py                # CodeComplexityAnalyzer, ADHDCodeNavigator, ProgressiveDisclosure, CognitiveLoadManager
+services/serena/focus_manager.py                # FocusManager, FocusMode enum, AttentionState enum, focus sessions
+services/serena/session_manager.py              # SessionManager, session init/update/complete
+services/serena/session_lifecycle_manager.py    # SessionLifecycleManager, SessionState dataclass, ConPort persistence
+services/serena/session_id_generator.py         # Session ID generation
+services/serena/navigation_cache.py             # NavigationCache, Redis-based, 1008 lines
+services/serena/enhanced_lsp.py                 # EnhancedLSPWrapper, LSPConfig, multi-language LSP
+services/serena/code_structure_analyzer.py       # CodeStructureAnalyzer, tree-sitter based
+services/serena/tree_sitter_analyzer.py         # Tree-sitter analysis
+services/serena/untracked_work_detector.py      # UntrackedWorkDetector, Feature 1 detection core
+services/serena/untracked_work_storage.py       # UntrackedWorkStorage, Feature 1 persistence (ConPort)
+services/serena/abandonment_tracker.py          # AbandonmentTracker, Feature 6
+services/serena/revival_suggester.py            # RevivalSuggester, Feature 6 suggestions
+services/serena/pattern_learner.py              # PatternLearner, PatternCache, Feature 5
+services/serena/metrics_dashboard.py            # MetricsAggregator, MetricsDashboard, Feature 7
+services/serena/multi_session_dashboard.py      # Multi-session dashboard
+services/serena/git_detector.py                 # GitWorkDetector, git status/branch analysis
+services/serena/file_watcher.py                 # SerenaFileWatcher, FileWatcherManager, watchdog-based
+services/serena/conport_client_unified.py       # ConPortDBClient, direct PostgreSQL client
+services/serena/conport_matcher.py              # ConPort matching logic
+services/serena/bridge_adapter.py               # SerenaBridgeAdapter, ConPort bridge adapter
+services/serena/eventbus_consumer.py            # EventBusConsumer, DecisionCache, Redis streams
+services/serena/integration_bridge_connector.py # Integration bridge connector
+services/serena/multi_workspace_wrapper.py      # SerenaMultiWorkspace, multi-workspace tool dispatch
+services/serena/performance_monitor.py          # PerformanceMonitor
+services/serena/redis_optimizer.py              # Redis optimizer
+services/serena/priority_context_builder.py     # Priority context builder
+services/serena/code_graph_storage.py           # Code graph storage
+services/serena/indexing_pipeline.py            # Indexing pipeline
+services/serena/claude_context_integration.py   # Claude context / dope-context integration
+services/serena/kg_integration.py               # Knowledge graph integration
+services/serena/kg_provider.py                  # KG provider
+services/serena/auto_activator.py               # Auto-activator
+services/serena/batch_track_tool.py             # Batch track tool
+services/serena/design_first_detector.py        # Design-first detector
+services/serena/developer_learning_engine.py    # Developer learning engine
+services/serena/false_starts_aggregator.py      # False starts aggregator
+services/serena/worktree_detector.py            # Worktree detector
+services/serena/mcp_client.py                   # MCP client
+services/serena/demo_hover_integration.py       # Demo hover integration
+services/serena/layer1_validation.py            # Layer 1 validation
+
+## Intelligence Sub-Package (services/serena/intelligence/)
+services/serena/intelligence/__init__.py                            # 1154 lines, full system wiring, all module exports
+services/serena/intelligence/database.py                            # SerenaIntelligenceDatabase, asyncpg, PostgreSQL
+services/serena/intelligence/schema_manager.py                      # SerenaSchemaManager, migrations
+services/serena/intelligence/schema.sql                             # PostgreSQL schema: 6 tables, 350 lines
+services/serena/intelligence/graph_operations.py                    # SerenaGraphOperations, RelationshipType, NavigationMode, CodeElementNode
+services/serena/intelligence/conport_bridge.py                      # ConPortKnowledgeGraphBridge, ConPortCodeLink, DecisionCodeContext
+services/serena/intelligence/adaptive_learning.py                   # AdaptiveLearningEngine, PersonalLearningProfile, LearningPhase, AttentionState
+services/serena/intelligence/learning_profile_manager.py            # PersonalLearningProfileManager, AccommodationPreference
+services/serena/intelligence/pattern_recognition.py                 # AdvancedPatternRecognition, NavigationPatternType, RecognizedPattern
+services/serena/intelligence/effectiveness_tracker.py               # EffectivenessTracker, EffectivenessDimension, ABTest
+services/serena/intelligence/effectiveness_evolution_system.py       # Effectiveness evolution
+services/serena/intelligence/context_switching_optimizer.py          # ContextSwitchingOptimizer, ContextSwitchEvent
+services/serena/intelligence/intelligent_relationship_builder.py    # IntelligentRelationshipBuilder, RelationshipSuggestion
+services/serena/intelligence/enhanced_tree_sitter.py                # EnhancedTreeSitterIntegration
+services/serena/intelligence/cognitive_load_orchestrator.py         # Cognitive load orchestrator
+services/serena/intelligence/accommodation_harmonizer.py            # Accommodation harmonizer
+services/serena/intelligence/adhd_relationship_filter.py            # ADHD relationship filter
+services/serena/intelligence/fatigue_detection_engine.py            # Fatigue detection engine
+services/serena/intelligence/progressive_disclosure_director.py     # Progressive disclosure director
+services/serena/intelligence/realtime_relevance_scorer.py           # Real-time relevance scorer
+services/serena/intelligence/personal_pattern_adapter.py            # Personal pattern adapter
+services/serena/intelligence/personalized_threshold_coordinator.py  # Personalized threshold coordinator
+services/serena/intelligence/strategy_template_manager.py           # Strategy template manager
+services/serena/intelligence/cross_session_persistence_bridge.py    # Cross-session persistence (ConPort ↔ Postgres sync)
+services/serena/intelligence/pattern_reuse_recommendation_engine.py # Pattern reuse recommendation
+services/serena/intelligence/navigation_success_validator.py        # Navigation success validator
+
+## Intelligence Tests
+services/serena/intelligence/test_database.py                       # Database unit tests
+services/serena/intelligence/integration_test.py                    # Integration test suite
+services/serena/intelligence/convergence_test.py                    # Learning convergence tests
+services/serena/intelligence/complete_system_integration_test.py    # Full system integration test
+services/serena/intelligence/performance_validation_system.py       # Performance validation
+
+## Service-Level Tests
+services/serena/tests/test_multi_workspace.py                       # Multi-workspace test
+services/serena/tests/test_serena_http.py                           # HTTP endpoint tests
+services/serena/test_conport_integration.py                         # ConPort integration test
+services/serena/test_f001_enhanced.py                               # Feature 1 enhanced tests
+services/serena/test_http_server.py                                 # HTTP server tests
+services/serena/test_token_limit_fix.py                             # Token limit fix tests
+services/serena/validate_f002_components.py                         # F002 component validation
+
+## Migrations
+services/serena/migrations/002_add_session_support.sql
+services/serena/migrations/002_add_session_support_adapted.sql
+services/serena/migrations/002_add_session_support_final.sql
+services/serena/migrations/002_session_support_simple.sql
+
+## Docker / Build / Runtime
+docker/mcp-servers-source/serena/Dockerfile                         # python:3.11-slim, pip install serena from git
+docker/mcp-servers-source/serena/wrapper.py                         # mcp-proxy SSE transport wrapper
+docker/mcp-servers-source/serena/info_server.py                     # FastAPI info/health server on port 4006
+docker/mcp-servers-source/serena/start_with_info.sh                 # Parallel: info_server + wrapper
+docker/mcp-servers-source/serena/README.md                          # (not inspected content)
+services/serena/src/dopemux_serena.egg-info/PKG-INFO                # Package metadata: dopemux-serena 0.1.0
+compose.yml                                                         # serena service definition: ports 3006/4006
+compose/legacy/docker-compose.master.yml                            # serena-v2 definition
+compose/legacy/docker-compose.staging.yml                           # serena-mcp staging definition
+services/registry.yaml                                              # serena: port 3006, /health, category: mcp
+
+## Config / Profiles
+config/profiles/adhd-default.yaml                                   # Referenced serena
+config/profiles/web-dev.yaml                                        # Referenced serena
+config/profiles/python-ml.yaml                                      # Referenced serena
+
+## Docs (external references)
+.claude/modules/cognitive-plane/serena-lsp.md
+docs/archive/sessions/serena/                                       # Historical session notes (v2 subdirectory)
+docs/archive/empty-stubs/serena-v2-deployment.md
+
+## Phase 2 — Full Extraction
+
+### mcp_server.py Deep Inspection
+- Lines 727-1467: list_tools() — 33 Tool() definitions verified
+- Lines 1469-1550: call_tool() dispatch — 33 branches verified
+- Lines 1552-1615: get_workspace_status_tool handler
+- Lines 1617-1781: find_symbol_tool handler (LSP + fallback)
+- Lines 1783-1955: goto_definition_tool handler (LSP + fallback)
+- Lines 1956-2071: get_context_tool handler (multi-workspace)
+- Lines 2073-2301: find_references_tool handler (LSP + fallback)
+- Lines 2302-2469: analyze_complexity_tool handler (tree-sitter + fallback)
+- Lines 2470-2516: filter_by_focus_tool handler
+- Lines 2518-2601: suggest_next_step_tool handler (heuristic)
+- Lines 2603-2698: get_reading_order_tool handler
+- Lines 2700-2807: find_relationships_tool handler (grep-based)
+- Lines 2809-2860: get_navigation_patterns_tool handler (placeholder)
+- Lines 2862-2908: update_focus_mode_tool handler (in-memory)
+- Lines 2910-3074: detect_untracked_work_tool handler
+- Lines 3076-3260: detect_untracked_work_enhanced_tool (DEAD HANDLER)
+- Lines 3262-3336: initialize_session_tool (DEAD HANDLER)
+- Lines 3338-3395: get_multi_session_dashboard_tool (DEAD HANDLER)
+- Lines 3397-3447: get_session_info_tool (DEAD HANDLER)
+- Lines 3449-3553: suggest_branch_organization_tool handler
+- Lines 3555-3633: get_pattern_stats_tool handler
+- Lines 3635-3695: get_top_patterns_tool handler
+- Lines 3697-3796: get_abandoned_work_tool handler
+- Lines 3798-3864: mark_abandoned_tool handler
+- Lines 3866-3938: get_abandonment_stats_tool handler
+- Lines 3940-4015: get_metrics_dashboard_tool handler
+- Lines 4017-4123: get_metric_history_tool handler
+- Lines 4125-4215: save_metrics_snapshot_tool handler
+- Lines 4217-4317: track_untracked_work_tool handler
+- Lines 4319-4399: snooze_untracked_work_tool handler
+- Lines 4401-4462: ignore_untracked_work_tool handler
+- Lines 4464-4520: get_untracked_work_config_tool handler
+- Lines 4522-4630: update_untracked_work_config_tool handler
+- Lines 4816-4890: read_file_tool handler
+- Lines 4892-4967: list_dir_tool handler
+- Lines 4969-5067: find_similar_code_tool handler
+- Lines 5069-5146: predict_navigation_from_git_tool handler
+- Lines 5148-5260: find_test_file_tool handler
+- Lines 5262-5323: get_unified_complexity_tool handler
+- Lines 5326-5378: main() entry point + __main__ block
+
+### Supporting Files Deep Inspection
+- intelligence/schema.sql: Full 350-line schema (6 tables, triggers, indexes, seed data)
+- conport_client_unified.py:1-80: ConPortDBClient adapter wrapping shared ConPortClient
+- navigation_cache.py:1-80: NavigationCache with NavigationCacheConfig (Redis-based)
+- session_lifecycle_manager.py:1-80: SessionState dataclass, SessionLifecycleManager class
+- __init__.py: version 2.0.0, description
+- docker/mcp-servers-source/serena/Dockerfile: upstream pip install
+- docker/mcp-servers-source/serena/wrapper.py: mcp-proxy SSE wrapper
+- compose.yml serena service block: ports, volumes, healthcheck

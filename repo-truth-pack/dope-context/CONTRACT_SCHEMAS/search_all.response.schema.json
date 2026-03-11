@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/search_all.response.schema.json",
+  "title": "search_all Response",
+  "description": "Response shape for search_all MCP tool. Derived from server.py:2091-2118.",
+  "oneOf": [
+    {
+      "title": "Single workspace unified results",
+      "type": "object",
+      "properties": {
+        "workspace": { "type": "string" },
+        "lane_used": { "type": "string", "const": "mixed" },
+        "fusion_strategy": { "type": "string", "const": "hybrid_rrf" },
+        "rerank_used": { "type": "boolean", "const": false },
+        "embed_model_used": { "type": "string", "const": "mixed" },
+        "timings_ms": {
+          "type": "object",
+          "properties": {
+            "embed": { "type": "number" },
+            "search": { "type": "number" },
+            "fuse": { "type": "number" },
+            "rerank": { "type": "number" }
+          },
+          "required": ["embed", "search", "fuse", "rerank"]
+        },
+        "code_results": { "type": "array" },
+        "docs_results": { "type": "array" },
+        "decision_results": { "type": "array" },
+        "decision_search_enabled": { "type": "boolean" },
+        "trinity_boundaries": { "$ref": "#/$defs/trinity_boundaries" },
+        "total_results": { "type": "integer" }
+      },
+      "required": ["workspace", "lane_used", "code_results", "docs_results", "decision_results", "trinity_boundaries", "total_results"]
+    },
+    {
+      "title": "Multi-workspace results",
+      "type": "object",
+      "properties": {
+        "workspace_count": { "type": "integer" },
+        "total_results": { "type": "integer" },
+        "results": { "type": "array" }
+      },
+      "required": ["workspace_count", "total_results", "results"]
+    }
+  ],
+  "$defs": {
+    "trinity_boundaries": {
+      "type": "object",
+      "properties": {
+        "marker": { "type": "string", "const": "search-memory-authority-boundary-v1" },
+        "decision_limit_default": { "type": "integer", "const": 3 },
+        "decision_limit_max": { "type": "integer", "const": 10 },
+        "decision_limit_configured": { "type": "integer" },
+        "decision_limit_effective": { "type": "integer" },
+        "top_k_requested": { "type": "integer" },
+        "decision_authority": { "type": "string", "const": "memory_plane" },
+        "code_docs_authority": { "type": "string", "const": "search_plane" }
+      },
+      "required": ["marker", "decision_authority", "code_docs_authority"]
+    }
+  }
+}
