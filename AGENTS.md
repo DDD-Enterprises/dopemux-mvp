@@ -53,7 +53,7 @@ dopemux-mvp/
 │   │   ├── conport/        # Knowledge graph MCP
 │   │   ├── zen/            # Code analysis MCP
 │   │   └── ...
-│   └── docker-compose.*.yml
+│   └── compose.yml         # Canonical stack definition
 │
 ├── scripts/                # Operational and automation scripts
 │   ├── docs_validator.py   # Validate doc frontmatter
@@ -134,6 +134,25 @@ python scripts/docs_frontmatter_guard.py --fix
 # Normalize doc filenames
 python scripts/docs_normalize.py --apply
 ```
+
+### Skill Templates (Codex/Gemini/Copilot/Claude)
+
+```bash
+# Sync all repo skill templates into $CODEX_HOME/skills
+python scripts/skills/sync_repo_skills.py
+
+# Sync only PR docgen skill family
+python scripts/skills/sync_repo_skills.py --family pr-docgen-sync
+
+# Sync only testgen family (backward-compatible path)
+python scripts/skills/sync_testgen_skills.py
+```
+
+Skill template roots:
+- `templates/skills/pr-docgen-sync/`
+- `templates/skills/pr-docgen-sync-gemini/`
+- `templates/skills/pr-docgen-sync-copilot/`
+- `templates/skills/pr-docgen-sync-claude/`
 
 ## Testing Strategy
 

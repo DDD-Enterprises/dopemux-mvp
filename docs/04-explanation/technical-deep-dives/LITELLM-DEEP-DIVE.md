@@ -24,7 +24,7 @@ The service is a LiteLLM Proxy server running in a Python container.
 * **Service Type**: AI Proxy / Router
 * **Port**: 4000
 * **Location**: `docker/mcp-servers/litellm`
-* **Orchestration**: Defined in `docker-compose.master.yml`.
+* **Orchestration**: Defined in canonical `compose.yml`.
 
 **Core Elements**:
 1. **`litellm.config.yaml`**: defines the model list and router settings. it includes extensive fallback logic and alias mapping (e.g., `fast` -> `grok-4-fast`).
@@ -57,7 +57,7 @@ The service is a LiteLLM Proxy server running in a Python container.
 
 ### Inventory Evidence (Phase 1)
 * **Source Code**: `docker/mcp-servers/litellm`.
-* **Orchestration**: Fully integrated into the master stack.
+* **Orchestration**: Fully integrated into the canonical stack.
 
 ### Failure & Drift Findings (Phase 2)
 * **Health Issue**: `docker inspect` confirmed healthcheck timeouts.

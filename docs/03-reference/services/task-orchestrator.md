@@ -3,8 +3,8 @@ id: task-orchestrator
 title: Task Orchestrator
 type: reference
 owner: '@hu3mann'
-last_review: '2026-02-08'
-next_review: '2026-05-10'
+last_review: '2026-03-11'
+next_review: '2026-06-11'
 author: '@hu3mann'
 date: '2026-02-08'
 prelude: Task Orchestrator (reference) for dopemux documentation and developer workflows.
@@ -102,3 +102,20 @@ Bridge settings:
 - Workflow contracts are additive and preserve existing coordination APIs.
 - Idea promotion is idempotent: repeated promote returns existing epic.
 - Leantime sync failure does not fail promotion; warning is returned in payload.
+- Progress synchronization can be submitted via `POST /api/coordination/operations` using operation `update_progress` (best-effort live sync with local ledger fallback in docs tooling).
+
+## Runtime Defaults
+
+- Canonical compose service: `task-orchestrator` in `compose.yml`.
+- Default host port: `8000` (override with `TASK_ORCHESTRATOR_PORT`).
+- Smoke profile startup: `scripts/smoke_up.sh`.
+- Full stack startup: `docker compose -f compose.yml up -d task-orchestrator`.
+
+## Leantime / Task-Orchestrator Follow-up Tickets (2026-03-11)
+
+- `PM-TO-001`: Standardize task-orchestrator health + readiness probe expectations between `/health` and workflow endpoints.
+- `PM-TO-002`: Add automated verification that Leantime promotion warnings are surfaced in CLI output and docs examples.
+- `PM-TO-003`: Add integration test coverage for idea/epic lifecycle with canonical port `8000` and `TASK_ORCHESTRATOR_PORT` override.
+- `PM-TO-004`: Add ops runbook step for rogue non-canonical task-orchestrator container cleanup (`scripts/start.sh` behavior).
+- `PM-TO-005`: Roll out PR docgen sync skill family and canonical index reconciliation automation.
+- `PM-TO-006`: Validate live `update_progress` ticket sync behavior in task-orchestrator + Leantime environments.

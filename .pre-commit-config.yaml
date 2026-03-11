@@ -165,6 +165,13 @@ repos:
         files: \.md$
         pass_filenames: true
 
+      - id: docs-placement-hygiene
+        name: Enforce docs placement hygiene (full-tree)
+        entry: python scripts/check_docs_hygiene.py --check --all-files
+        language: system
+        pass_filenames: false
+        always_run: true
+
       # Legacy UPGRADES tree is docs-only.
       - id: upgrades-docs-only-guard
         name: Reject executable/config code under UPGRADES (docs-only legacy tree)

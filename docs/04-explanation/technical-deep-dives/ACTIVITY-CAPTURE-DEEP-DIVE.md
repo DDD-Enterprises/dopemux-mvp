@@ -40,7 +40,7 @@ There is a fundamental "blocking startup" bug in the service's lifecycle managem
 * **Impact**: Uvicorn never starts the HTTP server because it's waiting for the lifespan to finish. Consequently, the health check fails (`Empty reply from server`), and the container is marked as `unhealthy`.
 
 **Drift Findings**:
-* The `ADHD_ENGINE_URL` in `docker-compose.master.yml` points to `host.docker.internal`, which is inconsistent with other services that use internal container networking (e.g., `http://adhd-engine:8095`).
+* The `ADHD_ENGINE_URL` in canonical `compose.yml` should avoid host-local fallbacks and prefer internal container networking aliases where possible (e.g., `http://adhd-engine:8095`).
 
 ### Integration Patterns & Data Flow
 1. **Subscribe**: Joins the `activity-capture` consumer group on the `dopemux:events` stream.

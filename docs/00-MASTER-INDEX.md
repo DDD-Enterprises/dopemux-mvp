@@ -3,8 +3,8 @@ id: 00-MASTER-INDEX
 title: 00 Master Index
 type: explanation
 owner: '@hu3mann'
-last_review: '2025-11-10'
-next_review: '2026-02-08'
+last_review: '2026-03-11'
+next_review: '2026-06-11'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: 00 Master Index (explanation) for dopemux documentation and developer workflows.
@@ -85,6 +85,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [System Bible](04-explanation/architecture/system-bible.md) - Consolidated knowledge base
 - [Three-Layer Integration](90-adr/ADR-207-architecture-3.0-three-layer-integration.md)
 - [Multi-Instance Implementation](04-explanation/architecture/multi-instance-implementation.md)
+- [Canonical Compose Runtime](../compose.yml) - Single orchestration source for smoke + full-stack operations
 
 ### Architecture Decision Records (ADRs)
 **Location:** `90-adr/`
@@ -92,6 +93,10 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [ADR-203: Task Orchestrator](90-adr/ADR-203-task-orchestrator-un-deprecation.md)
 - [ADR-202: Serena V2 Validation](90-adr/ADR-202-serena-v2-production-validation.md)
 - [ADR-201: ConPort Security](90-adr/ADR-201-conport-kg-security-hardening.md)
+- [ADR: PM Plane Authority Boundaries](90-adr/adr-pm-plane-authority-boundaries.md)
+- [ADR: ConPort Decision/Progress/Context Authority](90-adr/adr-conport-as-decision-progress-and-context-authority.md)
+- [ADR: Dopecon-Bridge Adapter-Only Scope](90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md)
+- [ADR: Leantime JSON-RPC + Plugin Integration Strategy](90-adr/adr-leantime-json-rpc-plus-plugin-integration-strategy.md)
 
 ---
 
@@ -109,6 +114,16 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Dashboard Implementation](archive/implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md)
 - [ConPort HTTP Planning](archive/implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md)
 - [Component Summaries](archive/implementation-plans/component-1-audit-summary.md)
+
+### Documentation Automation
+- [Documentation Root Index](INDEX.md)
+- [Documentation Catalog](03-reference/documentation-catalog.md)
+- PR Docgen Sync skill templates:
+  - `templates/skills/pr-docgen-sync/`
+  - `templates/skills/pr-docgen-sync-gemini/`
+  - `templates/skills/pr-docgen-sync-copilot/`
+  - `templates/skills/pr-docgen-sync-claude/`
+- Skill install/sync script: `scripts/skills/sync_repo_skills.py`
 
 ---
 
@@ -129,11 +144,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 ### Governance
 - [Authority Map](03-reference/governance/AUTHORITY_MAP.md)
 - [Conflict Ledger](03-reference/governance/CONFLICT_LEDGER.md)
-- [CI Contract](03-reference/governance/CI_CONTRACT.md)
-- [Runtime Contract](03-reference/governance/RUNTIME_CONTRACT.md)
-- [Scoreboard](03-reference/governance/SCOREBOARD.md)
-- [Task Packet Standard](03-reference/governance/TASK_PACKET_STANDARD.md)
-- [Task Packet Template](03-reference/governance/TASK_PACKET_TEMPLATE.md)
+- Additional governance contracts are tracked in the active backlog and linked from the Authority Map.
 
 ### Technical Deep Dives
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)
@@ -207,5 +218,5 @@ When adding new documentation:
 
 ---
 
-**Last Updated:** 2025-10-29
+**Last Updated:** 2026-03-11
 **Maintainer:** Documentation reorganization complete

@@ -289,7 +289,7 @@ dopemux decisions patterns tags            # See auto-detected patterns
 **Advanced Usage**:
 - See `MULTI_PROJECT.md` for multi-project workflows
 - See `PROFILES.md` for profile customization
-- See [CONTRIBUTING_ZEN.md](../CONTRIBUTING_ZEN.md) for Zen MCP development
+- See [CONTRIBUTING_ZEN.md](../03-reference/instructions/CONTRIBUTING_ZEN.md) for Zen MCP development
 
 ---
 

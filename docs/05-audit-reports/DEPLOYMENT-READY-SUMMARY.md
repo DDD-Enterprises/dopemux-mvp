@@ -12,6 +12,6 @@ prelude: Deployment Ready Summary (reference) for dopemux documentation and deve
 ---
 # Deployment Ready Summary
 
-This report is archived under `claudedocs/`.
+This report is mirrored in the audit reports directory.
 
-See [claudedocs/DEPLOYMENT-READY-SUMMARY.md](../../claudedocs/DEPLOYMENT-READY-SUMMARY.md).
+See [docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY.md](DEPLOYMENT-READY-SUMMARY.md).

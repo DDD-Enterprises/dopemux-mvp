@@ -361,7 +361,7 @@ localhost:3003  - PAL apilookup MCP
 localhost:3003  - Zen MCP
 localhost:3006  - Serena MCP
 localhost:3012  - Desktop-Commander MCP
-localhost:3014  - Task Orchestrator
+localhost:8000  - Task Orchestrator
 localhost:3016  - DopeconBridge
 localhost:5455  - PostgreSQL AGE
 localhost:6333  - Qdrant
