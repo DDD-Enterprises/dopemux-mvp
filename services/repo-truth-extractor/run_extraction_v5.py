@@ -14727,16 +14727,34 @@ def main() -> None:
             _active_profile.get("profile_id", args.profile),
             _active_profile.get("version", "?"),
         )
-        # Apply budget overrides from profile
+        # Apply budget overrides conservatively when the caller kept default limits.
         _budgets = _active_profile.get("phase_policy", {}).get("budgets_by_phase", {})
-        if _budgets:
-            _any_budget = next(iter(_budgets.values()), {})
-            if "max_files" in _any_budget and args.max_files_docs == 35:
-                pass  # Keep user-specified value; profile budgets applied per-phase in runner
-            if "max_chars" in _any_budget and args.max_chars == 650000:
-                pass
-            if "file_truncate_chars" in _any_budget and args.file_truncate_chars == 70000:
-                pass
+        _enabled_for_budget = _active_profile.get("phase_policy", {}).get("enabled_phases") or []
+        _candidate_phases = [phase for phase in resolve_phase_list(args.phase) if phase in _enabled_for_budget]
+        if not _candidate_phases:
+            _candidate_phases = [str(phase).strip().upper() for phase in _enabled_for_budget]
+        _selected_budgets = [
+            budget
+            for phase, budget in _budgets.items()
+            if str(phase).strip().upper() in _candidate_phases and isinstance(budget, dict)
+        ]
+        if _selected_budgets:
+            _max_files = [int(budget["max_files"]) for budget in _selected_budgets if "max_files" in budget]
+            if _max_files:
+                if args.max_files_docs == 35:
+                    args.max_files_docs = min(_max_files)
+                if args.max_files_code == 20:
+                    args.max_files_code = min(_max_files)
+            _max_chars = [int(budget["max_chars"]) for budget in _selected_budgets if "max_chars" in budget]
+            if _max_chars and args.max_chars == 650000:
+                args.max_chars = min(_max_chars)
+            _truncate_chars = [
+                int(budget["file_truncate_chars"])
+                for budget in _selected_budgets
+                if "file_truncate_chars" in budget
+            ]
+            if _truncate_chars and args.file_truncate_chars == 70000:
+                args.file_truncate_chars = min(_truncate_chars)
 
     phase_sequence = resolve_phase_list(args.phase)
     # If profile specifies enabled_phases, filter the phase sequence
