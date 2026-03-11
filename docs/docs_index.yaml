@@ -22,11 +22,11 @@ systems:
     implementation: docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md
     enhancements: docs/03-reference/systems/dashboard/dashboard-enhancements.md
   dopecon-bridge:
-    readme: docs/systems/dopecon-bridge/README.md
+    readme: docs/systems/dopecon-bridge/readme-2.md
   multi-workspace:
-    readme: docs/systems/multi-workspace/README.md
+    readme: docs/systems/multi-workspace/readme-2.md
   production:
-    readme: docs/systems/production/README.md
+    readme: docs/systems/production/readme-2.md
 services:
   task-orchestrator:
     readme: docs/03-reference/services/task-orchestrator.md
@@ -39,14 +39,14 @@ services:
     readme: services/adhd_engine/README.md
     docs_dir: services/adhd_engine/docs/
   orchestrator:
-    readme: docs/04-explanation/DOPEMUX-ORCHESTRATOR-FINAL-SPEC.md
+    readme: docs/04-explanation/dopemux-orchestrator-final-spec-2.md
     docs_dir: src/dopemux/orchestrator/
     claudedocs_dir: docs/04-explanation/design-decisions/
   conport-kg-ui:
     readme: services/conport_kg_ui/README.md
     claudedocs_dir: services/conport_kg_ui/src/
 architecture:
-  overview: docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md
+  overview: docs/04-explanation/architecture/dopemux-architecture-overview-2.md
   system_bible: docs/04-explanation/architecture/system-bible.md
   multi_instance: docs/04-explanation/architecture/multi-instance-implementation.md
   pipeline_readme: services/repo-truth-extractor/README.md
@@ -58,7 +58,7 @@ how_to:
   leantime_setup: docs/02-how-to/integrations/leantime-integration-guide.md
   mcp_service_discovery: docs/02-how-to/mcp-service-discovery-guide.md
   role_switching: docs/02-how-to/role-switching-quickstart.md
-  profile_usage: docs/02-how-to/PROFILE-USAGE.md
+  profile_usage: docs/02-how-to/profile-usage-2.md
   multi_instance: docs/02-how-to/multi-instance-workflow.md
   orchestrator_dashboard: docs/02-how-to/orchestrator-dashboard.md
   workflow_idea_epic_lifecycle: docs/02-how-to/operations/workflow-idea-epic-lifecycle.md
@@ -69,12 +69,12 @@ how_to:
   repo_truth_extractor_batch_quickstart: docs/02-how-to/extraction/batch-quickstart.md
 tutorials:
   directory: docs/01-tutorials/
-  start_here: docs/01-tutorials/START-HERE.md
+  start_here: docs/01-tutorials/start-here-2.md
   profile_user_guide: docs/01-tutorials/profile-user-guide.md
   profile_migration_guide: docs/01-tutorials/profile-migration-guide.md
 reference:
   directory: docs/03-reference/
-  profile_schema: docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md
+  profile_schema: docs/03-reference/configuration/profile-yaml-schema-2.md
   profile_developer_guide: docs/03-reference/profile-developer-guide.md
   features_index: docs/03-reference/features/features-index.md
   task_orchestrator_service: docs/03-reference/services/task-orchestrator.md
@@ -85,15 +85,15 @@ reference:
   repo_truth_extractor_pipeline_reliability: docs/03-reference/extraction/pipeline-reliability.md
   repo_truth_extractor_doctor_reprocess: docs/03-reference/extraction/doctor-reprocess.md
   repo_truth_extractor_prompt_contract: docs/03-reference/extraction/prompt-contract-v4.md
-  dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md
-  dope_context_architecture_and_boundaries: docs/03-reference/dope-context/DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md
+  dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md
+  dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
 explanation:
   directory: docs/04-explanation/
   serena_v2: docs/04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md
   conport: docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md
-  dope_memory: docs/04-explanation/technical-deep-dives/DOPE-MEMORY-DEEP-DIVE.md
-  adhd_engine: docs/04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART1.md
-  dope_context: docs/04-explanation/technical-deep-dives/DOPEMUX-CONTEXT-DEEP-DIVE.md
+  dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md
+  adhd_engine: docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md
+  dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
 archive:
   completed_projects: docs/archive/completed-projects/
   session_notes: docs/archive/session-notes/
