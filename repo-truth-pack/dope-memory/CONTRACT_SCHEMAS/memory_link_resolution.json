@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_link_resolution",
   "title": "memory_link_resolution contract",
   "description": "Link an issue entry to its resolution entry. Derived from MemoryLinkResolutionRequest (dope_memory_main.py:796) and DopeMemoryMCPServer.memory_link_resolution (dope_memory_main.py:415).",

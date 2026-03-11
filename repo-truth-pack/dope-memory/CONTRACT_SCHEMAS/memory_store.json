@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_store",
   "title": "memory_store contract",
   "description": "Store a manual work log entry. Derived from MemoryStoreRequest (dope_memory_main.py:757) and DopeMemoryMCPServer.memory_store (dope_memory_main.py:258).",

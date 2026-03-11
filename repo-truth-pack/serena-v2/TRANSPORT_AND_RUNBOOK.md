@@ -88,7 +88,7 @@ if __name__ == "__main__":
 ```dockerfile
 # docker/mcp-servers-source/serena/Dockerfile
 FROM python:3.11-slim
-RUN pip install "git+https://github.com/oraios/serena.git" mcp-proxy fastapi uvicorn
+RUN pip install "git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb" mcp-proxy fastapi uvicorn
 COPY wrapper.py info_server.py start_with_info.sh /app/
 CMD ["bash", "/app/start_with_info.sh"]
 ```
@@ -142,7 +142,7 @@ mcp-proxy --transport sse --port 3006 --host 0.0.0.0 --allow-origin '*' -- seren
 
 ### Local Development (stdio)
 ```bash
-cd /Users/hue/code/dopemux-mvp
+cd <REPO_ROOT>
 python services/serena/mcp_server.py
 ```
 
@@ -154,7 +154,7 @@ docker compose up serena
 
 ### Dashboard (HTTP, separate process)
 ```bash
-cd /Users/hue/code/dopemux-mvp/services/serena
+cd <REPO_ROOT>/services/serena
 python http_server.py
 # Health check: curl http://localhost:8003/health
 ```

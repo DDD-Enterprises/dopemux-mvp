@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dope-memory/memory_reflections",
   "title": "memory_reflections contract",
   "description": "Fetch recent reflection cards with staleness detection. Derived from MemoryReflectionsRequest (dope_memory_main.py:842) and DopeMemoryMCPServer.memory_reflections (dope_memory_main.py:663).",

@@ -2,7 +2,7 @@
 
 ## 1. Repo Identity Snapshot
 
-- **Repository**: `/Users/hue/code/dopemux-mvp` (local)
+- **Repository**: `<REPO_ROOT>` (local)
 - **Remote**: (local-only analysis)
 - **Target**: `services/serena/` (the "Serena v2" MCP server)
 - **Package name (egg-info)**: `dopemux-serena` version `0.1.0`
@@ -69,7 +69,7 @@ All modules in `services/serena/intelligence/` are imported via `intelligence/__
 There is no `v1/` directory or files explicitly marked v1. The module header says "Serena v2 MCP Server — Phase 2 + Enhanced Features".
 
 ### 5.2 Docker wrapper uses external serena package
-The Docker build (`docker/mcp-servers-source/serena/Dockerfile`) installs `git+https://github.com/oraios/serena.git` — this is the **upstream open-source Serena** (different from the dopemux-internal `services/serena/`). The wrapper runs `serena start-mcp-server` from the pip-installed package, NOT from `services/serena/mcp_server.py`.
+The Docker build (`docker/mcp-servers-source/serena/Dockerfile`) installs `git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb` — this is the **upstream open-source Serena** (different from the dopemux-internal `services/serena/`). The wrapper runs `serena start-mcp-server` from the pip-installed package, NOT from `services/serena/mcp_server.py`.
 
 **DISCREPANCY**: The compose.yml Docker service builds from `docker/mcp-servers-source/serena/` which uses the **upstream oraios/serena**, while the actual MCP server code at `services/serena/mcp_server.py` is a completely independent, much larger implementation. These are two different codebases with the same name.
 
@@ -337,7 +337,7 @@ Organized by concern:
 ### 13.4 Dual Serena Codebases (CRITICAL finding)
 There are TWO separate "Serena" implementations:
 1. **`services/serena/`** — 54,638+ lines of custom dopemux code, 32 MCP tools, intelligence engine. Runs via stdio.
-2. **`docker/mcp-servers-source/serena/`** — Thin wrapper around `pip install git+https://github.com/oraios/serena.git` (upstream OSS). Runs via mcp-proxy SSE.
+2. **`docker/mcp-servers-source/serena/`** — Thin wrapper around `pip install git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb` (upstream OSS). Runs via mcp-proxy SSE.
 
 The compose.yml service builds from (2), NOT from (1). This is a significant architectural divergence.
 

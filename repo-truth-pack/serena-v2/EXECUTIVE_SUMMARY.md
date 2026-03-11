@@ -3,7 +3,7 @@
 **Analyzed ref**: `fe48c0a874ac25ed179b9ddb091252a6dbe9b5c2`
 **Branch**: `codex/main-drain-20260306`
 **Date**: Phase 2 extraction
-**Target**: `services/serena/` within `/Users/hue/code/dopemux-mvp`
+**Target**: `services/serena/` within `<REPO_ROOT>`
 
 ## What Is Serena v2?
 
@@ -30,7 +30,7 @@ Serena v2 is an ADHD-optimized code intelligence system implemented as an MCP se
 
 ### Critical Architectural Issue: Dual Codebase
 **`services/serena/`** (this analysis): 54K lines, 33 tools, intelligence engine, ConPort integration
-**`docker/mcp-servers-source/serena/`**: 135-line wrapper around upstream `pip install git+https://github.com/oraios/serena.git`
+**`docker/mcp-servers-source/serena/`**: 135-line wrapper around upstream `pip install git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb`
 
 The `compose.yml` builds from the Docker wrapper (upstream code), NOT from `services/serena/`. There is **no Docker deployment path** for the 33-tool dopemux Serena implementation. This is the most significant architectural finding.
 
