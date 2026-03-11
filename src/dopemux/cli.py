@@ -2889,11 +2889,13 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_id: str = "A",
 
     try:
         with Live(status_text, console=console, refresh_per_second=4) as live:
-            # We use docker-compose with the generated override
-            compose_file = mcp_dir / "compose.yml"
+            # 3. Resolve the canonical compose file (project root compose.yml)
+            compose_file = project_path / "compose.yml"
             if not compose_file.exists():
-                # Try legacy name
-                compose_file = mcp_dir / "docker-compose.yml"
+                # Fallback to legacy path if root compose.yml is missing
+                compose_file = mcp_dir / "compose.yml"
+                if not compose_file.exists():
+                    compose_file = mcp_dir / "docker-compose.yml"
 
             cmd = [
                 "docker", "compose",
@@ -2909,7 +2911,7 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_id: str = "A",
                 stderr=subprocess.STDOUT,
                 text=True,
                 env=env_for_subprocess,
-                cwd=str(mcp_dir)
+                cwd=str(project_path)
             )
 
             for line in process.stdout:
