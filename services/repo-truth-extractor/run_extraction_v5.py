@@ -14348,6 +14348,7 @@ def main() -> None:
 
     if not (
         args.phase
+        or args.profile
         or args.verify_phase_output
         or args.print_config
         or args.doctor_auth
@@ -14366,7 +14367,7 @@ def main() -> None:
         or args.gemini_list_models
     ):
         parser.error(
-            "--phase is required unless using --verify-phase-output, --print-config, "
+            "--phase is required unless using --profile, --verify-phase-output, --print-config, "
             "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
             "--status, --status-json, --print-promptpack, --print-run-order, "
             "--print-phase-routing, --tail-run-log, --show-provider-usage, "
