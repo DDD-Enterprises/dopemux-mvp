@@ -72,6 +72,6 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('href="#main-dashboard"');
   expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
   expect(appContent).toContain('<Tooltip title="AI-generated recommendation based on current load" arrow>');
-  expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\\s\\S]*tabIndex=\\{0\\}/);
-  expect(appContent).toMatch(/<Tooltip title="AI-generated recommendation based on current load" arrow>[\\s\\S]*tabIndex=\\{0\\}/);
+  expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
+  expect(appContent).toMatch(/<Tooltip title="AI-generated recommendation based on current load" arrow>[\s\S]*tabIndex=\{0\}/);
 });
