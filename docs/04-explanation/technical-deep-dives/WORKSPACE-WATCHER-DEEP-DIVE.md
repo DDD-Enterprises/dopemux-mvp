@@ -23,7 +23,7 @@ The service is a standalone Python application intended to run as a background a
 * **Service Type**: Background Agent (Python)
 * **Location**: `services/workspace-watcher`
 * **Orchestration**:
-* **Master**: *Missing* from `docker-compose.master.yml`.
+* **Canonical**: *Missing* from `compose.yml`.
 * **Local**: Defined in `services/adhd_engine/docker/mcp-servers/docker-compose.yml`.
 * **Dependencies**: Redis (for event emission), OS-level APIs (`osascript`, `wmctrl`).
 
@@ -37,7 +37,7 @@ The service is a standalone Python application intended to run as a background a
 **Status**: **Not Running / Fragmented Orchestration**.
 
 **Findings**:
-1. **Orchestration Drift**: The README claims it runs via `docker-compose.master.yml`, but it is actually only defined in a nested, likely obsolete, `services/adhd_engine/docker/mcp-servers/docker-compose.yml`.
+1. **Orchestration Drift**: The README claims it runs via canonical `compose.yml`, but it is actually only defined in a nested, likely obsolete, `services/adhd_engine/docker/mcp-servers/docker-compose.yml`.
 1. **Containerization Challenge**: The service relies on `osascript` to query the macOS Window Server. This works natively on the host but **will fail inside a standard Docker container** unless specifically configured with access to the host's windowing system (which is non-trivial and often brittle).
 1. **Documentation Gap**: The `README.md` instructions are misleading regarding the Docker startup method.
 
@@ -61,7 +61,7 @@ The service is a standalone Python application intended to run as a background a
 * **Configuration**: `config.json` (mappings), `services/adhd_engine/docker/mcp-servers/docker-compose.yml` (legacy docker config).
 
 ### Failure & Drift Findings (Phase 2)
-* **Drift**: Service is referenced in "Environment" reports but missing from the master orchestration file.
+* **Drift**: Service is referenced in environment reports but missing from canonical orchestration.
 * **Code**: `AppDetector` explicitly checks for `darwin` (macOS) and uses `osascript`, confirming the host dependency.
 
 ## SECTION 3: LIVING DOCUMENTATION METADATA

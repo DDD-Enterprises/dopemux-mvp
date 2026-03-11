@@ -36,7 +36,7 @@ The service is a Python application primarily configured as a background monitor
 **Status**: **Un-orchestrated in Master Stack**.
 
 **Findings**:
-1. **Documentation Drift**: README claims it's in `docker-compose.master.yml`, which matches previous audits but is incorrect in the current state.
+1. **Documentation Drift**: README claims it's in canonical `compose.yml`, but it is currently only defined in legacy ADHD-engine compose assets.
 1. **Hardcoded Dependencies**:
 * Polls `localhost:8096`. This will fail in Docker unless `network_mode: host` or correct internal aliases are used.
 * Subscribes to `localhost:6379` (Redis).
@@ -53,7 +53,7 @@ The service is a Python application primarily configured as a background monitor
 * **Testing**: Unit tests exist in `services/adhd-notifier/tests`.
 * **Opportunity**:
 * **Unified Push**: Centralize mobile push logic into a shared utility.
-* **Standardize Orchestration**: Bring into `docker-compose.master.yml` with correct network aliases.
+* **Standardize Orchestration**: Bring into canonical `compose.yml` with correct network aliases.
 
 ## SECTION 2: EVIDENCE TRAIL
 
@@ -62,7 +62,7 @@ The service is a Python application primarily configured as a background monitor
 * **Structure**: Robust multi-channel notification logic detected.
 
 ### Failure & Drift Findings (Phase 2)
-* **Orchestration**: Confirmed as "orphaned" from the main master stack.
+* **Orchestration**: Confirmed as "orphaned" from the canonical stack.
 * **Dependencies**: Validated logic for port 8096 and 6379 polling.
 
 ## SECTION 3: LIVING DOCUMENTATION METADATA

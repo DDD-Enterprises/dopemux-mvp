@@ -3659,7 +3659,7 @@ def repscan_passthrough(
     _run_repscan_runner(args=forwarded)
 
 
-_PIPELINE_VERSION_CHOICES = ["v4", "v3"]
+_PIPELINE_VERSION_CHOICES = ["v5", "v4", "v3"]
 
 
 def _pipeline_version_options(command_fn: Callable) -> Callable:
@@ -3674,7 +3674,7 @@ def _pipeline_version_options(command_fn: Callable) -> Callable:
         "--pipeline-version",
         "pipeline_version",
         type=click.Choice(_PIPELINE_VERSION_CHOICES),
-        default="v4",
+        default="v5",
         show_default=True,
     )(command_fn)
     return command_fn

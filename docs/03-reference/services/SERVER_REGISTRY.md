@@ -152,11 +152,11 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 
 ### Task Orchestrator - Dependency Analysis & Task Orchestration
 - **Container**: `mcp-task-orchestrator`
-- **Port**: `3014`
+- **Port**: `8000`
 - **Role**: `workflow`
 - **Repository**: `https://github.com/jpicklyk/task-orchestrator`
 - **Description**: Advanced dependency analysis and task orchestration with 37 specialized tools
-- **Health Check**: `http://localhost:3014/health`
+- **Health Check**: `http://localhost:8000/health`
 - **Technology**: Kotlin, specialized orchestration algorithms
 
 **Authority Scope:**

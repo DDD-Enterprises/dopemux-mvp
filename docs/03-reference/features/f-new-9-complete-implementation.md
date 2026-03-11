@@ -335,7 +335,7 @@ python services/task-router/router_api.py
 docker run -p 18003:8003 dopemux-task-router
 
 # Staging
-docker-compose -f docker-compose.staging.yml up -d
+docker compose -f compose.yml up -d
 ```
 
 ### Get Task Suggestions

@@ -66,6 +66,28 @@ def test_upgrades_run_accepts_engine_version_alias() -> None:
     assert kwargs["pipeline_version"] == "v3"
 
 
+def test_upgrades_run_accepts_v5_pipeline_version() -> None:
+    runner = CliRunner()
+    with patch("dopemux.cli._run_extractor_runner") as mocked:
+        result = runner.invoke(
+            cli,
+            [
+                "upgrades",
+                "run",
+                "--pipeline-version",
+                "v5",
+                "--phase",
+                "A",
+                "--dry-run",
+            ],
+        )
+
+    assert result.exit_code == 0, result.output
+    mocked.assert_called_once()
+    kwargs = mocked.call_args.kwargs
+    assert kwargs["pipeline_version"] == "v5"
+
+
 def test_extractor_alias_warns_and_executes() -> None:
     runner = CliRunner()
     with patch("dopemux.cli._run_extractor_runner") as mocked:

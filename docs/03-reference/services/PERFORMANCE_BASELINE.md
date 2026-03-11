@@ -99,7 +99,7 @@ Results (average of 3 runs):
 | gptr-mcp | 3009 | ~150ms | 🟡 Acceptable |
 | dope-context | 3010 | ~80ms | ✅ Fast |
 | desktop-commander | 3012 | ~60ms | ✅ Fast |
-| task-orchestrator | 3014 | ~120ms | ✅ Good |
+| task-orchestrator | 8000 | ~120ms | ✅ Good |
 | leantime-bridge | 3015 | ~90ms | ✅ Fast |
 | activity-capture | 8096 | ~70ms | ✅ Fast |
 

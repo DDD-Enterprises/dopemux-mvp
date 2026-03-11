@@ -80,6 +80,18 @@ scripts/smoke_up.sh
 python tools/ports_health_audit.py --mode runtime
 ```
 
+## Canonical Runtime Port Controls
+
+`compose.yml` is env-driven for host port bindings. The most important overrides:
+
+- `POSTGRES_PORT` (default `5432`)
+- `QDRANT_PORT` (default `6333`)
+- `QDRANT_GRPC_PORT` (default `6334`)
+- `TASK_ORCHESTRATOR_PORT` (default `8000`)
+- `DOPE_MEMORY_PORT` (default `3020`)
+
+Smoke runs should use `.env.smoke` + `scripts/smoke_up.sh`; full-stack runs should use `.env` + `docker compose -f compose.yml ...`.
+
 ## Related Documentation
 
 - [Canonical Compose](../../compose.yml)

@@ -12,6 +12,6 @@ prelude: Phase 1C Dependency Map (reference) for dopemux documentation and devel
 ---
 # Phase 1C Dependency Map
 
-This report is archived under `claudedocs/`.
+This report is mirrored in the audit reports directory.
 
-See [claudedocs/phase-1c-dependency-map.md](../../claudedocs/phase-1c-dependency-map.md).
+See [docs/05-audit-reports/phase-1c-dependency-map.md](phase-1c-dependency-map.md).

@@ -50,3 +50,20 @@ This workspace integrates custom MCP servers inherited from the `dopemux-mvp` pr
 - **Redaction (INV-MEM-005):** Never persist API keys, secrets, or PII into ConPort, Dope Memory, or task logs.
 
 *Note: The servers rely on the `dopemux-mvp` Docker/Tmux stack running locally. Ensure they are active before invoking their tools.*
+
+## Documentation Sync Skill Family
+
+For PR/commit documentation reconciliation, use:
+
+- `templates/skills/pr-docgen-sync/`
+- `templates/skills/pr-docgen-sync-gemini/`
+- `templates/skills/pr-docgen-sync-copilot/`
+- `templates/skills/pr-docgen-sync-claude/`
+
+Install/sync with:
+
+```bash
+python scripts/skills/sync_repo_skills.py --family pr-docgen-sync
+```
+
+Default documentation impact baseline: `main...HEAD`.

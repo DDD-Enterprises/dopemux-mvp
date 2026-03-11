@@ -12,6 +12,6 @@ prelude: Phase 1B Service Catalog (reference) for dopemux documentation and deve
 ---
 # Phase 1B Service Catalog
 
-This report is archived under `claudedocs/`.
+This report is mirrored in the audit reports directory.
 
-See [claudedocs/phase-1b-service-catalog.md](../../claudedocs/phase-1b-service-catalog.md).
+See [docs/05-audit-reports/phase-1b-service-catalog.md](phase-1b-service-catalog.md).

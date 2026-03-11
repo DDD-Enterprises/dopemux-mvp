@@ -271,7 +271,7 @@ Tests verify:
 1. **Configure logging** from LOG_LEVEL env var
 1. **Expose health endpoint** at HEALTH_CHECK_PATH
 1. **Update Dockerfile** to accept env vars as ARG/ENV
-1. **Update docker-compose** to pass env vars
+1. **Update `compose.yml`** to pass env vars
 
 ### Example Migration (task-orchestrator)
 
