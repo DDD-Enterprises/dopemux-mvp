@@ -28,6 +28,8 @@ Complete specification for the Dope-Memory temporal chronicle and working-contex
 | [08_phased_roadmap.md](08-phased-roadmap.md) | Phase 0-4 delivery plan |
 | [09_test_plan.md](09-test-plan.md) | Unit, integration, and security tests |
 | [10_risk_register.md](10-risk-register.md) | Risk identification and mitigations |
+| [11_authoritative_working_memory_assistant_spec.md](11-authoritative-working-memory-assistant-spec.md) | Reconciled runtime-vs-design authoritative spec for working-memory-assistant/dope-memory |
+| [12_memory_trinity_authority_and_interaction_spec.md](12-memory-trinity-authority-and-interaction-spec.md) | Canonical Memory Trinity authority boundaries and cross-plane interaction contracts |
 
 ## Quick Reference
 
