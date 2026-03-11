@@ -6344,15 +6344,15 @@ def _format_line_numbered_content(content: str, file_truncate_chars: int) -> str
     used_chars = 0
     truncated = False
     for line_no, line in enumerate(lines, start=1):
-        numbered = f"{line_no}: {line}"
+        line_prefix = f"{line_no:04d}: "
+        numbered = f"{line_prefix}{line}"
         additional = len(numbered) if not numbered_lines else len(numbered) + 1
         if numbered_lines and used_chars + additional > file_truncate_chars:
             truncated = True
             break
         if not numbered_lines and additional > file_truncate_chars:
-            prefix = f"{line_no}: "
-            available = max(0, file_truncate_chars - len(prefix) - len("...[TRUNCATED]..."))
-            numbered_lines.append(f"{prefix}{line[:available]}...[TRUNCATED]...")
+            available = max(0, file_truncate_chars - len(line_prefix) - len("...[TRUNCATED]..."))
+            numbered_lines.append(f"{line_prefix}{line[:available]}...[TRUNCATED]...")
             truncated = True
             break
         numbered_lines.append(numbered)
