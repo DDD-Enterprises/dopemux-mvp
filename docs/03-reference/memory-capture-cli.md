@@ -302,7 +302,7 @@ CREATE TABLE promoted_pointers (
 ## Related Documentation
 
 - [ADR-213: Capture Adapters Single Ledger](../90-adr/ADR-213-capture-adapters-single-ledger.md)
-- [Derived Memory Pipeline Specification](../spec/dope-memory/v1/02_derived_memory_pipeline.md)
+- [Derived Memory Pipeline Specification](spec/dope-memory/v1/02_derived_memory_pipeline.md)
 - [Global Rollup Implementation](../../src/dopemux/memory/global_rollup.py)
 
 ---

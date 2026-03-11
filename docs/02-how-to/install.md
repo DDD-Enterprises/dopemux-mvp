@@ -44,7 +44,7 @@ That's it! The installer handles everything automatically.
 ```
 - Fastest option for first-time users
 - Non-interactive run (auto-confirms prompts)
-- Boots **core docker-compose stack** (`postgres`, `redis`, `qdrant`, `conport`, `adhd-engine`, `task-orchestrator`)
+- Boots the **core canonical compose stack** (`postgres`, `redis`, `qdrant`, `conport`, `adhd-engine`, `task-orchestrator`)
 - Takes ~3-5 minutes depending on image pulls
 
 ### Full Setup (All Services)
@@ -58,7 +58,7 @@ That's it! The installer handles everything automatically.
 - Skip the interactive prompt with `./install.sh --stack full`
 
 ### Advanced Flags
-- `--stack core|full` – Preselect which compose bundle to run (useful for CI or scripted installs)
+- `--stack core|full` – Preselect which service profile to run within canonical `compose.yml` (useful for CI or scripted installs)
 - `--env-file /path/to/.env` – Override where API keys/secrets are read/written (defaults to repo-root `.env`)
 - `--yes` – Auto-confirm every prompt (implied by `--quick` and `--full`)
 - `INSTALLER_TEST_MODE=1 ./install.sh ...` – CI-friendly dry-run that skips Docker/pip/shell side effects (used by automated tests)
@@ -75,8 +75,9 @@ That's it! The installer handles everything automatically.
 
 | Mode | Compose File | Services Included |
 |------|--------------|-------------------|
-| **Core (default/quick)** | `docker-compose.unified.yml` | PostgreSQL + AGE, Redis, Qdrant, ConPort MCP, ADHD Engine, Task Orchestrator |
-| **Full (--full)** | `docker-compose.master.yml` | Core stack **plus** Zen MCP, Context7, LiteLLM router, DopeconBridge, Genetic Agent, coordination plane, Redis Insight, multi-network wiring |
+| **Canonical (recommended)** | `compose.yml` | All services: PostgreSQL + AGE, Redis (2x), Qdrant, ConPort MCP, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge, DopeconBridge, Task Orchestrator, ADHD Engine, Genetic Agent |
+
+The canonical `compose.yml` file at the repository root is the single source of truth for runtime orchestration. Legacy compose files are deprecated.
 
 During interactive runs the installer now previews each bundle (services + estimated runtime) so you know exactly what will be launched. Passing `--stack` skips the prompt but still prints the summary. Full installs automatically create the required Docker networks (`mcp-network`, `dopemux-unified-network`, `leantime-net`).
 
@@ -1074,8 +1075,8 @@ sudo systemctl start docker  # Linux
 ### 2. Start Core Services
 
 ```bash
-# Start infrastructure
-docker-compose -f docker-compose.unified.yml up -d
+# Start infrastructure + core app services
+scripts/smoke_up.sh
 
 # Wait for services
 sleep 30
@@ -1128,9 +1129,9 @@ sudo systemctl restart docker  # Linux
 # Or restart Docker Desktop  # macOS
 
 # Clean up and retry
-docker-compose -f docker-compose.unified.yml down
+scripts/smoke_down.sh --volumes
 docker system prune -f
-docker-compose -f docker-compose.unified.yml up -d
+scripts/smoke_up.sh
 ```
 
 #### Port Conflicts
@@ -1140,7 +1141,7 @@ lsof -i :8095  # ADHD Engine
 lsof -i :5432  # PostgreSQL
 lsof -i :6379  # Redis
 
-# Change ports in docker-compose.unified.yml if needed
+# Change ports in compose.yml (or .env/.env.smoke) if needed
 ```
 
 #### Permission Issues
@@ -1173,7 +1174,7 @@ curl http://localhost:8095/health  # ADHD Engine
 curl http://localhost:3004/health  # ConPort
 
 # Restart services
-docker-compose -f docker-compose.unified.yml restart
+docker compose -f compose.yml restart
 
 # Check logs
 docker logs dopemux-adhd-engine
@@ -1191,7 +1192,7 @@ dopemux status
 
 # View logs
 tail -f install.log
-docker-compose -f docker-compose.unified.yml logs -f
+docker compose -f compose.yml logs -f
 ```
 
 ## 🔄 Updating Dopemux
@@ -1201,8 +1202,8 @@ docker-compose -f docker-compose.unified.yml logs -f
 git pull origin main
 
 # Update services
-docker-compose -f docker-compose.unified.yml pull
-docker-compose -f docker-compose.unified.yml up -d
+docker compose -f compose.yml pull
+docker compose -f compose.yml up -d
 
 # Re-index if needed
 mcp__dope-context__sync_workspace --workspace_path "$(pwd)"
@@ -1212,7 +1213,7 @@ mcp__dope-context__sync_workspace --workspace_path "$(pwd)"
 
 ```bash
 # Stop and remove services
-docker-compose -f docker-compose.unified.yml down -v
+docker compose -f compose.yml down -v
 
 # Remove configurations (optional)
 rm -rf ~/.claude ~/.dopemux

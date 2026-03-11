@@ -23,7 +23,7 @@ The service is a FastAPI-based Python application configured to run as a backend
 * **Service Type**: Internal API (Python/FastAPI)
 * **Default Port**: 3007
 * **Location**: `services/voice-commands`
-* **Orchestration**: *Missing* from `docker-compose.master.yml`.
+* **Orchestration**: *Missing* from canonical `compose.yml`.
 * **Dependencies**:
 * **Zen MCP**: (Default `http://localhost:3003`) for decomposition logic.
 * **DopeconBridge**: (Default `http://localhost:3016`) for data persistence.
@@ -38,7 +38,7 @@ The service is a FastAPI-based Python application configured to run as a backend
 **Status**: **Not Running / Un-orchestrated**.
 
 **Findings**:
-1. **Orchestration Gap**: While a `Dockerfile` exists, the service is not included in the master orchestration. This suggests it is a peripheral feature not currently enabled in the baseline stack.
+1. **Orchestration Gap**: While a `Dockerfile` exists, the service is not included in canonical orchestration. This suggests it is a peripheral feature not currently enabled in the baseline stack.
 1. **Missing Documentation**: No `README.md` exists within the service directory.
 1. **Hardcoded Defaults**: While it uses environment variables, several internal URLs (like `adhd_engine_url` in `VoiceTaskDecomposer`) have hardcoded `localhost` fallbacks which may cause issues in containerized environments if not correctly overridden.
 
@@ -64,7 +64,7 @@ The service is a FastAPI-based Python application configured to run as a backend
 * **Structure**: Clear separation between API, Decomposer, and Bridge layers.
 
 ### Failure & Drift Findings (Phase 2)
-* **Orchestration**: Confirmed absence from `docker-compose.master.yml`.
+* **Orchestration**: Confirmed absence from canonical `compose.yml`.
 * **Runtime**: No container found under `docker ps -a`.
 
 ## SECTION 3: LIVING DOCUMENTATION METADATA

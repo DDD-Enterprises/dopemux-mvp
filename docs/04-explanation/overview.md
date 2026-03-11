@@ -1,11 +1,26 @@
 ---
-id: README
-title: Readme
+id: explanation-overview
+title: Explanation Overview
 type: explanation
 owner: '@hu3mann'
-last_review: '2025-11-10'
-next_review: '2026-02-08'
 author: '@hu3mann'
-date: '2026-02-05'
-prelude: Readme (explanation) for dopemux documentation and developer workflows.
+date: '2026-03-11'
+last_review: '2026-03-11'
+next_review: '2026-06-11'
+prelude: Understanding-oriented explanation index for architecture, design rationale, and system behavior.
 ---
+# Explanation Overview
+
+Explanation docs provide architecture and design context for why the system works the way it does.
+
+## Core Explanation Areas
+
+- `architecture/` for system-level design
+- `technical-deep-dives/` for subsystem internals
+- `design-decisions/` for implementation rationale
+
+## Update Policy
+
+Any PR that changes runtime behavior, architecture boundaries, or policy decisions must update explanation docs alongside reference/how-to docs.
+
+`templates/skills/pr-docgen-sync/` enforces explanation coverage as a required document type.

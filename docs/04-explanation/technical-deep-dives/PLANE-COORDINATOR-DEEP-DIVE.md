@@ -74,7 +74,7 @@ The `Dockerfile.coordination` fails to copy the `task_orchestrator` package, whi
 
 ### Failure & Drift Findings (Phase 2)
 * **[CRITICAL] Dependency Drift**: The code in `app/services/task_coordinator.py` drifted to rely on a shared package structure that the Dockerfile was not updated to reflect.
-* **Configuration**: `docker-compose.master.yml` correctly maps the build context, but the internal Dockerfile logic is flawed.
+* **Configuration**: canonical `compose.yml` correctly maps the build context, but the internal Dockerfile logic is flawed.
 
 ## SECTION 3: LIVING DOCUMENTATION METADATA
 * Last Validated: 2026-02-09

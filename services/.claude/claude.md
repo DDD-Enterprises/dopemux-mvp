@@ -89,3 +89,11 @@ services/
 ```
 
 Always check existing services before creating duplicates.
+
+## Documentation Sync
+
+When service behavior changes, run the PR docgen sync workflow so user/dev/devops/product docs stay aligned:
+
+- Core + wrappers: `templates/skills/pr-docgen-sync*/`
+- Installer: `python scripts/skills/sync_repo_skills.py --family pr-docgen-sync`
+- Baseline: `main...HEAD`

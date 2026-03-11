@@ -61,7 +61,7 @@ The service is built as a FastAPI application (`server.py`) serving MCP tools ov
 * `server.py` (Main entrypoint)
 * `integration_bridge_connector.py` (Bridge integration)
 * `Dockerfile` (Python 3.10 slim)
-* **Config**: Defined in `docker-compose.master.yml` (Service `desktop-commander`, Port 3012).
+* **Config**: Defined in canonical `compose.yml` (service `desktop-commander`, Port 3012).
 
 ### Failure & Drift Findings (Phase 2)
 * **[Observed] Runtime State**: Service is defined but not appearing in active `docker ps` output. Likely stopped or failed to start.

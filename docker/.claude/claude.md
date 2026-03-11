@@ -75,3 +75,11 @@ docker compose -f compose.yml build my-service
 # Health check
 docker compose -f compose.yml ps
 ```
+
+## Documentation Sync
+
+When docker/compose changes affect runtime behavior or ports, trigger the PR docgen sync workflow:
+
+- Skill templates: `templates/skills/pr-docgen-sync*/`
+- Installer: `python scripts/skills/sync_repo_skills.py --family pr-docgen-sync`
+- Baseline: `main...HEAD`

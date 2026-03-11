@@ -458,7 +458,7 @@ mcp__conport__get_stats
 - `/services/serena/v2/metrics_dashboard.py`
 
 ### Configuration Files
-- `/docker-compose.staging.yml` - Service endpoints
+- `/compose.yml` - Service endpoints
 - `/services/task-orchestrator/observability/prometheus.yml`
 - `/services/monitoring/alerting_rules.yml`
 

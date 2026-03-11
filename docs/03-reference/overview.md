@@ -52,6 +52,12 @@ Configuration schemas and references.
 ### MCP Configuration
 - **[MCP Tools Overview](mcp-tools-overview.md)** - MCP tool configuration and usage
 
+### Documentation Automation
+- **[Documentation Catalog](documentation-catalog.md)** - Canonical index/list surfaces and rules
+- **PR Docgen Sync Skill (Core Template)** - `templates/skills/pr-docgen-sync/`
+- **Gemini/Copilot/Claude Wrappers** - `templates/skills/pr-docgen-sync-*/`
+- **Skill Sync Script** - `scripts/skills/sync_repo_skills.py`
+
 ---
 
 ## Features

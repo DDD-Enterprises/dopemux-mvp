@@ -36,7 +36,7 @@ The dashboard is a hybrid FastAPI application that serves a single-page HTML int
 **Status**: **Un-orchestrated in Master Stack**.
 
 **Findings**:
-1. **Documentation Drift**: README claims the service can be started via `docker-compose.master.yml`, but it is actually defined in the legacy ADHD engine compose file.
+1. **Documentation Drift**: README claims the service can be started via canonical `compose.yml`, but it is currently defined in legacy ADHD-engine compose assets.
 1. **Networking Defaults**: The backend uses `localhost` defaults for `ACTIVITY_CAPTURE_URL` (8096) and `ADHD_ENGINE_URL` (8095). In a containerized stack, these must be overridden with service aliases (e.g., `http://activity-capture:8096`).
 1. **Security**: Implements an optional `X-API-Key` check, but it defaults to `None` (disabled) unless `DASHBOARD_API_KEY` is set.
 
@@ -63,7 +63,7 @@ The dashboard is a hybrid FastAPI application that serves a single-page HTML int
 * **Orchestration**: Found service definition in `adhd_engine/docker/mcp-servers/docker-compose.yml`.
 
 ### Failure & Drift Findings (Phase 2)
-* **Deployment Gap**: Verified the service is missing from `docker-compose.master.yml`.
+* **Deployment Gap**: Verified the service is missing from canonical `compose.yml`.
 * **Config Drift**: Confirmed `ALLOWED_ORIGINS` in the master compose references port 8097, indicating intention but lack of implementation.
 
 ## SECTION 3: LIVING DOCUMENTATION METADATA

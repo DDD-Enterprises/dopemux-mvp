@@ -33,7 +33,7 @@ That's it! The installer handles everything automatically.
 ```
 - Fastest option for first-time users
 - Non-interactive run (auto-confirms prompts)
-- Boots **core docker-compose stack** (`postgres`, `redis`, `qdrant`, `conport`, `adhd-engine`, `task-orchestrator`)
+- Boots the **core canonical compose stack** (`postgres`, `redis`, `qdrant`, `conport`, `adhd-engine`, `task-orchestrator`)
 - Takes ~3-5 minutes depending on image pulls
 
 ### Full Setup (All Services)
@@ -47,7 +47,7 @@ That's it! The installer handles everything automatically.
 - Skip the interactive prompt with `./install.sh --stack full`
 
 ### Advanced Flags
-- `--stack core|full` – Preselect which compose bundle to run (useful for CI or scripted installs)
+- `--stack core|full` – Preselect which service profile to run within canonical `compose.yml` (useful for CI or scripted installs)
 - `--env-file /path/to/.env` – Override where API keys/secrets are read/written (defaults to repo-root `.env`)
 - `--yes` – Auto-confirm every prompt (implied by `--quick` and `--full`)
 - `INSTALLER_TEST_MODE=1 ./install.sh ...` – CI-friendly dry-run that skips Docker/pip/shell side effects (used by automated tests)

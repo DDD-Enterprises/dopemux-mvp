@@ -315,6 +315,30 @@ tags: [tag1, tag2]
 ---
 ```
 
+### PR Documentation Sync Workflow
+
+When code changes in a PR/branch:
+- Use `main...HEAD` as the documentation impact baseline.
+- Update canonical docs indexes/lists:
+  - `docs/docs_index.yaml`
+  - `docs/00-MASTER-INDEX.md`
+  - `docs/INDEX.md`
+  - `docs/01-tutorials/overview.md`
+  - `docs/02-how-to/overview.md`
+  - `docs/03-reference/overview.md`
+  - `docs/04-explanation/overview.md`
+  - `docs/03-reference/documentation-catalog.md`
+- Use repo skill templates:
+  - `templates/skills/pr-docgen-sync/`
+  - `templates/skills/pr-docgen-sync-gemini/`
+  - `templates/skills/pr-docgen-sync-copilot/`
+  - `templates/skills/pr-docgen-sync-claude/`
+- Install/sync skills via `python scripts/skills/sync_repo_skills.py`.
+- Run required docs gates before completion:
+  - `python scripts/docs_validator.py`
+  - `python scripts/docs_frontmatter_guard.py`
+  - `python scripts/check_root_hygiene.py`
+
 ## 12) Finding your way around
 
 ### Service-Specific README Files

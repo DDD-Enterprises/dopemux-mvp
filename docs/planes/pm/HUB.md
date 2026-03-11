@@ -22,6 +22,17 @@ This plane follows strict phases. Do not skip phases.
 - ADR template: `docs/90-adr/TEMPLATE_ADR.md`
 - Task Packet template: `docs/task-packets/TEMPLATE_TASK_PACKET.md`
 
+## Current Authority ADR Set (2026-03-11)
+
+- `docs/90-adr/adr-pm-plane-authority-boundaries.md`
+- `docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md`
+- `docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md`
+- `docs/90-adr/adr-leantime-json-rpc-plus-plugin-integration-strategy.md`
+
+## Active Follow-up Queue
+
+- `docs/planes/pm/task-orchestrator-leantime-followups.md`
+
 ## How to Run
 
 1. Open Claude Code in Supervisor Mode.
