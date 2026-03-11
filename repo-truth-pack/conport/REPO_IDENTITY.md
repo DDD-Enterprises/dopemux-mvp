@@ -4,7 +4,7 @@
 |---|---|
 | **Component Name** | ConPort (Knowledge Graph & Context Management) |
 | **Canonical Path** | `docker/mcp-servers-source/conport/` |
-| **Repository Root** | `/Users/hue/code/dopemux-mvp` |
+| **Repository Root** | `<REPO_ROOT>` |
 | **Analyzed Ref** | `fe48c0a874ac25ed179b9ddb091252a6dbe9b5c2` |
 | **Analyzed Branch** | `codex/main-drain-20260306` |
 | **Language** | Python 3.11 |
