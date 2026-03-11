@@ -1,0 +1,471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "conport/http/all_routes.json",
+  "title": "HTTP REST Route Contracts",
+  "description": "All 22 HTTP routes. Source: enhanced_server.py setup_routes() lines 235-280",
+  "meta": {
+    "base_url": "http://localhost:3004",
+    "framework": "aiohttp",
+    "auth": "none",
+    "content_type": "application/json"
+  },
+  "routes": {
+    "GET /health": {
+      "handler": "health_check",
+      "source": "enhanced_server.py:358-395",
+      "request": {"parameters": {}},
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "enum": ["healthy"]},
+          "service": {"type": "string", "const": "conport-enhanced"},
+          "port": {"type": "integer"},
+          "database": {"type": "string", "enum": ["healthy"]},
+          "redis": {"type": "string", "enum": ["healthy"]},
+          "timestamp": {"type": "number"}
+        }
+      },
+      "response_503": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "unhealthy"},
+          "error": {"type": "object"},
+          "timestamp": {"type": "number"}
+        }
+      }
+    },
+    "GET /metrics": {
+      "handler": "metrics_handler",
+      "source": "enhanced_server.py:397-406",
+      "conditional": "MONITORING_AVAILABLE",
+      "request": {"parameters": {}},
+      "response_200": {"content_type": "text/plain; charset=utf-8", "format": "prometheus"},
+      "response_404": {"body": "Monitoring not available"}
+    },
+    "GET /api/context/{workspace_id}": {
+      "handler": "get_context",
+      "source": "enhanced_server.py:485-578",
+      "request": {"path_params": {"workspace_id": "string"}},
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {"type": "string"},
+          "instance_id": {"type": ["string", "null"]},
+          "active_context": {"type": "string"},
+          "last_activity": {"type": "string"},
+          "session_time": {"type": "string"},
+          "focus_state": {"type": "string"},
+          "session_milestone": {"type": ["string", "null"]},
+          "updated_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "response_500": {"type": "object", "properties": {"error": {"type": "string"}}}
+    },
+    "POST /api/context/{workspace_id}": {
+      "handler": "update_context",
+      "source": "enhanced_server.py:580-652",
+      "request": {
+        "path_params": {"workspace_id": "string"},
+        "body": {
+          "type": "object",
+          "properties": {
+            "active_context": {"type": "string"},
+            "last_activity": {"type": "string"},
+            "session_time": {"type": "string"},
+            "focus_state": {"type": "string"},
+            "session_milestone": {"type": "string"}
+          }
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "success"},
+          "workspace_id": {"type": "string"},
+          "updated": {"type": "object"}
+        }
+      }
+    },
+    "POST /api/decisions": {
+      "handler": "log_decision",
+      "source": "enhanced_server.py:654-723",
+      "request": {
+        "body": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {"type": "string"},
+            "summary": {"type": "string"},
+            "rationale": {"type": "string"},
+            "alternatives": {"type": "array", "items": {"type": "string"}, "default": []},
+            "tags": {"type": "array", "items": {"type": "string"}, "default": []},
+            "confidence_level": {"type": "string", "default": "medium"},
+            "decision_type": {"type": "string", "default": "implementation"}
+          },
+          "required": ["workspace_id", "summary", "rationale"]
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "logged"},
+          "decision": {"type": "object"}
+        }
+      }
+    },
+    "GET /api/decisions": {
+      "handler": "get_decisions",
+      "source": "enhanced_server.py:789-857",
+      "request": {
+        "query_params": {
+          "workspace_id": {"type": "string", "required": false},
+          "limit": {"type": "integer", "default": 10}
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {"type": ["string", "null"]},
+          "decisions": {"type": "array"},
+          "count": {"type": "integer"},
+          "truncation_stats": {"type": ["object", "null"]}
+        }
+      }
+    },
+    "POST /api/progress": {
+      "handler": "log_progress",
+      "source": "enhanced_server.py:1129-1208",
+      "request": {
+        "body": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {"type": "string"},
+            "description": {"type": "string"},
+            "status": {"type": "string", "default": "IN_PROGRESS"},
+            "percentage": {"type": "integer", "default": 0},
+            "linked_decision_id": {"type": ["string", "null"]},
+            "priority": {"type": "string", "default": "medium"},
+            "estimated_hours": {"type": ["number", "null"]},
+            "actual_hours": {"type": ["number", "null"]}
+          },
+          "required": ["workspace_id", "description"]
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "logged"},
+          "progress": {"type": "object"}
+        }
+      },
+      "response_400": {"condition": "missing workspace_id or description"}
+    },
+    "GET /api/progress": {
+      "handler": "get_progress",
+      "source": "enhanced_server.py:859-960",
+      "request": {
+        "query_params": {
+          "workspace_id": {"type": "string", "required": false},
+          "status": {"type": "string", "required": false},
+          "limit": {"type": "integer", "default": 20}
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {"type": ["string", "null"]},
+          "progress": {"type": "array"},
+          "count": {"type": "integer"},
+          "truncation_stats": {"type": ["object", "null"]}
+        }
+      }
+    },
+    "PUT /api/progress/{progress_id}": {
+      "handler": "update_progress",
+      "source": "enhanced_server.py:1210-1320",
+      "request": {
+        "path_params": {"progress_id": "string (UUID)"},
+        "body": {
+          "type": "object",
+          "properties": {
+            "status": {"type": "string"},
+            "percentage": {"type": "integer"},
+            "description": {"type": "string"},
+            "priority": {"type": "string"},
+            "actual_hours": {"type": "number"}
+          }
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "updated"},
+          "progress": {"type": "object"}
+        }
+      },
+      "response_404": {"condition": "progress entry not found"},
+      "side_effects": ["Instance ID transition on status change", "DopeconBridge event"]
+    },
+    "GET /api/recent-activity/{workspace_id}": {
+      "handler": "get_recent_activity",
+      "source": "enhanced_server.py:1322-1371",
+      "request": {
+        "path_params": {"workspace_id": "string"},
+        "query_params": {"hours": {"type": "integer", "default": 24}}
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {"type": "string"},
+          "activities": {"type": "array"},
+          "hours_back": {"type": "integer"}
+        }
+      },
+      "note": "SQL injection risk: hours parameter interpolated via f-string (line 1348)"
+    },
+    "GET /api/active-work/{workspace_id}": {
+      "handler": "get_active_work",
+      "source": "enhanced_server.py:1373-1426",
+      "request": {"path_params": {"workspace_id": "string"}},
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {"type": "string"},
+          "active_work": {"type": "array"},
+          "count": {"type": "integer"}
+        }
+      }
+    },
+    "GET /api/search/{workspace_id}": {
+      "handler": "search_content",
+      "source": "enhanced_server.py:1428-1495",
+      "request": {
+        "path_params": {"workspace_id": "string"},
+        "query_params": {
+          "q": {"type": "string", "required": true},
+          "type": {"type": "string", "enum": ["decisions", "progress", "all"], "default": "all"}
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {"type": "string"},
+          "query": {"type": "string"},
+          "results": {
+            "type": "object",
+            "properties": {
+              "decisions": {"type": "array"},
+              "progress": {"type": "array"}
+            }
+          },
+          "total_count": {"type": "integer"}
+        }
+      },
+      "response_400": {"condition": "missing q parameter"}
+    },
+    "GET /api/unified-search": {
+      "handler": "unified_search",
+      "source": "enhanced_server.py:1923-1991",
+      "request": {
+        "query_params": {
+          "user_id": {"type": "string", "required": true},
+          "query": {"type": "string", "required": true},
+          "workspaces": {"type": "string", "description": "Comma-separated workspace IDs"},
+          "limit": {"type": "integer", "default": 50}
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "results": {"type": "array"},
+          "total": {"type": "integer"},
+          "query": {"type": "string"},
+          "workspaces_searched": {},
+          "response_time_ms": {"type": "number"}
+        }
+      },
+      "response_400": {"condition": "missing user_id or query"}
+    },
+    "GET /api/workspace-relationships": {
+      "handler": "workspace_relationships",
+      "source": "enhanced_server.py:1993-2038",
+      "request": {
+        "query_params": {
+          "decision_id": {"type": "string", "required": true},
+          "user_id": {"type": "string", "required": true},
+          "include_workspaces": {"type": "string", "default": "true"},
+          "max_depth": {"type": "integer", "default": 3}
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "root": {"type": "integer"},
+          "nodes": {"type": "array"},
+          "total_nodes": {"type": "integer"},
+          "max_depth_reached": {"type": "integer"},
+          "response_time_ms": {"type": "number"}
+        }
+      },
+      "response_400": {"condition": "missing decision_id or user_id"}
+    },
+    "GET /api/workspace-summary": {
+      "handler": "workspace_summary",
+      "source": "enhanced_server.py:2040-2091",
+      "request": {
+        "query_params": {"user_id": {"type": "string", "required": true}}
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "workspaces": {"type": "array"},
+          "total": {"type": "integer"},
+          "user_id": {"type": "string"},
+          "response_time_ms": {"type": "number"}
+        }
+      },
+      "response_400": {"condition": "missing user_id"}
+    },
+    "POST /api/custom_data": {
+      "handler": "save_custom_data",
+      "source": "enhanced_server.py:1523-1560",
+      "request": {
+        "body": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {"type": "string"},
+            "category": {"type": "string"},
+            "key": {"type": "string"},
+            "value": {}
+          },
+          "required": ["workspace_id", "category", "key", "value"]
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "saved"},
+          "workspace_id": {"type": "string"},
+          "category": {"type": "string"},
+          "key": {"type": "string"}
+        }
+      },
+      "response_400": {"condition": "missing required fields"}
+    },
+    "GET /api/custom_data": {
+      "handler": "get_custom_data",
+      "source": "enhanced_server.py:1562-1644",
+      "request": {
+        "query_params": {
+          "workspace_id": {"type": "string", "required": true},
+          "category": {"type": "string", "required": false},
+          "key": {"type": "string", "required": false}
+        }
+      },
+      "response_200_single": {"type": "object", "description": "When category+key provided"},
+      "response_200_list": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {"type": "string"},
+          "category": {"type": "string"},
+          "items": {"type": "array"},
+          "count": {"type": "integer"}
+        }
+      },
+      "response_400": {"condition": "missing workspace_id"},
+      "response_404": {"condition": "specific item not found"}
+    },
+    "DELETE /api/custom_data": {
+      "handler": "delete_custom_data",
+      "source": "enhanced_server.py:1646-1679",
+      "request": {
+        "query_params": {
+          "workspace_id": {"type": "string", "required": true},
+          "category": {"type": "string", "required": true},
+          "key": {"type": "string", "required": true}
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "deleted"},
+          "workspace_id": {"type": "string"},
+          "category": {"type": "string"},
+          "key": {"type": "string"}
+        }
+      },
+      "response_400": {"condition": "missing required parameters"}
+    },
+    "POST /mcp": {
+      "handler": "mcp_endpoint",
+      "source": "enhanced_server.py:1681-1711",
+      "note": "See jsonrpc/all_tools.json for detailed tool contracts"
+    },
+    "POST /api/instance/fork": {
+      "handler": "fork_instance",
+      "source": "enhanced_server.py:962-1022",
+      "request": {
+        "body": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {"type": "string"},
+            "source_instance": {"type": ["string", "null"]},
+            "target_instance": {"type": ["string", "null"]}
+          },
+          "required": ["workspace_id"]
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "forked"},
+          "workspace_id": {"type": "string"},
+          "source_instance": {"type": ["string", "null"]},
+          "target_instance": {"type": "string"},
+          "count": {"type": "integer"}
+        }
+      },
+      "response_400": {"condition": "missing workspace_id or target_instance not detected"}
+    },
+    "POST /api/progress/promote": {
+      "handler": "promote_progress",
+      "source": "enhanced_server.py:1024-1073",
+      "request": {
+        "body": {
+          "type": "object",
+          "properties": {"progress_id": {"type": "string"}},
+          "required": ["progress_id"]
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "promoted"},
+          "progress_id": {"type": "string"}
+        }
+      },
+      "response_400": {"condition": "missing progress_id"},
+      "response_404": {"condition": "progress entry not found"}
+    },
+    "POST /api/progress/promote_all": {
+      "handler": "promote_all",
+      "source": "enhanced_server.py:1075-1127",
+      "request": {
+        "body": {
+          "type": "object",
+          "properties": {"workspace_id": {"type": "string"}},
+          "required": ["workspace_id"]
+        }
+      },
+      "response_200": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "promoted_all"},
+          "workspace_id": {"type": "string"},
+          "instance_id": {"type": "string"},
+          "count": {"type": "integer"}
+        }
+      },
+      "response_400": {"condition": "missing workspace_id or no instance detected"}
+    }
+  }
+}

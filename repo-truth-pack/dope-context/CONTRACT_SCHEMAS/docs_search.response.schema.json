@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/docs_search.response.schema.json",
+  "title": "docs_search Response",
+  "description": "Response shape for docs_search MCP tool. Derived from server.py:1721-1773.",
+  "oneOf": [
+    {
+      "title": "Single workspace with metadata",
+      "type": "object",
+      "properties": {
+        "lane_used": { "type": "string", "const": "docs" },
+        "fusion_strategy": { "type": "string", "const": "dense" },
+        "rerank_used": { "type": "boolean", "const": false },
+        "embed_model_used": { "type": "string" },
+        "timings_ms": {
+          "type": "object",
+          "properties": {
+            "embed": { "type": "number", "minimum": 0 },
+            "search": { "type": "number", "minimum": 0 },
+            "fuse": { "type": "number", "minimum": 0 },
+            "rerank": { "type": "number", "minimum": 0 }
+          },
+          "required": ["embed", "search", "fuse"]
+        },
+        "results": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/docs_result" }
+        }
+      },
+      "required": ["lane_used", "fusion_strategy", "rerank_used", "results", "timings_ms"]
+    },
+    {
+      "title": "Multi-workspace results",
+      "type": "object",
+      "properties": {
+        "workspace_count": { "type": "integer" },
+        "total_results": { "type": "integer" },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "workspace": { "type": "string" },
+              "results": { "type": ["object", "array"] },
+              "result_count": { "type": "integer" }
+            }
+          }
+        }
+      },
+      "required": ["workspace_count", "total_results", "results"]
+    }
+  ],
+  "$defs": {
+    "docs_result": {
+      "type": "object",
+      "properties": {
+        "source_path": { "type": "string" },
+        "text": { "type": "string" },
+        "score": { "type": "number" },
+        "doc_type": { "type": "string" },
+        "truncated": { "type": "boolean" },
+        "original_length": { "type": "integer" },
+        "rank": { "type": "integer", "minimum": 1 },
+        "source_uri": { "type": "string" },
+        "chunk_id": { "type": "string" },
+        "snippet": { "type": "string" }
+      },
+      "required": ["source_path", "text", "score", "doc_type"]
+    }
+  }
+}

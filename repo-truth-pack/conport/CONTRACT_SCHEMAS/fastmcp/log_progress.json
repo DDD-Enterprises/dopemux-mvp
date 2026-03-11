@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "conport/fastmcp/log_progress.json",
+  "title": "FastMCP log_progress",
+  "description": "Log a new progress item or task. Source: server.py:149. NOTE: Default status is 'PLANNED' in FastMCP but 'IN_PROGRESS' in enhanced_server.py.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {"type": "string"},
+        "description": {"type": "string"},
+        "status": {"type": "string", "default": "PLANNED", "enum": ["PLANNED", "IN_PROGRESS", "COMPLETED", "BLOCKED", "CANCELLED"]},
+        "priority": {"type": "string", "default": "medium", "enum": ["low", "medium", "high", "urgent"]},
+        "linked_decision_id": {"type": ["string", "null"], "format": "uuid", "default": null}
+      },
+      "required": ["workspace_id", "description"]
+    },
+    "response": {
+      "type": "string",
+      "contentMediaType": "application/json",
+      "x-parsed-shape": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "const": "logged"},
+          "progress": {
+            "type": "object",
+            "properties": {
+              "id": {"type": "string", "format": "uuid"},
+              "workspace_id": {"type": "string"},
+              "description": {"type": "string"},
+              "status": {"type": "string"},
+              "percentage": {"type": "integer"},
+              "linked_decision_id": {"type": ["string", "null"]},
+              "priority": {"type": "string"},
+              "estimated_hours": {"type": ["number", "null"]},
+              "actual_hours": {"type": ["number", "null"]},
+              "created_at": {"type": "string", "format": "date-time"},
+              "updated_at": {"type": "string", "format": "date-time"},
+              "completed_at": {"type": ["string", "null"]}
+            }
+          }
+        }
+      }
+    }
+  }
+}

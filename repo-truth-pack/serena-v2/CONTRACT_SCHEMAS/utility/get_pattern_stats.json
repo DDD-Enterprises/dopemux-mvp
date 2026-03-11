@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/get_pattern_stats",
+  "title": "Get Pattern Stats",
+  "description": "Returns statistics about learned navigation and file access patterns including cache performance.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "cache_performance": {
+          "type": "object"
+        },
+        "pattern_counts": {
+          "type": "object"
+        },
+        "top_patterns": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "required": [
+        "status",
+        "cache_performance",
+        "pattern_counts",
+        "top_patterns"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Returns empty stats on database read failure"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 0
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": "F5"
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": false
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}

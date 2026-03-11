@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/search_code.request.schema.json",
+  "title": "search_code Request",
+  "description": "MCP tool: search_code — Hybrid dense+sparse code search. Derived from server.py:1313-1400.",
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Natural language search query."
+    },
+    "top_k": {
+      "type": "integer",
+      "default": 10,
+      "minimum": 1,
+      "description": "Number of results to return (max 50 for ADHD)."
+    },
+    "profile": {
+      "type": "string",
+      "default": "implementation",
+      "enum": ["implementation", "debugging", "exploration"],
+      "description": "Search profile."
+    },
+    "use_reranking": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to rerank with Voyage."
+    },
+    "filter_language": {
+      "type": ["string", "null"],
+      "description": "Filter by language (python, javascript, typescript)."
+    },
+    "workspace_path": {
+      "type": ["string", "null"],
+      "description": "Optional workspace path."
+    },
+    "workspace_paths": {
+      "type": ["array", "null"],
+      "items": { "type": "string" },
+      "description": "Optional list of workspaces to query sequentially."
+    },
+    "enrich_with_graph": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add code graph relationships from Serena (F-NEW-5)."
+    }
+  },
+  "required": ["query"],
+  "additionalProperties": false
+}

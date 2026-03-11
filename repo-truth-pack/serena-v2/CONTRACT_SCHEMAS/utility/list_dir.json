@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/list_dir",
+  "title": "List Directory",
+  "description": "Lists contents of a directory with optional recursive traversal. Returns plain text directory listing.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {
+        "relative_path": {
+          "type": "string",
+          "description": "Path to the directory relative to workspace root"
+        },
+        "recursive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to list contents recursively"
+        }
+      },
+      "required": [
+        "relative_path"
+      ],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "Plain text directory listing"
+        }
+      },
+      "required": [
+        "content"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Raises FileNotFoundError when directory does not exist"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 0
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": null
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": false
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}

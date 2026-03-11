@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/read_file",
+  "title": "Read File",
+  "description": "Reads file contents with optional line range selection. Returns numbered lines as plain text.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {
+        "relative_path": {
+          "type": "string",
+          "description": "Path to the file relative to workspace root"
+        },
+        "start_line": {
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Starting line number (0-based)"
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Ending line number (exclusive, 0-based)"
+        }
+      },
+      "required": [
+        "relative_path"
+      ],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "Plain text with numbered lines"
+        }
+      },
+      "required": [
+        "content"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Raises FileNotFoundError when file does not exist"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 0
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": null
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": false
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}

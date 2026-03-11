@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/get_workspace_status",
+  "title": "Get Workspace Status",
+  "description": "Returns comprehensive server and workspace status including component health, loaded tools, and ADHD feature availability.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "server": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "phase": {
+              "type": "string"
+            },
+            "uptime_seconds": {
+              "type": "number"
+            },
+            "started_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "name",
+            "phase",
+            "uptime_seconds",
+            "started_at"
+          ]
+        },
+        "workspace": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "detected": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "path",
+            "detected"
+          ]
+        },
+        "components": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "object",
+              "properties": {
+                "loaded": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "loaded",
+                "error"
+              ]
+            },
+            "lsp": {
+              "type": "object"
+            },
+            "claude_context": {
+              "type": "object"
+            },
+            "tree_sitter": {
+              "type": "object"
+            },
+            "adhd_features": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "database",
+            "lsp",
+            "claude_context",
+            "tree_sitter",
+            "adhd_features"
+          ]
+        },
+        "tools": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "server",
+        "workspace",
+        "components",
+        "tools"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Returns error with server diagnostic information"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 1
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": null
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": false
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}
