@@ -76,8 +76,6 @@ except ModuleNotFoundError:
     get_step_contract = contract_map_module.get_step_contract
 try:
     from lib.structured_output_contracts import (
-        artifacts_pass_contract_gate,
-        build_openai_response_format,
         canonicalize_artifacts,
         is_json_managed_step,
         is_strict_contract_step,
@@ -96,8 +94,6 @@ except ModuleNotFoundError:
         structured_contracts_spec
     )
     structured_contracts_spec.loader.exec_module(structured_contracts_module)
-    artifacts_pass_contract_gate = structured_contracts_module.artifacts_pass_contract_gate
-    build_openai_response_format = structured_contracts_module.build_openai_response_format
     canonicalize_artifacts = structured_contracts_module.canonicalize_artifacts
     is_json_managed_step = structured_contracts_module.is_json_managed_step
     is_strict_contract_step = structured_contracts_module.is_strict_contract_step
