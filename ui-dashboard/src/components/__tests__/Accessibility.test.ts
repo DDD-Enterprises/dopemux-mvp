@@ -20,7 +20,7 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('Prediction Loading...');
   // Indeterminate LinearProgress in loading state
   expect(content).toContain('aria-label="Loading prediction data"');
-  expect(content).toContain('<Tooltip title="Predictive LSTM model running on edge device" arrow>');
+  expect(content).toMatch(/<Tooltip[^>]*title="Predictive LSTM model running on edge device"[^>]*arrow/);
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
@@ -49,7 +49,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label="Current task progress"');
   // Timer accessibility
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
-  expect(content).toContain('<Tooltip title="Real-time task synchronization active" arrow>');
+  expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
 });
 

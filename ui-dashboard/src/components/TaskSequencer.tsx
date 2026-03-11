@@ -272,7 +272,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
-        <Tooltip title="Consent → Calibration → Chaos → Care">
+        <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
           <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
           </Box>
