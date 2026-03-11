@@ -18,7 +18,7 @@ import yaml
 
 # Repository root
 REPO_ROOT = Path(__file__).parent.parent.parent
-SMOKE_COMPOSE_PATH = REPO_ROOT / "docker-compose.smoke.yml"
+CANONICAL_COMPOSE_PATH = REPO_ROOT / "compose.yml"
 
 # Mandatory env vars from contract
 MANDATORY_ENV_VARS = {
@@ -48,9 +48,9 @@ def load_registry() -> Dict:
 
 
 def load_smoke_compose() -> Dict:
-    """Load smoke-compose file used by contract/runtime checks."""
-    assert SMOKE_COMPOSE_PATH.exists(), f"Smoke compose file not found: {SMOKE_COMPOSE_PATH}"
-    with open(SMOKE_COMPOSE_PATH) as f:
+    """Load canonical compose file used by contract/runtime checks."""
+    assert CANONICAL_COMPOSE_PATH.exists(), f"Canonical compose file not found: {CANONICAL_COMPOSE_PATH}"
+    with open(CANONICAL_COMPOSE_PATH) as f:
         return yaml.safe_load(f) or {}
 
 
@@ -58,7 +58,7 @@ def _resolve_service_runtime(service_info: Dict[str, Any]) -> tuple[Path | None,
     """Resolve runtime source directory and dockerfile path for a service.
 
     Resolution order:
-    1. `docker-compose.smoke.yml` build metadata for compose_service_name
+    1. `compose.yml` build metadata for compose_service_name
     2. `services/<service name>`
     3. `services/<compose_service_name>`
     """

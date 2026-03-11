@@ -1144,9 +1144,9 @@ sudo systemctl restart docker  # Linux
 # Or restart Docker Desktop  # macOS
 
 # Clean up and retry
-docker-compose -f docker-compose.unified.yml down
+docker compose -f compose.yml down
 docker system prune -f
-docker-compose -f docker-compose.unified.yml up -d
+docker compose -f compose.yml up -d
 ```
 
 #### Port Conflicts
@@ -1156,7 +1156,7 @@ lsof -i :8095  # ADHD Engine
 lsof -i :5432  # PostgreSQL
 lsof -i :6379  # Redis
 
-# Change ports in docker-compose.unified.yml if needed
+# Change ports in compose.yml if needed
 ```
 
 #### Permission Issues
@@ -1189,7 +1189,7 @@ curl http://localhost:8095/health  # ADHD Engine
 curl http://localhost:3004/health  # ConPort
 
 # Restart services
-docker-compose -f docker-compose.unified.yml restart
+docker compose -f compose.yml restart
 
 # Check logs
 docker logs dopemux-adhd-engine
@@ -1207,7 +1207,7 @@ dopemux status
 
 # View logs
 tail -f install.log
-docker-compose -f docker-compose.unified.yml logs -f
+docker compose -f compose.yml logs -f
 ```
 
 ## 🔄 Updating Dopemux
@@ -1217,8 +1217,8 @@ docker-compose -f docker-compose.unified.yml logs -f
 git pull origin main
 
 # Update services
-docker-compose -f docker-compose.unified.yml pull
-docker-compose -f docker-compose.unified.yml up -d
+docker compose -f compose.yml pull
+docker compose -f compose.yml up -d
 
 # Re-index if needed
 mcp__dope-context__sync_workspace --workspace_path "$(pwd)"
@@ -1228,7 +1228,7 @@ mcp__dope-context__sync_workspace --workspace_path "$(pwd)"
 
 ```bash
 # Stop and remove services
-docker-compose -f docker-compose.unified.yml down -v
+docker compose -f compose.yml down -v
 
 # Remove configurations (optional)
 rm -rf ~/.claude ~/.dopemux

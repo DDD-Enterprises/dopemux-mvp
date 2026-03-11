@@ -49,7 +49,7 @@ services/registry.yaml  (TRUTH SOURCE)
          ↓
          ├─→ .env.smoke (generated)
          │        ↓
-         │   docker-compose.smoke.yml (uses env vars)
+         │   compose.yml (canonical, env-driven ports)
          │
          ├─→ tools/ports_health_audit.py (validates runtime)
          │
@@ -76,11 +76,11 @@ python tools/ports_health_audit.py --mode static
 
 ### 4. Deploy
 ```bash
-docker compose -f docker-compose.smoke.yml up -d --build
+scripts/smoke_up.sh
 python tools/ports_health_audit.py --mode runtime
 ```
 
 ## Related Documentation
 
-- [Docker Compose Smoke Stack](../../docker-compose.smoke.yml)
+- [Canonical Compose](../../compose.yml)
 - [Service Registry](../../services/registry.yaml)

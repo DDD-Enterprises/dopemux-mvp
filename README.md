@@ -69,7 +69,7 @@ python scripts/render_workspace_configs.py --set-default
 source "$(python scripts/workspace_env_path.py)"
 
 # 4. Start services
-docker compose -f docker-compose.smoke.yml up --build -d
+scripts/smoke_up.sh
 python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
 
 # 5. Run CLI
@@ -159,7 +159,7 @@ source "$(python scripts/workspace_env_path.py)"
 Start the smoke stack and audit services:
 
 ```bash
-docker compose -f docker-compose.smoke.yml up --build -d
+scripts/smoke_up.sh
 python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
 ```
 
@@ -569,7 +569,7 @@ python3 scripts/render_workspace_configs.py --set-default
 source "$(python3 scripts/workspace_env_path.py)"
 
 # 4. Start core services (reads DOPEMUX_* from the sourced env)
-docker-compose -f docker-compose.unified.yml up -d
+docker compose -f compose.yml up -d
 
 # 5. Configure statusline in Claude Code settings
 {

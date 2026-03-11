@@ -26,6 +26,18 @@ NC='\033[0m' # No Color
 # Defaults
 REMOVE_VOLUMES=false
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+COMPOSE_FILE="compose.yml"
+ENV_FILE=".env.smoke"
+SMOKE_SERVICES=(
+    postgres
+    redis-events
+    redis-primary
+    mcp-qdrant
+    conport
+    dopecon-bridge
+    task-orchestrator
+    dope-memory
+)
 
 # Parse args
 while [[ $# -gt 0 ]]; do
@@ -42,6 +54,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 cd "$REPO_ROOT"
+COMPOSE_CMD=(docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE")
 
 echo -e "${BLUE}🛑 Smoke Stack Shutdown${NC}"
 echo "=================================================="
@@ -57,10 +70,10 @@ if [[ "$REMOVE_VOLUMES" == "true" ]]; then
         exit 0
     fi
 
-    docker compose -f docker-compose.smoke.yml down --volumes
+    "${COMPOSE_CMD[@]}" rm -fsv "${SMOKE_SERVICES[@]}"
 else
     echo -e "${YELLOW}🛑 Stopping stack (preserving volumes)${NC}"
-    docker compose -f docker-compose.smoke.yml down
+    "${COMPOSE_CMD[@]}" rm -fs "${SMOKE_SERVICES[@]}"
 fi
 
 if [[ $? -ne 0 ]]; then

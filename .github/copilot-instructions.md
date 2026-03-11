@@ -33,8 +33,8 @@ make type-check               # Run mypy
 make quality                  # All quality checks
 
 # Docker stacks
-docker-compose -f docker-compose.smoke.yml up    # Core services only
-docker-compose -f docker-compose.master.yml up   # Full stack
+scripts/smoke_up.sh                              # Core services only
+docker compose -f compose.yml up -d              # Full stack
 docker compose config         # Validate compose file syntax
 
 # Documentation validation

@@ -1,7 +1,7 @@
 """
 Architecture Test: Registry ↔ Compose Alignment
 
-Ensures that services/registry.yaml and docker-compose.smoke.yml stay in sync.
+Ensures that services/registry.yaml and compose.yml stay in sync.
 This prevents silent drift where registry says one port but compose uses another.
 
 Fails loudly if:
@@ -26,7 +26,7 @@ except ImportError:
 # Paths relative to repo root
 REPO_ROOT = Path(__file__).parent.parent.parent
 REGISTRY_PATH = REPO_ROOT / "services" / "registry.yaml"
-COMPOSE_PATH = REPO_ROOT / "docker-compose.smoke.yml"
+COMPOSE_PATH = REPO_ROOT / "compose.yml"
 
 
 def load_registry() -> Dict[str, Any]:
@@ -37,7 +37,7 @@ def load_registry() -> Dict[str, Any]:
 
 
 def load_compose() -> Dict[str, Any]:
-    """Load docker-compose.smoke.yml."""
+    """Load compose.yml."""
     assert COMPOSE_PATH.exists(), f"Compose file not found: {COMPOSE_PATH}"
     with open(COMPOSE_PATH) as f:
         return yaml.safe_load(f)
@@ -82,7 +82,7 @@ class TestRegistryComposeAlignment:
         assert REGISTRY_PATH.exists(), f"Registry not found at {REGISTRY_PATH}"
     
     def test_compose_exists(self):
-        """Smoke compose file must exist."""
+        """Canonical compose file must exist."""
         assert COMPOSE_PATH.exists(), f"Compose file not found at {COMPOSE_PATH}"
     
     def test_registry_has_services(self):

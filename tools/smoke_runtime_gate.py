@@ -38,7 +38,6 @@ except ImportError:
 class ServiceHealthConfig:
     """Health configuration for a smoke service."""
     name: str
-    container_name: str
     published_port: int
     health_path: str
 
@@ -68,7 +67,7 @@ class ServiceHealthResult:
 
 
 class ComposeParser:
-    """Parse docker-compose.smoke.yml to extract service configs."""
+    """Parse compose.yml to extract smoke service configs."""
 
     def __init__(self, compose_path: Path, env_file: Path):
         self.compose_path = compose_path
@@ -89,7 +88,7 @@ class ComposeParser:
         return env
 
     def _load_compose(self) -> dict:
-        """Load docker-compose.smoke.yml."""
+        """Load compose file."""
         with open(self.compose_path) as f:
             return yaml.safe_load(f)
 
@@ -122,9 +121,6 @@ class ComposeParser:
 
             svc_data = compose_services[svc_name]
 
-            # Get container name
-            container_name = svc_data.get('container_name', f'smoke-{svc_name}')
-
             # Parse published port
             ports = svc_data.get('ports', [])
             if not ports:
@@ -151,12 +147,13 @@ class ComposeParser:
                         if '/' in url_part:
                             health_path = '/' + url_part.split('/', 1)[1].split(' ')[0]
 
-            services.append(ServiceHealthConfig(
-                name=svc_name,
-                container_name=container_name,
-                published_port=published_port,
-                health_path=health_path
-            ))
+            services.append(
+                ServiceHealthConfig(
+                    name=svc_name,
+                    published_port=published_port,
+                    health_path=health_path,
+                )
+            )
 
         return services
 
@@ -167,34 +164,53 @@ class ContainerStabilityChecker:
     def __init__(self, compose_file: Path):
         self.compose_file = compose_file
 
-    def check_container(self, container_name: str) -> Tuple[bool, str, int]:
+    def check_service(self, service_name: str) -> Tuple[bool, str, int]:
         """
-        Check container stability.
+        Check service container stability from docker compose metadata.
 
         Returns:
             (is_healthy, status, restart_count)
         """
         try:
-            # Get container state via docker inspect
             result = subprocess.run(
-                ['docker', 'inspect', container_name],
+                [
+                    'docker',
+                    'compose',
+                    '-f',
+                    str(self.compose_file),
+                    'ps',
+                    '-a',
+                    '--format',
+                    'json',
+                    service_name,
+                ],
                 capture_output=True,
                 text=True,
                 timeout=5
             )
 
-            if result.returncode != 0:
+            if result.returncode != 0 or not result.stdout.strip():
                 return False, "not_found", 0
 
-            import json
-            inspect_data = json.loads(result.stdout)[0]
+            raw_line = result.stdout.strip().splitlines()[0]
+            ps_data = json.loads(raw_line)
+            status = str(ps_data.get('State', 'unknown')).lower()
+            container_name = ps_data.get('Name')
 
-            state = inspect_data['State']
-            status = state.get('Status', 'unknown')
-            restart_count = state.get('RestartCount', 0)
+            restart_count = 0
+            if container_name:
+                inspect_result = subprocess.run(
+                    ['docker', 'inspect', container_name],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                if inspect_result.returncode == 0 and inspect_result.stdout.strip():
+                    inspect_data = json.loads(inspect_result.stdout)[0]
+                    restart_count = int(inspect_data.get('State', {}).get('RestartCount', 0))
 
             # Container is healthy if running and not restarting excessively
-            is_running = status == 'running'
+            is_running = "running" in status
             is_stable = restart_count < 3
 
             is_healthy = is_running and is_stable
@@ -208,7 +224,8 @@ class ContainerStabilityChecker:
 class HealthProber:
     """Probe service health with retry logic."""
 
-    def __init__(self, max_retries: int = 5, timeout_per_probe: float = 2.0):
+    def __init__(self, compose_file: Path, max_retries: int = 5, timeout_per_probe: float = 2.0):
+        self.stability_checker = ContainerStabilityChecker(compose_file)
         self.max_retries = max_retries
         self.timeout_per_probe = timeout_per_probe
 
@@ -255,10 +272,7 @@ class HealthProber:
         start_time = time.time()
 
         # Phase 1: Container stability
-        stability_checker = ContainerStabilityChecker(Path('docker-compose.smoke.yml'))
-        container_healthy, container_status, restart_count = stability_checker.check_container(
-            config.container_name
-        )
+        container_healthy, container_status, restart_count = self.stability_checker.check_service(config.name)
 
         # If container is unstable, skip port/http checks
         if not container_healthy:
@@ -359,13 +373,22 @@ class EvidenceCollector:
             print(f"⚠️ Failed to capture compose ps: {e}", file=sys.stderr)
             return output_file
 
-    def collect_logs(self, container_name: str, tail_lines: int = 200) -> Path:
-        """Capture container logs."""
-        output_file = self.output_dir / f"logs_{container_name.replace('smoke-', '')}.tail.txt"
+    def collect_logs(self, service_name: str, tail_lines: int = 200) -> Path:
+        """Capture service logs."""
+        output_file = self.output_dir / f"logs_{service_name}.tail.txt"
 
         try:
             result = subprocess.run(
-                ['docker', 'logs', container_name, '--tail', str(tail_lines)],
+                [
+                    'docker',
+                    'compose',
+                    '-f',
+                    str(self.compose_file),
+                    'logs',
+                    '--tail',
+                    str(tail_lines),
+                    service_name,
+                ],
                 capture_output=True,
                 text=True,
                 timeout=10
@@ -378,7 +401,7 @@ class EvidenceCollector:
             return output_file
 
         except Exception as e:
-            print(f"⚠️ Failed to capture logs for {container_name}: {e}", file=sys.stderr)
+            print(f"⚠️ Failed to capture logs for {service_name}: {e}", file=sys.stderr)
             return output_file
 
 
@@ -400,7 +423,7 @@ class RuntimeGate:
         self.timeout_per_probe = timeout_per_probe
 
         self.parser = ComposeParser(compose_file, env_file)
-        self.prober = HealthProber(max_retries, timeout_per_probe)
+        self.prober = HealthProber(compose_file, max_retries, timeout_per_probe)
         self.evidence = EvidenceCollector(compose_file, output_dir)
 
     def run(self) -> Tuple[bool, List[ServiceHealthResult]]:
@@ -469,9 +492,7 @@ class RuntimeGate:
         # Collect logs for failed services
         failed_services = [r for r in results if not r.overall_healthy]
         for result in failed_services:
-            # Map service name to container name
-            container_name = f"smoke-{result.name}"
-            log_file = self.evidence.collect_logs(container_name)
+            log_file = self.evidence.collect_logs(result.name)
             print(f"   • Logs ({result.name}): {log_file}")
 
         # Write JSON report
@@ -528,8 +549,8 @@ def main():
     parser.add_argument(
         '--compose-file',
         type=Path,
-        default=Path('docker-compose.smoke.yml'),
-        help='Path to docker-compose.smoke.yml'
+        default=Path('compose.yml'),
+        help='Path to compose.yml'
     )
     parser.add_argument(
         '--env-file',
