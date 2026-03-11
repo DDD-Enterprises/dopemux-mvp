@@ -38,9 +38,10 @@ Run these phases in order and fail closed on ambiguity.
 
 ## Deterministic Rules
 
-- Determine touched scope from VCS diff first.
-- If diff is unavailable or empty, use requirement-to-file mapping.
-- If neither source is trustworthy, stop and request explicit scope.
+- If an explicit touched-file list is provided, treat it as the source of truth.
+- Otherwise, resolve touched scope from VCS in this order: `git status` first, then `git diff`.
+- If VCS-based resolution yields no trustworthy scope, fall back to requirement/feature-to-file mapping.
+- If none of these sources are trustworthy, stop and request explicit scope before proceeding.
 - Coverage is pass/fail for touched code; missing coverage evidence fails closed.
 - Always return a traceability matrix from requirement IDs to test IDs.
 
