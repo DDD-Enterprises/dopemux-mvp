@@ -9,7 +9,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 PROMPTSET_PATH = ROOT / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "promptset.yaml"
-OUTPUT_PATH = ROOT / "repo_truth_map.json"
+OUTPUT_PATH = ROOT / "reports" / "repo_truth_map.json"
 
 RUNNER_MINIMUM_REQUIRED_KEYS = ("id", "path", "line_range")
 
