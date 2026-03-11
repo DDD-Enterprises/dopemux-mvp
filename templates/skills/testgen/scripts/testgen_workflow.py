@@ -442,8 +442,9 @@ def build_traceability_matrix(
     applicable_layers = [decision.layer for decision in layer_decisions if decision.applicable]
     matrix: List[Dict[str, Any]] = []
     for requirement in requirements:
-        base_slug = _slugify(requirement.text)
-        test_ids = [f"test_{base_slug}_{layer}" for layer in applicable_layers]
+        text_slug = _slugify(requirement.text)
+        id_slug = _slugify(requirement.req_id)
+        test_ids = [f"test_{text_slug}_{id_slug}_{layer}" for layer in applicable_layers]
         matrix.append(
             {
                 "requirement_id": requirement.req_id,
