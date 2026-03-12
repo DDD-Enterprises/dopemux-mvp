@@ -105,7 +105,7 @@ jobs:
 
       - name: 🛡️ AI-Powered Security Analysis
         if: ${{ env.ANTHROPIC_API_KEY != '' }}
-        uses: anthropics/claude-code-security-review@main
+        uses: anthropics/claude-code-security-review@v1
         with:
           comment-pr: true
           claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
