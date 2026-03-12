@@ -27,6 +27,7 @@ from .leantime_jsonrpc_client import LeantimeJSONRPCClient, create_leantime_clie
 
 logger = logging.getLogger(__name__)
 
+
 class TaskStatus(Enum):
     """Leantime task status enumeration with ADHD considerations."""
 
@@ -39,6 +40,7 @@ class TaskStatus(Enum):
     NEEDS_BREAK = "6"  # ADHD-specific status
     CONTEXT_SWITCH = "7"  # ADHD-specific status
 
+
 class TaskPriority(Enum):
     """Task priority levels optimized for ADHD attention management."""
 
@@ -46,6 +48,7 @@ class TaskPriority(Enum):
     FOCUSED = "2"  # Standard attention required
     SCATTERED = "3"  # Low cognitive load, quick wins
     BACKGROUND = "4"  # Can be done with divided attention
+
 
 @dataclass
 class LeantimeTask:
@@ -82,6 +85,7 @@ class LeantimeTask:
         if self.tags is None:
             self.tags = []
 
+
 @dataclass
 class LeantimeProject:
     """Leantime project representation."""
@@ -98,6 +102,7 @@ class LeantimeProject:
     adhd_mode_enabled: bool = True
     context_preservation: bool = True
     notification_batching: bool = True
+
 
 class LeantimeBridge:
     """
@@ -566,6 +571,7 @@ class LeantimeBridge:
             }
 
             logger.error(f"Error: {e}")
+
 
 # Factory function for easy instantiation
 def create_leantime_bridge(config: Config) -> LeantimeBridge:
