@@ -65,7 +65,7 @@ services:
       - pg_age_data:/var/lib/postgresql/data
       - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "5432:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1" ]
       timeout: 5s
@@ -219,8 +219,8 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${QDRANT_PORT:-6333}:6333"
-      - "${QDRANT_GRPC_PORT:-6334}:6334"
+      - "6333:6333"
+      - "6334:6334"
     volumes:
       - dope-decision-graph-qdrant-data:/qdrant/storage
 
@@ -289,8 +289,8 @@ services:
   # LiteLLM - Model Router
   litellm:
     build:
-      context: ./docker/mcp-servers/litellm
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/mcp-servers/litellm/Dockerfile
     container_name: mcp-litellm
     restart: unless-stopped
     networks:
@@ -391,7 +391,6 @@ services:
     build:
       context: .
       dockerfile: services/task-orchestrator/Dockerfile
-    container_name: task-orchestrator
     restart: unless-stopped
     networks:
       - dopemux-network
@@ -408,7 +407,7 @@ services:
       - DOPECON_BRIDGE_REDIS_URL=redis://redis-primary:6379
       - PORT=8000
     ports:
-      - "${TASK_ORCHESTRATOR_PORT:-8000}:8000"
+      - "${TASK_ORCHESTRATOR_PORT:-3014}:8000"
     depends_on:
       - redis-primary
       - conport
@@ -458,7 +457,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${DOPE_MEMORY_PORT:-3020}:3020"
+      - "3020:3020"
     environment:
       - WMA_SECRET_KEY=${WMA_SECRET_KEY:-dev-only-change-me}
       - WMA_ENCRYPTION_KEY=${WMA_ENCRYPTION_KEY:-dev-only-change-me}
@@ -510,8 +509,8 @@ services:
       - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
     volumes:
       - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
-      - ${HOME:?HOME is required}/.serena:/root/.serena:rw
-      - ${HOME:?HOME is required}/code:${HOME:?HOME is required}/code:ro
+      - /Users/hue/.serena:/root/.serena:rw
+      - /Users/hue/code:/Users/hue/code:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4006/health || exit 1"]
       timeout: 10s

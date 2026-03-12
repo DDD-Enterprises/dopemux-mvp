@@ -322,8 +322,6 @@ def _resolve_extractor_root(start: Path) -> Optional[Path]:
 
 def _extractor_runner_path(repo_root: Path, pipeline_version: str) -> Path:
     base = repo_root / "services" / "repo-truth-extractor"
-    if pipeline_version == "v5":
-        return base / "run_extraction_v5.py"
     if pipeline_version == "v4":
         return base / "run_extraction_v4.py"
     return base / "run_extraction_v3.py"

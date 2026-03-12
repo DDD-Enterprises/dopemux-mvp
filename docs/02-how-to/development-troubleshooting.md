@@ -735,7 +735,7 @@ docker-compose restart zen
 
 1. **Check status**: `dopemux dev status`
 1. **View logs**: `dopemux health --verbose`
-1. **Search docs**: Check [Development Setup](development-setup.md)
+1. **Search docs**: Check [Development Setup](./DEVELOPMENT_SETUP.md)
 1. **Check GitHub**: Search existing issues
 
 ### When Asking for Help

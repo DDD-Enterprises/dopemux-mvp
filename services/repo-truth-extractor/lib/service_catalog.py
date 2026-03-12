@@ -9,6 +9,9 @@ ROOT = Path(__file__).resolve().parents[3]
 SERVICES_REGISTRY = ROOT / "services" / "registry.yaml"
 COMPOSE_FILES = [
     ROOT / "compose.yml",
+    ROOT / "docker-compose.dev.yml",
+    ROOT / "docker-compose.prod.yml",
+    ROOT / "docker-compose.smoke.yml",
 ]
 
 def read_yaml(path: Path) -> Any:

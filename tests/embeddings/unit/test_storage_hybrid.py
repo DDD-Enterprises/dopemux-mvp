@@ -7,8 +7,7 @@ Tests the HybridVectorStore and related storage components.
 import pytest
 import numpy as np
 from unittest.mock import AsyncMock, MagicMock, patch
-import pickle
-import types
+from pathlib import Path
 
 from dopemux.embeddings.storage import (
     HybridVectorStore,
@@ -20,98 +19,6 @@ from dopemux.embeddings.storage import (
 )
 from dopemux.embeddings.core import AdvancedEmbeddingConfig, SearchResult, VectorStoreError
 from dopemux.embeddings.providers import VoyageAPIClient
-
-
-class _FakeHNSWLibIndex:
-    """Small in-memory substitute for hnswlib.Index used in unit tests."""
-
-    def __init__(self, space: str, dim: int):
-        self.space = space
-        self.dim = dim
-        self._vectors: dict[int, np.ndarray] = {}
-        self._max_elements = 0
-        self._ef = 0
-
-    def init_index(self, max_elements: int, M: int, ef_construction: int) -> None:
-        self._max_elements = max_elements
-
-    def set_ef(self, ef: int) -> None:
-        self._ef = ef
-
-    def get_current_count(self) -> int:
-        return len(self._vectors)
-
-    def get_max_elements(self) -> int:
-        return self._max_elements
-
-    def resize_index(self, new_capacity: int) -> None:
-        self._max_elements = new_capacity
-
-    def add_items(self, vectors: np.ndarray, indices: list[int]) -> None:
-        for idx, vector in zip(indices, vectors):
-            self._vectors[int(idx)] = np.asarray(vector, dtype=np.float32)
-
-    def knn_query(self, query_vector: np.ndarray, k: int):
-        if not self._vectors:
-            return np.empty((1, 0), dtype=np.int64), np.empty((1, 0), dtype=np.float32)
-
-        query = np.asarray(query_vector, dtype=np.float32)
-        if query.ndim == 1:
-            query = query.reshape(1, -1)
-        query = query[0]
-
-        labels = sorted(self._vectors.keys())
-        matrix = np.vstack([self._vectors[label] for label in labels])
-
-        if self.space == "cosine":
-            vec_norm = np.linalg.norm(matrix, axis=1)
-            query_norm = np.linalg.norm(query)
-            denom = np.maximum(vec_norm * query_norm, 1e-12)
-            similarities = (matrix @ query) / denom
-            distances = 1.0 - similarities
-        else:
-            distances = np.linalg.norm(matrix - query, axis=1)
-
-        top_k = min(k, len(labels))
-        order = np.argsort(distances)[:top_k]
-        ranked_labels = np.array([[labels[i] for i in order]], dtype=np.int64)
-        ranked_distances = np.array([[float(distances[i]) for i in order]], dtype=np.float32)
-        return ranked_labels, ranked_distances
-
-    def save_index(self, path: str) -> None:
-        payload = {
-            "space": self.space,
-            "dim": self.dim,
-            "max_elements": self._max_elements,
-            "ef": self._ef,
-            "vectors": self._vectors,
-        }
-        with open(path, "wb") as handle:
-            pickle.dump(payload, handle)
-
-    def load_index(self, path: str) -> None:
-        with open(path, "rb") as handle:
-            payload = pickle.load(handle)
-        self.space = payload["space"]
-        self.dim = payload["dim"]
-        self._max_elements = payload["max_elements"]
-        self._ef = payload["ef"]
-        self._vectors = payload["vectors"]
-
-
-class _FakeBM25Okapi:
-    """Simple lexical scorer substitute for rank_bm25.BM25Okapi."""
-
-    def __init__(self, corpus):
-        self.corpus = corpus
-
-    def get_scores(self, query_tokens):
-        query_set = set(query_tokens)
-        scores = []
-        for document_tokens in self.corpus:
-            overlap = len(query_set & set(document_tokens))
-            scores.append(float(overlap))
-        return np.asarray(scores, dtype=np.float32)
 
 
 class TestInMemoryDocumentStore:
@@ -199,16 +106,9 @@ class TestHNSWIndex:
         )
 
     @pytest.fixture
-    def hnsw_index(self, config, monkeypatch):
+    def hnsw_index(self, config):
         """Create test HNSW index."""
-        from dopemux.embeddings.storage import vector_indices
-
-        if vector_indices.hnswlib is None:
-            monkeypatch.setattr(
-                vector_indices,
-                "hnswlib",
-                types.SimpleNamespace(Index=_FakeHNSWLibIndex),
-            )
+        pytest.importorskip("hnswlib")
         return HNSWIndex(config)
 
     def test_index_initialization(self, hnsw_index, config):
@@ -218,156 +118,193 @@ class TestHNSWIndex:
         assert hnsw_index.index is not None
         assert hnsw_index.doc_ids == []
 
-    def test_add_vectors(self, hnsw_index):
+    async def test_add_vectors(self, hnsw_index):
         """Test adding vectors to index."""
         vectors = np.random.random((5, 128)).astype(np.float32)
         doc_ids = ["doc1", "doc2", "doc3", "doc4", "doc5"]
 
-        hnsw_index.add_vectors(vectors, doc_ids)
+        await hnsw_index.add_vectors(vectors, doc_ids)
 
         assert len(hnsw_index.doc_ids) == 5
         assert hnsw_index.index.get_current_count() == 5
 
-    def test_search_vectors(self, hnsw_index):
+    async def test_search_vectors(self, hnsw_index):
         """Test vector search."""
+        # Add some vectors
         vectors = np.random.random((10, 128)).astype(np.float32)
         doc_ids = [f"doc{i}" for i in range(10)]
-        hnsw_index.add_vectors(vectors, doc_ids)
+        await hnsw_index.add_vectors(vectors, doc_ids)
 
+        # Search with first vector (should be very similar to itself)
         query_vector = vectors[0]
-        scores, indices = hnsw_index.search(query_vector, k=3)
+        results = await hnsw_index.search(query_vector, k=3)
 
-        assert len(indices) <= 3
-        assert indices[0] == 0
-        assert scores[0] > 0.9
+        assert len(results) <= 3
+        assert results[0]["doc_id"] == "doc0"  # Should find itself first
+        assert results[0]["score"] > 0.9  # High similarity
 
-    def test_search_empty_index(self, hnsw_index):
+    async def test_search_empty_index(self, hnsw_index):
         """Test searching empty index."""
         query_vector = np.random.random(128).astype(np.float32)
-        scores, indices = hnsw_index.search(query_vector, k=5)
+        results = await hnsw_index.search(query_vector, k=5)
 
-        assert scores == []
-        assert indices == []
+        assert len(results) == 0
 
-    def test_save_and_load_index(self, hnsw_index, tmp_path):
+    async def test_update_vector(self, hnsw_index):
+        """Test updating existing vector."""
+        # Add initial vector
+        vector = np.random.random(128).astype(np.float32)
+        await hnsw_index.add_vectors(np.array([vector]), ["doc1"])
+
+        # Update with new vector
+        new_vector = np.random.random(128).astype(np.float32)
+        await hnsw_index.update_vector("doc1", new_vector)
+
+        # Search should find the updated vector
+        results = await hnsw_index.search(new_vector, k=1)
+        assert len(results) == 1
+        assert results[0]["doc_id"] == "doc1"
+
+    async def test_delete_vector(self, hnsw_index):
+        """Test deleting vector."""
+        vectors = np.random.random((3, 128)).astype(np.float32)
+        doc_ids = ["doc1", "doc2", "doc3"]
+        await hnsw_index.add_vectors(vectors, doc_ids)
+
+        # Delete middle document
+        await hnsw_index.delete_vector("doc2")
+
+        # Should have 2 vectors remaining
+        assert len([doc_id for doc_id in hnsw_index.doc_ids if doc_id is not None]) == 2
+
+    async def test_save_and_load_index(self, hnsw_index, tmp_path):
         """Test saving and loading index."""
+        # Add some data
         vectors = np.random.random((5, 128)).astype(np.float32)
         doc_ids = ["doc1", "doc2", "doc3", "doc4", "doc5"]
-        hnsw_index.add_vectors(vectors, doc_ids)
+        await hnsw_index.add_vectors(vectors, doc_ids)
 
+        # Save index
         index_path = tmp_path / "test_index.bin"
-        hnsw_index.save(str(index_path))
+        await hnsw_index.save(str(index_path))
 
+        # Create new index and load
         new_index = HNSWIndex(hnsw_index.config)
-        new_index.load(str(index_path))
+        await new_index.load(str(index_path))
 
+        # Should have same data
         assert len(new_index.doc_ids) == 5
         assert new_index.index.get_current_count() == 5
 
+        # Search should work the same
         query_vector = vectors[0]
-        _, indices = new_index.search(query_vector, k=1)
-        assert indices[0] == 0
+        results = await new_index.search(query_vector, k=1)
+        assert results[0]["doc_id"] == "doc1"
 
     def test_get_stats(self, hnsw_index):
         """Test getting index statistics."""
-        vectors = np.random.random((1, 128)).astype(np.float32)
-        hnsw_index.add_vectors(vectors, ["doc1"])
         stats = hnsw_index.get_stats()
 
         assert "vector_count" in stats
+        assert "index_type" in stats
         assert "dimension" in stats
-        assert stats["vector_count"] == 1
-        assert stats["document_count"] == 1
+        assert stats["index_type"] == "hnsw"
 
 
 class TestBM25Index:
     """Test BM25 lexical index."""
 
     @pytest.fixture
-    def bm25_index(self, monkeypatch):
-        """Create test BM25 index."""
-        from dopemux.embeddings.storage import text_indices
+    def config(self):
+        """Create test configuration."""
+        return AdvancedEmbeddingConfig()
 
-        if text_indices.BM25Okapi is None:
-            monkeypatch.setattr(text_indices, "BM25Okapi", _FakeBM25Okapi)
-        return BM25Index()
+    @pytest.fixture
+    def bm25_index(self, config):
+        """Create test BM25 index."""
+        pytest.importorskip("rank_bm25")
+        return BM25Index(config)
 
     def test_index_initialization(self, bm25_index):
         """Test BM25 index initialization."""
-        assert bm25_index.language == "english"
-        assert bm25_index.bm25 is None
+        assert bm25_index.k1 == 1.5  # BM25 parameter
+        assert bm25_index.b == 0.75   # BM25 parameter
         assert bm25_index.documents == []
         assert bm25_index.doc_ids == []
 
-    def test_add_documents(self, bm25_index):
+    async def test_add_documents(self, bm25_index):
         """Test adding documents to BM25 index."""
-        documents = [
-            "machine learning algorithms",
-            "deep neural networks",
-            "machine learning with neural networks",
+        docs = [
+            {"id": "doc1", "content": "machine learning algorithms"},
+            {"id": "doc2", "content": "deep neural networks"},
+            {"id": "doc3", "content": "machine learning with neural networks"}
         ]
-        ids = ["doc1", "doc2", "doc3"]
 
-        bm25_index.add_documents(documents, ids)
+        await bm25_index.add_documents(docs)
 
         assert len(bm25_index.documents) == 3
         assert len(bm25_index.doc_ids) == 3
         assert bm25_index.doc_ids[0] == "doc1"
 
-    def test_search_documents(self, bm25_index):
+    async def test_search_documents(self, bm25_index):
         """Test BM25 search."""
-        documents = [
-            "machine learning algorithms",
-            "deep neural networks",
-            "machine learning with neural networks",
-            "computer vision applications",
+        docs = [
+            {"id": "doc1", "content": "machine learning algorithms"},
+            {"id": "doc2", "content": "deep neural networks"},
+            {"id": "doc3", "content": "machine learning with neural networks"},
+            {"id": "doc4", "content": "computer vision applications"}
         ]
-        ids = ["doc1", "doc2", "doc3", "doc4"]
-        bm25_index.add_documents(documents, ids)
+        await bm25_index.add_documents(docs)
 
-        results = bm25_index.search("machine learning", k=3)
+        # Search for "machine learning"
+        results = await bm25_index.search("machine learning", k=3)
 
         assert len(results) <= 3
-        top_doc_ids = [doc_id for doc_id, _ in results]
-        assert top_doc_ids[0] in {"doc1", "doc3"}
-        assert all(score > 0 for _, score in results)
+        # Documents with "machine learning" should rank higher
+        assert results[0]["doc_id"] in ["doc1", "doc3"]
+        assert all(result["score"] > 0 for result in results)
 
-    def test_search_empty_index(self, bm25_index):
+    async def test_search_empty_index(self, bm25_index):
         """Test searching empty index."""
-        results = bm25_index.search("test query", k=5)
+        results = await bm25_index.search("test query", k=5)
         assert len(results) == 0
 
-    def test_update_document(self, bm25_index):
+    async def test_update_document(self, bm25_index):
         """Test updating document in BM25 index."""
-        bm25_index.add_documents(["original content"], ["doc1"])
+        docs = [{"id": "doc1", "content": "original content"}]
+        await bm25_index.add_documents(docs)
 
-        bm25_index.update_document("doc1", "updated machine learning content")
+        # Update document
+        updated_doc = {"id": "doc1", "content": "updated machine learning content"}
+        await bm25_index.update_document("doc1", updated_doc)
 
-        results = bm25_index.search("machine learning", k=1)
+        # Search should find updated content
+        results = await bm25_index.search("machine learning", k=1)
         assert len(results) == 1
-        assert results[0][0] == "doc1"
+        assert results[0]["doc_id"] == "doc1"
 
-    def test_delete_document(self, bm25_index):
+    async def test_delete_document(self, bm25_index):
         """Test deleting document from BM25 index."""
-        bm25_index.add_documents(
-            ["keep this document", "delete this document"],
-            ["doc1", "doc2"],
-        )
+        docs = [
+            {"id": "doc1", "content": "keep this document"},
+            {"id": "doc2", "content": "delete this document"}
+        ]
+        await bm25_index.add_documents(docs)
 
-        bm25_index.remove_document("doc2")
+        await bm25_index.delete_document("doc2")
 
-        results = bm25_index.search("delete", k=10)
-        doc_ids = [doc_id for doc_id, _ in results]
+        # Search should not find deleted document
+        results = await bm25_index.search("delete", k=10)
+        doc_ids = [r["doc_id"] for r in results]
         assert "doc2" not in doc_ids
 
     def test_get_stats(self, bm25_index):
         """Test getting BM25 statistics."""
-        bm25_index.add_documents(["machine learning"], ["doc1"])
         stats = bm25_index.get_stats()
 
         assert "document_count" in stats
-        assert "vocabulary_size" in stats
-        assert stats["has_index"] is True
+        assert "index_type" in stats
+        assert stats["index_type"] == "bm25"
 
 
 class TestHybridRanker:

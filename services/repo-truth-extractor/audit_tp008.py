@@ -22,7 +22,7 @@ import yaml
 SERVICE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SERVICE_DIR.parents[1]
 MODEL_MAP_PATH = SERVICE_DIR / "promptsets" / "v4" / "model_map.yaml"
-REPO_TRUTH_MAP_PATH = REPO_ROOT / "reports" / "repo_truth_map.json"
+REPO_TRUTH_MAP_PATH = REPO_ROOT / "repo_truth_map.json"
 DEFAULT_OUT_DIR = REPO_ROOT / "reports" / "strict_closure"
 DEFAULT_RUNS_ROOT = REPO_ROOT / "extraction" / "repo-truth-extractor" / "v3" / "runs"
 

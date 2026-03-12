@@ -16,16 +16,16 @@ This directory contains comprehensive code audit reports and findings.
 ## Quick Links
 
 **Start Here**:
-- [FINAL-AUDIT-REPORT.md](final-audit-report-2.md) - Complete audit summary
-- [DEPLOYMENT-READY-SUMMARY.md](../archive/claude-sessions/deployment-ready-summary-2.md) - How to deploy fixes (historical packet)
+- [FINAL-AUDIT-REPORT.md](FINAL-AUDIT-REPORT.md) - Complete audit summary
+- [DEPLOYMENT-READY-SUMMARY.md](../archive/claude-sessions/DEPLOYMENT-READY-SUMMARY.md) - How to deploy fixes (historical packet)
 
 **Phase Reports**:
-- [PHASE-1-COMPLETE.md](phase-1-complete-2.md) - Inventory (1.5h)
+- [PHASE-1-COMPLETE.md](PHASE-1-COMPLETE.md) - Inventory (1.5h)
 - [phase-2-security-quality-complete.md](../archive/claude-sessions/phase-2-security-quality-complete.md) - Security scan (2h, historical)
 
 **Audit Plans**:
-- [OPTIMIZED-AUDIT-PLAN.md](optimized-audit-plan-2.md) - 36h MCP-enhanced plan (used)
-- [EXHAUSTIVE-AUDIT-PLAN.md](exhaustive-audit-plan-2.md) - 93h detailed plan (reference)
+- [OPTIMIZED-AUDIT-PLAN.md](OPTIMIZED-AUDIT-PLAN.md) - 36h MCP-enhanced plan (used)
+- [EXHAUSTIVE-AUDIT-PLAN.md](EXHAUSTIVE-AUDIT-PLAN.md) - 93h detailed plan (reference)
 
 ## Audit Summary
 
@@ -64,7 +64,7 @@ This directory contains comprehensive code audit reports and findings.
 
 ## Additional Resources
 
-- [AUDIT-SUMMARY-2025-10-16.md](audit-summary-2025-10-16-2.md) - Comprehensive overview
+- [AUDIT-SUMMARY-2025-10-16.md](AUDIT-SUMMARY-2025-10-16.md) - Comprehensive overview
 - [architecture-audit-2025-10-16.md](architecture-audit-2025-10-16.md) - Two-plane analysis (pre-audit)
 
 Total: 37 audit documents

@@ -3,15 +3,15 @@ id: 00-MASTER-INDEX
 title: 00 Master Index
 type: explanation
 owner: '@hu3mann'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: 00 Master Index (explanation) for dopemux documentation and developer workflows.
 ---
 # Dopemux Documentation - Master Index
 
-**Quick Navigation:** [Getting Started](#getting-started) | [How-To Guides](#how-to) | [Systems](#systems) | [Architecture](#architecture) | [Research Progress](04-explanation/technical-deep-dives/research-leaderboard.md) | [Archive](#archive)
+**Quick Navigation:** [Getting Started](#getting-started) | [How-To Guides](#how-to) | [Systems](#systems) | [Architecture](#architecture) | [Research Progress](04-explanation/technical-deep-dives/RESEARCH_LEADERBOARD.md) | [Archive](#archive)
 
 ---
 
@@ -19,7 +19,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 
 ### New to Dopemux?
 - **[Quick Start Guide](../QUICK_START.md)** - Get up and running in 5 minutes
-- **[Installation](01-tutorials/start-here-2.md)** - Comprehensive setup guide
+- **[Installation](01-tutorials/START-HERE.md)** - Comprehensive setup guide
 - **[README](../README.md)** - Project overview and features
 
 ---
@@ -81,25 +81,17 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 ## Architecture & Design
 
 ### Core Architecture
-- [Architecture Overview](04-explanation/architecture/dopemux-architecture-overview-2.md) - Complete system architecture
+- [Architecture Overview](04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md) - Complete system architecture
 - [System Bible](04-explanation/architecture/system-bible.md) - Consolidated knowledge base
-- [Three-Layer Integration](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
+- [Three-Layer Integration](90-adr/ADR-207-architecture-3.0-three-layer-integration.md)
 - [Multi-Instance Implementation](04-explanation/architecture/multi-instance-implementation.md)
-- [Canonical Compose Runtime](../compose.yml) - Single orchestration source for smoke + full-stack operations
 
 ### Architecture Decision Records (ADRs)
 **Location:** `90-adr/`
-- [ADR-207: Architecture 3.0](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
-- [ADR-203: Task Orchestrator](90-adr/adr-203-task-orchestrator-un-deprecation-2.md)
-- [ADR-202: Serena V2 Validation](90-adr/adr-202-serena-v2-production-validation-2.md)
-- [ADR-201: ConPort Security](90-adr/adr-201-conport-kg-security-hardening-2.md)
-- [ADR: PM Plane Authority Boundaries](90-adr/adr-pm-plane-authority-boundaries.md)
-- [ADR: ConPort Decision/Progress/Context Authority](90-adr/adr-conport-as-decision-progress-and-context-authority.md)
-- [ADR: dope-memory Chronicle Memory Authority](90-adr/adr-dope-memory-as-chronicle-memory-authority.md)
-- [ADR: Dopecon-Bridge Adapter-Only Scope](90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md)
-- [ADR: Leantime JSON-RPC + Plugin Integration Strategy](90-adr/adr-leantime-json-rpc-plus-plugin-integration-strategy.md)
-- [ADR: Task Orchestrator Workflow Authority](90-adr/adr-task-orchestrator-as-workflow-authority.md)
-- [ADR: Memory Trinity Authority and Interaction Model](90-adr/adr-memory-trinity-authority-and-interaction-model.md)
+- [ADR-207: Architecture 3.0](90-adr/ADR-207-architecture-3.0-three-layer-integration.md)
+- [ADR-203: Task Orchestrator](90-adr/ADR-203-task-orchestrator-un-deprecation.md)
+- [ADR-202: Serena V2 Validation](90-adr/ADR-202-serena-v2-production-validation.md)
+- [ADR-201: ConPort Security](90-adr/ADR-201-conport-kg-security-hardening.md)
 
 ---
 
@@ -107,54 +99,48 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 
 ### Active Planning
 **Location:** `archive/development/planning/`
-- [Master Action Plan](archive/development/planning/action-plan-master-2.md)
-- [DDDPG Kickoff](archive/development/planning/dddpg-kickoff.md)
-- [Layout Plans](archive/development/planning/dope-layout-modular-plan.md)
+- [Master Action Plan](archive/development/planning/ACTION-PLAN-MASTER.md)
+- [DDDPG Kickoff](archive/development/planning/DDDPG_KICKOFF.md)
+- [Layout Plans](archive/development/planning/DOPE_LAYOUT_MODULAR_PLAN.md)
 
 ### Implementation Plans
 **Location:** `archive/implementation-plans/`
-- [Master Index](archive/implementation-plans/00-master-index-2.md)
-- [Dashboard Implementation](archive/implementation-plans/dashboard-implementation-tracker.md)
-- [ConPort HTTP Planning](archive/implementation-plans/conport-http-deep-planning.md)
+- [Master Index](archive/implementation-plans/00-MASTER-INDEX.md)
+- [Dashboard Implementation](archive/implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md)
+- [ConPort HTTP Planning](archive/implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md)
 - [Component Summaries](archive/implementation-plans/component-1-audit-summary.md)
-
-### Documentation Automation
-- [Documentation Root Index](INDEX.md)
-- [Documentation Catalog](03-reference/documentation-catalog.md)
-- PR Docgen Sync skill templates:
-  - `templates/skills/pr-docgen-sync/`
-  - `templates/skills/pr-docgen-sync-gemini/`
-  - `templates/skills/pr-docgen-sync-copilot/`
-  - `templates/skills/pr-docgen-sync-claude/`
-- Skill install/sync script: `scripts/skills/sync_repo_skills.py`
 
 ---
 
 ## Reference
 
 ### Configuration
-- [Profile YAML Schema](03-reference/configuration/profile-yaml-schema-2.md)
+- [Profile YAML Schema](03-reference/configuration/PROFILE-YAML-SCHEMA.md)
 - [MCP Tools Overview](03-reference/mcp-tools-overview.md)
 - [Task Orchestrator Service Reference](03-reference/services/task-orchestrator.md)
-- [Dope-Context Docs Contextual Embedding Contract](03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md)
-- [Dope-Context Architecture and Trinity Boundaries](03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md)
+- [Dope-Context Docs Contextual Embedding Contract](03-reference/dope-context/DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md)
+- [Dope-Context Architecture and Trinity Boundaries](03-reference/dope-context/DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md)
 
 ### Features
 - [Features Index](03-reference/features/features-index.md)
-- [Untracked Work Detection](03-reference/f001-enhanced-untracked-work-system-2.md)
-- [Multi-Session Support](03-reference/f002-multi-session-support-2.md)
+- [Untracked Work Detection](03-reference/F001-ENHANCED-untracked-work-system.md)
+- [Multi-Session Support](03-reference/F002-multi-session-support.md)
 
 ### Governance
-- [Authority Map](03-reference/governance/authority-map.md)
-- [Conflict Ledger](03-reference/governance/conflict-ledger.md)
-- Additional governance contracts are tracked in the active backlog and linked from the Authority Map.
+- [Authority Map](03-reference/governance/AUTHORITY_MAP.md)
+- [Conflict Ledger](03-reference/governance/CONFLICT_LEDGER.md)
+- [CI Contract](03-reference/governance/CI_CONTRACT.md)
+- [Runtime Contract](03-reference/governance/RUNTIME_CONTRACT.md)
+- [Scoreboard](03-reference/governance/SCOREBOARD.md)
+- [Task Packet Standard](03-reference/governance/TASK_PACKET_STANDARD.md)
+- [Task Packet Template](03-reference/governance/TASK_PACKET_TEMPLATE.md)
 
 ### Technical Deep Dives
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)
 - [ConPort Technical Deep Dive](04-explanation/technical-deep-dives/conport-technical-deep-dive.md)
-- [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md)
-- [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md)
-- [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md)
+- [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/DOPE-MEMORY-DEEP-DIVE.md)
+- [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART1.md)
+- [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/DOPEMUX-CONTEXT-DEEP-DIVE.md)
 
 ---
 
@@ -221,5 +207,5 @@ When adding new documentation:
 
 ---
 
-**Last Updated:** 2026-03-11
+**Last Updated:** 2025-10-29
 **Maintainer:** Documentation reorganization complete

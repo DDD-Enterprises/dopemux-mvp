@@ -315,7 +315,7 @@ make ci             # Run all CI checks locally
 
 ## Documentation
 
-- **Technical Spec**: [`COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md`](../../../archive/component-implementations/component-7-environmental-interruption-shield.md)
+- **Technical Spec**: [`COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md`](../../../archive/component-implementations/COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md)
 - **Sprint Plan**: [`phase1-sprint-plan.md`](../../../archive/sessions/adhd-engine/phase1-sprint-plan.md)
 - **Guide Root**: [`quickstart.md`](quickstart.md)
 

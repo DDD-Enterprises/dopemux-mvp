@@ -417,7 +417,7 @@ if os.getenv("DOPEMUX_DEV_MODE") == "true":
 
 **For Docker Services**:
 ```yaml
-# compose.yml (dev profile example)
+# docker-compose.dev.yml
 services:
   zen:
     volumes:

@@ -39,7 +39,7 @@ The dashboard provides:
 
 ### Implementation Details
 - [Enhancement Plans](dashboard-enhancements.md) - Planned improvements
-- [Session Summaries](../../../archive/implementation-plans/dashboard-session-summary.md) - Development notes
+- [Session Summaries](../../../archive/implementation-plans/DASHBOARD_SESSION_SUMMARY.md) - Development notes
 
 ## Dashboard Components
 
@@ -136,7 +136,7 @@ Planned:
 ## Related Documentation
 
 - [ADHD Engine Documentation](../adhd-intelligence/adhd-complete-documentation.md)
-- [Architecture Overview](../../../04-explanation/architecture/dopemux-architecture-overview-2.md)
+- [Architecture Overview](../../../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
 - [Implementation Plans](../../../archive/implementation-plans/)
 
 ## Troubleshooting

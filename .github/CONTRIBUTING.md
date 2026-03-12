@@ -16,7 +16,7 @@ pre-commit install --install-hooks
 3. Start a local stack for validation:
 
 ```bash
-scripts/smoke_up.sh
+docker compose -f docker-compose.smoke.yml up --build -d
 ```
 
 ## Branching and Pull Requests

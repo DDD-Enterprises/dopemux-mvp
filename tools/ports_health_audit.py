@@ -13,159 +13,16 @@ from typing import List, Optional, Dict, Any, Tuple
 
 # Import registry module
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-
-@dataclass
-class _RegistryEntry:
-    name: str
-    path: str
-    is_docker: bool
-    port: Optional[int]
-    protocol: str
-    compose_service: Optional[str]
-    health_url: Optional[str]
-
-
-def _load_registry_entries(smoke_only: bool = False) -> List[_RegistryEntry]:
-    repo_root = Path(__file__).resolve().parent.parent
-    registry_path = repo_root / "services" / "registry.yaml"
-    compose_path = repo_root / "compose.yml"
-
-    registry_payload = yaml.safe_load(registry_path.read_text()) or {}
-    compose_payload = yaml.safe_load(compose_path.read_text()) if compose_path.exists() else {}
-    compose_services = compose_payload.get("services", {}) if isinstance(compose_payload, dict) else {}
-
-    entries: List[_RegistryEntry] = []
-    for service in registry_payload.get("services", []):
-        if smoke_only and not service.get("enabled_in_smoke", False):
-            continue
-
-        service_name = service.get("name")
-        if not service_name:
-            continue
-
-        compose_service = service.get("compose_service_name", service_name)
-        compose_cfg = compose_services.get(compose_service, {}) if isinstance(compose_services, dict) else {}
-
-        service_path = f"services/{service_name}"
-        is_docker = bool(compose_cfg)
-
-        build_cfg = compose_cfg.get("build") if isinstance(compose_cfg, dict) else None
-        if isinstance(build_cfg, dict):
-            context = build_cfg.get("context", service_path)
-            service_path = str(context).lstrip("./")
-        elif isinstance(build_cfg, str):
-            service_path = str(build_cfg).lstrip("./")
-
-        health_path = service.get("health_path")
-        category = str(service.get("category", "")).strip().lower()
-        protocol = "http" if health_path else ("worker" if category == "infrastructure" else "http")
-
-        entries.append(
-            _RegistryEntry(
-                name=str(service_name),
-                path=service_path,
-                is_docker=is_docker,
-                port=service.get("port"),
-                protocol=protocol,
-                compose_service=compose_service,
-                health_url=health_path,
-            )
-        )
-
-    return entries
-
-
-try:
-    from src.dopemux.registry import load_registry, get_smoke_services  # type: ignore
-except Exception:
-    def load_registry() -> List[_RegistryEntry]:
-        return _load_registry_entries(smoke_only=False)
-
-    def get_smoke_services() -> List[_RegistryEntry]:
-        return _load_registry_entries(smoke_only=True)
+from src.dopemux.registry import load_registry, get_smoke_services
 from enum import Enum
 
-try:
-    from src.dopemux.health.errors import (
-        HealthCheckStatus,
-        classify_health_response,
-        classify_docker_status,
-        get_classification_message,
-        get_suggested_action,
-    )
-except Exception:
-    class HealthCheckStatus(str, Enum):
-        HEALTHY = "HEALTHY"
-        UNKNOWN = "UNKNOWN"
-        RUNTIME_DOWN = "RUNTIME_DOWN"
-        SHAPE_FAIL = "SHAPE_FAIL"
-        CONTAINER_EXITED = "CONTAINER_EXITED"
-        CONTAINER_UNHEALTHY = "CONTAINER_UNHEALTHY"
-
-    def classify_health_response(
-        http_ok: Optional[bool] = None,
-        json_ok: Optional[bool] = None,
-        shape_ok: Optional[bool] = None,
-        *,
-        http_status: Optional[int] = None,
-        response_body: Optional[str] = None,
-        error_msg: Optional[str] = None,
-    ) -> HealthCheckStatus:
-        # Compatibility mode: support the historical boolean-based signature.
-        if http_ok is not None or json_ok is not None or shape_ok is not None:
-            resolved_http_ok = bool(http_ok)
-            resolved_json_ok = bool(json_ok)
-            resolved_shape_ok = bool(shape_ok)
-            if not resolved_http_ok:
-                return HealthCheckStatus.RUNTIME_DOWN
-            if not resolved_json_ok or not resolved_shape_ok:
-                return HealthCheckStatus.SHAPE_FAIL
-            return HealthCheckStatus.HEALTHY
-
-        if error_msg or http_status is None or http_status < 200 or http_status >= 300:
-            return HealthCheckStatus.RUNTIME_DOWN
-        if response_body is None:
-            return HealthCheckStatus.SHAPE_FAIL
-
-        try:
-            parsed = json.loads(response_body)
-        except Exception:
-            return HealthCheckStatus.SHAPE_FAIL
-
-        if not isinstance(parsed, dict):
-            return HealthCheckStatus.SHAPE_FAIL
-
-        required_keys = {"status", "service", "ts"}
-        if not required_keys.issubset(parsed.keys()):
-            return HealthCheckStatus.SHAPE_FAIL
-
-        return HealthCheckStatus.HEALTHY
-
-    def classify_docker_status(container_status: Optional[str], health_status: Optional[str]) -> HealthCheckStatus:
-        container_text = (container_status or "").lower()
-        health_text = (health_status or "").lower()
-        if "unhealthy" in container_text or health_text == "unhealthy":
-            return HealthCheckStatus.CONTAINER_UNHEALTHY
-        if "exited" in container_text:
-            return HealthCheckStatus.CONTAINER_EXITED
-        if "running" in container_text:
-            return HealthCheckStatus.HEALTHY
-        return HealthCheckStatus.UNKNOWN
-
-    def get_classification_message(status: HealthCheckStatus) -> str:
-        return str(status.value if isinstance(status, Enum) else status)
-
-    def get_suggested_action(status: HealthCheckStatus) -> str:
-        if status == HealthCheckStatus.CONTAINER_EXITED:
-            return "Inspect container logs and restart the service."
-        if status == HealthCheckStatus.CONTAINER_UNHEALTHY:
-            return "Inspect healthcheck output and dependent services."
-        if status == HealthCheckStatus.RUNTIME_DOWN:
-            return "Verify service is running and port mapping is correct."
-        if status == HealthCheckStatus.SHAPE_FAIL:
-            return "Check health endpoint response payload shape."
-        return "Check service logs for details."
+from src.dopemux.health.errors import (
+    HealthCheckStatus,
+    classify_health_response,
+    classify_docker_status,
+    get_classification_message,
+    get_suggested_action,
+)
 
 
 class HealthCheckError(str, Enum):
@@ -618,8 +475,8 @@ def main():
     if args.compose_file:
         compose_file = Path(args.compose_file)
     elif args.mode in ["runtime", "both"]:
-        # Default to canonical compose for runtime checks
-        compose_file = root / "compose.yml"
+        # Default to smoke stack for runtime checks
+        compose_file = root / "docker-compose.smoke.yml"
 
     # Load from registry module
     try:
