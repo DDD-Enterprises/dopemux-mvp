@@ -63,7 +63,7 @@ Last Updated: 2025-10-28
 - **Effort:** 3-4 hours remaining
 - **Dependencies:** ✅ SparklineGenerator exists, ✅ PrometheusClient ready
 - **Status:** 🚀 IMPLEMENTATION READY
-- **Docs:** [DASHBOARD_DAY10_DEEP_RESEARCH.md](./DASHBOARD_DAY10_DEEP_RESEARCH.md)
+- **Docs:** [DASHBOARD_DAY10_DEEP_RESEARCH.md](dashboard-day10-deep-research.md)
 
 1. **Interactive Dashboard Controls** 🎯 **DAY 10 - READY TO IMPLEMENT**
 - [x] Add keyboard shortcuts for all actions ✅ (Day 1-3)
@@ -80,7 +80,7 @@ Last Updated: 2025-10-28
 - **Effort:** 2-3 hours remaining
 - **Dependencies:** None
 - **Status:** 🚀 IMPLEMENTATION READY
-- **Docs:** [DASHBOARD_DAY10_READY.md](./DASHBOARD_DAY10_READY.md)
+- **Docs:** [DASHBOARD_DAY10_READY.md](dashboard-day10-ready.md)
 
 1. **Data Drill-Down Views** ✅ **COMPLETE (Day 4+6)**
 - [x] Base modal infrastructure ✅

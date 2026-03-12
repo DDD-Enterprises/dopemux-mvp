@@ -271,7 +271,7 @@ Tests verify:
 1. **Configure logging** from LOG_LEVEL env var
 1. **Expose health endpoint** at HEALTH_CHECK_PATH
 1. **Update Dockerfile** to accept env vars as ARG/ENV
-1. **Update docker-compose** to pass env vars
+1. **Update `compose.yml`** to pass env vars
 
 ### Example Migration (task-orchestrator)
 
@@ -345,7 +345,7 @@ CMD ["python", "server.py"]
 - **Service Registry**: `services/registry.yaml`
 - **Drift Scanner**: `tools/env_drift_scan.py`
 - **Architecture Tests**: `tests/arch/test_service_env_contract.py`
-- **Smoke Compose**: `docker-compose.smoke.yml`
+- **Canonical Compose**: `compose.yml`
 - **Env Matrix**: `reports/g33/env_support_matrix.md`
 
 ---

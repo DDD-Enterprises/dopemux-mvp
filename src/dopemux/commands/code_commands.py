@@ -166,6 +166,7 @@ def code_agent_status_cmd(ctx, verbose):
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))
 
+        import aiohttp
         from genetic_agent.core.config import AgentConfig
         import asyncio
 
@@ -205,8 +206,7 @@ def code_agent_status_cmd(ctx, verbose):
                                 error_msg = f"Health check failed with status {response.status}"
                     except Exception as e:
                         error_msg = f"Connection failed: {str(e)}"
-
-                        logger.error(f"Error: {e}")
+                        console.logger.error(f"Error: {e}")
                     status_icon = "✅" if reachable else "❌"
                     console.logger.info(f"  {status_icon} {service}")
                     if not reachable:

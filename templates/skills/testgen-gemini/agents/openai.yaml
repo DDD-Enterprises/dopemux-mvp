@@ -1,0 +1,4 @@
+interface:
+  display_name: "Testgen Gemini"
+  short_description: "Gemini-first wrapper for deterministic testgen"
+  default_prompt: "Use $testgen-gemini to generate a full layered test suite from this packet with Gemini-first specialist routing."

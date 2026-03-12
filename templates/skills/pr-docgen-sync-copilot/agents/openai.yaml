@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Docgen Sync Copilot"
+  short_description: "Copilot wrapper for PR docgen sync workflow"
+  default_prompt: "Use $pr-docgen-sync-copilot to run the full PR documentation sync workflow with copilot-oriented routing defaults."

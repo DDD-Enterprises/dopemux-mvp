@@ -71,8 +71,7 @@ async def health():
 
 - Use `docker/` for Dockerfiles
 - Add to appropriate compose file:
-  - `docker-compose.smoke.yml` - Core services
-  - `docker-compose.master.yml` - Full stack
+  - `compose.yml` - Canonical stack (use `scripts/smoke_up.sh` for core smoke subset)
 - Include HEALTHCHECK in Dockerfile
 
 ---
@@ -90,3 +89,11 @@ services/
 ```
 
 Always check existing services before creating duplicates.
+
+## Documentation Sync
+
+When service behavior changes, run the PR docgen sync workflow so user/dev/devops/product docs stay aligned:
+
+- Core + wrappers: `templates/skills/pr-docgen-sync*/`
+- Installer: `python scripts/skills/sync_repo_skills.py --family pr-docgen-sync`
+- Baseline: `main...HEAD`

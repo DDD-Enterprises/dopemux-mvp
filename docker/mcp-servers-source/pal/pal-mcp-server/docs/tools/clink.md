@@ -73,13 +73,18 @@ clink with gemini with planner role to map out our microservices migration strat
 Use clink codereviewer role to review auth.py for security issues
 ```
 
+**Test Specialist Role** - Requirement-traceable test design and generation
+```
+Use clink test-specialist role to generate layered tests for the checkout workflow
+```
+
 You can make your own custom roles in `conf/cli_clients/` or tweak any of the shipped presets.
 
 ## Tool Parameters
 
 - `prompt`: Your question or task for the external CLI (required)
 - `cli_name`: Which CLI to use - `gemini` (default), `claude`, `codex`, or add your own in `conf/cli_clients/`
-- `role`: Preset role - `default`, `planner`, `codereviewer` (default: `default`)
+- `role`: Preset role - `default`, `planner`, `codereviewer`, `test-specialist` (default: `default`)
 - `files`: Optional file paths for context (references only, CLI opens files itself)
 - `images`: Optional image paths for visual context
 - `continuation_id`: Continue previous clink conversations

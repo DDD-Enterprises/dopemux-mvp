@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/update_focus_mode",
+  "title": "Update Focus Mode",
+  "description": "Updates the current ADHD focus mode which controls result filtering behavior across all tools. Not persisted across restarts.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "focused",
+            "scattered",
+            "transitioning"
+          ],
+          "description": "New focus mode to set"
+        }
+      },
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "focused",
+            "scattered",
+            "transitioning"
+          ]
+        },
+        "previous_mode": {
+          "type": "string"
+        },
+        "max_results": {
+          "type": "integer"
+        },
+        "filtering_behavior": {
+          "type": "string"
+        },
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "saved_to_database": {
+              "type": "boolean",
+              "const": false
+            },
+            "restart_behavior": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "saved_to_database",
+            "restart_behavior"
+          ]
+        }
+      },
+      "required": [
+        "mode",
+        "previous_mode",
+        "max_results",
+        "filtering_behavior",
+        "persistence"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Returns error with current mode unchanged"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 3
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": null
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": false
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}

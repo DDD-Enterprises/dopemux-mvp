@@ -1,0 +1,153 @@
+version: 1
+
+docs_root: docs
+audit_output: reports/docs-hygiene/audit.json
+
+canonical_roots:
+  - 01-tutorials
+  - 02-how-to
+  - 03-reference
+  - 04-explanation
+  - 05-audit-reports
+  - 06-research
+  - 90-adr
+  - 91-rfc
+  - 92-runbooks
+  - 94-architecture
+  - archive
+  - planes
+  - systems
+
+quarantine_prefixes:
+  - docs/04-explanation/history/sourceFiles/
+
+keep_docs_root_files:
+  - docs/00-MASTER-INDEX.md
+  - docs/INDEX.md
+
+unknown_top_level_fallback_dir: docs/archive/unclassified-top-level
+default_root_target_dir: docs/04-explanation/root-relocated
+
+relocation_rules:
+  - id: map-spec
+    from: docs/spec/
+    to: docs/03-reference/spec/
+  - id: map-api
+    from: docs/api/
+    to: docs/03-reference/api/
+  - id: map-best-practices
+    from: docs/best-practices/
+    to: docs/03-reference/best-practices/
+  - id: map-instructions
+    from: docs/instructions/
+    to: docs/03-reference/instructions/
+  - id: map-investigations
+    from: docs/investigations/
+    to: docs/06-research/investigations/
+  - id: map-pm
+    from: docs/pm/
+    to: docs/planes/pm/
+  - id: map-projects
+    from: docs/projects/
+    to: docs/systems/
+    mode: project-subdir
+  - id: map-troubleshooting
+    from: docs/troubleshooting/
+    to: docs/92-runbooks/
+  - id: map-task-packets
+    from: docs/task_packets/
+    to: docs/03-reference/task-packets/
+  - id: map-templates
+    from: docs/templates/
+    to: docs/03-reference/templates/
+  - id: map-architecture
+    from: docs/architecture/
+    to: docs/04-explanation/architecture/
+  - id: map-explanation-archive
+    from: docs/04-explanation/archive/
+    to: docs/archive/
+  - id: map-explanation-audit-reports
+    from: docs/04-explanation/audit-reports/
+    to: docs/05-audit-reports/
+
+root_overrides:
+  docs/ADHD-DASHBOARD-SESSION-SUMMARY.md: docs/05-audit-reports/root-relocated/adhd-dashboard-session-summary-2.md
+  docs/AG-master_plan.md: docs/04-explanation/root-relocated/ag-master-plan.md
+  docs/AUDIT_INITIAL_FINDINGS.md: docs/05-audit-reports/root-relocated/audit-initial-findings.md
+  docs/CHECKLIST.md: docs/02-how-to/root-relocated/checklist-2.md
+  docs/CODEX_DESKTOP_BOOTSTRAP_PROMPT.md: docs/03-reference/instructions/codex-desktop-bootstrap-prompt.md
+  docs/COMPACT-DASHBOARD-COMPLETE.md: docs/05-audit-reports/root-relocated/compact-dashboard-complete-2.md
+  docs/CONTRIBUTING_ZEN.md: docs/03-reference/instructions/contributing-zen.md
+  docs/COVERAGE_POLICY.md: docs/03-reference/governance/coverage-policy.md
+  docs/DOCKER_SETUP.md: docs/02-how-to/docker-setup.md
+  docs/DOPEMUX_CONTINUATION_PRIMER.md: docs/04-explanation/root-relocated/dopemux-continuation-primer.md
+  docs/DOPETASK_KERNEL_INTEGRATION.md: docs/04-explanation/integrations/dopetask-kernel-integration.md
+  docs/DOPE_MEMORY_INTEGRATION.md: docs/04-explanation/integrations/dope-memory-integration.md
+  docs/FINAL-COMPLETE-SESSION-SUMMARY.md: docs/05-audit-reports/root-relocated/final-complete-session-summary-2.md
+  docs/GEMINI.md: docs/03-reference/instructions/gemini-2.md
+  docs/MCP_STATUS_UPDATE.md: docs/05-audit-reports/root-relocated/mcp-status-update.md
+  docs/MIGRATION_TASKX_TO_DOPETASK.md: docs/04-explanation/migrations/migration-taskx-to-dopetask.md
+  docs/MONITORING-DESIGN-SPRINT-SUMMARY.md: docs/05-audit-reports/root-relocated/monitoring-design-sprint-summary-2.md
+  docs/ORCHESTRATOR-INTEGRATION-COMPLETE.md: docs/05-audit-reports/root-relocated/orchestrator-integration-complete-2.md
+  docs/PHASE0_DETERMINISM_REPORT.md: docs/05-audit-reports/root-relocated/phase0-determinism-report.md
+  docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md: docs/05-audit-reports/root-relocated/phase0-determinism-report-processpool.md
+  docs/PHASE0_SERIALIZATION_REPORT.md: docs/05-audit-reports/root-relocated/phase0-serialization-report.md
+  docs/PIPELINE_RELIABILITY.md: docs/03-reference/extraction/pipeline-reliability-2.md
+  docs/PIPELINE_TRANSPORT_LAYER.md: docs/03-reference/extraction/pipeline-transport-layer-2.md
+  docs/PROCESSPOOL_STABILITY_REPORT.md: docs/05-audit-reports/root-relocated/processpool-stability-report.md
+  docs/STATELESS_OPERATOR_MODE_PROMPT.md: docs/03-reference/instructions/stateless-operator-mode-prompt.md
+  docs/THREAD_PRIMER_TASKX.md: docs/04-explanation/root-relocated/thread-primer-taskx.md
+  docs/TP-ROUTING-GLOBAL-0001-Commit1-SUMMARY.md: docs/05-audit-reports/root-relocated/tp-routing-global-0001-commit1-summary-2.md
+  docs/WORKTREE_SWITCHING_GUIDE.md: docs/04-explanation/concepts/worktree-switching-guide.md
+  docs/pr_description.md: docs/03-reference/templates/pr-description.md
+  docs/rgOutput.md: docs/05-audit-reports/root-relocated/rgoutput-2.md
+
+root_type_targets:
+  tutorial: docs/01-tutorials/root-relocated
+  how-to: docs/02-how-to/root-relocated
+  reference: docs/03-reference/root-relocated
+  explanation: docs/04-explanation/root-relocated
+  adr: docs/90-adr
+  rfc: docs/91-rfc
+  runbook: docs/92-runbooks
+
+root_token_rules:
+  - id: root-token-audit-report
+    contains_any:
+      - audit
+      - report
+      - summary
+      - status
+      - verification
+      - findings
+      - gate
+      - matrix
+      - baseline
+    target_dir: docs/05-audit-reports/root-relocated
+  - id: root-token-howto
+    contains_any:
+      - install
+      - setup
+      - guide
+      - quick
+      - checklist
+      - troubleshooting
+    target_dir: docs/02-how-to/root-relocated
+  - id: root-token-instructions
+    contains_any:
+      - prompt
+      - instruction
+      - codex
+      - claude
+      - gemini
+      - template
+      - pr
+    target_dir: docs/03-reference/instructions
+  - id: root-token-reference
+    contains_any:
+      - api
+      - schema
+      - contract
+      - policy
+      - reference
+    target_dir: docs/03-reference/root-relocated

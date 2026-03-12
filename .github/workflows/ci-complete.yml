@@ -105,7 +105,7 @@ jobs:
 
       - name: 🛡️ AI-Powered Security Analysis
         if: ${{ env.ANTHROPIC_API_KEY != '' }}
-        uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda
+        uses: anthropics/claude-code-security-review@main
         with:
           comment-pr: true
           claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
@@ -131,7 +131,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: 🔗 Check links (lychee)
-        uses: lycheeverse/lychee-action@v2.2.0  # Security: Fixed code injection vulnerability in v1
+        uses: lycheeverse/lychee-action@v2  # Security: Fixed code injection vulnerability in v1
         with:
           args: --config .lychee.toml docs/**/*.md README.md
           fail: false

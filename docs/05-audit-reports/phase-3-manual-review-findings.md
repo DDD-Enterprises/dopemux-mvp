@@ -12,6 +12,4 @@ prelude: Phase 3 Manual Review Findings (reference) for dopemux documentation an
 ---
 # Phase 3 Manual Review Findings
 
-This report is archived under `claudedocs/`.
-
-See [claudedocs/phase-3-manual-review-findings.md](../../claudedocs/phase-3-manual-review-findings.md).
+This report is mirrored in the audit reports directory.

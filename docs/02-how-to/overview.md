@@ -63,6 +63,12 @@ Day-to-day operational tasks and workflows.
 - **[Serena V2 Deployment](serena-v2-production-deployment.md#-quick-start---production-deployment)** - Deploy ADHD intelligence
 - **[Serena V2 Production Guide](serena-v2-production-deployment.md#-integration-architecture)** - Integration and production architecture
 
+### Documentation Operations
+- **[Master Index](../00-MASTER-INDEX.md)** - Canonical active docs navigation
+- **[Documentation Catalog](../03-reference/documentation-catalog.md)** - Index/list and policy references
+- **PR Docgen Sync Skill (Template)** - `templates/skills/pr-docgen-sync/`
+- **Skill Installer** - `scripts/skills/sync_repo_skills.py`
+
 ---
 
 ## How-To Guide Principles
