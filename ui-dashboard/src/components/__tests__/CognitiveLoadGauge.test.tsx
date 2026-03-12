@@ -1,6 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { describe, it, expect } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import CognitiveLoadGauge from '../CognitiveLoadGauge';
 
 describe('CognitiveLoadGauge', () => {
