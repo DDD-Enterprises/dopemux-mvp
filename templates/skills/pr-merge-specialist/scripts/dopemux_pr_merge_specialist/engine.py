@@ -5,7 +5,6 @@ import html
 import json
 import os
 import re
-import textwrap
 import time
 from collections import defaultdict, deque
 from dataclasses import replace
@@ -28,7 +27,6 @@ from .runtime import (
     pid_is_running,
     run_command,
     run_id,
-    shell_join,
     snapshot_environment,
     utc_now,
     write_json,
