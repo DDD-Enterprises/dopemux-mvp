@@ -255,10 +255,6 @@ class PTYAgent:
 if __name__ == "__main__":
     """Test PTY agent."""
 
-    # Note: Import requires PYTHONPATH=services/session-manager/src
-    import sys
-    from response_parser import parse_response
-
     logger.info("Testing PTY Agent Spawning:")
     logger.info("=" * 60)
 
@@ -276,13 +272,7 @@ if __name__ == "__main__":
     logger.info(f"Status: {agent.status.value}")
 
     if success:
-        logger.info("\nWaiting for prompt...")
-        for _ in range(20):  # Wait up to 2 seconds
-            output = agent.get_output()
-            result = parse_response(output, provider='claude')
-            if result.success and not result.error_type:
-                break
-            time.sleep(0.1)
+        time.sleep(2)
 
         # Check output
         output = agent.get_output()
@@ -296,14 +286,7 @@ if __name__ == "__main__":
         logger.info("\nSending test command...")
         agent.send_command("What is 2+2?")
 
-        logger.info("\nWaiting for response...")
-        agent.get_output(clear=True) # Clear existing output before waiting
-        for _ in range(30):  # Wait up to 3 seconds
-            new_output = agent.get_output()
-            result = parse_response(new_output, provider='claude')
-            if result.success and not result.error_type:
-                break
-            time.sleep(0.1)
+        time.sleep(3)
 
         # Get response
         new_output = agent.get_output(clear=True)
