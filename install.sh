@@ -81,6 +81,7 @@ FULL_STACK_ESTIMATE="~10-15 minutes (initial pull heavier due to MCP images)"
 REQUIRED_PYTHON_VERSION="3.10"
 REQUIRED_DOCKER_VERSION="20.10"
 REQUIRED_GIT_VERSION="2.30"
+REQUIRED_UV_VERSION="0.5"
 
 # Colors for output (ADHD-friendly visual hierarchy)
 RED='\033[0;31m'
@@ -100,6 +101,41 @@ VERBOSE=false
 # ============================================================================
 # Utility Functions
 # ============================================================================
+
+print_table_row() {
+    local col1="$1"
+    local col2="$2"
+    # Print without parsing escape sequences to count characters
+    # We use a perl regex to strip ANSI color codes before taking length
+    local stripped1=$(echo -e "$col1" | perl -pe 's/\\e\\[[0-9;]*[mGK]//g')
+    local stripped2=$(echo -e "$col2" | perl -pe 's/\\e\\[[0-9;]*[mGK]//g')
+
+    local len1=${#stripped1}
+    local len2=${#stripped2}
+
+    local pad1=$((30 - len1))
+    local pad2=$((30 - len2))
+
+    [ $pad1 -lt 0 ] && pad1=0
+    [ $pad2 -lt 0 ] && pad2=0
+
+    printf "${CYAN}│${NC} %s%*s ${CYAN}│${NC} %s%*s ${CYAN}│${NC}\n" "$col1" "$pad1" "" "$col2" "$pad2" ""
+}
+
+print_table_divider() {
+    printf "${CYAN}├────────────────────────────────┼────────────────────────────────┤${NC}\n"
+}
+
+print_table_header() {
+    printf "${CYAN}┌────────────────────────────────┬────────────────────────────────┐${NC}\n"
+    printf "${CYAN}│${NC} ${BOLD}%-30s${NC} ${CYAN}│${NC} ${BOLD}%-30s${NC} ${CYAN}│${NC}\n" "$1" "$2"
+    print_table_divider
+}
+
+print_table_footer() {
+    printf "${CYAN}└────────────────────────────────┴────────────────────────────────┘${NC}\n"
+}
+
 
 log() {
     echo -e "${CYAN}ℹ${NC}  $*"
@@ -581,11 +617,35 @@ version_gte() {
     printf '%s\n%s\n' "$2" "$1" | sort -V -C
 }
 
+check_uv() {
+    local silent="${1:-false}"
+    [ "$silent" = false ] && log "Checking uv..."
+
+    if ! check_command uv; then
+        [ "$silent" = false ] && error "uv not found"
+        [ "$silent" = false ] && echo -e "${YELLOW}Remediation:${NC} Run ${BOLD}curl -LsSf https://astral.sh/uv/install.sh | bash${NC} to install manually."
+        return 1
+    fi
+
+    local uv_version
+    uv_version=$(uv --version | awk '{print $2}')
+
+    if ! version_gte "$uv_version" "$REQUIRED_UV_VERSION"; then
+        [ "$silent" = false ] && error "uv $REQUIRED_UV_VERSION+ required (found: $uv_version)"
+        return 1
+    fi
+
+    [ "$silent" = false ] && success "uv $uv_version"
+    return 0
+}
+
 check_python() {
-    log "Checking Python..."
+    local silent="${1:-false}"
+    [ "$silent" = false ] && log "Checking Python..."
     
     if ! check_command python3; then
-        error "Python 3 not found"
+        [ "$silent" = false ] && error "Python 3 not found"
+        [ "$silent" = false ] && echo -e "${YELLOW}Remediation:${NC} Install Python 3 using your system package manager (e.g., apt install python3, brew install python3)."
         return 1
     fi
     
@@ -593,19 +653,21 @@ check_python() {
     py_version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
     
     if ! version_gte "$py_version" "$REQUIRED_PYTHON_VERSION"; then
-        error "Python $REQUIRED_PYTHON_VERSION+ required (found: $py_version)"
+        [ "$silent" = false ] && error "Python $REQUIRED_PYTHON_VERSION+ required (found: $py_version)"
         return 1
     fi
     
-    success "Python $py_version"
+    [ "$silent" = false ] && success "Python $py_version"
     return 0
 }
 
 check_git() {
-    log "Checking Git..."
+    local silent="${1:-false}"
+    [ "$silent" = false ] && log "Checking Git..."
     
     if ! check_command git; then
-        error "Git not found"
+        [ "$silent" = false ] && error "Git not found"
+        [ "$silent" = false ] && echo -e "${YELLOW}Remediation:${NC} Install Git using your system package manager (e.g., apt install git, brew install git)."
         return 1
     fi
     
@@ -613,30 +675,33 @@ check_git() {
     git_version=$(git --version | awk '{print $3}')
     
     if ! version_gte "$git_version" "$REQUIRED_GIT_VERSION"; then
-        warning "Git $REQUIRED_GIT_VERSION+ recommended (found: $git_version)"
+        [ "$silent" = false ] && warning "Git $REQUIRED_GIT_VERSION+ recommended (found: $git_version)"
     fi
     
-    success "Git $git_version"
+    [ "$silent" = false ] && success "Git $git_version"
     return 0
 }
 
 check_docker() {
-    log "Checking Docker..."
+    local silent="${1:-false}"
+    [ "$silent" = false ] && log "Checking Docker..."
 
     if [ "$INSTALLER_TEST_MODE" = "1" ]; then
-        warning "[test-mode] Skipping Docker checks"
+        [ "$silent" = false ] && warning "[test-mode] Skipping Docker checks"
         return 0
     fi
     
     if ! check_command docker; then
-        error "Docker not found"
+        [ "$silent" = false ] && error "Docker not found"
+        [ "$silent" = false ] && echo -e "${YELLOW}Remediation:${NC} Install Docker from https://docs.docker.com/get-docker/"
         return 1
     fi
     
     # Check if Docker daemon is running
     if ! docker info &> /dev/null; then
-        error "Docker daemon is not running"
-        error "Please start Docker Desktop (macOS) or dockerd (Linux)"
+        [ "$silent" = false ] && error "Docker daemon is not running"
+        [ "$silent" = false ] && error "Please start Docker Desktop (macOS) or dockerd (Linux)"
+        [ "$silent" = false ] && echo -e "${YELLOW}Remediation:${NC} Start Docker Desktop or the Docker service (e.g., sudo systemctl start docker)."
         return 1
     fi
     
@@ -644,32 +709,33 @@ check_docker() {
     docker_version=$(docker --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
     
     if ! version_gte "$docker_version" "$REQUIRED_DOCKER_VERSION"; then
-        warning "Docker $REQUIRED_DOCKER_VERSION+ recommended (found: $docker_version)"
+        [ "$silent" = false ] && warning "Docker $REQUIRED_DOCKER_VERSION+ recommended (found: $docker_version)"
     fi
     
-    success "Docker $docker_version"
+    [ "$silent" = false ] && success "Docker $docker_version"
     return 0
 }
 
 check_optional_tools() {
-    log "Checking optional tools..."
+    local silent="${1:-false}"
+    [ "$silent" = false ] && log "Checking optional tools..."
     
     local tools=("tmux" "jq" "curl" "sqlite3")
     local missing=()
     
     for tool in "${tools[@]}"; do
         if check_command "$tool"; then
-            success "$tool installed"
+            [ "$silent" = false ] && success "$tool installed"
         else
-            warning "$tool not installed (optional but recommended)"
+            [ "$silent" = false ] && warning "$tool not installed (optional but recommended)"
             missing+=("$tool")
         fi
     done
     
     if [ ${#missing[@]} -gt 0 ]; then
-        echo
-        warning "Missing optional tools: ${missing[*]}"
-        warning "Some features may be limited"
+        [ "$silent" = false ] && echo
+        [ "$silent" = false ] && warning "Missing optional tools: ${missing[*]}"
+        [ "$silent" = false ] && warning "Some features may be limited"
     fi
 }
 
@@ -678,6 +744,13 @@ check_optional_tools() {
 # ============================================================================
 
 install_dependencies() {
+    if ! check_command uv; then
+        log "Installing uv..."
+        curl -LsSf https://astral.sh/uv/install.sh | bash
+        export PATH="$HOME/.cargo/bin:$PATH"
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+
     log "Installing missing dependencies..."
     
     case "$PACKAGE_MANAGER" in
@@ -718,8 +791,8 @@ install_with_brew() {
     
     local packages=()
     
-    check_python || packages+=("python@3.11")
-    check_git || packages+=("git")
+    check_python "true" || packages+=("python@3.11")
+    check_git "true" || packages+=("git")
     check_command tmux || packages+=("tmux")
     check_command jq || packages+=("jq")
     check_command sqlite3 || packages+=("sqlite")
@@ -730,7 +803,7 @@ install_with_brew() {
     fi
     
     # Docker Desktop requires manual installation on macOS
-    if ! check_docker; then
+    if ! check_docker "true"; then
         warning "Docker Desktop not found"
         warning "Please install from: https://www.docker.com/products/docker-desktop"
         
@@ -749,8 +822,8 @@ install_with_apt() {
     
     local packages=()
     
-    check_python || packages+=("python3.11" "python3.11-venv" "python3-pip")
-    check_git || packages+=("git")
+    check_python "true" || packages+=("python3.11" "python3.11-venv")
+    check_git "true" || packages+=("git")
     check_command tmux || packages+=("tmux")
     check_command jq || packages+=("jq")
     check_command curl || packages+=("curl")
@@ -762,7 +835,7 @@ install_with_apt() {
     fi
     
     # Install Docker if missing
-    if ! check_docker; then
+    if ! check_docker "true"; then
         if ask_yes_no "Install Docker?" "y"; then
             curl -fsSL https://get.docker.com | sh
             sudo usermod -aG docker "$USER"
@@ -779,8 +852,8 @@ install_with_dnf() {
     
     local packages=()
     
-    check_python || packages+=("python3.11" "python3-pip")
-    check_git || packages+=("git")
+    check_python "true" || packages+=("python3.11")
+    check_git "true" || packages+=("git")
     check_command tmux || packages+=("tmux")
     check_command jq || packages+=("jq")
     check_command curl || packages+=("curl")
@@ -791,7 +864,7 @@ install_with_dnf() {
         sudo dnf install -y "${packages[@]}"
     fi
     
-    if ! check_docker; then
+    if ! check_docker "true"; then
         if ask_yes_no "Install Docker?" "y"; then
             sudo dnf install -y docker
             sudo systemctl start docker
@@ -810,8 +883,8 @@ install_with_pacman() {
     
     local packages=()
     
-    check_python || packages+=("python")
-    check_git || packages+=("git")
+    check_python "true" || packages+=("python")
+    check_git "true" || packages+=("git")
     check_command tmux || packages+=("tmux")
     check_command jq || packages+=("jq")
     check_command curl || packages+=("curl")
@@ -822,7 +895,7 @@ install_with_pacman() {
         sudo pacman -S --noconfirm "${packages[@]}"
     fi
     
-    if ! check_docker; then
+    if ! check_docker "true"; then
         if ask_yes_no "Install Docker?" "y"; then
             sudo pacman -S --noconfirm docker
             sudo systemctl start docker
@@ -915,7 +988,7 @@ install_dopemux_core() {
     else
         # Install Python package
         if [ -f "pyproject.toml" ]; then
-            python3 -m pip install --user -e . || fatal "Failed to install Python package"
+            uv tool install -e . || fatal "Failed to install Python package"
             success "Python package installed"
         else
             warning "pyproject.toml not found, skipping Python package install"
@@ -1008,7 +1081,6 @@ configure_shell_integration() {
 # Dopemux
 export PATH="$python_user_bin:\$HOME/.local/bin:\$PATH"
 export DOPEMUX_HOME="\$HOME/.dopemux"
-alias dopemux="python3 -m dopemux.cli"
 
 # Multi-Workspace Support
 export DEFAULT_WORKSPACE_PATH="\$PWD"  # Set to your main project
@@ -1169,12 +1241,17 @@ EOF
     detect_platform
     echo
     
-    # Check dependencies
+    echo
+    print_table_header "Dependency" "Status"
+
     local deps_missing=false
-    check_python || deps_missing=true
-    check_git || deps_missing=true
-    check_docker || deps_missing=true
-    check_optional_tools
+    if check_python "true"; then print_table_row "Python 3" "${GREEN}✅ Installed${NC}"; else print_table_row "Python 3" "${RED}❌ Missing${NC}"; deps_missing=true; fi
+    if check_uv "true"; then print_table_row "uv" "${GREEN}✅ Installed${NC}"; else print_table_row "uv" "${RED}❌ Missing${NC}"; deps_missing=true; fi
+    if check_git "true"; then print_table_row "Git" "${GREEN}✅ Installed${NC}"; else print_table_row "Git" "${RED}❌ Missing${NC}"; deps_missing=true; fi
+    if check_docker "true"; then print_table_row "Docker" "${GREEN}✅ Installed${NC}"; else print_table_row "Docker" "${RED}❌ Missing${NC}"; deps_missing=true; fi
+    print_table_footer
+
+    check_optional_tools "false"
     echo
     
     # Install missing dependencies if needed
@@ -1236,7 +1313,7 @@ quick_install() {
     check_python || fatal "Python 3.10+ required"
     check_git || fatal "Git required"
     check_docker || fatal "Docker required"
-    check_optional_tools
+    check_optional_tools "false"
 
     preflight_checks "$SELECTED_STACK"
     create_directory_structure
