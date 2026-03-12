@@ -1961,35 +1961,27 @@ artifacts:
   - line_range
   - id
 - phase: C
-  artifact_name: CODE_HEALTH_SURFACE.json
+  artifact_name: PYTHON_API_SURFACE.json
   canonical_writer_step_id: C14
   kind: json_item_list
   norm_artifact: true
   allow_timestamp_keys: false
   merge_strategy: itemlist_by_id
   required_fields:
+  - id
   - path
   - line_range
-  - id
 - phase: C
-  artifact_name: DEAD_CODE_INVENTORY.json
+  artifact_name: SERVICE_ENDPOINT_SURFACE.json
   canonical_writer_step_id: C15
   kind: json_item_list
   norm_artifact: true
   allow_timestamp_keys: false
   merge_strategy: itemlist_by_id
   required_fields:
+  - id
   - path
   - line_range
-  - id
-- phase: S
-  artifact_name: S7_OVERSEER_AGENT_FLOW_DESIGN.md
-  canonical_writer_step_id: S7
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
 - phase: C
   artifact_name: MODULE_DEPENDENCY_GRAPH.json
   canonical_writer_step_id: C16
@@ -2023,35 +2015,13 @@ artifacts:
   - id
   - path
   - line_range
-- phase: C
-  artifact_name: PYTHON_API_SURFACE.json
-  canonical_writer_step_id: C9
-  kind: json_item_list
+- phase: S
+  artifact_name: S7_OVERSEER_AGENT_FLOW_DESIGN.md
+  canonical_writer_step_id: S7
+  kind: markdown
   norm_artifact: true
   allow_timestamp_keys: false
-  merge_strategy: itemlist_by_id
-  required_fields:
-  - id
-  - path
-  - line_range
-- phase: C
-  artifact_name: SERVICE_ENDPOINT_SURFACE.json
-  canonical_writer_step_id: C9
-  kind: json_item_list
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: itemlist_by_id
-  required_fields:
-  - id
-  - path
-  - line_range
-- phase: Q
-  artifact_name: QA_ARTIFACT_COLLISION_REPORT.json
-  canonical_writer_step_id: Q11
-  kind: json_item_list
-  norm_artifact: false
-  allow_timestamp_keys: true
-  merge_strategy: itemlist_by_id
+  merge_strategy: markdown_concat
   required_fields: []
 - phase: S
   artifact_name: S8_ARCHITECTURE_DIAGRAMS.md
@@ -2084,12 +2054,4 @@ artifacts:
   norm_artifact: true
   allow_timestamp_keys: false
   merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: S12_STABILITY_SIGNATURE.json
-  canonical_writer_step_id: S12
-  kind: json_item_list
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: itemlist_by_id
   required_fields: []

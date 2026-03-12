@@ -11,6 +11,6 @@ prelude: Phase 1A Inventory (reference) for dopemux documentation and developer 
 ---
 # Phase 1A Inventory
 
-This report is mirrored in the audit reports directory.
+This report is archived under `claudedocs/`.
 
-See [docs/05-audit-reports/phase-1a-inventory.md](phase-1a-inventory.md).
+See [claudedocs/phase-1a-inventory.md](../../claudedocs/phase-1a-inventory.md).

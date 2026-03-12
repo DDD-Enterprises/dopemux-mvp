@@ -130,33 +130,25 @@ function App() {
       label: 'Energy Level',
       value: cognitiveState.energy,
       icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
-      tooltip: 'Current energy reserve based on biometric data',
       roast: "You're sipping ambition like it's lukewarm coffee.",
-      tooltip: "Your current biometric energy reserve based on activity and sleep data",
     },
     {
       label: 'Attention Focus',
       value: cognitiveState.attention,
       icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
-      tooltip: 'Real-time focus and attention span metrics',
       roast: "Focus is flirting with you; stop ghosting it.",
-      tooltip: "Real-time attention state: scattered, focused, or hyperfocused",
     },
     {
       label: 'Cognitive Load',
       value: cognitiveState.load,
       icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
-      tooltip: 'Average cognitive load across all team members',
       roast: "Load creeping up like a brat testing limits.",
-      tooltip: "Total mental effort being exerted on current tasks",
     },
     {
       label: '15-min Prediction',
       value: cognitiveState.prediction ?? null,
       icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
-      tooltip: 'AI-driven prediction of cognitive state for the next 15 minutes',
       roast: "Future you is pacing. Hydrate before they mutiny.",
-      tooltip: "AI-driven forecast of your cognitive state for the next 15 minutes",
     },
   ];
 
@@ -251,28 +243,22 @@ function App() {
           </Typography>
           <Divider sx={{ my: 2, borderColor: 'rgba(125, 251, 246, 0.3)' }} />
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Tooltip title="Current cognitive status and load percentage" arrow>
-              <Chip
-                label={`${statusMeta.label} • ${(cognitiveState.load * 100).toFixed(0)}% load`}
-                tabIndex={0}
-                sx={{
-                  backgroundColor: `${statusMeta.color}1A`,
-                  color: statusMeta.color,
-                  border: `1px solid ${statusMeta.color}`,
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="AI-generated recommendation based on current load" arrow>
-              <Chip
-                label={`Recommendation: ${cognitiveState.recommendation}`}
-                tabIndex={0}
-                sx={{
-                  backgroundColor: 'rgba(32, 50, 72, 0.65)',
-                  color: brandTokens.colors.serumMint,
-                  border: '1px solid rgba(148, 250, 219, 0.35)',
-                }}
-              />
-            </Tooltip>
+            <Chip
+              label={`${statusMeta.label} • ${(cognitiveState.load * 100).toFixed(0)}% load`}
+              sx={{
+                backgroundColor: `${statusMeta.color}1A`,
+                color: statusMeta.color,
+                border: `1px solid ${statusMeta.color}`,
+              }}
+            />
+            <Chip
+              label={`Recommendation: ${cognitiveState.recommendation}`}
+              sx={{
+                backgroundColor: 'rgba(32, 50, 72, 0.65)',
+                color: brandTokens.colors.serumMint,
+                border: '1px solid rgba(148, 250, 219, 0.35)',
+              }}
+            />
           </Box>
         </Box>
 
@@ -292,26 +278,7 @@ function App() {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Tooltip title={metric.tooltip} arrow>
-                    <Box
-                      tabIndex={0}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        outline: 'none',
-                        '&:focus': {
-                          borderRadius: 1,
-                          boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
-                        },
-                        '&:focus-visible': {
-                          borderRadius: 1,
-                          boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
-                        },
-                      }}
-                    >
-                      {metric.icon}
-                    </Box>
-                  </Tooltip>
+                  {metric.icon}
                   <Box>
                     <Typography variant="h6">{metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}</Typography>
                     <Typography variant="body2" color="text.secondary">{metric.label}</Typography>

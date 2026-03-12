@@ -20,8 +20,6 @@ Focus on concrete, machine-verifiable implementation facts.
 - `WORKFLOWS_TRUTH_GRAPH.md`
 - `PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
 - `CONFLICT_LEDGER.md`
-- `CODE_HEALTH_SURFACE.json`
-- `DEAD_CODE_INVENTORY.json`
 - Runner context artifacts:
   - `extraction/*/inputs/INVENTORY.json`
   - `extraction/*/inputs/PARTITIONS.json`
@@ -107,7 +105,6 @@ Produce top-20 risk register.
 MUST INCLUDE:
 - Determinism/idempotency/concurrency risks
 - Boundary bypass risks
-- Code quality risks (high-complexity hotspots, dead code, missing error handling from CODE_HEALTH_SURFACE and DEAD_CODE_INVENTORY)
 - Severity ranking with evidence
 - Minimal mechanical bounding mechanisms
 

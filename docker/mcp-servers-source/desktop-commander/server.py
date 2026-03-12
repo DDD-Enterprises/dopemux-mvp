@@ -110,18 +110,13 @@ async def type_text(text: str) -> Dict[str, Any]:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@mcp.router.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "ok"}
+
 
 if __name__ == "__main__":
-    import uvicorn
     port = int(os.getenv("MCP_SERVER_PORT", "3012"))
     logger.info(f"🚀 Starting Desktop Commander MCP Server on port {port} (SSE)")
-    
-    # Get the SSE app and add a health check route
-    app = mcp.sse_app()
-    
-    @app.get("/health")
-    async def health_check():
-        """Health check endpoint."""
-        return {"status": "ok"}
-        
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    mcp.run(transport="sse", host="0.0.0.0", port=port)

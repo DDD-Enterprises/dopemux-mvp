@@ -267,17 +267,6 @@ COMPLEXITY_THRESHOLD=0.6
 NOTIFICATION_METHODS=terminal,system
 ```
 
-#### Optional Runtime Fallback Settings
-```bash
-# Allow startup in degraded mode when engine init dependencies fail
-ADHD_ENGINE_ALLOW_DEGRADED_STARTUP=1
-
-# Force local in-memory cache paths (useful for tests without Redis)
-ADHD_FORCE_INMEMORY_CACHE=1
-```
-
-When degraded startup is enabled, the API remains available and returns explicit fallback/degraded metadata in health/accommodation responses.
-
 ### Docker Deployment
 
 ```yaml
@@ -286,7 +275,7 @@ services:
   adhd-engine:
     build: .
     ports:
-      - "8095:8095"
+      - "8080:8080"
     environment:
       - REDIS_URL=redis://redis:6379
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097
@@ -334,7 +323,7 @@ pytest tests/security/test_input_validation.py -v
 ### Health Endpoints
 ```bash
 # Main engine health
-curl http://localhost:8095/health
+curl http://localhost:8080/health
 
 # Dashboard health
 curl http://localhost:8097/health
@@ -442,7 +431,7 @@ Access specialized AI tools directly through your MCP client (Claude Desktop, et
 ```python
 import requests
 
-response = requests.post("http://localhost:8095/api/v1/assess-task", json={
+response = requests.post("http://localhost:8080/api/v1/assess-task", json={
     "task_description": "Implement user authentication with JWT",
     "estimated_hours": 4,
     "technologies": ["Python", "FastAPI", "JWT"]
@@ -455,7 +444,7 @@ print(f"Recommended breaks every: {result['break_frequency']}")
 
 #### Get Current ADHD State
 ```python
-response = requests.get("http://localhost:8095/api/v1/attention-state")
+response = requests.get("http://localhost:8080/api/v1/attention-state")
 state = response.json()
 
 if state['state'] == 'scattered':

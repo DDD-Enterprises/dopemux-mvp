@@ -24,7 +24,7 @@ task-orchestrator workflow runtime.
 Set service URL:
 
 ```bash
-export TASK_ORCH_URL="${TASK_ORCH_URL:-http://localhost:8000}"
+export TASK_ORCH_URL="${TASK_ORCH_URL:-http://localhost:3014}"
 ```
 
 ## Step 1: Create an Idea
