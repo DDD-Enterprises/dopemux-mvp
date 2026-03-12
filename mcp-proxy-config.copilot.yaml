@@ -5,12 +5,15 @@ mcpServers:
     args:
       - exec
       - -i
-      - mcp-conport_main
+      - mcp-conport
       - python
       - /app/conport_mcp_stdio.py
     env:
+      CONPORT_URL: "http://localhost:3005"
       DOPEMUX_INSTANCE_ID: "main"
       DOPEMUX_WORKSPACE_ID: "__WORKSPACE_ROOT__"
+      CONPORT_DB_URL: "postgres://localhost:5432/conport"
+      CONPORT_GRAPH_DIR: "./.conport/graph"
   gpt-researcher_wrapped:
     type: stdio
     command: python
@@ -72,25 +75,13 @@ mcpServers:
       PAL_DEFAULT_PROVIDER: "openrouter"
   gpt-researcher:
     type: stdio
-    command: python
+    command: uvx
     args:
-      - __WORKSPACE_ROOT__/scripts/gpt-researcher/mcp_server.py
-    env:
-      OPENAI_API_KEY: "${OPENAI_API_KEY}"
-      TAVILY_API_KEY: "${TAVILY_API_KEY}"
-      VOYAGEAI_API_KEY: "${VOYAGEAI_API_KEY}"
-      EXA_API_KEY: "${EXA_API_KEY}"
-  conport-admin:
-    type: stdio
-    command: docker
-    args:
-      - exec
-      - -i
-      - mcp-conport_main
-      - python
-      - /app/conport_mcp_stdio.py
-    env:
-      CONPORT_URL: "http://localhost:3005"
+      - mcp-proxy
+      - --transport
+      - sse
+      - http://127.0.0.1:3009/sse
+    env: {}
   exa:
     type: stdio
     command: uvx
@@ -105,7 +96,18 @@ mcpServers:
     command: python
     args:
       - services/task-orchestrator/server.py
+    env:
+      DOPEMUX_INSTANCE_ID: "${DOPEMUX_INSTANCE_ID:-main}"
+      DOPEMUX_WORKSPACE_ID: "__WORKSPACE_ROOT__"
+  leantime:
+    type: stdio
+    command: leantime-mcp
+    args:
+      - https://leantime.local/mcp
+      - --token
+      - "${LEAN_MCP_TOKEN}"
     env: {}
+    disabled: true
   leantime-bridge:
     type: stdio
     command: docker
@@ -116,4 +118,10 @@ mcpServers:
       - python
       - -m
       - leantime_bridge.http_server
+    env: {}
+  playwright:
+    type: stdio
+    command: npx
+    args:
+      - "@playwright/mcp@latest"
     env: {}
