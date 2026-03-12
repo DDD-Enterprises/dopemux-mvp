@@ -10,15 +10,15 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport_fix/litellm-build-and-mcp-context",
+        "mcp-conport_jules-283536006172502051-884c6715",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "fix/litellm-build-and-mcp-context",
-        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
+        "DOPEMUX_INSTANCE_ID": "jules-283536006172502051-884c6715",
+        "DOPEMUX_WORKSPACE_ID": "/app"
       }
     },
     "gpt-researcher_wrapped": {
