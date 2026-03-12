@@ -256,7 +256,6 @@ if __name__ == "__main__":
     """Test PTY agent."""
 
     # Note: Import requires PYTHONPATH=services/session-manager/src
-    import sys
     from response_parser import parse_response
 
     logger.info("Testing PTY Agent Spawning:")
