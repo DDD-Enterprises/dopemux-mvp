@@ -10,7 +10,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true  # ADHD-friendly: cancel outdated runs
 
-
 jobs:
   # ADHD chunk #1: Code quality (fast feedback)
   code-quality:
@@ -20,7 +19,7 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
           fetch-depth: 0
@@ -76,7 +75,6 @@ jobs:
             fi
           fi
         env:
-
           SKIP: docs-graph-validator  # Temporarily skip graph validator (pre-existing validation issues)
 
       - name: 🎯 ADHD-Friendly Summary
@@ -96,12 +94,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25  # 25-minute focus session
     env:
-
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
@@ -131,7 +128,7 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🔗 Check links (lychee)
         uses: lycheeverse/lychee-action@v2  # Security: Fixed code injection vulnerability in v1
@@ -152,7 +149,7 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
           fetch-depth: 0

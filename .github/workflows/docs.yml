@@ -1,11 +1,10 @@
 name: docs
 on: [push, pull_request]
-
 jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v5
@@ -23,9 +22,7 @@ jobs:
               pre-commit run --from-ref "$BEFORE" --to-ref "${{ github.sha }}"
             fi
           fi
-
         env:
-
           SKIP: docs-graph-validator  # Temporarily skip graph validator (pre-existing validation issues)
       - name: Broken-link check (lychee)
         uses: lycheeverse/lychee-action@v2  # Security: Fixed code injection vulnerability in v1
