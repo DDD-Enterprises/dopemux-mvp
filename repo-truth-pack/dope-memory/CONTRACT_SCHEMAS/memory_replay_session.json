@@ -1,0 +1,67 @@
+{
+  "$id": "dope-memory/memory_replay_session",
+  "title": "memory_replay_session contract",
+  "description": "Replay session entries chronologically. Supports replay_current (chain heads only) and replay_full (with supersession annotations). Derived from MemoryReplaySessionRequest (dope_memory_main.py:807) and DopeMemoryMCPServer.memory_replay_session (dope_memory_main.py:445).",
+  "request": {
+    "type": "object",
+    "properties": {
+      "workspace_id": { "type": "string", "default": "default" },
+      "instance_id": { "type": "string", "default": "A" },
+      "session_id": { "type": "string", "description": "Required. Session to replay." },
+      "top_k": { "type": "integer", "default": 3, "minimum": 1, "maximum": 20 },
+      "cursor": {
+        "type": ["string", "null"],
+        "default": null,
+        "description": "Base64-encoded cursor (ts_utc|id) from previous response"
+      },
+      "mode": {
+        "type": "string",
+        "default": "replay_current",
+        "pattern": "^(replay_current|replay_full)$",
+        "description": "replay_current: chain heads only (corrected narrative). replay_full: all entries with supersession annotations."
+      }
+    },
+    "required": ["session_id"]
+  },
+  "response": {
+    "type": "object",
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "ts_utc": { "type": "string", "format": "date-time", "description": "source_event_ts_utc (event time)" },
+            "category": { "type": "string" },
+            "entry_type": { "type": "string" },
+            "summary": { "type": "string" },
+            "outcome": { "type": "string" },
+            "importance_score": { "type": "integer" },
+            "details": { "type": "object", "description": "Parsed from details_json" },
+            "is_head": { "type": "boolean", "description": "Only in replay_full mode" },
+            "superseded_by": { "type": ["string", "null"], "description": "Only in replay_full mode" },
+            "supersedes": { "type": ["string", "null"], "description": "Only in replay_full mode" },
+            "chain_position": {
+              "type": ["object", "null"],
+              "properties": {
+                "position": { "type": "integer" },
+                "depth": { "type": "integer" }
+              },
+              "description": "Only in replay_full mode"
+            }
+          },
+          "required": ["id", "ts_utc", "category", "entry_type", "summary", "outcome", "importance_score", "details"]
+        }
+      },
+      "more_count": { "type": "integer", "enum": [0, 1], "description": "0 or 1 indicating if more results exist" },
+      "next_token": { "type": ["string", "null"] }
+    },
+    "required": ["items", "more_count", "next_token"]
+  },
+  "errors": {
+    "400": { "description": "Tool execution error" },
+    "422": { "description": "Pydantic validation error (invalid mode)" },
+    "503": { "description": "MCP server not initialized" }
+  }
+}

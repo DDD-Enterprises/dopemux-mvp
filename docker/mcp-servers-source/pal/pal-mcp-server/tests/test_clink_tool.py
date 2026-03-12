@@ -61,6 +61,13 @@ def test_registry_lists_roles():
     assert "default" in registry.list_roles("codex")
 
 
+def test_registry_includes_test_specialist_role():
+    registry = get_registry()
+    for cli_name in ("gemini", "codex", "claude"):
+        roles = registry.list_roles(cli_name)
+        assert "test-specialist" in roles
+
+
 @pytest.mark.asyncio
 async def test_clink_tool_defaults_to_first_cli(monkeypatch):
     tool = CLinkTool()

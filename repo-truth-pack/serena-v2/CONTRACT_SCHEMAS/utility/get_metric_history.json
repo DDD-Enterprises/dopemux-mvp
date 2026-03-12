@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/get_metric_history",
+  "title": "Get Metric History",
+  "description": "Returns time-series history for a specific metric with trend direction analysis.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {
+        "metric_name": {
+          "type": "string",
+          "enum": [
+            "confidence",
+            "pattern_boost",
+            "abandonment_rate",
+            "pass_rate"
+          ],
+          "description": "Name of the metric to retrieve history for"
+        },
+        "days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of days of history"
+        },
+        "granularity": {
+          "type": "string",
+          "enum": [
+            "daily",
+            "weekly"
+          ],
+          "description": "Time granularity of data points"
+        }
+      },
+      "required": [
+        "metric_name"
+      ],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "metric_name": {
+          "type": "string"
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "value": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "timestamp",
+              "value"
+            ]
+          }
+        },
+        "count": {
+          "type": "integer"
+        },
+        "trend": {
+          "type": "object",
+          "properties": {
+            "direction": {
+              "type": "string"
+            },
+            "delta": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "direction",
+            "delta"
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "metric_name",
+        "points",
+        "count",
+        "trend"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Returns empty points array with count=0"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 0
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": "F7"
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": false
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}

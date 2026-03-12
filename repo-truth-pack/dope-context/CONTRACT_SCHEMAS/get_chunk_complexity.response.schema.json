@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/get_chunk_complexity.response.schema.json",
+  "title": "get_chunk_complexity Response",
+  "description": "Response shape for get_chunk_complexity. Derived from server.py:2953-3026.",
+  "type": "object",
+  "properties": {
+    "complexity": { "type": "number", "minimum": 0.0, "maximum": 1.0, "description": "Complexity score 0.0-1.0" },
+    "method": { "type": "string", "enum": ["ast-heuristic", "text-heuristic"], "description": "Analysis method used" },
+    "file_path": { "type": "string" },
+    "symbol": { "type": "string" },
+    "reason": { "type": "string", "description": "Present when file_not_found or read_error" },
+    "line_count": { "type": "integer" },
+    "branch_count": { "type": "integer" },
+    "max_depth": { "type": "integer" },
+    "keyword_hits": { "type": "integer", "description": "Present for text-heuristic method" },
+    "scope_start_line": { "type": "integer" },
+    "scope_end_line": { "type": "integer" }
+  },
+  "required": ["complexity", "method", "file_path", "symbol"]
+}

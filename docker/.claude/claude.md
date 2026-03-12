@@ -25,9 +25,7 @@ docker/
 
 | File | Purpose | Use When |
 |------|---------|----------|
-| `docker-compose.smoke.yml` | Core services only | Testing basics |
-| `docker-compose.master.yml` | Full stack | Full development |
-| `docker-compose.monitoring.yml` | Grafana/Prometheus | Observability |
+| `compose.yml` | Canonical stack | Full development and smoke subsets |
 
 ---
 
@@ -66,14 +64,22 @@ See [`docker/mcp-servers/.claude/claude.md`](file:///Users/hue/code/dopemux-mvp/
 
 ```bash
 # Smoke stack (core)
-docker-compose -f docker-compose.smoke.yml up
+scripts/smoke_up.sh
 
 # Full stack
-docker-compose -f docker-compose.master.yml up
+docker compose -f compose.yml up -d
 
 # Build specific service
-docker-compose build my-service
+docker compose -f compose.yml build my-service
 
 # Health check
-docker-compose ps
+docker compose -f compose.yml ps
 ```
+
+## Documentation Sync
+
+When docker/compose changes affect runtime behavior or ports, trigger the PR docgen sync workflow:
+
+- Skill templates: `templates/skills/pr-docgen-sync*/`
+- Installer: `python scripts/skills/sync_repo_skills.py --family pr-docgen-sync`
+- Baseline: `main...HEAD`

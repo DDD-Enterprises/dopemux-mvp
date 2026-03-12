@@ -1,0 +1,30 @@
+{
+  "$id": "dope-memory/memory_mark_issue",
+  "title": "memory_mark_issue contract",
+  "description": "Mark an entry as an issue source. Derived from MemoryMarkIssueRequest (dope_memory_main.py:784) and DopeMemoryMCPServer.memory_mark_issue (dope_memory_main.py:394). NOTE: This tool currently only validates entry existence; the description/confidence/tags are accepted but not persisted.",
+  "request": {
+    "type": "object",
+    "properties": {
+      "workspace_id": { "type": "string", "default": "default" },
+      "instance_id": { "type": "string", "default": "A" },
+      "issue_entry_id": { "type": "string", "description": "Required. ID of the entry to mark as an issue source." },
+      "description": { "type": "string", "description": "Required. Issue description (accepted but currently not stored)." },
+      "confidence": { "type": "number", "default": 0.7, "minimum": 0.0, "maximum": 1.0 },
+      "evidence_window_min": { "type": "integer", "default": 30, "minimum": 1, "maximum": 1440 },
+      "tags": { "type": ["array", "null"], "items": { "type": "string" }, "default": null }
+    },
+    "required": ["issue_entry_id", "description"]
+  },
+  "response": {
+    "type": "object",
+    "properties": {
+      "issue_marked": { "type": "boolean" }
+    },
+    "required": ["issue_marked"]
+  },
+  "errors": {
+    "400": { "description": "Entry not found: returns {issue_marked: false} with error message" },
+    "422": { "description": "Pydantic validation error" },
+    "503": { "description": "MCP server not initialized" }
+  }
+}

@@ -1,0 +1,18 @@
+# ConPort Phase 1 Discovery — Search Patterns Used
+# Format: pattern | tool | scope | purpose
+
+@mcp.tool | grep | docker/mcp-servers-source/conport/*.py | Find MCP tool registrations (FastMCP decorator)
+FastMCP | grep | docker/mcp-servers-source/conport/*.py | Find FastMCP server instantiations
+conport | grep | compose.yml, compose/, docker-compose*.yml | Find Docker service definitions
+conport | grep | services/ (*.py, *.yaml) | Find service cross-references
+conport | grep | .claude.json, .claude/ | Find MCP client config for Claude
+INV-MEM | grep | docker/mcp-servers-source/conport/ | Search for authority invariant markers
+append.only|append_only|chronicle|ledger | grep | docker/mcp-servers-source/conport/ | Search for append-only ledger patterns
+promote|promotion | grep | docker/mcp-servers-source/conport/*.py | Find promotion logic for instance→shared
+SSoT|single.source.of.truth|authority | grep | docker/mcp-servers-source/conport/*.py | Search for SSoT claims in code
+dedup|deduplic|duplicate | grep | docker/mcp-servers-source/conport/*.py | Search for deduplication logic
+dispatch_map | view | enhanced_server.py:1736-1750 | Find JSON-RPC tool dispatch table
+_get_tool_schemas | view | enhanced_server.py:1787-1917 | Find tool schema definitions
+setup_routes | view | enhanced_server.py:235-280 | Find HTTP route registrations
+instance_id | grep | enhanced_server.py | Worktree isolation column usage
+conport-http|conport-mcp | grep | services/registry.yaml | Registry port assignments

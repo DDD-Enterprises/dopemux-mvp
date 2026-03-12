@@ -1,157 +1,126 @@
-version: "1.0"
-last_updated: "2026-02-21"
-description: "Machine-readable index of dopemux-mvp documentation for AI/tool consumption"
-
-# Entry Points - Key documents for getting started
+version: '1.0'
+last_updated: '2026-03-11'
+description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
-  quickstart: "QUICK_START.md"
-  install: "INSTALL.md"
-  readme: "README.md"
-  changelog: "CHANGELOG.md"
-  master_index: "docs/00-MASTER-INDEX.md"
-
-# Systems Documentation - Component-specific doc hubs
+  quickstart: QUICK_START.md
+  install: INSTALL.md
+  readme: README.md
+  changelog: CHANGELOG.md
+  master_index: docs/00-MASTER-INDEX.md
+  docs_root_index: docs/INDEX.md
 systems:
   conport:
-    overview: "docs/03-reference/systems/conport/conport-kg-status.md"
-    technical: "docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md"
-    integration: "docs/02-how-to/mcp-service-discovery-guide.md"
-    comparison: "docs/05-audit-reports/service-maturity-gap-analysis.md"
-    readme: "docs/03-reference/systems/conport/conport-kg-status.md"
-
+    overview: docs/03-reference/systems/conport/conport-kg-status.md
+    technical: docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md
+    integration: docs/02-how-to/mcp-service-discovery-guide.md
+    comparison: docs/05-audit-reports/service-maturity-gap-analysis.md
+    readme: docs/03-reference/systems/conport/conport-kg-status.md
   dashboard:
-    overview: "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md"
-    design: "docs/03-reference/systems/dashboard/tmux-dashboard-design.md"
-    metrics: "docs/03-reference/systems/dashboard/tmux-metrics-inventory.md"
-    implementation: "docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md"
-    enhancements: "docs/03-reference/systems/dashboard/dashboard-enhancements.md"
-
+    overview: docs/03-reference/systems/dashboard/tmux-dashboard-readme.md
+    design: docs/03-reference/systems/dashboard/tmux-dashboard-design.md
+    metrics: docs/03-reference/systems/dashboard/tmux-metrics-inventory.md
+    implementation: docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md
+    enhancements: docs/03-reference/systems/dashboard/dashboard-enhancements.md
   dopecon-bridge:
-    readme: "docs/systems/dopecon-bridge/README.md"
-
+    readme: docs/systems/dopecon-bridge/readme-2.md
   multi-workspace:
-    readme: "docs/systems/multi-workspace/README.md"
-
+    readme: docs/systems/multi-workspace/readme-2.md
   production:
-    readme: "docs/systems/production/README.md"
-
-# Services - Service-specific documentation
+    readme: docs/systems/production/readme-2.md
 services:
   task-orchestrator:
-    readme: "docs/03-reference/services/task-orchestrator.md"
-    docs_dir: "services/task-orchestrator/docs/"
-
+    readme: docs/03-reference/services/task-orchestrator.md
+    followups: docs/planes/pm/task-orchestrator-leantime-followups.md
+    docs_dir: services/task-orchestrator/docs/
   dopecon-bridge:
-    readme: "services/dopecon-bridge/README.md"
-    docs_dir: "services/dopecon-bridge/"
-
+    readme: services/dopecon-bridge/README.md
+    docs_dir: services/dopecon-bridge/
   adhd-engine:
-    readme: "services/adhd_engine/README.md"
-    docs_dir: "services/adhd_engine/docs/"
-
+    readme: services/adhd_engine/README.md
+    docs_dir: services/adhd_engine/docs/
   orchestrator:
-    readme: "docs/04-explanation/DOPEMUX-ORCHESTRATOR-FINAL-SPEC.md"
-    docs_dir: "src/dopemux/orchestrator/"
-    claudedocs_dir: "docs/04-explanation/design-decisions/"
-
+    readme: docs/04-explanation/dopemux-orchestrator-final-spec-2.md
+    docs_dir: src/dopemux/orchestrator/
+    claudedocs_dir: docs/04-explanation/design-decisions/
   conport-kg-ui:
-    readme: "services/conport_kg_ui/README.md"
-    claudedocs_dir: "services/conport_kg_ui/src/"
-
-# Architecture & Design Documents
+    readme: services/conport_kg_ui/README.md
+    claudedocs_dir: services/conport_kg_ui/src/
 architecture:
-  overview: "docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
-  system_bible: "docs/04-explanation/architecture/system-bible.md"
-  multi_instance: "docs/04-explanation/architecture/multi-instance-implementation.md"
-  pipeline_readme: "services/repo-truth-extractor/README.md"
-  adr_index: "docs/90-adr/"
-  rfc_index: "docs/91-rfc/"
-
-# How-To Guides
+  overview: docs/04-explanation/architecture/dopemux-architecture-overview-2.md
+  system_bible: docs/04-explanation/architecture/system-bible.md
+  multi_instance: docs/04-explanation/architecture/multi-instance-implementation.md
+  pipeline_readme: services/repo-truth-extractor/README.md
+  adr_index: docs/90-adr/
+  rfc_index: docs/91-rfc/
 how_to:
-  directory: "docs/02-how-to/"
-  deployment: "docs/02-how-to/deployment-guide.md"
-  leantime_setup: "docs/02-how-to/integrations/leantime-integration-guide.md"
-  mcp_service_discovery: "docs/02-how-to/mcp-service-discovery-guide.md"
-  role_switching: "docs/02-how-to/role-switching-quickstart.md"
-  profile_usage: "docs/02-how-to/PROFILE-USAGE.md"
-  multi_instance: "docs/02-how-to/multi-instance-workflow.md"
-  orchestrator_dashboard: "docs/02-how-to/orchestrator-dashboard.md"
-  workflow_idea_epic_lifecycle: "docs/02-how-to/operations/workflow-idea-epic-lifecycle.md"
-  dope_context_user_guide: "docs/02-how-to/dope-context/dope-context-user-guide.md"
-  repo_truth_extractor_cli: "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md"
-  repo_truth_extractor_cli_canonical_entrypoint: "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md"
-  repo_truth_extractor_user_guide: "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md"
-  repo_truth_extractor_batch_quickstart: "docs/02-how-to/extraction/batch-quickstart.md"
-
-# Tutorials
+  directory: docs/02-how-to/
+  deployment: docs/02-how-to/deployment-guide.md
+  leantime_setup: docs/02-how-to/integrations/leantime-integration-guide.md
+  mcp_service_discovery: docs/02-how-to/mcp-service-discovery-guide.md
+  role_switching: docs/02-how-to/role-switching-quickstart.md
+  profile_usage: docs/02-how-to/profile-usage-2.md
+  multi_instance: docs/02-how-to/multi-instance-workflow.md
+  orchestrator_dashboard: docs/02-how-to/orchestrator-dashboard.md
+  workflow_idea_epic_lifecycle: docs/02-how-to/operations/workflow-idea-epic-lifecycle.md
+  dope_context_user_guide: docs/02-how-to/dope-context/dope-context-user-guide.md
+  repo_truth_extractor_cli: docs/02-how-to/extraction/run-v4-from-dopemux-cli.md
+  repo_truth_extractor_cli_canonical_entrypoint: docs/02-how-to/extraction/run-v4-from-dopemux-cli.md
+  repo_truth_extractor_user_guide: docs/02-how-to/extraction/repo-truth-extractor-user-guide.md
+  repo_truth_extractor_batch_quickstart: docs/02-how-to/extraction/batch-quickstart.md
 tutorials:
-  directory: "docs/01-tutorials/"
-  start_here: "docs/01-tutorials/START-HERE.md"
-  profile_user_guide: "docs/01-tutorials/profile-user-guide.md"
-  profile_migration_guide: "docs/01-tutorials/profile-migration-guide.md"
-
-# Reference Documentation
+  directory: docs/01-tutorials/
+  start_here: docs/01-tutorials/start-here-2.md
+  profile_user_guide: docs/01-tutorials/profile-user-guide.md
+  profile_migration_guide: docs/01-tutorials/profile-migration-guide.md
 reference:
-  directory: "docs/03-reference/"
-  profile_schema: "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md"
-  profile_developer_guide: "docs/03-reference/profile-developer-guide.md"
-  features_index: "docs/03-reference/features/features-index.md"
-  task_orchestrator_service: "docs/03-reference/services/task-orchestrator.md"
-  mcp_tools_overview: "docs/03-reference/mcp-tools-overview.md"
-  mcp_token_management_best_practices: "docs/best-practices/mcp-token-management.md"
-  memory_capture_cli: "docs/03-reference/memory-capture-cli.md"
-  repo_truth_extractor_pipeline_phases: "docs/03-reference/extraction/pipeline-phases.md"
-  repo_truth_extractor_pipeline_reliability: "docs/03-reference/extraction/pipeline-reliability.md"
-  repo_truth_extractor_doctor_reprocess: "docs/03-reference/extraction/doctor-reprocess.md"
-  repo_truth_extractor_prompt_contract: "docs/03-reference/extraction/prompt-contract-v4.md"
-  dope_context_docs_contextual_embedding_contract: "docs/03-reference/dope-context/DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md"
-  dope_context_architecture_and_boundaries: "docs/03-reference/dope-context/DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md"
-
-# Explanation & Deep Dives
+  directory: docs/03-reference/
+  profile_schema: docs/03-reference/configuration/profile-yaml-schema-2.md
+  profile_developer_guide: docs/03-reference/profile-developer-guide.md
+  features_index: docs/03-reference/features/features-index.md
+  task_orchestrator_service: docs/03-reference/services/task-orchestrator.md
+  mcp_tools_overview: docs/03-reference/mcp-tools-overview.md
+  mcp_token_management_best_practices: docs/03-reference/best-practices/mcp-token-management.md
+  memory_capture_cli: docs/03-reference/memory-capture-cli.md
+  repo_truth_extractor_pipeline_phases: docs/03-reference/extraction/pipeline-phases.md
+  repo_truth_extractor_pipeline_reliability: docs/03-reference/extraction/pipeline-reliability.md
+  repo_truth_extractor_doctor_reprocess: docs/03-reference/extraction/doctor-reprocess.md
+  repo_truth_extractor_prompt_contract: docs/03-reference/extraction/prompt-contract-v4.md
+  dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md
+  dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
 explanation:
-  directory: "docs/04-explanation/"
-  serena_v2: "docs/04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md"
-  conport: "docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md"
-  dope_memory: "docs/04-explanation/technical-deep-dives/DOPE-MEMORY-DEEP-DIVE.md"
-  adhd_engine: "docs/04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART1.md"
-  dope_context: "docs/04-explanation/technical-deep-dives/DOPEMUX-CONTEXT-DEEP-DIVE.md"
-
-# Archive - Historical documents
+  directory: docs/04-explanation/
+  serena_v2: docs/04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md
+  conport: docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md
+  dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md
+  adhd_engine: docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md
+  dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
 archive:
-  completed_projects: "docs/archive/completed-projects/"
-  session_notes: "docs/archive/session-notes/"
-  deprecated: "docs/archive/deprecated/"
-  overview: "docs/archive/overview.md"
-
-# AI Tooling Configuration
+  completed_projects: docs/archive/completed-projects/
+  session_notes: docs/archive/session-notes/
+  deprecated: docs/archive/deprecated/
+  overview: docs/archive/overview.md
 ai_tooling:
-  claude_config: ".claude/claude.md"
-  mcp_servers: ".claude.json"
-  llm_instructions: ".claude/llm.md"
-  context: ".claude/context.md"
-  agent_architecture: ".claude/AGENT_ARCHITECTURE.md"
-
-# Service Registry
-service_registry: "services/registry.yaml"
-
-# Docker & Deployment
+  claude_config: .claude/claude.md
+  mcp_servers: .claude.json
+  llm_instructions: .claude/llm.md
+  context: .claude/context.md
+  agent_architecture: .claude/AGENT_ARCHITECTURE.md
+service_registry: services/registry.yaml
 docker:
-  compose_master: "docker-compose.master.yml"
-  compose_smoke: "docker-compose.smoke.yml"
-  compose_staging: "docker-compose.staging.yml"
-  compose_prod: "docker-compose.prod.yml"
-
-# Configuration
+  compose_canonical: compose.yml
 config:
-  profiles: "config/profiles/"
-  mcp: "config/.claude/"
-  routing: "config/env/"
-
-# Scripts & Tools
+  profiles: config/profiles/
+  mcp: config/.claude/
+  routing: config/env/
 scripts:
-  directory: "scripts/"
-  docs_validation: "scripts/docs_validator.py"
-  docs_frontmatter: "scripts/docs_frontmatter_guard.py"
-  docs_normalize: "scripts/docs_normalize.py"
-  docs_audit: "scripts/docs_audit/"
+  directory: scripts/
+  docs_validation: scripts/docs_validator.py
+  docs_frontmatter: scripts/docs_frontmatter_guard.py
+  docs_normalize: scripts/docs_normalize.py
+  docs_audit: scripts/docs_audit/
+  skills_sync: scripts/skills/sync_repo_skills.py
+skills:
+  pr_docgen_sync_core: templates/skills/pr-docgen-sync/SKILL.md
+  pr_docgen_sync_gemini: templates/skills/pr-docgen-sync-gemini/SKILL.md
+  pr_docgen_sync_copilot: templates/skills/pr-docgen-sync-copilot/SKILL.md
+  pr_docgen_sync_claude: templates/skills/pr-docgen-sync-claude/SKILL.md

@@ -25,7 +25,7 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
           <Typography variant="h6" color="text.secondary">
             Prediction Loading...
           </Typography>
-          <LinearProgress sx={{ mt: 2, mb: 2, width: '80%', mx: 'auto', borderRadius: 4 }} aria-label="Loading prediction data" />
+          <LinearProgress variant="indeterminate" sx={{ mt: 2, mb: 2, width: '80%', mx: 'auto', borderRadius: 4 }} aria-label="Loading prediction data" />
           <Typography variant="body2" color="text.secondary">
             LSTM daemon is teasing the future. Hold still.
           </Typography>

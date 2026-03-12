@@ -8,7 +8,7 @@ repos:
         entry: python3 scripts/docs_frontmatter_guard.py --fix
         language: system
         files: ^(docs/|task-packets/|UPGRADES/|services/[^/]+/docs/|docker/[^/]+/docs/).*\.md$
-        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
 
       # Graph schema validation
       - id: docs-graph-validator
@@ -16,7 +16,7 @@ repos:
         entry: python scripts/docs_validator.py
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Prohibited file pattern check
@@ -57,7 +57,7 @@ repos:
           - --
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Prelude token count validation for embeddings
@@ -93,7 +93,7 @@ repos:
             print('✅ All preludes within token limit')
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Markdown file location enforcement
@@ -124,8 +124,10 @@ repos:
               if [[ "$normalized" =~ ^\./(\.conport/|conport_export/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.github/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(examples/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(repo-truth-pack/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(tests/resources/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(src/dopemux/templates/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(templates/skills/) ]]; then continue; fi
               if [[ "$normalized" =~ /\.pytest_cache/ ]]; then continue; fi
               # UPGRADES directory is allowed
               if [[ "$normalized" =~ ^\./(UPGRADES/) ]]; then continue; fi
@@ -161,6 +163,22 @@ repos:
           - --
         language: system
         files: \.md$
+        pass_filenames: true
+
+      - id: docs-placement-hygiene
+        name: Enforce docs placement hygiene (changed files)
+        entry: python scripts/check_docs_hygiene.py --check
+        language: system
+        files: ^docs/.*\.md$
+        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        pass_filenames: true
+
+      - id: docs-filename-hygiene
+        name: Enforce docs filename hygiene (kebab-case)
+        entry: python scripts/check_docs_filename_hygiene.py --check
+        language: system
+        files: ^docs/.*\.md$
+        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Legacy UPGRADES tree is docs-only.
@@ -204,7 +222,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
@@ -219,9 +237,9 @@ repos:
     hooks:
       - id: trailing-whitespace
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|docs/rgOutput\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
       - id: end-of-file-fixer
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|docs/rgOutput\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
       - id: check-yaml
         files: ^config/.*\.ya?ml$

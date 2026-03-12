@@ -185,4 +185,14 @@ REQUIREMENTS:
 - Capture feature id/name, entrypoints, triggers, service touchpoints, and user-visible outcomes.
 - Include provenance with file path and evidence snippets.
 - Do not infer behavior without direct evidence.
+
+DOPEMUX FEATURE CATEGORIES (use as classification hints):
+- ADHD Engine: signal collectors, scorers, suggestion engines, focus sessions, break scheduling
+- Two-Plane Architecture: PM plane, Cognitive plane, plane coordination, boundary enforcement
+- Hook System: event hooks, lifecycle hooks, Claude Code hooks, git hooks, event bus
+- MCP Integration: MCP servers, MCP proxies, tool definitions, transport layers
+- Profile System: user profiles, editor profiles, extraction profiles
+- Agent Orchestration: agent launch, supervisor patterns, session management, agent communication
+- CLI System: Click/Typer commands, command groups, CLI routing
+- Editor Integration: Claude Code, Codex Desktop, Copilot, Vibe, VS Code extensions
 ```

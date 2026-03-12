@@ -233,11 +233,11 @@ How to verify success?
 ### Create 5 ADRs (2 hours)
 
 **File locations**:
-- `docs/90-adr/ADR-201-conport-kg-security-hardening.md`
-- `docs/90-adr/ADR-202-serena-v2-production-validation.md`
-- `docs/90-adr/ADR-203-task-orchestrator-un-deprecation.md`
-- `docs/90-adr/ADR-204-ml-risk-assessment-extraction.md`
-- `docs/90-adr/ADR-205-systematic-audit-methodology.md`
+- `docs/90-adr/adr-201-conport-kg-security-hardening-2.md`
+- `docs/90-adr/adr-202-serena-v2-production-validation-2.md`
+- `docs/90-adr/adr-203-task-orchestrator-un-deprecation-2.md`
+- `docs/90-adr/adr-204-ml-risk-assessment-extraction-2.md`
+- `docs/90-adr/adr-205-systematic-audit-methodology-2.md`
 
 **Content**: Use today's analysis reports as source material
 

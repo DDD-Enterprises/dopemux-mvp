@@ -18,7 +18,7 @@ import yaml
 
 # Repository root
 REPO_ROOT = Path(__file__).parent.parent.parent
-SMOKE_COMPOSE_PATH = REPO_ROOT / "docker-compose.smoke.yml"
+CANONICAL_COMPOSE_PATH = REPO_ROOT / "compose.yml"
 
 # Mandatory env vars from contract
 MANDATORY_ENV_VARS = {
@@ -48,9 +48,9 @@ def load_registry() -> Dict:
 
 
 def load_smoke_compose() -> Dict:
-    """Load smoke-compose file used by contract/runtime checks."""
-    assert SMOKE_COMPOSE_PATH.exists(), f"Smoke compose file not found: {SMOKE_COMPOSE_PATH}"
-    with open(SMOKE_COMPOSE_PATH) as f:
+    """Load canonical compose file used by contract/runtime checks."""
+    assert CANONICAL_COMPOSE_PATH.exists(), f"Canonical compose file not found: {CANONICAL_COMPOSE_PATH}"
+    with open(CANONICAL_COMPOSE_PATH) as f:
         return yaml.safe_load(f) or {}
 
 
@@ -58,7 +58,7 @@ def _resolve_service_runtime(service_info: Dict[str, Any]) -> tuple[Path | None,
     """Resolve runtime source directory and dockerfile path for a service.
 
     Resolution order:
-    1. `docker-compose.smoke.yml` build metadata for compose_service_name
+    1. `compose.yml` build metadata for compose_service_name
     2. `services/<service name>`
     3. `services/<compose_service_name>`
     """
@@ -174,6 +174,14 @@ def get_smoke_enabled_services(registry: Dict) -> List[Dict]:
     ]
 
 
+def get_runtime_smoke_services(registry: Dict) -> List[Dict]:
+    """Get smoke services that should satisfy runtime env contract checks."""
+    return [
+        svc for svc in get_smoke_enabled_services(registry)
+        if svc.get("category") != "infrastructure"
+    ]
+
+
 def get_service_exceptions(service_info: Dict) -> Set[str]:
     """Get env var exceptions for a service from registry."""
     return {
@@ -217,13 +225,9 @@ class TestServiceEnvContract:
             "No services enabled in smoke stack. Check services/registry.yaml"
         )
 
-    @pytest.mark.parametrize("service", get_smoke_enabled_services(load_registry()), ids=lambda s: s["name"])
+    @pytest.mark.parametrize("service", get_runtime_smoke_services(load_registry()), ids=lambda s: s["name"])
     def test_service_directory_exists(self, service):
         """Verify service directory exists."""
-        # Skip infrastructure services (use official Docker images)
-        if service.get("category") == "infrastructure":
-            pytest.skip(f"Infrastructure service '{service['name']}' uses official image")
-
         runtime_dir, _ = _resolve_service_runtime(service)
         assert runtime_dir and runtime_dir.exists(), (
             f"Service runtime directory not found for '{service['name']}'.\n"
@@ -231,13 +235,9 @@ class TestServiceEnvContract:
             f"or services/{service['name']}."
         )
 
-    @pytest.mark.parametrize("service", get_smoke_enabled_services(load_registry()), ids=lambda s: s["name"])
+    @pytest.mark.parametrize("service", get_runtime_smoke_services(load_registry()), ids=lambda s: s["name"])
     def test_service_has_entry_point(self, service):
         """Verify service has a main entry point."""
-        # Skip infrastructure services (use official Docker images)
-        if service.get("category") == "infrastructure":
-            pytest.skip(f"Infrastructure service '{service['name']}' uses official image")
-
         service_dir, _ = _resolve_service_runtime(service)
         if service_dir is None:
             pytest.skip(f"Service runtime directory not resolved: {service['name']}")
@@ -249,12 +249,10 @@ class TestServiceEnvContract:
             f"Directory: {service_dir}"
         )
 
-    @pytest.mark.parametrize("service", get_smoke_enabled_services(load_registry()), ids=lambda s: s["name"])
+    @pytest.mark.parametrize("service", get_runtime_smoke_services(load_registry()), ids=lambda s: s["name"])
     def test_mandatory_env_vars_loaded(self, service):
         """Test that service loads mandatory env vars (respecting exceptions)."""
         service_name = service["name"]
-        if service.get("category") == "infrastructure":
-            pytest.skip(f"Infrastructure service '{service_name}' uses official image")
         service_dir, _ = _resolve_service_runtime(service)
 
         # Skip if service directory doesn't exist (infrastructure services)
@@ -290,12 +288,10 @@ class TestServiceEnvContract:
             f"See: docs/03-reference/service-env-contract.md"
         )
 
-    @pytest.mark.parametrize("service", get_smoke_enabled_services(load_registry()), ids=lambda s: s["name"])
+    @pytest.mark.parametrize("service", get_runtime_smoke_services(load_registry()), ids=lambda s: s["name"])
     def test_category_specific_env_vars(self, service):
         """Test that service loads category-specific env vars."""
         service_name = service["name"]
-        if service.get("category") == "infrastructure":
-            pytest.skip(f"Infrastructure service '{service_name}' uses official image")
         service_dir, _ = _resolve_service_runtime(service)
         category = service.get("category", "unknown")
 
@@ -352,16 +348,12 @@ class TestServiceEnvContract:
                     f"has empty or invalid reason"
                 )
 
-    @pytest.mark.parametrize("service", get_smoke_enabled_services(load_registry()), ids=lambda s: s["name"])
+    @pytest.mark.parametrize("service", get_runtime_smoke_services(load_registry()), ids=lambda s: s["name"])
     def test_service_has_dockerfile(self, service):
         """Test that smoke-enabled services have Dockerfiles."""
         service_name = service["name"]
         category = service.get("category", "unknown")
         service_dir, compose_dockerfile = _resolve_service_runtime(service)
-
-        # Infrastructure services may not have Dockerfiles (use official images)
-        if category == "infrastructure":
-            pytest.skip(f"Infrastructure service '{service_name}' uses official image")
 
         # Skip if service directory doesn't exist
         if service_dir is None or not service_dir.exists():
