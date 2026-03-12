@@ -7,7 +7,7 @@ name = "dopemux"
 version = "0.1.0"
 description = "ADHD-optimized development platform that wraps Claude Code with custom configurations"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
     {name = "Dopemux Team", email = "team@dopemux.dev"},
@@ -126,17 +126,7 @@ warn_no_return = true
 warn_unreachable = true
 strict_equality = true
 
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "-ra -q -n auto --strict-markers --strict-config"
-testpaths = ["tests"]
-pythonpath = ["src"]
-asyncio_mode = "auto"
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-]
+
 
 [tool.coverage.run]
 source = ["src"]
