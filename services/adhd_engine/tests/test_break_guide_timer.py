@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import patch
 from services.adhd_engine.cli.break_guide import _timer
 
