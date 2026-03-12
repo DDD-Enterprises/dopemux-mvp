@@ -146,7 +146,7 @@ class ResponseParser:
             return result
 
         # Strip ANSI codes from all lines
-        cleaned_lines = self.strip_ansi(output)
+        cleaned_lines = self._strip_ansi(output)
 
         # Provider-specific parsing
         parser_method = f'_parse_{provider}'
@@ -164,7 +164,7 @@ class ResponseParser:
 
         return result
 
-    def strip_ansi(self, lines: List[str]) -> List[str]:
+    def _strip_ansi(self, lines: List[str]) -> List[str]:
         """
         Strip ANSI escape codes using regex.
 
@@ -190,7 +190,7 @@ class ResponseParser:
 
         for line in lines:
             # Detect prompt
-            if self.is_prompt(line):
+            if self._is_prompt(line):
                 prompt_count += 1
                 if prompt_count == 1:
                     # First prompt (user input echo)
@@ -270,7 +270,7 @@ class ResponseParser:
                 continue
 
             # Skip prompts
-            if self.is_prompt(line):
+            if self._is_prompt(line):
                 continue
 
             # Skip very short lines (likely not content)
@@ -287,7 +287,7 @@ class ResponseParser:
 
         return content.strip()
 
-    def is_prompt(self, line: str) -> bool:
+    def _is_prompt(self, line: str) -> bool:
         """Check if line is a prompt."""
         for pattern in self.PROMPT_PATTERNS:
             if re.match(pattern, line):

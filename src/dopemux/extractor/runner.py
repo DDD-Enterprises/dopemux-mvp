@@ -69,34 +69,10 @@ class PipelineRunner:
                 trace_file.write_text(full_prompt, encoding='utf-8')
                 logger.info(f"  ✅ Generated trace: {trace_file}")
             else:
-                try:
-                    import litellm
-
-                    logger.info(f"  Sending prompt to LLM for phase {phase}...")
-                    model = os.environ.get("LITELLM_MODEL", "gpt-4-turbo")
-
-                    response = litellm.completion(
-                        model=model,
-                        messages=[{"role": "user", "content": full_prompt}]
-                    )
-
-                    response_content = response.choices[0].message.content
-
-                    response_file = self.output_dir / f"{prompt_file.replace('.md', '_RESPONSE.md')}"
-                    response_file.write_text(response_content, encoding='utf-8')
-
-                    trace_file.write_text(full_prompt, encoding='utf-8')
-                    logger.info(f"  ✅ Generated response: {response_file}")
-                    logger.info(f"  ✅ Generated trace: {trace_file}")
-
-                except ImportError:
-                    logger.warning("  ⚠️ litellm not installed, falling back to simulation")
-                    trace_file.write_text(full_prompt, encoding='utf-8')
-                    logger.info(f"  ✅ (Simulation) Generated trace: {trace_file}")
-                except Exception as e:
-                    logger.error(f"  ❌ LLM call failed: {e}")
-                    trace_file.write_text(full_prompt, encoding='utf-8')
-                    logger.info(f"  ✅ (Simulation Fallback) Generated trace: {trace_file}")
+                # TODO: Implement actual LLM call via litellm if available
+                # For now, just write the trace as a fallback
+                trace_file.write_text(full_prompt, encoding='utf-8')
+                logger.info(f"  ✅ (Simulation) Generated trace: {trace_file}")
 
     def list_phases(self):
         """List available phases and prompts."""
