@@ -87,8 +87,8 @@ def _notify(title, message):
     """Send system notification via osascript."""
     import subprocess
     try:
-        script = f'display notification "{message}" with title "{title}" sound name "Glass"'
-        subprocess.run(["osascript", "-e", script], check=False)
+        script = 'on run argv\n  display notification (item 1 of argv) with title (item 2 of argv) sound name "Glass"\nend run'
+        subprocess.run(["osascript", "-e", script, message, title], check=False)
     except Exception:
         pass
 
