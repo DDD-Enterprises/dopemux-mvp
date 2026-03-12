@@ -745,10 +745,31 @@ check_optional_tools() {
         [ "$silent" = false ] && warning "Some features may be limited"
     fi
 }
+log "uv is not installed."
 
-# ============================================================================
-# Auto-Installation of Dependencies
-# ============================================================================
+        # Respect AUTO_CONFIRM if set; otherwise ask the user before installing uv
+        if [ "${AUTO_CONFIRM:-false}" != "true" ]; then
+            if ! ask_yes_no "uv is required for dependency management. Install uv now?"; then
+                warning "uv was not installed. Some installation steps may not work correctly."
+                return 1
+            fi
+        fi
+
+        log "Installing uv..."
+        if ! curl -LsSf https://astral.sh/uv/install.sh | bash; then
+            error "Failed to install uv via installer script. Please install uv manually and re-run this installer."
+            return 1
+        fi
+
+        # Update PATH for the current session (installer may have placed binaries here)
+        export PATH="$HOME/.cargo/bin:$PATH"
+        export PATH="$HOME/.local/bin:$PATH"
+
+        # Verify that uv is now available
+        if ! check_command uv; then
+            error "uv installation appears to have failed (uv not found on PATH after installation)."
+            return 1
+        fi
 
 install_dependencies() {
     if ! check_command uv; then
@@ -1289,7 +1310,8 @@ EOF
     install_docker_services "$SELECTED_STACK"
     configure_shell_integration
     echo
-    
+check_python || fatal "Python 3.10+ required"
+    check_uv || fatal "uv 0.5+ required"
     # Verify
     verify_installation
     echo
