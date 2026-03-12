@@ -1527,7 +1527,8 @@ def test_agent_manager_final_cleanup():
     """Test final cleanup of agent manager."""
     manager = get_agent_manager()
     
-    # Clean up any existing state
+    # Ensure it's running so we can test stopping it
+    manager.start()
     manager.stop()
     
     # Verify clean state
