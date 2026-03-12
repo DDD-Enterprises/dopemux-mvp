@@ -984,15 +984,8 @@ uvicorn main:app --port 8095 --reload
 - **[Serena Code Intelligence](./docs/04-explanation/serena-v2-technical-deep-dive.md)** - LSP-based semantic navigation
 - **[System Architecture](./docs/94-architecture/system-bible.md)** - Two-plane architecture overview
 - **[ADHD Engine](./docs/ADHD-ENGINE-DEEP-DIVE-PART1.md)** - Cognitive load management system
-<<<<<<< HEAD
 - **PR Docgen Sync Skills** - `templates/skills/pr-docgen-sync*/` with installer `scripts/skills/sync_repo_skills.py`
-=======
-<<<<<<< HEAD
-=======
-- **PR Docgen Sync Skills** - `templates/skills/pr-docgen-sync*/` with installer `scripts/skills/sync_repo_skills.py`
-- **PR Merge Specialist Skill** - `templates/skills/pr-merge-specialist/` with queue-drain, review-thread handling, and rebase-first merge orchestration
->>>>>>> 776ae3a99 (feat(pr-merge-specialist): add rebase-first queue drain)
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
+- **PR Merge Specialist Skill** - `templates/skills/pr-merge-specialist/` with `preflight`, `queue-scan`, `pr-plan`, `pr-apply`, `pr-merge`, and `queue-drain`, plus schema-validated policy, honest dry-runs, resumable artifacts, review-thread handling, and rebase-first merge orchestration
 
 ---
 

@@ -9,11 +9,6 @@ last_review: '2026-03-11'
 next_review: '2026-06-11'
 prelude: Canonical catalog of active documentation indexes, policy files, and documentation automation entrypoints.
 ---
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 # Documentation Catalog
 
 ## Canonical Active Index Surfaces
@@ -33,10 +28,7 @@ prelude: Canonical catalog of active documentation indexes, policy files, and do
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
-<<<<<<< HEAD
-=======
-- PR merge queue skill template: `templates/skills/pr-merge-specialist/`
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
+- PR merge queue skill template: `templates/skills/pr-merge-specialist/` with packaged tests, bundled policy, and phase-oriented queue orchestration
 - Skill sync installer: `scripts/skills/sync_repo_skills.py`
 - Legacy compatibility sync: `scripts/skills/sync_testgen_skills.py`
 
@@ -55,7 +47,3 @@ Active docs are maintained in Diataxis-aligned folders under `docs/`.
 Exclude these trees from mandatory active index reconciliation unless directly touched:
 - `docs/archive/**`
 - `docs/04-explanation/history/**`
-<<<<<<< HEAD
-=======
->>>>>>> 776ae3a99 (feat(pr-merge-specialist): add rebase-first queue drain)
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))

@@ -86,6 +86,9 @@ dopemux-pr-merge = "dopemux_pr_merge_specialist.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+dopemux_pr_merge_specialist = ["config/*.yaml"]
+
 [tool.black]
 line-length = 88
 target-version = ['py38']

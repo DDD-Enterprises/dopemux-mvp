@@ -1,4 +1,40 @@
-interface:
-  display_name: "PR Merge Specialist"
-  short_description: "Rebase-first queue draining with thread and conflict gates"
-  default_prompt: "Use $pr-merge-specialist to scan or drain open PR queues with deterministic ordering and fail-closed merge gates."
+display_name: PR Merge Specialist
+short_description: Rebase-first PR queue operator with explicit phase APIs, honest dry-runs, and policy-backed merge safety.
+default_prompt: >-
+  Use $pr-merge-specialist when scanning or draining open pull request queues. Start with
+  preflight or queue-scan unless execute mode is clearly requested. Keep dry-runs truthful,
+  prefer rebase-first updates and merges, block on unresolved active threads and missing
+  required approvals or checks, and emit the full artifact contract.
+prerequisites:
+  - git
+  - gh (authenticated)
+  - python
+  - pre-commit when required by policy
+platform_support:
+  supported:
+    - macOS
+    - Linux
+  unsupported:
+    - Windows native
+safety_boundaries:
+  - Do not mutate remote state without --execute.
+  - Do not mark merge_ready when required local validation was not executed.
+  - Do not use blanket -X ours/-X theirs conflict strategies.
+  - Fail closed when GitHub protection data or policy validation is incomplete.
+non_goals:
+  - Generic cross-platform Windows support in this version
+  - Repo-specific validation hardcoding inside the engine
+artifact_summary:
+  - RUN_MANIFEST.json
+  - PRECHECK.json
+  - ENVIRONMENT.json
+  - QUEUE_SNAPSHOT.json
+  - ORDERING_PLAN.json
+  - POLICY_EFFECTIVE.json
+  - CHECK_WAIT_REPORT.json
+  - BASE_REBASE_UPDATES.json
+  - RUN_SUMMARY.md
+examples:
+  - python3 -m dopemux_pr_merge_specialist.cli queue-scan --strategy hybrid --out-dir proof/pr_merge
+  - python3 -m dopemux_pr_merge_specialist.cli pr-plan --id 205 --out-dir proof/pr_merge
+  - python3 -m dopemux_pr_merge_specialist.cli queue-drain --execute --strategy hybrid --prioritize 190,191 --out-dir proof/pr_merge

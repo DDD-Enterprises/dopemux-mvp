@@ -106,11 +106,6 @@ Codex interfaces with Dopemux via the local MCP fabric listed in `docker/mcp-ser
 - **Plane Coordinator** (`dopemux-mcp-plane-coordinator`, port `8090`, `/health`): API surface for cross-plane coordination, conflict detection, and metrics.
 - **Leantime (project management)** (external network `leantime-net`, port `8080`): companion PM UI integrated through the Leantime Bridge.
 
-<<<<<<< HEAD:docs/03-reference/instructions/codex-2.md
-=======
-<<<<<<< HEAD:docs/instructions/CODEX.md
-=======
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205)):docs/instructions/CODEX.md
 ## Documentation Sync Skill Family
 
 When code changes must be mirrored into docs, use the PR docgen sync skill family:
@@ -120,10 +115,7 @@ When code changes must be mirrored into docs, use the PR docgen sync skill famil
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
-<<<<<<< HEAD:docs/03-reference/instructions/codex-2.md
-=======
-- Merge queue template: `templates/skills/pr-merge-specialist/`
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205)):docs/instructions/CODEX.md
+- Merge queue template: `templates/skills/pr-merge-specialist/` with `preflight`, `queue-scan`, `pr-plan`, `pr-apply`, `pr-merge`, and `queue-drain`
 - Installer: `python scripts/skills/sync_repo_skills.py`
 
 Default baseline for documentation impact scanning: `main...HEAD`.
@@ -135,8 +127,4 @@ python scripts/docs_frontmatter_guard.py
 python scripts/check_root_hygiene.py
 ```
 
-<<<<<<< HEAD:docs/03-reference/instructions/codex-2.md
-=======
->>>>>>> 776ae3a99 (feat(pr-merge-specialist): add rebase-first queue drain):docs/03-reference/instructions/codex-2.md
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205)):docs/instructions/CODEX.md
 Agent-specific rules are inserted in sentinel blocks only.
