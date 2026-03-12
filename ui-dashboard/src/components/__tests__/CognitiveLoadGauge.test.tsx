@@ -1,4 +1,6 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import CognitiveLoadGauge from '../CognitiveLoadGauge';
 
 describe('CognitiveLoadGauge', () => {
@@ -12,7 +14,7 @@ describe('CognitiveLoadGauge', () => {
     );
 
     // Status label
-    expect(screen.getByText(/Low Load/)).toBeInTheDocument();
+    expect(screen.getByText('Low Load - Ready for Complex Tasks')).toBeInTheDocument();
 
     // Load percentage (20%)
     expect(screen.getByText('20%')).toBeInTheDocument();
@@ -22,7 +24,7 @@ describe('CognitiveLoadGauge', () => {
     expect(screen.getByText('Take on more tasks')).toBeInTheDocument();
 
     // Roast text for non-critical status
-    expect(screen.getByText(/log your restraint/)).toBeInTheDocument();
+    expect(screen.getByText("I log your restraint, even when you pretend you don't need any.")).toBeInTheDocument();
   });
 
   it('renders correctly with "optimal" status', () => {
@@ -34,7 +36,7 @@ describe('CognitiveLoadGauge', () => {
       />
     );
 
-    expect(screen.getByText(/Optimal Zone/)).toBeInTheDocument();
+    expect(screen.getByText('Optimal Zone - Flow State Active')).toBeInTheDocument();
     expect(screen.getByText('50%')).toBeInTheDocument();
     expect(screen.getByText('Keep going')).toBeInTheDocument();
   });
@@ -48,7 +50,7 @@ describe('CognitiveLoadGauge', () => {
       />
     );
 
-    expect(screen.getByText(/High Load/)).toBeInTheDocument();
+    expect(screen.getByText('High Load - Consider Simplification')).toBeInTheDocument();
     expect(screen.getByText('80%')).toBeInTheDocument();
     expect(screen.getByText('Delegate tasks')).toBeInTheDocument();
   });
@@ -62,11 +64,11 @@ describe('CognitiveLoadGauge', () => {
       />
     );
 
-    expect(screen.getByText(/Critical Load/)).toBeInTheDocument();
+    expect(screen.getByText('Critical Load - Break Required')).toBeInTheDocument();
     expect(screen.getByText('95%')).toBeInTheDocument();
     expect(screen.getByText('Stop immediately')).toBeInTheDocument();
 
     // Roast text for critical status
-    expect(screen.getByText(/You're cooked/)).toBeInTheDocument();
+    expect(screen.getByText("[BLOCKER] You're cooked. Drop everything and sip water.")).toBeInTheDocument();
   });
 });
