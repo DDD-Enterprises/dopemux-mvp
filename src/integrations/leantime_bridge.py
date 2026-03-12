@@ -451,9 +451,9 @@ class LeantimeBridge:
 
     # Mapping of attention states to allowed task priorities
     ATTENTION_PRIORITIES = {
-        "hyperfocus": frozenset([TaskPriority.HYPERFOCUS]),
-        "focused": frozenset([TaskPriority.FOCUSED, TaskPriority.HYPERFOCUS]),
-        "scattered": frozenset([TaskPriority.SCATTERED, TaskPriority.BACKGROUND]),
+        "hyperfocus": frozenset({TaskPriority.HYPERFOCUS}),
+        "focused": frozenset({TaskPriority.FOCUSED, TaskPriority.HYPERFOCUS}),
+        "scattered": frozenset({TaskPriority.SCATTERED, TaskPriority.BACKGROUND}),
     }
 
     async def get_adhd_optimized_tasks(
