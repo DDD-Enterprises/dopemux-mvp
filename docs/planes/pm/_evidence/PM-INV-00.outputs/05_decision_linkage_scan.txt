@@ -537,7 +537,7 @@ src/dopemux/embeddings/integrations/conport.py:453:            summary = await s
 src/dopemux/embeddings/integrations/conport.py:458:            decisions = summary.get("decisions", []) if isinstance(summary, dict) else []
 src/dopemux/embeddings/integrations/conport.py:459:            return decisions if isinstance(decisions, list) else []
 src/dopemux/embeddings/integrations/conport.py:542:            "integration_type": "conport",
-src/dopemux/templates/init/docs/90-adr/template-adr-record.md:15:* <bullet decision>
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR_RECORD.md:15:* <bullet decision>
 src/dopemux/mcp/session_manager.py:78:    decisions_made: List[str] = field(default_factory=list)
 src/dopemux/mcp/session_manager.py:127:    decisions_made: int = 0
 src/dopemux/mcp/session_manager.py:610:            decisions_made=context_data.get("decisions_made", []),
@@ -592,8 +592,8 @@ src/dopemux/instance_state.py:598:    resolved_port = resolve_conport_port(conpo
 src/dopemux/instance_state.py:609:    conport_port: Optional[int] = None
 src/dopemux/instance_state.py:617:        conport_port: ConPort API port
 src/dopemux/instance_state.py:622:    resolved_port = resolve_conport_port(conport_port)
-src/dopemux/templates/init/docs/90-adr/template-adr.md:35:State the decision in one paragraph.
-src/dopemux/templates/init/docs/90-adr/template-adr.md:79:How do we move from current state to the decision?
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR.md:35:State the decision in one paragraph.
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR.md:79:How do we move from current state to the decision?
 src/dopemux/mcp/token_manager.py:654:            "conport": 300,
 src/dopemux/commands/decisions_commands.py:6:1. Decision review command - Interactive review workflow for overdue decisions
 src/dopemux/commands/decisions_commands.py:39:async def get_conport_connection():
@@ -887,7 +887,7 @@ src/dopemux/templates/init/.claude/claude.md:55:        --decision <CONPORT_DECI
 src/dopemux/templates/init/.claude/claude.md:119:   - Log decisions via ConPort or `dopemux status --summary`.
 src/dopemux/mcp/roles.py:242:        This helps ADHD users by reducing decision overhead and providing
 src/dopemux/mcp/roles.py:401:        This provides ADHD users with clear, limited options to reduce decision paralysis.
-src/dopemux/templates/init/docs/90-adr/template-adr-light.md:11:One-paragraph decision plus 2-5 bullet invariants.
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR_LIGHT.md:11:One-paragraph decision plus 2-5 bullet invariants.
 src/dopemux/templates/init/docs/task-packets/CHECKLIST.md:37:☐ No architectural decisions hidden in Task Packets
 services/task-orchestrator/demo_component6_e2e.py:224:        logger.info(f"      Rationale: {rec.rationale}")
 services/task-orchestrator/demo_component6_e2e.py:264:    logger.info(f"   Rationale: {'High capacity - show more options' if adaptive_count >= 3 else 'Overwhelmed - limit choices to reduce decision fatigue'}")

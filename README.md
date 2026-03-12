@@ -69,7 +69,7 @@ python scripts/render_workspace_configs.py --set-default
 source "$(python scripts/workspace_env_path.py)"
 
 # 4. Start services
-scripts/smoke_up.sh
+docker compose -f docker-compose.smoke.yml up --build -d
 python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
 
 # 5. Run CLI
@@ -94,7 +94,7 @@ dopemux kernel doctor --timestamp-mode deterministic
 - `.dopetask-pin` is used for runtime/CI behavior.
 - Use `dopemux kernel <lifecycle-command>` for kernel lifecycle operations.
 
-See [docs/DOPETASK_KERNEL_INTEGRATION.md](docs/04-explanation/integrations/DOPETASK_KERNEL_INTEGRATION.md) for the full contract and update/rollback process.
+See [docs/DOPETASK_KERNEL_INTEGRATION.md](docs/DOPETASK_KERNEL_INTEGRATION.md) for the full contract and update/rollback process.
 
 ---
 
@@ -159,7 +159,7 @@ source "$(python scripts/workspace_env_path.py)"
 Start the smoke stack and audit services:
 
 ```bash
-scripts/smoke_up.sh
+docker compose -f docker-compose.smoke.yml up --build -d
 python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
 ```
 
@@ -177,7 +177,7 @@ See [INSTALL.md](INSTALL.md) and [QUICK_START.md](QUICK_START.md) for more.
 - **docs/**: Architecture, engineering rituals, branding
 - **tests/**: Unit, contract, and smoke tests
 - **reports/**: Coverage, build matrix, inventories
-- **compose.yml**: Canonical stack definition
+- **docker-compose.*.yml**: Stack definitions
 - **pyproject.toml, requirements.txt**: Python dependencies
 
 See [docs/03-reference/00-repo-map.md](docs/03-reference/00-repo-map.md) for a full map.
@@ -215,7 +215,7 @@ See [docs/03-reference/00-repo-map.md](docs/03-reference/00-repo-map.md) for a f
 - [ ] Run `python tools/quick_checks.py fast|ci|contracts|smoke` for tiered validation
 - [ ] Ensure 80%+ coverage (see pytest.ini)
 - [ ] Use workflows in `.github/workflows/` for CI, security, and coverage
-- [ ] Update `services/registry.yaml` and `compose.yml` together for service changes
+- [ ] Update `services/registry.yaml` and compose files together for service changes
 - [ ] Run `python tools/docker_build_matrix.py --mode build --scoreboard` after Docker/service edits
 - [ ] Update reports/docs after tool outputs change
 - [ ] Never commit secrets or env files
@@ -306,7 +306,7 @@ A: Rerun tests with `pytest -q` and check `coverage.xml` for gaps.
 **Q: Docker build hangs?**
 A: Run `docker builder prune` before `python tools/docker_build_matrix.py --mode build --scoreboard`.
 
-For more, see [Troubleshooting Guide](docs/92-runbooks/workspaces.md).
+For more, see [Troubleshooting Guide](docs/troubleshooting/workspaces.md).
 
 ---
 
@@ -569,7 +569,7 @@ python3 scripts/render_workspace_configs.py --set-default
 source "$(python3 scripts/workspace_env_path.py)"
 
 # 4. Start core services (reads DOPEMUX_* from the sourced env)
-docker compose -f compose.yml up -d
+docker-compose -f docker-compose.unified.yml up -d
 
 # 5. Configure statusline in Claude Code settings
 {
@@ -979,12 +979,10 @@ uvicorn main:app --port 8095 --reload
 ## 📖 Documentation
 
 - **[Documentation Index](./docs/INDEX.md)** - Complete documentation overview
-- **[Master Index](./docs/00-MASTER-INDEX.md)** - Canonical active docs navigation
 - **[ConPort Memory System](./docs/04-explanation/conport-technical-deep-dive.md)** - Knowledge graph and decision logging
 - **[Serena Code Intelligence](./docs/04-explanation/serena-v2-technical-deep-dive.md)** - LSP-based semantic navigation
 - **[System Architecture](./docs/94-architecture/system-bible.md)** - Two-plane architecture overview
 - **[ADHD Engine](./docs/ADHD-ENGINE-DEEP-DIVE-PART1.md)** - Cognitive load management system
-- **PR Docgen Sync Skills** - `templates/skills/pr-docgen-sync*/` with installer `scripts/skills/sync_repo_skills.py`
 
 ---
 
@@ -1321,5 +1319,5 @@ dopemux workspace reset
 
 For more details, see:
 - [Multi-Workspace Implementation Guide](MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md)
-- [Workspace API Reference](docs/03-reference/api/workspace.md)
-- [Troubleshooting Guide](docs/92-runbooks/workspaces.md)
+- [Workspace API Reference](docs/api/workspace.md)
+- [Troubleshooting Guide](docs/troubleshooting/workspaces.md)

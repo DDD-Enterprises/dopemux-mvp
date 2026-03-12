@@ -5,7 +5,7 @@
 set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 echo "🚀 Starting Dopemux MCP Servers..."
 echo "📁 Project root: $PROJECT_ROOT"
@@ -66,7 +66,7 @@ echo "🐳 Starting Docker-based MCP servers..."
 
 # Start core infrastructure first
 echo "🏗️ Starting infrastructure services..."
-docker compose -p dopemux -f "$PROJECT_ROOT/compose.yml" up -d dopemux-postgres-age dopemux-redis-primary dopemux-redis-events mcp-qdrant
+docker compose -f "$PROJECT_ROOT/compose.yml" up -d dopemux-postgres-age dopemux-redis-primary dopemux-redis-events mcp-qdrant
 
 # Wait for infrastructure
 check_container_health "dopemux-postgres-age"
@@ -75,7 +75,7 @@ check_container_health "mcp-qdrant"
 
 # Start MCP servers
 echo "🔧 Starting MCP servers..."
-docker compose -p dopemux -f "$PROJECT_ROOT/compose.yml" up -d mcp-conport mcp-zen mcp-pal mcp-serena mcp-dope-context mcp-exa mcp-gptr-mcp mcp-leantime-bridge mcp-desktop-commander mcp-task-orchestrator mcp-clear-thought
+docker compose -f "$PROJECT_ROOT/compose.yml" up -d mcp-conport mcp-zen mcp-pal mcp-serena mcp-dope-context mcp-exa mcp-gptr-mcp mcp-leantime-bridge mcp-desktop-commander mcp-task-orchestrator mcp-clear-thought
 
 # Wait for MCP servers to be ready
 echo "🏥 Checking MCP server health..."
@@ -125,4 +125,4 @@ echo "💡 You can now start Claude Code with full MCP server support:"
 echo "   claude"
 echo ""
 echo "🔧 If you encounter issues, check logs with:"
-echo "   docker compose -p dopemux -f compose.yml logs [service-name]"
+echo "   docker compose -f compose.yml logs [service-name]"

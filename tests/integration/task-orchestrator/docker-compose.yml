@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  task-orchestrator:
+    image: ghcr.io/jpicklyk/task-orchestrator:latest
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/app/data
+      - ../../.claude:/project/.claude
+    environment:
+      - PORT=8082
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'Checking health...'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

@@ -299,8 +299,8 @@ src/dopemux/ux/progress_display.py:66:            message: Status message
 src/dopemux/ux/progress_display.py:143:            status_info: Status information to display
 src/dopemux/ux/progress_display.py:150:            ("Status", status_info.get("status", "Unknown")),
 src/dopemux/ux/progress_display.py:163:            title="System Status",
-src/dopemux/templates/init/docs/90-adr/template-adr.md:5:## Status
-src/dopemux/templates/init/docs/90-adr/template-adr.md:35:State the decision in one paragraph.
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR.md:5:## Status
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR.md:35:State the decision in one paragraph.
 services/task-orchestrator/demo_component6_e2e.py:30:    LoadStatus,
 services/task-orchestrator/demo_component6_e2e.py:60:class MockADHDState:
 services/task-orchestrator/demo_component6_e2e.py:94:def create_scenario_fresh_morning() -> MockADHDState:
@@ -357,7 +357,7 @@ src/dopemux/commands/decisions_commands.py:1431:                console.log("\n[
 src/dopemux/templates/init/docs/task-packets/STATUS.md:1:📊 Dopemux Execution Status
 src/dopemux/templates/init/docs/task-packets/STATUS.md:9:🧭 Status Legend
 src/dopemux/templates/init/docs/task-packets/STATUS.md:14:🧠 Subsystem Status
-src/dopemux/templates/init/docs/90-adr/template-adr-light.md:5:## Status
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR_LIGHT.md:5:## Status
 services/task-orchestrator/task_orchestrator/models.py:9:from enum import Enum
 services/task-orchestrator/task_orchestrator/models.py:13:class TaskStatus(str, Enum):
 services/task-orchestrator/task_orchestrator/models.py:24:class AgentType(str, Enum):

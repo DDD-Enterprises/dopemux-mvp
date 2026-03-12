@@ -45,7 +45,29 @@ phases:
     - A12
     - A13
     - A99
+    - A13
+    - A12
+    - A11
     steps:
+    - step_id: A11
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A11_EDITOR_INTEGRATION_SURFACES.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - EDITOR_INTEGRATION_SURFACE.json
+    - step_id: A12
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A12_CLI_COMMAND_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - CLI_COMMAND_SURFACE.json
+    - step_id: A13
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A13_HOOK_CONTRACT_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - HOOK_CONTRACT_SURFACE.json
+      - EVENT_FLOW_GRAPH.json
     - step_id: A0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md
       coverage_targets:
@@ -311,6 +333,18 @@ phases:
     - C16
     - C17
     steps:
+    - step_id: C12
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C12_AGENT_ORCHESTRATION_SURFACE.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - AGENT_ORCHESTRATION_SURFACE.json
+    - step_id: C13
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C13_ADHD_ENGINE_SURFACE.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - ADHD_ENGINE_SURFACE.json
     - step_id: C0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md
       coverage_targets:
@@ -390,12 +424,12 @@ phases:
       - REFUSAL_AND_GUARDRAILS_SURFACE.json
       - TASKX_INTEGRATION_SURFACE.json
       - WORKFLOW_RUNNER_SURFACE.json
-      - LEANTIME_INTEGRATION_SURFACE.json
       - DETERMINISM_RISK_LOCATIONS.json
       - IDEMPOTENCY_RISK_LOCATIONS.json
       - CONCURRENCY_RISK_LOCATIONS.json
       - CODE_SURFACES_QA.json
       - SERVICE_CATALOG.json
+      - LEANTIME_INTEGRATION_SURFACE.json
       - AGENT_ORCHESTRATION_SURFACE.json
       - ADHD_ENGINE_SURFACE.json
       - PYTHON_API_SURFACE.json
@@ -428,17 +462,17 @@ phases:
       outputs:
       - ADHD_ENGINE_SURFACE.json
     - step_id: C14
-      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C14_CODE_HEALTH_SURFACE.md
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C14_PYTHON_API_SURFACE.md
       coverage_targets:
       - code_surfaces
       outputs:
-      - CODE_HEALTH_SURFACE.json
+      - PYTHON_API_SURFACE.json
     - step_id: C15
-      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C15_DEAD_CODE_INVENTORY.md
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C15_SERVICE_ENDPOINT_SURFACE.md
       coverage_targets:
       - code_surfaces
       outputs:
-      - DEAD_CODE_INVENTORY.json
+      - SERVICE_ENDPOINT_SURFACE.json
     - step_id: C16
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C16_DEPENDENCY_GRAPHS.md
       coverage_targets:
@@ -662,7 +696,6 @@ phases:
     - Q2
     - Q3
     - Q9
-    - Q11
     steps:
     - step_id: Q0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md
@@ -695,12 +728,6 @@ phases:
       outputs:
       - PIPELINE_DOCTOR_REPORT.json
       - QA_SERVICE_COVERAGE.json
-    - step_id: Q11
-      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q11_ARTIFACT_COLLISION_REPORT.md
-      coverage_targets:
-      - phase_scope
-      outputs:
-      - QA_ARTIFACT_COLLISION_REPORT.json
   R:
     required_steps:
     - R0
@@ -994,8 +1021,13 @@ phases:
     - S9
     - S10
     - S11
-    - S12
     steps:
+    - step_id: S7
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S7_OVERSEER_AGENT_FLOW_DESIGN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - S7_OVERSEER_AGENT_FLOW_DESIGN.md
     - step_id: S0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md
       coverage_targets:
@@ -1084,9 +1116,3 @@ phases:
       - phase_scope
       outputs:
       - S11_DOCUMENTATION_GENERATION.md
-    - step_id: S12
-      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S12_STABILITY_SIGNATURE.md
-      coverage_targets:
-      - phase_scope
-      outputs:
-      - S12_STABILITY_SIGNATURE.json

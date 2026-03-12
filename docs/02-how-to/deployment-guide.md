@@ -181,17 +181,17 @@ docker exec mcp-conport psql -U dopemux_age -d dopemux_knowledge_graph \
 
 ```bash
 # Deploy all services with docker-compose
-docker compose -f compose.yml up -d
+docker-compose -f docker-compose.master.yml up -d
 
 # Monitor startup
-docker compose -f compose.yml logs -f
+docker-compose -f docker-compose.master.yml logs -f
 ```
 
 ### Deployment Option 2: Core Services Only
 
 ```bash
 # Deploy core services (minimal setup)
-scripts/smoke_up.sh
+docker-compose -f docker-compose.unified.yml up -d
 
 # Services included:
 # - PostgreSQL with AGE
@@ -207,7 +207,7 @@ scripts/smoke_up.sh
 
 ```bash
 # Use staging configuration
-docker compose -f compose.yml up -d
+docker-compose -f docker-compose.staging.yml up -d
 
 # Staging includes:
 # - Same services as production
@@ -274,7 +274,7 @@ docker ps --filter "name=dopemux"
 
 ```bash
 # Stop services
-docker compose -f compose.yml down
+docker-compose -f docker-compose.master.yml down
 
 # Restore database backup
 docker exec dopemux-postgres-age psql -U dopemux_age \
@@ -282,7 +282,7 @@ docker exec dopemux-postgres-age psql -U dopemux_age \
 
 # Restart with previous version
 git checkout <previous-tag>
-docker compose -f compose.yml up -d
+docker-compose -f docker-compose.master.yml up -d
 ```
 
 ### Scenario 2: Service Startup Failure
@@ -297,21 +297,21 @@ docker pull dopemux/<service>:<previous-tag>
 docker tag dopemux/<service>:<previous-tag> dopemux/<service>:latest
 
 # Restart
-docker compose -f compose.yml restart <service>
+docker-compose -f docker-compose.master.yml restart <service>
 ```
 
 ### Scenario 3: Complete Rollback
 
 ```bash
 # Full system rollback
-docker compose -f compose.yml down
+docker-compose -f docker-compose.master.yml down
 
 # Restore all data
 ./scripts/restore-backup.sh <backup-date>
 
 # Deploy previous version
 git checkout <previous-tag>
-docker compose -f compose.yml up -d
+docker-compose -f docker-compose.master.yml up -d
 ```
 
 ---
@@ -322,7 +322,7 @@ docker compose -f compose.yml up -d
 
 ```bash
 # Run smoke tests
-scripts/smoke_up.sh
+docker-compose -f docker-compose.smoke.yml up --abort-on-container-exit
 
 # Expected: All tests pass
 ```
@@ -413,7 +413,7 @@ export NEW_ADHD_ENGINE_API_KEY=$(openssl rand -hex 32)
 sed -i "s/ADHD_ENGINE_API_KEY=.*/ADHD_ENGINE_API_KEY=$NEW_ADHD_ENGINE_API_KEY/" .env
 
 # Restart affected services
-docker compose -f compose.yml restart adhd-engine
+docker-compose restart adhd-engine
 ```
 
 ### Network Security
@@ -434,7 +434,7 @@ docker network create --driver bridge dopemux-private
 
 ```bash
 # Tail all service logs
-docker compose -f compose.yml logs -f
+docker-compose logs -f
 
 # Specific service logs
 docker logs -f dopemux-adhd-engine
@@ -511,7 +511,7 @@ docker logs <failing-service>
 # E.g., if DopeconBridge fails, check Redis and PostgreSQL
 
 # Restart service
-docker compose -f compose.yml restart <service>
+docker-compose restart <service>
 ```
 
 ---
@@ -530,7 +530,7 @@ For service-specific deployment details, see:
 
 ```bash
 # Start full stack
-docker compose -f compose.yml up -d
+docker-compose -f docker-compose.master.yml up -d
 
 # Check all service health
 for port in 3004 3016 8000 8080; do
@@ -538,16 +538,16 @@ for port in 3004 3016 8000 8080; do
 done
 
 # View logs
-docker compose -f compose.yml logs -f
+docker-compose logs -f
 
 # Restart service
-docker compose -f compose.yml restart <service-name>
+docker-compose restart <service-name>
 
 # Stop all services
-docker compose -f compose.yml down
+docker-compose -f docker-compose.master.yml down
 
 # Full cleanup (WARNING: destroys data)
-docker compose -f compose.yml down -v
+docker-compose -f docker-compose.master.yml down -v
 ```
 
 ---

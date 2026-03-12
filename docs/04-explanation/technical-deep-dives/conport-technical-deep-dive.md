@@ -29,9 +29,9 @@ ConPort is not a monolithic service. It consists of two distinct runtime compone
 ## SECTION 2: EVIDENCE TRAIL
 
 ### Source 1: Docker Integration (2026-02-09)
-**File**: `compose.yml`
+**File**: `docker-compose.master.yml`
 **Finding**: The `conport` service builds from `./docker/mcp-servers/conport`.
-**Implication**: `services/conport` is **DEAD CODE** in the context of the canonical stack.
+**Implication**: `services/conport` is **DEAD CODE** in the context of the master stack.
 
 ### Source 2: Active Codebase (`docker/mcp-servers/conport/enhanced_server.py`)
 **Type**: Python / AIOHTTP
