@@ -2,11 +2,14 @@ name: Repo Identity Check
 
 on: [push, pull_request]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   identity-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
       - name: Verify Repo Identity
         run: |
           test -f .repo_id
