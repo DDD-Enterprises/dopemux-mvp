@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/clear_index.request.schema.json",
+  "title": "clear_index Request",
+  "description": "MCP tool: clear_index. Derived from server.py:1531-1546.",
+  "type": "object",
+  "properties": {
+    "workspace_path": { "type": ["string", "null"] },
+    "target": { "type": "string", "default": "code", "enum": ["code", "docs", "both"] }
+  },
+  "additionalProperties": false
+}

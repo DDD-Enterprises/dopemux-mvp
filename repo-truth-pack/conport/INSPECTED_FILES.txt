@@ -1,0 +1,36 @@
+# ConPort Phase 1 Discovery — Inspected Files
+# Format: path | line_range | purpose
+
+docker/mcp-servers-source/conport/server.py | 1-178 | MCP thin-client (FastMCP SSE+stdio)
+docker/mcp-servers-source/conport/conport_mcp_stdio.py | 1-175 | MCP stdio-only admin client
+docker/mcp-servers-source/conport/enhanced_server.py | 1-2149 | Primary HTTP+JSON-RPC server (active)
+docker/mcp-servers-source/conport/unified_queries.py | 1-361 | Cross-workspace query layer (asyncpg+redis)
+docker/mcp-servers-source/conport/instance_detector.py | 1-197 | Worktree instance detector (env-based)
+docker/mcp-servers-source/conport/shared_monitoring.py | 1-359 | Prometheus monitoring base
+docker/mcp-servers-source/conport/shared_monitoring_init.py | 1-5 | Monitoring package init
+docker/mcp-servers-source/conport/schema.sql | 1-291 | Base PostgreSQL schema (7 tables, 2 views, triggers)
+docker/mcp-servers-source/conport/schema.sql.bak | head-30 | Backup of schema.sql (identical content)
+docker/mcp-servers-source/conport/Dockerfile | 1-40 | Container build spec
+docker/mcp-servers-source/conport/direct_server.py | 1-271 | Mock/prototype HTTP server (deprecated)
+docker/mcp-servers-source/conport/info_server.py | 1-62 | Service discovery sidecar (port 4004)
+docker/mcp-servers-source/conport/start_with_info.sh | 1-19 | Multi-process entrypoint script
+docker/mcp-servers-source/conport/integration_bridge_client.py | 1-163 | DopeconBridge event publisher
+docker/mcp-servers-source/conport/simple_metrics_server.py | 1-48 | Standalone Prometheus metrics server
+docker/mcp-servers-source/conport/migrations/001_enhanced_decision_model.sql | full | Phase 1: 14 new decision fields + 3 new tables
+docker/mcp-servers-source/conport/migrations/002_decision_patterns_table.sql | full | Phase 2: decision patterns table
+docker/mcp-servers-source/conport/migrations/003_multi_tenancy_foundation.sql | full | Phase 3: multi-tenancy with user_id
+docker/mcp-servers-source/conport/migrations/004_unified_query_indexes.sql | full | Phase 4: cross-workspace query indexes
+docker/mcp-servers-source/conport/migrations/007_worktree_support_simple.sql | full | Migration 7: instance_id columns for worktree
+docker/mcp-servers-source/conport/migrations/007_rollback.sql | full | Rollback for migration 7
+docker/mcp-servers-source/conport/migrations/README.md | full | Migration documentation
+docker/mcp-servers-source/conport/migrations/run_migration_001.py | full | Python migration runner for 001
+docker/mcp-servers-source/conport/migrations/run_migration_002.py | full | Python migration runner for 002
+docker/mcp-servers-source/conport/migrations/test_migration_007.sh | full | Test script for migration 7
+docker/mcp-servers-source/conport/tests/test_instance_detector.py | full | Unit tests for instance detector
+docker/mcp-servers-source/conport/tests/test_worktree_routing.py | full | Integration tests for worktree routing
+docker/mcp-servers-source/conport/test_token_limit_fix.py | full | Token truncation tests
+docker/mcp-servers-source/conport/test_worktree_validation.py | full | Worktree validation tests
+compose.yml | lines 226-260 | Conport Docker service definition
+docker-compose.smoke.yml | lines 74-100 | Conport smoke stack definition
+services/registry.yaml | lines 78-120 | Registry entries (conport-http:3004, conport-mcp:3005)
+.claude.json | dopemux-conport key | MCP client config (SSE on :3005/mcp)

@@ -1,0 +1,2718 @@
+{
+  "baseline": "main...HEAD",
+  "existing_misplacements": [
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/02-how-to/DOCKER_SETUP.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/02-how-to/deployment-worktree.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/02-how-to/install.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/02-how-to/installation-legacy.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/02-how-to/operations/adhd-engine-rollout.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/02-how-to/root-relocated/CHECKLIST.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/02-how-to/tmux-setup.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/02-how-to/troubleshooting.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/02-how-to/websocket-quickstart.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/ai-agents.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/extraction/PIPELINE_RELIABILITY.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/extraction/PIPELINE_TRANSPORT_LAYER.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/governance/COVERAGE_POLICY.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/performance-optimizations.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/security.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/serena-v2-mcp-tools.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/service-env-contract.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/00_overview.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/01_architecture.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/02_data_model_sqlite.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/03_data_model_postgres.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/04_event_taxonomy.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/05_promotion_redaction.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/06_retrieval_ranking.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/07_mcp_contracts.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/08_phased_roadmap.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/09_test_plan.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/10_risk_register.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/spec/dope-memory/v1/README.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/adhd-intelligence/adhd-complete-documentation.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "how-to",
+      "expected_prefixes": [
+        "docs/02-how-to/"
+      ],
+      "path": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/adhd-intelligence/adhd-stack-readme.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/adhd-intelligence/serena-v2-quick-test.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/conport/conport-kg-status.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/dashboard/dashboard-enhancements.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/dashboard/overview.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/dashboard/tmux-dashboard-design.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/systems/dashboard/tmux-metrics-inventory.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/task-packets/TP-CLOUDFLARE-WEBHOOKS-0001.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/templates/pal-pr-layout.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/03-reference/templates/pr_description.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "reference",
+      "expected_prefixes": [
+        "docs/03-reference/",
+        "docs/05-audit-reports/",
+        "docs/systems/",
+        "docs/planes/",
+        "docs/spec/"
+      ],
+      "path": "docs/04-explanation/branding/cli-branding.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "reference",
+      "expected_prefixes": [
+        "docs/03-reference/",
+        "docs/05-audit-reports/",
+        "docs/systems/",
+        "docs/planes/",
+        "docs/spec/"
+      ],
+      "path": "docs/04-explanation/branding/d\u00f8pemux-brand-system.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "how-to",
+      "expected_prefixes": [
+        "docs/02-how-to/"
+      ],
+      "path": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/ADHD_ENGINE_PROFILE_DETECTOR_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/ADR-197-P0-STAGE1-STAGE2-IMPLEMENTATION-PR-PLAN-2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16__moved-2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/BRIDGE_ORCHESTRATOR_INTEGRATION_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/COMPLETE-AUDIT-SUMMARY-2025-10-16.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONFIG_BACKUP_SAFETY_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_DEEP_STATUS_TASK_EXTRACT_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_IMPORT_WIRING_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_PERSISTENCE_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_SQLITE_EXTRACTION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY__moved-2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/EXHAUSTIVE-AUDIT-PLAN.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/FILE_PATTERN_ANALYZER_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/FINAL-AUDIT-REPORT-2025-10-16.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/FINAL-AUDIT-REPORT.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/KG_DEPENDENCY_UNIFICATION_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/OPTIMIZED-AUDIT-PLAN.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PHASE-1-COMPLETE.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PHASE-3-REMAINING-SERVICES-QUICK-SCAN.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PHASE-4-DOCUMENTATION-VALIDATION-COMPLETE.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PHASE-6-INTEGRATION-TESTS-ASSESSMENT.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_CONFIG_INTEGRATION_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_CONFIG_SWAP_RESTART_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_CURRENT_DETECTION_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_DETECTOR_THRESHOLD_TESTS_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_DOCUMENTATION_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_ERROR_RECOVERY_ROLLBACK_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_OPTIMIZATION_SUGGESTIONS_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_START_E2E_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_SWITCH_COMMAND_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_SWITCH_INTEGRATION_TESTS_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_SWITCH_TIME_OPTIMIZATION_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_WEEK2_INTEGRATION_TESTING_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/ROADMAP-REMAINING-WORK.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/RUNTIME_STABILITY_HOTFIXES_2026-02-08.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/SEMANTIC_SEARCH_REFERENCE_INVENTORY_2026-02-07.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/START-HERE-NEXT-SESSION.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/ULTIMATE-AUDIT-COMPLETION-2025-10-16.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/architecture-audit-2025-10-16.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/audit-overview.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/comprehensive-feature-status-summary.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/documentation-audit-2025-10-16.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-1a-inventory.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-1a-inventory__moved-2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-1b-service-catalog.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-1b-service-catalog__moved-2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-1c-dependency-map.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-1c-dependency-map__moved-2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-1d-documentation-inventory.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-1d-documentation-inventory__moved-2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-2-security-quality-complete.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-2-security-quality-complete__moved-2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-2a-security-scan.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-2a-security-scan__moved-2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-3-manual-review-findings.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase-3-manual-review-findings__moved-2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase1-foundation-analysis-complete.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase1-foundation-analysis.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase2-code-review.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase2-conport-deep-analysis.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase2-summary.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/phase3-detailed-analysis.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/ADHD-DASHBOARD-SESSION-SUMMARY.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/AUDIT_INITIAL_FINDINGS.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/COMPACT-DASHBOARD-COMPLETE.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/FINAL-COMPLETE-SESSION-SUMMARY.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/MCP_STATUS_UPDATE.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/MONITORING-DESIGN-SPRINT-SUMMARY.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/ORCHESTRATOR-INTEGRATION-COMPLETE.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/PHASE0_DETERMINISM_REPORT.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/PHASE0_SERIALIZATION_REPORT.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/PROCESSPOOL_STABILITY_REPORT.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/TP-ROUTING-GLOBAL-0001-Commit1-SUMMARY.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/root-relocated/rgOutput.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/05-audit-reports/testing-audit-2025-10-16.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "reference",
+      "expected_prefixes": [
+        "docs/03-reference/",
+        "docs/05-audit-reports/",
+        "docs/systems/",
+        "docs/planes/",
+        "docs/spec/"
+      ],
+      "path": "docs/06-research/ACT pack - claude-mem.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "reference",
+      "expected_prefixes": [
+        "docs/03-reference/",
+        "docs/05-audit-reports/",
+        "docs/systems/",
+        "docs/planes/",
+        "docs/spec/"
+      ],
+      "path": "docs/06-research/claude-mem-phase0.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/06-research/investigations/INTEGRATION_SURFACES_MASTER.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/06-research/investigations/deep-research-report 1.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/06-research/multi-agent-ai-systems-research-2025-10-15.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "reference",
+      "expected_prefixes": [
+        "docs/03-reference/",
+        "docs/05-audit-reports/",
+        "docs/systems/",
+        "docs/planes/",
+        "docs/spec/"
+      ],
+      "path": "docs/06-research/p1 port act packet.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/06-research/research-adhd-interface-optimization-20251015.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/06-research/research-knowledge-graph-agent-memory-20251023.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/06-research/research-multi-pane-layout-patterns-2025-10-15.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART2.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/systems/dopecon-bridge/README.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/systems/multi-workspace/README.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/systems/production/README.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/systems/suppression-telemetry/CONPORT_SUMMARY.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/systems/suppression-telemetry/NEXT_STEPS.md",
+      "touched_or_new": false
+    },
+    {
+      "doc_type": "explanation",
+      "expected_prefixes": [
+        "docs/04-explanation/",
+        "docs/planes/",
+        "docs/03-reference/instructions/",
+        "docs/instructions/",
+        "docs/00-MASTER-INDEX.md",
+        "docs/INDEX.md",
+        "docs/03-reference/documentation-catalog.md",
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials/overview.md",
+        "docs/02-how-to/overview.md"
+      ],
+      "path": "docs/systems/suppression-telemetry/PROJECT_STATUS.md",
+      "touched_or_new": false
+    }
+  ],
+  "generated_at": "2026-03-11T19:09:17.355646+00:00",
+  "touched_or_new_misplacements": []
+}

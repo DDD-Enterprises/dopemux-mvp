@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/get_chunk_complexity.request.schema.json",
+  "title": "get_chunk_complexity Request",
+  "description": "MCP tool: get_chunk_complexity. Derived from server.py:2923-3026.",
+  "type": "object",
+  "properties": {
+    "file_path": { "type": "string", "description": "Path to source file." },
+    "symbol": { "type": "string", "description": "Function/class name to analyze." }
+  },
+  "required": ["file_path", "symbol"],
+  "additionalProperties": false
+}

@@ -174,20 +174,10 @@ class TestSerenaIntegration:
     """Test Serena integration with shared detection"""
 
     def test_serena_imports_shared_module(self):
-        """Serena should import from shared module"""
-        serena_path = project_root / "services" / "serena" / "v2"
-        sys.path.insert(0, str(serena_path))
-
-        try:
-            # Import enhanced_lsp which should have get_workspace_root imported
-            import enhanced_lsp
-
-            # Check if it imports the shared module
-            import inspect
-            source = inspect.getsource(enhanced_lsp)
-            assert "from src.dopemux.workspace_detection import get_workspace_root" in source
-        except ImportError:
-            pytest.skip("Serena dependencies not available")
+        """Serena module should import shared workspace detection."""
+        serena_lsp = project_root / "services" / "serena" / "enhanced_lsp.py"
+        source = serena_lsp.read_text()
+        assert "from src.dopemux.workspace_detection import get_workspace_root" in source
 
 
 class TestMCPWrapperScripts:

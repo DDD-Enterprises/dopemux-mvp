@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install dependencies (including serena from git)
 # Pinning to main branch for now, ideally should be a tag
-RUN pip install "git+https://github.com/oraios/serena.git" mcp-proxy fastapi uvicorn
+RUN pip install "git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb" mcp-proxy fastapi uvicorn
 
 # Copy wrapper script and info server
 COPY wrapper.py /app/wrapper.py

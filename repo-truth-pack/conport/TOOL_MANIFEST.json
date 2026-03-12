@@ -1,0 +1,578 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "meta": {
+    "component": "conport",
+    "analyzed_ref": "fe48c0a874ac25ed179b9ddb091252a6dbe9b5c2",
+    "analyzed_branch": "codex/main-drain-20260306",
+    "generated": "2026-03-10",
+    "surface_count": 3,
+    "note": "Three separate callable surfaces. FastMCP and JSON-RPC tool names differ. HTTP routes are REST endpoints, not MCP tools."
+  },
+  "surfaces": [
+    {
+      "surface_id": "fastmcp",
+      "transport": ["stdio", "sse"],
+      "source_files": ["server.py", "conport_mcp_stdio.py"],
+      "framework": "FastMCP",
+      "discovery": "MCP protocol tools/list",
+      "server_names": {
+        "server.py": "conport",
+        "conport_mcp_stdio.py": "conport-admin"
+      },
+      "tool_count": 13,
+      "note": "Both server.py and conport_mcp_stdio.py register identical 13 tools. One difference: conport_mcp_stdio.py log_decision sends 'summary' field as '[{topic}] {decision}' (line 71) while server.py sends 'topic' field directly (line 70).",
+      "tools": [
+        {
+          "name": "get_progress",
+          "description": "Get progress entries for a workspace (optionally filter by status).",
+          "source": "server.py:36",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": true},
+            "status": {"type": "string", "required": false, "default": null},
+            "limit": {"type": "integer", "required": false, "default": 20}
+          },
+          "delegates_to": "GET /api/progress?workspace_id={workspace_id}&limit={limit}&status={status}",
+          "returns": "JSON string"
+        },
+        {
+          "name": "update_progress",
+          "description": "Update an existing progress entry. Pass a dict with fields like status (e.g. COMPLETED), percentage, etc.",
+          "source": "server.py:46",
+          "parameters": {
+            "progress_id": {"type": "string", "required": true},
+            "updates": {"type": "object", "required": true}
+          },
+          "delegates_to": "PUT /api/progress/{progress_id}",
+          "returns": "JSON string"
+        },
+        {
+          "name": "get_decisions",
+          "description": "Get recent decisions (optionally filter by workspace).",
+          "source": "server.py:54",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": false, "default": null},
+            "limit": {"type": "integer", "required": false, "default": 10}
+          },
+          "delegates_to": "GET /api/decisions?limit={limit}&workspace_id={workspace_id}",
+          "returns": "JSON string"
+        },
+        {
+          "name": "log_decision",
+          "description": "Log an architectural or technical decision to the workspace graph.",
+          "source": "server.py:65",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": true},
+            "topic": {"type": "string", "required": true},
+            "decision": {"type": "string", "required": true},
+            "rationale": {"type": "string", "required": true},
+            "tags": {"type": "array", "items": "string", "required": false, "default": []}
+          },
+          "delegates_to": "POST /api/decisions",
+          "returns": "JSON string",
+          "variants": {
+            "server.py": "Sends payload with 'topic' field",
+            "conport_mcp_stdio.py": "Sends payload with 'summary' = '[{topic}] {decision}' instead of 'topic'"
+          }
+        },
+        {
+          "name": "get_recent_activity",
+          "description": "Get recent activity to rebuild context.",
+          "source": "server.py:80",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": true},
+            "hours": {"type": "integer", "required": false, "default": 24}
+          },
+          "delegates_to": "GET /api/recent-activity/{workspace_id}?hours={hours}",
+          "returns": "JSON string"
+        },
+        {
+          "name": "get_active_work",
+          "description": "Get currently active work items to maintain focus.",
+          "source": "server.py:89",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": true}
+          },
+          "delegates_to": "GET /api/active-work/{workspace_id}",
+          "returns": "JSON string"
+        },
+        {
+          "name": "workspace_summary",
+          "description": "Get an aggregated summary across all workspaces for a user.",
+          "source": "server.py:98",
+          "parameters": {
+            "user_id": {"type": "string", "required": true}
+          },
+          "delegates_to": "GET /api/workspace-summary?user_id={user_id}",
+          "returns": "JSON string"
+        },
+        {
+          "name": "fork_instance",
+          "description": "Fork PLANNED/IN_PROGRESS progress from shared/source into target instance.",
+          "source": "server.py:107",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": true},
+            "source_instance": {"type": "string", "required": false, "default": null},
+            "target_instance": {"type": "string", "required": false, "default": null}
+          },
+          "delegates_to": "POST /api/instance/fork",
+          "returns": "JSON string"
+        },
+        {
+          "name": "promote",
+          "description": "Promote a progress entry to shared (clear instance_id).",
+          "source": "server.py:118",
+          "parameters": {
+            "progress_id": {"type": "string", "required": true}
+          },
+          "delegates_to": "POST /api/progress/promote",
+          "returns": "JSON string"
+        },
+        {
+          "name": "promote_all",
+          "description": "Promote all instance-local PLANNED/IN_PROGRESS entries in current instance to shared.",
+          "source": "server.py:125",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": true}
+          },
+          "delegates_to": "POST /api/progress/promote_all",
+          "returns": "JSON string"
+        },
+        {
+          "name": "get_context",
+          "description": "Get active context for a workspace, including instance-specific data.",
+          "source": "server.py:132",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": true}
+          },
+          "delegates_to": "GET /api/context/{workspace_id}",
+          "returns": "JSON string"
+        },
+        {
+          "name": "update_context",
+          "description": "Update active context for a workspace.",
+          "source": "server.py:141",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": true},
+            "context_data": {"type": "object", "required": true}
+          },
+          "delegates_to": "POST /api/context/{workspace_id}",
+          "returns": "JSON string"
+        },
+        {
+          "name": "log_progress",
+          "description": "Log a new progress item or task in the workspace.",
+          "source": "server.py:149",
+          "parameters": {
+            "workspace_id": {"type": "string", "required": true},
+            "description": {"type": "string", "required": true},
+            "status": {"type": "string", "required": false, "default": "PLANNED"},
+            "priority": {"type": "string", "required": false, "default": "medium"},
+            "linked_decision_id": {"type": "string", "required": false, "default": null}
+          },
+          "delegates_to": "POST /api/progress",
+          "returns": "JSON string"
+        }
+      ]
+    },
+    {
+      "surface_id": "jsonrpc",
+      "transport": ["http"],
+      "source_file": "enhanced_server.py",
+      "endpoint": "POST /mcp",
+      "protocol": "JSON-RPC 2.0",
+      "discovery_methods": ["tools/list", "list_tools", "mcp.listTools", "tools.list", "listTools"],
+      "invocation_methods": ["tools/call", "tool/call", "conport_*"],
+      "tool_count": 12,
+      "discoverable_count": 9,
+      "undiscoverable_count": 3,
+      "note": "3 instance management tools (conport_fork_instance, conport_promote, conport_promote_all) are in dispatch_map but NOT returned by _get_tool_schemas(). They are callable but not discoverable via tools/list.",
+      "tools": [
+        {
+          "name": "conport_get_context",
+          "description": "Get active context for a workspace",
+          "source": "enhanced_server.py:1737,1766-1767",
+          "discoverable": true,
+          "dispatch_target": "_get_context_tool → _get_context",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"}
+            },
+            "required": ["workspace_id"]
+          }
+        },
+        {
+          "name": "conport_update_context",
+          "description": "Update active context for a workspace",
+          "source": "enhanced_server.py:1738,1769-1770",
+          "discoverable": true,
+          "dispatch_target": "_update_context_tool → _update_context",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"},
+              "active_context": {"type": "string"},
+              "last_activity": {"type": "string"},
+              "session_time": {"type": "string"},
+              "focus_state": {"type": "string"},
+              "session_milestone": {"type": "string"}
+            },
+            "required": ["workspace_id"]
+          }
+        },
+        {
+          "name": "conport_log_decision",
+          "description": "Log an architectural or technical decision",
+          "source": "enhanced_server.py:1739",
+          "discoverable": true,
+          "dispatch_target": "_log_decision",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"},
+              "summary": {"type": "string"},
+              "rationale": {"type": "string"},
+              "alternatives": {"type": "array", "items": {"type": "string"}},
+              "tags": {"type": "array", "items": {"type": "string"}},
+              "confidence_level": {"type": "string", "enum": ["low", "medium", "high"]},
+              "decision_type": {"type": "string"}
+            },
+            "required": ["workspace_id", "summary", "rationale"]
+          }
+        },
+        {
+          "name": "conport_get_decisions",
+          "description": "Retrieve recent decisions for a workspace",
+          "source": "enhanced_server.py:1740,1772-1773",
+          "discoverable": true,
+          "dispatch_target": "_get_decisions_tool → _get_decisions",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"},
+              "limit": {"type": "integer", "default": 10}
+            },
+            "required": ["workspace_id"]
+          }
+        },
+        {
+          "name": "conport_log_progress",
+          "description": "Log a new progress entry or task",
+          "source": "enhanced_server.py:1741",
+          "discoverable": true,
+          "dispatch_target": "_log_progress",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"},
+              "description": {"type": "string"},
+              "status": {"type": "string", "default": "IN_PROGRESS"},
+              "percentage": {"type": "integer", "default": 0},
+              "priority": {"type": "string", "default": "medium"},
+              "estimated_hours": {"type": "number"},
+              "actual_hours": {"type": "number"},
+              "linked_decision_id": {"type": "string"}
+            },
+            "required": ["workspace_id", "description"]
+          }
+        },
+        {
+          "name": "conport_get_progress",
+          "description": "Retrieve progress entries for a workspace",
+          "source": "enhanced_server.py:1742,1775-1776",
+          "discoverable": true,
+          "dispatch_target": "_get_progress_tool → _get_progress",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"},
+              "status": {"type": "string"},
+              "limit": {"type": "integer", "default": 20}
+            },
+            "required": ["workspace_id"]
+          }
+        },
+        {
+          "name": "conport_update_progress",
+          "description": "Update an existing progress entry",
+          "source": "enhanced_server.py:1743,1778-1779",
+          "discoverable": true,
+          "dispatch_target": "_update_progress_tool → _update_progress",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "progress_id": {"type": "string"},
+              "status": {"type": "string"},
+              "percentage": {"type": "integer"},
+              "description": {"type": "string"},
+              "priority": {"type": "string"},
+              "actual_hours": {"type": "number"}
+            },
+            "required": ["progress_id"]
+          }
+        },
+        {
+          "name": "conport_get_recent_activity",
+          "description": "Get recent activity for a workspace (last 24h by default)",
+          "source": "enhanced_server.py:1744,1781-1782",
+          "discoverable": true,
+          "dispatch_target": "_get_recent_activity_tool → _get_recent_activity",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"},
+              "hours": {"type": "integer", "default": 24}
+            },
+            "required": ["workspace_id"]
+          }
+        },
+        {
+          "name": "conport_get_active_work",
+          "description": "Get prioritized active work items",
+          "source": "enhanced_server.py:1745,1784-1785",
+          "discoverable": true,
+          "dispatch_target": "_get_active_work_tool → _get_active_work",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"}
+            },
+            "required": ["workspace_id"]
+          }
+        },
+        {
+          "name": "conport_fork_instance",
+          "description": "Fork PLANNED/IN_PROGRESS progress from shared/source into target instance",
+          "source": "enhanced_server.py:1747",
+          "discoverable": false,
+          "dispatch_target": "_fork_instance",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"},
+              "source_instance": {"type": "string"},
+              "target_instance": {"type": "string"}
+            },
+            "required": ["workspace_id"]
+          }
+        },
+        {
+          "name": "conport_promote",
+          "description": "Promote a progress entry to shared (clear instance_id)",
+          "source": "enhanced_server.py:1748",
+          "discoverable": false,
+          "dispatch_target": "_promote_progress",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "progress_id": {"type": "string"}
+            },
+            "required": ["progress_id"]
+          }
+        },
+        {
+          "name": "conport_promote_all",
+          "description": "Promote all instance-local entries to shared for a workspace",
+          "source": "enhanced_server.py:1749",
+          "discoverable": false,
+          "dispatch_target": "_promote_all",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workspace_id": {"type": "string"}
+            },
+            "required": ["workspace_id"]
+          }
+        }
+      ]
+    },
+    {
+      "surface_id": "http",
+      "transport": ["http"],
+      "source_file": "enhanced_server.py",
+      "framework": "aiohttp",
+      "base_url": "http://localhost:3004",
+      "route_count": 22,
+      "note": "Routes registered in setup_routes() at enhanced_server.py:235-280. Includes /mcp JSON-RPC endpoint counted separately above.",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "handler": "health_check",
+          "source": "enhanced_server.py:242,358-395",
+          "auth": "none",
+          "description": "Health check with database and Redis connectivity status"
+        },
+        {
+          "method": "GET",
+          "path": "/metrics",
+          "handler": "metrics_handler",
+          "source": "enhanced_server.py:239,397-406",
+          "auth": "none",
+          "description": "Prometheus metrics endpoint (conditional on MONITORING_AVAILABLE)",
+          "conditional": true
+        },
+        {
+          "method": "GET",
+          "path": "/api/context/{workspace_id}",
+          "handler": "get_context",
+          "source": "enhanced_server.py:245,485-495",
+          "auth": "none",
+          "description": "Get active context for workspace with instance-specific data"
+        },
+        {
+          "method": "POST",
+          "path": "/api/context/{workspace_id}",
+          "handler": "update_context",
+          "source": "enhanced_server.py:246,580-591",
+          "auth": "none",
+          "description": "Update active context for workspace"
+        },
+        {
+          "method": "POST",
+          "path": "/api/decisions",
+          "handler": "log_decision",
+          "source": "enhanced_server.py:249,654-664",
+          "auth": "none",
+          "description": "Log a decision with rationale"
+        },
+        {
+          "method": "GET",
+          "path": "/api/decisions",
+          "handler": "get_decisions",
+          "source": "enhanced_server.py:250,789-800",
+          "auth": "none",
+          "description": "Get decision history (workspace optional, limit default 10)"
+        },
+        {
+          "method": "POST",
+          "path": "/api/progress",
+          "handler": "log_progress",
+          "source": "enhanced_server.py:253,1129-1139",
+          "auth": "none",
+          "description": "Create a new progress entry"
+        },
+        {
+          "method": "GET",
+          "path": "/api/progress",
+          "handler": "get_progress",
+          "source": "enhanced_server.py:254,859-871",
+          "auth": "none",
+          "description": "Get progress entries (workspace, status, limit filterable)"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/progress/{progress_id}",
+          "handler": "update_progress",
+          "source": "enhanced_server.py:255,1210-1221",
+          "auth": "none",
+          "description": "Update existing progress entry with worktree instance transition handling"
+        },
+        {
+          "method": "GET",
+          "path": "/api/recent-activity/{workspace_id}",
+          "handler": "get_recent_activity",
+          "source": "enhanced_server.py:258,1322-1333",
+          "auth": "none",
+          "description": "Get recent activity for ADHD context rebuilding"
+        },
+        {
+          "method": "GET",
+          "path": "/api/active-work/{workspace_id}",
+          "handler": "get_active_work",
+          "source": "enhanced_server.py:259,1373-1383",
+          "auth": "none",
+          "description": "Get active work items prioritized for ADHD focus"
+        },
+        {
+          "method": "GET",
+          "path": "/api/search/{workspace_id}",
+          "handler": "search_content",
+          "source": "enhanced_server.py:262,1428-1495",
+          "auth": "none",
+          "description": "Full-text search within workspace (decisions and/or progress)"
+        },
+        {
+          "method": "GET",
+          "path": "/api/unified-search",
+          "handler": "unified_search",
+          "source": "enhanced_server.py:265,1923-1991",
+          "auth": "none",
+          "description": "Cross-workspace full-text search (requires user_id, query)"
+        },
+        {
+          "method": "GET",
+          "path": "/api/workspace-relationships",
+          "handler": "workspace_relationships",
+          "source": "enhanced_server.py:266,1993-2038",
+          "auth": "none",
+          "description": "Multi-workspace relationship graph traversal"
+        },
+        {
+          "method": "GET",
+          "path": "/api/workspace-summary",
+          "handler": "workspace_summary",
+          "source": "enhanced_server.py:267,2040-2091",
+          "auth": "none",
+          "description": "Workspace aggregation with activity metrics"
+        },
+        {
+          "method": "POST",
+          "path": "/api/custom_data",
+          "handler": "save_custom_data",
+          "source": "enhanced_server.py:270,1523-1560",
+          "auth": "none",
+          "description": "Save/upsert custom data in key-value store"
+        },
+        {
+          "method": "GET",
+          "path": "/api/custom_data",
+          "handler": "get_custom_data",
+          "source": "enhanced_server.py:271,1562-1644",
+          "auth": "none",
+          "description": "Retrieve custom data (by workspace, category, key)"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/custom_data",
+          "handler": "delete_custom_data",
+          "source": "enhanced_server.py:272,1646-1679",
+          "auth": "none",
+          "description": "Delete custom data entry"
+        },
+        {
+          "method": "POST",
+          "path": "/mcp",
+          "handler": "mcp_endpoint",
+          "source": "enhanced_server.py:275,1681-1711",
+          "auth": "none",
+          "description": "JSON-RPC 2.0 endpoint for MCP tool invocation (see jsonrpc surface)"
+        },
+        {
+          "method": "POST",
+          "path": "/api/instance/fork",
+          "handler": "fork_instance",
+          "source": "enhanced_server.py:278,962-972",
+          "auth": "none",
+          "description": "Fork active progress from source instance to target instance"
+        },
+        {
+          "method": "POST",
+          "path": "/api/progress/promote",
+          "handler": "promote_progress",
+          "source": "enhanced_server.py:279,1024-1037",
+          "auth": "none",
+          "description": "Promote instance-local progress entry to shared (set instance_id=NULL)"
+        },
+        {
+          "method": "POST",
+          "path": "/api/progress/promote_all",
+          "handler": "promote_all",
+          "source": "enhanced_server.py:280,1075-1085",
+          "auth": "none",
+          "description": "Bulk promote all instance-local PLANNED/IN_PROGRESS entries to shared"
+        }
+      ]
+    }
+  ]
+}

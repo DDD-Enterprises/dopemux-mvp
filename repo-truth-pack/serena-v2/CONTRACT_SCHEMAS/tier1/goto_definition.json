@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "serena-v2/contracts/goto_definition",
+  "title": "Go To Definition",
+  "description": "Navigates to the definition of a symbol at a given file position. Returns the file, line, column, and surrounding context of the definition.",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "type": "string",
+          "description": "Path to the source file"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Line number (1-based)"
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Column number (1-based, like editor display)"
+        }
+      },
+      "required": [
+        "file_path",
+        "line",
+        "column"
+      ],
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string"
+            },
+            "line": {
+              "type": "integer"
+            },
+            "column": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "file",
+            "line",
+            "column"
+          ]
+        },
+        "definition": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string"
+            },
+            "line": {
+              "type": "integer"
+            },
+            "column": {
+              "type": "integer"
+            },
+            "context": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "line",
+            "column",
+            "context"
+          ]
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "latency_ms": {
+              "type": "number"
+            },
+            "mode": {
+              "type": "string"
+            },
+            "cached": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "latency_ms",
+            "mode",
+            "cached"
+          ]
+        }
+      },
+      "required": [
+        "query",
+        "definition",
+        "performance"
+      ]
+    },
+    "error_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "const": "Returns error when symbol definition cannot be found"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "description",
+        "recoverable"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "const": 1
+        },
+        "feature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "const": null
+        },
+        "registration_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "handler_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "const": null
+        },
+        "multi_workspace": {
+          "type": "boolean",
+          "const": false
+        },
+        "conport_integration": {
+          "type": "boolean",
+          "const": false
+        },
+        "adhd_optimization": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "tier",
+        "feature",
+        "registration_line",
+        "handler_line",
+        "multi_workspace",
+        "conport_integration",
+        "adhd_optimization"
+      ]
+    }
+  }
+}

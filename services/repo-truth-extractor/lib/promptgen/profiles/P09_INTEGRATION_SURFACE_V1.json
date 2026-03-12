@@ -1,0 +1,57 @@
+{
+  "profile_id": "P09_INTEGRATION_SURFACE_V1",
+  "version": "1.0.0",
+  "description": "Integration surface extraction profile. Focuses on editor integrations, CLI commands, hook contracts, agent orchestration, ADHD engine, and code quality. Skips docs-only (D), home (H), boundary (B), governance (G), quality (Q), and task-packet (T) phases.",
+  "selection_threshold": 0.0,
+  "priority": 9,
+  "match_weights": {
+    "is_monorepo": 0.3,
+    "has_editor_integrations": 0.9,
+    "has_agent_system": 0.8,
+    "has_adhd_engine": 0.8,
+    "has_hooks": 0.7
+  },
+  "phase_policy": {
+    "enabled_phases": ["A", "C", "E", "W", "R", "S", "X", "Z"],
+    "budgets_by_phase": {
+      "A": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 35},
+      "C": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 25},
+      "E": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "W": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "R": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "S": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "X": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "Z": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20}
+    },
+    "targets_by_phase": {
+      "A": [
+        ".claude", ".dopemux", ".vibe", ".githooks", ".github", ".taskx",
+        "config", "scripts", "tools", "compose", "docker",
+        "src/dopemux/hooks", "src/dopemux/claude", "src/dopemux/claude_tools",
+        "src/dopemux/commands", "src/dopemux/mcp", "src/dopemux/cli.py",
+        "src/dopemux/__main__.py", "src/dopemux/routing_cli.py",
+        "src/dopemux/events", "src/dopemux/event_bus.py",
+        "services/copilot_transcript_ingester", "services/dopecon-bridge",
+        "mcp-proxy-config.copilot.yaml", "mcp-proxy-config.json"
+      ],
+      "C": ["src", "services", "shared", "plugins", "tools", "scripts", "tests"],
+      "E": ["scripts", "tools", "compose", ".github", "services", "src"],
+      "W": ["docs", "scripts", "src", "services"],
+      "R": ["A_repo_control_plane", "C_code_surfaces"],
+      "S": ["R_arbitration"],
+      "X": ["R_arbitration"],
+      "Z": ["R_arbitration", "X_feature_index"]
+    },
+    "prompt_variants_by_phase_step": {}
+  },
+  "prompt_overlays": {
+    "base": "Focus on integration surfaces: editor hooks, CLI commands, agent orchestration, ADHD engine components, and code quality. If unknown, emit UNKNOWN and never fabricate missing facts."
+  },
+  "v2_rules": {
+    "RULE_ENABLE_STRICT_ENVELOPE_ON_PARSE": {"enabled": true},
+    "RULE_REDUCE_MAX_FILES_ON_PARSE_OR_EMPTY": {"decrement": 2, "enabled": true, "threshold": 1},
+    "RULE_SHRINK_BUDGET_ON_PAYLOAD_UNSHRINKABLE": {"enabled": true, "factor": 0.8, "threshold": 1},
+    "RULE_SPLIT_STEP_ON_MISSING_ARTIFACTS": {"enabled": true, "threshold": 0.34},
+    "RULE_TARGET_REORDER_ON_THIN_COVERAGE": {"enabled": true, "threshold": 0.7}
+  }
+}

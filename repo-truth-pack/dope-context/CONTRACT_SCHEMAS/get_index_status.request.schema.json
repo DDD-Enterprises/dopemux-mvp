@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/get_index_status.request.schema.json",
+  "title": "get_index_status Request",
+  "description": "MCP tool: get_index_status. Derived from server.py:1453-1468.",
+  "type": "object",
+  "properties": {
+    "workspace_path": { "type": ["string", "null"] },
+    "workspace_paths": { "type": ["array", "null"], "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

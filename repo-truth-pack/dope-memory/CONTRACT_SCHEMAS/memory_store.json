@@ -1,0 +1,87 @@
+{
+  "$id": "dope-memory/memory_store",
+  "title": "memory_store contract",
+  "description": "Store a manual work log entry. Derived from MemoryStoreRequest (dope_memory_main.py:757) and DopeMemoryMCPServer.memory_store (dope_memory_main.py:258).",
+  "request": {
+    "type": "object",
+    "properties": {
+      "workspace_id": {
+        "type": "string",
+        "default": "default"
+      },
+      "instance_id": {
+        "type": "string",
+        "default": "A"
+      },
+      "category": {
+        "type": "string",
+        "enum": ["planning", "implementation", "review", "debugging", "research", "deployment", "architecture", "documentation"],
+        "description": "Required. Must match CHECK constraint."
+      },
+      "entry_type": {
+        "type": "string",
+        "enum": ["decision", "blocker", "resolution", "milestone", "error", "workflow_transition", "manual_note", "task_event"],
+        "description": "Required. Must match CHECK constraint."
+      },
+      "summary": {
+        "type": "string",
+        "description": "Required. Truncated to 500 chars."
+      },
+      "session_id": {
+        "type": ["string", "null"],
+        "default": null
+      },
+      "details": {
+        "type": ["object", "null"],
+        "default": null,
+        "description": "Passed through Redactor before storage"
+      },
+      "reasoning": {
+        "type": ["string", "null"],
+        "default": null,
+        "description": "Truncated to 2000 chars"
+      },
+      "outcome": {
+        "type": "string",
+        "default": "in_progress",
+        "enum": ["success", "partial", "blocked", "abandoned", "in_progress", "failed"]
+      },
+      "importance_score": {
+        "type": "integer",
+        "default": 6,
+        "minimum": 1,
+        "maximum": 10
+      },
+      "tags": {
+        "type": ["array", "null"],
+        "items": { "type": "string" },
+        "default": null
+      },
+      "links": {
+        "type": ["object", "null"],
+        "default": null,
+        "description": "Optional link object with keys: decisions, files, commits, chat_range",
+        "properties": {
+          "decisions": { "type": ["array", "null"], "items": { "type": "string" } },
+          "files": { "type": ["array", "null"], "items": { "type": "object" } },
+          "commits": { "type": ["array", "null"], "items": { "type": "string" } },
+          "chat_range": { "type": ["object", "null"] }
+        }
+      }
+    },
+    "required": ["category", "entry_type", "summary"]
+  },
+  "response": {
+    "type": "object",
+    "properties": {
+      "entry_id": { "type": "string", "description": "Deterministic SHA-256 entry ID" },
+      "created": { "type": "boolean" }
+    },
+    "required": ["entry_id", "created"]
+  },
+  "errors": {
+    "400": { "description": "Tool execution error (e.g., provenance validation failure)" },
+    "422": { "description": "Pydantic validation error" },
+    "503": { "description": "MCP server not initialized" }
+  }
+}

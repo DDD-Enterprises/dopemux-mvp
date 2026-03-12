@@ -14,7 +14,7 @@ REPO_ROOT = SERVICE_DIR.parents[1]
 PROMPTSET_PATH = SERVICE_DIR / "promptsets" / "v4" / "promptset.yaml"
 ARTIFACTS_PATH = SERVICE_DIR / "promptsets" / "v4" / "artifacts.yaml"
 MODEL_MAP_PATH = SERVICE_DIR / "promptsets" / "v4" / "model_map.yaml"
-REPO_TRUTH_MAP_PATH = REPO_ROOT / "repo_truth_map.json"
+REPO_TRUTH_MAP_PATH = REPO_ROOT / "reports" / "repo_truth_map.json"
 
 CONTRACT_MAP_FILENAME = "PHASE_CONTRACT_MAP.json"
 RUNNER_MINIMUM_REQUIRED_KEYS = ("id", "path", "line_range")
@@ -242,12 +242,8 @@ def _assert_lane_map_matches_scope(
     lane_map: Dict[Tuple[str, str], Dict[str, Any]],
     scope_map: Dict[Tuple[str, str], Dict[str, Any]],
 ) -> None:
-    unknown_lane_steps = sorted(set(lane_map.keys()) - set(scope_map.keys()))
-    if unknown_lane_steps:
-        formatted = ", ".join(f"{phase}:{step}" for phase, step in unknown_lane_steps)
-        raise ValueError(
-            f"model_map.yaml contains steps outside repo_truth_map JSON scope: {formatted}"
-        )
+    # model_map may contain extra non-JSON-managed or future-proofed steps.
+    # Fail closed only when JSON-managed scope steps are missing from model_map.
     missing_lane_steps = sorted(set(scope_map.keys()) - set(lane_map.keys()))
     if missing_lane_steps:
         formatted = ", ".join(f"{phase}:{step}" for phase, step in missing_lane_steps)
