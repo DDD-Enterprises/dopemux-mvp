@@ -229,10 +229,10 @@ class AIAgent:
                 output_lines.append(line)
                 last_data_time = time.time()
 
-                if wait_for_prompt:
-                    # Strip ANSI and check for prompt
-                    clean_line = self.parser.ANSI_REGEX.sub("", line)
-                    if self.parser._is_prompt(clean_line):
+if wait_for_prompt and source == "stdout":
+                    # Strip ANSI and check for prompt using ResponseParser's public API
+                    clean_line = self.parser.strip_ansi(line)
+                    if self.parser.is_prompt(clean_line):
                         break
             except queue.Empty:
                 if not wait_for_prompt and output_lines:
