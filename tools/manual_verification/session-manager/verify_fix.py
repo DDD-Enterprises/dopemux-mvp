@@ -1,7 +1,6 @@
 import time
-import queue
 import threading
-from typing import List, Optional
+from typing import List
 import sys
 import os
 
@@ -9,7 +8,6 @@ import os
 sys.path.append(os.path.join(os.getcwd(), "services/session-manager/src"))
 
 from agent_spawner import AIAgent, AgentSpawner, AgentConfig, AgentType, AgentStatus
-from response_parser import ResponseParser
 
 # Mock AIAgent to avoid subprocess and tmux
 class MockRealAIAgent(AIAgent):
@@ -34,17 +32,17 @@ class MockRealAIAgent(AIAgent):
 
 def main():
     config = AgentConfig(
-        agent_type=AgentType.CLAUDE,
+        agent_type=AgentType.DOPE_BRAINZ,
         command=["mock"],
         env={}
     )
     agent = MockRealAIAgent(config)
     spawner = AgentSpawner()
-    spawner.agents[AgentType.CLAUDE] = agent
+    spawner.agents[AgentType.DOPE_BRAINZ] = agent
 
     print("Testing improved implementation...")
     start_time = time.time()
-    response = spawner.send_to_agent(AgentType.CLAUDE, "What is 2+2?")
+    response = spawner.send_to_agent(AgentType.DOPE_BRAINZ, "What is 2+2?")
     end_time = time.time()
 
     print(f"Response received: {response}")
