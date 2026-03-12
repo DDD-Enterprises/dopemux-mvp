@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Merge Specialist"
+  short_description: "Rebase-first queue draining with thread and conflict gates"
+  default_prompt: "Use $pr-merge-specialist to scan or drain open PR queues with deterministic ordering and fail-closed merge gates."

@@ -64,6 +64,11 @@ This workspace integrates custom MCP servers inherited from the `dopemux-mvp` pr
 - **Redaction (INV-MEM-005):** Never persist API keys, secrets, or PII into ConPort, Dope Memory, or task logs.
 
 *Note: The servers rely on the `dopemux-mvp` Docker/Tmux stack running locally. Ensure they are active before invoking their tools.*
+<<<<<<< HEAD:docs/03-reference/instructions/gemini-2.md
+=======
+<<<<<<< HEAD:docs/GEMINI.md
+=======
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205)):docs/GEMINI.md
 
 ## Documentation Sync Skill Family
 
@@ -73,11 +78,23 @@ For PR/commit-driven docs reconciliation, use:
 - `templates/skills/pr-docgen-sync-gemini/`
 - `templates/skills/pr-docgen-sync-copilot/`
 - `templates/skills/pr-docgen-sync-claude/`
+<<<<<<< HEAD:docs/03-reference/instructions/gemini-2.md
+=======
+- `templates/skills/pr-merge-specialist/` for queue draining, review-thread handling, and rebase-first merges
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205)):docs/GEMINI.md
 
 Install/sync templates into Codex home:
 
 ```bash
 python scripts/skills/sync_repo_skills.py --family pr-docgen-sync
+<<<<<<< HEAD:docs/03-reference/instructions/gemini-2.md
 ```
 
 Default documentation impact baseline: `main...HEAD`.
+=======
+python scripts/skills/sync_repo_skills.py --family pr-merge-specialist
+```
+
+Default documentation impact baseline: `main...HEAD`.
+>>>>>>> 776ae3a99 (feat(pr-merge-specialist): add rebase-first queue drain):docs/03-reference/instructions/gemini-2.md
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205)):docs/GEMINI.md

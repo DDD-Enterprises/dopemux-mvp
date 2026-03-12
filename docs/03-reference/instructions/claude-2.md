@@ -85,6 +85,11 @@ This pack does not override TaskX pack; if conflict, TaskX wins.
 22. Optional prompt-pack output is allowed only as additive guidance with no contract override.
 <!-- CHATX:END -->
 
+<<<<<<< HEAD:docs/03-reference/instructions/claude-2.md
+=======
+<<<<<<< HEAD:docs/instructions/CLAUDE.md
+=======
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205)):docs/instructions/CLAUDE.md
 ## Documentation Sync Skill Family
 
 Use PR docgen sync templates for commit/PR-driven docs coverage:
@@ -94,6 +99,10 @@ Use PR docgen sync templates for commit/PR-driven docs coverage:
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
+<<<<<<< HEAD:docs/03-reference/instructions/claude-2.md
+=======
+- Merge queue: `templates/skills/pr-merge-specialist/`
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205)):docs/instructions/CLAUDE.md
 - Installer: `python scripts/skills/sync_repo_skills.py`
 
 Default baseline: `main...HEAD`.
@@ -105,4 +114,8 @@ python scripts/docs_frontmatter_guard.py
 python scripts/check_root_hygiene.py
 ```
 
+<<<<<<< HEAD:docs/03-reference/instructions/claude-2.md
+=======
+>>>>>>> 776ae3a99 (feat(pr-merge-specialist): add rebase-first queue drain):docs/03-reference/instructions/claude-2.md
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205)):docs/instructions/CLAUDE.md
 Agent-specific rules are inserted in sentinel blocks only.
