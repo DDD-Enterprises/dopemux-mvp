@@ -11,20 +11,18 @@ on:
   push:
     branches: [main]
 
-
 jobs:
   security-review:
     name: "🤖 Claude Code Security Analysis"
     runs-on: ubuntu-latest
     timeout-minutes: 25  # ADHD-optimized: 25-minute chunks
+    if: github.repository == 'DDD-Enterprises/dopemux-mvp' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-    if: github.repository == 'DDD-Enterprises/dopemux-mvp' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
-
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2  # Get enough history for diff analysis
