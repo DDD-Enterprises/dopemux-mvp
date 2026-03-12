@@ -1,9 +1,8 @@
 import time
 import queue
 import threading
-from typing import List, Optional
-import sys
-import os
+from typing import List
+
 import re
 
 # Mock ResponseParser since it might depend on things we don't have
