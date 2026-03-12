@@ -27,6 +27,7 @@ from .runtime import (
     pid_is_running,
     run_command,
     run_id,
+    shell_join,
     snapshot_environment,
     utc_now,
     write_json,
@@ -765,6 +766,7 @@ def pr_changed_files(worktree_path: Path, base_ref: str, commands_log: Optional[
 
 def scan_files_for_conflict_markers(worktree_path: Path, rel_paths: Sequence[str]) -> List[str]:
     hits: List[str] = []
+    conflict_pattern = re.compile(r"^<<<<<<< .*\n(?:.*\n)*?^=======\n(?:.*\n)*?^>>>>>>> .*$", re.MULTILINE)
     for rel_path in rel_paths:
         file_path = worktree_path / rel_path
         if not file_path.exists() or not file_path.is_file():
@@ -773,7 +775,7 @@ def scan_files_for_conflict_markers(worktree_path: Path, rel_paths: Sequence[str
             text = file_path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
-        if all(marker in text for marker in ("<<<<<<<", "=======", ">>>>>>>")):
+        if conflict_pattern.search(text):
             hits.append(rel_path)
     return sorted(set(hits))
 
@@ -868,6 +870,10 @@ def wait_for_green_checks(*, pr_id: int, client: GitHubClient, execute: bool, po
     wait_seconds = int(policy.get("check_rules", {}).get("wait_seconds", 900) or 900)
     poll_seconds = int(policy.get("check_rules", {}).get("poll_seconds", 30) or 30)
     summary = payload["summary"]
+    review_decision = str(payload.get("review_decision") or "")
+    if review_decision and review_decision != "APPROVED":
+        final_status = "approval_missing" if review_decision != "CHANGES_REQUESTED" else "changes_requested"
+        return green, payload, {"wait_used": False, "wait_reason": final_status, "iterations": 1, "final_status": final_status, "timed_out": False, "history": history}
     if not execute or green or wait_seconds <= 0 or summary.required_pending == 0 or summary.required_failure > 0:
         final_status = "green" if green else "required_failed" if summary.required_failure > 0 else "required_pending" if summary.required_pending > 0 else "not_waited"
         return green, payload, {"wait_used": False, "wait_reason": "execute_disabled" if not execute else "no_wait_needed", "iterations": 1, "final_status": final_status, "timed_out": False, "history": history}
@@ -1151,8 +1157,10 @@ def explain_findings(findings: Sequence[Finding], *, previous: Optional[Dict[str
     next_action = "merge" if not blockers else "clear blockers"
     changed_since_prior: List[str] = []
     if previous:
-        previous_blockers = {item["finding_type"] for item in previous.get("blockers", [])}
-        current_blockers = {item["finding_type"] for item in blockers}
+        previous_blockers = {item.get("finding_type") or item.get("type") for item in previous.get("blockers", [])}
+        current_blockers = {item.get("finding_type") or item.get("type") for item in blockers}
+        previous_blockers.discard(None)
+        current_blockers.discard(None)
         added = sorted(current_blockers - previous_blockers)
         removed = sorted(previous_blockers - current_blockers)
         if added:
@@ -1160,7 +1168,7 @@ def explain_findings(findings: Sequence[Finding], *, previous: Optional[Dict[str
         if removed:
             changed_since_prior.append("cleared blockers: " + ", ".join(removed))
     return {
-        "why_blocked": [item["message"] for item in blockers],
+        "why_blocked": [item.get("message") or item.get("name") or "" for item in blockers],
         "evidence": blockers + warnings,
         "next_action": next_action,
         "changed_since_prior_scan": changed_since_prior,
@@ -1446,7 +1454,7 @@ def pr_plan(args: argparse.Namespace) -> int:
     result = build_plan_result(active_run_id=active_run_id, pr=pr, threads=threads, check_payload=check_payload, validation_report=validation, policy=policy)
     explain = json.loads(result.artifacts["explain"])
     write_json(pr_dir / "INTAKE.json", {"meta": artifact_meta(repo_root=repo_root, repo_slug=repo_slug, run_identifier=active_run_id, pr_head_sha=pr.head_sha, base_sha=pr.base_sha).to_dict(), "pr": pr.to_dict()})
-    write_json(pr_dir / "REVIEW_THREADS.json", {"threads": [thread.__dict__ for thread in threads]})
+    write_json(pr_dir / "REVIEW_THREADS.json", {"threads": [thread.to_dict() for thread in threads]})
     write_json(pr_dir / "PLAN.json", result.to_dict())
     write_json(pr_dir / "EXPLAIN.json", explain)
     write_pr_state_artifact(pr_dir, result)
@@ -1668,7 +1676,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                 pr_dir = pr_dir_for(pr_root, pr.pr_id)
                 write_json(pr_dir / "INTAKE.json", {"meta": artifact_meta(repo_root=repo_root, repo_slug=repo_slug, run_identifier=active_run_id, pr_head_sha=pr.head_sha, base_sha=pr.base_sha).to_dict(), "pr": pr.to_dict()})
                 threads = thread_map[pr.pr_id]
-                write_json(pr_dir / "REVIEW_THREADS.json", {"threads": [thread.__dict__ for thread in threads]})
+                write_json(pr_dir / "REVIEW_THREADS.json", {"threads": [thread.to_dict() for thread in threads]})
                 check_payload = client.query_checks(pr.pr_id)
                 validation_dry = ValidationReport(
                     status=ValidationStatus.NOT_EXECUTED,
