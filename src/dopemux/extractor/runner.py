@@ -80,9 +80,18 @@ class PipelineRunner:
                         messages=[{"role": "user", "content": full_prompt}]
                     )
 
-                    response_content = response.choices[0].message.content
+                    # Defensive content extraction
+                    choice = response.choices[0]
+                    if hasattr(choice, 'message') and hasattr(choice.message, 'content'):
+                        response_content = choice.message.content
+                    elif hasattr(choice, 'text'):
+                        response_content = choice.text
+                    else:
+                        response_content = str(choice)
 
-                    response_file = self.output_dir / f"{prompt_file.replace('.md', '_RESPONSE.md')}"
+                    from pathlib import Path
+                    p = Path(prompt_file)
+                    response_file = self.output_dir / f"{p.stem}_RESPONSE{p.suffix}"
                     response_file.write_text(response_content, encoding='utf-8')
 
                     trace_file.write_text(full_prompt, encoding='utf-8')
@@ -93,10 +102,10 @@ class PipelineRunner:
                     logger.warning("  ⚠️ litellm not installed, falling back to simulation")
                     trace_file.write_text(full_prompt, encoding='utf-8')
                     logger.info(f"  ✅ (Simulation) Generated trace: {trace_file}")
-                except Exception as e:
-                    logger.error(f"  ❌ LLM call failed: {e}")
+                except Exception:
+                    logger.exception("  ❌ LLM call failed")
                     trace_file.write_text(full_prompt, encoding='utf-8')
-                    logger.info(f"  ✅ (Simulation Fallback) Generated trace: {trace_file}")
+                    logger.info(f"  ✅ (Fallback) Generated trace: {trace_file}")
 
     def list_phases(self):
         """List available phases and prompts."""
