@@ -1,0 +1,9 @@
+{
+  "generated_at": "2026-03-11T23:56:03.827742+00:00",
+  "run_id": "gate_test_run",
+  "runner": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/run_extraction_v5.py",
+  "target_phases": [
+    "A"
+  ],
+  "target_policy": "cost"
+}
