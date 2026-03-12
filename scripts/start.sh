@@ -43,35 +43,6 @@ if docker ps --filter 'label=com.docker.compose.project=dopemux-mvp' --format '{
     exit 1
 fi
 
-# Guard against task-orchestrator containers from non-canonical compose projects.
-# Those containers can auto-restart and appear outside the dopemux project group.
-ROGUE_TASK_ROWS="$(docker ps -a \
-  --filter 'label=com.docker.compose.service=task-orchestrator' \
-  --format '{{.ID}}|{{.Names}}|{{.Label "com.docker.compose.project"}}' \
-  | awk -F'|' '$3 != "dopemux"')"
-
-if [ -n "$ROGUE_TASK_ROWS" ]; then
-    echo "⚠️  Found task-orchestrator containers outside project 'dopemux'. Cleaning them up..."
-    echo "$ROGUE_TASK_ROWS" | while IFS='|' read -r cid cname project; do
-        project_label="${project:-unknown}"
-        echo "   - $cname (project: $project_label)"
-    done
-
-    # Stop each non-canonical compose project cleanly when label is available.
-    echo "$ROGUE_TASK_ROWS" | awk -F'|' '$3 != "" {print $3}' | sort -u | while IFS= read -r project; do
-        [ -z "$project" ] && continue
-        docker compose -p "$project" down --remove-orphans >/dev/null 2>&1 || true
-    done
-
-    # Force-remove remaining rogue containers to prevent restart loops.
-    echo "$ROGUE_TASK_ROWS" | while IFS='|' read -r cid _ _; do
-        [ -z "$cid" ] && continue
-        docker rm -f "$cid" >/dev/null 2>&1 || true
-    done
-
-    echo "✅ Rogue task-orchestrator containers removed"
-fi
-
 docker network inspect dopemux-network >/dev/null 2>&1 || docker network create dopemux-network
 
 echo "📦 Starting Dopemux stack..."

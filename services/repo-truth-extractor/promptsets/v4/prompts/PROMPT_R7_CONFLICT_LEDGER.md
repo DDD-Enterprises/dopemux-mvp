@@ -19,8 +19,6 @@ Focus on concrete, machine-verifiable implementation facts.
 - `TASKX_INTEGRATION_TRUTH.md`
 - `WORKFLOWS_TRUTH_GRAPH.md`
 - `PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
-- `CODE_HEALTH_SURFACE.json`
-- `DEAD_CODE_INVENTORY.json`
 - Runner context artifacts:
   - `extraction/*/inputs/INVENTORY.json`
   - `extraction/*/inputs/PARTITIONS.json`

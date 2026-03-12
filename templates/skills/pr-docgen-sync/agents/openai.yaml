@@ -1,4 +1,0 @@
-interface:
-  display_name: "PR Docgen Sync"
-  short_description: "Sync PR docs, indexes, and governance gates"
-  default_prompt: "Use $pr-docgen-sync to analyze main...HEAD changes, enforce doc-type coverage, reconcile canonical indexes, and run docs/frontmatter/root-hygiene gates with ticket progress sync." 

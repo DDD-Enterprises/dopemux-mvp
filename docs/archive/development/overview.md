@@ -29,10 +29,10 @@ This section contains active development documentation, planning, and ongoing wo
 Currently active development initiatives:
 
 ### Dashboard Development
-- [Dashboard Implementation Tracker](active-projects/dashboard-implementation-tracker.md) - Current progress
+- [Dashboard Implementation Tracker](active-projects/DASHBOARD_IMPLEMENTATION_TRACKER.md) - Current progress
 
 ### ConPort Development
-- [ConPort HTTP Planning](active-projects/conport-http-deep-planning.md) - HTTP API development
+- [ConPort HTTP Planning](active-projects/CONPORT_HTTP_DEEP_PLANNING.md) - HTTP API development
 
 *Note: Completed projects are moved to `../archive/completed-projects/`*
 
@@ -45,12 +45,12 @@ Currently active development initiatives:
 Active plans and roadmaps:
 
 ### Strategic Plans
-- [Master Action Plan](planning/action-plan-master-2.md) - Overall project roadmap
-- [DDDPG Kickoff](planning/dddpg-kickoff.md) - Development planning
+- [Master Action Plan](planning/ACTION-PLAN-MASTER.md) - Overall project roadmap
+- [DDDPG Kickoff](planning/DDDPG_KICKOFF.md) - Development planning
 
 ### Design Plans
-- [Layout Modular Plan](planning/dope-layout-modular-plan.md) - UI/layout planning
-- [Neon Layout Zen Plan](planning/neon-layout-zen-plan.md) - UI enhancement planning
+- [Layout Modular Plan](planning/DOPE_LAYOUT_MODULAR_PLAN.md) - UI/layout planning
+- [Neon Layout Zen Plan](planning/NEON_LAYOUT_ZEN_PLAN.md) - UI enhancement planning
 
 ---
 
@@ -61,7 +61,7 @@ Active plans and roadmaps:
 Detailed implementation documentation:
 
 ### Master Index
-- [Implementation Plans Master Index](../implementation-plans/00-master-index-2.md)
+- [Implementation Plans Master Index](../implementation-plans/00-MASTER-INDEX.md)
 
 ### Recent Implementations
 - Component audits and summaries

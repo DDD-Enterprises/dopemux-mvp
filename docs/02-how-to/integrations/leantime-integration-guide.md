@@ -72,8 +72,8 @@ sed -i '' 's/LEANTIME_API_TOKEN=.*/LEANTIME_API_TOKEN=your_new_token/' .env
 ### Step 5: Restart Bridge
 
 ```bash
-cd /Users/hue/code/dopemux-mvp
-docker compose -f compose.yml restart leantime-bridge
+cd /Users/hue/code/dopemux-mvp/docker/mcp-servers
+docker compose restart leantime-bridge
 ```
 
 ### Step 6: Test Integration
@@ -117,7 +117,7 @@ Show me all projects in Leantime
 **Cause**: Leantime container not running
 **Solution**:
 ```bash
-docker compose -f compose.yml up -d mysql_leantime redis_leantime leantime leantime-bridge
+docker compose up -d mysql_leantime redis_leantime leantime leantime-bridge
 ```
 
 ## Health Check
@@ -157,12 +157,6 @@ After setup, you can:
 - ✅ Create milestones
 - ✅ Sync with other task management systems
 - ✅ Use ADHD-optimized workflows
-
-## Current Follow-up Ticket Queue (2026-03-11)
-
-- `PM-TO-001`: Align Leantime-bridge and task-orchestrator readiness expectations in runbooks and tests.
-- `PM-TO-002`: Verify promote-time warning propagation from task-orchestrator to CLI/operator docs.
-- `PM-TO-003`: Add canonical port (`8000`) lifecycle examples to operational smoke checks.
 
 ## Support
 
@@ -553,7 +547,7 @@ python test_info_endpoint.py
 
 1. **Simplified Operations**
 - No custom Dockerfile to maintain
-- Easy to update: `docker compose -f compose.yml pull && docker compose -f compose.yml up -d`
+- Easy to update: `docker-compose pull && docker-compose up -d`
 - Rollback is simple if needed
 
 1. **MCP Integration Independent**
@@ -735,8 +729,8 @@ EOF
 sed -i 's/image: leantime\/leantime:latest/build: ./' docker/leantime/docker-compose.yml
 
 # 3. Build and deploy
-docker compose -f docker/leantime/docker-compose.yml build
-docker compose -f docker/leantime/docker-compose.yml up -d
+docker-compose -f docker/leantime/docker-compose.yml build
+docker-compose -f docker/leantime/docker-compose.yml up -d
 ```
 
 ### From Custom Image → Official Image
@@ -749,7 +743,7 @@ sed -i 's/build: ./image: leantime\/leantime:latest/' docker/leantime/docker-com
 # (Already configured in your setup)
 
 # 3. Restart
-docker compose -f docker/leantime/docker-compose.yml up -d
+docker-compose -f docker/leantime/docker-compose.yml up -d
 ```
 
 ## Plugin Development Best Practices

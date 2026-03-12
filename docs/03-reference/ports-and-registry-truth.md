@@ -49,7 +49,7 @@ services/registry.yaml  (TRUTH SOURCE)
          ↓
          ├─→ .env.smoke (generated)
          │        ↓
-         │   compose.yml (canonical, env-driven ports)
+         │   docker-compose.smoke.yml (uses env vars)
          │
          ├─→ tools/ports_health_audit.py (validates runtime)
          │
@@ -76,23 +76,11 @@ python tools/ports_health_audit.py --mode static
 
 ### 4. Deploy
 ```bash
-scripts/smoke_up.sh
+docker compose -f docker-compose.smoke.yml up -d --build
 python tools/ports_health_audit.py --mode runtime
 ```
 
-## Canonical Runtime Port Controls
-
-`compose.yml` is env-driven for host port bindings. The most important overrides:
-
-- `POSTGRES_PORT` (default `5432`)
-- `QDRANT_PORT` (default `6333`)
-- `QDRANT_GRPC_PORT` (default `6334`)
-- `TASK_ORCHESTRATOR_PORT` (default `8000`)
-- `DOPE_MEMORY_PORT` (default `3020`)
-
-Smoke runs should use `.env.smoke` + `scripts/smoke_up.sh`; full-stack runs should use `.env` + `docker compose -f compose.yml ...`.
-
 ## Related Documentation
 
-- [Canonical Compose](../../compose.yml)
+- [Docker Compose Smoke Stack](../../docker-compose.smoke.yml)
 - [Service Registry](../../services/registry.yaml)

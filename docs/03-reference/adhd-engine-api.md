@@ -25,22 +25,6 @@ The ADHD Engine provides **15 feature APIs** for cognitive accommodation. All en
 - Quick Wins (5 endpoints)
 - P1 Priority Features (4 endpoints)
 
-## Startup Modes and Runtime Fallbacks
-
-The service now supports degraded startup for local/test workflows when upstream dependencies are unavailable.
-
-- `ADHD_ENGINE_ALLOW_DEGRADED_STARTUP=1`
-  - Allows API startup even if engine initialization fails.
-  - `/health` remains available; responses include degraded/fallback state.
-- `ADHD_FORCE_INMEMORY_CACHE=1`
-  - Forces in-memory cache behavior for environments without Redis.
-  - Used by security/runtime tests to avoid external infra coupling.
-
-Optional dependency behavior:
-
-- If `prometheus_client` is unavailable, `/metrics` returns an explanatory JSON error instead of failing startup.
-- If `fastmcp` is unavailable, the service boots with a minimal fallback MCP app so HTTP routes remain usable.
-
 ---
 
 ## Energy Prediction

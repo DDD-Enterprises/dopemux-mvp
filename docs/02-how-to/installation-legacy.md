@@ -240,16 +240,16 @@ Run core services for local development:
 
 ```bash
 # Start smoke stack
-scripts/smoke_up.sh
+docker compose -f docker-compose.smoke.yml up --build -d
 
 # Verify service health
 python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
 
 # View logs
-docker compose -f compose.yml logs -f
+docker compose -f docker-compose.smoke.yml logs -f
 
 # Stop stack
-scripts/smoke_down.sh
+docker compose -f docker-compose.smoke.yml down
 ```
 
 ### Service Build Matrix
@@ -283,7 +283,7 @@ cat reports/docker_build_scoreboard.json
 
 ```bash
 # Set custom port base (shifts all ports up)
-PORT_BASE=10000 docker compose -f compose.yml up -d
+PORT_BASE=10000 docker compose -f docker-compose.smoke.yml up -d
 ```
 
 ---
@@ -444,7 +444,7 @@ lsof -i :5432
 lsof -i :6379
 
 # Stop conflicting services or use PORT_BASE
-PORT_BASE=10000 docker compose -f compose.yml up -d
+PORT_BASE=10000 docker compose -f docker-compose.smoke.yml up -d
 ```
 
 ### Issue: Coverage below 80%, tests fail
@@ -483,7 +483,7 @@ SKIP=docs-graph-validator pre-commit run --all-files
 ```bash
 # Build from repo root, not service directory
 cd /path/to/dopemux-mvp
-docker compose -f compose.yml build <service-name>
+docker compose -f docker-compose.smoke.yml build <service-name>
 ```
 
 ### Issue: Python version mismatch
@@ -536,7 +536,7 @@ print('✅ Core modules import successfully')
 
 ```bash
 # Check Docker containers running
-docker compose -f compose.yml ps
+docker compose -f docker-compose.smoke.yml ps
 
 # Test service health endpoints
 curl -s http://localhost:8000/health  # ADHD Engine

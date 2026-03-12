@@ -44,7 +44,7 @@ Keyboard shortcuts are displayed in the footer (same hotkeys as the Dope layout:
 
 ## Optional tmux integration
 
-Add a Makefile target (see `docs/archive/completed-projects/orchestrator-integration-complete-2.md`) or create a tmux preset that runs `python scripts/orchestrator_dashboard.py` in a dedicated pane. This pairs well with the Dope layout when you want the orchestrator view side-by-side with the Textual monitors.
+Add a Makefile target (see `docs/archive/completed-projects/ORCHESTRATOR-INTEGRATION-COMPLETE.md`) or create a tmux preset that runs `python scripts/orchestrator_dashboard.py` in a dedicated pane. This pairs well with the Dope layout when you want the orchestrator view side-by-side with the Textual monitors.
 
 ## Live Data Sources
 

@@ -96,7 +96,7 @@ dopemux test integration  # End-to-end
 ## Deployment
 
 ```bash
-docker compose -f compose.yml up -d
+docker-compose -f docker-compose.master.yml up -d
 ```
 
 Monitor: `dopemux health`.

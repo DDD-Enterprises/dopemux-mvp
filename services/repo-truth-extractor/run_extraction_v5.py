@@ -13226,6 +13226,8 @@ def run_phase_A(
         "node_modules",
         "venv",
         ".venv",
+        "src",
+        "services",
         "tests",
         "docs",
         "extraction",
@@ -13259,25 +13261,6 @@ def run_phase_A(
         "Makefile",
         ".claude.json",
         ".taskxroot",
-        # src/services subdirs needed by A5/A11/A12/A13
-        ".vibe",
-        "src/dopemux/hooks",
-        "src/dopemux/claude",
-        "src/dopemux/claude_tools",
-        "src/dopemux/commands",
-        "src/dopemux/mcp",
-        "src/dopemux/cli.py",
-        "src/dopemux/__main__.py",
-        "src/dopemux/routing_cli.py",
-        "src/dopemux/profile_commands.py",
-        "src/dopemux/dev_commands.py",
-        "src/dopemux/worktree_commands.py",
-        "src/dopemux/events",
-        "src/dopemux/event_bus.py",
-        "services/copilot_transcript_ingester",
-        "services/dopecon-bridge",
-        "mcp-proxy-config.copilot.yaml",
-        "mcp-proxy-config.json",
     ]
     _run_phase_inner(
         "A",
@@ -14308,12 +14291,6 @@ def main() -> None:
             "prompt files. Equivalent to setting REPO_TRUTH_EXTRACTOR_PROMPT_ROOT."
         ),
     )
-    parser.add_argument(
-        "--profile",
-        type=str,
-        default=None,
-        help="Extraction profile name (e.g., P09_INTEGRATION_SURFACE_V1). Filters phases and overrides budgets.",
-    )
     args = parser.parse_args()
     # --promptset-root: wire into env var so prompt_root() picks it up
     if args.promptset_root:
@@ -14348,7 +14325,6 @@ def main() -> None:
 
     if not (
         args.phase
-        or args.profile
         or args.verify_phase_output
         or args.print_config
         or args.doctor_auth
@@ -14367,7 +14343,7 @@ def main() -> None:
         or args.gemini_list_models
     ):
         parser.error(
-            "--phase is required unless using --profile, --verify-phase-output, --print-config, "
+            "--phase is required unless using --verify-phase-output, --print-config, "
             "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
             "--status, --status-json, --print-promptpack, --print-run-order, "
             "--print-phase-routing, --tail-run-log, --show-provider-usage, "
@@ -14709,69 +14685,7 @@ def main() -> None:
         d1_max_files=args.d1_max_files,
     )
 
-    # --profile: load extraction profile and apply phase filtering + budget overrides
-    _active_profile = None
-    if getattr(args, "profile", None):
-        _profile_dir = Path(__file__).parent / "lib" / "promptgen" / "profiles"
-        _profile_name = args.profile
-        if not _profile_name.endswith(".json"):
-            _profile_name += ".json"
-        _profile_path = _profile_dir / _profile_name
-        if not _profile_path.exists():
-            logger.error("Profile not found: %s (searched %s)", args.profile, _profile_dir)
-            sys.exit(1)
-        import json as _json_profile
-        with open(_profile_path) as _pf:
-            _active_profile = _json_profile.load(_pf)
-        logger.info(
-            "Loaded profile: %s (v%s)",
-            _active_profile.get("profile_id", args.profile),
-            _active_profile.get("version", "?"),
-        )
-        # Apply budget overrides conservatively when the caller kept default limits.
-        _budgets = _active_profile.get("phase_policy", {}).get("budgets_by_phase", {})
-        _enabled_for_budget = _active_profile.get("phase_policy", {}).get("enabled_phases") or []
-        _candidate_phases = [phase for phase in resolve_phase_list(args.phase) if phase in _enabled_for_budget]
-        if not _candidate_phases:
-            _candidate_phases = [str(phase).strip().upper() for phase in _enabled_for_budget]
-        _selected_budgets = [
-            budget
-            for phase, budget in _budgets.items()
-            if str(phase).strip().upper() in _candidate_phases and isinstance(budget, dict)
-        ]
-        if _selected_budgets:
-            _max_files = [int(budget["max_files"]) for budget in _selected_budgets if "max_files" in budget]
-            if _max_files:
-                if args.max_files_docs == 35:
-                    args.max_files_docs = min(_max_files)
-                if args.max_files_code == 20:
-                    args.max_files_code = min(_max_files)
-            _max_chars = [int(budget["max_chars"]) for budget in _selected_budgets if "max_chars" in budget]
-            if _max_chars and args.max_chars == 650000:
-                args.max_chars = min(_max_chars)
-            _truncate_chars = [
-                int(budget["file_truncate_chars"])
-                for budget in _selected_budgets
-                if "file_truncate_chars" in budget
-            ]
-            if _truncate_chars and args.file_truncate_chars == 70000:
-                args.file_truncate_chars = min(_truncate_chars)
-
     phase_sequence = resolve_phase_list(args.phase)
-    # If profile specifies enabled_phases, filter the phase sequence
-    if _active_profile:
-        _enabled = _active_profile.get("phase_policy", {}).get("enabled_phases")
-        if _enabled and phase_sequence:
-            _before = list(phase_sequence)
-            phase_sequence = [p for p in phase_sequence if p in _enabled]
-            _skipped = [p for p in _before if p not in _enabled]
-            if _skipped:
-                logger.info("Profile skipping phases: %s", ", ".join(_skipped))
-        elif _enabled and not phase_sequence:
-            # No explicit --phase, but profile has enabled_phases
-            phase_sequence = [p for p in PHASES if p in _enabled]
-            logger.info("Profile restricting to phases: %s", ", ".join(phase_sequence))
-
     prompt_report = write_run_manifest(
         root, dirs, run_id, args, run_context, phase_sequence or PHASES
     )

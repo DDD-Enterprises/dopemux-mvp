@@ -15,7 +15,7 @@
 #   description: string - brief service description
 
 version: "1.0"
-last_updated: "2026-03-11"
+last_updated: "2026-03-01"
 
 services:
   # Infrastructure Services
@@ -50,7 +50,7 @@ services:
     port: 6333
     container_port: 6333
     health_path: /
-    compose_service_name: mcp-qdrant
+    compose_service_name: qdrant
     enabled_in_smoke: true
     category: infrastructure
     description: "Qdrant vector database"
