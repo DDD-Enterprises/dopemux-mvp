@@ -1,7 +1,5 @@
 name: docs
 on: [push, pull_request]
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   checks:
@@ -26,6 +24,7 @@ jobs:
             fi
           fi
         env:
+
           SKIP: docs-graph-validator  # Temporarily skip graph validator (pre-existing validation issues)
       - name: Broken-link check (lychee)
         uses: lycheeverse/lychee-action@v2  # Security: Fixed code injection vulnerability in v1
