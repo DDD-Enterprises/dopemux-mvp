@@ -296,7 +296,7 @@ if __name__ == "__main__":
         agent.send_command("What is 2+2?")
 
         logger.info("\nWaiting for response...")
-        agent.get_output(clear=True) # Clear existing output before waiting
+        agent.get_output(clear=True)  # Clear existing output before waiting
         for _ in range(30):  # Wait up to 3 seconds
             new_output = agent.get_output()
             result = parse_response(new_output, provider='claude')
