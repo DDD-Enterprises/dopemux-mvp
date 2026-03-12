@@ -118,11 +118,6 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [ConPort HTTP Planning](archive/implementation-plans/conport-http-deep-planning.md)
 - [Component Summaries](archive/implementation-plans/component-1-audit-summary.md)
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 ### Documentation Automation
 - [Documentation Root Index](INDEX.md)
 - [Documentation Catalog](03-reference/documentation-catalog.md)
@@ -131,16 +126,10 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
-<<<<<<< HEAD
-- Skill install/sync script: `scripts/skills/sync_repo_skills.py`
-
-=======
 - PR Merge Specialist skill template:
   - `templates/skills/pr-merge-specialist/`
 - Skill install/sync script: `scripts/skills/sync_repo_skills.py`
 
->>>>>>> 776ae3a99 (feat(pr-merge-specialist): add rebase-first queue drain)
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 ---
 
 ## Reference

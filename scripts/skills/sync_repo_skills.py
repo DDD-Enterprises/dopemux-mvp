@@ -17,10 +17,7 @@ FAMILIES: Dict[str, List[str]] = {
         "pr-docgen-sync-copilot",
         "pr-docgen-sync-claude",
     ],
-<<<<<<< HEAD
-=======
     "pr-merge-specialist": ["pr-merge-specialist"],
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 }
 
 
@@ -83,11 +80,7 @@ def main() -> int:
         "--family",
         action="append",
         default=[],
-<<<<<<< HEAD
-        help="Skill family to sync (repeatable): testgen, pr-docgen-sync, all",
-=======
         help="Skill family to sync (repeatable): testgen, pr-docgen-sync, pr-merge-specialist, all",
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
     )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
