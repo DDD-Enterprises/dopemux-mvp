@@ -7,7 +7,7 @@ name = "dopemux"
 version = "0.1.0"
 description = "ADHD-optimized development platform that wraps Claude Code with custom configurations"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "Dopemux Team", email = "team@dopemux.dev"},
@@ -63,6 +63,7 @@ dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.0.0",
     "black>=23.0.0",
     "isort>=5.12.0",
     "flake8>=6.0.0",
@@ -127,7 +128,7 @@ strict_equality = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --strict-markers --strict-config"
+addopts = "-ra -q -n auto --strict-markers --strict-config"
 testpaths = ["tests"]
 pythonpath = ["src"]
 asyncio_mode = "auto"
