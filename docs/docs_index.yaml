@@ -113,6 +113,16 @@ config:
   mcp: config/.claude/
   routing: config/env/
 scripts:
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+  directory: "scripts/"
+  docs_validation: "scripts/docs_validator.py"
+  docs_frontmatter: "scripts/docs_frontmatter_guard.py"
+  docs_normalize: "scripts/docs_normalize.py"
+  docs_audit: "scripts/docs_audit/"
+=======
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
   directory: scripts/
   docs_validation: scripts/docs_validator.py
   docs_frontmatter: scripts/docs_frontmatter_guard.py
@@ -124,3 +134,8 @@ skills:
   pr_docgen_sync_gemini: templates/skills/pr-docgen-sync-gemini/SKILL.md
   pr_docgen_sync_copilot: templates/skills/pr-docgen-sync-copilot/SKILL.md
   pr_docgen_sync_claude: templates/skills/pr-docgen-sync-claude/SKILL.md
+<<<<<<< HEAD
+=======
+  pr_merge_specialist: templates/skills/pr-merge-specialist/SKILL.md
+>>>>>>> 776ae3a99 (feat(pr-merge-specialist): add rebase-first queue drain)
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))

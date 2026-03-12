@@ -9,6 +9,11 @@ last_review: '2026-03-11'
 next_review: '2026-06-11'
 prelude: Canonical entrypoint for active Dopemux documentation indexes, section overviews, and automation workflows.
 ---
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 # Documentation Index
 
 Use this file as the root pointer for active documentation navigation and maintenance.
@@ -30,6 +35,10 @@ Use this file as the root pointer for active documentation navigation and mainte
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
+<<<<<<< HEAD
+=======
+- PR merge queue skill: `templates/skills/pr-merge-specialist/`
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 - Skill installer script: `scripts/skills/sync_repo_skills.py`
 
 ## Validation Gates
@@ -41,3 +50,7 @@ python scripts/docs_validator.py
 python scripts/docs_frontmatter_guard.py
 python scripts/check_root_hygiene.py
 ```
+<<<<<<< HEAD
+=======
+>>>>>>> 776ae3a99 (feat(pr-merge-specialist): add rebase-first queue drain)
+>>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
