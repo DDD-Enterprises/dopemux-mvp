@@ -63,7 +63,7 @@ GENETIC_AGENT_MUTATION_RATE=0.2
 ### Integration
 - **EventBus**: Real-time feedback to Dopemux orchestrator.
 - **ConPort**: Logs GP patterns for future learning.
-- **Docker**: Service in canonical `compose.yml`.
+- **Docker**: Service in `docker-compose.master.yml`.
 
 ## Vanilla Agent: Iterative LLM Code Assistant
 
@@ -124,7 +124,7 @@ VANILLA_AGENT_DEVELOPMENT_MODE=repair
 ### Integration
 - **EventBus**: Real-time feedback to Dopemux orchestrator.
 - **ConPort**: Logs repair patterns for future learning.
-- **Docker**: Service in canonical `compose.yml`.
+- **Docker**: Service in `docker-compose.master.yml`.
 
 ---
 

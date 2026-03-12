@@ -1,4 +1,0 @@
-interface:
-  display_name: "Testgen Copilot"
-  short_description: "Copilot-oriented wrapper for deterministic testgen"
-  default_prompt: "Use $testgen-copilot to generate a full layered test suite from this packet with copilot-oriented specialist routing."

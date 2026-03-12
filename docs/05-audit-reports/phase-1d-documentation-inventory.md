@@ -12,6 +12,6 @@ prelude: Phase 1D Documentation Inventory (reference) for dopemux documentation 
 ---
 # Phase 1D Documentation Inventory
 
-This report is mirrored in the audit reports directory.
+This report is archived under `claudedocs/`.
 
-See [docs/05-audit-reports/phase-1d-documentation-inventory.md](phase-1d-documentation-inventory.md).
+See [claudedocs/phase-1d-documentation-inventory.md](../../claudedocs/phase-1d-documentation-inventory.md).

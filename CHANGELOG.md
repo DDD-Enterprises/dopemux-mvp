@@ -60,39 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- PM-plane authority ADR set:
-  - ConPort as decision/progress/context authority
-  - Dopecon-bridge narrowed to adapter-only scope
-  - Leantime JSON-RPC + plugin integration strategy
-  - PM-plane authority boundaries
-- Task-orchestrator and Leantime follow-up ticket queue in PM docs.
-- PR docgen sync skill family templates:
-  - `templates/skills/pr-docgen-sync/`
-  - `templates/skills/pr-docgen-sync-gemini/`
-  - `templates/skills/pr-docgen-sync-copilot/`
-  - `templates/skills/pr-docgen-sync-claude/`
-- Repo skill installer for template families: `scripts/skills/sync_repo_skills.py`.
-
-### Changed
-- Canonicalized runtime orchestration on root `compose.yml`; smoke flows now run through `scripts/smoke_up.sh` and `scripts/smoke_down.sh`.
-- Updated smoke/runtime tooling (`tools/smoke_runtime_gate.py`, `tools/ports_health_audit.py`, `tools/generate_smoke_env.py`) to use canonical compose semantics.
-- Updated deploy/start scripts to target compose project `dopemux` consistently.
-- Parameterized additional host port bindings in `compose.yml` (`POSTGRES_PORT`, `QDRANT_PORT`, `QDRANT_GRPC_PORT`, `TASK_ORCHESTRATOR_PORT`, `DOPE_MEMORY_PORT`).
-
-### Fixed
-- Added rogue task-orchestrator container cleanup in `scripts/start.sh` to prevent non-canonical compose projects from auto-restart conflicts.
-- Corrected registry-to-compose mapping for Qdrant (`compose_service_name: mcp-qdrant`).
-- Hardened ADHD Engine startup for local/test environments:
-  - optional degraded startup mode (`ADHD_ENGINE_ALLOW_DEGRADED_STARTUP`)
-  - optional in-memory cache forcing (`ADHD_FORCE_INMEMORY_CACHE`)
-  - graceful fallback when optional deps (`prometheus_client`, `fastmcp`) are unavailable.
-- Stabilized integration/security/unit tests for compose canonicalization and ADHD runtime behavior.
-
-### Documentation
-- Updated install/deployment/reference docs to remove legacy compose-file guidance and document canonical `compose.yml` usage.
-- Updated architecture, server registry, and instruction docs to reflect task-orchestrator canonical port `8000`.
-- Added canonical docs index/list reconciliation surfaces (`docs/INDEX.md`, section overviews, documentation catalog).
-- Added PR docgen workflow guidance across Codex/Claude/Gemini/Copilot instruction surfaces.
+- Pending items for the next patch release.
 
 ## [0.6.0] - Target: 2026-04-09
 

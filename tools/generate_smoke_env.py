@@ -2,7 +2,7 @@
 """
 Generate .env.smoke from services/registry.yaml
 
-This ensures compose.yml uses registry as single source of truth for smoke ports.
+This ensures docker-compose.smoke.yml uses registry as single source of truth for ports.
 
 Usage:
     python tools/generate_smoke_env.py [--output .env.smoke]
@@ -102,7 +102,7 @@ def main():
     print(f"   Services: {len([s for s in registry.get('services', []) if s.get('enabled_in_smoke')])} enabled in smoke stack")
     print(f"\nNext steps:")
     print(f"  1. Review {output_path}")
-    print(f"  2. Start smoke stack: scripts/smoke_up.sh")
+    print(f"  2. Start smoke stack: docker compose -f docker-compose.smoke.yml up -d --build")
     print(f"  3. Validate: python tools/ports_health_audit.py --mode runtime")
 
 

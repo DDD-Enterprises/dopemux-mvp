@@ -45,8 +45,7 @@
     "review_artifacts",
     "ui-dashboard",
     "config",
-    "dashboard",
-    "repo-truth-pack"
+    "dashboard"
   ],
   "allowed_root_files": [
     "CLAUDE_AUTOMATION_INSTRUCTIONS.md",

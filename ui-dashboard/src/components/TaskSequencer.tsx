@@ -230,7 +230,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-valuetext={`${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`}
           />
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
+            <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'}>
               <Button
                 size="small"
                 variant="contained"
@@ -241,7 +241,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 {isTimerRunning ? 'Pause' : 'Start'}
               </Button>
             </Tooltip>
-            <Tooltip title="Complete and Proceed" arrow>
+            <Tooltip title="Complete and Proceed">
               <Button
                 size="small"
                 variant="outlined"
@@ -252,7 +252,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 Complete
               </Button>
             </Tooltip>
-            <Tooltip title="Skip for Now" arrow>
+            <Tooltip title="Skip for Now">
               <Button
                 size="small"
                 variant="text"
@@ -272,7 +272,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
-        <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
+        <Tooltip title="Consent → Calibration → Chaos → Care">
           <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
           </Box>
@@ -311,7 +311,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                       <Typography variant="body2" sx={{ flexGrow: 1 }}>
                         {task.title}
                       </Typography>
-                      <Tooltip title={`Complexity: ${Math.round(task.complexity * 100)}% - used for ritual sequencing`} arrow>
+                      <Tooltip title={`Complexity: ${Math.round(task.complexity * 100)}% - used for ritual sequencing`}>
                         <Chip
                           size="small"
                           label={`${Math.round(task.complexity * 100)}% complex`}
