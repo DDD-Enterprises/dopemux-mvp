@@ -23,6 +23,7 @@ jobs:
               pre-commit run --from-ref "$BEFORE" --to-ref "${{ github.sha }}"
             fi
           fi
+
         env:
 
           SKIP: docs-graph-validator  # Temporarily skip graph validator (pre-existing validation issues)
