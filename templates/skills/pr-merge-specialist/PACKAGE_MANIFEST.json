@@ -1,0 +1,28 @@
+{
+  "artifact_version": "3.1",
+  "tool_version": "3.1.0",
+  "includes": [
+    "SKILL.md",
+    "agents/openai.yaml",
+    "config/policy.example.yaml",
+    "scripts/dopemux_pr_merge_specialist/config/policy.example.yaml",
+    "scripts/dopemux_pr_merge_specialist/__init__.py",
+    "scripts/dopemux_pr_merge_specialist/cli.py",
+    "scripts/dopemux_pr_merge_specialist/engine.py",
+    "scripts/dopemux_pr_merge_specialist/github_api.py",
+    "scripts/dopemux_pr_merge_specialist/policy.py",
+    "scripts/dopemux_pr_merge_specialist/runtime.py",
+    "scripts/dopemux_pr_merge_specialist/schema.py",
+    "scripts/dopemux_pr_merge_specialist/validation.py",
+    "tests/test_ordering_and_classification.py",
+    "tests/test_policy_and_validation.py",
+    "tests/test_queue_drain_integration.py",
+    "tests/test_template_contracts.py",
+    "tests/test_thread_and_merge_logic.py"
+  ],
+  "excludes": [
+    "__pycache__/",
+    "*.pyc",
+    "__MACOSX/"
+  ]
+}

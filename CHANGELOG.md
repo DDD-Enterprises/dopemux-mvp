@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-11-13
 
 ### Added
+- Pending items for the next patch release.
 - Initial public alpha release
 - Universal installer script with platform detection
 - Support for macOS (Apple Silicon & Intel), Ubuntu 22.04+, Arch Linux, Fedora
@@ -60,12 +61,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-- Pending items for the next patch release.
-=======
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 - PM-plane authority ADR set:
   - ConPort as decision/progress/context authority
   - Dopecon-bridge narrowed to adapter-only scope
@@ -77,11 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
-<<<<<<< HEAD
-=======
 - PR merge specialist skill template:
   - `templates/skills/pr-merge-specialist/`
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 - Repo skill installer for template families: `scripts/skills/sync_repo_skills.py`.
 
 ### Changed
@@ -89,10 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated smoke/runtime tooling (`tools/smoke_runtime_gate.py`, `tools/ports_health_audit.py`, `tools/generate_smoke_env.py`) to use canonical compose semantics.
 - Updated deploy/start scripts to target compose project `dopemux` consistently.
 - Parameterized additional host port bindings in `compose.yml` (`POSTGRES_PORT`, `QDRANT_PORT`, `QDRANT_GRPC_PORT`, `TASK_ORCHESTRATOR_PORT`, `DOPE_MEMORY_PORT`).
-<<<<<<< HEAD
-=======
-- Expanded `pr-merge-specialist` into a rebase-first queue drain with hybrid ordering, multi-pass retries, pending-check waits, proof artifacts, and review-thread handling.
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
+- Rebuilt `pr-merge-specialist` as a Unix-first, policy-driven merge package with explicit `preflight` / `queue-scan` / `pr-plan` / `pr-apply` / `pr-merge` / `queue-drain` phases, honest dry-run validation semantics, resumable manifests, and artifact versioning.
 
 ### Fixed
 - Added rogue task-orchestrator container cleanup in `scripts/start.sh` to prevent non-canonical compose projects from auto-restart conflicts.
@@ -102,20 +91,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - optional in-memory cache forcing (`ADHD_FORCE_INMEMORY_CACHE`)
   - graceful fallback when optional deps (`prometheus_client`, `fastmcp`) are unavailable.
 - Stabilized integration/security/unit tests for compose canonicalization and ADHD runtime behavior.
-<<<<<<< HEAD
-=======
 - Improved PR queue automation by reproducing local rebase conflicts for deep conflict packets and auto-applying explicit conflict-marker review suggestions.
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 
 ### Documentation
 - Updated install/deployment/reference docs to remove legacy compose-file guidance and document canonical `compose.yml` usage.
 - Updated architecture, server registry, and instruction docs to reflect task-orchestrator canonical port `8000`.
 - Added canonical docs index/list reconciliation surfaces (`docs/INDEX.md`, section overviews, documentation catalog).
 - Added PR docgen workflow guidance across Codex/Claude/Gemini/Copilot instruction surfaces.
-<<<<<<< HEAD
-=======
->>>>>>> 776ae3a99 (feat(pr-merge-specialist): add rebase-first queue drain)
->>>>>>> cf344f45c (review-response: address thread suggestions (pr-merge/20260311_210757/PR-205))
 
 ## [0.6.0] - Target: 2026-04-09
 
