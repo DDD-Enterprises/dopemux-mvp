@@ -105,10 +105,17 @@ VERBOSE=false
 print_table_row() {
     local col1="$1"
     local col2="$2"
-    # Print without parsing escape sequences to count characters
-    # We use a perl regex to strip ANSI color codes before taking length
-    local stripped1=$(echo -e "$col1" | perl -pe 's/\\e\\[[0-9;]*[mGK]//g')
-    local stripped2=$(echo -e "$col2" | perl -pe 's/\\e\\[[0-9;]*[mGK]//g')
+
+    # Strip ANSI codes using pure bash pattern matching
+    local stripped1="${col1//\\033[*/}"
+    local stripped2="${col2//\\033[*/}"
+    stripped1="${stripped1//\\[0-9;]*m/}"
+    stripped2="${stripped2//\\[0-9;]*m/}"
+    stripped1="${stripped1//\\033[0m/}"
+    stripped2="${stripped2//\\033[0m/}"
+    # Just in case there are other ansi codes, handle the most common ones
+    stripped1=$(echo -e "$col1" | sed -E 's/\\033\\[[0-9;]*m//g')
+    stripped2=$(echo -e "$col2" | sed -E 's/\\033\\[[0-9;]*m//g')
 
     local len1=${#stripped1}
     local len2=${#stripped2}
@@ -119,7 +126,7 @@ print_table_row() {
     [ $pad1 -lt 0 ] && pad1=0
     [ $pad2 -lt 0 ] && pad2=0
 
-    printf "${CYAN}│${NC} %s%*s ${CYAN}│${NC} %s%*s ${CYAN}│${NC}\n" "$col1" "$pad1" "" "$col2" "$pad2" ""
+    printf "${CYAN}│${NC} %b%*s ${CYAN}│${NC} %b%*s ${CYAN}│${NC}\n" "$col1" "$pad1" "" "$col2" "$pad2" ""
 }
 
 print_table_divider() {
@@ -1254,15 +1261,21 @@ EOF
     check_optional_tools "false"
     echo
     
-    # Install missing dependencies if needed
     if [ "$deps_missing" = true ]; then
         if ask_yes_no "Install missing dependencies automatically?" "y"; then
             install_dependencies
             echo
         else
-            fatal "Required dependencies missing. Please install manually and retry."
+            echo -e "${RED}❌ Required dependencies missing.${NC}"
+            echo -e "Please install the missing tools manually:"
+            echo -e "  - ${YELLOW}Python 3${NC}: Use your system package manager (e.g., apt install python3, brew install python3)"
+            echo -e "  - ${YELLOW}uv${NC}: Run curl -LsSf https://astral.sh/uv/install.sh | bash"
+            echo -e "  - ${YELLOW}Git${NC}: Use your system package manager (e.g., apt install git, brew install git)"
+            echo -e "  - ${YELLOW}Docker${NC}: Download from https://docs.docker.com/get-docker/ or start the service"
+            fatal "Please install manually and retry."
         fi
     fi
+
 
     choose_install_stack
     
