@@ -15,7 +15,6 @@ from typing import Any, Dict, List, Optional
 from core.config import Config
 from core.exceptions import DopemuxIntegrationError
 from core.monitoring import MetricsCollector
-
 try:
     from src.utils.adhd_optimizations import ADHDTaskOptimizer
     from src.utils.security import SecureTokenManager
@@ -449,13 +448,6 @@ class LeantimeBridge:
 
     # ADHD-Specific Methods
 
-    # Mapping of attention states to allowed task priorities
-    ATTENTION_PRIORITIES = {
-        "hyperfocus": frozenset([TaskPriority.HYPERFOCUS]),
-        "focused": frozenset([TaskPriority.FOCUSED, TaskPriority.HYPERFOCUS]),
-        "scattered": frozenset([TaskPriority.SCATTERED, TaskPriority.BACKGROUND]),
-    }
-
     async def get_adhd_optimized_tasks(
         self, user_id: int, attention_state: str = "focused"
     ) -> List[LeantimeTask]:
@@ -471,16 +463,26 @@ class LeantimeBridge:
         """
         all_tasks = await self.get_tasks()
 
-        # Retrieve allowed priorities once
-        allowed_priorities = self.ATTENTION_PRIORITIES.get(attention_state, frozenset())
-
         # Filter and optimize based on attention state
-        optimized_tasks = [
-            task
-            for task in all_tasks
-            if (task.user_id == user_id or task.user_id is None)
-            and task.priority in allowed_priorities
-        ]
+        optimized_tasks = []
+        for task in all_tasks:
+            if task.user_id == user_id or task.user_id is None:
+                # Apply ADHD filtering logic
+                if (
+                    attention_state == "hyperfocus"
+                    and task.priority == TaskPriority.HYPERFOCUS
+                ):
+                    optimized_tasks.append(task)
+                elif attention_state == "focused" and task.priority in [
+                    TaskPriority.FOCUSED,
+                    TaskPriority.HYPERFOCUS,
+                ]:
+                    optimized_tasks.append(task)
+                elif attention_state == "scattered" and task.priority in [
+                    TaskPriority.SCATTERED,
+                    TaskPriority.BACKGROUND,
+                ]:
+                    optimized_tasks.append(task)
 
         # Sort by ADHD-optimized criteria
         return sorted(
@@ -570,9 +572,8 @@ class LeantimeBridge:
                 "error": str(e),
             }
 
+
             logger.error(f"Error: {e}")
-
-
 # Factory function for easy instantiation
 def create_leantime_bridge(config: Config) -> LeantimeBridge:
     """

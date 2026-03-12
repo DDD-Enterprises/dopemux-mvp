@@ -11,6 +11,9 @@ on:
   push:
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   security-review:
     name: "🤖 Claude Code Security Analysis"
@@ -22,21 +25,13 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2  # Get enough history for diff analysis
       - name: 🔐 ADHD-Optimized Security Review
         if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5224187 (feat(tests): add dashboard logic tests and fix agent orchestrator cleanup)
-=======
->>>>>>> 06b6eb1d6 (chore(installer): implement code review fixes and align bash dependency checks)
->>>>>>> f80e2649a (review-response: address thread suggestions (pr-merge/20260311_210757/PR-204))
->>>>>>> 4e14cd517 (review-response: address thread suggestions (pr-merge/20260311_210757/PR-204))
         with:
           comment-pr: true
           claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
