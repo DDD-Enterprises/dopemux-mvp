@@ -44,7 +44,6 @@ from .schema import (
     MergeDecision,
     MergeActionType,
     OverrideRecord,
-    PhaseRecord,
     PRResult,
     PRState,
     PRStateData,
