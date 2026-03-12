@@ -1,0 +1,82 @@
+{
+  "findings": [
+    {
+      "layer": 1,
+      "message": "Runner and library modules loaded.",
+      "name": "import_smoke",
+      "status": "PASS"
+    },
+    {
+      "layer": 2,
+      "message": "promptset.yaml exists.",
+      "name": "contract_promptset.yaml",
+      "status": "PASS"
+    },
+    {
+      "layer": 2,
+      "message": "artifacts.yaml exists.",
+      "name": "contract_artifacts.yaml",
+      "status": "PASS"
+    },
+    {
+      "layer": 2,
+      "message": "model_map.yaml exists.",
+      "name": "contract_model_map.yaml",
+      "status": "PASS"
+    },
+    {
+      "layer": 3,
+      "message": "All prompts exist and match hashes.",
+      "name": "prompt_integrity",
+      "status": "PASS"
+    },
+    {
+      "layer": 4,
+      "message": "PHASE_CONTRACT_MAP.json generated.",
+      "name": "contract_map_gen",
+      "status": "PASS"
+    },
+    {
+      "layer": 5,
+      "message": "test_live_llm_guard.py exists.",
+      "name": "test_test_live_llm_guard.py",
+      "status": "PASS"
+    },
+    {
+      "layer": 5,
+      "message": "test_promptset_v4_lint.py exists.",
+      "name": "test_test_promptset_v4_lint.py",
+      "status": "PASS"
+    },
+    {
+      "layer": 5,
+      "message": "test_audit_tp008_drift.py exists.",
+      "name": "test_test_audit_tp008_drift.py",
+      "status": "PASS"
+    },
+    {
+      "layer": 6,
+      "message": "Preflight exists (generated 2026-02-20T11:29:42.485023+00:00).",
+      "name": "provider_preflight",
+      "status": "PASS"
+    },
+    {
+      "layer": 8,
+      "message": "test_v5_golden_fixture_smoke.py exists.",
+      "name": "smoke_test_v5_golden_fixture_smoke.py",
+      "status": "PASS"
+    },
+    {
+      "layer": 8,
+      "message": "test_v5_resume_smoke.py exists.",
+      "name": "smoke_test_v5_resume_smoke.py",
+      "status": "PASS"
+    },
+    {
+      "layer": 8,
+      "message": "test_v5_verify_phase_output_smoke.py exists.",
+      "name": "smoke_test_v5_verify_phase_output_smoke.py",
+      "status": "PASS"
+    }
+  ]
+}
