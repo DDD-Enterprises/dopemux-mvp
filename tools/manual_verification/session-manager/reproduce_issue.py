@@ -1,7 +1,7 @@
 import time
 import queue
 import threading
-from typing import List, Optional
+from typing import List
 
 # Simplified mock of current AIAgent and AgentSpawner logic
 class MockAgent:

@@ -230,10 +230,12 @@ class AIAgent:
                 last_data_time = time.time()
 
                 if wait_for_prompt:
-                    # Strip ANSI and check for prompt
-                    clean_line = self.parser.ANSI_REGEX.sub("", line)
-                    if self.parser._is_prompt(clean_line):
-                        break
+                    # Strip ANSI and check for prompt via public API
+                    clean_line = self.parser.strip_ansi([line])[0]
+                    if self.parser.is_prompt(clean_line):
+                        # Ensure we got some content before breaking on prompt
+                        if len(output_lines) > 1:
+                            break
             except queue.Empty:
                 if not wait_for_prompt and output_lines:
                     # In non-waiting mode, implement a small grace period (0.2s)
@@ -409,8 +411,18 @@ class AgentSpawner:
         if not success:
             return None
 
-        # Wait for response with smart completion detection
-        return agent.get_output(timeout=10.0, wait_for_prompt=True)
+        # Wait for response with smart completion detection.
+        # First, briefly wait for a CLI prompt if one is emitted; if not,
+        # fall back to non-prompt mode to avoid a fixed 10s latency.
+        prompt_wait_timeout = 2.0
+        remaining_timeout = 10.0 - prompt_wait_timeout
+
+        response = agent.get_output(timeout=prompt_wait_timeout, wait_for_prompt=True)
+        if response and len(response) > 1:
+            return response
+
+        # Fallback: rely on non-prompt completion behavior for the remaining time.
+        return agent.get_output(timeout=remaining_timeout, wait_for_prompt=False)
 
     def stop_all(self):
         """Stop all agents gracefully."""
