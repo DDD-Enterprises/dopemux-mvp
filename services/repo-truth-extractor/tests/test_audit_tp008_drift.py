@@ -27,27 +27,27 @@ tp008:
     scope: "JSON-producing steps only"
   lanes:
     CE:
-      primary: ["openrouter/openai/gpt-5.3-codex (strict)", "openrouter/openai/gpt-5.2 (strict)"]
-      repair: ["openrouter/openai/gpt-5.2 (strict)"]
-      sidefill: ["openrouter/openai/gpt-5.2 (strict)"]
+      primary: ["openrouter/openai/gpt-5.3-codex (strict)", "openrouter/openai/gpt-5.4 (strict)"]
+      repair: ["openrouter/openai/gpt-5.4 (strict)"]
+      sidefill: ["openrouter/openai/gpt-5.4 (strict)"]
       sidefill_enabled: true
       repair_mode: targeted_then_envelope
     BULK_docs_general:
       primary: ["xai/grok-4-1-fast-reasoning", "xai/grok-4-1-fast-non-reasoning"]
-      repair: ["openrouter/openai/gpt-5.2 (strict)"]
-      sidefill: ["openrouter/openai/gpt-5.2 (strict)"]
+      repair: ["xai/grok-4.20-beta-0309-non-reasoning"]
+      sidefill: ["xai/grok-4.20-beta-0309-reasoning"]
       sidefill_enabled_default: false
       repair_mode: targeted_only
     BULK_code_heavy:
       primary: ["xai/grok-code-fast-1", "xai/grok-4-1-fast-reasoning"]
-      repair: ["openrouter/openai/gpt-5.2 (strict)"]
-      sidefill: ["openrouter/openai/gpt-5.2 (strict)"]
+      repair: ["xai/grok-4.20-beta-0309-reasoning"]
+      sidefill: ["xai/grok-4.20-beta-0309-reasoning"]
       sidefill_enabled_default: false
       repair_mode: targeted_only
     AGG:
       primary: ["openrouter/openai/gpt-5-mini (strict)"]
-      repair: ["openrouter/openai/gpt-5.2 (strict)"]
-      sidefill: ["openrouter/openai/gpt-5.2 (strict)"]
+      repair: ["openrouter/openai/gpt-5.4 (strict)"]
+      sidefill: ["openrouter/openai/gpt-5.4 (strict)"]
       sidefill_enabled_default: false
       repair_mode: envelope
   phases:
@@ -119,9 +119,12 @@ def test_static_drift_includes_scope_info_and_detects_d2_lane_drift(tmp_path: Pa
 
     findings = drift["findings"]
 
-    # A11 is outside repo_truth_map JSON-managed scope -> informational.
+    # A11 is now JSON-managed in repo_truth_map, so the TP-008 bulk expectation
+    # is audited as a real lane drift against the current extraction model map.
     assert any(
-        row["finding_code"] == module.FINDING_INFO_NONEXISTENT and row["step_key"] == "A:A11"
+        row["finding_code"] == module.FINDING_FAIL_LANE
+        and row["step_key"] == "A:A11"
+        and row["severity"] == "fail"
         for row in findings
     )
 
@@ -162,7 +165,7 @@ def test_model_usage_classification_and_rollups(tmp_path: Path) -> None:
         (raw_dir / f"A0__{part}.json").write_text(json.dumps(payload), encoding="utf-8")
 
     _row("openrouter", "openai/gpt-5.3-codex", "A_P0001")
-    _row("openrouter", "openai/gpt-5.2", "A_P0002")
+    _row("openrouter", "openai/gpt-5.4", "A_P0002")
     _row("xai", "grok-4-1-fast-non-reasoning", "A_P0003")
 
     usage = module._run_model_usage_audit(

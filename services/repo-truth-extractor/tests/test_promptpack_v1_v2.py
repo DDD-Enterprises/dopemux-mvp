@@ -148,11 +148,13 @@ def test_promptpack_v1_carries_contract_metadata_for_d0_d1(tmp_path: Path) -> No
     assert d1_row["contract_lane"] == "CE"
     assert d1_row["strict_schema_required"] is True
     contract_metadata = d1_row["contract_metadata"]
-    assert contract_metadata["lane"]["provider"] == "openrouter"
+    assert contract_metadata["lane"]["provider"] == "gemini"
     assert contract_metadata["lane"]["strict_schema_required"] is True
     assert contract_metadata["lane"]["lane_class"] == "CE"
-    assert contract_metadata["lane"]["primary_routes"][0]["strict_json_schema"] is True
-    assert contract_metadata["lane"]["primary_routes"][0]["strict_passthrough_verified"] is True
+    # First route is Gemini (non-strict primary), strict routes follow
+    assert contract_metadata["lane"]["primary_routes"][0]["strict_json_schema"] is False
+    assert contract_metadata["lane"]["primary_routes"][1]["strict_json_schema"] is True
+    assert contract_metadata["lane"]["primary_routes"][1]["strict_passthrough_verified"] is True
     assert "CAP_NOTICES.partX.json" in contract_metadata["expected_artifacts"]
 
     rendered_path = Path(d1_row["rendered_prompt"])

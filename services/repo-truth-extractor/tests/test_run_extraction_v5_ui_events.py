@@ -57,7 +57,7 @@ def test_ui_events_emit_schema_to_events_and_timeline(tmp_path: Path) -> None:
         partition_id="D_P0001",
         failure_class="schema_missing_key",
         reason="schema_missing_key:line_range",
-        route="openrouter/openai/gpt-5.2",
+        route="openrouter/openai/gpt-5.4",
         artifact_name="DOC_INDEX.partX.json",
         item_key="line_range",
         item_id="DOC_INDEX:item_1",

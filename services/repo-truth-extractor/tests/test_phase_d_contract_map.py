@@ -36,8 +36,8 @@ def test_compile_phase_contract_map_includes_d0_d1_lane_and_artifacts() -> None:
     ]
     assert d0["lane"]["lane_class"] == "CE"
     assert d0["lane"]["strict_schema_required"] is True
-    assert d0["lane"]["primary_routes"][0]["provider"] == "openrouter"
-    assert d0["lane"]["primary_routes"][0]["model_id"] == "openai/gpt-5.3-codex"
+    assert d0["lane"]["primary_routes"][0]["provider"] == "gemini"
+    assert d0["lane"]["primary_routes"][0]["model_id"] == "gemini-3.1-pro-preview"
     assert d0["lane"]["sidefill_enabled"] is True
 
     d1 = steps["D:D1"]
@@ -55,8 +55,10 @@ def test_compile_phase_contract_map_includes_d0_d1_lane_and_artifacts() -> None:
     assert "line_range" in cap_meta["required_fields"]
     assert "evidence" in cap_meta["prompt_required_item_fields"]
     assert d1["lane"]["lane_class"] == "CE"
-    assert d1["lane"]["primary_routes"][0]["strict_json_schema"] is True
-    assert d1["lane"]["primary_routes"][0]["strict_passthrough_verified"] is True
+    # First route is Gemini (non-strict primary), strict routes follow
+    assert d1["lane"]["primary_routes"][0]["provider"] == "gemini"
+    assert d1["lane"]["primary_routes"][1]["strict_json_schema"] is True
+    assert d1["lane"]["primary_routes"][1]["strict_passthrough_verified"] is True
     assert d1["scope"]["json_managed"] is True
     assert d1["scope"]["mixed_step"] is False
 
