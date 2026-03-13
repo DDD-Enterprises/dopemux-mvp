@@ -79,7 +79,7 @@ def test_phase_d_provider_preflight_blocks_on_openrouter_402(
     assert payload["denylisted_providers"] == ["openrouter"]
 
 
-def test_phase_d_provider_preflight_is_not_required_when_no_openrouter_routes() -> None:
+def test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter() -> None:
     cfg = runner.RunnerConfig(
         dry_run=False,
         max_files_docs=10,
@@ -104,4 +104,4 @@ def test_phase_d_provider_preflight_is_not_required_when_no_openrouter_routes() 
         fail_fast_missing_inputs=False,
         routing_policy="cost",
     )
-    assert runner.phase_requires_provider_preflight("D", cfg) is False
+    assert runner.phase_requires_provider_preflight("D", cfg) is True
