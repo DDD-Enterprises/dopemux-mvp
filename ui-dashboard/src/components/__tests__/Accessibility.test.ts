@@ -58,6 +58,10 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
+  // Total duration and pluralization accessibility
+  expect(content).toContain('title={`Total estimated effort for remaining tasks: ${formatDuration(totalRemainingMinutes)}`}');
+  expect(content).toContain('tabIndex={0}');
+  expect(content).toContain("{optimizedTasks.length === 1 ? 'task' : 'tasks'}");
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
