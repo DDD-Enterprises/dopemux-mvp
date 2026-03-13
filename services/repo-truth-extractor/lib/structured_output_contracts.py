@@ -231,9 +231,11 @@ def _generic_item_schema(artifact_meta: Dict[str, Any]) -> Dict[str, Any]:
     }
     for key in required_keys:
         properties.setdefault(key, GENERIC_ITEM_VALUE_SCHEMA)
+    # OpenAI strict mode requires every property in 'required'
+    all_required = sorted(properties.keys())
     return {
         "type": "object",
-        "required": required_keys,
+        "required": all_required,
         "properties": properties,
         "additionalProperties": False,
     }
