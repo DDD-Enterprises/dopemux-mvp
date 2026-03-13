@@ -150,23 +150,26 @@ def test_step_tier_classifier_is_deterministic() -> None:
 def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
     runner = _load_runner_module()
     expected_d0 = [
+        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
         ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ]
     assert runner.resolve_step_ladder("cost", "D", "D0") == expected_d0
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D0") == expected_d0
     assert runner.resolve_step_ladder("quality", "D", "D1") == expected_d0
 
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D2") == [
-        ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
-        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+        ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "C", "C1") == [
         ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D4") == [
-        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ]
 
 
@@ -180,8 +183,10 @@ def test_resolve_effective_step_route_marks_strict_required_contract_lane() -> N
     assert route_info["provider"] == "openrouter"
     assert route_info["model_id"] == "openai/gpt-5.3-codex"
     attempts = route_info.get("strict_route_attempts")
-    assert isinstance(attempts, list) and attempts
-    assert attempts[0]["strict_capable"] is True
+    assert isinstance(attempts, list) and len(attempts) >= 2
+    # First attempt is Gemini (non-strict, skipped), second is GPT codex (strict)
+    assert attempts[0]["strict_capable"] is False
+    assert attempts[1]["strict_capable"] is True
 
 
 def test_strict_route_requires_verified_passthrough_for_openrouter() -> None:
@@ -192,7 +197,7 @@ def test_strict_route_requires_verified_passthrough_for_openrouter() -> None:
                 "primary_routes": [
                     {
                         "provider": "openrouter",
-                        "model_id": "openai/gpt-5.2",
+                        "model_id": "openai/gpt-5.4",
                         "api_key_env": "OPENROUTER_API_KEY",
                         "strict_json_schema": True,
                         "strict_passthrough_verified": False,
@@ -228,7 +233,7 @@ def test_strict_required_stage_fails_closed_before_token_spend() -> None:
                     "primary_routes": [
                         {
                             "provider": "openrouter",
-                            "model_id": "openai/gpt-5.2",
+                            "model_id": "openai/gpt-5.4",
                             "api_key_env": "OPENROUTER_API_KEY",
                             "strict_json_schema": True,
                             "strict_passthrough_verified": False,
