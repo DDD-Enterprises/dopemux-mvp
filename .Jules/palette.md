@@ -29,3 +29,7 @@
 ## 2026-03-11 - [Closing the Task Feedback Loop]
 **Learning:** In task-oriented interfaces, failing to provide a clear "success" or "empty" state after finishing a sequence can lead to user confusion or a sense of "unmet expectation." Providing a satisfying "Ritual Complete" visual (like a check icon and positive reinforcement text) creates a distinct sense of closure and progress.
 **Action:** Always implement explicit success and empty states for sequential task components to provide closure and guidance when a workflow is completed or empty.
+
+## 2026-03-12 - [ADHD-Friendly Duration Aggregation]
+**Learning:** For users with ADHD, "time blindness" can make a list of tasks feel overwhelming or infinite. Aggregating individual estimates into a "Total Remaining Duration" provides a clear end-to-end view of the workload, helping with mental preparation and scheduling.
+**Action:** Include total time/effort summaries in sequential task lists to provide a holistic view of remaining work.

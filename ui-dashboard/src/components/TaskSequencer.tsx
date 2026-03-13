@@ -13,6 +13,7 @@ import {
   Tooltip,
   LinearProgress,
   alpha,
+  useTheme,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -48,6 +49,7 @@ interface TaskSequencerProps {
 }
 
 const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
+  const theme = useTheme();
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: '1',
@@ -126,6 +128,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     const currentIndex = optimizedTasks.findIndex(t => t.id === taskId);
     const nextIndex = (currentIndex + 1) % optimizedTasks.length;
     setCurrentTaskId(optimizedTasks[nextIndex].id);
+  };
+
+  const totalRemainingMinutes = useMemo(() => {
+    return optimizedTasks.reduce((sum, task) => sum + task.estimatedMinutes, 0);
+  }, [optimizedTasks]);
+
+  const formatDuration = (totalMinutes: number): string => {
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    if (hours > 0) {
+      return `${hours}h ${mins}m`;
+    }
+    return `${mins}m`;
   };
 
   const formatTime = (seconds: number): string => {
@@ -282,9 +297,15 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       )}
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <Typography variant="subtitle2">
-          Optimized Sequence ({optimizedTasks.length} tasks)
-        </Typography>
+        <Tooltip title={`Total estimated effort for remaining tasks: ${formatDuration(totalRemainingMinutes)}`} arrow>
+          <Typography
+            variant="subtitle2"
+            tabIndex={0}
+            sx={{ cursor: 'help', '&:focus': { outline: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`, borderRadius: 1 } }}
+          >
+            Optimized Sequence ({optimizedTasks.length} {optimizedTasks.length === 1 ? 'task' : 'tasks'} • {formatDuration(totalRemainingMinutes)})
+          </Typography>
+        </Tooltip>
         <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
           <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
