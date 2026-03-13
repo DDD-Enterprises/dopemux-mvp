@@ -188,14 +188,13 @@ class RedisConnectionPool:
                 }
 
         except Exception as e:
+            logger.error(f"Error in health_check: {e}")
             return {
                 "status": "unhealthy",
                 "error": str(e),
                 "connection_pool_size": self.max_connections,
             }
 
-
-            logger.error(f"Error: {e}")
 # Global instance for easy access
 _pool_instance: Optional[RedisConnectionPool] = None
 

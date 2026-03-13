@@ -41,8 +41,12 @@ class TestCORSSecurity:
             client = AsyncClient(base_url="http://127.0.0.1:8095")
 
             server_ready = False
-            for _ in range(24):
+            # Increased retries for CI stability (60 * 0.5s = 30s timeout)
+            for _ in range(60):
                 if process.poll() is not None:
+                    # Capture and log stderr if process crashed
+                    stderr = process.stderr.read().decode()
+                    logging.error(f"ADHD Engine process exited unexpectedly with code {process.returncode}. Stderr: {stderr}")
                     break
                 try:
                     response = await client.get("/health")
@@ -51,7 +55,7 @@ class TestCORSSecurity:
                         break
                 except Exception as exc:
                     logging.debug("Health check retry while ADHD Engine boots: %s", exc)
-                await asyncio.sleep(0.25)
+                await asyncio.sleep(0.5)
 
             assert server_ready, "ADHD Engine server failed to start for CORS tests"
 
