@@ -8411,6 +8411,43 @@ def compute_comparison_resume_decision(
             return {"action": "RERUN", "reason": "invalid_comparison_artifact"}
     except (OSError, json.JSONDecodeError):
         return {"action": "RERUN", "reason": "unreadable_comparison_artifact"}
+
+    # Validate that the artifact matches the expected step/partition and, if present,
+    # provider/model metadata. If any of these fields are present but do not match,
+    # treat the artifact as stale/invalid and force a rerun.
+    artifact_step_id = payload.get("step_id")
+    if artifact_step_id is not None:
+        if not isinstance(artifact_step_id, str) or artifact_step_id != step_id:
+            return {
+                "action": "RERUN",
+                "reason": "comparison_artifact_step_mismatch",
+            }
+
+    artifact_partition_id = payload.get("partition_id")
+    if artifact_partition_id is not None:
+        if not isinstance(artifact_partition_id, str) or artifact_partition_id != partition_id:
+            return {
+                "action": "RERUN",
+                "reason": "comparison_artifact_partition_mismatch",
+            }
+
+    request_meta = payload.get("request_meta")
+    if isinstance(request_meta, dict):
+        artifact_provider = request_meta.get("provider")
+        if artifact_provider is not None:
+            if not isinstance(artifact_provider, str) or artifact_provider != provider:
+                return {
+                    "action": "RERUN",
+                    "reason": "comparison_artifact_provider_mismatch",
+                }
+        artifact_model_id = request_meta.get("model_id")
+        if artifact_model_id is not None:
+            if not isinstance(artifact_model_id, str) or artifact_model_id != model:
+                return {
+                    "action": "RERUN",
+                    "reason": "comparison_artifact_model_mismatch",
+                }
+
     return {"action": "SKIP", "reason": "valid_comparison_artifact"}
 
 
