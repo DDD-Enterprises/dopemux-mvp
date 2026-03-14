@@ -46,7 +46,6 @@ from .schema import (
     OverrideRecord,
     PRResult,
     PRState,
-    PRStateData,
     POLICY_SCHEMA_VERSION,
     PreflightCheck,
     PreflightResult,
