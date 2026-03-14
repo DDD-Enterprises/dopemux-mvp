@@ -1,0 +1,38 @@
+# Leantime Truth Pack — Search Patterns Used
+
+## Glob Patterns
+- app/Domain/*/Services/*.php
+- app/Domain/*/Models/*.php
+- app/Domain/*/Controllers/*.php
+- app/Domain/*/Hxcontrollers/*.php
+- app/Domain/*/Repositories/*.php
+- app/Domain/*/Htmx/*.php
+- app/Domain/*/register.php
+- app/Domain/*/routes.php
+- app/Domain/Api/Controllers/*.php
+- app/Command/*.php
+- app/Core/Events/*.php
+- app/Core/Auth/*.php
+- app/Core/Configuration/*.php
+- app/Core/Http/*.php
+- app/Core/Plugins/*.php
+- app/Core/UI/*.php
+- app/Views/**/*.php
+- database/**/*.php
+- config/*
+- .dev/*
+
+## Grep Patterns
+- "class.*Controller" in Api/Controllers
+- "php-mcp" in composer.json
+- "rpc|jsonrpc|method|dispatch" in Jsonrpc.php
+- "status" in Tickets/Repositories
+- "state" in Projects/Repositories
+- "role|permission" in Auth domain
+- "dispatch_event|dispatch_filter" across codebase
+- "zp_" table name prefix in repositories
+- "LEAN_*" in config/sample.env
+- "mcp" across codebase (excluding vendor/node_modules)
+- "canvasTypes" in canvas repositories
+- "kind" in Timesheets service
+- "CANVAS_NAME" in canvas controllers
