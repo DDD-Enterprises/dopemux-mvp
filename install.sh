@@ -1199,7 +1199,7 @@ EOF
     install_docker_services "$SELECTED_STACK"
     configure_shell_integration
     echo
-    
+
     # Verify
     verify_installation
     echo

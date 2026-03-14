@@ -163,6 +163,27 @@ repos:
         files: \.md$
         pass_filenames: true
 
+        name: Enforce docs placement hygiene (changed files)
+        entry: python scripts/check_docs_hygiene.py --check
+        language: system
+        files: ^docs/.*\.md$
+        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        pass_filenames: true
+
+      - id: docs-filename-hygiene
+        name: Enforce docs filename hygiene (kebab-case)
+        entry: python scripts/check_docs_filename_hygiene.py --check
+        language: system
+        files: ^docs/.*\.md$
+        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        pass_filenames: true
+
+      - id: docs-filename-hygiene
+        name: Enforce docs filename hygiene (kebab-case, full-tree)
+        entry: python scripts/check_docs_filename_hygiene.py --check --all-files
+        language: system
+        pass_filenames: false
+        always_run: true
       # Legacy UPGRADES tree is docs-only.
       - id: upgrades-docs-only-guard
         name: Reject executable/config code under UPGRADES (docs-only legacy tree)

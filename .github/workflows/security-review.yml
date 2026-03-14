@@ -29,6 +29,10 @@ jobs:
       - name: 🔐 ADHD-Optimized Security Review
         if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
+>>>>>>> ff5224187 (feat(tests): add dashboard logic tests and fix agent orchestrator cleanup)
+>>>>>>> 43ae27545 (🐛 Fix CI checkout failure by removing recursive submodule fetch)
+>>>>>>> fd992b140 (review-response: address thread suggestions (pr-merge/20260311_210757/PR-196))
+>>>>>>> 58eee13fc (review-response: address thread suggestions (pr-merge/20260311_210757/PR-196))
         with:
           comment-pr: true
           claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
