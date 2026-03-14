@@ -8531,9 +8531,11 @@ def run_comparison_lane(
                 "model_id": compare_model,
                 "comparison_of_step": step_id,
                 "elapsed_ms": elapsed_ms,
-                "final_contract_status": "pass",
-                "repair_invocations": 0,
-                "repair_successes": 0,
+                # Comparison lane does not run full canonical validation/repair pipeline;
+                # status/repair metrics are therefore non-authoritative.
+                "final_contract_status": "unknown",
+                "repair_invocations": None,
+                "repair_successes": None,
             }
             payload = {
                 "phase": phase,
