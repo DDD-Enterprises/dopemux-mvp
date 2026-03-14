@@ -1,0 +1,24 @@
+method,path,auth_required,side_effectful,backing_module,canonical_authority,classification,notes
+GET,/,False,False,routes.py,None,safe_read_only,Root info
+GET,/health,False,False,routes.py,Bridge/MCP,safe_read_only,Health check
+POST,/auth/token,False,True,auth.py,Bridge Auth,policy_wrapped,Login
+POST,/auth/refresh,True,True,auth.py,Bridge Auth,policy_wrapped,Token refresh
+POST,/events,True,True,event_bus.py,Redis Streams,policy_wrapped,Event publish
+GET,/events/stream,False,False,event_bus.py,Redis Streams,safe_read_only,SSE stream
+GET,/events/history,False,False,core.py,Redis,safe_read_only,History retrieval
+GET,/events/{stream:path},False,False,core.py,Redis,safe_read_only,Stream info
+POST,/events/tasks-imported,True,True,routes.py,Redis Streams,policy_wrapped,Convenience event
+POST,/events/session-started,True,True,routes.py,Redis Streams,policy_wrapped,Convenience event
+POST,/events/progress-updated,True,True,routes.py,Redis Streams,policy_wrapped,Convenience event
+POST,/tasks/parse-prd,False,False,routes.py,None,never_expose_directly,BLOCKED-FAIL_CLOSED
+GET,/tasks/next/{project_id},False,False,routes.py,None,never_expose_directly,BLOCKED-FAIL_CLOSED
+PATCH,/tasks/{task_id}/status,True,False,routes.py,None,never_expose_directly,BLOCKED-FAIL_CLOSED
+POST,/route/pm,True,True,mcp_client,Leantime Bridge,policy_wrapped,Authenticated PM proxy
+POST,/kg/custom_data,False,True,conport_client,ConPort,policy_wrapped,ConPort proxy
+GET,/kg/custom_data,False,False,conport_client,ConPort,safe_read_only,ConPort proxy
+POST,/kg/decisions,False,True,conport_client,ConPort,policy_wrapped,ConPort proxy
+GET,/kg/decisions,False,False,conport_client,ConPort,safe_read_only,ConPort proxy
+POST,/kg/progress,False,True,conport_client,ConPort,policy_wrapped,ConPort proxy
+GET,/kg/progress,False,False,conport_client,ConPort,safe_read_only,ConPort proxy
+GET,/ddg/decisions,False,False,conport_client,ConPort,safe_read_only,Compat proxy
+GET,/ddg/search,False,False,conport_client,ConPort,safe_read_only,Compat proxy
