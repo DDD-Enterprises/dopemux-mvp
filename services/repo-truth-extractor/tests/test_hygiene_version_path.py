@@ -25,13 +25,34 @@ hyg = _load_hyg()
 class TestVersionPathMismatch:
     """Version/path wiring must be detected and reported clearly."""
 
-    def test_check_version_path_detects_mismatch(self):
-        """check_version_path() returns a mismatch finding for the known v5→v3 wiring."""
+    def test_check_version_path_no_mismatch_after_fix(self):
+        """After fixing constants, v5 runner pointing to v5 path has NO mismatch."""
         finding = hyg.check_version_path(
             runner_path=Path("services/repo-truth-extractor/run_extraction_v5.py"),
             repo_root=Path("."),
         )
-        assert finding.has_mismatch
+        assert not finding.has_mismatch, (
+            f"Expected NO mismatch after constant rename. "
+            f"Runner: {finding.runner_version}, Output: {finding.output_path}"
+        )
+        assert finding.runner_version == "v5"
+        assert "v5" in finding.output_path
+        assert finding.severity == "ok"
+
+    def test_check_version_path_detects_legacy_v3_mismatch(self, tmp_path):
+        """Detects mismatch if runner still uses old V3_EXTRACTION_ROOT."""
+        # Simulate a v5 runner that still declares V3_EXTRACTION_ROOT (legacy)
+        runner = tmp_path / "services/repo-truth-extractor/run_extraction_v5.py"
+        runner.parent.mkdir(parents=True, exist_ok=True)
+        runner.write_text(
+            '#!/usr/bin/env python3\n'
+            'V3_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v3")\n'
+        )
+        finding = hyg.check_version_path(
+            runner_path=Path("services/repo-truth-extractor/run_extraction_v5.py"),
+            repo_root=tmp_path,
+        )
+        assert finding.has_mismatch, "Should detect v5 runner using v3 output path"
         assert finding.runner_version == "v5"
         assert "v3" in finding.output_path
         assert finding.severity in ("warn", "error")
@@ -49,16 +70,16 @@ class TestVersionPathMismatch:
     def test_scan_includes_version_path_issue(self, tmp_path):
         """run_scan() includes version_path_issues in its result."""
         (tmp_path / "services/repo-truth-extractor").mkdir(parents=True)
-        # Write a minimal runner that declares V3_EXTRACTION_ROOT
+        # Write a minimal runner that declares V5_EXTRACTION_ROOT (new convention)
         runner = tmp_path / "services/repo-truth-extractor/run_extraction_v5.py"
         runner.write_text(
             '#!/usr/bin/env python3\n'
-            'V3_EXTRACTION_ROOT = "extraction/repo-truth-extractor/v3"\n'
+            'V5_EXTRACTION_ROOT = "extraction/repo-truth-extractor/v5"\n'
         )
 
         result = hyg.run_scan(repo_root=tmp_path)
 
-        # Should have at least one version-path issue (warn or error)
+        # Should have a version-path finding (should be OK, no mismatch)
         assert isinstance(result.version_path_issues, list)
 
     def test_mismatch_finding_has_required_fields(self):
