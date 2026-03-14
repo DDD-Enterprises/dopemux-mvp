@@ -14728,7 +14728,7 @@ def main() -> None:
         "--compare-provider",
         type=str,
         default=None,
-        help="Provider slug for the comparison model (e.g. xai). Inferred from registry if omitted.",
+        help="Provider slug for the comparison model (e.g. xai). Defaults to 'xai' if omitted.",
     )
     parser.add_argument(
         "--compare-steps",
