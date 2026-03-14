@@ -52,7 +52,6 @@ artifacts:
   - id
   allow_empty_array_fields:
   - issues
-  - status
 - phase: A
   artifact_name: REPO_COMPOSE_SERVICE_GRAPH.json
   canonical_writer_step_id: A99
