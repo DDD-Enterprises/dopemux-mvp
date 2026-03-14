@@ -15,6 +15,10 @@ systems:
     integration: docs/02-how-to/mcp-service-discovery-guide.md
     comparison: docs/05-audit-reports/service-maturity-gap-analysis.md
     readme: docs/03-reference/systems/conport/conport-kg-status.md
+    surface_inventory: docs/systems/conport/callable-surface-inventory.md
+    surface_drift: docs/systems/conport/surface-equivalence-and-drift.md
+    preferred_surface: docs/systems/conport/preferred-canonical-surface.md
+    authority_invariants: docs/systems/conport/authority-invariants-and-dark-methods.md
   dashboard:
     overview: docs/03-reference/systems/dashboard/tmux-dashboard-readme.md
     design: docs/03-reference/systems/dashboard/tmux-dashboard-design.md
@@ -50,8 +54,11 @@ architecture:
   system_bible: docs/04-explanation/architecture/system-bible.md
   multi_instance: docs/04-explanation/architecture/multi-instance-implementation.md
   pipeline_readme: services/repo-truth-extractor/README.md
-  adr_index: docs/90-adr/
+  adr_index: docs/90-adr/adr-index.md
   rfc_index: docs/91-rfc/
+  pm_plane_hub: docs/planes/pm/hub-2.md
+  pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
+  pm_plane_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
 how_to:
   directory: docs/02-how-to/
   deployment: docs/02-how-to/deployment-guide.md
@@ -79,6 +86,9 @@ reference:
   features_index: docs/03-reference/features/features-index.md
   task_orchestrator_service: docs/03-reference/services/task-orchestrator.md
   mcp_tools_overview: docs/03-reference/mcp-tools-overview.md
+  pm_plane_write_matrix: docs/planes/pm/pm-plane-write-matrix.md
+  pm_plane_read_matrix: docs/planes/pm/pm-plane-read-matrix.md
+  pm_plane_write_surface_policy: docs/planes/pm/pm-plane-write-surface-policy.md
   mcp_token_management_best_practices: docs/03-reference/best-practices/mcp-token-management.md
   memory_capture_cli: docs/03-reference/memory-capture-cli.md
   repo_truth_extractor_pipeline_phases: docs/03-reference/extraction/pipeline-phases.md
@@ -94,6 +104,8 @@ explanation:
   dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md
   adhd_engine: docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md
   dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
+  pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
+  pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
 archive:
   completed_projects: docs/archive/completed-projects/
   session_notes: docs/archive/session-notes/

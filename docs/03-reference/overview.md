@@ -40,6 +40,10 @@ Detailed reference for Dopemux components.
 
 *To be organized: Component interfaces, metrics, events*
 
+### ConPort Surface Contracts
+- **[ConPort Callable Surface Inventory](../systems/conport/callable-surface-inventory.md)** - Active REST, JSON-RPC, and FastMCP surfaces
+- **[ConPort Surface Equivalence and Drift](../systems/conport/surface-equivalence-and-drift.md)** - Evidence-backed surface map and drift matrix
+
 ---
 
 ## Configuration
@@ -57,6 +61,11 @@ Configuration schemas and references.
 - **PR Docgen Sync Skill (Core Template)** - `templates/skills/pr-docgen-sync/`
 - **Gemini/Copilot/Claude Wrappers** - `templates/skills/pr-docgen-sync-*/`
 - **Skill Sync Script** - `scripts/skills/sync_repo_skills.py`
+
+### PM Plane Contracts
+- **[PM Plane Write Matrix](../planes/pm/pm-plane-write-matrix.md)** - Canonical mutation writers, prechecks, mirrors, and forbidden paths
+- **[PM Plane Read Matrix](../planes/pm/pm-plane-read-matrix.md)** - Canonical read sources, normalization, and provenance expectations
+- **[PM Plane Write Surface Policy](../planes/pm/pm-plane-write-surface-policy.md)** - Tool classification and raw-surface exposure policy
 
 ---
 
