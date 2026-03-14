@@ -69,9 +69,10 @@ async def log_decision(workspace_id: str, topic: str, decision: str, rationale: 
     payload = {
         "workspace_id": workspace_id,
         "summary": f"[{topic}] {decision}",
+        "topic": topic,
         "decision": decision,
         "rationale": rationale,
-        "tags": tags or []
+        "tags": tags or [],
     }
     url = f"{CONPORT_URL}/api/decisions"
     data = await _post_json(url, payload)
@@ -148,7 +149,7 @@ async def update_context(workspace_id: str, context_data: dict) -> str:
 
 
 @mcp.tool()
-async def log_progress(workspace_id: str, description: str, status: str = "PLANNED", priority: str = "medium", linked_decision_id: Optional[str] = None) -> str:
+async def log_progress(workspace_id: str, description: str, status: str = "IN_PROGRESS", priority: str = "medium", linked_decision_id: Optional[str] = None) -> str:
     """Log a new progress item or task in the workspace."""
     payload = {
         "workspace_id": workspace_id,
@@ -172,4 +173,3 @@ async def main():
 if __name__ == "__main__":
     # Ensure no extra print statements occur before JSON-RPC starts
     asyncio.run(main())
-
