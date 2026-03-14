@@ -10,6 +10,7 @@ OPTIONAL SURFACES (use when present):
 - Phase B: BOUNDARY_BYPASS_RISKS — bypass vectors with severity ratings
 - Phase E: EXEC_RISK_FACTS — execution-layer risk locations
 - Phase Q: QA_MISSING_ARTIFACTS — evidence gaps affecting risk ranking
+- Phase X: FEATURE_DEP_GRAPH, FEATURE_SURFACE — feature coupling and dependency risks
 
 TASK:
 Produce top-20 risk register.

@@ -9,6 +9,7 @@ HARD RULE: Reason from normalized A/H/D/C artifacts (required). If Phase W (work
 OPTIONAL SURFACES (use when present):
 - Phase W: WORKFLOW_CATALOG, WORKFLOW_IO_MAP, WORKFLOW_COORDINATION_SURFACE, WORKFLOW_FAILURE_RECOVERY, WORKFLOW_STATE_COUPLING — runbook steps, coordination, failure scenarios
 - Phase E: EXEC_STARTUP_GRAPH, EXEC_RUNTIME_MODES — startup sequences, runtime modes
+- Phase X: FEATURE_DEP_GRAPH, FEATURE_CODE_MAP — feature dependency chains affecting workflow topology
 
 TASK:
 Produce workflow truth graph.

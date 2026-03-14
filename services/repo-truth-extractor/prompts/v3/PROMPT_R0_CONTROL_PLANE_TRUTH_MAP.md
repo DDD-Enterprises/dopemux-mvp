@@ -9,6 +9,7 @@ HARD RULE: Reason from Phase A/H/D/C normalized artifacts (required). If Phase G
 OPTIONAL SURFACES (use when present):
 - Phase G: GOV_CI_GATES, GOV_POLICIES, GOV_SECRETS_SURFACE — governance authority, enforcement gates
 - Phase E: EXEC_BOOTSTRAP_COMMANDS, EXEC_ENV_CHAIN, EXEC_STARTUP_GRAPH — startup sequences, env precedence
+- Phase X: FEATURE_INDEX_MERGED, FEATURE_SURFACE, FEATURE_CODE_MAP — feature-to-code mapping, dependency graph
 
 TASK:
 Produce the repo/home control-plane truth map.

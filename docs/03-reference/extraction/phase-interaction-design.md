@@ -16,7 +16,7 @@ tags: [extraction, phases, arbitration, synthesis, model-routing]
 The v5 extraction pipeline runs 14 phases in this order:
 
 ```
-A → H → D → C → E → W → B → G → Q → R → X → T → Z → S
+A → H → D → C → E → W → B → G → X → Q → R → T → Z → S
 ```
 
 | Phase | Name | Category |
@@ -29,25 +29,25 @@ A → H → D → C → E → W → B → G → Q → R → X → T → Z → S
 | **W** | Workflow Plane | Independent extraction |
 | **B** | Boundary Plane | Independent extraction |
 | **G** | Governance Plane | Independent extraction |
-| **Q** | Quality Assurance | Aggregator (validates A–G) |
+| **X** | Feature Index | Independent extraction (direct repo scan) |
+| **Q** | Quality Assurance | Aggregator (validates A–G+X) |
 | **R** | Arbitration | Evidence arbitration |
-| **X** | Feature Index | Downstream (requires R) |
-| **T** | Task Packets | Downstream (requires R) |
+| **T** | Task Packets | Downstream (requires R+X) |
 | **Z** | Handoff / Freeze | Downstream (requires R) |
 | **S** | Synthesis | Final synthesis |
 
 ## Dependency Chain
 
 ```
-Independent extraction:  A  H  D  C  E  W  B  G
-                         │  │  │  │  │  │  │  │
-Quality gate:            └──┴──┴──┴──┴──┴──┴──┘→ Q
-                                                  │
-Arbitration:             A+H+D+C (required) ──→ R ← B+E+G+W+Q (optional)
-                                                  │
-Downstream:              R → X → T → Z
-                         │       │   │
-Synthesis:               R ──────┴───┘──→ S (X/T/Z optional)
+Independent extraction:  A  H  D  C  E  W  B  G  X
+                         │  │  │  │  │  │  │  │  │
+Quality gate:            └──┴──┴──┴──┴──┴──┴──┴──┘→ Q
+                                                     │
+Arbitration:             A+H+D+C (required) ──→ R ← B+E+G+W+Q+X (optional)
+                                                     │
+Downstream:              R+X → T → Z
+                         │         │
+Synthesis:               R ────────┘──→ S (X/T/Z optional)
 ```
 
 ### R Phase Dependencies
@@ -55,7 +55,7 @@ Synthesis:               R ──────┴───┘──→ S (X/T/Z o
 | Dependency Type | Phases | Behavior |
 |----------------|--------|----------|
 | **Required** | A, H, D, C | R will not start without norm outputs from all four |
-| **Optional** | B, E, G, W, Q | Collected when norm outputs exist; logged and skipped when absent |
+| **Optional** | B, E, G, W, Q, X | Collected when norm outputs exist; logged and skipped when absent |
 
 ### S Phase Dependencies
 
@@ -64,7 +64,7 @@ Synthesis:               R ──────┴───┘──→ S (X/T/Z o
 | **Required** | R | S will not start without R norm outputs |
 | **Optional** | X, T, Z | Included when available; S still produces valid output without them |
 
-## Optional Input Wiring: What B/E/G/W/Q Contribute to R
+## Optional Input Wiring: What B/E/G/W/Q/X Contribute to R
 
 | Phase | Key Artifacts | R Steps Enriched | Evidence Gained |
 |-------|--------------|------------------|-----------------|
@@ -73,17 +73,18 @@ Synthesis:               R ──────┴───┘──→ S (X/T/Z o
 | **G** (Governance) | GOV_CI_GATES, GOV_POLICIES, GOV_SECRETS_SURFACE | R0, R6, R7 | Gate criteria, policy scope, enforcement tools, secret patterns |
 | **W** (Workflow) | WORKFLOW_CATALOG, WORKFLOW_IO_MAP, WORKFLOW_COORDINATION_SURFACE, WORKFLOW_FAILURE_RECOVERY, WORKFLOW_STATE_COUPLING | R5, R6 | Runbook steps, service interactions, failure scenarios, state deps |
 | **Q** (QA) | QA_MISSING_ARTIFACTS, QA_NORM_DRIFT_REPORT, PIPELINE_DOCTOR_REPORT | R7, R8 | Pipeline health, missing evidence gaps, drift between runs |
+| **X** (Feature Index) | FEATURE_INDEX_MERGED, FEATURE_SURFACE, FEATURE_CODE_MAP, FEATURE_DEP_GRAPH | R0, R5, R8 | Feature-to-code mapping, dependency chains, coupling risks |
 
 ### R Step ↔ Optional Phase Mapping
 
 | R Step | Name | Optional Inputs | What They Add |
 |--------|------|----------------|---------------|
-| R0 | Control Plane Truth Map | G, E | Governance authority, execution startup sequences |
+| R0 | Control Plane Truth Map | G, E, X | Governance authority, execution startup sequences, feature-to-code map |
 | R3 | Trinity Boundary Enforcement | B | Boundary enforcement points, refusal rails |
-| R5 | Workflows Truth Graph | W, E | Workflow catalog, execution graph |
+| R5 | Workflows Truth Graph | W, E, X | Workflow catalog, execution graph, feature dependency chains |
 | R6 | Portability Risk Ledger | G, W | Governance scope, state coupling |
 | R7 | Conflict Ledger | Q, G | Pipeline health alerts, governance authority |
-| R8 | Risk Register Top 20 | B, E, Q | Bypass risks, execution risks, evidence gaps |
+| R8 | Risk Register Top 20 | B, E, Q, X | Bypass risks, execution risks, evidence gaps, feature coupling |
 | R10 | Two Plane Architecture | B, G | Boundary truth, governance enforcement |
 
 ### Why B/E/G/W/Q Do NOT Feed S
@@ -147,7 +148,7 @@ This shows:
 
 ```python
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
-R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q"]
+R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q", "X"]
 ```
 
 ### Optional Collection Logic
@@ -171,3 +172,32 @@ as supplemental evidence using the same citation discipline.
 OPTIONAL SURFACES (use when present):
 - Phase X: ARTIFACT_1, ARTIFACT_2 — description
 ```
+
+## Phase Input Surfaces
+
+Each independent phase scans specific repo directories. These targets are
+expanded to cover all relevant input surfaces.
+
+| Phase | Scan Targets |
+|-------|-------------|
+| **A** | 30+ root files and directories (comprehensive) |
+| **H** | HOME_SAFE_ROOTS with safety filter (prescan) |
+| **D** | `docs/` |
+| **C** | `src, services, shared, plugins, tools, scripts, tests, docker/mcp-servers-source, docker/mcp-servers, components` |
+| **E** | `scripts, tools, compose, .github, Makefile, package.json, docker, installers, install.sh, ops` |
+| **W** | `docs, scripts, src, services, Makefile, compose.yml, docker, config` |
+| **B** | `src, services, docs, contracts, config, .claude` |
+| **G** | `.github, docs, .claude, AGENTS.md, pyproject.toml, .pre-commit-config.yaml, config/repo_hygiene, pytest.ini, Makefile, contracts` |
+| **X** | `services, src, docs, config, scripts, Makefile, docker, compose.yml` (direct repo scan) |
+| **Q** | Aggregates raw/norm/qa from A–G+X (meta-phase) |
+| **T** | R/norm + X/norm + `AGENTS.md` + `.claude/PROJECT_INSTRUCTIONS.md` |
+
+### Design Notes
+
+- **Phase X** does a direct repo scan (not R artifacts) because X0–X4 prompt
+  contracts expect to build a feature index from source code and config, not
+  from arbitration outputs. X runs before Q and R so feature data flows into
+  both quality checks and arbitration.
+- **Phase T** includes governance context files (`AGENTS.md`,
+  `.claude/PROJECT_INSTRUCTIONS.md`) because the T0 prompt contract requires
+  repo governance constraints for task packet prioritisation.
