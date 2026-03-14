@@ -7,12 +7,18 @@ author: '@hu3mann'
 date: '2026-03-11'
 last_review: '2026-03-11'
 next_review: '2026-06-09'
-prelude: Establish ConPort as canonical for decisions, progress, and structured durable context.
+prelude: ConPort is the canonical source for decisions, progress, and durable structured project context across the PM plane.
 status: proposed
 graph_metadata:
   node_type: ADR
   impact: high
-  relates_to: []
+  relates_to:
+    - adr-pm-plane-authority-boundaries
+    - adr-dopecon-bridge-narrowing-to-adapter-only-role
+    - adr-dope-memory-as-chronicle-memory-authority
+    - adr-memory-trinity-authority-and-interaction-model
+    - adr-serena-as-technical-context-plane
+    - adr-dope-context-as-search-and-retrieval-plane
 ---
 
 # ADR: ConPort as decision, progress, and context authority
@@ -45,7 +51,7 @@ At the same time, the extraction also showed important problems:
 - `dope-memory` stores memory *about* decisions and progress, but should not be the decision authority
 - `conport-kg` is architecturally relevant but not runtime-ready enough to be canonical
 
-Without a formal decision, the system risks letting "context" and "decision" semantics leak across multiple stores.
+Without a formal decision, the system risks letting “context” and “decision” semantics leak across multiple stores.
 
 ## Decision
 
@@ -173,7 +179,7 @@ Until that standardization is complete:
 
 ### Immediate policy
 
-For now, ConPort remains canonical **despite** callable surface drift.
+For now, ConPort remains canonical **despite** callable surface drift.  
 But hardening and standardization are required follow-up work.
 
 ## Normalization rule
@@ -222,7 +228,7 @@ This decision is necessary because the current stack already contains overlap pr
 - dope-memory stores chronicle events referencing decisions
 - conport-kg models graph representations of context and decision-like objects
 
-Without a formal boundary, each layer can slowly grow its own "decision" model until reconciliation becomes impossible.
+Without a formal boundary, each layer can slowly grow its own “decision” model until reconciliation becomes impossible.
 
 ConPort is the best place to anchor canonical decision/progress/context truth because:
 
@@ -245,7 +251,7 @@ Rejected because dope-memory is strongest as chronicle memory, not as canonical 
 
 Rejected because it is not runtime-ready and would create another authority collision.
 
-### 4. Keep ConPort as "intended" canonical without a formal decision
+### 4. Keep ConPort as “intended” canonical without a formal decision
 
 Rejected because that is how systems drift into accidental plural authorities.
 
