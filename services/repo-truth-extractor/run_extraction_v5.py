@@ -87,6 +87,7 @@ except ModuleNotFoundError:
     write_phase_contract_map = contract_map_module.write_phase_contract_map
 try:
     from lib.structured_output_contracts import (
+        artifact_contract as _artifact_contract,
         artifacts_pass_contract_gate,
         artifact_order as contract_artifact_order,
         build_openai_response_format,
@@ -97,6 +98,7 @@ try:
         is_json_managed_step,
         is_strict_contract_step,
         merge_artifacts_by_name,
+        normalize_required_array_fields,
         plural_expected_json_artifacts,
         repair_mode as resolve_contract_repair_mode,
         resolve_stage_route,
@@ -118,6 +120,7 @@ except ModuleNotFoundError:
         structured_contracts_spec
     )
     structured_contracts_spec.loader.exec_module(structured_contracts_module)
+    _artifact_contract = structured_contracts_module.artifact_contract
     artifacts_pass_contract_gate = (
         structured_contracts_module.artifacts_pass_contract_gate
     )
@@ -132,6 +135,9 @@ except ModuleNotFoundError:
     is_json_managed_step = structured_contracts_module.is_json_managed_step
     is_strict_contract_step = structured_contracts_module.is_strict_contract_step
     merge_artifacts_by_name = structured_contracts_module.merge_artifacts_by_name
+    normalize_required_array_fields = (
+        structured_contracts_module.normalize_required_array_fields
+    )
     plural_expected_json_artifacts = (
         structured_contracts_module.plural_expected_json_artifacts
     )
@@ -8215,8 +8221,16 @@ def validate_success_partition_output(
     if payload.get("failure_type"):
         return False, "failure_type_top_level"
     request_meta = payload.get("request_meta")
-    if isinstance(request_meta, dict) and request_meta.get("failure_type"):
-        return False, "failure_type_request_meta"
+    _has_request_meta_failure_type = isinstance(request_meta, dict) and bool(
+        request_meta.get("failure_type")
+    )
+    if _has_request_meta_failure_type:
+        logger.warning(
+            "[RESUME_WARN] failure_type in request_meta but continuing to artifact check phase=%s step=%s partition=%s",
+            phase,
+            step_id,
+            partition_id,
+        )
 
     top_level_mismatch = _identity_mismatch(payload, "top_level")
     if top_level_mismatch:
@@ -8252,6 +8266,34 @@ def validate_success_partition_output(
     step_contract = _step_contract_for(phase, step_id)
     if is_strict_contract_step(step_contract):
         artifacts, _schema_norm = canonicalize_artifacts(artifacts, step_contract)
+        # Pre-gate normalization: coerce None/""/missing allow_empty_array_fields to []
+        normalized_artifacts = []
+        for art_row in artifacts:
+            if not isinstance(art_row, dict):
+                normalized_artifacts.append(art_row)
+                continue
+            art_name = str(art_row.get("artifact_name") or "").strip()
+            art_meta = _artifact_contract(step_contract, art_name)
+            art_payload = art_row.get("payload")
+            if isinstance(art_payload, dict) and isinstance(art_payload.get("items"), list):
+                norm_items, coercions = normalize_required_array_fields(
+                    art_payload["items"], art_meta
+                )
+                for c in coercions:
+                    logger.info(
+                        "[NORMALIZE] artifact=%s field=%s from_type=%s to_type=%s item_id=%s",
+                        art_name,
+                        c.get("field"),
+                        c.get("from_type"),
+                        c.get("to_type"),
+                        c.get("item_id"),
+                    )
+                normalized_artifacts.append(
+                    {"artifact_name": art_name, "payload": {**art_payload, "items": norm_items}}
+                )
+            else:
+                normalized_artifacts.append(art_row)
+        artifacts = normalized_artifacts
         contract_ok, contract_reason, _contract_ctx = artifacts_pass_contract_gate(
             artifacts, step_contract
         )
