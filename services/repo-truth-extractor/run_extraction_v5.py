@@ -277,10 +277,10 @@ LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
     "R2_synthesis": "R_arbitration",
 }
 EXTRACTOR_SERVICE_DIR = RUNNER_SERVICE_DIR
-V3_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v3")
-V3_RUNS_ROOT = V3_EXTRACTION_ROOT / "runs"
-V3_LATEST_RUN_FILE = V3_EXTRACTION_ROOT / "latest_run_id.txt"
-V3_DOCTOR_ROOT = V3_EXTRACTION_ROOT / "doctor"
+V5_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v5")
+V5_RUNS_ROOT = V5_EXTRACTION_ROOT / "runs"
+V5_LATEST_RUN_FILE = V5_EXTRACTION_ROOT / "latest_run_id.txt"
+V5_DOCTOR_ROOT = V5_EXTRACTION_ROOT / "doctor"
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
@@ -1167,6 +1167,9 @@ class UI:
             self._console = Console(force_terminal=(requested == "rich"))
             self._rich = True
 
+        import threading as _threading
+        self._active_partitions: Dict[str, Dict[str, Any]] = {}
+        self._partitions_lock = _threading.Lock()
         self._timeline_path: Path = (
             run_root / TELEMETRY_DIRNAME / TERMINAL_TIMELINE_FILENAME
         )
@@ -1213,6 +1216,114 @@ class UI:
         filled = int(round(ratio * width))
         bar = "#" * filled + "." * (width - filled)
         return f"[{bar}] {ratio * 100.0:5.1f}%"
+
+    def _provider_color(self, provider: str) -> str:
+        """Return Rich color for a provider name."""
+        mapping = {
+            "openai": "bold green",
+            "anthropic": "bold magenta",
+            "gemini": "bold blue",
+            "xai": "bold yellow",
+            "openrouter": "bold cyan",
+            "mistral": "bold orange3",
+        }
+        return mapping.get(str(provider).lower(), "bold white")
+
+    def partition_start_event(
+        self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        provider: str,
+        model_id: str,
+    ) -> None:
+        """Record that a partition has started LLM execution on a specific provider/model."""
+        import time as _time
+        entry = {
+            "phase": phase,
+            "step_id": step_id,
+            "provider": provider,
+            "model_id": model_id,
+            "start_ts": _time.monotonic(),
+            "attempt": 1,
+            "status": "running",
+        }
+        with self._partitions_lock:
+            self._active_partitions[partition_id] = entry
+        self._emit_event({
+            "type": "partition_start",
+            "phase": phase,
+            "step": step_id,
+            "partition_id": partition_id,
+            "provider": provider,
+            "model_id": model_id,
+        })
+        if self.cfg.quiet:
+            return
+        color = self._provider_color(provider)
+        if self._rich and self._console is not None:
+            self._console.print(
+                f"  [{color}]▶ {phase}:{step_id} {partition_id}[/{color}]"
+                f" [dim]→ {provider}/{model_id}[/dim]"
+            )
+        else:
+            self._print_plain(
+                f"PARTITION_START phase={phase} step={step_id} partition={partition_id} "
+                f"provider={provider} model={model_id}"
+            )
+
+    def retry_event(
+        self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        attempt: int,
+        max_attempts: int,
+        provider: str,
+        model_id: str,
+        status_code: Optional[int],
+        failure_type: Optional[str],
+        delay_seconds: float,
+    ) -> None:
+        """Show a live retry notification for a partition."""
+        with self._partitions_lock:
+            entry = self._active_partitions.get(partition_id)
+            if entry:
+                entry["attempt"] = attempt
+                entry["status"] = "retry"
+        self._emit_event({
+            "type": "partition_retry",
+            "phase": phase,
+            "step": step_id,
+            "partition_id": partition_id,
+            "attempt": attempt,
+            "max_attempts": max_attempts,
+            "provider": provider,
+            "model_id": model_id,
+            "status_code": status_code,
+            "failure_type": failure_type,
+            "delay_seconds": delay_seconds,
+        })
+        if self.cfg.quiet:
+            return
+        status_str = str(status_code) if status_code else "-"
+        failure_str = str(failure_type or "-")
+        if self._rich and self._console is not None:
+            self._console.print(
+                f"  [bold orange3]⟳ RETRY[/bold orange3] "
+                f"[dim]{phase}:{step_id} {partition_id}[/dim] "
+                f"attempt=[bold yellow]{attempt}/{max_attempts}[/bold yellow] "
+                f"[{self._provider_color(provider)}]{provider}/{model_id}[/{self._provider_color(provider)}] "
+                f"status=[bold red]{status_str}[/bold red] "
+                f"reason=[italic red]{failure_str}[/italic red] "
+                f"wait=[bold]{delay_seconds:.1f}s[/bold]"
+            )
+        else:
+            self._print_plain(
+                f"PARTITION_RETRY phase={phase} step={step_id} partition={partition_id} "
+                f"attempt={attempt}/{max_attempts} provider={provider} model={model_id} "
+                f"status_code={status_str} failure_type={failure_str} delay={delay_seconds:.1f}s"
+            )
 
     def step_progress_stop(self) -> None:
         if self._progress is not None:
@@ -1419,8 +1530,12 @@ class UI:
             return
         if self._rich and self._console is not None:
             self._console.print(
-                f"[bold yellow]ESCALATE[/bold yellow] phase={phase} step={step_id} partition={partition_id} "
-                f"reason={reason} from={from_route} to={to_route} hop={hop}"
+                f"  [bold yellow]🔀 ESCALATE[/bold yellow] "
+                f"[dim]{phase}:{step_id} {partition_id}[/dim] "
+                f"hop=[bold]{hop}[/bold] "
+                f"[bold red]{from_route}[/bold red] [bold]→[/bold] "
+                f"[bold cyan]{to_route}[/bold cyan] "
+                f"reason=[italic yellow]{reason}[/italic yellow]"
             )
             return
         self._summary_line(
@@ -1564,6 +1679,7 @@ class UI:
         item_key: Optional[str] = None,
         item_id: Optional[str] = None,
         item_path: Optional[str] = None,
+        retry_trace: Optional[List[Dict[str, Any]]] = None,
         mode: str = "full",
     ) -> None:
         event_payload = {
@@ -1578,6 +1694,7 @@ class UI:
             "item_key": str(item_key or "").strip() or None,
             "item_id": str(item_id or "").strip() or None,
             "item_path": str(item_path or "").strip() or None,
+            "retry_trace": retry_trace or [],
             "mode": str(mode or "full").strip().lower(),
         }
         self._emit_event(event_payload)
@@ -1590,6 +1707,20 @@ class UI:
         if self._rich and self._console is not None:
             style = "bold red" if event_payload["mode"] == "full" else "red"
             self._console.print(f"[{style}]{line}[/{style}]")
+            # If retry trace is available on the event payload, dump it
+            retry_trace = event_payload.get("retry_trace")
+            if isinstance(retry_trace, list) and len(retry_trace) > 1:
+                self._console.print(
+                    f"    [dim]retry trace ({len(retry_trace)} attempts):[/dim]"
+                )
+                for i, tr in enumerate(retry_trace, start=1):
+                    sc = tr.get("status_code", "-")
+                    ft = tr.get("failure_type", "-")
+                    ds = tr.get("delay_seconds")
+                    delay_str = f" → wait {ds:.1f}s" if ds is not None else ""
+                    self._console.print(
+                        f"    [dim]  [{i}] status={sc} type=[italic red]{ft}[/italic red]{delay_str}[/dim]"
+                    )
             return
         self._summary_line(line)
 
@@ -1976,7 +2107,7 @@ def _phase_input_stat(path: Path) -> Dict[str, Any]:
 
 def load_run_id(root: Path) -> Optional[str]:
     """Load latest run_id from file; return None if unavailable."""
-    id_file = root / V3_LATEST_RUN_FILE
+    id_file = root / V5_LATEST_RUN_FILE
     if not id_file.exists():
         return None
     run_id = id_file.read_text(encoding="utf-8").strip()
@@ -1988,7 +2119,7 @@ def load_run_id(root: Path) -> Optional[str]:
 def _validate_existing_run_dir(
     root: Path, run_id: str, allow_create_if_missing: bool = False
 ) -> None:
-    candidate = root / V3_RUNS_ROOT / run_id
+    candidate = root / V5_RUNS_ROOT / run_id
     if not candidate.exists():
         if allow_create_if_missing:
             candidate.mkdir(parents=True, exist_ok=True)
@@ -2000,7 +2131,7 @@ def _validate_existing_run_dir(
 
 def _generate_run_id(root: Path) -> str:
     base = datetime.now(timezone.utc).strftime("run_%Y%m%dT%H%M%SZ")
-    runs_root = root / V3_RUNS_ROOT
+    runs_root = root / V5_RUNS_ROOT
     runs_root.mkdir(parents=True, exist_ok=True)
 
     candidate = runs_root / base
@@ -2013,7 +2144,7 @@ def _generate_run_id(root: Path) -> str:
 
 
 def latest_run_id_path(root: Path) -> Path:
-    return root / V3_LATEST_RUN_FILE
+    return root / V5_LATEST_RUN_FILE
 
 
 def persist_latest_run_id(root: Path, run_id: str) -> None:
@@ -2039,7 +2170,7 @@ def resolve_run_context(
     else:
         latest = load_run_id(root)
         if latest:
-            latest_dir = root / V3_RUNS_ROOT / latest
+            latest_dir = root / V5_RUNS_ROOT / latest
             if latest_dir.exists() and latest_dir.is_dir():
                 run_id = latest
                 run_id_source = "latest_run_id"
@@ -2068,7 +2199,7 @@ def resolve_run_context(
 
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     """Return dict of run paths and ensure required folders exist."""
-    base = root / V3_RUNS_ROOT / run_id
+    base = root / V5_RUNS_ROOT / run_id
     if not base.exists():
         raise FileNotFoundError(f"Run directory {base} does not exist.")
     for legacy_name, canonical_name in LEGACY_PHASE_DIR_ALIASES.items():
@@ -3950,7 +4081,7 @@ def write_run_manifest(
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V3_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
                 "generated(new timestamp run id)",
             ],
             "no_write_latest": args.no_write_latest,
@@ -5078,7 +5209,7 @@ def run_provider_preflight(
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "batch_capability": batch_capability,
     }
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
     return (not failures), payload
@@ -5106,7 +5237,7 @@ def prepare_phase_provider_preflight(
         {str(provider) for provider in payload.get("failed_providers", []) if provider}
     )
     payload["denylisted_providers"] = list(denylisted)
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
     if not ok:
@@ -5355,7 +5486,7 @@ def run_doctor_full(
         },
     }
 
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "DOCTOR_FULL.json", payload)
     print(json.dumps(payload, indent=2))
@@ -6408,6 +6539,7 @@ def call_llm(
     force_json_output: bool = False,
     response_format_override: Optional[Dict[str, Any]] = None,
     structured_output_override: Optional[Dict[str, Any]] = None,
+    retry_callback: Optional[Callable] = None,
 ) -> Dict[str, Any]:
     if _live_llm_calls_blocked_for_tests():
         message = (
@@ -6820,6 +6952,11 @@ def call_llm(
             )
             retry_trace[-1]["delay_seconds"] = delay_seconds
             total_retry_delay += delay_seconds
+            if retry_callback is not None:
+                try:
+                    retry_callback(attempt + 1, status_code, failure_type, delay_seconds)
+                except Exception:
+                    pass
             if delay_seconds > 0:
                 time.sleep(delay_seconds)
     logger.error(
@@ -7259,7 +7396,7 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         f"succeeded_modes={','.join(succeeded_modes) if succeeded_modes else '-'} "
         f"failed_modes={','.join(failed_modes) if failed_modes else '-'}"
     )
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     doctor_json = doctor_dir / "AUTH_DOCTOR.json"
     doctor_txt = doctor_dir / "AUTH_DOCTOR.txt"
@@ -10699,6 +10836,21 @@ def execute_step_for_partitions(
                         if strict_contract_required
                         else None
                     ),
+                    retry_callback=(
+                        (lambda att, sc, ft, ds: ui.retry_event(
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            attempt=att,
+                            max_attempts=cfg.retry_max_attempts,
+                            provider=route_provider,
+                            model_id=route_model_id,
+                            status_code=sc,
+                            failure_type=ft,
+                            delay_seconds=ds,
+                        ))
+                        if ui is not None else None
+                    ),
                 )
                 response_text_local = str(llm_result.get("text", ""))
                 request_meta_local = enrich_request_meta(
@@ -13166,7 +13318,7 @@ def print_config(
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V3_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
                 "generated(new timestamp run id)",
             ],
             "dry_run": args.dry_run,
@@ -13288,7 +13440,7 @@ def update_proof_pack(
     }
     proof["finished_at"] = phase_finished_at
     proof["updated_at"] = now_iso()
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     auth_doctor = doctor_dir / "AUTH_DOCTOR.json"
     full_doctor = doctor_dir / "DOCTOR_FULL.json"
     routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
@@ -15825,7 +15977,7 @@ def main() -> None:
         if not ok:
             logger.error(
                 "Provider preflight failed before phase ALL. failed_providers=%s. See "
-                f"{(V3_DOCTOR_ROOT / 'PROVIDER_PREFLIGHT.json').as_posix()}",
+                f"{(V5_DOCTOR_ROOT / 'PROVIDER_PREFLIGHT.json').as_posix()}",
                 ",".join(payload.get("failed_providers", [])),
             )
             sys.exit(1)
