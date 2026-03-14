@@ -260,6 +260,7 @@ def classify_authority(rel_path: str) -> str:
 # ---------------------------------------------------------------------------
 
 _VERSION_RE = re.compile(r"run_extraction_v(\d+)\.py$")
+_V5_CONST_RE = re.compile(r'V5_EXTRACTION_ROOT\s*=\s*(?:Path\()?["\']([^"\']+)["\']')
 _V3_CONST_RE = re.compile(r'V3_EXTRACTION_ROOT\s*=\s*(?:Path\()?["\']([^"\']+)["\']')
 
 
@@ -292,7 +293,10 @@ def check_version_path(
                     pass
 
         if content is not None:
-            cm = _V3_CONST_RE.search(content)
+            # Try V5 first (new convention), then V3 (legacy)
+            cm = _V5_CONST_RE.search(content)
+            if cm is None:
+                cm = _V3_CONST_RE.search(content)
             output_path = cm.group(1) if cm else "unknown"
         else:
             # Cannot find runner — infer as matching (no mismatch to report)
