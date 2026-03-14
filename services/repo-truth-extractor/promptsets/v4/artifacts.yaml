@@ -932,7 +932,6 @@ artifacts:
   - id
   allow_empty_array_fields:
   - issues
-  - status
 - phase: H
   artifact_name: HOME_INVENTORY.json
   canonical_writer_step_id: H0
