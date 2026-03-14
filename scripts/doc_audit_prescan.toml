@@ -1,0 +1,46 @@
+[corpus]
+max_file_size = "100KB"
+max_corpus_size = "50MB"
+
+# Additional exclude globs (on top of hardcoded excludes)
+exclude_globs = [
+    "extraction/repo-truth-extractor/*/runs/**",
+    "extraction/runs/**",
+    "extraction/**/doctor/**",
+    "*.pyc",
+    "*.pyo",
+    "htmlcov/**",
+    "out/**",
+    "tmp/**",
+    "vendor/**",
+    ".dopemux/**",
+    ".taskx/**",
+    ".dopetask/**",
+    "session_data/**",
+    "context_snapshots/**",
+    "context_portal/**",
+    ".claude/session-*",
+    ".claude/SESSION_STATE_*",
+]
+
+# Additional include globs (empty = use defaults)
+include_globs = []
+
+[corpus.large_json_threshold]
+# JSON files above this size are auto-excluded as "large generated blobs"
+max_bytes = 512000  # 500KB
+
+[model]
+default = "grok-4.20-beta-0309-non-reasoning"
+provider = "xai"
+base_url = "https://api.x.ai/v1"
+api_key_env = "XAI_API_KEY"
+temperature = 0.1
+max_response_tokens = 200000
+
+[model.litellm_fallback]
+model_name = "xai/grok-4.20-beta-0309-non-reasoning"
+proxy_url = "http://localhost:4000"
+
+[output]
+default_dir = "extraction/prescan"
