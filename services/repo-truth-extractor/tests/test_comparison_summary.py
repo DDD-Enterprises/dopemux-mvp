@@ -261,6 +261,9 @@ def test_comparison_summary_records_route_info(tmp_path: Path) -> None:
     assert isinstance(comparison_route, dict), "comparison_route must be a dict"
 
     # comparison_route must identify grok
-    assert comparison_route.get("provider") == "xai" or comparison_route.get("model_id") == "grok-4.20-beta", (
+    assert (
+        comparison_route.get("provider") == "xai"
+        and comparison_route.get("model_id") == "grok-4.20-beta"
+    ), (
         f"comparison_route must identify xai/grok-4.20-beta; got {comparison_route}"
     )
