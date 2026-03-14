@@ -1110,10 +1110,14 @@ def _display_scan_results(scan, console) -> None:
     # Resume hazards
     if scan.resume_state_issues:
         tbl = Table(title="⚠️  Resume-State Hazards", box=rbox.SIMPLE, border_style="red")
-        tbl.add_column("Run dir", style="dim")
-        tbl.add_column("Issue", style="red")
-        for ri in scan.resume_state_issues[:15]:
-            tbl.add_row(ri.run_dir, ri.issue_type)
+        tbl.add_column("Severity", style="bold red")
+        tbl.add_column("Type", style="red")
+        tbl.add_column("Path", style="dim")
+        shown = scan.resume_state_issues[:15]
+        for ri in shown:
+            tbl.add_row(ri.severity, ri.issue_type, str(ri.path))
+        if len(scan.resume_state_issues) > 15:
+            tbl.add_row("", f"… and {len(scan.resume_state_issues) - 15} more", "")
         console.print(tbl)
 
     # Authority summary
