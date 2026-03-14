@@ -1,0 +1,671 @@
+{
+  "_meta": {
+    "repository": "https://github.com/jpicklyk/task-orchestrator",
+    "ref": "99023a9740e3ea310c31c5e80991670aa010fb2f",
+    "version": "2.2.0",
+    "registrationSurface": "CurrentMcpServer.kt:89-108",
+    "totalTools": 13,
+    "extractedFromCode": true
+  },
+  "tools": [
+    {
+      "name": "manage_items",
+      "category": "ITEM_MANAGEMENT",
+      "operations": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "operation"
+        ],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "create",
+              "update",
+              "delete"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "description": "Array of item objects for create/update"
+          },
+          "ids": {
+            "type": "array",
+            "description": "Array of item UUIDs for delete"
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Recursively delete descendants"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Shared default parent ID for create"
+          },
+          "requiresVerification": {
+            "type": "boolean"
+          }
+        }
+      },
+      "source": "items/ManageItemsTool.kt"
+    },
+    {
+      "name": "query_items",
+      "category": "ITEM_MANAGEMENT",
+      "operations": [
+        "get",
+        "search",
+        "overview"
+      ],
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "operation"
+        ],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "get",
+              "search",
+              "overview"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "Item UUID (required for get)"
+          },
+          "itemId": {
+            "type": "string",
+            "description": "Item UUID for scoped overview"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Filter by parent ID"
+          },
+          "depth": {
+            "type": "integer"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "queue",
+              "work",
+              "review",
+              "blocked",
+              "terminal"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags (OR logic)"
+          },
+          "query": {
+            "type": "string",
+            "description": "Text search in title and summary"
+          },
+          "createdAfter": {
+            "type": "string",
+            "format": "iso8601"
+          },
+          "createdBefore": {
+            "type": "string",
+            "format": "iso8601"
+          },
+          "modifiedAfter": {
+            "type": "string",
+            "format": "iso8601"
+          },
+          "modifiedBefore": {
+            "type": "string",
+            "format": "iso8601"
+          },
+          "roleChangedAfter": {
+            "type": "string",
+            "format": "iso8601"
+          },
+          "roleChangedBefore": {
+            "type": "string",
+            "format": "iso8601"
+          },
+          "sortBy": {
+            "type": "string",
+            "enum": [
+              "title",
+              "priority",
+              "complexity",
+              "createdAt",
+              "modifiedAt"
+            ]
+          },
+          "sortOrder": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0
+          },
+          "includeAncestors": {
+            "type": "boolean",
+            "default": false
+          },
+          "includeChildren": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "source": "items/QueryItemsTool.kt"
+    },
+    {
+      "name": "manage_notes",
+      "category": "NOTE_MANAGEMENT",
+      "operations": [
+        "upsert",
+        "delete"
+      ],
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "operation"
+        ],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "upsert",
+              "delete"
+            ]
+          },
+          "notes": {
+            "type": "array",
+            "description": "Array of note objects: {itemId, key, role, body?}"
+          },
+          "ids": {
+            "type": "array",
+            "description": "Array of note UUIDs for delete"
+          },
+          "itemId": {
+            "type": "string",
+            "description": "WorkItem UUID — delete all notes for this item"
+          },
+          "key": {
+            "type": "string",
+            "description": "Note key — with itemId, delete specific note"
+          }
+        }
+      },
+      "source": "notes/ManageNotesTool.kt"
+    },
+    {
+      "name": "query_notes",
+      "category": "NOTE_MANAGEMENT",
+      "operations": [
+        "get",
+        "list"
+      ],
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "operation"
+        ],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "get",
+              "list"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "Note UUID (required for get)"
+          },
+          "itemId": {
+            "type": "string",
+            "description": "WorkItem UUID (required for list)"
+          },
+          "role": {
+            "type": "string",
+            "description": "Filter by note role"
+          },
+          "includeBody": {
+            "type": "boolean",
+            "default": true,
+            "description": "When false, omit body for token efficiency"
+          }
+        }
+      },
+      "source": "notes/QueryNotesTool.kt"
+    },
+    {
+      "name": "manage_dependencies",
+      "category": "DEPENDENCY_MANAGEMENT",
+      "operations": [
+        "create",
+        "delete"
+      ],
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "operation"
+        ],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "create",
+              "delete"
+            ]
+          },
+          "dependencies": {
+            "type": "array",
+            "description": "Array: {fromItemId, toItemId, type?, unblockAt?}"
+          },
+          "pattern": {
+            "type": "string",
+            "enum": [
+              "linear",
+              "fan-out",
+              "fan-in"
+            ]
+          },
+          "itemIds": {
+            "type": "array",
+            "description": "Ordered IDs for linear pattern"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source UUID for fan-out"
+          },
+          "targets": {
+            "type": "array",
+            "description": "Target UUIDs for fan-out"
+          },
+          "sources": {
+            "type": "array",
+            "description": "Source UUIDs for fan-in"
+          },
+          "target": {
+            "type": "string",
+            "description": "Target UUID for fan-in"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "BLOCKS",
+              "IS_BLOCKED_BY",
+              "RELATES_TO"
+            ],
+            "default": "BLOCKS"
+          },
+          "unblockAt": {
+            "type": "string",
+            "enum": [
+              "queue",
+              "work",
+              "review",
+              "terminal"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "Dependency UUID for delete by ID"
+          },
+          "fromItemId": {
+            "type": "string"
+          },
+          "toItemId": {
+            "type": "string"
+          },
+          "deleteAll": {
+            "type": "boolean"
+          }
+        }
+      },
+      "source": "dependency/ManageDependenciesTool.kt"
+    },
+    {
+      "name": "query_dependencies",
+      "category": "DEPENDENCY_MANAGEMENT",
+      "operations": [
+        "query"
+      ],
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "itemId"
+        ],
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "WorkItem UUID (required)"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "incoming",
+              "outgoing",
+              "all"
+            ],
+            "default": "all"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "BLOCKS",
+              "IS_BLOCKED_BY",
+              "RELATES_TO"
+            ]
+          },
+          "includeItemInfo": {
+            "type": "boolean",
+            "default": false
+          },
+          "neighborsOnly": {
+            "type": "boolean",
+            "default": true,
+            "description": "false → BFS graph traversal"
+          }
+        }
+      },
+      "source": "dependency/QueryDependenciesTool.kt"
+    },
+    {
+      "name": "advance_item",
+      "category": "WORKFLOW",
+      "operations": [
+        "advance"
+      ],
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "itemId",
+          "trigger"
+        ],
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "WorkItem UUID"
+          },
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "start",
+              "complete",
+              "block",
+              "hold",
+              "resume",
+              "cancel"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "description": "Optional transition summary"
+          }
+        }
+      },
+      "source": "workflow/AdvanceItemTool.kt"
+    },
+    {
+      "name": "get_next_status",
+      "category": "WORKFLOW",
+      "operations": [
+        "check"
+      ],
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "itemId"
+        ],
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "WorkItem UUID"
+          }
+        }
+      },
+      "source": "workflow/GetNextStatusTool.kt"
+    },
+    {
+      "name": "get_next_item",
+      "category": "WORKFLOW",
+      "operations": [
+        "recommend"
+      ],
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [],
+        "properties": {
+          "parentId": {
+            "type": "string",
+            "description": "Scope to children of this item"
+          },
+          "role": {
+            "type": "string",
+            "description": "Filter by role"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Filter by priority"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags filter"
+          }
+        }
+      },
+      "source": "workflow/GetNextItemTool.kt"
+    },
+    {
+      "name": "get_blocked_items",
+      "category": "WORKFLOW",
+      "operations": [
+        "list"
+      ],
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [],
+        "properties": {
+          "parentId": {
+            "type": "string",
+            "description": "Scope to children of this item"
+          },
+          "includeBlockerDetails": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "source": "workflow/GetBlockedItemsTool.kt"
+    },
+    {
+      "name": "get_context",
+      "category": "WORKFLOW",
+      "operations": [
+        "item",
+        "session",
+        "health"
+      ],
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [],
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Item gate check mode"
+          },
+          "includeAncestors": {
+            "type": "boolean",
+            "default": false
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "item",
+              "session",
+              "health"
+            ],
+            "description": "Context mode (auto-detected from params)"
+          }
+        }
+      },
+      "source": "workflow/GetContextTool.kt"
+    },
+    {
+      "name": "complete_tree",
+      "category": "WORKFLOW",
+      "operations": [
+        "complete",
+        "cancel"
+      ],
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "itemId"
+        ],
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Root item UUID"
+          },
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "cancel"
+            ],
+            "default": "complete"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Summary for all transitions"
+          }
+        }
+      },
+      "source": "compound/CompleteTreeTool.kt"
+    },
+    {
+      "name": "create_work_tree",
+      "category": "ITEM_MANAGEMENT",
+      "operations": [
+        "create"
+      ],
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "required": [
+          "root"
+        ],
+        "properties": {
+          "root": {
+            "type": "object",
+            "description": "Root item: {title, description?, summary?, priority?, tags?, complexity?}"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Parent for root item"
+          },
+          "children": {
+            "type": "array",
+            "description": "Array: {ref, title, description?, summary?, priority?, tags?, complexity?}"
+          },
+          "deps": {
+            "type": "array",
+            "description": "Array: {from, to, type?, unblockAt?} — refs resolve to item UUIDs"
+          },
+          "notes": {
+            "type": "array",
+            "description": "Array: {ref, key, role, body?} — ref resolves to item UUID"
+          }
+        }
+      },
+      "source": "compound/CreateWorkTreeTool.kt"
+    }
+  ]
+}

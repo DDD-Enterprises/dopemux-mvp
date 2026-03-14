@@ -1,0 +1,20 @@
+{
+  "findings": [],
+  "invariants": {
+    "no_auto_transport_flips": true,
+    "strict_required_behavior": "fail_closed"
+  },
+  "meta": {
+    "model_map_path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/model_map.yaml",
+    "repo_truth_map_path": "/Users/hue/code/dopemux-mvp/reports/repo_truth_map.json",
+    "scope_excluded_as_info": true,
+    "scope_mode": "json-managed-only",
+    "tp008_map_path": "/Users/hue/code/dopemux-mvp/model_map_v2_tp008.yaml"
+  },
+  "recommendations": [],
+  "summary": {
+    "finding_code_histogram": {},
+    "in_scope_failures": 0,
+    "total_findings": 0
+  }
+}
