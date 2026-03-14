@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from dopecon_bridge.auth import init_default_users
 from dopecon_bridge.config import settings
 from dopecon_bridge.core import cache_manager, db_manager
 from dopecon_bridge.routes import get_all_routers
@@ -26,6 +27,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Lifecycle manager for database and cache connections."""
     logger.info("🚀 Starting DopeconBridge service...")
+    init_default_users()
     
     # Initialize database
     try:
@@ -51,7 +53,7 @@ async def lifespan(app: FastAPI):
 # Initialize FastAPI app
 app = FastAPI(
     title="Dopemux DopeconBridge",
-    description="Central task management and event coordination layer",
+    description="Adapter, router, and translation layer for canonical PM-plane backends",
     version="2.0.0",
     lifespan=lifespan
 )

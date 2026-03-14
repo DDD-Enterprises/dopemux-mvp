@@ -34,7 +34,7 @@ class Settings:
     task_master_url: str = ""  # Set in __post_init__
     task_orchestrator_url: str = ""  # Set in __post_init__
     leantime_bridge_url: str = ""  # Set in __post_init__
-    conport_url: str = field(default_factory=lambda: os.getenv("CONPORT_URL", "http://conport:3020"))
+    conport_url: str = field(default_factory=lambda: os.getenv("CONPORT_URL", "http://conport:3004"))
     
     # Database
     postgres_url: str = field(
@@ -80,9 +80,18 @@ class Settings:
         self.port = int(os.getenv("PORT", str(self.port_base + 16)))
         
         # Service URLs from container prefix
-        self.task_master_url = f"http://{self.container_prefix}-task-master-ai:3005"
-        self.task_orchestrator_url = f"http://{self.container_prefix}-task-orchestrator:3014"
-        self.leantime_bridge_url = f"http://{self.container_prefix}-leantime-bridge:3015"
+        self.task_master_url = os.getenv(
+            "TASK_MASTER_URL",
+            f"http://{self.container_prefix}-task-master-ai:3005",
+        )
+        self.task_orchestrator_url = os.getenv(
+            "TASK_ORCHESTRATOR_URL",
+            f"http://{self.container_prefix}-task-orchestrator:8000",
+        )
+        self.leantime_bridge_url = os.getenv(
+            "LEANTIME_BRIDGE_URL",
+            f"http://{self.container_prefix}-leantime-bridge:3015",
+        )
         
         # CORS origins
         origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080")
