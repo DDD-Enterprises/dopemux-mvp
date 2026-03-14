@@ -1,0 +1,31 @@
+---
+id: pm-plane-write-matrix
+title: PM Plane Write Matrix
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-12'
+last_review: '2026-03-12'
+next_review: '2026-06-10'
+prelude: Reference matrix for canonical PM-plane mutation writers, prechecks, mirrors, reconciliation, and forbidden direct paths.
+---
+# PM Plane Write Matrix
+
+| mutation | canonical_writer | required_precheck | allowed_secondary_writer | mirror_target | reconciliation_required | forbidden_direct_path | notes |
+|---|---|---|---|---|---|---|---|
+| `create_work_item` | `Leantime` | `PM policy validation` | `dopecon-bridge (policy-wrapped proxy only)` | `ConPort` for durable links, `dope-memory` for chronicle if emitted | `yes` | `dopecon-bridge -> TaskRecord local truth`; `Task Orchestrator -> PM record creation without Leantime reflection` | Canonical PM entity creation resolves to Leantime. Workflow semantics are still external. |
+| `update_pm_metadata` | `Leantime` | `PM policy validation` | `dopecon-bridge (policy-wrapped proxy only)` | `ConPort` if metadata must become durable context | `yes` when mirrored | `direct ConPort overwrite of PM fields`; `bridge-local metadata shadow as source of truth` | Safe only for non-workflow PM fields. |
+| `transition_workflow_state` | `Task Orchestrator` | `Task Orchestrator workflow legality check` | `dopecon-bridge (routing only)` | `Leantime` reflection after adjudication, `dope-memory` chronicle event | `yes` | `Leantime status change as workflow law`; `bridge-local status mutation`; `ConPort progress entry as workflow transition` | Workflow-significant writes must be adjudicated before Leantime reflection. |
+| `block_unblock_work_item` | `Task Orchestrator` | `Task Orchestrator blocker/dependency check` | `dopecon-bridge (routing only)` | `Leantime` reflection, `ConPort` contextual note, `dope-memory` chronicle event | `yes` | `Leantime blocker field as canonical workflow truth`; `bridge-local next-action/blocker state` | Block/unblock is workflow authority, not PM record authority. |
+| `attach_decision` | `ConPort` | `ConPort schema/object validation` | `dopecon-bridge (proxy only)` | `Leantime` link/reference only, `dope-memory` decision-linked chronicle reference | `yes` | `dopecon-bridge local DDG decision tables`; `dope-memory as canonical decision store` | Decision identity and durable semantics stay in ConPort. |
+| `log_progress` | `ConPort` | `ConPort progress validation` | `dopecon-bridge (proxy only)` | `Leantime` read-only reflection if needed, `dope-memory` chronicle event | `yes` | `Leantime comments/status as canonical progress`; `bridge-local DDG progress`; `dope-memory as canonical progress store` | Progress truth resolves to ConPort even if reflected elsewhere. |
+| `emit_chronicle_event` | `dope-memory` | `dope-memory chronicle write validation` | `dopecon-bridge (event transport only)` | `ConPort` references only when linked, retrieval indexing later via dope-context | `no` | `ConPort as chronicle store`; `Leantime text fields as chronicle authority`; `bridge event stream as durable truth` | Chronicle writes are append/correct operations inside dope-memory's boundary. |
+| `mirror_workflow_outcome_into_leantime` | `Leantime` | `Task Orchestrator adjudication must already exist` | `dopecon-bridge (policy-wrapped proxy only)` | none | `yes` | `direct Leantime status mutation without Task Orchestrator decision`; `bridge-local state copied into Leantime` | Mirror only. This row never authorizes workflow change by itself. |
+| `attach_technical_context` | `ConPort` | `ConPort durable-context validation` | `Serena` as supporting producer, `dopecon-bridge` as proxy | `Leantime` link/reference only | `yes` | `Serena direct durable-context authority`; `dope-memory durable technical context as source of truth` | Serena remains the technical context plane; durable PM attachment resolves to ConPort. |
+| `attach_retrieval_search_metadata` | `ConPort` | `ConPort durable-context validation` | `dope-context` as supporting producer, `dopecon-bridge` as proxy | `Leantime` link/reference only | `yes` | `dope-context index metadata treated as canonical context`; `bridge-local search cache as source of truth` | Retrieval evidence may support the write, but durable attachment resolves to ConPort. |
+
+## Notes
+
+- `dopecon-bridge` is intentionally absent as a `canonical_writer` in every row.
+- Where runtime surfaces are missing, the owning authority still stands; implementations must block or defer rather than invent substitute writers.
+- Mirror targets remain non-canonical unless a separate ADR promotes them.
