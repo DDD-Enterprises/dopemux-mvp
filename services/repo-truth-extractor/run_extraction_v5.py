@@ -15099,12 +15099,6 @@ def main() -> None:
     parser.add_argument("--run-id", type=str)
     parser.add_argument("--no-write-latest", action="store_true")
     parser.add_argument("--write-latest-even-on-dry-run", action="store_true")
-    parser.add_argument(
-        "--audit-sample-rate",
-        type=float,
-        default=0.15,
-        help="Fraction of phase outputs to audit with judge model (0 to disable).",
-    )
     parser.add_argument("--doctor", action="store_true")
     parser.add_argument("--doctor-auth", action="store_true")
     parser.add_argument("--preflight-providers", action="store_true")
