@@ -1,0 +1,304 @@
+{
+    "_meta": {
+        "tool": "query_container",
+        "source": "code",
+        "extraction_method": "direct read of executeGet/executeSearch/executeExport/executeOverview JSON builders",
+        "note": "Response shape varies by operation. All responses wrapped in standard envelope: {success, message, data, error, metadata}"
+    },
+    "type": "object",
+    "description": "Standard response envelope. The 'data' field shape varies by operation.",
+    "properties": {
+        "success": {
+            "type": "boolean"
+        },
+        "message": {
+            "type": "string"
+        },
+        "error": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "description": "Error code, e.g. VALIDATION_ERROR, RESOURCE_NOT_FOUND, DATABASE_ERROR, INTERNAL_ERROR"
+                        },
+                        "details": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "data": {
+            "description": "Shape varies by operation+containerType",
+            "oneOf": [
+                {
+                    "title": "get (project)",
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "description": {
+                            "type": "string"
+                        },
+                        "summary": {
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        },
+                        "tags": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "createdAt": {
+                            "type": "string"
+                        },
+                        "modifiedAt": {
+                            "type": "string"
+                        },
+                        "taskCounts": {
+                            "type": "object",
+                            "properties": {
+                                "total": {
+                                    "type": "integer"
+                                },
+                                "byStatus": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        },
+                        "sections": {
+                            "type": "array",
+                            "description": "Only if includeSections=true"
+                        }
+                    }
+                },
+                {
+                    "title": "get (feature)",
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "projectId": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": {
+                            "type": "string"
+                        },
+                        "summary": {
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        },
+                        "priority": {
+                            "type": "string"
+                        },
+                        "requiresVerification": {
+                            "type": "boolean"
+                        },
+                        "tags": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "createdAt": {
+                            "type": "string"
+                        },
+                        "modifiedAt": {
+                            "type": "string"
+                        },
+                        "taskCounts": {
+                            "type": "object",
+                            "properties": {
+                                "total": {
+                                    "type": "integer"
+                                },
+                                "byStatus": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "title": "get (task)",
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "title": {
+                            "type": "string"
+                        },
+                        "projectId": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "featureId": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": {
+                            "type": "string"
+                        },
+                        "summary": {
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        },
+                        "priority": {
+                            "type": "string"
+                        },
+                        "complexity": {
+                            "type": "integer"
+                        },
+                        "requiresVerification": {
+                            "type": "boolean"
+                        },
+                        "tags": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "createdAt": {
+                            "type": "string"
+                        },
+                        "modifiedAt": {
+                            "type": "string"
+                        }
+                    }
+                },
+                {
+                    "title": "search (any type)",
+                    "type": "object",
+                    "properties": {
+                        "items": {
+                            "type": "array",
+                            "description": "Minimal result items (~30 tokens each for tasks)",
+                            "items": {
+                                "type": "object",
+                                "description": "Task: {id, title, status, priority, complexity, featureId}; Feature: {id, name, status, priority, projectId}; Project: {id, name, status}"
+                            }
+                        },
+                        "count": {
+                            "type": "integer"
+                        },
+                        "roleFilter": {
+                            "type": "object",
+                            "description": "Present only when role= param used",
+                            "properties": {
+                                "role": {
+                                    "type": "string"
+                                },
+                                "resolvedStatuses": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "title": "export",
+                    "type": "object",
+                    "properties": {
+                        "markdown": {
+                            "type": "string",
+                            "description": "Full markdown export of entity"
+                        }
+                    }
+                },
+                {
+                    "title": "overview (global — no id)",
+                    "type": "object",
+                    "properties": {
+                        "items": {
+                            "type": "array",
+                            "description": "Minimal fields for all entities of type"
+                        },
+                        "count": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                {
+                    "title": "overview (scoped — with id, project)",
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        },
+                        "tasks": {
+                            "type": "array",
+                            "description": "Standalone task summaries"
+                        },
+                        "features": {
+                            "type": "array",
+                            "description": "Feature summaries with taskCounts"
+                        },
+                        "taskCounts": {
+                            "type": "object"
+                        },
+                        "featureMeta": {
+                            "type": "object",
+                            "description": "Present when filters active: {returned, total}"
+                        },
+                        "taskMeta": {
+                            "type": "object",
+                            "description": "Present when filters active: {returned, total}"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
