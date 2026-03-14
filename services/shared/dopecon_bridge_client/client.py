@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import json
 import os
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional
@@ -158,6 +158,12 @@ class _BaseBridgeClient:
         return headers
 
     @staticmethod
+    def _unsupported_surface(name: str) -> "DopeconBridgeError":
+        return DopeconBridgeError(
+            f"DopeconBridge surface {name} is deprecated or blocked in the active runtime"
+        )
+
+    @staticmethod
     def _parse_response(response: httpx.Response) -> MutableMapping[str, Any]:
         try:
             response.raise_for_status()
@@ -291,14 +297,8 @@ class DopeconBridgeClient(_BaseBridgeClient):
         requester: str,
         source: str = "pm",
     ) -> CrossPlaneRouteResponse:
-        payload = {
-            "source": source,
-            "operation": operation,
-            "data": dict(data),
-            "requester": requester,
-        }
-        resp = self._client.post("/route/cognitive", json=payload)
-        return CrossPlaneRouteResponse.from_json(self._parse_response(resp))
+        del operation, data, requester, source
+        raise self._unsupported_surface("/route/cognitive")
 
     def recent_decisions(
         self,
@@ -309,7 +309,7 @@ class DopeconBridgeClient(_BaseBridgeClient):
         params: Dict[str, Any] = {"limit": limit}
         if workspace_id:
             params["workspace_id"] = workspace_id
-        resp = self._client.get("/ddg/decisions/recent", params=params)
+        resp = self._client.get("/ddg/decisions", params=params)
         return DecisionList.from_json(self._parse_response(resp))
 
     def search_decisions(
@@ -322,14 +322,12 @@ class DopeconBridgeClient(_BaseBridgeClient):
         params: Dict[str, Any] = {"q": query, "limit": limit}
         if workspace_id:
             params["workspace_id"] = workspace_id
-        resp = self._client.get("/ddg/decisions/search", params=params)
+        resp = self._client.get("/ddg/search", params=params)
         return DecisionList.from_json(self._parse_response(resp))
 
     def related_decisions(self, *, decision_id: str, k: int = 10) -> DecisionList:
-        resp = self._client.get("/ddg/decisions/related", params={"decision_id": decision_id, "k": k})
-        data = self._parse_response(resp)
-        items = data.get("items", [])
-        return DecisionList(count=len(items), items=items, query=str(data.get("decision_id")))
+        del decision_id, k
+        raise self._unsupported_surface("/ddg/decisions/related")
 
     def related_text(
         self,
@@ -339,10 +337,8 @@ class DopeconBridgeClient(_BaseBridgeClient):
         k: int = 10,
     ) -> DecisionList:
         params: Dict[str, Any] = {"q": query, "k": k}
-        if workspace_id:
-            params["workspace_id"] = workspace_id
-        resp = self._client.get("/ddg/decisions/related-text", params=params)
-        return DecisionList.from_json(self._parse_response(resp))
+        del params, workspace_id
+        raise self._unsupported_surface("/ddg/decisions/related-text")
 
     # ------------------------------------------------------------------
     # ConPort Decision/Progress endpoints (for service migration)
@@ -407,18 +403,15 @@ class DopeconBridgeClient(_BaseBridgeClient):
         description: Optional[str] = None,
     ) -> Mapping[str, Any]:
         """Create a link between items in ConPort via DopeconBridge."""
-        payload = {
-            "source_item_type": source_item_type,
-            "source_item_id": source_item_id,
-            "target_item_type": target_item_type,
-            "target_item_id": target_item_id,
-            "relationship_type": relationship_type,
-        }
-        if description:
-            payload["description"] = description
-        
-        resp = self._client.post("/kg/links", json=payload)
-        return self._parse_response(resp)
+        del (
+            source_item_type,
+            source_item_id,
+            target_item_type,
+            target_item_id,
+            relationship_type,
+            description,
+        )
+        raise self._unsupported_surface("/kg/links")
 
     def get_progress_entries(
         self,
@@ -556,14 +549,8 @@ class AsyncDopeconBridgeClient(_BaseBridgeClient):
         requester: str,
         source: str = "pm",
     ) -> CrossPlaneRouteResponse:
-        payload = {
-            "source": source,
-            "operation": operation,
-            "data": dict(data),
-            "requester": requester,
-        }
-        resp = await self._client.post("/route/cognitive", json=payload)
-        return CrossPlaneRouteResponse.from_json(self._parse_response(resp))
+        del operation, data, requester, source
+        raise self._unsupported_surface("/route/cognitive")
 
     async def recent_decisions(
         self,
@@ -574,7 +561,7 @@ class AsyncDopeconBridgeClient(_BaseBridgeClient):
         params: Dict[str, Any] = {"limit": limit}
         if workspace_id:
             params["workspace_id"] = workspace_id
-        resp = await self._client.get("/ddg/decisions/recent", params=params)
+        resp = await self._client.get("/ddg/decisions", params=params)
         return DecisionList.from_json(self._parse_response(resp))
 
     async def search_decisions(
@@ -587,14 +574,12 @@ class AsyncDopeconBridgeClient(_BaseBridgeClient):
         params: Dict[str, Any] = {"q": query, "limit": limit}
         if workspace_id:
             params["workspace_id"] = workspace_id
-        resp = await self._client.get("/ddg/decisions/search", params=params)
+        resp = await self._client.get("/ddg/search", params=params)
         return DecisionList.from_json(self._parse_response(resp))
 
     async def related_decisions(self, *, decision_id: str, k: int = 10) -> DecisionList:
-        resp = await self._client.get("/ddg/decisions/related", params={"decision_id": decision_id, "k": k})
-        data = self._parse_response(resp)
-        items = data.get("items", [])
-        return DecisionList(count=len(items), items=items, query=str(data.get("decision_id")))
+        del decision_id, k
+        raise self._unsupported_surface("/ddg/decisions/related")
 
     async def related_text(
         self,
@@ -604,10 +589,8 @@ class AsyncDopeconBridgeClient(_BaseBridgeClient):
         k: int = 10,
     ) -> DecisionList:
         params: Dict[str, Any] = {"q": query, "k": k}
-        if workspace_id:
-            params["workspace_id"] = workspace_id
-        resp = await self._client.get("/ddg/decisions/related-text", params=params)
-        return DecisionList.from_json(self._parse_response(resp))
+        del params, workspace_id
+        raise self._unsupported_surface("/ddg/decisions/related-text")
 
     # ------------------------------------------------------------------
     # ConPort Decision/Progress endpoints (for service migration)
@@ -672,18 +655,15 @@ class AsyncDopeconBridgeClient(_BaseBridgeClient):
         description: Optional[str] = None,
     ) -> Mapping[str, Any]:
         """Create a link between items in ConPort via DopeconBridge."""
-        payload = {
-            "source_item_type": source_item_type,
-            "source_item_id": source_item_id,
-            "target_item_type": target_item_type,
-            "target_item_id": target_item_id,
-            "relationship_type": relationship_type,
-        }
-        if description:
-            payload["description"] = description
-        
-        resp = await self._client.post("/kg/links", json=payload)
-        return self._parse_response(resp)
+        del (
+            source_item_type,
+            source_item_id,
+            target_item_type,
+            target_item_id,
+            relationship_type,
+            description,
+        )
+        raise self._unsupported_surface("/kg/links")
 
     async def get_progress_entries(
         self,
