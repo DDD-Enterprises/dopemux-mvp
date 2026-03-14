@@ -1,0 +1,84 @@
+{
+    "_meta": {
+        "tool": "query_sections",
+        "source": "code",
+        "extraction_method": "direct read of buildSectionJson() and executeInternal() builders"
+    },
+    "type": "object",
+    "properties": {
+        "success": {
+            "type": "boolean"
+        },
+        "message": {
+            "type": "string"
+        },
+        "error": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "object"
+                }
+            ]
+        },
+        "metadata": {
+            "type": "object"
+        },
+        "data": {
+            "type": "object",
+            "properties": {
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "usageDescription": {
+                                "type": "string"
+                            },
+                            "contentFormat": {
+                                "type": "string",
+                                "enum": [
+                                    "markdown",
+                                    "plain_text",
+                                    "json",
+                                    "code"
+                                ]
+                            },
+                            "ordinal": {
+                                "type": "integer"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Present only when includeContent=true"
+                            }
+                        }
+                    }
+                },
+                "entityType": {
+                    "type": "string"
+                },
+                "entityId": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "count": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}
