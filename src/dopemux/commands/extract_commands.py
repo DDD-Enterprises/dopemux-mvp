@@ -807,6 +807,10 @@ def _hygiene_severity_color(level: str) -> str:
 @click.option("--workers", "-w", default=10, show_default=True, help="Partition worker count")
 @click.option("--routing-policy", default="balanced_openrouter", show_default=True, help="LLM routing policy")
 @click.option("--doctor", is_flag=True, help="Run provider preflight doctor checks")
+@click.option("--resume", is_flag=True, help="Resume a previous run, skipping already-completed partitions")
+@click.option("--import-v3", "import_v3_run_id", default=None, metavar="RUN_ID",
+              help="Migrate a v3 run into the v5 runs directory before resuming. "
+                   "Copies artifacts, sets --resume, and uses RUN_ID as the run-id.")
 @click.option("--skip-hygiene", is_flag=True, help="Skip pre-flight hygiene scan")
 @click.option("--apply-cleanup", is_flag=True, help="Apply quarantine cleanup if hygiene scan finds hazards")
 @click.option("--force", is_flag=True, help="Run extraction even if hygiene scan reports errors")
@@ -818,6 +822,8 @@ def truth_run(
     workers: int,
     routing_policy: str,
     doctor: bool,
+    resume: bool,
+    import_v3_run_id: Optional[str],
     skip_hygiene: bool,
     apply_cleanup: bool,
     force: bool,
@@ -831,12 +837,97 @@ def truth_run(
 
     \b
     Steps:
+      0. (Optional) Migrate a v3 run into v5 directory (--import-v3 RUN_ID)
       1. Pre-flight hygiene scan (read-only, skippable with --skip-hygiene)
       2. Optional cleanup / quarantine (requires --apply-cleanup)
       3. Launch run_extraction_v5.py with live streaming output
+
+    \b
+    Resume a v3 FULL_RUN in v5:
+      dopemux extract truth-run --import-v3 FULL_RUN --resume
     """
+    import shutil
+
+    # ------------------------------------------------------------------
+    # Phase 0: Migrate v3 run into v5 directory
+    # ------------------------------------------------------------------
+    _v3_root = Path("extraction/repo-truth-extractor/v3")
+    _v5_root = Path("extraction/repo-truth-extractor/v5")
+
+    if import_v3_run_id:
+        # --import-v3 implies --resume and pins the run_id
+        resume = True
+        if run_id is None:
+            run_id = import_v3_run_id
+
+        console.print()
+        console.print(Panel(
+            Text.from_markup(
+                f"[bold magenta]Phase 0 · Migrate v3 → v5[/bold magenta]\n"
+                f"[dim]Importing run[/dim] [bold]{import_v3_run_id}[/bold] "
+                f"[dim]from v3 into v5 runs directory[/dim]"
+            ),
+            border_style="magenta",
+        ))
+
+        v3_run_src = _v3_root / "runs" / import_v3_run_id
+        v5_runs_dir = _v5_root / "runs"
+        v5_run_dst = v5_runs_dir / import_v3_run_id
+        v5_latest = _v5_root / "latest_run_id.txt"
+
+        if not v3_run_src.exists():
+            console.print(f"[bold red]❌ v3 run not found:[/bold red] {v3_run_src}")
+            console.print(f"[dim]Available v3 runs:[/dim]")
+            if (_v3_root / "runs").exists():
+                for d in sorted((_v3_root / "runs").iterdir()):
+                    if d.is_dir():
+                        console.print(f"  [dim]• {d.name}[/dim]")
+            sys.exit(1)
+
+        if v5_run_dst.exists():
+            console.print(
+                f"[yellow]⚠️  v5 run already exists:[/yellow] [dim]{v5_run_dst}[/dim]\n"
+                f"[dim]Skipping copy — will resume using existing v5 artifacts.[/dim]"
+            )
+        else:
+            # Count what we're copying for the progress display
+            v3_files = list(v3_run_src.rglob("*"))
+            n_files = sum(1 for f in v3_files if f.is_file())
+            n_phases = sum(1 for d in v3_run_src.iterdir() if d.is_dir() and not d.name.startswith("."))
+
+            console.print(
+                f"[cyan]📦 Copying[/cyan] [bold]{n_files}[/bold] files across "
+                f"[bold]{n_phases}[/bold] phase dirs…"
+            )
+
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                TimeElapsedColumn(),
+                console=console,
+                transient=True,
+            ) as progress:
+                task = progress.add_task(
+                    f"[magenta]Copying {import_v3_run_id} → v5/runs/{import_v3_run_id}…",
+                    total=None,
+                )
+                v5_runs_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(str(v3_run_src), str(v5_run_dst))
+                progress.update(task, completed=True)
+
+            console.print(f"[bold green]✅ Copied:[/bold green] {v3_run_src} → {v5_run_dst}")
+
+        # Show phase summary table
+        _display_v3_migration_summary(v5_run_dst, import_v3_run_id, console)
+
+        # Update v5 latest_run_id.txt
+        _v5_root.mkdir(parents=True, exist_ok=True)
+        v5_latest.write_text(import_v3_run_id + "\n", encoding="utf-8")
+        console.print(f"[dim]📝 Updated v5/latest_run_id.txt → {import_v3_run_id}[/dim]")
+
     auto_run_id = run_id or datetime.now().strftime("RUN-%Y%m%dT%H%M%S")
 
+    resume_indicator = " [bold green]+resume[/bold green]" if resume else ""
     console.print(Panel(
         Text.from_markup(
             f"[bold cyan]🔬 dopemux extract truth-run[/bold cyan]\n"
@@ -844,6 +935,7 @@ def truth_run(
             f"[dim]phase=[/dim][bold]{phase}[/bold]  "
             f"[dim]workers=[/dim][bold]{workers}[/bold]  "
             f"[dim]routing=[/dim][bold magenta]{routing_policy}[/bold magenta]"
+            f"{resume_indicator}"
         ),
         box=box.DOUBLE_EDGE,
         border_style="bright_cyan",
@@ -954,6 +1046,8 @@ def truth_run(
            "--routing-policy", routing_policy, "--run-id", auto_run_id]
     if doctor:
         cmd.append("--doctor")
+    if resume:
+        cmd.append("--resume")
 
     console.print(f"[dim]$ {' '.join(cmd)}[/dim]")
     console.print()
@@ -1030,3 +1124,53 @@ def _display_scan_results(scan, console) -> None:
         for tier, count in sorted(scan.authority_summary.items()):
             tbl.add_row(tier, str(count))
         console.print(tbl)
+
+
+def _display_v3_migration_summary(v5_run_dir: "Path", run_id: str, console: "Console") -> None:
+    """Show a table summarising phases found in the migrated run directory."""
+    from rich.table import Table
+    from rich import box as rbox
+
+    if not v5_run_dir.exists():
+        return
+
+    phase_dirs = sorted(
+        [d for d in v5_run_dir.iterdir() if d.is_dir() and not d.name.startswith(".")],
+        key=lambda d: d.name,
+    )
+    if not phase_dirs:
+        return
+
+    tbl = Table(
+        title=f"📊 Migrated run: {run_id}",
+        box=rbox.SIMPLE_HEAVY,
+        border_style="magenta",
+    )
+    tbl.add_column("Phase dir", style="bold")
+    tbl.add_column("Raw outputs", justify="right", style="green")
+    tbl.add_column("FAILED markers", justify="right", style="red")
+    tbl.add_column("Norm outputs", justify="right", style="cyan")
+    tbl.add_column("QA outputs", justify="right", style="blue")
+
+    for phase_dir in phase_dirs:
+        raw_dir = phase_dir / "raw"
+        norm_dir = phase_dir / "norm"
+        qa_dir = phase_dir / "qa"
+
+        def _count(d: "Path", pattern: str) -> str:
+            if not d.exists():
+                return "[dim]—[/dim]"
+            return str(sum(1 for _ in d.glob(pattern)))
+
+        raw_ok = _count(raw_dir, "*.json")
+        raw_fail = _count(raw_dir, "*.FAILED.*")
+        norm_ok = _count(norm_dir, "*.json")
+        qa_ok = _count(qa_dir, "*.json")
+
+        tbl.add_row(phase_dir.name, raw_ok, raw_fail, norm_ok, qa_ok)
+
+    console.print(tbl)
+    console.print(
+        f"[dim]Phases with existing raw/*.json will be [bold green]skipped[/bold green] "
+        f"by v5 resume. Failed partitions will be [bold yellow]retried[/bold yellow].[/dim]"
+    )
