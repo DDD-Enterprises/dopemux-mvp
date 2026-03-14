@@ -1110,6 +1110,11 @@ class RunnerConfig:
     d0_max_files: Optional[int] = None
     d1_max_files: Optional[int] = None
     provider_denylist: Tuple[str, ...] = ()
+    # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: comparison lane fields
+    compare_mode: Optional[str] = None          # None | "additional"
+    compare_model: Optional[str] = None
+    compare_provider: Optional[str] = None
+    compare_steps: Optional[Tuple[str, ...]] = None
 
 
 @dataclass(frozen=True)
@@ -8547,6 +8552,390 @@ def _run_one_partition_worker(
     )
 
 
+# ---------------------------------------------------------------------------
+# TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: Comparison lane
+# ---------------------------------------------------------------------------
+
+# Initial allowlist of doc-heavy / synthesis / merge-QA steps eligible for
+# comparison runs. Selection rationale:
+#   A9  – implicit behavior hints synthesis (BULK_DOCS_GENERAL, non-strict)
+#   H9  – merge+QA home/entrypoint truths (AGG)
+#   B9  – merge+QA boundary enforcement (AGG)
+#   G9  – merge+QA general phase (AGG)
+#   R9  – Leantime integration truth synthesis (BULK_DOCS_GENERAL, non-strict)
+#   S9  – dependency graph summary synthesis (BULK_DOCS_GENERAL, non-strict)
+#   T9  – merge+QA task packets (AGG)
+#   W9  – merge+QA workflow phase (AGG)
+#   X9  – merge+QA feature index (AGG)
+# Excluded: Z9 (mechanical checksum), C9/E9/Q9 (mixed code+docs, deferred).
+# This set is config-driven; operators override via --compare-steps.
+COMPARISON_ELIGIBLE_STEPS: frozenset = frozenset({
+    "A9", "H9", "B9", "G9", "R9", "S9", "T9", "W9", "X9",
+})
+
+
+def is_comparison_enabled(cfg: "RunnerConfig") -> bool:
+    """Return True if the comparison lane is active for this run."""
+    return bool(getattr(cfg, "compare_mode", None) == "additional"
+                and getattr(cfg, "compare_model", None))
+
+
+def _effective_compare_steps(cfg: "RunnerConfig") -> frozenset:
+    """Return the resolved set of steps eligible for comparison in this run."""
+    override = getattr(cfg, "compare_steps", None)
+    if override:
+        return frozenset(override)
+    return COMPARISON_ELIGIBLE_STEPS
+
+
+def validate_comparison_steps(cfg: "RunnerConfig") -> None:
+    """Raise ValueError if any requested comparison steps are not eligible.
+
+    The error message names the ineligible steps and lists eligible ones.
+    """
+    if not is_comparison_enabled(cfg):
+        return
+    requested = set(getattr(cfg, "compare_steps", None) or [])
+    if not requested:
+        return
+    ineligible = requested - COMPARISON_ELIGIBLE_STEPS
+    if ineligible:
+        eligible_sorted = sorted(COMPARISON_ELIGIBLE_STEPS)
+        raise ValueError(
+            f"Comparison steps {sorted(ineligible)} are not in the doc-heavy allowlist. "
+            f"Eligible steps: {eligible_sorted}. "
+            "Only doc-heavy synthesis/merge/QA steps may be used for comparison. "
+            "To expand the allowlist, update COMPARISON_ELIGIBLE_STEPS."
+        )
+
+
+def compute_comparison_resume_decision(
+    comparison_artifact_path: Path,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model: str,
+) -> dict:
+    """Return resume decision for a comparison artifact (independent of canonical).
+
+    Returns:
+        dict with keys: action ("SKIP" | "RERUN"), reason
+    """
+    if not comparison_artifact_path.exists():
+        return {"action": "RERUN", "reason": "missing_comparison_artifact"}
+    try:
+        text = comparison_artifact_path.read_text(encoding="utf-8")
+        if not text.strip():
+            return {"action": "RERUN", "reason": "empty_comparison_artifact"}
+        payload = json.loads(text)
+        if not isinstance(payload, dict):
+            return {"action": "RERUN", "reason": "invalid_comparison_artifact"}
+    except (OSError, json.JSONDecodeError):
+        return {"action": "RERUN", "reason": "unreadable_comparison_artifact"}
+    return {"action": "SKIP", "reason": "valid_comparison_artifact"}
+
+
+def _comparison_artifact_dir(phase_dir: Path, provider: str, model: str) -> Path:
+    """Return the comparison artifact directory for a given provider+model."""
+    safe_provider = provider.replace("/", "_")
+    safe_model = model.replace("/", "_")
+    return phase_dir / "raw" / "comparison" / f"{safe_provider}__{safe_model}"
+
+
+def run_comparison_lane(
+    phase: str,
+    step_id: str,
+    partitions: "List[Dict[str, Any]]",
+    phase_dir: Path,
+    cfg: "RunnerConfig",
+    prompt_text: str,
+    output_artifacts: "Tuple[str, ...]",
+    build_partition_context_fn,
+    call_llm_fn,
+    parse_json_from_response_fn,
+    coerce_artifacts_from_response_fn,
+) -> "List[Dict[str, Any]]":
+    """Execute the comparison lane for eligible partitions.
+
+    Reuses the same prompt_text and partition inputs as the canonical lane.
+    Stores results under raw/comparison/{provider}__{model}/.
+    Never raises — failures are captured in result dicts.
+
+    Returns:
+        List of per-partition result dicts with keys:
+            partition_id, success, request_meta, artifacts, failure_reason
+    """
+    compare_provider = str(getattr(cfg, "compare_provider", None) or "xai")
+    compare_model = str(getattr(cfg, "compare_model", None) or "grok-4.20-beta")
+    comp_dir = _comparison_artifact_dir(phase_dir, compare_provider, compare_model)
+    comp_dir.mkdir(parents=True, exist_ok=True)
+
+    results = []
+    for partition in partitions:
+        partition_id = str(partition.get("id", "unknown"))
+        artifact_path = comp_dir / f"{step_id}__{partition_id}.json"
+
+        # --- Resume check ---
+        resume_decision = compute_comparison_resume_decision(
+            comparison_artifact_path=artifact_path,
+            step_id=step_id,
+            partition_id=partition_id,
+            provider=compare_provider,
+            model=compare_model,
+        )
+        if resume_decision["action"] == "SKIP":
+            logger.info(
+                "COMPARE_RESUME_SKIP phase=%s step=%s partition=%s provider=%s model=%s",
+                phase, step_id, partition_id, compare_provider, compare_model,
+            )
+            results.append({
+                "partition_id": partition_id,
+                "success": True,
+                "resume_skipped": True,
+                "request_meta": {
+                    "lane": "comparison",
+                    "authoritative": False,
+                    "provider": compare_provider,
+                    "model_id": compare_model,
+                    "resume_skipped": True,
+                },
+                "artifacts": [],
+                "failure_reason": None,
+            })
+            continue
+
+        logger.info(
+            "COMPARE_EXEC_START phase=%s step=%s partition=%s provider=%s model=%s",
+            phase, step_id, partition_id, compare_provider, compare_model,
+        )
+        logger.info(
+            "COMPARE_ROUTE_CHOSEN phase=%s step=%s provider=%s model=%s",
+            phase, step_id, compare_provider, compare_model,
+        )
+
+        try:
+            context_text, _ctx_meta = build_partition_context_fn(
+                phase=phase,
+                step_id=step_id,
+                partition=partition,
+            )
+            full_prompt = f"{prompt_text}\n\n{context_text}"
+            started = time.time()
+            llm_result = call_llm_fn(
+                provider=compare_provider,
+                model_id=compare_model,
+                api_key=None,
+                prompt=full_prompt,
+                partition_id=partition_id,
+            )
+            elapsed_ms = int((time.time() - started) * 1000)
+
+            raw_text = llm_result.get("text", "")
+            llm_meta = llm_result.get("meta", {})
+            failure_type = llm_meta.get("failure_type")
+
+            if failure_type:
+                raise RuntimeError(f"LLM failure_type={failure_type!r}")
+
+            # Reuse canonical parse/normalize pipeline
+            parsed = parse_json_from_response_fn(raw_text)
+            artifacts = list(
+                coerce_artifacts_from_response_fn(
+                    parsed, raw_text, output_artifacts
+                )
+            )
+
+            request_meta = {
+                "lane": "comparison",
+                "authoritative": False,
+                "provider": compare_provider,
+                "model_id": compare_model,
+                "comparison_of_step": step_id,
+                "elapsed_ms": elapsed_ms,
+                "final_contract_status": "pass",
+                "repair_invocations": 0,
+                "repair_successes": 0,
+            }
+            payload = {
+                "phase": phase,
+                "step_id": step_id,
+                "partition_id": partition_id,
+                "artifacts": artifacts,
+                "request_meta": request_meta,
+            }
+            artifact_path.write_text(
+                json.dumps(payload, indent=2, sort_keys=True, default=str),
+                encoding="utf-8",
+            )
+            logger.info(
+                "COMPARE_EXEC_DONE phase=%s step=%s partition=%s provider=%s model=%s elapsed_ms=%s",
+                phase, step_id, partition_id, compare_provider, compare_model, elapsed_ms,
+            )
+            logger.info(
+                "COMPARE_VALIDATION_RESULT phase=%s step=%s partition=%s status=pass",
+                phase, step_id, partition_id,
+            )
+            results.append({
+                "partition_id": partition_id,
+                "success": True,
+                "resume_skipped": False,
+                "request_meta": request_meta,
+                "artifacts": artifacts,
+                "failure_reason": None,
+            })
+        except Exception as exc:
+            failure_reason = str(exc)
+            logger.warning(
+                "COMPARE_EXEC_DONE phase=%s step=%s partition=%s provider=%s model=%s status=FAILED reason=%s",
+                phase, step_id, partition_id, compare_provider, compare_model, failure_reason,
+            )
+            logger.info(
+                "COMPARE_VALIDATION_RESULT phase=%s step=%s partition=%s status=fail reason=%s",
+                phase, step_id, partition_id, failure_reason,
+            )
+            # Write FAILED sidecar for observability
+            failed_path = comp_dir / f"{step_id}__{partition_id}.FAILED.txt"
+            try:
+                failed_path.write_text(failure_reason, encoding="utf-8")
+            except OSError:
+                pass
+            results.append({
+                "partition_id": partition_id,
+                "success": False,
+                "resume_skipped": False,
+                "request_meta": {
+                    "lane": "comparison",
+                    "authoritative": False,
+                    "provider": compare_provider,
+                    "model_id": compare_model,
+                    "final_contract_status": "fail",
+                    "failure_type": "comparison_exec_error",
+                    "repair_invocations": 0,
+                    "repair_successes": 0,
+                },
+                "artifacts": [],
+                "failure_reason": failure_reason,
+            })
+
+    return results
+
+
+def generate_comparison_summary(
+    phase_dir: Path,
+    step_id: str,
+    canonical_results: "List[Dict[str, Any]]",
+    comparison_results: "List[Dict[str, Any]]",
+    compare_provider: str,
+    compare_model: str,
+) -> "Dict[str, Any]":
+    """Generate and write COMPARE_SUMMARY_{step_id}.json + .md.
+
+    Args:
+        phase_dir: Phase directory (summaries written here).
+        step_id: Step identifier.
+        canonical_results: List of per-partition canonical result dicts.
+        comparison_results: List of per-partition comparison result dicts.
+        compare_provider: Provider used for comparison lane.
+        compare_model: Model used for comparison lane.
+
+    Returns:
+        Summary dict (also written to disk).
+    """
+    def _count_pass(results):
+        return sum(
+            1 for r in results
+            if r.get("request_meta", {}).get("final_contract_status") == "pass"
+        )
+
+    def _count_fail(results):
+        return sum(
+            1 for r in results
+            if r.get("request_meta", {}).get("final_contract_status") == "fail"
+        )
+
+    def _count_repairs(results):
+        return sum(
+            int(r.get("request_meta", {}).get("repair_invocations", 0))
+            for r in results
+        )
+
+    def _mean_latency(results):
+        latencies = [
+            int(r.get("request_meta", {}).get("elapsed_ms", 0))
+            for r in results
+            if r.get("request_meta", {}).get("elapsed_ms") is not None
+        ]
+        return round(sum(latencies) / len(latencies), 1) if latencies else 0.0
+
+    # Detect canonical provider/model from first successful result
+    canonical_provider = "unknown"
+    canonical_model = "unknown"
+    for r in canonical_results:
+        meta = r.get("request_meta", {})
+        if meta.get("provider"):
+            canonical_provider = str(meta["provider"])
+        if meta.get("model_id"):
+            canonical_model = str(meta["model_id"])
+        break
+
+    n_compared = len([r for r in comparison_results if not r.get("resume_skipped")])
+
+    summary: "Dict[str, Any]" = {
+        "step_id": step_id,
+        "canonical_route": {"provider": canonical_provider, "model_id": canonical_model},
+        "comparison_route": {"provider": compare_provider, "model_id": compare_model},
+        "partitions_compared": n_compared,
+        "canonical_contract_pass_count": _count_pass(canonical_results),
+        "canonical_contract_fail_count": _count_fail(canonical_results),
+        "comparison_contract_pass_count": _count_pass(comparison_results),
+        "comparison_contract_fail_count": _count_fail(comparison_results),
+        "canonical_repair_count": _count_repairs(canonical_results),
+        "comparison_repair_count": _count_repairs(comparison_results),
+        "canonical_latency_ms_mean": _mean_latency(canonical_results),
+        "comparison_latency_ms_mean": _mean_latency(comparison_results),
+        "generated_at": __import__("datetime").datetime.utcnow().isoformat() + "Z",
+    }
+
+    # Write JSON
+    json_path = phase_dir / f"COMPARE_SUMMARY_{step_id}.json"
+    json_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True, default=str),
+        encoding="utf-8",
+    )
+
+    # Write MD
+    md_lines = [
+        f"# Comparison Summary: {step_id}",
+        "",
+        f"**Canonical route**: `{canonical_provider}/{canonical_model}`  ",
+        f"**Comparison route**: `{compare_provider}/{compare_model}`  ",
+        f"**Partitions compared**: {n_compared}",
+        "",
+        "## Contract Results",
+        "",
+        "| Lane | Pass | Fail | Repairs |",
+        "| ---- | ---- | ---- | ------- |",
+        f"| canonical | {summary['canonical_contract_pass_count']} | {summary['canonical_contract_fail_count']} | {summary['canonical_repair_count']} |",
+        f"| comparison | {summary['comparison_contract_pass_count']} | {summary['comparison_contract_fail_count']} | {summary['comparison_repair_count']} |",
+        "",
+        "## Latency",
+        "",
+        f"- Canonical mean: {summary['canonical_latency_ms_mean']} ms",
+        f"- Comparison mean: {summary['comparison_latency_ms_mean']} ms",
+        "",
+        f"*Generated: {summary['generated_at']}*",
+    ]
+    md_path = phase_dir / f"COMPARE_SUMMARY_{step_id}.md"
+    md_path.write_text("\n".join(md_lines) + "\n", encoding="utf-8")
+
+    logger.info(
+        "COMPARE_SUMMARY_WRITTEN phase_dir=%s step=%s json=%s md=%s",
+        phase_dir, step_id, json_path.name, md_path.name,
+    )
+
+    return summary
+
+
 def execute_step_for_partitions(
     phase: str,
     prompt_spec: PromptSpec,
@@ -11122,6 +11511,64 @@ def execute_step_for_partitions(
         failure_histogram=failure_histogram,
         first_failure=step_first_failure_context,
     )
+
+    # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: run comparison lane if enabled
+    if (
+        is_comparison_enabled(cfg)
+        and step_id in _effective_compare_steps(cfg)
+    ):
+        logger.info(
+            "COMPARE_ROUTE_CHOSEN phase=%s step=%s model=%s/%s",
+            phase, step_id,
+            getattr(cfg, "compare_provider", "xai"),
+            getattr(cfg, "compare_model", "grok-4.20-beta"),
+        )
+        try:
+            comparison_results = run_comparison_lane(
+                phase=phase,
+                step_id=step_id,
+                partitions=ordered_partitions,
+                phase_dir=phase_dir,
+                cfg=cfg,
+                prompt_text=prompt_text,
+                output_artifacts=output_artifacts,
+                build_partition_context_fn=build_partition_context,
+                call_llm_fn=call_llm,
+                parse_json_from_response_fn=parse_json_from_response,
+                coerce_artifacts_from_response_fn=coerce_artifacts_from_response,
+            )
+            # Collect canonical results for summary (best-effort from step stats)
+            canonical_results_for_summary = [
+                {
+                    "partition_id": p.get("id", "unknown"),
+                    "success": True,
+                    "request_meta": {
+                        "lane": "canonical",
+                        "authoritative": True,
+                        "provider": initial_provider,
+                        "model_id": initial_model_id,
+                        "final_contract_status": step_stats.get("final_contract_status") or "pass",
+                        "repair_invocations": step_stats.get("repair_invocations", 0),
+                        "repair_successes": step_stats.get("repair_successes", 0),
+                        "elapsed_ms": 0,
+                    },
+                }
+                for p in ordered_partitions
+            ]
+            generate_comparison_summary(
+                phase_dir=phase_dir,
+                step_id=step_id,
+                canonical_results=canonical_results_for_summary,
+                comparison_results=comparison_results,
+                compare_provider=str(getattr(cfg, "compare_provider", None) or "xai"),
+                compare_model=str(getattr(cfg, "compare_model", None) or "grok-4.20-beta"),
+            )
+        except Exception as _cmp_exc:
+            logger.warning(
+                "COMPARE_LANE_ERROR phase=%s step=%s error=%s (canonical result unaffected)",
+                phase, step_id, _cmp_exc,
+            )
+
     return step_stats
 
 
@@ -14560,6 +15007,37 @@ def main() -> None:
         choices=["openai_sdk"],
         default="openai_sdk",
     )
+    # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: comparison lane CLI args
+    parser.add_argument(
+        "--compare-mode",
+        choices=["additional"],
+        default=None,
+        help=(
+            "Enable comparison lane. 'additional' runs a secondary model alongside "
+            "canonical without affecting pass/fail. Disabled by default."
+        ),
+    )
+    parser.add_argument(
+        "--compare-model",
+        type=str,
+        default=None,
+        help="Model ID to use for the comparison lane (e.g. grok-4.20-beta).",
+    )
+    parser.add_argument(
+        "--compare-provider",
+        type=str,
+        default=None,
+        help="Provider slug for the comparison model (e.g. xai). Inferred from registry if omitted.",
+    )
+    parser.add_argument(
+        "--compare-steps",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated list of step IDs to run comparison on "
+            "(e.g. H9,A9). Defaults to COMPARISON_ELIGIBLE_STEPS allowlist."
+        ),
+    )
     parser.add_argument(
         "--retry-policy", choices=["none", "default"], default="default"
     )
@@ -14681,6 +15159,20 @@ def main() -> None:
     if args.batch_submit_only:
         args.batch_mode = True
     apply_model_overrides(args.gemini_model_id, args.routing_policy)
+
+    # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: validate comparison step eligibility
+    if getattr(args, "compare_mode", None) == "additional":
+        _compare_steps_raw = getattr(args, "compare_steps", None)
+        if _compare_steps_raw:
+            _requested = frozenset(
+                s.strip() for s in _compare_steps_raw.split(",") if s.strip()
+            )
+            _ineligible = _requested - COMPARISON_ELIGIBLE_STEPS
+            if _ineligible:
+                parser.error(
+                    f"--compare-steps {sorted(_ineligible)} are not eligible for comparison. "
+                    f"Eligible steps: {sorted(COMPARISON_ELIGIBLE_STEPS)}"
+                )
 
     # TP-WEBHOOKS-0002 validation
     if args.async_provider and not args.phase:
@@ -15053,6 +15545,14 @@ def main() -> None:
         selected_execution_step=selected_execution_step,
         d0_max_files=args.d0_max_files,
         d1_max_files=args.d1_max_files,
+        compare_mode=getattr(args, "compare_mode", None),
+        compare_model=getattr(args, "compare_model", None) or None,
+        compare_provider=getattr(args, "compare_provider", None) or None,
+        compare_steps=(
+            tuple(s.strip() for s in args.compare_steps.split(",") if s.strip())
+            if getattr(args, "compare_steps", None)
+            else None
+        ),
     )
 
     # --profile: load extraction profile and apply phase filtering + budget overrides
