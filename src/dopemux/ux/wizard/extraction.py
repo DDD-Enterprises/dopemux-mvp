@@ -104,6 +104,11 @@ def run_extraction(state: WizardState) -> StageResult:
             "--skip-hygiene",
         ]
 
+        # Pass prescan intelligence file if available
+        prescan_intel = state.repo_root / "extraction" / "prescan" / "prescan_intelligence.json"
+        if prescan_intel.exists():
+            cmd.extend(["--prescan-file", str(prescan_intel)])
+
         console.print(f"\n  [bold cyan]Executing:[/bold cyan] {' '.join(cmd)}\n")
 
         try:

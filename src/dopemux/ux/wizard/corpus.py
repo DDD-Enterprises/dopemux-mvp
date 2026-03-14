@@ -83,43 +83,41 @@ def run_corpus_audit(state: WizardState) -> StageResult:
         f"{excluded:,} excluded (noise/binaries/vendor)[/dim]"
     )
 
-    # ── Stage 2b: Git intelligence passes (free, no API) ─────────────────
+    # ── Stage 2b: Full intelligence passes (free, no API) ──────────────────
     console.print()
     if state.educate_mode:
         render_educational_panel(
-            "Git Intelligence Passes (Free — No API Cost)",
-            "The prescan can run deeper analysis using your local git history:\n\n"
-            "  • [bold]Lifecycle detection[/bold]: fresh/active/stale/frozen per file\n"
-            "  • [bold]Ghost recovery[/bold]: deleted files (👻) restored as context\n"
-            "  • [bold]Exact dedup detection[/bold]: 683+ duplicate files found in this repo\n"
-            "  • [bold]Version chains[/bold]: -v2/-v3/-2 files grouped for compression\n"
-            "  • [bold]Feature gaps[/bold]: TODOs, stubs, proposed ADRs, draft docs\n"
-            "  • [bold]Co-change groups[/bold]: files always committed together\n\n"
-            "Takes ~30-60s extra. Produces prescan_intelligence.json used for\n"
-            "cost-optimized extraction routing.",
+            "Full Intelligence Passes (Free — No API Cost)",
+            "The prescan can run deep analysis using your local codebase:\n\n"
+            "  • [bold]Git intelligence[/bold]: lifecycle, ghosts, dupes, chains, co-change\n"
+            "  • [bold]Code intelligence[/bold]: AST, import graph, entry points, complexity\n"
+            "  • [bold]Architecture[/bold]: compose topology, services, event flows, API routes\n"
+            "  • [bold]Features[/bold]: flags, CLI commands, MCP tools, completeness\n\n"
+            "Takes ~60-90s. Produces prescan_intelligence.json and extraction\n"
+            "artifacts (skip list, routing hints, partition hints) for optimized runs.",
         )
 
     if Confirm.ask(
-        "[cyan]Run git intelligence passes (free, ~30s)?[/cyan]", default=True
+        "[cyan]Run full intelligence passes (free, ~60-90s)?[/cyan]", default=True
     ):
-        console.print("[bold cyan]Running git intelligence passes…[/bold cyan]\n")
-        cmd_git = [
+        console.print("[bold cyan]Running full intelligence passes…[/bold cyan]\n")
+        cmd_full = [
             sys.executable,
             str(prescan_script),
             "dry-run",
-            "--git-passes",
+            "--full-passes",
             "--force",
         ]
-        git_result = subprocess.run(
-            cmd_git,
+        full_result = subprocess.run(
+            cmd_full,
             capture_output=True,
             text=True,
             cwd=str(state.repo_root),
             timeout=300,
         )
-        if git_result.returncode != 0:
+        if full_result.returncode != 0:
             console.print(
-                "[yellow]⚠️  Git passes failed, continuing with heuristic results[/yellow]"
+                "[yellow]⚠️  Full passes failed, continuing with heuristic results[/yellow]"
             )
         else:
             state.git_passes_run = True
