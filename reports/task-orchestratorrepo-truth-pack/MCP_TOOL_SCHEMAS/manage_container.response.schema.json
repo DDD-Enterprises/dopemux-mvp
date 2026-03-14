@@ -1,0 +1,180 @@
+{
+    "_meta": {
+        "tool": "manage_container",
+        "source": "code",
+        "extraction_method": "direct read of executeCreate/executeBatchUpdate/executeBatchDelete JSON builders",
+        "note": "All responses use standard envelope {success, message, data, error, metadata}"
+    },
+    "type": "object",
+    "properties": {
+        "success": {
+            "type": "boolean"
+        },
+        "message": {
+            "type": "string"
+        },
+        "error": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string"
+                        },
+                        "details": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "timestamp": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "data": {
+            "oneOf": [
+                {
+                    "title": "create response",
+                    "type": "object",
+                    "properties": {
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "description": "For project/feature"
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "description": "For task"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "appliedTemplates": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "created": {
+                            "type": "integer"
+                        },
+                        "failed": {
+                            "type": "integer"
+                        },
+                        "failures": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "index": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "error": {
+                                        "type": "object",
+                                        "properties": {
+                                            "code": {
+                                                "type": "string"
+                                            },
+                                            "message": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "warning": {
+                            "type": "string",
+                            "description": "Present when no templates applied"
+                        }
+                    }
+                },
+                {
+                    "title": "update response",
+                    "type": "object",
+                    "properties": {
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "modifiedAt": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "updated": {
+                            "type": "integer"
+                        },
+                        "failed": {
+                            "type": "integer"
+                        },
+                        "failures": {
+                            "type": "array"
+                        },
+                        "cascadeEvents": {
+                            "type": "array",
+                            "description": "Present when status change triggers cascade"
+                        },
+                        "unblockedTasks": {
+                            "type": "array",
+                            "description": "Tasks unblocked by this status change"
+                        }
+                    }
+                },
+                {
+                    "title": "delete response",
+                    "type": "object",
+                    "properties": {
+                        "ids": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "format": "uuid"
+                            }
+                        },
+                        "deleted": {
+                            "type": "integer"
+                        },
+                        "failed": {
+                            "type": "integer"
+                        },
+                        "failures": {
+                            "type": "array"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
