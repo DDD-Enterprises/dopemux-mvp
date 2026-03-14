@@ -2475,6 +2475,8 @@ cli.add_command(upgrades)
 from .commands.extractor_commands import extractor, _run_extractor_runner, _run_repscan_runner
 cli.add_command(extractor)
 
+from .commands.audit_commands import audit
+cli.add_command(audit)
 
 
 # ============================================================
