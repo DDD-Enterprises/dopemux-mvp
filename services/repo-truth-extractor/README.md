@@ -109,7 +109,7 @@ python services/repo-truth-extractor/run_extraction_v5.py \
    partitions with the comparison model.
 3. Comparison outputs are written to a separate tree and **never overwrite canonical files**.
 4. A per-step summary (`COMPARE_SUMMARY_<STEP>.json` + `.md`) is written with side-by-side
-   metrics: schema pass/fail, repair counts, latency, token/cost usage.
+   metrics: schema pass/fail, repair counts, and mean latency.
 
 **Comparison artifact layout:**
 
