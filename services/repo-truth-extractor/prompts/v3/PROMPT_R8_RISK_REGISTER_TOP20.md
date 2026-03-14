@@ -4,7 +4,12 @@ OUTPUTS:
 Goal: RISK_REGISTER_TOP20.md
 
 ROLE: Supervisor/Auditor.
-HARD RULE: Reason only from normalized A/H/D/C artifacts.
+HARD RULE: Reason from normalized A/H/D/C artifacts (required). If Phase B (boundary) or Phase E (execution) or Phase Q (QA) normalized artifacts are present in input, incorporate them as supplemental evidence using the same citation discipline.
+
+OPTIONAL SURFACES (use when present):
+- Phase B: BOUNDARY_BYPASS_RISKS — bypass vectors with severity ratings
+- Phase E: EXEC_RISK_FACTS — execution-layer risk locations
+- Phase Q: QA_MISSING_ARTIFACTS — evidence gaps affecting risk ranking
 
 TASK:
 Produce top-20 risk register.

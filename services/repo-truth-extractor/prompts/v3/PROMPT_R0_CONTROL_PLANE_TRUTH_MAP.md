@@ -4,7 +4,11 @@ OUTPUTS:
 Goal: CONTROL_PLANE_TRUTH_MAP.md
 
 ROLE: Supervisor/Auditor. Evidence-first.
-HARD RULE: Reason only from Phase A/H/D/C normalized artifacts. If evidence is missing, write UNKNOWN and name the missing artifact.
+HARD RULE: Reason from Phase A/H/D/C normalized artifacts (required). If Phase G (governance) or Phase E (execution) normalized artifacts are present in input, incorporate them as supplemental evidence using the same citation discipline. If evidence is missing, write UNKNOWN and name the missing artifact.
+
+OPTIONAL SURFACES (use when present):
+- Phase G: GOV_CI_GATES, GOV_POLICIES, GOV_SECRETS_SURFACE — governance authority, enforcement gates
+- Phase E: EXEC_BOOTSTRAP_COMMANDS, EXEC_ENV_CHAIN, EXEC_STARTUP_GRAPH — startup sequences, env precedence
 
 TASK:
 Produce the repo/home control-plane truth map.
