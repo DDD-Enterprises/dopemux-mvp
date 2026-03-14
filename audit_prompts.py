@@ -1,9 +1,21 @@
-import os
-import yaml
-import re
 import json
+import os
+import re
+
+import yaml
 
 PROMPTSET_PATH = "services/repo-truth-extractor/promptsets/v4/promptset.yaml"
+SECTION_MIN_WORDS = {
+    "Goal": 5,
+    "Inputs": 5,
+    "Outputs": 1,
+    "Schema": 5,
+    "Extraction Procedure": 5,
+    "Evidence Rules": 5,
+    "Determinism Rules": 5,
+    "Anti-Fabrication Rules": 5,
+    "Failure Modes": 5,
+}
 
 def parse_markdown_sections(text):
     sections = {}
@@ -57,8 +69,6 @@ def main():
 
     results = []
     
-    STUB_THRESHOLD = 5 # Words
-    
     counts = {
         'complete': 0,
         'partial': 0,
@@ -93,7 +103,8 @@ def main():
                 missing_sections.append(req)
             else:
                 words = count_words(sections_lower[req_l])
-                if words <= STUB_THRESHOLD:
+                threshold = SECTION_MIN_WORDS.get(req, 5)
+                if words < threshold:
                     stub_sections.append((req, words))
 
         is_stub = len(stub_sections) > 0 and len(missing_sections) == 0

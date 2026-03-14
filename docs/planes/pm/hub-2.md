@@ -22,12 +22,26 @@ This plane follows strict phases. Do not skip phases.
 - ADR template: `docs/90-adr/adr-skeleton.md`
 - Task Packet template: `docs/task-packets/TEMPLATE_TASK_PACKET.md`
 
-## Current Authority ADR Set (2026-03-11)
+## Current Authority ADR Set (2026-03-12)
 
+- `docs/90-adr/adr-index.md`
 - `docs/90-adr/adr-pm-plane-authority-boundaries.md`
-- `docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md`
 - `docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md`
 - `docs/90-adr/adr-leantime-json-rpc-plus-plugin-integration-strategy.md`
+- `docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md`
+- `docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md`
+- `docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`
+- `docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md`
+- `docs/90-adr/adr-serena-as-technical-context-plane.md`
+- `docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md`
+
+## Current PM-plane contracts
+
+- `docs/planes/pm/pm-plane-write-adjudication-model.md`
+- `docs/planes/pm/pm-plane-write-matrix.md`
+- `docs/planes/pm/pm-plane-normalized-tool-surface.md`
+- `docs/planes/pm/pm-plane-read-matrix.md`
+- `docs/planes/pm/pm-plane-write-surface-policy.md`
 
 ## Active Follow-up Queue
 
