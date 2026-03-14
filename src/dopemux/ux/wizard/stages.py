@@ -37,6 +37,7 @@ class WizardState:
     corpus_manifest: Optional[List[Dict[str, Any]]] = None
     corpus_included_count: int = 0
     corpus_total_size: int = 0
+    grok_response: Optional[Dict[str, Any]] = None
     promptset_ready: bool = False
     selected_policy: str = "balanced_openrouter"
     run_id: str = ""
