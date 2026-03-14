@@ -1,0 +1,221 @@
+# Extraction Authority Tiers
+# TP-RTX-V5-PRE-RESTART-REPO-HYGIENE-0001
+#
+# This file defines a five-tier authority classification for documents
+# that the repo-truth extractor may ingest. The purpose is to prevent
+# roadmap/speculative/generated content from polluting canonical truth.
+#
+# Tiers (highest to lowest authority):
+#   1. canonical          — verified, implemented, design-binding truth
+#   2. reference          — implementation guides, API docs, service READMEs
+#   3. status_audit       — audit reports, status summaries, progress trackers
+#   4. roadmap_speculative — planned features, roadmaps, speculative docs
+#   5. generated          — proof bundles, extraction outputs, CI artifacts
+#
+# The extractor should weight or filter based on tier when constructing
+# prompts for truth extraction. Lower tiers should not override higher tiers.
+
+schema_version: "1"
+updated: "2026-03-14"
+
+tiers:
+  canonical:
+    priority: 1
+    description: >
+      Verified, implemented, design-binding truth. These documents describe
+      what the system currently IS, not what it plans to be. Changes to these
+      docs require deliberate review.
+    path_patterns:
+      - "pyproject.toml"
+      - "dopemux.toml"
+      - "compose.yml"
+      - "compose/**/*.yml"
+      - "compose/**/*.yaml"
+      - "docker/**/*.yml"
+      - "docker/**/*.yaml"
+      - "docker/**/*.json"
+      - ".claude/**"
+      - ".dopemux/**"
+      - ".taskx/**"
+      - ".github/**"
+      - "src/**/*.py"
+      - "services/**/*.py"
+      - "services/registry.yaml"
+      - "config/**/*.yaml"
+      - "config/**/*.json"
+      - "config/**/*.toml"
+      - "docs/90-adr/**"
+      - "docs/91-rfc/**"
+      - "AGENTS.md"
+      - "README.md"
+      - "INSTALL.md"
+      - "QUICK_START.md"
+    examples:
+      - "compose.yml"
+      - "src/dopemux/cli.py"
+      - "services/registry.yaml"
+      - "docs/90-adr/ADR-207-three-layer-integration.md"
+
+  reference:
+    priority: 2
+    description: >
+      Implementation guides, API documentation, and service READMEs.
+      These describe how to use and operate implemented features.
+      High-trust but may lag slightly behind implementation.
+    path_patterns:
+      - "docs/03-reference/**"
+      - "docs/02-how-to/**"
+      - "docs/04-explanation/**"
+      - "services/**/README.md"
+      - "docker/**/README.md"
+      - "scripts/**/*.md"
+      - "CHANGELOG.md"
+      - "docs/00-MASTER-INDEX.md"
+      - "docs/INDEX.md"
+      - "docs/docs_index.yaml"
+    examples:
+      - "docs/03-reference/repo_truth_extractor_pipeline_phases.md"
+      - "services/task-orchestrator/README.md"
+      - "CHANGELOG.md"
+
+  status_audit:
+    priority: 3
+    description: >
+      Audit reports, status summaries, coverage reports, and progress trackers.
+      These describe a snapshot state at a point in time. Do not treat as
+      implementation truth — they may describe an older state of the system.
+    path_patterns:
+      - "docs/05-audit-reports/**"
+      - "reports/**"
+      - "review_artifacts/**"
+      - "AUDIT_*.md"
+      - "AUDIT_*.json"
+      - "**/COVERAGE_ROLLUP.json"
+      - "**/PROOF_PACK.json"
+      - "**/RUN_MANIFEST.json"
+      - "repo-truth-pack/**"
+    examples:
+      - "AUDIT_INITIAL_FINDINGS.md"
+      - "AUDIT_RESULTS.json"
+      - "reports/ENV_VARS.json"
+      - "repo-truth-pack/conport/"
+
+  roadmap_speculative:
+    priority: 4
+    description: >
+      Roadmaps, planned features, speculative design docs, and draft proposals.
+      These describe what the system might become. Must NOT be treated as
+      current implementation truth. Low extraction weight.
+    path_patterns:
+      - "docs/01-tutorials/**"
+      - "UPGRADES/**"
+      - "docs/archive/**"
+      - "docs/**/*roadmap*"
+      - "docs/**/*plan*"
+      - "docs/**/*proposal*"
+      - "docs/**/*draft*"
+      - "docs/**/*rfc*"
+      - "docs/91-rfc/**"
+      - "task-packets/**"
+      - "contracts/**"
+      - "extraction/*/proofs/**"
+    notes: >
+      docs/91-rfc is listed here (roadmap_speculative) rather than canonical
+      because RFCs describe proposed changes, not ratified decisions. Once an
+      RFC is implemented, its content is reflected in ADRs and canonical docs.
+    examples:
+      - "UPGRADES/FULL_PIPELINE_OVERVIEW.md"
+      - "docs/archive/session_notes/"
+      - "task-packets/"
+
+  generated:
+    priority: 5
+    description: >
+      Machine-generated artifacts, proof bundles, extraction outputs, and CI artifacts.
+      These are DERIVED from source truth, not source truth themselves.
+      Must be excluded from extraction input to prevent feedback loops.
+    path_patterns:
+      - "proof/**"
+      - "extraction/repo-truth-extractor/v3/runs/**"
+      - "extraction/repo-truth-extractor/v4/runs/**"
+      - "extraction/repo-truth-extractor/v5/proofs/**"
+      - "extraction/repo-truth-extractor/quarantine/**"
+      - "tmp/**"
+      - "out/**"
+      - "htmlcov/**"
+      - "**/__pycache__/**"
+      - "**/.pytest_cache/**"
+      - "**/node_modules/**"
+      - "**/.venv/**"
+      - "vendor/**"
+      - "SYSTEM_ARCHIVE/**"
+    examples:
+      - "proof/TP5A-conport-full-surface-drift-0001/"
+      - "extraction/repo-truth-extractor/v3/runs/FULL_RUN/"
+      - "reports/CONCURRENCY_RISK_LOCATIONS.json"
+
+# ---------------------------------------------------------------------------
+# CLASSIFICATION RULES
+# Applied in priority order — first matching tier wins.
+# ---------------------------------------------------------------------------
+classification_rules:
+  - rule: "path_starts_with"
+    values:
+      - "extraction/repo-truth-extractor/v3/runs/"
+      - "extraction/repo-truth-extractor/v4/runs/"
+      - "extraction/repo-truth-extractor/v5/proofs/"
+      - "extraction/repo-truth-extractor/quarantine/"
+      - "proof/"
+      - "tmp/"
+      - "out/"
+      - "SYSTEM_ARCHIVE/"
+      - "htmlcov/"
+      - "reports/"
+    tier: "generated"
+
+  - rule: "path_contains"
+    values:
+      - "__pycache__"
+      - "node_modules"
+      - ".venv"
+      - "/.git/"
+      - "/dist/"
+    tier: "generated"
+
+  - rule: "path_starts_with"
+    values:
+      - "UPGRADES/"
+      - "docs/archive/"
+      - "task-packets/"
+      - "contracts/"
+      - "docs/91-rfc/"
+    tier: "roadmap_speculative"
+
+  - rule: "path_starts_with"
+    values:
+      - "docs/05-audit-reports/"
+      - "review_artifacts/"
+      - "repo-truth-pack/"
+    tier: "status_audit"
+  - rule: "filename_matches"
+    values:
+      - "AUDIT_*.md"
+      - "AUDIT_*.json"
+    tier: "status_audit"
+
+  - rule: "path_starts_with"
+    values:
+      - "docs/03-reference/"
+      - "docs/02-how-to/"
+      - "docs/04-explanation/"
+      - "docs/01-tutorials/"
+    tier: "reference"
+  - rule: "filename_matches"
+    values:
+      - "README.md"
+      - "CHANGELOG.md"
+    tier: "reference"
+
+  - rule: "default"
+    tier: "canonical"
+    note: "Any path not matched above is treated as canonical by default"
