@@ -27,7 +27,7 @@ class DopeconBridgeClient:
     allowing Dashboard and ADHD Engine to react in real-time.
     """
 
-    def __init__(self, bridge_url: str | None = None):
+    def __init__(self, bridge_url: Optional[str] = None):
         """
         Initialize DopeconBridge client
 
