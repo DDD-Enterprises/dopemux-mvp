@@ -283,6 +283,9 @@ V5_LATEST_RUN_FILE = V5_EXTRACTION_ROOT / "latest_run_id.txt"
 V5_DOCTOR_ROOT = V5_EXTRACTION_ROOT / "doctor"
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
+# Optional phases whose norm outputs enrich R arbitration when available.
+# B→R3/R8/R10  E→R0/R5/R8  G→R0/R6/R7  W→R5/R6  Q→R7/R8
+R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q"]
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
@@ -14502,6 +14505,16 @@ def run_phase_R_async_submit(
         if phase_norm.exists():
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
+    # Collect optional B/E/G/W/Q norm outputs when available
+    for opt_phase in R_OPTIONAL_INPUT_PHASES:
+        opt_norm = dirs.get(opt_phase)
+        if opt_norm is not None:
+            opt_norm_dir = opt_norm / "norm"
+            if opt_norm_dir.exists():
+                opt_files = sorted(opt_norm_dir.glob("*.json")) + sorted(opt_norm_dir.glob("*.md"))
+                if opt_files:
+                    input_files.extend(opt_files)
+                    logger.info("R_ASYNC_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, len(opt_files))
     deduped_inputs = sorted(set(input_files), key=str)
     context_items = to_items(deduped_inputs)
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
@@ -14913,6 +14926,26 @@ def run_phase_R(
         if phase_norm.exists():
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
+
+    # Collect optional B/E/G/W/Q norm outputs when available
+    optional_contributed: List[str] = []
+    for opt_phase in R_OPTIONAL_INPUT_PHASES:
+        opt_norm = dirs.get(opt_phase, dirs.get(opt_phase))
+        if opt_norm is None:
+            continue
+        opt_norm = opt_norm / "norm"
+        if opt_norm.exists():
+            opt_files = sorted(opt_norm.glob("*.json")) + sorted(opt_norm.glob("*.md"))
+            if opt_files:
+                input_files.extend(opt_files)
+                optional_contributed.append(f"{opt_phase}({len(opt_files)})")
+                logger.info("R_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, len(opt_files))
+            else:
+                logger.info("R_OPTIONAL_SKIP: phase=%s reason=empty_norm_dir", opt_phase)
+        else:
+            logger.info("R_OPTIONAL_SKIP: phase=%s reason=no_norm_dir", opt_phase)
+    if optional_contributed:
+        logger.info("R_OPTIONAL_SUMMARY: contributed=%s", ", ".join(optional_contributed))
 
     deduped_inputs = sorted(set(input_files), key=str)
     _run_phase_inner(

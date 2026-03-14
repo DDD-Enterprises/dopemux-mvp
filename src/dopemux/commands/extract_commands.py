@@ -814,6 +814,7 @@ def _hygiene_severity_color(level: str) -> str:
 @click.option("--skip-hygiene", is_flag=True, help="Skip pre-flight hygiene scan")
 @click.option("--apply-cleanup", is_flag=True, help="Apply quarantine cleanup if hygiene scan finds hazards")
 @click.option("--force", is_flag=True, help="Run extraction even if hygiene scan reports errors")
+@click.option("--check-phases", is_flag=True, help="Show phase readiness table and exit (no extraction)")
 @click.pass_context
 def truth_run(
     ctx,
@@ -827,6 +828,7 @@ def truth_run(
     skip_hygiene: bool,
     apply_cleanup: bool,
     force: bool,
+    check_phases: bool,
 ):
     """
     🔬 Full extraction workflow: hygiene scan → optional cleanup → v5 extraction run.
@@ -940,6 +942,13 @@ def truth_run(
         box=box.DOUBLE_EDGE,
         border_style="bright_cyan",
     ))
+
+    # ------------------------------------------------------------------
+    # Check-phases: show readiness table and exit
+    # ------------------------------------------------------------------
+    if check_phases:
+        _display_phase_readiness(console, Path("extraction/repo-truth-extractor/v5"), run_id)
+        return
 
     # ------------------------------------------------------------------
     # Phase 1: Hygiene scan
@@ -1177,4 +1186,137 @@ def _display_v3_migration_summary(v5_run_dir: "Path", run_id: str, console: "Con
     console.print(
         f"[dim]Phases with existing raw/*.json will be [bold green]skipped[/bold green] "
         f"by v5 resume. Failed partitions will be [bold yellow]retried[/bold yellow].[/dim]"
+    )
+
+
+# ── Phase readiness table ──────────────────────────────────────────────
+# Phase ordering and dependency constants (mirrors run_extraction_v5.py)
+_PHASE_ORDER = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
+_PHASE_LABELS = {
+    "A": "Repo Control Plane",
+    "H": "Home Control Plane",
+    "D": "Docs Pipeline",
+    "C": "Code Surfaces",
+    "E": "Execution Plane",
+    "W": "Workflow Plane",
+    "B": "Boundary Plane",
+    "G": "Governance Plane",
+    "Q": "Quality Assurance",
+    "R": "Arbitration",
+    "X": "Feature Index",
+    "T": "Task Packets",
+    "Z": "Handoff / Freeze",
+    "S": "Synthesis",
+}
+_R_REQUIRED = {"A", "H", "D", "C"}
+_R_OPTIONAL = {"B", "E", "G", "W", "Q"}
+_S_REQUIRED = {"R"}
+_S_OPTIONAL = {"X", "T", "Z"}
+
+
+def _display_phase_readiness(console: "Console", v5_root: "Path", run_id: Optional[str]) -> None:
+    """Show per-phase status and dependency readiness table, then exit."""
+    from rich.table import Table
+
+    runs_root = v5_root / "runs"
+    if run_id is None:
+        latest_file = v5_root / "latest_run_id.txt"
+        if latest_file.exists():
+            run_id = latest_file.read_text().strip()
+        else:
+            console.print("[yellow]No run_id specified and no latest_run_id.txt found.[/yellow]")
+            return
+
+    run_dir = runs_root / run_id
+    if not run_dir.exists():
+        console.print(f"[red]Run directory not found: {run_dir}[/red]")
+        return
+
+    console.print(Panel(
+        f"[bold cyan]Phase Readiness · run_id={run_id}[/bold cyan]",
+        border_style="cyan",
+    ))
+
+    tbl = Table(show_header=True, header_style="bold magenta", border_style="dim")
+    tbl.add_column("Phase", style="bold", width=6)
+    tbl.add_column("Name", width=22)
+    tbl.add_column("Status", width=14)
+    tbl.add_column("Raw", justify="right", width=6)
+    tbl.add_column("Norm", justify="right", width=6)
+    tbl.add_column("Failed", justify="right", width=7)
+    tbl.add_column("Deps Ready", width=22)
+
+    phase_data = {}
+    for p in _PHASE_ORDER:
+        phase_dir = run_dir / p
+        raw_dir = phase_dir / "raw"
+        norm_dir = phase_dir / "norm"
+
+        raw_count = len(list(raw_dir.glob("*.json"))) if raw_dir.exists() else 0
+        norm_count = (
+            len(list(norm_dir.glob("*.json"))) + len(list(norm_dir.glob("*.md")))
+            if norm_dir.exists()
+            else 0
+        )
+        failed_count = len(list(raw_dir.glob("*__FAILED__*"))) if raw_dir.exists() else 0
+        # Also check top-level FAILED markers
+        failed_count += len(list(phase_dir.glob("FAILED_*"))) if phase_dir.exists() else 0
+
+        if norm_count > 0 and failed_count == 0:
+            status = "[bold green]✅ complete[/bold green]"
+        elif norm_count > 0 and failed_count > 0:
+            status = "[bold yellow]⚠️  partial[/bold yellow]"
+        elif raw_count > 0 and norm_count == 0:
+            status = "[bold yellow]🔄 raw only[/bold yellow]"
+        elif raw_count == 0 and failed_count > 0:
+            status = "[bold red]❌ failed[/bold red]"
+        else:
+            status = "[dim]—  not started[/dim]"
+
+        phase_data[p] = {"raw": raw_count, "norm": norm_count, "failed": failed_count, "status": status}
+
+    for p in _PHASE_ORDER:
+        d = phase_data[p]
+        # Determine dependency readiness
+        if p == "R":
+            req_ok = all(phase_data[r]["norm"] > 0 for r in _R_REQUIRED)
+            opt_avail = [o for o in _R_OPTIONAL if phase_data[o]["norm"] > 0]
+            parts = []
+            parts.append(f"[green]req:✅[/green]" if req_ok else f"[red]req:❌[/red]")
+            if opt_avail:
+                parts.append(f"[cyan]opt:{','.join(opt_avail)}[/cyan]")
+            deps = " ".join(parts)
+        elif p == "S":
+            req_ok = phase_data["R"]["norm"] > 0
+            opt_avail = [o for o in _S_OPTIONAL if phase_data[o]["norm"] > 0]
+            parts = []
+            parts.append(f"[green]req:✅[/green]" if req_ok else f"[red]req:❌[/red]")
+            if opt_avail:
+                parts.append(f"[cyan]opt:{','.join(opt_avail)}[/cyan]")
+            deps = " ".join(parts)
+        elif p in ("X", "T", "Z"):
+            req_ok = phase_data["R"]["norm"] > 0
+            deps = "[green]R:✅[/green]" if req_ok else "[red]R:❌[/red]"
+        else:
+            deps = "[dim]none[/dim]"
+
+        tbl.add_row(
+            p,
+            _PHASE_LABELS.get(p, p),
+            d["status"],
+            str(d["raw"]) if d["raw"] else "—",
+            str(d["norm"]) if d["norm"] else "—",
+            str(d["failed"]) if d["failed"] else "—",
+            deps,
+        )
+
+    console.print(tbl)
+
+    # Summary
+    completed = sum(1 for d in phase_data.values() if d["norm"] > 0 and d["failed"] == 0)
+    partial = sum(1 for d in phase_data.values() if d["norm"] > 0 and d["failed"] > 0)
+    not_started = sum(1 for d in phase_data.values() if d["raw"] == 0 and d["norm"] == 0 and d["failed"] == 0)
+    console.print(
+        f"\n[bold]Summary:[/bold] {completed} complete, {partial} partial, "
+        f"{not_started} not started, {len(_PHASE_ORDER) - completed - partial - not_started} other"
     )

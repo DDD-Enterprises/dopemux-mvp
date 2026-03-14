@@ -102,6 +102,7 @@ reference:
   repo_truth_extractor_doctor_reprocess: docs/03-reference/extraction/doctor-reprocess.md
   repo_truth_extractor_prompt_contract: docs/03-reference/extraction/prompt-contract-v4.md
   repo_truth_extractor_v5_ui_live_output: docs/03-reference/extraction/v5-ui-live-output.md
+  repo_truth_extractor_phase_interaction_design: docs/03-reference/extraction/phase-interaction-design.md
   dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md
   dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
 explanation:
