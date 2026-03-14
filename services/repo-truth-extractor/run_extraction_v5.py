@@ -13393,6 +13393,29 @@ Return ONLY valid JSON matching exactly:
 """
 
 
+def _deterministic_phase_sample(
+    phase_outputs: "List[Dict[str, Any]]", n_sample: int
+) -> "List[Dict[str, Any]]":
+    """Deterministically select a subset of phase_outputs for auditing.
+
+    Uses a hash of a stable JSON representation of each item to provide
+    deterministic but well-distributed sampling without relying on RNG state.
+    """
+    if not phase_outputs or n_sample <= 0:
+        return []
+
+    def _item_hash(item: "Dict[str, Any]") -> str:
+        try:
+            # sort_keys ensures deterministic key order across runs
+            serialized = json.dumps(item, sort_keys=True, default=str)
+        except TypeError:
+            serialized = repr(item)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    sorted_items = sorted(phase_outputs, key=_item_hash)
+    return sorted_items[: min(n_sample, len(sorted_items))]
+
+
 def audit_phase_sample(
     phase_dir: "Path",
     phase_outputs: "List[Dict[str, Any]]",
@@ -13412,7 +13435,7 @@ def audit_phase_sample(
         return {"sampled": 0, "skipped": True}
 
     n_sample = min(max(1, int(len(phase_outputs) * sample_rate)), 5)
-    sample = random.sample(phase_outputs, min(n_sample, len(phase_outputs)))
+    sample = _deterministic_phase_sample(phase_outputs, n_sample)
 
     results: List[Dict[str, Any]] = []
     escalation_needed: List[str] = []
