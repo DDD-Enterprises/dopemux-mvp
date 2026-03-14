@@ -74,6 +74,8 @@ how_to:
   repo_truth_extractor_cli_canonical_entrypoint: docs/02-how-to/extraction/run-v4-from-dopemux-cli.md
   repo_truth_extractor_user_guide: docs/02-how-to/extraction/repo-truth-extractor-user-guide.md
   repo_truth_extractor_batch_quickstart: docs/02-how-to/extraction/batch-quickstart.md
+  repo_truth_extractor_truth_run: docs/02-how-to/extraction/truth-run-command.md
+  doc_audit_prescan_how_to: docs/02-how-to/doc-audit-prescan.md
 tutorials:
   directory: docs/01-tutorials/
   start_here: docs/01-tutorials/start-here-2.md
@@ -86,6 +88,7 @@ reference:
   features_index: docs/03-reference/features/features-index.md
   task_orchestrator_service: docs/03-reference/services/task-orchestrator.md
   mcp_tools_overview: docs/03-reference/mcp-tools-overview.md
+  doc_audit_prescan_reference: docs/03-reference/doc-audit-prescan.md
   pm_plane_write_matrix: docs/planes/pm/pm-plane-write-matrix.md
   pm_plane_read_matrix: docs/planes/pm/pm-plane-read-matrix.md
   pm_plane_write_surface_policy: docs/planes/pm/pm-plane-write-surface-policy.md
@@ -95,6 +98,7 @@ reference:
   repo_truth_extractor_pipeline_reliability: docs/03-reference/extraction/pipeline-reliability.md
   repo_truth_extractor_doctor_reprocess: docs/03-reference/extraction/doctor-reprocess.md
   repo_truth_extractor_prompt_contract: docs/03-reference/extraction/prompt-contract-v4.md
+  repo_truth_extractor_v5_ui_live_output: docs/03-reference/extraction/v5-ui-live-output.md
   dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md
   dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
 explanation:
