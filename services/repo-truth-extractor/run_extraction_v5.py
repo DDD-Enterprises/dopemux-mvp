@@ -601,7 +601,8 @@ GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     ],
 }
 
-OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
+_OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
+_UNUSED_GLOBALS = (_OPTIMAL_NO_CODE_PHASES,)
 OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
