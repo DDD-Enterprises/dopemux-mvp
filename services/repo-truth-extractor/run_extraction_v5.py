@@ -8577,6 +8577,7 @@ def run_comparison_lane(
             try:
                 failed_path.write_text(failure_reason, encoding="utf-8")
             except OSError:
+                # Best-effort sidecar write; ignore filesystem errors to avoid masking the original failure.
                 pass
             results.append({
                 "partition_id": partition_id,
