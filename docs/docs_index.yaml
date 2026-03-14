@@ -76,11 +76,13 @@ how_to:
   repo_truth_extractor_batch_quickstart: docs/02-how-to/extraction/batch-quickstart.md
   repo_truth_extractor_truth_run: docs/02-how-to/extraction/truth-run-command.md
   doc_audit_prescan_how_to: docs/02-how-to/doc-audit-prescan.md
+  extraction_wizard_how_to: docs/02-how-to/extraction-wizard.md
 tutorials:
   directory: docs/01-tutorials/
   start_here: docs/01-tutorials/start-here-2.md
   profile_user_guide: docs/01-tutorials/profile-user-guide.md
   profile_migration_guide: docs/01-tutorials/profile-migration-guide.md
+  extraction_quickstart: docs/01-tutorials/extraction-quickstart.md
 reference:
   directory: docs/03-reference/
   profile_schema: docs/03-reference/configuration/profile-yaml-schema-2.md
@@ -89,6 +91,7 @@ reference:
   task_orchestrator_service: docs/03-reference/services/task-orchestrator.md
   mcp_tools_overview: docs/03-reference/mcp-tools-overview.md
   doc_audit_prescan_reference: docs/03-reference/doc-audit-prescan.md
+  extraction_wizard_reference: docs/03-reference/extraction-wizard.md
   pm_plane_write_matrix: docs/planes/pm/pm-plane-write-matrix.md
   pm_plane_read_matrix: docs/planes/pm/pm-plane-read-matrix.md
   pm_plane_write_surface_policy: docs/planes/pm/pm-plane-write-surface-policy.md
