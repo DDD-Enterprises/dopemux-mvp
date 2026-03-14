@@ -347,3 +347,4 @@ services/router/
 proof/
 .taskx/proof/
 .dopetask/proof/
+extraction/prescan/
