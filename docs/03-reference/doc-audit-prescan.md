@@ -26,9 +26,9 @@ prelude: >
 ---
 # `doc_audit_prescan.py` — Reference
 
-**Location:** `scripts/doc_audit_prescan.py`  
-**Config:** `scripts/doc_audit_prescan.toml`  
-**Output:** `extraction/prescan/` (gitignored)  
+**Location:** `scripts/doc_audit_prescan.py`
+**Config:** `scripts/doc_audit_prescan.toml`
+**Output:** `extraction/prescan/` (gitignored)
 **Version:** 1.0.0
 
 Single-file Python script (~900 lines). No install required — uses only stdlib plus optional `openai` for direct mode.
