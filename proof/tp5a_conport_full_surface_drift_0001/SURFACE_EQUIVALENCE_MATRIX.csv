@@ -1,0 +1,22 @@
+logical_operation,fastmcp_name,jsonrpc_method,rest_method,rest_path,equivalence_confidence,notes
+get_context,get_context,conport_get_context,GET,/api/context/{workspace_id},HIGH,Fully equivalent across all three surfaces.
+update_context,update_context,conport_update_context,POST,/api/context/{workspace_id},HIGH,Fully equivalent. FastMCP uses context_data dict; REST uses named body fields.
+log_decision,log_decision,conport_log_decision,POST,/api/decisions,HIGH,"FastMCP wrapper transforms (topic,decision)->summary before POST. Drift was present, now repaired."
+get_decisions,get_decisions,conport_get_decisions,GET,/api/decisions,HIGH,Fully equivalent. workspace_id optional on all surfaces; limit default 10.
+log_progress,log_progress,conport_log_progress,POST,/api/progress,HIGH,"Default status drift (PLANNED vs IN_PROGRESS) was present in older FastMCP, now repaired. status default=IN_PROGRESS on all surfaces."
+get_progress,get_progress,conport_get_progress,GET,/api/progress,HIGH,Fully equivalent. workspace_id required; status+limit optional.
+update_progress,update_progress,conport_update_progress,PUT,/api/progress/{progress_id},HIGH,"FastMCP uses updates dict; JSON-RPC uses named fields; REST uses named body fields. Semantic parity."
+get_recent_activity,get_recent_activity,conport_get_recent_activity,GET,/api/recent-activity/{workspace_id},HIGH,Fully equivalent. hours default 24 on all surfaces.
+get_active_work,get_active_work,conport_get_active_work,GET,/api/active-work/{workspace_id},HIGH,Fully equivalent.
+search_content,MISSING,conport_search_content,GET,/api/search/{workspace_id},PARTIAL,"FastMCP: not exposed. JSON-RPC: in dispatch map but NOT in tools/list discovery. REST: full parity."
+workspace_summary,workspace_summary,MISSING,GET,/api/workspace-summary,PARTIAL,"JSON-RPC: conport_workspace_summary missing from _dispatch_tool() and _get_tool_schemas(). REST + FastMCP: equivalent."
+unified_search,MISSING,MISSING,GET,/api/unified-search,REST_ONLY,Phase 2 feature. Only on REST. No wrappers yet.
+workspace_relationships,MISSING,MISSING,GET,/api/workspace-relationships,REST_ONLY,Phase 2 feature. Only on REST. No wrappers yet.
+save_custom_data,MISSING,MISSING,POST,/api/custom_data,REST_ONLY,Generic KV store. Not yet promoted to wrapper surfaces.
+get_custom_data,MISSING,MISSING,GET,/api/custom_data,REST_ONLY,Generic KV store. Not yet promoted to wrapper surfaces.
+delete_custom_data,MISSING,MISSING,DELETE,/api/custom_data,REST_ONLY,Generic KV store. Not yet promoted to wrapper surfaces.
+fork_instance,fork_instance,conport_fork_instance,POST,/api/instance/fork,HIGH,"Fully equivalent but dark/admin-only. Not sanctioned for PM-plane use."
+promote_progress,promote,conport_promote,POST,/api/progress/promote,HIGH,"Fully equivalent but dark/admin-only. Not sanctioned for PM-plane use."
+promote_all,promote_all,conport_promote_all,POST,/api/progress/promote_all,HIGH,"Fully equivalent but dark/admin-only. Not sanctioned for PM-plane use."
+health_check,MISSING,MISSING,GET,/health,REST_ONLY,System endpoint. Infrastructure concern.
+metrics,MISSING,MISSING,GET,/metrics,REST_ONLY,"System endpoint. Conditional on MONITORING_AVAILABLE flag."
