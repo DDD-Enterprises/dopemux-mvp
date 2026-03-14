@@ -618,4 +618,212 @@ def render_intelligence_report(intel: Dict[str, Any]) -> None:
 
         console.print(cg_table)
 
+    # ── 6. Code Intelligence ────────────────────────────────────────────────
+    code_intel = intel.get("code_intelligence", {})
+    if code_intel:
+        code_tbl = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+        code_tbl.add_column("Metric", style="dim", min_width=28)
+        code_tbl.add_column("Value", justify="right")
+
+        code_tbl.add_row("Python files analysed", _fmt(code_intel.get("total_python_files", 0)))
+        code_tbl.add_row("Entry points (CLI/API/main)", _fmt(code_intel.get("entry_point_count", 0)))
+        code_tbl.add_row("Orphan files (dead code)", _fmt(code_intel.get("orphan_count", 0), warn_above=10))
+        code_tbl.add_row("Hub files (≥5 importers)", _fmt(code_intel.get("hub_count", 0)))
+        code_tbl.add_row("Circular imports detected", _fmt(code_intel.get("circular_count", len(code_intel.get("circular_imports", []))), warn_above=1))
+
+        cov_ratio = code_intel.get("test_coverage_ratio", 0)
+        cov_pct = int(cov_ratio * 100)
+        cov_color = "green" if cov_pct >= 60 else ("yellow" if cov_pct >= 30 else "red")
+        code_tbl.add_row("Test coverage (by file)", f"[{cov_color}]{cov_pct}%[/{cov_color}]")
+
+        avg_doc = code_intel.get("avg_docstring_coverage", 0)
+        dc = "green" if avg_doc >= 0.6 else ("yellow" if avg_doc >= 0.3 else "red")
+        code_tbl.add_row("Avg docstring coverage", f"[{dc}]{avg_doc:.0%}[/{dc}]")
+
+        # Top hubs
+        hub_lines: list[str] = []
+        for h in code_intel.get("hub_files", [])[:5]:
+            hub_lines.append(f"  [cyan]{h['path']}[/cyan] [dim]← {h['imported_by']} importers[/dim]")
+
+        # Top complexity hotspots
+        hot_lines: list[str] = []
+        for h in code_intel.get("complexity_hotspots", [])[:5]:
+            cx_val = h.get("score", h.get("complexity", 0))
+            hc = "red" if cx_val > 0.7 else "yellow"
+            hot_lines.append(f"  [{hc}]{h['path']}[/{hc}] [dim](score: {cx_val:.2f})[/dim]")
+
+        body_parts = [code_tbl]
+        if hub_lines:
+            body_parts.append(Text(""))
+            body_parts.append(Text("🔗 Top Import Hubs", style="bold"))
+            for ln in hub_lines:
+                body_parts.append(Text.from_markup(ln))
+        if hot_lines:
+            body_parts.append(Text(""))
+            body_parts.append(Text("🔥 Complexity Hotspots", style="bold"))
+            for ln in hot_lines:
+                body_parts.append(Text.from_markup(ln))
+
+        from rich.console import Group as RichGroup
+
+        console.print(
+            Panel(
+                RichGroup(*body_parts),
+                title="[bold blue]💻 Code Intelligence[/bold blue]",
+                border_style="blue",
+                box=ROUNDED,
+                padding=(0, 1),
+            )
+        )
+
+    # ── 7. Architecture Intelligence ────────────────────────────────────────
+    arch_data = intel.get("architecture", {})
+    if arch_data:
+        arch_tbl = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+        arch_tbl.add_column("Metric", style="dim", min_width=28)
+        arch_tbl.add_column("Value", justify="right")
+
+        arch_tbl.add_row("Services (compose + registry)", _fmt(arch_data.get("service_count", 0)))
+        arch_tbl.add_row("API endpoints detected", _fmt(arch_data.get("api_endpoint_count", 0)))
+        arch_tbl.add_row("Event publish/subscribe flows", _fmt(arch_data.get("event_flow_count", 0)))
+        arch_tbl.add_row("Files mapped to services", _fmt(arch_data.get("mapped_file_count", arch_data.get("file_service_map_count", 0))))
+
+        # Service-port table
+        svc_list = arch_data.get("services", [])
+        if svc_list and isinstance(svc_list, list):
+            svc_tbl = Table(
+                box=ROUNDED,
+                border_style="dim",
+                padding=(0, 1),
+                show_lines=False,
+            )
+            svc_tbl.add_column("Service", style="bold cyan", min_width=24)
+            svc_tbl.add_column("Ports", justify="right", min_width=12)
+            svc_tbl.add_column("Files", justify="right", min_width=6)
+
+            partitions = arch_data.get("service_partitions", {})
+            for svc_item in sorted(svc_list, key=lambda s: s.get("name", ""))[:15]:
+                svc_name = svc_item.get("name", "?")
+                raw_ports = svc_item.get("ports", [])
+                ports = ", ".join(str(p).split(":")[-1] for p in raw_ports) or "—"
+                file_count = len(partitions.get(svc_name, []))
+                svc_tbl.add_row(svc_name, ports, str(file_count))
+
+        # Event flows
+        event_lines: list[str] = []
+        for ef in arch_data.get("event_flows", [])[:5]:
+            event_lines.append(
+                f"  [magenta]{ef.get('type', '?')}[/magenta] "
+                f"[dim]in {ef.get('file', '?')}:{ef.get('line', '?')}[/dim]"
+            )
+
+        from rich.console import Group as RichGroup
+
+        parts = [arch_tbl]
+        if svc_list:
+            parts.append(Text(""))
+            parts.append(svc_tbl)
+        if event_lines:
+            parts.append(Text(""))
+            parts.append(Text("⚡ Event Flows (sample)", style="bold"))
+            for ln in event_lines:
+                parts.append(Text.from_markup(ln))
+
+        console.print(
+            Panel(
+                RichGroup(*parts),
+                title="[bold green]🏗️  Architecture Intelligence[/bold green]",
+                border_style="green",
+                box=ROUNDED,
+                padding=(0, 1),
+            )
+        )
+
+    # ── 8. Feature Intelligence ─────────────────────────────────────────────
+    feat_data = intel.get("features", {})
+    if feat_data:
+        feat_tbl = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+        feat_tbl.add_column("Metric", style="dim", min_width=28)
+        feat_tbl.add_column("Value", justify="right")
+
+        feat_tbl.add_row("Feature flags (ENABLE_*/FEATURE_*)", _fmt(feat_data.get("feature_flag_count", 0)))
+        feat_tbl.add_row("CLI commands (click)", _fmt(feat_data.get("cli_command_count", 0)))
+        feat_tbl.add_row("MCP tools registered", _fmt(feat_data.get("mcp_tool_count", 0)))
+        feat_tbl.add_row("MCP servers identified", _fmt(feat_data.get("mcp_server_count", 0)))
+
+        avg_comp = feat_data.get("avg_completeness", 0)
+        comp_color = "green" if avg_comp >= 0.7 else ("yellow" if avg_comp >= 0.4 else "red")
+        feat_tbl.add_row(
+            "Avg feature completeness",
+            f"[{comp_color}]{avg_comp:.0%}[/{comp_color}]",
+        )
+
+        # Feature flags table
+        flags = feat_data.get("feature_flags", [])
+        if flags:
+            flag_tbl = Table(
+                box=ROUNDED,
+                border_style="dim",
+                padding=(0, 1),
+                show_lines=False,
+            )
+            flag_tbl.add_column("Flag", style="bold yellow", min_width=30)
+            flag_tbl.add_column("Default", justify="center", min_width=8)
+            flag_tbl.add_column("Files", justify="right", min_width=5)
+
+            for fl in flags[:12]:
+                name = fl.get("name", "?")
+                default = fl.get("default", "?")
+                files = fl.get("file_count", len(fl.get("files", [])))
+                flag_tbl.add_row(name, str(default), str(files))
+
+        # CLI tree
+        cli_cmds = feat_data.get("cli_commands", [])
+        cli_lines: list[str] = []
+        for cmd in cli_cmds[:8]:
+            indent = "  " * cmd.get("depth", 0)
+            kind = cmd.get("kind", "command")
+            icon = "📂" if kind == "group" else "▸"
+            cli_lines.append(
+                f"  {indent}{icon} [bold]{cmd.get('name', '?')}[/bold] "
+                f"[dim]{cmd.get('file', '')}[/dim]"
+            )
+
+        # MCP servers
+        mcp_servers = feat_data.get("mcp_servers", [])
+        mcp_lines: list[str] = []
+        for srv in mcp_servers[:8]:
+            tool_n = srv.get("tool_count", 0)
+            mcp_lines.append(
+                f"  [cyan]{srv.get('name', '?')}[/cyan] "
+                f"[dim]({tool_n} tools)[/dim]"
+            )
+
+        from rich.console import Group as RichGroup
+
+        parts = [feat_tbl]
+        if flags:
+            parts.append(Text(""))
+            parts.append(flag_tbl)
+        if cli_lines:
+            parts.append(Text(""))
+            parts.append(Text("🖥  CLI Command Tree", style="bold"))
+            for ln in cli_lines:
+                parts.append(Text.from_markup(ln))
+        if mcp_lines:
+            parts.append(Text(""))
+            parts.append(Text("🔌 MCP Servers", style="bold"))
+            for ln in mcp_lines:
+                parts.append(Text.from_markup(ln))
+
+        console.print(
+            Panel(
+                RichGroup(*parts),
+                title="[bold yellow]🎯 Feature Intelligence[/bold yellow]",
+                border_style="yellow",
+                box=ROUNDED,
+                padding=(0, 1),
+            )
+        )
+
     console.print()

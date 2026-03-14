@@ -19,10 +19,10 @@ last_review: '2026-03-14'
 next_review: '2026-06-14'
 prelude: >
   Run the doc_audit_prescan.py script to inventory and classify every text
-  surface in the repo by authority class, then run free git intelligence passes
-  to detect duplicates, version chains, ghost files, planned features, and
-  co-change groups — optimising the downstream extraction run for cost, speed,
-  and accuracy.
+  surface in the repo by authority class, then run free intelligence passes
+  (git, code, architecture, features) to detect duplicates, version chains,
+  import graphs, service topology, feature flags, and more — optimising the
+  downstream extraction run for cost, speed, and accuracy.
 ---
 # Running the Documentation Pre-Scan Audit
 
@@ -43,8 +43,8 @@ The pre-scan audit inventories every text file in the repo, classifies it by aut
 # Step 1: Dry run — safe, no API calls
 python scripts/doc_audit_prescan.py dry-run --verbose
 
-# Step 2: Add git intelligence (free, no API, ~30s extra)
-python scripts/doc_audit_prescan.py dry-run --git-passes --force
+# Step 2: Full intelligence passes (free, ~60-90s)
+python scripts/doc_audit_prescan.py dry-run --full-passes --force
 
 # Step 3: Inspect the intelligence report
 cat extraction/prescan/prescan_intelligence.json | python -m json.tool | head -60
@@ -220,117 +220,75 @@ The `prescan_intelligence.json` is also mirrored to `services/repo-truth-extract
 | Walk takes >60s | Expected — ~150K files are scanned |
 | Git passes timeout | Add `--skip-feature-gaps` for repos >10K files |
 | Ghost files return junk | Lower `--max-ghosts` or add path filters to `GHOST_EXCLUDE_PATHS` |
-# Running the Documentation Pre-Scan Audit
 
-The pre-scan audit inventories every text file in the repo, classifies it by authority class, and optionally sends the corpus to Grok 4.20 Beta for deeper analysis.
+## v3.0: Code, Architecture, and Feature Intelligence
 
-**Key guarantee:** `docs/archive/` and all historical docs are *included*, not excluded — these contain forgotten plans and ideas worth rediscovering.
+Version 3.0 adds three new local analysis passes — all free, no API calls:
 
-## Prerequisites
+### `--code-passes`
 
-- Python 3.11+ (uses stdlib `tomllib`)
-- `openai>=1.0.0` — already in `pyproject.toml` (only needed for `direct` mode)
-- `XAI_API_KEY` in environment — only for `direct` mode
+Analyses Python files with the stdlib `ast` module:
 
-## Quick Start
-
-```bash
-# Step 1: Dry run — safe, no API calls
-python scripts/doc_audit_prescan.py dry-run --verbose
-
-# Step 2: Inspect results
-cat extraction/prescan/corpus_stats.json | python -m json.tool
-
-# Step 3a: Send to Grok directly (needs XAI_API_KEY)
-python scripts/doc_audit_prescan.py direct --force
-
-# Step 3b: OR write a handoff bundle for LiteLLM/CLI agent
-python scripts/doc_audit_prescan.py handoff --force
-```
-
-## Execution Modes
-
-### `dry-run` (start here)
-
-Walks the corpus, classifies every file, writes manifests. No network calls.
+- **Import graph**: directed graph of all Python imports with orphan and hub detection
+- **Entry point detection**: click commands, FastAPI routes, `if __name__` guards
+- **Test mapping**: `test_*.py` → `*.py` matching
+- **Complexity scoring**: per-file score (0-1) based on LOC, functions, classes, docstring coverage
+- **Primary author**: git shortlog per file
 
 ```bash
-python scripts/doc_audit_prescan.py dry-run --verbose
+python scripts/doc_audit_prescan.py dry-run --code-passes --force
 ```
 
-Output in `extraction/prescan/`:
-- `corpus_manifest.json` — every file with path, size, class, include/exclude reason
-- `included_files.txt` — bare path list of included files
-- `excluded_files.txt` — excluded paths with reasons
-- `corpus_stats.json` — counts/sizes by class, extension, directory
-- `run_metadata.json` — timestamp, git SHA, config hash
+### `--arch-passes`
 
-### `direct` (needs `XAI_API_KEY`)
+Maps system topology from local config files:
 
-Runs dry-run, packages content, calls Grok 4.20 Beta, writes `grok_response.json`.
+- **Compose topology**: services, ports, depends_on, networks from `compose.yml`
+- **Service registry**: port map + health endpoints from `services/registry.yaml`
+- **Event flows**: regex scan for publish/subscribe/emit patterns
+- **API surface**: FastAPI/Flask route decorator inventory
 
 ```bash
-export XAI_API_KEY=your-key
-python scripts/doc_audit_prescan.py direct --force
+python scripts/doc_audit_prescan.py dry-run --arch-passes --force
 ```
 
-### `handoff` (always works)
+### `--feature-passes`
 
-Runs dry-run, packages content, writes a self-contained bundle for a CLI agent or LiteLLM proxy.
+Inventories feature surface area:
+
+- **Feature flags**: `ENABLE_*`/`FEATURE_*` env vars and their defaults
+- **CLI command tree**: click groups and commands
+- **MCP tool inventory**: tool registrations across all MCP servers
+- **Completeness scoring**: cross-references tests, docs, and flags per feature
 
 ```bash
-python scripts/doc_audit_prescan.py handoff --force
-# See extraction/prescan/handoff_bundle/instructions.md for next steps
+python scripts/doc_audit_prescan.py dry-run --feature-passes --force
 ```
 
-## Corpus Size Gate
+### `--full-passes` (recommended)
 
-The default limit is 50MB. The current repo corpus is ~54MB, so you need `--force`:
+Runs ALL passes (git + code + arch + features) in one command:
 
 ```bash
-python scripts/doc_audit_prescan.py dry-run --force
+python scripts/doc_audit_prescan.py dry-run --full-passes --force
 ```
 
-Alternatively, add tighter exclude globs to `scripts/doc_audit_prescan.toml` to bring it under the limit.
+This produces:
+- `prescan_intelligence.json` — complete intelligence report with all sections
+- `extraction_skip_list.json` — orphans + duplicates → safe to skip
+- `extraction_routing_hints.json` — complexity hotspots → premium model routing
+- `extraction_partition_hints.json` — service-based file groupings
 
-## Inspecting Results
+## Extraction Artifacts
 
-```bash
-# Class breakdown
-python -c "import json; d=json.load(open('extraction/prescan/corpus_stats.json')); [print(f'{k}: {v}') for k,v in d['by_class'].items()]"
+When code or architecture passes run, the prescan generates advisory artifacts:
 
-# How many historical docs
-grep -c '"authority_class": "historical"' extraction/prescan/corpus_manifest.json
+| Artifact | Purpose |
+|----------|---------|
+| `extraction_skip_list.json` | Files to skip (orphans, duplicates) with reasons |
+| `extraction_routing_hints.json` | Premium vs economy model routing based on complexity/hub status |
+| `extraction_partition_hints.json` | Service-based partition suggestions |
 
-# Files that were excluded and why
-head -20 extraction/prescan/excluded_files.txt
+These are written to `extraction/prescan/` and mirrored to `services/repo-truth-extractor/runs/00_inputs/` if available.
 
-# Check archive/ docs are included
-grep 'archive' extraction/prescan/included_files.txt | wc -l
-```
-
-## Configuring the Corpus
-
-Edit `scripts/doc_audit_prescan.toml` to add/remove glob patterns:
-
-```toml
-[corpus]
-exclude_globs = [
-    "some/path/**",   # add to tighten corpus
-]
-```
-
-Or pass globs on the command line:
-
-```bash
-python scripts/doc_audit_prescan.py dry-run --exclude "reports/**" --max-corpus-size 60MB
-```
-
-## Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| `🛑 Corpus size exceeds limit` | Add `--force` or tighten exclude globs |
-| `❌ XAI_API_KEY not found` | Set env var or switch to `handoff` mode |
-| `❌ 'openai' package not installed` | `pip install openai>=1.0.0` |
-| Walk takes >60s | Expected — ~150K files are scanned |
+The extraction wizard (Stage 6) automatically passes `--prescan-file` to the extractor when these artifacts exist.

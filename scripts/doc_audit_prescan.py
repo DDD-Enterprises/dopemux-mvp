@@ -22,7 +22,9 @@ import logging
 import os
 import subprocess
 import sys
+import ast as _ast
 import re
+from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -31,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # ─── SECTION 1: Constants ───────────────────────────────────────────
 
-SCRIPT_VERSION = "2.0.0"
+SCRIPT_VERSION = "3.0.0"
 
 DEFAULT_MAX_FILE_SIZE = 100 * 1024  # 100KB
 DEFAULT_MAX_CORPUS_SIZE = 50 * 1024 * 1024  # 50MB
@@ -297,6 +299,19 @@ class FileEntry:
     deleted_at_sha: str | None = None
     deleted_date: str | None = None
     recovery_source: str = ""
+
+    # ── Code intelligence ──
+    import_count: int = 0
+    imported_by_count: int = 0
+    is_entry_point: bool = False
+    function_count: int = 0
+    class_count: int = 0
+    docstring_coverage: float = 0.0
+    complexity_score: float = 0.0
+    is_orphan: bool = False
+    tested_by: str | None = None
+    tests_file: str | None = None
+    primary_author: str | None = None
 
     def to_dict(self) -> dict:
         return {k: v for k, v in asdict(self).items() if v is not None}
@@ -929,11 +944,1029 @@ def detect_co_change_groups(entries: list[FileEntry], repo_root: Path) -> list[d
     return groups[:50]
 
 
+# ─── SECTION 5.6: Code Intelligence ────────────────────────────────────
+
+
+def analyze_python_ast(filepath: Path) -> dict[str, Any]:
+    """Parse a Python file with stdlib ast and extract structural metadata."""
+    result: dict[str, Any] = {
+        "functions": [],
+        "classes": [],
+        "imports": [],
+        "decorators": [],
+        "has_main_guard": False,
+        "docstring_count": 0,
+        "total_defs": 0,
+    }
+    try:
+        source = filepath.read_text(encoding="utf-8", errors="replace")
+        tree = _ast.parse(source, filename=str(filepath))
+    except (SyntaxError, UnicodeDecodeError, ValueError):
+        return result
+
+    for node in _ast.walk(tree):
+        if isinstance(node, _ast.FunctionDef | _ast.AsyncFunctionDef):
+            result["functions"].append(node.name)
+            result["total_defs"] += 1
+            if _ast.get_docstring(node):
+                result["docstring_count"] += 1
+            for dec in node.decorator_list:
+                dec_name = _decorator_name(dec)
+                if dec_name:
+                    result["decorators"].append(dec_name)
+        elif isinstance(node, _ast.ClassDef):
+            result["classes"].append(node.name)
+            result["total_defs"] += 1
+            if _ast.get_docstring(node):
+                result["docstring_count"] += 1
+        elif isinstance(node, _ast.Import):
+            for alias in node.names:
+                result["imports"].append(alias.name)
+        elif isinstance(node, _ast.ImportFrom):
+            if node.module:
+                result["imports"].append(node.module)
+        elif isinstance(node, _ast.If):
+            # Detect if __name__ == "__main__"
+            if _is_main_guard(node):
+                result["has_main_guard"] = True
+
+    return result
+
+
+def _decorator_name(node: _ast.expr) -> str:
+    """Extract decorator name from AST node."""
+    if isinstance(node, _ast.Name):
+        return node.id
+    if isinstance(node, _ast.Attribute):
+        return f"{_decorator_name(node.value)}.{node.attr}" if isinstance(
+            node.value, (_ast.Name, _ast.Attribute)
+        ) else node.attr
+    if isinstance(node, _ast.Call):
+        return _decorator_name(node.func)
+    return ""
+
+
+def _is_main_guard(node: _ast.If) -> bool:
+    """Check if an If node is 'if __name__ == "__main__"'."""
+    try:
+        test = node.test
+        if isinstance(test, _ast.Compare):
+            left = test.left
+            if isinstance(left, _ast.Name) and left.id == "__name__":
+                return True
+            if (
+                test.comparators
+                and isinstance(test.comparators[0], _ast.Name)
+                and test.comparators[0].id == "__name__"
+            ):
+                return True
+    except (AttributeError, IndexError):
+        pass
+    return False
+
+
+_ENTRY_POINT_DECORATORS = frozenset({
+    "click.command", "click.group",
+    "app.get", "app.post", "app.put", "app.delete", "app.patch",
+    "app.route", "app.api_route", "app.websocket",
+    "router.get", "router.post", "router.put", "router.delete",
+    "router.patch", "router.route", "router.api_route",
+    "main", "cli",
+})
+
+
+def enrich_with_code_intelligence(
+    entries: list[FileEntry], repo_root: Path
+) -> dict[str, Any]:
+    """
+    Run full code intelligence: AST analysis, import graph,
+    entry point detection, test mapping, and complexity scoring.
+    Returns aggregate code intelligence dict for the report.
+    """
+    py_entries = [
+        e for e in entries
+        if e.rel_path.endswith(".py") and e.include and not e.is_ghost
+    ]
+    logger.info(f"  • Analysing {len(py_entries)} Python files with AST...")
+
+    # ── Phase 1: AST analysis + populate FileEntry fields ──
+    ast_cache: dict[str, dict] = {}
+    for e in py_entries:
+        fp = repo_root / e.rel_path
+        if not fp.exists():
+            continue
+        info = analyze_python_ast(fp)
+        ast_cache[e.rel_path] = info
+        e.function_count = len(info["functions"])
+        e.class_count = len(info["classes"])
+        e.import_count = len(info["imports"])
+        total_defs = info["total_defs"]
+        e.docstring_coverage = (
+            info["docstring_count"] / total_defs if total_defs > 0 else 0.0
+        )
+        # Entry point detection
+        if info["has_main_guard"]:
+            e.is_entry_point = True
+        for dec in info["decorators"]:
+            if any(ep in dec for ep in _ENTRY_POINT_DECORATORS):
+                e.is_entry_point = True
+                break
+
+    # ── Phase 2: Import graph ──
+    logger.info("  • Building import graph...")
+    import_graph = _build_import_graph(py_entries, ast_cache, repo_root)
+
+    # ── Phase 3: Test mapping ──
+    logger.info("  • Mapping tests to implementations...")
+    _map_tests(py_entries)
+
+    # ── Phase 4: Complexity scoring ──
+    logger.info("  • Computing complexity scores...")
+    _compute_complexity(py_entries, repo_root)
+
+    # ── Phase 5: Primary author ──
+    logger.info("  • Detecting primary authors...")
+    _detect_primary_authors(py_entries, repo_root)
+
+    # ── Aggregate ──
+    entry_points = [e.rel_path for e in py_entries if e.is_entry_point]
+    orphans = [e.rel_path for e in py_entries if e.is_orphan]
+    hubs = sorted(
+        [
+            {"path": e.rel_path, "imported_by": e.imported_by_count}
+            for e in py_entries
+            if e.imported_by_count >= 5
+        ],
+        key=lambda x: x["imported_by"],
+        reverse=True,
+    )
+    tested_count = sum(1 for e in py_entries if e.tested_by)
+    untested = [
+        e.rel_path for e in py_entries
+        if not e.tested_by and e.is_entry_point
+    ]
+    complexity_hotspots = sorted(
+        [
+            {"path": e.rel_path, "score": round(e.complexity_score, 2)}
+            for e in py_entries
+            if e.complexity_score > 0.6
+        ],
+        key=lambda x: x["score"],
+        reverse=True,
+    )[:20]
+
+    total_docstrings = sum(e.docstring_coverage for e in py_entries)
+    avg_docstring_cov = total_docstrings / len(py_entries) if py_entries else 0
+
+    return {
+        "total_python_files": len(py_entries),
+        "entry_points": entry_points[:50],
+        "entry_point_count": len(entry_points),
+        "orphan_files": orphans[:50],
+        "orphan_count": len(orphans),
+        "hub_files": hubs[:20],
+        "hub_count": len(hubs),
+        "circular_imports": import_graph.get("circular", [])[:20],
+        "circular_count": len(import_graph.get("circular", [])),
+        "untested_entry_points": untested[:30],
+        "test_coverage_ratio": round(
+            tested_count / len(py_entries) if py_entries else 0, 2
+        ),
+        "complexity_hotspots": complexity_hotspots,
+        "import_graph_summary": {
+            "nodes": import_graph["nodes"],
+            "edges": import_graph["edges"],
+            "components": import_graph.get("components", 0),
+        },
+        "avg_docstring_coverage": round(avg_docstring_cov, 2),
+    }
+
+
+def _build_import_graph(
+    py_entries: list[FileEntry],
+    ast_cache: dict[str, dict],
+    repo_root: Path,
+) -> dict[str, Any]:
+    """Build directed import graph; detect orphans, hubs, circular imports."""
+    # Map module paths to rel_paths
+    path_to_module: dict[str, str] = {}
+    module_to_path: dict[str, str] = {}
+    for e in py_entries:
+        mod = e.rel_path.replace("/", ".").replace("\\", ".")
+        if mod.endswith(".py"):
+            mod = mod[:-3]
+        if mod.endswith(".__init__"):
+            mod = mod[:-9]
+        path_to_module[e.rel_path] = mod
+        module_to_path[mod] = e.rel_path
+
+    # Build adjacency (who imports whom)
+    adjacency: dict[str, set[str]] = defaultdict(set)
+    reverse_adj: dict[str, set[str]] = defaultdict(set)
+    edge_count = 0
+
+    for e in py_entries:
+        info = ast_cache.get(e.rel_path, {})
+        for imp in info.get("imports", []):
+            # Try to resolve import to a file in the repo
+            target = _resolve_import(imp, module_to_path)
+            if target and target != e.rel_path:
+                adjacency[e.rel_path].add(target)
+                reverse_adj[target].add(e.rel_path)
+                edge_count += 1
+
+    # Populate imported_by_count and is_orphan
+    for e in py_entries:
+        e.imported_by_count = len(reverse_adj.get(e.rel_path, set()))
+        if e.imported_by_count == 0 and not e.is_entry_point:
+            # Not imported by anyone and not an entry point
+            if not e.rel_path.endswith("__init__.py"):
+                e.is_orphan = True
+
+    # Detect circular imports (simple: A→B→A)
+    circular: list[list[str]] = []
+    seen_pairs: set[tuple[str, str]] = set()
+    for src, targets in adjacency.items():
+        for tgt in targets:
+            if tgt in adjacency and src in adjacency[tgt]:
+                pair = tuple(sorted([src, tgt]))
+                if pair not in seen_pairs:
+                    seen_pairs.add(pair)
+                    circular.append(list(pair))
+
+    # Connected components (simple BFS)
+    visited: set[str] = set()
+    components = 0
+    all_nodes = set(adjacency.keys()) | set(reverse_adj.keys())
+    for node in all_nodes:
+        if node in visited:
+            continue
+        components += 1
+        queue = [node]
+        while queue:
+            current = queue.pop()
+            if current in visited:
+                continue
+            visited.add(current)
+            queue.extend(adjacency.get(current, set()) - visited)
+            queue.extend(reverse_adj.get(current, set()) - visited)
+
+    return {
+        "nodes": len(all_nodes),
+        "edges": edge_count,
+        "circular": circular,
+        "components": components,
+    }
+
+
+def _resolve_import(imp: str, module_to_path: dict[str, str]) -> str | None:
+    """Try to resolve an import string to a repo-relative file path."""
+    # Try exact match
+    if imp in module_to_path:
+        return module_to_path[imp]
+    # Try progressively shorter prefixes (e.g. dopemux.cli → src.dopemux.cli)
+    parts = imp.split(".")
+    for prefix_mod, path in module_to_path.items():
+        prefix_parts = prefix_mod.split(".")
+        if len(parts) <= len(prefix_parts) and prefix_parts[-len(parts):] == parts:
+            return path
+    return None
+
+
+def _map_tests(py_entries: list[FileEntry]) -> None:
+    """Map test files to implementation files by naming convention."""
+    test_entries: dict[str, FileEntry] = {}
+    impl_entries: dict[str, FileEntry] = {}
+
+    for e in py_entries:
+        basename = Path(e.rel_path).stem
+        if basename.startswith("test_"):
+            impl_name = basename[5:]  # strip "test_"
+            test_entries[impl_name] = e
+        elif basename.endswith("_test"):
+            impl_name = basename[:-5]
+            test_entries[impl_name] = e
+        else:
+            impl_entries[basename] = e
+
+    for impl_name, test_entry in test_entries.items():
+        test_entry.tests_file = impl_entries.get(impl_name, FileEntry(
+            rel_path="", size_bytes=0, extension=""
+        )).rel_path or None
+        if impl_name in impl_entries:
+            impl_entries[impl_name].tested_by = test_entry.rel_path
+
+
+def _compute_complexity(py_entries: list[FileEntry], repo_root: Path) -> None:
+    """Compute a composite complexity score 0-1 for each Python file."""
+    for e in py_entries:
+        fp = repo_root / e.rel_path
+        if not fp.exists():
+            continue
+        try:
+            lines = fp.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        loc = len(lines)
+        # Score components (all 0-1):
+        # - LOC: >500 = 1.0, <50 = 0.0
+        loc_score = min(1.0, max(0.0, (loc - 50) / 450))
+        # - Function density: >20 = 1.0
+        func_score = min(1.0, e.function_count / 20)
+        # - Class count: >5 = 1.0
+        class_score = min(1.0, e.class_count / 5)
+        # - Low docstring coverage = higher complexity
+        doc_score = 1.0 - e.docstring_coverage
+        # Composite (weighted)
+        e.complexity_score = round(
+            0.35 * loc_score + 0.25 * func_score + 0.15 * class_score + 0.25 * doc_score,
+            3,
+        )
+
+
+def _detect_primary_authors(py_entries: list[FileEntry], repo_root: Path) -> None:
+    """Detect primary author (most commits) per file via git shortlog."""
+    paths = [e.rel_path for e in py_entries if not e.is_ghost]
+    if not paths:
+        return
+    # Batch: git log for all files at once, parse per-file
+    try:
+        result = subprocess.run(
+            ["git", "log", "--format=%H %aN", "--name-only", "--no-merges", "-n", "500"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode != 0:
+            return
+    except (subprocess.TimeoutExpired, OSError):
+        return
+
+    file_authors: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    current_author = ""
+    for line in result.stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line[0:40].replace(" ", "").isalnum() and " " in line[:42]:
+            # Commit line: <sha> <author>
+            parts = line.split(" ", 1)
+            if len(parts) == 2 and len(parts[0]) == 40:
+                current_author = parts[1]
+        elif current_author:
+            file_authors[line][current_author] += 1
+
+    path_set = {e.rel_path for e in py_entries}
+    for e in py_entries:
+        if e.rel_path in file_authors:
+            authors = file_authors[e.rel_path]
+            if authors:
+                e.primary_author = max(authors, key=authors.get)
+
+
+# ─── SECTION 5.7: Architecture Intelligence ───────────────────────────
+
+
+def enrich_with_arch_intelligence(
+    entries: list[FileEntry], repo_root: Path
+) -> dict[str, Any]:
+    """Run architecture intelligence: compose topology, service registry,
+    event flows, API surface. Returns aggregate dict for report."""
+
+    logger.info("  • Parsing compose.yml topology...")
+    compose_data = _parse_compose_topology(repo_root)
+
+    logger.info("  • Parsing service registry...")
+    registry_data = _parse_service_registry(repo_root)
+
+    logger.info("  • Mapping files to services...")
+    file_service_map = _map_files_to_services(entries, compose_data, registry_data)
+
+    logger.info("  • Detecting event flow patterns...")
+    event_flows = _detect_event_flows(entries, repo_root)
+
+    logger.info("  • Detecting API surface...")
+    api_endpoints = _detect_api_surface(entries, repo_root)
+
+    # Build port map
+    port_map: dict[str, str] = {}
+    for svc in compose_data.get("services", []):
+        for port in svc.get("ports", []):
+            host_port = str(port).split(":")[0]
+            port_map[host_port] = svc["name"]
+
+    # Service dependency graph
+    dep_graph: dict[str, list[str]] = {}
+    for svc in compose_data.get("services", []):
+        deps = svc.get("depends_on", [])
+        if deps:
+            dep_graph[svc["name"]] = deps
+
+    # Service-level file groupings for partition hints
+    service_partitions: dict[str, list[str]] = defaultdict(list)
+    for path, svc_name in file_service_map.items():
+        service_partitions[svc_name].append(path)
+
+    return {
+        "services": compose_data.get("services", []),
+        "service_count": len(compose_data.get("services", [])),
+        "service_dependency_graph": dep_graph,
+        "api_endpoints": api_endpoints[:100],
+        "api_endpoint_count": len(api_endpoints),
+        "event_flows": event_flows[:50],
+        "event_flow_count": len(event_flows),
+        "port_map": port_map,
+        "file_service_map_count": len(file_service_map),
+        "service_partitions": {
+            k: sorted(v)[:50] for k, v in sorted(
+                service_partitions.items(), key=lambda x: len(x[1]), reverse=True
+            )
+        },
+    }
+
+
+def _parse_compose_topology(repo_root: Path) -> dict[str, Any]:
+    """Parse compose.yml for services, ports, depends_on, build contexts."""
+    compose_path = repo_root / "compose.yml"
+    if not compose_path.exists():
+        compose_path = repo_root / "docker-compose.yml"
+    if not compose_path.exists():
+        return {"services": []}
+
+    try:
+        import yaml
+        with open(compose_path) as f:
+            data = yaml.safe_load(f)
+    except Exception:
+        return {"services": []}
+
+    if not isinstance(data, dict):
+        return {"services": []}
+
+    services_raw = data.get("services", {})
+    if not isinstance(services_raw, dict):
+        return {"services": []}
+
+    services = []
+    for name, cfg in services_raw.items():
+        if not isinstance(cfg, dict):
+            continue
+        # Extract ports
+        ports = []
+        for p in cfg.get("ports", []):
+            ports.append(str(p))
+
+        # Extract depends_on
+        deps = cfg.get("depends_on", [])
+        if isinstance(deps, dict):
+            deps = list(deps.keys())
+        elif not isinstance(deps, list):
+            deps = []
+
+        # Build context
+        build = cfg.get("build", "")
+        if isinstance(build, dict):
+            build_ctx = build.get("context", "")
+        else:
+            build_ctx = str(build)
+
+        services.append({
+            "name": name,
+            "ports": ports,
+            "depends_on": deps,
+            "build_context": build_ctx,
+            "image": cfg.get("image", ""),
+            "has_healthcheck": "healthcheck" in cfg,
+            "networks": list(cfg.get("networks", {}).keys())
+            if isinstance(cfg.get("networks"), dict)
+            else cfg.get("networks", []),
+        })
+
+    return {"services": services}
+
+
+def _parse_service_registry(repo_root: Path) -> dict[str, Any]:
+    """Parse services/registry.yaml for canonical service metadata."""
+    reg_path = repo_root / "services" / "registry.yaml"
+    if not reg_path.exists():
+        return {"services": {}}
+    try:
+        import yaml
+        with open(reg_path) as f:
+            data = yaml.safe_load(f)
+        return data if isinstance(data, dict) else {"services": {}}
+    except Exception:
+        return {"services": {}}
+
+
+def _map_files_to_services(
+    entries: list[FileEntry],
+    compose_data: dict[str, Any],
+    registry_data: dict[str, Any],
+) -> dict[str, str]:
+    """Assign files to owning service based on paths and build contexts."""
+    file_map: dict[str, str] = {}
+
+    # Build context prefixes from compose
+    svc_prefixes: list[tuple[str, str]] = []
+    for svc in compose_data.get("services", []):
+        ctx = svc.get("build_context", "")
+        if ctx and ctx != ".":
+            svc_prefixes.append((ctx.rstrip("/") + "/", svc["name"]))
+
+    # services/ directory mapping
+    svc_prefixes.append(("services/", ""))
+
+    # Sort by prefix length (longest first for specificity)
+    svc_prefixes.sort(key=lambda x: len(x[0]), reverse=True)
+
+    for e in entries:
+        if not e.include or e.is_ghost:
+            continue
+        assigned = False
+        for prefix, svc_name in svc_prefixes:
+            if e.rel_path.startswith(prefix):
+                if svc_name:
+                    file_map[e.rel_path] = svc_name
+                else:
+                    # Infer from services/<name>/... pattern
+                    parts = e.rel_path.split("/")
+                    if len(parts) >= 2:
+                        file_map[e.rel_path] = parts[1]
+                assigned = True
+                break
+        if not assigned:
+            if e.rel_path.startswith("src/"):
+                file_map[e.rel_path] = "core"
+            elif e.rel_path.startswith("docker/"):
+                file_map[e.rel_path] = "docker-infra"
+            elif e.rel_path.startswith("docs/"):
+                file_map[e.rel_path] = "documentation"
+
+    return file_map
+
+
+_EVENT_PATTERNS = [
+    (r'\.publish\s*\(\s*["\']([^"\']+)', "publish"),
+    (r'\.subscribe\s*\(\s*["\']([^"\']+)', "subscribe"),
+    (r'\.emit\s*\(\s*["\']([^"\']+)', "emit"),
+    (r'event_bus\.fire\s*\(\s*["\']([^"\']+)', "fire"),
+    (r'on_event\s*\(\s*["\']([^"\']+)', "on_event"),
+    (r'EventType\.(\w+)', "event_type"),
+]
+
+
+def _detect_event_flows(
+    entries: list[FileEntry], repo_root: Path
+) -> list[dict[str, str]]:
+    """Scan Python files for publish/subscribe/emit patterns."""
+    flows: list[dict[str, str]] = []
+    py_entries = [
+        e for e in entries
+        if e.rel_path.endswith(".py") and e.include and not e.is_ghost
+    ]
+
+    for e in py_entries:
+        fp = repo_root / e.rel_path
+        if not fp.exists():
+            continue
+        try:
+            content = fp.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+
+        for pattern, action in _EVENT_PATTERNS:
+            for match in re.finditer(pattern, content):
+                flows.append({
+                    "file": e.rel_path,
+                    "action": action,
+                    "event": match.group(1),
+                })
+
+    return flows
+
+
+_API_ROUTE_PATTERNS = [
+    (r'@(?:app|router)\.(get|post|put|delete|patch|options|head)\s*\(\s*["\']([^"\']+)',
+     "decorator"),
+    (r'\.add_api_route\s*\(\s*["\']([^"\']+)["\'].*methods=\[([^\]]+)',
+     "add_route"),
+]
+
+
+def _detect_api_surface(
+    entries: list[FileEntry], repo_root: Path
+) -> list[dict[str, str]]:
+    """Find FastAPI/Flask route decorators and build endpoint inventory."""
+    endpoints: list[dict[str, str]] = []
+    py_entries = [
+        e for e in entries
+        if e.rel_path.endswith(".py") and e.include and not e.is_ghost
+    ]
+
+    for e in py_entries:
+        fp = repo_root / e.rel_path
+        if not fp.exists():
+            continue
+        try:
+            content = fp.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+
+        for match in re.finditer(
+            r'@(?:app|router)\.(get|post|put|delete|patch)\s*\(\s*["\']([^"\']+)',
+            content, re.IGNORECASE,
+        ):
+            endpoints.append({
+                "file": e.rel_path,
+                "method": match.group(1).upper(),
+                "path": match.group(2),
+            })
+
+    return endpoints
+
+
+# ─── SECTION 5.8: Feature Intelligence ─────────────────────────────────
+
+
+def enrich_with_feature_intelligence(
+    entries: list[FileEntry], repo_root: Path
+) -> dict[str, Any]:
+    """Run feature intelligence: flags, CLI commands, MCP tools, completeness.
+    Returns aggregate dict for report."""
+
+    logger.info("  • Scanning for feature flags...")
+    feature_flags = _scan_feature_flags(entries, repo_root)
+
+    logger.info("  • Tracing CLI command tree...")
+    cli_commands = _trace_cli_commands(entries, repo_root)
+
+    logger.info("  • Inventorying MCP tools...")
+    mcp_tools = _inventory_mcp_tools(entries, repo_root)
+
+    logger.info("  • Scoring feature completeness...")
+    completeness = _score_feature_completeness(
+        feature_flags, cli_commands, mcp_tools, entries
+    )
+
+    return {
+        "feature_flags": feature_flags[:100],
+        "feature_flag_count": len(feature_flags),
+        "cli_commands": cli_commands[:100],
+        "cli_command_count": len(cli_commands),
+        "mcp_tools": mcp_tools[:100],
+        "mcp_tool_count": len(mcp_tools),
+        "completeness_scores": completeness,
+    }
+
+
+def _scan_feature_flags(
+    entries: list[FileEntry], repo_root: Path
+) -> list[dict[str, Any]]:
+    """Find ENABLE_*/FEATURE_* environment variables across the codebase."""
+    flag_map: dict[str, dict[str, Any]] = {}
+
+    # Scan Python files for os.getenv/os.environ
+    py_entries = [
+        e for e in entries
+        if e.rel_path.endswith(".py") and e.include and not e.is_ghost
+    ]
+    for e in py_entries:
+        fp = repo_root / e.rel_path
+        if not fp.exists():
+            continue
+        try:
+            content = fp.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+
+        for match in re.finditer(
+            r'(?:os\.(?:getenv|environ\.get))\s*\(\s*["\']'
+            r'((?:ENABLE|FEATURE|DISABLE)_\w+)["\']'
+            r'(?:\s*,\s*["\']?([^"\')\s,]+))?',
+            content,
+        ):
+            flag_name = match.group(1)
+            default_val = match.group(2) or ""
+            if flag_name not in flag_map:
+                flag_map[flag_name] = {
+                    "name": flag_name,
+                    "default": default_val,
+                    "read_in": [],
+                    "set_in": [],
+                }
+            flag_map[flag_name]["read_in"].append(e.rel_path)
+
+    # Scan compose.yml for environment vars
+    compose_path = repo_root / "compose.yml"
+    if compose_path.exists():
+        try:
+            content = compose_path.read_text(encoding="utf-8", errors="replace")
+            for match in re.finditer(
+                r'((?:ENABLE|FEATURE|DISABLE)_\w+)\s*[:=]\s*(\S+)', content
+            ):
+                flag_name = match.group(1)
+                val = match.group(2)
+                if flag_name not in flag_map:
+                    flag_map[flag_name] = {
+                        "name": flag_name,
+                        "default": val,
+                        "read_in": [],
+                        "set_in": [],
+                    }
+                flag_map[flag_name]["set_in"].append("compose.yml")
+        except OSError:
+            pass
+
+    # Scan .env files
+    for env_file in [".env", ".env.example", ".env.dev"]:
+        env_path = repo_root / env_file
+        if env_path.exists():
+            try:
+                content = env_path.read_text(encoding="utf-8", errors="replace")
+                for match in re.finditer(
+                    r'^((?:ENABLE|FEATURE|DISABLE)_\w+)\s*=\s*(.+)$',
+                    content, re.MULTILINE,
+                ):
+                    flag_name = match.group(1)
+                    val = match.group(2).strip()
+                    if flag_name not in flag_map:
+                        flag_map[flag_name] = {
+                            "name": flag_name,
+                            "default": val,
+                            "read_in": [],
+                            "set_in": [],
+                        }
+                    flag_map[flag_name]["set_in"].append(env_file)
+            except OSError:
+                pass
+
+    return sorted(flag_map.values(), key=lambda x: x["name"])
+
+
+def _trace_cli_commands(
+    entries: list[FileEntry], repo_root: Path
+) -> list[dict[str, Any]]:
+    """Trace click.group → click.command chains to build command tree."""
+    commands: list[dict[str, Any]] = []
+    py_entries = [
+        e for e in entries
+        if e.rel_path.endswith(".py") and e.include and not e.is_ghost
+    ]
+
+    for e in py_entries:
+        fp = repo_root / e.rel_path
+        if not fp.exists():
+            continue
+        try:
+            content = fp.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+
+        # Find @click.group()
+        for match in re.finditer(
+            r'@click\.group\s*\(([^)]*)\)\s*\ndef\s+(\w+)',
+            content, re.DOTALL,
+        ):
+            group_name = match.group(2)
+            commands.append({
+                "type": "group",
+                "name": group_name,
+                "file": e.rel_path,
+            })
+
+        # Find @click.command() or @<group>.command()
+        for match in re.finditer(
+            r'@(?:\w+\.)?command\s*\(([^)]*)\)\s*\ndef\s+(\w+)',
+            content, re.DOTALL,
+        ):
+            cmd_name = match.group(2)
+            commands.append({
+                "type": "command",
+                "name": cmd_name,
+                "file": e.rel_path,
+            })
+
+    return commands
+
+
+def _inventory_mcp_tools(
+    entries: list[FileEntry], repo_root: Path
+) -> list[dict[str, Any]]:
+    """Find MCP tool registrations in services/ and docker/ directories."""
+    tools: list[dict[str, Any]] = []
+    py_entries = [
+        e for e in entries
+        if e.rel_path.endswith(".py") and e.include and not e.is_ghost
+    ]
+
+    for e in py_entries:
+        fp = repo_root / e.rel_path
+        if not fp.exists():
+            continue
+        try:
+            content = fp.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+
+        # Pattern 1: Tool("name", ...) or Tool(name="name", ...)
+        for match in re.finditer(
+            r'Tool\s*\(\s*(?:name\s*=\s*)?["\']([^"\']+)["\']',
+            content,
+        ):
+            tools.append({
+                "tool": match.group(1),
+                "file": e.rel_path,
+                "server": _infer_server_name(e.rel_path),
+            })
+
+        # Pattern 2: "name": "tool_name" inside list_tools returns
+        if "list_tools" in content or "ListToolsResult" in content:
+            for match in re.finditer(
+                r'["\']name["\']\s*:\s*["\']([^"\']+)["\']',
+                content,
+            ):
+                tool_name = match.group(1)
+                if not any(t["tool"] == tool_name and t["file"] == e.rel_path
+                           for t in tools):
+                    tools.append({
+                        "tool": tool_name,
+                        "file": e.rel_path,
+                        "server": _infer_server_name(e.rel_path),
+                    })
+
+    return tools
+
+
+def _infer_server_name(rel_path: str) -> str:
+    """Infer MCP server name from file path."""
+    parts = rel_path.split("/")
+    if "mcp-servers" in rel_path or "mcp-servers-source" in rel_path:
+        for i, p in enumerate(parts):
+            if p.startswith("mcp-servers") and i + 1 < len(parts):
+                return parts[i + 1]
+    if parts[0] == "services" and len(parts) >= 2:
+        return parts[1]
+    return Path(rel_path).stem
+
+
+def _score_feature_completeness(
+    flags: list[dict],
+    cli_commands: list[dict],
+    mcp_tools: list[dict],
+    entries: list[FileEntry],
+) -> dict[str, float]:
+    """Score feature completeness per service/area."""
+    # Group features by area
+    areas: dict[str, dict[str, int]] = defaultdict(
+        lambda: {"features": 0, "tested": 0, "documented": 0}
+    )
+
+    # CLI commands → group by file's parent directory
+    for cmd in cli_commands:
+        area = Path(cmd["file"]).parts[0] if "/" in cmd["file"] else "root"
+        areas[area]["features"] += 1
+
+    # MCP tools → group by server
+    for tool in mcp_tools:
+        areas[tool["server"]]["features"] += 1
+
+    # Feature flags → count by first read_in file's area
+    for flag in flags:
+        read_files = flag.get("read_in", [])
+        if read_files:
+            area = Path(read_files[0]).parts[0]
+            areas[area]["features"] += 1
+
+    # Check test coverage per area
+    tested_paths = {e.rel_path for e in entries if e.tested_by}
+    doc_paths = {
+        e.rel_path for e in entries
+        if e.rel_path.startswith("docs/") and e.include
+    }
+
+    scores: dict[str, float] = {}
+    for area, counts in areas.items():
+        if counts["features"] == 0:
+            continue
+        # Simple heuristic: base score from feature count,
+        # bonus for tests and docs
+        feature_count = counts["features"]
+        has_tests = any(
+            e.tested_by for e in entries
+            if e.rel_path.startswith(area + "/")
+        )
+        has_docs = any(
+            d.startswith(f"docs/") and area.replace("_", "-") in d
+            for d in (e.rel_path for e in entries if e.rel_path.startswith("docs/"))
+        )
+        score = 0.4  # base
+        if has_tests:
+            score += 0.3
+        if has_docs:
+            score += 0.3
+        scores[area] = round(score, 2)
+
+    return dict(sorted(scores.items(), key=lambda x: x[1], reverse=True)[:20])
+
+
+# ─── SECTION 5.9: Extraction Artifact Generation ──────────────────────
+
+
+def generate_extraction_artifacts(
+    entries: list[FileEntry],
+    code_intel: dict[str, Any],
+    arch_intel: dict[str, Any],
+    feature_intel: dict[str, Any],
+    config: PrescanConfig,
+) -> list[Path]:
+    """Generate extraction-ready artifact files for the extractor to consume."""
+    artifacts: list[Path] = []
+
+    # 1. Skip list: orphans + duplicates
+    skip_files: dict[str, str] = {}
+    for e in entries:
+        if e.is_orphan and e.include:
+            skip_files[e.rel_path] = "orphan (imported by nothing, not entry point)"
+        if e.is_duplicate and e.include:
+            skip_files[e.rel_path] = f"duplicate of group {e.duplicate_group_id}"
+
+    skip_data = {
+        "generated_by": f"doc_audit_prescan v{SCRIPT_VERSION}",
+        "skip_files": list(skip_files.keys()),
+        "skip_reason": skip_files,
+        "total_skippable": len(skip_files),
+        "estimated_savings_pct": round(
+            len(skip_files) / max(1, len([e for e in entries if e.include])) * 100, 1
+        ),
+    }
+    skip_path = config.output_dir / "extraction_skip_list.json"
+    skip_path.write_text(json.dumps(skip_data, indent=2) + "\n")
+    artifacts.append(skip_path)
+
+    # 2. Routing hints: complex/hub → premium, simple/tested → economy
+    premium: dict[str, str] = {}
+    economy: dict[str, str] = {}
+    for e in entries:
+        if not e.include or e.is_ghost or not e.rel_path.endswith(".py"):
+            continue
+        reasons = []
+        if e.imported_by_count >= 5:
+            reasons.append(f"hub (imported by {e.imported_by_count} files)")
+        if e.complexity_score > 0.7:
+            reasons.append(f"high complexity ({e.complexity_score:.2f})")
+        if e.is_entry_point:
+            reasons.append("entry point")
+        if reasons:
+            premium[e.rel_path] = " + ".join(reasons)
+        elif e.complexity_score < 0.3 and e.tested_by:
+            economy[e.rel_path] = f"low complexity ({e.complexity_score:.2f}), tested"
+
+    routing_data = {
+        "generated_by": f"doc_audit_prescan v{SCRIPT_VERSION}",
+        "premium_tier": list(premium.keys()),
+        "premium_reason": premium,
+        "premium_count": len(premium),
+        "economy_tier": list(economy.keys()),
+        "economy_reason": economy,
+        "economy_count": len(economy),
+    }
+    routing_path = config.output_dir / "extraction_routing_hints.json"
+    routing_path.write_text(json.dumps(routing_data, indent=2) + "\n")
+    artifacts.append(routing_path)
+
+    # 3. Partition hints: service-based groupings
+    partition_data = {
+        "generated_by": f"doc_audit_prescan v{SCRIPT_VERSION}",
+        "service_partitions": arch_intel.get("service_partitions", {}),
+        "service_count": len(arch_intel.get("service_partitions", {})),
+        "suggestion": "Group files by owning service for coherent extraction",
+    }
+    partition_path = config.output_dir / "extraction_partition_hints.json"
+    partition_path.write_text(json.dumps(partition_data, indent=2) + "\n")
+    artifacts.append(partition_path)
+
+    # Mirror to extractor 00_inputs
+    extractor_inputs = config.repo_root / "services/repo-truth-extractor/runs/00_inputs"
+    if extractor_inputs.is_dir():
+        for artifact in artifacts:
+            dest = extractor_inputs / artifact.name.upper()
+            dest.write_text(artifact.read_text())
+            logger.info(f"  🔗 Mirrored: {dest.name}")
+
+    return artifacts
+
+
 def build_intelligence_report(
     entries: list[FileEntry],
     co_change_groups: list[dict],
     config: PrescanConfig,
     meta: RunMetadata,
+    *,
+    code_intel: dict[str, Any] | None = None,
+    arch_intel: dict[str, Any] | None = None,
+    feature_intel: dict[str, Any] | None = None,
 ) -> Path:
     """
     Aggregate all intelligence into prescan_intelligence.json.
@@ -987,7 +2020,7 @@ def build_intelligence_report(
     corpus_health = max(0, int(80 - dup_ratio * 20 - frozen_ratio * 10 + ghost_bonus))
 
     report = {
-        "schema_version": "2.0",
+        "schema_version": "3.0",
         "generated_at": meta.timestamp,
         "git_sha": meta.git_sha,
         "git_branch": meta.git_branch,
@@ -1037,6 +2070,25 @@ def build_intelligence_report(
             ][:20],
         },
     }
+
+    # ── Merge code/arch/feature intelligence if available ──
+    if code_intel:
+        report["code_intelligence"] = code_intel
+        hints = report["extraction_hints"]
+        hints["orphan_files"] = code_intel.get("orphan_files", [])[:30]
+        hints["hub_files"] = [h["path"] for h in code_intel.get("hub_files", [])]
+        hints["complexity_hotspots"] = [
+            h["path"] for h in code_intel.get("complexity_hotspots", [])
+        ]
+        hints["untested_entry_points"] = code_intel.get("untested_entry_points", [])
+
+    if arch_intel:
+        report["architecture"] = arch_intel
+        hints = report["extraction_hints"]
+        hints["service_partitions"] = arch_intel.get("service_partitions", {})
+
+    if feature_intel:
+        report["features"] = feature_intel
 
     out_path = config.output_dir / "prescan_intelligence.json"
     out_path.write_text(
@@ -1686,6 +2738,134 @@ def _print_intelligence_report(intel_path: Path) -> None:
                 cg_table.add_row(f"[bold]{group['commit_count']}[/bold]", flines)
             rcon.print(cg_table)
 
+        # ── code intelligence ─────────────────────────────────────────────
+        code_intel = intel.get("code_intelligence", {})
+        if code_intel:
+            from rich.console import Group as RichGroup
+
+            ci_tbl = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+            ci_tbl.add_column("Metric", style="dim", min_width=28)
+            ci_tbl.add_column("Value", justify="right")
+
+            ci_tbl.add_row("Python files analysed", _nfmt(code_intel.get("total_python_files", 0)))
+            ci_tbl.add_row("Entry points", _nfmt(code_intel.get("entry_point_count", 0)))
+            ci_tbl.add_row("Orphan files", _nfmt(code_intel.get("orphan_count", 0), warn=10))
+            ci_tbl.add_row("Hub files (≥5 importers)", _nfmt(code_intel.get("hub_count", 0)))
+            ci_tbl.add_row("Circular imports", _nfmt(code_intel.get("circular_count", len(code_intel.get("circular_imports", []))), warn=1))
+
+            cov_ratio = code_intel.get("test_coverage_ratio", 0)
+            cov_pct = int(cov_ratio * 100)
+            cv_c = "green" if cov_pct >= 60 else ("yellow" if cov_pct >= 30 else "red")
+            ci_tbl.add_row("Test coverage (by file)", f"[{cv_c}]{cov_pct}%[/{cv_c}]")
+
+            avg_doc = code_intel.get("avg_docstring_coverage", 0)
+            dc = "green" if avg_doc >= 0.6 else ("yellow" if avg_doc >= 0.3 else "red")
+            ci_tbl.add_row("Avg docstring coverage", f"[{dc}]{avg_doc:.0%}[/{dc}]")
+
+            parts = [ci_tbl]
+
+            hubs = code_intel.get("hub_files", [])[:5]
+            if hubs:
+                parts.append(Text(""))
+                parts.append(Text("🔗 Top Import Hubs", style="bold"))
+                for h in hubs:
+                    parts.append(Text(f"  {h['path']}  ← {h['imported_by']} importers", style="cyan"))
+
+            hotspots = code_intel.get("complexity_hotspots", [])[:5]
+            if hotspots:
+                parts.append(Text(""))
+                parts.append(Text("🔥 Complexity Hotspots", style="bold"))
+                for h in hotspots:
+                    parts.append(Text(f"  {h['path']}  (score: {h.get('score', 0):.2f})", style="yellow"))
+
+            rcon.print(Panel(
+                RichGroup(*parts),
+                title="[bold blue]💻 Code Intelligence[/bold blue]",
+                border_style="blue", box=ROUNDED, padding=(0, 1),
+            ))
+
+        # ── architecture intelligence ─────────────────────────────────────
+        arch_data = intel.get("architecture", {})
+        if arch_data:
+            from rich.console import Group as RichGroup
+
+            ai_tbl = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+            ai_tbl.add_column("Metric", style="dim", min_width=28)
+            ai_tbl.add_column("Value", justify="right")
+
+            ai_tbl.add_row("Services", _nfmt(arch_data.get("service_count", 0)))
+            ai_tbl.add_row("API endpoints", _nfmt(arch_data.get("api_endpoint_count", 0)))
+            ai_tbl.add_row("Event flows", _nfmt(arch_data.get("event_flow_count", 0)))
+            ai_tbl.add_row("Files mapped to services", _nfmt(arch_data.get("mapped_file_count", arch_data.get("file_service_map_count", 0))))
+
+            svc_list = arch_data.get("services", [])
+            if svc_list and isinstance(svc_list, list):
+                svc_tbl = Table(box=ROUNDED, border_style="dim", padding=(0, 1))
+                svc_tbl.add_column("Service", style="bold cyan", min_width=22)
+                svc_tbl.add_column("Ports", justify="right", min_width=10)
+                partitions = arch_data.get("service_partitions", {})
+                for svc_item in sorted(svc_list, key=lambda s: s.get("name", ""))[:12]:
+                    sn = svc_item.get("name", "?")
+                    raw_ports = svc_item.get("ports", [])
+                    ports = ", ".join(str(p).split(":")[-1] for p in raw_ports) or "—"
+                    fc = len(partitions.get(sn, []))
+                    svc_tbl.add_row(sn, f"{ports}  ({fc} files)")
+
+            parts = [ai_tbl]
+            if svc_list:
+                parts.append(Text(""))
+                parts.append(svc_tbl)
+
+            rcon.print(Panel(
+                RichGroup(*parts),
+                title="[bold green]🏗️  Architecture Intelligence[/bold green]",
+                border_style="green", box=ROUNDED, padding=(0, 1),
+            ))
+
+        # ── feature intelligence ──────────────────────────────────────────
+        feat_data = intel.get("features", {})
+        if feat_data:
+            from rich.console import Group as RichGroup
+
+            fi_tbl = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+            fi_tbl.add_column("Metric", style="dim", min_width=28)
+            fi_tbl.add_column("Value", justify="right")
+
+            fi_tbl.add_row("Feature flags", _nfmt(feat_data.get("feature_flag_count", 0)))
+            fi_tbl.add_row("CLI commands", _nfmt(feat_data.get("cli_command_count", 0)))
+            fi_tbl.add_row("MCP tools", _nfmt(feat_data.get("mcp_tool_count", 0)))
+            fi_tbl.add_row("MCP servers", _nfmt(feat_data.get("mcp_server_count", 0)))
+
+            avg_comp = feat_data.get("avg_completeness", 0)
+            cc = "green" if avg_comp >= 0.7 else ("yellow" if avg_comp >= 0.4 else "red")
+            fi_tbl.add_row("Avg completeness", f"[{cc}]{avg_comp:.0%}[/{cc}]")
+
+            flags = feat_data.get("feature_flags", [])
+            if flags:
+                fl_tbl = Table(box=ROUNDED, border_style="dim", padding=(0, 1))
+                fl_tbl.add_column("Flag", style="bold yellow", min_width=28)
+                fl_tbl.add_column("Default", justify="center", min_width=8)
+                for fl in flags[:10]:
+                    fl_tbl.add_row(fl.get("name", "?"), str(fl.get("default", "?")))
+
+            parts = [fi_tbl]
+            if flags:
+                parts.append(Text(""))
+                parts.append(fl_tbl)
+
+            mcp_servers = feat_data.get("mcp_servers", [])
+            if mcp_servers:
+                parts.append(Text(""))
+                parts.append(Text("🔌 MCP Servers", style="bold"))
+                for srv in mcp_servers[:8]:
+                    parts.append(Text(f"  {srv.get('name', '?')}  ({srv.get('tool_count', 0)} tools)", style="cyan"))
+
+            rcon.print(Panel(
+                RichGroup(*parts),
+                title="[bold yellow]🎯 Feature Intelligence[/bold yellow]",
+                border_style="yellow", box=ROUNDED, padding=(0, 1),
+            ))
+
         rcon.print()
 
     except ImportError:
@@ -1840,8 +3020,38 @@ def main() -> int:
         action="store_true",
         help="Skip per-file TODO/stub content scan (faster for large repos)",
     )
+    parser.add_argument(
+        "--code-passes",
+        action="store_true",
+        help="Run code intelligence: AST analysis, import graph, entry points, "
+        "test mapping, complexity scoring",
+    )
+    parser.add_argument(
+        "--arch-passes",
+        action="store_true",
+        help="Run architecture intelligence: compose topology, service registry, "
+        "event flows, API surface",
+    )
+    parser.add_argument(
+        "--feature-passes",
+        action="store_true",
+        help="Run feature intelligence: feature flags, CLI commands, "
+        "MCP tool inventory, completeness scoring",
+    )
+    parser.add_argument(
+        "--full-passes",
+        action="store_true",
+        help="Run ALL intelligence passes (git + code + arch + features)",
+    )
 
     args = parser.parse_args()
+
+    # --full-passes enables everything
+    if args.full_passes:
+        args.git_passes = True
+        args.code_passes = True
+        args.arch_passes = True
+        args.feature_passes = True
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
@@ -1910,15 +3120,68 @@ def main() -> int:
         if co_change_groups:
             logger.info(f"    Found {len(co_change_groups)} co-change groups")
 
+    # Code intelligence passes (opt-in via --code-passes or --full-passes)
+    code_intel: dict[str, Any] | None = None
+    if args.code_passes:
+        logger.info("💻 Running code intelligence passes...")
+        code_intel = enrich_with_code_intelligence(entries, config.repo_root)
+        logger.info(
+            f"   ✓ {code_intel['total_python_files']} Python files analysed, "
+            f"{code_intel['entry_point_count']} entry points, "
+            f"{code_intel['orphan_count']} orphans, "
+            f"{code_intel['hub_count']} hubs"
+        )
+
+    # Architecture intelligence passes (opt-in via --arch-passes or --full-passes)
+    arch_intel: dict[str, Any] | None = None
+    if args.arch_passes:
+        logger.info("🏗️  Running architecture intelligence passes...")
+        arch_intel = enrich_with_arch_intelligence(entries, config.repo_root)
+        logger.info(
+            f"   ✓ {arch_intel['service_count']} services, "
+            f"{arch_intel['api_endpoint_count']} API endpoints, "
+            f"{arch_intel['event_flow_count']} event flows"
+        )
+
+    # Feature intelligence passes (opt-in via --feature-passes or --full-passes)
+    feature_intel: dict[str, Any] | None = None
+    if args.feature_passes:
+        logger.info("🎯 Running feature intelligence passes...")
+        feature_intel = enrich_with_feature_intelligence(entries, config.repo_root)
+        logger.info(
+            f"   ✓ {feature_intel['feature_flag_count']} feature flags, "
+            f"{feature_intel['cli_command_count']} CLI commands, "
+            f"{feature_intel['mcp_tool_count']} MCP tools"
+        )
+
     # Build manifests (always, for all modes)
     stats, meta = build_manifests(entries, config, mode)
     _print_summary(stats, config)
     logger.info(f"\n📄 Manifests written to {config.output_dir}/")
 
-    # Intelligence report (git passes only)
-    if args.git_passes:
-        intel_path = build_intelligence_report(entries, co_change_groups, config, meta)
+    # Intelligence report (any intelligence passes)
+    has_any_intel = args.git_passes or args.code_passes or args.arch_passes or args.feature_passes
+    if has_any_intel:
+        intel_path = build_intelligence_report(
+            entries, co_change_groups, config, meta,
+            code_intel=code_intel,
+            arch_intel=arch_intel,
+            feature_intel=feature_intel,
+        )
         logger.info(f"🧠 Intelligence report: {intel_path}")
+
+        # Generate extraction artifacts if code or arch intelligence available
+        if code_intel or arch_intel:
+            logger.info("📋 Generating extraction artifacts...")
+            artifacts = generate_extraction_artifacts(
+                entries,
+                code_intel or {},
+                arch_intel or {},
+                feature_intel or {},
+                config,
+            )
+            logger.info(f"   ✓ {len(artifacts)} extraction artifact(s) written")
+
         _print_intelligence_report(intel_path)
 
     # Corpus size safety gate

@@ -38,6 +38,8 @@ class WizardState:
     corpus_included_count: int = 0
     corpus_total_size: int = 0
     grok_response: Optional[Dict[str, Any]] = None
+    intelligence_report: Optional[Dict[str, Any]] = None  # prescan_intelligence.json
+    git_passes_run: bool = False
     promptset_ready: bool = False
     selected_policy: str = "balanced_openrouter"
     run_id: str = ""
@@ -52,20 +54,76 @@ class WizardState:
 PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
 
 PHASE_INFO: Dict[str, Dict[str, str]] = {
-    "A": {"name": "Repo Control Plane", "icon": "🏗️", "desc": "Analyzes repo structure, entry points, and configuration files"},
-    "H": {"name": "Home Control Plane", "icon": "🏠", "desc": "Examines user/home directory configuration and dotfiles"},
-    "D": {"name": "Docs Pipeline", "icon": "📚", "desc": "Deep analysis of all documentation files and their relationships"},
-    "C": {"name": "Code Surfaces", "icon": "💻", "desc": "Maps code interfaces, APIs, and public surfaces"},
-    "E": {"name": "Execution Plane", "icon": "⚡", "desc": "Analyzes runtime behavior, scripts, and execution paths"},
-    "W": {"name": "Workflow Plane", "icon": "🔄", "desc": "Maps CI/CD workflows, GitHub Actions, and automation"},
-    "B": {"name": "Boundary Contracts", "icon": "🔒", "desc": "Identifies API contracts, schema boundaries, and interfaces"},
-    "G": {"name": "Governance Plane", "icon": "📋", "desc": "Reviews governance rules, policies, and compliance"},
-    "Q": {"name": "Quality Assurance", "icon": "✅", "desc": "Cross-checks extraction quality and consistency"},
-    "R": {"name": "Arbitration", "icon": "⚖️", "desc": "Reconciles conflicts between different extraction phases"},
-    "X": {"name": "Feature Index", "icon": "🗂️", "desc": "Builds searchable feature index from all extractions"},
-    "T": {"name": "Task Packets", "icon": "📦", "desc": "Generates task-oriented work packets from findings"},
-    "Z": {"name": "Handoff Freeze", "icon": "🧊", "desc": "Creates frozen snapshot for handoff to other systems"},
-    "S": {"name": "Synthesis", "icon": "🧬", "desc": "Final synthesis combining all phases into coherent truth"},
+    "A": {
+        "name": "Repo Control Plane",
+        "icon": "🏗️",
+        "desc": "Analyzes repo structure, entry points, and configuration files",
+    },
+    "H": {
+        "name": "Home Control Plane",
+        "icon": "🏠",
+        "desc": "Examines user/home directory configuration and dotfiles",
+    },
+    "D": {
+        "name": "Docs Pipeline",
+        "icon": "📚",
+        "desc": "Deep analysis of all documentation files and their relationships",
+    },
+    "C": {
+        "name": "Code Surfaces",
+        "icon": "💻",
+        "desc": "Maps code interfaces, APIs, and public surfaces",
+    },
+    "E": {
+        "name": "Execution Plane",
+        "icon": "⚡",
+        "desc": "Analyzes runtime behavior, scripts, and execution paths",
+    },
+    "W": {
+        "name": "Workflow Plane",
+        "icon": "🔄",
+        "desc": "Maps CI/CD workflows, GitHub Actions, and automation",
+    },
+    "B": {
+        "name": "Boundary Contracts",
+        "icon": "🔒",
+        "desc": "Identifies API contracts, schema boundaries, and interfaces",
+    },
+    "G": {
+        "name": "Governance Plane",
+        "icon": "📋",
+        "desc": "Reviews governance rules, policies, and compliance",
+    },
+    "Q": {
+        "name": "Quality Assurance",
+        "icon": "✅",
+        "desc": "Cross-checks extraction quality and consistency",
+    },
+    "R": {
+        "name": "Arbitration",
+        "icon": "⚖️",
+        "desc": "Reconciles conflicts between different extraction phases",
+    },
+    "X": {
+        "name": "Feature Index",
+        "icon": "🗂️",
+        "desc": "Builds searchable feature index from all extractions",
+    },
+    "T": {
+        "name": "Task Packets",
+        "icon": "📦",
+        "desc": "Generates task-oriented work packets from findings",
+    },
+    "Z": {
+        "name": "Handoff Freeze",
+        "icon": "🧊",
+        "desc": "Creates frozen snapshot for handoff to other systems",
+    },
+    "S": {
+        "name": "Synthesis",
+        "icon": "🧬",
+        "desc": "Final synthesis combining all phases into coherent truth",
+    },
 }
 
 
@@ -101,6 +159,11 @@ AUTHORITY_CLASSES: Dict[str, Dict[str, str]] = {
         "color": "white",
         "icon": "⚪",
         "desc": "Auto-generated files (lock files, builds, caches)",
+    },
+    "ghost": {
+        "color": "dim",
+        "icon": "👻",
+        "desc": "Deleted files recovered from git history — may contain valuable content",
     },
 }
 
