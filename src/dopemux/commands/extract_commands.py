@@ -4,6 +4,7 @@ Extract Commands
 Document extraction with ADHD-optimized patterns.
 """
 
+import importlib.util
 import os
 import sys
 import time
@@ -16,8 +17,11 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich import box
+from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
 from rich.table import Table
+from rich.text import Text
 
 from ..console import console
 
@@ -770,3 +774,259 @@ def _run_extract_cleanup(
                 import traceback
                 traceback.print_exc()
             sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
+# Helper: load extraction_hygiene module dynamically
+# ---------------------------------------------------------------------------
+
+def _load_hygiene_module():
+    """Load extraction_hygiene.py without requiring it to be on sys.path."""
+    repo_root = Path(__file__).resolve().parents[3]
+    mod_path = repo_root / "services" / "repo-truth-extractor" / "extraction_hygiene.py"
+    if not mod_path.exists():
+        return None, None
+    spec = importlib.util.spec_from_file_location("extraction_hygiene", mod_path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["extraction_hygiene"] = mod
+    spec.loader.exec_module(mod)
+    return mod, repo_root
+
+
+def _hygiene_severity_color(level: str) -> str:
+    return {"error": "bold red", "warning": "bold yellow", "info": "cyan"}.get(level, "white")
+
+
+# ---------------------------------------------------------------------------
+# truth-run command
+# ---------------------------------------------------------------------------
+
+@extract.command("truth-run")
+@click.option("--run-id", default=None, help="Extraction run ID (default: auto timestamp)")
+@click.option("--phase", default="ALL", show_default=True, help="Extraction phase(s) to run (e.g. A, A,B, ALL)")
+@click.option("--workers", "-w", default=10, show_default=True, help="Partition worker count")
+@click.option("--routing-policy", default="balanced_openrouter", show_default=True, help="LLM routing policy")
+@click.option("--doctor", is_flag=True, help="Run provider preflight doctor checks")
+@click.option("--skip-hygiene", is_flag=True, help="Skip pre-flight hygiene scan")
+@click.option("--apply-cleanup", is_flag=True, help="Apply quarantine cleanup if hygiene scan finds hazards")
+@click.option("--force", is_flag=True, help="Run extraction even if hygiene scan reports errors")
+@click.pass_context
+def truth_run(
+    ctx,
+    run_id: Optional[str],
+    phase: str,
+    workers: int,
+    routing_policy: str,
+    doctor: bool,
+    skip_hygiene: bool,
+    apply_cleanup: bool,
+    force: bool,
+):
+    """
+    🔬 Full extraction workflow: hygiene scan → optional cleanup → v5 extraction run.
+
+    Runs the complete repo-truth-extractor pipeline with a pre-flight hygiene
+    check to catch stale artifacts, noisy paths, and version/path mismatches
+    before they contaminate extraction output.
+
+    \b
+    Steps:
+      1. Pre-flight hygiene scan (read-only, skippable with --skip-hygiene)
+      2. Optional cleanup / quarantine (requires --apply-cleanup)
+      3. Launch run_extraction_v5.py with live streaming output
+    """
+    auto_run_id = run_id or datetime.now().strftime("RUN-%Y%m%dT%H%M%S")
+
+    console.print(Panel(
+        Text.from_markup(
+            f"[bold cyan]🔬 dopemux extract truth-run[/bold cyan]\n"
+            f"[dim]run_id=[/dim][bold]{auto_run_id}[/bold]  "
+            f"[dim]phase=[/dim][bold]{phase}[/bold]  "
+            f"[dim]workers=[/dim][bold]{workers}[/bold]  "
+            f"[dim]routing=[/dim][bold magenta]{routing_policy}[/bold magenta]"
+        ),
+        box=box.DOUBLE_EDGE,
+        border_style="bright_cyan",
+    ))
+
+    # ------------------------------------------------------------------
+    # Phase 1: Hygiene scan
+    # ------------------------------------------------------------------
+    if skip_hygiene:
+        console.print("[dim]⏩ Pre-flight hygiene scan skipped (--skip-hygiene)[/dim]")
+        scan = None
+        mod = None
+        repo_root = Path.cwd()
+    else:
+        console.print()
+        console.print(Panel("[bold blue]Phase 1 · Pre-flight Hygiene Scan[/bold blue]", border_style="blue"))
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+            console=console,
+            transient=True,
+        ) as progress:
+            task = progress.add_task("[cyan]Scanning repo surfaces…", total=None)
+            mod, repo_root = _load_hygiene_module()
+            if mod is None:
+                console.print("[bold red]❌ extraction_hygiene.py not found — cannot run pre-flight scan.[/bold red]")
+                console.print("[dim]Hint: expected at services/repo-truth-extractor/extraction_hygiene.py[/dim]")
+                if not force:
+                    sys.exit(1)
+                scan = None
+            else:
+                scan = mod.run_scan(repo_root=repo_root)
+            progress.update(task, completed=True)
+
+        if scan is not None:
+            _display_scan_results(scan, console)
+
+            error_count = len(scan.errors)
+            warn_count = len(scan.warnings)
+
+            if error_count > 0 and not force:
+                console.print(
+                    f"\n[bold red]🚫 Hygiene scan found {error_count} error(s). "
+                    "Aborting. Use --force to override.[/bold red]"
+                )
+                sys.exit(1)
+            elif error_count > 0:
+                console.print(f"\n[bold yellow]⚠️  {error_count} error(s) found — proceeding anyway (--force)[/bold yellow]")
+            elif warn_count > 0:
+                console.print(f"\n[yellow]⚠️  {warn_count} warning(s) found.[/yellow]")
+            else:
+                console.print("\n[bold green]✅ Hygiene scan clean — no issues found.[/bold green]")
+
+    # ------------------------------------------------------------------
+    # Phase 2: Optional cleanup
+    # ------------------------------------------------------------------
+    if apply_cleanup and mod is not None and scan is not None:
+        console.print()
+        console.print(Panel("[bold yellow]Phase 2 · Quarantine Cleanup[/bold yellow]", border_style="yellow"))
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+            console=console,
+            transient=True,
+        ) as progress:
+            task = progress.add_task("[yellow]Applying cleanup…", total=None)
+            plan = mod.run_apply(repo_root=repo_root, dry_run=False)
+            progress.update(task, completed=True)
+
+        moved = [a for a in plan.applied_actions if a.action == "move_to_quarantine"]
+        if moved:
+            tbl = Table(box=box.SIMPLE, border_style="yellow")
+            tbl.add_column("Action", style="yellow")
+            tbl.add_column("Path", style="dim")
+            tbl.add_column("Reason", style="cyan")
+            for a in moved:
+                tbl.add_row("→ quarantined", str(a.source.relative_to(repo_root)), a.reason)
+            console.print(tbl)
+            if plan.manifest_path:
+                console.print(f"[dim]📄 Manifest: {plan.manifest_path}[/dim]")
+        else:
+            console.print("[green]✅ Nothing to quarantine.[/green]")
+    elif apply_cleanup and (mod is None or scan is None):
+        console.print("[dim]⏩ Cleanup skipped (hygiene module unavailable).[/dim]")
+
+    # ------------------------------------------------------------------
+    # Phase 3: Launch extraction
+    # ------------------------------------------------------------------
+    console.print()
+    console.print(Panel(
+        Text.from_markup(
+            f"[bold green]Phase 3 · Running v5 Extraction[/bold green]\n"
+            f"[dim]Launching run_extraction_v5.py — output streams below[/dim]"
+        ),
+        border_style="green",
+    ))
+
+    runner_path = _find_runner(repo_root if not skip_hygiene else Path.cwd())
+    if runner_path is None:
+        console.print("[bold red]❌ run_extraction_v5.py not found. Check services/repo-truth-extractor/.[/bold red]")
+        sys.exit(1)
+
+    cmd = [sys.executable, str(runner_path), "--phase", phase, "--partition-workers", str(workers),
+           "--routing-policy", routing_policy, "--run-id", auto_run_id]
+    if doctor:
+        cmd.append("--doctor")
+
+    console.print(f"[dim]$ {' '.join(cmd)}[/dim]")
+    console.print()
+
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                text=True, bufsize=1, cwd=str(repo_root if not skip_hygiene else Path.cwd()))
+        assert proc.stdout is not None
+        for line in proc.stdout:
+            print(line, end="", flush=True)
+        proc.wait()
+        if proc.returncode != 0:
+            console.print(f"\n[bold red]❌ Extraction exited with code {proc.returncode}[/bold red]")
+            sys.exit(proc.returncode)
+        else:
+            console.print("\n[bold green]✅ Extraction complete.[/bold green]")
+    except KeyboardInterrupt:
+        console.print("\n[yellow]⚠️  Interrupted.[/yellow]")
+        sys.exit(130)
+
+
+def _find_runner(repo_root: Path) -> Optional[Path]:
+    """Locate run_extraction_v5.py relative to repo_root."""
+    candidate = repo_root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
+    if candidate.exists():
+        return candidate
+    # Fallback: search upward
+    for parent in [Path.cwd()] + list(Path.cwd().parents):
+        c = parent / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
+        if c.exists():
+            return c
+    return None
+
+
+def _display_scan_results(scan, console) -> None:
+    """Render hygiene scan results to the console."""
+    from rich.table import Table
+    from rich import box as rbox
+
+    # Version path
+    if scan.version_path_issues:
+        for issue in scan.version_path_issues:
+            console.print(f"[bold red]🔗 VERSION_PATH_MISMATCH:[/bold red] {issue.message}")
+    else:
+        console.print("[green]🔗 Version/path wiring:[/green] [bold green]v5 code → v5 output ✅[/bold green]")
+
+    # Noise paths
+    if scan.noise_paths:
+        tbl = Table(title="⚠️  Noisy Paths Detected", box=rbox.SIMPLE, border_style="yellow")
+        tbl.add_column("Path", style="dim")
+        tbl.add_column("Category", style="yellow")
+        for np in scan.noise_paths[:20]:
+            tbl.add_row(np.path, np.category)
+        if len(scan.noise_paths) > 20:
+            tbl.add_row(f"… and {len(scan.noise_paths) - 20} more", "")
+        console.print(tbl)
+    else:
+        console.print("[green]📁 Noise paths:[/green] [bold green]none found ✅[/bold green]")
+
+    # Resume hazards
+    if scan.resume_state_issues:
+        tbl = Table(title="⚠️  Resume-State Hazards", box=rbox.SIMPLE, border_style="red")
+        tbl.add_column("Run dir", style="dim")
+        tbl.add_column("Issue", style="red")
+        for ri in scan.resume_state_issues[:15]:
+            tbl.add_row(ri.run_dir, ri.issue_type)
+        console.print(tbl)
+
+    # Authority summary
+    if scan.authority_summary:
+        tbl = Table(title="📚 Authority Classification Summary", box=rbox.SIMPLE, border_style="cyan")
+        tbl.add_column("Tier", style="bold cyan")
+        tbl.add_column("Count", justify="right")
+        for tier, count in sorted(scan.authority_summary.items()):
+            tbl.add_row(tier, str(count))
+        console.print(tbl)
