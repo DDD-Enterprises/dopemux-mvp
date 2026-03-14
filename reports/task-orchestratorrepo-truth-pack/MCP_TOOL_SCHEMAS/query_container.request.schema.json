@@ -1,0 +1,88 @@
+{
+    "_meta": {
+        "tool": "query_container",
+        "source": "code",
+        "source_file": "clockwork/src/main/kotlin/io/github/jpicklyk/mcptask/application/tools/QueryContainerTool.kt",
+        "lines": "150-242",
+        "extraction_method": "direct read of parameterSchema ToolSchema definition",
+        "analyzed_ref": "99023a9 HEAD-at-time-of-analysis"
+    },
+    "type": "object",
+    "required": [
+        "operation",
+        "containerType"
+    ],
+    "properties": {
+        "operation": {
+            "type": "string",
+            "description": "Operation to perform",
+            "enum": [
+                "get",
+                "search",
+                "export",
+                "overview"
+            ]
+        },
+        "containerType": {
+            "type": "string",
+            "description": "Type of container",
+            "enum": [
+                "project",
+                "feature",
+                "task"
+            ]
+        },
+        "id": {
+            "type": "string",
+            "description": "Container ID (required for: get, export; optional for: overview — enables scoping)",
+            "format": "uuid"
+        },
+        "query": {
+            "type": "string",
+            "description": "Search text query (search operation)"
+        },
+        "status": {
+            "type": "string",
+            "description": "Filter by status. Supports multi-value (OR): 'pending,in-progress'; negation: '!completed'; multi-negation: '!completed,!cancelled'"
+        },
+        "priority": {
+            "type": "string",
+            "description": "Filter by priority (feature/task only). Supports multi-value and negation."
+        },
+        "tags": {
+            "type": "string",
+            "description": "Comma-separated tags filter"
+        },
+        "projectId": {
+            "type": "string",
+            "description": "Filter by project ID (feature/task)",
+            "format": "uuid"
+        },
+        "featureId": {
+            "type": "string",
+            "description": "Filter by feature ID (task only)",
+            "format": "uuid"
+        },
+        "limit": {
+            "type": "integer",
+            "description": "Maximum results (search)",
+            "default": 20
+        },
+        "includeSections": {
+            "type": "boolean",
+            "description": "Include sections (get only)",
+            "default": false
+        },
+        "summaryLength": {
+            "type": "integer",
+            "description": "Summary max length (overview only, 0-200)",
+            "default": 100,
+            "minimum": 0,
+            "maximum": 200
+        },
+        "role": {
+            "type": "string",
+            "description": "Filter by role (queue, work, review, blocked, terminal) — uses workflow configuration"
+        }
+    }
+}

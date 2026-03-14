@@ -1,0 +1,74 @@
+# INSPECTED_FILES.txt
+# Every file inspected (full read or outline) during Pass 1 Discovery
+# Paths are repo-relative
+
+# Build / Config
+settings.gradle.kts
+build.gradle.kts
+current/build.gradle.kts
+version.properties
+gradle.properties
+Dockerfile
+docker-compose.yml
+README.md
+
+# Entrypoint
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/CurrentMain.kt
+
+# MCP Interface Layer
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/interfaces/mcp/CurrentMcpServer.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/interfaces/mcp/McpToolAdapter.kt
+
+# Tool Framework
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/ToolDefinition.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/BaseToolDefinition.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/ToolExecutionContext.kt
+
+# Tool Implementations (13 tools)
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/items/ManageItemsTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/items/QueryItemsTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/notes/ManageNotesTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/notes/QueryNotesTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/dependency/ManageDependenciesTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/dependency/QueryDependenciesTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/workflow/AdvanceItemTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/workflow/GetNextStatusTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/workflow/GetNextItemTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/workflow/GetBlockedItemsTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/workflow/GetContextTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/compound/CompleteTreeTool.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/tools/compound/CreateWorkTreeTool.kt
+
+# Domain Models
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/domain/model/Role.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/domain/model/WorkItem.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/domain/model/Note.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/domain/model/Dependency.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/domain/model/Priority.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/domain/model/DependencyType.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/domain/model/RoleTransition.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/domain/model/NoteSchemaEntry.kt
+
+# Application Services
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/service/RoleTransitionHandler.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/service/NoteSchemaService.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/service/WorkTreeExecutor.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/application/service/CascadeDetector.kt
+
+# Infrastructure — Database
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/infrastructure/database/DatabaseConfig.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/infrastructure/database/DatabaseManager.kt
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/infrastructure/database/schema/WorkItemsTable.kt
+
+# Infrastructure — Config
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/infrastructure/config/YamlNoteSchemaService.kt
+
+# Infrastructure — Repository
+current/src/main/kotlin/io/github/jpicklyk/mcptask/current/infrastructure/repository/RepositoryProvider.kt
+
+# Flyway Migrations
+current/src/main/resources/db/migration/V1__Current_Initial_Schema.sql
+current/src/main/resources/db/migration/V2__Work_Item_Field_Updates.sql
+
+# Test files (enumerated, not individually inspected in Pass 1)
+# 35 test files under current/src/test/ — listed for completeness

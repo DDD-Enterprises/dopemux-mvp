@@ -1,0 +1,42 @@
+# SEARCH_PATTERNS.txt
+# All search patterns used during Pass 1 Discovery
+
+# Git metadata
+git log -1 --format="%H %h %s %ai"
+git rev-parse --abbrev-ref HEAD
+git tag --sort=-creatordate | head -20
+
+# File discovery (find_by_name)
+Pattern: * | Dir: current/src | Type: file              # All source files
+Pattern: * | Dir: current/src/test | Type: file          # All test files
+Pattern: CurrentMcpServer* | Dir: current/src | Type: file  # MCP server class
+Pattern: * | Dir: current/src/main/.../interfaces | Type: file  # Interface layer
+Pattern: * | Dir: current/src/main/.../infrastructure | Type: file  # Infrastructure
+Pattern: V* | Dir: current/src/main/resources | Type: file  # Flyway migrations
+
+# Outline inspections (view_file_outline)
+CurrentMain.kt
+ToolDefinition.kt
+BaseToolDefinition.kt
+ManageItemsTool.kt
+QueryItemsTool.kt
+ManageNotesTool.kt
+ManageDependenciesTool.kt
+QueryDependenciesTool.kt
+AdvanceItemTool.kt
+GetNextItemTool.kt
+GetBlockedItemsTool.kt
+GetContextTool.kt
+CompleteTreeTool.kt
+CreateWorkTreeTool.kt
+WorkTreeExecutor.kt
+CascadeDetector.kt
+WorkItemsTable.kt
+RepositoryProvider.kt
+
+# Directory listings
+/ (repo root)
+/current
+/current/src
+/current/docs
+/clockwork
