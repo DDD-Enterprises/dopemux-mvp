@@ -57,7 +57,12 @@ class LeantimeBridgeAdapter:
                 timeout=config.timeout,
             )
         else:
-            config.source_plane = "pm_plane"
+            config = DopeconBridgeConfig(
+                base_url=config.base_url,
+                token=token or config.token,
+                timeout=config.timeout,
+                source_plane="pm_plane",
+            )
         
         self.client = AsyncDopeconBridgeClient(config=config)
         logger.info(f"✅ Leantime DopeconBridge adapter initialized (PM plane, workspace: {workspace_id})")

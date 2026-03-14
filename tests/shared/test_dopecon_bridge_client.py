@@ -138,3 +138,59 @@ def test_save_and_get_custom_data() -> None:
 
     assert data == [{"key": "foo", "value": {"count": 1}}]
     assert "/kg/custom_data" in calls
+
+
+def test_recent_and_search_decisions_use_active_ddg_routes() -> None:
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append((request.method, request.url.path, dict(request.url.params)))
+        return httpx.Response(
+            200,
+            json={
+                "count": 1,
+                "items": [{"id": "dec_1", "summary": "Keep adapter-only bridge"}],
+            },
+        )
+
+    client = DopeconBridgeClient(
+        base_url="http://bridge",
+        transport=httpx.MockTransport(handler),
+    )
+
+    recent = client.recent_decisions(workspace_id="/workspace", limit=5)
+    search = client.search_decisions(query="adapter", workspace_id="/workspace", limit=3)
+
+    client.close()
+
+    assert recent.count == 1
+    assert search.items[0]["id"] == "dec_1"
+    assert calls[0][1] == "/ddg/decisions"
+    assert calls[1][1] == "/ddg/search"
+
+
+def test_unsupported_bridge_surfaces_raise_explicit_errors() -> None:
+    client = DopeconBridgeClient(
+        base_url="http://bridge",
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, json={})),
+    )
+
+    with pytest.raises(DopeconBridgeError, match="deprecated or blocked"):
+        client.route_cognitive(operation="noop", data={}, requester="tester")
+
+    with pytest.raises(DopeconBridgeError, match="deprecated or blocked"):
+        client.related_decisions(decision_id="dec_1")
+
+    with pytest.raises(DopeconBridgeError, match="deprecated or blocked"):
+        client.related_text(query="adapter")
+
+    with pytest.raises(DopeconBridgeError, match="deprecated or blocked"):
+        client.create_link(
+            source_item_type="decision",
+            source_item_id="a",
+            target_item_type="progress",
+            target_item_id="b",
+            relationship_type="supports",
+        )
+
+    client.close()

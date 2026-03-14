@@ -122,7 +122,7 @@ class MCPClientManager:
         urls = {
             "task-master-ai": settings.task_master_url,
             "task-orchestrator": settings.task_orchestrator_url,
-            "leantime-bridge": settings.leantime_bridge_url
+            "leantime-bridge": settings.leantime_bridge_url,
         }
         url = urls.get(service)
         if not url:
@@ -134,7 +134,7 @@ class MCPClientManager:
         if not self.session:
             return {"status": "not_initialized"}
 
-        services = ["task-master-ai", "task-orchestrator", "leantime-bridge"]
+        services = ["task-orchestrator", "leantime-bridge"]
         health_status = {}
 
         for service in services:
@@ -172,6 +172,85 @@ class ConPortClient:
         self.session = aiohttp.ClientSession(timeout=timeout)
         self._initialized = True
         logger.info("✅ ConPort client initialized")
+
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: Optional[Dict[str, Any]] = None,
+        json_body: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Execute a JSON request against the active ConPort REST surface."""
+        if not self.session:
+            await self.initialize()
+
+        url = f"{self.base_url}{path}"
+        async with self.session.request(method, url, params=params, json=json_body) as response:
+            raw_text = await response.text()
+            if response.status >= 400:
+                detail = raw_text or f"ConPort request failed with status {response.status}"
+                raise HTTPException(status_code=502, detail=detail[:500])
+            if not raw_text:
+                return {}
+            try:
+                return json.loads(raw_text)
+            except json.JSONDecodeError as exc:
+                raise HTTPException(status_code=502, detail="ConPort returned invalid JSON") from exc
+
+    async def health_check(self) -> bool:
+        """Check whether the active ConPort REST endpoint is healthy."""
+        try:
+            await self._request("GET", "/health")
+            return True
+        except Exception as exc:  # pragma: no cover - best effort diagnostic
+            logger.error("Health check failed for conport: %s", exc)
+            return False
+
+    async def list_decisions(
+        self,
+        *,
+        workspace_id: Optional[str] = None,
+        limit: int = 20,
+    ) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"limit": limit}
+        if workspace_id:
+            params["workspace_id"] = workspace_id
+        return await self._request("GET", "/api/decisions", params=params)
+
+    async def search_decisions(
+        self,
+        *,
+        query: str,
+        workspace_id: str,
+        limit: int = 20,
+    ) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"q": query, "limit": limit, "type": "decisions"}
+        return await self._request("GET", f"/api/search/{workspace_id}", params=params)
+
+    async def log_decision(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return await self._request("POST", "/api/decisions", json_body=payload)
+
+    async def list_progress(
+        self,
+        *,
+        workspace_id: str,
+        limit: int = 50,
+        status: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"workspace_id": workspace_id, "limit": limit}
+        if status:
+            params["status"] = status
+        return await self._request("GET", "/api/progress", params=params)
+
+    async def log_progress(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return await self._request("POST", "/api/progress", json_body=payload)
+
+    async def save_custom_data(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return await self._request("POST", "/api/custom_data", json_body=payload)
+
+    async def get_custom_data(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        return await self._request("GET", "/api/custom_data", params=params)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
     async def get_context(self, context_token: str) -> Dict[str, Any]:

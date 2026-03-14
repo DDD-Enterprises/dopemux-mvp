@@ -44,7 +44,7 @@ class TaskPriority(Enum):
 # ============================================================================
 
 class TaskRecord(Base):
-    """Shared task record across all Dopemux instances."""
+    """Legacy transitional task cache. Non-canonical after bridge narrowing."""
     __tablename__ = "tasks"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -65,7 +65,7 @@ class TaskRecord(Base):
 
 
 class ProjectRecord(Base):
-    """Shared project record across all Dopemux instances."""
+    """Legacy transitional project cache. Non-canonical after bridge narrowing."""
     __tablename__ = "projects"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -79,7 +79,7 @@ class ProjectRecord(Base):
 
 
 class DdgDecision(Base):
-    """Dope Decision Graph - Decision records."""
+    """Legacy DDG decision cache. Non-canonical after ConPort proxy alignment."""
     __tablename__ = "ddg_decisions"
 
     id = Column(String, primary_key=True)
@@ -93,7 +93,7 @@ class DdgDecision(Base):
 
 
 class DdgProgress(Base):
-    """Dope Decision Graph - Progress records."""
+    """Legacy DDG progress cache. Non-canonical after ConPort proxy alignment."""
     __tablename__ = "ddg_progress"
 
     id = Column(String, primary_key=True)
@@ -108,7 +108,7 @@ class DdgProgress(Base):
 
 
 class DdgEmbedding(Base):
-    """Optional embeddings store (fallback when vector DB not used)."""
+    """Optional embeddings cache. Non-canonical retrieval aid only."""
     __tablename__ = "ddg_embeddings"
 
     id = Column(String, primary_key=True)  # decision_id
