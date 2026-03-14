@@ -8,7 +8,19 @@ from pathlib import Path
 import pytest
 
 # Import the module under test (will fail until extraction_hygiene.py exists)
-from services.repo_truth_extractor import extraction_hygiene as hyg
+import importlib.util as _ilu
+import sys as _sys
+def _load_hyg():
+    _root = __import__('pathlib').Path(__file__).resolve().parents[3]
+    _spec = _ilu.spec_from_file_location(
+        "extraction_hygiene",
+        _root / "services" / "repo-truth-extractor" / "extraction_hygiene.py",
+    )
+    _mod = _ilu.module_from_spec(_spec)
+    _sys.modules["extraction_hygiene"] = _mod
+    _spec.loader.exec_module(_mod)
+    return _mod
+hyg = _load_hyg()
 
 
 REPO_ROOT = Path(__file__).parents[3]
@@ -89,7 +101,6 @@ class TestNoisyPathDetection:
         # Build a minimal fake repo tree
         (tmp_path / "src/dopemux").mkdir(parents=True)
         (tmp_path / "src/dopemux/cli.py").write_text("# code")
-        (tmp_path / "node_modules/dep/README.md").mkdir(parents=True, exist_ok=True) or None
         (tmp_path / "node_modules/dep").mkdir(parents=True, exist_ok=True)
         (tmp_path / "node_modules/dep/README.md").write_text("# dep")
         (tmp_path / ".venv/lib").mkdir(parents=True)
