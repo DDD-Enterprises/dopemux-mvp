@@ -77,7 +77,7 @@ class TestPhaseInteractionConstants(unittest.TestCase):
 
     def test_r_optional_input_phases_values(self):
         v5 = _load_v5()
-        self.assertEqual(set(v5.R_OPTIONAL_INPUT_PHASES), {"B", "E", "G", "W", "Q"})
+        self.assertEqual(set(v5.R_OPTIONAL_INPUT_PHASES), {"B", "E", "G", "W", "Q", "X"})
 
     def test_r_required_input_phases_unchanged(self):
         v5 = _load_v5()
@@ -360,6 +360,126 @@ class TestPromptContractAmendments(unittest.TestCase):
             text = self._read_prompt(fname)
             self.assertNotIn("Reason only from", text, f"{fname} still has 'only from' hard rule")
             self.assertIn("required", text.lower(), f"{fname} should mention 'required'")
+
+    def test_r0_mentions_phase_x(self):
+        text = self._read_prompt("PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md")
+        self.assertIn("Phase X", text)
+        self.assertIn("FEATURE_INDEX_MERGED", text)
+
+    def test_r5_mentions_phase_x(self):
+        text = self._read_prompt("PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md")
+        self.assertIn("Phase X", text)
+        self.assertIn("FEATURE_DEP_GRAPH", text)
+
+    def test_r8_mentions_phase_x(self):
+        text = self._read_prompt("PROMPT_R8_RISK_REGISTER_TOP20.md")
+        self.assertIn("Phase X", text)
+        self.assertIn("FEATURE_SURFACE", text)
+
+
+# ---------------------------------------------------------------------------
+# Phase ordering
+# ---------------------------------------------------------------------------
+class TestPhaseOrdering(unittest.TestCase):
+    """Verify X runs before Q and R in the phase sequence."""
+
+    def test_x_before_q_in_phases(self):
+        v5 = _load_v5()
+        x_idx = v5.PHASES.index("X")
+        q_idx = v5.PHASES.index("Q")
+        self.assertLess(x_idx, q_idx, "X should run before Q")
+
+    def test_x_before_r_in_phases(self):
+        v5 = _load_v5()
+        x_idx = v5.PHASES.index("X")
+        r_idx = v5.PHASES.index("R")
+        self.assertLess(x_idx, r_idx, "X should run before R")
+
+    def test_cli_phase_order_matches_v5(self):
+        mod = _load_extract_cmds()
+        v5 = _load_v5()
+        self.assertEqual(mod._PHASE_ORDER, v5.PHASES)
+
+    def test_x_in_r_optional(self):
+        v5 = _load_v5()
+        self.assertIn("X", v5.R_OPTIONAL_INPUT_PHASES)
+
+
+# ---------------------------------------------------------------------------
+# Phase target coverage
+# ---------------------------------------------------------------------------
+class TestPhaseTargetCoverage(unittest.TestCase):
+    """Verify each phase handler targets the expected input surfaces."""
+
+    def test_phase_e_includes_docker(self):
+        """E must scan docker/ for Dockerfiles, entrypoints, healthchecks."""
+        import inspect
+        v5 = _load_v5()
+        src = inspect.getsource(v5.run_phase_E)
+        self.assertIn('"docker"', src)
+        self.assertIn('"installers"', src)
+        self.assertIn('"ops"', src)
+
+    def test_phase_g_includes_governance_files(self):
+        """G must scan pyproject.toml, pre-commit, Makefile, etc."""
+        import inspect
+        v5 = _load_v5()
+        src = inspect.getsource(v5.run_phase_G)
+        self.assertIn('"pyproject.toml"', src)
+        self.assertIn('".pre-commit-config.yaml"', src)
+        self.assertIn('"Makefile"', src)
+        self.assertIn('"pytest.ini"', src)
+        self.assertIn('"contracts"', src)
+
+    def test_phase_w_includes_compose_and_config(self):
+        """W must scan Makefile, compose.yml, docker/, config/ for coordination."""
+        import inspect
+        v5 = _load_v5()
+        src = inspect.getsource(v5.run_phase_W)
+        self.assertIn('"Makefile"', src)
+        self.assertIn('"compose.yml"', src)
+        self.assertIn('"docker"', src)
+        self.assertIn('"config"', src)
+
+    def test_phase_c_includes_mcp_server_source(self):
+        """C must scan docker/mcp-servers-source/ and components/."""
+        import inspect
+        v5 = _load_v5()
+        src = inspect.getsource(v5.run_phase_C)
+        self.assertIn('"docker/mcp-servers-source"', src)
+        self.assertIn('"components"', src)
+
+    def test_phase_b_includes_contracts_and_config(self):
+        """B must scan contracts/, config/, .claude/."""
+        import inspect
+        v5 = _load_v5()
+        src = inspect.getsource(v5.run_phase_B)
+        self.assertIn('"contracts"', src)
+        self.assertIn('"config"', src)
+        self.assertIn('".claude"', src)
+
+    def test_phase_t_includes_governance_context(self):
+        """T must include AGENTS.md and .claude/PROJECT_INSTRUCTIONS.md."""
+        import inspect
+        v5 = _load_v5()
+        src = inspect.getsource(v5.run_phase_T)
+        self.assertIn("AGENTS.md", src)
+        self.assertIn("PROJECT_INSTRUCTIONS.md", src)
+
+    def test_phase_x_uses_collector_not_r_artifacts(self):
+        """X must do a direct repo scan, not consume R norm artifacts."""
+        import inspect
+        v5 = _load_v5()
+        src = inspect.getsource(v5.run_phase_X)
+        self.assertIn("Collector", src, "X should use Collector for direct repo scan")
+        self.assertNotIn('dirs["R"]', src, "X should not read R artifacts")
+
+    def test_phase_q_aggregates_x(self):
+        """Q should aggregate X outputs alongside A-G."""
+        import inspect
+        v5 = _load_v5()
+        src = inspect.getsource(v5.run_phase_Q)
+        self.assertIn('"X"', src, "Q should include X in its aggregation list")
 
 
 if __name__ == "__main__":

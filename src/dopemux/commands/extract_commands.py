@@ -1191,7 +1191,7 @@ def _display_v3_migration_summary(v5_run_dir: "Path", run_id: str, console: "Con
 
 # ── Phase readiness table ──────────────────────────────────────────────
 # Phase ordering and dependency constants (mirrors run_extraction_v5.py)
-_PHASE_ORDER = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
+_PHASE_ORDER = ["A", "H", "D", "C", "E", "W", "B", "G", "X", "Q", "R", "T", "Z", "S"]
 _PHASE_LABELS = {
     "A": "Repo Control Plane",
     "H": "Home Control Plane",
@@ -1209,7 +1209,7 @@ _PHASE_LABELS = {
     "S": "Synthesis",
 }
 _R_REQUIRED = {"A", "H", "D", "C"}
-_R_OPTIONAL = {"B", "E", "G", "W", "Q"}
+_R_OPTIONAL = {"B", "E", "G", "W", "Q", "X"}
 _S_REQUIRED = {"R"}
 _S_OPTIONAL = {"X", "T", "Z"}
 
@@ -1294,7 +1294,13 @@ def _display_phase_readiness(console: "Console", v5_root: "Path", run_id: Option
             if opt_avail:
                 parts.append(f"[cyan]opt:{','.join(opt_avail)}[/cyan]")
             deps = " ".join(parts)
-        elif p in ("X", "T", "Z"):
+        elif p == "X":
+            deps = "[dim]independent (repo scan)[/dim]"
+        elif p == "Q":
+            # Q aggregates A-G plus X when available
+            x_avail = phase_data["X"]["norm"] > 0
+            deps = "[dim]aggregates A–G" + ("+X" if x_avail else "") + "[/dim]"
+        elif p in ("T", "Z"):
             req_ok = phase_data["R"]["norm"] > 0
             deps = "[green]R:✅[/green]" if req_ok else "[red]R:❌[/red]"
         else:

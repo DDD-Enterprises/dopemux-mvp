@@ -173,7 +173,7 @@ except Exception:  # pragma: no cover - optional rich rendering
 
 # --- Configuration & Constants ---
 
-PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
+PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "X", "Q", "R", "T", "Z", "S"]
 PROMPT_HASH_MODE = "strict"
 PROMPT_ROOT_ENV_VAR = "REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"
 LEGACY_PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
@@ -285,7 +285,7 @@ CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
 # Optional phases whose norm outputs enrich R arbitration when available.
 # B→R3/R8/R10  E→R0/R5/R8  G→R0/R6/R7  W→R5/R6  Q→R7/R8
-R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q"]
+R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q", "X"]
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
@@ -14272,7 +14272,10 @@ def run_phase_C(
             REPO_SCAN_EXCLUDES,
         ),
     )
-    targets = ["src", "services", "shared", "plugins", "tools", "scripts", "tests"]
+    targets = [
+        "src", "services", "shared", "plugins", "tools", "scripts", "tests",
+        "docker/mcp-servers-source", "docker/mcp-servers", "components",
+    ]
     _run_phase_inner(
         "C",
         dirs,
@@ -14306,7 +14309,10 @@ def run_phase_E(
         Path.cwd(),
         _merge_scan_excludes([".git", "node_modules", "docs"], REPO_SCAN_EXCLUDES),
     )
-    targets = ["scripts", "tools", "compose", ".github", "Makefile", "package.json"]
+    targets = [
+        "scripts", "tools", "compose", ".github", "Makefile", "package.json",
+        "docker", "installers", "install.sh", "ops",
+    ]
     _run_phase_inner(
         "E",
         dirs,
@@ -14329,7 +14335,7 @@ def run_phase_W(
         dirs,
         cfg,
         collector,
-        ["docs", "scripts", "src", "services"],
+        ["docs", "scripts", "src", "services", "Makefile", "compose.yml", "docker", "config"],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "W"),
     )
@@ -14346,7 +14352,7 @@ def run_phase_B(
         dirs,
         cfg,
         collector,
-        ["src", "services", "docs"],
+        ["src", "services", "docs", "contracts", "config", ".claude"],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "B"),
     )
@@ -14363,7 +14369,11 @@ def run_phase_G(
         dirs,
         cfg,
         collector,
-        [".github", "docs", ".claude", "AGENTS.md"],
+        [
+            ".github", "docs", ".claude", "AGENTS.md",
+            "pyproject.toml", ".pre-commit-config.yaml", "config/repo_hygiene",
+            "pytest.ini", "Makefile", "contracts",
+        ],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "G"),
     )
@@ -14373,7 +14383,7 @@ def run_phase_Q(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
     items = collect_phase_artifacts(
-        dirs, ["A", "H", "D", "C", "E", "W", "B", "G"], ["raw", "norm", "qa"]
+        dirs, ["A", "H", "D", "C", "E", "W", "B", "G", "X"], ["raw", "norm", "qa"]
     )
     promptpack_manifest = _write_q_promptpack_declared_outputs_manifest(dirs)
     items.extend(to_items([promptpack_manifest]))
@@ -14963,20 +14973,23 @@ def run_phase_R(
 def run_phase_X(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    r_norm = dirs["R"] / "norm"
-    r_inputs: List[Path] = []
-    if r_norm.exists():
-        r_inputs.extend(sorted(r_norm.glob("*.json")))
-        r_inputs.extend(sorted(r_norm.glob("*.md")))
-    if not r_inputs:
-        raise RuntimeError(f"Phase X requires R norm outputs at {r_norm}")
+    # X prompts (X0-X4) expect direct repo scan of feature surfaces,
+    # not R artifacts.  Scan targets align with X0 prompt contract:
+    # services/, src/, docs/, config/, scripts/, Makefile, docker, compose.yml
+    collector = Collector(
+        Path.cwd(),
+        _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES),
+    )
+    targets = [
+        "services", "src", "docs", "config", "scripts",
+        "Makefile", "docker", "compose.yml",
+    ]
     _run_phase_inner(
         "X",
         dirs,
         cfg,
-        None,
-        None,
-        precollected_items=to_items(r_inputs),
+        collector,
+        targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "X"),
     )
@@ -14991,6 +15004,12 @@ def run_phase_T(
         if norm_dir.exists():
             input_files.extend(sorted(norm_dir.glob("*.json")))
             input_files.extend(sorted(norm_dir.glob("*.md")))
+    # T0 prompt requires governance constraints for task packet prioritisation
+    repo_root = Path.cwd()
+    for gov_path in ["AGENTS.md", ".claude/PROJECT_INSTRUCTIONS.md"]:
+        p = repo_root / gov_path
+        if p.exists():
+            input_files.append(p)
     _run_phase_inner(
         "T",
         dirs,
