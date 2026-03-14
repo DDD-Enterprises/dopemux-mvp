@@ -10,6 +10,7 @@ Usage:
   python scripts/doc_audit_prescan.py direct [--model MODEL]
   python scripts/doc_audit_prescan.py handoff [--output-dir PATH]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,6 +22,7 @@ import logging
 import os
 import subprocess
 import sys
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -29,45 +31,122 @@ logger = logging.getLogger(__name__)
 
 # ─── SECTION 1: Constants ───────────────────────────────────────────
 
-SCRIPT_VERSION = "1.0.0"
+SCRIPT_VERSION = "2.0.0"
 
-DEFAULT_MAX_FILE_SIZE = 100 * 1024          # 100KB
+DEFAULT_MAX_FILE_SIZE = 100 * 1024  # 100KB
 DEFAULT_MAX_CORPUS_SIZE = 50 * 1024 * 1024  # 50MB
-DEFAULT_LARGE_JSON_THRESHOLD = 500 * 1024   # 500KB
+DEFAULT_LARGE_JSON_THRESHOLD = 500 * 1024  # 500KB
 XAI_BASE_URL = "https://api.x.ai/v1"
 DEFAULT_MODEL = "grok-4.20-beta-0309-non-reasoning"
 
-TEXT_EXTENSIONS = frozenset({
-    ".md", ".mdx", ".txt", ".yaml", ".yml", ".toml", ".json",
-    ".py", ".sh", ".cfg", ".ini", ".rst", ".csv", ".env",
-    ".html", ".css", ".js", ".ts", ".tsx", ".jsx",
-})
+TEXT_EXTENSIONS = frozenset(
+    {
+        ".md",
+        ".mdx",
+        ".txt",
+        ".yaml",
+        ".yml",
+        ".toml",
+        ".json",
+        ".py",
+        ".sh",
+        ".cfg",
+        ".ini",
+        ".rst",
+        ".csv",
+        ".env",
+        ".html",
+        ".css",
+        ".js",
+        ".ts",
+        ".tsx",
+        ".jsx",
+    }
+)
 
-BINARY_EXTENSIONS = frozenset({
-    ".pyc", ".pyo", ".so", ".dylib", ".dll", ".exe",
-    ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".bmp", ".webp",
-    ".woff", ".woff2", ".ttf", ".eot", ".otf",
-    ".pdf", ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z", ".rar",
-    ".mp3", ".mp4", ".wav", ".avi", ".mov", ".mkv",
-    ".sqlite", ".db", ".sqlite3",
-    ".pickle", ".pkl", ".npy", ".npz",
-    ".wasm", ".o", ".a", ".lib",
-})
+BINARY_EXTENSIONS = frozenset(
+    {
+        ".pyc",
+        ".pyo",
+        ".so",
+        ".dylib",
+        ".dll",
+        ".exe",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".svg",
+        ".ico",
+        ".bmp",
+        ".webp",
+        ".woff",
+        ".woff2",
+        ".ttf",
+        ".eot",
+        ".otf",
+        ".pdf",
+        ".zip",
+        ".tar",
+        ".gz",
+        ".bz2",
+        ".xz",
+        ".7z",
+        ".rar",
+        ".mp3",
+        ".mp4",
+        ".wav",
+        ".avi",
+        ".mov",
+        ".mkv",
+        ".sqlite",
+        ".db",
+        ".sqlite3",
+        ".pickle",
+        ".pkl",
+        ".npy",
+        ".npz",
+        ".wasm",
+        ".o",
+        ".a",
+        ".lib",
+    }
+)
 
 # Directories always excluded — matched against any path component
-HARDCODED_EXCLUDE_DIRS = frozenset({
-    "node_modules", ".venv", "venv", "__pycache__", ".git",
-    "dist", "build", ".mypy_cache", ".pytest_cache", ".ruff_cache",
-    "htmlcov", ".tox", ".eggs", ".egg-info",
-    ".DS_Store",
-})
+HARDCODED_EXCLUDE_DIRS = frozenset(
+    {
+        "node_modules",
+        ".venv",
+        "venv",
+        "__pycache__",
+        ".git",
+        "dist",
+        "build",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        "htmlcov",
+        ".tox",
+        ".eggs",
+        ".egg-info",
+        ".DS_Store",
+    }
+)
 
 AUTHORITY_CLASSES = (
-    "canonical", "historical", "operational",
-    "audit", "template", "generated", "noise",
+    "canonical",
+    "historical",
+    "operational",
+    "audit",
+    "template",
+    "generated",
+    "noise",
+    "ghost",
 )
 
 # ─── SECTION 2: Configuration ───────────────────────────────────────
+
 
 def parse_size(s: str) -> int:
     """Parse human size string to bytes. E.g., '100KB' -> 102400."""
@@ -109,11 +188,17 @@ def load_config(cli_args: argparse.Namespace) -> PrescanConfig:
             subprocess.check_output(
                 ["git", "rev-parse", "--show-toplevel"],
                 stderr=subprocess.DEVNULL,
-            ).decode().strip()
+            )
+            .decode()
+            .strip()
         ).resolve()
 
     # Load TOML config
-    config_path = Path(cli_args.config) if cli_args.config else repo_root / "scripts" / "doc_audit_prescan.toml"
+    config_path = (
+        Path(cli_args.config)
+        if cli_args.config
+        else repo_root / "scripts" / "doc_audit_prescan.toml"
+    )
     toml_data: dict[str, Any] = {}
     if config_path.exists():
         try:
@@ -163,7 +248,9 @@ def load_config(cli_args: argparse.Namespace) -> PrescanConfig:
         force=cli_args.force,
     )
 
+
 # ─── SECTION 3: Data Models ─────────────────────────────────────────
+
 
 @dataclass
 class FileEntry:
@@ -175,6 +262,41 @@ class FileEntry:
     exclude_reason: str | None = None
     content_hash: str | None = None
     directory_class: str = ""  # top-level directory bucket
+
+    # ── Git enrichment ──
+    last_commit_date: str | None = None
+    last_commit_sha: str | None = None
+    first_commit_date: str | None = None
+    commit_count: int = 0
+    last_author: str | None = None
+    days_since_modified: int | None = None
+    churn_score: float = 0.0
+    contributor_count: int = 0
+    lifecycle_stage: str = ""  # fresh|active|stale|frozen|unknown
+    was_renamed: bool = False
+    previous_paths: list[str] = field(default_factory=list)
+
+    # ── Duplicate detection ──
+    duplicate_group_id: str | None = None
+    is_duplicate: bool = False
+    canonical_duplicate: str | None = None
+
+    # ── Version chain ──
+    version_chain_id: str | None = None
+    version_ordinal: int = 0
+    is_latest_version: bool = True
+
+    # ── Feature gaps ──
+    has_todo_markers: bool = False
+    has_stub_methods: bool = False
+    is_draft_doc: bool = False
+    is_proposed_adr: bool = False
+
+    # ── Ghost recovery ──
+    is_ghost: bool = False
+    deleted_at_sha: str | None = None
+    deleted_date: str | None = None
+    recovery_source: str = ""
 
     def to_dict(self) -> dict:
         return {k: v for k, v in asdict(self).items() if v is not None}
@@ -201,7 +323,9 @@ class RunMetadata:
     repo_root: str = ""
     script_version: str = SCRIPT_VERSION
 
+
 # ─── SECTION 4: Corpus Walker ───────────────────────────────────────
+
 
 def _is_excluded_dir(path: Path, repo_root: Path) -> bool:
     """Check if any path component is a hardcoded exclude."""
@@ -270,7 +394,9 @@ def walk_corpus(config: PrescanConfig) -> list[FileEntry]:
             entry.exclude_reason = f"size_exceeds_max:{size}>{config.max_file_size}"
         elif ext == ".json" and size > config.large_json_threshold:
             entry.include = False
-            entry.exclude_reason = f"large_json_blob:{size}>{config.large_json_threshold}"
+            entry.exclude_reason = (
+                f"large_json_blob:{size}>{config.large_json_threshold}"
+            )
         elif ext not in TEXT_EXTENSIONS and ext != "":
             # Unknown extension — exclude unless it's small and looks textual
             entry.include = False
@@ -292,7 +418,9 @@ def walk_corpus(config: PrescanConfig) -> list[FileEntry]:
 
     return entries
 
+
 # ─── SECTION 5: Classifier ──────────────────────────────────────────
+
 
 def classify_file(entry: FileEntry) -> str:
     """Classify a file into an authority class. First match wins."""
@@ -380,8 +508,12 @@ def classify_file(entry: FileEntry) -> str:
     if name == "CLAUDE.md":
         return "canonical"
     if name in (
-        "model_map_v2_tp008.yaml", "pyproject.toml", "compose.yml",
-        "dopemux.toml", "litellm.config", "Makefile",
+        "model_map_v2_tp008.yaml",
+        "pyproject.toml",
+        "compose.yml",
+        "dopemux.toml",
+        "litellm.config",
+        "Makefile",
     ):
         return "canonical"
 
@@ -408,20 +540,546 @@ def classify_all(entries: list[FileEntry]) -> None:
     for entry in entries:
         entry.authority_class = classify_file(entry)
 
+
+# ─── SECTION 5.5: Git Intelligence ──────────────────────────────────
+
+_COMMIT_SEP = "!!!COMMIT!!!"
+
+
+def _parse_git_log_for_files(
+    repo_root: Path,
+) -> dict[str, list[tuple[str, str, str]]]:
+    """
+    Single git log call → {rel_path: [(sha, author, date), ...]} newest-first.
+    """
+    try:
+        raw = subprocess.check_output(
+            [
+                "git",
+                "log",
+                f"--format={_COMMIT_SEP}%H|%an|%ad",
+                "--date=short",
+                "--name-only",
+                "--diff-filter=AMRC",
+            ],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL,
+            timeout=120,
+        ).decode(errors="replace")
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+        subprocess.TimeoutExpired,
+    ):
+        return {}
+
+    per_file: dict[str, list[tuple[str, str, str]]] = {}
+    current: tuple[str, str, str] | None = None
+
+    for line in raw.splitlines():
+        if line.startswith(_COMMIT_SEP):
+            header = line[len(_COMMIT_SEP) :]
+            parts = header.split("|", 2)
+            sha = parts[0] if parts else ""
+            author = parts[1] if len(parts) > 1 else ""
+            date = parts[2].strip() if len(parts) > 2 else ""
+            current = (sha, author, date)
+        elif line.strip() and current:
+            per_file.setdefault(line.strip(), []).append(current)
+
+    return per_file
+
+
+def _parse_renames(repo_root: Path) -> dict[str, list[str]]:
+    """Returns {new_path: [old_path1, ...]} from git rename history."""
+    try:
+        raw = subprocess.check_output(
+            ["git", "log", "--diff-filter=R", "--name-status", "--format="],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL,
+            timeout=60,
+        ).decode(errors="replace")
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+        subprocess.TimeoutExpired,
+    ):
+        return {}
+
+    renames: dict[str, list[str]] = {}
+    for line in raw.splitlines():
+        line = line.strip()
+        if line.startswith("R"):
+            parts = line.split("\t")
+            if len(parts) == 3:
+                old_path, new_path = parts[1], parts[2]
+                renames.setdefault(new_path, []).append(old_path)
+    return renames
+
+
+def enrich_with_git(entries: list[FileEntry], repo_root: Path) -> None:
+    """Enrich FileEntry list with git metadata. Modifies entries in-place."""
+    per_file = _parse_git_log_for_files(repo_root)
+    renames = _parse_renames(repo_root)
+    today = dt.date.today()
+
+    for entry in entries:
+        if entry.is_ghost:
+            continue
+        commits = per_file.get(entry.rel_path, [])
+        if not commits:
+            entry.lifecycle_stage = "unknown"
+            continue
+
+        entry.last_commit_sha = commits[0][0]
+        entry.last_author = commits[0][1]
+        entry.last_commit_date = commits[0][2]
+        entry.first_commit_date = commits[-1][2]
+        entry.commit_count = len(commits)
+        entry.contributor_count = len({c[1] for c in commits})
+
+        try:
+            last_d = dt.date.fromisoformat(entry.last_commit_date)
+            entry.days_since_modified = (today - last_d).days
+        except (ValueError, TypeError):
+            pass
+
+        if entry.first_commit_date and entry.days_since_modified is not None:
+            try:
+                first_d = dt.date.fromisoformat(entry.first_commit_date)
+                age_days = max((today - first_d).days, 1)
+                entry.churn_score = round(entry.commit_count / (age_days / 30), 3)
+            except (ValueError, TypeError):
+                pass
+
+        dsm = entry.days_since_modified
+        if dsm is not None:
+            if dsm < 30:
+                entry.lifecycle_stage = "fresh"
+            elif dsm < 90:
+                entry.lifecycle_stage = "active"
+            elif dsm < 365:
+                entry.lifecycle_stage = "stale"
+            else:
+                entry.lifecycle_stage = "frozen"
+
+        prev = renames.get(entry.rel_path, [])
+        if prev:
+            entry.was_renamed = True
+            entry.previous_paths = prev[:5]
+
+
+def recover_ghost_files(
+    existing_paths: set[str],
+    repo_root: Path,
+    max_ghosts: int = 50,
+) -> list[FileEntry]:
+    """
+    Recover recently-deleted doc files from git history.
+    Returns synthetic ghost FileEntry list (authority_class='ghost').
+    """
+    _GHOST_SEP = "!!!DEL!!!"
+    ghost_exts = {".md", ".yaml", ".yml", ".toml", ".py", ".rst", ".txt"}
+    ghost_exclude = {
+        "node_modules",
+        ".venv",
+        "venv",
+        "__pycache__",
+        ".git",
+        "htmlcov",
+        "extraction",
+        "runs",
+        "tmp",
+        "dist",
+        "build",
+    }
+
+    try:
+        raw = subprocess.check_output(
+            [
+                "git",
+                "log",
+                "--diff-filter=D",
+                "--name-only",
+                f"--format={_GHOST_SEP}%H|%ad",
+                "--date=short",
+            ],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL,
+            timeout=60,
+        ).decode(errors="replace")
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+        subprocess.TimeoutExpired,
+    ):
+        return []
+
+    ghosts: list[FileEntry] = []
+    seen_paths: set[str] = set()
+    current_meta: tuple[str, str] = ("", "")
+
+    for line in raw.splitlines():
+        if line.startswith(_GHOST_SEP):
+            parts = line[len(_GHOST_SEP) :].split("|", 1)
+            sha = parts[0] if parts else ""
+            date = parts[1].strip() if len(parts) > 1 else ""
+            current_meta = (sha, date)
+        elif line.strip() and current_meta[0]:
+            fp = line.strip()
+            ext = Path(fp).suffix.lower()
+            if ext not in ghost_exts:
+                continue
+            if fp in existing_paths or fp in seen_paths:
+                continue
+            parts_fp = PurePosixPath(fp).parts
+            if any(p in ghost_exclude for p in parts_fp):
+                continue
+            seen_paths.add(fp)
+            ghost = FileEntry(
+                rel_path=fp,
+                size_bytes=0,
+                extension=ext,
+                authority_class="ghost",
+                include=True,
+                directory_class=parts_fp[0] if len(parts_fp) > 1 else "root",
+                is_ghost=True,
+                deleted_at_sha=current_meta[0],
+                deleted_date=current_meta[1],
+                recovery_source="git_history",
+            )
+            ghosts.append(ghost)
+            if len(ghosts) >= max_ghosts:
+                break
+
+    return ghosts
+
+
+def detect_duplicates(entries: list[FileEntry]) -> int:
+    """
+    Group included files by SHA256 hash.
+    Marks duplicate_group_id/is_duplicate/canonical_duplicate in-place.
+    Returns number of duplicate groups found.
+    """
+    hash_groups: dict[str, list[FileEntry]] = {}
+    for e in entries:
+        if e.include and e.content_hash and not e.is_ghost:
+            hash_groups.setdefault(e.content_hash, []).append(e)
+
+    groups_found = 0
+    for h, group in hash_groups.items():
+        if len(group) < 2:
+            continue
+        groups_found += 1
+        group_id = h[:8]
+        canonical = min(group, key=lambda x: len(x.rel_path))
+        for e in group:
+            e.duplicate_group_id = group_id
+            if e is canonical:
+                e.is_duplicate = False
+            else:
+                e.is_duplicate = True
+                e.canonical_duplicate = canonical.rel_path
+
+    return groups_found
+
+
+_VERSION_PATTERNS = [  # noqa: E501
+    (re.compile(r"^(.+?)[-_]v(\d+)(\.|$)"), "v-suffix"),
+    (re.compile(r"^(.+?)[-_](\d+)(\.|$)"), "num-suffix"),
+    (
+        re.compile(r"^(.+?)[-_](old|new|bak|backup|orig|copy)(\.|$)", re.I),
+        "name-suffix",
+    ),
+    (re.compile(r"^(.+?)\.(v\d+)$"), "dotversion"),
+]
+
+
+def detect_version_chains(entries: list[FileEntry]) -> int:
+    """
+    Detect version chains from filename patterns (-v2, -2, -old, etc.).
+    Assigns version_chain_id/version_ordinal/is_latest_version in-place.
+    Returns number of chains found.
+    """
+    by_dir: dict[str, list[FileEntry]] = {}
+    for e in entries:
+        if not e.include and not e.is_ghost:
+            continue
+        d = str(PurePosixPath(e.rel_path).parent)
+        by_dir.setdefault(d, []).append(e)
+
+    chain_map: dict[str, list[FileEntry]] = {}
+    for dir_path, dir_entries in by_dir.items():
+        for e in dir_entries:
+            fname = PurePosixPath(e.rel_path).stem
+            ext = e.extension
+            for pattern, _ in _VERSION_PATTERNS:
+                m = pattern.match(fname)
+                if m:
+                    base = m.group(1)
+                    chain_key = f"{dir_path}::{base}{ext}"
+                    chain_map.setdefault(chain_key, []).append(e)
+                    break
+
+    chains_found = 0
+    for chain_key, chain_entries in chain_map.items():
+        if len(chain_entries) < 2:
+            continue
+        chains_found += 1
+        chain_id = hashlib.sha256(chain_key.encode()).hexdigest()[:8]
+
+        def _version_key(e: FileEntry) -> int:
+            m = re.search(r"(\d+)$", PurePosixPath(e.rel_path).stem)
+            return int(m.group(1)) if m else 0
+
+        sorted_chain = sorted(chain_entries, key=_version_key)
+        last_idx = len(sorted_chain) - 1
+        for ordinal, e in enumerate(sorted_chain):
+            e.version_chain_id = chain_id
+            e.version_ordinal = ordinal
+            e.is_latest_version = ordinal == last_idx
+
+    return chains_found
+
+
+def scan_feature_gaps(entries: list[FileEntry], repo_root: Path) -> None:
+    """
+    Scan included files for planned-but-unimplemented feature signals.
+    Marks has_todo_markers/has_stub_methods/is_draft_doc/is_proposed_adr.
+    """
+    _TODO_RE = re.compile(r"\b(TODO|FIXME|HACK|XXX|NOT[_ ]IMPLEMENTED)\b", re.I)
+    _STUB_RE = re.compile(r"raise\s+NotImplementedError")
+    _DRAFT_RE = re.compile(r"^status:\s*(draft|proposed|wip)\b", re.I | re.M)
+    _ADR_RE = re.compile(r"^(status|type):\s*(proposed|draft)\b", re.I | re.M)
+
+    for e in entries:
+        if not e.include or e.is_ghost:
+            continue
+        try:
+            text = (repo_root / e.rel_path).read_text(
+                encoding="utf-8", errors="replace"
+            )
+        except (OSError, PermissionError):
+            continue
+
+        if _TODO_RE.search(text):
+            e.has_todo_markers = True
+        if _STUB_RE.search(text):
+            e.has_stub_methods = True
+        if _DRAFT_RE.search(text):
+            e.is_draft_doc = True
+        if "90-adr" in e.rel_path and _ADR_RE.search(text):
+            e.is_proposed_adr = True
+
+
+def detect_co_change_groups(entries: list[FileEntry], repo_root: Path) -> list[dict]:
+    """
+    Build co-change groups from git commit history.
+    Returns top-50 groups [{group_id, files, commit_count}] sorted by frequency.
+    """
+    _CC_SEP = "!!!CC!!!"
+    included_paths = {e.rel_path for e in entries if e.include}
+
+    try:
+        raw = subprocess.check_output(
+            [
+                "git",
+                "log",
+                f"--format={_CC_SEP}%H",
+                "--name-only",
+                "--diff-filter=AMRC",
+            ],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL,
+            timeout=120,
+        ).decode(errors="replace")
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+        subprocess.TimeoutExpired,
+    ):
+        return []
+
+    current_files: list[str] = []
+    co_counts: dict[frozenset, int] = {}
+
+    for line in raw.splitlines():
+        if line.startswith(_CC_SEP):
+            if len(current_files) >= 2:
+                in_commit = [f for f in current_files if f in included_paths]
+                if len(in_commit) >= 2:
+                    key = frozenset(in_commit[:10])
+                    co_counts[key] = co_counts.get(key, 0) + 1
+            current_files = []
+        elif line.strip():
+            current_files.append(line.strip())
+
+    groups = [
+        {
+            "group_id": hashlib.sha256("|".join(sorted(files)).encode()).hexdigest()[
+                :8
+            ],
+            "files": sorted(files),
+            "commit_count": count,
+        }
+        for files, count in co_counts.items()
+        if count >= 3
+    ]
+    groups.sort(key=lambda g: g["commit_count"], reverse=True)
+    return groups[:50]
+
+
+def build_intelligence_report(
+    entries: list[FileEntry],
+    co_change_groups: list[dict],
+    config: PrescanConfig,
+    meta: RunMetadata,
+) -> Path:
+    """
+    Aggregate all intelligence into prescan_intelligence.json.
+    Acts as the extraction bridge for run_extraction_v5.py.
+    """
+    included = [e for e in entries if e.include and not e.is_ghost]
+    ghosts = [e for e in entries if e.is_ghost]
+
+    # Duplicate summary
+    dup_groups: dict[str, list[str]] = {}
+    for e in included:
+        if e.duplicate_group_id:
+            dup_groups.setdefault(e.duplicate_group_id, []).append(e.rel_path)
+
+    # Version chain summary
+    chains: dict[str, list[dict]] = {}
+    for e in entries:
+        if e.version_chain_id:
+            chains.setdefault(e.version_chain_id, []).append(
+                {
+                    "path": e.rel_path,
+                    "ordinal": e.version_ordinal,
+                    "is_latest": e.is_latest_version,
+                    "commit_count": e.commit_count,
+                    "last_commit_date": e.last_commit_date,
+                }
+            )
+
+    # Feature gap summary
+    planned_features = {
+        "proposed_adrs": [e.rel_path for e in included if e.is_proposed_adr],
+        "stub_files": [e.rel_path for e in included if e.has_stub_methods],
+        "todo_files": [e.rel_path for e in included if e.has_todo_markers],
+        "draft_docs": [e.rel_path for e in included if e.is_draft_doc],
+    }
+
+    # Lifecycle distribution
+    lifecycle_counts: dict[str, int] = {}
+    for e in included:
+        if e.lifecycle_stage:
+            lifecycle_counts[e.lifecycle_stage] = (
+                lifecycle_counts.get(e.lifecycle_stage, 0) + 1
+            )
+
+    # Corpus health score (0-100)
+    total = len(included) or 1
+    dup_ratio = len([e for e in included if e.is_duplicate]) / total
+    frozen_ratio = lifecycle_counts.get("frozen", 0) / total
+    compression_potential = sum(max(0, len(v) - 1) for v in chains.values())
+    ghost_bonus = min(len(ghosts) * 2, 10)
+    corpus_health = max(0, int(80 - dup_ratio * 20 - frozen_ratio * 10 + ghost_bonus))
+
+    report = {
+        "schema_version": "2.0",
+        "generated_at": meta.timestamp,
+        "git_sha": meta.git_sha,
+        "git_branch": meta.git_branch,
+        "corpus_summary": {
+            "included_files": len(included),
+            "ghost_files": len(ghosts),
+            "corpus_health_score": corpus_health,
+            "total_size_bytes": sum(e.size_bytes for e in included),
+        },
+        "duplicate_groups": dup_groups,
+        "version_chains": {
+            cid: sorted(members, key=lambda x: x["ordinal"])
+            for cid, members in chains.items()
+        },
+        "version_chain_count": len(chains),
+        "compression_potential_files": compression_potential,
+        "planned_features": planned_features,
+        "lifecycle_distribution": lifecycle_counts,
+        "co_change_groups": co_change_groups[:20],
+        "ghost_files": [
+            {
+                "path": g.rel_path,
+                "deleted_date": g.deleted_date,
+                "deleted_at_sha": g.deleted_at_sha,
+            }
+            for g in ghosts
+        ],
+        "extraction_hints": {
+            "skip_duplicates": [e.rel_path for e in included if e.is_duplicate],
+            "version_chain_compress": [
+                {
+                    "chain_id": cid,
+                    "latest": next(
+                        (m["path"] for m in members if m["is_latest"]), None
+                    ),
+                    "superseded": [m["path"] for m in members if not m["is_latest"]],
+                }
+                for cid, members in chains.items()
+            ],
+            "planned_feature_files": (
+                planned_features["proposed_adrs"] + planned_features["stub_files"]
+            ),
+            "high_churn_files": [
+                e.rel_path
+                for e in sorted(included, key=lambda x: x.churn_score, reverse=True)
+                if e.churn_score > 1.0
+            ][:20],
+        },
+    }
+
+    out_path = config.output_dir / "prescan_intelligence.json"
+    out_path.write_text(
+        json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    )
+
+    # Mirror to extractor 00_inputs if it exists
+    extractor_inputs = config.repo_root / "services/repo-truth-extractor/runs/00_inputs"
+    if extractor_inputs.is_dir():
+        dest = extractor_inputs / "PRESCAN_INTELLIGENCE.json"
+        dest.write_text(
+            json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+        )
+        logger.info(f"🔗 Extraction bridge: {dest}")
+
+    return out_path
+
+
 # ─── SECTION 6: Manifest Builder ────────────────────────────────────
+
 
 def _get_git_info(repo_root: Path) -> tuple[str, str]:
     """Return (sha, branch) from git."""
     try:
-        sha = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], cwd=repo_root, stderr=subprocess.DEVNULL
-        ).decode().strip()
+        sha = (
+            subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=repo_root, stderr=subprocess.DEVNULL
+            )
+            .decode()
+            .strip()
+        )
     except (subprocess.CalledProcessError, FileNotFoundError):
         sha = "UNKNOWN"
     try:
-        branch = subprocess.check_output(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=repo_root, stderr=subprocess.DEVNULL
-        ).decode().strip()
+        branch = (
+            subprocess.check_output(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                cwd=repo_root,
+                stderr=subprocess.DEVNULL,
+            )
+            .decode()
+            .strip()
+        )
     except (subprocess.CalledProcessError, FileNotFoundError):
         branch = "UNKNOWN"
     return sha, branch
@@ -461,7 +1119,8 @@ def build_manifests(
         "\n".join(
             f"{e.rel_path}\t{e.exclude_reason or 'unknown'}"
             for e in sorted(excluded, key=lambda x: x.rel_path)
-        ) + "\n"
+        )
+        + "\n"
     )
 
     # ── corpus_stats.json ──
@@ -479,7 +1138,9 @@ def build_manifests(
         stats.by_class[cls]["total_size"] += e.size_bytes
 
         stats.by_extension[e.extension] = stats.by_extension.get(e.extension, 0) + 1
-        stats.by_directory[e.directory_class] = stats.by_directory.get(e.directory_class, 0) + 1
+        stats.by_directory[e.directory_class] = (
+            stats.by_directory.get(e.directory_class, 0) + 1
+        )
 
     (config.output_dir / "corpus_stats.json").write_text(
         json.dumps(asdict(stats), indent=2, sort_keys=True) + "\n"
@@ -487,7 +1148,11 @@ def build_manifests(
 
     # ── run_metadata.json ──
     sha, branch = _get_git_info(config.repo_root)
-    config_str = json.dumps(asdict(config) if hasattr(config, '__dataclass_fields__') else str(config), sort_keys=True, default=str)
+    config_str = json.dumps(
+        asdict(config) if hasattr(config, "__dataclass_fields__") else str(config),
+        sort_keys=True,
+        default=str,
+    )
     meta = RunMetadata(
         timestamp=dt.datetime.now(dt.timezone.utc).isoformat(),
         mode=mode,
@@ -501,6 +1166,7 @@ def build_manifests(
     )
 
     return stats, meta
+
 
 # ─── SECTION 7: Payload Packager ────────────────────────────────────
 
@@ -550,7 +1216,9 @@ def _read_preview(path: Path) -> str:
     preview_lines = lines[:MAX_PREVIEW_LINES]
     preview = "".join(preview_lines)
     if len(preview.encode("utf-8")) > MAX_PREVIEW_BYTES:
-        preview = preview.encode("utf-8")[:MAX_PREVIEW_BYTES].decode("utf-8", errors="replace")
+        preview = preview.encode("utf-8")[:MAX_PREVIEW_BYTES].decode(
+            "utf-8", errors="replace"
+        )
     return preview
 
 
@@ -564,7 +1232,7 @@ def package_payload(
         by_class.setdefault(e.authority_class, []).append(e)
 
     lines: list[str] = [
-        f"# Documentation Authority Audit Corpus",
+        "# Documentation Authority Audit Corpus",
         f"Generated: {meta.timestamp}",
         f"Git SHA: {meta.git_sha}",
         f"Files: {len(included)} | Total Size: {_human_size(sum(e.size_bytes for e in included))}",
@@ -589,7 +1257,9 @@ def package_payload(
     payload_path.write_text("\n".join(lines), encoding="utf-8")
     return payload_path
 
+
 # ─── SECTION 8: Direct Grok Caller ──────────────────────────────────
+
 
 def call_grok_direct(payload_path: Path, config: PrescanConfig) -> dict | None:
     """Call Grok 4.20 Beta directly via xAI API. Returns parsed response or None."""
@@ -605,8 +1275,7 @@ def call_grok_direct(payload_path: Path, config: PrescanConfig) -> dict | None:
         import openai
     except ImportError:
         logger.error(
-            "❌ 'openai' package not installed.\n"
-            "   pip install openai>=1.0.0"
+            "❌ 'openai' package not installed.\n" "   pip install openai>=1.0.0"
         )
         return None
 
@@ -639,8 +1308,12 @@ def call_grok_direct(payload_path: Path, config: PrescanConfig) -> dict | None:
         raw_meta = {
             "model": response.model,
             "usage": {
-                "prompt_tokens": response.usage.prompt_tokens if response.usage else None,
-                "completion_tokens": response.usage.completion_tokens if response.usage else None,
+                "prompt_tokens": (
+                    response.usage.prompt_tokens if response.usage else None
+                ),
+                "completion_tokens": (
+                    response.usage.completion_tokens if response.usage else None
+                ),
                 "total_tokens": response.usage.total_tokens if response.usage else None,
             },
             "finish_reason": response.choices[0].finish_reason,
@@ -659,7 +1332,9 @@ def call_grok_direct(payload_path: Path, config: PrescanConfig) -> dict | None:
         )
         return None
 
+
 # ─── SECTION 9: LiteLLM Handoff Builder ─────────────────────────────
+
 
 def build_handoff_bundle(
     entries: list[FileEntry],
@@ -788,21 +1463,332 @@ Provide the agent with:
 
     return bundle_dir
 
+
 # ─── SECTION 10: CLI Entry Point ────────────────────────────────────
 
+
+def _print_intelligence_report(intel_path: Path) -> None:
+    """Render prescan_intelligence.json as a stunning Rich terminal display."""
+    import json as _json
+
+    try:
+        with open(intel_path) as _f:
+            intel = _json.load(_f)
+    except (OSError, ValueError):
+        return
+
+    try:
+        from rich.box import ROUNDED, HEAVY
+        from rich.columns import Columns
+        from rich.console import Console as RichConsole
+        from rich.panel import Panel
+        from rich.table import Table
+        from rich.text import Text
+
+        rcon = RichConsole()
+        summary = intel.get("corpus_summary", {})
+        lifecycle = intel.get("lifecycle_distribution", {})
+        planned = intel.get("planned_features", {})
+        hints = intel.get("extraction_hints", {})
+        dup_groups = intel.get("duplicate_groups", {})
+        co_groups = intel.get("co_change_groups", [])
+
+        health = summary.get("corpus_health_score", 0)
+        total_files = summary.get("included_files", 0)
+        ghost_count = summary.get("ghost_files", 0)
+        git_branch = intel.get("git_branch", "?")
+        git_sha = (intel.get("git_sha") or "?")[:10]
+        chain_count = intel.get("version_chain_count", 0)
+        compress_n = intel.get("compression_potential_files", 0)
+        skip_n = len(hints.get("skip_duplicates", []))
+        dup_n = sum(len(v) - 1 for v in dup_groups.values())
+        hichurn_n = len(hints.get("high_churn_files", []))
+        adr_n = len(planned.get("proposed_adrs", []))
+        stub_n = len(planned.get("stub_files", []))
+        todo_n = len(planned.get("todo_files", []))
+        draft_n = len(planned.get("draft_docs", []))
+
+        # ── health gauge ─────────────────────────────────────────────────
+        if health >= 75:
+            bar_color, hlabel = "bright_green", "HEALTHY"
+        elif health >= 50:
+            bar_color, hlabel = "yellow", "FAIR"
+        else:
+            bar_color, hlabel = "red", "NEEDS ATTENTION"
+        filled = round(health / 5)
+        gauge = "█" * filled + "░" * (20 - filled)
+
+        gen_ts = intel.get("generated_at", "")[:19].replace("T", "  ")
+        header = (
+            f"\n  [{bar_color}]{gauge}[/{bar_color}]"
+            f"  [bold {bar_color}]{health}/100  {hlabel}[/bold {bar_color}]\n"
+            f"  [dim]git: {git_sha}  •  branch: {git_branch}  •  {gen_ts}[/dim]\n"
+        )
+        rcon.print()
+        rcon.print(Panel(
+            header,
+            title="[bold white]🧠  PRE-EXTRACTION INTELLIGENCE REPORT[/bold white]",
+            border_style="bright_cyan",
+            box=HEAVY,
+            padding=(0, 2),
+        ))
+
+        # ── side-by-side panels ───────────────────────────────────────────
+        left = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+        left.add_column("Label", style="dim", min_width=26)
+        left.add_column("Value", justify="right")
+
+        def _nfmt(n: int, warn: int = 0) -> str:
+            if warn and n > warn:
+                return f"[bold yellow]{n:,}[/bold yellow]"
+            return f"[bold]{n:,}[/bold]"
+
+        left.add_row("Total included files",         _nfmt(total_files))
+        left.add_row("Ghost files  👻",              _nfmt(ghost_count))
+        left.add_row("Redundant files (dupes)",       _nfmt(dup_n, warn=50))
+        left.add_row("Skip candidates",               _nfmt(skip_n, warn=100))
+        left.add_row("Version chains",                _nfmt(chain_count))
+        left.add_row("Compressible version files",    _nfmt(compress_n))
+        left.add_row("High-churn files  🔥",         _nfmt(hichurn_n))
+        left.add_row("Co-change groups",              _nfmt(len(co_groups)))
+
+        right = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+        right.add_column("Label", style="dim", min_width=24)
+        right.add_column("Value", justify="right")
+
+        def _pfmt(n: int, icon: str) -> str:
+            c = "magenta" if n > 0 else "dim"
+            return f"[{c}]{icon}  {n:,}[/{c}]"
+
+        right.add_row("Proposed ADRs",          _pfmt(adr_n,   "📋"))
+        right.add_row("Stub implementations",   _pfmt(stub_n,  "🔧"))
+        right.add_row("Files with TODOs",       _pfmt(todo_n,  "📌"))
+        right.add_row("Draft / proposed docs",  _pfmt(draft_n, "📝"))
+        total_planned = adr_n + stub_n + draft_n
+        right.add_section()
+        fc = "magenta" if total_planned > 0 else "dim"
+        right.add_row(
+            "[bold]Total planned work items[/bold]",
+            f"[bold {fc}]{total_planned:,}[/bold {fc}]",
+        )
+
+        rcon.print(Columns([
+            Panel(left,  title="[bold cyan]📦 Corpus Profile[/bold cyan]",
+                  border_style="cyan", box=ROUNDED, padding=(0, 1)),
+            Panel(right, title="[bold magenta]🗺  Planned Features[/bold magenta]",
+                  border_style="magenta", box=ROUNDED, padding=(0, 1)),
+        ], equal=True, expand=True))
+
+        # ── lifecycle bar chart ───────────────────────────────────────────
+        if lifecycle:
+            _LC_META = {
+                "fresh":   ("🌱", "bright_green"),
+                "active":  ("🔥", "green"),
+                "stale":   ("🌤", "yellow"),
+                "frozen":  ("🧊", "blue"),
+                "unknown": ("❓", "dim"),
+            }
+            lc_table = Table(
+                box=ROUNDED, border_style="dim cyan",
+                title="[bold]📅  File Lifecycle Distribution[/bold]",
+                padding=(0, 1),
+            )
+            lc_table.add_column("Stage",   min_width=10)
+            lc_table.add_column("Bar",     min_width=28)
+            lc_table.add_column("Files",   justify="right", min_width=6)
+            lc_table.add_column("%",       justify="right", min_width=5)
+
+            lc_total = sum(lifecycle.values()) or 1
+            _order = ["fresh", "active", "stale", "frozen", "unknown"]
+            for stage in sorted(lifecycle, key=lambda s: _order.index(s) if s in _order else 99):
+                count = lifecycle[stage]
+                icon, color = _LC_META.get(stage, ("•", "white"))
+                frac = count / lc_total
+                bf = round(frac * 26)
+                bar = (
+                    f"[{color}]" + "█" * bf + "[/]"
+                    + "[dim]" + "░" * (26 - bf) + "[/dim]"
+                )
+                lc_table.add_row(
+                    f"{icon}  [{color}]{stage}[/{color}]",
+                    bar, f"{count:,}", f"[dim]{frac*100:.0f}%[/dim]",
+                )
+            rcon.print(lc_table)
+
+        # ── extraction hints ──────────────────────────────────────────────
+        if skip_n or compress_n or ghost_count or total_planned or hichurn_n:
+            token_est = min(
+                int((skip_n / max(total_files, 1)) * 100 * 0.6
+                    + (compress_n / max(total_files, 1)) * 100 * 0.3), 65
+            )
+            _SAVLABELS = [
+                (50, "bold green", "🚀 MAJOR SAVINGS"),
+                (25, "green",      "💚 GOOD SAVINGS"),
+                (10, "yellow",     "💛 MODERATE"),
+                (0,  "dim",        "—  MINIMAL"),
+            ]
+            s_color, s_label = next(
+                (c, l) for t, c, l in _SAVLABELS if token_est >= t
+            )
+            lines = []
+            if skip_n:
+                lines.append(
+                    f"  [bold yellow]💰 {skip_n:,} files SKIPPED[/bold yellow]"
+                    f" [dim](exact duplicates — zero extraction cost)[/dim]"
+                )
+            if compress_n:
+                lines.append(
+                    f"  [bold cyan]🗜  {compress_n:,} files COMPRESSED[/bold cyan]"
+                    f" [dim](version chains → evolution summaries)[/dim]"
+                )
+            if ghost_count:
+                lines.append(
+                    f"  [dim]👻 {ghost_count} ghost files[/dim]"
+                    f" [dim](run --passes discover to assess recovery value)[/dim]"
+                )
+            if total_planned:
+                lines.append(
+                    f"  [bold magenta]📋 {total_planned} planned features[/bold magenta]"
+                    f" [dim]→ Phase X + T priority routing[/dim]"
+                )
+            if hichurn_n:
+                lines.append(
+                    f"  [bold]🔥 {hichurn_n} high-churn files[/bold]"
+                    f" [dim]→ premium model routing recommended[/dim]"
+                )
+            lines += [
+                "",
+                f"  Estimated token reduction:  "
+                f"[bold {s_color}]{token_est}%  {s_label}[/bold {s_color}]",
+            ]
+            rcon.print(Panel(
+                "\n".join(lines),
+                title="[bold green]💡  Extraction Hints[/bold green]",
+                border_style="green", box=ROUNDED, padding=(0, 1),
+            ))
+
+        # ── co-change groups ──────────────────────────────────────────────
+        if co_groups:
+            cg_table = Table(
+                box=ROUNDED, border_style="dim",
+                title="[bold]🔗  Top Co-Change Groups[/bold]",
+                padding=(0, 1), show_lines=True,
+            )
+            cg_table.add_column("Commits", justify="right", min_width=7)
+            cg_table.add_column("Files in Group", min_width=48)
+            for group in co_groups[:6]:
+                flines = "\n".join(
+                    f"[dim cyan]{fp}[/dim cyan]"
+                    for fp in sorted(group["files"])[:4]
+                )
+                if len(group["files"]) > 4:
+                    flines += f"\n[dim]  … +{len(group['files']) - 4} more[/dim]"
+                cg_table.add_row(f"[bold]{group['commit_count']}[/bold]", flines)
+            rcon.print(cg_table)
+
+        rcon.print()
+
+    except ImportError:
+        # plain-text minimal fallback
+        summary = intel.get("corpus_summary", {})
+        health = summary.get("corpus_health_score", 0)
+        print(f"\n🧠 Intelligence Report  Health: {health}/100")
+        dup_n = sum(len(v) - 1 for v in intel.get("duplicate_groups", {}).values())
+        print(f"  Duplicates: {dup_n}  Chains: {intel.get('version_chain_count', 0)}")
+        print(f"  Ghosts: {summary.get('ghost_files', 0)}")
+
+
 def _print_summary(stats: CorpusStats, config: PrescanConfig) -> None:
-    """Print ADHD-friendly summary to stdout."""
-    print(f"\n📋 Classification Summary:")
-    for cls in AUTHORITY_CLASSES:
-        info = stats.by_class.get(cls, {"count": 0, "total_size": 0})
-        if info["count"] > 0:
-            print(f"  {cls:12s}: {info['count']:4d} files ({_human_size(info['total_size'])})")
-    print(f"\n📦 Total corpus: {stats.included_count} files, {_human_size(stats.total_included_size)}")
-    if stats.total_included_size > config.max_corpus_size:
-        print(f"⚠️  Exceeds {_human_size(config.max_corpus_size)} limit!")
-    else:
-        print(f"✅ Under {_human_size(config.max_corpus_size)} limit")
-    print(f"🚫 Excluded: {stats.excluded_count} files")
+    """Print ADHD-friendly summary — uses Rich if available, else plain text."""
+    try:
+        from rich.box import ROUNDED, HEAVY
+        from rich.columns import Columns
+        from rich.console import Console as RichConsole
+        from rich.panel import Panel
+        from rich.table import Table
+        from rich.text import Text
+
+        rcon = RichConsole()
+
+        # ── header ────────────────────────────────────────────────────────
+        total_mb = stats.total_included_size / (1024 * 1024)
+        limit_mb = config.max_corpus_size / (1024 * 1024)
+        ok = stats.total_included_size <= config.max_corpus_size
+        status_line = (
+            f"  [bold green]✅  {stats.included_count:,} files · {total_mb:.1f} MB[/bold green]"
+            f"  [dim](limit {limit_mb:.0f} MB)[/dim]"
+            if ok else
+            f"  [bold red]⚠️  {stats.included_count:,} files · {total_mb:.1f} MB[/bold red]"
+            f"  [dim](limit {limit_mb:.0f} MB — EXCEEDED)[/dim]"
+        )
+        rcon.print(
+            Panel(
+                f"{status_line}\n  [dim]Excluded: {stats.excluded_count:,} files (noise/binaries/vendor)[/dim]",
+                title="[bold white]📋  Corpus Classification Summary[/bold white]",
+                border_style="bright_cyan",
+                box=HEAVY,
+                padding=(0, 2),
+            )
+        )
+
+        # ── per-class table ───────────────────────────────────────────────
+        CLASS_ICONS = {
+            "canonical":  ("📘", "bright_blue"),
+            "reference":  ("📗", "green"),
+            "support":    ("📙", "yellow"),
+            "ephemeral":  ("📄", "dim"),
+            "noise":      ("🗑",  "dim red"),
+            "code":       ("🐍", "cyan"),
+            "config":     ("⚙️",  "magenta"),
+            "ghost":      ("👻", "dim"),
+        }
+        cls_table = Table(
+            box=ROUNDED,
+            border_style="dim cyan",
+            padding=(0, 1),
+            show_header=True,
+        )
+        cls_table.add_column("Class",   min_width=12)
+        cls_table.add_column("Bar",     min_width=24)
+        cls_table.add_column("Files",   justify="right", min_width=6)
+        cls_table.add_column("Size",    justify="right", min_width=9)
+
+        max_count = max(
+            (v["count"] for v in stats.by_class.values() if v["count"] > 0),
+            default=1,
+        )
+        for cls in AUTHORITY_CLASSES:
+            info = stats.by_class.get(cls, {"count": 0, "total_size": 0})
+            if not info["count"]:
+                continue
+            icon, color = CLASS_ICONS.get(cls, ("•", "white"))
+            frac = info["count"] / max(max_count, 1)
+            filled = max(1, round(frac * 22))
+            bar = f"[{color}]" + "█" * filled + "[/]" + "[dim]" + "░" * (22 - filled) + "[/dim]"
+            cls_table.add_row(
+                f"{icon}  [{color}]{cls}[/{color}]",
+                bar,
+                f"{info['count']:,}",
+                f"[dim]{_human_size(info['total_size'])}[/dim]",
+            )
+        rcon.print(cls_table)
+
+    except ImportError:
+        # ── plain-text fallback ───────────────────────────────────────────
+        print("\n📋 Classification Summary:")
+        for cls in AUTHORITY_CLASSES:
+            info = stats.by_class.get(cls, {"count": 0, "total_size": 0})
+            if info["count"] > 0:
+                print(f"  {cls:12s}: {info['count']:4d} files ({_human_size(info['total_size'])})")
+        print(
+            f"\n📦 Total corpus: {stats.included_count} files, "
+            f"{_human_size(stats.total_included_size)}"
+        )
+        if stats.total_included_size > config.max_corpus_size:
+            print(f"⚠️  Exceeds {_human_size(config.max_corpus_size)} limit!")
+        else:
+            print(f"✅ Under {_human_size(config.max_corpus_size)} limit")
+        print(f"🚫 Excluded: {stats.excluded_count} files")
 
 
 def main() -> int:
@@ -811,12 +1797,13 @@ def main() -> int:
         description="Pre-scan documentation authority/noise audit",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Examples:\n"
-               "  %(prog)s dry-run --verbose\n"
-               "  %(prog)s direct --model grok-4.20-beta\n"
-               "  %(prog)s handoff --output-dir /tmp/audit\n",
+        "  %(prog)s dry-run --verbose\n"
+        "  %(prog)s direct --model grok-4.20-beta\n"
+        "  %(prog)s handoff --output-dir /tmp/audit\n",
     )
     parser.add_argument(
-        "mode", choices=["dry-run", "direct", "handoff"],
+        "mode",
+        choices=["dry-run", "direct", "handoff"],
         help="Execution mode: dry-run (manifests only), direct (call Grok), handoff (write bundle)",
     )
     parser.add_argument("--repo-root", type=str, default=None)
@@ -824,12 +1811,35 @@ def main() -> int:
     parser.add_argument("--config", type=str, default=None)
     parser.add_argument("--max-file-size", type=str, default=None)
     parser.add_argument("--max-corpus-size", type=str, default=None)
-    parser.add_argument("--include", action="append", default=[], help="Additional include glob")
-    parser.add_argument("--exclude", action="append", default=[], help="Additional exclude glob")
+    parser.add_argument(
+        "--include", action="append", default=[], help="Additional include glob"
+    )
+    parser.add_argument(
+        "--exclude", action="append", default=[], help="Additional exclude glob"
+    )
     parser.add_argument("--model", type=str, default=None)
     parser.add_argument("--provider", type=str, default=None)
     parser.add_argument("--verbose", "-v", action="store_true")
-    parser.add_argument("--force", action="store_true", help="Override corpus size limit")
+    parser.add_argument(
+        "--force", action="store_true", help="Override corpus size limit"
+    )
+    parser.add_argument(
+        "--git-passes",
+        action="store_true",
+        help="Enable git intelligence: history, ghost recovery, dedup, "
+        "version chains, feature gaps, co-change groups",
+    )
+    parser.add_argument(
+        "--max-ghosts",
+        type=int,
+        default=50,
+        help="Max deleted files to recover as ghost entries (default: 50)",
+    )
+    parser.add_argument(
+        "--skip-feature-gaps",
+        action="store_true",
+        help="Skip per-file TODO/stub content scan (faster for large repos)",
+    )
 
     args = parser.parse_args()
 
@@ -854,10 +1864,62 @@ def main() -> int:
     # Classify
     classify_all(entries)
 
+    # Git intelligence passes (opt-in via --git-passes)
+    co_change_groups: list[dict] = []
+    if args.git_passes:
+        logger.info("🔍 Running git intelligence passes...")
+
+        logger.info("  • Enriching with git history...")
+        enrich_with_git(entries, config.repo_root)
+
+        logger.info("  • Recovering ghost files...")
+        existing_paths = {e.rel_path for e in entries}
+        ghosts = recover_ghost_files(
+            existing_paths, config.repo_root, max_ghosts=args.max_ghosts
+        )
+        if ghosts:
+            entries.extend(ghosts)
+            logger.info(f"    👻 Recovered {len(ghosts)} ghost files")
+
+        logger.info("  • Detecting exact duplicates...")
+        n_dup_groups = detect_duplicates(entries)
+        if n_dup_groups:
+            logger.info(f"    Found {n_dup_groups} duplicate groups")
+
+        logger.info("  • Detecting version chains...")
+        n_chains = detect_version_chains(entries)
+        if n_chains:
+            logger.info(f"    Found {n_chains} version chains")
+
+        if not args.skip_feature_gaps:
+            logger.info("  • Scanning for feature gaps...")
+            scan_feature_gaps(entries, config.repo_root)
+            gaps = sum(
+                1
+                for e in entries
+                if e.has_todo_markers
+                or e.has_stub_methods
+                or e.is_draft_doc
+                or e.is_proposed_adr
+            )
+            if gaps:
+                logger.info(f"    Found {gaps} files with feature gaps")
+
+        logger.info("  • Building co-change groups...")
+        co_change_groups = detect_co_change_groups(entries, config.repo_root)
+        if co_change_groups:
+            logger.info(f"    Found {len(co_change_groups)} co-change groups")
+
     # Build manifests (always, for all modes)
     stats, meta = build_manifests(entries, config, mode)
     _print_summary(stats, config)
     logger.info(f"\n📄 Manifests written to {config.output_dir}/")
+
+    # Intelligence report (git passes only)
+    if args.git_passes:
+        intel_path = build_intelligence_report(entries, co_change_groups, config, meta)
+        logger.info(f"🧠 Intelligence report: {intel_path}")
+        _print_intelligence_report(intel_path)
 
     # Corpus size safety gate
     if stats.total_included_size > config.max_corpus_size and not config.force:
@@ -876,7 +1938,9 @@ def main() -> int:
     # Package payload (needed for both direct and handoff)
     logger.info("📦 Packaging audit payload...")
     payload_path = package_payload(entries, config, meta)
-    logger.info(f"   Payload: {payload_path} ({_human_size(payload_path.stat().st_size)})")
+    logger.info(
+        f"   Payload: {payload_path} ({_human_size(payload_path.stat().st_size)})"
+    )
 
     if mode == "direct":
         result = call_grok_direct(payload_path, config)
