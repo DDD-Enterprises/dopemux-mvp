@@ -296,6 +296,7 @@ extraction/repo-truth-extractor/v3/doctor/
 extraction/repo-truth-extractor/v4/doctor/
 extraction/repo-truth-extractor/v3/latest_run_id.txt
 extraction/repo-truth-extractor/v4/latest_run_id.txt
+extraction/repo-truth-extractor/quarantine/
 
 # Artifact and report hygiene
 .claude/*.backup

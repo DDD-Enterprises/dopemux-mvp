@@ -1,0 +1,232 @@
+# Extraction Hygiene Policy
+# TP-RTX-V5-PRE-RESTART-REPO-HYGIENE-0001
+#
+# This policy governs what the repo-truth extractor should and should not ingest.
+# It is read by services/repo-truth-extractor/extraction_hygiene.py for preflight
+# scanning and apply-mode quarantine operations.
+#
+# Rationale: The v5 extractor hard-codes include/exclude globs as Python constants.
+# This file externalises the policy so operators can review it without reading code,
+# and the hygiene scanner can validate against it independently of extraction runs.
+
+schema_version: "1"
+policy_name: "TP-RTX-V5-PRE-RESTART-REPO-HYGIENE-0001"
+updated: "2026-03-14"
+
+# ---------------------------------------------------------------------------
+# INCLUDE ROOTS
+# Paths the extractor is expected to read. Presence of these is a GOOD signal.
+# This list mirrors PROMPTGEN_DEFAULT_INCLUDE_GLOBS in run_extraction_v5.py.
+# ---------------------------------------------------------------------------
+include_roots:
+  - path: "pyproject.toml"
+    rationale: "Project metadata — canonical truth about package structure and deps"
+  - path: "dopemux.toml"
+    rationale: "Dopemux operator config — canonical project-level settings"
+  - path: "compose.yml"
+    rationale: "Service composition — canonical stack definition"
+  - path: ".claude/**"
+    rationale: "Claude AI instructions and tool config — canonical agent surface"
+  - path: ".dopemux/**"
+    rationale: "Dopemux runtime config and instance state"
+  - path: ".taskx/**"
+    rationale: "TaskX project definitions and workflow config"
+  - path: ".github/**"
+    rationale: "CI/CD workflows and GitHub automation — canonical governance surface"
+  - path: "config/**"
+    rationale: "Project configuration — canonical settings and policy files"
+  - path: "scripts/**"
+    rationale: "Operational scripts — implementation truth for automation"
+  - path: "tools/**"
+    rationale: "Tooling definitions"
+  - path: "compose/**"
+    rationale: "Extended compose fragments"
+  - path: "docker/**"
+    rationale: "Container and service definitions — canonical infrastructure surface"
+  - path: "AGENTS.md"
+    rationale: "Agent instruction surface — canonical AI agent config"
+  - path: "README.md"
+    rationale: "Project overview — canonical entry point"
+  - path: "QUICK_START.md"
+    rationale: "Onboarding doc — canonical user-facing truth"
+  - path: "INSTALL.md"
+    rationale: "Installation instructions — canonical operator truth"
+  - path: "CHANGELOG.md"
+    rationale: "Version history — canonical release record"
+
+# ---------------------------------------------------------------------------
+# EXCLUDE ROOTS
+# Paths that MUST NOT be ingested. Presence during a scan is a WARN signal.
+# ---------------------------------------------------------------------------
+exclude_roots:
+  # Version control
+  - path: "**/.git/**"
+    category: "vcs"
+    rationale: "Git internals — never project truth"
+
+  # Python build and cache artifacts
+  - path: "**/__pycache__/**"
+    category: "build_cache"
+    rationale: "Python bytecode cache — generated, no truth value"
+  - path: "**/.venv/**"
+    category: "virtualenv"
+    rationale: "Python virtual environment — third-party packages, not project truth"
+  - path: "**/.taskx_venv/**"
+    category: "virtualenv"
+    rationale: "TaskX virtual environment"
+  - path: "**/.dopetask_venv/**"
+    category: "virtualenv"
+    rationale: "Dopetask virtual environment"
+  - path: "**/dist/**"
+    category: "build_artifact"
+    rationale: "Distribution artifacts — generated outputs, not source truth"
+  - path: "**/build/**"
+    category: "build_artifact"
+    rationale: "Build outputs — generated, not source truth"
+  - path: "htmlcov/**"
+    category: "test_artifact"
+    rationale: "Test coverage HTML report — generated artifact"
+  - path: ".pytest_cache/**"
+    category: "test_artifact"
+    rationale: "pytest cache — transient test state"
+  - path: ".mypy_cache/**"
+    category: "test_artifact"
+    rationale: "mypy type check cache"
+
+  # Node/frontend artifacts
+  - path: "**/node_modules/**"
+    category: "vendored_deps"
+    rationale: "Node.js dependencies — third-party code, pollutes extraction with vendored READMEs and docs"
+  - path: "ui-dashboard/dist/**"
+    category: "build_artifact"
+    rationale: "Frontend build output — generated"
+
+  # Vendor directory
+  - path: "vendor/**"
+    category: "vendored_deps"
+    rationale: "Vendored dependencies — third-party code not representing project truth"
+
+  # Media and binary files
+  - path: "**/*.png"
+    category: "binary"
+    rationale: "Binary image — no extractable truth"
+  - path: "**/*.jpg"
+    category: "binary"
+    rationale: "Binary image"
+  - path: "**/*.jpeg"
+    category: "binary"
+    rationale: "Binary image"
+  - path: "**/*.webp"
+    category: "binary"
+    rationale: "Binary image"
+  - path: "**/*.gif"
+    category: "binary"
+    rationale: "Binary image"
+  - path: "**/*.pdf"
+    category: "binary"
+    rationale: "Binary PDF — not extractable as structured truth"
+  - path: "**/*.zip"
+    category: "archive"
+    rationale: "Archive — not inspected by extractor"
+
+  # OS artifacts
+  - path: "**/.DS_Store"
+    category: "os_artifact"
+    rationale: "macOS metadata — no truth value"
+
+  # Extraction run outputs (the extractor must not read its own prior outputs)
+  - path: "extraction/repo-truth-extractor/v3/runs/**"
+    category: "run_output"
+    rationale: "Prior v3 extraction run outputs — feeding these back contaminates truth with stale derived content"
+  - path: "extraction/repo-truth-extractor/v4/runs/**"
+    category: "run_output"
+    rationale: "Prior v4 extraction run outputs"
+  - path: "extraction/repo-truth-extractor/v3/doctor/**"
+    category: "run_output"
+    rationale: "v3 doctor/diagnostic snapshots — not source truth"
+  - path: "extraction/repo-truth-extractor/v4/doctor/**"
+    category: "run_output"
+    rationale: "v4 doctor/diagnostic snapshots"
+  - path: "extraction/repo-truth-extractor/quarantine/**"
+    category: "quarantine"
+    rationale: "Hygiene quarantine zone — archived junk, never re-ingest"
+
+  # Generated reports and proof bundles
+  - path: "reports/**"
+    category: "generated_report"
+    rationale: "Generated analysis outputs (risk reports, surface JSON) — derived, not source truth"
+  - path: "proof/**"
+    category: "proof_bundle"
+    rationale: "Proof bundles — verification artifacts, not implementation truth"
+  - path: "extraction/repo-truth-extractor/v5/proofs/**"
+    category: "proof_bundle"
+    rationale: "v5 proof bundles — verification artifacts, not implementation truth"
+
+  # Temporary and scratch directories
+  - path: "tmp/**"
+    category: "temp"
+    rationale: "Temporary test runs and scratch data — transient, not truth"
+  - path: "out/**"
+    category: "temp"
+    rationale: "Transient execution outputs"
+
+  # Legacy/archive systems
+  - path: "SYSTEM_ARCHIVE/**"
+    category: "archive"
+    rationale: "Legacy system backups — historical, not current implementation truth"
+
+# ---------------------------------------------------------------------------
+# QUARANTINE ROOTS
+# Paths that hygiene apply-mode may archive into the quarantine zone.
+# These are safe to quarantine when stale; they are NOT source content.
+# ---------------------------------------------------------------------------
+quarantine_candidates:
+  - path_pattern: "extraction/repo-truth-extractor/v3/runs/*/*/raw/*.FAILED.*"
+    condition: "stale_failed_after_success"
+    rationale: "FAILED sidecars that exist alongside a newer success file — stale resume noise"
+  - path_pattern: "extraction/repo-truth-extractor/**/.DS_Store"
+    condition: "always"
+    rationale: "macOS metadata in extraction tree — noise"
+  - path_pattern: "extraction/repo-truth-extractor/**/*.zip"
+    condition: "always"
+    rationale: "Zip archives in extraction tree — not needed for resume"
+
+# ---------------------------------------------------------------------------
+# VERSION / PATH WIRING
+# Documents the known mismatch between the active extractor version and
+# the output path it writes to. This is a deliberate policy annotation,
+# not a bug to auto-fix.
+# ---------------------------------------------------------------------------
+version_path_wiring:
+  active_runner: "run_extraction_v5.py"
+  active_version_label: "v5"
+  output_root: "extraction/repo-truth-extractor/v3"
+  mismatch: true
+  mismatch_severity: "warn"
+  mismatch_rationale: >
+    The v5 runner inherits the V3_EXTRACTION_ROOT constant and writes runs to the v3
+    output tree. This is intentional for resume compatibility with existing v3 runs.
+    Changing the output path would orphan all existing run artifacts and break resume.
+    Operators should be aware that 'v5' refers to the runner version, not an isolated
+    output namespace. A deliberate migration to a v5 output path requires a separate
+    task packet.
+
+# ---------------------------------------------------------------------------
+# RESUME STATE HAZARDS
+# Patterns that indicate potentially poisoned resume state.
+# ---------------------------------------------------------------------------
+resume_state_hazards:
+  - pattern: "*/raw/*.FAILED.*"
+    description: "FAILED sidecar without a corresponding success file"
+    severity: "warn"
+    recommended_action: "Review; quarantine if run was completed successfully by later run"
+  - pattern: "RESUME_PROOF.json"
+    fields_to_check:
+      - field: "resume_status"
+        bad_values: ["poisoned", "corrupt"]
+        severity: "error"
+      - field: "blocked_promptset"
+        bad_values: [true]
+        severity: "warn"
+    description: "RESUME_PROOF.json with blocked or corrupted state"
+    recommended_action: "Do not resume from this run; start a fresh run"
