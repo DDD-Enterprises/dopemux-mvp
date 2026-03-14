@@ -95,6 +95,11 @@ def _artifact_rules_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
                 for value in row.get("required_fields", [])
                 if str(value).strip()
             ],
+            "allow_empty_array_fields": [
+                str(value).strip()
+                for value in row.get("allow_empty_array_fields", [])
+                if str(value).strip()
+            ],
         }
     return rules
 
@@ -242,13 +247,17 @@ def _assert_lane_map_matches_scope(
     lane_map: Dict[Tuple[str, str], Dict[str, Any]],
     scope_map: Dict[Tuple[str, str], Dict[str, Any]],
 ) -> None:
-    # model_map may contain extra non-JSON-managed or future-proofed steps.
-    # Fail closed only when JSON-managed scope steps are missing from model_map.
     missing_lane_steps = sorted(set(scope_map.keys()) - set(lane_map.keys()))
     if missing_lane_steps:
         formatted = ", ".join(f"{phase}:{step}" for phase, step in missing_lane_steps)
         raise ValueError(
             f"repo_truth_map JSON-managed steps missing from model_map.yaml: {formatted}"
+        )
+    extra_lane_steps = sorted(set(lane_map.keys()) - set(scope_map.keys()))
+    if extra_lane_steps:
+        formatted = ", ".join(f"{phase}:{step}" for phase, step in extra_lane_steps)
+        raise ValueError(
+            f"model_map.yaml steps outside repo_truth_map JSON scope: {formatted}"
         )
 
 
@@ -258,7 +267,8 @@ def compile_phase_contract_map() -> Dict[str, Any]:
     lane_map = _model_map_by_key()
     prompt_paths = _prompt_path_by_step()
     scope_map = _repo_truth_scope_by_key()
-    _assert_lane_map_matches_scope(lane_map, scope_map)
+    scoped_lane_map = {key: lane_map[key] for key in scope_map.keys() if key in lane_map}
+    _assert_lane_map_matches_scope(scoped_lane_map, scope_map)
 
     steps_payload: Dict[str, Dict[str, Any]] = {}
     for (phase_code, step_id), scope in sorted(scope_map.items()):
@@ -292,6 +302,7 @@ def compile_phase_contract_map() -> Dict[str, Any]:
                 "kind": str(artifact_rule.get("kind") or "json_item_list"),
                 "canonical_writer_step_id": str(artifact_rule.get("canonical_writer_step_id") or step_id),
                 "norm_artifact": bool(artifact_rule.get("norm_artifact", True)),
+                "allow_empty_array_fields": list(artifact_rule.get("allow_empty_array_fields") or []),
             }
 
         steps_payload[f"{phase_code}:{step_id}"] = {
