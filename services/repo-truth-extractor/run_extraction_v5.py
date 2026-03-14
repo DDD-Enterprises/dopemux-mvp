@@ -11356,20 +11356,21 @@ def execute_step_for_partitions(
                 parse_json_from_response_fn=parse_json_from_response,
                 coerce_artifacts_from_response_fn=coerce_artifacts_from_response,
             )
-            # Collect canonical results for summary (best-effort from step stats)
+            # Collect canonical results for summary (best-effort from step stats).
+            # We avoid fabricating per-partition latency/repair metrics here,
+            # since only aggregate step_stats are available at this point.
+            canonical_success = bool(step_stats.get("success", True))
+            final_contract_status = step_stats.get("final_contract_status") or "unknown"
             canonical_results_for_summary = [
                 {
                     "partition_id": p.get("id", "unknown"),
-                    "success": True,
+                    "success": canonical_success,
                     "request_meta": {
                         "lane": "canonical",
                         "authoritative": True,
                         "provider": initial_provider,
                         "model_id": initial_model_id,
-                        "final_contract_status": step_stats.get("final_contract_status") or "pass",
-                        "repair_invocations": step_stats.get("repair_invocations", 0),
-                        "repair_successes": step_stats.get("repair_successes", 0),
-                        "elapsed_ms": 0,
+                        "final_contract_status": final_contract_status,
                     },
                 }
                 for p in ordered_partitions
