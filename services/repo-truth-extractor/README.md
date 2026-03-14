@@ -1,14 +1,3 @@
----
-id: README
-title: Readme
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-03-13'
-last_review: '2026-03-13'
-next_review: '2026-06-11'
-prelude: Readme (explanation) for dopemux documentation and developer workflows.
----
 # Repo Truth Extractor
 
 Repo Truth Extractor is the canonical extraction service for dopemux.
