@@ -1,8 +1,8 @@
 # PROMPT_Z1
 
 ## Goal
-Produce `Z1` outputs for phase `Z` with strict schema, explicit evidence, and deterministic normalization.
-Focus on concrete, machine-verifiable implementation facts.
+Produce the `Z1` proof-pack output for phase `Z` with strict schema, explicit evidence, and deterministic normalization.
+Focus on concrete, machine-verifiable freeze evidence and proof-pack assembly facts.
 
 ## Inputs
 - Source scope (scan these roots first):
@@ -35,18 +35,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, evidence`
 
 ## Extraction Procedure
-1. Load all finalized extraction artifacts as input for proof pack and runbook
-2. Compute checksums and integrity metadata for PROOF_PACK
-3. Build PROOF_PACK: compile all required components with provenance tracking
-4. Validate completeness: verify all expected artifacts are present and checksums match
-5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+1. Load all finalized freeze artifacts required to assemble `PROOF_PACK.md`.
+2. Compute or verify proof-pack integrity metadata from the supplied freeze inputs.
+3. Build `PROOF_PACK.md` as the single declared output with provenance tracking for each required section.
+4. Validate completeness: verify all expected proof-pack inputs are present and note any missing components explicitly in the output.
+5. For each load-bearing section, attach evidence per the schema contract above.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.
 10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+12. Emit exactly the declared output and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -86,9 +86,9 @@ Focus on concrete, machine-verifiable implementation facts.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
-# PROMPT_Z1 — PROOF PACK / RUNBOOK
+# PROMPT_Z1 — PROOF PACK
 
-TASK: Generate a proof pack snapshot and runbook.
+TASK: Generate a proof pack snapshot.
 
 OUTPUTS:
 	•	PROOF_PACK.md
