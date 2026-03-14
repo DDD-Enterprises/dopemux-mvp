@@ -7,12 +7,20 @@ author: '@hu3mann'
 date: '2026-03-11'
 last_review: '2026-03-11'
 next_review: '2026-06-09'
-prelude: PM plane authority boundaries for canonical system responsibilities and integration routing.
+prelude: PM-plane authority model for canonical system responsibilities, write boundaries, and integration routing.
 status: proposed
 graph_metadata:
   node_type: ADR
   impact: high
-  relates_to: []
+  relates_to:
+    - adr-dopecon-bridge-narrowing-to-adapter-only-role
+    - adr-leantime-json-rpc-plus-plugin-integration-strategy
+    - adr-conport-as-decision-progress-and-context-authority
+    - adr-dope-memory-as-chronicle-memory-authority
+    - adr-task-orchestrator-as-workflow-authority
+    - adr-memory-trinity-authority-and-interaction-model
+    - adr-serena-as-technical-context-plane
+    - adr-dope-context-as-search-and-retrieval-plane
 ---
 
 # ADR: PM Plane Authority Boundaries
@@ -209,7 +217,7 @@ Leantime should be integrated primarily through:
 - **JSON-RPC** as the stable external seam
 - optional plugin support for hooks, UI injection, and internal extension seams
 
-Leantime's MCP path is not yet mature enough to be treated as the primary contract surface.
+Leantime’s MCP path is not yet mature enough to be treated as the primary contract surface.
 
 ### dopecon-bridge narrowing requirement
 
@@ -257,7 +265,7 @@ The alternative, allowing multiple systems to co-own tasks, decisions, next-acti
 
 ### 1. Leantime as both PM SoR and workflow authority
 
-Rejected because Leantime's workflow semantics are too weak and unconstrained.
+Rejected because Leantime’s workflow semantics are too weak and unconstrained.
 
 ### 2. dopecon-bridge as PM-plane authority hub
 
