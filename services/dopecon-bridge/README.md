@@ -1,286 +1,72 @@
-# DopeconBridge - EventBus Coordination Layer
+# DopeconBridge Active Runtime
 
-**Version**: 1.0.0
-**Port**: 3016 (PORT_BASE + 16)
-**Status**: ✅ Production Ready
+## Role
 
-## Overview
+DopeconBridge is the active PM-plane adapter, router, and translator layer. It is **not** a canonical authority for tasks, workflow state, decisions, progress, or chronicle memory.
 
-DopeconBridge provides **async event coordination** between Dopemux services using Redis Streams. Enables real-time communication between ConPort, ADHD Engine, and Dashboard without tight coupling.
+Canonical authorities remain:
 
-## Architecture
+- **Leantime** for PM operational records
+- **Task Orchestrator** for workflow legality, blockers, and next-action
+- **ConPort** for decisions, progress, and durable context
+- **dope-memory** for chronicle memory
 
-### EventBus (Redis Streams)
+## Active runtime boundary
 
-**Implementation**: `event_bus.py`
-**Pattern**: Pub/Sub with consumer groups
-**Backend**: Redis Streams (xadd/xreadgroup)
+The active runtime is limited to:
 
-**Features**:
-- 8 event types for system coordination
-- Consumer groups for load balancing
-- Automatic message acknowledgment
-- Non-blocking async publishing
-- ADHD-optimized: Resilient to interruptions
+- `services/dopecon-bridge/main.py`
+- `services/dopecon-bridge/dopecon_bridge/`
 
-### Event Types
+Legacy or excluded modules at the service root are not part of the sanctioned runtime unless explicitly reactivated by a separate decision.
 
-| Event | Publisher | Subscribers | Purpose |
-|-------|-----------|-------------|---------|
-| `tasks_imported` | ConPort | Dashboard, ADHD Engine | New tasks available |
-| `session_started` | ADHD Engine | Dashboard, ConPort | 25min session begins |
-| `progress_updated` | ConPort | Dashboard | Task progress changed |
-| `decision_logged` | ConPort | All services | New architectural decision |
-| `session_completed` | ADHD Engine | Dashboard, ConPort | Session finished |
-| `session_paused` | ADHD Engine | Dashboard | Break time |
-| `break_reminder` | ADHD Engine | Dashboard | Time for break |
-| `adhd_state_changed` | ADHD Engine | Dashboard | Energy/focus updated |
+## Sanctioned active surfaces
 
-## REST API
+- `GET /health`
+- `GET /`
+- `POST /auth/token`
+- `POST /auth/refresh`
+- `POST /events` and convenience `POST /events/*`
+  - authenticated
+  - event transport only
+- `GET /events/stream`
+- `GET /events/history`
+- `GET /events/{stream}`
+- `POST /route/pm`
+  - adapter-safe Leantime-backed PM operations only
+  - rejects workflow-significant mutations
+- `GET/POST /kg/custom_data`
+- `GET/POST /kg/decisions`
+- `GET/POST /kg/progress`
+- `GET /ddg/decisions`
+- `GET /ddg/search`
 
-### Base URL
-```
-http://localhost:3016
-```
+## Blocked or deprecated active surfaces
 
-### Endpoints
+- `POST /tasks/parse-prd`
+- `GET /tasks/next/{project_id}`
+- `PATCH /tasks/{task_id}/status`
+- `/route/cognitive`
+- `/ddg/decisions/related`
+- `/ddg/decisions/related-text`
+- `/kg/links`
 
-#### Health Check
-```bash
-GET /health
+These paths are blocked or unsupported because they previously depended on bridge-local authority or on backend contracts that are not part of the sanctioned active runtime.
 
-Response:
-{
-  "status": "healthy",
-  "instance": "default",
-  "port": 3016,
-  "event_bus": "ready"
-}
-```
+## Local persistence posture
 
-#### Publish Event (Generic)
-```bash
-POST /events
-Content-Type: application/json
+Bridge-local SQL tables such as `TaskRecord`, `DdgDecision`, and `DdgProgress` are transitional and non-canonical. They must not be used as PM-plane truth.
 
-{
-  "stream": "dopemux:events",
-  "event_type": "tasks_imported",
-  "data": {"task_count": 15, "sprint_id": "S-2025.10"}
-}
+## Authentication
 
-Response:
-{
-  "status": "published",
-  "message_id": "1760911882663-0",
-  "stream": "dopemux:events",
-  "event_type": "tasks_imported",
-  "timestamp": "2025-10-19T22:11:22.566477"
-}
-```
+- Event write routes require authentication.
+- The default admin user is initialized for local development only.
+- PM-plane operators should prefer service-to-service tokens over interactive use.
 
-#### Get Stream Info
-```bash
-GET /events/{stream}
-
-Example: GET /events/dopemux:events
-
-Response:
-{
-  "stream": "dopemux:events",
-  "info": {
-    "length": 7,
-    "groups": 2
-  }
-}
-```
-
-#### Convenience Endpoints
+## Verification
 
 ```bash
-# Publish tasks_imported
-POST /events/tasks-imported?task_count=15&sprint_id=S-2025.10
-
-# Publish session_started
-POST /events/session-started?task_id=task-123&duration_minutes=25
-
-# Publish progress_updated
-POST /events/progress-updated?task_id=task-123&status=IN_PROGRESS&progress=0.5
+python3 -m pytest tests/shared/test_dopecon_bridge_client.py \
+  services/dopecon-bridge/tests/test_leantime_route_contract.py \
+  services/dopecon-bridge/tests/test_task_integration_unit.py
 ```
-
-## Integration Examples
-
-### ConPort → EventBus (Decision Logging)
-
-```python
-# In ConPort enhanced_server.py
-from dopecon_bridge_client import DopeconBridgeClient
-
-# Initialize
-self.dopecon_bridge = DopeconBridgeClient()
-await self.dopecon_bridge.initialize()
-
-# Publish when decision logged
-await self.dopecon_bridge.publish_decision_logged(
-    decision_id="abc-123",
-    summary="Use microservices architecture",
-    workspace_id="/project/path",
-    tags=["architecture"]
-)
-```
-
-### Dashboard → EventBus (Event Subscription)
-
-```python
-# Subscribe to events
-async for msg_id, event in event_bus.subscribe("dopemux:events", "dashboard-group"):
-    if event.type == EventType.DECISION_LOGGED:
-        # Update UI with new decision
-        ui.show_notification(f"Decision: {event.data['summary']}")
-
-    elif event.type == EventType.PROGRESS_UPDATED:
-        # Update progress bar
-        ui.update_progress(event.data['task_id'], event.data['progress'])
-```
-
-## Deployment
-
-### Docker Build
-```bash
-cd services/mcp-dopecon-bridge
-docker build -t mcp-dopecon-bridge:latest .
-```
-
-### Docker Run
-```bash
-docker run -d \
-  --name mcp-dopecon-bridge \
-  --network dopemux-network \
-  -p 3016:3016 \
-  -e PORT_BASE=3000 \
-  -e REDIS_URL=redis://dopemux-redis-primary:6379 \
-  -e POSTGRES_URL=postgresql+asyncpg://user:pass@host:5432/db \
-  mcp-dopecon-bridge:latest
-```
-
-### Multi-Network Setup
-```bash
-# Connect to both dopemux-network and mcp-network
-docker network connect mcp-network mcp-dopecon-bridge
-```
-
-## Testing
-
-### Run EventBus Tests
-```bash
-# Test all event types via REST API
-bash test_api.sh
-
-# Test ConPort integration
-bash test_conport_integration.sh
-
-# Manual test with curl
-curl -X POST http://localhost:3016/events \
-  -H "Content-Type: application/json" \
-  -d '{"event_type":"test_event","data":{"key":"value"}}'
-```
-
-### Verify Events in Redis
-```bash
-# Check stream length
-docker exec dopemux-redis-primary redis-cli XLEN "dopemux:events"
-
-# Read events
-docker exec dopemux-redis-primary redis-cli XRANGE "dopemux:events" - + COUNT 5
-```
-
-## Files
-
-- `event_bus.py` - Redis Streams EventBus implementation (320 lines)
-- `main.py` - FastAPI application with event endpoints (1720 lines)
-- `dopecon_bridge_client.py` - HTTP client for other services (130 lines)
-- `requirements.txt` - Python dependencies
-- `Dockerfile` - Container build configuration
-- `test_api.sh` - EventBus REST API tests
-- `test_conport_integration.sh` - ConPort integration tests
-- `EVENTBUS_VALIDATION.md` - Validation test results
-
-## Event Flow Diagram
-
-```
-ConPort                     DopeconBridge              Redis Streams
-┌─────────┐                ┌─────────────────┐             ┌──────────────┐
-│log_     │                │                 │             │              │
-│decision │──HTTP POST───▶ │ POST /events    │──xadd────▶  │ dopemux:     │
-│         │                │                 │             │ events       │
-└─────────┘                └─────────────────┘             └──────────────┘
-                                                                   │
-                           ┌─────────────────┐                    │
-                           │ Dashboard       │◀──xreadgroup───────┘
-                           │ (subscriber)    │
-                           └─────────────────┘
-```
-
-## Performance
-
-- **Event Publishing**: < 10ms
-- **Redis Streams**: < 5ms storage
-- **HTTP API**: < 50ms end-to-end
-- **Non-blocking**: Events published asynchronously
-
-## ADHD Optimizations
-
-- **Non-blocking**: Event failures don't break workflows
-- **Graceful degradation**: Services work without EventBus
-- **Fast feedback**: < 50ms latency for UI updates
-- **Resilient**: Automatic reconnection on failures
-
-## Production Checklist
-
-- ✅ EventBus tested with 7+ events
-- ✅ ConPort integration validated
-- ✅ Redis Streams storing correctly
-- ✅ REST API operational
-- ✅ Multi-network connectivity confirmed
-- ✅ Error handling comprehensive
-- ✅ Logging and monitoring enabled
-- ⬜ Dashboard subscriber implementation (next step)
-- ⬜ ADHD Engine integration (next step)
-
-## Next Steps
-
-1. **Dashboard Integration**: Build event subscriber in React/Ink
-2. **ADHD Engine**: Publish session lifecycle events
-3. **Monitoring**: Add Prometheus metrics for event rates
-4. **Schema Migration**: Add instance_id to progress_entries table
-
-## Troubleshooting
-
-### EventBus not connecting
-```bash
-# Check Redis
-docker ps | grep redis
-docker exec dopemux-redis-primary redis-cli PING
-
-# Check DopeconBridge logs
-docker logs mcp-dopecon-bridge
-```
-
-### Events not publishing
-```bash
-# Check DopeconBridge health
-curl http://localhost:3016/health
-
-# Check ConPort DopeconBridge client
-docker logs mcp-conport | grep dopecon_bridge
-```
-
-## Documentation
-
-- Module spec: `.claude/modules/coordination/dopecon-bridge.md`
-- Validation: `EVENTBUS_VALIDATION.md`
-- ConPort API: `docker/mcp-servers/conport/README.md` (TBD)
-
----
-
-**Status**: ✅ DopeconBridge EventBus is production-ready and enables real-time cross-service coordination for Dopemux ADHD-optimized workflows.
