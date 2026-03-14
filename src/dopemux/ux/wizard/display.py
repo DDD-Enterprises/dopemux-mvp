@@ -9,7 +9,7 @@ import math
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from rich.box import ROUNDED, SIMPLE_HEAVY
+from rich.box import ROUNDED, SIMPLE_HEAVY, HEAVY
 from rich.columns import Columns
 from rich.panel import Panel
 from rich.table import Table
@@ -21,7 +21,6 @@ from .stages import (
     AUTHORITY_CLASSES,
     PHASE_INFO,
     PHASES,
-    PROVIDER_COLORS,
     StageResult,
     StageStatus,
     WizardState,
@@ -339,3 +338,284 @@ def render_next_steps(state: WizardState) -> None:
         for i, step in enumerate(steps, 1):
             console.print(f"  {i}. {step}")
         console.print()
+
+
+# ── Intelligence report ───────────────────────────────────────────────────
+
+_LIFECYCLE_META: Dict[str, Tuple[str, str]] = {
+    "fresh":   ("🌱", "bright_green"),
+    "active":  ("🔥", "green"),
+    "stale":   ("🌤", "yellow"),
+    "frozen":  ("🧊", "blue"),
+    "unknown": ("❓", "dim"),
+}
+
+_SAVINGS_THRESHOLDS = [
+    (50, "bold green", "🚀 MAJOR SAVINGS"),
+    (25, "green",      "💚 GOOD SAVINGS"),
+    (10, "yellow",     "💛 MODERATE"),
+    (0,  "dim",        "—  MINIMAL"),
+]
+
+
+def _health_gauge(score: int) -> Text:
+    """Render a coloured health score bar in a Text object."""
+    if score >= 75:
+        bar_color, label = "bright_green", "HEALTHY"
+    elif score >= 50:
+        bar_color, label = "yellow", "FAIR"
+    else:
+        bar_color, label = "red", "NEEDS ATTENTION"
+
+    filled = round(score / 5)           # 0-20 blocks
+    empty  = 20 - filled
+    bar = "█" * filled + "░" * empty
+    t = Text()
+    t.append("  ")
+    t.append(bar, style=bar_color)
+    t.append(f"  {score}/100  ", style="bold " + bar_color)
+    t.append(label, style="bold " + bar_color)
+    return t
+
+
+def _fmt(n: int, warn_above: int = 0, good_below: int = 0) -> str:
+    """Format a number with optional colour."""
+    if warn_above and n > warn_above:
+        return f"[bold yellow]{n:,}[/bold yellow]"
+    if good_below and n < good_below:
+        return f"[green]{n:,}[/green]"
+    return f"[bold]{n:,}[/bold]"
+
+
+def render_intelligence_report(intel: Dict[str, Any]) -> None:
+    """
+    Render the full prescan_intelligence.json as a rich terminal display.
+
+    Sections:
+      1. Header panel with corpus health gauge
+      2. Side-by-side: Corpus Profile | Planned Features
+      3. Lifecycle distribution bar chart
+      4. Extraction hints (savings & routing)
+      5. Co-change groups (if any)
+    """
+    summary = intel.get("corpus_summary", {})
+    lifecycle = intel.get("lifecycle_distribution", {})
+    planned = intel.get("planned_features", {})
+    hints = intel.get("extraction_hints", {})
+    dup_groups = intel.get("duplicate_groups", {})
+    co_groups = intel.get("co_change_groups", [])
+
+    health = summary.get("corpus_health_score", 0)
+    total_files = summary.get("included_files", 0)
+    ghost_count = summary.get("ghost_files", 0)
+    git_branch = intel.get("git_branch", "?")
+    git_sha = (intel.get("git_sha") or "?")[:10]
+    chain_count = intel.get("version_chain_count", 0)
+    compress_n = intel.get("compression_potential_files", 0)
+    skip_n = len(hints.get("skip_duplicates", []))
+    dup_n = sum(len(v) - 1 for v in dup_groups.values())
+    hichurn_n = len(hints.get("high_churn_files", []))
+
+    adr_n = len(planned.get("proposed_adrs", []))
+    stub_n = len(planned.get("stub_files", []))
+    todo_n = len(planned.get("todo_files", []))
+    draft_n = len(planned.get("draft_docs", []))
+
+    # ── 1. Header panel ────────────────────────────────────────────────────
+    gen_ts = intel.get("generated_at", "")[:19].replace("T", "  ")
+    header_lines = [
+        "",
+        _health_gauge(health),
+        Text(f"\n  Git: {git_sha}  •  Branch: {git_branch}  •  Generated: {gen_ts}", style="dim"),
+        Text(""),
+    ]
+    header_body = Text.assemble(*[
+        item if isinstance(item, Text) else Text(item)
+        for item in header_lines
+    ])
+
+    console.print()
+    console.print(
+        Panel(
+            header_body,
+            title="[bold white]🧠  PRE-EXTRACTION INTELLIGENCE REPORT[/bold white]",
+            border_style="bright_cyan",
+            box=HEAVY,
+            padding=(0, 2),
+        )
+    )
+
+    # ── 2. Side-by-side: Corpus Profile | Planned Features ─────────────────
+    # Left panel — corpus profile
+    left = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+    left.add_column("Label", style="dim", min_width=24)
+    left.add_column("Value", justify="right")
+
+    left.add_row("Total included files",    _fmt(total_files))
+    left.add_row("Ghost files (👻 recovered)", _fmt(ghost_count))
+    left.add_row("Redundant files (dupes)",  _fmt(dup_n, warn_above=50))
+    left.add_row("Skip candidates",          _fmt(skip_n, warn_above=100))
+    left.add_row("Version chains",           _fmt(chain_count))
+    left.add_row("Compressible version files", _fmt(compress_n))
+    left.add_row("High-churn files (> 1/mo)", _fmt(hichurn_n))
+    left.add_row("Co-change groups",         _fmt(len(co_groups)))
+
+    corpus_panel = Panel(
+        left,
+        title="[bold cyan]📦 Corpus Profile[/bold cyan]",
+        border_style="cyan",
+        box=ROUNDED,
+        padding=(0, 1),
+    )
+
+    # Right panel — planned features
+    right = Table(box=None, show_header=False, padding=(0, 1), expand=True)
+    right.add_column("Label", style="dim", min_width=22)
+    right.add_column("Value", justify="right")
+
+    def _feat_fmt(n: int, icon: str) -> str:
+        color = "magenta" if n > 0 else "dim"
+        return f"[{color}]{icon}  {n:,}[/{color}]"
+
+    right.add_row("Proposed ADRs",         _feat_fmt(adr_n,   "📋"))
+    right.add_row("Stub implementations", _feat_fmt(stub_n,  "🔧"))
+    right.add_row("Files with TODOs",     _feat_fmt(todo_n,  "📌"))
+    right.add_row("Draft / proposed docs", _feat_fmt(draft_n, "📝"))
+
+    total_planned = adr_n + stub_n + draft_n
+    right.add_section()
+    feat_color = "magenta" if total_planned > 0 else "dim"
+    right.add_row(
+        "[bold]Total planned work items[/bold]",
+        f"[bold {feat_color}]{total_planned:,}[/bold {feat_color}]",
+    )
+
+    planned_panel = Panel(
+        right,
+        title="[bold magenta]🗺  Planned Features[/bold magenta]",
+        border_style="magenta",
+        box=ROUNDED,
+        padding=(0, 1),
+    )
+
+    console.print(Columns([corpus_panel, planned_panel], equal=True, expand=True))
+
+    # ── 3. Lifecycle bar chart ──────────────────────────────────────────────
+    if lifecycle:
+        lc_table = Table(
+            box=ROUNDED,
+            border_style="dim cyan",
+            title="[bold]📅  File Lifecycle Distribution[/bold]",
+            padding=(0, 1),
+        )
+        lc_table.add_column("Stage",   min_width=10)
+        lc_table.add_column("Bar",     min_width=28)
+        lc_table.add_column("Files",   justify="right", min_width=6)
+        lc_table.add_column("%",       justify="right", min_width=5)
+
+        lc_total = sum(lifecycle.values()) or 1
+        for stage, count in sorted(
+            lifecycle.items(),
+            key=lambda x: ["fresh", "active", "stale", "frozen", "unknown"].index(x[0])
+            if x[0] in ["fresh", "active", "stale", "frozen", "unknown"]
+            else 99,
+        ):
+            icon, color = _LIFECYCLE_META.get(stage, ("•", "white"))
+            frac = count / lc_total
+            bar_filled = round(frac * 26)
+            bar = f"[{color}]" + "█" * bar_filled + "[/]" + "[dim]" + "░" * (26 - bar_filled) + "[/dim]"
+            pct = f"{frac * 100:.0f}%"
+            lc_table.add_row(
+                f"{icon}  [{color}]{stage}[/{color}]",
+                bar,
+                f"{count:,}",
+                f"[dim]{pct}[/dim]",
+            )
+
+        console.print(lc_table)
+
+    # ── 4. Extraction hints ─────────────────────────────────────────────────
+    if skip_n or compress_n or ghost_count or total_planned or hichurn_n:
+        token_reduction_est = min(
+            int((skip_n / max(total_files, 1)) * 100 * 0.6
+                + (compress_n / max(total_files, 1)) * 100 * 0.3),
+            65,
+        )
+        for threshold, color, label in _SAVINGS_THRESHOLDS:
+            if token_reduction_est >= threshold:
+                savings_color, savings_label = color, label
+                break
+
+        hints_lines: list[str] = []
+        if skip_n:
+            hints_lines.append(
+                f"  [bold yellow]💰 {skip_n:,} files SKIPPED[/bold yellow]"
+                f" [dim](exact duplicates — zero extraction cost)[/dim]"
+            )
+        if compress_n:
+            hints_lines.append(
+                f"  [bold cyan]🗜  {compress_n:,} files COMPRESSED[/bold cyan]"
+                f" [dim](version chains → evolution summaries)[/dim]"
+            )
+        if ghost_count:
+            hints_lines.append(
+                f"  [dim]👻 {ghost_count} ghost files[/dim]"
+                f" [dim](deleted content — run Grok DISCOVER pass to assess)[/dim]"
+            )
+        if total_planned:
+            hints_lines.append(
+                f"  [bold magenta]📋 {total_planned} planned features[/bold magenta]"
+                f" [dim]→ Phase X + T priority routing[/dim]"
+            )
+        if hichurn_n:
+            hints_lines.append(
+                f"  [bold]🔥 {hichurn_n} high-churn files[/bold]"
+                f" [dim]→ premium model routing recommended[/dim]"
+            )
+
+        hints_lines.append("")
+        hints_lines.append(
+            f"  Estimated token reduction: "
+            f"[bold {savings_color}]{token_reduction_est}%  {savings_label}[/bold {savings_color}]"
+        )
+
+        console.print(
+            Panel(
+                "\n".join(hints_lines),
+                title="[bold green]💡  Extraction Hints[/bold green]",
+                border_style="green",
+                box=ROUNDED,
+                padding=(0, 1),
+            )
+        )
+
+    # ── 5. Co-change groups ─────────────────────────────────────────────────
+    if co_groups:
+        cg_table = Table(
+            box=ROUNDED,
+            border_style="dim",
+            title=(
+                "[bold]🔗  Top Co-Change Groups "
+                "[dim](files that always move together)[/dim][/bold]"
+            ),
+            padding=(0, 1),
+            show_lines=True,
+        )
+        cg_table.add_column("Commits", justify="right", min_width=7)
+        cg_table.add_column("Files in Group", min_width=48)
+
+        for group in co_groups[:6]:
+            files_txt = "\n".join(
+                f"[dim cyan]{f}[/dim cyan]"
+                for f in sorted(group["files"])[:4]
+            )
+            if len(group["files"]) > 4:
+                files_txt += f"\n[dim]  … +{len(group['files']) - 4} more[/dim]"
+            cg_table.add_row(
+                f"[bold]{group['commit_count']}[/bold]",
+                files_txt,
+            )
+
+        console.print(cg_table)
+
+    console.print()
