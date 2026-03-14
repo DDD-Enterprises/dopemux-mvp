@@ -7,7 +7,19 @@ from unittest.mock import patch
 
 import pytest
 
-from services.repo_truth_extractor import extraction_hygiene as hyg
+import importlib.util as _ilu
+import sys as _sys
+def _load_hyg():
+    _root = __import__('pathlib').Path(__file__).resolve().parents[3]
+    _spec = _ilu.spec_from_file_location(
+        "extraction_hygiene",
+        _root / "services" / "repo-truth-extractor" / "extraction_hygiene.py",
+    )
+    _mod = _ilu.module_from_spec(_spec)
+    _sys.modules["extraction_hygiene"] = _mod
+    _spec.loader.exec_module(_mod)
+    return _mod
+hyg = _load_hyg()
 
 
 class TestVersionPathMismatch:
