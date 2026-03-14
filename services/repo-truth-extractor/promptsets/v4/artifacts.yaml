@@ -50,6 +50,9 @@ artifacts:
   - path
   - line_range
   - id
+  allow_empty_array_fields:
+  - issues
+  - status
 - phase: A
   artifact_name: REPO_COMPOSE_SERVICE_GRAPH.json
   canonical_writer_step_id: A99
@@ -928,6 +931,9 @@ artifacts:
   - path
   - line_range
   - id
+  allow_empty_array_fields:
+  - issues
+  - status
 - phase: H
   artifact_name: HOME_INVENTORY.json
   canonical_writer_step_id: H0
@@ -1916,6 +1922,8 @@ artifacts:
   - path
   - line_range
   - id
+  allow_empty_array_fields:
+  - subcommands
 - phase: A
   artifact_name: HOOK_CONTRACT_SURFACE.json
   canonical_writer_step_id: A13
@@ -2045,14 +2053,6 @@ artifacts:
   - id
   - path
   - line_range
-- phase: Q
-  artifact_name: QA_ARTIFACT_COLLISION_REPORT.json
-  canonical_writer_step_id: Q11
-  kind: json_item_list
-  norm_artifact: false
-  allow_timestamp_keys: true
-  merge_strategy: itemlist_by_id
-  required_fields: []
 - phase: S
   artifact_name: S8_ARCHITECTURE_DIAGRAMS.md
   canonical_writer_step_id: S8
