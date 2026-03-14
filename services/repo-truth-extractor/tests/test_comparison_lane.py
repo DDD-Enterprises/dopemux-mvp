@@ -393,8 +393,11 @@ def test_comparison_route_metadata_distinct_from_canonical(
     assert meta.get("authoritative") is False, (
         "comparison artifact must have authoritative=false"
     )
-    assert meta.get("provider") == "xai" or meta.get("model_id") == "grok-4.20-beta", (
-        "comparison artifact must record comparison provider/model"
+    assert meta.get("provider") == "xai", (
+        f"comparison artifact must record provider='xai', got: {meta.get('provider')!r}"
+    )
+    assert meta.get("model_id") == "grok-4.20-beta", (
+        f"comparison artifact must record model_id='grok-4.20-beta', got: {meta.get('model_id')!r}"
     )
 
     # Canonical artifact must have lane=canonical
