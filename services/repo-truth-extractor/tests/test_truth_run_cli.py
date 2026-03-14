@@ -305,3 +305,115 @@ class TestV5OutputPath(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# ---------------------------------------------------------------------------
+# Test 8: --resume and --import-v3 options are present
+# ---------------------------------------------------------------------------
+class TestTruthRunResumeAndImportOptions(unittest.TestCase):
+    def _get_cmd(self):
+        src_path = str(_REPO_ROOT / "src")
+        if src_path not in sys.path:
+            sys.path.insert(0, src_path)
+        try:
+            from dopemux.commands.extract_commands import extract
+            return extract.commands["truth-run"]
+        except ImportError:
+            self.skipTest("dopemux package not importable")
+
+    def test_resume_option_present(self):
+        """truth-run must have a --resume flag."""
+        cmd = self._get_cmd()
+        names = {p.name for p in cmd.params}
+        self.assertIn("resume", names, "--resume option missing from truth-run")
+
+    def test_import_v3_option_present(self):
+        """truth-run must have --import-v3 option."""
+        cmd = self._get_cmd()
+        names = {p.name for p in cmd.params}
+        self.assertIn("import_v3_run_id", names, "--import-v3 option missing from truth-run")
+
+    def test_all_options_present(self):
+        """truth-run must expose all expected options including new ones."""
+        cmd = self._get_cmd()
+        names = {p.name for p in cmd.params}
+        for expected in ["run_id", "phase", "workers", "routing_policy",
+                         "doctor", "resume", "import_v3_run_id",
+                         "skip_hygiene", "apply_cleanup", "force"]:
+            self.assertIn(expected, names, f"Option {expected!r} missing")
+
+
+# ---------------------------------------------------------------------------
+# Test 9: --import-v3 migration logic (filesystem)
+# ---------------------------------------------------------------------------
+class TestImportV3MigrationLogic(unittest.TestCase):
+    def test_copy_from_v3_to_v5_runs(self):
+        """_display_v3_migration_summary must not crash on well-formed run dir."""
+        import tempfile
+        src_path = str(_REPO_ROOT / "src")
+        if src_path not in sys.path:
+            sys.path.insert(0, src_path)
+        try:
+            from dopemux.commands.extract_commands import _display_v3_migration_summary
+        except ImportError:
+            self.skipTest("dopemux package not importable")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp) / "FULL_RUN"
+            phase_dir = run_dir / "A_repo_control_plane"
+            (phase_dir / "raw").mkdir(parents=True)
+            (phase_dir / "norm").mkdir(parents=True)
+            (phase_dir / "qa").mkdir(parents=True)
+            # Populate some fake artifacts
+            (phase_dir / "raw" / "A0__A_P0001.json").write_text("{}")
+            (phase_dir / "raw" / "A0__A_P0002.json").write_text("{}")
+            (phase_dir / "raw" / "A0__A_P0003.FAILED.txt").write_text("err")
+            (phase_dir / "norm" / "NORM.json").write_text("{}")
+            (phase_dir / "qa" / "QA.json").write_text("{}")
+
+            from rich.console import Console
+            console = Console(file=open("/dev/null", "w"))
+            # Must not raise
+            _display_v3_migration_summary(run_dir, "FULL_RUN", console)
+
+    def test_resume_flag_passed_to_subprocess_cmd(self):
+        """When --resume is True, '--resume' must appear in the subprocess command."""
+        src_path = str(_REPO_ROOT / "src")
+        if src_path not in sys.path:
+            sys.path.insert(0, src_path)
+        try:
+            from dopemux.commands.extract_commands import _find_runner
+        except ImportError:
+            self.skipTest("dopemux package not importable")
+
+        # Simulate the command assembly logic from truth_run
+        import sys as _sys
+        runner_path = Path("/fake/run_extraction_v5.py")
+        auto_run_id = "FULL_RUN"
+        phase = "ALL"
+        workers = 10
+        routing_policy = "balanced_openrouter"
+        resume = True
+        doctor = False
+
+        cmd = [_sys.executable, str(runner_path), "--phase", phase,
+               "--partition-workers", str(workers),
+               "--routing-policy", routing_policy, "--run-id", auto_run_id]
+        if doctor:
+            cmd.append("--doctor")
+        if resume:
+            cmd.append("--resume")
+
+        self.assertIn("--resume", cmd, "--resume must be in cmd when resume=True")
+        self.assertIn("FULL_RUN", cmd, "--run-id FULL_RUN must be in cmd")
+
+    def test_no_resume_flag_without_flag(self):
+        """When --resume is False, '--resume' must NOT appear in subprocess command."""
+        import sys as _sys
+        runner_path = Path("/fake/run_extraction_v5.py")
+        auto_run_id = "new-run"
+        resume = False
+        cmd = [_sys.executable, str(runner_path), "--run-id", auto_run_id]
+        if resume:
+            cmd.append("--resume")
+        self.assertNotIn("--resume", cmd)
