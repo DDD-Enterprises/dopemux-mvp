@@ -78,6 +78,12 @@ models:
     provider: xai
     litellm_model: "xai/grok-code-fast-1"
 
+  # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: comparison lane model
+  - name: grok-4.20-beta
+    provider: xai
+    litellm_model: "xai/grok-4.20-beta"
+    notes: "Comparison-lane model only. Not canonical. Registered by TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001."
+
   # OPENAI (direct)
   - name: gpt-5.2
     provider: openai
