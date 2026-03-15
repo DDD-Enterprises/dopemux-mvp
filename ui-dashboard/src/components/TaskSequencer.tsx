@@ -23,6 +23,7 @@ import {
   Timer,
   Flame,
   Swords,
+  Hourglass,
 } from 'lucide-react';
 import { brandTokens } from '../theme';
 
@@ -153,6 +154,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     if (complexity > 0.5) return brandTokens.colors.giltEdge;
     return brandTokens.colors.serumMint;
   };
+
+  const totalRemainingMinutes = useMemo(() => {
+    const totalEstimatedMinutes = tasks
+      .filter((task) => task.status !== 'completed')
+      .reduce((sum, task) => sum + task.estimatedMinutes, 0);
+    return Math.max(0, Math.round(totalEstimatedMinutes - taskTimer / 60));
+  }, [tasks, taskTimer]);
 
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
@@ -285,6 +293,24 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
+        <Tooltip title="Aggregate estimated time remaining for all incomplete tasks" arrow>
+          <Chip
+            size="small"
+            icon={<Hourglass size={12} color={brandTokens.colors.giltEdge} />}
+            label={`${totalRemainingMinutes}m left`}
+            tabIndex={0}
+            aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
+            sx={{
+              ml: 1,
+              height: 20,
+              fontSize: '0.7rem',
+              bgcolor: 'rgba(255, 207, 120, 0.1)',
+              color: brandTokens.colors.giltEdge,
+              border: `1px solid ${alpha(brandTokens.colors.giltEdge, 0.4)}`,
+              '& .MuiChip-icon': { ml: 0.5, mr: -0.5 }
+            }}
+          />
+        </Tooltip>
         <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
           <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
