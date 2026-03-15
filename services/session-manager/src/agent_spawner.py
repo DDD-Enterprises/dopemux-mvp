@@ -19,6 +19,7 @@ import threading
 import queue
 import time
 import libtmux
+from response_parser import ResponseParser
 
 
 class AgentType(Enum):
@@ -74,6 +75,7 @@ class AIAgent:
         self.output_queue: queue.Queue = queue.Queue()
         self.restart_count = 0
         self.last_health_check: Optional[float] = None
+        self.parser = ResponseParser()
 
     def start(self) -> bool:
         """
@@ -203,27 +205,41 @@ class AIAgent:
             self.status = AgentStatus.ERROR
             return False
 
-    def get_output(self, timeout: float = 1.0) -> list[str]:
+    def get_output(
+        self, timeout: float = 1.0, wait_for_prompt: bool = False
+    ) -> list[str]:
         """
         Get available output from agent.
 
         Args:
             timeout: Seconds to wait for output
+            wait_for_prompt: Whether to wait until a prompt is detected
 
         Returns:
             List of output lines
         """
         output_lines = []
         deadline = time.time() + timeout
+        last_data_time = time.time()
 
         while time.time() < deadline:
             try:
+                # Poll with short timeout to allow checking loop conditions
                 source, line = self.output_queue.get(timeout=0.1)
                 output_lines.append(line)
+                last_data_time = time.time()
+
+                if wait_for_prompt:
+                    # Strip ANSI and check for prompt
+                    clean_line = self.parser.ANSI_REGEX.sub("", line)
+                    if self.parser._is_prompt(clean_line):
+                        break
             except queue.Empty:
-                if output_lines:
-                    # Got some output, can return
-                    break
+                if not wait_for_prompt and output_lines:
+                    # In non-waiting mode, implement a small grace period (0.2s)
+                    # to ensure we don't break on a tiny pause in output.
+                    if time.time() - last_data_time > 0.2:
+                        break
                 continue
 
         return output_lines
@@ -393,10 +409,8 @@ class AgentSpawner:
         if not success:
             return None
 
-        # Wait for response (TODO: smarter completion detection)
-        time.sleep(2)  # Give AI time to respond
-
-        return agent.get_output(timeout=5.0)
+        # Wait for response with smart completion detection
+        return agent.get_output(timeout=10.0, wait_for_prompt=True)
 
     def stop_all(self):
         """Stop all agents gracefully."""
