@@ -21,6 +21,7 @@ import {
   Pause,
   SkipForward,
   Timer,
+  Clock,
   Flame,
   Swords,
 } from 'lucide-react';
@@ -147,6 +148,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
+
+  const totalRemainingMinutes = useMemo(() => {
+    const totalEstimatedMinutes = optimizedTasks.reduce((sum, task) => sum + task.estimatedMinutes, 0);
+    return Math.max(0, Math.ceil(totalEstimatedMinutes - (taskTimer / 60)));
+  }, [optimizedTasks, taskTimer]);
 
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
@@ -285,6 +291,16 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
+        <Tooltip title={`Total remaining duration: ${totalRemainingMinutes} minutes`} arrow>
+          <Box
+            component="span"
+            tabIndex={0}
+            aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
+            sx={{ display: 'flex', alignItems: 'center', outline: 'none', cursor: 'help' }}
+          >
+            <Clock size={16} color={brandTokens.colors.aftercareViolet} aria-hidden="true" />
+          </Box>
+        </Tooltip>
         <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
           <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />

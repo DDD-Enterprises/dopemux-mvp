@@ -75,6 +75,14 @@ test('TaskSequencer.tsx has accessible timer with pluralization', () => {
   expect(content).toContain('const getTimerAriaLabel = (seconds: number): string =>');
 });
 
+test('TaskSequencer.tsx displays total remaining duration with accessibility', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
+  expect(content).toContain('const totalRemainingMinutes = useMemo(() =>');
+  expect(content).toContain('aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}');
+  expect(content).toContain('tabIndex={0}');
+  expect(content).toMatch(/<Tooltip[^>]*title={`Total remaining duration: \${totalRemainingMinutes} minutes`}/);
+});
+
 test('App.tsx has accessible header chips and skip link', () => {
   const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
   expect(appContent).toContain('href="#main-dashboard"');
