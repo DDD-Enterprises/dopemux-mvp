@@ -254,11 +254,13 @@ def test_ddg_and_custom_data_routes_proxy_to_conport(runtime_client, monkeypatch
         AsyncMock(return_value={"count": 1, "items": [{"key": "foo", "value": {"bar": 1}}]}),
     )
 
+    bridge_main.app.dependency_overrides[bridge_routes.get_current_user] = lambda: {"username": "admin"}
     ddg_response = runtime_client.get("/ddg/decisions", params={"workspace_id": "/workspace", "limit": 5})
     custom_response = runtime_client.get(
         "/kg/custom_data",
         params={"workspace_id": "/workspace", "category": "test", "limit": 5},
     )
+    bridge_main.app.dependency_overrides.clear()
 
     assert ddg_response.status_code == 200
     assert ddg_response.json()["items"] == [{"id": "dec_1"}]
