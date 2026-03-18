@@ -123,12 +123,11 @@ class GitHubClient:
         cached = self._cache_get(cache_key)
         if cached is not None:
             return list(cached)
+        # We want ALL non-closed PRs, including drafts
         cmd = [
             "gh",
             "pr",
             "list",
-            "--state",
-            "open",
             "--limit",
             str(limit),
             "--json",
@@ -165,6 +164,24 @@ class GitHubClient:
             raise RuntimeError("Unexpected gh pr list payload")
         self.cache[cache_key] = payload
         return payload
+
+    def ready_pr(self, pr_id: int) -> bool:
+        """Convert a draft PR to ready for review."""
+        cmd = ["gh", "pr", "ready", str(pr_id), *self._repo_args()]
+        result = self._run(cmd)
+        return result.returncode == 0
+
+    def get_authenticated_user(self) -> str:
+        """Get the login of the currently authenticated user."""
+        cached = self._cache_get("auth_user")
+        if cached:
+            return str(cached)
+        result = self._run(["gh", "api", "user", "--jq", ".login"])
+        if result.returncode != 0:
+            return ""
+        user = result.stdout.strip()
+        self.cache["auth_user"] = user
+        return user
 
     def fetch_pr(self, pr_id: int) -> Dict[str, Any]:
         cache_key = f"pr:{pr_id}"

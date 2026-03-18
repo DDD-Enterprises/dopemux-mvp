@@ -15,7 +15,7 @@ from rich.layout import Layout
 from rich.live import Live
 
 from .ux_engine import RenderMode, RichTerminalRenderer
-from .queue_drain import pr_apply, pr_merge, pr_approve
+from .queue_drain import pr_apply, pr_merge, pr_approve, pr_ready
 
 
 @dataclass
@@ -103,8 +103,14 @@ class DopemuxDashboard:
             elif tactic == "A":
                 self.log_step(f"ENGAGING APPROVAL: PR #{pr_id}", "START")
                 result = pr_approve(cmd_args, progress_callback=self.log_step)
-                self.log_step("Approval submitted.", "SUCCESS")
-                self.state.status_message = f"Approval complete for PR #{pr_id}."
+                self.log_step("Approval process complete.", "SUCCESS")
+                self.state.status_message = f"Approval action finished for PR #{pr_id}."
+                
+            elif tactic == "R":
+                self.log_step(f"ENGAGING READY: PR #{pr_id}", "START")
+                result = pr_ready(cmd_args, progress_callback=self.log_step)
+                self.log_step("PR is now OPEN.", "SUCCESS")
+                self.state.status_message = f"PR #{pr_id} marked as READY."
             else:
                 self.log_step(f"Tactic [{tactic}] not yet dashboard-instrumented.", "INFO")
                 time.sleep(1)
@@ -112,7 +118,7 @@ class DopemuxDashboard:
             if result:
                 self.state.last_action_result = result.lifecycle_state
                 # Preserve history if it exists
-                history = self.state.active_pr.get("history", [])
+                history = self.state.prs[self.state.active_index].get("history", [])
                 
                 return {
                     "pr_id": result.pr_state.pr_id,
@@ -121,6 +127,7 @@ class DopemuxDashboard:
                     "ci_status": getattr(result.pr_state, "ci_status", "UNKNOWN"),
                     "unresolved_threads": getattr(result.pr_state, "unresolved_threads", 0),
                     "risk_score": getattr(result.pr_state, "risk_score", 0.0),
+                    "is_draft": getattr(result.pr_state, "is_draft", False),
                     "history": history,
                     "merge_strategy": result.merge_decision.action if result.merge_decision else "UNKNOWN",
                     "rationale": result.merge_decision.reason if result.merge_decision else "",
@@ -172,11 +179,13 @@ class DopemuxDashboard:
                         if active:
                             lc_state = str(active.get("lifecycle_state", "discovered")).upper()
                             unresolved = int(active.get("unresolved_threads", 0))
+                            is_draft = bool(active.get("is_draft", False))
                             
-                            if "READY" in lc_state or active.get("merge_strategy") == "auto_merge_fallback":
+                            if is_draft:
+                                choice = "R"
+                            elif "READY" in lc_state or active.get("merge_strategy") == "auto_merge_fallback":
                                 choice = "I"
                             elif unresolved > 0:
-                                # PRIORITIZE PATCHING IF THREADS EXIST
                                 choice = "P"
                             elif "CONFLICT" in lc_state:
                                 choice = "S"
@@ -189,12 +198,25 @@ class DopemuxDashboard:
                     elif choice == "X":
                         self.state.auto_pilot = not self.state.auto_pilot
                         self.state.status_message = f"AUTO-PILOT: {'ENGAGED' if self.state.auto_pilot else 'DISENGAGED'}"
+                    elif choice == "B": # BULK APPROVE
+                        self.state.status_message = "ENGAGING BULK APPROVAL..."
+                        live.update(self.render())
+                        for i, pr in enumerate(self.state.prs):
+                            self.state.active_index = i
+                            active_pr_id = str(pr.get('pr_id'))
+                            self.state.status_message = f"Bulk: Approving PR #{active_pr_id}..."
+                            updated = self._execute_tactic("A", active_pr_id)
+                            if updated:
+                                self.state.prs[i] = updated
+                            live.update(self.render())
+                            time.sleep(0.5)
+                        self.state.status_message = "BULK APPROVAL COMPLETE."
                     elif choice in ("UP", "DOWN", "S"):
                         self.state.active_index = (self.state.active_index + (1 if choice != "UP" else -1)) % len(self.state.prs)
                         self.state.status_message = f"Cycled to PR #{self.state.active_pr.get('pr_id')}"
                         self.state.execution_log = []
                         self.state.last_action_result = None
-                    elif choice in ("A", "P", "I", "T", "V"):
+                    elif choice in ("A", "P", "I", "T", "V", "R"):
                         active_pr_id = str(self.state.active_pr.get('pr_id'))
                         initial_state = self.state.active_pr.get("lifecycle_state")
                         
