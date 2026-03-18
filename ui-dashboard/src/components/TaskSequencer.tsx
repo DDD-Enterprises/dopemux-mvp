@@ -147,6 +147,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return `Time elapsed: ${secLabel}`;
   };
 
+  const getDurationAriaLabel = (minutes: number): string => {
+    const label = minutes === 1 ? '1 minute' : `${minutes} minutes`;
+    return `Total remaining duration: ${label}`;
+  };
+
   const currentTask = tasks.find((task) => task.id === currentTaskId);
 
   const totalRemainingMinutes = useMemo(() => {
@@ -291,11 +296,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
-        <Tooltip title={`Total remaining duration: ${totalRemainingMinutes} minutes`} arrow>
+        <Tooltip title={getDurationAriaLabel(totalRemainingMinutes)} arrow>
           <Box
             component="span"
             tabIndex={0}
-            aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
+            aria-label={getDurationAriaLabel(totalRemainingMinutes)}
             sx={{ display: 'flex', alignItems: 'center', outline: 'none', cursor: 'help' }}
           >
             <Clock size={16} color={brandTokens.colors.aftercareViolet} aria-hidden="true" />
