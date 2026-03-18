@@ -82,11 +82,11 @@ class DopemuxDashboard:
         
         try:
             result = None
-            if tactic == "P":
-                self.log_step(f"ENGAGING PATCH ENGINE: PR #{pr_id}", "START")
+            if tactic == "P" or tactic == "T":
+                self.log_step(f"ENGAGING REMEDIATION ENGINE: PR #{pr_id}", "START")
                 result = pr_apply(cmd_args, progress_callback=self.log_step)
                 self.log_step("Patch Engine finished.", "SUCCESS")
-                self.state.status_message = f"Patch complete for PR #{pr_id}."
+                self.state.status_message = f"Remediation complete for PR #{pr_id}."
                     
             elif tactic == "I":
                 self.log_step(f"ENGAGING MERGE ENGINE: PR #{pr_id}", "START")
@@ -118,7 +118,7 @@ class DopemuxDashboard:
             if result:
                 self.state.last_action_result = result.lifecycle_state
                 # Preserve history if it exists
-                history = self.state.prs[self.state.active_index].get("history", [])
+                history = self.state.active_pr.get("history", [])
                 
                 return {
                     "pr_id": result.pr_state.pr_id,
@@ -128,8 +128,12 @@ class DopemuxDashboard:
                     "unresolved_threads": getattr(result.pr_state, "unresolved_threads", 0),
                     "risk_score": getattr(result.pr_state, "risk_score", 0.0),
                     "is_draft": getattr(result.pr_state, "is_draft", False),
+                    "validation_report": result.validation_report.to_dict() if result.validation_report else {},
                     "history": history,
-                    "merge_strategy": result.merge_decision.action if result.merge_decision else "UNKNOWN",
+                    "merge_strategy": (
+                        result.merge_strategy if hasattr(result, "merge_strategy") else 
+                        (result.merge_decision.action if result.merge_decision else "UNKNOWN")
+                    ),
                     "rationale": result.merge_decision.reason if result.merge_decision else "",
                     "blockers": [b.to_dict() for b in result.findings if str(b.kind) == "blocker"],
                     "warnings": [b.to_dict() for b in result.findings if str(b.kind) == "warning"],
@@ -198,7 +202,7 @@ class DopemuxDashboard:
                     elif choice == "X":
                         self.state.auto_pilot = not self.state.auto_pilot
                         self.state.status_message = f"AUTO-PILOT: {'ENGAGED' if self.state.auto_pilot else 'DISENGAGED'}"
-                    elif choice == "B": # BULK APPROVE
+                    elif choice == "B":
                         self.state.status_message = "ENGAGING BULK APPROVAL..."
                         live.update(self.render())
                         for i, pr in enumerate(self.state.prs):
