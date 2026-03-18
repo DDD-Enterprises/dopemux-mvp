@@ -126,6 +126,10 @@ class Finding:
     kind: FindingSeverity
     finding_type: str
     message: str
+    id: str = ""
+    severity: Optional[FindingSeverity] = None
+    category: str = ""
+    suggestion: str = ""
     details: Dict[str, Any] = field(default_factory=dict)
     source: str = ""
     override: Optional[OverrideRecord] = None
