@@ -1,0 +1,13 @@
+tool,canonical_source,supporting_sources,normalization_required,provenance_required,notes
+pm_get_project_context,ConPort,"Leantime; dope-memory",yes,yes,Durable context envelope with source-plane markers.
+pm_get_priority_queue,Task Orchestrator,Leantime,yes,yes,Workflow authority determines ordering.
+pm_get_blockers,Task Orchestrator,ConPort,yes,yes,Blockers remain workflow truth even when supported by context.
+pm_get_workflow_state,Task Orchestrator,Leantime,yes,yes,Separate workflow legality from PM-facing status.
+pm_update_work_item,Leantime,ConPort,"request and response",yes,Write tool; read-back comes from Leantime plus linked durable context.
+pm_transition_work_item,Task Orchestrator,"Leantime; dope-memory","request and response",yes,Write tool; expose workflow result plus any reflection receipts.
+pm_get_sprint_snapshot,Leantime,ConPort,yes,yes,PM operational sprint snapshot with optional context attachments.
+pm_get_decision_context,ConPort,dope-memory,yes,yes,Decision records plus linked chronicle references.
+pm_log_progress,ConPort,"Leantime; dope-memory","request and response",yes,Write tool; read-back comes from ConPort progress plus mirror receipts.
+pm_get_work_chronicle,dope-memory,"ConPort; Leantime",yes,yes,Timeline view must keep chronicle truth distinct from referenced PM/context records.
+pm_search_project_knowledge,dope-context,"ConPort; dope-memory; Leantime",yes,yes,Search results must preserve retrieval provenance and source-plane identity.
+pm_get_technical_context,Serena,"ConPort; dope-context",yes,yes,Technical context remains technical even when linked into PM work.
