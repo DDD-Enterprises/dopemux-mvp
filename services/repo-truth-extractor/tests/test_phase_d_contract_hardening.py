@@ -109,16 +109,18 @@ def test_balanced_grok_openrouter_routes_use_contract_lane_map_for_d_steps() -> 
     runner = _load_v3_module()
     runner.apply_model_overrides(runner.DEFAULT_GEMINI_MODEL_ID, "balanced_grok_openrouter")
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D0") == [
+        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
         ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D1") == [
+        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
         ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D2") == [
-        ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
-        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+        ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
     ]
 
 

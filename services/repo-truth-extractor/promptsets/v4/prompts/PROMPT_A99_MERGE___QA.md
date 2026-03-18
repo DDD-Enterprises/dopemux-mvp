@@ -207,18 +207,19 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all A-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
-2. Merge all REPO_CTRL_* artifacts into REPO_CTRL_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
-3. Run QA checks: verify all A-Phase artifacts present, coverage complete, sort order deterministic; emit REPO_CTRL_QA
-4. Cross-check coverage: verify every inventory item has corresponding extraction entries
-5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load all declared upstream A-phase artifacts and verify schema compliance, required fields, and deterministic ordering before merging.
+2. For each declared output artifact, merge only the upstream artifacts relevant to that artifact name using the registry-defined merge strategy.
+3. Emit `REPOCTRL_NORM_MANIFEST.json` as the deterministic manifest of declared outputs, including artifact name, writer step, item counts when available, checksum when derivable from input content, and evidence anchors.
+4. Emit `REPOCTRL_QA.json` as the QA artifact summarizing expected artifacts present/missing, empty-artifact detection, duplicate-ID/evidence checks, and coverage gaps.
+5. Cross-check coverage: verify every inventory item that should surface in A-phase outputs is either represented or explicitly flagged with an evidence-backed gap.
+6. For each output item, populate `id`, required fields, and `evidence` per the schema contracts in this prompt and the artifact registry.
+7. Legacy Context is intent guidance only and is never evidence.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -263,63 +264,14 @@ Focus on concrete, machine-verifiable implementation facts.
 Phase: A
 Step: A99
 
-Outputs:
-- REPO_INSTRUCTION_SURFACE.json
-- REPO_INSTRUCTION_REFERENCES.json
-- REPO_MCP_SERVER_DEFS.json
-- REPO_MCP_PROXY_SURFACE.json
-- REPO_ROUTER_SURFACE.json
-- REPO_HOOKS_SURFACE.json
-- REPO_IMPLICIT_BEHAVIOR_HINTS.json
-- REPO_COMPOSE_SERVICE_GRAPH.json
-- REPO_LITELLM_SURFACE.json
-- REPO_TASKX_SURFACE.json
-- REPOCTRL_NORM_MANIFEST.json
-- REPOCTRL_QA.json
-
-Mode: merge_qa
-Strict: evidence_only
-Format: JSON only (no markdown fences)
+Intent summary:
+- Merge upstream A-phase artifacts into the exact declared output artifact names for this step.
+- Produce a deterministic manifest artifact (`REPOCTRL_NORM_MANIFEST.json`).
+- Produce a deterministic QA artifact (`REPOCTRL_QA.json`) summarizing presence, gaps, and merge quality.
 
 Hard rules:
-1) Do NOT invent. If not present, write "UNKNOWN".
-2) Every non-trivial field must include "evidence" with source_path and either key_path or excerpt.
-3) Emit ONLY valid JSON. No commentary.
-
-Input:
-You will receive raw outputs from steps A0-A99. Merge and normalize into the exact output artifact names above.
-Summarize only what is present.
-
-Required JSON shape:
-{
-  "artifact": "REPOCTRL_NORM_MANIFEST.json",
-  "phase": "A",
-  "step": "A99",
-  "generated_at": "<iso8601>",
-  "items": [
-    {
-      "id": "manifest:<artifact_name>",
-      "artifact_name": "...",
-      "count": 0,
-      "sha256": "...",
-      "evidence": [
-        {
-          "source_path": "...",
-          "key_path": "...",
-          "excerpt": "..."
-        }
-      ]
-    }
-  ],
-  "unknowns": ["..."]
-}
-
-Task:
-1) Produce deterministic manifest of artifacts (name/count/sha256 when available).
-2) Produce REPOCTRL_QA.json with:
-- expected artifacts present/missing by filename
-- empty artifact detection (0 items)
-- duplicate evidence detection
-- partition coverage counts (ok/failed)
-- parse failures refere
+1) Do NOT invent. If not present, write `UNKNOWN`.
+2) Every non-trivial field must include evidence with exact source anchors.
+3) Emit ONLY the declared artifact names and keep them deterministic.
+4) Legacy examples must never override the schema, outputs, or determinism rules above.
 ```

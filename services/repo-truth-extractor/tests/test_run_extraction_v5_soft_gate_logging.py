@@ -57,13 +57,13 @@ def test_soft_gate_events_include_denominator_math_and_states(tmp_path: Path) ->
     ui.soft_gate_event(
         status="fallback_started",
         action="strict_fallback_batch",
-        fallback_route="openrouter/openai/gpt-5.2",
+        fallback_route="openrouter/openai/gpt-5.4",
         **common,
     )
     ui.soft_gate_event(
         status="fallback_done",
         action="strict_fallback_batch_done",
-        fallback_route="openrouter/openai/gpt-5.2",
+        fallback_route="openrouter/openai/gpt-5.4",
         remaining_failed=2,
         **common,
     )
