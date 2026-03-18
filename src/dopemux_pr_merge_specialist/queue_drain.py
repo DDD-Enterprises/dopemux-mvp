@@ -32,7 +32,6 @@ from .thread_resolution import (
     has_resolution_signal,
     is_implementable_comment,
     decide_thread_disposition,
-    extract_suggestion_block,
     graphql_escape,
     graph_reply_to_thread,
     graph_resolve_thread,
@@ -47,6 +46,7 @@ from .conflict import (
     resolve_conflict_markers,
     apply_suggestion_to_file,
     comment_prefers_conflict_side,
+    extract_suggestion_block,
     conflict_files,
     pr_changed_files,
     scan_files_for_conflict_markers,
@@ -202,6 +202,85 @@ def pr_plan(args: argparse.Namespace) -> int:
     print(f"Plan artifacts: {pr_dir}")
     return 0
 
+def remediate_ci_failure(worktree_path: Path, validation_report: ValidationReport, log: Callable, timeout_seconds: int = 120) -> bool:
+    failed_steps = [s for s in validation_report.steps if s.status == "failed"]
+    if not failed_steps:
+        return False
+        
+    step = failed_steps[0]
+    log(f"Analyzing CI failure from step '{step.name}'...")
+    
+    error_output = (step.stderr or step.stdout or "No output available")[-4000:]
+    
+    prompt = f"""
+You are an expert developer fixing a CI failure. 
+The following command failed: {step.command}
+
+Output/Error:
+```
+{error_output}
+```
+
+Identify the files to fix, and output ONLY valid bash commands to apply the fix (e.g., using sed, perl, python -c, or echo) in the current directory.
+DO NOT include any markdown formatting, explanations, or backticks around the script. Output the raw bash script.
+"""
+    
+    log("Calling AI to synthesize a fix...")
+    
+    import subprocess
+    try:
+        process = subprocess.Popen(
+            ["gemini", "chat", "--system", prompt],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            cwd=worktree_path,
+        )
+        stdout, stderr = process.communicate(input="Please generate the bash script to fix this.", timeout=timeout_seconds)
+    except Exception as e:
+        log(f"AI invocation failed: {e}", "ERROR")
+        return False
+        
+    if process.returncode != 0:
+        log("AI failed to generate a fix.", "ERROR")
+        return False
+        
+    fix_script = stdout.strip()
+    if not fix_script:
+        log("AI returned an empty fix.", "ERROR")
+        return False
+        
+    # Remove markdown code blocks if AI included them despite instructions
+    fix_script = re.sub(r"^```(bash|sh)?\n?", "", fix_script, flags=re.IGNORECASE)
+    fix_script = re.sub(r"\n?```$", "", fix_script)
+    fix_script = fix_script.strip()
+    
+    log("Applying synthesized fix...")
+    
+    fix_path = worktree_path / ".dopemux_ci_fix.sh"
+    fix_path.write_text(fix_script)
+    fix_path.chmod(0o755)
+    
+    try:
+        apply_result = subprocess.run(
+            [str(fix_path)],
+            cwd=worktree_path,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except Exception as e:
+        log(f"Fix application failed: {e}", "ERROR")
+        return False
+        
+    if apply_result.returncode != 0:
+        log("Synthesized fix failed to resolve the issue.", "ERROR")
+        return False
+        
+    log("AI fix applied successfully.", "SUCCESS")
+    return True
+
 def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str, str], None]] = None) -> PRResult:
     def log(msg: str, s_type: str = "INFO"):
         if progress_callback:
@@ -285,6 +364,31 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
             ),
             progress_callback=progress_callback
         )
+        
+        if not validation.passed and execute:
+            log("Validation failed, attempting AI remediation...")
+            if remediate_ci_failure(worktree_path, validation, log):
+                log("Re-running validation suite after AI fix...", "START")
+                validation = run_validation(
+                    repo_root=repo_root,
+                    worktree_path=worktree_path,
+                    policy=policy,
+                    execute=execute,
+                    commands_log=commands_log,
+                    pr_id=pr.pr_id,
+                    head_sha=pr.head_sha,
+                    base_sha=pr.base_sha,
+                    policy_fingerprint=policy_fingerprint(policy),
+                    lifecycle_state=(
+                        pr.lifecycle_state.value
+                        if hasattr(pr.lifecycle_state, "value")
+                        else str(pr.lifecycle_state)
+                    ),
+                    progress_callback=progress_callback
+                )
+                if validation.passed:
+                    log("Committing AI remediation fix...")
+                    stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy)
         
         if validation.passed:
             log("Validation PASSED", "SUCCESS")

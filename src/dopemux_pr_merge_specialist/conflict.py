@@ -78,6 +78,7 @@ __all__ = [
     "resolve_conflict_markers",
     "apply_suggestion_to_file",
     "comment_prefers_conflict_side",
+    "extract_suggestion_block",
     "conflict_files",
     "pr_changed_files",
     "scan_files_for_conflict_markers",
@@ -106,6 +107,12 @@ def comment_prefers_conflict_side(body: str) -> Optional[str]:
     if "after <code>=======</code>" in lowered or "keep the other side" in lowered:
         return "theirs"
     return None
+
+def extract_suggestion_block(body: str) -> Optional[str]:
+    match = re.search(r"```suggestion\s*(.*?)```", body, re.DOTALL | re.IGNORECASE)
+    if not match:
+        return None
+    return match.group(1).strip("\n")
 
 
 def read_file_at_ref(worktree_path: Path, ref: str, rel_path: str) -> Optional[str]:

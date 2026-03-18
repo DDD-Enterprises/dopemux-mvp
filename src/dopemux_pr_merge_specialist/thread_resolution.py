@@ -92,7 +92,6 @@ __all__ = [
     "has_resolution_signal",
     "is_implementable_comment",
     "decide_thread_disposition",
-    "extract_suggestion_block",
     "graphql_escape",
     "graph_reply_to_thread",
     "graph_resolve_thread",
@@ -201,13 +200,6 @@ def decide_thread_disposition(
         reason="Suggestion is not safely auto-applicable; posting rationale and resolving.",
         path=path,
     )
-
-
-def extract_suggestion_block(body: str) -> Optional[str]:
-    match = re.search(r"```suggestion\s*(.*?)```", body, re.DOTALL | re.IGNORECASE)
-    if not match:
-        return None
-    return match.group(1).strip("\n")
 
 
 def graphql_escape(value: str) -> str:
@@ -328,7 +320,8 @@ def apply_thread_dispositions(
             if execute:
                 append_command_log(
                     commands_log,
-                    graph_reply_to_thread(
+                    _execute_thread_graphql(
+                        graph_reply_to_thread,
                         disposition.thread_id,
                         "Automated queue-drain applied a minimal fix and will run verification before merge.",
                         repo_root=repo_root,
@@ -337,7 +330,8 @@ def apply_thread_dispositions(
                 )
                 append_command_log(
                     commands_log,
-                    graph_resolve_thread(
+                    _execute_thread_graphql(
+                        graph_resolve_thread,
                         disposition.thread_id,
                         repo_root=repo_root,
                         timeout_seconds=timeout_seconds,
@@ -357,7 +351,8 @@ def apply_thread_dispositions(
             if execute:
                 append_command_log(
                     commands_log,
-                    graph_reply_to_thread(
+                    _execute_thread_graphql(
+                        graph_reply_to_thread,
                         disposition.thread_id,
                         "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
                         repo_root=repo_root,
@@ -366,7 +361,8 @@ def apply_thread_dispositions(
                 )
                 append_command_log(
                     commands_log,
-                    graph_resolve_thread(
+                    _execute_thread_graphql(
+                        graph_resolve_thread,
                         disposition.thread_id,
                         repo_root=repo_root,
                         timeout_seconds=timeout_seconds,
@@ -386,7 +382,8 @@ def apply_thread_dispositions(
             if execute:
                 append_command_log(
                     commands_log,
-                    graph_reply_to_thread(
+                    _execute_thread_graphql(
+                        graph_reply_to_thread,
                         disposition.thread_id,
                         "Outdated thread auto-resolved after re-validation with no newer objections.",
                         repo_root=repo_root,
@@ -395,7 +392,8 @@ def apply_thread_dispositions(
                 )
                 append_command_log(
                     commands_log,
-                    graph_resolve_thread(
+                    _execute_thread_graphql(
+                        graph_resolve_thread,
                         disposition.thread_id,
                         repo_root=repo_root,
                         timeout_seconds=timeout_seconds,
