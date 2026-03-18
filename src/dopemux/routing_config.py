@@ -354,3 +354,14 @@ class RoutingConfig:
     def is_subscription_mode(cls) -> bool:
         """Check if routing is in subscription mode (direct to Anthropic)."""
         return cls.get_mode() == "subscription"
+
+    def get_ports(self) -> Dict[str, int]:
+        """Get the configured ports.
+
+        Returns:
+            Dictionary of port names and numbers
+        """
+        if not self._loaded:
+            self.load()
+        return self.config.get("ports", {})
+

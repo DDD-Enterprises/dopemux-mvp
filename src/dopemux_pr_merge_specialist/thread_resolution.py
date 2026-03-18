@@ -11,10 +11,10 @@ from collections import defaultdict, deque
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
-
 from .conflict import (
     apply_suggestion_to_file,
     build_conflict_analysis,
+    comment_prefers_conflict_side,
     conflict_excerpt,
     conflict_files,
     maybe_sync_canonical_file,
@@ -90,7 +90,6 @@ __all__ = [
     "contains_marker",
     "has_newer_objection",
     "has_resolution_signal",
-    "comment_prefers_conflict_side",
     "is_implementable_comment",
     "decide_thread_disposition",
     "extract_suggestion_block",
@@ -133,26 +132,6 @@ def has_resolution_signal(thread: ReviewThread, policy: Dict[str, Any]) -> bool:
         if contains_marker(comment.body, markers):
             return True
     return False
-
-
-def comment_prefers_conflict_side(body: str) -> Optional[str]:
-    lowered = html.unescape(body).lower()
-    if "<<<<<<< head" not in lowered and "conflict marker" not in lowered:
-        return None
-    head_markers = [
-        "keep the head side",
-        "from the <code>head</code> side",
-        "keep the current main version",
-        "keep the current version",
-        "keep the wrapper implementation already in head",
-        "between <code><<<<<<< head</code> and <code>=======</code>",
-        "under <code><<<<<<< head</code>",
-    ]
-    if any(marker in lowered for marker in head_markers):
-        return "head"
-    if "after <code>=======</code>" in lowered or "keep the other side" in lowered:
-        return "theirs"
-    return None
 
 
 def is_implementable_comment(

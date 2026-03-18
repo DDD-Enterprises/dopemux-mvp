@@ -77,6 +77,7 @@ __all__ = [
     "maybe_sync_canonical_file",
     "resolve_conflict_markers",
     "apply_suggestion_to_file",
+    "comment_prefers_conflict_side",
     "conflict_files",
     "pr_changed_files",
     "scan_files_for_conflict_markers",
@@ -85,6 +86,26 @@ __all__ = [
     "build_conflict_analysis",
     "recommend_conflict_strategy",
 ]
+
+
+def comment_prefers_conflict_side(body: str) -> Optional[str]:
+    lowered = html.unescape(body).lower()
+    if "<<<<<<< head" not in lowered and "conflict marker" not in lowered:
+        return None
+    head_markers = [
+        "keep the head side",
+        "from the <code>head</code> side",
+        "keep the current main version",
+        "keep the current version",
+        "keep the wrapper implementation already in head",
+        "between <code><<<<<<< head</code> and <code>=======</code>",
+        "under <code><<<<<<< head</code>",
+    ]
+    if any(marker in lowered for marker in head_markers):
+        return "head"
+    if "after <code>=======</code>" in lowered or "keep the other side" in lowered:
+        return "theirs"
+    return None
 
 
 def read_file_at_ref(worktree_path: Path, ref: str, rel_path: str) -> Optional[str]:

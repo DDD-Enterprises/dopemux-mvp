@@ -25,8 +25,36 @@ from .preflight import preflight, manifest_for_run, write_manifest, build_run_pa
 from .plan_builder import artifact_meta, decision_basis_payload, plan_fingerprint, findings_from_pr_state, truth_sources_for, summarize_findings, explain_findings, build_plan_result, render_operator_summary, write_pr_state_artifact, _inflate_pr_result
 from .classification import _status_value, _severity_value, _state_value, ensure_transition, classify_pr, risk_score, build_pr_state, lifecycle_for_findings, has_conflicts, CLASS_PRIORITY, VALID_TRANSITIONS, TRUTH_PRECEDENCE
 from .queue import parse_pr_id_args, priority_key, build_dependency_edges, sort_states, apply_priority_preferences, snapshot_payload, require_clean_worktree, acquire_queue_lock, release_queue_lock, QUEUE_LOCK_PATH
-from .thread_resolution import latest_comment, contains_marker, has_newer_objection, has_resolution_signal, comment_prefers_conflict_side, is_implementable_comment, decide_thread_disposition, extract_suggestion_block, graphql_escape, graph_reply_to_thread, graph_resolve_thread, _graphql_mutation_ok, _is_rate_limited, _execute_thread_graphql, apply_thread_dispositions
-from .conflict import read_file_at_ref, maybe_sync_canonical_file, resolve_conflict_markers, apply_suggestion_to_file, conflict_files, pr_changed_files, scan_files_for_conflict_markers, conflict_excerpt, recent_file_history, build_conflict_analysis, recommend_conflict_strategy
+from .thread_resolution import (
+    latest_comment,
+    contains_marker,
+    has_newer_objection,
+    has_resolution_signal,
+    is_implementable_comment,
+    decide_thread_disposition,
+    extract_suggestion_block,
+    graphql_escape,
+    graph_reply_to_thread,
+    graph_resolve_thread,
+    _graphql_mutation_ok,
+    _is_rate_limited,
+    _execute_thread_graphql,
+    apply_thread_dispositions,
+)
+from .conflict import (
+    read_file_at_ref,
+    maybe_sync_canonical_file,
+    resolve_conflict_markers,
+    apply_suggestion_to_file,
+    comment_prefers_conflict_side,
+    conflict_files,
+    pr_changed_files,
+    scan_files_for_conflict_markers,
+    conflict_excerpt,
+    recent_file_history,
+    build_conflict_analysis,
+    recommend_conflict_strategy,
+)
 from .merge import checks_green, wait_for_green_checks, checks_blocker_reason, decide_merge_action, run_merge_with_fallback, serialize_check_payload
 from .worktree import prepare_worktree, cleanup_worktree, ensure_worktree_matches_pr_head, attempt_rebase
 
