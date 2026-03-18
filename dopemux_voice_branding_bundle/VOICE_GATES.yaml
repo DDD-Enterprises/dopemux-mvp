@@ -1,0 +1,23 @@
+version: 2
+name: dopemux_voice_gates_v2
+
+lexical_gates:
+  hard_avoid_phrases:
+    - "as an ai"
+    - "probably"
+    - "maybe"
+    - "generally speaking"
+  soft_avoid_phrases:
+    - "no worries"
+    - "it's okay"
+    - "don't worry"
+    - "hope you're doing well"
+  required_closers:
+    - "NEXT:"
+    - "Next:"
+    - "Receipt:"
+    - "PROGRESS"
+
+structure_gates:
+  require_fact_inference_split_for_nontrivial_claims: true
+  require_unknown_todo_instead_of_guessing: true

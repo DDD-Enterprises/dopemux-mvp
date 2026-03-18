@@ -1,0 +1,188 @@
+---
+id: CHEAT_SHEET
+title: Cheat Sheet
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-18'
+last_review: '2026-03-18'
+next_review: '2026-06-16'
+prelude: Cheat Sheet (reference) for dopemux documentation and developer workflows.
+---
+# Commands & CLI Cheat Sheet (extracted)
+
+- `json`
+- `{`
+- `"id": "msg_...",`
+- `"conversation_id": "conv_...",`
+- `"platform": "imessage|instagram|whatsapp|txt",`
+- `"sender": {"id":"p_...", "display":"..."},`
+- `"timestamp": "2025-08-14T15:00:00Z",`
+- `"text": "string",`
+- `"attachments": [{"type":"image|video|file|link","ref":"path|url"}],`
+- `"reactions": [{"from":"p_...","kind":"like|heart|..."}],`
+- `"meta": {"source_file":"...", "page":12, "line":34}`
+- `}`
+- `Error model`
+- `"error": "BadRequest|Internal|NotFound",`
+- `"code": "INVALID_INPUT|INGEST_FAIL|EMBED_FAIL|QUERY_TIMEOUT",`
+- `"detail": "human-readable",`
+- `"hint": "actionable next step",`
+- `"context": {"run_id":"r_...", "source_id":"..."}`
+- `SLAs & Limits`
+- `CLI has no SLA.`
+- `If HTTP API is enabled in M2: requests MUST complete ≤ 60s or stream partials.`
+- `Python primary.`
+- `ChatX Architecture`
+- `Python with uv; packaged CLI; optional docker for reproducibility.`
+- `chatx ingest <path> [--type imessage|instagram|whatsapp|txt] [--source-id <label>] [--tz <IANA>] [--dry-run]`
+- `chatx reindex [--targets messages|sessions|insights|all] [--force]`
+- `chatx query "<question>" [--conv <id>|--participant <id>|--since <date>|--until <date>] [--k <int>] [--local-only] [--model <name>]`
+- `chatx simulate --scenario <path|json> [--conv <id>] [--local-only]`
+- `chatx reply --message-id <id> [--style <profile>] [--local-only]`
+- `chatx export [--format json|parquet] [--out <path>]`
+- `chatx admin vacuum|migrate|check|stats`
+- `chatx ingest on each`
+- `chatx query`
+- `chatx simulate`
+- `chatx reply`
+- `Python 3.11+`
+- `uv
+CLI: Typer`
+- `mypy strict`
+- `Python and JavaScript, you can craft a powerful development stack that integrates cutting-edge AI assistance, robust frameworks, and efficient workflows. Below, we explore the best command-line tools, IDEs, and software for AI-augmented development (including the emerging “vibe coding” paradigm) and outline a comprehensive plan (Definition of Done) to set up your project environment.`
+- `git or ffmpeg command.`
+- `Git in CLI: Mastering Git is crucial, and there are tools to make it easier. GitHub CLI (gh) lets you interact with GitHub from terminal (opening pull requests, issues, viewing logs). For a TUI (text UI) approach, Lazygit provides an interactive terminal UI to stage, commit, and browse history with keypresses ￼. You might also install forgit, a zsh plugin that uses fzf to interactively pick changes for git commands (e.g. select hunks to add) ￼. To automate quality checks, set up pre-commit hooks (with the pre-commit framework ￼) so that linters and tests run before you push code.`
+- `git repository for context ￼. For example, you can tell Aider “upgrade this project to Django 4.2 and fix any import issues,” and it will modify the files accordingly, then automatically commit the changes with an AI-generated message ￼ ￼. This makes it a close (free) analog to Copilot’s chat, directly in your workflow ￼ ￼. Other helpful AI CLI tools include aicommits or OpenCommit for generating commit messages from diff (these use OpenAI under the hood) ￼ ￼, and CLI chat tools (like aichat or yai) that let you query various AI models from your terminal for quick answers ￼ ￼. With these, you can ask something like yai "Explain what this shell script does" and get an explanation right in the terminal.`
+- `Docker Desktop (now Apple Silicon native) or UTM (for running VMs on Apple’s hypervisor ￼) allow you to simulate cloud environments locally. This is useful if your stack includes services like databases or if you want to test on Linux in a VM.`
+- `Python extension (Microsoft) and ESLint/Prettier for JavaScript to get immediate feedback on code issues and consistent formatting. For GitHub integration, GitLens is invaluable – it shows line-by-line blame, commit history, and makes navigating your Git repo easier. If you work with containers or cloud, use Dev Containers extension or Remote - SSH to develop in isolated environments. There’s also a GitHub Pull Requests extension to manage PRs within VS Code.`
+- `make PyCharm or IntelliJ a strong option if VS Code doesn’t meet your needs.`
+- `Git hooks (via pre-commit framework) can even be set up to invoke these AI commit tools automatically on commit, subject to your approval.`
+- `Python & JavaScript)`
+- `Python and JavaScript and the need to build two backend systems and web apps, you’ll likely be working across a full-stack application. Here’s a recommended stack that balances open-source flexibility with modern developer experience, taking advantage of your Mac’s capabilities:`
+- `Python type hints) and automatic interactive docs. FastAPI is excellent for AI applications because it easily integrates with libraries like Pydantic for data validation and has great async support for handling many requests (useful if your service calls AI models which might be IO-bound). An alternative is Django (or its lightweight cousin Flask), but FastAPI will feel more modern and is very performant. With FastAPI, you can run an ASGI server (Uvicorn) locally for development and later deploy to the cloud (it’s cloud-agnostic: works on AWS, GCP, etc., or containers). Since your Mac is ARM-based, you’ll be happy to know Python libraries (even heavy ones like NumPy, PyTorch, TensorFlow) have Apple Silicon builds now – e.g., PyTorch uses Apple’s Metal acceleration (MPS), allowing you to train or fine-tune models on the GPU if needed. Ensure you install the conda or pip Apple silicon versions of these libraries for optimal performance. For instance, if you plan to do any ML locally, pip install torch -U should fetch the darwin (macOS) wheel with MPS support.`
+- `Python and JS, using a GraphQL layer (via Apollo Server or Hasura) or a simple REST interface can connect the two backends if they need to talk to each other. For example, your FastAPI service could provide AI-focused endpoints (e.g. vector search, model inference), and your Node/Next.js app could call those endpoints to power the user-facing features. This separation of concerns (AI logic in Python, web frontend in JS) plays to each language’s strengths.`
+- `AWS (paid) or using OpenAI’s API (if you rely on GPT-4 in production). We recommend sticking to open-source for core components (so you’re not locked in): e.g. use Docker to containerize your app and Terraform or Pulumi (both have open source versions) to script cloud infrastructure, if needed. This ensures your project can run on any cloud or on-prem. Your Mac is powerful enough to run the entire stack locally in Docker for development. Tools like Docker Compose can define a multi-container setup (database, backend, frontend) that mirrors production, which you can run on your Mac for testing.`
+- `Python and JavaScript, so you can use it on your FastAPI backend or in a Node environment (there’s a LangChain.js for Node/TS) ￼. This means both parts of your stack can leverage similar abstractions for AI. For example, you could use LangChain in Python to handle a user query by retrieving relevant data then calling an LLM, or use it in Node to orchestrate a multi-step form-filling AI agent.`
+- `Python library (can run in-memory or as a persistent DB) great for prototypes. FAISS (from Facebook) is a library for efficient similarity search; many frameworks use it under the hood. If you need a more scalable solution or one accessible from both Python and JS, consider Weaviate or Milvus (open source vector DB servers), or managed services like Pinecone (hosted, proprietary) if convenience trumps openness.`
+- `pip install, no separate service needed) and later move to a more robust solution if needed.`
+- `Python FastAPI endpoint, which then uses LangChain to: (1) embed the question, (2) query the vector store for relevant context documents (say, product specs or user data), (3) construct a prompt combining the context and question, and (4) call an LLM (OpenAI’s GPT-4 or a local model via Ollama) to get an answer. LangChain’s abstractions will help you implement this logic without needing to reinvent the wheel for each step. It also supports advanced patterns like agents – where the LLM can choose actions (like calling a tool or making a calculation). Indeed, by late 2024 there’s a trend of moving from simple retrieval QA bots to more agentic AI apps that perform multi-step reasoning and tool usage ￼ ￼. If your product might benefit from that (e.g., an AI that not only answers questions but also triggers certain functions), LangChain’s agent framework (or its newer LangGraph variant) can be explored. Keep in mind these are cutting-edge capabilities and can add complexity; it’s often wise to start with straightforward Q&A or text-generation features and incrementally add complexity.`
+- `Python version management, if needed), Node Version Manager (nvm) for Node.js, Docker, etc. Ensure Python 3.11+ and Node.js (LTS, e.g. 18 or 20) are installed and working. Do a quick check: python3 --version and node --version should show expected outputs.`
+- `brew install lazygit) and try running lazygit in a git repo to ensure it works.`
+- `Python virtual environment (via python -m venv .venv or using pyenv). Activate it and install FastAPI (or your chosen framework) and uvicorn server (pip install fastapi uvicorn[standard]). Also install LangChain (pip install langchain) and a vector store for development like Chroma (pip install chromadb) or FAISS (pip install faiss-cpu). If you plan to use OpenAI API, install openai Python package and set up your API key as an environment variable. Initialize a FastAPI app file (e.g., main.py with a simple hello world endpoint) and a basic LangChain usage example (perhaps a route that calls OpenAI to repeat a message). Test running the server: uvicorn main:app --reload. Verify in browser or curl that the endpoint works. This confirms your Python env is functional. Commit this baseline.`
+- `Node project. If using Next.js, run npx create-next-app@latest or if using another framework, set it up accordingly (e.g., npm init astro or npx create-react-app if going pure React). Install any additional libraries you know you’ll use (UI library, etc.): e.g. npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion for Chakra UI. Ensure the dev server runs: npm run dev and open localhost to see the default page. If Next.js, also create an api/hello.ts route and test it returns data (just to mirror having an API route). Commit the initial frontend.`
+- `Python back-end. If both are on localhost different ports, you might proxy API calls in Next.js (using Next.js rewrite or just direct fetch calls to http://localhost:8000 where FastAPI runs). Implement a small integration: for example, have the Next.js app fetch from FastAPI’s hello endpoint and display it. This tests the full loop. You might need to enable CORS in FastAPI for localhost – use from fastapi.middleware.cors import CORSMiddleware to allow your dev origin. Once connected, commit those changes.`
+- `Python script or notebook. The goal is to verify that you can generate embeddings and that the vector DB works on your machine. (Chroma runs in-process; for others like Weaviate you’d need to run a service – which you could do via Docker if needed).`
+- `npm concurrently to start both, or simply two terminal panes (here’s where tmux or Warp split panes help). For instance, create an npm run dev-all that runs uvicorn and next dev in parallel (if using PM2 or concurrently). Alternatively, use VS Code Tasks: define tasks in .vscode/tasks.json to launch the Python server and JS dev server, and a compound task to run both. This way, with one command (or VS Code startup) you can get your whole system running.`
+- `Python files and ESLint on JS files on commit. Run pre-commit install to activate git hooks. Also, write a couple of basic tests (e.g., one PyTest for a sample Python function, one Jest test for a React component) to ensure your testing setup works. This will be part of DoD to have a testing framework in place. If using GitHub Actions, add a simple CI workflow YAML that runs these tests on push.`
+- `Python side).`
+- `git commit and get a well-formatted commit message suggestion from your AI tool, then push and see CI pass (indicating linters/tests are properly configured).`
+- `Docker can build images (test by building a simple container for your app), the Apple Metal acceleration is detected by ML frameworks (test with a quick PyTorch tensor operation on MPS), and no dependency is broken on ARM (most mainstream ones have been fixed by 2024).`
+- `ChatX using your AI-dev research to lock the toolchain, workflow, and baseline specs.`
+- `ChatX
+Status: Draft | Owner: You | Last Updated: 2025-08-14 PT`
+- `Docker image.`
+- `chatx ingest <path> [--type imessage|instagram|whatsapp|txt] [--source-id <label>] [--tz <IANA>] [--dry-run]``
+- `chatx reindex [--targets messages|sessions|insights|all] [--force]``
+- `chatx query "<question>" [--conv <id>|--participant <id>|--since <date>|--until <date>] [--k <int>=32] [--local-only] [--model <name>]``
+- `chatx simulate --scenario <path|json> [--conv <id>] [--seed <int>] [--local-only]``
+- `chatx reply --message-id <id> [--style <profile>] [--local-only]``
+- `chatx export [--format json|parquet] [--out <path>]``
+- `chatx admin vacuum|migrate|check|stats``
+- `chatx ingest` on each`
+- `chatx query "Who de-escalates conflicts most often?"``
+- `chatx simulate``
+- `chatx reply``
+- `Python pipeline that processes iMessage-extracted PDFs (you’re on the right, they’re on the left), converts to structured message blocks, runs the full DØPEMÜX forensic stack, and integrates with GPT-5 via the OpenAI Responses API using File Search—for both schema-tagging and downstream RAG-style question answering.`
+- `Python script (e.g. `chat_pipeline.py`) will serve as the entry point. Running `python chat_pipeline.py <input_pdf> [options]` will kick off the analysis. The input PDF path is the primary required argument.`
+- `python
+def main():`
+- `make it traceable (you can trace a summary claim in Phase 3 back to message\_ids in Phase 1). We enforce traceability also through citations (`map_refs`) everywhere as per schema, so nothing in the analysis is ungrounded.`
+- `chatx run --all|--phase {1|2|3|4} [--resume-from <phase>]`
+- `chatx ingest <pdf> [--use-ocr] [--tz <IANA>] [--out <dir>]`
+- `chatx assemble --retriever local|file-search [--allow-cloud]`
+- `chatx rollup --retriever local|file-search [--allow-cloud]`
+- `chatx audit [--strict]`
+- `chatx query "<question>" [--retriever local|file-search] [--allow-cloud] [--k 32] [--local-only]`
+- `chatx config get|set KEY=VALUE`
+- `chatx run --all`
+- `make sure that our tooling and memory store are appropriate for this data (single chats) and let's make sure everything is thought through from the ground up`
+- `make the conversation more natural for the AI to consume. (If multiple people react to the same message in a group chat, each will be an entry; we’d aggregate those into a combined annotation.) If needed, we can detect removed or changed reactions by their types (Apple uses 3000–3005 for reaction removal`
+- `make sure syncing is paused to get a consistent snapshot.`
+- `Python ijson library can stream parse large JSON if needed). In many cases it might be fine to load into memory (a few hundred MB JSON is okay on modern systems), but we note this as a design consideration. We also drop unneeded columns early (as Haziq’s analysis did, dropping heavy fields like images, videos from the DataFrame)`
+- `make browsing easier.`
+- `Python (with sqlite3 module) or an appropriate tool to execute the queries, and Python’s JSON libraries for Instagram. No special proprietary tools are required, though installing the SQLite CLI or a GUI can be useful for debugging`
+- `Python script or a small Rust program, etc.). Given one user already built a Rust tool covering all iMessage features`
+- `ChatX
+Status: Draft | Owner: You | Last Updated: 2025-08-15 PT`
+- `ChatX Extraction & Memory Architecture`
+- `chatx imessage pull --contact "<phone|email|name>" [--include-attachments] [--db ~/Library/Messages/chat.db] [--out ./out]`
+- `chatx instagram pull --contact "<username>" --zip ./instagram-data.zip [--include-attachments] [--out ./out]`
+- `chatx transform --input ./out/raw/*.json --to jsonl [--chunk by=date|turns:20] [--contact "<key>"]`
+- `chatx index --input ./out/chunks/*.json --store chroma [--collection chatx]`
+- `chatx query "<question>" --contact "<key>" [--since 2024-01-01] [--retriever local|cloud] [--k 32]`
+- `chatx imessage pull --contact "<id>" --include-attachments`
+- `chatx instagram pull --contact "<user>"`
+- `chatx transform --to jsonl`
+- `chatx index and chatx query "What did we decide about rent?" --contact "<key>"`
+- `make it configurable.`
+- `chatx redact --input ./out/chunks/*.json --policy ./redact.yml [--pseudonymize] [--salt-file ./salt.key] [--report ./out/redaction_report.json]`
+- `chatx index --input ./out/redacted/*.json --store chroma [--collection chatx]`
+- `chatx query "<question>" --contact "<key>" [--since 2024-01-01] [--retriever local|cloud] [--k 32] [--allow-cloud] [--pii-strict fail|warn]`
+- `chatx preflight cloud --input ./out/redacted/*.json --threshold 0.999`
+- `chatx query "…" --allow-cloud`
+- `make sure the system can reversably tran sform substance or other crimes back but the plaveholder obscures the meaning`
+- `chatx redact --input ./out/chunks/*.json --policy ./redact.yml --pseudonymize --opaque --salt-file ./salt.key --threshold 0.995 --strict=false --report ./out/redaction_report.json`
+- `chatx preflight cloud --input ./out/redacted/*.json --threshold 0.995 --hardfail-classes csam,violence_extreme`
+- `chatx query "<q>" --contact "<key>" --retriever local|cloud --allow-cloud --threshold 0.995 [--strict]`
+- `chatx tokens inspect --ledger ./out/token_ledger.json --id <id8>`
+- `chatx tokens export --ledger ./out/token_ledger.json --format csv`
+- `chatx query ... --retriever cloud --allow-cloud`
+- `chatx redact --opaque runs`
+- `make sure we are following the ideal process for processing these messsages using the cloud llm to pull extra. meaning`
+- `chatx enrich messages --contact "<key>" [--since <date>] [--until <date>] --allow-cloud --threshold 0.995 [--strict] [--batch 100] [--model <name>]`
+- `chatx enrich units --contact "<key>" [--window turns:50] --allow-cloud --threshold 0.995 [--strict]`
+- `chatx enrich messages --allow-cloud`
+- `chatx enrich commands and wire to Policy Shield.`
+- `make reccomendatiobns of the tech stack and rough design`
+- `make sense of context in each chunk.`
+- `Python is a pragmatic choice, given the rich ecosystem for both NLP and CLI development. Below are suggested technologies for each component of the pipeline:`
+- `Python with a library like Typer or Click to create a user-friendly command-line interface. This allows commands such as ingest, query, analyze, etc., with options for specifying files or questions.`
+- `Python string processing and NLP libraries for cleaning. For PII removal, consider using regex for patterns like emails, phone numbers, or use a tool like Microsoft Presidio (an open-source PII scrubbing library). For content filtering, you might incorporate Hugging Face transformers with a small model (e.g., a RoBERTa-based toxicity classifier) to flag and remove toxic content. This can be supplemented with a curated list of forbidden phrases (for extreme cases). Ensure this step outputs a cleaned version of text that is still intelligible for analysis but omits problematic elements.`
+- `Python library (chromadb) to create and persist the vector store. You can initialize a Chroma collection for the conversations, and add documents as you process them. Each document would include the embedding and metadata (like an ID, speaker, maybe a conversation ID if multiple conversations). Chroma can save to disk (it uses DuckDB or SQLite under the hood), so you can reuse the index. The similarity search API will allow you to fetch top-k similar vectors for a given query vector. According to LangChain's integration docs, Chroma supports features like filtering and similarity search with scores`
+- `Python SDK (openai package). For Anthropic’s Claude, you can use their official SDK or an API wrapper (by 2025 Anthropic might have an improved interface). You’ll need to handle API keys and abide by their rate limits. If offering a local LLM option, libraries like LlamaCpp (for running GGML models) or Hugging Face’s Transformers with a model in HF format can be used. Keep in mind memory requirements for large models if running locally. A possible design is to default to OpenAI/Claude for best results, but allow a --local flag in the CLI to use a smaller local model if the user prefers (with the understanding that analysis quality might drop).`
+- `Make sure to include system-level instructions to guide the LLM (e.g., "You are an expert relationship advisor analyzing the following conversation snippets..." for analysis tasks, and "Continue the conversation as if you are [User] responding to [Partner]..." for response generation tasks).`
+- `Python 3.x`
+- `make mistakes. Check important info. See Cookie Preferences.`
+- `make sense to store chat message history in vector DB? : r/LangChain`
+- `chatx imessage pull --contact "<phone|email|name>" [--include-attachments]`
+- `chatx instagram pull --contact "<username>" --zip ./ig.zip [--include-attachments]`
+- `chatx whatsapp pull --input ./export.json|.txt`
+- `chatx transform --to jsonl --chunk turns:40`
+- `chatx redact --threshold 0.995 --pseudonymize --opaque --report ./out/redaction_report.json`
+- `chatx index --store chroma`
+- `chatx enrich messages --allow-cloud --model gpt5 --batch 100`
+- `chatx query "What changed after June?" --contact "<key>" --k 32 --retriever local|cloud --allow-cloud`
+- `chatx simulate "What if I had declined on 2024-07-12?" --contact "<key>" --allow-cloud`
+- `chatx reply --contact "<key>" --message-id msg_123 --tone "warm+direct"`
+- `Python 3.11+.`
+- `chatx label build --contact "<key>" [--since ... --until ...] [--taxonomy ./labels.yml]`
+- `chatx issues extract --contact "<key>" [--gap-hours 12]`
+- `chatx episodes detect --contact "<key>" --types fight,topic`
+- `chatx timeline show --contact "<key>" [--label substances|intimacy_connection] [--period weekly]`
+- `chatx factors analyze --contact "<key>" --label substances --window "P14D"`
+- `chatx query --contact "<key>" --q "..." \`
+- `chatx query --labels-any substances --since 2024-01-01`
+- `chatx issues extract`
+- `chatx episodes detect --types fight`
+- `chatx factors analyze --label intimacy_connection`
+- `chatx issues build --contact "<key>" [--since ... --until ...] [--gap-hours 12]`
+- `chatx issues graph build --contact "<key>" [--lag-weeks 8] [--theta 0.35] [--nmin 4]`
+- `chatx issues graph show --contact "<key>" [--focus intimacy_connection] [--depth 2]`
+- `chatx timeline label --contact "<key>" --label intimacy_connection --period weekly`
+- `chatx episodes list --contact "<key>" [--type fight|topic] [--since ...]`
+- `chatx factors link --contact "<key>" --from intimacy_connection --to stress_levels [--max-lag 21d]`
+- `chatx query "How has intimacy changed and what influenced it?" \`
+- `chatx issues build runs`
+- `chatx issues graph build --lag-weeks 8`
+- `chatx query runs, then retrieval MUST only surface chunks matching those labels (plus allowed related expansion) and MUST include a Factors Context block (coarse only).`
