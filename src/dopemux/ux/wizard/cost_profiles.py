@@ -218,7 +218,6 @@ def run_cost_selection(state: WizardState) -> StageResult:
     corpus_size = state.corpus_total_size or 50_000_000  # fallback to ~50MB
 
     # Factor in prescan savings if intelligence router is available
-    savings_pct = 0.0
     if state.intelligence_router:
         savings = state.intelligence_router.estimate_token_savings(state.corpus_manifest)
         savings_pct = savings.get("estimated_reduction_pct", 0)
