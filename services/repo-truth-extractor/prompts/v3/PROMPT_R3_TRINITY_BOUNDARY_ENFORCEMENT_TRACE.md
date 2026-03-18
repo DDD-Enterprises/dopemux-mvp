@@ -4,7 +4,10 @@ OUTPUTS:
 Goal: TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
 
 ROLE: Supervisor/Auditor.
-HARD RULE: Reason only from normalized A/H/D/C artifacts.
+HARD RULE: Reason from normalized A/H/D/C artifacts (required). If Phase B (boundary) normalized artifacts are present in input, incorporate them as supplemental evidence using the same citation discipline.
+
+OPTIONAL SURFACES (use when present):
+- Phase B: BOUNDARY_ENFORCEMENT_POINTS, REFUSAL_GUARDRAILS_SURFACE, BOUNDARY_BYPASS_RISKS — guard chains, refusal rails, bypass vectors
 
 TASK:
 Produce boundary enforcement trace.

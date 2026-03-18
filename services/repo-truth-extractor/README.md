@@ -1,3 +1,14 @@
+---
+id: README
+title: Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-13'
+last_review: '2026-03-13'
+next_review: '2026-06-11'
+prelude: Readme (explanation) for dopemux documentation and developer workflows.
+---
 # Repo Truth Extractor
 
 Repo Truth Extractor is the canonical extraction service for dopemux.
@@ -109,7 +120,7 @@ python services/repo-truth-extractor/run_extraction_v5.py \
    partitions with the comparison model.
 3. Comparison outputs are written to a separate tree and **never overwrite canonical files**.
 4. A per-step summary (`COMPARE_SUMMARY_<STEP>.json` + `.md`) is written with side-by-side
-   metrics: schema pass/fail, repair counts, and mean latency.
+   metrics: schema pass/fail, repair counts, latency, token/cost usage.
 
 **Comparison artifact layout:**
 
