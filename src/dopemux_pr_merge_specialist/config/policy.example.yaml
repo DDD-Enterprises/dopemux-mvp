@@ -1,0 +1,106 @@
+version: 1
+platform:
+  supported:
+    - darwin
+    - linux
+  unsupported:
+    - windows
+  shell: posix
+timeouts:
+  subprocess_seconds: 600
+  gh_seconds: 120
+  phase_seconds: 1800
+validation:
+  require_local_validation_for_merge_ready: true
+  steps:
+    - name: pre-commit
+      command: [pre-commit, run, --all-files]
+      run_in_dry_run: false
+    - name: docs-frontmatter-fix
+      command: [python, scripts/docs_frontmatter_guard.py, --fix]
+      run_in_dry_run: false
+    - name: docs-validator
+      command: [python, scripts/docs_validator.py]
+      run_in_dry_run: false
+    - name: docs-hygiene
+      command: [python, scripts/check_docs_hygiene.py, --check, --all-files]
+      run_in_dry_run: false
+    - name: docs-filename-hygiene
+      command: [python, scripts/check_docs_filename_hygiene.py, --check, --all-files]
+      run_in_dry_run: false
+    - name: root-hygiene
+      command: [python, scripts/check_root_hygiene.py]
+      run_in_dry_run: false
+gates:
+  require_clean_worktree: true
+  allow_dirty_override: true
+  block_on_active_threads: true
+  block_on_pending_required_checks: true
+  block_on_missing_approvals: true
+  block_on_changes_requested: true
+thread_rules:
+  auto_resolve_outdated: true
+  auto_resolve_resolution_signals: true
+  resolution_markers:
+    - addressed
+    - fixed
+    - resolved
+    - acknowledged
+    - done in latest push
+    - updated in latest push
+    - landed in latest push
+  objection_markers:
+    - not fixed
+    - still
+    - needs changes
+    - please address
+    - didn't
+    - fails
+    - not resolved
+  implementable_patterns:
+    - '```suggestion'
+    - 'change <code>'
+    - 'delete <code>'
+    - 'remove <code>'
+    - conflict marker
+    - '<<<<<<< head'
+check_rules:
+  wait_for_healthy_pending: true
+  wait_seconds: 900
+  poll_seconds: 30
+  fail_closed_on_incomplete_data: true
+conflict_rules:
+  strict: true
+  scan_changed_files_for_markers: true
+  allow_blanket_strategies: false
+  canonical_head_markers:
+    - keep the current main version
+    - keep the current version
+    - keep the deterministic head side
+    - keep the wrapper implementation already in head
+safety:
+  negative_allowlist:
+    - migrations
+    - auth
+    - permissions
+    - deploy
+    - infra
+    - schema
+    - contract
+    - secrets
+    - destructive
+retry:
+  max_attempts: 3
+  backoff_seconds: 2
+  max_backoff_seconds: 10
+  retryable_gh_errors:
+    - rate limit
+    - '502'
+    - '503'
+    - '504'
+    - connection reset
+    - timeout
+    - temporary failure
+merge:
+  allow_auto_fallback_only_for:
+    - merge_queue_required
