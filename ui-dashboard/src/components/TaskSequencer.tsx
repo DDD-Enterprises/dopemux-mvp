@@ -21,6 +21,7 @@ import {
   Pause,
   SkipForward,
   Timer,
+  Clock,
   Flame,
   Swords,
   Clock,
@@ -145,6 +146,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       return `Time elapsed: ${minLabel} and ${secLabel}`;
     }
     return `Time elapsed: ${secLabel}`;
+  };
+
+  const getDurationAriaLabel = (minutes: number): string => {
+    const label = minutes === 1 ? '1 minute' : `${minutes} minutes`;
+    return `Total remaining duration: ${label}`;
   };
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
