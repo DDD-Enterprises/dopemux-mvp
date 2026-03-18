@@ -106,13 +106,13 @@ class ClaudeLauncher:
                     )
                     if result.returncode == 0 and "claude" in result.stdout.lower():
                         self.claude_path = path
-                        console.logger.info(f"[green]✓ Found Claude Code at {path}[/green]")
+                        console.logger.info(f"[success]✓ Found Claude Code at {path}[/success]")
                         return
                 except (subprocess.TimeoutExpired, subprocess.SubprocessError):
                     continue
 
         # Not found
-        console.logger.info("[yellow]⚠️ Claude Code not found in standard locations[/yellow]")
+        console.logger.info("[warning]⚠️ Claude Code not found in standard locations[/warning]")
 
     def is_available(self) -> bool:
         """Check if Claude Code is available."""
@@ -185,7 +185,7 @@ Alternative: Set CLAUDE_PATH environment variable
         ):
             cmd.append("--dangerously-skip-permissions")
             console.print(
-                "[red]⚠️  Added --dangerously-skip-permissions flag to Claude Code[/red]"
+                "[error]⚠️  Added --dangerously-skip-permissions flag to Claude Code[/error]"
             )
 
         # In API-key proxy mode, rely on env to suppress browser/login prompts
@@ -196,9 +196,9 @@ Alternative: Set CLAUDE_PATH environment variable
         from rich.panel import Panel
         
         launch_msg = Panel(
-            "🚀 [bold cyan]Launching Claude Code[/bold cyan]\n"
-            "[dim]ADHD optimizations • Context awareness • MCP tools enabled[/dim]",
-            border_style="cyan",
+            "🚀 [mint]Launching Claude Code[/mint]\n"
+            "[text.dim]ADHD optimizations • Context awareness • MCP tools enabled[/text.dim]",
+            border_style="info",
             padding=(0, 2)
         )
         console.print(launch_msg)
@@ -316,10 +316,10 @@ Alternative: Set CLAUDE_PATH environment variable
             try:
                 routing_config = RoutingConfig.load_default()
                 routing_mode = routing_config.get_mode()
-                console.logger.info(f"[blue]📋 Claude Launcher: Routing mode {routing_mode}[/blue]")
+                console.logger.info(f"[info]📋 Claude Launcher: Routing mode {routing_mode}[/info]")
             except Exception as e:
-                console.logger.warning(f"[yellow]⚠️  Could not load routing config: {e}[/yellow]")
-                console.logger.info("[dim]Falling back to legacy environment behavior[/dim]")
+                console.logger.warning(f"[warning]⚠️  Could not load routing config: {e}[/warning]")
+                console.logger.info("[text.dim]Falling back to legacy environment behavior[/text.dim]")
         
         # If routing mode is api, configure for proxy routing
         if routing_mode == "api":
@@ -342,7 +342,7 @@ Alternative: Set CLAUDE_PATH environment variable
             
             via_litellm = True
             env["DOPEMUX_ROUTING_MODE"] = "api"
-            console.logger.info(f"[blue]🔄 Routing mode 'api': Claude → CCR (127.0.0.1:{ccr_port})[/blue]")
+            console.logger.info(f"[info]🔄 Routing mode 'api': Claude → CCR (127.0.0.1:{ccr_port})[/info]")
         # If routing mode is subscription, use direct OAuth
         elif routing_mode == "subscription":
             # Ensure no stale proxy env vars
@@ -356,12 +356,12 @@ Alternative: Set CLAUDE_PATH environment variable
             env.pop("DOPEMUX_SET_ANTHROPIC_API_KEY", None)
             
             via_litellm = False
-            console.logger.info("[blue]📋 Routing mode 'subscription': Claude → Anthropic (direct OAuth)[/blue]")
+            console.logger.info("[info]📋 Routing mode 'subscription': Claude → Anthropic (direct OAuth)[/info]")
         # Fallback to legacy behavior
         else:
             via_litellm = env.get("DOPEMUX_CLAUDE_VIA_LITELLM") in ("1", "true", "True")
             if via_litellm:
-                console.logger.info("[dim]Using legacy DOPEMUX_CLAUDE_VIA_LITELLM flag[/dim]")
+                console.logger.info("[text.dim]Using legacy DOPEMUX_CLAUDE_VIA_LITELLM flag[/text.dim]")
                 # Keep legacy fallback behavior for now
                 if not env.get("ANTHROPIC_BASE_URL"):
                     proxy_url = env.get("LITELLM_PROXY_URL") or env.get("OPENAI_API_BASE")
@@ -388,7 +388,7 @@ Alternative: Set CLAUDE_PATH environment variable
                 if k.upper().startswith("ANTHROPIC_OAUTH") or k.upper() in {"ANTHROPIC_TOKEN", "CLAUDE_TOKEN"}:
                     env.pop(k, None)
             console.print(
-                "[dim]✓ Routing Claude via LiteLLM proxy (API key mode enabled)[/dim]"
+                "[text.dim]✓ Routing Claude via LiteLLM proxy (API key mode enabled)[/text.dim]"
             )
             
             # CRITICAL: Do NOT pass ANTHROPIC_API_KEY to Claude Code subprocess
@@ -398,7 +398,7 @@ Alternative: Set CLAUDE_PATH environment variable
             if "ANTHROPIC_API_KEY" in env:
                 del env["ANTHROPIC_API_KEY"]
                 console.print(
-                    "[dim]✓ Using Claude Pro Max OAuth (ANTHROPIC_API_KEY excluded from Claude Code)[/dim]"
+                    "[text.dim]✓ Using Claude Pro Max OAuth (ANTHROPIC_API_KEY excluded from Claude Code)[/text.dim]"
                 )
 
         # MCP servers will still get ANTHROPIC_API_KEY through their individual env configs
@@ -406,7 +406,7 @@ Alternative: Set CLAUDE_PATH environment variable
         # This allows MCP servers to use the key while Claude Code uses OAuth
 
         if not via_litellm:
-            console.logger.info("[dim]ℹ️  Claude Pro Max: Authenticate through the app[/dim]")
+            console.logger.info("[text.dim]ℹ️  Claude Pro Max: Authenticate through the app[/text.dim]")
 
         # Add other API keys for MCP server fallback
         # These are needed by MCP servers for fallback when Claude Pro Max hits rate limits
@@ -421,11 +421,11 @@ Alternative: Set CLAUDE_PATH environment variable
 
         if available_keys:
             console.print(
-                f"[dim]✓ MCP fallback ready with: {', '.join(available_keys)}[/dim]"
+                f"[text.dim]✓ MCP fallback ready with: {', '.join(available_keys)}[/text.dim]"
             )
         else:
             console.print(
-                "[dim]ℹ️  No fallback API keys set - MCP servers will use Claude Pro Max only[/dim]"
+                "[text.dim]ℹ️  No fallback API keys set - MCP servers will use Claude Pro Max only[/text.dim]"
             )
 
         return env
@@ -528,32 +528,32 @@ Alternative: Set CLAUDE_PATH environment variable
             ]
 
             for package in node_packages:
-                console.logger.info(f"[blue]Installing {package}...[/blue]")
+                console.logger.info(f"[info]Installing {package}...[/info]")
                 result = subprocess.run(
                     ["npm", "install", "-g", package], capture_output=True, text=True
                 )
                 if result.returncode != 0:
                     console.print(
-                        f"[yellow]Warning: Failed to install {package}[/yellow]"
+                        f"[warning]Warning: Failed to install {package}[/warning]"
                     )
 
             # Install Python packages
             python_packages = ["context-portal-mcp"]  # Removed task-master-ai (crashes)
 
             for package in python_packages:
-                console.logger.info(f"[blue]Installing {package}...[/blue]")
+                console.logger.info(f"[info]Installing {package}...[/info]")
                 result = subprocess.run(
                     ["pip", "install", package], capture_output=True, text=True
                 )
                 if result.returncode != 0:
                     console.print(
-                        f"[yellow]Warning: Failed to install {package}[/yellow]"
+                        f"[warning]Warning: Failed to install {package}[/warning]"
                     )
 
             return True
 
         except Exception as e:
-            console.logger.error(f"[red]Error installing dependencies: {e}[/red]")
+            console.logger.error(f"[error]Error installing dependencies: {e}[/error]")
             return False
 
     def _cleanup(self) -> None:

@@ -20,6 +20,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from dopemux.ui.theme import styled_panel, styled_table
+
 import docker
 
 
@@ -500,11 +502,13 @@ class HealthChecker:
             overall_color = "green"
 
         # Main status table
-        table = Table(title=f"🧠 Dopemux Health Status - {overall_status}")
-        table.add_column("Service", style="cyan", width=20)
-        table.add_column("Status", style="bold", width=12)
-        table.add_column("Message", style="white", width=40)
-        table.add_column("Response", justify="right", style="dim", width=10)
+        table = styled_table(
+            f"🧠 Dopemux Health Status - {overall_status}",
+            ("Service", {"style": "info", "width": 20}),
+            ("Status", {"style": "bold", "width": 12}),
+            ("Message", {"style": "text", "width": 40}),
+            ("Response", {"justify": "right", "style": "text.dim", "width": 10}),
+        )
 
         for service_name, health in results.items():
             emoji, _, color = health.status.value
@@ -522,11 +526,11 @@ class HealthChecker:
         if detailed:
             for service_name, health in results.items():
                 if health.details:
-                    details_table = Table(
-                        title=f"📋 {service_name.replace('_', ' ').title()} Details"
+                    details_table = styled_table(
+                        f"📋 {service_name.replace('_', ' ').title()} Details",
+                        ("Property", {"style": "info"}),
+                        ("Value", {"style": "success"}),
                     )
-                    details_table.add_column("Property", style="cyan")
-                    details_table.add_column("Value", style="green")
 
                     for key, value in health.details.items():
                         if isinstance(value, (dict, list)):
@@ -556,7 +560,7 @@ class HealthChecker:
         """
 
         self.console.print(
-            Panel(
+            styled_panel(
                 summary_text.strip(),
                 title="🏥 Health Summary",
                 border_style=overall_color,

@@ -66,13 +66,13 @@ class DiscoveryPhase(BasePhase):
     async def execute(self) -> bool:
         """Discover and analyze what needs updating."""
         try:
-            self.console.print("[cyan]📊 Checking for updates...[/cyan]")
+            self.console.print("[info]📊 Checking for updates...[/info]")
 
             # Get version information
             version_info = self.manager.check_for_updates()
 
             if version_info.current == version_info.target:
-                self.console.print("[green]✅ Already up to date![/green]")
+                self.console.print("[success]✅ Already up to date![/success]")
                 return True
 
             # Analyze changes
@@ -85,14 +85,14 @@ class DiscoveryPhase(BasePhase):
             if not self.config.dry_run:
                 import click
                 if not click.confirm("Continue with update?", default=True):
-                    self.console.print("[yellow]Update cancelled by user[/yellow]")
+                    self.console.print("[warning]Update cancelled by user[/warning]")
                     return False
 
             return True
 
         except Exception as e:
             logger.exception("Discovery phase failed")
-            self.console.print(f"[red]Discovery failed: {e}[/red]")
+            self.console.print(f"[error]Discovery failed: {e}[/error]")
             return False
 
     async def _analyze_changes(self, version_info) -> Dict[str, Any]:
@@ -197,9 +197,9 @@ class DiscoveryPhase(BasePhase):
         self.console.print(f"\\n[bold]📋 Update Plan: v{version_info.current} → v{version_info.target}[/bold]")
 
         # Create update summary table
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Component", style="cyan")
-        table.add_column("Status", style="green")
+        table = Table(show_header=True, header_style="magenta")
+        table.add_column("Component", style="info")
+        table.add_column("Status", style="success")
         table.add_column("Details")
 
         # Add rows based on discovered changes
@@ -223,8 +223,8 @@ class DiscoveryPhase(BasePhase):
 
         self.console.print(table)
 
-        self.console.print("\\n[dim]⏱️ Estimated time: 15-20 minutes[/dim]")
-        self.console.print("[dim]💾 Backup space needed: ~250 MB[/dim]")
+        self.console.print("\\n[text.dim]⏱️ Estimated time: 15-20 minutes[/text.dim]")
+        self.console.print("[text.dim]💾 Backup space needed: ~250 MB[/text.dim]")
 
 
 class BackupPhase(BasePhase):
@@ -241,11 +241,11 @@ class BackupPhase(BasePhase):
     async def execute(self) -> bool:
         """Create comprehensive backups before update."""
         if self.config.skip_backups:
-            self.console.print("[yellow]⚠️ Skipping backups (as requested)[/yellow]")
+            self.console.print("[warning]⚠️ Skipping backups (as requested)[/warning]")
             return True
 
         try:
-            self.console.print("[cyan]💾 Creating backups...[/cyan]")
+            self.console.print("[info]💾 Creating backups...[/info]")
 
             # Create timestamped backup directory
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -267,12 +267,12 @@ class BackupPhase(BasePhase):
             # Register backup with rollback manager
             self.manager.rollback.register_backup(backup_path)
 
-            self.console.print(f"[green]✅ Backup created: {backup_name}[/green]")
+            self.console.print(f"[success]✅ Backup created: {backup_name}[/success]")
             return True
 
         except Exception as e:
             logger.exception("Backup phase failed")
-            self.console.print(f"[red]Backup failed: {e}[/red]")
+            self.console.print(f"[error]Backup failed: {e}[/error]")
             return False
 
     async def _backup_databases(self, backup_path: Path) -> None:
@@ -356,7 +356,7 @@ class UpdatePhase(BasePhase):
     async def execute(self) -> bool:
         """Execute core update operations."""
         try:
-            self.console.print("[cyan]🔄 Executing updates...[/cyan]")
+            self.console.print("[info]🔄 Executing updates...[/info]")
 
             # Git synchronization
             if not await self._update_git():
@@ -370,18 +370,18 @@ class UpdatePhase(BasePhase):
             if not self.config.skip_docker and not await self._update_docker():
                 return False
 
-            self.console.print("[green]✅ Core updates completed[/green]")
+            self.console.print("[success]✅ Core updates completed[/success]")
             return True
 
         except Exception as e:
             logger.exception("Update phase failed")
-            self.console.print(f"[red]Update phase failed: {e}[/red]")
+            self.console.print(f"[error]Update phase failed: {e}[/error]")
             return False
 
     async def _update_git(self) -> bool:
         """Update git repository with stash/pop for local changes."""
         try:
-            self.console.print("[dim]📝 Saving local changes...[/dim]")
+            self.console.print("[text.dim]📝 Saving local changes...[/text.dim]")
 
             # Stash any local changes
             stash_result = subprocess.run(
@@ -390,33 +390,33 @@ class UpdatePhase(BasePhase):
             )
 
             # Pull latest changes
-            self.console.print("[dim]⬇️ Pulling latest changes...[/dim]")
+            self.console.print("[text.dim]⬇️ Pulling latest changes...[/text.dim]")
             pull_result = subprocess.run(
                 ["git", "pull", "origin", "main"],
                 capture_output=True, text=True, timeout=60
             )
 
             if pull_result.returncode != 0:
-                self.console.print(f"[red]Git pull failed: {pull_result.stderr}[/red]")
+                self.console.print(f"[error]Git pull failed: {pull_result.stderr}[/error]")
                 return False
 
             # Pop stashed changes if any were stashed
             if "No local changes to save" not in stash_result.stdout:
-                self.console.print("[dim]📝 Restoring local changes...[/dim]")
+                self.console.print("[text.dim]📝 Restoring local changes...[/text.dim]")
                 pop_result = subprocess.run(
                     ["git", "stash", "pop"],
                     capture_output=True, text=True, timeout=30
                 )
 
                 if pop_result.returncode != 0:
-                    self.console.print("[yellow]⚠️ Could not restore local changes automatically[/yellow]")
-                    self.console.print("[yellow]You may need to resolve conflicts manually[/yellow]")
+                    self.console.print("[warning]⚠️ Could not restore local changes automatically[/warning]")
+                    self.console.print("[warning]You may need to resolve conflicts manually[/warning]")
 
             return True
 
         except Exception as e:
             logger.exception("Git update failed")
-            self.console.print(f"[red]Git update failed: {e}[/red]")
+            self.console.print(f"[error]Git update failed: {e}[/error]")
             return False
 
     async def _update_dependencies(self) -> bool:
@@ -424,17 +424,17 @@ class UpdatePhase(BasePhase):
         try:
             # Update Python dependencies
             if (self.project_root / "requirements.txt").exists():
-                self.console.print("[dim]📦 Updating Python dependencies...[/dim]")
+                self.console.print("[text.dim]📦 Updating Python dependencies...[/text.dim]")
                 result = subprocess.run(
                     ["pip", "install", "-r", "requirements.txt", "--upgrade"],
                     capture_output=True, text=True, timeout=300
                 )
                 if result.returncode != 0:
-                    self.console.print(f"[yellow]Python dependency update had issues: {result.stderr}[/yellow]")
+                    self.console.print(f"[warning]Python dependency update had issues: {result.stderr}[/warning]")
 
             # Update pyproject.toml dependencies
             if (self.project_root / "pyproject.toml").exists():
-                self.console.print("[dim]📦 Installing project dependencies...[/dim]")
+                self.console.print("[text.dim]📦 Installing project dependencies...[/text.dim]")
                 result = subprocess.run(
                     ["pip", "install", "-e", ".[dev]"],
                     capture_output=True, text=True, timeout=300
@@ -446,7 +446,7 @@ class UpdatePhase(BasePhase):
                 for server_dir in mcp_servers_dir.iterdir():
                     package_json = server_dir / "package.json"
                     if package_json.exists():
-                        self.console.print(f"[dim]📦 Updating Node dependencies in {server_dir.name}...[/dim]")
+                        self.console.print(f"[text.dim]📦 Updating Node dependencies in {server_dir.name}...[/text.dim]")
                         result = subprocess.run(
                             ["npm", "update"],
                             cwd=server_dir, capture_output=True, text=True, timeout=180
@@ -456,7 +456,7 @@ class UpdatePhase(BasePhase):
 
         except Exception as e:
             logger.exception("Dependency update failed")
-            self.console.print(f"[red]Dependency update failed: {e}[/red]")
+            self.console.print(f"[error]Dependency update failed: {e}[/error]")
             return False
 
     async def _update_docker(self) -> bool:
@@ -468,7 +468,7 @@ class UpdatePhase(BasePhase):
             for compose_file in compose_files:
                 if not compose_file.exists():
                     continue
-                self.console.print(f"[dim]🐳 Updating Docker services in {compose_file.name}...[/dim]")
+                self.console.print(f"[text.dim]🐳 Updating Docker services in {compose_file.name}...[/text.dim]")
 
                 # Build only services that need rebuilding
                 build_result = subprocess.run(
@@ -477,13 +477,13 @@ class UpdatePhase(BasePhase):
                 )
 
                 if build_result.returncode != 0:
-                    self.console.print(f"[yellow]Docker build warnings in {compose_file.name}: {build_result.stderr}[/yellow]")
+                    self.console.print(f"[warning]Docker build warnings in {compose_file.name}: {build_result.stderr}[/warning]")
 
             return True
 
         except Exception as e:
             logger.exception("Docker update failed")
-            self.console.print(f"[red]Docker update failed: {e}[/red]")
+            self.console.print(f"[error]Docker update failed: {e}[/error]")
             return False
 
 
@@ -501,7 +501,7 @@ class OrchestrationPhase(BasePhase):
     async def execute(self) -> bool:
         """Orchestrate service restarts and migrations."""
         try:
-            self.console.print("[cyan]🎭 Orchestrating services...[/cyan]")
+            self.console.print("[info]🎭 Orchestrating services...[/info]")
 
             # Apply database migrations
             if not await self._apply_migrations():
@@ -515,12 +515,12 @@ class OrchestrationPhase(BasePhase):
             if not await self._update_mcp_configs():
                 return False
 
-            self.console.print("[green]✅ Service orchestration completed[/green]")
+            self.console.print("[success]✅ Service orchestration completed[/success]")
             return True
 
         except Exception as e:
             logger.exception("Orchestration phase failed")
-            self.console.print(f"[red]Orchestration failed: {e}[/red]")
+            self.console.print(f"[error]Orchestration failed: {e}[/error]")
             return False
 
     async def _apply_migrations(self) -> bool:
@@ -535,7 +535,7 @@ class OrchestrationPhase(BasePhase):
             specific_migration = migrations_dir / migration_path
 
             if specific_migration.exists():
-                self.console.print(f"[dim]🔄 Applying migration: {migration_path}...[/dim]")
+                self.console.print(f"[text.dim]🔄 Applying migration: {migration_path}...[/text.dim]")
 
                 # Run pre-migration script
                 pre_script = specific_migration / "pre.py"
@@ -545,7 +545,7 @@ class OrchestrationPhase(BasePhase):
                         capture_output=True, text=True, timeout=60
                     )
                     if result.returncode != 0:
-                        self.console.print(f"[red]Pre-migration failed: {result.stderr}[/red]")
+                        self.console.print(f"[error]Pre-migration failed: {result.stderr}[/error]")
                         return False
 
                 # Run main migration script
@@ -556,7 +556,7 @@ class OrchestrationPhase(BasePhase):
                         capture_output=True, text=True, timeout=300
                     )
                     if result.returncode != 0:
-                        self.console.print(f"[red]Migration failed: {result.stderr}[/red]")
+                        self.console.print(f"[error]Migration failed: {result.stderr}[/error]")
                         return False
 
                 # Run post-migration script
@@ -567,13 +567,13 @@ class OrchestrationPhase(BasePhase):
                         capture_output=True, text=True, timeout=60
                     )
                     if result.returncode != 0:
-                        self.console.print(f"[yellow]Post-migration warnings: {result.stderr}[/yellow]")
+                        self.console.print(f"[warning]Post-migration warnings: {result.stderr}[/warning]")
 
             return True
 
         except Exception as e:
             logger.exception("Migration failed")
-            self.console.print(f"[red]Migration failed: {e}[/red]")
+            self.console.print(f"[error]Migration failed: {e}[/error]")
             return False
 
     async def _restart_services(self) -> bool:
@@ -601,14 +601,14 @@ class OrchestrationPhase(BasePhase):
 
         except Exception as e:
             logger.exception("Service restart failed")
-            self.console.print(f"[red]Service restart failed: {e}[/red]")
+            self.console.print(f"[error]Service restart failed: {e}[/error]")
             return False
 
     async def _restart_service_group(self, services: List[str], group_name: str) -> None:
         """Restart a group of services."""
-        self.console.print(f"[dim]🔄 Restarting {group_name}...[/dim]")
+        self.console.print(f"[text.dim]🔄 Restarting {group_name}...[/text.dim]")
 
-        # Try to restart via docker-compose
+        # Try to restart via docker compose
         compose_file = self.project_root / "compose.yml"
         if compose_file.exists():
             for service in services:
@@ -626,7 +626,7 @@ class OrchestrationPhase(BasePhase):
                     )
 
                 except subprocess.TimeoutExpired:
-                    self.console.print(f"[yellow]Service {service} restart took longer than expected[/yellow]")
+                    self.console.print(f"[warning]Service {service} restart took longer than expected[/warning]")
                 except Exception as e:
                     logger.warning(f"Could not restart {service}: {e}")
 
@@ -635,7 +635,7 @@ class OrchestrationPhase(BasePhase):
         try:
             # This would integrate with Claude Code's configuration system
             # For now, just indicate that MCP configs should be updated
-            self.console.print("[dim]🔧 MCP configurations may need manual update[/dim]")
+            self.console.print("[text.dim]🔧 MCP configurations may need manual update[/text.dim]")
             return True
 
         except Exception as e:
@@ -657,7 +657,7 @@ class ValidationPhase(BasePhase):
     async def execute(self) -> bool:
         """Validate that the update was successful."""
         try:
-            self.console.print("[cyan]🏥 Validating system health...[/cyan]")
+            self.console.print("[info]🏥 Validating system health...[/info]")
 
             # Run health checks
             health_results = await self.manager.health.check_all_services()
@@ -676,7 +676,7 @@ class ValidationPhase(BasePhase):
 
         except Exception as e:
             logger.exception("Validation phase failed")
-            self.console.print(f"[red]Validation failed: {e}[/red]")
+            self.console.print(f"[error]Validation failed: {e}[/error]")
             return False
 
     async def _verify_critical_paths(self) -> bool:
@@ -686,7 +686,7 @@ class ValidationPhase(BasePhase):
             # Test MCP server responsiveness
             # Test basic CLI functionality
 
-            self.console.print("[dim]✅ Critical paths verified[/dim]")
+            self.console.print("[text.dim]✅ Critical paths verified[/text.dim]")
             return True
 
         except Exception as e:
@@ -699,16 +699,16 @@ class ValidationPhase(BasePhase):
         version_file = self.project_root / "VERSION"
 
         version_file.write_text(version_info.target)
-        self.console.print(f"[dim]📝 Updated VERSION file to {version_info.target}[/dim]")
+        self.console.print(f"[text.dim]📝 Updated VERSION file to {version_info.target}[/text.dim]")
 
     def _show_validation_results(self, health_results: Dict[str, bool]) -> None:
         """Show validation results in a user-friendly format."""
-        table = Table(show_header=True, header_style="bold green")
-        table.add_column("Service", style="cyan")
+        table = Table(show_header=True, header_style="success")
+        table.add_column("Service", style="info")
         table.add_column("Status")
 
         for service, healthy in health_results.items():
-            status = "[green]✅ Healthy[/green]" if healthy else "[red]❌ Unhealthy[/red]"
+            status = "[success]✅ Healthy[/success]" if healthy else "[error]❌ Unhealthy[/error]"
             table.add_row(service, status)
 
         self.console.print("\\n[bold]🏥 Health Check Results:[/bold]")

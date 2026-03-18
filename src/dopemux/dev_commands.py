@@ -27,14 +27,14 @@ def dev_status():
     content.append(f"[bold]Dev Mode:[/bold] {'✅ ACTIVE' if status['active'] else '❌ Inactive'}")
     content.append(f"[bold]Test Databases:[/bold] {'✅' if status['test_databases'] else '❌'}")
     content.append(f"[bold]Log Level:[/bold] {status['log_level']}")
-    content.append(f"[bold]Database Dir:[/bold] [dim]{status['database_dir']}[/dim]\n")
+    content.append(f"[bold]Database Dir:[/bold] [text.dim]{status['database_dir']}[/text.dim]\n")
 
     # Show dev component paths
     if status['dev_components']:
         content.append("[bold]Component Dev Paths:[/bold]")
         for name, path in status['dev_components'].items():
             if path:
-                content.append(f"  {name}: [green]{path}[/green] ✅")
+                content.append(f"  {name}: [success]{path}[/success] ✅")
         content.append("")
 
     # Show skipped services
@@ -44,7 +44,7 @@ def dev_status():
     console.print(Panel(
         "\n".join(content),
         title="[bold]🔧 Development Mode Status[/bold]",
-        border_style="yellow" if status['active'] else "dim"
+        border_style="warning" if status['active'] else "dim"
     ))
 
     # Show recommendations
@@ -54,9 +54,9 @@ def dev_status():
         console.logger.info("  • Use test databases (isolated from production)")
         console.logger.info("  • Check logs with: dopemux health --verbose")
     else:
-        console.logger.info("\n[dim]Dev mode inactive. To enable:[/dim]")
-        console.logger.info("[dim]  export DOPEMUX_DEV_MODE=true[/dim]")
-        console.logger.info("[dim]  Or clone component to ~/code/{component-name}[/dim]")
+        console.logger.info("\n[text.dim]Dev mode inactive. To enable:[/text.dim]")
+        console.logger.info("[text.dim]  export DOPEMUX_DEV_MODE=true[/text.dim]")
+        console.logger.info("[text.dim]  Or clone component to ~/code/{component-name}[/text.dim]")
 
 
 @click.command("enable")
@@ -75,10 +75,10 @@ def dev_enable():
         with open(shell_config, "a") as f:
             f.write("\n# Dopemux dev mode\nexport DOPEMUX_DEV_MODE=true\n")
         console.logger.info(f"\n✅ Dev mode enabled in {shell_config}")
-        console.logger.info("[dim]Restart shell or run: source {shell_config}[/dim]")
+        console.logger.info("[text.dim]Restart shell or run: source {shell_config}[/text.dim]")
     else:
-        console.logger.info("\n[yellow]⚠️  Shell config not found[/yellow]")
-        console.logger.info("[dim]Manually add: export DOPEMUX_DEV_MODE=true[/dim]")
+        console.logger.info("\n[warning]⚠️  Shell config not found[/warning]")
+        console.logger.info("[text.dim]Manually add: export DOPEMUX_DEV_MODE=true[/text.dim]")
 
 
 @click.command("paths")
@@ -87,20 +87,20 @@ def dev_paths():
     components = DevMode.get_all_dev_components()
 
     if not components:
-        console.logger.info("\n[yellow]No development components detected[/yellow]")
-        console.logger.info("\n[dim]Clone to standard locations:[/dim]")
-        console.logger.info("[dim]  git clone <zen-repo> ~/code/zen-mcp-server[/dim]")
-        console.logger.info("[dim]  git clone <dopemux> ~/code/dopemux-mvp[/dim]")
+        console.logger.info("\n[warning]No development components detected[/warning]")
+        console.logger.info("\n[text.dim]Clone to standard locations:[/text.dim]")
+        console.logger.info("[text.dim]  git clone <zen-repo> ~/code/zen-mcp-server[/text.dim]")
+        console.logger.info("[text.dim]  git clone <dopemux> ~/code/dopemux-mvp[/text.dim]")
         return
 
     table = Table(title="\n🔧 Development Component Paths", show_header=True, box=box.ROUNDED)
-    table.add_column("Component", style="cyan")
-    table.add_column("Local Path", style="green")
-    table.add_column("Status", style="yellow")
+    table.add_column("Component", style="info")
+    table.add_column("Local Path", style="success")
+    table.add_column("Status", style="warning")
 
     for name, path in components.items():
         status = "✅ Active" if path else "❌ Not found"
         table.add_row(name, str(path), status)
 
     console.logger.info(table)
-    console.logger.info("\n[dim]Dopemux will use these paths instead of production versions[/dim]")
+    console.logger.info("\n[text.dim]Dopemux will use these paths instead of production versions[/text.dim]")
