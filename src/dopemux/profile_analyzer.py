@@ -326,23 +326,23 @@ class GitHistoryAnalyzer:
             analysis: GitAnalysis results to display
         """
         if analysis.total_commits == 0:
-            console.logger.info("[yellow]⚠️  No git history found - using defaults[/yellow]")
+            console.logger.info("[warning]⚠️  No git history found - using defaults[/warning]")
             return
 
-        console.logger.info("\n[bold cyan]📊 Your Development Pattern Analysis[/bold cyan]\n")
+        console.logger.info("\n[mint]📊 Your Development Pattern Analysis[/mint]\n")
 
         # Commit activity
-        console.logger.info(f"[green]📈 Activity:[/green] {analysis.total_commits} commits ({analysis.avg_commits_per_day} per day avg)")
+        console.logger.info(f"[success]📈 Activity:[/success] {analysis.total_commits} commits ({analysis.avg_commits_per_day} per day avg)")
 
         # Branch patterns
         if analysis.common_branch_prefixes:
-            console.logger.info(f"\n[green]🌿 Branch Patterns:[/green]")
+            console.logger.info(f"\n[success]🌿 Branch Patterns:[/success]")
             for prefix, count in analysis.common_branch_prefixes[:3]:
                 console.logger.info(f"   • {prefix}: {count} commits")
 
         # Directory patterns
         if analysis.common_directories:
-            console.logger.info(f"\n[green]📁 Common Directories:[/green]")
+            console.logger.info(f"\n[success]📁 Common Directories:[/success]")
             table = Table(show_header=False, box=None, padding=(0, 2))
             for directory, count in analysis.common_directories[:5]:
                 table.add_row(f"• {directory}", f"{count} changes")
@@ -351,16 +351,16 @@ class GitHistoryAnalyzer:
         # Temporal patterns
         if analysis.common_work_hours:
             hours_str = ", ".join(f"{h:02d}:00" for h in analysis.common_work_hours[:4])
-            console.logger.info(f"\n[green]⏰ Peak Work Hours:[/green] {hours_str}")
+            console.logger.info(f"\n[success]⏰ Peak Work Hours:[/success] {hours_str}")
             if analysis.peak_work_time:
-                console.logger.info(f"   → Typically works in the [cyan]{analysis.peak_work_time}[/cyan]")
+                console.logger.info(f"   → Typically works in the [info]{analysis.peak_work_time}[/info]")
 
         # Energy/Session inference
-        console.logger.info(f"\n[green]⚡ Suggested Settings:[/green]")
-        console.logger.info(f"   • Energy Level: [cyan]{analysis.suggested_energy_level}[/cyan]")
-        console.logger.info(f"   • Session Duration: [cyan]{analysis.suggested_session_duration} minutes[/cyan]")
+        console.logger.info(f"\n[success]⚡ Suggested Settings:[/success]")
+        console.logger.info(f"   • Energy Level: [info]{analysis.suggested_energy_level}[/info]")
+        console.logger.info(f"   • Session Duration: [info]{analysis.suggested_session_duration} minutes[/info]")
 
         # MCP suggestions
-        console.logger.info(f"\n[green]🔧 Recommended MCP Servers:[/green]")
+        console.logger.info(f"\n[success]🔧 Recommended MCP Servers:[/success]")
         for mcp in analysis.suggested_mcps:
             console.logger.info(f"   • {mcp}")

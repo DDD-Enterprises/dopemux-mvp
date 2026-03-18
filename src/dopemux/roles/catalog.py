@@ -314,13 +314,13 @@ def activate_role(
     # Provide gentle feedback if a role requires servers that are missing
     if console and activation.missing_required:
         console.print(
-            f"[yellow]⚠ Missing required MCP servers for role '{spec.label}': "
-            f"{', '.join(activation.missing_required)}[/yellow]"
+            f"[warning]⚠ Missing required MCP servers for role '{spec.label}': "
+            f"{', '.join(activation.missing_required)}[/warning]"
         )
     if console and activation.missing_optional:
         console.print(
-            f"[dim]ℹ Optional MCP servers unavailable for this role: "
-            f"{', '.join(activation.missing_optional)}[/dim]"
+            f"[text.dim]ℹ Optional MCP servers unavailable for this role: "
+            f"{', '.join(activation.missing_optional)}[/text.dim]"
         )
 
     return activation

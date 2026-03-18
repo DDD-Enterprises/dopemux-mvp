@@ -112,12 +112,12 @@ class RollbackManager:
 
             self._save_registry(registry)
 
-            self.console.print(f"[green]💾 Rollback point created: {checkpoint_name}[/green]")
+            self.console.print(f"[success]💾 Rollback point created: {checkpoint_name}[/success]")
             return True
 
         except Exception as e:
             logger.exception("Failed to create rollback point")
-            self.console.print(f"[red]Failed to create rollback point: {e}[/red]")
+            self.console.print(f"[error]Failed to create rollback point: {e}[/error]")
             return False
 
     async def auto_rollback(self) -> bool:
@@ -128,16 +128,16 @@ class RollbackManager:
             True if rollback was successful
         """
         try:
-            self.console.print("[yellow]🔄 Initiating automatic rollback...[/yellow]")
+            self.console.print("[warning]🔄 Initiating automatic rollback...[/warning]")
 
             if not self.current_backup:
-                self.console.print("[red]❌ No backup available for rollback[/red]")
+                self.console.print("[error]❌ No backup available for rollback[/error]")
                 return False
 
             # Load backup manifest
             manifest_path = self.current_backup / "manifest.json"
             if not manifest_path.exists():
-                self.console.print("[red]❌ Backup manifest not found[/red]")
+                self.console.print("[error]❌ Backup manifest not found[/error]")
                 return False
 
             with open(manifest_path) as f:
@@ -154,14 +154,14 @@ class RollbackManager:
             ]
 
             for step_name, step_func in steps:
-                self.console.print(f"[cyan]  → {step_name}...[/cyan]")
+                self.console.print(f"[info]  → {step_name}...[/info]")
                 success = await step_func() if hasattr(step_func, '__call__') else step_func()
 
                 if not success:
-                    self.console.print(f"[red]❌ {step_name} failed[/red]")
+                    self.console.print(f"[error]❌ {step_name} failed[/error]")
                     return False
 
-                self.console.print(f"[green]✅ {step_name} completed[/green]")
+                self.console.print(f"[success]✅ {step_name} completed[/success]")
 
             # Mark last known good state
             registry = self._load_registry()
@@ -177,7 +177,7 @@ class RollbackManager:
 
         except Exception as e:
             logger.exception("Auto rollback failed")
-            self.console.print(f"[red]❌ Rollback failed: {e}[/red]")
+            self.console.print(f"[error]❌ Rollback failed: {e}[/error]")
             return False
 
     async def manual_rollback(self, backup_name: Optional[str] = None) -> bool:
@@ -195,7 +195,7 @@ class RollbackManager:
             if backup_name:
                 backup_path = self.backup_dir / backup_name
                 if not backup_path.exists():
-                    self.console.print(f"[red]Backup '{backup_name}' not found[/red]")
+                    self.console.print(f"[error]Backup '{backup_name}' not found[/error]")
                     return False
             else:
                 backup_path = self._select_backup_interactively()
@@ -210,13 +210,13 @@ class RollbackManager:
             version_from = manifest.get('version_from', 'unknown')
             created_at = manifest.get('created_at', 'unknown')
 
-            self.console.print(f"\\n[yellow]⚠️ Rollback Confirmation[/yellow]")
+            self.console.print(f"\\n[warning]⚠️ Rollback Confirmation[/warning]")
             self.console.print(f"Target backup: {backup_path.name}")
             self.console.print(f"Created: {created_at}")
             self.console.print(f"Will restore to version: {version_from}")
 
             if not Confirm.ask("Continue with rollback?", default=False):
-                self.console.print("[yellow]Rollback cancelled by user[/yellow]")
+                self.console.print("[warning]Rollback cancelled by user[/warning]")
                 return False
 
             # Set as current backup and perform rollback
@@ -225,7 +225,7 @@ class RollbackManager:
 
         except Exception as e:
             logger.exception("Manual rollback failed")
-            self.console.print(f"[red]Manual rollback failed: {e}[/red]")
+            self.console.print(f"[error]Manual rollback failed: {e}[/error]")
             return False
 
     def list_available_backups(self) -> List[Dict[str, Any]]:
@@ -268,7 +268,7 @@ class RollbackManager:
                 backup_path = Path(backup_info['path'])
                 if backup_path.exists():
                     shutil.rmtree(backup_path)
-                    self.console.print(f"[dim]Removed old backup: {backup_path.name}[/dim]")
+                    self.console.print(f"[text.dim]Removed old backup: {backup_path.name}[/text.dim]")
 
             # Update registry
             registry['backups'] = backups[-keep_count:]
@@ -282,7 +282,7 @@ class RollbackManager:
         backups = self.list_available_backups()
 
         if not backups:
-            self.console.print("[yellow]No backups available[/yellow]")
+            self.console.print("[warning]No backups available[/warning]")
             return None
 
         self.console.print("\\n[bold]Available Backups:[/bold]")
@@ -304,7 +304,7 @@ class RollbackManager:
             if 1 <= choice <= len(backups):
                 return Path(backups[choice - 1]['path'])
             else:
-                self.console.print("[red]Invalid selection[/red]")
+                self.console.print("[error]Invalid selection[/error]")
                 return None
         except (ValueError, KeyboardInterrupt):
             return None
@@ -312,14 +312,14 @@ class RollbackManager:
     def _stop_services(self) -> bool:
         """Stop all dopemux services for rollback."""
         try:
-            # Stop via docker-compose
+            # Stop via docker compose
             compose_files = [self.project_root / "compose.yml"]
             
             for compose_file in compose_files:
                 if not compose_file.exists():
                     continue
                 result = subprocess.run(
-                    ["docker-compose", "-f", str(compose_file), "stop"],
+                    ["docker", "compose", "-f", str(compose_file), "stop"],
                     capture_output=True, text=True, timeout=60
                 )
                 if result.returncode != 0:
@@ -412,7 +412,7 @@ class RollbackManager:
             # This would reset git to the previous commit
             # For now, just log the action
             version_from = manifest.get('version_from', 'unknown')
-            self.console.print(f"[dim]Code state: targeting version {version_from}[/dim]")
+            self.console.print(f"[text.dim]Code state: targeting version {version_from}[/text.dim]")
 
             # Update VERSION file
             version_file = self.project_root / "VERSION"
@@ -427,14 +427,14 @@ class RollbackManager:
     def _restart_services(self) -> bool:
         """Restart services after rollback."""
         try:
-            # Restart via docker-compose
+            # Restart via docker compose
             compose_files = [self.project_root / "compose.yml"]
             
             for compose_file in compose_files:
                 if not compose_file.exists():
                     continue
                 result = subprocess.run(
-                    ["docker-compose", "-f", str(compose_file), "up", "-d"],
+                    ["docker", "compose", "-f", str(compose_file), "up", "-d"],
                     capture_output=True, text=True, timeout=120
                 )
                 if result.returncode != 0:
@@ -472,7 +472,7 @@ class RollbackManager:
         panel = Panel(
             success_message,
             title="🔄 Rollback Complete",
-            border_style="green"
+            border_style="success"
         )
         self.console.print(panel)
 
