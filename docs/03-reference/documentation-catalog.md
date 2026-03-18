@@ -16,6 +16,7 @@ prelude: Canonical catalog of active documentation indexes, policy files, and do
 - `docs/docs_index.yaml`
 - `docs/00-MASTER-INDEX.md`
 - `docs/INDEX.md`
+- `docs/90-adr/adr-index.md`
 - `docs/01-tutorials/overview.md`
 - `docs/02-how-to/overview.md`
 - `docs/03-reference/overview.md`
@@ -42,6 +43,10 @@ python scripts/check_root_hygiene.py
 ## Placement Policy
 
 Active docs are maintained in Diataxis-aligned folders under `docs/`.
+
+Active subsystem and plane hubs that should be reconciled when impacted:
+- `docs/planes/pm/hub-2.md`
+- `docs/planes/pm/readme-2.md`
 
 Exclude these trees from mandatory active index reconciliation unless directly touched:
 - `docs/archive/**`
