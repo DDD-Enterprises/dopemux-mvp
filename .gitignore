@@ -292,10 +292,14 @@ extraction/runs/
 extraction/latest_run_id.txt
 extraction/repo-truth-extractor/v3/runs/
 extraction/repo-truth-extractor/v4/runs/
+extraction/repo-truth-extractor/v5/runs/
 extraction/repo-truth-extractor/v3/doctor/
 extraction/repo-truth-extractor/v4/doctor/
+extraction/repo-truth-extractor/v5/doctor/
 extraction/repo-truth-extractor/v3/latest_run_id.txt
 extraction/repo-truth-extractor/v4/latest_run_id.txt
+extraction/repo-truth-extractor/v5/latest_run_id.txt
+extraction/repo-truth-extractor/quarantine/
 
 # Artifact and report hygiene
 .claude/*.backup
@@ -346,3 +350,4 @@ services/router/
 proof/
 .taskx/proof/
 .dopetask/proof/
+extraction/prescan/

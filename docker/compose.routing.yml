@@ -1,0 +1,43 @@
+services:
+  # LiteLLM
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - LITELLM_LOG=INFO
+      - DATABASE_URL=postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@postgres:5432/dopemux_knowledge_graph
+      - STORE_MODEL_IN_DB=True
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - UI_USERNAME=${LITELLM_UI_USERNAME:-dopemux}
+      - UI_PASSWORD=${LITELLM_UI_PASSWORD:-dopemux_admin}
+    volumes:
+      - ../litellm.config.yaml:/app/config.yaml
+    ports:
+      - "${LITELLM_PORT:-4000}:4000"
+    command: [ "--config", "/app/config.yaml", "--port", "4000", "--num_workers", "8" ]
+
+  # PAL MCP Server
+  pal-mcp-server:
+    build:
+      context: ../docker/mcp-servers/pal/pal-mcp-server
+      dockerfile: docker/mcp-servers/pal/pal-mcp-server/Dockerfile
+    container_name: pal-mcp-server
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - PORT=3011
+      - HOST=0.0.0.0
+      - LITELLM_URL=http://litellm:4000
+      - LITELLM_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+    ports:
+      - "${PAL_MCP_PORT:-3011}:3011"
+    depends_on:
+      - litellm
+
+networks:
+  dopemux-network:
+    external: true
