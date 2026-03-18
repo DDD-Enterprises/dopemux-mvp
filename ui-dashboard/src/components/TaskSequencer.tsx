@@ -304,7 +304,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               ml: 1,
               height: 20,
               fontSize: '0.7rem',
-              bgcolor: 'rgba(255, 207, 120, 0.1)',
+              bgcolor: alpha(brandTokens.colors.saintGold, 0.1),
               color: brandTokens.colors.giltEdge,
               border: `1px solid ${alpha(brandTokens.colors.giltEdge, 0.4)}`,
               '& .MuiChip-icon': { ml: 0.5, mr: -0.5 }
