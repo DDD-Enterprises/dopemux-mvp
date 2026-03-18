@@ -204,18 +204,56 @@ Running `./install.sh --full --yes` expects these values to be present ahead of 
   - Service health monitoring and auto-restart
   - Log aggregation and troubleshooting tools
 
+## 🎯 Usage Modes
+
+You can run the installer with specific flags to skip interactive selection:
+
+```bash
+# Core services only (Postgres, Redis, Qdrant, Orchestrator)
+./install.sh --quick
+
+# Full stack (adds PM, Research tools, Agents)
+./install.sh --full
+
+# Specific stack selection
+./install.sh --stack research
+```
+
+## 🧠 Generating Repository Ground Truth
+
+After installation, run the following command to build a comprehensive context pack for your AI agents:
+
+```bash
+dopemux truth
+```
+
+This command triggers the **Extraction Pipeline** (Phases A-S), which maps your codebases, documents, and system boundaries into a structured "Truth Pack."
+
+## 🏗️ Architecture & Modules
+
+Dopemux uses a modular Docker Compose architecture to manage its diverse services. The installer automatically selects the required fragments based on your chosen stack:
+
+- **`docker/compose.core.yml`**: Essential infrastructure (Postgres, Redis, Vector DB, Orchestrator).
+- **`docker/compose.pm.yml`**: Project Management stack (Leantime, MySQL).
+- **`docker/compose.routing.yml`**: Model routing and LLM gateway (LiteLLM, PAL).
+- **`docker/compose.research.yml`**: Deep research agents (GPT-Researcher, Exa).
+- **`docker/compose.agents.yml`**: Desktop automation and Webhook receivers.
+
+### Python Environment
+The `dopemux` CLI is installed into a dedicated virtual environment at `~/.dopemux/venv`. This prevents conflicts with your system Python and ensures all dependencies are isolated. The installer automatically adds this path to your `~/.zshrc` or `~/.bashrc`.
+
 ## 🖥️ System Requirements
 
 ### Minimum Requirements
 - **macOS** 12+ or **Linux** (Ubuntu 20.04+, CentOS 8+)
 - **Docker** 20.10+ with Docker Compose
-- **4GB RAM** (8GB recommended)
+- **8GB RAM** (Core installation only)
 - **10GB disk space**
 - **Git** 2.30+
 - **curl** for health checks
 
 ### Recommended Hardware
-- **8GB RAM** for full installation
+- **16GB+ RAM** for full installation (runs ~17 containerized services including vector databases and machine learning tools)
 - **SSD storage** for better performance
 - **Multi-core CPU** for parallel processing
 

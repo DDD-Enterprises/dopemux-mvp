@@ -1,0 +1,75 @@
+# Minimal MCP Stack for Testing
+version: '3.8'
+
+networks:
+  mcp-test-network:
+    driver: bridge
+
+services:
+  # Infrastructure
+  postgres:
+    image: postgres:16-alpine
+    container_name: test-postgres
+    environment:
+      - POSTGRES_USER=dopemux_age
+      - POSTGRES_PASSWORD=dopemux_age_dev_password
+      - POSTGRES_DB=dopemux_knowledge_graph
+    ports:
+      - "5433:5432"
+    networks:
+      - mcp-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dopemux_age"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: test-redis
+    ports:
+      - "6380:6379"
+    networks:
+      - mcp-test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: test-qdrant
+    ports:
+      - "6335:6333"
+    networks:
+      - mcp-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6333 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Conport MCP Server
+  conport:
+    build:
+      context: ./docker/mcp-servers/conport
+      dockerfile: Dockerfile
+    container_name: test-mcp-conport
+    environment:
+      - MCP_SERVER_PORT=3004
+      - AGE_HOST=postgres
+      - AGE_PORT=5432
+      - AGE_PASSWORD=dopemux_age_dev_password
+    ports:
+      - "3004:3004"
+    networks:
+      - mcp-test-network
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3004/health || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
