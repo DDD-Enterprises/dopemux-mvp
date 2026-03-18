@@ -1,4 +1,5 @@
 """DopetaskBundleLoader — find, validate, and parse Dopetask proof bundles."""
+
 from __future__ import annotations
 
 import json
@@ -26,9 +27,15 @@ class DopetaskBundleLoader:
     # handled with defaults when absent (e.g. lean manifests from engine lanes).
     REQUIRED_FIELDS: frozenset[str] = frozenset({"artifacts"})
     # Expected in full bundles; absence triggers DEGRADED (not ERROR)
-    EXPECTED_FIELDS: frozenset[str] = frozenset({
-        "status", "summary", "acceptance_checks", "validation", "manifest",
-    })
+    EXPECTED_FIELDS: frozenset[str] = frozenset(
+        {
+            "status",
+            "summary",
+            "acceptance_checks",
+            "validation",
+            "manifest",
+        }
+    )
     # Either tp_id or pr_id must be present — checked separately.
     ID_FIELDS = {"tp_id", "pr_id"}
 

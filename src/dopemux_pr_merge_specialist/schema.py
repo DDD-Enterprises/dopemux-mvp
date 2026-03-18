@@ -126,13 +126,21 @@ class Finding:
     kind: FindingSeverity
     finding_type: str
     message: str
+    id: str = ""
+    severity: Optional[FindingSeverity] = None
+    category: str = ""
+    suggestion: str = ""
     details: Dict[str, Any] = field(default_factory=dict)
     source: str = ""
     override: Optional[OverrideRecord] = None
 
     def to_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
-        payload["kind"] = self.kind.value if isinstance(self.kind, FindingSeverity) else str(self.kind)
+        payload["kind"] = (
+            self.kind.value
+            if isinstance(self.kind, FindingSeverity)
+            else str(self.kind)
+        )
         payload["override"] = None if self.override is None else self.override.to_dict()
         return payload
 
@@ -144,7 +152,11 @@ class Finding:
             details=self.details.get("detail") if self.details else None,
             metadata={
                 **self.details,
-                **({"override": self.override.to_dict()} if self.override is not None else {}),
+                **(
+                    {"override": self.override.to_dict()}
+                    if self.override is not None
+                    else {}
+                ),
             },
         )
 
@@ -246,7 +258,11 @@ class ValidationResult:
 
     @property
     def passed(self) -> bool:
-        return (self.status.value if isinstance(self.status, ValidationStatus) else str(self.status)) == ValidationStatus.PASSED.value
+        return (
+            self.status.value
+            if isinstance(self.status, ValidationStatus)
+            else str(self.status)
+        ) == ValidationStatus.PASSED.value
 
     @property
     def input_fingerprint(self) -> Optional[Fingerprint]:
@@ -254,13 +270,19 @@ class ValidationResult:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "status": self.status.value if isinstance(self.status, ValidationStatus) else str(self.status),
+            "status": (
+                self.status.value
+                if isinstance(self.status, ValidationStatus)
+                else str(self.status)
+            ),
             "required_for_merge_ready": self.required_for_merge_ready,
             "passed": self.passed,
             "attempts": self.attempts,
             "remediation_applied": self.remediation_applied,
             "steps": [step.to_dict() for step in self.steps],
-            "input_fingerprint": None if self.fingerprint is None else self.fingerprint.to_dict(),
+            "input_fingerprint": (
+                None if self.fingerprint is None else self.fingerprint.to_dict()
+            ),
         }
 
 
@@ -310,8 +332,14 @@ class PullRequestState:
 
     def to_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
-        payload["lifecycle_state"] = self.lifecycle_state.value if isinstance(self.lifecycle_state, PRState) else str(self.lifecycle_state)
-        payload["check_summary"] = None if self.check_summary is None else self.check_summary.to_dict()
+        payload["lifecycle_state"] = (
+            self.lifecycle_state.value
+            if isinstance(self.lifecycle_state, PRState)
+            else str(self.lifecycle_state)
+        )
+        payload["check_summary"] = (
+            None if self.check_summary is None else self.check_summary.to_dict()
+        )
         return payload
 
 
@@ -331,7 +359,11 @@ class ThreadDisposition:
 
     def to_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
-        payload["disposition"] = self.disposition.value if isinstance(self.disposition, ThreadDispositionType) else str(self.disposition)
+        payload["disposition"] = (
+            self.disposition.value
+            if isinstance(self.disposition, ThreadDispositionType)
+            else str(self.disposition)
+        )
         return payload
 
 
@@ -344,7 +376,11 @@ class MergeDecision:
 
     def to_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
-        payload["action"] = self.action.value if isinstance(self.action, MergeActionType) else str(self.action)
+        payload["action"] = (
+            self.action.value
+            if isinstance(self.action, MergeActionType)
+            else str(self.action)
+        )
         return payload
 
 
@@ -365,7 +401,9 @@ class PlanDecision:
             "blockers": [item.to_dict() for item in self.blockers],
             "warnings": self.warnings,
             "observations": self.observations,
-            "validation": None if self.validation is None else self.validation.to_dict(),
+            "validation": (
+                None if self.validation is None else self.validation.to_dict()
+            ),
             "decision_basis": self.decision_basis,
         }
 
@@ -389,7 +427,9 @@ class PhaseRecord:
             "truth_sources": [item.to_dict() for item in self.truth_sources],
             "precedence_order": self.precedence_order,
             "decision_basis": self.decision_basis,
-            "fingerprint": None if self.fingerprint is None else self.fingerprint.to_dict(),
+            "fingerprint": (
+                None if self.fingerprint is None else self.fingerprint.to_dict()
+            ),
             "artifacts": self.artifacts,
         }
 
@@ -435,7 +475,11 @@ class PreflightResult:
         return {
             "ok": self.ok,
             "checks": [item.to_dict() for item in self.checks],
-            "policy_resolution": None if self.policy_resolution is None else self.policy_resolution.to_dict(),
+            "policy_resolution": (
+                None
+                if self.policy_resolution is None
+                else self.policy_resolution.to_dict()
+            ),
             "override_records": [item.to_dict() for item in self.override_records],
         }
 
@@ -460,33 +504,58 @@ class PRResult:
         blockers = [
             item.as_blocker().to_dict()
             for item in self.findings
-            if (item.kind.value if isinstance(item.kind, FindingSeverity) else str(item.kind)) == FindingSeverity.BLOCKER.value
+            if (
+                item.kind.value
+                if isinstance(item.kind, FindingSeverity)
+                else str(item.kind)
+            )
+            == FindingSeverity.BLOCKER.value
         ]
         warnings = [
             item.to_dict()
             for item in self.findings
-            if (item.kind.value if isinstance(item.kind, FindingSeverity) else str(item.kind)) == FindingSeverity.WARNING.value
+            if (
+                item.kind.value
+                if isinstance(item.kind, FindingSeverity)
+                else str(item.kind)
+            )
+            == FindingSeverity.WARNING.value
         ]
         observations = [
             item.to_dict()
             for item in self.findings
-            if (item.kind.value if isinstance(item.kind, FindingSeverity) else str(item.kind)) == FindingSeverity.OBSERVATION.value
+            if (
+                item.kind.value
+                if isinstance(item.kind, FindingSeverity)
+                else str(item.kind)
+            )
+            == FindingSeverity.OBSERVATION.value
         ]
         return {
             "run_id": self.run_id,
             "pr_state": self.pr_state.to_dict(),
             "lifecycle_state": self.lifecycle_state,
             "apply_actions": self.apply_actions,
-            "merge_decision": None if self.merge_decision is None else self.merge_decision.to_dict(),
+            "merge_decision": (
+                None if self.merge_decision is None else self.merge_decision.to_dict()
+            ),
             "blockers": blockers,
             "warnings": warnings,
             "observations": observations,
             "truth_sources": [item.to_dict() for item in self.truth_sources],
             "precedence_order": self.precedence_order,
             "decision_basis": self.decision_basis,
-            "validation_report": None if self.validation_report is None else self.validation_report.to_dict(),
-            "thread_dispositions": [item.to_dict() for item in self.thread_dispositions],
-            "fingerprint": None if self.fingerprint is None else self.fingerprint.to_dict(),
+            "validation_report": (
+                None
+                if self.validation_report is None
+                else self.validation_report.to_dict()
+            ),
+            "thread_dispositions": [
+                item.to_dict() for item in self.thread_dispositions
+            ],
+            "fingerprint": (
+                None if self.fingerprint is None else self.fingerprint.to_dict()
+            ),
             "artifacts": self.artifacts,
         }
 
@@ -573,6 +642,7 @@ class PRMergeReport:
     autonomy_report: Optional[AutonomyGateReport] = None
     verification_plan: Optional[Any] = None
     metadata_update: Optional[Any] = None
+    remediation_flow_trace: Optional[RemediationFlowTrace] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -580,9 +650,40 @@ class PRMergeReport:
             "status": self.status,
             "blockers": [b.to_dict() for b in self.blockers],
             "telemetry": self.telemetry,
-            "review_reply_plan": self.review_reply_plan.to_dict() if self.review_reply_plan else None,
-            "consensus_decision": self.consensus_decision.to_dict() if self.consensus_decision else None,
-            "autonomy_report": self.autonomy_report.to_dict() if self.autonomy_report else None,
+            "review_reply_plan": (
+                self.review_reply_plan.to_dict() if self.review_reply_plan else None
+            ),
+            "consensus_decision": (
+                self.consensus_decision.to_dict() if self.consensus_decision else None
+            ),
+            "autonomy_report": (
+                self.autonomy_report.to_dict() if self.autonomy_report else None
+            ),
+            "remediation_flow_trace": (
+                self.remediation_flow_trace.to_dict() if self.remediation_flow_trace else None
+            ),
+        }
+
+
+@dataclass(frozen=True)
+class RemediationStageResult:
+    name: str
+    status: str
+    details: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class RemediationFlowTrace:
+    run_id: str
+    stages: List[RemediationStageResult] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "run_id": self.run_id,
+            "stages": [s.to_dict() for s in self.stages],
         }
 
 

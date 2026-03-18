@@ -45,7 +45,9 @@ class GitHubClient:
         self.max_attempts = int(retry.get("max_attempts", 3) or 3)
         self.backoff_seconds = int(retry.get("backoff_seconds", 2) or 2)
         self.max_backoff_seconds = int(retry.get("max_backoff_seconds", 10) or 10)
-        self.retryable_markers = [str(x).lower() for x in retry.get("retryable_gh_errors", [])]
+        self.retryable_markers = [
+            str(x).lower() for x in retry.get("retryable_gh_errors", [])
+        ]
         self.timeout_seconds = int(timeouts.get("gh_seconds", 120) or 120)
 
     def cache_summary(self) -> Dict[str, Any]:
@@ -72,16 +74,24 @@ class GitHubClient:
     def _run(self, cmd: Sequence[str]) -> CommandResult:
         last_result: Optional[CommandResult] = None
         for attempt in range(1, self.max_attempts + 1):
-            result = run_command(cmd, cwd=self.repo_root, timeout_seconds=self.timeout_seconds)
+            result = run_command(
+                cmd, cwd=self.repo_root, timeout_seconds=self.timeout_seconds
+            )
             last_result = result
             if result.returncode == 0:
                 return result
             stderr = (result.stderr or "").lower()
-            if attempt >= self.max_attempts or not any(marker in stderr for marker in self.retryable_markers):
+            if attempt >= self.max_attempts or not any(
+                marker in stderr for marker in self.retryable_markers
+            ):
                 return result
-            delay = min(self.backoff_seconds * (2 ** (attempt - 1)), self.max_backoff_seconds)
+            delay = min(
+                self.backoff_seconds * (2 ** (attempt - 1)), self.max_backoff_seconds
+            )
             time.sleep(delay)
-        return last_result or CommandResult(list(cmd), 1, "", "unknown GitHub command failure")
+        return last_result or CommandResult(
+            list(cmd), 1, "", "unknown GitHub command failure"
+        )
 
     def _cache_get(self, key: str) -> Optional[Any]:
         if key in self.cache:
@@ -97,7 +107,9 @@ class GitHubClient:
         if self.repo:
             self.cache["repo_slug"] = self.repo
             return self.repo
-        result = self._run(["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"])
+        result = self._run(
+            ["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]
+        )
         if result.returncode != 0:
             raise RuntimeError(f"Unable to resolve repo slug: {result.stderr.strip()}")
         slug = result.stdout.strip()
@@ -111,12 +123,11 @@ class GitHubClient:
         cached = self._cache_get(cache_key)
         if cached is not None:
             return list(cached)
+        # We want ALL non-closed PRs, including drafts
         cmd = [
             "gh",
             "pr",
             "list",
-            "--state",
-            "open",
             "--limit",
             str(limit),
             "--json",
@@ -153,6 +164,24 @@ class GitHubClient:
             raise RuntimeError("Unexpected gh pr list payload")
         self.cache[cache_key] = payload
         return payload
+
+    def ready_pr(self, pr_id: int) -> bool:
+        """Convert a draft PR to ready for review."""
+        cmd = ["gh", "pr", "ready", str(pr_id), *self._repo_args()]
+        result = self._run(cmd)
+        return result.returncode == 0
+
+    def get_authenticated_user(self) -> str:
+        """Get the login of the currently authenticated user."""
+        cached = self._cache_get("auth_user")
+        if cached:
+            return str(cached)
+        result = self._run(["gh", "api", "user", "--jq", ".login"])
+        if result.returncode != 0:
+            return ""
+        user = result.stdout.strip()
+        self.cache["auth_user"] = user
+        return user
 
     def fetch_pr(self, pr_id: int) -> Dict[str, Any]:
         cache_key = f"pr:{pr_id}"
@@ -217,8 +246,7 @@ class GitHubClient:
         cursor: Optional[str] = None
         while True:
             after_clause = "null" if cursor is None else f'"{cursor}"'
-            query = textwrap.dedent(
-                f"""
+            query = textwrap.dedent(f"""
                 query {{
                   repository(owner: \"{owner}\", name: \"{name}\") {{
                     pullRequest(number: {pr_id}) {{
@@ -250,8 +278,7 @@ class GitHubClient:
                     }}
                   }}
                 }}
-                """
-            ).strip()
+                """).strip()
             result = self._run(["gh", "api", "graphql", "-f", f"query={query}"])
             if result.returncode != 0:
                 raise RuntimeError(
@@ -269,7 +296,9 @@ class GitHubClient:
                 comments_page = node.get("comments", {}) or {}
                 comments = self._parse_comments(comments_page.get("nodes", []) or [])
                 if comments_page.get("pageInfo", {}).get("hasNextPage"):
-                    extra = self._fetch_thread_comments(node.get("id", ""), comments_page["pageInfo"].get("endCursor"))
+                    extra = self._fetch_thread_comments(
+                        node.get("id", ""), comments_page["pageInfo"].get("endCursor")
+                    )
                     comments.extend(extra)
                 threads.append(
                     ReviewThread(
@@ -293,12 +322,13 @@ class GitHubClient:
         self.cache[cache_key] = threads
         return threads
 
-    def _fetch_thread_comments(self, thread_id: str, cursor: Optional[str]) -> List[ThreadComment]:
+    def _fetch_thread_comments(
+        self, thread_id: str, cursor: Optional[str]
+    ) -> List[ThreadComment]:
         comments: List[ThreadComment] = []
         next_cursor = cursor
         while next_cursor:
-            query = textwrap.dedent(
-                f"""
+            query = textwrap.dedent(f"""
                 query {{
                   node(id: \"{thread_id}\") {{
                     ... on PullRequestReviewThread {{
@@ -317,11 +347,12 @@ class GitHubClient:
                     }}
                   }}
                 }}
-                """
-            ).strip()
+                """).strip()
             result = self._run(["gh", "api", "graphql", "-f", f"query={query}"])
             if result.returncode != 0:
-                raise RuntimeError(f"Unable to fetch paginated comments for thread {thread_id}")
+                raise RuntimeError(
+                    f"Unable to fetch paginated comments for thread {thread_id}"
+                )
             payload = json_loads_or_empty(result.stdout)
             comments_page = payload.get("data", {}).get("node", {}).get("comments", {})
             comments.extend(self._parse_comments(comments_page.get("nodes", []) or []))

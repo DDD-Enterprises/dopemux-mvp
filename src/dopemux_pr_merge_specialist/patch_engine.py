@@ -1,11 +1,12 @@
 """TP-PRMS-053: Code Editing and Patch Execution Engine."""
+
 from __future__ import annotations
 
 import json
 import time
 import traceback
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -33,12 +34,12 @@ class PatchScope:
 
 @dataclass
 class PatchPlan:
-    patch_id: str      # uuid4
+    patch_id: str  # uuid4
     patch_class: PatchClass
     scope: PatchScope
-    diff_text: str     # unified diff
+    diff_text: str  # unified diff
     created_at: float
-    provenance: dict   # {pr_id, run_id, origin_tactic, strategy_id}
+    provenance: dict  # {pr_id, run_id, origin_tactic, strategy_id}
 
 
 @dataclass
@@ -48,7 +49,7 @@ class PatchApplicationTrace:
     apply_blocked_reason: str | None
     verification_required: bool
     verification_plan_id: str | None
-    outcome: str    # APPLIED / STAGED / BLOCKED / FAILED
+    outcome: str  # APPLIED / STAGED / BLOCKED / FAILED
     computed_at: float
 
 
@@ -57,7 +58,9 @@ class PatchEngine:
 
     POSTURE_ALLOW_APPLY = {"GO_SUPERVISED_ONLY", "GO_FULL_AUTO"}
 
-    def __init__(self, ops_engine: FlightDeckOpsEngine, posture: str = "GO_SUPERVISED_ONLY"):
+    def __init__(
+        self, ops_engine: FlightDeckOpsEngine, posture: str = "GO_SUPERVISED_ONLY"
+    ):
         self.ops = ops_engine
         self.posture = posture
 
@@ -166,7 +169,10 @@ class PatchEngine:
                 )
 
             # SAFE_LOCAL_EDIT, SAFE_METADATA_EDIT, LOW_RISK_PATCH_PROPOSAL
-            if "APPLY_FIX" in allowed_actions and self.posture in self.POSTURE_ALLOW_APPLY:
+            if (
+                "APPLY_FIX" in allowed_actions
+                and self.posture in self.POSTURE_ALLOW_APPLY
+            ):
                 return PatchApplicationTrace(
                     patch_id=plan.patch_id,
                     applied=True,
@@ -199,9 +205,7 @@ class PatchEngine:
                 computed_at=time.time(),
             )
 
-    def log_provenance(
-        self, trace: PatchApplicationTrace, plan: PatchPlan
-    ) -> None:
+    def log_provenance(self, trace: PatchApplicationTrace, plan: PatchPlan) -> None:
         """Write to ops_engine.log_safety_event with patch metadata."""
         self.ops.log_safety_event(
             pr_id=plan.provenance.get("pr_id", "unknown"),

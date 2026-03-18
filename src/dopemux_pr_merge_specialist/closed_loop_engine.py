@@ -1,11 +1,12 @@
 """TP-PRMS-052: Closed-Loop Automation Engine."""
+
 from __future__ import annotations
 
 import json
-import uuid
 import time
 import traceback
-from dataclasses import dataclass, field, asdict
+import uuid
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -15,9 +16,10 @@ from .ops_engine import FlightDeckOpsEngine
 @dataclass
 class ClosedLoopTrace:
     """Audit record for one full closed-loop cycle."""
+
     pr_id: str
-    cycle_id: str          # uuid4
-    implicit_actions: list[dict]   # {action, reason, timestamp}
+    cycle_id: str  # uuid4
+    implicit_actions: list[dict]  # {action, reason, timestamp}
     state_before: dict
     state_after: dict
     next_tactic: str
@@ -110,29 +112,37 @@ class ClosedLoopEngine:
 
         try:
             # Phase 1: Refresh
-            implicit_actions.append({
-                "action": "REFRESH_STATE",
-                "reason": "Starting closed-loop cycle",
-                "timestamp": time.time(),
-            })
+            implicit_actions.append(
+                {
+                    "action": "REFRESH_STATE",
+                    "reason": "Starting closed-loop cycle",
+                    "timestamp": time.time(),
+                }
+            )
             state = self.refresh_mission_state(pr_id, report)
 
             # Phase 2: Select tactic
-            implicit_actions.append({
-                "action": "SELECT_TACTIC",
-                "reason": "Computing next safe tactic",
-                "timestamp": time.time(),
-            })
+            implicit_actions.append(
+                {
+                    "action": "SELECT_TACTIC",
+                    "reason": "Computing next safe tactic",
+                    "timestamp": time.time(),
+                }
+            )
             allowed = state.get("allowed_actions", [])
             tactic_result = self.select_next_tactic(state, allowed)
 
             # Phase 3: Recompute summary
-            implicit_actions.append({
-                "action": "RECOMPUTE_SUMMARY",
-                "reason": "Updating posture and blockers after tactic selection",
-                "timestamp": time.time(),
-            })
-            state_after = self.recompute_summary(pr_id, {"type": "cycle_complete"}, state)
+            implicit_actions.append(
+                {
+                    "action": "RECOMPUTE_SUMMARY",
+                    "reason": "Updating posture and blockers after tactic selection",
+                    "timestamp": time.time(),
+                }
+            )
+            state_after = self.recompute_summary(
+                pr_id, {"type": "cycle_complete"}, state
+            )
             state_after["selected_tactic"] = tactic_result["tactic"]
 
             return ClosedLoopTrace(

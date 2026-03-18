@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 
-
-CANONICAL_BODY_FIELDS = frozenset({
-    "status", "summary", "acceptance_checks", "validation", "artifacts", "manifest"
-})
+CANONICAL_BODY_FIELDS = frozenset(
+    {"status", "summary", "acceptance_checks", "validation", "artifacts", "manifest"}
+)
 
 _FIELD_DEFAULTS: dict[str, object] = {
     "status": "UNKNOWN",

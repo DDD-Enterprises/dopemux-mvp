@@ -64,7 +64,7 @@ class ClaudeConfigurator:
         self._copy_template_files(project_path, template)
 
         console.print(
-            f"[green]✓ Claude configuration setup complete for {template} project[/green]"
+            f"[success]✓ Claude configuration setup complete for {template} project[/success]"
         )
 
     def _create_claude_md(self, claude_dir: Path, template: str) -> None:
@@ -609,7 +609,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         config_file = project_path / ".dopemux" / "config.yaml"
 
         if not config_file.exists():
-            console.logger.info("[red]No Dopemux configuration found in project[/red]")
+            console.logger.info("[error]No Dopemux configuration found in project[/error]")
             return
 
         import yaml
@@ -633,7 +633,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         with open(config_file, "w") as f:
             yaml.dump(config, f, default_flow_style=False, indent=2)
 
-        console.logger.info(f"[green]✓ Updated project configuration[/green]")
+        console.logger.info(f"[success]✓ Updated project configuration[/success]")
 
     def get_project_status(self, project_path: Path) -> Dict[str, Any]:
         """Get project configuration status."""

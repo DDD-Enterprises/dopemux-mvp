@@ -4,7 +4,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .runtime import execute_or_dry_run, fingerprint_payload, shell_join
-from .schema import Fingerprint, ValidationReport, ValidationStatus, ValidationStepResult
+from .schema import (
+    Fingerprint,
+    ValidationReport,
+    ValidationStatus,
+    ValidationStepResult,
+)
 
 
 def validation_fingerprint(
@@ -48,6 +53,7 @@ def run_validation(
     base_sha: str,
     policy_fingerprint: str,
     lifecycle_state: str,
+    progress_callback: Optional[Callable[[str, str], None]] = None,
 ) -> ValidationReport:
     target_cwd = worktree_path or repo_root
     steps_cfg = list(policy.get("validation", {}).get("steps", []))
@@ -70,7 +76,9 @@ def run_validation(
         return ValidationReport(
             status=ValidationStatus.NOT_EXECUTED,
             required_for_merge_ready=bool(
-                policy.get("validation", {}).get("require_local_validation_for_merge_ready", True)
+                policy.get("validation", {}).get(
+                    "require_local_validation_for_merge_ready", True
+                )
             ),
             steps=steps,
             attempts=0,
@@ -83,14 +91,27 @@ def run_validation(
     for step in steps_cfg:
         command = [str(part) for part in step.get("command", [])]
         name = str(step.get("name", "unnamed-step"))
+        
+        if progress_callback:
+            progress_callback(f"Running step: {name}", "INFO")
+            
         result = execute_or_dry_run(
             command,
             execute=True,
             cwd=target_cwd,
             commands_log=commands_log,
-            timeout_seconds=int(policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600),
+            timeout_seconds=int(
+                policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+            ),
         )
         status = "passed" if result.returncode == 0 else "failed"
+        
+        if progress_callback:
+            if status == "passed":
+                progress_callback(f"Step '{name}' PASSED", "SUCCESS")
+            else:
+                progress_callback(f"Step '{name}' FAILED (Exit {result.returncode})", "ERROR")
+
         step_results.append(
             ValidationStepResult(
                 name=name,
@@ -108,7 +129,9 @@ def run_validation(
             return ValidationReport(
                 status=ValidationStatus.FAILED,
                 required_for_merge_ready=bool(
-                    policy.get("validation", {}).get("require_local_validation_for_merge_ready", True)
+                    policy.get("validation", {}).get(
+                        "require_local_validation_for_merge_ready", True
+                    )
                 ),
                 steps=step_results,
                 attempts=1,
@@ -118,7 +141,9 @@ def run_validation(
     return ValidationReport(
         status=ValidationStatus.PASSED,
         required_for_merge_ready=bool(
-            policy.get("validation", {}).get("require_local_validation_for_merge_ready", True)
+            policy.get("validation", {}).get(
+                "require_local_validation_for_merge_ready", True
+            )
         ),
         steps=step_results,
         attempts=1,

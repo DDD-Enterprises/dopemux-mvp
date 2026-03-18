@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, auto
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 
 class RenderMode(Enum):
@@ -11,185 +11,323 @@ class RenderMode(Enum):
 
 
 def detect_render_mode() -> RenderMode:
-    """Heuristically determine the best render mode for the current terminal."""
+    """Determine the best rendering mode based on terminal capabilities."""
     if not sys.stdout.isatty():
         return RenderMode.PLAIN
-    
-    # Try to get terminal size
+
+    # Check for Rich support
     try:
-        import shutil
-        columns, _ = shutil.get_terminal_size()
-        if columns < 80:
-            return RenderMode.COMPACT
-    except:
-        pass
-        
-    return RenderMode.RICH
-
-
-class RichTerminalRenderer:
-    """Provides spaceage terminal rendering with color and structural elements."""
-
-    def __init__(self, mode: Optional[RenderMode] = None, use_color: bool = True):
-        self.mode = mode or RenderMode.FULL
-        self.use_color = use_color
-        self.colors = {
-            "CRITICAL": "\033[1;31m",
-            "HIGH": "\033[31m",
-            "MEDIUM": "\033[33m",
-            "LOW": "\033[36m",
-            "INFO": "\033[32m",
-            "RESET": "\033[0m"
-        }
-
-    def badge(self, status: str, severity: str = "INFO") -> str:
-        """Render a status chip/badge."""
-        color = self.colors.get(severity, self.colors["INFO"]) if self.use_color else ""
-        reset = self.colors["RESET"] if self.use_color else ""
-        return f"{color}[ {status:^8} ]{reset}"
-
-    def table(self, title: str, headers: List[str], rows: List[List[Any]]):
-        """Render a clean monospace table."""
-        print(f"\n══ {title} ══")
-        
-        # Calculate widths
-        widths = [len(h) for h in headers]
-        for row in rows:
-            for i, val in enumerate(row):
-                widths[i] = max(widths[i], len(str(val)))
-        
-        # Header
-        header_line = " | ".join(f"{h:<{widths[i]}}" for i, h in enumerate(headers))
-        print(header_line)
-        print("-" * (sum(widths) + (len(headers) - 1) * 3))
-        
-        # Rows
-        for row in rows:
-            print(" | ".join(f"{str(val):<{widths[i]}}" for i, val in enumerate(row)))
-
-    def timeline(self, stages: List[str], active_index: int):
-        """Render a step-based progress timeline."""
-        output = "\n"
-        for i, stage in enumerate(stages):
-            if i == active_index:
-                color = self.colors["MEDIUM"] if self.use_color else ""
-                output += f" {color}[{stage}]{self.colors['RESET'] if self.use_color else ''}"
-            else:
-                output += f"  {stage}  "
-            
-            if i < len(stages) - 1:
-                output += " ➔ "
-        print(output + "\n")
-
-    def card(self, title: str, content: Dict[str, Any]):
-        """Render a grouped summary card."""
-        print(f"\n┌── {title} ──────────────────────────────────────")
-        for key, value in content.items():
-            print(f"│ {key:<15}: {value}")
-        print("└──────────────────────────────────────────────")
-
-    def mission_header_card(self, pr_id: str, repo: str, state: str, posture: str, risk: str, confidence: str, mission_line: str, return_obj: bool = False) -> Any:
-        """Render the primary mission intelligence header."""
-        from rich.panel import Panel
-        from rich.table import Table
-        from rich.text import Text
-        
-        table = Table.grid(padding=(0, 2))
-        table.add_column(style="bold cyan")
-        table.add_column()
-        
-        table.add_row("PR ID", f"#{pr_id}")
-        table.add_row("REPO", repo)
-        table.add_row("STATUS", Text(state, style="bold green" if state == "READY" else "bold red"))
-        table.add_row("POSTURE", Text(posture, style="bold magenta"))
-        table.add_row("RISK", Text(risk, style="bold yellow" if risk != "LOW" else "green"))
-        table.add_row("CONF", Text(confidence, style="bold cyan"))
-        
-        panel = Panel(table, title=f"MISSION INTEL: PR #{pr_id}", subtitle=mission_line, border_style="cyan")
-        if return_obj: return panel
-        print(panel)
-
-    def strategy_comparison_table(self, strategy_library: Dict[str, Any], selected_id: str, return_obj: bool = False) -> Any:
-        """Render a table comparing integration strategies."""
-        from rich.table import Table
-        from rich.panel import Panel
-        
-        table = Table(box=None, padding=(0, 1))
-        table.add_column("Strategy", style="bold cyan")
-        table.add_column("Risk", style="dim")
-        table.add_column("Description")
-        
-        for sid, strat in strategy_library.items():
-            style = "bold yellow" if sid == selected_id else "dim"
-            table.add_row(
-                strat.name if hasattr(strat, 'name') else sid,
-                strat.risk_profile if hasattr(strat, 'risk_profile') else "N/A",
-                strat.description if hasattr(strat, 'description') else "N/A",
-                style=style
-            )
-            
-        panel = Panel(table, title="STRATEGY ADJUDICATION", border_style="yellow")
-        if return_obj: return panel
-        print(panel)
-
-    def blocker_table(self, blockers: List[Any], return_obj: bool = False) -> Any:
-        """Render a list of active blockers."""
-        from rich.table import Table
-        from rich.panel import Panel
-        
-        table = Table(box=None)
-        table.add_column("Type", style="bold red")
-        table.add_column("Description")
-        
-        for b in blockers:
-            b_type = b.type if hasattr(b, 'type') else b.get('type', 'UNKNOWN')
-            b_desc = b.description if hasattr(b, 'description') else b.get('description', 'N/A')
-            table.add_row(b_type, b_desc)
-            
-        panel = Panel(table, title="ACTIVE BLOCKERS", border_style="red")
-        if return_obj: return panel
-        print(panel)
-
-    def stage_progress_rail(self, stages: List[Any]):
-        """Render a detailed progress rail for stages."""
         from rich.console import Console
-        from rich.text import Text
-        
-        output = Text()
-        for i, stage in enumerate(stages):
-            name = stage.name if hasattr(stage, 'name') else str(stage)
-            status = stage.status if hasattr(stage, 'status') else "PENDING"
-            
-            color = "green" if status == "SUCCESS" else "yellow" if status == "IN_PROGRESS" else "red" if status == "FAILURE" else "dim"
-            output.append(f" {name} ", style=color)
-            if i < len(stages) - 1:
-                output.append(" ➔ ", style="dim")
-        
-        print("\nREMEDIATION FLOW:")
-        Console().print(output)
 
-    def signoff_panel(self, action_class: str, required: bool, owner: str, state: str, last_timestamp: str):
-        """Render a formal sign-off panel."""
+        console = Console()
+        if console.width < 80:
+            return RenderMode.COMPACT
+        return RenderMode.RICH
+    except ImportError:
+        return RenderMode.PLAIN
+
+
+class TerminalRenderer:
+    """Base class for all terminal output."""
+
+    def __init__(self, mode: Optional[RenderMode] = None):
+        self.mode = mode or detect_render_mode()
+
+    def print_header(self, text: str):
+        pass
+
+    def print_success(self, text: str):
+        print(f"✅ {text}")
+
+    def print_error(self, text: str):
+        print(f"❌ {text}")
+
+    def print_warning(self, text: str):
+        print(f"⚠️ {text}")
+
+    def print_info(self, text: str):
+        print(f"ℹ️ {text}")
+
+
+class RichTerminalRenderer(TerminalRenderer):
+    """Advanced UI rendering using the Rich library."""
+
+    def __init__(self, mode: Optional[RenderMode] = None):
+        super().__init__(mode)
+        from rich.console import Console
+
+        self.console = Console()
+
+    def print_header(self, text: str):
         from rich.panel import Panel
-        from rich.text import Text
-        
-        content = Text.assemble(
-            ("ACTION   : ", "bold cyan"), f"{action_class}\n",
-            ("REQUIRED : ", "bold cyan"), f"{'YES' if required else 'NO'}\n",
-            ("OWNER    : ", "bold cyan"), f"{owner}\n",
-            ("STATE    : ", "bold cyan"), (state, "bold green"), f"\n",
-            ("STAMP    : ", "bold cyan"), last_timestamp
-        )
-        print(Panel(content, title="OPERATOR SIGNOFF", border_style="green"))
+
+        self.console.print(Panel(text, style="bold cyan", border_style="cyan"))
+
+    def print_success(self, text: str):
+        self.console.print(f"[bold green]✅ {text}[/bold green]")
+
+    def print_error(self, text: str):
+        self.console.print(f"[bold red]❌ {text}[/bold red]")
+
+    def print_warning(self, text: str):
+        self.console.print(f"[yellow]⚠️ {text}[/yellow]")
+
+    def print_info(self, text: str):
+        self.console.print(f"[blue]ℹ️ {text}[/blue]")
 
     def next_action_card(self, command: str, reason: str, severity: str):
         """Render the next recommended action."""
         from rich.panel import Panel
         from rich.text import Text
-        
-        color = "red" if severity == "HIGH" else "yellow" if severity == "MEDIUM" else "green"
+
+        color = (
+            "red"
+            if severity == "HIGH"
+            else "yellow" if severity == "MEDIUM" else "green"
+        )
         content = Text.assemble(
-            ("COMMAND : ", "bold cyan"), f"{command}\n",
-            ("REASON  : ", "bold cyan"), reason
+            ("COMMAND : ", "bold cyan"),
+            f"{command}\n",
+            ("REASON  : ", "bold cyan"),
+            reason,
         )
         print(Panel(content, title="NEXT ACTION", border_style=color))
+
+    def render_dashboard_layout(self, state: Any) -> Any:
+        """Assemble the entire Grand Dashboard layout using rich.layout.Layout."""
+        from rich.layout import Layout
+        from rich.panel import Panel
+        from rich.table import Table
+        from rich.text import Text
+        from rich.align import Align
+        import time
+
+        layout = Layout()
+        layout.split_column(
+            Layout(name="header", size=3),
+            Layout(name="body", ratio=1),
+            Layout(name="footer", size=3)
+        )
+        
+        # Header
+        grid = Table.grid(expand=True)
+        grid.add_column(justify="left", ratio=1)
+        grid.add_column(justify="right")
+        
+        title = Text.assemble(
+            ("🚀 ", "bold yellow"),
+            ("DOPEMUX ", "bold cyan"),
+            ("PR-MERGE ", "bold magenta"),
+            ("GRAND ORCHESTRATOR", "bold white")
+        )
+        
+        elapsed = int(time.time() - state.start_time)
+        timer = Text(f"MISSION TIME: {elapsed//60:02d}:{elapsed%60:02d}", style="dim yellow")
+        grid.add_row(title, timer)
+        layout["header"].update(Panel(grid, style="white on blue"))
+
+        # Body
+        layout["body"].split_row(
+            Layout(name="queue", ratio=2),
+            Layout(name="cockpit", ratio=3)
+        )
+
+        # Queue Table with Viewport logic
+        table = Table(expand=True, box=None)
+        table.add_column("PR#", style="bold cyan", width=6)
+        table.add_column("Title", ratio=1)
+        table.add_column("Status", justify="center")
+
+        total_prs = len(state.prs)
+        max_visible = 15
+        
+        start_idx = 0
+        if total_prs > max_visible:
+            start_idx = max(0, state.active_index - (max_visible // 2))
+            if start_idx + max_visible > total_prs:
+                start_idx = total_prs - max_visible
+        
+        end_idx = min(total_prs, start_idx + max_visible)
+
+        for i in range(start_idx, end_idx):
+            pr = state.prs[i]
+            is_active = i == state.active_index
+            row_style = "bold white on grey15" if is_active else "dim"
+            
+            step = str(pr.get("lifecycle_state", "discovered")).upper()
+            is_draft = bool(pr.get("is_draft", False))
+            
+            if is_draft:
+                status_icon = "📝"
+            elif "READY" in step or "MERGED" in step:
+                status_icon = "🟢"
+            elif "BLOCKED" in step or "CONFLICT" in step:
+                status_icon = "🔴"
+            else:
+                status_icon = "⏳"
+            
+            table.add_row(
+                f"{'> ' if is_active else '  '}{pr.get('pr_id', '???')}",
+                pr.get("title", "Unknown Title"),
+                status_icon,
+                style=row_style
+            )
+        
+        q_title = f"[ QUEUE STATUS ({total_prs}) ]"
+        if total_prs > max_visible:
+            q_title = f"[ QUEUE STATUS ({start_idx+1}-{end_idx} of {total_prs}) ]"
+            
+        layout["queue"].update(Panel(table, title=q_title, border_style="cyan"))
+
+        # Cockpit
+        active = state.active_pr
+        if active:
+            cockpit = Layout()
+            cockpit.split_column(
+                Layout(name="top", ratio=3),
+                Layout(name="middle", size=3),
+                Layout(name="bottom", ratio=2)
+            )
+            cockpit["top"].split_row(
+                Layout(name="intel", ratio=2),
+                Layout(name="stats", ratio=1),
+                Layout(name="blockers", ratio=2)
+            )
+            
+            # Intel
+            intel_text = Text()
+            intel_text.append(f"#{active.get('pr_id')} | ", style="bold cyan")
+            intel_text.append(f"{active.get('title', 'Unknown')[:60]}...\n", style="white")
+            intel_text.append(f"STRATEGY : {active.get('merge_strategy', 'MECHANICAL')}\n", style="bold magenta")
+            intel_text.append(f"RATIONALE: {active.get('rationale', 'Standard rebase.')[:150]}...", style="dim")
+            cockpit["top"]["intel"].update(Panel(intel_text, title="MISSION INTEL", border_style="magenta"))
+            
+            # Stats
+            stats_text = Text()
+            stats_text.append("CI STATUS: ", style="bold")
+            ci = active.get("ci_status", "UNKNOWN")
+            stats_text.append(f"{ci}\n", style="green" if ci == "SUCCESS" else "red" if ci == "FAILURE" else "yellow")
+            stats_text.append(f"THREADS  : {active.get('unresolved_threads', 0)} unresolved\n", style="cyan")
+            stats_text.append(f"RISK     : {active.get('risk_score', 0.0):.1f}", style="orange")
+            cockpit["top"]["stats"].update(Panel(stats_text, title="QUICK STATS", border_style="blue"))
+
+            # Blockers & Warnings
+            blocker_text = Text()
+            blockers = active.get("blockers", [])
+            warnings = active.get("warnings", [])
+            history = active.get("history", [])
+            
+            if not blockers:
+                blocker_text.append("✅ ALL SYSTEMS NOMINAL\n", style="bold green")
+                if warnings:
+                    blocker_text.append(f"⚠️ {len(warnings)} Advisory Warnings\n", style="yellow")
+                else:
+                    blocker_text.append("Ready for integration.\n", style="dim green")
+            else:
+                for b in blockers[:3]:
+                    b_type = str(b.get('type', '???')).replace('_', ' ').upper()
+                    b_name = b.get('name', b.get('description', 'Blocker'))
+                    blocker_text.append(f"❌ {b_type}: ", style="bold red")
+                    blocker_text.append(f"{b_name[:40]}\n", style="white")
+            
+            if history:
+                blocker_text.append("\n📜 MISSION HISTORY:\n", style="bold cyan")
+                for h in history[-3:]:
+                    blocker_text.append(f"  • {h.get('event')} ", style="dim white")
+                    blocker_text.append(f"({h.get('timestamp')})\n", style="dim cyan")
+            
+            cockpit["top"]["blockers"].update(Panel(blocker_text, title="TACTICAL INSIGHTS", border_style="red" if blockers else "green"))
+
+            # Middle row: Horizontal Stats
+            middle_grid = Table.grid(expand=True)
+            middle_grid.add_column(ratio=1)
+            middle_grid.add_column(ratio=1)
+            
+            is_draft = bool(active.get("is_draft", False))
+            draft_text = Text.assemble(("DRAFT MODE: ", "bold"), ("ENABLED" if is_draft else "DISABLED", "yellow" if is_draft else "dim white"))
+            
+            middle_grid.add_row(Align.center(draft_text), Align.center(Text("")))
+            cockpit["middle"].update(Panel(middle_grid, border_style="blue"))
+
+            # Bottom row: Objective or Execution Log
+            log_text = Text()
+            execution_log = getattr(state, "execution_log", [])
+            if not execution_log:
+                lc_state = str(active.get("lifecycle_state", "discovered")).upper()
+                obj_text = Text()
+                if is_draft:
+                    obj_text.append("🎯 OBJECTIVE: Transition PR out of DRAFT mode.\n", style="bold yellow")
+                    obj_text.append("NEXT STEP: Press [R] to mark as READY FOR REVIEW.", style="white")
+                elif "READY" in lc_state:
+                    obj_text.append("🎯 OBJECTIVE: Final sign-off and integration.\n", style="bold green")
+                    obj_text.append("NEXT STEP: Press [A] to Approve or [I] to Implement Merge.", style="white")
+                elif "THREAD" in lc_state or "COMMENT" in lc_state:
+                    obj_text.append("🎯 OBJECTIVE: Resolve outstanding reviewer feedback.\n", style="bold yellow")
+                    obj_text.append("NEXT STEP: Press [T] to review threads or [P] to auto-patch trivial suggestions.", style="white")
+                elif "CONFLICT" in lc_state:
+                    obj_text.append("🎯 OBJECTIVE: Reconcile branch divergence.\n", style="bold red")
+                    obj_text.append("NEXT STEP: Press [I] to launch the Fusion Engine.", style="white")
+                elif "MERGED" in lc_state:
+                    obj_text.append("🏁 MISSION ACCOMPLISHED\n", style="bold green")
+                    obj_text.append("PR has been successfully integrated.", style="white")
+                else:
+                    obj_text.append(f"🎯 OBJECTIVE: Advance PR from {lc_state} state.\n", style="bold cyan")
+                    obj_text.append("NEXT STEP: Perform system verification [V] to refresh state.", style="white")
+                
+                cockpit["bottom"].update(Panel(obj_text, title="MISSION OBJECTIVE", border_style="cyan"))
+            else:
+                for step in execution_log[-5:]:
+                    s_type = step.get("type", "INFO")
+                    s_msg = step.get("message", "")
+                    s_ts = step.get("timestamp", "")
+                    color = "green" if s_type == "SUCCESS" else "red" if s_type == "ERROR" else "yellow" if s_type == "START" else "white"
+                    log_text.append(f"[{s_ts}] {s_msg}\n", style=color)
+                
+                cockpit["bottom"].update(Panel(log_text, title="EXECUTION LOG", border_style="yellow"))
+            
+            layout["cockpit"].update(cockpit)
+        else:
+            layout["cockpit"].update(
+                Panel("No PR selected", border_style="dim")
+            )
+
+        # Footer
+        controls = Text.assemble(
+            ("[A] ", "bold cyan"), "Approve  ",
+            ("[B] ", "bold blue"), "Bulk Approve  ",
+            ("[R] ", "bold green"), "Ready  ",
+            ("[P] ", "bold magenta"), "Patch  ",
+            ("[I] ", "bold yellow"), "Implement  ",
+            ("[T] ", "bold blue"), "Threads  ",
+            ("[V] ", "bold green"), "Verify  ",
+            ("[S] ", "bold white"), "Skip  ",
+            ("[X] ", "bold orange"), "Auto-Pilot  ",
+            ("[Q] ", "bold red"), "Quit"
+        )
+        footer_grid = Table.grid(expand=True)
+        
+        ap_status = Text("AUTO-PILOT: ", style="bold")
+        if getattr(state, "auto_pilot", False):
+            ap_status.append("ENGAGED", style="blink bold green")
+        else:
+            ap_status.append("DISENGAGED", style="dim white")
+
+        footer_grid.add_row(
+            controls,
+            Align.right(
+                Text.assemble(
+                    ap_status,
+                    ("  |  ", "dim"),
+                    (state.status_message, "italic dim white")
+                )
+            ),
+        )
+        layout["footer"].update(
+            Panel(
+                footer_grid,
+                title="TACTICAL CONTROLS",
+                border_style="dim",
+            )
+        )
+
+        return layout

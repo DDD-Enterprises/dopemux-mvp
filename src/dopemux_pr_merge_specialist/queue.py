@@ -12,19 +12,94 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from .github_api import BOT_AUTHORS, GitHubClient, ci_status, summarize_checks, thread_counters
-from .policy import PolicyError, load_effective_policy, policy_artifact_payload, policy_fingerprint
-from .runtime import CommandResult, append_command_log, execute_or_dry_run, fingerprint_payload, pid_is_running, run_command, run_id, shell_join, snapshot_environment, utc_now, write_json, write_text
-from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, TOOL_VERSION
-from .validation import run_validation, validation_report_md
+from .classification import (
+    CLASS_PRIORITY,
+    VALID_TRANSITIONS,
+    _severity_value,
+    _state_value,
+    _status_value,
+    build_pr_state,
+    classify_pr,
+    ensure_transition,
+    has_conflicts,
+    lifecycle_for_findings,
+    risk_score,
+)
+from .github_api import (
+    BOT_AUTHORS,
+    GitHubClient,
+    ci_status,
+    summarize_checks,
+    thread_counters,
+)
+from .policy import (
+    PolicyError,
+    load_effective_policy,
+    policy_artifact_payload,
+    policy_fingerprint,
+)
+from .runtime import (
+    CommandResult,
+    append_command_log,
+    execute_or_dry_run,
+    fingerprint_payload,
+    pid_is_running,
+    run_command,
+    run_id,
+    shell_join,
+    snapshot_environment,
+    utc_now,
+    write_json,
+    write_text,
+)
+from .schema import (
+    ARTIFACT_VERSION,
+    POLICY_SCHEMA_VERSION,
+    TOOL_VERSION,
+    ArtifactMeta,
+    BlockerType,
+    FallbackReason,
+    Finding,
+    FindingSeverity,
+    Fingerprint,
+    MergeActionType,
+    MergeDecision,
+    OverrideRecord,
+    PhaseRecord,
+    PreflightCheck,
+    PreflightResult,
+    PRResult,
+    PRState,
+    PRStateData,
+    PullRequestState,
+    QueueOrderingLayer,
+    ReviewThread,
+    RunManifest,
+    ThreadComment,
+    ThreadDisposition,
+    ThreadDispositionType,
+    TruthSource,
+    ValidationReport,
+    ValidationStatus,
+)
 from .strategy_library import STRATEGY_LIBRARY
+from .validation import run_validation, validation_report_md
 
-
-
-from .classification import _status_value, _severity_value, _state_value, ensure_transition, classify_pr, risk_score, build_pr_state, lifecycle_for_findings, has_conflicts, CLASS_PRIORITY, VALID_TRANSITIONS
-__all__ = ['parse_pr_id_args', 'priority_key', 'build_dependency_edges', 'sort_states', 'apply_priority_preferences', 'snapshot_payload', 'require_clean_worktree', 'acquire_queue_lock', 'release_queue_lock', 'QUEUE_LOCK_PATH']
+__all__ = [
+    "parse_pr_id_args",
+    "priority_key",
+    "build_dependency_edges",
+    "sort_states",
+    "apply_priority_preferences",
+    "snapshot_payload",
+    "require_clean_worktree",
+    "acquire_queue_lock",
+    "release_queue_lock",
+    "QUEUE_LOCK_PATH",
+]
 
 QUEUE_LOCK_PATH = Path("tmp") / "pr_merge_specialist_queue.lock"
+
 
 def parse_pr_id_args(values: Sequence[str]) -> List[int]:
     parsed: List[int] = []
@@ -42,6 +117,7 @@ def parse_pr_id_args(values: Sequence[str]) -> List[int]:
         ordered.append(pr_id)
     return ordered
 
+
 def require_clean_worktree(repo_root: Path) -> Tuple[bool, str]:
     result = run_command(["git", "status", "--porcelain"], cwd=repo_root)
     if result.returncode != 0:
@@ -50,7 +126,8 @@ def require_clean_worktree(repo_root: Path) -> Tuple[bool, str]:
         return False, result.stdout.strip()
     return True, ""
 
-def acquire_queue_lock(repo_root: Path, active_run_id: str) -> Tuple[bool, Path, str]:
+
+def acquire_queue_lock(repo_root: Path, active_run_id: str = "unknown") -> Tuple[bool, Path, str]:
     lock_path = repo_root / QUEUE_LOCK_PATH
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {"pid": os.getpid(), "run_id": active_run_id, "started_at": utc_now()}
@@ -73,18 +150,26 @@ def acquire_queue_lock(repo_root: Path, active_run_id: str) -> Tuple[bool, Path,
         handle.write("\n")
     return True, lock_path, ""
 
+
 def release_queue_lock(lock_path: Optional[Path]) -> None:
     if lock_path and lock_path.exists():
         lock_path.unlink()
 
-def priority_key(pr: PullRequestState) -> Tuple[int, float, int, str, int]:
+
+def priority_key(pr: PullRequestState, policy: Optional[Dict[str, Any]] = None) -> Tuple[int, float, int, str, int]:
+    from .scoring import AdvancedQueueScorer
+    scorer = AdvancedQueueScorer(policy=policy)
+    
+    wsemt_score = scorer.calculate_wsemt_score(pr)
+    
     return (
         CLASS_PRIORITY.get(pr.pr_class, 99),
-        pr.risk_score,
+        -wsemt_score, # Higher score = better priority
         pr.diff_size,
         pr.updated_at,
         pr.pr_id,
     )
+
 
 def build_dependency_edges(states: List[PullRequestState]) -> Dict[int, List[int]]:
     edges: Dict[int, List[int]] = defaultdict(list)
@@ -95,26 +180,46 @@ def build_dependency_edges(states: List[PullRequestState]) -> Dict[int, List[int
             edges[depends_on].append(pr.pr_id)
     return {key: sorted(set(value)) for key, value in edges.items()}
 
-def sort_states(states: List[PullRequestState], strategy: str) -> Tuple[List[PullRequestState], List[QueueOrderingLayer], Dict[int, List[int]], bool]:
+
+def sort_states(
+    states: List[PullRequestState], strategy: str, policy: Optional[Dict[str, Any]] = None
+) -> Tuple[
+    List[PullRequestState], List[QueueOrderingLayer], Dict[int, List[int]], bool
+]:
     if len(states) <= 3 or strategy == "simple":
-        ordered = sorted(states, key=priority_key)
-        return ordered, [QueueOrderingLayer(layer=0, pr_ids=[item.pr_id for item in ordered])], {}, False
+        ordered = sorted(states, key=lambda p: priority_key(p, policy=policy))
+        return (
+            ordered,
+            [QueueOrderingLayer(layer=0, pr_ids=[item.pr_id for item in ordered])],
+            {},
+            False,
+        )
     edges = build_dependency_edges(states)
     if not edges:
-        ordered = sorted(states, key=priority_key)
-        return ordered, [QueueOrderingLayer(layer=0, pr_ids=[item.pr_id for item in ordered])], {}, False
+        ordered = sorted(states, key=lambda p: priority_key(p, policy=policy))
+        return (
+            ordered,
+            [QueueOrderingLayer(layer=0, pr_ids=[item.pr_id for item in ordered])],
+            {},
+            False,
+        )
     by_id = {item.pr_id: item for item in states}
     indegree: Dict[int, int] = {item.pr_id: 0 for item in states}
     for targets in edges.values():
         for target in targets:
             indegree[target] = indegree.get(target, 0) + 1
-    queue: deque[int] = deque(sorted([pid for pid, count in indegree.items() if count == 0], key=lambda pid: priority_key(by_id[pid])))
+    queue: deque[int] = deque(
+        sorted(
+            [pid for pid, count in indegree.items() if count == 0],
+            key=lambda pid: priority_key(by_id[pid], policy=policy),
+        )
+    )
     ordered_ids: List[int] = []
     layers: List[QueueOrderingLayer] = []
     visited: set[int] = set()
     layer_index = 0
     while queue:
-        layer_items = sorted(list(queue), key=lambda pid: priority_key(by_id[pid]))
+        layer_items = sorted(list(queue), key=lambda pid: priority_key(by_id[pid], policy=policy))
         queue.clear()
         layers.append(QueueOrderingLayer(layer=layer_index, pr_ids=layer_items))
         layer_index += 1
@@ -129,12 +234,21 @@ def sort_states(states: List[PullRequestState], strategy: str) -> Tuple[List[Pul
                     queue.append(child)
     cycle = len(visited) != len(states)
     if cycle:
-        remaining = sorted([item.pr_id for item in states if item.pr_id not in visited], key=lambda pid: priority_key(by_id[pid]))
+        remaining = sorted(
+            [item.pr_id for item in states if item.pr_id not in visited],
+            key=lambda pid: priority_key(by_id[pid], policy=policy),
+        )
         layers.append(QueueOrderingLayer(layer=layer_index, pr_ids=remaining))
         ordered_ids.extend(remaining)
     return [by_id[pid] for pid in ordered_ids], layers, edges, cycle
 
-def apply_priority_preferences(states: List[PullRequestState], *, only_ids: Sequence[int], prioritize_ids: Sequence[int]) -> List[PullRequestState]:
+
+def apply_priority_preferences(
+    states: List[PullRequestState],
+    *,
+    only_ids: Sequence[int],
+    prioritize_ids: Sequence[int],
+) -> List[PullRequestState]:
     filtered = states
     if only_ids:
         allowed = set(only_ids)
@@ -146,6 +260,7 @@ def apply_priority_preferences(states: List[PullRequestState], *, only_ids: Sequ
     remainder = [pr for pr in filtered if pr.pr_id not in priority_rank]
     prioritized.sort(key=lambda pr: priority_rank[pr.pr_id])
     return prioritized + remainder
+
 
 def snapshot_payload(states: List[PullRequestState]) -> List[Dict[str, Any]]:
     return [state.to_dict() for state in states]

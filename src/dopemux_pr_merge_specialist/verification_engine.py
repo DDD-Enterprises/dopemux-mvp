@@ -1,10 +1,16 @@
+import json
 import re
 import subprocess
 import time
-import json
 from pathlib import Path
-from typing import List, Dict, Any, Optional
-from .schema import FeedbackItem, VerificationRequest, VerificationResult, VerificationExecutionPlan
+from typing import Any, Dict, List, Optional
+
+from .schema import (
+    FeedbackItem,
+    VerificationExecutionPlan,
+    VerificationRequest,
+    VerificationResult,
+)
 
 
 class VerificationExtractor:
@@ -24,12 +30,14 @@ class VerificationExtractor:
         for item in items:
             for pattern, intent in self.patterns:
                 if re.search(pattern, item.text):
-                    requests.append(VerificationRequest(
-                        id=f"VERIF_{item.id}_{intent}",
-                        intent=f"Requested by {item.author}: {intent}",
-                        source_item_id=item.id,
-                        command_intent=intent
-                    ))
+                    requests.append(
+                        VerificationRequest(
+                            id=f"VERIF_{item.id}_{intent}",
+                            intent=f"Requested by {item.author}: {intent}",
+                            source_item_id=item.id,
+                            command_intent=intent,
+                        )
+                    )
         return requests
 
 
@@ -42,11 +50,13 @@ class CommandMapper:
             "pytest": "pytest",
             "lint": "ruff check .",
             "typecheck": "mypy .",
-            "verify_migration": "ls src/dopemux_pr_merge_specialist/", # Placeholder
-            "build": "python3 -m build"
+            "verify_migration": "ls src/dopemux_pr_merge_specialist/",  # Placeholder
+            "build": "python3 -m build",
         }
 
-    def map_requests(self, requests: List[VerificationRequest]) -> VerificationExecutionPlan:
+    def map_requests(
+        self, requests: List[VerificationRequest]
+    ) -> VerificationExecutionPlan:
         executable = []
         manual = []
         refused = []
@@ -55,16 +65,24 @@ class CommandMapper:
             command = self.policy_map.get(req.command_intent)
             if command:
                 # Security: Only allow exact mapped commands
-                executable.append(VerificationRequest(
-                    **{**req.__dict__, "mapped_command": command, "status": "EXECUTABLE"}
-                ))
+                executable.append(
+                    VerificationRequest(
+                        **{
+                            **req.__dict__,
+                            "mapped_command": command,
+                            "status": "EXECUTABLE",
+                        }
+                    )
+                )
             else:
                 # If intent not in map, default to manual
-                manual.append(VerificationRequest(
-                    **{**req.__dict__, "status": "MANUAL"}
-                ))
+                manual.append(
+                    VerificationRequest(**{**req.__dict__, "status": "MANUAL"})
+                )
 
-        return VerificationExecutionPlan(executable=executable, manual=manual, refused=refused)
+        return VerificationExecutionPlan(
+            executable=executable, manual=manual, refused=refused
+        )
 
 
 class VerificationExecutor:
@@ -79,7 +97,7 @@ class VerificationExecutor:
         for req in plan.executable:
             print(f"  ⚡ Executing: {req.mapped_command}")
             start_time = time.time()
-            
+
             # Execute with timeout
             try:
                 res = subprocess.run(
@@ -87,39 +105,47 @@ class VerificationExecutor:
                     shell=True,
                     capture_output=True,
                     text=True,
-                    timeout=300 # 5 min limit
+                    timeout=300,  # 5 min limit
                 )
                 duration_ms = (time.time() - start_time) * 1000
-                
+
                 # Store evidence
                 evidence_path = self.evidence_dir / f"{req.id}.log"
-                evidence_path.write_text(f"Command: {req.mapped_command}\nSTDOUT:\n{res.stdout}\nSTDERR:\n{res.stderr}")
-                
-                results.append(VerificationResult(
-                    request_id=req.id,
-                    command=req.mapped_command,
-                    exit_code=res.returncode,
-                    stdout=res.stdout[:1000], # Cap for report
-                    stderr=res.stderr[:1000],
-                    duration_ms=duration_ms,
-                    evidence_path=str(evidence_path)
-                ))
+                evidence_path.write_text(
+                    f"Command: {req.mapped_command}\nSTDOUT:\n{res.stdout}\nSTDERR:\n{res.stderr}"
+                )
+
+                results.append(
+                    VerificationResult(
+                        request_id=req.id,
+                        command=req.mapped_command,
+                        exit_code=res.returncode,
+                        stdout=res.stdout[:1000],  # Cap for report
+                        stderr=res.stderr[:1000],
+                        duration_ms=duration_ms,
+                        evidence_path=str(evidence_path),
+                    )
+                )
             except subprocess.TimeoutExpired:
-                results.append(VerificationResult(
-                    request_id=req.id,
-                    command=req.mapped_command,
-                    exit_code=-1,
-                    stdout="",
-                    stderr="TIMEOUT EXPIRED",
-                    duration_ms=300000.0
-                ))
+                results.append(
+                    VerificationResult(
+                        request_id=req.id,
+                        command=req.mapped_command,
+                        exit_code=-1,
+                        stdout="",
+                        stderr="TIMEOUT EXPIRED",
+                        duration_ms=300000.0,
+                    )
+                )
             except Exception as e:
-                results.append(VerificationResult(
-                    request_id=req.id,
-                    command=req.mapped_command,
-                    exit_code=-1,
-                    stdout="",
-                    stderr=f"Error executing command: {str(e)}",
-                    duration_ms=0.0
-                ))
+                results.append(
+                    VerificationResult(
+                        request_id=req.id,
+                        command=req.mapped_command,
+                        exit_code=-1,
+                        stdout="",
+                        stderr=f"Error executing command: {str(e)}",
+                        duration_ms=0.0,
+                    )
+                )
         return results

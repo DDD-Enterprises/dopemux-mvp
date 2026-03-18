@@ -201,7 +201,9 @@ def _load_yaml(path: Path) -> Dict[str, Any]:
     return payload
 
 
-def discover_policy_path(repo_root: Path, explicit_path: Optional[str] = None) -> Tuple[Path, str]:
+def discover_policy_path(
+    repo_root: Path, explicit_path: Optional[str] = None
+) -> Tuple[Path, str]:
     if explicit_path:
         path = Path(explicit_path)
         if not path.is_absolute():
@@ -221,14 +223,22 @@ def _validate_command_steps(steps: Iterable[Dict[str, Any]], *, section: str) ->
         if not step.get("name"):
             raise PolicyError(f"{section}.steps[{index}] is missing 'name'.")
         command = step.get("command")
-        if not isinstance(command, list) or not command or not all(isinstance(x, str) and x for x in command):
-            raise PolicyError(f"{section}.steps[{index}] must define a non-empty string command list.")
+        if (
+            not isinstance(command, list)
+            or not command
+            or not all(isinstance(x, str) and x for x in command)
+        ):
+            raise PolicyError(
+                f"{section}.steps[{index}] must define a non-empty string command list."
+            )
 
 
 def validate_policy(policy: Dict[str, Any]) -> None:
     missing = [key for key in REQUIRED_TOP_LEVEL_KEYS if key not in policy]
     if missing:
-        raise PolicyError(f"Policy is missing required top-level keys: {', '.join(missing)}")
+        raise PolicyError(
+            f"Policy is missing required top-level keys: {', '.join(missing)}"
+        )
     version = policy.get("version")
     if version != POLICY_SCHEMA_VERSION:
         raise PolicyError(
@@ -244,7 +254,15 @@ def validate_policy(policy: Dict[str, Any]) -> None:
     if not isinstance(validation, dict):
         raise PolicyError("validation must be a mapping.")
     _validate_command_steps(validation.get("steps", []), section="validation")
-    for section_name in ("gates", "thread_rules", "check_rules", "conflict_rules", "safety", "retry", "merge"):
+    for section_name in (
+        "gates",
+        "thread_rules",
+        "check_rules",
+        "conflict_rules",
+        "safety",
+        "retry",
+        "merge",
+    ):
         if not isinstance(policy.get(section_name), dict):
             raise PolicyError(f"{section_name} must be a mapping.")
     negative_allowlist = policy["safety"].get("negative_allowlist")

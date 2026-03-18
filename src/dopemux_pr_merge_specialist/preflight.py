@@ -12,18 +12,98 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from .github_api import BOT_AUTHORS, GitHubClient, ci_status, summarize_checks, thread_counters
-from .policy import PolicyError, load_effective_policy, policy_artifact_payload, policy_fingerprint
-from .runtime import CommandResult, append_command_log, execute_or_dry_run, fingerprint_payload, pid_is_running, run_command, run_id, shell_join, snapshot_environment, utc_now, write_json, write_text
-from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, TOOL_VERSION
-from .validation import run_validation, validation_report_md
+from .classification import (
+    CLASS_PRIORITY,
+    VALID_TRANSITIONS,
+    _severity_value,
+    _state_value,
+    _status_value,
+    build_pr_state,
+    classify_pr,
+    ensure_transition,
+    has_conflicts,
+    lifecycle_for_findings,
+    risk_score,
+)
+from .github_api import (
+    BOT_AUTHORS,
+    GitHubClient,
+    ci_status,
+    summarize_checks,
+    thread_counters,
+)
+from .policy import (
+    PolicyError,
+    load_effective_policy,
+    policy_artifact_payload,
+    policy_fingerprint,
+)
+from .queue import (
+    QUEUE_LOCK_PATH,
+    acquire_queue_lock,
+    apply_priority_preferences,
+    build_dependency_edges,
+    parse_pr_id_args,
+    priority_key,
+    release_queue_lock,
+    require_clean_worktree,
+    snapshot_payload,
+    sort_states,
+)
+from .runtime import (
+    CommandResult,
+    append_command_log,
+    execute_or_dry_run,
+    fingerprint_payload,
+    pid_is_running,
+    run_command,
+    run_id,
+    shell_join,
+    snapshot_environment,
+    utc_now,
+    write_json,
+    write_text,
+)
+from .schema import (
+    ARTIFACT_VERSION,
+    POLICY_SCHEMA_VERSION,
+    TOOL_VERSION,
+    ArtifactMeta,
+    BlockerType,
+    FallbackReason,
+    Finding,
+    FindingSeverity,
+    Fingerprint,
+    MergeActionType,
+    MergeDecision,
+    OverrideRecord,
+    PhaseRecord,
+    PreflightCheck,
+    PreflightResult,
+    PRResult,
+    PRState,
+    PRStateData,
+    PullRequestState,
+    QueueOrderingLayer,
+    ReviewThread,
+    RunManifest,
+    ThreadComment,
+    ThreadDisposition,
+    ThreadDispositionType,
+    TruthSource,
+    ValidationReport,
+    ValidationStatus,
+)
 from .strategy_library import STRATEGY_LIBRARY
+from .validation import run_validation, validation_report_md
 
-
-
-from .queue import parse_pr_id_args, priority_key, build_dependency_edges, sort_states, apply_priority_preferences, snapshot_payload, require_clean_worktree, acquire_queue_lock, release_queue_lock, QUEUE_LOCK_PATH
-from .classification import _status_value, _severity_value, _state_value, ensure_transition, classify_pr, risk_score, build_pr_state, lifecycle_for_findings, has_conflicts, CLASS_PRIORITY, VALID_TRANSITIONS
-__all__ = ['preflight', 'manifest_for_run', 'write_manifest', 'build_run_paths', 'pr_dir_for']
+__all__ = [
+    "preflight",
+    "manifest_for_run",
+    "write_manifest",
+    "build_run_paths",
+    "pr_dir_for",
+]
 
 
 def build_run_paths(out_dir: str, active_run_id: str) -> Tuple[Path, Path, Path]:
@@ -34,12 +114,21 @@ def build_run_paths(out_dir: str, active_run_id: str) -> Tuple[Path, Path, Path]
     pr_root.mkdir(parents=True, exist_ok=True)
     return run_dir, queue_dir, pr_root
 
+
 def pr_dir_for(pr_root: Path, pr_id: int) -> Path:
     path = pr_root / str(pr_id)
     path.mkdir(parents=True, exist_ok=True)
     return path
 
-def manifest_for_run(*, active_run_id: str, mode: str, repo_root: Path, repo_slug: str, policy: Dict[str, Any]) -> RunManifest:
+
+def manifest_for_run(
+    *,
+    active_run_id: str,
+    mode: str,
+    repo_root: Path,
+    repo_slug: str,
+    policy: Dict[str, Any],
+) -> RunManifest:
     return RunManifest(
         run_id=active_run_id,
         mode=mode,
@@ -52,7 +141,13 @@ def manifest_for_run(*, active_run_id: str, mode: str, repo_root: Path, repo_slu
             "policy_schema_version": str(POLICY_SCHEMA_VERSION),
         },
         completed_phases=[],
-        resumable_phases=["queue-scan", "pr-plan", "pr-apply", "pr-merge", "queue-drain"],
+        resumable_phases=[
+            "queue-scan",
+            "pr-plan",
+            "pr-apply",
+            "pr-merge",
+            "queue-drain",
+        ],
         invalidation_conditions=[
             "policy fingerprint changes",
             "planned PR head SHA changes",
@@ -63,16 +158,23 @@ def manifest_for_run(*, active_run_id: str, mode: str, repo_root: Path, repo_slu
         artifact_pointers={},
     )
 
+
 def write_manifest(run_dir: Path, manifest: RunManifest) -> None:
     write_json(run_dir / "RUN_MANIFEST.json", manifest.to_dict())
 
+
 def preflight(args: argparse.Namespace) -> int:
     from .plan_builder import artifact_meta
+
     repo_root = Path.cwd()
     active_run_id = getattr(args, "run_id", None) or run_id()
     run_dir, _, _ = build_run_paths(args.out_dir, active_run_id)
-    policy = load_effective_policy(repo_root, explicit_path=getattr(args, "policy", None))
-    client = GitHubClient(repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy)
+    policy = load_effective_policy(
+        repo_root, explicit_path=getattr(args, "policy", None)
+    )
+    client = GitHubClient(
+        repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy
+    )
     repo_slug = client.resolve_repo_slug()
     binaries = ["git", "gh", "python", "pre-commit"]
     checks: List[PreflightCheck] = []
@@ -98,7 +200,9 @@ def preflight(args: argparse.Namespace) -> int:
             remediation="Run `gh auth login` for the target repository.",
         )
     )
-    remote = run_command(["git", "remote", "get-url", "origin"], cwd=repo_root, timeout_seconds=30)
+    remote = run_command(
+        ["git", "remote", "get-url", "origin"], cwd=repo_root, timeout_seconds=30
+    )
     checks.append(
         PreflightCheck(
             name="git_remote",
@@ -108,7 +212,9 @@ def preflight(args: argparse.Namespace) -> int:
             remediation="Configure the `origin` remote.",
         )
     )
-    worktree = run_command(["git", "worktree", "list"], cwd=repo_root, timeout_seconds=60)
+    worktree = run_command(
+        ["git", "worktree", "list"], cwd=repo_root, timeout_seconds=60
+    )
     checks.append(
         PreflightCheck(
             name="git_worktree",
@@ -165,11 +271,15 @@ def preflight(args: argparse.Namespace) -> int:
     precheck = PreflightResult(
         ok=all(item.status in {"passed", "warning"} for item in checks),
         checks=checks,
-        policy_resolution=policy_artifact_payload(policy).get("policy_resolution"),  # placeholder, replaced below
+        policy_resolution=policy_artifact_payload(policy).get(
+            "policy_resolution"
+        ),  # placeholder, replaced below
         override_records=overrides,
     )
     precheck_payload = precheck.to_dict()
-    precheck_payload["meta"] = artifact_meta(repo_root=repo_root, repo_slug=repo_slug, run_identifier=active_run_id).to_dict()
+    precheck_payload["meta"] = artifact_meta(
+        repo_root=repo_root, repo_slug=repo_slug, run_identifier=active_run_id
+    ).to_dict()
     precheck_payload["policy_resolution"] = {
         "source": policy_artifact_payload(policy).get("policy_source", ""),
         "path": policy_artifact_payload(policy).get("policy_path", ""),

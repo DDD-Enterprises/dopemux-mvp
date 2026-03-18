@@ -49,13 +49,16 @@ def run_command(
             check=False,
             timeout=timeout_seconds,
         )
-        return CommandResult(list(cmd), completed.returncode, completed.stdout, completed.stderr, False)
+        return CommandResult(
+            list(cmd), completed.returncode, completed.stdout, completed.stderr, False
+        )
     except subprocess.TimeoutExpired as exc:
         return CommandResult(
             list(cmd),
             124,
             exc.stdout or "",
-            (exc.stderr or "") + f"\nCommand timed out after {timeout_seconds} seconds.",
+            (exc.stderr or "")
+            + f"\nCommand timed out after {timeout_seconds} seconds.",
             True,
         )
 
@@ -72,7 +75,9 @@ def ensure_parent(path: Path) -> None:
 
 def write_json(path: Path, payload: Any) -> None:
     ensure_parent(path)
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
 
 
 def write_text(path: Path, text: str) -> None:
@@ -80,7 +85,9 @@ def write_text(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def append_command_log(path: Path, result: CommandResult, *, dry_run: bool = False) -> None:
+def append_command_log(
+    path: Path, result: CommandResult, *, dry_run: bool = False
+) -> None:
     ensure_parent(path)
     mode = "a" if path.exists() else "w"
     with path.open(mode, encoding="utf-8") as handle:
@@ -112,13 +119,19 @@ def execute_or_dry_run(
     commands_log: Path,
     timeout_seconds: int = 600,
 ) -> CommandResult:
-    result = run_command(cmd, cwd=cwd, timeout_seconds=timeout_seconds) if execute else dry_run_result(cmd)
+    result = (
+        run_command(cmd, cwd=cwd, timeout_seconds=timeout_seconds)
+        if execute
+        else dry_run_result(cmd)
+    )
     append_command_log(commands_log, result, dry_run=not execute)
     return result
 
 
 def fingerprint_payload(payload: Any) -> str:
-    return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def fingerprint_text(text: str) -> str:
@@ -138,7 +151,9 @@ def pid_is_running(pid: int) -> bool:
 def snapshot_environment(repo_root: Path) -> Dict[str, Any]:
     return {
         "cwd": str(repo_root),
-        "python": os.environ.get("PYENV_VERSION") or os.environ.get("VIRTUAL_ENV") or "system",
+        "python": os.environ.get("PYENV_VERSION")
+        or os.environ.get("VIRTUAL_ENV")
+        or "system",
         "platform": os.uname().sysname if hasattr(os, "uname") else os.name,
         "pid": os.getpid(),
     }

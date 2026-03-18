@@ -3,6 +3,7 @@
 Implements the spaceage cockpit layout with 8 UX components rendered via
 RichTerminalRenderer.  Gracefully degrades to PLAIN/COMPACT modes.
 """
+
 from __future__ import annotations
 
 import json
@@ -10,15 +11,16 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .ux_engine import RichTerminalRenderer, RenderMode, detect_render_mode
-from .strategy_library import STRATEGY_LIBRARY
 from .closed_loop_engine import ClosedLoopEngine
+from .strategy_library import STRATEGY_LIBRARY
+from .ux_engine import RenderMode, RichTerminalRenderer, detect_render_mode
 
 try:
     from rich.layout import Layout as _RLayout
     from rich.live import Live as _RLive
     from rich.panel import Panel as _RPanel
     from rich.text import Text as _RText
+
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
@@ -46,6 +48,30 @@ class InteractiveMergeWizard:
 
     def run(self) -> None:
         """Launch the interactive wizard."""
+        # Auto-pilot bypass
+        auto_pilot = getattr(self, "auto_pilot", False)
+        focus_pr_id = getattr(self, "focus_pr_id", None)
+        
+        if auto_pilot:
+            if focus_pr_id:
+                self._render_pr(str(focus_pr_id))
+            else:
+                # Process all PRs from queue
+                print("📡 Auto-pilot scanning queue...")
+                try:
+                    from .remediation_orchestrator import RemediationOrchestrator
+                    orchestrator = RemediationOrchestrator(self.manager)
+                    # Use a dummy scan if no direct method, or just get list from manager
+                    prs = getattr(self.manager, "fetch_open_prs", lambda x: [])(10)
+                    for pr in prs:
+                        pr_id = str(pr.get("number"))
+                        print(f"🎯 Auto-pilot focusing on PR #{pr_id}")
+                        self._render_pr(pr_id)
+                        time.sleep(2)
+                except Exception as e:
+                    print(f"Auto-pilot error: {e}")
+            return
+
         # Use full RICH cockpit if possible
         if RICH_AVAILABLE and self.mode in (RenderMode.RICH, RenderMode.FULL):
             self._run_rich()
@@ -86,11 +112,14 @@ class InteractiveMergeWizard:
         if self.ops and isinstance(self.ops, type(self.ops)):
             try:
                 from .ops_engine import FlightDeckOpsEngine
+
                 if isinstance(self.ops, FlightDeckOpsEngine):
                     loop_engine = ClosedLoopEngine(self.ops, STRATEGY_LIBRARY)
                     report_dict = report.to_dict() if hasattr(report, "to_dict") else {}
                     loop_trace = loop_engine.run_cycle(pr_id, report_dict)
-                    print(f"\n[CLOSED-LOOP] Cycle complete. Next tactic: {loop_trace.next_tactic} | Posture: {loop_trace.posture}")
+                    print(
+                        f"\n[CLOSED-LOOP] Cycle complete. Next tactic: {loop_trace.next_tactic} | Posture: {loop_trace.posture}"
+                    )
             except Exception as _e:
                 pass  # Non-fatal; degrade gracefully
 
@@ -119,8 +148,13 @@ class InteractiveMergeWizard:
             mission_line=mission_line,
             return_obj=True,
         )
-        if RICH_AVAILABLE and header_obj is not None and not isinstance(header_obj, str):
+        if (
+            RICH_AVAILABLE
+            and header_obj is not None
+            and not isinstance(header_obj, str)
+        ):
             from rich.console import Console
+
             Console().print(header_obj)
         else:
             print(header_obj or "")
@@ -130,8 +164,13 @@ class InteractiveMergeWizard:
             strat_obj = self.ux.strategy_comparison_table(
                 STRATEGY_LIBRARY, strategy_label, return_obj=True
             )
-            if RICH_AVAILABLE and strat_obj is not None and not isinstance(strat_obj, str):
+            if (
+                RICH_AVAILABLE
+                and strat_obj is not None
+                and not isinstance(strat_obj, str)
+            ):
                 from rich.console import Console
+
                 Console().print(strat_obj)
             else:
                 print(strat_obj or "")
@@ -140,8 +179,13 @@ class InteractiveMergeWizard:
         blockers = getattr(report, "blockers", [])
         if blockers:
             blocker_obj = self.ux.blocker_table(blockers, return_obj=True)
-            if RICH_AVAILABLE and blocker_obj is not None and not isinstance(blocker_obj, str):
+            if (
+                RICH_AVAILABLE
+                and blocker_obj is not None
+                and not isinstance(blocker_obj, str)
+            ):
                 from rich.console import Console
+
                 Console().print(blocker_obj)
             else:
                 print(blocker_obj or "")
@@ -168,9 +212,15 @@ class InteractiveMergeWizard:
         if loop_trace is not None and loop_trace.next_tactic != "DEFER":
             # Overlay loop-selected tactic into next action reason
             if next_action is None:
-                next_action = {"command": "queue-scan", "reason": f"Loop tactic: {loop_trace.next_tactic}", "severity": "INFO"}
+                next_action = {
+                    "command": "queue-scan",
+                    "reason": f"Loop tactic: {loop_trace.next_tactic}",
+                    "severity": "INFO",
+                }
             else:
-                next_action["reason"] = f"[{loop_trace.next_tactic}] {next_action['reason']}"
+                next_action["reason"] = (
+                    f"[{loop_trace.next_tactic}] {next_action['reason']}"
+                )
         if next_action:
             self.ux.next_action_card(
                 command=next_action["command"],
@@ -205,6 +255,7 @@ class InteractiveMergeWizard:
         """Fetch a remediation report for the given PR ID."""
         try:
             from .remediation_orchestrator import RemediationOrchestrator
+
             run_id = time.strftime("%Y%m%d_%H%M%S")
             orchestrator = RemediationOrchestrator(self.manager)
             return orchestrator.run_flow(pr_id, run_id)
@@ -257,11 +308,27 @@ class InteractiveMergeWizard:
             return None
         status = getattr(report, "status", "")
         if status == "merge_ready":
-            return {"command": "pr-fix --id {pr_id} --tier 1", "reason": "PR is ready for merge queue.", "severity": "LOW"}
+            return {
+                "command": "pr-fix --id {pr_id} --tier 1",
+                "reason": "PR is ready for merge queue.",
+                "severity": "LOW",
+            }
         elif status == "blocked":
             blockers = getattr(report, "blockers", [])
             if blockers:
                 b = blockers[0]
-                desc = getattr(b, "description", b.get("description", "")) if isinstance(b, dict) else b.description
-                return {"command": "queue-scan", "reason": f"Resolve blocker: {desc[:60]}", "severity": "HIGH"}
-        return {"command": "queue-scan", "reason": "Review PR queue.", "severity": "INFO"}
+                desc = (
+                    getattr(b, "description", b.get("description", ""))
+                    if isinstance(b, dict)
+                    else b.description
+                )
+                return {
+                    "command": "queue-scan",
+                    "reason": f"Resolve blocker: {desc[:60]}",
+                    "severity": "HIGH",
+                }
+        return {
+            "command": "queue-scan",
+            "reason": "Review PR queue.",
+            "severity": "INFO",
+        }

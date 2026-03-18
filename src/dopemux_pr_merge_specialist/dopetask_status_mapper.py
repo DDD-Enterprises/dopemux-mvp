@@ -1,4 +1,5 @@
 """DopetaskStatusMapper — map Dopetask governance states without flattening."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -8,18 +9,33 @@ from dataclasses import dataclass, field
 # ---------------------------------------------------------------------------
 
 TP_STATUS_VALUES = {
-    "PLANNED", "IN_PROGRESS", "VALIDATED", "OPERATIONAL",
-    "BLOCKED", "DEFERRED", "FAILED", "UNKNOWN",
+    "PLANNED",
+    "IN_PROGRESS",
+    "VALIDATED",
+    "OPERATIONAL",
+    "BLOCKED",
+    "DEFERRED",
+    "FAILED",
+    "UNKNOWN",
 }
 
 POSTURE_MODE_VALUES = {
-    "ADVISORY_ONLY", "GO_SUPERVISED_ONLY", "LIVE_SAFE",
-    "DEFER_ONLY", "GO_FULL_AUTO", "HOLD", "UNKNOWN",
+    "ADVISORY_ONLY",
+    "GO_SUPERVISED_ONLY",
+    "LIVE_SAFE",
+    "DEFER_ONLY",
+    "GO_FULL_AUTO",
+    "HOLD",
+    "UNKNOWN",
 }
 
 HEADLINE_STATE_VALUES = {
-    "READY", "BLOCKED", "DEFERRED", "SUPERVISED",
-    "INCIDENT", "UNKNOWN",
+    "READY",
+    "BLOCKED",
+    "DEFERRED",
+    "SUPERVISED",
+    "INCIDENT",
+    "UNKNOWN",
 }
 
 # Identity maps — Dopetask semantics preserved exactly
@@ -62,6 +78,7 @@ POSTURE_BLOCKED_ACTIONS: dict[str, list[str]] = {
 # ---------------------------------------------------------------------------
 # Dataclasses (also imported by dopetask_bundle_loader and dopetask_adapter)
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class DopetaskTPIdentity:
@@ -129,7 +146,9 @@ class DopetaskOperatorView:
 
 @dataclass
 class DopetaskIntegration:
-    loaded_from: str   # "canonical_bundle" | "compatibility_manifest" | "launch" | "bundle"
+    loaded_from: (
+        str  # "canonical_bundle" | "compatibility_manifest" | "launch" | "bundle"
+    )
     adapter_status: str  # "READY" | "DEGRADED" | "ERROR"
     errors: list[str]
     warnings: list[str]
@@ -156,6 +175,7 @@ class DopetaskAdapterResult:
 # Mapper
 # ---------------------------------------------------------------------------
 
+
 class DopetaskStatusMapper:
     """Map Dopetask governance states preserving all semantics (no flattening)."""
 
@@ -175,11 +195,13 @@ class DopetaskStatusMapper:
             advisory_only=(m == "ADVISORY_ONLY"),
             signoff_required=(m in {"GO_SUPERVISED_ONLY", "ADVISORY_ONLY"}),
             defer_only=(m == "DEFER_ONLY"),
-            auto_apply_allowed=(m in {"GO_FULL_AUTO", "LIVE_SAFE", "GO_SUPERVISED_ONLY"}),
+            auto_apply_allowed=(
+                m in {"GO_FULL_AUTO", "LIVE_SAFE", "GO_SUPERVISED_ONLY"}
+            ),
             auto_apply_risk_threshold=(
-                "HIGH" if m == "GO_FULL_AUTO"
-                else "MEDIUM" if m == "LIVE_SAFE"
-                else "LOW"
+                "HIGH"
+                if m == "GO_FULL_AUTO"
+                else "MEDIUM" if m == "LIVE_SAFE" else "LOW"
             ),
         )
 
@@ -191,8 +213,12 @@ class DopetaskStatusMapper:
     ) -> DopetaskGovernance:
         """Derive governance object from posture + bundle data."""
         pm = self.map_posture(posture)
-        allowed = list(bundle.get("allowed_actions", POSTURE_ALLOWED_ACTIONS.get(pm, [])))
-        blocked = list(bundle.get("blocked_actions", POSTURE_BLOCKED_ACTIONS.get(pm, [])))
+        allowed = list(
+            bundle.get("allowed_actions", POSTURE_ALLOWED_ACTIONS.get(pm, []))
+        )
+        blocked = list(
+            bundle.get("blocked_actions", POSTURE_BLOCKED_ACTIONS.get(pm, []))
+        )
         signoff_required = pm in {"GO_SUPERVISED_ONLY", "ADVISORY_ONLY"}
         return DopetaskGovernance(
             allowed_actions=allowed,
@@ -203,9 +229,11 @@ class DopetaskStatusMapper:
                 "reason": (
                     "Supervised posture requires explicit review"
                     if pm == "GO_SUPERVISED_ONLY"
-                    else "Advisory posture: no automated action permitted"
-                    if pm == "ADVISORY_ONLY"
-                    else ""
+                    else (
+                        "Advisory posture: no automated action permitted"
+                        if pm == "ADVISORY_ONLY"
+                        else ""
+                    )
                 ),
             },
         )
@@ -221,7 +249,9 @@ class DopetaskStatusMapper:
         p = self.map_posture(posture)
 
         if s == "FAILED":
-            base = "Engine run failed. Review errors and relaunch with corrected context."
+            base = (
+                "Engine run failed. Review errors and relaunch with corrected context."
+            )
         elif s == "BLOCKED":
             base = "Engine blocked. Resolve blockers before proceeding."
         elif p == "GO_SUPERVISED_ONLY":

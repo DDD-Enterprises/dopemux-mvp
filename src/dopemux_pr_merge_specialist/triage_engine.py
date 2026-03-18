@@ -1,5 +1,6 @@
 import re
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from .schema import CITriageCategory
 
 
@@ -24,11 +25,11 @@ class TriageRule:
         """Check if this rule matches a given check run dictionary."""
         if self.conclusion and check_run.get("conclusion") != self.conclusion:
             return False
-        
+
         if self.check_name_pattern:
             if not re.search(self.check_name_pattern, check_run.get("name", "")):
                 return False
-                
+
         return True
 
 
@@ -43,29 +44,29 @@ class TriageEngine:
                 category="INFRA",
                 retryable=True,
                 reason="Job timed out, likely infrastructure congestion.",
-                conclusion="TIMED_OUT"
+                conclusion="TIMED_OUT",
             ),
             TriageRule(
                 name="Action Required / Governance",
                 category="GOVERNANCE",
                 retryable=False,
                 reason="Manual intervention or governance check required.",
-                conclusion="ACTION_REQUIRED"
+                conclusion="ACTION_REQUIRED",
             ),
             TriageRule(
                 name="Known Flaky Pattern",
                 category="FLAKE",
                 retryable=True,
                 reason="Matches known flaky test pattern.",
-                check_name_pattern=r"(e2e|integration|selenium)"
+                check_name_pattern=r"(e2e|integration|selenium)",
             ),
             TriageRule(
                 name="Generic Code Failure",
                 category="CODE",
                 retryable=False,
                 reason="Standard check failure, likely a bug or linter error.",
-                conclusion="FAILURE"
-            )
+                conclusion="FAILURE",
+            ),
         ]
 
     def triage(self, check_runs: List[Dict[str, Any]]) -> Dict[str, CITriageCategory]:
@@ -74,31 +75,31 @@ class TriageEngine:
         for run in check_runs:
             name = run.get("name", "unknown")
             conclusion = run.get("conclusion")
-            
+
             if conclusion in ["SUCCESS", "NEUTRAL", "SKIPPED"]:
                 continue
-                
+
             matched = False
             for rule in self.rules:
                 if rule.matches(run):
                     results[name] = rule.category
                     matched = True
                     break
-            
+
             if not matched:
                 results[name] = "UNKNOWN"
-                
+
         return results
 
     def is_retryable(self, triage_results: Dict[str, CITriageCategory]) -> bool:
         """Determine if the overall PR state is retryable based on triage results."""
         if not triage_results:
             return False
-            
+
         # If any failure is CODE or GOVERNANCE, it's NOT retryable automatically
         non_retryable = {"CODE", "GOVERNANCE", "UNKNOWN"}
         for cat in triage_results.values():
             if cat in non_retryable:
                 return False
-        
+
         return True

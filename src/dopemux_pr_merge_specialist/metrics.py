@@ -1,7 +1,8 @@
 import json
 import time
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 from .schema import PRMergeReport
 
 
@@ -33,12 +34,16 @@ class MetricsEngine:
                 "retry_count": "int",
                 "ci_rerun_count": "int",
                 "incident": "bool",
-                "rollback_event": "bool"
+                "rollback_event": "bool",
             }
         }
-        (self.metrics_path / "METRICS_SCHEMA.json").write_text(json.dumps(schema, indent=2))
+        (self.metrics_path / "METRICS_SCHEMA.json").write_text(
+            json.dumps(schema, indent=2)
+        )
 
-    def log_event(self, report: PRMergeReport, duration_ms: float = 0.0, rollout_tier: str = "0"):
+    def log_event(
+        self, report: PRMergeReport, duration_ms: float = 0.0, rollout_tier: str = "0"
+    ):
         """Log a merge event with expanded adoption and incident metadata."""
         event = {
             "timestamp": time.time(),
@@ -58,12 +63,12 @@ class MetricsEngine:
             "retry_count": report.telemetry.get("retry_count", 0),
             "ci_rerun_count": report.telemetry.get("ci_rerun_count", 0),
             "incident": report.telemetry.get("incident", False),
-            "rollback_event": report.telemetry.get("rollback_event", False)
+            "rollback_event": report.telemetry.get("rollback_event", False),
         }
-        
+
         date_str = time.strftime("%Y-%m-%d")
         ledger_file = self.metrics_path / f"events-{date_str}.jsonl"
-        
+
         with open(ledger_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(event) + "\n")
 
@@ -71,7 +76,7 @@ class MetricsEngine:
         """Calculate real rollups and emit required hardening reports."""
         events = []
         ledger_files = sorted(self.metrics_path.glob("events-*.jsonl"))
-        
+
         for lf in ledger_files:
             with open(lf, "r", encoding="utf-8") as f:
                 for line in f:
@@ -84,14 +89,23 @@ class MetricsEngine:
             return {"total_runs": 0}
 
         total_runs = len(events)
-        successes = len([e for e in events if e.get("status") in ["merged", "merge_ready"]])
-        first_pass_successes = len([e for e in events if e.get("status") in ["merged", "merge_ready"] and e.get("retry_count", 0) == 0])
+        successes = len(
+            [e for e in events if e.get("status") in ["merged", "merge_ready"]]
+        )
+        first_pass_successes = len(
+            [
+                e
+                for e in events
+                if e.get("status") in ["merged", "merge_ready"]
+                and e.get("retry_count", 0) == 0
+            ]
+        )
         total_duration = sum(e.get("duration_ms", 0.0) for e in events)
         total_score = sum(e.get("score", 0.0) for e in events)
         total_retries = sum(e.get("retry_count", 0) for e in events)
         total_ci_reruns = sum(e.get("ci_rerun_count", 0) for e in events)
         total_incidents = len([e for e in events if e.get("incident")])
-        
+
         blocker_dist = {}
         conflict_dist = {}
         for e in events:
@@ -111,25 +125,33 @@ class MetricsEngine:
             "total_incidents": total_incidents,
             "blocker_distribution": blocker_dist,
             "conflict_class_frequency": conflict_dist,
-            "queue_admission_rate": round(len([e for e in events if e.get("is_in_queue")]) / total_runs, 2)
+            "queue_admission_rate": round(
+                len([e for e in events if e.get("is_in_queue")]) / total_runs, 2
+            ),
         }
 
         # Hard Gate Artifacts
-        (self.metrics_path / "METRICS_SUMMARY.json").write_text(json.dumps(summary, indent=2))
-        
+        (self.metrics_path / "METRICS_SUMMARY.json").write_text(
+            json.dumps(summary, indent=2)
+        )
+
         rollup_report = {
             "period_start": events[0]["timestamp"] if events else 0,
             "period_end": events[-1]["timestamp"] if events else 0,
             "metrics": summary,
-            "trends": "STABLE"
+            "trends": "STABLE",
         }
-        (self.metrics_path / "METRICS_ROLLUP_REPORT.json").write_text(json.dumps(rollup_report, indent=2))
-        
+        (self.metrics_path / "METRICS_ROLLUP_REPORT.json").write_text(
+            json.dumps(rollup_report, indent=2)
+        )
+
         cost_rollup = {
             "rerun_cost_proxy": total_ci_reruns * 1.0,
             "ci_waste_potential_proxy": (total_runs - successes) * 0.5,
-            "label": "Honest Cost Proxy (1.0 units per rerun)"
+            "label": "Honest Cost Proxy (1.0 units per rerun)",
         }
-        (self.metrics_path / "CI_COST_ROLLUP.json").write_text(json.dumps(cost_rollup, indent=2))
+        (self.metrics_path / "CI_COST_ROLLUP.json").write_text(
+            json.dumps(cost_rollup, indent=2)
+        )
 
         return summary

@@ -1,28 +1,29 @@
 """TP-PRMS-054: Edit-Verify-Gate-Signoff Fusion Engine."""
+
 from __future__ import annotations
 
 import json
 import time
 import traceback
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
 from .ops_engine import FlightDeckOpsEngine
-from .patch_engine import PatchClass, PatchEngine, PatchPlan, PatchApplicationTrace
+from .patch_engine import PatchApplicationTrace, PatchClass, PatchEngine, PatchPlan
 
 
 @dataclass
 class SignoffPacket:
-    packet_id: str    # uuid4
+    packet_id: str  # uuid4
     patch_id: str
     trigger_reason: str
     patch_class: str
     risk_class: str
     verification_outcome: str
     owner: str
-    state: str        # PENDING_SIGNOFF
+    state: str  # PENDING_SIGNOFF
     created_at: float
 
 
@@ -30,7 +31,9 @@ class SignoffPacket:
 class DeferPacket:
     packet_id: str
     patch_id: str
-    defer_reason: str   # VERIFICATION_FAILED | INSUFFICIENT_EVIDENCE | POLICY_BLOCK | ...
+    defer_reason: (
+        str  # VERIFICATION_FAILED | INSUFFICIENT_EVIDENCE | POLICY_BLOCK | ...
+    )
     blockers: list[dict]
     created_at: float
 
@@ -40,7 +43,7 @@ class FusionTrace:
     trace_id: str
     pr_id: str
     patch_id: str
-    stages: list[dict]   # [{stage, outcome, timestamp}]
+    stages: list[dict]  # [{stage, outcome, timestamp}]
     signoff_packet: SignoffPacket | None
     defer_packet: DeferPacket | None
     final_state: dict
@@ -142,7 +145,8 @@ class FusionEngine:
 
         conditions = [
             plan.patch_class == PatchClass.SIGNOFF_REQUIRED_PATCH,
-            plan.scope.risk_class in ("MEDIUM", "HIGH") and verification.get("passed", False),
+            plan.scope.risk_class in ("MEDIUM", "HIGH")
+            and verification.get("passed", False),
             gate.get("decision") != "DEFER",
         ]
         # At least one condition triggers signoff
@@ -204,43 +208,71 @@ class FusionEngine:
 
         try:
             # Stage 1: Verify
-            stages.append({"stage": "VERIFY", "outcome": "STARTED", "timestamp": time.time()})
+            stages.append(
+                {"stage": "VERIFY", "outcome": "STARTED", "timestamp": time.time()}
+            )
             verification = self.run_verification(plan, apply_trace)
-            stages.append({
-                "stage": "VERIFY",
-                "outcome": verification["status"],
-                "timestamp": time.time(),
-            })
+            stages.append(
+                {
+                    "stage": "VERIFY",
+                    "outcome": verification["status"],
+                    "timestamp": time.time(),
+                }
+            )
 
             # Stage 2: Gate recompute
-            stages.append({"stage": "GATE", "outcome": "STARTED", "timestamp": time.time()})
+            stages.append(
+                {"stage": "GATE", "outcome": "STARTED", "timestamp": time.time()}
+            )
             posture = self.patch_engine.posture
             gate = self.recompute_gate(verification, posture, apply_trace)
-            stages.append({
-                "stage": "GATE",
-                "outcome": gate["decision"],
-                "timestamp": time.time(),
-            })
+            stages.append(
+                {
+                    "stage": "GATE",
+                    "outcome": gate["decision"],
+                    "timestamp": time.time(),
+                }
+            )
 
             # Stage 3: Signoff / Defer
-            stages.append({"stage": "SIGNOFF_OR_DEFER", "outcome": "STARTED", "timestamp": time.time()})
+            stages.append(
+                {
+                    "stage": "SIGNOFF_OR_DEFER",
+                    "outcome": "STARTED",
+                    "timestamp": time.time(),
+                }
+            )
             blockers: list = []
             signoff_packet = self.generate_signoff_packet(plan, verification, gate)
-            defer_packet = self.generate_defer_packet(plan, verification, gate, blockers)
+            defer_packet = self.generate_defer_packet(
+                plan, verification, gate, blockers
+            )
 
             # Invariant: never both non-None simultaneously
             if signoff_packet and defer_packet:
                 defer_packet = None
 
-            final_outcome = "SIGNOFF_PENDING" if signoff_packet else ("DEFERRED" if defer_packet else "CLEAN")
-            stages.append({
-                "stage": "SIGNOFF_OR_DEFER",
-                "outcome": final_outcome,
-                "timestamp": time.time(),
-            })
+            final_outcome = (
+                "SIGNOFF_PENDING"
+                if signoff_packet
+                else ("DEFERRED" if defer_packet else "CLEAN")
+            )
+            stages.append(
+                {
+                    "stage": "SIGNOFF_OR_DEFER",
+                    "outcome": final_outcome,
+                    "timestamp": time.time(),
+                }
+            )
 
             # Stage 4: Final state
-            stages.append({"stage": "FINAL_STATE", "outcome": "COMPLETE", "timestamp": time.time()})
+            stages.append(
+                {
+                    "stage": "FINAL_STATE",
+                    "outcome": "COMPLETE",
+                    "timestamp": time.time(),
+                }
+            )
             final_state = {
                 "pr_id": pr_id,
                 "patch_id": plan.patch_id,
@@ -270,11 +302,13 @@ class FusionEngine:
                 blockers=[{"id": "internal_error", "description": error_reason}],
                 created_at=time.time(),
             )
-            stages.append({
-                "stage": "ERROR",
-                "outcome": "INTERNAL_ERROR",
-                "timestamp": time.time(),
-            })
+            stages.append(
+                {
+                    "stage": "ERROR",
+                    "outcome": "INTERNAL_ERROR",
+                    "timestamp": time.time(),
+                }
+            )
             return FusionTrace(
                 trace_id=trace_id,
                 pr_id=pr_id,

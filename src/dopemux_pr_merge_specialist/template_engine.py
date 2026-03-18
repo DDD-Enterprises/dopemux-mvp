@@ -1,8 +1,8 @@
+import json
 import os
 import re
-import json
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 
 class TemplateDiscoverer:
@@ -13,13 +13,13 @@ class TemplateDiscoverer:
             ".github/pull_request_template.md",
             ".github/PULL_REQUEST_TEMPLATE.md",
             "docs/PULL_REQUEST_TEMPLATE.md",
-            ".github/PULL_REQUEST_TEMPLATE/default.md"
+            ".github/PULL_REQUEST_TEMPLATE/default.md",
         ]
 
     def discover(self) -> List[Dict[str, Any]]:
         found = []
         seen_files = []
-        
+
         for path in self.search_paths:
             if os.path.exists(path):
                 is_duplicate = False
@@ -27,11 +27,11 @@ class TemplateDiscoverer:
                     if os.path.samefile(path, seen):
                         is_duplicate = True
                         break
-                
+
                 if not is_duplicate:
                     found.append({"path": path, "is_primary": len(found) == 0})
                     seen_files.append(path)
-        
+
         template_dir = Path(".github/PULL_REQUEST_TEMPLATE")
         if template_dir.exists():
             for f in template_dir.glob("*.md"):
@@ -41,11 +41,11 @@ class TemplateDiscoverer:
                     if os.path.samefile(path_str, seen):
                         is_duplicate = True
                         break
-                
+
                 if not is_duplicate:
                     found.append({"path": path_str, "is_primary": False})
                     seen_files.append(path_str)
-                    
+
         return found
 
 
@@ -60,14 +60,14 @@ class DriftDetector:
             "ALIASED_SUFFICIENT": 0.95,
             "PRESENT_BUT_INSUFFICIENT": 0.40,
             "UNKNOWN": 0.20,
-            "MISSING": 0.00
+            "MISSING": 0.00,
         }
 
     def normalize_heading(self, text: str) -> str:
         text = text.lower()
-        text = re.sub(r"^[^\w\s]+", "", text) # Strip leading emoji/symbols
+        text = re.sub(r"^[^\w\s]+", "", text)  # Strip leading emoji/symbols
         text = text.strip(" :.!?-_")
-        text = " ".join(text.split()) # Collapse internal whitespace
+        text = " ".join(text.split())  # Collapse internal whitespace
         return text
 
     def is_sufficient(self, content: str) -> bool:
@@ -81,7 +81,7 @@ class DriftDetector:
         intents = self.config["checklist_intents"]
         expected = 8 if is_high_risk else 7
         matched = 0
-        
+
         norm_content = content.lower()
         for intent_name, patterns in intents.items():
             if intent_name == "high_risk_notes_completed" and not is_high_risk:
@@ -90,13 +90,13 @@ class DriftDetector:
                 if pattern.lower() in norm_content:
                     matched += 1
                     break
-        
+
         return matched / expected if expected > 0 else 0.0
 
     def analyze(self, template_path: str, is_high_risk: bool = False) -> Dict[str, Any]:
         raw_content = Path(template_path).read_text()
         lines = raw_content.splitlines()
-        
+
         # 1. Segment sections
         sections_content = {}
         current_section = "intro"
@@ -109,7 +109,7 @@ class DriftDetector:
                 if current_section not in sections_content:
                     sections_content[current_section] = []
                 sections_content[current_section].append(line)
-        
+
         # 2. Deterministic Scoring
         raw_score = 0.0
         section_results = {}
@@ -120,11 +120,11 @@ class DriftDetector:
         for name, cfg in self.canonical_sections.items():
             if name == "High-Risk Integration Notes" and not is_high_risk:
                 continue
-                
+
             weight = self.config["alignment_score_weights"].get(name, 0)
             status = "MISSING"
             detected_heading = None
-            
+
             # Check canonical and aliases
             targets = [name] + cfg.get("accepted_aliases", [])
             for target in targets:
@@ -132,52 +132,87 @@ class DriftDetector:
                 if norm_target in sections_content:
                     detected_heading = target
                     content_str = "\n".join(sections_content[norm_target])
-                    
+
                     if name == "Checklist":
                         multiplier = self.score_checklist(content_str, is_high_risk)
-                        status = "PRESENT_AND_SUFFICIENT" if multiplier > 0.8 else "PRESENT_BUT_INSUFFICIENT"
+                        status = (
+                            "PRESENT_AND_SUFFICIENT"
+                            if multiplier > 0.8
+                            else "PRESENT_BUT_INSUFFICIENT"
+                        )
                     else:
-                        is_aliased = self.normalize_heading(target) != self.normalize_heading(name)
+                        is_aliased = self.normalize_heading(
+                            target
+                        ) != self.normalize_heading(name)
                         if self.is_sufficient(content_str):
-                            status = "ALIASED_SUFFICIENT" if is_aliased else "PRESENT_AND_SUFFICIENT"
+                            status = (
+                                "ALIASED_SUFFICIENT"
+                                if is_aliased
+                                else "PRESENT_AND_SUFFICIENT"
+                            )
                             multiplier = self.multipliers[status]
                         else:
                             status = "PRESENT_BUT_INSUFFICIENT"
                             multiplier = self.multipliers[status]
-                    
+
                     raw_score += weight * multiplier
                     break
-            
-            section_results[name] = {"status": status, "detected_heading": detected_heading}
+
+            section_results[name] = {
+                "status": status,
+                "detected_heading": detected_heading,
+            }
 
         # 3. Normalization
         normalized_score = round((raw_score / applicable_total_weight) * 100)
-        
+
         # 4. Final State Mapping & Hard Blockers
         state_bands = [
-            (90, "ALIGNED"), (70, "PARTIALLY_ALIGNED"), (50, "PRESENT_BUT_WEAK"), (1, "DRIFTED"), (0, "MISSING")
+            (90, "ALIGNED"),
+            (70, "PARTIALLY_ALIGNED"),
+            (50, "PRESENT_BUT_WEAK"),
+            (1, "DRIFTED"),
+            (0, "MISSING"),
         ]
         raw_band_state = "DRIFTED"
         for low, state_name in state_bands:
             if normalized_score >= low:
                 raw_band_state = state_name
                 break
-        
+
         hard_blockers = []
         max_state = "ALIGNED"
-        
-        if section_results.get("Verification", {}).get("status") == "MISSING" or \
-           section_results.get("Risks", {}).get("status") == "MISSING" or \
-           section_results.get("Rollback", {}).get("status") == "MISSING":
+
+        if (
+            section_results.get("Verification", {}).get("status") == "MISSING"
+            or section_results.get("Risks", {}).get("status") == "MISSING"
+            or section_results.get("Rollback", {}).get("status") == "MISSING"
+        ):
             hard_blockers.append("missing_critical_safety_sections")
             max_state = "DRIFTED"
-            
+
         if section_results.get("Checklist", {}).get("status") == "MISSING":
             hard_blockers.append("missing_checklist")
-            max_state = min(max_state, "PRESENT_BUT_WEAK", key=lambda x: ["MISSING", "DRIFTED", "PRESENT_BUT_WEAK", "PARTIALLY_ALIGNED", "ALIGNED"].index(x))
+            max_state = min(
+                max_state,
+                "PRESENT_BUT_WEAK",
+                key=lambda x: [
+                    "MISSING",
+                    "DRIFTED",
+                    "PRESENT_BUT_WEAK",
+                    "PARTIALLY_ALIGNED",
+                    "ALIGNED",
+                ].index(x),
+            )
 
         # Apply state ordering for min()
-        state_order = ["MISSING", "DRIFTED", "PRESENT_BUT_WEAK", "PARTIALLY_ALIGNED", "ALIGNED"]
+        state_order = [
+            "MISSING",
+            "DRIFTED",
+            "PRESENT_BUT_WEAK",
+            "PARTIALLY_ALIGNED",
+            "ALIGNED",
+        ]
         final_state = raw_band_state
         if max_state != "ALIGNED":
             if state_order.index(raw_band_state) > state_order.index(max_state):
@@ -190,7 +225,9 @@ class DriftDetector:
             "raw_score": round(raw_score, 2),
             "hard_blockers": hard_blockers,
             "sections": section_results,
-            "recommended_mode": self.config["recommended_modes"].get(final_state, "ESCALATE")
+            "recommended_mode": self.config["recommended_modes"].get(
+                final_state, "ESCALATE"
+            ),
         }
 
 
@@ -209,5 +246,5 @@ class TemplateInjectionPlanner:
             "target_path": analysis["path"],
             "actions": actions,
             "status": "PLAN_READY" if actions else "ALIGNED",
-            "recommended_mode": analysis["recommended_mode"]
+            "recommended_mode": analysis["recommended_mode"],
         }

@@ -1,4 +1,5 @@
 """DopetaskPacketLauncher — wire the correct flight-deck engine for a TP ID and run it."""
+
 from __future__ import annotations
 
 import time
@@ -8,7 +9,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .ops_engine import FlightDeckOpsEngine
-
 
 # ---------------------------------------------------------------------------
 # TP → engine lane mapping
@@ -25,9 +25,11 @@ PACKET_ENGINE_MAP: dict[str, str] = {
 # Launch trace
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PacketLaunchTrace:
     """Audit record for a single packet launch attempt."""
+
     tp_id: str
     engine_lane: str
     run_id: str
@@ -40,6 +42,7 @@ class PacketLaunchTrace:
 # ---------------------------------------------------------------------------
 # Launcher
 # ---------------------------------------------------------------------------
+
 
 class DopetaskPacketLauncher:
     """Wire the correct engine for a TP ID, run one cycle, and return a trace.
@@ -132,6 +135,7 @@ class DopetaskPacketLauncher:
 
         # Emit minimal bundle
         import json
+
         bundle = {
             "tp_id": tp_id,
             "pr_id": pr_id,
@@ -147,7 +151,10 @@ class DopetaskPacketLauncher:
             "acceptance_checks": [],
             "validation": {"outcome": "PASS", "gates": []},
             "artifacts": [],
-            "manifest": {"generator": "DopetaskPacketLauncher", "posture": state.get("posture", "HOLD")},
+            "manifest": {
+                "generator": "DopetaskPacketLauncher",
+                "posture": state.get("posture", "HOLD"),
+            },
         }
         bundle_path = out_dir / f"{tp_id}_PROOF_BUNDLE.json"
         bundle_path.write_text(json.dumps(bundle, indent=2), encoding="utf-8")
@@ -162,10 +169,13 @@ class DopetaskPacketLauncher:
     ) -> str:
         from .patch_engine import PatchEngine
 
-        engine = PatchEngine(self.ops, posture=context.get("posture", "GO_SUPERVISED_ONLY"))
+        engine = PatchEngine(
+            self.ops, posture=context.get("posture", "GO_SUPERVISED_ONLY")
+        )
         _ = engine  # engine wired; minimal stub run
 
         import json
+
         bundle = {
             "tp_id": tp_id,
             "pr_id": context.get("pr_id", tp_id),
@@ -181,7 +191,10 @@ class DopetaskPacketLauncher:
             "acceptance_checks": [],
             "validation": {"outcome": "PASS", "gates": []},
             "artifacts": [],
-            "manifest": {"generator": "DopetaskPacketLauncher", "posture": context.get("posture", "GO_SUPERVISED_ONLY")},
+            "manifest": {
+                "generator": "DopetaskPacketLauncher",
+                "posture": context.get("posture", "GO_SUPERVISED_ONLY"),
+            },
         }
         bundle_path = out_dir / f"{tp_id}_PROOF_BUNDLE.json"
         bundle_path.write_text(json.dumps(bundle, indent=2), encoding="utf-8")
@@ -195,6 +208,7 @@ class DopetaskPacketLauncher:
         out_dir: Path,
     ) -> str:
         import json
+
         bundle = {
             "tp_id": tp_id,
             "pr_id": context.get("pr_id", tp_id),
@@ -210,7 +224,10 @@ class DopetaskPacketLauncher:
             "acceptance_checks": [],
             "validation": {"outcome": "PASS", "gates": []},
             "artifacts": [],
-            "manifest": {"generator": "DopetaskPacketLauncher", "posture": context.get("posture", "GO_SUPERVISED_ONLY")},
+            "manifest": {
+                "generator": "DopetaskPacketLauncher",
+                "posture": context.get("posture", "GO_SUPERVISED_ONLY"),
+            },
         }
         bundle_path = out_dir / f"{tp_id}_PROOF_BUNDLE.json"
         bundle_path.write_text(json.dumps(bundle, indent=2), encoding="utf-8")

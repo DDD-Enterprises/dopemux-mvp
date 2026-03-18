@@ -1,13 +1,14 @@
 import json
 import time
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
+
 from .schema import (
-    AnalyzerReport, 
-    ChallengeReport, 
-    ArbiterReport, 
-    ProviderInvocationMetadata, 
-    RuntimeFailure
+    AnalyzerReport,
+    ArbiterReport,
+    ChallengeReport,
+    ProviderInvocationMetadata,
+    RuntimeFailure,
 )
 
 
@@ -16,11 +17,16 @@ class SchemaValidator:
 
     def validate(self, role: str, data: Dict[str, Any]):
         required_fields = {
-            "analyzer": ["ours_summary", "theirs_summary", "candidate_end_states", "confidence"],
+            "analyzer": [
+                "ours_summary",
+                "theirs_summary",
+                "candidate_end_states",
+                "confidence",
+            ],
             "challenger": ["objections", "hidden_risks", "confidence"],
-            "arbiter": ["preferred_candidate", "defer_to_human", "confidence"]
+            "arbiter": ["preferred_candidate", "defer_to_human", "confidence"],
         }
-        
+
         fields = required_fields.get(role.lower(), [])
         for field in fields:
             if field not in data:
@@ -30,24 +36,26 @@ class SchemaValidator:
 class ArbitrationLLMClient:
     """Provider-agnostic transport for high-risk arbitration roles."""
 
-    def __init__(self, mode: str = "MOCK", provider_config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, mode: str = "MOCK", provider_config: Optional[Dict[str, Any]] = None
+    ):
         self.mode = mode
         self.config = provider_config or {}
         self.validator = SchemaValidator()
 
     def run_role(
-        self, 
-        role: str, 
-        evidence_bundle: Dict[str, Any], 
-        prior_reports: List[Any] = None
+        self,
+        role: str,
+        evidence_bundle: Dict[str, Any],
+        prior_reports: List[Any] = None,
     ) -> Union[Dict[str, Any], RuntimeFailure]:
         """Execute a role prompt via the configured provider."""
         start_time = time.time()
-        
+
         # 1. Routing (Simplified for TP-033)
         provider = self.config.get(role, {}).get("provider", "MOCK")
         model = self.config.get(role, {}).get("model", "STUB")
-        
+
         try:
             # 2. Mock / Real Call
             if provider == "MOCK" or self.mode == "MOCK":
@@ -55,12 +63,12 @@ class ArbitrationLLMClient:
             else:
                 # In real impl, would use PAL MCP or direct SDK
                 # For 033, we assume routed calls through PAL is the goal
-                raw_output = "{}" 
+                raw_output = "{}"
 
             # 3. Parse and Validate
             data = json.loads(raw_output)
             self.validator.validate(role, data)
-            
+
             latency = (time.time() - start_time) * 1000
             return {
                 "data": data,
@@ -70,8 +78,8 @@ class ArbitrationLLMClient:
                     model=model,
                     latency_ms=latency,
                     status="SUCCESS",
-                    prompt_version="1.0.0"
-                )
+                    prompt_version="1.0.0",
+                ),
             }
 
         except json.JSONDecodeError as e:
@@ -85,7 +93,7 @@ class ArbitrationLLMClient:
         """Execute a generic role-based prompt (e.g. for code synthesis)."""
         if self.mode == "MOCK":
             return self._get_mock_generic_response(role, prompt)
-        
+
         # Real implementation would call PAL/SDK here
         return "{}"
 
@@ -94,16 +102,19 @@ class ArbitrationLLMClient:
         if "Implement a review suggestion" in prompt:
             # Detect target file from prompt if possible
             import re
+
             file_match = re.search(r"File:\s*([^\s\n]+)", prompt)
             target_file = file_match.group(1) if file_match else "src/example.py"
-            
-            return json.dumps({
-                "explanation": "Synthesized a surgical fix based on the review feedback.",
-                "file": target_file,
-                "patch": f"# Suggested fix for {target_file}\ndef resolved_logic():\n    return True\n",
-                "confidence": "HIGH"
-            })
-        
+
+            return json.dumps(
+                {
+                    "explanation": "Synthesized a surgical fix based on the review feedback.",
+                    "file": target_file,
+                    "patch": f"# Suggested fix for {target_file}\ndef resolved_logic():\n    return True\n",
+                    "confidence": "HIGH",
+                }
+            )
+
         return "{}"
 
     def _get_mock_response(self, role: str) -> str:
@@ -116,14 +127,14 @@ class ArbitrationLLMClient:
                 "theirs_summary": "Mock theirs",
                 "overlap_summary": "Mock overlap",
                 "candidate_end_states": [{"id": "C1", "desc": "Synthesized"}],
-                "confidence": "HIGH"
+                "confidence": "HIGH",
             },
             "challenger": {
                 "case_id": "CHALLENGER_MOCK",
                 "analyzer_ref": "ANALYZER_MOCK",
                 "objections": [],
                 "hidden_risks": [],
-                "confidence": "HIGH"
+                "confidence": "HIGH",
             },
             "arbiter": {
                 "case_id": "ARBITER_MOCK",
@@ -131,7 +142,7 @@ class ArbitrationLLMClient:
                 "challenge_ref": "CHALLENGER_MOCK",
                 "preferred_candidate": "C1",
                 "defer_to_human": False,
-                "confidence": "HIGH"
-            }
+                "confidence": "HIGH",
+            },
         }
         return json.dumps(mocks.get(role.lower(), {}))

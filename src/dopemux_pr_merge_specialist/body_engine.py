@@ -1,7 +1,13 @@
-import re
 import json
-from typing import List, Dict, Any, Optional
-from .schema import ChecklistItem, PRMetadataUpdate, VerificationResult, VerificationRequest
+import re
+from typing import Any, Dict, List, Optional
+
+from .schema import (
+    ChecklistItem,
+    PRMetadataUpdate,
+    VerificationRequest,
+    VerificationResult,
+)
 
 
 class BodyParser:
@@ -14,7 +20,7 @@ class BodyParser:
         for i, m in enumerate(matches):
             state = m.group(1).lower() == "x"
             text = m.group(2).strip()
-            
+
             # Simple heuristic for intent link
             intent_link = None
             if "pytest" in text.lower() or "test" in text.lower():
@@ -24,27 +30,38 @@ class BodyParser:
             elif "typecheck" in text.lower() or "mypy" in text.lower():
                 intent_link = "typecheck"
 
-            items.append(ChecklistItem(
-                id=f"CHECK_{i}",
-                text=text,
-                is_checked=state,
-                intent_link=intent_link
-            ))
+            items.append(
+                ChecklistItem(
+                    id=f"CHECK_{i}",
+                    text=text,
+                    is_checked=state,
+                    intent_link=intent_link,
+                )
+            )
         return items
 
 
 class BodyEnforcer:
     """Generates updated body text with evidence and checked items."""
 
-    def enforce(self, body: str, checklists: List[ChecklistItem], results: List[VerificationResult]) -> str:
+    def enforce(
+        self,
+        body: str,
+        checklists: List[ChecklistItem],
+        results: List[VerificationResult],
+    ) -> str:
         new_body = body
-        
+
         # 1. Update Checkboxes based on results
         for item in checklists:
             if not item.is_checked and item.intent_link:
                 # Check if we have a passing result for this intent
                 # Note: This is simplified; real mapping would use the intent_link
-                passing = any(r.exit_code == 0 for r in results if item.intent_link in r.command.lower())
+                passing = any(
+                    r.exit_code == 0
+                    for r in results
+                    if item.intent_link in r.command.lower()
+                )
                 if passing:
                     # Precise replace of the specific line
                     old_line = f"[{' '}] {item.text}"
@@ -68,9 +85,9 @@ class MetadataCleaner:
 
     def __init__(self):
         self.rules = [
-            (r"(?i)^wip:\s*", ""), # Remove WIP:
-            (r"(?i)^draft:\s*", ""), # Remove Draft:
-            (r"\s*\[wip\]\s*", ""), # Remove [WIP]
+            (r"(?i)^wip:\s*", ""),  # Remove WIP:
+            (r"(?i)^draft:\s*", ""),  # Remove Draft:
+            (r"\s*\[wip\]\s*", ""),  # Remove [WIP]
         ]
 
     def clean(self, title: str, body: str) -> PRMetadataUpdate:
@@ -93,6 +110,6 @@ class MetadataCleaner:
             old_title=title,
             new_title=new_title,
             old_body=body,
-            new_body=body, # Body cleaning separate from enforcement
-            hygiene_applied=hygiene_applied
+            new_body=body,  # Body cleaning separate from enforcement
+            hygiene_applied=hygiene_applied,
         )

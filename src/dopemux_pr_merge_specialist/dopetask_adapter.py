@@ -1,11 +1,10 @@
 """DopetaskAdapter — top-level coordinator for consuming Dopetask proof bundles."""
+
 from __future__ import annotations
 
 import json
 from dataclasses import asdict
 from pathlib import Path
-
-from .runtime import utc_now
 
 from .dopetask_archive_resolver import DopetaskArchiveResolver
 from .dopetask_bundle_loader import BundleSchemaError, DopetaskBundleLoader
@@ -19,9 +18,10 @@ from .dopetask_status_mapper import (
     DopetaskProofRef,
     DopetaskStatusMapper,
     DopetaskSummary,
-    DopetaskTPIdentity,
     DopetaskTarget,
+    DopetaskTPIdentity,
 )
+from .runtime import utc_now
 
 
 class DopetaskAdapter:
@@ -180,9 +180,14 @@ class DopetaskAdapter:
         # Update proof_ref fields with resolved values
         # (proof_ref is a dataclass — rebuild a corrected version)
         from dataclasses import replace as dc_replace
+
         proof_ref = dc_replace(
             proof_ref,
-            archive_path=archive_res.archive_path if archive_res.archive_expected else proof_ref.archive_path,
+            archive_path=(
+                archive_res.archive_path
+                if archive_res.archive_expected
+                else proof_ref.archive_path
+            ),
             archive_present=archive_res.archive_present,
         )
 
@@ -208,7 +213,9 @@ class DopetaskAdapter:
             adapter_status = "READY"
 
         # --- Step 5: Build output objects ---
-        raw_posture = bundle.get("posture") or bundle.get("manifest", {}).get("posture", "UNKNOWN")
+        raw_posture = bundle.get("posture") or bundle.get("manifest", {}).get(
+            "posture", "UNKNOWN"
+        )
         raw_status = bundle.get("status", "UNKNOWN")
 
         posture_obj = self.mapper.derive_posture_obj(raw_posture)
@@ -221,7 +228,9 @@ class DopetaskAdapter:
         key_caveats = bundle.get("key_caveats", summary_raw.get("key_caveats", []))
 
         headline = self.mapper.derive_headline_state(raw_posture, raw_status)
-        next_action = self.mapper.derive_next_action(raw_status, raw_posture, key_caveats)
+        next_action = self.mapper.derive_next_action(
+            raw_status, raw_posture, key_caveats
+        )
 
         tp_id = bundle.get("tp_id") or bundle.get("pr_id", "UNKNOWN")
         run_id = bundle.get("run_id") or bundle.get("cycle_id", "UNKNOWN")
@@ -252,11 +261,21 @@ class DopetaskAdapter:
         )
 
         summary = DopetaskSummary(
-            result=summary_raw.get("result", "") if isinstance(summary_raw, dict) else "",
+            result=(
+                summary_raw.get("result", "") if isinstance(summary_raw, dict) else ""
+            ),
             next_action=next_action,
             headline_state=headline,
-            confidence=summary_raw.get("confidence", "UNKNOWN") if isinstance(summary_raw, dict) else "UNKNOWN",
-            risk=summary_raw.get("risk", "UNKNOWN") if isinstance(summary_raw, dict) else "UNKNOWN",
+            confidence=(
+                summary_raw.get("confidence", "UNKNOWN")
+                if isinstance(summary_raw, dict)
+                else "UNKNOWN"
+            ),
+            risk=(
+                summary_raw.get("risk", "UNKNOWN")
+                if isinstance(summary_raw, dict)
+                else "UNKNOWN"
+            ),
             key_findings=list(key_findings),
             key_caveats=list(key_caveats),
         )
@@ -295,16 +314,26 @@ class DopetaskAdapter:
     def _error_result(self, error: str, source_hint: str) -> DopetaskAdapterResult:
         """Build a minimal ERROR result when loading fails."""
         dummy_tp = DopetaskTPIdentity(
-            id="UNKNOWN", family="flight_deck", lane="unknown",
-            title="UNKNOWN", status="UNKNOWN", run_id="UNKNOWN",
+            id="UNKNOWN",
+            family="flight_deck",
+            lane="unknown",
+            title="UNKNOWN",
+            status="UNKNOWN",
+            run_id="UNKNOWN",
         )
         dummy_target = DopetaskTarget(
-            repo=self.repo, worktree=self.worktree,
-            ref="", pr_number=None, case_id=None,
+            repo=self.repo,
+            worktree=self.worktree,
+            ref="",
+            pr_number=None,
+            case_id=None,
         )
         dummy_posture = DopetaskPosture(
-            mode="UNKNOWN", advisory_only=False, signoff_required=False,
-            defer_only=False, auto_apply_allowed=False,
+            mode="UNKNOWN",
+            advisory_only=False,
+            signoff_required=False,
+            defer_only=False,
+            auto_apply_allowed=False,
             auto_apply_risk_threshold="LOW",
         )
         dummy_summary = DopetaskSummary(

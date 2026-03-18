@@ -1,15 +1,16 @@
 from enum import Enum, auto
 from typing import List, Literal, Optional
+
 from .schema import PRState
 
 
 class ConflictClass(Enum):
-    MECHANICAL = auto()    # Simple import/version bumps
-    GENERATED = auto()     # Lockfiles, generated code
-    RERERE = auto()        # Previously resolved and recorded
-    STRUCTURAL = auto()    # File moves, renames
-    SEMANTIC = auto()      # Logic changes in same block
-    HIGH_RISK = auto()     # Protected files, security logic
+    MECHANICAL = auto()  # Simple import/version bumps
+    GENERATED = auto()  # Lockfiles, generated code
+    RERERE = auto()  # Previously resolved and recorded
+    STRUCTURAL = auto()  # File moves, renames
+    SEMANTIC = auto()  # Logic changes in same block
+    HIGH_RISK = auto()  # Protected files, security logic
 
 
 class ConflictAnalyzer:
@@ -18,26 +19,32 @@ class ConflictAnalyzer:
     def __init__(self):
         self.protected_paths = ["contracts/", "security/", "config/auth/"]
 
-    def classify_conflict(self, pr_state: PRState, diff_context: Optional[str] = None) -> ConflictClass:
+    def classify_conflict(
+        self, pr_state: PRState, diff_context: Optional[str] = None
+    ) -> ConflictClass:
         """Classify the conflict based on labels, paths, and diff (if available)."""
-        
+
         # 1. High Risk Paths
         # (In real impl, would check affected files list)
-        
+
         # 2. Labels as hints
         if "conflict:mechanical" in pr_state.labels:
             return ConflictClass.MECHANICAL
-            
+
         if "conflict:semantic" in pr_state.labels:
             return ConflictClass.HIGH_RISK
-            
+
         # Default to high risk if mergeable is false and no hints
         if not pr_state.mergeable:
             return ConflictClass.HIGH_RISK
-            
+
         return ConflictClass.MECHANICAL
 
     def is_auto_resolvable(self, conflict_class: ConflictClass) -> bool:
         """Determine if a conflict class is safe for automated rerere path."""
-        safe_classes = {ConflictClass.MECHANICAL, ConflictClass.GENERATED, ConflictClass.RERERE}
+        safe_classes = {
+            ConflictClass.MECHANICAL,
+            ConflictClass.GENERATED,
+            ConflictClass.RERERE,
+        }
         return conflict_class in safe_classes

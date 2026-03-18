@@ -1,11 +1,12 @@
 import json
 import subprocess
 import sys
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 
 class GraphQLApiError(Exception):
     """Raised when a GraphQL API call fails."""
+
     pass
 
 
@@ -15,10 +16,12 @@ class GraphQLClient:
     def __init__(self):
         pass
 
-    def query(self, query_text: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def query(
+        self, query_text: str, variables: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Execute a GraphQL query or mutation."""
         cmd = ["gh", "api", "graphql", "-f", f"query={query_text}"]
-        
+
         if variables:
             for key, value in variables.items():
                 if isinstance(value, int):
@@ -29,7 +32,7 @@ class GraphQLClient:
                     cmd.extend(["-f", f"{key}={value}"])
 
         result = subprocess.run(cmd, capture_output=True, text=True)
-        
+
         if result.returncode != 0:
             error_msg = result.stderr.strip() or result.stdout.strip()
             raise GraphQLApiError(f"GitHub GraphQL API error: {error_msg}")
@@ -38,10 +41,14 @@ class GraphQLClient:
             data = json.loads(result.stdout)
             if "errors" in data:
                 # GitHub returns 200 even with some partial errors
-                raise GraphQLApiError(f"GraphQL errors: {json.dumps(data['errors'], indent=2)}")
+                raise GraphQLApiError(
+                    f"GraphQL errors: {json.dumps(data['errors'], indent=2)}"
+                )
             return data.get("data", {})
         except json.JSONDecodeError:
-            raise GraphQLApiError(f"Failed to parse GitHub API response: {result.stdout}")
+            raise GraphQLApiError(
+                f"Failed to parse GitHub API response: {result.stdout}"
+            )
 
     def mutate(self, mutation_text: str, variables: Dict[str, Any]) -> Dict[str, Any]:
         """Execute a GraphQL mutation."""

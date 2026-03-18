@@ -12,22 +12,115 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from .github_api import BOT_AUTHORS, GitHubClient, ci_status, summarize_checks, thread_counters
-from .policy import PolicyError, load_effective_policy, policy_artifact_payload, policy_fingerprint
-from .runtime import CommandResult, append_command_log, execute_or_dry_run, fingerprint_payload, pid_is_running, run_command, run_id, shell_join, snapshot_environment, utc_now, write_json, write_text
-from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, TOOL_VERSION
-from .validation import run_validation, validation_report_md
+from .github_api import (
+    BOT_AUTHORS,
+    GitHubClient,
+    ci_status,
+    summarize_checks,
+    thread_counters,
+)
+from .policy import (
+    PolicyError,
+    load_effective_policy,
+    policy_artifact_payload,
+    policy_fingerprint,
+)
+from .runtime import (
+    CommandResult,
+    append_command_log,
+    execute_or_dry_run,
+    fingerprint_payload,
+    pid_is_running,
+    run_command,
+    run_id,
+    shell_join,
+    snapshot_environment,
+    utc_now,
+    write_json,
+    write_text,
+)
+from .schema import (
+    ARTIFACT_VERSION,
+    POLICY_SCHEMA_VERSION,
+    TOOL_VERSION,
+    ArtifactMeta,
+    BlockerType,
+    FallbackReason,
+    Finding,
+    FindingSeverity,
+    Fingerprint,
+    MergeActionType,
+    MergeDecision,
+    OverrideRecord,
+    PhaseRecord,
+    PreflightCheck,
+    PreflightResult,
+    PRResult,
+    PRState,
+    PRStateData,
+    PullRequestState,
+    QueueOrderingLayer,
+    ReviewThread,
+    RunManifest,
+    ThreadComment,
+    ThreadDisposition,
+    ThreadDispositionType,
+    TruthSource,
+    ValidationReport,
+    ValidationStatus,
+)
 from .strategy_library import STRATEGY_LIBRARY
+from .validation import run_validation, validation_report_md
+
+__all__ = [
+    "read_file_at_ref",
+    "maybe_sync_canonical_file",
+    "resolve_conflict_markers",
+    "apply_suggestion_to_file",
+    "comment_prefers_conflict_side",
+    "extract_suggestion_block",
+    "conflict_files",
+    "pr_changed_files",
+    "scan_files_for_conflict_markers",
+    "conflict_excerpt",
+    "recent_file_history",
+    "build_conflict_analysis",
+    "recommend_conflict_strategy",
+]
 
 
+def comment_prefers_conflict_side(body: str) -> Optional[str]:
+    lowered = html.unescape(body).lower()
+    if "<<<<<<< head" not in lowered and "conflict marker" not in lowered:
+        return None
+    head_markers = [
+        "keep the head side",
+        "from the <code>head</code> side",
+        "keep the current main version",
+        "keep the current version",
+        "keep the wrapper implementation already in head",
+        "between <code><<<<<<< head</code> and <code>=======</code>",
+        "under <code><<<<<<< head</code>",
+    ]
+    if any(marker in lowered for marker in head_markers):
+        return "head"
+    if "after <code>=======</code>" in lowered or "keep the other side" in lowered:
+        return "theirs"
+    return None
 
-__all__ = ['read_file_at_ref', 'maybe_sync_canonical_file', 'resolve_conflict_markers', 'apply_suggestion_to_file', 'conflict_files', 'pr_changed_files', 'scan_files_for_conflict_markers', 'conflict_excerpt', 'recent_file_history', 'build_conflict_analysis', 'recommend_conflict_strategy']
+def extract_suggestion_block(body: str) -> Optional[str]:
+    match = re.search(r"```suggestion\s*(.*?)```", body, re.DOTALL | re.IGNORECASE)
+    if not match:
+        return None
+    return match.group(1).strip("\n")
+
 
 def read_file_at_ref(worktree_path: Path, ref: str, rel_path: str) -> Optional[str]:
     result = run_command(["git", "show", f"{ref}:{rel_path}"], cwd=worktree_path)
     if result.returncode != 0:
         return None
     return result.stdout
+
 
 def maybe_sync_canonical_file(
     *,
@@ -42,7 +135,9 @@ def maybe_sync_canonical_file(
 ) -> Tuple[str, str]:
     if prefer != "head":
         return resolved, ""
-    canonical_markers = policy.get("conflict_rules", {}).get("canonical_head_markers", [])
+    canonical_markers = policy.get("conflict_rules", {}).get(
+        "canonical_head_markers", []
+    )
     if not contains_marker(comment_body, canonical_markers):
         return resolved, ""
     canonical = read_file_at_ref(worktree_path, f"origin/{base_ref}", rel_path)
@@ -50,9 +145,12 @@ def maybe_sync_canonical_file(
         return resolved, ""
     if any(marker in canonical for marker in ("<<<<<<<", "=======", ">>>>>>>")):
         return resolved, ""
-    if canonical.rstrip("\n") == resolved.rstrip("\n") or canonical.rstrip("\n") in original.rstrip("\n"):
+    if canonical.rstrip("\n") == resolved.rstrip("\n") or canonical.rstrip(
+        "\n"
+    ) in original.rstrip("\n"):
         return canonical, " using canonical base file content"
     return resolved, ""
+
 
 def resolve_conflict_markers(text: str, *, prefer: str) -> Tuple[bool, str]:
     if "<<<<<<<" not in text:
@@ -89,7 +187,15 @@ def resolve_conflict_markers(text: str, *, prefer: str) -> Tuple[bool, str]:
         resolved += "\n"
     return changed, resolved
 
-def apply_suggestion_to_file(*, worktree_path: Path, thread: ReviewThread, comment: ThreadComment, base_ref: str, policy: Dict[str, Any]) -> Tuple[bool, str]:
+
+def apply_suggestion_to_file(
+    *,
+    worktree_path: Path,
+    thread: ReviewThread,
+    comment: ThreadComment,
+    base_ref: str,
+    policy: Dict[str, Any],
+) -> Tuple[bool, str]:
     target = comment.path or thread.path
     if not target:
         return False, "No path on thread/comment."
@@ -100,7 +206,9 @@ def apply_suggestion_to_file(*, worktree_path: Path, thread: ReviewThread, comme
     text = original
     preferred_conflict_side = comment_prefers_conflict_side(comment.body)
     if preferred_conflict_side is not None:
-        changed, resolved = resolve_conflict_markers(text, prefer=preferred_conflict_side)
+        changed, resolved = resolve_conflict_markers(
+            text, prefer=preferred_conflict_side
+        )
         if not changed:
             return False, resolved
         resolved, canonical_note = maybe_sync_canonical_file(
@@ -116,7 +224,10 @@ def apply_suggestion_to_file(*, worktree_path: Path, thread: ReviewThread, comme
         if resolved == original:
             return False, "Conflict-marker resolution produced no file changes."
         file_path.write_text(resolved, encoding="utf-8")
-        return True, f"Resolved conflict markers in {target} using {preferred_conflict_side} side{canonical_note}."
+        return (
+            True,
+            f"Resolved conflict markers in {target} using {preferred_conflict_side} side{canonical_note}.",
+        )
     suggestion = extract_suggestion_block(comment.body)
     if suggestion is not None:
         start = thread.original_start_line or thread.original_line or thread.line
@@ -127,9 +238,15 @@ def apply_suggestion_to_file(*, worktree_path: Path, thread: ReviewThread, comme
         start_idx = max(start - 1, 0)
         end_idx = max(end, start_idx + 1)
         replacement = suggestion.splitlines()
-        text = "\n".join(lines[:start_idx] + replacement + lines[end_idx:]) + ("\n" if original.endswith("\n") else "")
+        text = "\n".join(lines[:start_idx] + replacement + lines[end_idx:]) + (
+            "\n" if original.endswith("\n") else ""
+        )
     else:
-        replace_match = re.search(r"change\s+<code>(.*?)</code>\s+to\s+<code>(.*?)</code>", comment.body, re.IGNORECASE | re.DOTALL)
+        replace_match = re.search(
+            r"change\s+<code>(.*?)</code>\s+to\s+<code>(.*?)</code>",
+            comment.body,
+            re.IGNORECASE | re.DOTALL,
+        )
         if replace_match:
             old = html.unescape(replace_match.group(1)).strip()
             new = html.unescape(replace_match.group(2)).strip()
@@ -137,7 +254,11 @@ def apply_suggestion_to_file(*, worktree_path: Path, thread: ReviewThread, comme
                 return False, "Could not locate replacement source fragment in file."
             text = text.replace(old, new, 1)
         else:
-            delete_match = re.search(r"(?:delete|remove)\s+(?:the\s+)?(?:line\s+)?<code>(.*?)</code>", comment.body, re.IGNORECASE | re.DOTALL)
+            delete_match = re.search(
+                r"(?:delete|remove)\s+(?:the\s+)?(?:line\s+)?<code>(.*?)</code>",
+                comment.body,
+                re.IGNORECASE | re.DOTALL,
+            )
             if not delete_match:
                 return False, "No known machine-applicable suggestion pattern."
             snippet = html.unescape(delete_match.group(1)).strip()
@@ -156,28 +277,62 @@ def apply_suggestion_to_file(*, worktree_path: Path, thread: ReviewThread, comme
     file_path.write_text(text, encoding="utf-8")
     return True, f"Applied suggestion to {target}."
 
+
 def conflict_files(worktree_path: Path, policy: Dict[str, Any]) -> List[str]:
-    status = run_command(["git", "status", "--porcelain"], cwd=worktree_path, timeout_seconds=int(policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600))
+    status = run_command(
+        ["git", "status", "--porcelain"],
+        cwd=worktree_path,
+        timeout_seconds=int(
+            policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+        ),
+    )
     if status.returncode != 0:
         return []
-    return [line[3:].strip() for line in status.stdout.splitlines() if line.startswith(("UU ", "AA ", "DD "))]
+    return [
+        line[3:].strip()
+        for line in status.stdout.splitlines()
+        if line.startswith(("UU ", "AA ", "DD "))
+    ]
 
-def pr_changed_files(worktree_path: Path, base_ref: str, commands_log: Optional[Path], policy: Dict[str, Any]) -> List[str]:
-    fetch = run_command(["git", "fetch", "origin", base_ref], cwd=worktree_path, timeout_seconds=int(policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600))
+
+def pr_changed_files(
+    worktree_path: Path,
+    base_ref: str,
+    commands_log: Optional[Path],
+    policy: Dict[str, Any],
+) -> List[str]:
+    fetch = run_command(
+        ["git", "fetch", "origin", base_ref],
+        cwd=worktree_path,
+        timeout_seconds=int(
+            policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+        ),
+    )
     if commands_log:
         append_command_log(commands_log, fetch)
     if fetch.returncode != 0:
         return []
-    diff = run_command(["git", "diff", "--name-only", f"origin/{base_ref}...HEAD"], cwd=worktree_path, timeout_seconds=int(policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600))
+    diff = run_command(
+        ["git", "diff", "--name-only", f"origin/{base_ref}...HEAD"],
+        cwd=worktree_path,
+        timeout_seconds=int(
+            policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+        ),
+    )
     if commands_log:
         append_command_log(commands_log, diff)
     if diff.returncode != 0:
         return []
     return [line.strip() for line in diff.stdout.splitlines() if line.strip()]
 
-def scan_files_for_conflict_markers(worktree_path: Path, rel_paths: Sequence[str]) -> List[str]:
+
+def scan_files_for_conflict_markers(
+    worktree_path: Path, rel_paths: Sequence[str]
+) -> List[str]:
     hits: List[str] = []
-    conflict_pattern = re.compile(r"^<<<<<<< .*\n(?:.*\n)*?^=======\n(?:.*\n)*?^>>>>>>> .*$", re.MULTILINE)
+    conflict_pattern = re.compile(
+        r"^<<<<<<< .*\n(?:.*\n)*?^=======\n(?:.*\n)*?^>>>>>>> .*$", re.MULTILINE
+    )
     for rel_path in rel_paths:
         file_path = worktree_path / rel_path
         if not file_path.exists() or not file_path.is_file():
@@ -190,7 +345,10 @@ def scan_files_for_conflict_markers(worktree_path: Path, rel_paths: Sequence[str
             hits.append(rel_path)
     return sorted(set(hits))
 
-def conflict_excerpt(worktree_path: Path, rel_path: str, *, context_lines: int = 3) -> str:
+
+def conflict_excerpt(
+    worktree_path: Path, rel_path: str, *, context_lines: int = 3
+) -> str:
     file_path = worktree_path / rel_path
     if not file_path.exists() or not file_path.is_file():
         return "File unavailable for conflict excerpt."
@@ -208,17 +366,36 @@ def conflict_excerpt(worktree_path: Path, rel_path: str, *, context_lines: int =
         if end < len(lines):
             end += 1
         end = min(end + context_lines, len(lines))
-        excerpts.append("\n".join(f"{line_no + 1:>4}: {content}" for line_no, content in enumerate(lines[start:end], start=start)))
+        excerpts.append(
+            "\n".join(
+                f"{line_no + 1:>4}: {content}"
+                for line_no, content in enumerate(lines[start:end], start=start)
+            )
+        )
         index = end
         if len(excerpts) >= 2:
             break
-    return "\n\n".join(excerpts) if excerpts else "No conflict markers found in working tree file."
+    return (
+        "\n\n".join(excerpts)
+        if excerpts
+        else "No conflict markers found in working tree file."
+    )
 
-def recent_file_history(worktree_path: Path, rel_path: str, *, limit: int, policy: Dict[str, Any]) -> List[str]:
-    result = run_command(["git", "log", "--oneline", f"-n{limit}", "--", rel_path], cwd=worktree_path, timeout_seconds=int(policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600))
+
+def recent_file_history(
+    worktree_path: Path, rel_path: str, *, limit: int, policy: Dict[str, Any]
+) -> List[str]:
+    result = run_command(
+        ["git", "log", "--oneline", f"-n{limit}", "--", rel_path],
+        cwd=worktree_path,
+        timeout_seconds=int(
+            policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+        ),
+    )
     if result.returncode != 0 or not result.stdout.strip():
         return []
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
 
 def recommend_conflict_strategy(
     *,
@@ -230,31 +407,81 @@ def recommend_conflict_strategy(
 
     # Heuristic: migration files present -> MIGRATION_FIRST_THEN_FEATURE_REPLAY
     migration_patterns = ("migration", "alembic", "migrate", "schema")
-    if any(p for p in conflict_file_paths if any(m in p.lower() for m in migration_patterns)):
-        return "MIGRATION_FIRST_THEN_FEATURE_REPLAY", "Conflict involves migration files"
+    if any(
+        p
+        for p in conflict_file_paths
+        if any(m in p.lower() for m in migration_patterns)
+    ):
+        return (
+            "MIGRATION_FIRST_THEN_FEATURE_REPLAY",
+            "Conflict involves migration files",
+        )
 
     # Heuristic: interface/API files -> INTERFACE_FIRST_RECONCILIATION
-    interface_patterns = ("__init__.py", "types.ts", "types.py", "schema", "api", "interface", ".d.ts")
-    if any(p for p in conflict_file_paths if any(m in p.lower() for m in interface_patterns)):
-        return "INTERFACE_FIRST_RECONCILIATION", "Conflict involves interface/API surface files"
+    interface_patterns = (
+        "__init__.py",
+        "types.ts",
+        "types.py",
+        "schema",
+        "api",
+        "interface",
+        ".d.ts",
+    )
+    if any(
+        p
+        for p in conflict_file_paths
+        if any(m in p.lower() for m in interface_patterns)
+    ):
+        return (
+            "INTERFACE_FIRST_RECONCILIATION",
+            "Conflict involves interface/API surface files",
+        )
 
     # Heuristic: high file count -> STAGED_SEQUENCE_MERGE
     if len(conflict_file_paths) > 5:
-        return "STAGED_SEQUENCE_MERGE", f"Large conflict surface ({len(conflict_file_paths)} files)"
+        return (
+            "STAGED_SEQUENCE_MERGE",
+            f"Large conflict surface ({len(conflict_file_paths)} files)",
+        )
 
     # Heuristic: test files only -> PATCH_ISOLATION_PLAN
     if conflict_file_paths and all("test" in p.lower() for p in conflict_file_paths):
         return "PATCH_ISOLATION_PLAN", "Conflicts isolated to test files"
 
     # Heuristic: if rebase error suggests complex history -> REVERT_AND_REINTEGRATE
-    if "could not apply" in rebase_error.lower() or "multiple conflicts" in rebase_error.lower():
-        return "REVERT_AND_REINTEGRATE", "Complex rebase failure suggests history rewrite needed"
+    if (
+        "could not apply" in rebase_error.lower()
+        or "multiple conflicts" in rebase_error.lower()
+    ):
+        return (
+            "REVERT_AND_REINTEGRATE",
+            "Complex rebase failure suggests history rewrite needed",
+        )
+
+    # Heuristic: Semantic Risk / High-Risk Path Divergence
+    # Escalation path for sensitive files
+    unsafe_patterns = ("auth/", "secrets/", "security/", "middleware/", "permission", "encryption", "legal/")
+    if any(
+        p
+        for p in conflict_file_paths
+        if any(u in p.lower() for u in unsafe_patterns)
+    ):
+        return (
+            "ESCALATE_FOR_HUMAN_REVIEW",
+            "Conflict touches security-sensitive or core architectural middleware",
+        )
 
     # Default: simplest strategy
     return "OURS_THEN_PORT_SELECTIVE", "Standard conflict resolution (default)"
 
 
-def build_conflict_analysis(*, pr: PullRequestState, worktree_path: Optional[Path], rebase_error: str, policy: Dict[str, Any]) -> str:
+def build_conflict_analysis(
+    *,
+    pr: PullRequestState,
+    worktree_path: Optional[Path],
+    rebase_error: str,
+    policy: Dict[str, Any],
+) -> str:
     strict = bool(policy.get("conflict_rules", {}).get("strict", True))
     lines = [
         f"# Conflict Analysis for PR #{pr.pr_id}",
@@ -287,16 +514,36 @@ def build_conflict_analysis(*, pr: PullRequestState, worktree_path: Optional[Pat
     if worktree_path:
         files = conflict_files(worktree_path, policy)
         file_paths = files
-        lines.extend(["## Conflicting Files", *([f"- {item}" for item in files] if files else ["- none detected"]), ""])
+        lines.extend(
+            [
+                "## Conflicting Files",
+                *([f"- {item}" for item in files] if files else ["- none detected"]),
+                "",
+            ]
+        )
         if files:
             lines.append("## Conflict Hunks")
             for rel_path in files:
-                lines.extend([f"### {rel_path}", "```text", conflict_excerpt(worktree_path, rel_path), "```", ""])
+                lines.extend(
+                    [
+                        f"### {rel_path}",
+                        "```text",
+                        conflict_excerpt(worktree_path, rel_path),
+                        "```",
+                        "",
+                    ]
+                )
             lines.append("## Recent File History")
             for rel_path in files:
-                history = recent_file_history(worktree_path, rel_path, limit=5, policy=policy)
+                history = recent_file_history(
+                    worktree_path, rel_path, limit=5, policy=policy
+                )
                 lines.append(f"### {rel_path}")
-                lines.extend([f"- {entry}" for entry in history] if history else ["- no recent history available"])
+                lines.extend(
+                    [f"- {entry}" for entry in history]
+                    if history
+                    else ["- no recent history available"]
+                )
                 lines.append("")
 
     # Add strategy recommendation
@@ -316,5 +563,11 @@ def build_conflict_analysis(*, pr: PullRequestState, worktree_path: Optional[Pat
         lines.append(f"- When to use: {strategy.use_case}")
         lines.append("")
 
-    lines.extend(["## Resolution Decision", "- status: escalated", "- reason: strict conflict mode requires explicit semantic resolution evidence."])
+    lines.extend(
+        [
+            "## Resolution Decision",
+            "- status: escalated",
+            "- reason: strict conflict mode requires explicit semantic resolution evidence.",
+        ]
+    )
     return "\n".join(lines) + "\n"

@@ -12,16 +12,80 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from .github_api import BOT_AUTHORS, GitHubClient, ci_status, summarize_checks, thread_counters
-from .policy import PolicyError, load_effective_policy, policy_artifact_payload, policy_fingerprint
-from .runtime import CommandResult, append_command_log, execute_or_dry_run, fingerprint_payload, pid_is_running, run_command, run_id, shell_join, snapshot_environment, utc_now, write_json, write_text
-from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, TOOL_VERSION
-from .validation import run_validation, validation_report_md
+from .github_api import (
+    BOT_AUTHORS,
+    GitHubClient,
+    ci_status,
+    summarize_checks,
+    thread_counters,
+)
+from .policy import (
+    PolicyError,
+    load_effective_policy,
+    policy_artifact_payload,
+    policy_fingerprint,
+)
+from .runtime import (
+    CommandResult,
+    append_command_log,
+    execute_or_dry_run,
+    fingerprint_payload,
+    pid_is_running,
+    run_command,
+    run_id,
+    shell_join,
+    snapshot_environment,
+    utc_now,
+    write_json,
+    write_text,
+)
+from .schema import (
+    ARTIFACT_VERSION,
+    POLICY_SCHEMA_VERSION,
+    TOOL_VERSION,
+    ArtifactMeta,
+    BlockerType,
+    FallbackReason,
+    Finding,
+    FindingSeverity,
+    Fingerprint,
+    MergeActionType,
+    MergeDecision,
+    OverrideRecord,
+    PhaseRecord,
+    PreflightCheck,
+    PreflightResult,
+    PRResult,
+    PRState,
+    PRStateData,
+    PullRequestState,
+    QueueOrderingLayer,
+    ReviewThread,
+    RunManifest,
+    ThreadComment,
+    ThreadDisposition,
+    ThreadDispositionType,
+    TruthSource,
+    ValidationReport,
+    ValidationStatus,
+)
 from .strategy_library import STRATEGY_LIBRARY
+from .validation import run_validation, validation_report_md
 
-
-
-__all__ = ['_status_value', '_severity_value', '_state_value', 'ensure_transition', 'classify_pr', 'risk_score', 'build_pr_state', 'lifecycle_for_findings', 'has_conflicts', 'CLASS_PRIORITY', 'VALID_TRANSITIONS', 'TRUTH_PRECEDENCE']
+__all__ = [
+    "_status_value",
+    "_severity_value",
+    "_state_value",
+    "ensure_transition",
+    "classify_pr",
+    "risk_score",
+    "build_pr_state",
+    "lifecycle_for_findings",
+    "has_conflicts",
+    "CLASS_PRIORITY",
+    "VALID_TRANSITIONS",
+    "TRUTH_PRECEDENCE",
+]
 
 CLASS_PRIORITY: Dict[str, int] = {
     "READY": 1,
@@ -37,7 +101,7 @@ TRUTH_PRECEDENCE = [
     "github_protection_review",
     "local_validation",
     "local_rebase_simulation",
-    "heuristics"
+    "heuristics",
 ]
 
 VALID_TRANSITIONS: Dict[PRState, set[PRState]] = {
@@ -47,28 +111,44 @@ VALID_TRANSITIONS: Dict[PRState, set[PRState]] = {
     PRState.APPLY_BLOCKED: {PRState.PLANNED, PRState.ABORTED, PRState.ESCALATED},
     PRState.APPLY_READY: {PRState.APPLIED, PRState.ABORTED},
     PRState.APPLIED: {PRState.MERGE_BLOCKED, PRState.MERGE_READY, PRState.ABORTED},
-    PRState.MERGE_BLOCKED: {PRState.PLANNED, PRState.APPLIED, PRState.ABORTED, PRState.ESCALATED},
+    PRState.MERGE_BLOCKED: {
+        PRState.PLANNED,
+        PRState.APPLIED,
+        PRState.ABORTED,
+        PRState.ESCALATED,
+    },
     PRState.MERGE_READY: {PRState.MERGED, PRState.ABORTED},
     PRState.MERGED: set(),
     PRState.ESCALATED: {PRState.PLANNED, PRState.ABORTED},
     PRState.ABORTED: set(),
 }
 
+
 def _status_value(status: Any) -> str:
     return status.value if hasattr(status, "value") else str(status)
+
 
 def _severity_value(kind: Any) -> str:
     return kind.value if hasattr(kind, "value") else str(kind)
 
+
 def _state_value(state: Any) -> str:
     return state.value if hasattr(state, "value") else str(state)
+
 
 def ensure_transition(current: PRState, target: PRState) -> None:
     if target not in VALID_TRANSITIONS.get(current, set()):
         raise RuntimeError(f"Invalid lifecycle transition: {current} -> {target}")
 
-def lifecycle_for_findings(findings: Sequence[Finding], *, validation_status: ValidationStatus) -> PRState:
-    blockers = [item for item in findings if _severity_value(item.kind) == FindingSeverity.BLOCKER.value]
+
+def lifecycle_for_findings(
+    findings: Sequence[Finding], *, validation_status: ValidationStatus
+) -> PRState:
+    blockers = [
+        item
+        for item in findings
+        if _severity_value(item.kind) == FindingSeverity.BLOCKER.value
+    ]
     if blockers:
         return PRState.APPLY_BLOCKED
     if _status_value(validation_status) == ValidationStatus.PASSED.value:
@@ -77,12 +157,16 @@ def lifecycle_for_findings(findings: Sequence[Finding], *, validation_status: Va
         return PRState.APPLY_READY
     return PRState.MERGE_BLOCKED
 
+
 def has_conflicts(mergeable: str, merge_state_status: str) -> bool:
     mergeable_u = str(mergeable or "").upper()
     state_u = str(merge_state_status or "").upper()
     return mergeable_u == "CONFLICTING" or state_u in {"DIRTY", "HAS_HOOKS"}
 
-def classify_pr(*, ci_state: str, conflicts: bool, active_unresolved_threads: int, is_draft: bool) -> str:
+
+def classify_pr(
+    *, ci_state: str, conflicts: bool, active_unresolved_threads: int, is_draft: bool
+) -> str:
     if is_draft:
         return "BLOCKED"
     ci_fail = ci_state == "FAILURE"
@@ -99,6 +183,7 @@ def classify_pr(*, ci_state: str, conflicts: bool, active_unresolved_threads: in
     if has_comments:
         return "COMMENTS_ONLY"
     return "BLOCKED"
+
 
 def risk_score(
     *,
@@ -129,7 +214,13 @@ def risk_score(
         score += 500.0
     return score
 
-def build_pr_state(raw: Dict[str, Any], unresolved_total: int, active_unresolved: int, outdated_unresolved: int) -> PullRequestState:
+
+def build_pr_state(
+    raw: Dict[str, Any],
+    unresolved_total: int,
+    active_unresolved: int,
+    outdated_unresolved: int,
+) -> PullRequestState:
     checks = raw.get("statusCheckRollup", []) or []
     ci_state = ci_status(checks)
     merge_state_status = raw.get("mergeStateStatus") or ""
@@ -151,7 +242,11 @@ def build_pr_state(raw: Dict[str, Any], unresolved_total: int, active_unresolved
         mergeable=raw.get("mergeable", "UNKNOWN"),
         merge_state_status=merge_state_status,
         review_decision=raw.get("reviewDecision") or "",
-        labels=[item.get("name", "") for item in raw.get("labels", []) if isinstance(item, dict)],
+        labels=[
+            item.get("name", "")
+            for item in raw.get("labels", [])
+            if isinstance(item, dict)
+        ],
         updated_at=raw.get("updatedAt", ""),
         is_draft=bool(raw.get("isDraft", False)),
         additions=int(raw.get("additions", 0) or 0),

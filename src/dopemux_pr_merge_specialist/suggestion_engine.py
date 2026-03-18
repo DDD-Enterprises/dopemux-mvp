@@ -1,7 +1,8 @@
 import json
-from typing import List, Dict, Any, Optional
-from .schema import FeedbackItem, PRMergeReport
+from typing import Any, Dict, List, Optional
+
 from .arbitration_runtime import ArbitrationLLMClient
+from .schema import FeedbackItem, PRMergeReport
 
 
 class SuggestionImplementer:
@@ -10,7 +11,9 @@ class SuggestionImplementer:
     def __init__(self, client: Optional[ArbitrationLLMClient] = None):
         self.client = client or ArbitrationLLMClient(mode="MOCK")
 
-    def synthesize_patch(self, item: FeedbackItem, context_files: List[str]) -> Dict[str, Any]:
+    def synthesize_patch(
+        self, item: FeedbackItem, context_files: List[str]
+    ) -> Dict[str, Any]:
         """Generate a patch plan for a specific feedback item."""
         prompt = f"""
         Role: Senior Software Engineer
@@ -36,15 +39,15 @@ class SuggestionImplementer:
              "confidence": "HIGH|MEDIUM|LOW"
            }
         """
-        
+
         response = self.client.call_role("analyzer", prompt)
-        
+
         try:
             data = json.loads(response)
             # Support both old 'patch' and new 'search/replace' for compatibility during transition
             if "patch" in data and "replace" not in data:
                 data["replace"] = data["patch"]
-                data["search"] = None # Fallback to append/manual
+                data["search"] = None  # Fallback to append/manual
             return data
         except:
             return {
@@ -52,7 +55,7 @@ class SuggestionImplementer:
                 "file": item.file or "UNKNOWN",
                 "search": None,
                 "replace": "# No patch synthesized (Schema failure)",
-                "confidence": "LOW"
+                "confidence": "LOW",
             }
 
     def plan_all_suggestions(self, report: PRMergeReport) -> List[Dict[str, Any]]:
@@ -60,18 +63,22 @@ class SuggestionImplementer:
         patches = []
         if not report.feedback_items:
             return []
-            
+
         for item in report.feedback_items:
             if item.is_resolved or item.is_outdated or item.id == "PR_BODY":
                 continue
-                
+
             # Attempt synthesis for ANY unresolved comment
             target_files = [item.file] if item.file else []
             patch = self.synthesize_patch(item, target_files)
             patch["source_item_id"] = item.id
-            
+
             # Present to user if the model was able to identify a file and patch
-            if patch.get("file") and patch["file"] != "UNKNOWN" and "No patch synthesized" not in patch["patch"]:
+            if (
+                patch.get("file")
+                and patch["file"] != "UNKNOWN"
+                and "No patch synthesized" not in patch["patch"]
+            ):
                 patches.append(patch)
-                
+
         return patches

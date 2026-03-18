@@ -1,41 +1,73 @@
-from typing import Dict, Any, List, Optional
-from .schema import PRState
+from __future__ import annotations
+
+import math
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from .schema import PullRequestState
 
 
-class ScoringEngine:
-    """Calculates priority scores for PRs to determine enqueue order."""
+class AdvancedQueueScorer:
+    """
+    Implements the Weighted Shortest Expected Merge Time (WSEMT) scoring model.
+    
+    Formula: Score = (Base_Priority + (Age_Factor)) / Expected_CI_Duration
+    
+    Higher score = Higher priority.
+    """
 
-    def __init__(self, weights: Optional[Dict[str, float]] = None):
-        self.weights = weights or {
-            "urgency": 10.0,
-            "age_bonus": 0.5, # points per day
-            "ci_cost_negative": -1.0, # points per minute of expected CI
-            "risk_negative": -5.0, # points per high-risk label
-            "hotfix_boost": 50.0
+    def __init__(self, policy: Optional[Dict[str, Any]] = None):
+        self.policy = policy or {}
+        config = self.policy.get("scoring", {})
+        
+        self.weights = {
+            "hotfix": config.get("hotfix_weight", 100.0),
+            "feature": config.get("feature_weight", 20.0),
+            "chore": config.get("chore_weight", 5.0),
+            "aging_multiplier": config.get("aging_multiplier", 0.1), # Points per minute
+            "base_ci_minutes": config.get("base_ci_minutes", 10.0),
+            "ci_per_file_factor": config.get("ci_per_file_factor", 0.5),
         }
 
-    def calculate_score(self, pr_state: PRState) -> float:
-        """Calculate total score for a PR."""
-        score = 0.0
+    def calculate_wsemt_score(self, pr: PullRequestState) -> float:
+        """Calculate the risk-adjusted WSEMT score."""
         
-        # 1. Hotfix boost
-        if any(l.lower() in ["hotfix", "emergency", "security"] for l in pr_state.labels):
-            score += self.weights.get("hotfix_boost", 0.0)
-            
-        # 2. Age Bonus (mocked based on updatedAt for now)
-        # In real impl, would parse updatedAt and calc days
-        score += self.weights.get("age_bonus", 0.0) * 1.0 # Placeholder
+        # 1. Base Priority Weight
+        base_priority = 10.0
+        labels = [l.lower() for l in pr.labels]
         
-        # 3. Risk (based on labels or diffstat)
-        if pr_state.mergeable is False:
-             score += self.weights.get("risk_negative", 0.0)
-             
-        # 4. Urgency Label
-        if "urgency:high" in pr_state.labels:
-            score += self.weights.get("urgency", 0.0)
+        if any(kw in labels for kw in ["hotfix", "emergency", "security", "p0"]):
+            base_priority += self.weights["hotfix"]
+        elif any(kw in labels for kw in ["feature", "enhancement"]):
+            base_priority += self.weights["feature"]
+        elif any(kw in labels for kw in ["chore", "refactor", "docs"]):
+            base_priority += self.weights["chore"]
+
+        # 2. Queue Age Factor (Anti-starvation)
+        # We use updated_at as a proxy for 'time in queue' if created_at is missing
+        # Format is usually ISO 8601: 2026-03-17T22:45:46Z
+        age_minutes = 0.0
+        try:
+            if pr.updated_at:
+                # Simple parse, ignoring TZ for relative diff if same day
+                ts = datetime.fromisoformat(pr.updated_at.replace("Z", "+00:00"))
+                delta = datetime.now(ts.tzinfo) - ts
+                age_minutes = max(0.0, delta.total_seconds() / 60.0)
+        except Exception:
+            pass
             
+        age_contribution = age_minutes * self.weights["aging_multiplier"]
+
+        # 3. Expected CI Duration (Denominator)
+        # Heuristic: base time + penalty for number of files changed
+        expected_duration = self.weights["base_ci_minutes"] + (pr.changed_files * self.weights["ci_per_file_factor"])
+        
+        # Ensure we don't divide by zero
+        expected_duration = max(1.0, expected_duration)
+
+        score = (base_priority + age_contribution) / expected_duration
         return score
 
-    def rank_prs(self, pr_states: List[PRState]) -> List[PRState]:
-        """Return PRs sorted by score descending."""
-        return sorted(pr_states, key=self.calculate_score, reverse=True)
+    def rank_prs(self, prs: List[PullRequestState]) -> List[PullRequestState]:
+        """Rank PRs by WSEMT score descending."""
+        return sorted(prs, key=self.calculate_wsemt_score, reverse=True)
