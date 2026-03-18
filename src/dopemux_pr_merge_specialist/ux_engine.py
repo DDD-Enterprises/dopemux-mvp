@@ -155,7 +155,16 @@ class RichTerminalRenderer(TerminalRenderer):
             row_style = "bold white on grey15" if is_active else "dim"
             
             step = str(pr.get("lifecycle_state", "discovered")).upper()
-            status_icon = "🟢" if "READY" in step or "MERGED" in step else "🔴" if "BLOCKED" in step or "CONFLICT" in step else "⏳"
+            is_draft = bool(pr.get("is_draft", False))
+            
+            if is_draft:
+                status_icon = "📝"
+            elif "READY" in step or "MERGED" in step:
+                status_icon = "🟢"
+            elif "BLOCKED" in step or "CONFLICT" in step:
+                status_icon = "🔴"
+            else:
+                status_icon = "⏳"
             
             table.add_row(
                 f"{'> ' if is_active else '  '}{pr.get('pr_id', '???')}",
@@ -180,8 +189,9 @@ class RichTerminalRenderer(TerminalRenderer):
                 Layout(name="bottom", ratio=2)
             )
             cockpit["top"].split_row(
-                Layout(name="intel", ratio=1),
-                Layout(name="blockers", ratio=1)
+                Layout(name="intel", ratio=2),
+                Layout(name="stats", ratio=1),
+                Layout(name="blockers", ratio=2)
             )
             
             # Intel
@@ -192,6 +202,15 @@ class RichTerminalRenderer(TerminalRenderer):
             intel_text.append(f"RATIONALE: {active.get('rationale', 'Standard rebase.')[:150]}...", style="dim")
             cockpit["top"]["intel"].update(Panel(intel_text, title="MISSION INTEL", border_style="magenta"))
             
+            # Stats
+            stats_text = Text()
+            stats_text.append("CI STATUS: ", style="bold")
+            ci = active.get("ci_status", "UNKNOWN")
+            stats_text.append(f"{ci}\n", style="green" if ci == "SUCCESS" else "red" if ci == "FAILURE" else "yellow")
+            stats_text.append(f"THREADS  : {active.get('unresolved_threads', 0)} unresolved\n", style="cyan")
+            stats_text.append(f"RISK     : {active.get('risk_score', 0.0):.1f}", style="orange")
+            cockpit["top"]["stats"].update(Panel(stats_text, title="QUICK STATS", border_style="blue"))
+
             # Blockers & Warnings
             blocker_text = Text()
             blockers = active.get("blockers", [])
@@ -213,25 +232,22 @@ class RichTerminalRenderer(TerminalRenderer):
             
             if history:
                 blocker_text.append("\n📜 MISSION HISTORY:\n", style="bold cyan")
-                for h in history[-3:]: # Show last 3 history items
+                for h in history[-3:]:
                     blocker_text.append(f"  • {h.get('event')} ", style="dim white")
                     blocker_text.append(f"({h.get('timestamp')})\n", style="dim cyan")
             
             cockpit["top"]["blockers"].update(Panel(blocker_text, title="TACTICAL INSIGHTS", border_style="red" if blockers else "green"))
 
             # Middle row: Horizontal Stats
-            stats_grid = Table.grid(expand=True)
-            stats_grid.add_column(ratio=1)
-            stats_grid.add_column(ratio=1)
-            stats_grid.add_column(ratio=1)
+            middle_grid = Table.grid(expand=True)
+            middle_grid.add_column(ratio=1)
+            middle_grid.add_column(ratio=1)
             
-            ci = active.get("ci_status", "UNKNOWN")
-            ci_text = Text.assemble(("CI STATUS: ", "bold"), (ci, "green" if ci == "SUCCESS" else "red" if ci == "FAILURE" else "yellow"))
-            thread_text = Text.assemble(("THREADS: ", "bold"), (f"{active.get('unresolved_threads', 0)} unresolved", "cyan"))
-            risk_text = Text.assemble(("RISK SCORE: ", "bold"), (f"{active.get('risk_score', 0.0):.1f}", "orange"))
+            is_draft = bool(active.get("is_draft", False))
+            draft_text = Text.assemble(("DRAFT MODE: ", "bold"), ("ENABLED" if is_draft else "DISABLED", "yellow" if is_draft else "dim white"))
             
-            stats_grid.add_row(Align.center(ci_text), Align.center(thread_text), Align.center(risk_text))
-            cockpit["middle"].update(Panel(stats_grid, border_style="blue"))
+            middle_grid.add_row(Align.center(draft_text), Align.center(Text("")))
+            cockpit["middle"].update(Panel(middle_grid, border_style="blue"))
 
             # Bottom row: Objective or Execution Log
             log_text = Text()
@@ -239,7 +255,10 @@ class RichTerminalRenderer(TerminalRenderer):
             if not execution_log:
                 lc_state = str(active.get("lifecycle_state", "discovered")).upper()
                 obj_text = Text()
-                if "READY" in lc_state:
+                if is_draft:
+                    obj_text.append("🎯 OBJECTIVE: Transition PR out of DRAFT mode.\n", style="bold yellow")
+                    obj_text.append("NEXT STEP: Press [R] to mark as READY FOR REVIEW.", style="white")
+                elif "READY" in lc_state:
                     obj_text.append("🎯 OBJECTIVE: Final sign-off and integration.\n", style="bold green")
                     obj_text.append("NEXT STEP: Press [A] to Approve or [I] to Implement Merge.", style="white")
                 elif "THREAD" in lc_state or "COMMENT" in lc_state:
@@ -249,7 +268,7 @@ class RichTerminalRenderer(TerminalRenderer):
                     obj_text.append("🎯 OBJECTIVE: Reconcile branch divergence.\n", style="bold red")
                     obj_text.append("NEXT STEP: Press [I] to launch the Fusion Engine.", style="white")
                 elif "MERGED" in lc_state:
-                    obj_text.append("🏁 MISSION ACCOMPLISHED\n", style="bold bold green")
+                    obj_text.append("🏁 MISSION ACCOMPLISHED\n", style="bold green")
                     obj_text.append("PR has been successfully integrated.", style="white")
                 else:
                     obj_text.append(f"🎯 OBJECTIVE: Advance PR from {lc_state} state.\n", style="bold cyan")
@@ -275,6 +294,8 @@ class RichTerminalRenderer(TerminalRenderer):
         # Footer
         controls = Text.assemble(
             ("[A] ", "bold cyan"), "Approve  ",
+            ("[B] ", "bold blue"), "Bulk Approve  ",
+            ("[R] ", "bold green"), "Ready  ",
             ("[P] ", "bold magenta"), "Patch  ",
             ("[I] ", "bold yellow"), "Implement  ",
             ("[T] ", "bold blue"), "Threads  ",

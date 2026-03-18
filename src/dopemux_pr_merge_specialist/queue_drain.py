@@ -58,7 +58,7 @@ from .conflict import (
 from .merge import checks_green, wait_for_green_checks, checks_blocker_reason, decide_merge_action, run_merge_with_fallback, serialize_check_payload
 from .worktree import prepare_worktree, cleanup_worktree, ensure_worktree_matches_pr_head, attempt_rebase
 
-__all__ = ['queue_scan', 'queue_scan_internal', 'pr_plan', 'pr_apply', 'pr_merge', 'pr_approve', '_get_ops_engine', '_derive_allowed_actions', 'queue_drain', 'stage_and_push_if_needed', 'update_remaining_pr_bases']
+__all__ = ['queue_scan', 'queue_scan_internal', 'pr_plan', 'pr_apply', 'pr_merge', 'pr_approve', 'pr_ready', '_get_ops_engine', '_derive_allowed_actions', 'queue_drain', 'stage_and_push_if_needed', 'update_remaining_pr_bases']
 
 def stage_and_push_if_needed(*, worktree_path: Path, head_ref: str, active_run_id: str, pr_id: int, execute: bool, commands_log: Path, policy: Dict[str, Any]) -> bool:
     timeout_seconds = int(policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600)
@@ -451,20 +451,59 @@ def pr_approve(args: argparse.Namespace, progress_callback: Optional[Callable[[s
     policy = load_effective_policy(repo_root, explicit_path=getattr(args, "policy", None))
     client = GitHubClient(repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy)
     
+    raw = client.fetch_pr(int(args.id))
+    author = (raw.get("author") or {}).get("login", "unknown")
+    auth_user = client.get_authenticated_user()
+    
     log(f"Approving PR #{args.id}...")
     
     execute = getattr(args, "execute", False)
     if execute:
-        cmd = ["gh", "pr", "review", str(args.id), "--approve"]
-        if getattr(args, "repo", None):
-            cmd.extend(["--repo", args.repo])
-            
-        result = run_command(cmd, cwd=repo_root, timeout_seconds=30)
-        if result.returncode == 0:
-            log("PR approved successfully.", "SUCCESS")
+        if author == auth_user:
+            log(f"Skipping approval: {auth_user} is the PR author.", "WARNING")
         else:
-            log(f"Approval FAILED: {result.stderr.strip()}", "ERROR")
-            raise RuntimeError(f"Approval failed: {result.stderr.strip()}")
+            cmd = ["gh", "pr", "review", str(args.id), "--approve"]
+            if getattr(args, "repo", None):
+                cmd.extend(["--repo", args.repo])
+                
+            result = run_command(cmd, cwd=repo_root, timeout_seconds=30)
+            if result.returncode == 0:
+                log("PR approved successfully.", "SUCCESS")
+            else:
+                log(f"Approval FAILED: {result.stderr.strip()}", "ERROR")
+                raise RuntimeError(f"Approval failed: {result.stderr.strip()}")
+            
+    # Refresh state
+    threads = client.fetch_review_threads(int(args.id))
+    unresolved_total, active_threads, outdated_threads = thread_counters(threads)
+    pr = build_pr_state(raw, unresolved_total, active_threads, outdated_threads)
+    pr_dir = pr_dir_for(pr_root, pr.pr_id)
+    check_payload = client.query_checks(pr.pr_id)
+    validation = ValidationReport(status=ValidationStatus.NOT_EXECUTED, required_for_merge_ready=bool(policy.get("validation", {}).get("require_local_validation_for_merge_ready", True)), steps=[], attempts=0, remediation_applied=False)
+    result = build_plan_result(active_run_id=active_run_id, pr=pr, threads=threads, check_payload=check_payload, validation_report=validation, policy=policy)
+    write_pr_state_artifact(pr_dir, result)
+    return result
+
+def pr_ready(args: argparse.Namespace, progress_callback: Optional[Callable[[str, str], None]] = None) -> PRResult:
+    def log(msg: str, s_type: str = "INFO"):
+        if progress_callback:
+            progress_callback(msg, s_type)
+            
+    repo_root = Path.cwd()
+    active_run_id = getattr(args, "run_id", None) or run_id()
+    run_dir, _, pr_root = build_run_paths(args.out_dir, active_run_id)
+    policy = load_effective_policy(repo_root, explicit_path=getattr(args, "policy", None))
+    client = GitHubClient(repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy)
+    
+    log(f"Marking PR #{args.id} as READY...")
+    
+    execute = getattr(args, "execute", False)
+    if execute:
+        if client.ready_pr(int(args.id)):
+            log("PR marked as READY.", "SUCCESS")
+        else:
+            log("Failed to mark PR as READY.", "ERROR")
+            raise RuntimeError("gh pr ready failed")
             
     # Refresh state
     raw = client.fetch_pr(int(args.id))
