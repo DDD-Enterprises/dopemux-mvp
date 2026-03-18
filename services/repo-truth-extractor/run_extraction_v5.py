@@ -15193,6 +15193,7 @@ def main() -> None:
     except (AttributeError, ValueError):
         pass
     parser = argparse.ArgumentParser("Master Extraction Runner")
+    parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
     parser.add_argument("--sync", action="store_true", help="Synchronize prompt source scopes with modern architecture.")
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
@@ -15456,6 +15457,18 @@ def main() -> None:
     args.batch_max_requests_per_job = max(1, int(args.batch_max_requests_per_job))
     if args.batch_submit_only:
         args.batch_mode = True
+    
+    router = None
+    if args.prescan:
+        if IntelligenceRouter:
+            router = IntelligenceRouter.from_dir(Path(args.prescan))
+            if router:
+                logger.info(f"Initialized IntelligenceRouter from {args.prescan}")
+            else:
+                logger.warning(f"Failed to initialize IntelligenceRouter from {args.prescan}")
+        else:
+            logger.warning("IntelligenceRouter class not available, skipping prescan logic.")
+
     apply_model_overrides(args.gemini_model_id, args.routing_policy)
 
     # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: validate comparison step eligibility
