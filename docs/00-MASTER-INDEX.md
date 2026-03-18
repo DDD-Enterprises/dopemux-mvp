@@ -47,6 +47,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Multi-Instance Workflow](02-how-to/multi-instance-workflow.md)
 - [Instance State Persistence](02-how-to/instance-state-persistence.md)
 - [Orchestrator Dashboard Quickstart](02-how-to/orchestrator-dashboard.md)
+- [PR Merge Flight Dashboard Quickstart](02-how-to/pr-merge-flight-dashboard.md)
 - [Workflow Idea to Epic Lifecycle](02-how-to/operations/workflow-idea-epic-lifecycle.md)
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
 - [Repo Truth Extractor CLI Runbook](02-how-to/extraction/run-v4-from-dopemux-cli.md) - canonical command namespace: `dopemux upgrades ...` (`extractor` is legacy alias)

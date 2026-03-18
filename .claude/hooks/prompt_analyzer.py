@@ -255,6 +255,46 @@ def build_context_injection(
     return context_lines
 
 
+def notify_orchestrator(signals: Dict[str, bool], prompt: str):
+    """Notify task-orchestrator of new work intent (non-blocking)."""
+    _http_json(
+        "POST",
+        f"{TASK_ORCH_URL}/api/tools/record_intent",
+        payload={
+            "prompt_summary": prompt[:200],
+            "signals": signals,
+            "timestamp": datetime.now().isoformat(),
+        },
+        timeout=1,
+    )
+
+
+def auto_start_session(prompt: str):
+    """Auto-start orchestrator session on first prompt."""
+    try:
+        from session_lifecycle import start_session_if_needed
+        start_session_if_needed(prompt)
+    except ImportError:
+        # session_lifecycle.py not available, try direct
+        import os
+        session_file = "/tmp/dopemux_current_session.json"
+        if not os.path.exists(session_file):
+            _http_json(
+                "POST",
+                f"{TASK_ORCH_URL}/api/tools/start_session",
+                payload={
+                    "task_description": prompt[:100],
+                    "energy_level": "medium",
+                    "estimated_minutes": 25,
+                },
+                timeout=2,
+            )
+
+
+# Task-Orchestrator endpoint
+TASK_ORCH_URL = "http://localhost:3009"
+
+
 def main():
     """Main hook entry point."""
     try:
@@ -272,14 +312,23 @@ def main():
         adhd_state = get_adhd_context()
         unfinished = check_unfinished_work()
 
-        # Log intent (non-blocking)
-        log_intent(
-            prompt_summary=user_prompt[:100], signals=signals, adhd_state=adhd_state
-        )
+        # Notify task-orchestrator of intent (non-blocking)
+        notify_orchestrator(signals, user_prompt)
 
         # Handle context switch
         if signals["is_context_switch"]:
             save_context_on_switch(user_prompt)
+            # Notify orchestrator of switch
+            _http_json(
+                "POST",
+                f"{TASK_ORCH_URL}/api/tools/record_context_switch",
+                payload={
+                    "from_task": "previous_context",
+                    "to_task": user_prompt[:100],
+                    "reason": "detected_in_prompt"
+                },
+                timeout=1
+            )
 
         # Build context injection
         context_lines = build_context_injection(signals, adhd_state, unfinished)

@@ -58,6 +58,7 @@ Day-to-day operational tasks and workflows.
 ### Workflow Management
 - **[Role Switching Quickstart](role-switching-quickstart.md)** - Switch between development roles
 - **[Instance Slash Commands](instance-slash-commands.md)** - Command reference
+- **[PR Merge Flight Dashboard](pr-merge-flight-dashboard.md)** - Tactical PR queue management
 
 ### ADHD Engine
 - **[Serena V2 Deployment](serena-v2-production-deployment.md#-quick-start---production-deployment)** - Deploy ADHD intelligence

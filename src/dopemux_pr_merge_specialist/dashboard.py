@@ -15,7 +15,7 @@ from rich.layout import Layout
 from rich.live import Live
 
 from .ux_engine import RenderMode, RichTerminalRenderer
-from .queue_drain import pr_apply, pr_merge
+from .queue_drain import pr_apply, pr_merge, pr_approve
 
 
 @dataclass
@@ -99,6 +99,12 @@ class DopemuxDashboard:
                 result = pr_apply(cmd_args, progress_callback=self.log_step)
                 self.log_step("Verification sequence complete.", "SUCCESS")
                 self.state.status_message = f"Verification complete for PR #{pr_id}."
+            
+            elif tactic == "A":
+                self.log_step(f"ENGAGING APPROVAL: PR #{pr_id}", "START")
+                result = pr_approve(cmd_args, progress_callback=self.log_step)
+                self.log_step("Approval submitted.", "SUCCESS")
+                self.state.status_message = f"Approval complete for PR #{pr_id}."
             else:
                 self.log_step(f"Tactic [{tactic}] not yet dashboard-instrumented.", "INFO")
                 time.sleep(1)
@@ -106,7 +112,7 @@ class DopemuxDashboard:
             if result:
                 self.state.last_action_result = result.lifecycle_state
                 # Preserve history if it exists
-                history = self.state.prs[self.state.active_index].get("history", [])
+                history = self.state.active_pr.get("history", [])
                 
                 return {
                     "pr_id": result.pr_state.pr_id,
@@ -157,17 +163,20 @@ class DopemuxDashboard:
                         char = sys.stdin.read(1)
                         if char == '\x1b':
                             next_char = sys.stdin.read(2)
-                            if next_char == '[A': choice = "UP"
-                            elif next_char == '[B': choice = "DOWN"
+                            if next_char == "[A": choice = "UP"
+                            elif next_char == "[B": choice = "DOWN"
                         else:
                             choice = char.upper()
                     elif self.state.auto_pilot:
                         active = self.state.active_pr
                         if active:
                             lc_state = str(active.get("lifecycle_state", "discovered")).upper()
+                            unresolved = int(active.get("unresolved_threads", 0))
+                            
                             if "READY" in lc_state or active.get("merge_strategy") == "auto_merge_fallback":
                                 choice = "I"
-                            elif "THREAD" in lc_state or "COMMENT" in lc_state:
+                            elif unresolved > 0:
+                                # PRIORITIZE PATCHING IF THREADS EXIST
                                 choice = "P"
                             elif "CONFLICT" in lc_state:
                                 choice = "S"
