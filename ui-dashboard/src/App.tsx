@@ -291,6 +291,7 @@ function App() {
                   <Tooltip title={metric.tooltip} arrow>
                     <Box
                       tabIndex={0}
+                      aria-label={metric.label}
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
