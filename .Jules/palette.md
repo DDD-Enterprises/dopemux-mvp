@@ -29,3 +29,7 @@
 ## 2026-03-11 - [Closing the Task Feedback Loop]
 **Learning:** In task-oriented interfaces, failing to provide a clear "success" or "empty" state after finishing a sequence can lead to user confusion or a sense of "unmet expectation." Providing a satisfying "Ritual Complete" visual (like a check icon and positive reinforcement text) creates a distinct sense of closure and progress.
 **Action:** Always implement explicit success and empty states for sequential task components to provide closure and guidance when a workflow is completed or empty.
+
+## 2026-03-12 - [Non-Jumping Dynamic Durations]
+**Learning:** For users with "time blindness" (ADHD), showing the total remaining time is a critical "end of the tunnel" signal. However, if the time "jumps" back up when completing an overdue task, it can be demoralizing. Calculating totals as `otherMinutes + Math.max(0, currentTaskEstimate - elapsed)` ensures the estimate only ever decreases or stays flat during the ritual.
+**Action:** When aggregating dynamic remaining time, always use `Math.max(0, ...)` for the active task's contribution to ensure the total is monotonically decreasing and psychologically consistent.

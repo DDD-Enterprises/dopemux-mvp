@@ -23,6 +23,7 @@ import {
   Timer,
   Flame,
   Swords,
+  Clock,
 } from 'lucide-react';
 import { brandTokens } from '../theme';
 
@@ -147,6 +148,18 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
+
+  const totalRemainingMinutes = useMemo(() => {
+    const otherTasks = optimizedTasks.filter((task) => task.id !== currentTaskId);
+    const otherMinutes = otherTasks.reduce((sum, task) => sum + task.estimatedMinutes, 0);
+
+    const currentTaskObj = tasks.find((task) => task.id === currentTaskId);
+    const remainingCurrent = currentTaskObj
+      ? Math.max(0, currentTaskObj.estimatedMinutes - taskTimer / 60)
+      : 0;
+
+    return Math.ceil(otherMinutes + remainingCurrent);
+  }, [optimizedTasks, tasks, currentTaskId, taskTimer]);
 
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
@@ -285,6 +298,35 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
+        {optimizedTasks.length > 0 && (
+          <Tooltip title="Total remaining duration for all tasks" arrow>
+            <Box
+              role="status"
+              aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
+              tabIndex={0}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                ml: 'auto',
+                px: 1,
+                py: 0.25,
+                borderRadius: 1,
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                color: brandTokens.colors.ritualCyan,
+                border: '1px solid rgba(125, 251, 246, 0.2)',
+                '&:focus-visible': {
+                  outline: `2px solid ${brandTokens.colors.ritualCyan}`,
+                },
+              }}
+            >
+              <Clock size={14} aria-hidden="true" />
+              <Typography variant="caption" sx={{ fontWeight: 'bold', fontFamily: '"Space Grotesk", sans-serif' }}>
+                {totalRemainingMinutes}m
+              </Typography>
+            </Box>
+          </Tooltip>
+        )}
         <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
           <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
