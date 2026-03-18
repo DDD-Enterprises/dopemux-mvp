@@ -9,6 +9,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from dopemux.ui.theme import styled_panel
+
 
 # Comprehensive feature database
 DOPEMUX_FEATURES = [
@@ -18,7 +20,7 @@ DOPEMUX_FEATURES = [
         "description": "Full monitoring experience with orchestrator + dual agents",
         "usage": "dopemux dope --theme muted",
         "category": "Quick Start",
-        "color": "red"
+        "color": "error"
     },
     {
         "emoji": "⚡",
@@ -26,7 +28,7 @@ DOPEMUX_FEATURES = [
         "description": "Fastest way to start - simple layout, instant coding",
         "usage": "dopemux quick",
         "category": "Quick Start",
-        "color": "yellow"
+        "color": "warning"
     },
     {
         "emoji": "🌳",
@@ -34,7 +36,7 @@ DOPEMUX_FEATURES = [
         "description": "Parallel development without branch switching chaos",
         "usage": "dopemux worktrees create feature/new",
         "category": "Workflow",
-        "color": "green"
+        "color": "success"
     },
     {
         "emoji": "🧠",
@@ -50,7 +52,7 @@ DOPEMUX_FEATURES = [
         "description": "Visualize your energy patterns and session analytics",
         "usage": "http://localhost:8097/api/metrics",
         "category": "ADHD Features",
-        "color": "cyan"
+        "color": "info"
     },
     {
         "emoji": "💾",
@@ -58,7 +60,7 @@ DOPEMUX_FEATURES = [
         "description": "Never lose your train of thought - save/restore context",
         "usage": "dopemux save (auto-saves with context manager)",
         "category": "Productivity",
-        "color": "blue"
+        "color": "info"
     },
     {
         "emoji": "🔍",
@@ -66,7 +68,7 @@ DOPEMUX_FEATURES = [
         "description": "AI-powered search across code + docs with complexity scoring",
         "usage": "Uses dope-context MCP server automatically",
         "category": "Search",
-        "color": "green"
+        "color": "success"
     },
     {
         "emoji": "📝",
@@ -74,7 +76,7 @@ DOPEMUX_FEATURES = [
         "description": "Log architectural decisions with rationale to ConPort",
         "usage": "dopemux decisions list --workspace .",
         "category": "Knowledge Graph",
-        "color": "blue"
+        "color": "info"
     },
     {
         "emoji": "🏥",
@@ -82,7 +84,7 @@ DOPEMUX_FEATURES = [
         "description": "Comprehensive system diagnostics for all services",
         "usage": "dopemux health",
         "category": "Maintenance",
-        "color": "green"
+        "color": "success"
     },
     {
         "emoji": "🎯",
@@ -90,7 +92,7 @@ DOPEMUX_FEATURES = [
         "description": "Run multiple isolated Claude sessions simultaneously",
         "usage": "dopemux instances create (manages worktree instances)",
         "category": "Advanced",
-        "color": "cyan"
+        "color": "info"
     },
     {
         "emoji": "🤖",
@@ -98,7 +100,7 @@ DOPEMUX_FEATURES = [
         "description": "9 MCP servers: ConPort, Serena, PAL, Zen, and more",
         "usage": "dopemux mcp status (manage all MCP servers)",
         "category": "MCP",
-        "color": "yellow"
+        "color": "warning"
     },
     {
         "emoji": "🧪",
@@ -114,7 +116,7 @@ DOPEMUX_FEATURES = [
         "description": "Live development metrics in your tmux status bar",
         "usage": "Shows energy ⚡, attention 👁️, breaks ☕, tokens",
         "category": "UI",
-        "color": "cyan"
+        "color": "info"
     },
     {
         "emoji": "🎨",
@@ -130,7 +132,7 @@ DOPEMUX_FEATURES = [
         "description": "Proactive break suggestions after 25-min focus sessions",
         "usage": "Automatic - prevents ADHD burnout",
         "category": "ADHD Features",
-        "color": "yellow"
+        "color": "warning"
     },
     {
         "emoji": "🔄",
@@ -138,7 +140,7 @@ DOPEMUX_FEATURES = [
         "description": "Resume your last session with all context preserved",
         "usage": "dopemux restore",
         "category": "Productivity",
-        "color": "blue"
+        "color": "info"
     },
     {
         "emoji": "📐",
@@ -146,7 +148,7 @@ DOPEMUX_FEATURES = [
         "description": "Pre-built layouts with examples and documentation",
         "usage": "dopemux layouts (shows: low, medium, dope, full)",
         "category": "UI",
-        "color": "green"
+        "color": "success"
     },
     {
         "emoji": "🎭",
@@ -162,7 +164,7 @@ DOPEMUX_FEATURES = [
         "description": "One-command backup of all volumes and state",
         "usage": "dopemux backup",
         "category": "Maintenance",
-        "color": "blue"
+        "color": "info"
     },
     {
         "emoji": "🛡️",
@@ -170,7 +172,7 @@ DOPEMUX_FEATURES = [
         "description": "Prevents accidental work on main - suggests worktrees",
         "usage": "Automatic - prompts when uncommitted on main",
         "category": "Safety",
-        "color": "red"
+        "color": "error"
     },
     {
         "emoji": "🔌",
@@ -178,7 +180,7 @@ DOPEMUX_FEATURES = [
         "description": "Route to 13+ models: GPT-5, Grok, Claude, DeepSeek",
         "usage": "export ANTHROPIC_BASE_URL=http://localhost:4000",
         "category": "AI",
-        "color": "yellow"
+        "color": "warning"
     },
     {
         "emoji": "🧭",
@@ -186,7 +188,7 @@ DOPEMUX_FEATURES = [
         "description": "Separate cognitive state per project workspace",
         "usage": "dopemux start --workspace ~/code/project",
         "category": "Workflow",
-        "color": "green"
+        "color": "success"
     },
     {
         "emoji": "📱",
@@ -194,7 +196,7 @@ DOPEMUX_FEATURES = [
         "description": "Test/build completion alerts to your phone via Happy",
         "usage": "dopemux run-tests (sends results to mobile)",
         "category": "Integrations",
-        "color": "cyan"
+        "color": "info"
     },
     {
         "emoji": "🎬",
@@ -202,7 +204,7 @@ DOPEMUX_FEATURES = [
         "description": "Automatic session recording to ConPort knowledge graph",
         "usage": "dopemux decisions list (query recorded sessions)",
         "category": "Knowledge Graph",
-        "color": "blue"
+        "color": "info"
     },
     {
         "emoji": "🏥",
@@ -210,7 +212,7 @@ DOPEMUX_FEATURES = [
         "description": "Dr. Dopemux runs comprehensive health checks",
         "usage": "dopemux doctor (diagnoses all services)",
         "category": "Maintenance",
-        "color": "green"
+        "color": "success"
     },
     {
         "emoji": "🔬",
@@ -218,7 +220,7 @@ DOPEMUX_FEATURES = [
         "description": "Multi-angle document processing with ADHD patterns",
         "usage": "dopemux analyze (deep codebase analysis)",
         "category": "Search",
-        "color": "cyan"
+        "color": "info"
     },
     {
         "emoji": "🧩",
@@ -234,7 +236,7 @@ DOPEMUX_FEATURES = [
         "description": "Customize Claude Code integration with hooks",
         "usage": "dopemux hooks list (manage hooks)",
         "category": "Advanced",
-        "color": "yellow"
+        "color": "warning"
     },
     {
         "emoji": "🛡️",
@@ -242,7 +244,7 @@ DOPEMUX_FEATURES = [
         "description": "Safety hooks prevent dangerous operations",
         "usage": "dopemux safe status (check safety hooks)",
         "category": "Safety",
-        "color": "red"
+        "color": "error"
     },
     {
         "emoji": "🤖",
@@ -250,7 +252,7 @@ DOPEMUX_FEATURES = [
         "description": "Claude auto-responds to continue conversations",
         "usage": "dopemux autoresponder status",
         "category": "AI",
-        "color": "cyan"
+        "color": "info"
     },
     {
         "emoji": "📱",
@@ -266,7 +268,7 @@ DOPEMUX_FEATURES = [
         "description": "Get notified when builds complete",
         "usage": "dopemux run-build 'npm run build'",
         "category": "Integrations",
-        "color": "yellow"
+        "color": "warning"
     },
     {
         "emoji": "📄",
@@ -274,7 +276,7 @@ DOPEMUX_FEATURES = [
         "description": "Extract structured data from chatlogs with ADHD patterns",
         "usage": "dopemux extract (ADHD-optimized parsing)",
         "category": "Productivity",
-        "color": "blue"
+        "color": "info"
     },
     {
         "emoji": "🔧",
@@ -282,7 +284,7 @@ DOPEMUX_FEATURES = [
         "description": "Development tooling for Dopemux contributors",
         "usage": "dopemux dev (contributor commands)",
         "category": "Advanced",
-        "color": "dim"
+        "color": "text.dim"
     },
 ]
 
@@ -313,9 +315,9 @@ def create_hint_banner(hint: Dict[str, str] = None, width: int = 80) -> Panel:
     
     # Create gradient title
     title = Text()
-    title.append("💡 ", style="bold yellow")
-    title.append("Dopemux Tip", style="bold cyan")
-    title.append(" • ", style="dim")
+    title.append("💡 ", style="warning")
+    title.append("Dopemux Tip", style="mint")
+    title.append(" • ", style="text.dim")
     title.append(hint["category"], style=f"bold {hint['color']}")
     
     # Create content grid
@@ -332,7 +334,7 @@ def create_hint_banner(hint: Dict[str, str] = None, width: int = 80) -> Panel:
     content.add_row("", "")
     
     # Description
-    desc_text = Text(hint["description"], style="dim white")
+    desc_text = Text(hint["description"], style="text.dim")
     content.add_row("📖", desc_text)
     content.add_row("", "")
     
@@ -342,23 +344,20 @@ def create_hint_banner(hint: Dict[str, str] = None, width: int = 80) -> Panel:
     usage_line.append(hint["usage"], style=f"{hint['color']}")
     content.add_row("⚡", usage_line)
     
-    # Create panel with gradient border
-    panel = Panel(
+    # Create panel using themed helper (respects render mode)
+    return styled_panel(
         content,
-        title=title,
+        title=f"💡 Dopemux Tip • {hint['category']}",
         border_style=hint["color"],
-        padding=(0, 2),
-        expand=False
+        expand=False,
     )
-    
-    return panel
 
 
 def create_feature_list_banner() -> Panel:
     """Create a banner showing all feature categories."""
     content = Table.grid(padding=(0, 2))
-    content.add_column(style="bold cyan", justify="left")
-    content.add_column(style="dim", justify="right")
+    content.add_column(style="mint", justify="left")
+    content.add_column(style="text.dim", justify="right")
     
     # Count features by category
     categories = {}
@@ -366,7 +365,7 @@ def create_feature_list_banner() -> Panel:
         cat = feature["category"]
         categories[cat] = categories.get(cat, 0) + 1
     
-    content.add_row("[bold yellow]💡 Dopemux Features[/bold yellow]", "")
+    content.add_row("[warning]💡 Dopemux Features[/warning]", "")
     content.add_row("", "")
     
     category_emojis = {
@@ -389,13 +388,13 @@ def create_feature_list_banner() -> Panel:
         emoji = category_emojis.get(cat, "📁")
         content.add_row(
             f"{emoji} {cat}",
-            f"[dim]{count} features[/dim]"
+            f"[text.dim]{count} features[/text.dim]"
         )
     
     return Panel(
         content,
-        title="[bold cyan]Feature Categories[/bold cyan]",
-        border_style="cyan",
+        title="[mint]Feature Categories[/mint]",
+        border_style="info",
         padding=(1, 2)
     )
 

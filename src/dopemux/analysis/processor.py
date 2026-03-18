@@ -137,22 +137,22 @@ class DocumentProcessor:
         """
         self.stats["start_time"] = time.time()
 
-        with console.status("[bold green]Discovering documents...") as status:
+        with console.status("[success]Discovering documents...") as status:
             # Phase 1: Document Discovery
             files = self._discover_documents()
 
             if not files:
-                console.print("[yellow]⚠️ No documents found to process[/yellow]")
+                console.print("[warning]⚠️ No documents found to process[/warning]")
                 return self._get_results()
 
-            console.print(f"[green]📁 Found {len(files)} documents to process[/green]")
+            console.print(f"[success]📁 Found {len(files)} documents to process[/success]")
 
             # Phase 2: Document Processing
-            status.update("[bold blue]Processing documents...")
+            status.update("[info]Processing documents...")
             atomic_units = self._process_documents(files)
 
             # Phase 3: Registry Generation
-            status.update("[bold cyan]Generating registries...")
+            status.update("[mint]Generating registries...")
             self._generate_registries(atomic_units)
 
             # Phase 4: Embedding Generation
@@ -172,7 +172,7 @@ class DocumentProcessor:
 
         if not source_path.exists():
             console.print(
-                f"[red]❌ Source directory does not exist: {source_path}[/red]"
+                f"[error]❌ Source directory does not exist: {source_path}[/error]"
             )
             return files
 
@@ -222,7 +222,7 @@ class DocumentProcessor:
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
-            TextColumn("[bold blue]{task.completed}/{task.total}"),
+            TextColumn("[info]{task.completed}/{task.total}"),
             console=console,
         ) as progress:
 
@@ -250,7 +250,7 @@ class DocumentProcessor:
 
                 except Exception as e:
                     console.print(
-                        f"[yellow]⚠️ Error processing {file_path}: {e}[/yellow]"
+                        f"[warning]⚠️ Error processing {file_path}: {e}[/warning]"
                     )
                     continue
 
@@ -350,7 +350,7 @@ class DocumentProcessor:
             return registries
 
         except Exception as e:
-            console.print(f"[yellow]⚠️ Registry generation failed: {e}[/yellow]")
+            console.print(f"[warning]⚠️ Registry generation failed: {e}[/warning]")
             return {}
 
     def _create_embeddings(self, atomic_units: List[Dict[str, Any]]):
@@ -379,7 +379,7 @@ class DocumentProcessor:
                     progress.update(task, completed=(i // batch_size) + 1)
 
         except Exception as e:
-            console.print(f"[yellow]⚠️ Embedding creation failed: {e}[/yellow]")
+            console.print(f"[warning]⚠️ Embedding creation failed: {e}[/warning]")
 
     def _display_completion_summary(self):
         """Display ADHD-friendly completion summary."""
@@ -387,9 +387,9 @@ class DocumentProcessor:
 
         # Create summary table
         table = Table(title="🎉 Processing Complete!")
-        table.add_column("Metric", style="cyan")
-        table.add_column("Count", style="green", justify="right")
-        table.add_column("Status", style="yellow")
+        table.add_column("Metric", style="info")
+        table.add_column("Count", style="success", justify="right")
+        table.add_column("Status", style="warning")
 
         table.add_row("Files Processed", str(self.stats["files_processed"]), "✅")
         table.add_row("Atomic Units", str(self.stats["atomic_units_created"]), "✅")
@@ -412,7 +412,7 @@ class DocumentProcessor:
                 f"🔗 {self.stats['evidence_links']} evidence links for full traceability\n"
                 f"🎯 Ready for semantic search and intelligent navigation!",
                 title="🎉 Analysis Complete",
-                border_style="green",
+                border_style="success",
             )
         )
 

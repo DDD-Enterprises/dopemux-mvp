@@ -42,6 +42,8 @@ from rich.text import Text
 from . import __version__
 from .claude_tools.cli import register_commands
 from .console import console
+from .ui.output import emit
+from .ui.theme import Glyphs, RenderMode, StatusChip, get_render_mode, set_render_mode, styled_panel, styled_table
 
 # Load environment variables from .env file
 load_dotenv()
@@ -236,12 +238,12 @@ def _persist_instance_env_exports(
 
         relative_export = export_path.relative_to(project_root)
         console.print(
-            f"[dim]✓ Instance environment exported to {relative_export} "
-            f"(source .dopemux/env/current.sh to mirror in this shell)[/dim]"
+            f"[text.dim]✓ Instance environment exported to {relative_export} "
+            f"(source .dopemux/env/current.sh to mirror in this shell)[/text.dim]"
         )
     except Exception as exc:  # pragma: no cover - best effort persistence
         console.print(
-            f"[yellow]⚠️  Could not persist instance environment: {exc}[/yellow]"
+            f"[warning]⚠️  Could not persist instance environment: {exc}[/warning]"
         )
 
 
@@ -391,10 +393,10 @@ def _suggest_server_start(missing_servers: Iterable[str]) -> None:
         return
     service_arg = ",".join(services)
     console.print(
-        f"[yellow]💡 Start required services: dopemux mcp up --services {service_arg}[/yellow]"
+        f"[warning]💡 Start required services: dopemux mcp up --services {service_arg}[/warning]"
     )
     console.print(
-        "[dim]   or bring up the full stack: dopemux mcp start-all --verify[/dim]"
+        "[text.dim]   or bring up the full stack: dopemux mcp start-all --verify[/text.dim]"
     )
 
 
@@ -409,11 +411,11 @@ def _invoke_switch_role_script(role_key: str) -> None:
     try:
         subprocess.run([str(script_path), role_key], check=True)
         console.print(
-            f"[dim]✓ Synced MetaMCP role via {script_path} {role_key}[/dim]"
+            f"[text.dim]✓ Synced MetaMCP role via {script_path} {role_key}[/text.dim]"
         )
     except subprocess.CalledProcessError as exc:
         console.print(
-            f"[yellow]⚠ switch-role.sh failed (exit {exc.returncode}); continuing[/yellow]"
+            f"[warning]⚠ switch-role.sh failed (exit {exc.returncode}); continuing[/warning]"
         )
 
 
@@ -451,7 +453,7 @@ def _start_minimal_session(
     except Exception as e:
         logger.error(f"Error launching Claude Code: {e}")
     if not background:
-        console.logger.info("[green]✨ Claude Code is running (minimal mode)\n[/green]")
+        console.logger.info("[success]✨ Claude Code is running (minimal mode)\n[/success]")
 
 
 @click.group()
@@ -461,8 +463,28 @@ def _start_minimal_session(
 @click.option("--config", "-c", help="Configuration file path")
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
 @click.option("--debug-log", type=click.Path(path_type=Path, dir_okay=False), help="Write debug logs to file")
+@click.option(
+    "--render-mode",
+    type=click.Choice(["rich", "plain", "compact", "audit"]),
+    default=None,
+    help="Output rendering mode",
+)
+@click.option("--compact", is_flag=True, help="Compact output (shortcut for --render-mode compact)")
+@click.option("--plain", is_flag=True, help="No styling (shortcut for --render-mode plain)")
+@click.option("--json", "json_output", is_flag=True, help="Emit JSON output (implies --plain)")
+@click.option("--no-hints", is_flag=True, help="Suppress startup tips")
 @click.pass_context
-def cli(ctx, config: Optional[str], verbose: bool, debug_log: Optional[Path]):
+def cli(
+    ctx,
+    config: Optional[str],
+    verbose: bool,
+    debug_log: Optional[Path],
+    render_mode: Optional[str],
+    compact: bool,
+    plain: bool,
+    json_output: bool,
+    no_hints: bool,
+):
     """
     🧠 Dopemux - ADHD-optimized development platform
 
@@ -472,6 +494,27 @@ def cli(ctx, config: Optional[str], verbose: bool, debug_log: Optional[Path]):
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose
     ctx.obj["config_manager"] = ConfigManager(config_path=config)
+    ctx.obj["json_output"] = json_output
+
+    # Resolve render mode from flags (priority: --json > --render-mode > --compact > --plain > env)
+    if json_output:
+        set_render_mode(RenderMode.PLAIN)
+    elif render_mode:
+        set_render_mode(RenderMode(render_mode))
+    elif compact:
+        set_render_mode(RenderMode.COMPACT)
+    elif plain:
+        set_render_mode(RenderMode.PLAIN)
+    # else: auto-detect from env (default)
+
+    # Startup hints (stderr, only for interactive terminals)
+    if not no_hints and not json_output and sys.stderr.isatty():
+        try:
+            from .startup_hints import create_hint_banner
+
+            console.print(create_hint_banner(), stderr=True)
+        except Exception:
+            pass  # hints are non-critical
 
     # Optional debug file logging
     log_path_env = os.getenv("DOPEMUX_DEBUG_LOG")
@@ -531,11 +574,11 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
         pass
 
     if directory and not workspace_exists and not dopemux_exists:
-        console.logger.info(f"[red]Directory does not exist: {workspace}[/red]")
+        console.logger.info(f"[error]Directory does not exist: {workspace}[/error]")
         sys.exit(1)
 
     if not force and not workspace_exists and dopemux_exists:
-        console.logger.info(f"[yellow]⚠️  Project already initialized (.dopemux/ exists)[/yellow]")
+        console.logger.info(f"[warning]⚠️  Project already initialized (.dopemux/ exists)[/warning]")
         sys.exit(1)
 
     try:
@@ -547,7 +590,7 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
     success = init_project(workspace, profile, force)
 
     if not success:
-        console.logger.info("[yellow]Initialization cancelled.[/yellow]")
+        console.logger.info("[warning]Initialization cancelled.[/warning]")
         sys.exit(1)
 
     click.echo("Project Initialized")
@@ -784,24 +827,24 @@ def start(
             routing_config = RoutingConfig.load_default()
             routing_mode = routing_config.get_mode()
             routing_ports = routing_config.get_ports()
-            console.logger.info(f"[blue]📋 Routing mode: {routing_mode}[/blue]")
+            console.logger.info(f"[info]📋 Routing mode: {routing_mode}[/info]")
         except Exception as e:
-            console.logger.warning(f"[yellow]⚠️  Could not load routing config: {e}[/yellow]")
-            console.logger.info("[dim]Falling back to legacy flag behavior[/dim]")
+            console.logger.warning(f"[warning]⚠️  Could not load routing config: {e}[/warning]")
+            console.logger.info("[text.dim]Falling back to legacy flag behavior[/text.dim]")
     
     # Warn about deprecated flags when routing mode is available
     deprecated_flags_used = any([use_grok, use_codex, use_altp, use_alt_routing, use_claude_router])
     if deprecated_flags_used and routing_mode is not None:
-        console.logger.warning("[yellow]⚠️  Deprecated flags detected (--grok/--codex/--altp/--alt-routing/--claude-router)[/yellow]")
-        console.logger.info("[dim]Prefer: dopemux routing mode api|subscription[/dim]")
+        console.logger.warning("[warning]⚠️  Deprecated flags detected (--grok/--codex/--altp/--alt-routing/--claude-router)[/warning]")
+        console.logger.info("[text.dim]Prefer: dopemux routing mode api|subscription[/text.dim]")
 
     # Check if provider flags were disabled due to subscription mode
     if not (use_grok or use_codex or use_altp or use_litellm) and (original_grok or original_codex or original_altp or original_litellm):
-        console.logger.info("[blue]📋 Using direct Anthropic connection (subscription mode)[/blue]")
+        console.logger.info("[info]📋 Using direct Anthropic connection (subscription mode)[/info]")
 
     # ── Handle routing mode: api (proxy through CCR/LiteLLM) ─────────
     if routing_mode == "api" and not deprecated_flags_used:
-        console.logger.info("[blue]🔄 Routing mode 'api': Starting services and configuring proxy[/blue]")
+        console.logger.info("[info]🔄 Routing mode 'api': Starting services and configuring proxy[/info]")
         
         # Run health check and repair if needed
         try:
@@ -809,7 +852,7 @@ def start(
             service_manager = LaunchdServiceManager.get_instance()
             
             # Check health first
-            console.logger.info("[blue]🏥 Checking routing service health...[/blue]")
+            console.logger.info("[info]🏥 Checking routing service health...[/info]")
             health = service_manager.check_health()
             
             # Check if services are healthy
@@ -817,11 +860,11 @@ def start(
             ccr_healthy = health.get("ccr", {}).get("status") == "healthy"
             
             if litellm_healthy and ccr_healthy:
-                console.logger.info("[green]✅ Routing services healthy[/green]")
+                console.logger.info("[success]✅ Routing services healthy[/success]")
             else:
                 # Services are unhealthy - attempt repair
                 if no_routing_repair:
-                    console.logger.info("[yellow]⚠️  Routing services unhealthy, repair disabled[/yellow]")
+                    console.logger.info("[warning]⚠️  Routing services unhealthy, repair disabled[/warning]")
                     error_msg = []
                     if not litellm_healthy:
                         error_msg.append(f"LiteLLM: {health.get('litellm', {}).get('error', 'unhealthy')}")
@@ -829,7 +872,7 @@ def start(
                         error_msg.append(f"CCR: {health.get('ccr', {}).get('error', 'unhealthy')}")
                     raise click.ClickException(f"Routing services unhealthy: {', '.join(error_msg)}")
                 
-                console.logger.info("[yellow]⚠️  Routing services unhealthy - attempting repair[/yellow]")
+                console.logger.info("[warning]⚠️  Routing services unhealthy - attempting repair[/warning]")
                 
                 # Run repair loop
                 allow_sync_keys = not routing_repair_no_sync_keys
@@ -840,35 +883,35 @@ def start(
                 
                 # Check if repair was successful
                 if repair_result.get("healthy", False):
-                    console.logger.info("[green]✅ Routing services repaired successfully[/green]")
+                    console.logger.info("[success]✅ Routing services repaired successfully[/success]")
                     health = repair_result["health"]
                     litellm_healthy = True
                     ccr_healthy = True
                 else:
                     # Repair failed - provide diagnostics
-                    console.logger.error("[red]❌ Failed to repair routing services[/red]")
+                    console.logger.error("[error]❌ Failed to repair routing services[/error]")
                     
                     # Show repair attempts
-                    console.logger.info("[yellow]Repair attempts:[/yellow]")
+                    console.logger.info("[warning]Repair attempts:[/warning]")
                     for attempt in repair_result.get("attempts", []):
                         console.logger.info(f"  Pass {attempt['pass']}: {attempt['action']}")
                     
                     # Show log paths
                     log_paths = service_manager._get_log_paths()
-                    console.logger.info("[yellow]Check logs for details:[/yellow]")
+                    console.logger.info("[warning]Check logs for details:[/warning]")
                     console.logger.info(f"  LiteLLM launchd: {log_paths['litellm_launchd']}")
                     console.logger.info(f"  CCR launchd: {log_paths['ccr_launchd']}")
                     console.logger.info(f"  LiteLLM latest: {log_paths['litellm_latest']}")
                     
                     # Show diagnostic commands
-                    console.logger.info("[yellow]Diagnostic commands:[/yellow]")
+                    console.logger.info("[warning]Diagnostic commands:[/warning]")
                     console.logger.info("  dopemux routing health")
                     console.logger.info("  dopemux routing status")
                     console.logger.info("  tail -f ~/.dopemux/logs/litellm_launchd.log")
                     
                     # Determine if we should fall back to subscription mode
                     if routing_fallback_subscription:
-                        console.logger.info("[yellow]🔄 Falling back to subscription mode as requested[/yellow]")
+                        console.logger.info("[warning]🔄 Falling back to subscription mode as requested[/warning]")
                         routing_mode = "subscription"
                         _ensure_env_consistent_with_mode(routing_mode)
                     else:
@@ -880,8 +923,8 @@ def start(
                         raise click.ClickException(f"Routing services unhealthy after repair: {', '.join(error_msg)}")
             
         except Exception as e:
-            console.logger.error(f"[red]❌ Failed to start routing services: {e}[/red]")
-            console.logger.info("[yellow]Falling back to direct Anthropic connection[/yellow]")
+            console.logger.error(f"[error]❌ Failed to start routing services: {e}[/error]")
+            console.logger.info("[warning]Falling back to direct Anthropic connection[/warning]")
             routing_mode = "subscription"
             # Ensure env vars are cleaned up immediately
             _ensure_env_consistent_with_mode(routing_mode)
@@ -897,22 +940,22 @@ def start(
                 os.environ["ANTHROPIC_API_KEY"] = ccr_api_key
                 # Mark that we set this key so we can clean it up if needed
                 os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
-                console.logger.info(f"[dim]✓ CCR API key configured[/dim]")
+                console.logger.info(f"[text.dim]✓ CCR API key configured[/text.dim]")
             else:
-                console.logger.warning("[yellow]⚠️  DOPEMUX_CCR_API_KEY not set in routing.env[/yellow]")
+                console.logger.warning("[warning]⚠️  DOPEMUX_CCR_API_KEY not set in routing.env[/warning]")
             
-            console.logger.info(f"[dim]✓ Claude Code → CCR (127.0.0.1:{ccr_port}) → LiteLLM[/dim]")
+            console.logger.info(f"[text.dim]✓ Claude Code → CCR (127.0.0.1:{ccr_port}) → LiteLLM[/text.dim]")
             
             # Mark that we're using routing
             os.environ["DOPEMUX_ROUTING_MODE"] = "api"
             
     # ── Handle routing mode: subscription (direct to Anthropic) ──────
     elif routing_mode == "subscription" and not deprecated_flags_used:
-        console.logger.info("[blue]📋 Routing mode 'subscription': Direct Anthropic connection[/blue]")
+        console.logger.info("[info]📋 Routing mode 'subscription': Direct Anthropic connection[/info]")
         
         # Ensure env vars are consistent with subscription mode
         _ensure_env_consistent_with_mode(routing_mode)
-        console.logger.info("[dim]✓ Claude Code → Anthropic (direct)[/dim]")
+        console.logger.info("[text.dim]✓ Claude Code → Anthropic (direct)[/text.dim]")
 
     # ── Handle --grok / --codex / --altp provider routing ───────────────
     provider_proxy_started = False
@@ -935,7 +978,7 @@ def start(
                 )
 
             console.logger.info(
-                f"[cyan]🎯 {flag_name}: Routing ALL requests → {provider['label']}[/cyan]"
+                f"[info]🎯 {flag_name}: Routing ALL requests → {provider['label']}[/info]"
             )
 
             config_data = generate_single_target_config(
@@ -959,8 +1002,8 @@ def start(
                 pass
 
             if current_routing_mode != "api":
-                console.logger.warning("[yellow]⚠️  --altp flag ignored in subscription mode[/yellow]")
-                console.logger.info("[dim]   Use 'dopemux routing mode api' to enable proxy routing[/dim]")
+                console.logger.warning("[warning]⚠️  --altp flag ignored in subscription mode[/warning]")
+                console.logger.info("[text.dim]   Use 'dopemux routing mode api' to enable proxy routing[/text.dim]")
                 # Disable proxy usage for this branch
                 use_altp = False
                 use_litellm = False
@@ -975,20 +1018,20 @@ def start(
                     )
 
             if use_altp:
-                console.logger.info("[cyan]🎯 --altp: Tier-matched alternative provider routing[/cyan]")
+                console.logger.info("[info]🎯 --altp: Tier-matched alternative provider routing[/info]")
                 for t in ALTP_PROVIDER["targets"]:
                     tier = t["name"].replace("altp-", "")
-                    console.logger.info(f"[dim]   {tier:>6s} → {t['label']} ({t['model']})[/dim]")
+                    console.logger.info(f"[text.dim]   {tier:>6s} → {t['label']} ({t['model']})[/text.dim]")
 
                 config_data = generate_multi_target_config(ALTP_PROVIDER["targets"])
                 
                 # Auto-enable Claude Code Router for API translation
                 use_claude_router = True
-                console.logger.info("[dim]   Enabling Claude Code Router for API translation (responses → completions)[/dim]")
+                console.logger.info("[text.dim]   Enabling Claude Code Router for API translation (responses → completions)[/text.dim]")
                 
                 _routing_summary = "Claude Code → CCR → LiteLLM → tier-matched providers"
 
-        console.logger.info("[blue]🔄 Starting LiteLLM proxy (no DB required)...[/blue]")
+        console.logger.info("[info]🔄 Starting LiteLLM proxy (no DB required)...[/info]")
         try:
             litellm_port, litellm_master_key = start_simple_proxy(
                 project_root=Path.cwd(),
@@ -998,7 +1041,7 @@ def start(
         except LiteLLMProxyError as exc:
             raise click.ClickException(str(exc))
 
-        console.logger.info(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
+        console.logger.info(f"[success]✅ LiteLLM proxy ready on port {litellm_port}[/success]")
 
         # Wire Claude Code to use the proxy
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
@@ -1023,13 +1066,13 @@ def start(
         use_litellm = True
         use_alt_routing = False  # Skip the full alt-routing block below
 
-        console.logger.info(f"[dim]✓ {_routing_summary} (:{litellm_port})[/dim]")
+        console.logger.info(f"[text.dim]✓ {_routing_summary} (:{litellm_port})[/text.dim]")
         console.logger.info("")
 
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
         use_litellm = True
-        console.logger.info("[cyan]🚀 Alternative routing enabled - starting LiteLLM automatically...[/cyan]")
+        console.logger.info("[info]🚀 Alternative routing enabled - starting LiteLLM automatically...[/info]")
 
         from pathlib import Path as EnvPath
         from dotenv import load_dotenv
@@ -1037,9 +1080,9 @@ def start(
         routing_env = EnvPath.cwd() / ".env.routing"
         if routing_env.exists():
             load_dotenv(routing_env)
-            console.logger.info("[dim]✓ Loaded .env.routing[/dim]")
+            console.logger.info("[text.dim]✓ Loaded .env.routing[/text.dim]")
         else:
-            console.logger.info("[yellow]⚠️  .env.routing not found - using defaults[/yellow]")
+            console.logger.info("[warning]⚠️  .env.routing not found - using defaults[/warning]")
 
         instance_dir = Path.cwd() / ".dopemux" / "litellm" / "A"
         instance_dir.mkdir(parents=True, exist_ok=True)
@@ -1064,9 +1107,9 @@ def start(
             except Exception:
                 logger.error("Unexpected DB URL load error", exc_info=True)
         if not db_url:
-            console.logger.info("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
-            console.logger.info("[yellow]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/yellow]")
-            console.logger.info("\n[cyan]Example:[/cyan]")
+            console.logger.info("[error]❌ LiteLLM metrics database is required for alternative routing.[/error]")
+            console.logger.info("[warning]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/warning]")
+            console.logger.info("\n[info]Example:[/info]")
             console.logger.info("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")  # pragma: allowlist secret
             raise click.ClickException("LiteLLM metrics database not configured.")
 
@@ -1109,10 +1152,10 @@ def start(
                 # Port 4001 is also taken, try 4002
                 litellm_port = 4002
                 if not is_port_available(litellm_port):
-                    console.logger.info("[red]❌ Ports 4000-4002 are all in use.[/red]")
-                    console.logger.info("[yellow]   Free up a port or stop an existing LiteLLM instance.[/yellow]")
+                    console.logger.info("[error]❌ Ports 4000-4002 are all in use.[/error]")
+                    console.logger.info("[warning]   Free up a port or stop an existing LiteLLM instance.[/warning]")
                     raise click.ClickException("No available ports for LiteLLM proxy.")
-            console.logger.info(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
+            console.logger.info(f"[warning]⚠️  Port 4000 is in use, using port {litellm_port} instead[/warning]")
 
         litellm_master_key = ""
         regenerated_master_key = False
@@ -1132,7 +1175,7 @@ def start(
             cause = getattr(exc, "__cause__", None)
             if isinstance(cause, OSError) and getattr(cause, "errno", None) == 1:
                 console.print(
-                    "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.[/yellow]"
+                    "[warning]⚠️ LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.[/warning]"
                 )
         except Exception as e:
             pass
@@ -1142,7 +1185,7 @@ def start(
             base_candidate = env_master_key_raw or stored_master_key
             litellm_master_key, regenerated_master_key = ensure_master_key(base_candidate)
             if regenerated_master_key:
-                console.logger.info("[yellow]⚠️  Generated LiteLLM master key with sk- prefix for proxy auth[/yellow]")
+                console.logger.info("[warning]⚠️  Generated LiteLLM master key with sk- prefix for proxy auth[/warning]")
         else:
             regenerated_master_key = False
 
@@ -1174,16 +1217,16 @@ def start(
         general_settings["master_key"] = litellm_master_key
 
         if dry_run:
-            console.print("[dim]⚡ Dry-run: Skipping LiteLLM DB sync[/dim]")
+            console.print("[text.dim]⚡ Dry-run: Skipping LiteLLM DB sync[/text.dim]")
             db_status_msg = "Dry-run: DB sync skipped"
             db_enabled = True
         else:
             try:
                 db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
             except LiteLLMProxyError as exc:
-                console.logger.error(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
-                console.logger.info("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
-                console.logger.info("\n[cyan]Troubleshooting:[/cyan]")
+                console.logger.error(f"[error]❌ LiteLLM database setup failed: {exc}[/error]")
+                console.logger.info("[warning]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/warning]")
+                console.logger.info("\n[info]Troubleshooting:[/info]")
                 console.logger.info("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
                 console.logger.info("  2. Verify database credentials in .env.routing")
                 console.logger.info("  3. Ensure the 'litellm' database exists")
@@ -1191,11 +1234,11 @@ def start(
                 raise click.ClickException(str(exc))
 
         if not db_enabled:
-            console.logger.info(f"[red]❌ {db_status_msg}[/red]")
-            console.logger.info("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
+            console.logger.info(f"[error]❌ {db_status_msg}[/error]")
+            console.logger.info("[warning]   LiteLLM metrics must be available. Resolve the database issue and retry.")
             raise click.ClickException("LiteLLM metrics database not ready.")
 
-        console.logger.info(f"[dim]{db_status_msg}[/dim]")
+        console.logger.info(f"[text.dim]{db_status_msg}[/text.dim]")
         general_settings["database_url"] = db_url
 
         config_path = instance_dir / "litellm.config.yaml"
@@ -1209,17 +1252,17 @@ def start(
 
             logger.error(f"Error: {e}")
         if litellm_running:
-            console.logger.info(f"[green]✓ LiteLLM proxy already running on port {litellm_port}[/green]")
+            console.logger.info(f"[success]✓ LiteLLM proxy already running on port {litellm_port}[/success]")
         else:
-            console.logger.info("[blue]🔄 Starting LiteLLM proxy...[/blue]")
+            console.logger.info("[info]🔄 Starting LiteLLM proxy...[/info]")
             kill_result = subprocess.run(
                 ["pkill", "-f", "litellm"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
             if kill_result.returncode not in (0, 1):
-                console.logger.info("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
-                console.logger.info(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
+                console.logger.info("[error]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
+                console.logger.info(f"[warning]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
                 raise click.ClickException("LiteLLM proxy still running.")
 
             time.sleep(1)
@@ -1232,7 +1275,7 @@ def start(
                     start_new_session=True,
                 )
 
-            console.logger.info("[dim]⏳ Waiting for LiteLLM to start...[/dim]")
+            console.logger.info("[text.dim]⏳ Waiting for LiteLLM to start...[/text.dim]")
             ready = False
             for _ in range(20):
                 try:
@@ -1247,22 +1290,22 @@ def start(
                     cause = getattr(exc, "__cause__", None)
                     if isinstance(cause, OSError) and getattr(cause, "errno", None) == 1:
                         console.print(
-                            "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); assuming proxy is running.[/yellow]"
+                            "[warning]⚠️ LiteLLM health probe blocked by OS (operation not permitted); assuming proxy is running.[/warning]"
                         )
                         ready = True
                         break
                 time.sleep(1)
 
             if not ready:
-                console.logger.info("[red]❌ LiteLLM proxy did not become healthy.[/red]")
-                console.logger.info(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
-                console.logger.info("\n[cyan]Common issues:[/cyan]")
+                console.logger.info("[error]❌ LiteLLM proxy did not become healthy.[/error]")
+                console.logger.info(f"[warning]   Check logs: tail -f {litellm_log}[/warning]")
+                console.logger.info("\n[info]Common issues:[/info]")
                 console.logger.error("  • Database connection failed (check PostgreSQL is running)")
                 console.logger.info(f"  • Port {litellm_port} became busy during startup")
                 console.logger.error("  • Configuration error in litellm.config.yaml")
                 raise click.ClickException("LiteLLM proxy failed to start.")
 
-            console.logger.info(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
+            console.logger.info(f"[success]✅ LiteLLM proxy ready on port {litellm_port}[/success]")
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
@@ -1283,7 +1326,7 @@ def start(
         if models_list:
             os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(models_list)
         else:
-            console.logger.info("[yellow]⚠️  No models found in litellm.config.yaml[/yellow]")
+            console.logger.info("[warning]⚠️  No models found in litellm.config.yaml[/warning]")
 
         os.environ["DOPEMUX_LITELLM_DB_URL"] = db_url
         os.environ.setdefault("LITELLM_DATABASE_URL", db_url)
@@ -1296,8 +1339,8 @@ def start(
                 logger.error(f"Persist DB URL failed: {e}")
             except Exception:
                 logger.error("Unexpected DB URL persist error", exc_info=True)
-        console.logger.info("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
-        console.logger.info("[dim]✓ Claude Code configured to use LiteLLM proxy[/dim]")
+        console.logger.info("[text.dim]ℹ️ LiteLLM metrics database synchronised[/text.dim]")
+        console.logger.info("[text.dim]✓ Claude Code configured to use LiteLLM proxy[/text.dim]")
         console.logger.info("")
     # Default to LiteLLM + Router if configured (Option A)
     if not use_litellm and not use_claude_router:
@@ -1317,8 +1360,8 @@ def start(
         except RoleNotFoundError:
             available = ", ".join(available_roles())
             console.print(
-                f"[red]❌ Unknown role: {requested_role}[/red]\n"
-                f"[dim]Available roles: {available}[/dim]"
+                f"[error]❌ Unknown role: {requested_role}[/error]\n"
+                f"[text.dim]Available roles: {available}[/text.dim]"
             )
             sys.exit(1)
 
@@ -1327,39 +1370,39 @@ def start(
         pending_profile_name = getattr(role_profile, "name", spec.profile_name)
         if role:
             console.print(
-                f"[cyan]🎭 Role activated:[/cyan] {spec.label} "
-                f"[dim]({spec.key})[/dim] — {spec.description}"
+                f"[info]🎭 Role activated:[/info] {spec.label} "
+                f"[text.dim]({spec.key})[/text.dim] — {spec.description}"
             )
             if role_activation.enabled_servers:
                 console.print(
-                    f"[dim]Enabled MCP servers: {', '.join(role_activation.enabled_servers)}[/dim]"
+                    f"[text.dim]Enabled MCP servers: {', '.join(role_activation.enabled_servers)}[/text.dim]"
                 )
             if role_activation.disabled_servers:
                 console.print(
-                    f"[dim]Disabled MCP servers: {', '.join(role_activation.disabled_servers)}[/dim]"
+                    f"[text.dim]Disabled MCP servers: {', '.join(role_activation.disabled_servers)}[/text.dim]"
                 )
         else:
             console.print(
-                f"[dim]🎭 Active role:[/dim] {spec.label} "
-                f"[dim]({spec.key})[/dim]"
+                f"[text.dim]🎭 Active role:[/text.dim] {spec.label} "
+                f"[text.dim]({spec.key})[/text.dim]"
             )
     else:
         pending_profile_name = None
 
     if dry_run:
-        console.logger.info("[cyan]Dry run: no tmux or Claude Code processes will be started.[/cyan]")
+        console.logger.info("[info]Dry run: no tmux or Claude Code processes will be started.[/info]")
         if role_activation:
             spec = role_activation.spec
             console.print(
-                f"[dim]Role:[/dim] {spec.label} ({spec.key}) — {spec.description}"
+                f"[text.dim]Role:[/text.dim] {spec.label} ({spec.key}) — {spec.description}"
             )
             if role_activation.enabled_servers:
                 console.print(
-                    f"[dim]MCP servers that would remain enabled: {', '.join(role_activation.enabled_servers)}[/dim]"
+                    f"[text.dim]MCP servers that would remain enabled: {', '.join(role_activation.enabled_servers)}[/text.dim]"
                 )
             if role_activation.disabled_servers:
                 console.print(
-                    f"[dim]MCP servers that would be disabled: {', '.join(role_activation.disabled_servers)}[/dim]"
+                    f"[text.dim]MCP servers that would be disabled: {', '.join(role_activation.disabled_servers)}[/text.dim]"
                 )
         else:
             current_config = config_manager.load_config()
@@ -1369,7 +1412,7 @@ def start(
                 if server.enabled
             )
             console.print(
-                f"[dim]No role specified — current enabled MCP servers: {', '.join(enabled_now)}[/dim]"
+                f"[text.dim]No role specified — current enabled MCP servers: {', '.join(enabled_now)}[/text.dim]"
             )
 
         if role_activation and role_activation.missing_required:
@@ -1387,25 +1430,25 @@ def start(
                     )
                     preview_servers = sorted(preview.get("mcpServers", {}).keys())
                     console.print(
-                        f"[dim]Profile '{profile.name}' would mount MCP servers: {', '.join(preview_servers)}[/dim]"
+                        f"[text.dim]Profile '{profile.name}' would mount MCP servers: {', '.join(preview_servers)}[/text.dim]"
                     )
                 except ClaudeConfigError as err:
                     console.print(
-                        f"[yellow]⚠ Claude config preview failed: {err}[/yellow]"
+                        f"[warning]⚠ Claude config preview failed: {err}[/warning]"
                     )
             else:
                     console.print(
-                        f"[yellow]⚠ Profile '{pending_profile_name}' is not defined."
+                        f"[warning]⚠ Profile '{pending_profile_name}' is not defined."
                     )
 
-        console.logger.info("[green]Dry run complete. No changes were made.[/green]")
+        console.logger.info("[success]Dry run complete. No changes were made.[/success]")
         ctx.exit(0)
 
     if role_activation and role_activation.missing_required:
         _suggest_server_start(role_activation.missing_required)
     if role_activation and role_activation.missing_optional:
         console.print(
-            f"[dim]Optional services currently offline: {', '.join(role_activation.missing_optional)}[/dim]"
+            f"[text.dim]Optional services currently offline: {', '.join(role_activation.missing_optional)}[/text.dim]"
         )
 
     # Kill all active tmux sessions at start (requested behavior)
@@ -1443,7 +1486,7 @@ def start(
     # Check if project is initialized
     if not dopemux_exists:
         console.print(
-            "[yellow]Project not initialized. Run 'dopemux init' first.[/yellow]"
+            "[warning]Project not initialized. Run 'dopemux init' first.[/warning]"
         )
         if click.confirm("Initialize now?"):
             ctx.invoke(init, directory=str(project_path))
@@ -1479,13 +1522,13 @@ def start(
                 )
 
             if selected_worktree:
-                console.logger.info(f"\n[blue]🔄 Recovering worktree session: {selected_worktree}[/blue]")
+                console.logger.info(f"\n[info]🔄 Recovering worktree session: {selected_worktree}[/info]")
                 os.chdir(selected_worktree)
                 project_path = Path(selected_worktree)
-                console.logger.info(f"[green]✅ Switched to worktree: {project_path.name}[/green]")
-                console.logger.info(f"[dim]   Path: {project_path}[/dim]\n")
+                console.logger.info(f"[success]✅ Switched to worktree: {project_path.name}[/success]")
+                console.logger.info(f"[text.dim]   Path: {project_path}[/text.dim]\n")
         except Exception as e:
-            console.print(f"[yellow]⚠️ Recovery menu unavailable: {e}[/yellow]")
+            console.print(f"[warning]⚠️ Recovery menu unavailable: {e}[/warning]")
 
         try:
             should_exit = False
@@ -1499,13 +1542,13 @@ def start(
             if new_worktree:
                 os.chdir(new_worktree)
                 project_path = Path.cwd()
-                console.logger.info(f"[green]🔀 Switched to worktree: {project_path.name}[/green]")
-                console.logger.info(f"[dim]   Path: {project_path}[/dim]")
+                console.logger.info(f"[success]🔀 Switched to worktree: {project_path.name}[/success]")
+                console.logger.info(f"[text.dim]   Path: {project_path}[/text.dim]")
 
             if should_exit and not new_worktree:
                 sys.exit(0)
         except Exception as e:
-            console.print(f"[yellow]⚠️ Protection check unavailable: {e}[/yellow]")
+            console.print(f"[warning]⚠️ Protection check unavailable: {e}[/warning]")
 
     instance_id = None
     port_base = None
@@ -1517,13 +1560,15 @@ def start(
         running_instances = detect_instances_sync(project_path)
 
         if running_instances:
-            console.logger.info(f"\n[yellow]⚠️  Found {len(running_instances)} running instance(s):[/yellow]")
+            console.logger.info(f"\n[warning]⚠️  Found {len(running_instances)} running instance(s):[/warning]")
 
-            table = Table(title="Running Instances")
-            table.add_column("Instance", style="cyan")
-            table.add_column("Port", style="magenta")
-            table.add_column("Branch", style="green")
-            table.add_column("Current Worktree", style="blue")
+            table = styled_table(
+                f"{Glyphs.SERVER} Running Instances",
+                ("Instance", {"style": "mint"}),
+                ("Port", {"style": "magenta"}),
+                ("Branch", {"style": "mint.soft"}),
+                ("Current Worktree", {"style": "violet"}),
+            )
 
             for inst in running_instances:
                 table.add_row(
@@ -1539,7 +1584,7 @@ def start(
                 instance_id, port_base = instance_manager.get_next_available_instance(running_instances)
 
                 console.print(
-                    f"\n[blue]💡 Multi-instance mode: Creating new worktree for instance {instance_id}[/blue]"
+                    f"\n[info]💡 Multi-instance mode: Creating new worktree for instance {instance_id}[/info]"
                 )
 
                 if click.confirm(f"Create new worktree on port {port_base}?", default=True):
@@ -1550,10 +1595,10 @@ def start(
                         show_default=True
                     )
 
-                    console.logger.info(f"[blue]📁 Creating worktree for {branch_name}...[/blue]")
+                    console.logger.info(f"[info]📁 Creating worktree for {branch_name}...[/info]")
                     worktree_path = instance_manager.create_worktree(instance_id, branch_name)
 
-                    console.logger.info(f"[green]✅ Worktree created at {worktree_path}[/green]")
+                    console.logger.info(f"[success]✅ Worktree created at {worktree_path}[/success]")
 
                     instance_env_vars = instance_manager.get_instance_env_vars(
                         instance_id,
@@ -1562,17 +1607,17 @@ def start(
                     )
 
                     console.print(
-                        f"\n[green]🎯 Starting instance {instance_id} on port {port_base}[/green]"
+                        f"\n[success]🎯 Starting instance {instance_id} on port {port_base}[/success]"
                     )
-                    console.logger.info(f"[dim]   Environment: DOPEMUX_INSTANCE_ID={instance_id}[/dim]")
-                    console.logger.info(f"[dim]   Workspace: {project_path}[/dim]")
-                    console.logger.info(f"[dim]   Worktree: {worktree_path}[/dim]")
+                    console.logger.info(f"[text.dim]   Environment: DOPEMUX_INSTANCE_ID={instance_id}[/text.dim]")
+                    console.logger.info(f"[text.dim]   Workspace: {project_path}[/text.dim]")
+                    console.logger.info(f"[text.dim]   Worktree: {worktree_path}[/text.dim]")
 
                 else:
-                    console.logger.info("[yellow]Cancelled. Continuing with single instance.[/yellow]")
+                    console.logger.info("[warning]Cancelled. Continuing with single instance.[/warning]")
 
             except RuntimeError as e:
-                console.logger.info(f"[red]❌ {str(e)}[/red]")
+                console.logger.info(f"[error]❌ {str(e)}[/error]")
                 sys.exit(1)
 
         if instance_id is None:
@@ -1586,7 +1631,7 @@ def start(
                 worktree_path
             )
 
-            console.logger.info("[blue]🆕 Starting first instance (A) on port 3000[/blue]")
+            console.logger.info("[info]🆕 Starting first instance (A) on port 3000[/info]")
     else:
         instance_id = 'A'
         port_base = 3000
@@ -1615,9 +1660,9 @@ def start(
                     port_base,
                     worktree_path
                 )
-                console.logger.info(f"[dim]⚙️  Forced instance id: {instance_id} (port {port_base})[/dim]")
+                console.logger.info(f"[text.dim]⚙️  Forced instance id: {instance_id} (port {port_base})[/text.dim]")
             else:
-                console.logger.info(f"[dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/dim]")
+                console.logger.info(f"[text.dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/text.dim]")
     except Exception as e:
         pass
 
@@ -1635,7 +1680,7 @@ def start(
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = "http://127.0.0.1:4000/v1/chat/completions"
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
         
-        console.logger.info("[green]✅ Forced Claude Code to use LiteLLM proxy[/green]")
+        console.logger.info("[success]✅ Forced Claude Code to use LiteLLM proxy[/success]")
 
     # Inject instance environment variables
     if instance_env_vars:
@@ -1645,7 +1690,7 @@ def start(
         for key, value in instance_env_vars.items():
             os.environ[key] = value
 
-        console.logger.info("[dim]✅ Instance environment variables configured[/dim]")
+        console.logger.info("[text.dim]✅ Instance environment variables configured[/text.dim]")
         _persist_instance_env_exports(project_path, instance_id or "A", instance_env_vars)
 
     active_profile_applied = False
@@ -1663,16 +1708,16 @@ def start(
                 except Exception:
                     logger.error("Unexpected set active profile error", exc_info=True)
                 console.print(
-                    f"[dim]✓ Activated profile '{profile.name}' for Claude Code[/dim]"
+                    f"[text.dim]✓ Activated profile '{profile.name}' for Claude Code[/text.dim]"
                 )
                 active_profile_applied = True
             except ClaudeConfigError as err:
                 console.print(
-                    f"[yellow]⚠ Could not apply profile '{profile.name}': {err}[/yellow]"
+                    f"[warning]⚠ Could not apply profile '{profile.name}': {err}[/warning]"
                 )
         else:
             console.print(
-                f"[yellow]⚠ Profile '{pending_profile_name}' is not defined."
+                f"[warning]⚠ Profile '{pending_profile_name}' is not defined."
             )
 
     if role_activation and not dry_run:
@@ -1690,8 +1735,8 @@ def start(
     if litellm_enabled and not use_alt_routing and not _direct_provider_routing and not provider_proxy_started:
         # Require OpenRouter since LiteLLM proxy is configured to route through it
         if not os.environ.get("OPENROUTER_API_KEY"):
-            console.logger.info("[red]❌ OPENROUTER_API_KEY is not set.[/red]")
-            console.logger.info("[dim]Set OPENROUTER_API_KEY before using --litellm[/dim]")
+            console.logger.info("[error]❌ OPENROUTER_API_KEY is not set.[/error]")
+            console.logger.info("[text.dim]Set OPENROUTER_API_KEY before using --litellm[/text.dim]")
             sys.exit(1)
 
         try:
@@ -1713,27 +1758,27 @@ def start(
 
             if litellm_proxy_info.already_running:
                 console.print(
-                    f"[green]✅ Reusing LiteLLM proxy at {litellm_proxy_info.base_url}[/green]"
+                    f"[success]✅ Reusing LiteLLM proxy at {litellm_proxy_info.base_url}[/success]"
                 )
             else:
                 console.print(
-                    f"[green]✅ LiteLLM proxy ready at {litellm_proxy_info.base_url}[/green]"
+                    f"[success]✅ LiteLLM proxy ready at {litellm_proxy_info.base_url}[/success]"
                 )
                 console.print(
-                    f"[dim]   Config: {litellm_proxy_info.config_path}[/dim]"
+                    f"[text.dim]   Config: {litellm_proxy_info.config_path}[/text.dim]"
                 )
                 console.print(
-                    f"[dim]   Logs: {litellm_proxy_info.log_path}[/dim]"
+                    f"[text.dim]   Logs: {litellm_proxy_info.log_path}[/text.dim]"
                 )
             if litellm_proxy_info.db_status:
                 prisma_log = litellm_proxy_info.log_path.parent / "prisma.log"
                 color = "dim" if litellm_proxy_info.db_enabled else "yellow"
                 console.logger.info(f"[{color}]   {litellm_proxy_info.db_status}[/{color}]")
                 if prisma_log.exists():
-                    console.logger.info(f"[dim]   Prisma log: {prisma_log}[/dim]")
+                    console.logger.info(f"[text.dim]   Prisma log: {prisma_log}[/text.dim]")
 
         except LiteLLMProxyError as exc:
-            console.logger.error(f"[red]❌ LiteLLM proxy failed: {exc}[/red]")
+            console.logger.error(f"[error]❌ LiteLLM proxy failed: {exc}[/error]")
             sys.exit(1)
 
     router_info = None
@@ -1785,19 +1830,19 @@ def start(
 
         if not provider_url:
             console.print(
-                "[red]❌ Claude Code Router upstream URL is not configured.[/red]"
+                "[error]❌ Claude Code Router upstream URL is not configured.[/error]"
             )
             console.print(
-                "[dim]Set CLAUDE_CODE_ROUTER_UPSTREAM_URL or enable --litellm.[/dim]"
+                "[text.dim]Set CLAUDE_CODE_ROUTER_UPSTREAM_URL or enable --litellm.[/text.dim]"
             )
             sys.exit(1)
 
         if not provider_models:
             console.print(
-                "[red]❌ No models configured for Claude Code Router upstream.[/red]"
+                "[error]❌ No models configured for Claude Code Router upstream.[/error]"
             )
             console.print(
-                "[dim]Set CLAUDE_CODE_ROUTER_MODELS or rely on --litellm defaults.[/dim]"
+                "[text.dim]Set CLAUDE_CODE_ROUTER_MODELS or rely on --litellm defaults.[/text.dim]"
             )
             sys.exit(1)
 
@@ -1818,7 +1863,7 @@ def start(
                 router_overrides=router_overrides if router_overrides else None,
             )
         except DopeBrainzRouterError as exc:
-            console.logger.error(f"[red]❌ DopeBrainz Router failed: {exc}[/red]")
+            console.logger.error(f"[error]❌ DopeBrainz Router failed: {exc}[/error]")
             sys.exit(1)
 
         router_env = router_manager.build_client_env(router_info)
@@ -1837,17 +1882,17 @@ def start(
 
         if router_info.already_running:
             console.print(
-                f"[green]✅ Reusing Claude Code Router at {router_info.base_url}[/green]"
+                f"[success]✅ Reusing Claude Code Router at {router_info.base_url}[/success]"
             )
         else:
             console.print(
-                f"[green]✅ Claude Code Router ready at {router_info.base_url}[/green]"
+                f"[success]✅ Claude Code Router ready at {router_info.base_url}[/success]"
             )
-            console.logger.info(f"[dim]   Config: {router_info.config_path}[/dim]")
-            console.logger.info(f"[dim]   Logs: {router_info.log_path}[/dim]")
+            console.logger.info(f"[text.dim]   Config: {router_info.config_path}[/text.dim]")
+            console.logger.info(f"[text.dim]   Logs: {router_info.log_path}[/text.dim]")
 
     with Progress(
-        SpinnerColumn(),
+        SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
@@ -1869,11 +1914,11 @@ def start(
                 description=f"Restored session from {context.get('timestamp', 'unknown')}",
             )
             console.print(
-                f"[green]📍 Welcome back! You were working on: {context.get('current_goal', 'Unknown task')}[/green]"
+                f"[success]📍 Welcome back! You were working on: {context.get('current_goal', 'Unknown task')}[/success]"
             )
         else:
             progress.update(task, description="Starting fresh session")
-            console.logger.info("[blue]🆕 Starting new session[/blue]")
+            console.logger.info("[info]🆕 Starting new session[/info]")
 
         # Check if dangerous mode has expired
         _check_dangerous_mode_expiry()
@@ -1900,7 +1945,7 @@ def start(
                 progress.update(task, description="✅ MCP auto-configuration complete")
             else:
                 progress.update(task, description="⚠️ MCP auto-configuration skipped")
-                console.logger.info(f"[dim]{message}[/dim]")
+                console.logger.info(f"[text.dim]{message}[/text.dim]")
 
         # Start MCP servers by default (ADHD-optimized experience)
         if not no_mcp:
@@ -1919,10 +1964,10 @@ def start(
                     )
                 elif status in {"request_failed", "http_error"}:
                     console.logger.info(
-                        "[yellow]⚠️  Autoindex startup trigger failed; continuing without blocking.[/yellow]"
+                        "[warning]⚠️  Autoindex startup trigger failed; continuing without blocking.[/warning]"
                     )
         else:
-            console.logger.info("[yellow]⚠️  Skipping MCP servers (reduced ADHD experience)[/yellow]")
+            console.logger.info("[warning]⚠️  Skipping MCP servers (reduced ADHD experience)[/warning]")
 
         # Launch Claude Code
         progress.update(task, description="Launching Claude Code...")
@@ -1978,18 +2023,18 @@ def start(
             workspace_id=str(project_path.resolve()),
             conport_port=3004  # Always save via instance A's ConPort
         )
-        console.logger.info("[dim]✅ Instance state saved for crash recovery[/dim]")
+        console.logger.info("[text.dim]✅ Instance state saved for crash recovery[/text.dim]")
 
     if not background:
         console.print(
-            "[green]✨ Claude Code is running with ADHD optimizations[/green]"
+            "[success]✨ Claude Code is running with ADHD optimizations[/success]"
         )
         console.logger.info("Press Ctrl+C to stop monitoring and save context")
 
         try:
             claude_process.wait()
         except KeyboardInterrupt:
-            console.logger.info("\n[yellow]⏸️ Saving context and stopping...[/yellow]")
+            console.logger.info("\n[warning]⏸️ Saving context and stopping...[/warning]")
 
             # Mark instance as stopped in ConPort
             if instance_id:
@@ -2002,7 +2047,7 @@ def start(
                     state.status = 'stopped'
                     state.last_active = datetime.now(timezone.utc)
                     save_instance_state_sync(state, workspace_id, conport_port=3004)
-                    console.logger.info("[dim]✅ Instance marked as stopped[/dim]")
+                    console.logger.info("[text.dim]✅ Instance marked as stopped[/text.dim]")
 
             ctx.invoke(save)
             attention_monitor.stop_monitoring()
@@ -2022,11 +2067,11 @@ def save(ctx, message: Optional[str], force: bool):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.logger.info("[error]No Dopemux project found in current directory[/error]")
         sys.exit(1)
 
     with Progress(
-        SpinnerColumn(),
+        SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
@@ -2037,9 +2082,9 @@ def save(ctx, message: Optional[str], force: bool):
 
         progress.update(task, description="Context saved!", completed=True)
 
-    console.logger.info(f"[green]✅ Context saved (session: {session_id[:8]})[/green]")
+    console.logger.info(f"[success]✅ Context saved (session: {session_id[:8]})[/success]")
     if message:
-        console.logger.info(f"[dim]Note: {message}[/dim]")
+        console.logger.info(f"[text.dim]Note: {message}[/text.dim]")
 
 
 @cli.command()
@@ -2057,7 +2102,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.logger.info("[error]No Dopemux project found in current directory[/error]")
         sys.exit(1)
 
     context_manager = ContextManager(project_path)
@@ -2065,14 +2110,16 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
     if list_sessions:
         sessions = context_manager.list_sessions()
         if not sessions:
-            console.logger.info("[yellow]No saved sessions found[/yellow]")
+            console.logger.info("[warning]No saved sessions found[/warning]")
             return
 
-        table = Table(title="Available Sessions")
-        table.add_column("ID", style="cyan")
-        table.add_column("Timestamp", style="green")
-        table.add_column("Goal", style="yellow")
-        table.add_column("Files", justify="right", style="blue")
+        table = styled_table(
+            "Available Sessions",
+            ("ID", {"style": "mint"}),
+            ("Timestamp", {"style": "mint.soft"}),
+            ("Goal", {"style": "gold"}),
+            ("Files", {"justify": "right", "style": "violet"}),
+        )
 
         for s in sessions:
             table.add_row(
@@ -2088,7 +2135,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
         return
 
     with Progress(
-        SpinnerColumn(),
+        SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
@@ -2103,21 +2150,35 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
 
     if context:
         console.print(
-            f"[green]✅ Restored session from {context.get('timestamp', 'unknown')}[/green]"
+            f"[success]{Glyphs.SUCCESS} Restored session from {context.get('timestamp', 'unknown')}[/success]"
         )
         console.print(
-            f"[blue]🎯 Goal: {context.get('current_goal', 'No goal set')}[/blue]"
+            f"[info]🎯 Goal: {context.get('current_goal', 'No goal set')}[/info]"
         )
         console.print(
-            f"[yellow]📁 Files: {len(context.get('open_files', []))} files restored[/yellow]"
+            f"[text.dim]📁 Files: {len(context.get('open_files', []))} files restored[/text.dim]"
         )
     else:
-        console.logger.info("[red]❌ No context found to restore[/red]")
+        console.logger.info("[error]{Glyphs.ERROR} No context found to restore[/error]")
 
 
 from .commands.instances_commands import instances
 cli.add_command(instances, "instances")
 
+
+@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def pr_merge_command(args):
+    """🚀 PR Merge Specialist - Managed remediation and merging."""
+    import sys
+    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
+    
+    # Bridge to the specialist's argparse CLI
+    sys.argv = ["dopemux pr-merge"] + list(args)
+    try:
+        pr_merge_main()
+    except SystemExit as e:
+        sys.exit(e.code)
 
 
 @cli.command()
@@ -2136,7 +2197,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.logger.info("[error]No Dopemux project found in current directory[/error]")
         sys.exit(1)
 
     # Show all by default if no specific flags
@@ -2147,10 +2208,12 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         monitor = AttentionMonitor(project_path)
         metrics = monitor.get_current_metrics()
 
-        table = Table(title="🧠 Attention Metrics")
-        table.add_column("Metric", style="cyan")
-        table.add_column("Value", style="green")
-        table.add_column("Status", style="yellow")
+        table = styled_table(
+            "🧠 Attention Metrics",
+            ("Metric", {"style": "mint"}),
+            ("Value", {"style": "mint.soft"}),
+            ("Status", {"style": "gold"}),
+        )
 
         table.add_row(
             "Current State",
@@ -2169,9 +2232,11 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         context_manager = ContextManager(project_path)
         current_context = context_manager.get_current_context()
 
-        table = Table(title="📍 Context Information")
-        table.add_column("Item", style="cyan")
-        table.add_column("Value", style="green")
+        table = styled_table(
+            "📍 Context Information",
+            ("Item", {"style": "mint"}),
+            ("Value", {"style": "mint.soft"}),
+        )
 
         table.add_row("Current Goal", current_context.get("current_goal", "Not set"))
         table.add_row("Open Files", str(len(current_context.get("open_files", []))))
@@ -2185,10 +2250,12 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         progress_info = decomposer.get_progress()
 
         if progress_info:
-            table = Table(title="📋 Task Progress")
-            table.add_column("Task", style="cyan")
-            table.add_column("Status", style="green")
-            table.add_column("Progress", style="yellow")
+            table = styled_table(
+                "📋 Task Progress",
+                ("Task", {"style": "mint"}),
+                ("Status", {"style": "mint.soft"}),
+                ("Progress", {"style": "gold"}),
+            )
 
             for task in progress_info.get("tasks", []):
                 status_emoji = (
@@ -2200,7 +2267,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
 
             console.logger.info(table)
         else:
-            console.logger.info("[yellow]No active tasks found[/yellow]")
+            console.logger.info("[warning]No active tasks found[/warning]")
 
     if mobile:
         from .mobile.runtime import check_cli_health, list_mobile_panes
@@ -2220,9 +2287,11 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
             tmux_error = str(exc)
 
             logger.error(f"Error: {e}")
-        mobile_table = Table(title="📱 Mobile Status")
-        mobile_table.add_column("Check", style="cyan")
-        mobile_table.add_column("Status", style="green")
+        mobile_table = styled_table(
+            "📱 Mobile Status",
+            ("Check", {"style": "mint"}),
+            ("Status", {"style": "mint.soft"}),
+        )
 
         mobile_table.add_row("Mobile Enabled", "✅ Enabled" if mobile_cfg.enabled else "❌ Disabled")
         mobile_table.add_row("Happy CLI", "✅ Healthy" if happy_ok else "❌ Unavailable")
@@ -2236,10 +2305,12 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         console.logger.info(mobile_table)
 
         if not tmux_error and panes:
-            sessions_table = Table(title="📱 Active Happy Sessions")
-            sessions_table.add_column("Pane", style="cyan")
-            sessions_table.add_column("Window", style="green")
-            sessions_table.add_column("Path", style="dim")
+            sessions_table = styled_table(
+                "📱 Active Happy Sessions",
+                ("Pane", {"style": "mint"}),
+                ("Window", {"style": "mint.soft"}),
+                ("Path", {"style": "text.dim"}),
+            )
 
             for pane in panes:
                 sessions_table.add_row(
@@ -2272,9 +2343,9 @@ def run_tests(ctx, command: Sequence[str], cwd: Optional[str], label: str):
         cmd_display = " ".join(args)
 
         if result.returncode == 0:
-            console.logger.info(f"[green]✅ Tests passed ({cmd_display})[/green]")
+            console.logger.info(f"[success]✅ Tests passed ({cmd_display})[/success]")
         else:
-            console.logger.error(f"[red]❌ Tests failed ({cmd_display})[/red]")
+            console.logger.error(f"[error]❌ Tests failed ({cmd_display})[/error]")
             sys.exit(result.returncode)
 
     cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
@@ -2303,9 +2374,9 @@ def run_build(ctx, command: Sequence[str], cwd: Optional[str], label: str):
         cmd_display = " ".join(args)
 
         if result.returncode == 0:
-            console.logger.info(f"[green]✅ Build succeeded ({cmd_display})[/green]")
+            console.logger.info(f"[success]✅ Build succeeded ({cmd_display})[/success]")
         else:
-            console.logger.error(f"[red]❌ Build failed ({cmd_display})[/red]")
+            console.logger.error(f"[error]❌ Build failed ({cmd_display})[/error]")
             sys.exit(result.returncode)
 
     cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
@@ -2338,25 +2409,25 @@ def task(
 
     See: docs/90-adr/ADR-XXXX-path-c-migration.md
     """
-    console.logger.info("[yellow]" + "="*60 + "[/yellow]")
-    console.logger.info("[red]⚠️  DEPRECATED COMMAND[/red]")
-    console.logger.info("[yellow]" + "="*60 + "[/yellow]")
+    console.logger.info("[warning]" + "="*60 + "[/warning]")
+    console.logger.info("[error]⚠️  DEPRECATED COMMAND[/error]")
+    console.logger.info("[warning]" + "="*60 + "[/warning]")
     console.logger.info()
     console.logger.info("The 'dopemux task' command has been replaced by SuperClaude /dx: commands:")
     console.logger.info()
-    console.logger.info("  [cyan]/dx:implement[/cyan] - Start ADHD-optimized implementation session")
-    console.logger.info("  [cyan]/dx:session start[/cyan] - Begin work session")
-    console.logger.info("  [cyan]/dx:load[/cyan] - Load tasks from ConPort")
-    console.logger.info("  [cyan]/dx:stats[/cyan] - View ADHD metrics and progress")
+    console.logger.info("  [info]/dx:implement[/info] - Start ADHD-optimized implementation session")
+    console.logger.info("  [info]/dx:session start[/info] - Begin work session")
+    console.logger.info("  [info]/dx:load[/info] - Load tasks from ConPort")
+    console.logger.info("  [info]/dx:stats[/info] - View ADHD metrics and progress")
     console.logger.info()
     console.logger.info("Migration completed: October 2025")
-    console.logger.info("See: [blue]docs/90-adr/ADR-XXXX-path-c-migration.md[/blue]")
+    console.logger.info("See: [info]docs/90-adr/ADR-XXXX-path-c-migration.md[/info]")
     console.logger.info()
-    console.logger.info("[yellow]" + "="*60 + "[/yellow]")
+    console.logger.info("[warning]" + "="*60 + "[/warning]")
 
     project_path = Path.cwd()
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.logger.info("[error]No Dopemux project found in current directory[/error]")
         sys.exit(1)
 
     decomposer = TaskDecomposer(project_path)
@@ -2364,14 +2435,16 @@ def task(
     if list_tasks:
         tasks = decomposer.list_tasks()
         if not tasks:
-            console.logger.info("[yellow]No tasks found[/yellow]")
+            console.logger.info("[warning]No tasks found[/warning]")
             return
 
-        table = Table(title="Current Tasks")
-        table.add_column("Task", style="cyan")
-        table.add_column("Priority", style="yellow")
-        table.add_column("Duration", style="green")
-        table.add_column("Status", style="blue")
+        table = styled_table(
+            f"{Glyphs.INFO} Current Tasks",
+            ("Task", {"style": "mint"}),
+            ("Priority", {"style": "gold"}),
+            ("Duration", {"style": "mint.soft"}),
+            ("Status", {"style": "violet"}),
+        )
 
         for task in tasks:
             status = (
@@ -2395,7 +2468,7 @@ def task(
 
     # Check if description is provided for adding new task
     if not description:
-        console.logger.info("[red]Description required when not listing tasks[/red]")
+        console.logger.info("[error]Description required when not listing tasks[/error]")
         console.logger.info("Use 'dopemux task --list' to list current tasks")
         sys.exit(1)
 
@@ -2404,10 +2477,10 @@ def task(
         description=description, duration=duration, priority=priority
     )
 
-    console.logger.info(f"[green]✅ Task added: {description}[/green]")
-    console.logger.info(f"[blue]🆔 ID: {task_id}[/blue]")
-    console.logger.info(f"[yellow]⏱️ Duration: {duration} minutes[/yellow]")
-    console.logger.info(f"[cyan]🎯 Priority: {priority}[/cyan]")
+    console.logger.info(f"[success]✅ Task added: {description}[/success]")
+    console.logger.info(f"[info]🆔 ID: {task_id}[/info]")
+    console.logger.info(f"[warning]⏱️ Duration: {duration} minutes[/warning]")
+    console.logger.info(f"[info]🎯 Priority: {priority}[/info]")
 
 
 from .commands.autoresponder_commands import autoresponder
@@ -2475,6 +2548,8 @@ cli.add_command(upgrades)
 from .commands.extractor_commands import extractor, _run_extractor_runner, _run_repscan_runner
 cli.add_command(extractor)
 
+from .commands.audit_commands import audit
+cli.add_command(audit)
 
 
 # ============================================================
@@ -2517,7 +2592,7 @@ def analyze(
     # Prepare configuration
     source_path = Path(directory).resolve()
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Directory does not exist: {source_path}[/red]")
+        console.logger.info(f"[error]❌ Directory does not exist: {source_path}[/error]")
         sys.exit(1)
 
     # Set output directory
@@ -2555,8 +2630,8 @@ def analyze(
     )
 
     # Initialize and run processor
-    console.logger.info(f"[blue]🧠 Starting ADHD-optimized analysis of {source_path}[/blue]")
-    console.logger.info(f"[dim]Output: {output_path}[/dim]")
+    console.logger.info(f"[info]🧠 Starting ADHD-optimized analysis of {source_path}[/info]")
+    console.logger.info(f"[text.dim]Output: {output_path}[/text.dim]")
 
     try:
         processor = DocumentProcessor(config)
@@ -2564,30 +2639,29 @@ def analyze(
 
         if results["success"]:
             console.print(
-                f"[green]✅ Analysis complete! Results saved to {output_path}[/green]"
+                f"[success]✅ Analysis complete! Results saved to {output_path}[/success]"
             )
             console.print(
-                f"[blue]📊 Processing time: {results['processing_time']:.1f}s[/blue]"
+                f"[info]📊 Processing time: {results['processing_time']:.1f}s[/info]"
             )
 
             # Show usage suggestions
             console.print(
-                Panel(
+                styled_panel(
                     f"🎯 Next steps:\n\n"
                     f"• Browse results in {output_path}\n"
                     f"• Use semantic search with embeddings\n"
                     f"• Explore feature and component registries\n"
                     f"• Review evidence links for traceability",
-                    title="🚀 Ready to Explore",
-                    border_style="green",
+                    title=f"{Glyphs.SUCCESS} Ready to Explore",
                 )
             )
         else:
-            console.logger.error("[red]❌ Analysis failed[/red]")
+            console.logger.error("[error]❌ Analysis failed[/error]")
             sys.exit(1)
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Analysis error: {e}[/red]")
+        console.logger.error(f"[error]❌ Analysis error: {e}[/error]")
         if ctx.obj.get("verbose"):
             import traceback
 
@@ -2627,7 +2701,7 @@ def health(
 
     # Handle cleanup flag first
     if cleanup:
-        console.logger.info("[blue]🧹 Cleaning up orphaned MCP processes...[/blue]")
+        console.logger.info("[info]🧹 Cleaning up orphaned MCP processes...[/info]")
 
         try:
             # Find orphaned MCP processes
@@ -2675,7 +2749,7 @@ def health(
                         except Exception:
                             logger.error("Unexpected process parent check error", exc_info=True)
             if orphaned_pids:
-                console.print(f"[yellow]Found {len(orphaned_pids)} orphaned MCP processes[/yellow]")
+                console.print(f"[warning]Found {len(orphaned_pids)} orphaned MCP processes[/warning]")
 
                 if click.confirm("Kill these processes?", default=True):
                     killed = 0
@@ -2686,14 +2760,14 @@ def health(
                         except (OSError, ValueError):
                             pass
 
-                    console.print(f"[green]✅ Cleaned up {killed} orphaned processes[/green]")
+                    console.print(f"[success]✅ Cleaned up {killed} orphaned processes[/success]")
                 else:
-                    console.print("[yellow]Cleanup cancelled[/yellow]")
+                    console.print("[warning]Cleanup cancelled[/warning]")
             else:
-                console.print("[green]✅ No orphaned MCP processes found[/green]")
+                console.print("[success]✅ No orphaned MCP processes found[/success]")
 
         except Exception as e:
-            console.print(f"[red]❌ Cleanup failed: {e}[/red]")
+            console.print(f"[error]❌ Cleanup failed: {e}[/error]")
 
         # Exit after cleanup unless combined with other flags
         if not (detailed or service or fix or watch):
@@ -2701,15 +2775,15 @@ def health(
 
     if watch:
         console.print(
-            f"[blue]👁️ Starting continuous health monitoring (interval: {interval}s)[/blue]"
+            f"[info]👁️ Starting continuous health monitoring (interval: {interval}s)[/info]"
         )
-        console.print("[dim]Press Ctrl+C to stop[/dim]")
+        console.print("[text.dim]Press Ctrl+C to stop[/text.dim]")
 
         try:
             while True:
                 console.clear()
                 console.print(
-                    f"[dim]Last check: {datetime.now().strftime('%H:%M:%S')}[/dim]"
+                    f"[text.dim]Last check: {datetime.now().strftime('%H:%M:%S')}[/text.dim]"
                 )
 
                 results = health_checker.check_all(detailed=detailed)
@@ -2717,12 +2791,12 @@ def health(
 
                 time.sleep(interval)
         except KeyboardInterrupt:
-            console.print("\n[yellow]🛑 Health monitoring stopped[/yellow]")
+            console.print("\n[warning]🛑 Health monitoring stopped[/warning]")
             return
 
     # Single health check
     with Progress(
-        SpinnerColumn(),
+        SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
@@ -2732,9 +2806,9 @@ def health(
             # Check specific service
             checker_method = getattr(health_checker, f"_check_{service}", None)
             if not checker_method:
-                console.logger.info(f"[red]❌ Unknown service: {service}[/red]")
+                console.logger.info(f"[error]❌ Unknown service: {service}[/error]")
                 console.print(
-                    f"[yellow]Available services: {', '.join(health_checker.checks.keys())}[/yellow]"
+                    f"[warning]Available services: {', '.join(health_checker.checks.keys())}[/warning]"
                 )
                 sys.exit(1)
 
@@ -2747,11 +2821,29 @@ def health(
         progress.update(task, description="Health checks complete!", completed=True)
 
     # Display results
-    health_checker.display_health_report(results, detailed=detailed)
+    def _rich_health():
+        health_checker.display_health_report(results, detailed=detailed)
+
+    emit(
+        ctx,
+        data={
+            "services": {
+                name: {
+                    "status": h.status.value[0],
+                    "message": h.message,
+                    "response_time_ms": h.response_time_ms,
+                }
+                for name, h in results.items()
+            },
+            "critical": sum(1 for h in results.values() if h.status.value[0] == "critical"),
+            "healthy": sum(1 for h in results.values() if h.status.value[0] == "healthy"),
+        },
+        rich_render=_rich_health,
+    )
 
     # Fix unhealthy services if requested
     if fix:
-        console.logger.info("\n[blue]🔧 Attempting to fix unhealthy services...[/blue]")
+        console.logger.info("\n[info]🔧 Attempting to fix unhealthy services...[/info]")
 
         with Progress(
             SpinnerColumn(),
@@ -2768,12 +2860,12 @@ def health(
 
         if restarted:
             console.print(
-                f"[green]✅ Restarted services: {', '.join(restarted)}[/green]"
+                f"[success]✅ Restarted services: {', '.join(restarted)}[/success]"
             )
-            console.logger.info("[blue]💡 Run 'dopemux health' again to verify fixes[/blue]")
+            console.logger.info("[info]💡 Run 'dopemux health' again to verify fixes[/info]")
         else:
-            console.logger.info("[yellow]⚠️ No services could be automatically fixed[/yellow]")
-            console.logger.info("[dim]Manual intervention may be required[/dim]")
+            console.logger.info("[warning]⚠️ No services could be automatically fixed[/warning]")
+            console.logger.info("[text.dim]Manual intervention may be required[/text.dim]")
 
     # Exit with appropriate code for scripting
     critical_count = sum(1 for h in results.values() if h.status.value[0] == "critical")
@@ -2823,7 +2915,7 @@ def _configure_openrouter_litellm():
     os.environ["CLAUDE_CODE_LLM_BASE_URL"] = "http://localhost:4000"
     os.environ["CLAUDE_CODE_LLM_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
     
-    console.logger.info("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
+    console.logger.info("[success]✅ OpenRouter via LiteLLM configuration applied[/success]")
 
 
 
@@ -2839,7 +2931,7 @@ def _resolve_mcp_dir(project_path: Path) -> Optional[Path]:
     try:
         return provisioner.ensure_stack_present()
     except Exception as e:
-        console.logger.error(f"[red]❌ MCP Provisioning failed: {e}[/red]")
+        console.logger.error(f"[error]❌ MCP Provisioning failed: {e}[/error]")
         return None
 
 
@@ -2848,7 +2940,7 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_id: str = "A",
     Start MCP servers with auto-provisioning, instance-scoped overlays, and Phase 0 gate.
     """
     if os.getenv("DOPEMUX_SKIP_MCP_START", "0").lower() in {"1", "true", "yes"}:
-        console.logger.info("[yellow]⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)[/yellow]")
+        console.logger.info("[warning]⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)[/warning]")
         return
 
     # 1. Provision stack if missing
@@ -2875,13 +2967,13 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_id: str = "A",
         # Fallback if python-dotenv not installed (unlikely but safe)
         pass
 
-    console.logger.info(f"\n[bold blue]🔌 Starting MCP Servers (Instance {instance_id})[/bold blue]")
-    console.logger.info(f"[dim]Project: {overlay['compose_project_name']}[/dim]")
-    console.logger.info(f"[dim]Ports: PAL={overlay['port_map']['PAL']}, ConPort={overlay['port_map']['ConPort']}[/dim]\n")
+    console.logger.info(f"\n[info]🔌 Starting MCP Servers (Instance {instance_id})[/info]")
+    console.logger.info(f"[text.dim]Project: {overlay['compose_project_name']}[/text.dim]")
+    console.logger.info(f"[text.dim]Ports: PAL={overlay['port_map']['PAL']}, ConPort={overlay['port_map']['ConPort']}[/text.dim]\n")
 
     # Start docker-compose with overlay
     status_text = Text()
-    status_text.append("🚀 ", style="bold blue")
+    status_text.append("🚀 ", style="info")
     status_text.append("Launching containers...")
 
     startup_successful = False
@@ -2922,24 +3014,24 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_id: str = "A",
                         output_lines.pop(0)
                     
                     status_text = Text()
-                    status_text.append("🚀 ", style="bold blue")
+                    status_text.append("🚀 ", style="info")
                     status_text.append("Launching containers...\n")
                     for out in output_lines:
-                        status_text.append(f"  [dim]{out}[/dim]\n")
+                        status_text.append(f"  [text.dim]{out}[/text.dim]\n")
                     live.update(status_text)
 
             process.wait()
             if process.returncode == 0:
                 startup_successful = True
-                status_text.append("\n✅ Containers launched!", style="bold green")
+                status_text.append("\n✅ Containers launched!", style="success")
                 live.update(status_text)
             else:
-                status_text.append(f"\n❌ Startup failed (exit {process.returncode})", style="bold red")
+                status_text.append(f"\n❌ Startup failed (exit {process.returncode})", style="error")
                 live.update(status_text)
                 raise RuntimeError(f"Docker compose failed with exit code {process.returncode}")
 
         # 4. Phase 0 Discovery Gate
-        console.logger.info("[blue]🛡️ Running Phase 0 Discovery Gate...[/blue]")
+        console.logger.info("[info]🛡️ Running Phase 0 Discovery Gate...[/info]")
         from .mcp.gate import DiscoveryGate
         
         # We need to wait a few seconds for servers to actually start listening
@@ -2955,14 +3047,14 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_id: str = "A",
             gate.print_block_report()
             raise click.ClickException("MCP Phase 0 Discovery Gate failed. Mandatory tools not available.")
         
-        console.logger.info("[green]✅ Phase 0 Discovery Gate passed![/green]")
+        console.logger.info("[success]✅ Phase 0 Discovery Gate passed![/success]")
 
     except Exception as e:
-        console.logger.error(f"[red]❌ MCP Startup failed: {e}[/red]")
+        console.logger.error(f"[error]❌ MCP Startup failed: {e}[/error]")
         if output_lines:
-            console.print("[dim]Last output lines:[/dim]")
+            console.print("[text.dim]Last output lines:[/text.dim]")
             for line in output_lines[-10:]:
-                console.print(f"  [dim]{line}[/dim]")
+                console.print(f"  [text.dim]{line}[/text.dim]")
         raise click.ClickException(f"Failed to start MCP stack: {e}")
 
 
@@ -2995,7 +3087,7 @@ def _trigger_dope_context_autoindex_startup(
         response = requests.post(endpoint, json=payload, timeout=5)
         if response.status_code >= 400:
             console.logger.info(
-                f"[yellow]⚠️  Autoindex bootstrap request failed ({response.status_code})[/yellow]"
+                f"[warning]⚠️  Autoindex bootstrap request failed ({response.status_code})[/warning]"
             )
             return {
                 "status": "http_error",
@@ -3032,35 +3124,35 @@ def _activate_dangerous_mode():
         expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
 
         if time.time() < expires_timestamp:
-            console.logger.info("[yellow]⚠️  Dangerous mode already active[/yellow]")
+            console.logger.info("[warning]⚠️  Dangerous mode already active[/warning]")
             remaining_minutes = int((expires_timestamp - time.time()) / 60)
-            console.logger.info(f"[dim]Expires in {remaining_minutes} minutes[/dim]")
+            console.logger.info(f"[text.dim]Expires in {remaining_minutes} minutes[/text.dim]")
             return
         else:
             # Expired, clear old settings
             _deactivate_dangerous_mode()
 
     # Show serious warning
-    console.print(Panel(
-        "[red bold]⚠️  DANGER: This will disable ALL security restrictions![/red bold]\n\n"
-        "[yellow]This mode will:[/yellow]\n"
+    console.print(styled_panel(
+        "[error]{Glyphs.WARNING}  DANGER: This will disable ALL security restrictions![/error]\n\n"
+        "[warning]This mode will:[/warning]\n"
         "• Skip all permission checks\n"
         "• Disable role enforcement\n"
         "• Bypass budget limits\n"
         "• Allow unrestricted tool access\n\n"
-        "[red]Use ONLY in isolated, trusted environments![/red]\n"
-        "[yellow]Session will expire automatically in 1 hour.[/yellow]",
-        title="🚨 Security Warning",
-        border_style="red"
+        "[error]Use ONLY in isolated, trusted environments![/error]\n"
+        "[warning]Session will expire automatically in 1 hour.[/warning]",
+        title=f"{Glyphs.WARNING} Security Warning",
+        border_style="error",
     ))
 
     # Require explicit confirmation
     if not click.confirm("\nDo you understand the risks and want to proceed?", default=False):
-        console.logger.info("[green]Dangerous mode cancelled. Staying in safe mode.[/green]")
+        console.logger.info("[success]Dangerous mode cancelled. Staying in safe mode.[/success]")
         return
 
     if not click.confirm("Are you in an isolated, trusted environment?", default=False):
-        console.logger.info("[green]Dangerous mode cancelled for security.[/green]")
+        console.logger.info("[success]Dangerous mode cancelled for security.[/success]")
         return
 
     # Set time-limited dangerous mode (1 hour)
@@ -3104,7 +3196,7 @@ def _deactivate_dangerous_mode():
     for var in dangerous_vars:
         os.environ.pop(var, None)
 
-    console.logger.info("[green]✅ Dangerous mode deactivated[/green]")
+    console.logger.info("[success]✅ Dangerous mode deactivated[/success]")
 
 
 def _check_dangerous_mode_expiry():
@@ -3114,7 +3206,7 @@ def _check_dangerous_mode_expiry():
         expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
 
         if time.time() >= expires_timestamp:
-            console.logger.info("[yellow]⏰ Dangerous mode expired, returning to safe mode[/yellow]")
+            console.logger.info("[warning]⏰ Dangerous mode expired, returning to safe mode[/warning]")
             _deactivate_dangerous_mode()
             return True
     return False
@@ -3166,27 +3258,27 @@ def _run_volume_backup(dest: Optional[str], pattern: Optional[str], no_pull: boo
     try:
         result = subprocess.run(["docker", "volume", "ls", "--format", "{{.Name}}"], capture_output=True, text=True, check=True)
     except Exception as e:
-        console.logger.info(f"[red]❌ Docker not available: {e}[/red]")
+        console.logger.info(f"[error]❌ Docker not available: {e}[/error]")
         sys.exit(1)
 
     volumes = [v.strip() for v in result.stdout.splitlines() if v.strip() and vol_pattern.search(v.strip())]
     if not volumes:
-        console.logger.info("[yellow]No matching volumes found[/yellow]")
+        console.logger.info("[warning]No matching volumes found[/warning]")
         return
 
-    console.logger.info(f"[blue]== Backing up {len(volumes)} volumes to {dest_path} ==[/blue]")
+    console.logger.info(f"[info]== Backing up {len(volumes)} volumes to {dest_path} ==[/info]")
 
     if not no_pull:
         try:
             subprocess.run(["docker", "image", "inspect", "alpine:latest"], capture_output=True, text=True, check=True)
         except subprocess.CalledProcessError:
-            console.logger.info("[dim]Pulling alpine:latest ...[/dim]")
+            console.logger.info("[text.dim]Pulling alpine:latest ...[/text.dim]")
             subprocess.run(["docker", "pull", "alpine:latest"], check=False)
 
     ok = 0
     fail = 0
     for vol in volumes:
-        console.logger.info(f"Backing up [cyan]{vol}[/cyan] ...")
+        console.logger.info(f"Backing up [info]{vol}[/info] ...")
         cmd = [
             "docker", "run", "--rm",
             "-v", f"{vol}:/data:ro",
@@ -3196,10 +3288,10 @@ def _run_volume_backup(dest: Optional[str], pattern: Optional[str], no_pull: boo
         ]
         try:
             subprocess.run(cmd, check=True)
-            console.logger.info(f"[green]✓ {vol}[/green] → {dest_path / (vol + '.tgz')}")
+            console.logger.info(f"[success]✓ {vol}[/success] → {dest_path / (vol + '.tgz')}")
             ok += 1
         except subprocess.CalledProcessError:
-            console.logger.error(f"[red]✗ Failed to back up {vol}[/red]")
+            console.logger.error(f"[error]✗ Failed to back up {vol}[/error]")
             fail += 1
 
     try:
@@ -3211,9 +3303,9 @@ def _run_volume_backup(dest: Optional[str], pattern: Optional[str], no_pull: boo
                     for chunk in iter(lambda: tf.read(1024 * 1024), b""):
                         h.update(chunk)
                 f.write(f"{h.hexdigest()}  {tgz.name}\n")
-        console.logger.info(f"[green]Manifest written:[/green] {sums_path}")
+        console.logger.info(f"[success]Manifest written:[/success] {sums_path}")
     except Exception as e:
-        console.logger.info(f"[yellow]⚠️  Could not write checksum manifest: {e}[/yellow]")
+        console.logger.info(f"[warning]⚠️  Could not write checksum manifest: {e}[/warning]")
 
     console.logger.error(f"\n[bold]Summary[/bold]: Backed up {ok} volumes, {fail} failed")
 
@@ -3232,24 +3324,24 @@ def _print_or_apply_cron(frequency: str, apply: bool) -> None:
     if not apply:
         console.logger.info("\n[bold]Cron suggestion[/bold] (add via 'crontab -e'):\n")
         console.logger.info(cron_entry)
-        console.logger.info("\n[dim]Tip: Adjust path and time as needed.[/dim]")
+        console.logger.info("\n[text.dim]Tip: Adjust path and time as needed.[/text.dim]")
         return
 
     try:
         current = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
         content = current.stdout if current.returncode == 0 else ""
         if "# dopemux-backup" in content:
-            console.logger.info("[yellow]⚠️  A dopemux-backup entry already exists in your crontab[/yellow]")
+            console.logger.info("[warning]⚠️  A dopemux-backup entry already exists in your crontab[/warning]")
             return
         new_content = content + ("\n" if content and not content.endswith("\n") else "") + cron_entry
         p = subprocess.run(["crontab", "-"], input=new_content, text=True)
         if p.returncode == 0:
-            console.logger.info("[green]✅ Installed dopemux backup cron job[/green]")
+            console.logger.info("[success]✅ Installed dopemux backup cron job[/success]")
         else:
-            console.logger.info("[yellow]⚠️  Could not install cron job. Printing entry instead:[/yellow]")
+            console.logger.info("[warning]⚠️  Could not install cron job. Printing entry instead:[/warning]")
             console.logger.info(cron_entry)
     except Exception as e:
-        console.logger.error(f"[yellow]⚠️  Failed to install cron job: {e}[/yellow]")
+        console.logger.error(f"[warning]⚠️  Failed to install cron job: {e}[/warning]")
         console.logger.info("\nAdd this entry manually via 'crontab -e':\n")
         console.logger.info(cron_entry)
 
@@ -3320,13 +3412,13 @@ def _run_extract_chatlog(
     try:
         from extraction_pipeline import ExtractionPipeline, PipelineConfig
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import extraction pipeline: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
+        console.logger.info(f"[error]❌ Could not import extraction pipeline: {e}[/error]")
+        console.logger.info("[warning]💡 Make sure you're in the dopemux-mvp directory[/warning]")
         sys.exit(1)
 
     source_path = Path(directory).resolve()
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Directory does not exist: {source_path}[/red]")
+        console.logger.info(f"[error]❌ Directory does not exist: {source_path}[/error]")
         sys.exit(1)
 
     if output:
@@ -3355,13 +3447,13 @@ def _run_extract_chatlog(
         workspace_id=workspace_id,
     )
 
-    console.logger.info("[blue]🚀 Starting Basic Chatlog Extraction Pipeline[/blue]")
-    console.logger.info(f"[blue]📁 Source: {source_path}[/blue]")
-    console.logger.info(f"[blue]📤 Output: {output_path}[/blue]")
-    console.logger.info(f"[blue]🎯 Extractors: Decision, Feature, Research[/blue]")
+    console.logger.info("[info]🚀 Starting Basic Chatlog Extraction Pipeline[/info]")
+    console.logger.info(f"[info]📁 Source: {source_path}[/info]")
+    console.logger.info(f"[info]📤 Output: {output_path}[/info]")
+    console.logger.info(f"[info]🎯 Extractors: Decision, Feature, Research[/info]")
 
     with Progress(
-        SpinnerColumn(),
+        SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
@@ -3375,7 +3467,7 @@ def _run_extract_chatlog(
 
             if not files:
                 progress.update(task, description="No files found to process", completed=True)
-                console.logger.info("[yellow]⚠️ No unprocessed chatlog files found[/yellow]")
+                console.logger.info("[warning]⚠️ No unprocessed chatlog files found[/warning]")
                 return
 
             progress.update(task, description=f"Processing {len(files)} files...")
@@ -3386,7 +3478,7 @@ def _run_extract_chatlog(
 
                 stats = result['statistics']
                 console.print(
-                    Panel(
+                    styled_panel(
                         f"🎯 Basic Extraction Results:\n\n"
                         f"• Files processed: {stats['files_processed']}/{stats['total_files']}\n"
                         f"• Total chunks: {stats['total_chunks']}\n"
@@ -3394,30 +3486,29 @@ def _run_extract_chatlog(
                         f"• High confidence fields: {stats['high_confidence_fields']}\n"
                         f"• Documents generated: {stats['documents_generated']}\n"
                         f"• Processing time: {stats['processing_time']:.2f}s\n\n"
-                        f"📊 Field Types:\n"
+                        f"🔬 Field Types:\n"
                         + "\n".join(
                             [f"• {field_type}: {count}" for field_type, count in stats['fields_by_type'].items()]
                         ),
-                        title="🚀 Basic Extraction Complete",
-                        border_style="green",
+                        title=f"{Glyphs.SUCCESS} Basic Extraction Complete",
                     )
                 )
 
-                console.logger.info(f"\n[green]📁 Results saved to: {output_path}[/green]")
-                console.logger.info(f"[green]📦 Processed files archived to: {result['archive_directory']}[/green]")
+                console.logger.info(f"\n[success]📁 Results saved to: {output_path}[/success]")
+                console.logger.info(f"[success]📦 Processed files archived to: {result['archive_directory']}[/success]")
 
             else:
                 progress.update(task, description="Extraction failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Extraction failed[/red]")
+                console.logger.error(f"[error]❌ Extraction failed[/error]")
                 if result.get('errors'):
-                    console.logger.error(f"[red]Errors: {len(result['errors'])}[/red]")
+                    console.logger.error(f"[error]Errors: {len(result['errors'])}[/error]")
                     for error in result['errors'][:3]:
-                        console.logger.error(f"[red]  • {error}[/red]")
+                        console.logger.error(f"[error]  • {error}[/error]")
                 sys.exit(1)
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Extraction pipeline failed: {e}[/red]")
+            console.logger.error(f"[error]❌ Extraction pipeline failed: {e}[/error]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()
@@ -3503,13 +3594,13 @@ def _run_extract_pro(
     try:
         from extraction_pipeline import ExtractionPipeline, PipelineConfig
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import extraction pipeline: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
+        console.logger.info(f"[error]❌ Could not import extraction pipeline: {e}[/error]")
+        console.logger.info("[warning]💡 Make sure you're in the dopemux-mvp directory[/warning]")
         sys.exit(1)
 
     source_path = Path(directory).resolve()
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Directory does not exist: {source_path}[/red]")
+        console.logger.info(f"[error]❌ Directory does not exist: {source_path}[/error]")
         sys.exit(1)
 
     # Set output directory
@@ -3544,13 +3635,13 @@ def _run_extract_pro(
         workspace_id=workspace_id
     )
 
-    console.logger.info("[blue]🔬 Starting Pro Chatlog Extraction Pipeline[/blue]")
-    console.logger.info(f"[blue]📁 Source: {source_path}[/blue]")
-    console.logger.info(f"[blue]📤 Output: {output_path}[/blue]")
-    console.logger.info(f"[blue]🎯 Extractors: All 7 (Decision, Feature, Research, Constraint, Stakeholder, Risk, Security)[/blue]")
+    console.logger.info("[info]🔬 Starting Pro Chatlog Extraction Pipeline[/info]")
+    console.logger.info(f"[info]📁 Source: {source_path}[/info]")
+    console.logger.info(f"[info]📤 Output: {output_path}[/info]")
+    console.logger.info(f"[info]🎯 Extractors: All 7 (Decision, Feature, Research, Constraint, Stakeholder, Risk, Security)[/info]")
 
     with Progress(
-        SpinnerColumn(),
+        SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
@@ -3565,7 +3656,7 @@ def _run_extract_pro(
 
             if not files:
                 progress.update(task, description="No files found to process", completed=True)
-                console.logger.info("[yellow]⚠️ No unprocessed chatlog files found[/yellow]")
+                console.logger.info("[warning]⚠️ No unprocessed chatlog files found[/warning]")
                 return
 
             progress.update(task, description=f"Processing {len(files)} files with ALL extractors...")
@@ -3576,7 +3667,7 @@ def _run_extract_pro(
 
                 stats = result['statistics']
                 console.print(
-                    Panel(
+                    styled_panel(
                         f"🔬 Pro Extraction Results:\n\n"
                         f"• Files processed: {stats['files_processed']}/{stats['total_files']}\n"
                         f"• Total chunks: {stats['total_chunks']}\n"
@@ -3584,34 +3675,33 @@ def _run_extract_pro(
                         f"• High confidence fields: {stats['high_confidence_fields']}\n"
                         f"• Documents generated: {stats['documents_generated']}\n"
                         f"• Processing time: {stats['processing_time']:.2f}s\n\n"
-                        f"📊 Field Types:\n" +
+                        f"🔬 Field Types:\n" +
                         "\n".join([f"• {field_type}: {count}"
                                  for field_type, count in stats['fields_by_type'].items()]) +
                         f"\n\n⏱️ Phase Times:\n" +
                         "\n".join([f"• {phase}: {time:.2f}s"
                                  for phase, time in stats['phase_times'].items()]),
-                        title="🚀 Pro Extraction Complete",
-                        border_style="green",
+                        title=f"{Glyphs.SUCCESS} Pro Extraction Complete",
                     )
                 )
 
-                console.logger.info(f"\n[green]📁 Results saved to: {output_path}[/green]")
-                console.logger.info(f"[green]📦 Processed files archived to: {result['archive_directory']}[/green]")
-                console.logger.info(f"[green]📊 Knowledge graph: {output_path}/knowledge_graph.json[/green]")
-                console.logger.info(f"[green]📋 Comprehensive report: {output_path}/reports/[/green]")
+                console.logger.info(f"\n[success]📁 Results saved to: {output_path}[/success]")
+                console.logger.info(f"[success]📦 Processed files archived to: {result['archive_directory']}[/success]")
+                console.logger.info(f"[success]📊 Knowledge graph: {output_path}/knowledge_graph.json[/success]")
+                console.logger.info(f"[success]📋 Comprehensive report: {output_path}/reports/[/success]")
 
             else:
                 progress.update(task, description="Pro extraction failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Pro extraction failed[/red]")
+                console.logger.error(f"[error]❌ Pro extraction failed[/error]")
                 if result.get('errors'):
-                    console.logger.error(f"[red]Errors: {len(result['errors'])}[/red]")
+                    console.logger.error(f"[error]Errors: {len(result['errors'])}[/error]")
                     for error in result['errors'][:3]:  # Show first 3 errors
-                        console.logger.error(f"[red]  • {error}[/red]")
+                        console.logger.error(f"[error]  • {error}[/error]")
                 sys.exit(1)
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Pro extraction pipeline failed: {e}[/red]")
+            console.logger.error(f"[error]❌ Pro extraction pipeline failed: {e}[/error]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()
@@ -3961,6 +4051,33 @@ def extractor_trace(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
         runner.run_all(dry_run=dry_run)
 
 
+@cli.command("truth")
+@click.option("--dry-run", is_flag=True, default=True, help="Simulate execution (default)")
+@click.option("--execute", is_flag=True, help="Actually call LLM providers")
+@click.option("--deep", is_flag=True, help="Enable deep mode (includes historical/archived docs)")
+@click.option("--resume", is_flag=True, help="Resume a previous extraction run")
+@click.option("--workers", type=int, default=1, help="Number of parallel workers (default: 1)")
+@click.option(
+    "--routing-policy",
+    type=click.Choice(["cost", "balanced", "quality", "optimal"]),
+    default="cost",
+    help="Intelligence routing policy (default: cost)"
+)
+@click.pass_context
+def truth_command(ctx, dry_run: bool, execute: bool, deep: bool, resume: bool, workers: int, routing_policy: str):
+    """
+    Generate a Repository Ground Truth pack for LLM context.
+    
+    This command runs the full multi-phase extraction pipeline (Phases A-S)
+    to build a comprehensive map of the project's logic, docs, and boundaries.
+    """
+    project_path = Path.cwd()
+    if execute:
+        dry_run = False
+    runner = PipelineRunner(project_path)
+    runner.run_all(dry_run=dry_run, deep=deep, resume=resume, workers=workers, routing_policy=routing_policy)
+
+
 extractor.add_command(extractor_list, "list")
 extractor.add_command(extractor_run, "run")
 extractor.add_command(extractor_doctor, "doctor")
@@ -4010,11 +4127,11 @@ def launch(ctx, preset: str, attach: bool):
     import subprocess
     import time
     
-    console.logger.info(f"[cyan]🚀 Launching Dopemux with '{preset}' preset...[/cyan]\n")
+    console.logger.info(f"[info]🚀 Launching Dopemux with '{preset}' preset...[/info]\n")
     
     if preset == "minimal":
         # Just start Claude Code, no tmux
-        console.logger.info("[dim]Starting Claude Code without tmux...[/dim]")
+        console.logger.info("[text.dim]Starting Claude Code without tmux...[/text.dim]")
         ctx.invoke(cli.commands['start'])
         return
     
@@ -4030,7 +4147,7 @@ def launch(ctx, preset: str, attach: bool):
     layout, theme = layout_map[preset]
     
     # Start tmux with layout
-    console.logger.info(f"[blue]📐 Creating {layout} layout...[/blue]")
+    console.logger.info(f"[info]📐 Creating {layout} layout...[/info]")
     
     tmux_start_args = [
         "dopemux", "tmux", "start",
@@ -4046,16 +4163,16 @@ def launch(ctx, preset: str, attach: bool):
 
     autoindex_result = _trigger_dope_context_autoindex_startup(Path.cwd())
     if autoindex_result and autoindex_result.get("status") in {"started", "already_running"}:
-        console.logger.info("[dim]✅ Dope-context autoindex bootstrap triggered[/dim]")
+        console.logger.info("[text.dim]✅ Dope-context autoindex bootstrap triggered[/text.dim]")
 
     # Apply theme if specified
     if theme:
         console.logger.info(f"\n[magenta]🎨 Applying {theme} theme...[/magenta]")
         time.sleep(1)  # Give tmux time to initialize
         subprocess.run(["dopemux", "tmux", "theme", theme, "--apply"], check=True)
-        console.logger.info(f"[green]✨ {preset} preset ready![/green]")
+        console.logger.info(f"[success]✨ {preset} preset ready![/success]")
     else:
-        console.logger.info(f"[green]✨ {preset} preset ready![/green]")
+        console.logger.info(f"[success]✨ {preset} preset ready![/success]")
 
 
 @cli.command("dope")
@@ -4101,7 +4218,7 @@ def quick(ctx):
     
     Equivalent to: dopemux tmux start --layout medium
     """
-    console.print("[cyan]⚡ Quick start - medium layout[/cyan]\n")
+    console.print("[info]⚡ Quick start - medium layout[/info]\n")
     import subprocess
     subprocess.run([
         "dopemux", "tmux", "start",
@@ -4168,6 +4285,38 @@ def shell_setup_cmd(ctx, shell_type: str):
 
 
         logger.error(f"Error: {e}")
+# =============================================================================
+# Dashboard TUI Command
+# =============================================================================
+
+
+@cli.command("dashboard")
+@click.option("--demo", is_flag=True, help="Run with mock data (no live services required)")
+def dashboard_cmd(demo: bool):
+    """📊 Launch the ADHD-optimized TUI dashboard.
+
+    Real-time monitoring of ADHD state, productivity metrics, service health,
+    and cognitive load trends.
+
+    \b
+    Keybindings:
+        q — Quit
+        t — Toggle tasks panel
+        s — Toggle services panel
+        p — Toggle trends panel
+        d — Open detail popup (requires tmux)
+        r — Force refresh
+
+    \b
+    Examples:
+        dopemux dashboard          # Live dashboard
+        dopemux dashboard --demo   # Preview with mock data
+    """
+    from .ui.dashboard import run_dashboard
+
+    run_dashboard(demo=demo)
+
+
 # Worktree Diagnostics Command
 # =============================================================================
 
@@ -4194,8 +4343,8 @@ def doctor_cmd(ctx, worktree: bool, verbose: bool):
         sys.exit(0 if success else 1)
     else:
         # General Dopemux health check
-        console.logger.info("\n[bold cyan]🏥 Dopemux System Diagnostics[/bold cyan]\n")
-        console.logger.info("[yellow]Use --worktree flag for worktree-specific checks[/yellow]\n")
+        console.logger.info("\n[mint]🏥 Dopemux System Diagnostics[/mint]\n")
+        console.logger.info("[warning]Use --worktree flag for worktree-specific checks[/warning]\n")
 
         # Basic checks
         checks = []
@@ -4267,28 +4416,34 @@ def doctor_cmd(ctx, worktree: bool, verbose: bool):
             taskx_label = "TaskX doctor deterministic (scripts/taskx missing)"
         checks.append((taskx_label, taskx_doctor_ok))
 
-        # Print results
-        from rich.table import Table
-        table = Table(show_header=False)
-        table.add_column("Check", style="bold")
-        table.add_column("Status")
+        passed = sum(1 for _, r in checks if r)
 
-        passed = 0
-        for check_name, result in checks:
-            status = "[green]✅ Pass[/green]" if result else "[red]❌ Fail[/red]"
-            table.add_row(check_name, status)
-            if result:
-                passed += 1
+        def _rich_doctor():
+            table = styled_table(
+                f"{Glyphs.INFO} System Diagnostics",
+                ("Check", {"style": "text"}),
+                ("Status",),
+            )
+            for check_name, result in checks:
+                status = "[success]✅ Pass[/success]" if result else "[error]❌ Fail[/error]"
+                table.add_row(check_name, status)
+            console.logger.info(table)
+            console.logger.info(f"\n[bold]Result:[/bold] {passed}/{len(checks)} checks passed")
+            if passed == len(checks):
+                console.logger.info("[success]🎉 System healthy![/success]")
+            else:
+                console.logger.error("[warning]⚠️  Some checks failed. See above for details.[/warning]")
 
-        console.logger.info(table)
-
-        # Summary
-        console.logger.info(f"\n[bold]Result:[/bold] {passed}/{len(checks)} checks passed")
-
-        if passed == len(checks):
-            console.logger.info("[green]🎉 System healthy![/green]")
-        else:
-            console.logger.error("[yellow]⚠️  Some checks failed. See above for details.[/yellow]")
+        emit(
+            ctx,
+            data={
+                "checks": [{"name": n, "passed": r} for n, r in checks],
+                "passed": passed,
+                "total": len(checks),
+                "healthy": passed == len(checks),
+            },
+            rich_render=_rich_doctor,
+        )
 
         sys.exit(0 if passed == len(checks) else 1)
 
@@ -4407,10 +4562,10 @@ def main():
     try:
         cli()
     except KeyboardInterrupt:
-        console.logger.info("\n[yellow]⏸️ Interrupted by user[/yellow]")
+        console.logger.info("\n[warning]⏸️ Interrupted by user[/warning]")
         sys.exit(1)
     except Exception as e:
-        error_text = Text("❌ Error: ", style="red") + Text(str(e))
+        error_text = Text(f"{Glyphs.ERROR} Error: ", style="error") + Text(str(e))
         console.logger.error(error_text)
         if "--debug" in sys.argv:
             raise
@@ -4441,12 +4596,12 @@ def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, inst
 
         if setup:
             claude_hooks.start_monitoring(workspace)
-            console.logger.info("[green]✅ Claude Code hooks started[/green]")
+            console.logger.info("[success]✅ Claude Code hooks started[/success]")
             console.logger.info(f"   Monitoring paths: {[str(p) for p in claude_hooks.watched_paths]}")
 
         elif teardown:
             claude_hooks.stop_monitoring()
-            console.logger.info("[green]✅ Claude Code hooks stopped[/green]")
+            console.logger.info("[success]✅ Claude Code hooks stopped[/success]")
 
         elif status:
             hook_status = claude_hooks.get_status()
@@ -4456,45 +4611,45 @@ def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, inst
             console.logger.info(f"   Watched paths: {hook_status['watched_paths']}")
             console.logger.info("\n[bold]Hook Types:[/bold]")
             for hook_type, enabled in hook_status['active_hooks'].items():
-                status_icon = "[green]✓[/green]" if enabled else "[red]✗[/red]"
+                status_icon = "[success]✓[/success]" if enabled else "[error]✗[/error]"
                 console.logger.info(f"   {status_icon} {hook_type}")
 
         elif enable:
             claude_hooks.enable_hook(enable)
-            console.logger.info(f"[green]✅ Hook enabled: {enable}[/green]")
+            console.logger.info(f"[success]✅ Hook enabled: {enable}[/success]")
 
         elif disable:
             claude_hooks.disable_hook(disable)
-            console.logger.info(f"[green]✅ Hook disabled: {disable}[/green]")
+            console.logger.info(f"[success]✅ Hook disabled: {disable}[/success]")
 
         elif shell_scripts:
             scripts = get_shell_hook_scripts()
             console.logger.info("[bold]Shell Hook Scripts:[/bold]")
-            console.logger.info("\n[dim]Add these to your ~/.bashrc or ~/.zshrc:[/dim]\n")
+            console.logger.info("\n[text.dim]Add these to your ~/.bashrc or ~/.zshrc:[/text.dim]\n")
 
-            console.logger.info("[bold cyan]For Bash:[/bold cyan]")
+            console.logger.info("[mint]For Bash:[/mint]")
             console.logger.info(scripts['bash_preexec'])
             console.logger.info(scripts['bash_precmd'])
 
-            console.logger.info("\n[bold cyan]For Zsh:[/bold cyan]")
+            console.logger.info("\n[mint]For Zsh:[/mint]")
             console.logger.info(scripts['zsh_hooks'])
 
         elif install_shell_hooks:
             from .hooks.shell_hook_installer import install_shell_hooks as installer
             success, message = installer(force=force)
             if success:
-                console.logger.info(f"[green]{message}[/green]")
+                console.logger.info(f"[success]{message}[/success]")
             else:
-                console.logger.info(f"[red]{message}[/red]")
+                console.logger.info(f"[error]{message}[/error]")
                 sys.exit(1)
 
         elif uninstall_shell_hooks:
             from .hooks.shell_hook_installer import uninstall_shell_hooks as uninstaller
             success, message = uninstaller()
             if success:
-                console.logger.info(f"[green]{message}[/green]")
+                console.logger.info(f"[success]{message}[/success]")
             else:
-                console.logger.info(f"[red]{message}[/red]")
+                console.logger.info(f"[error]{message}[/error]")
                 sys.exit(1)
 
         else:
@@ -4519,7 +4674,7 @@ def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, inst
             console.logger.info("   git-commit       Monitor git operations (disabled by default)")
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Hook command failed: {e}[/red]")
+        console.logger.error(f"[error]❌ Hook command failed: {e}[/error]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)

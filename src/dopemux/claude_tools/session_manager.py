@@ -95,7 +95,7 @@ class SessionManager:
             )
             return result.get('success', False)
         except Exception as e:
-            self.console.log(f"[yellow]Warning: Failed to store session in ConPort: {e}[/yellow]")
+            self.console.log(f"[warning]Warning: Failed to store session in ConPort: {e}[/warning]")
             return False
 
     def _retrieve_sessions_from_conport(self) -> List[Dict[str, Any]]:
@@ -114,7 +114,7 @@ class SessionManager:
                 return list(result.get('data', {}).values())
             return []
         except Exception as e:
-            self.console.log(f"[yellow]Warning: Failed to retrieve sessions from ConPort: {e}[/yellow]")
+            self.console.log(f"[warning]Warning: Failed to retrieve sessions from ConPort: {e}[/warning]")
             return []
 
     def find_sessions(self, keywords: Optional[str] = None,
@@ -321,16 +321,16 @@ class SessionManager:
 
         # Display grouped sessions
         for group_name, group_sessions in grouped.items():
-            self.console.log(f"[bold cyan]Recent Sessions - {group_name}[/bold cyan]")
+            self.console.log(f"[mint]Recent Sessions - {group_name}[/mint]")
 
             table = Table(box=box.ROUNDED)
-            table.add_column("Agent", style="cyan", no_wrap=True)
+            table.add_column("Agent", style="info", no_wrap=True)
             table.add_column("Project", style="magenta")
-            table.add_column("Branch", style="green")
-            table.add_column("Time", style="dim")
+            table.add_column("Branch", style="success")
+            table.add_column("Time", style="text.dim")
             table.add_column("Files", justify="right")
             table.add_column("Duration", justify="right")
-            table.add_column("Message", style="white")
+            table.add_column("Message", style="text")
 
             for session in group_sessions:
                 time_str = self._format_relative_time(session['timestamp'])
@@ -426,12 +426,12 @@ class SessionManager:
             elif session['agent'] == 'codex':
                 return self._resume_codex_session(session)
             else:
-                self.console.log(f"[red]Unsupported agent: {session['agent']}[/red]")
+                self.console.log(f"[error]Unsupported agent: {session['agent']}[/error]")
                 return False
 
         except Exception as e:
             logger.error(f"Error resuming session {session['id']}: {e}")
-            self.console.log(f"[red]Failed to resume session: {e}[/red]")
+            self.console.log(f"[error]Failed to resume session: {e}[/error]")
             return False
 
     def _resume_dopemux_session(self, session: Dict[str, Any]) -> bool:
@@ -447,7 +447,7 @@ class SessionManager:
         try:
             # Use context manager to restore
             self.context_manager.restore_session(session['id'])
-            self.console.log(f"[green]Resumed Dopemux session: {session['id']}[/green]")
+            self.console.log(f"[success]Resumed Dopemux session: {session['id']}[/success]")
             return True
         except Exception as e:
             logger.error(f"Failed to resume Dopemux session: {e}")
@@ -477,7 +477,7 @@ class SessionManager:
                 "--no-recovery"
             ])
 
-            self.console.log(f"[green]Resumed Claude session: {session['id']}[/green]")
+            self.console.log(f"[success]Resumed Claude session: {session['id']}[/success]")
             return True
         except Exception as e:
             logger.error(f"Failed to resume Claude session: {e}")
@@ -506,7 +506,7 @@ class SessionManager:
                 "resume", session['id']
             ])
 
-            self.console.log(f"[green]Resumed Codex session: {session['id']}[/green]")
+            self.console.log(f"[success]Resumed Codex session: {session['id']}[/success]")
             return True
         except Exception as e:
             logger.error(f"Failed to resume Codex session: {e}")

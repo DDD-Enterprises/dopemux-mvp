@@ -17,6 +17,8 @@ from rich.table import Table
 
 from ..console import console
 from ..instance_manager import InstanceManager, detect_instances_sync, detect_orphaned_instances_sync
+from ..ui.output import emit
+from ..ui.theme import styled_table
 
 logger = logging.getLogger(__name__)
 
@@ -53,40 +55,63 @@ def instances_list(ctx):
         conport_port=3004
     )
 
-    if running_instances:
-        console.logger.info(f"\n[green]Found {len(running_instances)} running instance(s)[/green]\n")
+    def _rich_instances():
+        if running_instances:
+            console.logger.info(f"\n[success]Found {len(running_instances)} running instance(s)[/success]\n")
 
-        table = Table(title="Running Instances")
-        table.add_column("Instance", style="cyan", no_wrap=True)
-        table.add_column("Port", style="magenta", no_wrap=True)
-        table.add_column("Branch", style="green")
-        table.add_column("Current Worktree", style="blue")
-        table.add_column("Status", style="green")
-
-        for inst in running_instances:
-            status = "Healthy" if inst.is_healthy else "Unknown"
-            table.add_row(
-                inst.instance_id,
-                str(inst.port_base),
-                inst.git_branch or "unknown",
-                str(inst.worktree_path) if inst.worktree_path else "main",
-                status
+            table = styled_table(
+                "Running Instances",
+                ("Instance", {"style": "info", "no_wrap": True}),
+                ("Port", {"style": "magenta", "no_wrap": True}),
+                ("Branch", {"style": "success"}),
+                ("Current Worktree", {"style": "info"}),
+                ("Status", {"style": "success"}),
             )
 
-        console.logger.info(table)
-    else:
-        console.logger.info("[yellow]No running instances found[/yellow]")
+            for inst in running_instances:
+                status = "Healthy" if inst.is_healthy else "Unknown"
+                table.add_row(
+                    inst.instance_id,
+                    str(inst.port_base),
+                    inst.git_branch or "unknown",
+                    str(inst.worktree_path) if inst.worktree_path else "main",
+                    status
+                )
+
+            console.logger.info(table)
+        else:
+            console.logger.info("[warning]No running instances found[/warning]")
+
+    emit(
+        ctx,
+        data={
+            "instances": [
+                {
+                    "id": inst.instance_id,
+                    "port": inst.port_base,
+                    "branch": inst.git_branch or "unknown",
+                    "worktree": str(inst.worktree_path) if inst.worktree_path else "main",
+                    "healthy": inst.is_healthy,
+                }
+                for inst in running_instances
+            ],
+            "orphaned": len(orphaned_instances),
+        },
+        rich_render=_rich_instances,
+    )
 
     if orphaned_instances:
-        console.logger.info(f"\n[red]Found {len(orphaned_instances)} orphaned instance(s)[/red]")
-        console.logger.info("[dim]Orphaned instances have crashed but their worktrees still exist[/dim]\n")
+        console.logger.info(f"\n[error]Found {len(orphaned_instances)} orphaned instance(s)[/error]")
+        console.logger.info("[text.dim]Orphaned instances have crashed but their worktrees still exist[/text.dim]\n")
 
-        orphan_table = Table(title="Orphaned Instances (Crashed)")
-        orphan_table.add_column("Instance", style="red", no_wrap=True)
-        orphan_table.add_column("Branch", style="yellow")
-        orphan_table.add_column("Last Active", style="dim")
-        orphan_table.add_column("Last Focus", style="cyan")
-        orphan_table.add_column("Action", style="green")
+        orphan_table = styled_table(
+            "Orphaned Instances (Crashed)",
+            ("Instance", {"style": "error", "no_wrap": True}),
+            ("Branch", {"style": "warning"}),
+            ("Last Active", {"style": "text.dim"}),
+            ("Last Focus", {"style": "info"}),
+            ("Action", {"style": "success"}),
+        )
 
         for orphan in orphaned_instances:
             if isinstance(orphan['last_active'], str):
@@ -111,24 +136,26 @@ def instances_list(ctx):
             )
 
         console.logger.info(orphan_table)
-        console.logger.info("\n[dim]Tip: Use 'dopemux instances resume <id>' to restart an orphaned instance[/dim]")
-        console.logger.info("[dim]     Or use 'dopemux instances cleanup <id>' to remove the worktree[/dim]")
+        console.logger.info("\n[text.dim]Tip: Use 'dopemux instances resume <id>' to restart an orphaned instance[/text.dim]")
+        console.logger.info("[text.dim]     Or use 'dopemux instances cleanup <id>' to remove the worktree[/text.dim]")
 
     console.logger.info("\n[bold]Git Worktrees:[/bold]")
     worktrees = instance_manager.list_worktrees()
 
     if worktrees:
-        worktree_table = Table()
-        worktree_table.add_column("ID", style="cyan")
-        worktree_table.add_column("Path", style="dim")
-        worktree_table.add_column("Branch", style="green")
+        worktree_table = styled_table(
+            "Git Worktrees",
+            ("ID", {"style": "info"}),
+            ("Path", {"style": "text.dim"}),
+            ("Branch", {"style": "success"}),
+        )
 
         for wt_id, wt_path, wt_branch in worktrees:
             worktree_table.add_row(wt_id, str(wt_path), wt_branch)
 
         console.logger.info(worktree_table)
     else:
-        console.logger.info("[dim]No worktrees found[/dim]")
+        console.logger.info("[text.dim]No worktrees found[/text.dim]")
 
 
 @instances.command("resume")
@@ -155,37 +182,37 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
     state = load_instance_state_sync(instance_id, workspace_id, conport_port=3004)
 
     if not state:
-        console.logger.info(f"[red]No saved state found for instance {instance_id}[/red]")
-        console.logger.info("[dim]Tip: Use 'dopemux instances list' to see available instances[/dim]")
+        console.logger.info(f"[error]No saved state found for instance {instance_id}[/error]")
+        console.logger.info("[text.dim]Tip: Use 'dopemux instances list' to see available instances[/text.dim]")
         sys.exit(1)
 
     if state.status != 'orphaned':
-        console.logger.info(f"[yellow]Instance {instance_id} is not orphaned (status: {state.status})[/yellow]")
+        console.logger.info(f"[warning]Instance {instance_id} is not orphaned (status: {state.status})[/warning]")
         if state.status == 'active':
-            console.logger.info(f"[dim]Instance is already running on port {state.port_base}[/dim]")
+            console.logger.info(f"[text.dim]Instance is already running on port {state.port_base}[/text.dim]")
         sys.exit(1)
 
     worktree_path = Path(state.worktree_path)
     if not worktree_path.exists():
-        console.logger.info(f"[red]Worktree not found at {worktree_path}[/red]")
-        console.logger.info("[dim]The worktree may have been deleted. Use 'dopemux instances cleanup' to remove state[/dim]")
+        console.logger.info(f"[error]Worktree not found at {worktree_path}[/error]")
+        console.logger.info("[text.dim]The worktree may have been deleted. Use 'dopemux instances cleanup' to remove state[/text.dim]")
         sys.exit(1)
 
-    console.logger.info(f"\n[cyan]Resuming instance {instance_id}...[/cyan]")
+    console.logger.info(f"\n[info]Resuming instance {instance_id}...[/info]")
     console.logger.info(f"   Branch: {state.git_branch}")
     console.logger.info(f"   Worktree: {worktree_path}")
     console.logger.info(f"   Port base: {state.port_base}")
 
     if state.last_focus_context:
-        console.logger.info(f"   Last focus: [dim]{state.last_focus_context}[/dim]")
+        console.logger.info(f"   Last focus: [text.dim]{state.last_focus_context}[/text.dim]")
 
     if restore_context and state.last_working_directory:
-        console.logger.info(f"\n[green]Context restoration enabled:[/green]")
+        console.logger.info(f"\n[success]Context restoration enabled:[/success]")
         console.logger.info(f"   Working directory: {state.last_working_directory}")
         if state.last_focus_context:
             console.logger.info(f"   Focus context: {state.last_focus_context}")
 
-    console.logger.info(f"\n[yellow]Starting instance {instance_id} on port {state.port_base}...[/yellow]")
+    console.logger.info(f"\n[warning]Starting instance {instance_id} on port {state.port_base}...[/warning]")
 
     env = os.environ.copy()
     env.update({
@@ -201,21 +228,21 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
     if restore_context and state.last_working_directory:
         try:
             os.chdir(state.last_working_directory)
-            console.logger.info(f"[green]Changed to working directory: {state.last_working_directory}[/green]")
+            console.logger.info(f"[success]Changed to working directory: {state.last_working_directory}[/success]")
         except Exception as e:
-            console.logger.info(f"[yellow]Could not change to working directory: {e}[/yellow]")
-            console.logger.info("[dim]Staying in current directory[/dim]")
+            console.logger.info(f"[warning]Could not change to working directory: {e}[/warning]")
+            console.logger.info("[text.dim]Staying in current directory[/text.dim]")
 
-    console.logger.info(f"\n[green]Instance {instance_id} resumed successfully![/green]")
-    console.logger.info(f"[dim]Services are starting on port {state.port_base}...[/dim]")
+    console.logger.info(f"\n[success]Instance {instance_id} resumed successfully![/success]")
+    console.logger.info(f"[text.dim]Services are starting on port {state.port_base}...[/text.dim]")
 
     if restore_context:
-        console.logger.info("\n[cyan]Context Restored:[/cyan]")
+        console.logger.info("\n[info]Context Restored:[/info]")
         console.logger.info(f"   You were working on: {state.last_focus_context or 'N/A'}")
         console.logger.info(f"   In directory: {os.getcwd()}")
 
-    console.logger.info(f"\n[dim]Tip: Instance will be marked as 'active' when dopemux start completes[/dim]")
-    console.logger.info(f"[dim]     Run: cd {worktree_path} && dopemux start[/dim]")
+    console.logger.info(f"\n[text.dim]Tip: Instance will be marked as 'active' when dopemux start completes[/text.dim]")
+    console.logger.info(f"[text.dim]     Run: cd {worktree_path} && dopemux start[/text.dim]")
 
     from ..instance_state import save_instance_state_sync
     state.status = 'active'
@@ -243,8 +270,8 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
     instance_manager = InstanceManager(project_path)
 
     if not instance_id and not all:
-        console.logger.info("[red]Specify instance ID or use --all flag[/red]")
-        console.logger.info("[dim]Usage: dopemux instances cleanup <ID> or --all[/dim]")
+        console.logger.info("[error]Specify instance ID or use --all flag[/error]")
+        console.logger.info("[text.dim]Usage: dopemux instances cleanup <ID> or --all[/text.dim]")
         sys.exit(1)
 
     if all:
@@ -258,15 +285,15 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
         ]
 
         if not stopped_instances:
-            console.logger.info("[green]No stopped instances to clean up[/green]")
+            console.logger.info("[success]No stopped instances to clean up[/success]")
             return
 
-        console.logger.info(f"\n[yellow]Found {len(stopped_instances)} stopped instance(s) to clean:[/yellow]")
+        console.logger.info(f"\n[warning]Found {len(stopped_instances)} stopped instance(s) to clean:[/warning]")
         for wt_id, wt_path in stopped_instances:
             console.logger.info(f"  Instance {wt_id}: {wt_path}")
 
         if not force and not click.confirm("\nProceed with cleanup?"):
-            console.logger.info("[yellow]Cleanup cancelled[/yellow]")
+            console.logger.info("[warning]Cleanup cancelled[/warning]")
             return
 
         from ..instance_state import cleanup_instance_state_sync
@@ -274,42 +301,42 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
 
         for wt_id, _ in stopped_instances:
             if instance_manager.cleanup_worktree(wt_id):
-                console.logger.info(f"[green]Removed worktree for instance {wt_id}[/green]")
+                console.logger.info(f"[success]Removed worktree for instance {wt_id}[/success]")
                 if cleanup_instance_state_sync(wt_id, workspace_id, conport_port=3004):
-                    console.logger.info(f"[dim]Removed instance state for {wt_id}[/dim]")
+                    console.logger.info(f"[text.dim]Removed instance state for {wt_id}[/text.dim]")
             else:
-                console.logger.error(f"[red]Failed to remove worktree for instance {wt_id}[/red]")
+                console.logger.error(f"[error]Failed to remove worktree for instance {wt_id}[/error]")
 
     else:
         if instance_id == 'A':
-            console.logger.info("[red]Cannot clean up main worktree (instance A)[/red]")
+            console.logger.info("[error]Cannot clean up main worktree (instance A)[/error]")
             sys.exit(1)
 
         running_instances = detect_instances_sync(project_path)
         if any(inst.instance_id == instance_id for inst in running_instances):
-            console.logger.info(f"[red]Instance {instance_id} is still running[/red]")
-            console.logger.info("[dim]Stop the instance before cleaning up its worktree[/dim]")
+            console.logger.info(f"[error]Instance {instance_id} is still running[/error]")
+            console.logger.info("[text.dim]Stop the instance before cleaning up its worktree[/text.dim]")
             sys.exit(1)
 
         worktree_path = instance_manager._get_worktree_path(instance_id)
         if not worktree_path or not worktree_path.exists():
-            console.logger.info(f"[yellow]No worktree found for instance {instance_id}[/yellow]")
+            console.logger.info(f"[warning]No worktree found for instance {instance_id}[/warning]")
             return
 
-        console.logger.info(f"\n[yellow]Removing worktree for instance {instance_id}[/yellow]")
-        console.logger.info(f"[dim]Path: {worktree_path}[/dim]")
+        console.logger.info(f"\n[warning]Removing worktree for instance {instance_id}[/warning]")
+        console.logger.info(f"[text.dim]Path: {worktree_path}[/text.dim]")
 
         if not force and not click.confirm("Proceed?"):
-            console.logger.info("[yellow]Cleanup cancelled[/yellow]")
+            console.logger.info("[warning]Cleanup cancelled[/warning]")
             return
 
         if instance_manager.cleanup_worktree(instance_id):
-            console.logger.info(f"[green]Removed worktree for instance {instance_id}[/green]")
+            console.logger.info(f"[success]Removed worktree for instance {instance_id}[/success]")
 
             from ..instance_state import cleanup_instance_state_sync
             workspace_id = str(project_path.resolve())
 
             if cleanup_instance_state_sync(instance_id, workspace_id, conport_port=3004):
-                console.logger.info(f"[dim]Removed instance state from ConPort[/dim]")
+                console.logger.info(f"[text.dim]Removed instance state from ConPort[/text.dim]")
         else:
-            console.logger.error(f"[red]Failed to remove worktree for instance {instance_id}[/red]")
+            console.logger.error(f"[error]Failed to remove worktree for instance {instance_id}[/error]")

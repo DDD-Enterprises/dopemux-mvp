@@ -213,7 +213,7 @@ class ADHDOrchestrator:
             selected_break = self.interactive_prompts.ask_break_suggestion(break_suggestion)
             if selected_break:
                 self.workflow_manager.take_break()
-                console.log(f"[yellow]Taking break: {selected_break}[/yellow]")
+                console.log(f"[warning]Taking break: {selected_break}[/warning]")
                 # Wait for break duration
                 await asyncio.sleep(self.workflow_manager.break_duration_minutes * 60)
 
@@ -250,7 +250,7 @@ class ADHDOrchestrator:
 
             if selected_activity:
                 self.workflow_manager.take_break()
-                console.log(f"[yellow]Taking break: {selected_activity}[/yellow]")
+                console.log(f"[warning]Taking break: {selected_activity}[/warning]")
                 
                 # Enter visual break mode
                 self.enter_break_mode(self.workflow_manager.break_duration_minutes)

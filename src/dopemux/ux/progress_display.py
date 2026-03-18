@@ -23,6 +23,7 @@ from rich.text import Text
 from rich.table import Table
 
 from ..console import console
+from ..ui.theme import Glyphs, styled_panel
 
 
 class ProgressDisplay:
@@ -87,8 +88,8 @@ class ProgressDisplay:
             self.current_progress = None
 
         # Show completion panel
-        status_icon = "✅" if success else "❌"
-        status_color = "green" if success else "red"
+        status_icon = Glyphs.SUCCESS if success else Glyphs.ERROR
+        border = "success" if success else "error"
 
         panel_content = f"{status_icon} {operation_name} completed in {duration:.1f}s"
 
@@ -98,14 +99,13 @@ class ProgressDisplay:
                 result_lines = [f"  {k}: {v}" for k, v in results.items()]
                 panel_content += "\n" + "\n".join(result_lines)
 
-        panel = Panel(
-            panel_content,
-            title=f"Operation Complete",
-            border_style=status_color,
-            padding=(1, 2)
+        self.console.log(
+            styled_panel(
+                panel_content,
+                title=f"{status_icon} Operation Complete",
+                border_style=border,
+            )
         )
-
-        self.console.log(panel)
 
     def show_error(self, operation_name: str, error: str, complexity: float = 0.5):
         """
@@ -124,16 +124,16 @@ class ProgressDisplay:
         # Show error with detail based on complexity
         if complexity > 0.7:
             # High complexity - minimal error info
-            self.console.log(f"[red]❌ {operation_name} failed[/red]")
+            self.console.log(f"[error]{Glyphs.ERROR} {operation_name} failed[/error]")
         else:
             # Provide helpful error details
-            panel = Panel(
-                f"Error: {error}\n\nTry checking logs or restarting the operation.",
-                title=f"{operation_name} Failed",
-                border_style="red",
-                padding=(1, 2)
+            self.console.log(
+                styled_panel(
+                    f"Error: {error}\n\nTry checking logs or restarting the operation.",
+                    title=f"{Glyphs.ERROR} {operation_name} Failed",
+                    border_style="error",
+                )
             )
-            self.console.log(panel)
 
     def show_adhd_friendly_status(self, status_info: Dict[str, Any]):
         """
@@ -158,31 +158,30 @@ class ProgressDisplay:
         for label, value in key_items:
             table.add_row(f"[bold]{label}:[/bold]", str(value))
 
-        panel = Panel(
-            table,
-            title="System Status",
-            border_style="blue",
-            padding=(1, 2)
+        self.console.log(
+            styled_panel(
+                table,
+                title=f"{Glyphs.INFO} System Status",
+                border_style="panel.border",
+            )
         )
-
-        self.console.log(panel)
 
     def _show_minimal_start(self, operation_name: str):
         """Show minimal start indicator for high-complexity operations."""
-        self.console.log(f"[dim]⏳ Starting {operation_name}...[/dim]")
+        self.console.log(f"[text.dim]{Glyphs.PENDING} Starting {operation_name}...[/text.dim]")
 
     def _show_spinner_start(self, operation_name: str):
         """Show spinner for simple operations."""
-        with self.console.status(f"[bold green]Working on {operation_name}...[/bold green]") as status:
+        with self.console.status(f"[success]Working on {operation_name}...[/success]") as status:
             # Spinner is handled by the context manager
             pass
 
     def _show_progress_bar(self, operation_name: str, total_steps: int):
         """Show progress bar for multi-step operations."""
         self.current_progress = Progress(
-            SpinnerColumn(),
+            SpinnerColumn(spinner_name="dots12", style="spinner"),
             TextColumn("[progress.description]{task.description}"),
-            BarColumn(complete_style="green", finished_style="green"),
+            BarColumn(complete_style="bar.complete", finished_style="bar.complete"),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
             TimeRemainingColumn(),
             console=self.console,

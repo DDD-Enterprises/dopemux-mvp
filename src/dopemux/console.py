@@ -15,6 +15,8 @@ Usage:
 
 from rich.console import Console
 
+from dopemux.ui.theme import create_console
+
 
 class _ConsoleAdapter:
     """Adapter that provides .logger interface for Rich Console."""
@@ -27,19 +29,14 @@ class _ConsoleAdapter:
         self._console.print(*args, **kwargs)
 
     def error(self, *args, **kwargs) -> None:
-        """Log error message to console with red styling."""
-        self._console.print(*args, **kwargs, style="red")
+        """Log error message to console with error styling."""
+        self._console.print(*args, style="error", **kwargs)
 
     def warning(self, *args, **kwargs) -> None:
-        """Log warning message to console with yellow styling."""
-        self._console.print(*args, **kwargs, style="yellow")
-
-
-    def warning(self, *args, **kwargs) -> None:
-        """Log warning message to console with yellow styling."""
-        self._console.print(*args, **kwargs, style="yellow")
+        """Log warning message to console with warning styling."""
+        self._console.print(*args, style="warning", **kwargs)
 
 
 # Single console instance with logger adapter - use this everywhere
-console = Console()
+console = create_console()
 console.logger = _ConsoleAdapter(console)

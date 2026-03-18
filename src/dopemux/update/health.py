@@ -369,11 +369,11 @@ class HealthChecker:
         total_count = len(health_results)
 
         if healthy_count == total_count:
-            self.console.print("[green]✅ All services healthy![/green]")
+            self.console.print("[success]✅ All services healthy![/success]")
         else:
             unhealthy = self.get_unhealthy_services(health_results)
-            self.console.print(f"[yellow]⚠️ {len(unhealthy)} services need attention:[/yellow]")
+            self.console.print(f"[warning]⚠️ {len(unhealthy)} services need attention:[/warning]")
             for service in unhealthy:
-                self.console.print(f"  [red]❌ {service}[/red]")
+                self.console.print(f"  [error]❌ {service}[/error]")
 
-        self.console.print(f"[dim]Overall health: {healthy_count}/{total_count} services[/dim]")
+        self.console.print(f"[text.dim]Overall health: {healthy_count}/{total_count} services[/text.dim]")

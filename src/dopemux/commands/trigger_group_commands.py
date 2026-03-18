@@ -38,7 +38,7 @@ def trigger_command_done(_async: bool, quiet: bool):
     except CaptureError:
         sys.exit(1)
     if not quiet:
-        console.print("[dim]command-done trigger received[/dim]")
+        console.print("[text.dim]command-done trigger received[/text.dim]")
     return 0
 
 @trigger_group.command("shell-command")
@@ -66,7 +66,7 @@ def trigger_shell_command(context: str, _async: bool, quiet: bool):
     except CaptureError:
         sys.exit(1)
     if not quiet:
-        console.print("[dim]shell-command trigger received[/dim]")
+        console.print("[text.dim]shell-command trigger received[/text.dim]")
     return 0
 
 
