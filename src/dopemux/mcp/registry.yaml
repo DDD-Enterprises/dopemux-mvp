@@ -8,7 +8,7 @@ servers:
     required_for_auto: true
     docker:
       service: conport
-      compose_file: compose.yml
+      compose_file: docker/compose.core.yml
       port: 3004
       health_url: http://localhost:3004/health
     local:
@@ -24,7 +24,7 @@ servers:
     required_for_auto: true
     docker:
       service: serena
-      compose_file: compose.yml
+      compose_file: docker/compose.core.yml
       port: 3006
       health_url: http://localhost:4006/health
     local:
@@ -38,7 +38,7 @@ servers:
     required_for_auto: false
     docker:
       service: desktop-commander
-      compose_file: compose.yml
+      compose_file: docker/compose.core.yml
       port: 3012
       health_url: http://localhost:3012/health
 
@@ -48,7 +48,7 @@ servers:
     required_for_auto: false
     docker:
       service: gptr-mcp
-      compose_file: compose.yml
+      compose_file: docker/compose.core.yml
       port: 3009
       health_url: http://localhost:3009/health
 
@@ -58,7 +58,7 @@ servers:
     required_for_auto: false
     docker:
       service: leantime-bridge
-      compose_file: compose.yml
+      compose_file: docker/compose.core.yml
       port: 3015
       health_url: http://localhost:3015/health
 
@@ -68,7 +68,7 @@ servers:
     required_for_auto: true
     docker:
       service: dope-context
-      compose_file: compose.yml
+      compose_file: docker/compose.core.yml
       port: 3010
       health_url: http://localhost:3010/health
     local:
@@ -83,7 +83,7 @@ servers:
     required_for_auto: false
     docker:
       service: dope-context
-      compose_file: compose.yml
+      compose_file: docker/compose.core.yml
       port: 3010
       health_url: http://localhost:3010/health
 

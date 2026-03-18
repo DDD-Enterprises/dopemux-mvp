@@ -1137,6 +1137,7 @@ class RunnerConfig:
     compare_provider: Optional[str] = None
     compare_steps: Optional[Tuple[str, ...]] = None
     prescan_dir: Optional[str] = None  # Path to prescan output for intelligence routing
+    router: Optional[Any] = None  # IntelligenceRouter instance
 
 
 @dataclass(frozen=True)
@@ -15625,6 +15626,7 @@ def main() -> None:
             selected_execution_step=selected_execution_step,
             d0_max_files=args.d0_max_files,
             d1_max_files=args.d1_max_files,
+            router=router,
         )
 
         def _prompt_executor(step, rendered_prompt, schema, _prior_outputs):  # type: ignore[no-untyped-def]
@@ -15865,6 +15867,7 @@ def main() -> None:
             else None
         ),
         prescan_dir=getattr(args, "prescan_dir", None),
+        router=router,
     )
 
     # --profile: load extraction profile and apply phase filtering + budget overrides
