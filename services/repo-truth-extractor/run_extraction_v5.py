@@ -66,6 +66,23 @@ except ModuleNotFoundError:
     OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
     XAIBatchClient = batch_clients_module.XAIBatchClient
     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
+
+try:
+    from lib.intelligence_router import IntelligenceRouter
+except ImportError:
+    intelligence_router_path = RUNNER_SERVICE_DIR / "lib" / "intelligence_router.py"
+    if intelligence_router_path.exists():
+        intelligence_router_spec = importlib.util.spec_from_file_location(
+            "repo_truth_intelligence_router", intelligence_router_path
+        )
+        if intelligence_router_spec and intelligence_router_spec.loader:
+            intelligence_router_module = importlib.util.module_from_spec(intelligence_router_spec)
+            intelligence_router_spec.loader.exec_module(intelligence_router_module)
+            IntelligenceRouter = intelligence_router_module.IntelligenceRouter
+        else:
+            IntelligenceRouter = None
+    else:
+        IntelligenceRouter = None
 try:
     from lib.phase_contract_map import (
         CONTRACT_MAP_FILENAME as PHASE_CONTRACT_MAP_FILENAME,
@@ -173,7 +190,7 @@ except Exception:  # pragma: no cover - optional rich rendering
 
 # --- Configuration & Constants ---
 
-PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
+PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "X", "Q", "R", "T", "Z", "S"]
 PROMPT_HASH_MODE = "strict"
 PROMPT_ROOT_ENV_VAR = "REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"
 LEGACY_PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
@@ -283,6 +300,9 @@ V5_LATEST_RUN_FILE = V5_EXTRACTION_ROOT / "latest_run_id.txt"
 V5_DOCTOR_ROOT = V5_EXTRACTION_ROOT / "doctor"
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
+# Optional phases whose norm outputs enrich R arbitration when available.
+# B→R3/R8/R10  E→R0/R5/R8  G→R0/R6/R7  W→R5/R6  Q→R7/R8
+R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q", "X"]
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
@@ -1042,6 +1062,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("extract_runner")
 _RUN_FILE_HANDLER: Optional[logging.Handler] = None
+_ACTIVE_INTELLIGENCE_ROUTER: Optional["IntelligenceRouter"] = None
 
 
 def configure_run_file_logger(run_root: Path) -> Path:
@@ -1115,6 +1136,7 @@ class RunnerConfig:
     compare_model: Optional[str] = None
     compare_provider: Optional[str] = None
     compare_steps: Optional[Tuple[str, ...]] = None
+    prescan_dir: Optional[str] = None  # Path to prescan output for intelligence routing
 
 
 @dataclass(frozen=True)
@@ -5570,11 +5592,16 @@ def max_files_for_phase(phase: str, cfg: RunnerConfig) -> int:
 
 
 def build_partitions(
-    phase: str, inventory: List[Dict[str, Any]], max_files: int, max_chars: int
+    phase: str,
+    inventory: List[Dict[str, Any]],
+    max_files: int,
+    max_chars: int,
+    router: Optional[IntelligenceRouter] = None,  # DEPRECATED: use DC2 post-processing via _ACTIVE_INTELLIGENCE_ROUTER
 ) -> List[Dict[str, Any]]:
     partitions: List[Dict[str, Any]] = []
     current_paths: List[str] = []
     current_chars = 0
+    skipped_count = 0
 
     def flush_partition() -> None:
         nonlocal current_paths, current_chars
@@ -5592,19 +5619,39 @@ def build_partitions(
         current_paths = []
         current_chars = 0
 
+    # Sort inventory by priority if router is available
+    if router:
+        inventory = sorted(
+            inventory, 
+            key=lambda x: router.get_routing_priority(x["path"]), 
+            reverse=True
+        )
+
     for item in inventory:
         path = item["path"]
+        
+        # Intelligence-based skipping
+        if router and router.should_skip(path):
+            skipped_count += 1
+            continue
+
         base_chars = int(item.get("char_count_estimate", 0))
         # Account for per-file headers in context payload construction.
         est_chars = base_chars + min(len(path) + 80, 2000)
         would_exceed_files = len(current_paths) >= max_files
         would_exceed_chars = current_paths and (current_chars + est_chars > max_chars)
+        
         if would_exceed_files or would_exceed_chars:
             flush_partition()
+        
         current_paths.append(path)
         current_chars += est_chars
 
     flush_partition()
+    
+    if skipped_count > 0:
+        logger.info(f"Phase {phase}: skipped {skipped_count} files based on prescan intelligence.")
+
     if not partitions:
         partitions.append(
             {
@@ -9579,8 +9626,13 @@ def execute_step_for_partitions(
                 )
 
         output_instructions = build_output_envelope_instructions(output_artifacts)
+        context_brief = partition.get("context_brief", "")
+        brief_section = f"\n{context_brief}\n" if context_brief else ""
         prompt_prefix = (
-            "Extract from the files below.\n" f"{output_instructions}\n" "\nFILES:\n"
+            "Extract from the files below.\n"
+            f"{output_instructions}\n"
+            f"{brief_section}"
+            "\nFILES:\n"
         )
         reserved_chars = len(prompt_prefix)
         context_budget = max(cfg.max_chars - reserved_chars, 2048)
@@ -11796,6 +11848,22 @@ def _run_phase_inner(
     partitions = build_partitions(
         phase, inventory, max_files=max_files, max_chars=cfg.max_chars
     )
+
+    # DC2 Phase 2: Router post-processing (reorder + briefs)
+    router = _ACTIVE_INTELLIGENCE_ROUTER
+    if router:
+        try:
+            from lib.prescan.partition_brief_generator import PartitionBriefGenerator
+            brief_gen = PartitionBriefGenerator(router.code_report, token_budget=2000)
+        except Exception:
+            brief_gen = None
+        for idx, partition in enumerate(partitions):
+            partition["paths"] = router.reorder_partition(partition["paths"])
+            if brief_gen:
+                brief = brief_gen.generate_brief(phase, partition["paths"])
+                if brief:
+                    partition["context_brief"] = brief
+        logger.info("Phase %s: router reordered %d partitions", phase, len(partitions))
 
     write_json(
         phase_dir / "inputs" / "INVENTORY.json",
@@ -14269,7 +14337,10 @@ def run_phase_C(
             REPO_SCAN_EXCLUDES,
         ),
     )
-    targets = ["src", "services", "shared", "plugins", "tools", "scripts", "tests"]
+    targets = [
+        "src", "services", "shared", "plugins", "tools", "scripts", "tests",
+        "docker/mcp-servers-source", "docker/mcp-servers", "components",
+    ]
     _run_phase_inner(
         "C",
         dirs,
@@ -14303,7 +14374,10 @@ def run_phase_E(
         Path.cwd(),
         _merge_scan_excludes([".git", "node_modules", "docs"], REPO_SCAN_EXCLUDES),
     )
-    targets = ["scripts", "tools", "compose", ".github", "Makefile", "package.json"]
+    targets = [
+        "scripts", "tools", "compose", ".github", "Makefile", "package.json",
+        "docker", "installers", "install.sh", "ops",
+    ]
     _run_phase_inner(
         "E",
         dirs,
@@ -14326,7 +14400,7 @@ def run_phase_W(
         dirs,
         cfg,
         collector,
-        ["docs", "scripts", "src", "services"],
+        ["docs", "scripts", "src", "services", "Makefile", "compose.yml", "docker", "config"],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "W"),
     )
@@ -14343,7 +14417,7 @@ def run_phase_B(
         dirs,
         cfg,
         collector,
-        ["src", "services", "docs"],
+        ["src", "services", "docs", "contracts", "config", ".claude"],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "B"),
     )
@@ -14360,7 +14434,11 @@ def run_phase_G(
         dirs,
         cfg,
         collector,
-        [".github", "docs", ".claude", "AGENTS.md"],
+        [
+            ".github", "docs", ".claude", "AGENTS.md",
+            "pyproject.toml", ".pre-commit-config.yaml", "config/repo_hygiene",
+            "pytest.ini", "Makefile", "contracts",
+        ],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "G"),
     )
@@ -14370,7 +14448,7 @@ def run_phase_Q(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
     items = collect_phase_artifacts(
-        dirs, ["A", "H", "D", "C", "E", "W", "B", "G"], ["raw", "norm", "qa"]
+        dirs, ["A", "H", "D", "C", "E", "W", "B", "G", "X"], ["raw", "norm", "qa"]
     )
     promptpack_manifest = _write_q_promptpack_declared_outputs_manifest(dirs)
     items.extend(to_items([promptpack_manifest]))
@@ -14502,6 +14580,16 @@ def run_phase_R_async_submit(
         if phase_norm.exists():
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
+    # Collect optional B/E/G/W/Q norm outputs when available
+    for opt_phase in R_OPTIONAL_INPUT_PHASES:
+        opt_norm = dirs.get(opt_phase)
+        if opt_norm is not None:
+            opt_norm_dir = opt_norm / "norm"
+            if opt_norm_dir.exists():
+                opt_files = sorted(opt_norm_dir.glob("*.json")) + sorted(opt_norm_dir.glob("*.md"))
+                if opt_files:
+                    input_files.extend(opt_files)
+                    logger.info("R_ASYNC_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, len(opt_files))
     deduped_inputs = sorted(set(input_files), key=str)
     context_items = to_items(deduped_inputs)
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
@@ -14509,6 +14597,23 @@ def run_phase_R_async_submit(
     partitions = build_partitions(
         "R", inventory, max_files=max_files, max_chars=cfg.max_chars
     )
+
+    # DC2 Phase 2: Router post-processing for Phase R (async path)
+    _r_router = _ACTIVE_INTELLIGENCE_ROUTER
+    if _r_router:
+        try:
+            from lib.prescan.partition_brief_generator import PartitionBriefGenerator
+            _r_brief_gen = PartitionBriefGenerator(_r_router.code_report, token_budget=2000)
+        except Exception:
+            _r_brief_gen = None
+        for _r_idx, _r_part in enumerate(partitions):
+            _r_part["paths"] = _r_router.reorder_partition(_r_part["paths"])
+            if _r_brief_gen:
+                _r_brief = _r_brief_gen.generate_brief("R", _r_part["paths"])
+                if _r_brief:
+                    _r_part["context_brief"] = _r_brief
+        logger.info("Phase R (async): router reordered %d partitions", len(partitions))
+
     prompts = get_phase_prompts("R")
     if not prompts:
         raise RuntimeError("No prompts found for phase R")
@@ -14551,11 +14656,17 @@ def run_phase_R_async_submit(
             continue
         output_artifacts = prompt_spec.output_artifacts
         output_instructions = build_output_envelope_instructions(output_artifacts)
-        prompt_prefix = (
-            "Extract from the files below.\n" + output_instructions + "\n\nFILES:\n"
-        )
 
         for partition in partitions:
+            _async_brief = partition.get("context_brief", "")
+            _async_brief_section = f"\n{_async_brief}\n" if _async_brief else ""
+            prompt_prefix = (
+                "Extract from the files below.\n"
+                + output_instructions
+                + "\n"
+                + _async_brief_section
+                + "\nFILES:\n"
+            )
             partition_id = str(partition["id"])
 
             latest_attempt = event_store.latest_attempt_for_tuple(
@@ -14914,6 +15025,26 @@ def run_phase_R(
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
 
+    # Collect optional B/E/G/W/Q norm outputs when available
+    optional_contributed: List[str] = []
+    for opt_phase in R_OPTIONAL_INPUT_PHASES:
+        opt_norm = dirs.get(opt_phase, dirs.get(opt_phase))
+        if opt_norm is None:
+            continue
+        opt_norm = opt_norm / "norm"
+        if opt_norm.exists():
+            opt_files = sorted(opt_norm.glob("*.json")) + sorted(opt_norm.glob("*.md"))
+            if opt_files:
+                input_files.extend(opt_files)
+                optional_contributed.append(f"{opt_phase}({len(opt_files)})")
+                logger.info("R_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, len(opt_files))
+            else:
+                logger.info("R_OPTIONAL_SKIP: phase=%s reason=empty_norm_dir", opt_phase)
+        else:
+            logger.info("R_OPTIONAL_SKIP: phase=%s reason=no_norm_dir", opt_phase)
+    if optional_contributed:
+        logger.info("R_OPTIONAL_SUMMARY: contributed=%s", ", ".join(optional_contributed))
+
     deduped_inputs = sorted(set(input_files), key=str)
     _run_phase_inner(
         "R",
@@ -14930,20 +15061,23 @@ def run_phase_R(
 def run_phase_X(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    r_norm = dirs["R"] / "norm"
-    r_inputs: List[Path] = []
-    if r_norm.exists():
-        r_inputs.extend(sorted(r_norm.glob("*.json")))
-        r_inputs.extend(sorted(r_norm.glob("*.md")))
-    if not r_inputs:
-        raise RuntimeError(f"Phase X requires R norm outputs at {r_norm}")
+    # X prompts (X0-X4) expect direct repo scan of feature surfaces,
+    # not R artifacts.  Scan targets align with X0 prompt contract:
+    # services/, src/, docs/, config/, scripts/, Makefile, docker, compose.yml
+    collector = Collector(
+        Path.cwd(),
+        _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES),
+    )
+    targets = [
+        "services", "src", "docs", "config", "scripts",
+        "Makefile", "docker", "compose.yml",
+    ]
     _run_phase_inner(
         "X",
         dirs,
         cfg,
-        None,
-        None,
-        precollected_items=to_items(r_inputs),
+        collector,
+        targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "X"),
     )
@@ -14958,6 +15092,12 @@ def run_phase_T(
         if norm_dir.exists():
             input_files.extend(sorted(norm_dir.glob("*.json")))
             input_files.extend(sorted(norm_dir.glob("*.md")))
+    # T0 prompt requires governance constraints for task packet prioritisation
+    repo_root = Path.cwd()
+    for gov_path in ["AGENTS.md", ".claude/PROJECT_INSTRUCTIONS.md"]:
+        p = repo_root / gov_path
+        if p.exists():
+            input_files.append(p)
     _run_phase_inner(
         "T",
         dirs,
@@ -15283,6 +15423,12 @@ def main() -> None:
             "directory (from `dopemux extractor init`) or any directory containing "
             "prompt files. Equivalent to setting REPO_TRUTH_EXTRACTOR_PROMPT_ROOT."
         ),
+    )
+    parser.add_argument(
+        "--prescan-dir",
+        type=str,
+        default=None,
+        help="Path to prescan output dir for intelligence-informed extraction.",
     )
     parser.add_argument(
         "--profile",
@@ -15705,6 +15851,7 @@ def main() -> None:
             if getattr(args, "compare_steps", None)
             else None
         ),
+        prescan_dir=getattr(args, "prescan_dir", None),
     )
 
     # --profile: load extraction profile and apply phase filtering + budget overrides
@@ -15940,6 +16087,19 @@ def main() -> None:
                 ",".join(payload.get("failed_providers", [])),
             )
             sys.exit(1)
+
+    # Load intelligence router from prescan output (if available)
+    global _ACTIVE_INTELLIGENCE_ROUTER
+    if cfg.prescan_dir and IntelligenceRouter is not None:
+        _prescan_path = Path(cfg.prescan_dir)
+        if _prescan_path.exists():
+            _ACTIVE_INTELLIGENCE_ROUTER = IntelligenceRouter.from_dir(_prescan_path)
+            if _ACTIVE_INTELLIGENCE_ROUTER:
+                logger.info("Loaded intelligence router from %s", _prescan_path)
+            else:
+                logger.warning("Prescan dir exists but router failed to load: %s", _prescan_path)
+        else:
+            logger.warning("Prescan dir not found: %s", _prescan_path)
 
     runners = {
         "A": run_phase_A,
