@@ -2265,6 +2265,8 @@ def start(
 
             if success:
                 progress.update(task, description="✅ MCP auto-configuration complete")
+            if wizard_instance:
+                wizard_instance.update_boot_step("Configuring Worktree", "SUCCESS")
             else:
                 progress.update(task, description="⚠️ MCP auto-configuration skipped")
                 console.logger.info(f"[text.dim]{message}[/text.dim]")
@@ -2276,6 +2278,7 @@ def start(
                 project_path,
                 instance_id=instance_id or "A",
                 instance_env=instance_env_vars,
+                wizard=wizard_instance,
             )
             startup_workspace = (worktree_path or project_path).resolve()
             autoindex_result = _trigger_dope_context_autoindex_startup(
@@ -2318,12 +2321,18 @@ def start(
 
         # Start attention monitoring
         progress.update(task, description="Starting activity monitoring...")
+        if wizard_instance:
+            wizard_instance.update_boot_step("Starting Activity Monitor", "LOADING")
         
         from .hooks.claude_code_hooks import claude_hooks
         claude_hooks.start_monitoring(str(project_path))
         
         attention_monitor = AttentionMonitor(project_path)
         attention_monitor.start_monitoring()
+
+        if wizard_instance:
+            wizard_instance.update_boot_step("Starting Activity Monitor", "SUCCESS")
+            wizard_instance.finish(success=True, final_message="Dopemux Cockpit: All systems nominal. Launching Claude Code...")
 
         progress.update(task, description="Ready! 🎯", completed=True)
 
@@ -3484,7 +3493,1357 @@ def _resolve_mcp_dir(project_path: Path) -> Optional[Path]:
 
 
 def _start_mcp_servers_with_progress(
-    project_path: Path, instance_id: str = "A", instance_env: Optional[dict] = None
+    project_path: Path, instance_id: str = "A", instance_env: Optional[dict] = None, wizard=None
+):
+    """
+    Start MCP servers with auto-provisioning, instance-scoped overlays, and Phase 0 gate.
+    """
+    if os.getenv("DOPEMUX_SKIP_MCP_START", "0").lower() in {"1", "true", "yes"}:
+        if wizard:
+            wizard.add_log("⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)")
+        else:
+            console.logger.info("[warning]⏭️ Skipping MCP server startup[/warning]")
+        return
+
+    # 1. Provision stack if missing
+    mcp_dir = _resolve_mcp_dir(project_path)
+    if not mcp_dir:
+        if wizard: wizard.add_log("❌ MCP stack provisioning failed", style="red")
+        raise click.ClickException("MCP stack provisioning failed.")
+
+    # 2. Materialize instance overlay
+    from .mcp.instance_overlay import InstanceOverlayManager
+    overlay_manager = InstanceOverlayManager(project_path, instance_id)
+    overlay = overlay_manager.materialize()
+
+    # 3. Prepare environment
+    env_for_subprocess = os.environ.copy()
+    if instance_env:
+        env_for_subprocess.update(instance_env)
+
+    try:
+        import dotenv
+        env_vars = dotenv.dotenv_values(overlay["env_path"])
+        env_for_subprocess.update({k: v for k, v in env_vars.items() if v is not None})
+    except ImportError:
+        pass
+
+    if wizard:
+        wizard.add_log(f"🔌 Starting MCP Servers (Instance {instance_id})")
+        wizard.add_log(f"Project: {overlay['compose_project_name']}")
+        wizard.update_boot_step("Connecting to Docker", "LOADING")
+    else:
+        console.logger.info(f"\n[info]🔌 Starting MCP Servers (Instance {instance_id})[/info]")
+        console.logger.info(f"[text.dim]Project: {overlay['compose_project_name']}[/text.dim]")
+
+    # 4. Resolve the canonical compose files
+    compose_files = []
+    docker_dir = project_path / "docker"
+    for compose_part in ["core", "routing", "research", "pm", "agents"]:
+        part_file = docker_dir / f"compose.{compose_part}.yml"
+        if part_file.exists():
+            compose_files.append("-f")
+            compose_files.append(str(part_file))
+    
+    if not compose_files:
+        legacy_file = project_path / "compose.yml"
+        if legacy_file.exists():
+            compose_files.append("-f")
+            compose_files.append(str(legacy_file))
+        else:
+            fallback = mcp_dir / "compose.yml"
+            if not fallback.exists():
+                fallback = mcp_dir / "docker-compose.yml"
+            compose_files.append("-f")
+            compose_files.append(str(fallback))
+
+    compose_files.append("-f")
+    compose_files.append(overlay["compose_path"])
+
+    cmd = [
+        "docker", "compose",
+    ] + compose_files + [
+        "--project-name", overlay["compose_project_name"],
+        "up", "-d", "--remove-orphans",
+    ]
+
+    startup_successful = False
+    output_lines = []
+
+    def run_docker_logic():
+        nonlocal startup_successful
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            env=env_for_subprocess,
+            cwd=str(project_path),
+        )
+
+        for line in process.stdout:
+            line = line.strip()
+            if line:
+                output_lines.append(line)
+                if wizard:
+                    wizard.add_log(line)
+                if len(output_lines) > 5:
+                    output_lines.pop(0)
+                
+                if not wizard:
+                    # Update local live display
+                    pass # Handled by the 'with Live' block outside if needed
+
+        process.wait()
+        startup_successful = (process.returncode == 0)
+        if not startup_successful:
+            if wizard: wizard.update_boot_step("Connecting to Docker", "FAILURE")
+            raise RuntimeError(f"Docker compose failed with exit code {process.returncode}")
+
+    if wizard:
+        run_docker_logic()
+        wizard.update_boot_step("Connecting to Docker", "SUCCESS")
+        wizard.update_boot_step("Booting MCP Services", "LOADING")
+    else:
+        status_text = Text("🚀 Launching containers...")
+        from rich.live import Live
+        with Live(status_text, console=console, refresh_per_second=4) as live:
+            run_docker_logic()
+            status_text.append("\n✅ Containers launched!", style="success")
+            live.update(status_text)
+
+    # 5. Phase 0 Discovery Gate
+    if wizard: wizard.add_log("🛡️ Running Phase 0 Discovery Gate...")
+    from .mcp.gate import DiscoveryGate
+    time.sleep(2)
+
+    for srv_name, port in overlay["port_map"].items():
+        env_var = f"DOPMUX_{srv_name.upper().replace('-', '_')}_URL"
+        os.environ[env_var] = f"http://127.0.0.1:{port}/mcp" if srv_name != "LiteLLM" else f"http://127.0.0.1:{port}"
+
+    gate = DiscoveryGate(project_path, run_id=f"start-{instance_id}-{int(time.time())}")
+    if not asyncio.run(gate.run()):
+        if wizard: wizard.update_boot_step("Booting MCP Services", "FAILURE")
+        raise RuntimeError("MCP Discovery Gate failed.")
+    
+    if wizard:
+        wizard.update_boot_step("Booting MCP Services", "SUCCESS")
+        wizard.add_log("✅ MCP Servers Online")
+
+        startup_workspace = (worktree_path or project_path).resolve()
+            autoindex_result = _trigger_dope_context_autoindex_startup(
+                startup_workspace
+            )
+            if autoindex_result:
+                status = autoindex_result.get("status", "unknown")
+                if status in {"started", "already_running"}:
+                    progress.update(
+                        task,
+                        description=(
+                            f"Autoindex startup {status} for {startup_workspace.name}"
+                        ),
+                    )
+                elif status in {"request_failed", "http_error"}:
+                    console.logger.info(
+                        "[warning]⚠️  Autoindex startup trigger failed; continuing without blocking.[/warning]"
+                    )
+        else:
+            console.logger.info(
+                "[warning]⚠️  Skipping MCP servers (reduced ADHD experience)[/warning]"
+            )
+
+        # Configure role-based instructions
+        if role:
+            progress.update(task, description=f"Activating {role} persona...")
+            configurator = ClaudeConfigurator(config_manager)
+            # project_path is the base directory for .claude/
+            configurator.setup_project_config(project_path, role=role)
+
+        # Launch Claude Code
+        progress.update(task, description="Launching Claude Code...")
+        launcher = ClaudeLauncher(config_manager)
+        claude_process = launcher.launch(
+            project_path=project_path,
+            background=background,
+            debug=debug,
+            context=context,
+        )
+
+        # Start attention monitoring
+        progress.update(task, description="Starting activity monitoring...")
+        if wizard_instance:
+            wizard_instance.update_boot_step("Starting Activity Monitor", "LOADING")
+        
+        from .hooks.claude_code_hooks import claude_hooks
+        claude_hooks.start_monitoring(str(project_path))
+        
+        attention_monitor = AttentionMonitor(project_path)
+        attention_monitor.start_monitoring()
+
+        if wizard_instance:
+            wizard_instance.update_boot_step("Starting Activity Monitor", "SUCCESS")
+            wizard_instance.finish(success=True, final_message="Dopemux Cockpit: All systems nominal. Launching Claude Code...")
+
+        progress.update(task, description="Ready! 🎯", completed=True)
+
+    # Save instance state to ConPort for crash recovery
+    if instance_id and port_base:
+        from datetime import datetime, timezone
+
+        from .instance_state import InstanceState, save_instance_state_sync
+
+        # Get current git branch
+        try:
+            git_branch = subprocess.run(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                cwd=str(worktree_path or project_path),
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+        except (subprocess.SubprocessError, OSError) as e:
+            git_branch = "unknown"
+            logger.debug(f"Git branch detection failed (expected in non-git dirs): {e}")
+        except Exception:
+            git_branch = "unknown"
+            logger.debug("Unexpected git branch detection error")
+        state = InstanceState(
+            instance_id=instance_id,
+            port_base=port_base,
+            worktree_path=str(worktree_path or project_path),
+            git_branch=git_branch,
+            created_at=datetime.now(timezone.utc),
+            last_active=datetime.now(timezone.utc),
+            status="active",
+            last_working_directory=str(worktree_path or project_path),
+            last_focus_context=(
+                context.get("current_goal", "New session") if context else "New session"
+            ),
+        )
+
+        save_instance_state_sync(
+            state,
+            workspace_id=str(project_path.resolve()),
+            conport_port=3004,  # Always save via instance A's ConPort
+        )
+        console.logger.info(
+            "[text.dim]✅ Instance state saved for crash recovery[/text.dim]"
+        )
+
+    if not background:
+        console.print(
+            "[success]✨ Claude Code is running with ADHD optimizations[/success]"
+        )
+        console.logger.info("Press Ctrl+C to stop monitoring and save context")
+
+        try:
+            claude_process.wait()
+        except KeyboardInterrupt:
+            console.logger.info(
+                "\n[warning]⏸️ Saving context and stopping...[/warning]"
+            )
+
+            # Mark instance as stopped in ConPort
+            if instance_id:
+                from datetime import datetime, timezone
+
+                from .instance_state import (
+                    load_instance_state_sync,
+                    save_instance_state_sync,
+                )
+
+                workspace_id = str(project_path.resolve())
+                state = load_instance_state_sync(
+                    instance_id, workspace_id, conport_port=3004
+                )
+                if state:
+                    state.status = "stopped"
+                    state.last_active = datetime.now(timezone.utc)
+                    save_instance_state_sync(state, workspace_id, conport_port=3004)
+                    console.logger.info(
+                        "[text.dim]✅ Instance marked as stopped[/text.dim]"
+                    )
+
+            ctx.invoke(save)
+            attention_monitor.stop_monitoring()
+
+
+@cli.command()
+@click.option("--message", "-m", help="Save message/note")
+@click.option("--force", "-f", is_flag=True, help="Force save even if no changes")
+@click.pass_context
+def save(ctx, message: Optional[str], force: bool):
+    """
+    💾 Save current development context
+
+    Captures open files, cursor positions, mental model, and recent decisions
+    for seamless restoration later.
+    """
+    project_path = Path.cwd()
+
+    if not (project_path / ".dopemux").exists():
+        console.logger.info(
+            "[error]No Dopemux project found in current directory[/error]"
+        )
+        sys.exit(1)
+
+    with Progress(
+        SpinnerColumn(spinner_name="dots12", style="spinner"),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Saving context...", total=None)
+
+        context_manager = ContextManager(project_path)
+        session_id = context_manager.save_context(message=message, force=force)
+
+        progress.update(task, description="Context saved!", completed=True)
+
+    console.logger.info(
+        f"[success]✅ Context saved (session: {session_id[:8]})[/success]"
+    )
+    if message:
+        console.logger.info(f"[text.dim]Note: {message}[/text.dim]")
+
+
+@cli.command()
+@click.option("--session", "-s", help="Specific session ID to restore")
+@click.option(
+    "--list", "-l", "list_sessions", is_flag=True, help="List available sessions"
+)
+@click.pass_context
+def restore(ctx, session: Optional[str], list_sessions: bool):
+    """
+    🔄 Restore previous development context
+
+    Restores files, cursor positions, and mental model from a previous session.
+    """
+    project_path = Path.cwd()
+
+    if not (project_path / ".dopemux").exists():
+        console.logger.info(
+            "[error]No Dopemux project found in current directory[/error]"
+        )
+        sys.exit(1)
+
+    context_manager = ContextManager(project_path)
+
+    if list_sessions:
+        sessions = context_manager.list_sessions()
+        if not sessions:
+            console.logger.info("[warning]No saved sessions found[/warning]")
+            return
+
+        table = styled_table(
+            "Available Sessions",
+            ("ID", {"style": "mint"}),
+            ("Timestamp", {"style": "mint.soft"}),
+            ("Goal", {"style": "gold"}),
+            ("Files", {"justify": "right", "style": "violet"}),
+        )
+
+        for s in sessions:
+            table.add_row(
+                s["id"],
+                s["timestamp"],
+                s.get("current_goal", "No goal set")[:50],
+                str(len(s.get("open_files", []))),
+            )
+
+        console.logger.info(table)
+        for s in sessions:
+            console.logger.info(
+                f"- {s['id']} :: {s.get('current_goal', 'No goal set')}"
+            )
+        return
+
+    with Progress(
+        SpinnerColumn(spinner_name="dots12", style="spinner"),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Restoring context...", total=None)
+
+        if session:
+            context = context_manager.restore_session(session)
+        else:
+            context = context_manager.restore_latest()
+
+        progress.update(task, description="Context restored!", completed=True)
+
+    if context:
+        console.print(
+            f"[success]{Glyphs.SUCCESS} Restored session from {context.get('timestamp', 'unknown')}[/success]"
+        )
+        console.print(
+            f"[info]🎯 Goal: {context.get('current_goal', 'No goal set')}[/info]"
+        )
+        console.print(
+            f"[text.dim]📁 Files: {len(context.get('open_files', []))} files restored[/text.dim]"
+        )
+    else:
+        console.logger.info("[error]{Glyphs.ERROR} No context found to restore[/error]")
+
+
+from .commands.instances_commands import instances
+from .commands.personas_commands import personas
+
+@cli.group("native-hooks")
+def native_hooks():
+    """Claude Code internal hook management (deterministic)."""
+    pass
+
+@native_hooks.command("register")
+@click.option("--global", "is_global", is_flag=True, help="Register hooks globally")
+def native_hooks_register(is_global: bool):
+    """Configure Claude Code to use Dopemux native hooks."""
+    import json
+    from pathlib import Path
+    
+    # Path to this script's native hook entry point
+    hook_script = Path(__file__).resolve().parent / "claude" / "native_hooks.py"
+    cmd = f"python3 {hook_script}"
+    
+    # Define hook configuration
+    hooks_config = {
+        "hooks": {
+            "command": [
+                {
+                    "events": [
+                        "SessionStart", 
+                        "UserPromptSubmit", 
+                        "PreToolUse", 
+                        "PermissionRequest", 
+                        "PostToolUse", 
+                        "PostToolUseFailure", 
+                        "Stop", 
+                        "SubagentStop", 
+                        "PreCompact", 
+                        "SessionEnd"
+                    ],
+                    "command": cmd
+                }
+            ]
+        }
+    }
+    
+    # Target settings file
+    if is_global:
+        settings_path = Path.home() / ".claude" / "settings.json"
+    else:
+        settings_path = Path.cwd() / ".claude" / "settings.json"
+        
+    # Read existing settings
+    existing = {}
+    if settings_path.exists():
+        try:
+            existing = json.loads(settings_path.read_text())
+        except:
+            pass
+            
+    # Simple merge (Dopemux hooks first)
+    if "hooks" not in existing:
+        existing["hooks"] = {}
+    if "command" not in existing["hooks"]:
+        existing["hooks"]["command"] = []
+        
+    # Check if already registered
+    already_registered = any(h.get("command") == cmd for h in existing["hooks"]["command"])
+    
+    if not already_registered:
+        existing["hooks"]["command"].insert(0, hooks_config["hooks"]["command"][0])
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text(json.dumps(existing, indent=2))
+        console.print(f"[success]✓ Registered Dopemux native hooks in {settings_path}[/success]")
+    else:
+        console.print(f"[info]Dopemux native hooks already registered in {settings_path}[/info]")
+
+
+cli.add_command(instances, "instances")
+cli.add_command(personas, "personas")
+cli.add_command(native_hooks, "native-hooks")
+
+
+@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def pr_merge_command(args):
+    """🚀 PR Merge Specialist - Managed remediation and merging."""
+    import sys
+
+    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
+
+    # Bridge to the specialist's argparse CLI
+    sys.argv = ["dopemux pr-merge"] + list(args)
+    try:
+        pr_merge_main()
+    except SystemExit as e:
+        sys.exit(e.code)
+
+@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def pr_merge_command(args):
+    """🚀 PR Merge Specialist - Managed remediation and merging."""
+    import sys
+    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
+    
+    # Bridge to the specialist's argparse CLI
+    sys.argv = ["dopemux pr-merge"] + list(args)
+    try:
+        pr_merge_main()
+    except SystemExit as e:
+        sys.exit(e.code)
+
+@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def pr_merge_command(args):
+    """🚀 PR Merge Specialist - Managed remediation and merging."""
+    import sys
+    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
+    
+    # Bridge to the specialist's argparse CLI
+    sys.argv = ["dopemux pr-merge"] + list(args)
+    try:
+        pr_merge_main()
+    except SystemExit as e:
+        sys.exit(e.code)
+
+
+@cli.command()
+@click.option("--attention", "-a", is_flag=True, help="Show attention metrics")
+@click.option("--context", "-c", is_flag=True, help="Show context information")
+@click.option("--tasks", "-t", is_flag=True, help="Show task progress")
+@click.option("--mobile", "-m", is_flag=True, help="Show Happy mobile status")
+@click.pass_context
+def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
+    """
+    📊 Show current session status and metrics
+
+    Displays attention state, context information, task progress, and
+    ADHD accommodation effectiveness.
+    """
+    project_path = Path.cwd()
+
+    if not (project_path / ".dopemux").exists():
+        console.logger.info(
+            "[error]No Dopemux project found in current directory[/error]"
+        )
+        sys.exit(1)
+
+    # Show all by default if no specific flags
+    if not any([attention, context, tasks, mobile]):
+        attention = context = tasks = mobile = True
+
+    if attention:
+        monitor = AttentionMonitor(project_path)
+        metrics = monitor.get_current_metrics()
+
+        table = styled_table(
+            "🧠 Attention Metrics",
+            ("Metric", {"style": "mint"}),
+            ("Value", {"style": "mint.soft"}),
+            ("Status", {"style": "gold"}),
+        )
+
+        table.add_row(
+            "Current State",
+            metrics.get("attention_state", "unknown"),
+            _get_attention_emoji(metrics.get("attention_state")),
+        )
+        table.add_row(
+            "Session Duration", f"{metrics.get('session_duration', 0):.1f} min", "⏱️"
+        )
+        table.add_row("Focus Score", f"{metrics.get('focus_score', 0):.1%}", "🎯")
+        table.add_row("Context Switches", str(metrics.get("context_switches", 0)), "🔄")
+
+        console.logger.info(table)
+
+    if context:
+        context_manager = ContextManager(project_path)
+        current_context = context_manager.get_current_context()
+
+        table = styled_table(
+            "📍 Context Information",
+            ("Item", {"style": "mint"}),
+            ("Value", {"style": "mint.soft"}),
+        )
+
+        table.add_row("Current Goal", current_context.get("current_goal", "Not set"))
+        table.add_row("Open Files", str(len(current_context.get("open_files", []))))
+        table.add_row("Last Save", current_context.get("last_save", "Never"))
+        table.add_row("Git Branch", current_context.get("git_branch", "unknown"))
+
+        console.logger.info(table)
+
+    if tasks:
+        decomposer = TaskDecomposer(project_path)
+        progress_info = decomposer.get_progress()
+
+        if progress_info:
+            table = styled_table(
+                "📋 Task Progress",
+                ("Task", {"style": "mint"}),
+                ("Status", {"style": "mint.soft"}),
+                ("Progress", {"style": "gold"}),
+            )
+
+            for task in progress_info.get("tasks", []):
+                status_emoji = (
+                    "✅" if task["completed"] else "🔄" if task["in_progress"] else "⏳"
+                )
+                table.add_row(
+                    task["name"], status_emoji, f"{task.get('progress', 0):.0%}"
+                )
+
+            console.logger.info(table)
+        else:
+            console.logger.info("[warning]No active tasks found[/warning]")
+
+    if mobile:
+        from .mobile.runtime import check_cli_health, list_mobile_panes
+        from .mobile.tmux_utils import TmuxError
+
+        cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
+        mobile_cfg = cfg_manager.get_mobile_config()
+
+        happy_ok = check_cli_health("happy")
+        claude_ok = check_cli_health("claude")
+
+        try:
+            panes = list_mobile_panes()
+            tmux_error = None
+        except TmuxError as exc:
+            panes = []
+            tmux_error = str(exc)
+
+            logger.error(f"Error: {e}")
+        mobile_table = styled_table(
+            "📱 Mobile Status",
+            ("Check", {"style": "mint"}),
+            ("Status", {"style": "mint.soft"}),
+        )
+
+        mobile_table.add_row(
+            "Mobile Enabled", "✅ Enabled" if mobile_cfg.enabled else "❌ Disabled"
+        )
+        mobile_table.add_row(
+            "Happy CLI", "✅ Healthy" if happy_ok else "❌ Unavailable"
+        )
+        mobile_table.add_row(
+            "Claude CLI", "✅ Healthy" if claude_ok else "⚠️ Check setup"
+        )
+
+        if tmux_error:
+            mobile_table.add_row("tmux", f"⚠️ {tmux_error}")
+        else:
+            mobile_table.add_row("Active Sessions", str(len(panes)))
+
+        console.logger.info(mobile_table)
+
+        if not tmux_error and panes:
+            sessions_table = styled_table(
+                "📱 Active Happy Sessions",
+                ("Pane", {"style": "mint"}),
+                ("Window", {"style": "mint.soft"}),
+                ("Path", {"style": "text.dim"}),
+            )
+
+            for pane in panes:
+                sessions_table.add_row(
+                    pane.title or "(unnamed)",
+                    pane.window or "?",
+                    pane.path or "",
+                )
+
+            console.logger.info(sessions_table)
+
+
+@cli.command("run-tests")
+@click.argument("command", nargs=-1)
+@click.option(
+    "--cwd",
+    type=click.Path(file_okay=False, dir_okay=True),
+    help="Working directory for the test command",
+)
+@click.option(
+    "--label",
+    default="Test run",
+    show_default=True,
+    help="Notification label for this test run",
+)
+@click.pass_context
+def run_tests(ctx, command: Sequence[str], cwd: Optional[str], label: str):
+    """Run automated tests and send mobile notifications."""
+
+    args = list(command) if command else ["pytest"]
+    task_label = label or "Test run"
+
+    with mobile_task_notification(
+        ctx,
+        task_label,
+        success_message=f"✅ {task_label} complete",
+        failure_message=f"❌ {task_label} failed",
+    ):
+        result = subprocess.run(args, cwd=cwd, check=False)
+        cmd_display = " ".join(args)
+
+        if result.returncode == 0:
+            console.logger.info(f"[success]✅ Tests passed ({cmd_display})[/success]")
+        else:
+            console.logger.error(f"[error]❌ Tests failed ({cmd_display})[/error]")
+            sys.exit(result.returncode)
+
+    cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
+    update_tmux_mobile_indicator(cfg_manager)
+
+
+@cli.command("run-build")
+@click.argument("command", nargs=-1)
+@click.option(
+    "--cwd",
+    type=click.Path(file_okay=False, dir_okay=True),
+    help="Working directory for the build command",
+)
+@click.option(
+    "--label",
+    default="Build",
+    show_default=True,
+    help="Notification label for this build run",
+)
+@click.pass_context
+def run_build(ctx, command: Sequence[str], cwd: Optional[str], label: str):
+    """Run a build command and send mobile notifications."""
+
+    # Default to npm build if no command provided
+    args = list(command) if command else ["npm", "run", "build"]
+    task_label = label or "Build"
+
+    with mobile_task_notification(
+        ctx,
+        task_label,
+        success_message=f"✅ {task_label} complete",
+        failure_message=f"❌ {task_label} failed",
+    ):
+        result = subprocess.run(args, cwd=cwd, check=False)
+        cmd_display = " ".join(args)
+
+        if result.returncode == 0:
+            console.logger.info(
+                f"[success]✅ Build succeeded ({cmd_display})[/success]"
+            )
+        else:
+            console.logger.error(f"[error]❌ Build failed ({cmd_display})[/error]")
+            sys.exit(result.returncode)
+
+    cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
+    update_tmux_mobile_indicator(cfg_manager)
+
+
+from .commands.kernel_commands import kernel
+
+cli.add_command(kernel)
+
+
+@cli.command()
+@click.argument("description", required=False)
+@click.option("--duration", "-d", type=int, default=25, help="Task duration in minutes")
+@click.option(
+    "--priority", "-p", type=click.Choice(["low", "medium", "high"]), default="medium"
+)
+@click.option("--list", "-l", "list_tasks", is_flag=True, help="List current tasks")
+@click.pass_context
+def task(
+    ctx, description: Optional[str], duration: int, priority: str, list_tasks: bool
+):
+    """
+    📋 DEPRECATED - Use SuperClaude /dx: commands instead
+
+    This command has been replaced by:
+    - /dx:implement - Start ADHD-optimized implementation session
+    - /dx:session start/end/break - Session management
+    - /dx:load - Load tasks from ConPort
+    - /dx:stats - View ADHD metrics and progress
+
+    See: docs/90-adr/ADR-XXXX-path-c-migration.md
+    """
+    console.logger.info("[warning]" + "=" * 60 + "[/warning]")
+    console.logger.info("[error]⚠️  DEPRECATED COMMAND[/error]")
+    console.logger.info("[warning]" + "=" * 60 + "[/warning]")
+    console.logger.info()
+    console.logger.info(
+        "The 'dopemux task' command has been replaced by SuperClaude /dx: commands:"
+    )
+    console.logger.info()
+    console.logger.info(
+        "  [info]/dx:implement[/info] - Start ADHD-optimized implementation session"
+    )
+    console.logger.info("  [info]/dx:session start[/info] - Begin work session")
+    console.logger.info("  [info]/dx:load[/info] - Load tasks from ConPort")
+    console.logger.info("  [info]/dx:stats[/info] - View ADHD metrics and progress")
+    console.logger.info()
+    console.logger.info("Migration completed: October 2025")
+    console.logger.info("See: [info]docs/90-adr/ADR-XXXX-path-c-migration.md[/info]")
+    console.logger.info()
+    console.logger.info("[warning]" + "=" * 60 + "[/warning]")
+
+    project_path = Path.cwd()
+    if not (project_path / ".dopemux").exists():
+        console.logger.info(
+            "[error]No Dopemux project found in current directory[/error]"
+        )
+        sys.exit(1)
+
+    decomposer = TaskDecomposer(project_path)
+
+    if list_tasks:
+        tasks = decomposer.list_tasks()
+        if not tasks:
+            console.logger.info("[warning]No tasks found[/warning]")
+            return
+
+        table = styled_table(
+            f"{Glyphs.INFO} Current Tasks",
+            ("Task", {"style": "mint"}),
+            ("Priority", {"style": "gold"}),
+            ("Duration", {"style": "mint.soft"}),
+            ("Status", {"style": "violet"}),
+        )
+
+        for task in tasks:
+            status = (
+                "✅ Complete"
+                if task.get("status") == "completed"
+                else (
+                    "🔄 In Progress"
+                    if task.get("status") == "in_progress"
+                    else "⏳ Pending"
+                )
+            )
+            table.add_row(
+                task["description"],
+                task["priority"],
+                f"{task['estimated_duration']}m",
+                status,
+            )
+
+        console.logger.info(table)
+        return
+
+    # Check if description is provided for adding new task
+    if not description:
+        console.logger.info(
+            "[error]Description required when not listing tasks[/error]"
+        )
+        console.logger.info("Use 'dopemux task --list' to list current tasks")
+        sys.exit(1)
+
+    # Add new task
+    task_id = decomposer.add_task(
+        description=description, duration=duration, priority=priority
+    )
+
+    console.logger.info(f"[success]✅ Task added: {description}[/success]")
+    console.logger.info(f"[info]🆔 ID: {task_id}[/info]")
+    console.logger.info(f"[warning]⏱️ Duration: {duration} minutes[/warning]")
+    console.logger.info(f"[info]🎯 Priority: {priority}[/info]")
+
+
+from .commands.autoresponder_commands import autoresponder
+
+cli.add_command(autoresponder)
+
+
+from .commands.extract_commands import extract
+
+cli.add_command(extract, "extract")
+
+
+from .commands.update_commands import update
+
+cli.add_command(update)
+
+
+from .commands.profile_commands import profile
+
+cli.add_command(profile)
+try:
+    from .profile_commands import use_profile as _use_profile
+
+    cli.add_command(_use_profile, "switch")
+except ImportError:
+    pass
+
+
+from .commands.decisions_commands import decisions
+
+cli.add_command(decisions)
+
+
+from .commands.dev_commands import dev
+
+cli.add_command(dev)
+cli.add_command(mobile_commands, "mobile")
+cli.add_command(mobile_env_commands, "mobile-env")
+if genetic_group:
+    cli.add_command(genetic_group, "genetic")
+
+
+from .commands.code_commands import code
+
+cli.add_command(code)
+cli.add_command(tmux_commands, "tmux")
+from .claude_tools.cli import register_commands
+
+register_commands(cli)
+
+
+from .commands.memory_commands import memory
+
+cli.add_command(memory)
+
+
+from .commands.trigger_group_commands import trigger_group
+
+cli.add_command(trigger_group, "trigger")
+
+
+from .commands.capture_group_commands import capture_group
+
+cli.add_command(capture_group, "capture")
+
+
+from .commands.workflow_group_commands import workflow_group
+
+cli.add_command(workflow_group, "workflow")
+
+
+from .commands.upgrades_commands import upgrades
+
+cli.add_command(upgrades)
+
+
+from .commands.extractor_commands import (
+    _run_extractor_runner,
+    _run_repscan_runner,
+    extractor,
+)
+
+cli.add_command(extractor)
+
+from .commands.audit_commands import audit
+
+cli.add_command(audit)
+
+
+# ============================================================
+# Commands extracted back from submodules (use @cli.command)
+# ============================================================
+
+
+# from src/dopemux/commands/extract_commands.py
+@cli.command()
+@click.argument("directory", default=".")
+@click.option("--output", "-o", help="Output directory for analysis results")
+@click.option(
+    "--embedding-model", "-m", default="voyage-context-3", help="Embedding model to use"
+)
+@click.option("--milvus-uri", help="Milvus database URI (file path for Lite mode)")
+@click.option("--max-files", type=int, help="Maximum number of files to process")
+@click.option("--batch-size", type=int, default=10, help="Batch size for processing")
+@click.option("--extensions", help="Comma-separated list of file extensions to include")
+@click.option("--exclude", help="Comma-separated list of patterns to exclude")
+@click.pass_context
+def analyze(
+    ctx,
+    directory: str,
+    output: Optional[str],
+    embedding_model: str,
+    milvus_uri: Optional[str],
+    max_files: Optional[int],
+    batch_size: int,
+    extensions: Optional[str],
+    exclude: Optional[str],
+):
+    """
+    🔍 Analyze codebase with multi-angle document processing
+
+    Processes documents in the specified directory, extracting features,
+    components, subsystems, and research insights with semantic embeddings
+    for intelligent code navigation and ADHD-friendly analysis.
+    """
+    from .analysis import DocumentProcessor, ProcessingConfig
+
+    # Prepare configuration
+    source_path = Path(directory).resolve()
+    if not source_path.exists():
+        console.logger.info(
+            f"[error]❌ Directory does not exist: {source_path}[/error]"
+        )
+        sys.exit(1)
+
+    # Set output directory
+    if output:
+        output_path = Path(output).resolve()
+    else:
+        output_path = source_path / ".dopemux" / "analysis"
+
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    # Parse extensions
+    file_extensions = None
+    if extensions:
+        file_extensions = [
+            f".{ext.strip().lstrip('.')}" for ext in extensions.split(",")
+        ]
+
+    # Parse exclusion patterns
+    exclude_patterns = None
+    if exclude:
+        exclude_patterns = [pattern.strip() for pattern in exclude.split(",")]
+
+    # Create configuration
+    config = ProcessingConfig(
+        source_directory=source_path,
+        output_directory=output_path,
+        max_files=max_files,
+        file_extensions=file_extensions,
+        exclude_patterns=exclude_patterns,
+        embedding_model=embedding_model,
+        milvus_uri=milvus_uri,
+        batch_size=batch_size,
+        show_progress=True,
+        gentle_feedback=True,
+    )
+
+    # Initialize and run processor
+    console.logger.info(
+        f"[info]🧠 Starting ADHD-optimized analysis of {source_path}[/info]"
+    )
+    console.logger.info(f"[text.dim]Output: {output_path}[/text.dim]")
+
+    try:
+        processor = DocumentProcessor(config)
+        results = processor.analyze_directory()
+
+        if results["success"]:
+            console.print(
+                f"[success]✅ Analysis complete! Results saved to {output_path}[/success]"
+            )
+            console.print(
+                f"[info]📊 Processing time: {results['processing_time']:.1f}s[/info]"
+            )
+
+            # Show usage suggestions
+            console.print(
+                styled_panel(
+                    f"🎯 Next steps:\n\n"
+                    f"• Browse results in {output_path}\n"
+                    f"• Use semantic search with embeddings\n"
+                    f"• Explore feature and component registries\n"
+                    f"• Review evidence links for traceability",
+                    title=f"{Glyphs.SUCCESS} Ready to Explore",
+                )
+            )
+        else:
+            console.logger.error("[error]❌ Analysis failed[/error]")
+            sys.exit(1)
+
+    except Exception as e:
+        console.logger.error(f"[error]❌ Analysis error: {e}[/error]")
+        if ctx.obj.get("verbose"):
+            import traceback
+
+            traceback.print_exc()
+        sys.exit(1)
+
+
+from .commands.mcp_commands import mcp, servers
+
+cli.add_command(mcp)
+cli.add_command(servers)
+
+
+@cli.command()
+@click.option("--detailed", "-d", is_flag=True, help="Show detailed health information")
+@click.option("--service", "-s", help="Check specific service only")
+@click.option("--fix", "-f", is_flag=True, help="Attempt to fix unhealthy services")
+@click.option("--cleanup", "-c", is_flag=True, help="Clean up orphaned MCP processes")
+@click.option("--watch", "-w", is_flag=True, help="Continuous monitoring mode")
+@click.option(
+    "--interval", "-i", type=int, default=30, help="Watch interval in seconds"
+)
+@click.pass_context
+def health(
+    ctx,
+    detailed: bool,
+    service: Optional[str],
+    fix: bool,
+    cleanup: bool,
+    watch: bool,
+    interval: int,
+):
+    """
+    🏥 Comprehensive health check for Dopemux ecosystem
+
+    Monitors Dopemux core, Claude Code, MCP servers, Docker services,
+    system resources, and ADHD feature effectiveness with ADHD-friendly reporting.
+
+    Use --cleanup to find and kill orphaned MCP server processes.
+    """
+    project_path = Path.cwd()
+    health_checker = HealthChecker(project_path, console)
+
+    # Handle cleanup flag first
+    if cleanup:
+        console.logger.info("[info]🧹 Cleaning up orphaned MCP processes...[/info]")
+
+        try:
+            # Find orphaned MCP processes
+            result = subprocess.run(
+                ["ps", "aux"], capture_output=True, text=True, check=True
+            )
+
+            orphaned_pids = []
+            mcp_patterns = [
+                "conport-mcp",
+                "serena/v2/mcp_server.py",
+                "src.mcp.server",
+                "dopemux-gpt-researcher",
+            ]
+
+            for line in result.stdout.split("\n"):
+                # Check if it's an MCP process
+                if any(pattern in line for pattern in mcp_patterns):
+                    # Extract PID
+                    parts = line.split()
+                    if len(parts) > 1:
+                        pid = parts[1]
+                        # Check if parent process (Claude Code) is still running
+                        try:
+                            parent_check = subprocess.run(
+                                ["ps", "-o", "ppid=", "-p", pid],
+                                capture_output=True,
+                                text=True,
+                            )
+                            ppid = parent_check.stdout.strip()
+                            if ppid:
+                                parent_cmd = subprocess.run(
+                                    ["ps", "-o", "comm=", "-p", ppid],
+                                    capture_output=True,
+                                    text=True,
+                                )
+                                # If parent is not Claude Code, it's orphaned
+                                if "claude" not in parent_cmd.stdout.lower():
+                                    orphaned_pids.append(pid)
+                        except (subprocess.SubprocessError, OSError) as e:
+                            logger.error(f"Process parent check failed: {e}")
+                        except Exception:
+                            logger.error(
+                                "Unexpected process parent check error", exc_info=True
+                            )
+            if orphaned_pids:
+                console.print(
+                    f"[warning]Found {len(orphaned_pids)} orphaned MCP processes[/warning]"
+                )
+
+                if click.confirm("Kill these processes?", default=True):
+                    killed = 0
+                    for pid in orphaned_pids:
+                        try:
+                            os.kill(int(pid), signal.SIGTERM)
+                            killed += 1
+                        except (OSError, ValueError):
+                            pass
+
+                    console.print(
+                        f"[success]✅ Cleaned up {killed} orphaned processes[/success]"
+                    )
+                else:
+                    console.print("[warning]Cleanup cancelled[/warning]")
+            else:
+                console.print("[success]✅ No orphaned MCP processes found[/success]")
+
+        except Exception as e:
+            console.print(f"[error]❌ Cleanup failed: {e}[/error]")
+
+        # Exit after cleanup unless combined with other flags
+        if not (detailed or service or fix or watch):
+            return
+
+    if watch:
+        console.print(
+            f"[info]👁️ Starting continuous health monitoring (interval: {interval}s)[/info]"
+        )
+        console.print("[text.dim]Press Ctrl+C to stop[/text.dim]")
+
+        try:
+            while True:
+                console.clear()
+                console.print(
+                    f"[text.dim]Last check: {datetime.now().strftime('%H:%M:%S')}[/text.dim]"
+                )
+
+                results = health_checker.check_all(detailed=detailed)
+                health_checker.display_health_report(results, detailed=detailed)
+
+                time.sleep(interval)
+        except KeyboardInterrupt:
+            console.print("\n[warning]🛑 Health monitoring stopped[/warning]")
+            return
+
+    # Single health check
+    with Progress(
+        SpinnerColumn(spinner_name="dots12", style="spinner"),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Running health checks...", total=None)
+
+        if service:
+            # Check specific service
+            checker_method = getattr(health_checker, f"_check_{service}", None)
+            if not checker_method:
+                console.logger.info(f"[error]❌ Unknown service: {service}[/error]")
+                console.print(
+                    f"[warning]Available services: {', '.join(health_checker.checks.keys())}[/warning]"
+                )
+                sys.exit(1)
+
+            result = checker_method(detailed=detailed)
+            results = {service: result}
+        else:
+            # Check all services
+            results = health_checker.check_all(detailed=detailed)
+
+        progress.update(task, description="Health checks complete!", completed=True)
+
+    # Display results
+    def _rich_health():
+        health_checker.display_health_report(results, detailed=detailed)
+
+    emit(
+        ctx,
+        data={
+            "services": {
+                name: {
+                    "status": h.status.value[0],
+                    "message": h.message,
+                    "response_time_ms": h.response_time_ms,
+                }
+                for name, h in results.items()
+            },
+            "critical": sum(
+                1 for h in results.values() if h.status.value[0] == "critical"
+            ),
+            "healthy": sum(
+                1 for h in results.values() if h.status.value[0] == "healthy"
+            ),
+        },
+        rich_render=_rich_health,
+    )
+
+    # Fix unhealthy services if requested
+    if fix:
+        console.logger.info("\n[info]🔧 Attempting to fix unhealthy services...[/info]")
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            fix_task = progress.add_task("Fixing services...", total=None)
+
+            restarted = health_checker.restart_unhealthy_services()
+
+            progress.update(
+                fix_task, description="Fix attempts complete!", completed=True
+            )
+
+        if restarted:
+            console.print(
+                f"[success]✅ Restarted services: {', '.join(restarted)}[/success]"
+            )
+            console.logger.info(
+                "[info]💡 Run 'dopemux health' again to verify fixes[/info]"
+            )
+        else:
+            console.logger.info(
+                "[warning]⚠️ No services could be automatically fixed[/warning]"
+            )
+            console.logger.info(
+                "[text.dim]Manual intervention may be required[/text.dim]"
+            )
+
+    # Exit with appropriate code for scripting
+    critical_count = sum(1 for h in results.values() if h.status.value[0] == "critical")
+    if critical_count > 0:
+        sys.exit(1)
+
+
+def _get_attention_emoji(state: Optional[str]) -> str:
+    """Get emoji for attention state."""
+    emoji_map = {
+        "focused": "🎯",
+        "scattered": "🌪️",
+        "hyperfocus": "🔥",
+        "normal": "😊",
+        "distracted": "😵‍💫",
+    }
+    return emoji_map.get(state, "❓")
+
+
+def _configure_openrouter_litellm():
+    """Configure environment for OpenRouter via LiteLLM"""
+    # Set up OpenRouter models for LiteLLM
+    openrouter_models = [
+        "openrouter-xai-grok-code-fast",
+        "openrouter-openai-gpt-5",
+        "openrouter-openai-gpt-5-mini",
+        "openrouter-openai-gpt-5-codex",
+        "openrouter-google-gemini-2-flash",
+        "openrouter-meta-llama-3.1-405b",
+    ]
+
+    # Update environment
+    os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+    os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+    os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(openrouter_models)
+
+    # Ensure Zen MCP uses LiteLLM
+    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
+    os.environ["ZEN_FALLBACK_MODELS"] = (
+        "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
+    )
+
+    # Set up LiteLLM proxy URL
+    os.environ["LITELLM_PROXY_URL"] = "http://localhost:4000"
+
+    # Configure Claude Code to use LiteLLM
+    os.environ["CLAUDE_CODE_LLM_PROVIDER"] = "litellm"
+    os.environ["CLAUDE_CODE_LLM_BASE_URL"] = "http://localhost:4000"
+    os.environ["CLAUDE_CODE_LLM_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
+
+    console.logger.info(
+        "[success]✅ OpenRouter via LiteLLM configuration applied[/success]"
+    )
+
+
+def _resolve_mcp_dir(project_path: Path) -> Optional[Path]:
+    """
+    Resolve MCP stack directory using MCPProvisioner.
+    Auto-provisions if missing.
+    """
+    from .mcp.provision import MCPProvisioner
+
+    provisioner = MCPProvisioner(project_path)
+    try:
+        return provisioner.ensure_stack_present()
+    except Exception as e:
+        console.logger.error(f"[error]❌ MCP Provisioning failed: {e}[/error]")
+        return None
+
+
+def _start_mcp_servers_with_progress(
+    project_path: Path, instance_id: str = "A", instance_env: Optional[dict] = None, wizard=None
 ):
     """
     Start MCP servers with auto-provisioning, instance-scoped overlays, and Phase 0 gate.
@@ -3535,6 +4894,9 @@ def _start_mcp_servers_with_progress(
     status_text = Text()
     status_text.append("🚀 ", style="info")
     status_text.append("Launching containers...")
+    if wizard:
+        wizard.update_boot_step("Connecting to Docker", "LOADING")
+        wizard.update_boot_step("Booting MCP Services", "LOADING")
 
     startup_successful = False
     output_lines = []
