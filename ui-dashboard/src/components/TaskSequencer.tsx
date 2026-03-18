@@ -23,6 +23,7 @@ import {
   Timer,
   Flame,
   Swords,
+  Clock,
 } from 'lucide-react';
 import { brandTokens } from '../theme';
 
@@ -147,6 +148,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
+
+  const totalRemainingMinutes = useMemo(() => {
+    const totalEstimatedMinutes = tasks
+      .filter((task) => task.status !== 'completed')
+      .reduce((sum, task) => sum + task.estimatedMinutes, 0);
+
+    return Math.max(0, Math.ceil(totalEstimatedMinutes - (taskTimer / 60)));
+  }, [tasks, taskTimer]);
 
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
@@ -285,6 +294,27 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
+        <Tooltip title={`Total remaining duration: ${totalRemainingMinutes} minutes`} arrow>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              ml: 'auto',
+              color: brandTokens.colors.ritualCyan,
+              cursor: 'help',
+              '&:focus': { outline: 'none', borderRadius: 1, boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}` }
+            }}
+            tabIndex={0}
+            role="status"
+            aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
+          >
+            <Clock size={14} aria-hidden="true" />
+            <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+              {totalRemainingMinutes}m
+            </Typography>
+          </Box>
+        </Tooltip>
         <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
           <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
