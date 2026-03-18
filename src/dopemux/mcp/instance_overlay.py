@@ -105,14 +105,10 @@ class InstanceOverlayManager:
         compose_path = self.instance_dir / "mcp.compose.override.yml"
         
         # We generate a simple override that maps ports based on our allocator
-        content = f"""version: '3.8'
-services:
+        content = f"""services:
   conport:
     ports:
       - "{self.port_map['ConPort']}:3004"
-  pal:
-    ports:
-      - "{self.port_map['PAL']}:3003"
   serena:
     ports:
       - "{self.port_map['Serena']}:3006"

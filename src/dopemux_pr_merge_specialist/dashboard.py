@@ -105,6 +105,9 @@ class DopemuxDashboard:
                 
             if result:
                 self.state.last_action_result = result.lifecycle_state
+                # Preserve history if it exists
+                history = self.state.prs[self.state.active_index].get("history", [])
+                
                 return {
                     "pr_id": result.pr_state.pr_id,
                     "title": result.pr_state.title,
@@ -112,7 +115,7 @@ class DopemuxDashboard:
                     "ci_status": getattr(result.pr_state, "ci_status", "UNKNOWN"),
                     "unresolved_threads": getattr(result.pr_state, "unresolved_threads", 0),
                     "risk_score": getattr(result.pr_state, "risk_score", 0.0),
-                    "history": self.state.active_pr.get("history", []),
+                    "history": history,
                     "merge_strategy": result.merge_decision.action if result.merge_decision else "UNKNOWN",
                     "rationale": result.merge_decision.reason if result.merge_decision else "",
                     "blockers": [b.to_dict() for b in result.findings if str(b.kind) == "blocker"],
@@ -206,5 +209,4 @@ class DopemuxDashboard:
             if old_settings:
                 termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-        self.console.print("
-[bold green]MISSION COMPLETE. FLIGHT DATA SAVED TO PROOF BUNDLE. 🛰️[/bold green]")
+        self.console.print("\n[bold green]MISSION COMPLETE. FLIGHT DATA SAVED TO PROOF BUNDLE. 🛰️[/bold green]")

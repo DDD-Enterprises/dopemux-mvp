@@ -1574,11 +1574,27 @@ def start(
     # Resolve role (interactive wizard fallback)
     requested_role = role or os.environ.get("DOPEMUX_AGENT_ROLE")
     
+    wizard_instance = None
+    
     if not requested_role and not dry_run and not background and sys.stdin.isatty():
-        requested_role = start_wizard()
+        requested_role, wizard_instance = start_wizard()
         if not requested_role:
             console.print("[warning]Launch cancelled by user[/warning]")
             sys.exit(0)
+    elif not dry_run and not background and sys.stdin.isatty():
+        # Initialize wizard in boot-sequence mode if role was pre-selected
+        from .ux.launcher_wizard import LauncherWizard, LauncherState
+        try:
+            wizard_instance = LauncherWizard(console)
+            wizard_instance.state = LauncherState.BOOT_SEQUENCE
+            # Find index of requested role
+            for i, (k, _) in enumerate(wizard_instance.roles):
+                if k == requested_role:
+                    wizard_instance.selected_index = i
+                    break
+            wizard_instance.live.start()
+        except Exception:
+            wizard_instance = None
             
     # Final fallback to developer
     requested_role = requested_role or "developer"
