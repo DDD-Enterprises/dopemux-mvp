@@ -1,20 +1,19 @@
-Objective: Implement TP-RTE-PHASED-RELIABILITY-0033 for Phase D reliability: deterministic JSON salvage, line_range enforcement, and provider preflight fail-fast.
-Scope:
-- services/repo-truth-extractor/run_extraction_v3.py
-- services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D*.md
-- services/repo-truth-extractor/prompts/v3/PROMPT_D*.md
-- services/repo-truth-extractor/tests/test_phase_d_json_salvage.py
-- services/repo-truth-extractor/tests/test_phase_d_line_range.py
-- services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py
-- proof/PLAN.txt
+Objective: Implement Brand System Phase 0 — Foundation Infrastructure (voice engine, enriched CSV, token sync validator)
+
+Scope: allowed files (exact paths)
+- src/dopemux/ui/voice.py (NEW)
+- dopemux_voice_branding_bundle/SPECIMEN_LEDGER_ENRICHED.csv (NEW)
+- scripts/sync_brand_tokens.py (NEW)
+
 Steps:
-1) Add deterministic prose-plus-JSON salvage before parse_failure.
-2) Line-number Phase D partition context and tighten D prompt output rails around line_range.
-3) Enforce line_range shape in schema gating.
-4) Add a Phase D provider preflight guard that blocks fan-out when OpenRouter is unhealthy.
-5) Verify with focused tests and compileall.
+1. Create src/dopemux/ui/voice.py — VoiceMode enum, CopyLibrary, validate_output()
+2. Create enrichment script to process SPECIMEN_LEDGER_REGEN.csv → SPECIMEN_LEDGER_ENRICHED.csv
+3. Run enrichment to produce enriched CSV (~150 rows from ~650)
+4. Create scripts/sync_brand_tokens.py — cross-platform token sync validator
+5. Verify all acceptance criteria pass
+
 Verification:
-- python -m compileall -q services/repo-truth-extractor tests
-- pytest -q services/repo-truth-extractor/tests/test_phase_d_json_salvage.py
-- pytest -q services/repo-truth-extractor/tests/test_phase_d_line_range.py
-- pytest -q services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py
+- python -c "from dopemux.ui.voice import VoiceMode, CopyLibrary, validate_output; print('OK')"
+- python -c "from dopemux.ui.voice import validate_output; v=validate_output('as an ai, probably'); print(f'{len(v)} violations')"
+- python -c "from dopemux.ui.voice import CopyLibrary; print(CopyLibrary().random_aftercare())"
+- python scripts/sync_brand_tokens.py

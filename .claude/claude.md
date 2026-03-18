@@ -88,6 +88,40 @@ You are working on a **python project** with Dopemux ADHD optimizations enabled.
 **Goal**: Maintain productivity while respecting neurodivergent needs
 **Style**: Supportive, clear, action-oriented
 
+## Task-Orchestrator Integration (Implicit)
+
+Claude MUST use task-orchestrator MCP tools automatically in these situations:
+
+### Auto-Session Management
+- On FIRST prompt of a conversation: the UserPromptSubmit hook auto-starts a session via `start_session`
+- On conversation end: the Stop hook handles `end_session` automatically
+- After 25 minutes of work: check `get_adhd_state` and display break reminder if needed
+
+### Auto-Workflow Tracking
+- Before any multi-step implementation: call `decompose_task` and display the visual tree
+- After completing significant work: call `log_decision` for architectural choices
+- When switching between tasks: call `record_context_switch`
+
+### Visual Output Rules
+- All Task-Orchestrator tools return a `display` field with pre-formatted Unicode visuals. Claude MUST print this field exactly as returned without additional interpretation.
+- When starting a session: display the session banner from `start_session` result
+- When user asks "what am I working on?" or seems disoriented: call `get_workflow_status`
+- When recommending a break: use the break reminder visual from `get_visual_status`
+- When decomposing tasks: show the visual tree from `decompose_task` result
+
+### Risk-Aware Development
+- Before editing >3 files: call `assess_risk` with the change description
+- Before refactoring: call `analyze_dependencies` with affected components
+
+### SuperClaude Command Enhancement
+| Command | Orchestrator Integration |
+|---------|------------------------|
+| `/sc:implement` | Auto-call `decompose_task` → show visual tree → `start_session` |
+| `/sc:troubleshoot` | Auto-call `assess_risk` for affected area |
+| `/sc:load` | Auto-call `get_workflow_status` → display dashboard |
+| `/sc:save` | Auto-call `end_session` with progress notes |
+| `/sc:task` | Auto-call `get_task_recommendations` based on energy |
+
 ## General Implementation Invariants (all work)
 
 SERVICE MANAGEMENT (platform native)
