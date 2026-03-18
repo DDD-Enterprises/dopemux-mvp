@@ -92,12 +92,12 @@ def list_profiles():
     profiles = manager.list_profiles()
 
     if not profiles:
-        console.logger.info("\n[yellow]No profiles found[/yellow]")
+        console.logger.info("\n[warning]No profiles found[/warning]")
         return
 
     table = Table(title=f"\n📋 Profiles ({len(profiles)})", show_header=True, box=box.ROUNDED)
-    table.add_column("Name", style="cyan")
-    table.add_column("Description", style="white")
+    table.add_column("Name", style="info")
+    table.add_column("Description", style="text")
 
     workspace = detect_workspace()
     active = manager.get_active_profile(workspace)
@@ -155,7 +155,7 @@ def use_profile(
 
     profile = manager.get_profile(profile_name)
     if not profile:
-        console.logger.info(f"\n[red]❌ Profile not found: {profile_name}[/red]")
+        console.logger.info(f"\n[error]❌ Profile not found: {profile_name}[/error]")
         return
 
     previous = manager.get_active_profile(workspace)
@@ -204,15 +204,15 @@ def use_profile(
         if "apply_config" in future_errors:
             exc = future_errors["apply_config"]
             console.logger.info(
-                f"\n[red]❌ Failed to apply Claude config for profile '{profile_name}': {exc}[/red]"
+                f"\n[error]❌ Failed to apply Claude config for profile '{profile_name}': {exc}[/error]"
             )
             if previous:
-                console.logger.info(f"[dim]Active profile remains: {previous}[/dim]")
+                console.logger.info(f"[text.dim]Active profile remains: {previous}[/text.dim]")
             return
 
         if "save_session" in future_errors:
             exc = future_errors["save_session"]
-            console.logger.info(f"[yellow]⚠ Session save skipped due to error: {exc}[/yellow]")
+            console.logger.info(f"[warning]⚠ Session save skipped due to error: {exc}[/warning]")
 
     try:
         set_started = perf_counter()
@@ -224,11 +224,11 @@ def use_profile(
             rollback_started = perf_counter()
             try:
                 claude_config.rollback_to_backup(backup_path)
-                console.logger.info("[yellow]↩ Configuration rolled back from backup[/yellow]")
+                console.logger.info("[warning]↩ Configuration rolled back from backup[/warning]")
                 timings["rollback_config"] = perf_counter() - rollback_started
             except Exception as rollback_exc:
                 logger.error("Profile rollback failed: %s", rollback_exc)
-        console.logger.info(f"\n[red]❌ Failed to set active profile: {exc}[/red]")
+        console.logger.info(f"\n[error]❌ Failed to set active profile: {exc}[/error]")
         return
 
     elapsed_seconds = (datetime.utcnow() - started_at).total_seconds()
@@ -250,19 +250,19 @@ def use_profile(
 
     if previous and previous != profile_name:
         console.logger.info(
-            f"\n✅ Active profile: [cyan]{profile_name}[/cyan] "
-            f"(from [dim]{previous}[/dim], {elapsed_seconds:.2f}s)"
+            f"\n✅ Active profile: [info]{profile_name}[/info] "
+            f"(from [text.dim]{previous}[/text.dim], {elapsed_seconds:.2f}s)"
         )
     else:
         console.logger.info(
-            f"\n✅ Active profile: [cyan]{profile_name}[/cyan] "
+            f"\n✅ Active profile: [info]{profile_name}[/info] "
             f"({elapsed_seconds:.2f}s)"
         )
 
     if apply_config:
-        console.logger.info("[dim]✓ Claude settings updated with profile MCP selection[/dim]")
+        console.logger.info("[text.dim]✓ Claude settings updated with profile MCP selection[/text.dim]")
     if save_session and saved_session_id:
-        console.logger.info(f"[dim]✓ Context saved (session: {saved_session_id[:8]})[/dim]")
+        console.logger.info(f"[text.dim]✓ Context saved (session: {saved_session_id[:8]})[/text.dim]")
 
     if restart_claude:
         restart_started = perf_counter()
@@ -271,9 +271,9 @@ def use_profile(
                 ["dopemux", "start", "--profile", profile_name],
                 check=True,
             )
-            console.logger.info("[dim]✓ Claude restart command completed successfully[/dim]")
+            console.logger.info("[text.dim]✓ Claude restart command completed successfully[/text.dim]")
         except Exception as exc:
-            console.logger.info(f"[red]❌ Claude restart command failed: {exc}[/red]")
+            console.logger.info(f"[error]❌ Claude restart command failed: {exc}[/error]")
         finally:
             timings["restart_claude"] = perf_counter() - restart_started
 
@@ -282,15 +282,15 @@ def use_profile(
         restored = _restore_context_for_switch(workspace)
         timings["restore_context"] = perf_counter() - restore_started
         if restored:
-            console.logger.info("[dim]✓ Context restored after switch[/dim]")
+            console.logger.info("[text.dim]✓ Context restored after switch[/text.dim]")
 
     total_elapsed = perf_counter() - switch_started
     timings["total"] = total_elapsed
     timing_summary = ", ".join(f"{name}={value:.2f}s" for name, value in timings.items())
-    console.logger.info(f"[dim]Switch timing: {timing_summary}[/dim]")
+    console.logger.info(f"[text.dim]Switch timing: {timing_summary}[/text.dim]")
     if total_elapsed > target_seconds:
         console.logger.info(
-            f"[yellow]⚠ Switch duration {total_elapsed:.2f}s exceeded target {target_seconds:.2f}s[/yellow]"
+            f"[warning]⚠ Switch duration {total_elapsed:.2f}s exceeded target {target_seconds:.2f}s[/warning]"
         )
 
 
@@ -305,10 +305,10 @@ def show_profile(verbose: bool):
     if not active_name:
         active_name = manager.detect_profile_from_claude_config(workspace=workspace, cache_result=True)
         if not active_name:
-            console.logger.info(f"\n[yellow]No active profile[/yellow]")
+            console.logger.info(f"\n[warning]No active profile[/warning]")
             return
         console.logger.info(
-            f"\n[dim]Detected active profile from Claude config: {active_name}[/dim]"
+            f"\n[text.dim]Detected active profile from Claude config: {active_name}[/text.dim]"
         )
 
     profile = manager.get_profile(active_name)
@@ -316,18 +316,18 @@ def show_profile(verbose: bool):
         return
 
     content = [
-        f"[bold cyan]Profile:[/bold cyan] {profile.name}",
+        f"[mint]Profile:[/mint] {profile.name}",
         f"{profile.description}\n",
         f"[bold]MCP Servers:[/bold]",
         f"  Required: {', '.join(profile.mcp_servers.get('required', []))}",
     ]
 
-    console.logger.info(Panel("\n".join(content), border_style="cyan"))
+    console.logger.info(Panel("\n".join(content), border_style="info"))
 
     if verbose:
         merged = manager.load_merged_config(workspace, active_name)
         import yaml
-        console.logger.info(f"\n[dim]{yaml.dump(merged, default_flow_style=False)}[/dim]")
+        console.logger.info(f"\n[text.dim]{yaml.dump(merged, default_flow_style=False)}[/text.dim]")
 
 
 @click.command("create")
@@ -351,18 +351,18 @@ def create_profile(name: str, description: str, based_on: str, interactive: bool
             wizard = ProfileWizard()
             result_file = wizard.run(profile_name=name, output_dir=manager.profiles_dir)
             if result_file:
-                console.logger.info(f"\n✅ Profile created: [cyan]{name}[/cyan]")
-                console.logger.info(f"[dim]Wizard output: {result_file}[/dim]")
+                console.logger.info(f"\n✅ Profile created: [info]{name}[/info]")
+                console.logger.info(f"[text.dim]Wizard output: {result_file}[/text.dim]")
             else:
-                console.logger.info(f"\n[yellow]⚠️  Wizard cancelled for profile: {name}[/yellow]")
+                console.logger.info(f"\n[warning]⚠️  Wizard cancelled for profile: {name}[/warning]")
             return
 
         desc = description or f"Custom: {name}"
         profile = manager.create_profile(name, desc, based_on)
-        console.logger.info(f"\n✅ Profile created: [cyan]{name}[/cyan]")
-        console.logger.info(f"[dim]Edit: ~/.dopemux/profiles/{name}.yaml[/dim]")
+        console.logger.info(f"\n✅ Profile created: [info]{name}[/info]")
+        console.logger.info(f"[text.dim]Edit: ~/.dopemux/profiles/{name}.yaml[/text.dim]")
     except ValueError as e:
-        console.logger.info(f"\n[red]❌ {e}[/red]")
+        console.logger.info(f"\n[error]❌ {e}[/error]")
 
 
 @click.command("copy")
@@ -374,12 +374,12 @@ def copy_profile(source_profile: str, target_profile: str):
 
     source = manager.get_profile(source_profile)
     if not source:
-        console.logger.info(f"\n[red]❌ Source profile not found: {source_profile}[/red]")
+        console.logger.info(f"\n[error]❌ Source profile not found: {source_profile}[/error]")
         return
 
     target_path = manager.profiles_dir / f"{target_profile}.yaml"
     if Path.exists(target_path):
-        console.logger.info(f"\n[red]❌ Target profile already exists: {target_profile}[/red]")
+        console.logger.info(f"\n[error]❌ Target profile already exists: {target_profile}[/error]")
         return
 
     copied = manager.create_profile(
@@ -387,7 +387,7 @@ def copy_profile(source_profile: str, target_profile: str):
         description=f"Copy of {source_profile}: {source.description}",
         based_on=source_profile,
     )
-    console.logger.info(f"\n✅ Profile copied: [cyan]{source_profile}[/cyan] → [cyan]{copied.name}[/cyan]")
+    console.logger.info(f"\n✅ Profile copied: [info]{source_profile}[/info] → [info]{copied.name}[/info]")
 
 
 @click.command("delete")
@@ -399,13 +399,13 @@ def delete_profile(profile_name: str, force: bool):
     profile_path = manager.profiles_dir / f"{profile_name}.yaml"
 
     if not Path.exists(profile_path):
-        console.logger.info(f"\n[red]❌ Profile not found: {profile_name}[/red]")
+        console.logger.info(f"\n[error]❌ Profile not found: {profile_name}[/error]")
         return
 
     protected_profiles = {"full", "adhd-default"}
     if profile_name in protected_profiles and not force:
         console.logger.info(
-            f"\n[yellow]⚠️  '{profile_name}' is protected. Use --force to archive it.[/yellow]"
+            f"\n[warning]⚠️  '{profile_name}' is protected. Use --force to archive it.[/warning]"
         )
         return
 
@@ -423,7 +423,7 @@ def delete_profile(profile_name: str, force: bool):
             marker.unlink()
 
     console.logger.info(
-        f"\n✅ Profile archived: [cyan]{profile_name}[/cyan] → [dim]{archive_path}[/dim]"
+        f"\n✅ Profile archived: [info]{profile_name}[/info] → [text.dim]{archive_path}[/text.dim]"
     )
 
 
@@ -436,12 +436,12 @@ def edit_profile(profile_name: str, editor: str):
     profile_path = manager.profiles_dir / f"{profile_name}.yaml"
 
     if not Path.exists(profile_path):
-        console.logger.info(f"\n[red]❌ Profile not found: {profile_name}[/red]")
+        console.logger.info(f"\n[error]❌ Profile not found: {profile_name}[/error]")
         return
 
     editor_cmd = editor or os.getenv("EDITOR")
     if not editor_cmd:
-        console.logger.info("\n[red]❌ No editor configured. Set $EDITOR or pass --editor.[/red]")
+        console.logger.info("\n[error]❌ No editor configured. Set $EDITOR or pass --editor.[/error]")
         return
 
     backup_path = profile_path.with_suffix(".yaml.bak")
@@ -451,8 +451,8 @@ def edit_profile(profile_name: str, editor: str):
         subprocess.run([editor_cmd, str(profile_path)], check=True)
         manager.get_profile(profile_name)
         backup_path.unlink(missing_ok=True)
-        console.logger.info(f"\n✅ Profile updated: [cyan]{profile_name}[/cyan]")
+        console.logger.info(f"\n✅ Profile updated: [info]{profile_name}[/info]")
     except Exception as exc:
         shutil.copy(backup_path, profile_path)
         backup_path.unlink(missing_ok=True)
-        console.logger.info(f"\n[red]❌ Edit failed and was rolled back: {exc}[/red]")
+        console.logger.info(f"\n[error]❌ Edit failed and was rolled back: {exc}[/error]")

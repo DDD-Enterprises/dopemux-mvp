@@ -32,7 +32,6 @@ class RoutingConfig:
         self.config_path = config_path or self.DEFAULT_CONFIG_PATH
         self.config: Dict[str, Any] = {}
         self._loaded = False
-        self._ports: Optional[Dict[str, int]] = None
 
     def load(self) -> Dict[str, Any]:
         """Load and validate the routing configuration.
@@ -78,23 +77,6 @@ class RoutingConfig:
         except Exception as e:
             raise RoutingConfigError(f"Failed to copy template: {e}") from e
 
-    @property
-    def ports(self) -> Dict[str, int]:
-        """Get the validated ports configuration.
-
-        Returns:
-            Dictionary with 'litellm' and 'ccr' ports
-
-        Raises:
-            RoutingConfigError: If ports are not available
-        """
-        if self._ports is None:
-            if not self._loaded:
-                raise RoutingConfigError("Configuration not loaded. Call load() first.")
-            # Try to validate if not already done
-            self.validate()
-        return self._ports
-
     def validate(self) -> None:
         """Validate the loaded configuration.
 
@@ -137,18 +119,6 @@ class RoutingConfig:
         if "litellm" not in ports or "ccr" not in ports:
             raise RoutingConfigError("Ports section must contain 'litellm' and 'ccr'")
 
-        # Validate port values are integers in valid range
-        try:
-            litellm_port = int(ports["litellm"])
-            ccr_port = int(ports["ccr"])
-            if not (1 <= litellm_port <= 65535):
-                raise RoutingConfigError(f"litellm port {litellm_port} must be between 1-65535")
-            if not (1 <= ccr_port <= 65535):
-                raise RoutingConfigError(f"ccr port {ccr_port} must be between 1-65535")
-            self._ports = {"litellm": litellm_port, "ccr": ccr_port}
-        except ValueError as e:
-            raise RoutingConfigError(f"Port values must be integers: {e}") from e
-
         # Validate providers
         providers = self.config.get("providers", [])
         if not isinstance(providers, list) or len(providers) == 0:
@@ -188,37 +158,6 @@ class RoutingConfig:
                     f"Model {model['name']} references unknown provider: "
                     f"{model['provider']}"
                 )
-
-            # Validate litellm_model prefix matches provider (for direct supported providers)
-            provider_name = model["provider"]
-            model_id = model["model_id"]
-            if provider_name in ["gemini", "xai", "openai"]:
-                expected_prefix = f"{provider_name}/"
-                if not model_id.startswith(expected_prefix):
-                    raise RoutingConfigError(
-                        f"Model {model['name']} has invalid model_id '{model_id}' "
-                        f"for provider '{provider_name}'. It must start with '{expected_prefix}'"
-                    )
-
-            # Warn on Gemini preview models
-            if provider_name == "gemini" and "preview" in model_id:
-                logger.warning(
-                    f"Model {model['name']} uses a preview Gemini model: {model_id}. "
-                    "Preview models may have more restrictive limits and can change."
-                )
-
-            # Validate optional params
-            params = model.get("params", {})
-            if not isinstance(params, dict):
-                raise RoutingConfigError(f"Model {model['name']} params must be a dictionary")
-                
-            allowed_params = {"thinking"}
-            for key in params:
-                if key not in allowed_params:
-                    raise RoutingConfigError(
-                        f"Model {model['name']} has unsupported param key '{key}'. "
-                        f"Allowed keys are: {', '.join(allowed_params)}"
-                    )
 
             model_names[model["name"]] = model
 
@@ -270,9 +209,8 @@ class RoutingConfig:
             raise RoutingConfigError("Aliases must be a dictionary")
 
         for alias, target in aliases.items():
-            # Allow aliases to reference either slots OR models directly
-            if target not in slots and target not in model_names:
-                msg = f"Alias {alias} references unknown slot or model: {target}"
+            if target not in slots:
+                msg = f"Alias {alias} references unknown slot: {target}"
                 raise RoutingConfigError(msg)
 
     def generate_litellm_config(self, master_key: str) -> Dict[str, Any]:
@@ -315,11 +253,6 @@ class RoutingConfig:
             if "extra_headers" in provider:
                 litellm_params["extra_headers"] = provider["extra_headers"]
 
-            # Add optional params (already validated)
-            params = model.get("params", {})
-            for key, value in params.items():
-                litellm_params[key] = value
-
             model_list.append({
                 "model_name": model["name"],
                 "litellm_params": litellm_params,
@@ -328,18 +261,10 @@ class RoutingConfig:
         # Build model_alias_map from slots and aliases
         model_alias_map = {}
 
-        # Get all model names for direct resolution
-        known_model_names = {m["name"] for m in models}
-
-        # First, map all aliases to their targets (slots or models)
-        for alias, target in aliases.items():
-            if target in slots:
-                model_alias_map[alias] = slots[target]
-            elif target in known_model_names:
-                model_alias_map[alias] = target
-            else:
-                # Should have been caught by validation, but safety first
-                logger.warning(f"Alias {alias} references unknown target: {target}")
+        # First, map all aliases to their slot targets
+        for alias, slot_name in aliases.items():
+            model_name = slots[slot_name]
+            model_alias_map[alias] = model_name
 
         # Then, add direct slot mappings for convenience
         for slot_name, model_name in slots.items():
@@ -412,17 +337,6 @@ class RoutingConfig:
         config = cls()
         config.load()
         return config
-
-    def get_ports(self) -> Dict[str, int]:
-        """Get ports as a dictionary with 'litellm' and 'ccr' keys.
-
-        Returns:
-            Dictionary containing litellm and ccr ports
-
-        Raises:
-            RoutingConfigError: If ports are not available
-        """
-        return self.ports
 
     @classmethod
     def get_mode(cls) -> str:

@@ -104,7 +104,7 @@ class EnhancedWorktreeManager:
             return True, None
 
         except Exception as e:
-            console.print(f"[red]Error checking branch availability: {e}[/red]")
+            console.print(f"[error]Error checking branch availability: {e}[/error]")
             return True, None
 
     def get_all_worktrees(self) -> List[WorktreeInfo]:
@@ -140,7 +140,7 @@ class EnhancedWorktreeManager:
                 worktrees.append(self._create_worktree_info(current_info))
 
         except subprocess.CalledProcessError as e:
-            console.print(f"[red]Error listing worktrees: {e}[/red]")
+            console.print(f"[error]Error listing worktrees: {e}[/error]")
 
         return worktrees
 
@@ -211,8 +211,8 @@ class EnhancedWorktreeManager:
         # Check if branch name is protected
         if branch_name in self.main_branches:
             console.print(
-                f"[red]❌ Cannot create worktree for protected branch '{branch_name}'[/red]\n"
-                f"[yellow]💡 Tip: Use a feature branch name instead[/yellow]"
+                f"[error]❌ Cannot create worktree for protected branch '{branch_name}'[/error]\n"
+                f"[warning]💡 Tip: Use a feature branch name instead[/warning]"
             )
             return False
 
@@ -221,7 +221,7 @@ class EnhancedWorktreeManager:
 
         if not is_available:
             console.print(
-                f"[yellow]⚠️  Branch '{branch_name}' is already checked out at:[/yellow]\n"
+                f"[warning]⚠️  Branch '{branch_name}' is already checked out at:[/warning]\n"
                 f"    {existing_path}"
             )
 
@@ -237,17 +237,17 @@ class EnhancedWorktreeManager:
         worktree_path = self.workspace_path.parent / f"dopemux-{worktree_name}"
 
         if worktree_path.exists():
-            console.print(f"[red]❌ Directory already exists: {worktree_path}[/red]")
+            console.print(f"[error]❌ Directory already exists: {worktree_path}[/error]")
             return False
 
         try:
             if branch_exists:
                 # Branch exists, just create worktree
-                console.print(f"[cyan]🌳 Creating worktree for existing branch '{branch_name}'...[/cyan]")
+                console.print(f"[info]🌳 Creating worktree for existing branch '{branch_name}'...[/info]")
                 cmd = ["git", "worktree", "add", str(worktree_path), branch_name]
             else:
                 # Create new branch and worktree
-                console.print(f"[cyan]🌳 Creating new branch '{branch_name}' from '{base_branch}'...[/cyan]")
+                console.print(f"[info]🌳 Creating new branch '{branch_name}' from '{base_branch}'...[/info]")
                 cmd = ["git", "worktree", "add", "-b", branch_name, str(worktree_path), base_branch]
 
             result = subprocess.run(
@@ -259,10 +259,10 @@ class EnhancedWorktreeManager:
             )
 
             if result.returncode != 0:
-                console.print(f"[red]❌ Failed to create worktree:[/red]\n{result.stderr}")
+                console.print(f"[error]❌ Failed to create worktree:[/error]\n{result.stderr}")
                 return False
 
-            console.print(f"[green]✅ Worktree created at: {worktree_path}[/green]")
+            console.print(f"[success]✅ Worktree created at: {worktree_path}[/success]")
 
             # Set up worktree configuration
             self._configure_worktree(worktree_path)
@@ -270,12 +270,12 @@ class EnhancedWorktreeManager:
             # Offer to switch to new worktree
             if Confirm.ask("Switch to the new worktree now?"):
                 os.chdir(worktree_path)
-                console.print(f"[green]📍 Switched to: {worktree_path}[/green]")
+                console.print(f"[success]📍 Switched to: {worktree_path}[/success]")
 
             return True
 
         except Exception as e:
-            console.print(f"[red]❌ Error creating worktree: {e}[/red]")
+            console.print(f"[error]❌ Error creating worktree: {e}[/error]")
             return False
 
     def _check_branch_exists(self, branch_name: str) -> bool:
@@ -340,7 +340,7 @@ fi
                 pre_checkout_hook.chmod(0o755)
 
         except Exception as e:
-            console.print(f"[yellow]⚠️  Warning: Could not configure worktree hooks: {e}[/yellow]")
+            console.print(f"[warning]⚠️  Warning: Could not configure worktree hooks: {e}[/warning]")
 
     def switch_to_worktree(self, branch_name: str) -> bool:
         """
@@ -358,23 +358,23 @@ fi
         worktrees = self.get_all_worktrees()
 
         if not worktrees:
-            console.print("[red]❌ No worktrees found[/red]")
+            console.print("[error]❌ No worktrees found[/error]")
             return False
 
         # Check if already on target worktree
         current_wt = next((wt for wt in worktrees if wt.is_current), None)
         if current_wt and current_wt.branch == branch_name:
-            console.print(f"[yellow]ℹ️  Already on worktree: {branch_name}[/yellow]")
+            console.print(f"[warning]ℹ️  Already on worktree: {branch_name}[/warning]")
             return True
 
         # Try exact match first
         exact_matches = [wt for wt in worktrees if wt.branch == branch_name]
         if exact_matches:
             wt = exact_matches[0]
-            console.print(f"[cyan]🔀 Switching to worktree: {wt.path}[/cyan]")
-            console.print(f"[dim]Branch: {wt.branch}[/dim]")
+            console.print(f"[info]🔀 Switching to worktree: {wt.path}[/info]")
+            console.print(f"[text.dim]Branch: {wt.branch}[/text.dim]")
             os.chdir(wt.path)
-            console.print(f"[green]📍 Now in: {wt.path}[/green]")
+            console.print(f"[success]📍 Now in: {wt.path}[/success]")
             return True
 
         # Try fuzzy matching (case-insensitive partial match)
@@ -386,21 +386,21 @@ fi
 
         if len(fuzzy_matches) == 1:
             wt = fuzzy_matches[0]
-            console.print(f"[cyan]🔎 Fuzzy matched: '{branch_name}' → '{wt.branch}'[/cyan]")
-            console.print(f"[cyan]🔀 Switching to worktree: {wt.path}[/cyan]")
+            console.print(f"[info]🔎 Fuzzy matched: '{branch_name}' → '{wt.branch}'[/info]")
+            console.print(f"[info]🔀 Switching to worktree: {wt.path}[/info]")
             os.chdir(wt.path)
-            console.print(f"[green]📍 Now in: {wt.path}[/green]")
+            console.print(f"[success]📍 Now in: {wt.path}[/success]")
             return True
         elif len(fuzzy_matches) > 1:
-            console.print(f"[yellow]⚠️  Multiple matches found for '{branch_name}':[/yellow]")
+            console.print(f"[warning]⚠️  Multiple matches found for '{branch_name}':[/warning]")
             for wt in fuzzy_matches:
                 console.print(f"  • {wt.branch}")
-            console.print("\n[yellow]💡 Tip: Please specify the exact branch name[/yellow]")
+            console.print("\n[warning]💡 Tip: Please specify the exact branch name[/warning]")
             return False
 
         # No matches found - show available worktrees
-        console.print(f"[red]❌ No worktree found for branch '{branch_name}'[/red]")
-        console.print("\n[cyan]Available worktrees:[/cyan]")
+        console.print(f"[error]❌ No worktree found for branch '{branch_name}'[/error]")
+        console.print("\n[info]Available worktrees:[/info]")
         for wt in worktrees:
             current_marker = "→ " if wt.is_current else "  "
             console.print(f"{current_marker}• {wt.branch}")
@@ -474,10 +474,10 @@ fi
         Returns:
             Number of worktrees cleaned
         """
-        console.print("[cyan]🧹 Checking for worktrees to clean...[/cyan]")
+        console.print("[info]🧹 Checking for worktrees to clean...[/info]")
 
         if dry_run:
-            console.print("[yellow]⚠️  Dry run mode - no changes will be made[/yellow]\n")
+            console.print("[warning]⚠️  Dry run mode - no changes will be made[/warning]\n")
 
         cleaned = 0
         try:
@@ -497,42 +497,42 @@ fi
             for wt in worktrees:
                 # Skip main/master worktrees (always protected)
                 if wt.branch in self.main_branches:
-                    console.print(f"[dim]  ⏭️  Skipping main worktree: {wt.branch}[/dim]")
+                    console.print(f"[text.dim]  ⏭️  Skipping main worktree: {wt.branch}[/text.dim]")
                     continue
 
                 # Skip current worktree
                 if wt.is_current:
-                    console.print(f"[dim]  ⏭️  Skipping current worktree: {wt.branch}[/dim]")
+                    console.print(f"[text.dim]  ⏭️  Skipping current worktree: {wt.branch}[/text.dim]")
                     continue
 
                 # Check if directory exists
                 if not wt.path.exists():
-                    console.print(f"[yellow]  • Orphaned worktree: {wt.branch} (directory missing)[/yellow]")
+                    console.print(f"[warning]  • Orphaned worktree: {wt.branch} (directory missing)[/warning]")
                     candidates.append((wt, "orphaned"))
                     continue
 
                 # Check if worktree is dirty
                 if wt.is_dirty:
                     if force:
-                        console.print(f"[yellow]  • Dirty worktree: {wt.branch} (has uncommitted changes) [red]Force mode: Will remove anyway[/red][/yellow]")
+                        console.print(f"[warning]  • Dirty worktree: {wt.branch} (has uncommitted changes) [error]Force mode: Will remove anyway[/error][/warning]")
                         candidates.append((wt, "dirty (forced)"))
                     else:
-                        console.print(f"[yellow]  ⚠️  Skipping dirty worktree: {wt.branch} (has uncommitted changes, use --force to remove)[/yellow]")
+                        console.print(f"[warning]  ⚠️  Skipping dirty worktree: {wt.branch} (has uncommitted changes, use --force to remove)[/warning]")
                     continue
 
                 # Clean feature branch candidate
-                console.print(f"[yellow]  • Clean worktree: {wt.branch}[/yellow]")
+                console.print(f"[warning]  • Clean worktree: {wt.branch}[/warning]")
                 candidates.append((wt, "clean"))
 
             # Show summary and process
             if not candidates:
-                console.print("\n[green]✅ No worktrees need cleanup[/green]")
+                console.print("\n[success]✅ No worktrees need cleanup[/success]")
                 return 0
 
-            console.print(f"\n[cyan]Found {len(candidates)} worktree(s) to clean[/cyan]")
+            console.print(f"\n[info]Found {len(candidates)} worktree(s) to clean[/info]")
 
             if dry_run:
-                console.print("\n[yellow]📋 Dry run - no changes made[/yellow]")
+                console.print("\n[warning]📋 Dry run - no changes made[/warning]")
                 for wt, reason in candidates:
                     console.print(f"  • Would remove: {wt.branch} ({reason})")
                 return len(candidates)
@@ -546,15 +546,15 @@ fi
                         capture_output=True,
                         check=True
                     )
-                    console.print(f"[green]  ✅ Removed: {wt.branch}[/green]")
+                    console.print(f"[success]  ✅ Removed: {wt.branch}[/success]")
                     cleaned += 1
                 except subprocess.CalledProcessError as e:
-                    console.print(f"[red]  ❌ Failed to remove {wt.branch}: {e}[/red]")
+                    console.print(f"[error]  ❌ Failed to remove {wt.branch}: {e}[/error]")
 
-            console.print(f"\n[green]✅ Cleaned {cleaned} worktree(s)[/green]")
+            console.print(f"\n[success]✅ Cleaned {cleaned} worktree(s)[/success]")
 
         except Exception as e:
-            console.print(f"[red]❌ Error during cleanup: {e}[/red]")
+            console.print(f"[error]❌ Error during cleanup: {e}[/error]")
 
         return cleaned
 
@@ -568,8 +568,8 @@ fi
         worktrees = self.get_all_worktrees()
 
         if not worktrees:
-            console.print("[yellow]No worktrees found[/yellow]")
-            console.print("\n[dim]💡 Tip: Create a worktree with 'git worktree add <path> -b <branch>'[/dim]")
+            console.print("[warning]No worktrees found[/warning]")
+            console.print("\n[text.dim]💡 Tip: Create a worktree with 'git worktree add <path> -b <branch>'[/text.dim]")
             return
 
         # Sort by last commit time (most recent first)
@@ -588,17 +588,17 @@ fi
 
         # Create table
         table = Table(title="🌳 Git Worktrees", show_header=True)
-        table.add_column("Branch", style="cyan", no_wrap=True)
-        table.add_column("Path", style="dim")
+        table.add_column("Branch", style="info", no_wrap=True)
+        table.add_column("Path", style="text.dim")
         table.add_column("Status", justify="center")
         table.add_column("Current", justify="center")
 
         for wt in displayed:
             # Status indicators
             if wt.is_dirty:
-                status = Text("● dirty", style="yellow")
+                status = Text("● dirty", style="warning")
             else:
-                status = Text("✓ clean", style="green")
+                status = Text("✓ clean", style="success")
 
             # Current indicator
             current = "→" if wt.is_current else ""
@@ -606,7 +606,7 @@ fi
             # Branch display
             branch_display = wt.branch
             if wt.branch in self.main_branches:
-                branch_display = Text(wt.branch, style="bold red")
+                branch_display = Text(wt.branch, style="error")
 
             # Path display (shortened for ADHD friendliness)
             path_display = str(wt.path.name)
@@ -622,7 +622,7 @@ fi
 
         if hidden_count > 0:
             console.print(
-                f"\n[dim]... and {hidden_count} more. Use --all to see all worktrees[/dim]"
+                f"\n[text.dim]... and {hidden_count} more. Use --all to see all worktrees[/text.dim]"
             )
 
         # Tips for ADHD
@@ -639,15 +639,15 @@ fi
         for wt in worktrees:
             if wt.branch == branch_name:
                 if wt.branch in self.main_branches:
-                    console.print(f"[red]❌ Cannot archive protected branch '{branch_name}'[/red]")
+                    console.print(f"[error]❌ Cannot archive protected branch '{branch_name}'[/error]")
                     return False
 
                 if wt.is_dirty:
-                    console.print(f"[yellow]⚠️  Worktree has uncommitted changes[/yellow]")
+                    console.print(f"[warning]⚠️  Worktree has uncommitted changes[/warning]")
                     if not Confirm.ask("Archive anyway?"):
                         return False
 
-                console.print(f"[cyan]📦 Archiving worktree for branch '{branch_name}'...[/cyan]")
+                console.print(f"[info]📦 Archiving worktree for branch '{branch_name}'...[/info]")
 
                 try:
                     # Remove worktree but keep branch
@@ -659,16 +659,16 @@ fi
                         check=True
                     )
 
-                    console.print(f"[green]✅ Archived worktree at: {wt.path}[/green]")
-                    console.print(f"[dim]Branch '{branch_name}' preserved for historical reference[/dim]")
+                    console.print(f"[success]✅ Archived worktree at: {wt.path}[/success]")
+                    console.print(f"[text.dim]Branch '{branch_name}' preserved for historical reference[/text.dim]")
 
                     return True
 
                 except subprocess.CalledProcessError as e:
-                    console.print(f"[red]❌ Failed to archive worktree: {e}[/red]")
+                    console.print(f"[error]❌ Failed to archive worktree: {e}[/error]")
                     return False
 
-        console.print(f"[red]❌ No worktree found for branch '{branch_name}'[/red]")
+        console.print(f"[error]❌ No worktree found for branch '{branch_name}'[/error]")
         return False
 
 

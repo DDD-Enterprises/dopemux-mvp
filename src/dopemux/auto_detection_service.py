@@ -73,7 +73,7 @@ class AutoDetectionConfig:
                 self.never_suggest = set(data.get('never_suggest', []))
 
         except Exception as e:
-            _console_print(f"[yellow]⚠️  Could not load config from {config_file}: {e}[/yellow]")
+            _console_print(f"[warning]⚠️  Could not load config from {config_file}: {e}[/warning]")
 
     def save(self, config_file: Path) -> None:
         """Save configuration to file."""
@@ -190,21 +190,21 @@ class AutoDetectionService:
         - Clear confidence display
         - Option to never ask again
         """
-        _console_print(f"\n[cyan]💡 Profile Suggestion[/cyan]")
+        _console_print(f"\n[info]💡 Profile Suggestion[/info]")
         _console_print(format_match_summary(match))
 
         # Ask with [y/N/never] options
         _console_print(f"\n[bold]Switch to '{profile_name}' profile?[/bold]")
-        _console_print("[dim]  y = Yes, switch now[/dim]")
-        _console_print("[dim]  N = No, not now (default)[/dim]")
-        _console_print("[dim]  never = Never suggest this profile again[/dim]")
+        _console_print("[text.dim]  y = Yes, switch now[/text.dim]")
+        _console_print("[text.dim]  N = No, not now (default)[/text.dim]")
+        _console_print("[text.dim]  never = Never suggest this profile again[/text.dim]")
 
         choice = input("\nChoice [y/N/never]: ").strip().lower()
 
         # Handle "never"
         if choice == "never":
             self.config.never_suggest.add(profile_name)
-            _console_print(f"[yellow]✓ Will not suggest '{profile_name}' again[/yellow]")
+            _console_print(f"[warning]✓ Will not suggest '{profile_name}' again[/warning]")
             # Save updated config
             config_file = self.workspace_root / ".dopemux" / "profile-settings.yaml"
             self.config.save(config_file)
@@ -254,7 +254,7 @@ class AutoDetectionService:
         """
         iteration = 0
 
-        _console_print("[cyan]🔍 Auto-detection service started[/cyan]")
+        _console_print("[info]🔍 Auto-detection service started[/info]")
         _console_print(f"   Check interval: {self.config.check_interval_seconds}s")
         _console_print(f"   Confidence threshold: {self.config.confidence_threshold:.0%}")
         _console_print(f"   Quiet hours: {self.config.quiet_hours_start}-{self.config.quiet_hours_end}")
@@ -265,14 +265,14 @@ class AutoDetectionService:
                 suggested = self.run_detection_cycle()
 
                 if suggested:
-                    _console_print(f"[green]✓ Switched to '{suggested}' profile[/green]")
+                    _console_print(f"[success]✓ Switched to '{suggested}' profile[/success]")
 
                 # Wait for next check
                 time.sleep(self.config.check_interval_seconds)
                 iteration += 1
 
         except KeyboardInterrupt:
-            _console_print("\n[yellow]Auto-detection service stopped[/yellow]")
+            _console_print("\n[warning]Auto-detection service stopped[/warning]")
 
 
 def create_default_settings(output_file: Path) -> None:
@@ -284,7 +284,7 @@ def create_default_settings(output_file: Path) -> None:
     """
     config = AutoDetectionConfig()
     config.save(output_file)
-    _console_print(f"[green]✅ Created default settings at {output_file}[/green]")
+    _console_print(f"[success]✅ Created default settings at {output_file}[/success]")
 
 
 if __name__ == "__main__":
