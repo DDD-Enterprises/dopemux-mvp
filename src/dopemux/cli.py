@@ -1653,7 +1653,7 @@ def start(
             profile = role_profile or ProfileManager().get_profile(pending_profile_name)
             if profile:
                 try:
-                    claude_config = ClaudeConfig()
+                    claude_config = ClaudeConfig(config_path=project_path / ".claude" / "claude_config.json")
                     preview = claude_config.apply_profile(
                         profile,
                         create_backup=False,
@@ -1979,7 +1979,7 @@ def start(
         profile = role_profile or profile_manager.get_profile(pending_profile_name)
         if profile:
             try:
-                claude_config = ClaudeConfig()
+                claude_config = ClaudeConfig(config_path=project_path / ".claude" / "claude_config.json")
                 claude_config.apply_profile(profile, create_backup=True, dry_run=False)
                 try:
                     profile_manager.set_active_profile(project_path, profile.name)
