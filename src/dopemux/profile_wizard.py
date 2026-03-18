@@ -63,15 +63,15 @@ class ProfileWizard:
         ADHD Optimization: Max 3 questions, auto-suggests from git analysis
         """
         console.print(Panel(
-            "[bold cyan]Welcome to the Dopemux Profile Wizard![/bold cyan]\n\n"
+            "[mint]Welcome to the Dopemux Profile Wizard![/mint]\n\n"
             "I'll analyze your git history and help you create a personalized profile.\n"
             "This will only take about 2 minutes. 🚀",
             title="✨ Profile Creation",
-            border_style="cyan"
+            border_style="info"
         ))
 
         # Step 1: Analyze git history
-        console.logger.info("\n[cyan]📊 Analyzing your development patterns...[/cyan]")
+        console.logger.info("\n[info]📊 Analyzing your development patterns...[/info]")
         analysis = self.analyzer.analyze(days_back=90, max_commits=100)
         self.analyzer.display_analysis(analysis)
 
@@ -86,7 +86,7 @@ class ProfileWizard:
 
         # Step 3: Confirm MCP servers (with smart defaults)
         console.logger.info(f"\n[bold]Question 2 of 3:[/bold] Which MCP servers do you want?")
-        console.logger.info(f"[dim]Based on your git history, I recommend: {', '.join(analysis.suggested_mcps)}[/dim]")
+        console.logger.info(f"[text.dim]Based on your git history, I recommend: {', '.join(analysis.suggested_mcps)}[/text.dim]")
 
         mcp_choice = Prompt.ask(
             "MCP selection",
@@ -101,17 +101,17 @@ class ProfileWizard:
         elif mcp_choice == "full":
             selected_mcps = self.ALL_MCPS
         else:  # custom
-            console.logger.info("\n[cyan]Available MCPs:[/cyan]")
+            console.logger.info("\n[info]Available MCPs:[/info]")
             for i, mcp in enumerate(self.ALL_MCPS, 1):
                 console.logger.info(f"  {i}. {mcp}")
-            console.logger.info("\n[dim]Enter numbers separated by commas (e.g., 1,2,4)[/dim]")
+            console.logger.info("\n[text.dim]Enter numbers separated by commas (e.g., 1,2,4)[/text.dim]")
             selection = Prompt.ask("MCP numbers")
             indices = [int(x.strip()) - 1 for x in selection.split(',') if x.strip().isdigit()]
             selected_mcps = [self.ALL_MCPS[i] for i in indices if 0 <= i < len(self.ALL_MCPS)]
 
         # Step 4: ADHD preferences
         console.logger.info(f"\n[bold]Question 3 of 3:[/bold] ADHD session preferences")
-        console.logger.info(f"[dim]Suggested: {analysis.suggested_session_duration} min sessions, {analysis.suggested_energy_level} energy[/dim]")
+        console.logger.info(f"[text.dim]Suggested: {analysis.suggested_session_duration} min sessions, {analysis.suggested_energy_level} energy[/text.dim]")
 
         use_suggested = Confirm.ask(
             "Use suggested ADHD settings?",
@@ -150,23 +150,23 @@ class ProfileWizard:
 
         # Confirm before writing
         console.logger.info(f"\n[bold]Profile Summary:[/bold]")
-        console.logger.info(f"   • Name: [cyan]{profile.name}[/cyan]")
-        console.logger.info(f"   • MCPs: [cyan]{len(profile.mcps)} servers[/cyan]")
-        console.logger.info(f"   • Session: [cyan]{session_duration} min[/cyan]")
-        console.logger.info(f"   • Energy: [cyan]{energy_level}[/cyan]")
-        console.logger.info(f"   • File: [dim]{output_file}[/dim]")
+        console.logger.info(f"   • Name: [info]{profile.name}[/info]")
+        console.logger.info(f"   • MCPs: [info]{len(profile.mcps)} servers[/info]")
+        console.logger.info(f"   • Session: [info]{session_duration} min[/info]")
+        console.logger.info(f"   • Energy: [info]{energy_level}[/info]")
+        console.logger.info(f"   • File: [text.dim]{output_file}[/text.dim]")
 
         if not Confirm.ask(f"\nSave profile to {output_file}?", default=True):
-            console.logger.info("[yellow]❌ Profile creation cancelled[/yellow]")
+            console.logger.info("[warning]❌ Profile creation cancelled[/warning]")
             return None
 
         # Write profile YAML
         self._save_profile(profile, output_file)
 
-        console.logger.info(f"\n[green]✅ Profile '{profile_name}' created successfully![/green]")
-        console.logger.info(f"\n[dim]💡 Next steps:[/dim]")
-        console.logger.info(f"   • Test it: [cyan]dopemux profile show {profile_name}[/cyan]")
-        console.logger.info(f"   • Apply it: [cyan]dopemux profile apply {profile_name}[/cyan]")
+        console.logger.info(f"\n[success]✅ Profile '{profile_name}' created successfully![/success]")
+        console.logger.info(f"\n[text.dim]💡 Next steps:[/text.dim]")
+        console.logger.info(f"   • Test it: [info]dopemux profile show {profile_name}[/info]")
+        console.logger.info(f"   • Apply it: [info]dopemux profile apply {profile_name}[/info]")
 
         return output_file
 
@@ -220,4 +220,4 @@ class ProfileWizard:
 
             yaml.dump(profile_dict, f, default_flow_style=False, indent=2, sort_keys=False)
 
-        console.logger.info(f"[dim]   Written {output_file.stat().st_size} bytes to {output_file.name}[/dim]")
+        console.logger.info(f"[text.dim]   Written {output_file.stat().st_size} bytes to {output_file.name}[/text.dim]")

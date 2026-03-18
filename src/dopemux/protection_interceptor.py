@@ -96,10 +96,10 @@ def check_main_protection_interactive(
     if not offer_creation:
         # Just show warning, let user decide
         if enforce:
-            console.print("[red]❌ Operation blocked by main worktree protection[/red]")
+            console.print("[error]❌ Operation blocked by main worktree protection[/error]")
             return True  # Exit
         else:
-            console.print("[yellow]⚠️ Warning shown - proceeding anyway[/yellow]")
+            console.print("[warning]⚠️ Warning shown - proceeding anyway[/warning]")
             return False  # Continue
 
     # Offer interactive worktree creation.
@@ -119,8 +119,8 @@ def _display_protection_warning(trigger: ProtectionTrigger) -> None:
 
     panel = Panel(
         warning_text,
-        title="[bold yellow]⚠️  Main Worktree Protection[/bold yellow]",
-        border_style="yellow",
+        title="[warning]⚠️  Main Worktree Protection[/warning]",
+        border_style="warning",
         padding=(1, 2)
     )
 
@@ -147,9 +147,9 @@ def _offer_worktree_creation(
     options.add_column(style="bold", justify="right")
     options.add_column(style="", justify="left")
     
-    options.add_row("1.", "[green]✨ Create worktree[/green] - Move changes to new worktree [dim](recommended)[/dim]")
-    options.add_row("2.", "[blue]⚡ Stay in main[/blue] - Continue in main worktree [dim](not recommended)[/dim]")
-    options.add_row("3.", "[dim]🚪 Exit[/dim] - Clean up manually and restart")
+    options.add_row("1.", "[success]✨ Create worktree[/success] - Move changes to new worktree [text.dim](recommended)[/text.dim]")
+    options.add_row("2.", "[info]⚡ Stay in main[/info] - Continue in main worktree [text.dim](not recommended)[/text.dim]")
+    options.add_row("3.", "[text.dim]🚪 Exit[/text.dim] - Clean up manually and restart")
     
     console.print("\n[cyan bold]💡 What would you like to do?[/cyan bold]\n")
     console.print(options)
@@ -157,9 +157,9 @@ def _offer_worktree_creation(
 
     # Get user choice with styled input
     try:
-        choice = console.input("[cyan]Choose [bold](1/2/3)[/bold] [[bold green]1[/bold green]]: [/cyan]").strip() or "1"
+        choice = console.input("[info]Choose [bold](1/2/3)[/bold] [[success]1[/success]]: [/info]").strip() or "1"
     except (KeyboardInterrupt, EOFError):
-        console.print("\n[dim]Cancelled - exiting[/dim]")
+        console.print("\n[text.dim]Cancelled - exiting[/text.dim]")
         return True  # Exit
 
     if choice == "1":
@@ -167,17 +167,17 @@ def _offer_worktree_creation(
         return _create_worktree_interactive(workspace_path, trigger)
     elif choice == "2":
         # Continue in main (warn)
-        console.print("\n[yellow]⚠️ Continuing in main worktree - please be careful![/yellow]")
+        console.print("\n[warning]⚠️ Continuing in main worktree - please be careful![/warning]")
         # Remember for this run to suppress further warnings
         os.environ["DOPEMUX_ALLOW_MAIN"] = "1"
         return False
     elif choice == "3":
         # Exit
-        console.print("\n[dim]Exiting - please clean up changes manually[/dim]")
+        console.print("\n[text.dim]Exiting - please clean up changes manually[/text.dim]")
         return True
     else:
         # Invalid choice - default to exit (safe)
-        console.print(f"\n[red]Invalid choice: '{choice}' - exiting for safety[/red]")
+        console.print(f"\n[error]Invalid choice: '{choice}' - exiting for safety[/error]")
         return True
 
 
@@ -192,50 +192,50 @@ def _create_worktree_interactive(
         True if should exit (creation failed),
         False if worktree created successfully
     """
-    console.print("\n[cyan]📝 Creating new worktree...[/cyan]\n")
+    console.print("\n[info]📝 Creating new worktree...[/info]\n")
 
     # Generate name suggestions
     inferrer = WorktreeNameInferrer(workspace_path)
     suggestions = inferrer.suggest_names(max_suggestions=3)
 
     if not suggestions:
-        console.print("[red]❌ Could not generate worktree name suggestions[/red]")
+        console.print("[error]❌ Could not generate worktree name suggestions[/error]")
         return True  # Exit
 
     # Display suggestions (ADHD: max 3 options)
-    console.print("[cyan]Suggested names (best match first):[/cyan]")
+    console.print("[info]Suggested names (best match first):[/info]")
     for i, suggestion in enumerate(suggestions, start=1):
-        console.print(f"  {i}. [green]{suggestion.name}[/green] ({suggestion.source}, confidence: {suggestion.confidence:.0%})")
+        console.print(f"  {i}. [success]{suggestion.name}[/success] ({suggestion.source}, confidence: {suggestion.confidence:.0%})")
     console.print()
 
     # Get user choice or custom name
-    console.print("[cyan]Options:[/cyan]")
+    console.print("[info]Options:[/info]")
     console.print("  • Enter [bold]1-3[/bold] to use suggestion")
     console.print("  • Enter [bold]custom name[/bold] for custom worktree")
     console.print("  • Press [bold]Enter[/bold] to use best suggestion\n")
 
     try:
-        choice_input = console.input(f"[cyan]Choice [[bold]{suggestions[0].name}[/bold]]: [/cyan]").strip()
+        choice_input = console.input(f"[info]Choice [[bold]{suggestions[0].name}[/bold]]: [/info]").strip()
     except (KeyboardInterrupt, EOFError):
-        console.print("\n[dim]Cancelled - staying in main[/dim]")
+        console.print("\n[text.dim]Cancelled - staying in main[/text.dim]")
         return False  # Continue in main
 
     # Parse choice
     worktree_name = _parse_name_choice(choice_input, suggestions, inferrer)
 
     if not worktree_name:
-        console.print("[yellow]⚠️ No name selected - staying in main[/yellow]")
+        console.print("[warning]⚠️ No name selected - staying in main[/warning]")
         return False
 
     # Ask about change migration
-    console.print("\n[cyan]💭 Would you like to migrate your uncommitted changes to the new worktree?[/cyan]")
-    console.print("  • [green]Yes (recommended)[/green] - Stash changes and apply in new worktree")
-    console.print("  • [dim]No[/dim] - Create empty worktree (changes stay in main)\n")
+    console.print("\n[info]💭 Would you like to migrate your uncommitted changes to the new worktree?[/info]")
+    console.print("  • [success]Yes (recommended)[/success] - Stash changes and apply in new worktree")
+    console.print("  • [text.dim]No[/text.dim] - Create empty worktree (changes stay in main)\n")
 
     try:
-        migrate_choice = console.input("[cyan]Migrate changes? [Y/n]: [/cyan]").strip().lower()
+        migrate_choice = console.input("[info]Migrate changes? [Y/n]: [/info]").strip().lower()
     except (KeyboardInterrupt, EOFError):
-        console.print("\n[dim]Cancelled - staying in main[/dim]")
+        console.print("\n[text.dim]Cancelled - staying in main[/text.dim]")
         return False
 
     migrate_changes = _parse_migration_choice(migrate_choice)
@@ -244,14 +244,14 @@ def _create_worktree_interactive(
     success = _execute_worktree_creation(workspace_path, worktree_name, migrate_changes=migrate_changes)
 
     if success:
-        console.print(f"\n[green]✅ Worktree created: {worktree_name}[/green]")
+        console.print(f"\n[success]✅ Worktree created: {worktree_name}[/success]")
         if migrate_changes:
-            console.print("[green]✓ Changes migrated successfully[/green]")
-        console.print("[green]🎯 Continuing in new worktree[/green]\n")
+            console.print("[success]✓ Changes migrated successfully[/success]")
+        console.print("[success]🎯 Continuing in new worktree[/success]\n")
         return False
     else:
-        console.print(f"\n[red]❌ Failed to create worktree: {worktree_name}[/red]")
-        console.print("[yellow]⚠️ Staying in main - please create worktree manually[/yellow]")
+        console.print(f"\n[error]❌ Failed to create worktree: {worktree_name}[/error]")
+        console.print("[warning]⚠️ Staying in main - please create worktree manually[/warning]")
         return False
 
 
@@ -284,9 +284,9 @@ def _parse_name_choice(
 
     if not inferrer.check_name_available(custom_name):
         # Name conflict - resolve
-        console.print(f"[yellow]⚠️ Name '{custom_name}' already exists[/yellow]")
+        console.print(f"[warning]⚠️ Name '{custom_name}' already exists[/warning]")
         resolved = inferrer.resolve_conflict(custom_name)
-        console.print(f"[cyan]Using '{resolved}' instead[/cyan]")
+        console.print(f"[info]Using '{resolved}' instead[/info]")
         return resolved
 
     return custom_name
@@ -326,19 +326,19 @@ def _stash_changes(workspace_path: str) -> Optional[str]:
 
         if result.returncode != 0:
             logger.error(f"Git stash failed: {result.stderr}")
-            console.print(f"[red]Failed to stash changes: {result.stderr.strip()}[/red]")
+            console.print(f"[error]Failed to stash changes: {result.stderr.strip()}[/error]")
             return None
 
-        console.print(f"[green]✓ Stashed changes: {stash_name}[/green]")
+        console.print(f"[success]✓ Stashed changes: {stash_name}[/success]")
         return stash_name
 
     except subprocess.TimeoutExpired:
         logger.error("Git stash timed out")
-        console.print("[red]Git stash timed out[/red]")
+        console.print("[error]Git stash timed out[/error]")
         return None
     except Exception as e:
         logger.error(f"Failed to stash changes: {e}")
-        console.print(f"[red]Error stashing: {e}[/red]")
+        console.print(f"[error]Error stashing: {e}[/error]")
         return None
 
 
@@ -369,7 +369,7 @@ def _pop_stash(workspace_path: str, stash_name: str) -> bool:
 
         if not stash_index:
             logger.warning(f"Stash not found: {stash_name}")
-            console.print(f"[yellow]⚠️ Could not find stash: {stash_name}[/yellow]")
+            console.print(f"[warning]⚠️ Could not find stash: {stash_name}[/warning]")
             return False
 
         # Pop the stash
@@ -384,24 +384,24 @@ def _pop_stash(workspace_path: str, stash_name: str) -> bool:
         if result.returncode != 0:
             # Check if it's a conflict
             if "CONFLICT" in result.stdout or "CONFLICT" in result.stderr:
-                console.print("[yellow]⚠️ Merge conflicts detected - please resolve manually[/yellow]")
-                console.print(f"[dim]Run 'git status' to see conflicts[/dim]")
+                console.print("[warning]⚠️ Merge conflicts detected - please resolve manually[/warning]")
+                console.print(f"[text.dim]Run 'git status' to see conflicts[/text.dim]")
                 return True  # Partial success - stash applied but has conflicts
             else:
                 logger.error(f"Git stash pop failed: {result.stderr}")
-                console.print(f"[red]Failed to apply stash: {result.stderr.strip()}[/red]")
+                console.print(f"[error]Failed to apply stash: {result.stderr.strip()}[/error]")
                 return False
 
-        console.print(f"[green]✓ Applied changes from stash[/green]")
+        console.print(f"[success]✓ Applied changes from stash[/success]")
         return True
 
     except subprocess.TimeoutExpired:
         logger.error("Git stash pop timed out")
-        console.print("[red]Git stash pop timed out[/red]")
+        console.print("[error]Git stash pop timed out[/error]")
         return False
     except Exception as e:
         logger.error(f"Failed to pop stash: {e}")
-        console.print(f"[red]Error applying stash: {e}[/red]")
+        console.print(f"[error]Error applying stash: {e}[/error]")
         return False
 
 
@@ -432,16 +432,16 @@ def _execute_worktree_creation(
     try:
         # Step 1: Stash changes if migration requested
         if migrate_changes:
-            console.print("\n[cyan]📦 Migrating changes to new worktree...[/cyan]")
+            console.print("\n[info]📦 Migrating changes to new worktree...[/info]")
             stash_name = _stash_changes(workspace_path)
             if not stash_name:
-                console.print("[yellow]⚠️ Could not stash changes - creating empty worktree[/yellow]")
+                console.print("[warning]⚠️ Could not stash changes - creating empty worktree[/warning]")
                 migrate_changes = False  # Skip migration
             elif snapshot_path:
                 _sync_project_scaffolding(snapshot_path, workspace)
 
         # Step 2: Create worktree with new branch
-        console.print(f"[cyan]🌳 Creating worktree: {worktree_name}[/cyan]")
+        console.print(f"[info]🌳 Creating worktree: {worktree_name}[/info]")
         result = subprocess.run(
             ["git", "worktree", "add", str(worktree_path), "-b", worktree_name],
             cwd=workspace_path,
@@ -452,11 +452,11 @@ def _execute_worktree_creation(
 
         if result.returncode != 0:
             logger.error(f"Git worktree add failed: {result.stderr}")
-            console.print(f"[red]Git error: {result.stderr.strip()}[/red]")
+            console.print(f"[error]Git error: {result.stderr.strip()}[/error]")
 
             # Rollback: Pop stash if we stashed
             if stash_name:
-                console.print("[cyan]Rolling back stash...[/cyan]")
+                console.print("[info]Rolling back stash...[/info]")
                 subprocess.run(
                     ["git", "stash", "pop"],
                     cwd=workspace_path,
@@ -465,11 +465,11 @@ def _execute_worktree_creation(
                 )
             return False
 
-        console.print(f"[green]✓ Created worktree at: {worktree_path}[/green]")
+        console.print(f"[success]✓ Created worktree at: {worktree_path}[/success]")
 
         # Step 3: Apply stash in new worktree if migration requested
         if migrate_changes and stash_name:
-            console.print(f"[cyan]📥 Applying changes in new worktree...[/cyan]")
+            console.print(f"[info]📥 Applying changes in new worktree...[/info]")
 
             # Switch to new worktree
             original_dir = os.getcwd()
@@ -483,7 +483,7 @@ def _execute_worktree_creation(
                 os.chdir(original_dir)
 
                 if not success:
-                    console.print("[yellow]⚠️ Changes not fully migrated - check stash manually[/yellow]")
+                    console.print("[warning]⚠️ Changes not fully migrated - check stash manually[/warning]")
                     _record_last_created_worktree(worktree_path)
                     return True  # Worktree created, but migration incomplete
                 elif snapshot_path:
@@ -492,7 +492,7 @@ def _execute_worktree_creation(
             except Exception as e:
                 os.chdir(original_dir)  # Ensure we switch back
                 logger.error(f"Failed during migration: {e}")
-                console.print(f"[yellow]⚠️ Migration error: {e}[/yellow]")
+                console.print(f"[warning]⚠️ Migration error: {e}[/warning]")
                 _record_last_created_worktree(worktree_path)
                 return True  # Worktree created, but migration failed
 
@@ -504,7 +504,7 @@ def _execute_worktree_creation(
 
     except subprocess.TimeoutExpired:
         logger.error("Git worktree add timed out")
-        console.print("[red]Git command timed out[/red]")
+        console.print("[error]Git command timed out[/error]")
 
         if stash_name:
             subprocess.run(
@@ -517,7 +517,7 @@ def _execute_worktree_creation(
 
     except Exception as e:
         logger.error(f"Failed to create worktree: {e}")
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[error]Error: {e}[/error]")
 
         if stash_name:
             subprocess.run(

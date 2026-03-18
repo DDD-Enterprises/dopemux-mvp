@@ -384,7 +384,7 @@ class CliTmuxBackend(BaseTmuxBackend):
             "set-option", "-t", session,
             "pane-border-format",
             "#[default]"
-            "#{?pane_active,#[bold],#[dim]}"
+            "#{?pane_active,#[bold],#[text.dim]}"
             "#[bg=#{@dopemux_title_bg:-#1e1e2e}]"
             "#[fg=#{@dopemux_title_fg:-#cdd6f4}] "
             "#{pane_title} "
