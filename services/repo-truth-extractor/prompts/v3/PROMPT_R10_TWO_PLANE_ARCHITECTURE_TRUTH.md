@@ -5,7 +5,7 @@ Produce a deterministic, evidence-backed architecture truth report for the two-p
 Focus on explicit boundaries, authority ownership, and integration edges proven by code/config/docs.
 
 ## Inputs
-- Upstream normalized artifacts:
+- Upstream normalized artifacts (required — from A/H/D/C):
   - `SERVICE_CATALOG.json`
   - `TRINITY_ENFORCEMENT_SURFACE.json`
   - `BOUNDARY_ENFORCEMENT_POINTS.json`
@@ -14,6 +14,9 @@ Focus on explicit boundaries, authority ownership, and integration edges proven 
   - `DOPE_MEMORY_CODE_SURFACE.json`
   - `LEANTIME_INTEGRATION_TRUTH.md`
   - `RISK_REGISTER_TOP20.md`
+- Optional supplemental artifacts (from B/G — use when present):
+  - Phase B: `BOUNDARY_ENFORCEMENT_POINTS.json`, `REFUSAL_GUARDRAILS_SURFACE.json`, `BOUNDARY_BYPASS_RISKS.json` — boundary guard chains, refusal rails
+  - Phase G: `GOV_POLICIES.json`, `GOV_CI_GATES.json` — governance authority, enforcement gates
 - Supporting source/doc paths for disambiguation:
   - `src/dopemux/**`
   - `services/**`
