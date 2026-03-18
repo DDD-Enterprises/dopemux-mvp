@@ -1,0 +1,31 @@
+{
+  "packet": "TP-RTX-V5-PRE-RESTART-REPO-HYGIENE-0001",
+  "quarantine_timestamp": "20260314T120000Z",
+  "quarantine_root": "extraction/repo-truth-extractor/quarantine/20260314T120000Z",
+  "total_items": 3,
+  "items": [
+    {
+      "original_path": "extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A0__A_P0015.FAILED.txt",
+      "quarantine_path": "extraction/repo-truth-extractor/quarantine/20260314T120000Z/real_proc_test_20260226_192237/A_repo_control_plane/raw/A0__A_P0015.FAILED.txt",
+      "reason": "stale_failed",
+      "original_mtime": "2026-02-26T19:22:37Z",
+      "success_file_mtime": "2026-02-26T20:15:42Z"
+    },
+    {
+      "original_path": "extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A2__A_P0004.FAILED.json",
+      "quarantine_path": "extraction/repo-truth-extractor/quarantine/20260314T120000Z/real_proc_test_20260226_192237/A_repo_control_plane/raw/A2__A_P0004.FAILED.json",
+      "reason": "stale_failed",
+      "original_mtime": "2026-02-26T19:23:11Z",
+      "success_file_mtime": "2026-02-26T20:18:03Z"
+    },
+    {
+      "original_path": "extraction/.DS_Store",
+      "quarantine_path": "extraction/repo-truth-extractor/quarantine/20260314T120000Z/extraction_.DS_Store",
+      "reason": "os_artifact",
+      "original_mtime": "2026-03-10T08:44:21Z",
+      "success_file_mtime": null
+    }
+  ],
+  "reversible": true,
+  "restore_instructions": "Move items from quarantine_path back to original_path using the paths listed above. No content was modified — this is a move operation only."
+}
