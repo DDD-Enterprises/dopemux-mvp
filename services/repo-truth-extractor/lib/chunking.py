@@ -24,18 +24,32 @@ def plan_chunks_for_step(
     inventory_by_path: Dict[str, Dict[str, Any]],
     max_files: int,
     max_chars: int,
+    router: Any = None,
 ) -> List[Dict[str, Any]]:
     planned: List[Dict[str, Any]] = []
     soft_target = max(int(max_chars * 0.7), 2048)
     idx = 1
 
-    def _sort_key(path: str) -> Tuple[str, float, int]:
+    def _sort_key(path: str) -> Tuple[int, str, float, int]:
+        priority = router.get_routing_priority(path) if router else 50
         info = inventory_by_path.get(path, {})
-        return (path, float(info.get("mtime", 0.0) or 0.0), int(info.get("size", 0) or 0))
+        return (
+            -priority,
+            path,
+            float(info.get("mtime", 0.0) or 0.0),
+            int(info.get("size", 0) or 0),
+        )
 
     for partition in sorted(partitions, key=lambda item: str(item.get("id", ""))):
         base_id = str(partition.get("id", ""))
-        paths = sorted((str(path) for path in partition.get("paths", [])), key=_sort_key)
+        paths = sorted(
+            (str(path) for path in partition.get("paths", [])), key=_sort_key
+        )
+
+        # Intelligence-based skipping
+        if router:
+            paths = [p for p in paths if not router.should_skip(p)]
+
         if not paths:
             chunk_id = f"{base_id}_C{idx:04d}"
             planned.append(
@@ -100,6 +114,7 @@ def build_partition_context(
     max_files: int,
     max_chars: int,
     tail_chars: int,
+    router: Any = None,
 ) -> Tuple[str, Dict[str, int], List[Dict[str, Any]]]:
     chunks: List[str] = []
     file_entries: List[Dict[str, Any]] = []
@@ -107,27 +122,38 @@ def build_partition_context(
     context_bytes = 0
     truncated_files = 0
     tail_snippet_files = 0
+    compressed_files = 0
 
     for path_str in partition_paths:
         if len(chunks) >= max_files:
             skipped_files += 1
             continue
 
-        content = read_text_fn(path_str)
-        original_chars = len(content)
-        truncated = False
-        used_tail = False
+        # Check for compression hint
+        compression_hint = router.get_compression_hint(path_str) if router else None
 
-        if len(content) > file_truncate_chars:
-            head_chars = max(file_truncate_chars - max(tail_chars, 0), 0)
-            head_part = content[:head_chars]
-            tail_part = content[-tail_chars:] if tail_chars > 0 else ""
-            content = (
-                f"{head_part}\n...[TRUNCATED_HEAD]...\n"
-                + (f"\n...[TRUNCATED_TAIL]...\n{tail_part}" if tail_part else "")
-            )
-            truncated = True
-            used_tail = bool(tail_part)
+        if compression_hint:
+            content = f"[PRESCAN COMPRESSION] {compression_hint}"
+            compressed_files += 1
+            original_chars = 0
+            truncated = False
+            used_tail = False
+        else:
+            content = read_text_fn(path_str)
+            original_chars = len(content)
+            truncated = False
+            used_tail = False
+
+            if len(content) > file_truncate_chars:
+                head_chars = max(file_truncate_chars - max(tail_chars, 0), 0)
+                head_part = content[:head_chars]
+                tail_part = content[-tail_chars:] if tail_chars > 0 else ""
+                content = (
+                    f"{head_part}\n...[TRUNCATED_HEAD]...\n"
+                    + (f"\n...[TRUNCATED_TAIL]...\n{tail_part}" if tail_part else "")
+                )
+                truncated = True
+                used_tail = bool(tail_part)
 
         chunk_text = f"--- FILE: {path_str} ---\n{content}\n"
         chunk_bytes = len(chunk_text.encode("utf-8"))
@@ -164,6 +190,7 @@ def build_partition_context(
                 "injected_bytes": chunk_bytes,
                 "truncated": truncated,
                 "used_tail_snippet": used_tail,
+                "compressed": bool(compression_hint),
             }
         )
 
@@ -175,6 +202,7 @@ def build_partition_context(
         "context_bytes": len(context.encode("utf-8")),
         "truncated_files": truncated_files,
         "tail_snippet_files": tail_snippet_files,
+        "compressed_files": compressed_files,
     }
     return context, stats, file_entries
 
