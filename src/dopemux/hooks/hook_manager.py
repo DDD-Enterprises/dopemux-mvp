@@ -16,6 +16,9 @@ Key Safety Features:
 
 import asyncio
 import logging
+import os
+import json
+import aiohttp
 from typing import Dict, Any, Optional, List
 from contextlib import asynccontextmanager
 import time
@@ -75,7 +78,7 @@ class HookManager:
             self.active_hooks[hook_type] = False
             logger.info(f"Hook disabled: {hook_type}")
 
-    async def trigger_hook(self, hook_type: str, context: Optional[Dict[str, Any]] = None) -> None:
+    async def trigger_hook(self, hook_type: str, context: Optional[Dict[str, Any]] = None) -> Any:
         """
         Trigger a hook with safety guarantees.
 
@@ -86,19 +89,20 @@ class HookManager:
             context: Event context data
 
         Returns:
-            None (async operation, non-blocking)
+            The result of the hook execution (or None)
         """
         if context is None:
             context = {}
 
         try:
             # Route to appropriate handler system
+            result = None
             hook_handled = False
 
             # Handle VS Code/editor hooks (direct integration)
             if hook_type in ['save', 'terminal-open', 'pane-focus', 'git-commit']:
                 if self.is_hook_enabled(hook_type):
-                    await self._handle_vscode_hook(hook_type, context)
+                    result = await self._handle_vscode_hook(hook_type, context)
                     hook_handled = True
 
             # Handle Claude Code external monitoring hooks
@@ -113,11 +117,13 @@ class HookManager:
 
                 mapped_hook = claude_event_map.get(hook_type)
                 if mapped_hook and claude_hooks.is_hook_enabled(mapped_hook):
-                    await self._handle_claude_event(hook_type, context)
+                    result = await self._handle_claude_event(hook_type, context)
                     hook_handled = True
 
             if not hook_handled:
                 logger.debug(f"No enabled handler for hook type: {hook_type}")
+
+            return result
 
         except Exception as e:
             # Never let hook errors affect user workflow
@@ -125,16 +131,17 @@ class HookManager:
             if not self.quiet_mode:
                 logger.debug("Hook error surfaced in non-quiet mode for %s", hook_type)
 
-    async def _handle_vscode_hook(self, hook_type: str, context: Dict[str, Any]) -> None:
+    async def _handle_vscode_hook(self, hook_type: str, context: Dict[str, Any]) -> Any:
         """Handle VS Code/editor-specific hooks."""
         if hook_type == 'save':
-            await self._handle_file_save(context)
+            return await self._handle_file_save(context)
         elif hook_type == 'terminal-open':
-            await self._handle_terminal_open(context)
+            return await self._handle_terminal_open(context)
         elif hook_type == 'pane-focus':
-            await self._handle_pane_focus(context)
+            return await self._handle_pane_focus(context)
         elif hook_type == 'git-commit':
-            await self._handle_git_commit(context)
+            return await self._handle_git_commit(context)
+        return None
 
     async def _handle_claude_event(self, event_type: str, context: Dict[str, Any]) -> None:
         """Handle Claude Code monitoring events."""
@@ -212,34 +219,42 @@ class HookManager:
             except Exception as e:
                 logger.error(f"Command activity logging failed: {e}")
 
-    async def _handle_file_save(self, context: Dict[str, Any]) -> None:
+    async def _handle_file_save(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Handle file save events - trigger background indexing."""
         file_path = context.get('file', '')
         language = context.get('language', '')
 
         if not file_path:
-            return
+            return {"status": "error", "message": "No file path"}
 
         # Background tasks - non-blocking
         asyncio.create_task(self._index_file_background(file_path, language))
+        return {"status": "scheduled", "task": "indexing", "file": file_path}
 
-    async def _handle_terminal_open(self, context: Dict[str, Any]) -> None:
+    async def _handle_terminal_open(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Handle terminal open events - prepare workspace context."""
         terminal_name = context.get('name', '')
         shell_path = context.get('shell', '')
 
         # Background context loading
         asyncio.create_task(self._load_terminal_context(terminal_name, shell_path))
+        return {"status": "scheduled", "task": "context_load", "terminal": terminal_name}
 
-    async def _handle_pane_focus(self, context: Dict[str, Any]) -> None:
+    async def _handle_pane_focus(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Handle pane focus events - update session context."""
         # Minimal context update - very fast
         asyncio.create_task(self._update_session_context())
+        return {"status": "scheduled", "task": "session_update"}
 
-    async def _handle_git_commit(self, context: Dict[str, Any]) -> None:
+    async def _handle_git_commit(self, context: Dict[str, Any]) -> Any:
         """Handle git commit events - validate and index."""
-        # Only if explicitly enabled (high risk due to commit blocking)
+        # If explicitly requested, run blocking validation
+        if context.get('blocking', False):
+            return await self._validate_commit(context)
+
+        # Default to background to avoid blocking user flow
         asyncio.create_task(self._validate_commit(context))
+        return {"status": "scheduled", "task": "commit_validation"}
 
     @asynccontextmanager
     async def _with_timeout(self, operation_name: str):
@@ -255,47 +270,95 @@ class HookManager:
                 logger.warning(f"Hook slow: {operation_name} ({elapsed:.1f}ms)")
 
     # Background operation implementations
-    async def _index_file_background(self, file_path: str, language: str) -> None:
-        """Background file indexing with timeout."""
-        async with self._with_timeout(f"index_{file_path}"):
+    async def _index_file_background(self, file_path: str, language: str) -> Dict[str, Any]:
+        """Index a file in Dope-Context/Search plane."""
+        async with self._with_timeout("indexing"):
             try:
-                # Placeholder for actual indexing logic
-                # Would integrate with Dope-Context here
-                await asyncio.sleep(0.01)  # Simulate fast operation
-                logger.debug(f"Indexed file: {file_path} ({language})")
-            except Exception as e:
-                logger.error(f"File indexing failed: {e}")
+                # Resolve workspace root (relative to Dopemux root)
+                workspace_root = os.getcwd()
 
-    async def _load_terminal_context(self, terminal_name: str, shell_path: str) -> None:
-        """Load terminal-specific context."""
-        async with self._with_timeout(f"terminal_{terminal_name}"):
-            try:
-                # Placeholder for context loading
-                await asyncio.sleep(0.01)
-                logger.debug(f"Terminal context loaded: {terminal_name}")
+                # Determine Dope-Context endpoint
+                base_url = os.getenv("DOPE_CONTEXT_URL", "http://localhost:3010").rstrip("/")
+                endpoint = f"{base_url}/autoindex/bootstrap"
+
+                payload = {
+                    "workspace_path": workspace_root,
+                    "force": False,
+                    "wait_for_completion": False,
+                    "debounce_seconds": 1.0,
+                    "trigger": "hook_manager_file_save",
+                }
+
+                logger.info(f"Triggering Dope-Context indexing for {file_path}")
+
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(
+                        endpoint,
+                        json=payload,
+                        timeout=aiohttp.ClientTimeout(total=5.0)
+                    ) as response:
+                        if response.status < 400:
+                            return {"status": "success", "file": file_path}
+                        else:
+                            logger.warning(f"Dope-Context indexing trigger failed: {response.status}")
+                            return {"status": "error", "code": response.status}
+
             except Exception as e:
-                logger.error(f"Terminal context load failed: {e}")
+                logger.error(f"Background indexing failed for {file_path}: {e}")
+                return {"status": "error", "message": str(e)}
+
+    async def _load_terminal_context(self, terminal_name: str, shell_path: str) -> Dict[str, Any]:
+        """Prepare terminal context when opened."""
+        async with self._with_timeout("terminal_context"):
+            try:
+                logger.debug(f"Loading context for terminal '{terminal_name}' ({shell_path})")
+
+                # In a real implementation, this would fetch ADHD cognitive state
+                # or recent work items from ConPort to prime the terminal session.
+                # For now, we simulate a successful context retrieval.
+                await asyncio.sleep(0.05)
+
+                return {
+                    "status": "success",
+                    "terminal": terminal_name,
+                    "context_id": "adhd-focus-session-v1"
+                }
+            except Exception as e:
+                logger.error(f"Terminal context loading failed: {e}")
+                return {"status": "error", "message": str(e)}
 
     async def _update_session_context(self) -> None:
-        """Update current session context."""
+        """Update active session context based on user focus."""
         async with self._with_timeout("session_update"):
             try:
-                # Minimal context update
-                await asyncio.sleep(0.005)
-                logger.debug("Session context updated")
+                # This would update the ConPort active context overlay
+                await asyncio.sleep(0.01)
             except Exception as e:
-                logger.error(f"Session update failed: {e}")
+                logger.error(f"Session context update failed: {e}")
 
-    async def _validate_commit(self, context: Dict[str, Any]) -> None:
-        """Validate git commit (only when explicitly enabled)."""
+    async def _validate_commit(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate a git commit before it's finalized."""
         async with self._with_timeout("commit_validation"):
             try:
-                # Placeholder for commit validation
-                # Would check complexity, run tests, etc.
-                await asyncio.sleep(0.05)  # Slightly longer but still fast
-                logger.debug("Commit validated")
+                message = context.get('message', '')
+                if not message:
+                    return {"status": "failed", "reason": "Empty commit message"}
+
+                # Simple validation rule: no ADHD-unfriendly placeholders
+                placeholders = ["TODO", "TBD", "FIXME", "temp"]
+                if any(p in message.upper() for p in placeholders):
+                    logger.warning(f"ADHD Alert: Commit message contains placeholders: {message}")
+                    return {
+                        "status": "warning",
+                        "reason": "placeholder_found",
+                        "message": message
+                    }
+
+                return {"status": "success", "message": "Commit validated"}
+
             except Exception as e:
                 logger.error(f"Commit validation failed: {e}")
+                return {"status": "error", "message": str(e)}
 
     # Configuration methods
     def set_quiet_mode(self, quiet: bool) -> None:
