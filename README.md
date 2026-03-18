@@ -52,31 +52,24 @@ If you want your terminal, services, and dashboard to work together to keep you 
 
 ## Quick Start
 
-**For detailed installation instructions, see [docs/04-installation.md](docs/04-installation.md).**
+**The recommended way to get started is the one-command installer:**
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/DDD-Enterprises/dopemux-mvp
 cd dopemux-mvp
 
-# 2. Install dependencies (single source of truth)
-python -m pip install --upgrade pip
-pip install -e ".[dev]"
-pre-commit install --install-hooks
+# 2. Run the universal installer (Core stack recommended for 8GB RAM)
+./install.sh --quick
 
-# 3. Generate workspace configs and set up environment
-python scripts/render_workspace_configs.py --set-default
-source "$(python scripts/workspace_env_path.py)"
+# 3. Initialize your environment
+source ~/.zshrc && dopemux start
 
-# 4. Start services
-scripts/smoke_up.sh
-python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
-
-# 5. Run CLI
-dopemux --help
+# 4. Generate your repository Ground Truth pack
+dopemux truth
 ```
 
-See [docs/04-installation.md](docs/04-installation.md), [INSTALL.md](INSTALL.md), and [QUICK_START.md](QUICK_START.md) for more.
+See [INSTALL.md](INSTALL.md) and [docs/USER_JOURNEY.md](docs/USER_JOURNEY.md) for detailed onboarding paths.
 
 ---
 
