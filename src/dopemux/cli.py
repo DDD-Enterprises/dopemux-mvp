@@ -3631,22 +3631,22 @@ def _start_mcp_servers_with_progress(
         wizard.add_log("✅ MCP Servers Online")
 
         startup_workspace = (worktree_path or project_path).resolve()
-            autoindex_result = _trigger_dope_context_autoindex_startup(
-                startup_workspace
-            )
-            if autoindex_result:
-                status = autoindex_result.get("status", "unknown")
-                if status in {"started", "already_running"}:
-                    progress.update(
-                        task,
-                        description=(
-                            f"Autoindex startup {status} for {startup_workspace.name}"
-                        ),
-                    )
-                elif status in {"request_failed", "http_error"}:
-                    console.logger.info(
-                        "[warning]⚠️  Autoindex startup trigger failed; continuing without blocking.[/warning]"
-                    )
+        autoindex_result = _trigger_dope_context_autoindex_startup(
+            startup_workspace
+        )
+        if autoindex_result:
+            status = autoindex_result.get("status", "unknown")
+            if status in {"started", "already_running"}:
+                progress.update(
+                    task,
+                    description=(
+                        f"Autoindex startup {status} for {startup_workspace.name}"
+                    ),
+                )
+            elif status in {"request_failed", "http_error"}:
+                console.logger.info(
+                    "[warning]⚠️  Autoindex startup trigger failed; continuing without blocking.[/warning]"
+                )
         else:
             console.logger.info(
                 "[warning]⚠️  Skipping MCP servers (reduced ADHD experience)[/warning]"
