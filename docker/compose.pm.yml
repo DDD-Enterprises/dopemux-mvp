@@ -1,0 +1,67 @@
+services:
+  mysql_leantime:
+    image: mysql:8.0
+    container_name: mysql_leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-dopemux_root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-leantime_db}
+      MYSQL_USER: ${MYSQL_USER:-leantime_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-leantime_pass}
+    volumes:
+      - mysql_leantime_data:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis_leantime:
+    image: redis:7-alpine
+    container_name: redis_leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    command: redis-server --requirepass ${REDIS_PASSWORD:-dopemux_redis}
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  leantime:
+    image: leantime/leantime:latest
+    container_name: leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      LEAN_DB_HOST: mysql_leantime
+      LEAN_DB_USER: ${MYSQL_USER:-leantime_user}
+      LEAN_DB_PASSWORD: ${MYSQL_PASSWORD:-leantime_pass}
+      LEAN_DB_DATABASE: ${MYSQL_DATABASE:-leantime_db}
+      LEAN_REDIS_HOST: redis_leantime
+      LEAN_REDIS_PASSWORD: ${REDIS_PASSWORD:-dopemux_redis}
+      LEAN_SITENAME: ${LEAN_SITENAME:-Dopemux Leantime}
+      LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD:-dopemux_session_pass_change_me}
+      LEAN_APP_URL: ${LEAN_APP_URL:-http://localhost:8080}
+    ports:
+      - "${LEANTIME_PORT:-8080}:80"
+    depends_on:
+      mysql_leantime:
+        condition: service_healthy
+      redis_leantime:
+        condition: service_healthy
+
+networks:
+  dopemux-network:
+    external: true
+
+volumes:
+  mysql_leantime_data:

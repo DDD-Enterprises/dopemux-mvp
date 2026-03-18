@@ -2618,6 +2618,20 @@ def pr_merge_command(args):
     except SystemExit as e:
         sys.exit(e.code)
 
+@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def pr_merge_command(args):
+    """🚀 PR Merge Specialist - Managed remediation and merging."""
+    import sys
+    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
+    
+    # Bridge to the specialist's argparse CLI
+    sys.argv = ["dopemux pr-merge"] + list(args)
+    try:
+        pr_merge_main()
+    except SystemExit as e:
+        sys.exit(e.code)
+
 
 @cli.command()
 @click.option("--attention", "-a", is_flag=True, help="Show attention metrics")
