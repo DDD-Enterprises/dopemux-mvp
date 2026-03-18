@@ -24,6 +24,7 @@ from rich.table import Table
 from rich.text import Text
 
 from ..console import console
+from ..ui.theme import styled_panel, styled_table
 
 @click.group()
 @click.pass_context
@@ -110,13 +111,13 @@ def _run_extract_docs(
     try:
         from document_classifier import DocumentClassifier, extract_from_directory
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import extraction modules: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
+        console.logger.info(f"[error]❌ Could not import extraction modules: {e}[/error]")
+        console.logger.info("[warning]💡 Make sure you're in the dopemux-mvp directory[/warning]")
         sys.exit(1)
 
     source_path = Path(directory).resolve()
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Directory does not exist: {source_path}[/red]")
+        console.logger.info(f"[error]❌ Directory does not exist: {source_path}[/error]")
         sys.exit(1)
 
     if not extensions:
@@ -194,7 +195,7 @@ def _run_extract_docs(
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Extraction failed: {e}[/red]")
+            console.logger.error(f"[error]❌ Extraction failed: {e}[/error]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()
@@ -208,7 +209,7 @@ def _run_extract_docs(
 
             output_text = yaml.dump(output_data, default_flow_style=False, allow_unicode=True)
         except ImportError:
-            console.logger.info("[yellow]⚠️ PyYAML not available, falling back to JSON[/yellow]")
+            console.logger.info("[warning]⚠️ PyYAML not available, falling back to JSON[/warning]")
             output_text = json.dumps(output_data, indent=2, ensure_ascii=False)
     elif format == "csv":
         output_buffer = StringIO()
@@ -249,12 +250,12 @@ def _run_extract_docs(
     if output:
         output_path = Path(output)
         output_path.write_text(output_text, encoding='utf-8')
-        console.logger.info(f"[green]✅ Results written to {output_path}[/green]")
+        console.logger.info(f"[success]✅ Results written to {output_path}[/success]")
     else:
         console.logger.info(output_text)
 
     console.print(
-        Panel(
+        styled_panel(
             f"🎯 Extraction Summary:\n\n"
             f"• Mode: {mode}\n"
             f"• Documents: {results.get('documents_processed', 0)}\n"
@@ -262,7 +263,7 @@ def _run_extract_docs(
             f"• Entity types: {len(filtered_entities)}\n"
             f"• Format: {format}",
             title="📊 Results",
-            border_style="green",
+            border_style="success",
         )
     )
 
@@ -398,15 +399,15 @@ def _run_extract_pipeline(
     try:
         from ..extraction import UnifiedDocumentPipeline, PipelineConfig
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import pipeline modules: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure the extraction package is properly installed[/yellow]")
+        console.logger.info(f"[error]❌ Could not import pipeline modules: {e}[/error]")
+        console.logger.info("[warning]💡 Make sure the extraction package is properly installed[/warning]")
         sys.exit(1)
 
     source_path = Path(directory).resolve()
     output_path = Path(output).resolve()
 
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Source directory does not exist: {source_path}[/red]")
+        console.logger.info(f"[error]❌ Source directory does not exist: {source_path}[/error]")
         sys.exit(1)
 
     file_extensions = None
@@ -438,9 +439,9 @@ def _run_extract_pipeline(
         synthesis_format=synthesis_format,
     )
 
-    console.logger.info(f"[blue]🚀 Starting unified document pipeline...[/blue]")
-    console.logger.info(f"[blue]📁 Source: {source_path}[/blue]")
-    console.logger.info(f"[blue]📤 Output: {output_path}[/blue]")
+    console.logger.info(f"[info]🚀 Starting unified document pipeline...[/info]")
+    console.logger.info(f"[info]📁 Source: {source_path}[/info]")
+    console.logger.info(f"[info]📤 Output: {output_path}[/info]")
 
     with Progress(
         SpinnerColumn(),
@@ -457,7 +458,7 @@ def _run_extract_pipeline(
                 progress.update(task, description="Pipeline completed successfully! ✅", completed=True)
 
                 console.print(
-                    Panel(
+                    styled_panel(
                         f"🎯 Pipeline Results:\n\n"
                         f"• Processing time: {result.processing_time:.2f}s\n"
                         f"• Documents processed: {result.document_count}\n"
@@ -472,34 +473,34 @@ def _run_extract_pipeline(
                         f"• Vector embeddings: {'✅' if embeddings else '❌'}\n"
                         f"• Confidence threshold: {confidence}",
                         title="🚀 Pipeline Complete",
-                        border_style="green",
+                        border_style="success",
                     )
                 )
 
                 if result.output_files:
-                    console.logger.info("\n[green]📤 Generated files:[/green]")
+                    console.logger.info("\n[success]📤 Generated files:[/success]")
                     for file_path in result.output_files:
                         console.logger.info(f"  • {file_path}")
 
                 if result.registry_files:
-                    console.logger.info("\n[green]📊 TSV registries:[/green]")
+                    console.logger.info("\n[success]📊 TSV registries:[/success]")
                     for name, path in result.registry_files.items():
                         count = result.registry_counts.get(name, 0) if result.registry_counts else 0
                         console.logger.info(f"  • {name}: {path} ({count} entries)")
 
                 if result.embedding_summary:
-                    console.logger.info("\n[green]🔍 Embeddings:[/green]")
+                    console.logger.info("\n[success]🔍 Embeddings:[/success]")
                     console.logger.info(f"  • Model: {result.embedding_summary.get('model', 'N/A')}")
                     console.logger.info(f"  • Vectors: {result.vector_count}")
 
             else:
                 progress.update(task, description="Pipeline failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Pipeline failed: {result.error_message}[/red]")
+                console.logger.error(f"[error]❌ Pipeline failed: {result.error_message}[/error]")
                 sys.exit(1)
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Pipeline execution failed: {e}[/red]")
+            console.logger.error(f"[error]❌ Pipeline execution failed: {e}[/error]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()
@@ -583,14 +584,14 @@ def _run_extract_cleanup(
     try:
         from ..extraction.cleanup import PipelineCleanup, CleanupConfig
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import cleanup modules: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure the extraction package is properly installed[/yellow]")
+        console.logger.info(f"[error]❌ Could not import cleanup modules: {e}[/error]")
+        console.logger.info("[warning]💡 Make sure the extraction package is properly installed[/warning]")
         sys.exit(1)
 
     target_path = Path(directory).resolve()
 
     if not target_path.exists():
-        console.logger.info(f"[red]❌ Target directory does not exist: {target_path}[/red]")
+        console.logger.info(f"[error]❌ Target directory does not exist: {target_path}[/error]")
         sys.exit(1)
 
     # Configure cleanup
@@ -608,12 +609,12 @@ def _run_extract_cleanup(
         backup_before_delete=False  # For safety in dry-run mode
     )
 
-    console.logger.info(f"[blue]🧹 {'Previewing' if dry_run else 'Executing'} pipeline cleanup...[/blue]")
-    console.logger.info(f"[blue]📁 Target: {target_path}[/blue]")
-    console.logger.info(f"[blue]🎯 Cleanup types: {', '.join(cleanup_types_list)}[/blue]")
+    console.logger.info(f"[info]🧹 {'Previewing' if dry_run else 'Executing'} pipeline cleanup...[/info]")
+    console.logger.info(f"[info]📁 Target: {target_path}[/info]")
+    console.logger.info(f"[info]🎯 Cleanup types: {', '.join(cleanup_types_list)}[/info]")
 
     if dry_run:
-        console.logger.info("[yellow]⚠️  DRY RUN: No files will actually be removed[/yellow]")
+        console.logger.info("[warning]⚠️  DRY RUN: No files will actually be removed[/warning]")
 
     with Progress(
         SpinnerColumn(),
@@ -663,7 +664,7 @@ def _run_extract_cleanup(
                 # Generate detailed report
                 if report_format == "detailed":
                     console.print(
-                        Panel(
+                        styled_panel(
                             f"🧹 Cleanup Results:\n\n"
                             f"• Files removed: {result.files_removed}\n"
                             f"• Space freed: {result.space_freed / (1024*1024):.2f} MB\n"
@@ -673,13 +674,13 @@ def _run_extract_cleanup(
                             + "\n".join([f"• {category}: {count} files"
                                        for category, count in result.files_by_category.items()]),
                             title=f"🧹 Cleanup {'Preview' if dry_run else 'Complete'}",
-                            border_style="green" if result.success else "red",
+                            border_style="success" if result.success else "red",
                         )
                     )
 
                     # Show detailed file lists
                     if result.removed_files:
-                        console.logger.info(f"\n[green]{'📋 Files to be removed:' if dry_run else '🗑️  Files removed:'}[/green]")
+                        console.logger.info(f"\n[success]{'📋 Files to be removed:' if dry_run else '🗑️  Files removed:'}[/success]")
                         for file_path in result.removed_files[:20]:  # Show first 20
                             file_size = file_path.stat().st_size if file_path.exists() else 0
                             size_str = f"({file_size / 1024:.1f} KB)" if file_size > 0 else ""
@@ -690,7 +691,7 @@ def _run_extract_cleanup(
 
                     # Show errors if any
                     if result.errors:
-                        console.logger.error(f"\n[red]⚠️  Errors encountered:[/red]")
+                        console.logger.error(f"\n[error]⚠️  Errors encountered:[/error]")
                         for error in result.errors[:5]:  # Show first 5 errors
                             console.logger.error(f"  • {error}")
                         if len(result.errors) > 5:
@@ -698,12 +699,12 @@ def _run_extract_cleanup(
 
                 elif report_format == "table":
                     # Create a summary table
-                    from rich.table import Table
-
-                    table = Table(title=f"Cleanup {'Preview' if dry_run else 'Results'}")
-                    table.add_column("Category", style="cyan")
-                    table.add_column("Files", justify="right", style="magenta")
-                    table.add_column("Size", justify="right", style="green")
+                    table = styled_table(
+                        f"Cleanup {'Preview' if dry_run else 'Results'}",
+                        ("Category", {"style": "info"}),
+                        ("Files", {"justify": "right", "style": "magenta"}),
+                        ("Size", {"justify": "right", "style": "success"}),
+                    )
 
                     for category, count in result.files_by_category.items():
                         # Calculate size for this category
@@ -760,16 +761,16 @@ def _run_extract_cleanup(
                     with open(report_path, 'w') as f:
                         json.dump(report_data, f, indent=2)
 
-                    console.logger.info(f"\n[green]📄 Report saved to: {report_path}[/green]")
+                    console.logger.info(f"\n[success]📄 Report saved to: {report_path}[/success]")
 
             else:
                 progress.update(task, description="Cleanup failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Cleanup failed: {result.error_message}[/red]")
+                console.logger.error(f"[error]❌ Cleanup failed: {result.error_message}[/error]")
                 sys.exit(1)
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Cleanup execution failed: {e}[/red]")
+            console.logger.error(f"[error]❌ Cleanup execution failed: {e}[/error]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()

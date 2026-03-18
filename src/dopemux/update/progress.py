@@ -25,6 +25,8 @@ from rich.progress import (
 from rich.panel import Panel
 from rich.text import Text
 
+from dopemux.ui.theme import Glyphs, styled_panel
+
 
 class UpdateState(Enum):
     """Current state of the update process."""
@@ -100,9 +102,9 @@ class ProgressTracker:
 
         # Create rich progress display
         self.main_progress = Progress(
-            SpinnerColumn(),
+            SpinnerColumn(spinner_name="dots12", style="spinner"),
             TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
+            BarColumn(complete_style="bar.complete", finished_style="bar.complete"),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
             TimeElapsedColumn(),
             TimeRemainingColumn(),
@@ -164,23 +166,24 @@ class ProgressTracker:
                 self.phases[phase_key].progress_percentage = percentage
 
         # Show step update
-        self.console.print(f"[dim]  → {step_description}...[/dim]")
+        self.console.print(f"[text.dim]  → {step_description}...[/text.dim]")
 
     def show_checkpoint_saved(self, checkpoint_name: str) -> None:
         """Show that a checkpoint was saved."""
-        self.console.print(f"[green]💾 Checkpoint saved: {checkpoint_name}[/green]")
+        self.console.print(f"[success]{Glyphs.SUCCESS} Checkpoint saved: {checkpoint_name}[/success]")
 
     def show_encouragement(self) -> None:
         """Show an encouraging message for ADHD users."""
         message = self.encouragement_messages[self.encouragement_index]
         self.encouragement_index = (self.encouragement_index + 1) % len(self.encouragement_messages)
 
-        panel = Panel(
-            Text(message, style="cyan"),
-            title="💝 ADHD Support",
-            border_style="cyan"
+        self.console.print(
+            styled_panel(
+                Text(message, style="info"),
+                title=f"{Glyphs.INFO} ADHD Support",
+                border_style="panel.border",
+            )
         )
-        self.console.print(panel)
 
     def show_time_estimate(self, estimated_minutes: int) -> None:
         """Show time estimate in ADHD-friendly format."""
@@ -193,19 +196,20 @@ class ProgressTracker:
         else:
             time_desc = f"📚 About {estimated_minutes} minutes (maybe read a chapter?)"
 
-        self.console.print(f"[dim]⏱️ {time_desc}[/dim]")
+        self.console.print(f"[text.dim]⏱️ {time_desc}[/text.dim]")
 
     def show_interrupt_recovery(self, last_checkpoint: str, time_ago: str) -> None:
         """Show friendly interrupt recovery message."""
-        panel = Panel(
-            f"Welcome back! 👋\\n\\n"
-            f"Last checkpoint: {last_checkpoint}\\n"
-            f"Time since interruption: {time_ago}\\n\\n"
-            f"I've saved your progress - let's pick up where we left off!",
-            title="🔄 Resuming Update",
-            border_style="green"
+        self.console.print(
+            styled_panel(
+                f"Welcome back! 👋\\n\\n"
+                f"Last checkpoint: {last_checkpoint}\\n"
+                f"Time since interruption: {time_ago}\\n\\n"
+                f"I've saved your progress - let's pick up where we left off!",
+                title=f"{Glyphs.RUNNING} Resuming Update",
+                border_style="success",
+            )
         )
-        self.console.print(panel)
 
     def _show_welcome_message(self, update_name: str) -> None:
         """Show ADHD-friendly welcome message."""
@@ -219,12 +223,13 @@ class ProgressTracker:
             "Feel free to step away - I'll keep track of everything!"
         )
 
-        panel = Panel(
-            welcome_text,
-            title="🧠 Dopemux Update Manager",
-            border_style="bright_blue"
+        self.console.print(
+            styled_panel(
+                welcome_text,
+                title=f"{Glyphs.INFO} Dopemux Update Manager",
+                border_style="panel.border",
+            )
         )
-        self.console.print(panel)
 
     def _show_phase_start(self, phase_name: str, phase_number: int, total_phases: int) -> None:
         """Show phase start with progress indicator."""
@@ -234,12 +239,12 @@ class ProgressTracker:
         empty_blocks = "░" * (total_phases - phase_number)
         progress_bar = f"[{filled_blocks}{current_block}{empty_blocks}]"
 
-        self.console.print(f"\\n[bold cyan]Phase {phase_number}/{total_phases}: {phase_name}[/bold cyan]")
-        self.console.print(f"[dim]{progress_bar} {phase_number}/{total_phases} phases complete[/dim]")
+        self.console.print(f"\\n[mint]Phase {phase_number}/{total_phases}: {phase_name}[/mint]")
+        self.console.print(f"[text.dim]{progress_bar} {phase_number}/{total_phases} phases complete[/text.dim]")
 
     def _show_phase_completion(self, phase_name: str) -> None:
         """Show phase completion with mini celebration."""
-        self.console.print(f"[green]✅ {phase_name} completed![/green]")
+        self.console.print(f"[success]{Glyphs.SUCCESS} {phase_name} completed![/success]")
 
         # Show encouragement periodically
         if len([p for p in self.phases.values() if p.is_completed]) % 2 == 0:
@@ -261,16 +266,16 @@ class ProgressTracker:
             )
 
             if success_rate == 100:
-                panel = Panel(
+                panel = styled_panel(
                     f"🎉 Update completed successfully! 🎉\\n\\n{summary}",
-                    title="✅ Success",
-                    border_style="green"
+                    title=f"{Glyphs.SUCCESS} Success",
+                    border_style="success",
                 )
             else:
-                panel = Panel(
-                    f"⚠️ Update completed with issues\\n\\n{summary}",
-                    title="⚠️ Partial Success",
-                    border_style="yellow"
+                panel = styled_panel(
+                    f"{Glyphs.WARNING} Update completed with issues\\n\\n{summary}",
+                    title=f"{Glyphs.WARNING} Partial Success",
+                    border_style="warning",
                 )
 
             self.console.print(panel)

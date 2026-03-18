@@ -19,7 +19,7 @@ def _run_taskx_kernel(base_args: Sequence[str], taskx_args: Sequence[str]) -> No
     repo_root = Path(__file__).resolve().parents[3]
     wrapper = repo_root / "scripts" / "taskx"
     if not wrapper.exists():
-        console.logger.error(f"[red]TaskX wrapper missing: {wrapper}[/red]")
+        console.logger.error(f"[error]TaskX wrapper missing: {wrapper}[/error]")
         sys.exit(1)
 
     cmd = [str(wrapper), *base_args, *taskx_args]

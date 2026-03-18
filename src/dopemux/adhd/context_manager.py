@@ -111,7 +111,7 @@ class ContextManager:
 
         # Create initial session
         self._current_session_id = str(uuid.uuid4())
-        console.log("[green]✓ Context manager initialized[/green]")
+        console.log("[success]✓ Context manager initialized[/success]")
 
     def _validate_project_path(self, file_path: Path) -> bool:
         """
@@ -135,7 +135,7 @@ class ContextManager:
         except (ValueError, OSError):
             # ValueError: path is outside project
             # OSError: path doesn't exist or permission issues
-            console.log(f"[red]Security: Blocked access to path outside project: {file_path}[/red]")
+            console.log(f"[error]Security: Blocked access to path outside project: {file_path}[/error]")
             return False
 
     def _run_git_command(self, args: List[str], timeout: int = 10) -> Optional[str]:
@@ -155,7 +155,7 @@ class ContextManager:
         }
 
         if not args or args[0] not in allowed_commands:
-            console.log(f"[red]Security: Git command not allowed: {args}[/red]")
+            console.log(f"[error]Security: Git command not allowed: {args}[/error]")
             return None
 
         # Build secure command
@@ -176,14 +176,14 @@ class ContextManager:
                 return result.stdout.strip()
             else:
                 # Log error but don't expose it to prevent information leakage
-                console.log(f"[yellow]Git command failed (code {result.returncode})[/yellow]")
+                console.log(f"[warning]Git command failed (code {result.returncode})[/warning]")
                 return None
 
         except subprocess.TimeoutExpired:
-            console.log(f"[red]Git command timed out after {timeout}s[/red]")
+            console.log(f"[error]Git command timed out after {timeout}s[/error]")
             return None
         except Exception as e:
-            console.log(f"[red]Git command error: {type(e).__name__}[/red]")
+            console.log(f"[error]Git command error: {type(e).__name__}[/error]")
             return None
 
     def _init_storage(self) -> None:
@@ -274,7 +274,7 @@ class ContextManager:
             return context.session_id
 
         except Exception as e:
-            console.log(f"[red]Error saving context: {e}[/red]")
+            console.log(f"[error]Error saving context: {e}[/error]")
             # Emergency fallback
             emergency_session_id = self._emergency_save()
             return emergency_session_id or str(uuid.uuid4())
@@ -305,7 +305,7 @@ class ContextManager:
             return None
 
         except Exception as e:
-            console.log(f"[red]Error restoring session {session_id}: {e}[/red]")
+            console.log(f"[error]Error restoring session {session_id}: {e}[/error]")
             return None
 
     def restore_latest(self) -> Optional[Dict[str, Any]]:
@@ -333,7 +333,7 @@ class ContextManager:
             return None
 
         except Exception as e:
-            console.log(f"[red]Error restoring latest session: {e}[/red]")
+            console.log(f"[error]Error restoring latest session: {e}[/error]")
             return None
 
     def list_sessions(self, limit: int = 20) -> List[Dict[str, Any]]:
@@ -377,7 +377,7 @@ class ContextManager:
                     )
 
         except Exception as e:
-            console.log(f"[red]Error listing sessions: {e}[/red]")
+            console.log(f"[error]Error listing sessions: {e}[/error]")
 
         return sessions
 
@@ -387,19 +387,19 @@ class ContextManager:
             context = self._capture_current_state()
             return context.to_dict()
         except Exception as e:
-            console.log(f"[red]Error getting current context: {e}[/red]")
+            console.log(f"[error]Error getting current context: {e}[/error]")
             return {}
 
     def start_auto_save(self, interval: int = 30) -> None:
         """Start automatic context saving."""
         self._auto_save_enabled = True
         # In a real implementation, this would start a background thread
-        console.log(f"[blue]Auto-save enabled (every {interval}s)[/blue]")
+        console.log(f"[info]Auto-save enabled (every {interval}s)[/info]")
 
     def stop_auto_save(self) -> None:
         """Stop automatic context saving."""
         self._auto_save_enabled = False
-        console.log("[blue]Auto-save disabled[/blue]")
+        console.log("[info]Auto-save disabled[/info]")
 
     def cleanup_old_sessions(self, days: int = 30) -> int:
         """
@@ -427,12 +427,12 @@ class ContextManager:
                         session_file.unlink()
 
                 console.print(
-                    f"[green]✓ Cleaned up {deleted_count} old sessions[/green]"
+                    f"[success]✓ Cleaned up {deleted_count} old sessions[/success]"
                 )
                 return deleted_count
 
         except Exception as e:
-            console.log(f"[red]Error cleaning up sessions: {e}[/red]")
+            console.log(f"[error]Error cleaning up sessions: {e}[/error]")
             return 0
 
     def generate_smart_description(self, context: ContextSnapshot) -> str:
@@ -760,7 +760,7 @@ class ContextManager:
                         )
 
         except Exception as e:
-            console.log(f"[yellow]Warning: Could not get open files: {e}[/yellow]")
+            console.log(f"[warning]Warning: Could not get open files: {e}[/warning]")
 
         return open_files[:10]  # Limit to 10 most recent
 
@@ -786,7 +786,7 @@ class ContextManager:
                 git_state["last_commit"] = last_commit
 
         except Exception as e:
-            console.log(f"[yellow]Warning: Could not get git state: {e}[/yellow]")
+            console.log(f"[warning]Warning: Could not get git state: {e}[/warning]")
 
         return git_state
 
@@ -895,27 +895,27 @@ class ContextManager:
             if current_file and os.path.exists(current_file):
                 # In Claude Code, we can suggest opening the file
                 console.print(
-                    f"[blue]💡 Context restored - consider opening: {current_file}[/blue]"
+                    f"[info]💡 Context restored - consider opening: {current_file}[/info]"
                 )
                 if cursor_position:
                     console.print(
-                        f"[blue]   Cursor position: line {cursor_position.get('line', '?')}, col {cursor_position.get('column', '?')}[/blue]"
+                        f"[info]   Cursor position: line {cursor_position.get('line', '?')}, col {cursor_position.get('column', '?')}[/info]"
                     )
 
             # Show other context info
             current_goal = context_data.get('current_goal', 'Unknown')
-            console.log(f"[blue]🎯 Current goal: {current_goal}[/blue]")
+            console.log(f"[info]🎯 Current goal: {current_goal}[/info]")
 
             # Show any recent changes or notes
             notes = context_data.get('notes', [])
             if notes:
-                console.log(f"[blue]📝 Recent notes: {len(notes)} items[/blue]")
+                console.log(f"[info]📝 Recent notes: {len(notes)} items[/info]")
 
         except Exception as e:
-            console.log(f"[red]❌ Failed to apply context: {e}[/red]")
+            console.log(f"[error]❌ Failed to apply context: {e}[/error]")
             # Fallback to basic display
             console.print(
-                f"[blue]Context data available: {list(context_data.keys()) if context_data else 'None'}[/blue]"
+                f"[info]Context data available: {list(context_data.keys()) if context_data else 'None'}[/info]"
             )
 
     def _emergency_save(self) -> Optional[str]:
@@ -933,8 +933,8 @@ class ContextManager:
             }
             with open(emergency_file, "w") as f:
                 json.dump(emergency_context, f, indent=2)
-            console.log("[yellow]Emergency context saved[/yellow]")
+            console.log("[warning]Emergency context saved[/warning]")
             return emergency_session_id
         except Exception as e:
-            console.log(f"[red]Emergency save failed: {e}[/red]")
+            console.log(f"[error]Emergency save failed: {e}[/error]")
             return None

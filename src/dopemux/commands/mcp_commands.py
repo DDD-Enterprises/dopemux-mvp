@@ -34,11 +34,11 @@ def mcp_up_cmd(all_services: bool, services: str):
         else:
             svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
             cmd = f"docker compose -f compose.yml up -d --build {svc_list}"
-        console.logger.info(f"[blue]{cmd}[/blue]")
+        console.logger.info(f"[info]{cmd}[/info]")
         subprocess.run(["bash", "-lc", cmd], check=True)
-        console.logger.info("[green]MCP servers started[/green]")
+        console.logger.info("[success]MCP servers started[/success]")
     except CalledProcessError:
-        console.logger.error("[red]Failed to start MCP servers[/red]")
+        console.logger.error("[error]Failed to start MCP servers[/error]")
         sys.exit(1)
 
 
@@ -54,9 +54,9 @@ def mcp_down_cmd():
             ["docker", "compose", "-f", "compose.yml", "rm", "-f", "-s", "-v"] + mcp_services,
             check=True,
         )
-        console.logger.info("[green]MCP servers stopped[/green]")
+        console.logger.info("[success]MCP servers stopped[/success]")
     except CalledProcessError:
-        console.logger.error("[red]Failed to stop MCP servers[/red]")
+        console.logger.error("[error]Failed to stop MCP servers[/error]")
         sys.exit(1)
 
 
@@ -78,7 +78,7 @@ def mcp_logs_cmd(service: str):
             cmd = f"docker compose -f compose.yml logs -f {service}"
         else:
             cmd = "docker compose -f compose.yml logs -f"
-        console.logger.info(f"[blue]{cmd}[/blue]")
+        console.logger.info(f"[info]{cmd}[/info]")
         subprocess.run(["bash", "-lc", cmd], check=False)
     except CalledProcessError:
         sys.exit(1)
@@ -102,25 +102,25 @@ def mcp_start_all_cmd(verify: bool):
         script_path = Path(__file__).parent.parent.parent.parent / "scripts" / "start-all.sh"
 
         if not script_path.exists():
-            console.logger.info(f"[red]start-all.sh not found at {script_path}[/red]")
-            console.logger.info("[yellow]Falling back to manual startup...[/yellow]")
+            console.logger.info(f"[error]start-all.sh not found at {script_path}[/error]")
+            console.logger.info("[warning]Falling back to manual startup...[/warning]")
 
-            console.logger.info("[blue]Starting MCP servers...[/blue]")
+            console.logger.info("[info]Starting MCP servers...[/info]")
             subprocess.run(["docker", "compose", "-f", "compose.yml", "up", "-d"], check=True)
 
-            console.logger.info("[blue]Starting Integration Bridge...[/blue]")
+            console.logger.info("[info]Starting Integration Bridge...[/info]")
             subprocess.run(
                 ["bash", "-lc", "cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"],
                 check=True,
             )
 
-            console.logger.info("[blue]Starting Task Orchestrator...[/blue]")
+            console.logger.info("[info]Starting Task Orchestrator...[/info]")
             subprocess.run(
                 ["docker", "compose", "-f", "compose.yml", "--profile", "manual", "up", "-d", "task-orchestrator"],
                 check=True,
             )
 
-            console.logger.info("[green]All services started[/green]")
+            console.logger.info("[success]All services started[/success]")
         else:
             cmd = ["bash", str(script_path)]
             if verify:
@@ -128,8 +128,8 @@ def mcp_start_all_cmd(verify: bool):
             subprocess.run(cmd, check=True)
 
     except CalledProcessError:
-        console.logger.error("[red]Failed to start all services[/red]")
-        console.logger.info("[yellow]Try: docker ps to see running containers[/yellow]")
+        console.logger.error("[error]Failed to start all services[/error]")
+        console.logger.info("[warning]Try: docker ps to see running containers[/warning]")
         sys.exit(1)
 
 

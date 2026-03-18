@@ -73,7 +73,7 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
             }
 
             if dry_run:
-                console.logger.info("[yellow]🔍 Dry run mode - analyzing bug without repair[/yellow]")
+                console.logger.info("[warning]🔍 Dry run mode - analyzing bug without repair[/warning]")
                 analysis = await agent._analyze_bug(bug_description, file_path or "", line or 0)
                 console.logger.info("Analysis Results:")
                 console.logger.info(f"  Description: {analysis.get('description', 'N/A')}")
@@ -84,16 +84,16 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
             result = await agent.process_task(task)
 
             if result.get('success'):
-                console.logger.info("[green]✅ Repair successful![/green]")
+                console.logger.info("[success]✅ Repair successful![/success]")
                 console.logger.info(f"Confidence: {result.get('confidence', 0):.2f}")
                 console.logger.info(f"Iterations: {result.get('iterations', 0)}")
                 if result.get('repair'):
-                    console.logger.info("\n[blue]Generated Repair:[/blue]")
+                    console.logger.info("\n[info]Generated Repair:[/info]")
                     console.logger.info(result['repair'])
                 if result.get('explanation'):
-                    console.logger.info(f"\n[yellow]Explanation:[/yellow] {result['explanation']}")
+                    console.logger.info(f"\n[warning]Explanation:[/warning] {result['explanation']}")
             else:
-                console.logger.error("[red]❌ Repair failed[/red]")
+                console.logger.error("[error]❌ Repair failed[/error]")
                 console.logger.error(f"Reason: {result.get('explanation', 'Unknown error')}")
                 if verbose:
                     console.logger.debug(f"Debug: Iterations attempted: {result.get('iterations', 0)}")
@@ -101,7 +101,7 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
         asyncio.run(run_repair())
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Code repair failed: {e}[/red]")
+        console.logger.error(f"[error]❌ Code repair failed: {e}[/error]")
         if verbose:
             import traceback
             traceback.print_exc()
@@ -134,7 +134,7 @@ def analyze(ctx, bug_description, file_path, line, verbose):
 
             analysis = await agent._analyze_bug(bug_description, file_path or "", line or 0)
 
-            console.logger.info("[blue]🔍 Bug Analysis Complete[/blue]")
+            console.logger.info("[info]🔍 Bug Analysis Complete[/info]")
             console.logger.info(f"Description: {analysis.get('description', 'N/A')}")
             console.logger.info(f"Complexity Score: {analysis.get('complexity', {}).get('score', 'N/A')}")
             console.logger.info(f"Similar Patterns Found: {len(analysis.get('similar_patterns', {}).get('results', []))}")
@@ -148,7 +148,7 @@ def analyze(ctx, bug_description, file_path, line, verbose):
         asyncio.run(run_analysis())
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Analysis failed: {e}[/red]")
+        console.logger.error(f"[error]❌ Analysis failed: {e}[/error]")
         if verbose:
             import traceback
             traceback.print_exc()
@@ -173,7 +173,7 @@ def code_agent_status_cmd(ctx, verbose):
         async def show_status():
             config = AgentConfig()
 
-            console.logger.info("[blue]🧠 Vanilla Code Agent Status[/blue]")
+            console.logger.info("[info]🧠 Vanilla Code Agent Status[/info]")
             console.logger.info(f"Container Zen URL: {config.zen_url}")
             console.logger.info(f"Container ConPort URL: {config.conport_url}")
             console.logger.info(f"Container Serena URL: {config.serena_url}")
@@ -183,7 +183,7 @@ def code_agent_status_cmd(ctx, verbose):
             console.logger.info(f"Workspace: {config.workspace_id}")
 
             # Test MCP connectivity from host (localhost URLs)
-            console.logger.info("\n[yellow]Host MCP Service Status (localhost):[/yellow]")
+            console.logger.info("\n[warning]Host MCP Service Status (localhost):[/warning]")
             host_urls = {
                 "Zen": "http://localhost:3003",
                 "ConPort": "http://localhost:3004",
@@ -212,12 +212,12 @@ def code_agent_status_cmd(ctx, verbose):
                     if not reachable:
                         console.logger.error(f"    Error: {error_msg}")
 
-            console.logger.info("\n[dim]Note: Container uses Docker network names, host uses localhost[/dim]")
+            console.logger.info("\n[text.dim]Note: Container uses Docker network names, host uses localhost[/text.dim]")
 
         asyncio.run(show_status())
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Status check failed: {e}[/red]")
+        console.logger.error(f"[error]❌ Status check failed: {e}[/error]")
         if verbose:
             import traceback
             traceback.print_exc()

@@ -50,17 +50,17 @@ def build(projects_file: Optional[Path], index_path: Optional[Path]):
 
     try:
         roots = resolve_rollup_projects(projects_file=projects_file)
-        console.logger.info(f"[cyan]Resolved {len(roots)} project(s)[/cyan]")
+        console.logger.info(f"[info]Resolved {len(roots)} project(s)[/info]")
 
         indexer = GlobalRollupIndexer(index_path=index_path)
         result = indexer.build(roots)
 
-        console.logger.info(f"[green]✓[/green] Projects registered: {result['projects_registered']}")
-        console.logger.info(f"[green]✓[/green] Pointers indexed: {result['pointers_upserted']}")
-        console.logger.info(f"[green]✓[/green] Index: {result['index_path']}")
+        console.logger.info(f"[success]✓[/success] Projects registered: {result['projects_registered']}")
+        console.logger.info(f"[success]✓[/success] Pointers indexed: {result['pointers_upserted']}")
+        console.logger.info(f"[success]✓[/success] Index: {result['index_path']}")
 
     except GlobalRollupError as e:
-        console.logger.error(f"[red]✗ Rollup error:[/red] {e}")
+        console.logger.error(f"[error]✗ Rollup error:[/error] {e}")
         raise click.Abort()
 
 
@@ -80,13 +80,13 @@ def list(index_path: Optional[Path]):
     projects = indexer.list_projects()
 
     if not projects:
-        console.logger.info("[yellow]No projects registered in global index[/yellow]")
+        console.logger.info("[warning]No projects registered in global index[/warning]")
         return
 
     table = Table(title="Registered Projects")
-    table.add_column("Project ID", style="cyan")
-    table.add_column("Repo Root", style="green")
-    table.add_column("Last Seen", style="yellow")
+    table.add_column("Project ID", style="info")
+    table.add_column("Repo Root", style="success")
+    table.add_column("Last Seen", style="warning")
 
     for proj in projects:
         table.add_row(
@@ -121,14 +121,14 @@ def search(query: str, limit: int, index_path: Optional[Path]):
     results = indexer.search(query, limit=limit)
 
     if not results:
-        console.logger.info(f"[yellow]No results for: {query}[/yellow]")
+        console.logger.info(f"[warning]No results for: {query}[/warning]")
         return
 
     table = Table(title=f"Search Results: {query}")
-    table.add_column("Timestamp", style="cyan")
-    table.add_column("Type", style="yellow")
-    table.add_column("Summary", style="green")
-    table.add_column("Project", style="blue", overflow="fold")
+    table.add_column("Timestamp", style="info")
+    table.add_column("Type", style="warning")
+    table.add_column("Summary", style="success")
+    table.add_column("Project", style="info", overflow="fold")
 
     for row in results:
         table.add_row(
@@ -139,7 +139,7 @@ def search(query: str, limit: int, index_path: Optional[Path]):
         )
 
     console.logger.info(table)
-    console.logger.info(f"\n[dim]Showing {len(results)} of up to {limit} results[/dim]")
+    console.logger.info(f"\n[text.dim]Showing {len(results)} of up to {limit} results[/text.dim]")
 
 
 @memory.group()
@@ -200,18 +200,18 @@ def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path], lane: Op
             event_data = json.loads(event)
         except json.JSONDecodeError as e:
             if not quiet:
-                console.logger.error(f"[red]✗ Invalid JSON:[/red] {e}")
+                console.logger.error(f"[error]✗ Invalid JSON:[/error] {e}")
             raise click.Abort()
 
         # Validate event structure
         if not isinstance(event_data, dict):
             if not quiet:
-                console.logger.error("[red]✗ Event must be a JSON object[/red]")
+                console.logger.error("[error]✗ Event must be a JSON object[/error]")
             raise click.Abort()
 
         if "event_type" not in event_data:
             if not quiet:
-                console.logger.error("[red]✗ Event must have 'event_type' field[/red]")
+                console.logger.error("[error]✗ Event must have 'event_type' field[/error]")
             raise click.Abort()
 
         # Emit to Chronicle
@@ -226,22 +226,22 @@ def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path], lane: Op
         # Output result
         if not quiet:
             if result.inserted:
-                console.logger.info(f"[green]✓[/green] Event captured: {result.event_id[:16]}...")
+                console.logger.info(f"[success]✓[/success] Event captured: {result.event_id[:16]}...")
                 console.logger.info(f"  Event type: {event_data.get('event_type')}")
                 console.logger.info(f"  Mode: {mode}")
             else:
-                console.logger.info(f"[yellow]✓[/yellow] Event already exists (deduplicated): {result.event_id[:16]}...")
+                console.logger.info(f"[warning]✓[/warning] Event already exists (deduplicated): {result.event_id[:16]}...")
 
         # Exit code 0 on success
         sys.exit(0)
 
     except CaptureError as e:
         if not quiet:
-            console.logger.error(f"[red]✗ Capture error:[/red] {e}")
+            console.logger.error(f"[error]✗ Capture error:[/error] {e}")
         sys.exit(1)
     except Exception as e:
         if not quiet:
-            console.logger.error(f"[red]✗ Unexpected error:[/red] {e}")
+            console.logger.error(f"[error]✗ Unexpected error:[/error] {e}")
         sys.exit(1)
 
 
@@ -284,36 +284,36 @@ def copilot(session_id: str, since: Optional[str], repo_root: Optional[Path]):
             try:
                 since_dt = datetime.fromisoformat(since.rstrip("Z"))
             except ValueError as e:
-                console.logger.error(f"[red]✗ Invalid timestamp format:[/red] {e}")
-                console.logger.info("[dim]Expected ISO 8601 format: 2025-02-12T10:30:00Z[/dim]")
+                console.logger.error(f"[error]✗ Invalid timestamp format:[/error] {e}")
+                console.logger.info("[text.dim]Expected ISO 8601 format: 2025-02-12T10:30:00Z[/text.dim]")
                 raise click.Abort()
 
         # Initialize adapter
         adapter = CopilotCaptureAdapter(repo_root=repo_root)
 
         # Ingest session
-        console.logger.info(f"[cyan]📥 Ingesting Copilot session: {session_id}[/cyan]")
+        console.logger.info(f"[info]📥 Ingesting Copilot session: {session_id}[/info]")
         if since:
-            console.logger.info(f"[dim]Filtering events after: {since}[/dim]")
+            console.logger.info(f"[text.dim]Filtering events after: {since}[/text.dim]")
 
         stats = adapter.ingest_session(session_id, since=since_dt)
 
         # Display results
-        console.logger.info(f"\n[green]✓[/green] Ingestion complete:")
+        console.logger.info(f"\n[success]✓[/success] Ingestion complete:")
         console.logger.info(f"  Total events parsed: {stats['total']}")
         console.logger.info(f"  Successfully inserted: {stats['inserted']}")
         console.logger.info(f"  Deduplicated (already exist): {stats['deduplicated']}")
         console.logger.info(f"  Skipped (unmapped types): {stats['skipped']}")
 
         if stats["inserted"] == 0 and stats["total"] > 0:
-            console.logger.info("\n[yellow]💡 All events already ingested (idempotent)[/yellow]")
+            console.logger.info("\n[warning]💡 All events already ingested (idempotent)[/warning]")
 
     except FileNotFoundError as e:
-        console.logger.error(f"[red]✗ Session not found:[/red] {e}")
-        console.logger.info("[dim]Use 'dopemux memory capture copilot-list' to see available sessions[/dim]")
+        console.logger.error(f"[error]✗ Session not found:[/error] {e}")
+        console.logger.info("[text.dim]Use 'dopemux memory capture copilot-list' to see available sessions[/text.dim]")
         raise click.Abort()
     except Exception as e:
-        console.logger.error(f"[red]✗ Ingestion failed:[/red] {e}")
+        console.logger.error(f"[error]✗ Ingestion failed:[/error] {e}")
         raise click.Abort()
 
 
@@ -343,16 +343,16 @@ def copilot_list(limit: int):
     sessions = adapter.list_sessions()
 
     if not sessions:
-        console.logger.info("[yellow]No Copilot sessions found in ~/.copilot/session-state/[/yellow]")
+        console.logger.info("[warning]No Copilot sessions found in ~/.copilot/session-state/[/warning]")
         return
 
     # Limit results
     display_sessions = sessions[:limit]
 
     table = Table(title=f"Available Copilot Sessions (showing {len(display_sessions)} of {len(sessions)})")
-    table.add_column("Session ID", style="cyan", width=36)
-    table.add_column("Events", style="green", justify="right")
-    table.add_column("Started", style="yellow")
+    table.add_column("Session ID", style="info", width=36)
+    table.add_column("Events", style="success", justify="right")
+    table.add_column("Started", style="warning")
 
     for session in display_sessions:
         table.add_row(
@@ -364,7 +364,7 @@ def copilot_list(limit: int):
     console.logger.info(table)
 
     if len(sessions) > limit:
-        console.logger.info(f"\n[dim]💡 Showing {limit} of {len(sessions)} sessions. Use --limit to see more.[/dim]")
+        console.logger.info(f"\n[text.dim]💡 Showing {limit} of {len(sessions)} sessions. Use --limit to see more.[/text.dim]")
 
 
 # ============================================================================

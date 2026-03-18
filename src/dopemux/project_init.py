@@ -95,9 +95,9 @@ class ProjectInitializer:
             True if successful
         """
         console.print(Panel.fit(
-            "[bold cyan]🚀 Dopemux Project Initialization[/bold cyan]\n"
-            f"Workspace: [dim]{self.workspace}[/dim]",
-            border_style="cyan"
+            "[mint]🚀 Dopemux Project Initialization[/mint]\n"
+            f"Workspace: [text.dim]{self.workspace}[/text.dim]",
+            border_style="info"
         ))
 
         # Ensure workspace directory exists (tests may provide new paths)
@@ -107,8 +107,8 @@ class ProjectInitializer:
             fallback = Path(tempfile.mkdtemp(prefix="dopemux-init-"))
             if fallback != self.workspace:
                 console.print(
-                    f"[yellow]⚠️ Unable to create workspace at {self.workspace}; "
-                    f"using {fallback} instead.[/yellow]"
+                    f"[warning]⚠️ Unable to create workspace at {self.workspace}; "
+                    f"using {fallback} instead.[/warning]"
                 )
                 self.workspace = fallback
                 self.dopemux_dir = self.workspace / ".dopemux"
@@ -118,10 +118,10 @@ class ProjectInitializer:
 
         # Check if already initialized
         if self.dopemux_dir.is_dir() and not force:
-            console.logger.info(f"\n[yellow]⚠️  Project already initialized (.dopemux/ exists)[/yellow]")
+            console.logger.info(f"\n[warning]⚠️  Project already initialized (.dopemux/ exists)[/warning]")
 
             if not Confirm.ask("Reinitialize?", default=False):
-                console.logger.info("[dim]Cancelled. Use --force to skip confirmation.[/dim]")
+                console.logger.info("[text.dim]Cancelled. Use --force to skip confirmation.[/text.dim]")
                 return False
 
         profiles = self.profile_manager.list_profiles()
@@ -142,14 +142,14 @@ class ProjectInitializer:
                 else:
                     profile_name = detected
             else:
-                console.logger.info("\n[dim]Could not auto-detect project type[/dim]")
+                console.logger.info("\n[text.dim]Could not auto-detect project type[/text.dim]")
                 if interactive:
                     profile_name = self._prompt_profile_selection(profiles)
                 else:
                     if profiles:
                         profile_name = profiles[0].name
                         console.print(
-                            f"[dim]Non-interactive mode detected; defaulting to profile '{profile_name}'.[/dim]"
+                            f"[text.dim]Non-interactive mode detected; defaulting to profile '{profile_name}'.[/text.dim]"
                         )
                     else:
                         profile_name = "adhd-default"
@@ -157,8 +157,8 @@ class ProjectInitializer:
         # Verify profile exists
         profile = self.profile_manager.get_profile(profile_name)
         if not profile:
-            console.logger.info(f"\n[red]❌ Profile not found: {profile_name}[/red]")
-            console.logger.info("[dim]Run: dopemux profile list[/dim]")
+            console.logger.info(f"\n[error]❌ Profile not found: {profile_name}[/error]")
+            console.logger.info("[text.dim]Run: dopemux profile list[/text.dim]")
             return False
 
 
@@ -181,11 +181,11 @@ class ProjectInitializer:
         self.install_templates()
 
         # Step 6: Summary
-        console.logger.info(f"\n✅ [bold green]Initialization complete![/bold green]")
+        console.logger.info(f"\n✅ [success]Initialization complete![/success]")
         console.logger.info(f"\n[bold]Next steps:[/bold]")
-        console.logger.info(f"  1. Review profile: [cyan]dopemux profile show[/cyan]")
-        console.logger.info(f"  2. Start dopemux: [cyan]dopemux start[/cyan]")
-        console.logger.info(f"  3. (Optional) Edit: [dim].dopemux/config.yaml[/dim]")
+        console.logger.info(f"  1. Review profile: [info]dopemux profile show[/info]")
+        console.logger.info(f"  2. Start dopemux: [info]dopemux start[/info]")
+        console.logger.info(f"  3. (Optional) Edit: [text.dim].dopemux/config.yaml[/text.dim]")
 
         return True
 
@@ -202,7 +202,7 @@ class ProjectInitializer:
         templates_root = Path(__file__).parent / "templates" / "init"
 
         if not templates_root.exists():
-            console.logger.info("[yellow]   Warning: Template directory not found, skipping templates[/yellow]")
+            console.logger.info("[warning]   Warning: Template directory not found, skipping templates[/warning]")
             return
 
         # Recursively copy all template files
@@ -239,12 +239,12 @@ class ProjectInitializer:
         profiles = profiles or self.profile_manager.list_profiles()
 
         if not profiles:
-            console.logger.info("[yellow]No profiles available. Using 'adhd-default'[/yellow]")
+            console.logger.info("[warning]No profiles available. Using 'adhd-default'[/warning]")
             return "adhd-default"
 
         console.logger.info("\n[bold]Available profiles:[/bold]")
         for i, p in enumerate(profiles, 1):
-            console.logger.info(f"  {i}. [cyan]{p.name}[/cyan] - {p.description}")
+            console.logger.info(f"  {i}. [info]{p.name}[/info] - {p.description}")
 
         choice = Prompt.ask(
             "\nSelect profile",

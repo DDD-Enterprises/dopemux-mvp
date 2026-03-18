@@ -59,7 +59,7 @@ def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
     config_manager = _get_autoresponder_config_manager(ctx, project_path)
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.logger.info("[error]No Dopemux project found in current directory[/error]")
         sys.exit(1)
 
     # Update configuration if options provided
@@ -95,23 +95,23 @@ def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
             progress.update(
                 task, description="Auto responder started! 🤖", completed=True
             )
-            console.logger.info("[green]✅ Claude Auto Responder is now active[/green]")
+            console.logger.info("[success]✅ Claude Auto Responder is now active[/success]")
             console.print(
-                "[blue]🎯 Monitoring for Claude Code confirmation prompts[/blue]"
+                "[info]🎯 Monitoring for Claude Code confirmation prompts[/info]"
             )
 
             config = config_manager.get_claude_autoresponder_config()
-            console.logger.info(f"[yellow]📡 Scope: {config.terminal_scope}[/yellow]")
+            console.logger.info(f"[warning]📡 Scope: {config.terminal_scope}[/warning]")
             if config.response_delay > 0:
-                console.logger.info(f"[cyan]⏱️ Delay: {config.response_delay}s[/cyan]")
+                console.logger.info(f"[info]⏱️ Delay: {config.response_delay}s[/info]")
             console.print(
-                f"[dim]💤 Auto-stop after {config.timeout_minutes} minutes of inactivity[/dim]"
+                f"[text.dim]💤 Auto-stop after {config.timeout_minutes} minutes of inactivity[/text.dim]"
             )
         else:
             progress.update(task, description="Failed to start", completed=True)
-            console.logger.error("[red]❌ Failed to start auto responder[/red]")
+            console.logger.error("[error]❌ Failed to start auto responder[/error]")
             console.print(
-                "[yellow]💡 Try running 'dopemux autoresponder setup' first[/yellow]"
+                "[warning]💡 Try running 'dopemux autoresponder setup' first[/warning]"
             )
             sys.exit(1)
 
@@ -128,7 +128,7 @@ def autoresponder_stop(ctx):
     config_manager = _get_autoresponder_config_manager(ctx, project_path)
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.logger.info("[error]No Dopemux project found in current directory[/error]")
         sys.exit(1)
 
     from integrations.claude_autoresponder import create_autoresponder_manager
@@ -136,7 +136,7 @@ def autoresponder_stop(ctx):
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
 
     if not autoresponder_manager.is_running():
-        console.logger.info("[yellow]Auto responder is not running[/yellow]")
+        console.logger.info("[warning]Auto responder is not running[/warning]")
         return
 
     with Progress(
@@ -153,10 +153,10 @@ def autoresponder_stop(ctx):
 
         if success:
             progress.update(task, description="Auto responder stopped", completed=True)
-            console.logger.info("[green]✅ Claude Auto Responder stopped[/green]")
+            console.logger.info("[success]✅ Claude Auto Responder stopped[/success]")
 
             # Show session stats
-            console.logger.info(f"[blue]📊 Session Statistics:[/blue]")
+            console.logger.info(f"[info]📊 Session Statistics:[/info]")
             console.logger.info(f"  ⏱️ Uptime: {status['uptime_minutes']:.1f} minutes")
             console.logger.info(f"  ✅ Responses sent: {status['responses_sent']}")
             if status["responses_sent"] > 0:
@@ -165,7 +165,7 @@ def autoresponder_stop(ctx):
                 )
         else:
             progress.update(task, description="Error stopping", completed=True)
-            console.logger.error("[red]❌ Error stopping auto responder[/red]")
+            console.logger.error("[error]❌ Error stopping auto responder[/error]")
 
 
 @autoresponder.command("status")
@@ -180,7 +180,7 @@ def autoresponder_status(ctx):
     config_manager = _get_autoresponder_config_manager(ctx, project_path)
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.logger.info("[error]No Dopemux project found in current directory[/error]")
         sys.exit(1)
 
     from integrations.claude_autoresponder import create_autoresponder_manager
@@ -193,7 +193,7 @@ def autoresponder_status(ctx):
     status_emoji = "🟢" if status["running"] else "🟡"
 
     table = Table(title="🤖 Claude Auto Responder Status")
-    table.add_column("Property", style="cyan")
+    table.add_column("Property", style="info")
     table.add_column("Value", style=status_color)
 
     table.add_row("Status", f"{status_emoji} {status['status'].title()}")
@@ -212,8 +212,8 @@ def autoresponder_status(ctx):
 
     # Configuration table
     config_table = Table(title="⚙️ Configuration")
-    config_table.add_column("Setting", style="cyan")
-    config_table.add_column("Value", style="green")
+    config_table.add_column("Setting", style="info")
+    config_table.add_column("Value", style="success")
 
     config = status["config"]
     config_table.add_row("Enabled", "Yes" if config["enabled"] else "No")
@@ -240,7 +240,7 @@ def autoresponder_setup(ctx):
     config_manager = _get_autoresponder_config_manager(ctx, project_path)
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.logger.info("[error]No Dopemux project found in current directory[/error]")
         sys.exit(1)
 
     from integrations.claude_autoresponder import create_autoresponder_manager
@@ -258,12 +258,12 @@ def autoresponder_setup(ctx):
 
         if success:
             progress.update(task, description="Setup complete! 🎉", completed=True)
-            console.logger.info("[green]✅ ClaudeAutoResponder setup complete[/green]")
-            console.logger.info("[blue]🚀 Run 'dopemux autoresponder start' to begin[/blue]")
+            console.logger.info("[success]✅ ClaudeAutoResponder setup complete[/success]")
+            console.logger.info("[info]🚀 Run 'dopemux autoresponder start' to begin[/info]")
         else:
             progress.update(task, description="Setup failed", completed=True)
-            console.logger.error("[red]❌ Setup failed[/red]")
-            console.logger.info("[yellow]Check logs for details[/yellow]")
+            console.logger.error("[error]❌ Setup failed[/error]")
+            console.logger.info("[warning]Check logs for details[/warning]")
             sys.exit(1)
 
 
@@ -321,8 +321,8 @@ def autoresponder_config(
         current_config = config_manager.get_claude_autoresponder_config()
 
         table = Table(title="🤖 Auto Responder Configuration")
-        table.add_column("Setting", style="cyan")
-        table.add_column("Value", style="green")
+        table.add_column("Setting", style="info")
+        table.add_column("Value", style="success")
 
         table.add_row("Enabled", "Yes" if current_config.enabled else "No")
         table.add_row("Terminal Scope", current_config.terminal_scope)
@@ -339,10 +339,10 @@ def autoresponder_config(
     # Apply updates
     try:
         config_manager.update_claude_autoresponder(**updates)
-        console.logger.info("[green]✅ Configuration updated[/green]")
+        console.logger.info("[success]✅ Configuration updated[/success]")
 
         for key, value in updates.items():
-            console.logger.info(f"[blue]  {key}: {value}[/blue]")
+            console.logger.info(f"[info]  {key}: {value}[/info]")
 
         # Restart if running
         if (project_path / ".dopemux").exists():
@@ -353,10 +353,10 @@ def autoresponder_config(
             )
             if autoresponder_manager.is_running():
                 console.print(
-                    "[yellow]🔄 Restarting auto responder with new settings...[/yellow]"
+                    "[warning]🔄 Restarting auto responder with new settings...[/warning]"
                 )
                 autoresponder_manager.restart()
 
     except ValueError as e:
-        console.logger.error(f"[red]❌ Configuration error: {e}[/red]")
+        console.logger.error(f"[error]❌ Configuration error: {e}[/error]")
         sys.exit(1)

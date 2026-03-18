@@ -85,7 +85,7 @@ class InteractivePrompts:
                 return result
 
         except KeyboardInterrupt:
-            console.log("[yellow]Selection cancelled[/yellow]")
+            console.log("[warning]Selection cancelled[/warning]")
             return None
 
     def ask_confirmation(self, message: str, default: bool = True, complexity: float = 0.5) -> bool:
@@ -117,7 +117,7 @@ class InteractivePrompts:
             ).ask()
 
             if result == "show details":
-                console.log(f"[dim]{message} - This action will proceed with the recommended settings.[/dim]")
+                console.log(f"[text.dim]{message} - This action will proceed with the recommended settings.[/text.dim]")
                 return self.ask_confirmation(message, default, complexity)
 
             return result == "yes"
@@ -155,7 +155,7 @@ class InteractivePrompts:
             return None if result == "__skip__" else result
 
         except KeyboardInterrupt:
-            console.log("[yellow]Break skipped[/yellow]")
+            console.log("[warning]Break skipped[/warning]")
             return None
 
     def ask_progressive_details(self, basic_info: Dict[str, Any], full_info: Dict[str, Any], user_level: str = "intermediate") -> Dict[str, Any]:
@@ -207,7 +207,7 @@ class InteractivePrompts:
             Selected option name or None
         """
         if not options:
-            console.log(f"[yellow]No {title.lower()} available[/yellow]")
+            console.log(f"[warning]No {title.lower()} available[/warning]")
             return None
 
         # Create choices
@@ -226,7 +226,7 @@ class InteractivePrompts:
 
         try:
             if context:
-                console.log(f"[dim]{context}[/dim]")
+                console.log(f"[text.dim]{context}[/text.dim]")
 
             result = questionary.select(
                 title,
@@ -242,7 +242,7 @@ class InteractivePrompts:
                 return result
 
         except KeyboardInterrupt:
-            console.log("[yellow]Menu cancelled[/yellow]")
+            console.log("[warning]Menu cancelled[/warning]")
             return None
 
 
