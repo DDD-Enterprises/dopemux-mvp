@@ -169,6 +169,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return brandTokens.colors.serumMint;
   };
 
+  const totalRemainingMinutes = useMemo(() => {
+    const totalEstimatedMinutes = tasks
+      .filter((task) => task.status !== 'completed')
+      .reduce((sum, task) => sum + task.estimatedMinutes, 0);
+    return Math.max(0, Math.round(totalEstimatedMinutes - taskTimer / 60));
+  }, [tasks, taskTimer]);
+
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
