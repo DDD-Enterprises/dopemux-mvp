@@ -37,8 +37,6 @@ help:
 	@echo "  docs-audit-apply-rename PLAN=reports/docs-audit/rename_plan.csv  Apply renames"
 	@echo ""
 	@echo "Project Management (Leantime + Task-Master):"
-	@echo "  pm-install     Interactive installer (Leantime + Task-Master)"
-	@echo "  pm-install-unattended  Unattended install with default config"
 	@echo "  pm-up          Start PM stack (docker-compose up -d)"
 	@echo "  pm-down        Stop PM stack (docker-compose down)"
 	@echo "  pm-logs        Tail PM stack logs"
@@ -151,12 +149,6 @@ docs-audit-apply-rename:
 	python3 scripts/docs_audit/audit_docs.py apply-rename --plan $(PLAN)
 
 # ---- Project Management (Leantime + Task-Master) ----
-pm-install:
-	python3 installers/leantime/install.py
-
-pm-install-unattended:
-	python3 installers/leantime/install.py -u -c installers/leantime/configs/default.yaml
-
 pm-up:
 	docker compose -f compose.yml up -d leantime mysql_leantime redis_leantime
 
