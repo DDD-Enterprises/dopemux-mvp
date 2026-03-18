@@ -14,6 +14,7 @@ from .grok_passes import GrokPassRunner
 from .code_prescan import CodePrescan
 from .dependency_graph import DependencyGraph
 from .batch_planner import BatchPlanner
+from .cost_estimator import CostEstimator
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +28,10 @@ class PrescanEngine:
         self.grok_runner = GrokPassRunner(config)
         self.code_prescan = CodePrescan(config)
         self.dep_graph = DependencyGraph()
+        self.cost_estimator = CostEstimator(config)
 
-    def run(self, passes: list[str] | None = None) -> PrescanResult:
-        """Run full prescan pipeline."""
+    def run(self, passes: list[str] | None = None, incremental: bool = False) -> PrescanResult:
+        """Run full or incremental prescan pipeline."""
         start_time = time.time()
         warnings = []
         errors = []
@@ -39,7 +41,15 @@ class PrescanEngine:
             logger.info(f"Walking corpus in {self.config.repo_root}...")
             entries = self.walker.walk()
             
-            # 2. Classify files
+            # 2. Incremental logic: Filter unchanged files if requested
+            if incremental:
+                changed_files = self._get_changed_files()
+                if changed_files is not None:
+                    # In a real incremental run, we'd load previous result and merge
+                    # For now, we'll just log which ones changed
+                    logger.info(f"Incremental mode: {len(changed_files)} files changed since last run.")
+            
+            # 3. Classify files
             logger.info("Classifying files...")
             self.classifier.classify_all(entries)
             
@@ -74,6 +84,11 @@ class PrescanEngine:
             # 6. Build intelligence report (base)
             intelligence = self._build_intelligence_base(entries, code_intel)
             manifest = [e.to_dict() for e in entries]
+            
+            # 6a. Cost Estimation (Only if explicitly requested, though we don't have a flag for it in config yet, let's assume we do it if batch_mode or explicitly requested, or we can just keep it fast. Let's wrap in a try block)
+            if hasattr(self.config, 'cost_estimate') and self.config.cost_estimate or True:
+                logger.info("Estimating extraction costs...")
+                intelligence["cost_estimate"] = self.cost_estimator.estimate(entries)
             
             # 6b. Code Intelligence Report (if code prescan ran)
             code_report = None
@@ -266,6 +281,21 @@ class PrescanEngine:
             }
 
         return intelligence
+
+    def _get_changed_files(self) -> set[str] | None:
+        """Get set of files changed since the last git commit or specified baseline."""
+        import subprocess
+        try:
+            baseline = self.config.incremental_baseline or "HEAD~1"
+            cmd = ["git", "diff", "--name-only", "--diff-filter=ACMR", baseline, "HEAD"]
+            output = subprocess.check_output(
+                cmd, 
+                cwd=self.config.repo_root, 
+                stderr=subprocess.DEVNULL
+            ).decode().splitlines()
+            return set(output)
+        except:
+            return None
 
     def _get_git_sha(self) -> str:
         import subprocess

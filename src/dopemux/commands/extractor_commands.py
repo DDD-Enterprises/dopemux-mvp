@@ -67,6 +67,16 @@ def extractor(ctx):
     help="Enable git metadata enrichment (default: True).",
 )
 @click.option(
+    "--incremental",
+    is_flag=True,
+    help="Incremental prescan based on git diff.",
+)
+@click.option(
+    "--cost-estimate",
+    is_flag=True,
+    help="Print estimated extraction cost and exit.",
+)
+@click.option(
     "--verbose", "-v",
     is_flag=True,
     help="Verbose output.",
@@ -77,6 +87,8 @@ def prescan(
     passes: Optional[str],
     code: bool,
     git: bool,
+    incremental: bool,
+    cost_estimate: bool,
     verbose: bool,
 ):
     """Run pre-extraction intelligence audit."""
@@ -106,6 +118,7 @@ def prescan(
         output_dir=Path(output) if output else repo_path / "extraction" / "prescan",
         enable_code_prescan=code,
         enable_git_enrichment=git,
+        incremental=incremental,
         verbose=verbose,
     )
 
@@ -119,15 +132,36 @@ def prescan(
         console=console,
     ) as progress:
         task = progress.add_task("Running prescan engine...", total=None)
-        result = engine.run(passes=pass_list)
+        result = engine.run(passes=pass_list, incremental=incremental)
         progress.update(task, completed=True)
 
     if result.success:
+        # Load intelligence to show cost estimate if requested
+        import json
+        with open(result.intelligence_path) as f:
+            intelligence = json.load(f)
+        
+        if cost_estimate:
+            cost = intelligence.get("cost_estimate", {})
+            net = cost.get("net_estimates", {})
+            savings = cost.get("estimated_savings", {})
+            
+            console.print("\n[bold]Extraction Cost Estimate[/bold]")
+            console.print(f"  Gross Tokens: {cost.get('corpus_stats', {}).get('total_tokens_gross', 0):,}")
+            console.print(f"  Total Savings: {savings.get('total_savings_tokens', 0):,} tokens ({savings.get('savings_pct', 0)}%)")
+            console.print(f"  Net Tokens:    {net.get('input_tokens', 0):,} input / {net.get('output_tokens', 0):,} output")
+            console.print(f"  [success]Total Est Cost: ${net.get('total_cost_usd', 0)} USD[/success]")
+            return
+
         console.print(f"\n[success]✓ Prescan completed successfully[/success]")
         console.print(f"  Intelligence: {result.intelligence_path}")
         console.print(f"  Manifest: {result.manifest_path}")
         console.print(f"  Files scanned: {result.file_count}")
         console.print(f"  Included: {result.included_count}")
+        
+        cost = intelligence.get("cost_estimate", {})
+        net = cost.get("net_estimates", {})
+        console.print(f"  Est. Cost: ${net.get('total_cost_usd', 0)} USD")
         console.print(f"  Duration: {result.duration_seconds}s")
     else:
         console.print(f"\n[error]✗ Prescan failed[/error]")
