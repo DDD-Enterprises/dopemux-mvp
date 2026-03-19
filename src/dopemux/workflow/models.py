@@ -368,7 +368,14 @@ def task_artifact_presence(task: WorkflowTask) -> Dict[str, bool]:
     if not directory.exists():
         return {stem: False for stem in task.required_artifacts}
 
-    names = {path.name.lower() for path in directory.iterdir() if path.is_file()}
+    names = set()
+    for path in directory.iterdir():
+        if not path.is_file():
+            continue
+        lowered = path.name.lower()
+        names.add(lowered)
+        names.add(lowered.replace("-", "_"))
+
     presence: Dict[str, bool] = {}
     for stem in task.required_artifacts:
         normalized = stem.lower()

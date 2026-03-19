@@ -3,8 +3,8 @@ id: README
 title: Readme
 type: reference
 owner: '@hu3mann'
-last_review: '2025-11-10'
-next_review: '2026-02-08'
+last_review: '2026-03-19'
+next_review: '2026-06-19'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: Readme (reference) for dopemux documentation and developer workflows.
@@ -44,6 +44,9 @@ Detailed reference for Dopemux components.
 - **[ConPort Callable Surface Inventory](../systems/conport/callable-surface-inventory.md)** - Active REST, JSON-RPC, and FastMCP surfaces
 - **[ConPort Surface Equivalence and Drift](../systems/conport/surface-equivalence-and-drift.md)** - Evidence-backed surface map and drift matrix
 
+### Workflow Kit
+- **[Internal Workflow Kit Reference](internal-workflow-kit.md)** - Phases, state schema, checkpoint tokens, and role assets
+
 ---
 
 ## Configuration
@@ -61,6 +64,7 @@ Configuration schemas and references.
 - **PR Docgen Sync Skill (Core Template)** - `templates/skills/pr-docgen-sync/`
 - **Gemini/Copilot/Claude Wrappers** - `templates/skills/pr-docgen-sync-*/`
 - **Skill Sync Script** - `scripts/skills/sync_repo_skills.py`
+- **Workflow Skill Pack** - `templates/skills/{brief-drafter,task-breakdown,code-researcher,research-reviewer,implementation-planner,plan-reviewer,code-implementer,quality-refactorer}/`
 
 ### PM Plane Contracts
 - **[PM Plane Write Matrix](../planes/pm/pm-plane-write-matrix.md)** - Canonical mutation writers, prechecks, mirrors, and forbidden paths
