@@ -46,7 +46,8 @@
     "ui-dashboard",
     "config",
     "dashboard",
-    "repo-truth-pack"
+    "repo-truth-pack",
+    "llm-docs"
   ],
   "allowed_root_files": [
     "CLAUDE_AUTOMATION_INSTRUCTIONS.md",
@@ -99,6 +100,7 @@
     "DAO_SURFACE.json",
     "CONCURRENCY_RISK_LOCATIONS.json",
     "compose.yml",
+    "compose.adhd-stack.yml",
     "AG-master_plan.md",
     "install.sh",
     "CHANGELOG.md",
