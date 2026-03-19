@@ -1,0 +1,28 @@
+# Dopemux Workflow Manager Profile
+# Phase-gated orchestration lane for internal workflow runs
+
+name: workflow-manager
+description: Manager lane for phase-gated workflow orchestration, checkpoint validation, and worker delegation.
+
+mcp_servers:
+  required:
+    - conport
+    - serena
+    - zen
+
+  enabled:
+    - pal
+    - desktop-commander
+
+  disabled: []
+
+adhd_config:
+  session_duration_minutes: 50
+  energy_preference: medium
+  attention_mode: focused
+  energy_tracking_enabled: true
+  break_reminders_enabled: true
+
+markers:
+  required_files: []
+  optional_files: []
