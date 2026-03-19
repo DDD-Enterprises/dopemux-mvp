@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Patch Verification Linkage (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Patch Verification Linkage
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Patch Verification Linkage
 
 ## Verification Burden by Patch Class
 

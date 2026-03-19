@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+from services.shared.brand_voice import StatusChip, brand_list, brand_text
+
 
 class EnergyLevel(str, Enum):
     """Developer energy levels for task matching."""
@@ -91,6 +93,16 @@ class AccommodationRecommendation:
     suggested_actions: List[str]
     cognitive_benefit: str
     implementation_effort: str  # minimal, low, moderate, high
+
+    def __post_init__(self):
+        chip = StatusChip.BLOCKER if self.urgency == "immediate" else StatusChip.EDGE
+        self.message = brand_text(self.message, chip=chip)
+        self.suggested_actions = brand_list(self.suggested_actions, chip=StatusChip.EDGE)
+        self.cognitive_benefit = brand_text(
+            self.cognitive_benefit,
+            chip=StatusChip.LOGGED,
+            include_chip=False,
+        )
 
 
 @dataclass

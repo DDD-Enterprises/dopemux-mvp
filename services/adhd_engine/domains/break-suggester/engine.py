@@ -25,6 +25,8 @@ from typing import Dict, List, Optional
 from collections import deque
 from statistics import mean, stdev
 
+from services.shared.brand_voice import StatusChip, brand_text
+
 logger = logging.getLogger(__name__)
 
 
@@ -38,6 +40,10 @@ class BreakSuggestion:
     triggered_by: List[str]  # Event types that triggered this
     timestamp: datetime
     workspace_path: Optional[str] = None  # Multi-workspace tracking
+
+    def __post_init__(self):
+        chip = StatusChip.BLOCKER if self.priority in {"high", "critical"} else StatusChip.AFTERCARE
+        self.message = brand_text(self.message, chip=chip)
 
 
 @dataclass

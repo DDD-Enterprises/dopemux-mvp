@@ -13,6 +13,14 @@ import logging
 from typing import Optional, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_text, brand_title
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +97,9 @@ class MobilePushNotifier:
         Returns:
             True if sent successfully
         """
+        title = brand_title(title, chip=StatusChip.AFTERCARE)
+        message = brand_text(message, chip=StatusChip.AFTERCARE)
+
         if not self.config.enabled:
             logger.info(f"📱 [Notifications disabled] {title}: {message}")
             return False
@@ -118,8 +129,8 @@ class MobilePushNotifier:
         Returns:
             True if sent successfully
         """
-        title = f"Energy: {energy_level.title()}"
-        message = recommendation
+        title = brand_title(f"Energy: {energy_level.title()}", chip=StatusChip.EDGE)
+        message = brand_text(recommendation, chip=StatusChip.EDGE)
         
         priority = (
             NotificationPriority.HIGH if energy_level == "very_low"
@@ -143,8 +154,8 @@ class MobilePushNotifier:
         Returns:
             True if sent successfully
         """
-        title = f"Focus: {attention_state.title()}"
-        message = suggestion
+        title = brand_title(f"Focus: {attention_state.title()}", chip=StatusChip.LIVE)
+        message = brand_text(suggestion, chip=StatusChip.LIVE)
         
         priority = (
             NotificationPriority.HIGH if attention_state == "scattered"
@@ -183,8 +194,12 @@ class MobilePushNotifier:
             
             if not self._session:
                 self._session = aiohttp.ClientSession()
-            
-            async with self._session.post(url, data=message, headers=headers) as response:
+
+            request = self._session.post(url, data=message, headers=headers)
+            if not hasattr(request, "__aenter__"):
+                request = await request
+
+            async with request as response:
                 if response.status == 200:
                     logger.info(f"📱 Ntfy sent: {title}")
                     return True
@@ -228,8 +243,12 @@ class MobilePushNotifier:
             
             if not self._session:
                 self._session = aiohttp.ClientSession()
-            
-            async with self._session.post(url, data=data) as response:
+
+            request = self._session.post(url, data=data)
+            if not hasattr(request, "__aenter__"):
+                request = await request
+
+            async with request as response:
                 if response.status == 200:
                     logger.info(f"📱 Pushover sent: {title}")
                     return True
@@ -261,11 +280,15 @@ class MobilePushNotifier:
             
             if not self._session:
                 self._session = aiohttp.ClientSession()
-            
-            async with self._session.post(
+
+            request = self._session.post(
                 self.config.happy_webhook_url,
                 json=payload
-            ) as response:
+            )
+            if not hasattr(request, "__aenter__"):
+                request = await request
+
+            async with request as response:
                 if response.status in (200, 201, 202):
                     logger.info(f"📱 Happy sent: {title}")
                     return True

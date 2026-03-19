@@ -1,19 +1,42 @@
-Objective: Implement Brand System Phase 0 — Foundation Infrastructure (voice engine, enriched CSV, token sync validator)
+Objective: Implement Brand System Phase 6 — branded notifications and ADHD runtime copy
 
 Scope: allowed files (exact paths)
-- src/dopemux/ui/voice.py (NEW)
-- dopemux_voice_branding_bundle/SPECIMEN_LEDGER_ENRICHED.csv (NEW)
-- scripts/sync_brand_tokens.py (NEW)
+- proof/PLAN.txt
+- services/shared/brand_voice.py
+- services/adhd_notifier/__init__.py
+- services/adhd_notifier/mobile_push.py
+- services/adhd-notifier/notify.py
+- services/adhd-notifier/mobile_push.py
+- services/adhd-notifier/daily_reporter.py
+- services/voice-commands/voice_api.py
+- services/voice-commands/voice_task_decomposer.py
+- services/adhd_engine/cli/break_guide.py
+- services/adhd_engine/correlation_engine.py
+- services/adhd_engine/event_listener.py
+- services/adhd_engine/hello_flow_implementation.py
+- services/adhd_engine/api/schemas.py
+- services/adhd_engine/api/routes.py
+- services/adhd_engine/core/models.py
+- services/adhd_engine/core/output_dispatcher.py
+- services/adhd_engine/core/error_handling.py
+- services/adhd_engine/core/engine.py
+- services/adhd_engine/engine.py
+- services/adhd_engine/domains/break-suggester/engine.py
+- services/adhd_engine/domains/attention/intent_pattern_analyzer.py
+- services/adhd_engine/domains/attention/overwhelm_detector.py
+- services/adhd_engine/domains/task_enablement/decomposition_coordinator.py
+- services/adhd_engine/ml/energy_predictor.py
 
 Steps:
-1. Create src/dopemux/ui/voice.py — VoiceMode enum, CopyLibrary, validate_output()
-2. Create enrichment script to process SPECIMEN_LEDGER_REGEN.csv → SPECIMEN_LEDGER_ENRICHED.csv
-3. Run enrichment to produce enriched CSV (~150 rows from ~650)
-4. Create scripts/sync_brand_tokens.py — cross-platform token sync validator
-5. Verify all acceptance criteria pass
+1. Create a shared notification voice adapter backed by `StatusChip`, `VoiceEngine`, and `validate_or_fallback()`
+2. Refactor desktop, mobile, daily-report, and voice-command services to emit branded titles, messages, and suggestion lists
+3. Brand ADHD Engine API responses and event-surfaced findings without changing payload schemas
+4. Brand break guidance, break-suggester, overwhelm, intent, decomposition, and energy-prediction recommendation copy
+5. Align duplicate engine/core-engine mobile notification and recommendation surfaces to the same chip-prefixed phrasing
+6. Run compile checks across every touched Phase 6 file plus targeted notifier/engine tests
+7. Run `python scripts/brand_lint.py` before advancing
 
 Verification:
-- python -c "from dopemux.ui.voice import VoiceMode, CopyLibrary, validate_output; print('OK')"
-- python -c "from dopemux.ui.voice import validate_output; v=validate_output('as an ai, probably'); print(f'{len(v)} violations')"
-- python -c "from dopemux.ui.voice import CopyLibrary; print(CopyLibrary().random_aftercare())"
-- python scripts/sync_brand_tokens.py
+- python -m py_compile services/shared/brand_voice.py services/adhd-notifier/notify.py services/adhd-notifier/mobile_push.py services/adhd-notifier/daily_reporter.py services/voice-commands/voice_api.py services/voice-commands/voice_task_decomposer.py services/adhd_engine/cli/break_guide.py services/adhd_engine/correlation_engine.py services/adhd_engine/event_listener.py services/adhd_engine/hello_flow_implementation.py services/adhd_engine/api/schemas.py services/adhd_engine/api/routes.py services/adhd_engine/core/models.py services/adhd_engine/core/output_dispatcher.py services/adhd_engine/core/error_handling.py services/adhd_engine/core/engine.py services/adhd_engine/engine.py services/adhd_engine/domains/break-suggester/engine.py services/adhd_engine/domains/attention/intent_pattern_analyzer.py services/adhd_engine/domains/attention/overwhelm_detector.py services/adhd_engine/domains/task_enablement/decomposition_coordinator.py services/adhd_engine/ml/energy_predictor.py
+- pytest services/adhd-notifier/tests/test_notify.py services/adhd-notifier/tests/test_mobile_push.py services/adhd_engine/tests/test_break_guide_timer.py
+- python scripts/brand_lint.py

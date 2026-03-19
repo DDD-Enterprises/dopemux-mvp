@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Auto Apply Guardrails (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Auto-Apply Guardrails
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Auto-Apply Guardrails
 
 ## Overview
 This document codifies the governance constraints for automated actions within the flight deck.

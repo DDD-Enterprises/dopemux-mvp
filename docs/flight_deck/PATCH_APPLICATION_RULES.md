@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Patch Application Rules (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Patch Application Rules
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Patch Application Rules
 
 ## Apply Rules by Patch Class
 

@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Operations Review Cadence (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Operations Review Cadence
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Operations Review Cadence
 
 ## Overview
 

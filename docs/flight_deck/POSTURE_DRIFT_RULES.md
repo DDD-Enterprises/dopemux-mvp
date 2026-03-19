@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Posture Drift Rules (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Posture Drift Rules
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Posture Drift Rules
 
 ## Overview
 

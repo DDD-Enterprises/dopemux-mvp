@@ -21,6 +21,8 @@ import logging
 import pickle
 import os
 
+from services.shared.brand_voice import StatusChip, brand_text
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,6 +34,9 @@ class EnergyPrediction:
     contributing_factors: List[str]  # Top factors influencing prediction
     recommendation: str  # Actionable recommendation
     timestamp: datetime = field(default_factory=datetime.now)
+
+    def __post_init__(self):
+        self.recommendation = brand_text(self.recommendation, chip=StatusChip.EDGE)
 
 
 class EnergyPatternPredictor:

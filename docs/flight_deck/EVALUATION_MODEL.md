@@ -9,7 +9,11 @@ last_review: '2026-03-17'
 next_review: '2026-06-15'
 prelude: Evaluation Model (explanation) for dopemux documentation and developer workflows.
 ---
-# Flight Deck Evaluation Model
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Flight Deck Evaluation Model
 
 ## Overview
 This document defines the methodology for evaluating the unified interactive flight deck as a holistic subsystem. The goal is to determine if the combination of mission intelligence, live synthesis, and tactical controls provides a safe, materially useful operator experience.

@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Defer Trigger Rules (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Defer Trigger Rules
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Defer Trigger Rules
 
 ## Exactly When a DeferPacket Fires
 

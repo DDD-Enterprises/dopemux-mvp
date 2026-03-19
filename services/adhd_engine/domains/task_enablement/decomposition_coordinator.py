@@ -14,6 +14,8 @@ from datetime import datetime
 import logging
 import asyncio
 
+from services.shared.brand_voice import StatusChip, brand_text
+
 from .task_decomposition_assistant import (
     TaskDecompositionAssistant,
     TaskComplexity
@@ -208,14 +210,15 @@ class DecompositionCoordinator:
         # Build consent message (verbosity based on energy)
         if energy == "low":
             # Minimal message for low energy
-            message = (
+            message = brand_text(
                 f"🧠 Break down '{task_desc[:30]}...' into {estimated_subtasks} tasks?\n"
                 f"Reason: {reason}\n"
-                f"[Y/n/p for preview]: "
+                f"[Y/n/p for preview]: ",
+                chip=StatusChip.EDGE,
             )
         else:
             # Detailed message for medium/high energy
-            message = f"""
+            message = brand_text(f"""
 🧠 ADHD Engine detected high-complexity task
 
 Task: {task_desc}
@@ -232,7 +235,7 @@ Would you like to decompose this task?
 [N] No, keep as single task
 [P] Preview breakdown first
 
-Your choice: """
+Your choice: """, chip=StatusChip.EDGE)
         
         logger.info(
             f"{'Gentle' if attention == 'distracted' else 'Standard'} decomposition consent request: "

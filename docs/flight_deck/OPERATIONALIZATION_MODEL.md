@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Operationalization Model (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Flight Deck Operationalization Model
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Flight Deck Operationalization Model
 
 ## Overview
 This model defines the operational posture for the unified interactive flight deck, transitioning it from a trial surface to a governed production interface.

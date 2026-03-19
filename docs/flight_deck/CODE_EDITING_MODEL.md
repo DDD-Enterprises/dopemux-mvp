@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Code Editing Model (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Code Editing Model
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Code Editing Model
 
 ## Overview
 

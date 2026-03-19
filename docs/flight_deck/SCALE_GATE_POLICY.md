@@ -9,7 +9,11 @@ last_review: '2026-03-17'
 next_review: '2026-06-15'
 prelude: Scale Gate Policy (explanation) for dopemux documentation and developer workflows.
 ---
-# Scale Gate Policy
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Scale Gate Policy
 
 ## Overview
 

@@ -9,7 +9,11 @@ last_review: '2026-03-17'
 next_review: '2026-06-15'
 prelude: Go No Go Criteria (explanation) for dopemux documentation and developer workflows.
 ---
-# Flight Deck Go/No-Go Criteria
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Flight Deck Go/No-Go Criteria
 
 ## Decision Framework
 The governance decision for the flight deck is based on safety, utility, and stability metrics.
