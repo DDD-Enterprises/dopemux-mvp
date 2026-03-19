@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Supervised Use Policy (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Flight Deck Supervised Use Policy
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Flight Deck Supervised Use Policy
 
 ## Overview
 This policy governs the interaction between human operators and the interactive flight deck in production environments.

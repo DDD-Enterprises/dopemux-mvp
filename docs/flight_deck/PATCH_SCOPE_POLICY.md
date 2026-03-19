@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Patch Scope Policy (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Patch Scope Policy
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Patch Scope Policy
 
 ## Required Scope Elements
 

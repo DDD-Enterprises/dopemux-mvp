@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Post Trial Governance Options (explanation) for dopemux documentation and
   developer workflows.
 ---
-# Flight Deck Post-Trial Governance Options
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Flight Deck Post-Trial Governance Options
 
 ## Overview
 Based on the evaluation of the unified flight deck (Tranche 22+), the system will adopt one of the following operational postures.

@@ -14,6 +14,8 @@ from datetime import datetime, timedelta
 import logging
 from statistics import mean, correlation
 
+from services.shared.brand_voice import StatusChip, brand_text
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,6 +33,7 @@ class CorrelationInsight:
     def __post_init__(self):
         if self.timestamp is None:
             self.timestamp = datetime.now()
+        self.recommendation = brand_text(self.recommendation, chip=StatusChip.EDGE)
 
 
 class CrossServiceCorrelator:

@@ -25,6 +25,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 import logging
 
+from services.shared.brand_voice import StatusChip, brand_list, brand_text
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,6 +56,12 @@ class CircuitBreakerAction:
     message: str
     steps: List[str]
     benefit: str
+
+    def __post_init__(self):
+        chip = StatusChip.BLOCKER if self.urgency == "immediate" else StatusChip.EDGE
+        self.message = brand_text(self.message, chip=chip)
+        self.steps = brand_list(self.steps, chip=StatusChip.EDGE)
+        self.benefit = brand_text(self.benefit, chip=StatusChip.LOGGED, include_chip=False)
 
 
 class OverwhelmDetector:

@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Implicit Action Policy (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Implicit Action Policy
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Implicit Action Policy
 
 ## Purpose
 

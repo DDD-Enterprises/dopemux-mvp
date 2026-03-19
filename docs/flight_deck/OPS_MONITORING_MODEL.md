@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Ops Monitoring Model (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Ops Monitoring Model
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Ops Monitoring Model
 
 ## Overview
 

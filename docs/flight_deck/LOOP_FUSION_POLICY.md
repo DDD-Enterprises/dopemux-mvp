@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Loop Fusion Policy (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Loop Fusion Policy
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Loop Fusion Policy
 
 ## Fail-Closed Invariant
 

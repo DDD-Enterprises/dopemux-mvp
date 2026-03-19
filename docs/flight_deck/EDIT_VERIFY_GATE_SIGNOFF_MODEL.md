@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Edit Verify Gate Signoff Model (explanation) for dopemux documentation and
   developer workflows.
 ---
-# Edit-Verify-Gate-Signoff Model
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Edit-Verify-Gate-Signoff Model
 
 ## Overview
 

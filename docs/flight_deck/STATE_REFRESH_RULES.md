@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: State Refresh Rules (explanation) for dopemux documentation and developer
   workflows.
 ---
-# State Refresh Rules
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## State Refresh Rules
 
 ## When Mission State Is Considered Stale
 

@@ -20,16 +20,34 @@ Provides:
 
 import asyncio
 import logging
+import os
+import sys
+from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from dopemux.voice import inject_voice_header, validate_or_fallback
+
 logger = logging.getLogger(__name__)
 
 # ConPort-KG imports (sys.path approach validated in deep analysis)
-import sys
-import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'conport_kg'))
+
+GUARDIAN_HEADER = inject_voice_header(
+    "Protect focus. Prefer graceful degradation to noisy failure. Keep the next step visible.",
+    surface="guardian",
+)
+
+
+def _guardian_copy(text: str, fallback: str) -> str:
+    """Return voice-safe guardian status text."""
+    return validate_or_fallback(text, surface="guardian", fallback=fallback)
 
 try:
     from age_client import AGEClient
@@ -37,7 +55,12 @@ try:
     CONPORT_KG_AVAILABLE = True
 except ImportError as e:
     CONPORT_KG_AVAILABLE = False
-    logger.info(f"⚠️  ConPort-KG not available: {e}")
+    logger.info(
+        _guardian_copy(
+            f"[LIVE] ConPort-KG offline. FACT: optional graph layer unavailable ({e}). NEXT: continue in basic mode.",
+            "[LIVE] Guardian voice gate fallback. FACT: optional graph layer unavailable. TODO: continue in basic mode.",
+        )
+    )
     # Define stub classes for graceful degradation
     class AGEClient:
         pass
@@ -87,16 +110,31 @@ class CognitiveGuardianKG:
             try:
                 self.age_client = age_client or self._create_age_client()
                 self.attention_monitor = attention_monitor or AttentionStateMonitor()
-                logger.info(f"✅ CognitiveGuardianKG initialized: {workspace_id}")
+                logger.info(
+                    _guardian_copy(
+                        f"[LIVE] CognitiveGuardianKG linked for {workspace_id}. NEXT: graph queries are live.",
+                        "[LIVE] Guardian linked. FACT: graph queries are live. TODO: continue with focus support.",
+                    )
+                )
             except Exception as e:
-                logger.warning(f"KG initialization failed, falling back to basic mode: {e}")
+                logger.warning(
+                    _guardian_copy(
+                        f"[LIVE] KG startup slipped for {workspace_id}. FACT: {e}. NEXT: continue in basic mode.",
+                        "[LIVE] Guardian fallback engaged. FACT: KG startup failed. TODO: continue in basic mode.",
+                    )
+                )
                 self.enable_kg = False
                 self.age_client = None
                 self.attention_monitor = None
         else:
             self.age_client = None
             self.attention_monitor = None
-            logger.info(f"⚠️  CognitiveGuardianKG in basic mode (KG disabled): {workspace_id}")
+            logger.info(
+                _guardian_copy(
+                    f"[LIVE] CognitiveGuardianKG in basic mode for {workspace_id}. NEXT: use graceful degradation paths.",
+                    "[LIVE] Guardian basic mode active. FACT: KG is disabled. TODO: use graceful degradation paths.",
+                )
+            )
     
     def _create_age_client(self) -> AGEClient:
         """
@@ -185,7 +223,10 @@ class CognitiveGuardianKG:
         except Exception as e:
             # LOUD error logging (ERROR level for monitoring)
             logger.error(
-                f"Task relationship query failed for {task_id}: {e}",
+                _guardian_copy(
+                    f"[LIVE] Relationship query failed for {task_id}. FACT: {e}. NEXT: return empty relationships and keep moving.",
+                    "[LIVE] Guardian query fallback. FACT: relationship lookup failed. TODO: return empty relationships.",
+                ),
                 exc_info=True,
                 extra={
                     "task_id": task_id,
@@ -298,7 +339,10 @@ class CognitiveGuardianKG:
             
         except Exception as e:
             logger.error(
-                f"Semantic search failed for query '{query}': {e}",
+                _guardian_copy(
+                    f"[LIVE] Semantic search failed for '{query}'. FACT: {e}. NEXT: return an empty result set.",
+                    "[LIVE] Guardian search fallback. FACT: semantic search failed. TODO: return an empty result set.",
+                ),
                 exc_info=True,
                 extra={
                     "query": query,
@@ -346,9 +390,19 @@ class CognitiveGuardianKG:
         if self.age_client:
             try:
                 self.age_client.close()
-                logger.info(f"✅ CognitiveGuardianKG closed: {self.workspace_id}")
+                logger.info(
+                    _guardian_copy(
+                        f"[LIVE] CognitiveGuardianKG closed for {self.workspace_id}. NEXT: focus state preserved.",
+                        "[LIVE] Guardian closed. FACT: focus state preserved. TODO: end the session cleanly.",
+                    )
+                )
             except Exception as e:
-                logger.warning(f"Error closing AGE client: {e}")
+                logger.warning(
+                    _guardian_copy(
+                        f"[LIVE] AGE client close raised an error. FACT: {e}. NEXT: clear the client on the next boot.",
+                        "[LIVE] Guardian close fallback. FACT: AGE client close failed. TODO: clear the client on the next boot.",
+                    )
+                )
 
 
 # Module-level validation
@@ -356,23 +410,28 @@ if __name__ == "__main__":
     # Quick validation (synchronous wrapper for testing)
     async def test_basic():
         """Basic validation test."""
-        logger.info("Testing CognitiveGuardianKG initialization...")
+        logger.info(_guardian_copy("[LIVE] Testing CognitiveGuardianKG initialization.", "[LIVE] Guardian test start."))
         
         # Test 1: Basic initialization
         kg = CognitiveGuardianKG(workspace_id="/test", enable_kg=False)
-        logger.info(f"✅ Initialized in basic mode: {kg.workspace_id}")
+        logger.info(
+            _guardian_copy(
+                f"[LIVE] Basic mode initialized for {kg.workspace_id}.",
+                "[LIVE] Guardian test basic mode ready.",
+            )
+        )
         
         # Test 2: Graceful degradation
         rels = await kg.get_task_relationships("task-123")
         assert rels == {"dependencies": [], "blockers": [], "related": []}
-        logger.info("✅ Graceful degradation works")
+        logger.info(_guardian_copy("[LIVE] Graceful degradation path confirmed.", "[LIVE] Guardian graceful degradation confirmed."))
         
         # Test 3: Semantic search fallback
         results = await kg.search_tasks_semantic("test query")
         assert results == []
-        logger.info("✅ Semantic search fallback works")
+        logger.info(_guardian_copy("[LIVE] Semantic search fallback confirmed.", "[LIVE] Guardian semantic search fallback confirmed."))
         
-        logger.info("\n✅ All basic tests passed!")
+        logger.info(_guardian_copy("[LIVE] All guardian basic tests passed.", "[LIVE] Guardian basic tests passed."))
     
     # Run test
     asyncio.run(test_basic())

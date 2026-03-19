@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Tactic Selection Model (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Tactic Selection Model
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Tactic Selection Model
 
 ## Overview
 

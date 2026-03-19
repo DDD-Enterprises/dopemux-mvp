@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Signoff Trigger Rules (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Signoff Trigger Rules
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Signoff Trigger Rules
 
 ## Exactly When a SignoffPacket Fires
 

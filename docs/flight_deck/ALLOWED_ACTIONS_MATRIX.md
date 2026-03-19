@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Allowed Actions Matrix (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Flight Deck Allowed Actions Matrix
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Flight Deck Allowed Actions Matrix
 
 ## Purpose
 This matrix defines the boundaries of automation for the flight deck tactical controls.

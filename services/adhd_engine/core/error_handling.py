@@ -23,6 +23,8 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
 from functools import wraps
 
+from services.shared.brand_voice import StatusChip, brand_text
+
 logger = logging.getLogger(__name__)
 
 class ErrorType(Enum):
@@ -61,6 +63,7 @@ class DopemuxError:
 
     def __post_init__(self):
         """Generate ADHD-friendly error message if not provided."""
+        self.message = brand_text(self.message, chip=StatusChip.BLOCKER)
         if not self.adhd_friendly_message:
             self.adhd_friendly_message = self._generate_adhd_message()
 
@@ -83,13 +86,28 @@ class DopemuxError:
 
         # Add context-aware suggestions
         if self.severity == ErrorSeverity.CRITICAL:
-            return f"{base}. This needs immediate attention - consider taking a focused break first."
+            return brand_text(
+                f"{base}. This needs immediate attention. Take one focused step at a time.",
+                chip=StatusChip.BLOCKER,
+                include_chip=False,
+            )
         elif self.severity == ErrorSeverity.HIGH:
-            return f"{base}. This is important - good time for methodical troubleshooting."
+            return brand_text(
+                f"{base}. This is important. Use methodical troubleshooting.",
+                chip=StatusChip.BLOCKER,
+                include_chip=False,
+            )
         elif self.severity == ErrorSeverity.MEDIUM:
-            return f"{base}. Handle when you have mental bandwidth available."
-        else:
-            return f"{base}. No immediate action needed."
+            return brand_text(
+                f"{base}. Handle this when you have the bandwidth.",
+                chip=StatusChip.EDGE,
+                include_chip=False,
+            )
+        return brand_text(
+            f"{base}. No immediate action needed.",
+            chip=StatusChip.LOGGED,
+            include_chip=False,
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for logging/serialization."""

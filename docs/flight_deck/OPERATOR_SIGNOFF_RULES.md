@@ -10,7 +10,11 @@ next_review: '2026-06-15'
 prelude: Operator Signoff Rules (explanation) for dopemux documentation and developer
   workflows.
 ---
-# Flight Deck Operator Sign-off Rules
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Flight deck reference
+
+## Flight Deck Operator Sign-off Rules
 
 ## Overview
 Tactical actions (Patching, Code implementation) require formal operator sign-off.

@@ -15,12 +15,21 @@ Channels:
 import asyncio
 import subprocess
 import logging
+import shlex
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional, Protocol
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from services.shared.brand_voice import StatusChip, brand_list, brand_text
+
 logger = logging.getLogger(__name__)
+
+
+def _sanitize_text(value: str, max_length: int = 160) -> str:
+    """Strip control characters and bound user-visible shell input."""
+    sanitized = "".join(ch for ch in str(value) if ch.isprintable() and ch not in {"\n", "\r", "\t"})
+    return sanitized[:max_length]
 
 
 @dataclass
@@ -37,6 +46,9 @@ class ADHDFinding:
     def __post_init__(self):
         if not self.timestamp:
             self.timestamp = datetime.utcnow().isoformat()
+        chip = StatusChip.BLOCKER if self.severity in {"high", "critical"} else StatusChip.LIVE
+        self.message = brand_text(self.message, chip=chip)
+        self.recommended_actions = brand_list(self.recommended_actions, chip=StatusChip.EDGE)
 
 
 class OutputChannel(ABC):
@@ -115,7 +127,9 @@ class TmuxStatusChannel(OutputChannel):
         try:
             icon = self.ICONS.get(finding.finding_type, "📢")
             # Truncate message for status bar
-            short_msg = finding.message[:30] + "..." if len(finding.message) > 30 else finding.message
+            short_msg = _sanitize_text(finding.message, max_length=30)
+            if len(finding.message) > 30:
+                short_msg += "..."
             status_text = f"#{icon} {short_msg}"
             
             result = subprocess.run(
@@ -150,9 +164,12 @@ class TmuxPopupChannel(OutputChannel):
             # Build popup content
             actions_text = ""
             if finding.recommended_actions:
-                actions_text = f"\n\nRecommended:\n• " + "\n• ".join(finding.recommended_actions[:3])
+                actions_text = f"\n\nRecommended:\n• " + "\n• ".join(
+                    _sanitize_text(action, max_length=80) for action in finding.recommended_actions[:3]
+                )
             
-            popup_content = f"{finding.message}{actions_text}"
+            popup_content = _sanitize_text(f"{finding.message}{actions_text}", max_length=400)
+            popup_shell_arg = shlex.quote(popup_content)
             
             # Use tmux display-popup
             result = subprocess.run(
@@ -162,7 +179,7 @@ class TmuxPopupChannel(OutputChannel):
                     "-h", "12",  # Height
                     "-T", f"⚠️ ADHD Alert: {finding.finding_type}",
                     "-E",  # Close on any key
-                    f"echo '{popup_content}'; read -n 1 -s"
+                    f"printf %s {popup_shell_arg}; read -n 1 -s"
                 ],
                 capture_output=True,
                 timeout=30
@@ -221,7 +238,7 @@ class VoiceChannel(OutputChannel):
         
         try:
             # Clean message for speech (remove emojis)
-            message = finding.message
+            message = _sanitize_text(finding.message)
             for emoji in ["⚠️", "🎉", "🔥", "😰", "🆘", "✅", "📍", "⚡", "🐇", "🔋"]:
                 message = message.replace(emoji, "")
             message = message.strip()

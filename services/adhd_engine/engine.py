@@ -47,6 +47,7 @@ from .context_preserver import ContextPreserver
 from .social_battery_monitor import SocialBatteryMonitor
 from .voice_assistant import VoiceAssistant
 from .output_dispatcher import ADHDOutputDispatcher, ADHDFinding
+from services.shared.brand_voice import StatusChip, brand_list, brand_text, brand_title
 
 # ConPort-KG Integration (optional)
 try:
@@ -1141,6 +1142,8 @@ Format: {{
                 cognitive_benefit="Prevents burnout and maintains sustained productivity",
                 implementation_effort="minimal"
             )
+            message = break_recommendation.message
+            break_suggestions = break_recommendation.suggested_actions
 
             # Store recommendation
             if user_id not in self.active_accommodations:
@@ -1176,8 +1179,11 @@ Format: {{
                 await self._send_mobile_notification(
                     user_id=user_id,
                     notification_type="break",
-                    title="Break Time! ⏰",
-                    message=f"Time for a {work_duration:.0f}-minute break! Try: {break_suggestions[0] if break_suggestions else 'Take a short break'}",
+                    title=brand_title("Break check", chip=StatusChip.AFTERCARE),
+                    message=brand_text(
+                        f"Time for a {work_duration:.0f}-minute break. Try {break_suggestions[0] if break_suggestions else 'a short reset'}.",
+                        chip=StatusChip.AFTERCARE,
+                    ),
                     duration=5,
                     activity=break_suggestions[0] if break_suggestions else "Take a short break"
                 )
@@ -1540,10 +1546,13 @@ Format: {{
                 await self._send_mobile_notification(
                     user_id=user_id,
                     notification_type="energy",
-                    title="Energy Alert ⚡",
-                    message=f"Your energy level is {current.value.lower()}. Suggestions: {', '.join(suggestions[:2])}",
+                    title=brand_title("Energy alert", chip=StatusChip.EDGE),
+                    message=brand_text(
+                        f"Energy is {current.value.lower()}. Next moves: {', '.join(suggestions[:2])}.",
+                        chip=StatusChip.EDGE,
+                    ),
                     energy_level=current.value.lower(),
-                    suggestions=suggestions
+                    suggestions=brand_list(suggestions, chip=StatusChip.EDGE)
                 )
                 logger.info(f"📱 Mobile energy alert sent for {user_id}: {current.value}")
             except Exception as e:
@@ -1576,8 +1585,8 @@ Format: {{
         notification = {
             "user_id": user_id,
             "type": notification_type,
-            "title": title,
-            "message": message,
+            "title": title if title.startswith("[") else brand_title(title, chip=StatusChip.LIVE),
+            "message": message if message.startswith("[") else brand_text(message, chip=StatusChip.LIVE),
             "timestamp": datetime.now(timezone.utc).isoformat(),
             **kwargs
         }
@@ -1706,7 +1715,11 @@ Format: {{
                         "session_duration_minutes": session_duration,
                         "tasks_completed_today": tasks_completed,
                         "timestamp": datetime.utcnow().isoformat(),
-                        "recommendation": self.active_accommodations.get(user_id, [AccommodationRecommendation(message="Continue current workflow", urgency="low", accommodation_type="none", suggested_actions=[])])[0].message if self.active_accommodations.get(user_id) else "Continue current workflow"
+                        "recommendation": (
+                            self.active_accommodations[user_id][0].message
+                            if self.active_accommodations.get(user_id)
+                            else brand_text("Continue current workflow.", chip=StatusChip.LOGGED)
+                        )
                     }
                 },
                 user_id=user_id

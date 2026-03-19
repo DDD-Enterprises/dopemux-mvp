@@ -14,8 +14,16 @@ ADHD Benefits:
 import asyncio
 import logging
 import aiohttp
+import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Dict, Any, Optional
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, aftercare_text, brand_text, brand_title
 
 logger = logging.getLogger(__name__)
 
@@ -126,30 +134,27 @@ class DailyReporter:
 
         # Build report
         report = f"""
-╔════════════════════════════════════════════════════════════╗
-║          ADHD Activity Report - {date_str}          ║
-╚════════════════════════════════════════════════════════════╝
+━━━◆ Ø ◆━━━  {brand_title(f"Daily ADHD Report - {date_str}", chip=StatusChip.LOGGED)}
 
 SESSIONS & PRODUCTIVITY
-  Sessions tracked: {sessions}
-  Activities logged: {activities}
-  Logging errors: {errors}
+  {brand_text(f"Sessions tracked: {sessions}", include_chip=False)}
+  {brand_text(f"Activities logged: {activities}", include_chip=False)}
+  {brand_text(f"Logging errors: {errors}", include_chip=False)}
 
 ADHD ACCOMMODATIONS
-  Break reminders: {breaks_suggested}
-  Hyperfocus protections: {hyperfocus_protections}
+  {brand_text(f"Break reminders: {breaks_suggested}", include_chip=False)}
+  {brand_text(f"Hyperfocus protections: {hyperfocus_protections}", include_chip=False)}
 
 CURRENT STATE
-  Energy: {adhd_state.get('current_state', {}).get('energy_levels', {}).get('hue', 'unknown')}
-  Attention: {adhd_state.get('current_state', {}).get('attention_states', {}).get('hue', 'unknown')}
+  {brand_text(f"Energy: {adhd_state.get('current_state', {}).get('energy_levels', {}).get('hue', 'unknown')}", include_chip=False)}
+  {brand_text(f"Attention: {adhd_state.get('current_state', {}).get('attention_states', {}).get('hue', 'unknown')}", include_chip=False)}
 
 INSIGHTS
-  {'✅ Good break compliance!' if breaks_suggested > 0 else '⚠️  No breaks tracked yet'}
-  {'⚠️  Hyperfocus detected - watch for burnout' if hyperfocus_protections > 0 else '✅ No hyperfocus issues'}
-  {'✅ Active ADHD monitoring' if activities > 0 else '📊 Building baseline data...'}
+  {brand_text('Break compliance is live.' if breaks_suggested > 0 else 'No breaks tracked yet. Start with one reset.', include_chip=False)}
+  {brand_text('Hyperfocus protection fired. Guard your recovery block.' if hyperfocus_protections > 0 else 'No hyperfocus issues logged today.', include_chip=False)}
+  {brand_text('Monitoring stayed active through the day.' if activities > 0 else 'Baseline data is still building.', include_chip=False)}
 
-═══════════════════════════════════════════════════════════
-Report generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+{aftercare_text(f"Report generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")}
 """
         return report
 
@@ -170,10 +175,10 @@ Report generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
             report_path = report_dir / filename
 
-            with open(report_path, "w") as f:
+            with open(report_path, "w", encoding="utf-8") as f:
                 f.write(report)
 
-            logger.info(f"Report saved: {report_path}")
+            logger.info(brand_text(f"Report saved: {report_path}"))
             return str(report_path)
 
         except Exception as e:
