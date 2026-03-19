@@ -218,13 +218,12 @@ async def _invalidate_user_caches(user_id: str):
 def get_engine():
     """Get global engine instance."""
     global engine
-    # In Docker, main might be in services.adhd_engine.main or just main
     try:
-        from services.adhd_engine import main as engine_main
-    except ImportError:
+        from .. import main as engine_main
+    except (ImportError, ValueError):
         try:
-            from .. import main as engine_main
-        except (ImportError, ValueError):
+            from services.adhd_engine import main as engine_main
+        except ImportError:
             try:
                 from adhd_engine import main as engine_main
             except ImportError:
@@ -693,8 +692,7 @@ async def get_cognitive_load(
 ):
     """Get current cognitive load for user."""
     try:
-        # Calculate current system-wide cognitive load
-        cognitive_load = await engine._calculate_system_cognitive_load()
+        cognitive_load = await engine._calculate_cognitive_load(user_id)
         
         # Categorize the load
         if cognitive_load < 0.3:
@@ -714,6 +712,7 @@ async def get_cognitive_load(
             "cognitive_load": round(cognitive_load, 2),
             "category": category,
             "threshold_status": status,
+            "focus_duration_minutes": await engine._get_session_duration(user_id),
             "last_updated": datetime.now(timezone.utc).isoformat()
         }
     except Exception as e:
@@ -1902,4 +1901,3 @@ async def log_git_event(
     except Exception as e:
         logger.error(f"Git event logging failed: {e}")
         return {"recorded": False, "error": str(e)}
-

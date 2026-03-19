@@ -1,187 +1,175 @@
-# 🚀 Quick Start: Claude Code with Alternative Providers
+# Dopemux MVP Quick Start
 
-## What This Does
+This quick start brings up the ADHD MVP inner loop:
 
-Routes Claude Code requests through LiteLLM to use:
-- **Direct XAI** (Grok models - no middleman fees)
-- **OpenRouter** (access to GPT-5, O3, Minimax, GLM-4.6, etc.)
+- `postgres` with Apache AGE
+- `redis`
+- `conport`
+- `dopecon-bridge`
+- `workspace-watcher`
+- `activity-capture`
+- `adhd-engine`
+- `adhd-dashboard`
+- `ui-dashboard` as a separate Vite app
+
+The goal is a live graph:
+
+`workspace change -> Redis stream -> Activity Capture -> ADHD Engine -> Redis pub/sub -> ADHD Dashboard -> UI`
 
 ## Prerequisites
 
-1. **OpenRouter API Key** (get from https://openrouter.ai/keys)
-2. **XAI API Key** (already set in your .env)
+- Docker with `docker compose`
+- Python 3.11+ for local test runs
+- Node 18+ for `ui-dashboard`
 
-## 3-Step Setup
-
-### Step 1: Start Dopemux Services
-
-Ensure all background services (ConPort, Task Orchestrator, etc.) are running:
+## 1. Start the MVP stack
 
 ```bash
-dopemux mcp up --all
-# or manually
-./scripts/start-all-mcp-servers.sh
+docker compose -f compose.adhd-stack.yml up -d --build
 ```
 
-### Step 2: Set Your OpenRouter Key
+Check service health:
 
 ```bash
-# Option A: Add to .env file
-echo 'OPENROUTER_API_KEY=sk-or-v1-YOUR_KEY_HERE' >> .env
-
-# Option B: Export for this session
-export OPENROUTER_API_KEY="sk-or-v1-YOUR_KEY_HERE"
+docker compose -f compose.adhd-stack.yml ps
+curl http://localhost:8095/health
+curl http://localhost:8096/health
+curl http://localhost:8097/health
+curl http://localhost:3016/health
 ```
 
-### Step 2: Start LiteLLM Proxy
+## 2. Start the dashboard UI
+
+The React UI stays separate for MVP.
 
 ```bash
-./scripts/fix_routing.sh
+cd ui-dashboard
+npm install
+VITE_DASHBOARD_API_URL=http://localhost:8097 \
+VITE_DASHBOARD_WS_URL=ws://localhost:8097 \
+npm run dev
 ```
 
-This will:
-- ✅ Verify your API keys
-- ✅ Start LiteLLM on port 4000
-- ✅ Configure all 13 models
-- ✅ Test the connection
+Open [http://localhost:5173](http://localhost:5173).
 
-### Step 3: Start Claude Code
+## 3. First 5 minutes
+
+1. Bring the stack up with `docker compose -f compose.adhd-stack.yml up -d --build`.
+2. Start the UI from `ui-dashboard`.
+3. Open the dashboard and confirm the top status chip shows a live or degraded connection state.
+4. Trigger one workspace switch event with the manual watcher command below.
+5. Watch the dashboard update its live signal feed and cognitive state panels.
+
+## 4. Trigger a smoke-test workspace switch
+
+Inside the running `workspace-watcher` container:
 
 ```bash
-export ANTHROPIC_BASE_URL='http://localhost:4000'
-export ANTHROPIC_API_KEY='<REDACTED_LITELLM_MASTER_KEY>'
-dopemux start
+docker compose -f compose.adhd-stack.yml exec workspace-watcher \
+  python main.py \
+  --emit-switch \
+  --redis-url redis://redis:6379 \
+  --from-app Terminal \
+  --to-app "Claude Code" \
+  --from-workspace /Users/hue/code/other-project \
+  --to-workspace /Users/hue/code/dopemux-mvp
 ```
 
-### Step 4: Verify dopeTask Kernel Wiring
+That injects one canonical `workspace.switched` event into `dopemux:events` without needing host window focus visibility from inside Docker.
+
+## 5. Verify the live graph
+
+Check the aggregate dashboard API:
 
 ```bash
-scripts/dopetask --version
-dopemux kernel doctor --timestamp-mode deterministic
+curl http://localhost:8097/api/adhd-state | jq
+curl http://localhost:8097/api/cognitive-load | jq
+curl http://localhost:8097/api/task-recommendations | jq
 ```
 
-Use `dopemux kernel --help` for full lifecycle commands (`compile`, `run`, `collect`, `gate`, `promote`, `feedback`, `loop`).
-The current repo pin is `dopetask==0.2.0`.
-`.dopetask-pin` is used for runtime and CI behavior.
-
-## Verify It's Working
+Check Activity Capture metrics:
 
 ```bash
-# Test the routing
-./TEST_ROUTING.sh
-
-# Or manually test a model
-curl -X POST http://localhost:4000/v1/chat/completions \
-  -H "Authorization: Bearer <REDACTED_LITELLM_MASTER_KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "grok-4-fast",
-    "messages": [{"role": "user", "content": "Hello!"}],
-    "max_tokens": 50
-  }'
+curl http://localhost:8096/metrics | jq
 ```
 
-## Available Models
-
-### Free Tier 💰
-- `minimax-m2-free` - Completely free through OpenRouter
-
-### XAI Direct 🚀
-- `grok-4-fast` - Fast general purpose
-- `grok-code-fast-1` - Code-specialized
-
-### OpenAI Premium 🧠
-- `gpt-5-pro` - Premium GPT-5
-- `gpt-5` - Standard GPT-5
-- `gpt-5-mini` - Faster GPT-5
-- `gpt-5-codex` - Code GPT-5
-- `o3-deep-research` - Deep reasoning
-- `o4-mini-deep-research` - Compact research
-- `o3-pro` - Pro reasoning
-- `o3` - Standard reasoning
-- `codex-mini` - Compact code model
-
-### Other Providers 🌐
-- `glm-4.6` - Z-AI's GLM model
-
-## Pick Your Default Route (Optional)
-
-Want Claude to always use a specific provider when you launch with `--alt-routing`?
+Check Redis-backed event flow:
 
 ```bash
-# Inspect current models and see which one is active
-dopemux alt-routing --list-models
-
-# Choose a preset (balanced, research, budget)
-dopemux alt-routing --preset balanced
-
-# Or fully customize the fallback chain
-dopemux alt-routing --primary openrouter-openai-gpt-5-mini \
-  --fallbacks "openrouter-openai-gpt-5,openrouter-xai-grok-4-fast"
+docker compose -f compose.adhd-stack.yml exec redis \
+  redis-cli XRANGE dopemux:events - + COUNT 5
 ```
 
-This updates `.dopemux/litellm/A/litellm.config.yaml`, so every future
-`dopemux start --alt-routing` session reuses the selection automatically.
+## 6. Verify DopeconBridge auth
 
-## Aliases (Shortcuts)
+Unauthenticated KG and event inspection routes should fail:
 
-- `grok` → `grok-4-fast`
-- `grok-code` → `grok-code-fast-1`
-- `free` → `minimax-m2-free`
-- `codex` → `gpt-5-codex`
-- `research` → `o3-deep-research`
-- `pro` → `gpt-5-pro`
-- `fast` → `grok-4-fast`
-
-## Smart Fallbacks
-
-If a model fails, LiteLLM automatically tries alternatives:
-
-```
-grok-4-fast fails → gpt-5 → minimax-m2-free
-grok-code-fast-1 fails → gpt-5-codex → gpt-5
-o3-deep-research fails → o3-pro → o3
-```
-
-## Troubleshooting
-
-### "401 Unauthorized"
-- Check: `echo $OPENROUTER_API_KEY`
-- Should start with: `sk-or-v1-`
-
-### "LiteLLM not responding"
 ```bash
-# Check if running
-curl http://localhost:4000/health
-
-# Check logs
-tail -f .dopemux/litellm/A/litellm.log
-
-# Restart
-pkill -f litellm
-./scripts/fix_routing.sh
+curl -i http://localhost:3016/kg/decisions
+curl -i http://localhost:3016/events/history
 ```
 
-### "Model not found"
+Fetch a dev JWT:
+
 ```bash
-# List available models
-curl -H "Authorization: Bearer <REDACTED_LITELLM_MASTER_KEY>" \
-  http://localhost:4000/v1/models | jq -r '.data[].id'
+curl -s -X POST http://localhost:3016/auth/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=dopemux-dev-admin&password=dopemux-bridge-local-2026"
 ```
 
-## Cost Savings 💸
+Use the returned bearer token:
 
-- **XAI Direct**: No OpenRouter markup
-- **Free tier**: `minimax-m2-free` costs $0
-- **Smart fallbacks**: Automatically use cheaper models if premium ones fail
+```bash
+TOKEN="<paste-access-token>"
 
-## Next Steps
+curl -s http://localhost:3016/events/history \
+  -H "Authorization: Bearer ${TOKEN}" | jq
+```
 
-Once working:
-1. Use Claude Code normally - all requests route through LiteLLM
-2. Monitor usage: Check `.dopemux/litellm/A/litellm.log`
-3. Switch models: Edit `.dopemux/litellm/A/litellm.config.yaml`
+## 7. Local verification commands
 
-## Full Documentation
+Python:
 
-See `CLAUDE_CODE_ROUTING_ANALYSIS.md` for complete architecture details.
+```bash
+python -m pytest \
+  services/adhd_engine/tests/test_api.py \
+  services/adhd-dashboard/tests/test_task_recommender.py \
+  services/workspace-watcher/tests \
+  services/activity-capture/tests -q
+```
+
+Frontend:
+
+```bash
+cd ui-dashboard
+npm run build
+npm test -- --run
+```
+
+## 8. Key MVP defaults
+
+- ADHD engine API key: `dopemux-adhd-engine-local-2026`
+- Bridge username: `dopemux-dev-admin`
+- Bridge password: `dopemux-bridge-local-2026`
+- Bridge JWT secret is seeded only for local MVP compose
+- UI talks only to `adhd-dashboard` on `8097`
+- Producer event names remain mixed; consumers normalize dotted and underscored legacy forms
+
+## 9. Troubleshooting
+
+If the UI loads but stays stale:
+
+```bash
+curl http://localhost:8097/api/adhd-state | jq
+docker compose -f compose.adhd-stack.yml logs adhd-dashboard
+docker compose -f compose.adhd-stack.yml logs activity-capture
+docker compose -f compose.adhd-stack.yml logs adhd-engine
+```
+
+If the watcher container cannot see host focus changes, use the manual `--emit-switch` command above for smoke tests. That is the expected MVP fallback in containerized local dev.
+
+If you want to stop everything:
+
+```bash
+docker compose -f compose.adhd-stack.yml down
+```

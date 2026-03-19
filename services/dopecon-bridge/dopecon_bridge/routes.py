@@ -202,19 +202,22 @@ async def _publish_event_internal(request: PublishEventRequest) -> Dict[str, Any
 
     event_bus = EventBus()
     await event_bus.initialize()
-    event = Event(
-        type=request.event_type,
-        data=request.data,
-        source=request.source or settings.service_name,
-    )
-    msg_id = await event_bus.publish(request.stream, event)
-    return {
-        "status": "published",
-        "message_id": msg_id,
-        "stream": request.stream,
-        "event_type": request.event_type,
-        "timestamp": datetime.utcnow().isoformat(),
-    }
+    try:
+        event = Event(
+            type=request.event_type,
+            data=request.data,
+            source=request.source or settings.service_name,
+        )
+        msg_id = await event_bus.publish(request.stream, event)
+        return {
+            "status": "published",
+            "message_id": msg_id,
+            "stream": request.stream,
+            "event_type": request.event_type,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+    finally:
+        await event_bus.close()
 
 
 @auth_router.post("/token")
@@ -296,8 +299,10 @@ async def publish_event(
 async def subscribe_to_events(
     stream: str = "dopemux:events",
     consumer_group: str = "dashboard",
+    current_user: dict = Depends(get_current_user),
 ):
     """Subscribe to event stream via server-sent events."""
+    del current_user
     from .event_bus import EventBus
 
     event_bus = EventBus()
@@ -315,8 +320,10 @@ async def subscribe_to_events(
 async def get_event_history(
     stream: str = "dopemux:events",
     count: int = Query(100, ge=1, le=1000),
+    current_user: dict = Depends(get_current_user),
 ):
     """Get event history from Redis Stream."""
+    del current_user
     try:
         cache_client = await cache_manager.get_client()
         entries = await cache_client.xrevrange(stream, count=count)
@@ -344,8 +351,9 @@ async def get_event_history(
 
 
 @events_router.get("/{stream:path}")
-async def get_stream_info(stream: str):
+async def get_stream_info(stream: str, current_user: dict = Depends(get_current_user)):
     """Return Redis stream info for the requested event stream."""
+    del current_user
     try:
         cache_client = await cache_manager.get_client()
         info = await cache_client.xinfo_stream(stream)
@@ -496,8 +504,9 @@ async def route_pm(
 
 
 @kg_router.post("/custom_data")
-async def save_custom_data(request: CustomDataRequest):
+async def save_custom_data(request: CustomDataRequest, current_user: dict = Depends(get_current_user)):
     """Proxy custom-data writes to the active ConPort REST surface."""
+    del current_user
     payload = request.model_dump()
     payload["workspace_id"] = _default_workspace_id(payload.get("workspace_id"))
     result = await conport_client.save_custom_data(payload)
@@ -517,8 +526,10 @@ async def get_custom_data(
     category: Optional[str] = None,
     key: Optional[str] = None,
     limit: int = Query(50, ge=1, le=200),
+    current_user: dict = Depends(get_current_user),
 ):
     """Proxy custom-data reads to ConPort and normalize the response."""
+    del current_user
     params: Dict[str, Any] = {"workspace_id": _default_workspace_id(workspace_id), "limit": limit}
     if category:
         params["category"] = category
@@ -529,8 +540,9 @@ async def get_custom_data(
 
 
 @kg_router.post("/decisions")
-async def create_decision(request: DecisionRequest):
+async def create_decision(request: DecisionRequest, current_user: dict = Depends(get_current_user)):
     """Proxy decision writes to ConPort."""
+    del current_user
     payload = request.model_dump()
     payload["workspace_id"] = _default_workspace_id(payload.get("workspace_id"))
     if not payload.get("summary"):
@@ -540,6 +552,21 @@ async def create_decision(request: DecisionRequest):
         else:
             raise HTTPException(status_code=400, detail="Decision summary is required")
     result = await conport_client.log_decision(payload)
+    if result.get("status") == "logged":
+        await _publish_event_internal(
+            PublishEventRequest(
+                stream="dopemux:events",
+                event_type="decision.logged",
+                data={
+                    "workspace_id": payload["workspace_id"],
+                    "summary": payload.get("summary"),
+                    "rationale": payload.get("rationale"),
+                    "decision": result.get("decision", {}),
+                    "tags": payload.get("tags", []),
+                },
+                source="conport",
+            )
+        )
     return {
         "success": result.get("status") == "logged",
         "status": result.get("status"),
@@ -552,8 +579,10 @@ async def create_decision(request: DecisionRequest):
 async def list_decisions(
     workspace_id: Optional[str] = None,
     limit: int = Query(20, ge=1, le=100),
+    current_user: dict = Depends(get_current_user),
 ):
     """Proxy decision reads to ConPort."""
+    del current_user
     result = await conport_client.list_decisions(
         workspace_id=_default_workspace_id(workspace_id),
         limit=limit,
@@ -562,11 +591,27 @@ async def list_decisions(
 
 
 @kg_router.post("/progress")
-async def create_progress(request: ProgressRequest):
+async def create_progress(request: ProgressRequest, current_user: dict = Depends(get_current_user)):
     """Proxy progress writes to ConPort."""
+    del current_user
     payload = request.model_dump()
     payload["workspace_id"] = _default_workspace_id(payload.get("workspace_id"))
     result = await conport_client.log_progress(payload)
+    if result.get("status") == "logged":
+        await _publish_event_internal(
+            PublishEventRequest(
+                stream="dopemux:events",
+                event_type="progress.updated",
+                data={
+                    "workspace_id": payload["workspace_id"],
+                    "description": payload.get("description"),
+                    "status": payload.get("status"),
+                    "progress": payload.get("percentage"),
+                    "metadata": payload.get("metadata", {}),
+                },
+                source="conport",
+            )
+        )
     return {
         "success": result.get("status") == "logged",
         "status": result.get("status"),
@@ -580,8 +625,10 @@ async def list_progress(
     workspace_id: Optional[str] = None,
     limit: int = Query(50, ge=1, le=200),
     status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user),
 ):
     """Proxy progress reads to ConPort and normalize the response."""
+    del current_user
     result = await conport_client.list_progress(
         workspace_id=_default_workspace_id(workspace_id),
         limit=limit,
@@ -594,8 +641,10 @@ async def list_progress(
 async def ddg_recent_decisions(
     workspace_id: Optional[str] = None,
     limit: int = Query(20, ge=1, le=100),
+    current_user: dict = Depends(get_current_user),
 ):
     """Expose recent decisions through a ConPort-backed compatibility surface."""
+    del current_user
     result = await conport_client.list_decisions(
         workspace_id=_default_workspace_id(workspace_id),
         limit=limit,
@@ -608,8 +657,10 @@ async def ddg_search_decisions(
     q: str,
     workspace_id: Optional[str] = None,
     limit: int = Query(20, ge=1, le=100),
+    current_user: dict = Depends(get_current_user),
 ):
     """Expose decision search through a ConPort-backed compatibility surface."""
+    del current_user
     result = await conport_client.search_decisions(
         query=q,
         workspace_id=_default_workspace_id(workspace_id),
