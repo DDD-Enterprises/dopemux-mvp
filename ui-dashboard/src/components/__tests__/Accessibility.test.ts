@@ -43,6 +43,7 @@ test('App.tsx exposes metric card tooltips with focus indicators', () => {
   const appContent = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
   expect(appContent).toContain('<Tooltip title={metric.tooltip} arrow>');
   expect(appContent).toMatch(/<Tooltip title=\{metric\.tooltip\} arrow>[\s\S]*tabIndex=\{0\}/);
+  expect(appContent).toContain('aria-label={metric.label}');
   expect(appContent).toContain('&:focus-visible');
 });
 
@@ -58,6 +59,10 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
+  // Total remaining duration
+  expect(content).toContain('aria-label={`Total remaining duration: ${totalRemainingMinutes} ${totalRemainingMinutes === 1 ? \'minute\' : \'minutes\'}`}');
+  expect(content).toContain('role="status"');
+  expect(content).toContain('aria-label="Ritual complete: all tasks finished"');
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
