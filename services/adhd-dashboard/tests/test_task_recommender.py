@@ -1,6 +1,8 @@
 """
 Tests for Task Recommender
 """
+from unittest.mock import patch
+
 import pytest
 from task_recommender import TaskRecommender
 
@@ -40,3 +42,51 @@ class TestTaskRecommender:
         assert "work_type" in result
         # Medium energy should have balanced recommendations
         assert result["work_type"] is not None
+
+    def test_headers_include_engine_api_key(self, monkeypatch):
+        monkeypatch.setenv("ADHD_ENGINE_API_KEY", "expected-key")
+        recommender = TaskRecommender(user_id="test")
+
+        assert recommender._headers == {"X-API-Key": "expected-key"}
+
+    @pytest.mark.asyncio
+    async def test_get_current_recommendation_propagates_headers(self):
+        captured_headers = []
+
+        class FakeResponse:
+            def __init__(self, payload):
+                self.status = 200
+                self._payload = payload
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, exc_type, exc, tb):
+                return None
+
+            async def json(self):
+                return self._payload
+
+        class FakeSession:
+            def __init__(self, *, headers=None, **_kwargs):
+                captured_headers.append(headers)
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, exc_type, exc, tb):
+                return None
+
+            def get(self, url):
+                if "energy-level" in url:
+                    return FakeResponse({"energy_level": "medium"})
+                return FakeResponse({"attention_state": "focused"})
+
+        recommender = TaskRecommender(user_id="test", api_key="expected-key")
+
+        with patch("task_recommender.aiohttp.ClientSession", FakeSession):
+            result = await recommender.get_current_recommendation()
+
+        assert captured_headers == [{"X-API-Key": "expected-key"}]
+        assert result["energy"] == "medium"
+        assert result["attention"] == "focused"

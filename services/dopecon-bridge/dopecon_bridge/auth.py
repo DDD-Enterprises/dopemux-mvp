@@ -5,6 +5,7 @@ Extracted from main.py lines 1344-1389.
 """
 
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -90,9 +91,15 @@ async def get_current_user(
 
 def init_default_users():
     """Initialize default admin user."""
-    if "admin" not in users_db:
-        users_db["admin"] = {
-            "username": "admin",
-            "hashed_password": get_password_hash("password"),
+    username = os.getenv("DOPECON_BRIDGE_ADMIN_USERNAME", "admin")
+    password = os.getenv("DOPECON_BRIDGE_ADMIN_PASSWORD")
+    if not password:
+        password = "password"
+        logger.warning("Using fallback DopeconBridge admin password; set DOPECON_BRIDGE_ADMIN_PASSWORD for safer dev auth")
+
+    if username not in users_db:
+        users_db[username] = {
+            "username": username,
+            "hashed_password": get_password_hash(password),
         }
-        logger.info("✅ Default admin user initialized")
+        logger.info("✅ Default admin user initialized: %s", username)
