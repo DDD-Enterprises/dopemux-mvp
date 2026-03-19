@@ -29,3 +29,7 @@
 ## 2026-03-11 - [Closing the Task Feedback Loop]
 **Learning:** In task-oriented interfaces, failing to provide a clear "success" or "empty" state after finishing a sequence can lead to user confusion or a sense of "unmet expectation." Providing a satisfying "Ritual Complete" visual (like a check icon and positive reinforcement text) creates a distinct sense of closure and progress.
 **Action:** Always implement explicit success and empty states for sequential task components to provide closure and guidance when a workflow is completed or empty.
+
+## 2026-03-12 - [Temporal Grounding with "End of the Tunnel" Metrics]
+**Learning:** For users with ADHD, "time blindness" makes it difficult to estimate how much effort remains in a session. Providing an aggregate "Total Remaining Duration" that dynamically updates (and remains monotonic) gives users a concrete finish line, reducing anxiety and improving task persistence.
+**Action:** For multi-step rituals or sequences, always calculate and display an aggregate "Total Remaining" duration that updates in real-time to provide temporal grounding.
