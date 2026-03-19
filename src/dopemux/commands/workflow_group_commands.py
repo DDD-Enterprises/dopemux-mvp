@@ -2,6 +2,7 @@
 Workflow Group Commands
 """
 
+import json
 import os
 import sys
 import subprocess
@@ -13,15 +14,171 @@ from typing import Optional, Dict, List, Sequence
 import click
 import yaml
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
 from .capture_group_commands import _workflow_request
+from ..workflow import DEFAULT_COMPLETION_TOKEN, WorkflowKernel
+from ..workflow.orchestration import WorkflowOrchestrator
 
 @click.group("workflow")
 def workflow_group():
     """Workflow planning commands."""
     pass
+
+
+def _print_workflow_summary(state) -> None:
+    console.print(
+        f"[success]Workflow[/success] [mint]{state.workflow_id}[/mint] "
+        f"[text.dim]phase={state.phase.value} status={state.status.value}[/text.dim]"
+    )
+    console.print(f"[text.dim]workspace[/text.dim] {state.workspace_root}")
+    if state.active_workspace and state.active_workspace != state.workspace_root:
+        console.print(f"[text.dim]active workspace[/text.dim] {state.active_workspace}")
+    if state.brief_path:
+        console.print(f"[text.dim]brief[/text.dim] {state.brief_path}")
+    console.print(
+        f"[text.dim]pm authority[/text.dim] {state.pm_authority} "
+        f"(reachable={state.pm_reachable})"
+    )
+
+
+@workflow_group.command("init")
+@click.argument("prompt", required=False)
+@click.option("--mode", type=click.Choice(["manager", "executor"]), default="manager", show_default=True)
+@click.option("--max-iterations", type=int, default=0, show_default=True)
+@click.option("--max-minutes", type=int, default=0, show_default=True)
+@click.option("--completion-token", default=DEFAULT_COMPLETION_TOKEN, show_default=True)
+@click.option("--force-new", is_flag=True, help="Always create a new workflow even when an active one exists.")
+def workflow_init(
+    prompt: Optional[str],
+    mode: str,
+    max_iterations: int,
+    max_minutes: int,
+    completion_token: str,
+    force_new: bool,
+):
+    """Create or resume a local workflow run for the current workspace."""
+    kernel = WorkflowKernel(Path.cwd())
+    state = kernel.init_workflow(
+        prompt=prompt or "",
+        mode=mode,
+        max_iterations=max_iterations,
+        max_minutes=max_minutes,
+        completion_token=completion_token,
+        force_new=force_new,
+    )
+    _print_workflow_summary(state)
+
+
+@workflow_group.command("status")
+@click.option("--workflow-id", default=None, help="Explicit workflow id to inspect.")
+@click.option("--json-output", "json_output", is_flag=True, help="Emit machine-readable JSON.")
+def workflow_status(workflow_id: Optional[str], json_output: bool):
+    """Show the active workflow bound to the current workspace or instance."""
+    kernel = WorkflowKernel(Path.cwd())
+    state = kernel.resolve(workflow_id)
+    if not state:
+        raise click.ClickException("No workflow is bound to this workspace or instance.")
+
+    inspection = kernel.inspection(state)
+    if json_output:
+        click.echo(json.dumps(inspection, indent=2, sort_keys=True))
+        return
+
+    _print_workflow_summary(state)
+    if inspection["task_title"]:
+        console.print(
+            f"[text.dim]task[/text.dim] {inspection['task_title']} "
+            f"[text.dim]({inspection['task_status']})[/text.dim]"
+        )
+    if inspection["gate_failures"]:
+        console.print("[warning]Gate failures:[/warning]")
+        for failure in inspection["gate_failures"]:
+            console.print(f"  - {failure}")
+    else:
+        console.print("[success]No gate failures for the current phase.[/success]")
+
+
+@workflow_group.command("resume")
+@click.option("--workflow-id", default=None, help="Explicit workflow id to rebind.")
+def workflow_resume(workflow_id: Optional[str]):
+    """Rebind the current workspace or instance to an existing workflow."""
+    kernel = WorkflowKernel(Path.cwd())
+    state = kernel.resume(workflow_id)
+    if not state:
+        raise click.ClickException("No workflow found to resume.")
+    _print_workflow_summary(state)
+
+
+@workflow_group.command("cancel")
+@click.option("--workflow-id", default=None, help="Explicit workflow id to cancel.")
+def workflow_cancel(workflow_id: Optional[str]):
+    """Deactivate the current workflow without deleting its artifacts."""
+    kernel = WorkflowKernel(Path.cwd())
+    state = kernel.cancel(workflow_id)
+    if not state:
+        raise click.ClickException("No workflow found to cancel.")
+    _print_workflow_summary(state)
+
+
+@workflow_group.command("inspect")
+@click.option("--workflow-id", default=None, help="Explicit workflow id to inspect.")
+@click.option("--json-output", "json_output", is_flag=True, help="Emit full structured state.")
+def workflow_inspect(workflow_id: Optional[str], json_output: bool):
+    """Show workflow details, checkpoints, and executor launch preview."""
+    kernel = WorkflowKernel(Path.cwd())
+    state = kernel.resolve(workflow_id)
+    if not state:
+        raise click.ClickException("No workflow found to inspect.")
+
+    inspection = kernel.inspection(state)
+    orchestrator = WorkflowOrchestrator(Path(state.workspace_root))
+    launch_preview = None
+    if state.current_task():
+        try:
+            spec = orchestrator.build_worker_launch_spec(state)
+            launch_preview = {
+                "task_id": spec.task_id,
+                "instance_id": spec.instance_id,
+                "branch_name": spec.branch_name,
+                "worktree_path": str(spec.worktree_path),
+                "session_name": spec.session_name,
+                "window_name": spec.window_name,
+                "command": spec.command,
+            }
+        except Exception as exc:
+            launch_preview = {"error": str(exc)}
+
+    payload = {
+        "inspection": inspection,
+        "state": state.to_dict(),
+        "launch_preview": launch_preview,
+    }
+    if json_output:
+        click.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+
+    _print_workflow_summary(state)
+    console.print(f"[text.dim]history entries[/text.dim] {len(state.history)}")
+    console.print(f"[text.dim]checkpoints[/text.dim] {len(state.checkpoints)}")
+
+    if state.checkpoints:
+        console.print("[mint]Recent checkpoints:[/mint]")
+        for checkpoint in state.checkpoints[-3:]:
+            console.print(
+                f"  - {checkpoint.phase.value}:{checkpoint.status.value} "
+                f"{checkpoint.summary or checkpoint.task_id or ''}".rstrip()
+            )
+
+    if launch_preview:
+        console.print("[gold]Executor launch preview:[/gold]")
+        if "error" in launch_preview:
+            console.print(f"  - {launch_preview['error']}")
+        else:
+            console.print(
+                f"  - instance {launch_preview['instance_id']} -> {launch_preview['worktree_path']}"
+            )
+            console.print(f"  - {launch_preview['command']}")
 
 
 @workflow_group.group("ideas")
