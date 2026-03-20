@@ -1912,22 +1912,22 @@
   {
     "name": "ALLOWED_ORIGINS",
     "default": "http://localhost:3000,http://localhost:8080",
-    "location": "./docs/archive/claude-sessions/DEEP-DOCUMENTATION-ALL-FINDINGS.md:131"
+    "location": "./docs/archive/claude-sessions/deep-documentation-all-findings-3.md:131"
   },
   {
     "name": "SERENA_DB_PASSWORD",
     "default": "serena_dev_pass",
-    "location": "./docs/archive/claude-sessions/DEEP-DOCUMENTATION-ALL-FINDINGS.md:150"
+    "location": "./docs/archive/claude-sessions/deep-documentation-all-findings-3.md:150"
   },
   {
     "name": "SERENA_TEST_PASSWORD",
     "default": "serena_test_pass",
-    "location": "./docs/archive/claude-sessions/DEEP-DOCUMENTATION-ALL-FINDINGS.md:156"
+    "location": "./docs/archive/claude-sessions/deep-documentation-all-findings-3.md:156"
   },
   {
     "name": "ADHD_ENGINE_API_KEY",
     "default": null,
-    "location": "./docs/archive/claude-sessions/DEEP-DOCUMENTATION-ALL-FINDINGS.md:174"
+    "location": "./docs/archive/claude-sessions/deep-documentation-all-findings-3.md:174"
   },
   {
     "name": "MCP_SERVER_PORT",
@@ -2082,62 +2082,62 @@
   {
     "name": "SERENA_DB_PASSWORD",
     "default": "serena_dev_pass",
-    "location": "./docs/archive/claude-sessions/DEPLOYMENT-READY-SUMMARY.md:43"
+    "location": "./docs/archive/claude-sessions/deployment-ready-summary-3.md:43"
   },
   {
     "name": "HOST",
     "default": "0.0.0.0",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:150"
+    "location": "./docs/archive/reports/implementation-summary-2.md:150"
   },
   {
     "name": "PORT",
     "default": "3004",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:151"
+    "location": "./docs/archive/reports/implementation-summary-2.md:151"
   },
   {
     "name": "LOG_LEVEL",
     "default": "info",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:152"
+    "location": "./docs/archive/reports/implementation-summary-2.md:152"
   },
   {
     "name": "HOST",
     "default": "0.0.0.0",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:162"
+    "location": "./docs/archive/reports/implementation-summary-2.md:162"
   },
   {
     "name": "LOG_LEVEL",
     "default": "info",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:163"
+    "location": "./docs/archive/reports/implementation-summary-2.md:163"
   },
   {
     "name": "HOST",
     "default": "0.0.0.0",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:173"
+    "location": "./docs/archive/reports/implementation-summary-2.md:173"
   },
   {
     "name": "PORT",
     "default": "8000",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:174"
+    "location": "./docs/archive/reports/implementation-summary-2.md:174"
   },
   {
     "name": "LOG_LEVEL",
     "default": "info",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:175"
+    "location": "./docs/archive/reports/implementation-summary-2.md:175"
   },
   {
     "name": "HOST",
     "default": "0.0.0.0",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:418"
+    "location": "./docs/archive/reports/implementation-summary-2.md:418"
   },
   {
     "name": "PORT",
     "default": "3004",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:419"
+    "location": "./docs/archive/reports/implementation-summary-2.md:419"
   },
   {
     "name": "LOG_LEVEL",
     "default": "info",
-    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:420"
+    "location": "./docs/archive/reports/implementation-summary-2.md:420"
   },
   {
     "name": "ALLOWED_ORIGINS",
@@ -2312,27 +2312,27 @@
   {
     "name": "ADHD_ENGINE_API_KEY",
     "default": null,
-    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:225"
+    "location": "./docs/05-audit-reports/roadmap-remaining-work-3.md:225"
   },
   {
     "name": "ALLOWED_ORIGINS",
     "default": null,
-    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:226"
+    "location": "./docs/05-audit-reports/roadmap-remaining-work-3.md:226"
   },
   {
     "name": "ALLOWED_ORIGINS",
     "default": null,
-    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:532"
+    "location": "./docs/05-audit-reports/roadmap-remaining-work-3.md:532"
   },
   {
     "name": "ALLOWED_ORIGINS",
     "default": null,
-    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:533"
+    "location": "./docs/05-audit-reports/roadmap-remaining-work-3.md:533"
   },
   {
     "name": "SERENA_DB_PASSWORD",
     "default": null,
-    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:539"
+    "location": "./docs/05-audit-reports/roadmap-remaining-work-3.md:539"
   },
   {
     "name": "DOPEMUX_INSTANCE_ID",
@@ -2672,7 +2672,7 @@
   {
     "name": "WORKSPACE_ID",
     "default": "/Users/hue/code/dopemux-mvp",
-    "location": "./docs/archive/claude-sessions/WEEK-7-INTEGRATION-BRIDGE-COMPLETION-PLAN.md:51"
+    "location": "./docs/archive/claude-sessions/week-7-integration-bridge-completion-plan-3.md:51"
   },
   {
     "name": "LEANTIME_API_URL",
@@ -2727,7 +2727,7 @@
   {
     "name": "WORKSPACE_HASH_OVERRIDE",
     "default": null,
-    "location": "./docs/archive/completed-projects/DOPE_CONTEXT_FIX_SUMMARY.md:70"
+    "location": "./docs/archive/completed-projects/dope-context-fix-summary-2.md:70"
   },
   {
     "name": "LEANTIME_API_URL",
@@ -2757,27 +2757,27 @@
   {
     "name": "WORKSPACE_ID",
     "default": "default",
-    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:209"
+    "location": "./docs/archive/completed-projects/monitoring/monitoring-tmux-comprehensive-audit-2.md:209"
   },
   {
     "name": "INSTANCE_ID",
     "default": "0",
-    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:210"
+    "location": "./docs/archive/completed-projects/monitoring/monitoring-tmux-comprehensive-audit-2.md:210"
   },
   {
     "name": "SERVICE_VERSION",
     "default": "unknown",
-    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:233"
+    "location": "./docs/archive/completed-projects/monitoring/monitoring-tmux-comprehensive-audit-2.md:233"
   },
   {
     "name": "WORKSPACE_ID",
     "default": null,
-    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:301"
+    "location": "./docs/archive/completed-projects/monitoring/monitoring-tmux-comprehensive-audit-2.md:301"
   },
   {
     "name": "INSTANCE_ID",
     "default": null,
-    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:302"
+    "location": "./docs/archive/completed-projects/monitoring/monitoring-tmux-comprehensive-audit-2.md:302"
   },
   {
     "name": "ANTHROPIC_API_KEY",
@@ -2787,22 +2787,22 @@
   {
     "name": "WORKSPACE_ID",
     "default": null,
-    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_QUICK_REF.md:82"
+    "location": "./docs/archive/completed-projects/monitoring/monitoring-tmux-quick-ref-2.md:82"
   },
   {
     "name": "INSTANCE_ID",
     "default": null,
-    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_QUICK_REF.md:83"
+    "location": "./docs/archive/completed-projects/monitoring/monitoring-tmux-quick-ref-2.md:83"
   },
   {
     "name": "WORKSPACE_ID",
     "default": "default",
-    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_QUICK_REF.md:245"
+    "location": "./docs/archive/completed-projects/monitoring/monitoring-tmux-quick-ref-2.md:245"
   },
   {
     "name": "INSTANCE_ID",
     "default": "0",
-    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_QUICK_REF.md:246"
+    "location": "./docs/archive/completed-projects/monitoring/monitoring-tmux-quick-ref-2.md:246"
   },
   {
     "name": "VOYAGE_API_KEY",
@@ -2917,27 +2917,27 @@
   {
     "name": "DOPECON_BRIDGE_URL",
     "default": "http://localhost:3016",
-    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_INTEGRATION.md:124"
+    "location": "./docs/archive/completed-projects/dopeconbridge/dopeconbridge-complete-integration-2.md:124"
   },
   {
     "name": "DOPECON_BRIDGE_TOKEN",
     "default": null,
-    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_INTEGRATION.md:125"
+    "location": "./docs/archive/completed-projects/dopeconbridge/dopeconbridge-complete-integration-2.md:125"
   },
   {
     "name": "DOPECON_BRIDGE_SOURCE_PLANE",
     "default": "cognitive_plane",
-    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_INTEGRATION.md:126"
+    "location": "./docs/archive/completed-projects/dopeconbridge/dopeconbridge-complete-integration-2.md:126"
   },
   {
     "name": "CONPORT_WORKSPACE_ID",
     "default": "os.getcwd(",
-    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md:48"
+    "location": "./docs/archive/completed-projects/dopeconbridge/dopeconbridge-conport-update-2.md:48"
   },
   {
     "name": "CONPORT_URL",
     "default": "http://localhost:3010",
-    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md:49"
+    "location": "./docs/archive/completed-projects/dopeconbridge/dopeconbridge-conport-update-2.md:49"
   },
   {
     "name": "WORKSPACE_ID",
@@ -3007,7 +3007,7 @@
   {
     "name": "TMUX",
     "default": null,
-    "location": "./docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md:187"
+    "location": "./docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md:187"
   },
   {
     "name": "LOCALE",
@@ -3027,12 +3027,12 @@
   {
     "name": "CONPORT_URL",
     "default": "http://localhost:8005",
-    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_QUICK_START_OLD.md:118"
+    "location": "./docs/archive/completed-projects/dopeconbridge/dopeconbridge-quick-start-old-2.md:118"
   },
   {
     "name": "WORKSPACE_ID",
     "default": "os.getcwd(",
-    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_QUICK_START_OLD.md:123"
+    "location": "./docs/archive/completed-projects/dopeconbridge/dopeconbridge-quick-start-old-2.md:123"
   },
   {
     "name": "ZEN_DEV_PATH",
@@ -3207,12 +3207,12 @@
   {
     "name": "DATABASE_URL",
     "default": "postgresql://dopemux_age:dopemux_age_dev_password@...",
-    "location": "./docs/archive/completed-projects/PHASE2_COMPLETION_REPORT.md:142"
+    "location": "./docs/archive/completed-projects/phase2-completion-report-2.md:142"
   },
   {
     "name": "REDIS_URL",
     "default": "redis://redis-primary:6379",
-    "location": "./docs/archive/completed-projects/PHASE2_COMPLETION_REPORT.md:151"
+    "location": "./docs/archive/completed-projects/phase2-completion-report-2.md:151"
   },
   {
     "name": "API_PORT",
@@ -3382,7 +3382,7 @@
   {
     "name": "DATABASE_URL",
     "default": "postgresql://...",
-    "location": "./docs/archive/completed-projects/PHASE2_SECURITY_REVIEW.md:60"
+    "location": "./docs/archive/completed-projects/phase2-security-review-2.md:60"
   },
   {
     "name": "GEMINI_API_KEY",
@@ -3602,7 +3602,7 @@
   {
     "name": "MY_CUSTOM_VAR",
     "default": "\"\"",
-    "location": "./docs/archive/completed-projects/multi-workspace/MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md:499"
+    "location": "./docs/archive/completed-projects/multi-workspace/multi-workspace-implementation-guide-2.md:499"
   },
   {
     "name": "DIAL_API_VERSION",
@@ -4192,12 +4192,12 @@
   {
     "name": "DOPEMUX_HOME",
     "default": "os.path.expanduser(\"~/.dopemux\"",
-    "location": "./docs/archive/completed-projects/HARDCODED_PATHS_AUDIT.md:106"
+    "location": "./docs/archive/completed-projects/hardcoded-paths-audit-2.md:106"
   },
   {
     "name": "DOPEMUX_WORKSPACE_ROOT",
     "default": null,
-    "location": "./docs/archive/completed-projects/HARDCODED_PATHS_AUDIT.md:118"
+    "location": "./docs/archive/completed-projects/hardcoded-paths-audit-2.md:118"
   },
   {
     "name": "REDIS_URL",
@@ -5352,27 +5352,27 @@
   {
     "name": "DOPE_MEMORY_INPUT_STREAM",
     "default": "activity.events.v1",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:44"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:44"
   },
   {
     "name": "REDIS_PASSWORD",
     "default": null,
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:45"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:45"
   },
   {
     "name": "DOPE_MEMORY_INPUT_STREAM",
     "default": "activity.events.v1",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:62"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:62"
   },
   {
     "name": "DOPE_MEMORY_OUTPUT_STREAM",
     "default": "memory.derived.v1",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:63"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:63"
   },
   {
     "name": "DOPE_MEMORY_CONSUMER_GROUP",
     "default": "dope-memory-ingestor",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:64"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:64"
   },
   {
     "name": "ADHD_ENGINE_URL",
@@ -5387,12 +5387,12 @@
   {
     "name": "ENABLE_RETENTION_JOB",
     "default": "true",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06_DOPE_MEMORY_PROMOTION_RETENTION_PROVENANCE.md:114"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06-dope-memory-promotion-retention-provenance-2.md:114"
   },
   {
     "name": "RETENTION_INTERVAL_SEC",
     "default": "3600",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06_DOPE_MEMORY_PROMOTION_RETENTION_PROVENANCE.md:115"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06-dope-memory-promotion-retention-provenance-2.md:115"
   },
   {
     "name": "POSTGRES_HOST",
@@ -5422,6 +5422,6 @@
   {
     "name": "ADHD_FORCE_INMEMORY_CACHE",
     "default": "\"\"",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/08_ADHD_COGNITIVE_PLANE_SURFACES.md:33"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/08-adhd-cognitive-plane-surfaces-2.md:33"
   }
 ]

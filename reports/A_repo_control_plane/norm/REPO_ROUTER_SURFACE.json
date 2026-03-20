@@ -6148,7 +6148,7 @@
         "anchor": "L31",
         "excerpt_hash": "36b67ecf4d63e3834e360151f8bf3068ef7025779a9534ff46f9756bdaafb4dc",
         "excerpt_snippet": "1. **`litellm.config.yaml`**: defines the model list and router settings. it includes extensive fallback logic and alias mapping (e.g., `fast` -> `grok-4-fast`)",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "entrypoints": {
         "cli_flags": [
@@ -6196,7 +6196,7 @@
             "anchor": "L42",
             "excerpt_hash": "8772e51ca9ba2a40c5c6a6e916a31d5e90a539c1724bc01bb981f4ceae9b006d",
             "excerpt_snippet": "2. **Configuration Robustness**: The router settings include sophisticated retry policies and fallback chains, indicating a highly mature integration.",
-            "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+            "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
           },
           "match": {
             "command": null,
@@ -6225,7 +6225,7 @@
             "anchor": "L18",
             "excerpt_hash": "f34d3f344f57d9ffdd3f37b7d1942f2127ff7f9af125af230392104f507bf394",
             "excerpt_snippet": "**LiteLLM** acts as the universal proxy and router for the Dopemux intelligence stack. it provides a unified OpenAI-compatible interface for multiple LLM provid",
-            "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+            "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
           },
           "match": {
             "command": null,
@@ -6254,7 +6254,7 @@
             "anchor": "L24",
             "excerpt_hash": "72fd278b102710bb5b2a29cc3f4e7605919ebe0725f23468cf11ecfc71c9606a",
             "excerpt_snippet": "* **Service Type**: AI Proxy / Router",
-            "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+            "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
           },
           "match": {
             "command": null,
@@ -6283,7 +6283,7 @@
             "anchor": "L50",
             "excerpt_hash": "ce653a0f9cf2f6de2aa60f59da9da376afc4a51cc1a889c5ae111ce3648ac699",
             "excerpt_snippet": "4. **Resilience**: If a provider fails, LiteLLM automatically tries the defined fallbacks.",
-            "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+            "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
           },
           "match": {
             "command": null,
@@ -6312,7 +6312,7 @@
             "anchor": "L31",
             "excerpt_hash": "96649ceb90f763373fe9120bc33591e73a92e00a98d8ea815fd7c6ce56e03a09",
             "excerpt_snippet": "1. **`litellm.config.yaml`**: defines the model list and router settings. it includes extensive fallback logic and alias mapping (e.g., `fast` -> `grok-4-fast`)",
-            "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+            "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
           },
           "match": {
             "command": null,
@@ -6341,7 +6341,7 @@
             "anchor": "L48",
             "excerpt_hash": "045639ce0ba8aa33839a168a420cd03cefcec826e3bbb5e033b1e3855f8b63b5",
             "excerpt_snippet": "2. **Route**: LiteLLM matches the model alias and selects the healthiest/best provider from the list.",
-            "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+            "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
           },
           "match": {
             "command": null,
@@ -16189,7 +16189,7 @@
         "anchor": "L471",
         "excerpt_hash": "f8c3285ca7227cd0e4e48457d09b117c45e20036b486f7dc46f0ae986dd2a3b1",
         "excerpt_snippet": "- Profile visible in statusline (clear mental model) - Gentle suggestions, not forced switches (ADHD-friendly) - Session continuity via ConPort (zero data loss)",
-        "path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md"
+        "path": "docs/04-explanation/design-decisions/profile-manager-design-3.md"
       },
       "entrypoints": {
         "cli_flags": [
@@ -16261,7 +16261,7 @@
             "anchor": "L471",
             "excerpt_hash": "1187cb694fdcaa768589f903a5f4f14002b2bca41eb455a0ce43a78e2a1977da",
             "excerpt_snippet": "- Profile visible in statusline (clear mental model)",
-            "path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md"
+            "path": "docs/04-explanation/design-decisions/profile-manager-design-3.md"
           },
           "match": {
             "command": null,
@@ -16290,7 +16290,7 @@
             "anchor": "L208",
             "excerpt_hash": "3d9136e7585d06907d8a0d9017e885a1562f25ff214f8dcf61c27531df9e5aa4",
             "excerpt_snippet": "### Fallback Hierarchy",
-            "path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md"
+            "path": "docs/04-explanation/design-decisions/profile-manager-design-3.md"
           },
           "match": {
             "command": null,
@@ -16947,7 +16947,7 @@
         "anchor": "L32",
         "excerpt_hash": "bb5c6831d8fe5cdf84c9295549dd050a96ba07939712014f7bdad0f383f36305",
         "excerpt_snippet": "- **\ud83d\udcda** (Book) - PAL apilookup (Documentation) - Port 3003 - **\ud83e\udde0** (Brain) - Zen (Multi-model reasoning) - Port 3003 - **\ud83d\udd2c** (Microscope) - Serena (Code intelli",
-        "path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md"
+        "path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md"
       },
       "entrypoints": {
         "cli_flags": [
@@ -16999,7 +16999,7 @@
             "anchor": "L167",
             "excerpt_hash": "99ec7e400a45b178118ee642ebd41c021603fb810b8dd82fec3b1cf9084ed8dc",
             "excerpt_snippet": "**Fallback**: Statusline will show \u26a0\ufe0f for all servers (safe failure)",
-            "path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md"
+            "path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md"
           },
           "match": {
             "command": null,
@@ -17028,7 +17028,7 @@
             "anchor": "L32",
             "excerpt_hash": "caf4959b53c0264f2a9671ac2dbd97f8c16949692135517aa9741a6ae37e75a2",
             "excerpt_snippet": "- **\ud83e\udde0** (Brain) - Zen (Multi-model reasoning) - Port 3003",
-            "path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md"
+            "path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md"
           },
           "match": {
             "command": null,
@@ -17057,7 +17057,7 @@
             "anchor": "L64",
             "excerpt_hash": "2099c287eba7efb28ac2e82459b43de74d11a0d8b08052d75450ba2c3d452e65",
             "excerpt_snippet": "2. **Zen \ud83e\udde0** - Multi-model reasoning (thinkdeep, consensus, debug, planner)",
-            "path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md"
+            "path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md"
           },
           "match": {
             "command": null,

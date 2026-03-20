@@ -4,7 +4,7 @@ roots = [
   ".claude/context.md",
   ".claude/WORKTREE_MCP_SETUP.md",
   "docs/03-reference/services/task-orchestrator.md",
-  "docs/90-adr/ADR-203-task-orchestrator-un-deprecation.md"
+  "docs/90-adr/adr-203-task-orchestrator-un-deprecation-3.md"
 ]
 for p in roots:
   pp = pathlib.Path(p)

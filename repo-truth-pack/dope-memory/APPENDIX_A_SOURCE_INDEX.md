@@ -26,8 +26,8 @@ Grouped listing of every file inspected during Phase 1 discovery for dope-memory
 | `docs/spec/dope-memory/v1/09_test_plan.md` | Test plan |
 | `docs/spec/dope-memory/v1/10_risk_register.md` | Risk register |
 | `docs/DOPE_MEMORY_INTEGRATION.md` | Integration guide |
-| `docs/04-explanation/technical-deep-dives/DOPE-MEMORY-DEEP-DIVE.md` | Deep dive doc (listed, not inspected) |
-| `docs/90-adr/ADR-213-dual-capture-canonical-ledger.md` | ADR for canonical ledger (referenced, not inspected) |
+| `docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-3.md` | Deep dive doc (listed, not inspected) |
+| `docs/90-adr/adr-213-dual-capture-canonical-ledger-3.md` | ADR for canonical ledger (referenced, not inspected) |
 | `docs/03-reference/memory-capture-cli.md` | CLI capture reference (listed, not inspected) |
 | `docs/docs_index.yaml` | Machine-readable doc index (listed, references dope-memory) |
 

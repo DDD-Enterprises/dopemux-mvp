@@ -27,7 +27,7 @@
 
 ## Deliverable 1: Canonical Brand Resource Pack
 
-**Output**: `docs/04-explanation/branding/BRAND_RESOURCE_PACK.md`
+**Output**: `docs/04-explanation/branding/brand-resource-pack.md`
 
 **Source files to consolidate**:
 - `docs/04-explanation/branding/dopemux-brand-system.md` — pillars, colors, voice dial

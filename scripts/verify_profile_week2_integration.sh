@@ -20,13 +20,13 @@ echo "[verify] profile week2 integration: docs parity checks"
 python scripts/docs_validator.py \
   docs/01-tutorials/profile-user-guide.md \
   docs/01-tutorials/profile-migration-guide.md \
-  docs/02-how-to/PROFILE-USAGE.md \
+  docs/02-how-to/profile-usage-3.md \
   docs/03-reference/profile-developer-guide.md \
-  docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md \
-  docs/05-audit-reports/PROFILE_OPTIMIZATION_SUGGESTIONS_VERIFICATION_2026-02-06.md \
-  docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md \
-  docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md \
-  docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md \
-  docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md
+  docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md \
+  docs/05-audit-reports/profile-optimization-suggestions-verification-2026-02-06-2.md \
+  docs/05-audit-reports/profile-usage-analysis-and-init-wizard-verification-2026-02-06-2.md \
+  docs/05-audit-reports/profile-documentation-completion-verification-2026-02-06-2.md \
+  docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06-2.md \
+  docs/05-audit-reports/final-state-feature-baseline-and-execution-plan-2026-02-06-2.md
 
 echo "[verify] profile week2 integration: PASS"

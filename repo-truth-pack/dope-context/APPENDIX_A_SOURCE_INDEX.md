@@ -16,8 +16,8 @@ Every file inspected during Phase 1, grouped by category.
 
 | File | Purpose |
 |------|---------|
-| `docs/03-reference/dope-context/DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md` | Architecture reference (listed, not read in this pass) |
-| `docs/03-reference/dope-context/DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md` | Embedding reference (listed, not read) |
+| `docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1-2.md` | Architecture reference (listed, not read in this pass) |
+| `docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1-2.md` | Embedding reference (listed, not read) |
 | `docs/02-how-to/dope-context/dope-context-user-guide.md` | User guide (listed, not read) |
 | `docs/04-explanation/technical-deep-dives/dope-context-technical-deep-dive.md` | Technical deep dive (listed, not read) |
 | `docs/systems/dope-context/architecture.md` | System architecture docs (listed, not read) |
