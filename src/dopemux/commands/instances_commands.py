@@ -13,8 +13,6 @@ from pathlib import Path
 from typing import Optional
 
 import click
-from rich.table import Table
-
 from ..console import console
 from ..instance_manager import InstanceManager, detect_instances_sync, detect_orphaned_instances_sync
 from ..ui.output import emit
@@ -26,10 +24,11 @@ logger = logging.getLogger(__name__)
 @click.group()
 def instances():
     """
-    Manage multiple Dopemux instances and worktrees
+    🧪 Instance Orchestration: Manage parallel Ritual-Daemons
 
-    Commands for managing parallel ADHD-optimized development workflows
-    with isolated worktrees and shared database.
+    Controls isolated DØPEMÜX instances and their associated worktrees. Each 
+    instance operates on its own port-range with a private focus-state, while 
+    contributing to the shared neural database for cross-context awareness.
     """
     pass
 
@@ -38,10 +37,11 @@ def instances():
 @click.pass_context
 def instances_list(ctx):
     """
-    List all running instances and worktrees
+    📊 Diagnostic HUD: Scan and catalog all active cockpits
 
-    Shows currently active instances with their ports, branches, and paths.
-    Automatically detects and reports orphaned instances (crashed).
+    Reports on every running instance, detailing assigned port-bases, branch 
+    trajectories, and absolute worktree coordinates. Automatically detects 
+    and flags orphaned instances that have suffered service failure.
     """
     project_path = Path.cwd()
     workspace_id = str(project_path.resolve())
@@ -160,19 +160,15 @@ def instances_list(ctx):
 
 @instances.command("resume")
 @click.argument("instance_id")
-@click.option("--restore-context", "-r", is_flag=True, help="Restore working directory and focus context")
+@click.option("--restore-context", "-r", is_flag=True, help="🧪 Contextual Restoration: Reconnect focus-state and restore the last known working coordinate.")
 @click.pass_context
 def instances_resume(ctx, instance_id: str, restore_context: bool):
     """
-    Resume an orphaned instance (one-click crash recovery)
+    ⚡ Resuscitate Daemon: Restore a fallen or orphaned instance
 
-    Restarts services for an orphaned instance, optionally restoring
-    the last working directory and focus context.
-
-    \b
-    Examples:
-        dopemux instances resume B              # Restart instance B
-        dopemux instances resume B --restore-context  # Restart and restore context
+    Restarts crashed or orphaned instances. This recovery ritual attempts 
+    to re-stabilize instance services and can optionally reconstruct the 
+    exact working directory and focus context from the persistent ledger.
     """
     project_path = Path.cwd()
     workspace_id = str(project_path.resolve())
@@ -252,19 +248,16 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
 
 @instances.command("cleanup")
 @click.argument("instance_id", required=False)
-@click.option("--all", "-a", is_flag=True, help="Clean up all stopped instances")
-@click.option("--force", "-f", is_flag=True, help="Force cleanup without confirmation")
+@click.option("--all", "-a", is_flag=True, help="⚡ Mass Purge: Target every stopped or orphaned instance for immediate decommission.")
+@click.option("--force", "-f", is_flag=True, help="🔥 Bypass Safeguards: Destroy worktrees and state ledgers without confirmation.")
 @click.pass_context
 def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
     """
-    Clean up stopped instance worktrees
+    🔬 Ritual Decommission: Remove inactive cockpits and artifacts
 
-    Removes git worktrees for stopped instances to free up disk space.
-
-    \b
-    Examples:
-        dopemux instances cleanup B          # Remove instance B worktree
-        dopemux instances cleanup --all      # Remove all stopped instances
+    Removes Git worktrees and state ledgers for stopped or dead instances. 
+    This operation is critical for maintaining the purity of the instance 
+    registry and preventing resource hemorrhage.
     """
     project_path = Path.cwd()
     instance_manager = InstanceManager(project_path)

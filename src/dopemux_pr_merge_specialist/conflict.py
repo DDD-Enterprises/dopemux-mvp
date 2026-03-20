@@ -86,7 +86,83 @@ __all__ = [
     "recent_file_history",
     "build_conflict_analysis",
     "recommend_conflict_strategy",
+    "conflict_recovery_policy",
+    "conflict_recovery_state",
+    "safe_conflict_surface",
 ]
+
+
+DEFAULT_CONFLICT_RECOVERY_POLICY = {
+    "require_opt_in_label": True,
+    "opt_in_labels": ["conflict:mechanical"],
+    "blocked_labels": ["conflict:semantic"],
+    "max_conflict_files": 5,
+    "prefer_side": "theirs",
+    "safe_path_prefixes": ["docs/", "tests/"],
+    "safe_filenames": [
+        "package.json",
+        "package-lock.json",
+        "yarn.lock",
+        "pnpm-lock.yaml",
+        "poetry.lock",
+        "uv.lock",
+        "requirements.txt",
+        "requirements-dev.txt",
+        "requirements-test.txt",
+    ],
+}
+
+
+def conflict_recovery_policy(policy: Dict[str, Any]) -> Dict[str, Any]:
+    configured = (
+        policy.get("conflict_rules", {}).get("auto_recovery", {}) or {}
+    )
+    merged = dict(DEFAULT_CONFLICT_RECOVERY_POLICY)
+    for key, value in configured.items():
+        merged[key] = value
+    merged["opt_in_labels"] = [str(item) for item in merged.get("opt_in_labels", [])]
+    merged["blocked_labels"] = [
+        str(item) for item in merged.get("blocked_labels", [])
+    ]
+    merged["safe_path_prefixes"] = [
+        str(item) for item in merged.get("safe_path_prefixes", [])
+    ]
+    merged["safe_filenames"] = [
+        str(item) for item in merged.get("safe_filenames", [])
+    ]
+    merged["max_conflict_files"] = int(merged.get("max_conflict_files", 5) or 5)
+    merged["require_opt_in_label"] = bool(
+        merged.get("require_opt_in_label", True)
+    )
+    merged["prefer_side"] = str(merged.get("prefer_side", "theirs") or "theirs")
+    return merged
+
+
+def conflict_recovery_state(pr: PullRequestState, policy: Dict[str, Any]) -> str:
+    labels = {label.strip() for label in pr.labels if label}
+    config = conflict_recovery_policy(policy)
+    if labels & set(config["blocked_labels"]):
+        return "semantic_conflict_blocked"
+    if labels & set(config["opt_in_labels"]):
+        return "eligible"
+    if config["require_opt_in_label"]:
+        return "manual_conflict_required"
+    return "eligible"
+
+
+def safe_conflict_surface(
+    rel_paths: Sequence[str], policy: Dict[str, Any]
+) -> Tuple[bool, List[str]]:
+    config = conflict_recovery_policy(policy)
+    safe_prefixes = tuple(config["safe_path_prefixes"])
+    safe_filenames = set(config["safe_filenames"])
+    unsafe = [
+        rel_path
+        for rel_path in rel_paths
+        if Path(rel_path).name not in safe_filenames
+        and not any(rel_path.startswith(prefix) for prefix in safe_prefixes)
+    ]
+    return not unsafe, unsafe
 
 
 def comment_prefers_conflict_side(body: str) -> Optional[str]:

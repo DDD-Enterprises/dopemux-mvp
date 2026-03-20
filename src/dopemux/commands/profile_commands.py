@@ -12,25 +12,40 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
+from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 @click.group()
 def profile():
-    """📋 Manage MCP profiles for context-aware tool selection."""
+    """
+    📋 Contextual Attunement: Manage MCP profiles for tool selection
+
+    Orchestrates the selection and application of ritual profiles. These 
+    profiles define the cognitive capabilities of the cockpit, mounting specific 
+    MCP servers and tuning ADHD-optimized attention parameters to align with 
+    the active mission profile.
+
+    Capabilities:
+    - Profile Lifecycle: List, initialize, validate, and apply ritual profiles.
+    - Auto-Detection: Engage the suggestion daemon for context-aware switches.
+    - Usage Analytics: Analyze temporal patterns to optimize ritual efficiency.
+    """
     pass
 
 
 @profile.command("list")
-@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
+@click.option("--profile-dir", "-d", help="🔬 Archive Coordinate: Override the default ritual profile directory.", type=click.Path(exists=True))
 @click.pass_context
 def profile_list_cmd(ctx, profile_dir: Optional[str]):
-    """📋 List all available profiles.
+    """
+    📋 Catalog Rituals: List all available cognitive profiles
 
-    Shows all profiles with their MCP server counts and descriptions.
-    Profiles can be applied with: dopemux profile apply <name>
+    Displays the full index of registered profiles, detailing their 
+    prescribed MCP server stacks and behavioral metadata.
     """
     try:
         # Get profiles directory
@@ -51,11 +66,13 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
             sys.exit(1)
 
         # Display profiles in a rich table
-        table = Table(title="📋 Available Profiles", show_header=True, header_style="mint")
-        table.add_column("Name", style="success")
-        table.add_column("Display Name", style="info")
-        table.add_column("MCPs", style="warning")
-        table.add_column("Description", style="text", no_wrap=False)
+        table = styled_table(
+            "Available Profiles",
+            ("Name", {"style": "success"}),
+            ("Display Name", {"style": "info"}),
+            ("MCPs", {"style": "warning"}),
+            ("Description", {"style": "text", "no_wrap": False}),
+        )
 
         for p in profile_set.profiles:
             mcp_count = len(p.mcps)
@@ -88,10 +105,15 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
 
 @profile.command("init")
 @click.argument("profile_name", required=False)
-@click.option("--output-dir", "-o", help="Output directory for profile", type=click.Path())
+@click.option("--output-dir", "-o", help="📂 Ritual Chamber: Output directory for the new profile.", type=click.Path())
 @click.pass_context
 def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]):
-    """✨ Create a personalized profile using git history analysis."""
+    """
+    ✨ Forge Persona: Create a personalized profile using history analysis
+
+    Launches the profile synthesis wizard to generate a new ritual profile 
+    based on git history patterns and cognitive preferences.
+    """
     try:
         from ..profile_wizard import ProfileWizard
 
@@ -118,11 +140,16 @@ def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]
 
 
 @profile.command("auto-enable")
-@click.option("--check-interval", "-i", type=int, help="Check interval in seconds (default: 300)")
-@click.option("--threshold", "-t", type=float, help="Confidence threshold (default: 0.85)")
+@click.option("--check-interval", "-i", type=int, help="⏱️ Scan Frequency: Check interval in seconds (default: 300).")
+@click.option("--threshold", "-t", type=float, help="🎯 Confidence Gate: Threshold for auto-detection (default: 0.85).")
 @click.pass_context
 def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optional[float]):
-    """🔍 Enable auto-detection with gentle profile suggestions."""
+    """
+    🔍 Engage Suggestion Daemon: Enable context-aware profile detection
+
+    Activates the background monitoring daemon to suggest profile transitions 
+    based on active directory coordinates and file system rituals.
+    """
     try:
         from ..auto_detection_service import AutoDetectionService, create_default_settings
 
@@ -159,7 +186,12 @@ def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optio
 @profile.command("auto-disable")
 @click.pass_context
 def profile_auto_disable_cmd(ctx):
-    """⏸️  Disable auto-detection suggestions."""
+    """
+    ⏸️  Silence Suggestion Daemon: Disable auto-detection rituals
+
+    Deactivates the background monitoring daemon, halting all automatic 
+    profile transition suggestions.
+    """
     try:
         config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
 
@@ -183,7 +215,12 @@ def profile_auto_disable_cmd(ctx):
 @profile.command("auto-status")
 @click.pass_context
 def profile_auto_status_cmd(ctx):
-    """📊 Show auto-detection configuration and status."""
+    """
+    📊 Monitoring HUD: Show auto-detection configuration and status
+
+    Displays the current operational state and configuration parameters 
+    of the profile suggestion daemon.
+    """
     try:
         config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
 
@@ -217,10 +254,15 @@ def profile_auto_status_cmd(ctx):
 
 
 @profile.command("stats")
-@click.option("--days", "-d", type=int, default=30, help="Days of history to analyze (default: 30)")
+@click.option("--days", "-d", type=int, default=30, help="⏳ Temporal Window: Days of history to analyze (default: 30).")
 @click.pass_context
 def profile_stats_cmd(ctx, days: int):
-    """📊 Show profile usage analytics and trends."""
+    """
+    📊 Ritual Analytics: Show profile usage trends and patterns
+
+    Renders a high-fidelity dashboard of profile transition history, 
+    accuracy metrics, and optimization suggestions.
+    """
     try:
         from ..profile_analytics import get_stats_sync, display_stats
 
@@ -259,23 +301,28 @@ def profile_stats_cmd(ctx, days: int):
 
 
 @profile.command("analyze-usage")
-@click.option("--days", "days_back", type=click.IntRange(1), default=90, show_default=True, help="Days of git history to analyze")
+@click.option("--days", "days_back", type=click.IntRange(1), default=90, show_default=True, help="⏳ History Window: Days of git history to analyze.")
 @click.option(
     "--max-commits",
     type=click.IntRange(1),
     default=500,
     show_default=True,
-    help="Maximum commits to scan",
+    help="⚡ Scan Depth: Maximum commits to analyze for pattern synthesis.",
 )
 @click.option(
     "--repo-path",
     type=click.Path(exists=True, file_okay=False, path_type=Path),
     default=None,
-    help="Repository path (defaults to current directory)",
+    help="🔬 Repository Coordinate: Target path for git history analysis.",
 )
 @click.pass_context
 def profile_analyze_usage_cmd(ctx, days_back: int, max_commits: int, repo_path: Optional[Path]):
-    """Analyze git usage patterns to suggest profile defaults."""
+    """
+    🔬 Pattern Synthesis: Analyze git usage to suggest profile defaults
+
+    Performs deep inspection of repository history to identify common 
+    rituals and suggest the most effective default profiles.
+    """
     try:
         from ..profile_analyzer import GitHistoryAnalyzer
 
@@ -291,11 +338,16 @@ def profile_analyze_usage_cmd(ctx, days_back: int, max_commits: int, repo_path: 
 
 @profile.command("show")
 @click.argument("profile_name")
-@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
-@click.option("--raw", "-r", is_flag=True, help="Show raw YAML content")
+@click.option("--profile-dir", "-d", help="🔬 Archive Coordinate: Override the default ritual profile directory.", type=click.Path(exists=True))
+@click.option("--raw", "-r", is_flag=True, help="🧪 Inspect Raw Schema: Show unformatted YAML content.")
 @click.pass_context
 def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bool):
-    """📄 Show detailed profile information."""
+    """
+    📄 Inspect Persona: Show detailed profile information
+
+    Displays the complete architectural specification for a single 
+    ritual profile, including all cognitive constraints and MCP servers.
+    """
     try:
         parser = ProfileParser(Path(profile_dir) if profile_dir else None)
         profile_paths = parser.discover_profiles()
@@ -383,11 +435,16 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
 
 @profile.command("validate")
 @click.argument("profile_name", required=False)
-@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
-@click.option("--all", "-a", is_flag=True, help="Validate all profiles")
+@click.option("--profile-dir", "-d", help="🔬 Archive Coordinate: Override the default ritual profile directory.", type=click.Path(exists=True))
+@click.option("--all", "-a", is_flag=True, help="⚡ Batch Validation: Inspect all profiles in the registry.")
 @click.pass_context
 def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional[str], all: bool):
-    """✅ Validate profile YAML and configuration."""
+    """
+    ✅ Verify Integrity: Validate profile YAML and configuration
+
+    Performs a strict structural audit of profile artifacts to ensure 
+    schema compliance and system compatibility.
+    """
     try:
         parser = ProfileParser(Path(profile_dir) if profile_dir else None)
 
@@ -397,10 +454,12 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
             profile_set = parser.load_all_profiles(fail_fast=False)
 
             # Show results
-            table = Table(title="Validation Results", show_header=True, header_style="mint")
-            table.add_column("Profile", style="info")
-            table.add_column("Status", style="text")
-            table.add_column("Message", style="text", no_wrap=False)
+            table = styled_table(
+                "Validation Results",
+                ("Profile", {"style": "info"}),
+                ("Status", {"style": "text"}),
+                ("Message", {"style": "text", "no_wrap": False}),
+            )
 
             for p in profile_set.profiles:
                 table.add_row(p.name, "[success]✓ Valid[/success]", f"{len(p.mcps)} MCP servers")

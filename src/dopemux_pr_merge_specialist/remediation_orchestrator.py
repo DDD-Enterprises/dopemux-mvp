@@ -1,6 +1,7 @@
 import json
 from typing import Any, Dict, List, Optional
 
+from .action_model import blocker_findings
 from .schema import PRMergeReport, RemediationFlowTrace, RemediationStageResult
 
 
@@ -47,11 +48,7 @@ class RemediationOrchestrator:
             result = build_plan_result(active_run_id=run_id, pr=pr_state_obj, threads=threads, check_payload=check_payload, validation_report=validation, policy=policy)
             
             # Map PRResult to PRMergeReport for compatibility with the Wizard's expectations
-            from .schema import Blocker
-            blockers = []
-            for f in result.findings:
-                if str(f.kind) == "blocker":
-                    blockers.append(f.as_blocker())
+            blockers = [finding.as_blocker() for finding in blocker_findings(result.findings)]
             
             report = PRMergeReport(
                 pr_id=pr_id,

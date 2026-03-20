@@ -12,14 +12,28 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
+from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 @click.group()
 def update():
-    """🔄 Update and upgrade dopemux system components."""
+    """
+    🔄 System Regeneration: Update and Upgrade DØPEMÜX
+
+    Orchestrates the synchronization and modernization of all cockpit components.
+    This command group manages the lifecycle of the ritual engine, ensuring all 
+    daemons, Docker containers, and cognitive patterns are aligned with the 
+    latest temporal coordinates.
+
+    Capabilities:
+    - Full System Synchronization: Updates repository, dependencies, and images.
+    - Checkpoint Recovery: Resume interrupted rituals from exact coordinates.
+    - Temporal Rollback: Revert the flight-deck to a known stable state.
+    """
     pass
 
 
@@ -27,42 +41,36 @@ def update():
 @click.option(
     "--check",
     is_flag=True,
-    help="Check for updates without applying them (dry run)"
+    help="🔬 Preview Update: Check for available ritual upgrades without committing to ignition."
 )
 @click.option(
     "--minimal",
     is_flag=True,
-    help="Skip Docker rebuilds if possible (faster update)"
+    help="⚡ Streamlined Ignition: Skip Docker rebuilds to accelerate the synchronization sequence."
 )
 @click.option(
     "--skip-backups",
     is_flag=True,
-    help="Skip backup creation (not recommended)"
+    help="⚠️ Bypass Safeguards: Skip backup creation (not recommended)."
 )
 @click.option(
     "--skip-docker",
     is_flag=True,
-    help="Skip Docker image updates"
+    help="💧 Isolate Environment: Skip Docker image updates during the ritual."
 )
 @click.option(
     "--timeout",
     type=int,
     default=30,
-    help="Timeout in minutes for update operations"
+    help="⏱️ Ritual Duration: Maximum time in minutes for synchronization before halting."
 )
 @click.pass_context
 def run(ctx, check: bool, minimal: bool, skip_backups: bool, skip_docker: bool, timeout: int):
     """
-    🚀 Run comprehensive system update
+    🚀 Initiate Regeneration: Run comprehensive system update
 
-    Updates all dopemux components including:
-    - Git repository (with local change preservation)
-    - Docker containers and images
-    - Python and Node.js dependencies
-    - Database migrations
-    - Configuration updates
-
-    Includes automatic backup, rollback capability, and ADHD-friendly progress tracking.
+    Synchronizes all DØPEMÜX components including repository state, 
+    daemon dependencies, container images, and cognitive schemas.
     """
     import asyncio
     from ..update import UpdateManager, UpdateConfig
@@ -116,10 +124,10 @@ def run(ctx, check: bool, minimal: bool, skip_backups: bool, skip_docker: bool, 
 @click.pass_context
 def resume(ctx):
     """
-    ▶️ Resume interrupted update from last checkpoint
+    ▶️ Re-Engage Ritual: Resume interrupted update from last checkpoint
 
-    Continues an update that was interrupted by user or system failure.
-    Uses automatic checkpointing to resume from the exact point of interruption.
+    Restores the synchronization sequence from the exact temporal 
+    coordinate where the previous attempt was halted.
     """
     import asyncio
     from ..update import UpdateManager, UpdateConfig
@@ -149,20 +157,20 @@ def resume(ctx):
 @update.command()
 @click.option(
     "--backup-name",
-    help="Specific backup to rollback to (interactive selection if not provided)"
+    help="📜 Temporal Anchor: Specific backup to rollback to (interactive selection if not provided)."
 )
 @click.option(
     "--list-backups",
     is_flag=True,
-    help="List available backups and exit"
+    help="📋 Catalog Archives: List all available system checkpoints."
 )
 @click.pass_context
 def rollback(ctx, backup_name: Optional[str], list_backups: bool):
     """
-    ⏪ Rollback to previous system state
+    ⏪ Temporal Reversion: Rollback to previous system state
 
-    Safely restore the system to a previous working state using automatic backups.
-    Includes database restoration, configuration rollback, and service restart.
+    Restores the cockpit and daemon state to a known stable checkpoint, 
+    undoing all changes since the selected archive was captured.
     """
     import asyncio
     from ..update import RollbackManager
@@ -179,11 +187,13 @@ def rollback(ctx, backup_name: Optional[str], list_backups: bool):
                 return
 
             console.logger.info("\n[bold]Available Backups:[/bold]")
-            table = Table(show_header=True, header_style="magenta")
-            table.add_column("Name", style="info")
-            table.add_column("Created", style="text.dim")
-            table.add_column("Version", style="success")
-            table.add_column("Size", style="info")
+            table = styled_table(
+                "Available Backups",
+                ("Name", {"style": "info"}),
+                ("Created", {"style": "text.dim"}),
+                ("Version", {"style": "success"}),
+                ("Size", {"style": "info"}),
+            )
 
             for backup in backups:
                 backup_path = Path(backup['path'])
@@ -218,10 +228,10 @@ def rollback(ctx, backup_name: Optional[str], list_backups: bool):
 @click.pass_context
 def update_status_cmd(ctx):
     """
-    📊 Show system update status and health
+    📊 Diagnostic HUD: Show system update status and health
 
-    Displays current version, available updates, system health,
-    and update history.
+    Displays current version coordinates, available upgrades, 
+    system service health, and temporal update history.
     """
     import asyncio
     from ..update import UpdateManager
@@ -279,10 +289,12 @@ def _show_update_plan(plan):
         return
 
     # Show what will be updated
-    table = Table(show_header=True, header_style="mint")
-    table.add_column("Component", style="info")
-    table.add_column("Action", style="warning")
-    table.add_column("Details")
+    table = styled_table(
+        "Update Plan",
+        ("Component", {"style": "info"}),
+        ("Action", {"style": "warning"}),
+        "Details",
+    )
 
     table.add_row("Code", "🔄 Update", "Pull latest changes from git")
     table.add_row("Dependencies", "📦 Update", "Python and Node.js packages")

@@ -11,13 +11,12 @@ import sys
 from pathlib import Path
 
 import httpx
-from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable, Footer, Header, Static
+
+from .theme import Glyphs, StatusChip, styled_panel, styled_table
+from .voice import VoiceEngine, VoiceMode
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Demo data (used when --demo is active)
@@ -41,6 +40,41 @@ DEMO_SERVICES = [
 DEMO_COGNITIVE_HISTORY = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.6, 0.5, 0.42, 0.38, 0.35, 0.40]
 DEMO_VELOCITY_HISTORY = [3, 4, 5, 5, 6, 7, 6, 5, 4, 6, 7, 8]
 DEMO_SWITCHES_HISTORY = [2, 1, 2, 3, 5, 3, 2, 1, 2, 1, 1, 0]
+
+VOICE = VoiceEngine(mode=VoiceMode.UX_SCOLD, is_scattered=True)
+
+
+def _grid_table() -> object:
+    """Return a borderless themed table for compact dashboard facts."""
+    return styled_table("", "Signal", "State", show_header=False, box=None, expand=True)
+
+
+def _energy_state(energy: str, cognitive_load: float) -> tuple[str, str, str]:
+    """Map dashboard energy/load state to branded glyphs and styles."""
+    if cognitive_load >= 0.85:
+        return "error", "error", "🚨"
+    mapping = {
+        "low": ("mint.soft", "panel.border", "💧"),
+        "medium": ("info", "info", "⚡"),
+        "high": ("warning", "warning", "🔥"),
+    }
+    return mapping.get(energy, ("text.dim", "panel.border", "⚡"))
+
+
+def _attention_state(attention: str) -> tuple[str, str]:
+    mapping = {
+        "focused": ("info", "Focused"),
+        "scattered": ("magenta", "Scattered"),
+    }
+    return mapping.get(attention, ("text.dim", attention.title()))
+
+
+def _load_state(value: float) -> tuple[str, str]:
+    if value >= 0.85:
+        return "error", "Critical"
+    if value >= 0.65:
+        return "warning", "Elevated"
+    return "mint.soft", "Stable"
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -87,33 +121,51 @@ class ADHDStatePanel(Static):
         self.break_in = data.get("break_warning", {}).get("minutes_until", 99)
         self.is_connected = True
 
-    def render(self) -> Panel:
+    def render(self) -> object:
         if not self.is_connected:
-            return Panel(
-                Text("⚠️  ADHD Engine Disconnected", style="bold #FF8BD1", justify="center"),
+            return styled_panel(
+                (
+                    f"{StatusChip.BLOCKER.render('ADHD Engine disconnected.')}\n\n"
+                    f"[magenta]{VOICE.get_roast()}[/]\n"
+                    f"[text.dim]NEXT:[/] Bring the telemetry service back online."
+                ),
                 title="ADHD STATE",
-                border_style="#FF8BD1",
+                border_style="error",
             )
 
-        energy_icon = {"high": "⚡↑", "medium": "⚡=", "low": "⚡↓"}.get(self.energy, "⚡")
-        attention_icon = {"focused": "👁️●", "scattered": "👁️🌀"}.get(self.attention, "👁️")
+        energy_style, border_style, energy_icon = _energy_state(self.energy, self.cognitive_load)
+        attention_style, attention_label = _attention_state(self.attention)
+        load_style, load_label = _load_state(self.cognitive_load)
         load_bar = self._make_gauge(self.cognitive_load)
-        flow_status = "🌊 Active" if self.in_flow else ""
-        break_warning = f"☕ in {self.break_in}m" if self.break_in < 20 else ""
-
-        table = Table.grid(padding=1)
-        table.add_column(style="bold #94FADB")
-        table.add_column(style="bold #9B78FF")
-        table.add_column(style="bold #F5F26D")
-
-        table.add_row(
-            f"{energy_icon} {self.energy.title()}",
-            f"{attention_icon} {self.attention.title()}",
-            f"🧠 {load_bar} {int(self.cognitive_load * 100)}%",
+        flow_status = (
+            f"[info]{Glyphs.RUNNING} Flow ritual active[/]"
+            if self.in_flow
+            else "[text.dim]No active flow lock[/]"
         )
-        table.add_row(flow_status, break_warning, "")
+        break_warning = (
+            f"[violet]{StatusChip.AFTERCARE.render(f'Break in {self.break_in}m.')}[/]\n"
+            f"[violet]{VOICE.get_aftercare()}[/]"
+            if self.break_in < 20
+            else "[text.dim]No break pressure yet[/]"
+        )
 
-        return Panel(table, title="ADHD STATE", border_style="#94FADB")
+        table = _grid_table()
+        table.add_row(
+            f"[label]{energy_icon} Energy[/]",
+            f"[{energy_style}]{self.energy.title()}[/]",
+        )
+        table.add_row(
+            "[label]🧠 Cognitive load[/]",
+            f"[{load_style}]{load_label}[/] [text.dim]{load_bar} {int(self.cognitive_load * 100)}%[/]",
+        )
+        table.add_row(
+            "[label]👁 Attention[/]",
+            f"[{attention_style}]{attention_label}[/]",
+        )
+        table.add_row("[label]Flow[/]", flow_status)
+        table.add_row("[label]Aftercare[/]", break_warning)
+
+        return styled_panel(table, title="[blink]🧠 ADHD STATE[/blink]", border_style=border_style)
 
     @staticmethod
     def _make_gauge(value: float) -> str:
@@ -159,24 +211,27 @@ class ProductivityPanel(Static):
             except Exception:
                 pass
 
-    def render(self) -> Panel:
+    def render(self) -> object:
         rate = self.tasks_completed / self.tasks_total if self.tasks_total > 0 else 0
         bar = "█" * int(rate * 10) + "░" * (10 - int(rate * 10))
         sparkline = "".join("▁▂▃▄▅▆▇█"[min(v, 7)] for v in self.velocity)
 
-        table = Table.grid(padding=1)
-        table.add_column()
-        table.add_column()
+        table = _grid_table()
         table.add_row(
-            f"Tasks: {self.tasks_completed}/{self.tasks_total} ({int(rate * 100)}%) {bar}",
-            f"Decisions: {self.decisions_today} today",
+            f"[label]{Glyphs.CODE} Tasks[/]",
+            f"[mint.soft]{self.tasks_completed}/{self.tasks_total}[/] [text.dim]({int(rate * 100)}%) {bar}[/]",
         )
         table.add_row(
-            f"Velocity: {sparkline}",
-            f"Completion: {int(rate * 100)}% (target: 85%)",
+            f"[label]{Glyphs.INFO} Decisions[/]",
+            f"[info]{self.decisions_today}[/] [text.dim]logged today[/]",
+        )
+        table.add_row("[label]Velocity[/]", f"[info]{sparkline}[/]")
+        table.add_row(
+            "[label]Completion[/]",
+            f"{StatusChip.LOGGED.render(f'{int(rate * 100)}% locked')} [text.dim](target: 85%)[/]",
         )
 
-        return Panel(table, title="PRODUCTIVITY", border_style="#7DFBF6")
+        return styled_panel(table, title="🚀 MISSION VELOCITY", border_style="info")
 
 
 class ServicesGrid(Static):
@@ -214,14 +269,18 @@ class ServicesGrid(Static):
                     resp = await client.get(url, timeout=2.0)
                     if resp.status_code == 200:
                         data = resp.json()
-                        status = "✓" if data.get("status") == "healthy" else "✗"
+                        status = (
+                            f"{Glyphs.SUCCESS} LIVE"
+                            if data.get("status") == "healthy"
+                            else f"{Glyphs.ERROR} BLOCKER"
+                        )
                         latency = f"{data.get('latency_ms', 0)}ms"
                         version = data.get("version", "—")
                         table.add_row(name, status, latency, version)
                     else:
-                        table.add_row(name, "✗", "error", str(resp.status_code))
+                        table.add_row(name, f"{Glyphs.ERROR} BLOCKER", "error", str(resp.status_code))
                 except Exception as exc:
-                    table.add_row(name, "✗", "timeout", str(exc)[:20])
+                    table.add_row(name, f"{Glyphs.ERROR} BLOCKER", "timeout", str(exc)[:20])
 
 
 class TrendsPanel(Static):
@@ -231,22 +290,18 @@ class TrendsPanel(Static):
     velocity_history = reactive(DEMO_VELOCITY_HISTORY)
     switches_history = reactive(DEMO_SWITCHES_HISTORY)
 
-    def render(self) -> Panel:
+    def render(self) -> object:
         def sparkline(data: list[float | int]) -> str:
             chars = "▁▂▃▄▅▆▇█"
             mx = max(data) or 1
             return "".join(chars[min(int((v / mx) * 7), 7)] for v in data)
 
-        table = Table.grid(padding=1)
-        table.add_column(style="#94A3B8")
-        table.add_column()
-        table.add_column(style="#94A3B8")
+        table = _grid_table()
+        table.add_row("[label]Cognitive load[/]", f"[mint.soft]{sparkline(self.cognitive_history)}[/] [text.dim](last 2h)[/]")
+        table.add_row("[label]Task velocity[/]", f"[info]{sparkline(self.velocity_history)}[/] [text.dim](last 7d)[/]")
+        table.add_row("[label]Context switches[/]", f"[warning]{sparkline(self.switches_history)}[/] [text.dim](last 24h)[/]")
 
-        table.add_row("Cognitive Load:", sparkline(self.cognitive_history), "(last 2h)")
-        table.add_row("Task Velocity:", sparkline(self.velocity_history), "(last 7d)")
-        table.add_row("Context Switches:", sparkline(self.switches_history), "(last 24h)")
-
-        return Panel(table, title="TRENDS", border_style="#F5F26D")
+        return styled_panel(table, title="📈 COGNITIVE TRENDS", border_style="warning")
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -258,8 +313,8 @@ class DopemuxDashboard(App):
     """Main Textual dashboard app."""
 
     CSS_PATH = "dopemux.tcss"
-    TITLE = "Dopemux Dashboard"
-    SUB_TITLE = "ADHD-optimized monitoring"
+    TITLE = f"{Glyphs.BRAND_MARK} Dopemux Dashboard"
+    SUB_TITLE = "ADHD-HUD telemetry"
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -288,7 +343,7 @@ class DopemuxDashboard(App):
         """Open tmux popup with detailed view."""
         detail_script = Path(__file__).parent.resolve() / "dashboard_detail.py"
         if not detail_script.exists():
-            self.notify("Detail script not found", severity="error")
+            self.notify("[BLOCKER] Detail popup script missing.", severity="error")
             return
 
         try:
@@ -308,7 +363,7 @@ class DopemuxDashboard(App):
                 check=False,
             )
         except FileNotFoundError:
-            self.notify("tmux not found — detail popup requires tmux", severity="warning")
+            self.notify("[OVERRIDE] tmux required for detail popup.", severity="warning")
         except Exception:
             pass
 
@@ -335,7 +390,7 @@ class DopemuxDashboard(App):
             panel.call_later(panel.update_metrics)
         for panel in self.query(ServicesGrid):
             panel.call_later(panel.update_services)
-        self.notify("Refreshing all panels…")
+        self.notify("[LIVE] Refreshing cockpit telemetry.", severity="information")
 
 
 def run_dashboard(*, demo: bool = False) -> None:

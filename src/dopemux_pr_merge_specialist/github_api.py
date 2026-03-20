@@ -142,6 +142,7 @@ class GitHubClient:
                     "mergeStateStatus",
                     "labels",
                     "reviewDecision",
+                    "autoMergeRequest",
                     "updatedAt",
                     "baseRefName",
                     "headRefName",
@@ -205,6 +206,7 @@ class GitHubClient:
                     "mergeStateStatus",
                     "labels",
                     "reviewDecision",
+                    "autoMergeRequest",
                     "updatedAt",
                     "baseRefName",
                     "headRefName",
@@ -234,6 +236,87 @@ class GitHubClient:
         if not oid:
             return None, "PR head SHA was empty"
         return oid, None
+
+    def fetch_branch_protection(self, branch: str) -> Dict[str, Any]:
+        branch_name = str(branch or "").strip()
+        if not branch_name:
+            return {
+                "available": False,
+                "protected": False,
+                "branch": branch_name,
+                "required_approving_review_count": 0,
+                "approval_required": False,
+            }
+        cache_key = f"branch_protection:{branch_name}"
+        cached = self._cache_get(cache_key)
+        if cached is not None:
+            return dict(cached)
+        repo_slug = self.resolve_repo_slug()
+        result = self._run(
+            ["gh", "api", f"repos/{repo_slug}/branches/{branch_name}/protection"]
+        )
+        if result.returncode != 0:
+            stderr = (result.stderr or "").lower()
+            if "404" in stderr or "not found" in stderr or "not protected" in stderr:
+                payload = {
+                    "available": True,
+                    "protected": False,
+                    "branch": branch_name,
+                    "required_approving_review_count": 0,
+                    "approval_required": False,
+                    "require_code_owner_reviews": False,
+                    "require_last_push_approval": False,
+                    "required_conversation_resolution": False,
+                    "required_status_checks": [],
+                    "strict_status_checks": False,
+                    "enforce_admins": False,
+                    "required_linear_history": False,
+                }
+                self.cache[cache_key] = payload
+                return payload
+            raise RuntimeError(
+                f"Unable to fetch protection for branch {branch_name}: {result.stderr.strip()}"
+            )
+        raw = json_loads_or_empty(result.stdout)
+        if not isinstance(raw, dict):
+            raise RuntimeError(
+                f"Unexpected branch protection payload for {branch_name!r}"
+            )
+        review_cfg = raw.get("required_pull_request_reviews") or {}
+        status_cfg = raw.get("required_status_checks") or {}
+        count = int(review_cfg.get("required_approving_review_count", 0) or 0)
+        require_code_owner_reviews = bool(
+            review_cfg.get("require_code_owner_reviews", False)
+        )
+        require_last_push_approval = bool(
+            review_cfg.get("require_last_push_approval", False)
+        )
+        payload = {
+            "available": True,
+            "protected": True,
+            "branch": branch_name,
+            "required_approving_review_count": count,
+            "approval_required": bool(
+                count > 0 or require_code_owner_reviews or require_last_push_approval
+            ),
+            "require_code_owner_reviews": require_code_owner_reviews,
+            "require_last_push_approval": require_last_push_approval,
+            "required_conversation_resolution": bool(
+                (raw.get("required_conversation_resolution") or {}).get(
+                    "enabled", False
+                )
+            ),
+            "required_status_checks": list(status_cfg.get("contexts") or []),
+            "strict_status_checks": bool(status_cfg.get("strict", False)),
+            "enforce_admins": bool(
+                (raw.get("enforce_admins") or {}).get("enabled", False)
+            ),
+            "required_linear_history": bool(
+                (raw.get("required_linear_history") or {}).get("enabled", False)
+            ),
+        }
+        self.cache[cache_key] = payload
+        return payload
 
     def fetch_review_threads(self, pr_id: int) -> List[ReviewThread]:
         cache_key = f"threads:{pr_id}"
@@ -379,11 +462,15 @@ class GitHubClient:
             )
         return comments
 
-    def query_checks(self, pr_id: int) -> Dict[str, Any]:
-        payload = self.fetch_pr(pr_id)
+    def query_checks(
+        self, pr_id: int, *, pr_payload: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        payload = dict(pr_payload) if pr_payload is not None else self.fetch_pr(pr_id)
         checks = payload.get("statusCheckRollup", []) or []
         summary = summarize_checks(checks)
         review_decision = str(payload.get("reviewDecision") or "")
+        protection = self.fetch_branch_protection(str(payload.get("baseRefName") or ""))
+        approval_required = bool(protection.get("approval_required", False))
         blockers: List[str] = []
         warnings: List[str] = []
         if summary.required_failure > 0:
@@ -394,15 +481,21 @@ class GitHubClient:
             warnings.append("optional_check_failed")
         if summary.optional_pending > 0:
             warnings.append("optional_check_pending")
-        if review_decision == "CHANGES_REQUESTED":
+        if approval_required and review_decision == "CHANGES_REQUESTED":
             blockers.append("changes_requested")
-        elif review_decision != "APPROVED":
+        elif approval_required and review_decision != "APPROVED":
             blockers.append("approval_missing")
+        elif review_decision == "CHANGES_REQUESTED":
+            warnings.append("changes_requested_not_blocking")
+        elif review_decision and review_decision != "APPROVED":
+            warnings.append("approval_not_required")
         return {
             "summary": summary,
             "review_decision": review_decision,
             "mergeable": payload.get("mergeable", ""),
             "merge_state_status": payload.get("mergeStateStatus", ""),
+            "protection": protection,
+            "approval_required": approval_required,
             "blocker_types": blockers,
             "warning_types": warnings,
         }

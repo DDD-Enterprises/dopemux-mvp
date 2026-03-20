@@ -175,7 +175,14 @@ class AgentCommunicator:
                     if line.startswith('AGENT_MSG: '):
                         try:
                             json_part = line[11:]  # Remove 'AGENT_MSG: ' prefix
-                            return AgentMessage.from_json(json_part)
+                            msg = AgentMessage.from_json(json_part)
+                            # Apply brand voice enforcement
+                            try:
+                                from dopemux.ui.voice import VoiceEnforcer
+                                msg.content = VoiceEnforcer.clean(msg.content)
+                            except ImportError:
+                                pass
+                            return msg
                         except json.JSONDecodeError:
                             continue  # Not a valid message, continue
 

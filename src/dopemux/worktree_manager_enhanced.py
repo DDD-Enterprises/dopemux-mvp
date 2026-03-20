@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from rich.panel import Panel
-from rich.prompt import Confirm, Prompt
+from dopemux.ui.prompts import dopemux_confirm, dopemux_prompt
 from rich.table import Table
 from rich.text import Text
 
@@ -225,7 +225,7 @@ class EnhancedWorktreeManager:
                 f"    {existing_path}"
             )
 
-            if Confirm.ask("Would you like to switch to that worktree instead?"):
+            if dopemux_confirm("Would you like to switch to that worktree instead?"):
                 return self.switch_to_worktree(branch_name)
             return False
 
@@ -268,7 +268,7 @@ class EnhancedWorktreeManager:
             self._configure_worktree(worktree_path)
 
             # Offer to switch to new worktree
-            if Confirm.ask("Switch to the new worktree now?"):
+            if dopemux_confirm("Switch to the new worktree now?"):
                 os.chdir(worktree_path)
                 console.print(f"[success]📍 Switched to: {worktree_path}[/success]")
 
@@ -644,7 +644,7 @@ fi
 
                 if wt.is_dirty:
                     console.print(f"[warning]⚠️  Worktree has uncommitted changes[/warning]")
-                    if not Confirm.ask("Archive anyway?"):
+                    if not dopemux_confirm("Archive anyway?"):
                         return False
 
                 console.print(f"[info]📦 Archiving worktree for branch '{branch_name}'...[/info]")

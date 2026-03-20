@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
 
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..console import console
@@ -166,7 +167,7 @@ class MultiAngleExtractor:
             for unit in atomic_units
         ]
 
-        with Progress(
+        with branded_progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,

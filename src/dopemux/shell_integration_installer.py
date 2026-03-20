@@ -26,7 +26,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 
-from rich.prompt import Confirm
+from dopemux.ui.prompts import dopemux_confirm
 
 from .console import console
 
@@ -130,7 +130,7 @@ class ShellIntegrationInstaller:
             console.logger.info("  • [bold]dwtls[/bold]         - List all worktrees")
             console.logger.info("  • [bold]dwtcur[/bold]        - Show current worktree\n")
 
-            if not Confirm.ask("Install shell integration?", default=True):
+            if not dopemux_confirm("Install shell integration?", default=True):
                 return False, "Installation cancelled by user"
 
         # Create backup

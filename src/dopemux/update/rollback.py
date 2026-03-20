@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Any, Union
 
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Confirm
+from dopemux.ui.prompts import dopemux_confirm
 
 logger = logging.getLogger(__name__)
 
@@ -215,7 +215,7 @@ class RollbackManager:
             self.console.print(f"Created: {created_at}")
             self.console.print(f"Will restore to version: {version_from}")
 
-            if not Confirm.ask("Continue with rollback?", default=False):
+            if not dopemux_confirm("Continue with rollback?", default=False):
                 self.console.print("[warning]Rollback cancelled by user[/warning]")
                 return False
 

@@ -21,15 +21,15 @@ from .theme import Glyphs
 # Custom Matrix/Glitch sequence for the ritual daemon
 DOPEMUX_SPINNER = [
     f"[mint]{Glyphs.BRAND_MARK}[/mint]",
-    f"[mint.soft]\[=  \][/mint.soft]",
-    f"[mint.soft]\[== \][/mint.soft]",
-    f"[mint.soft]\[===\][/mint.soft]",
-    f"[magenta]\[>  \][/magenta]",
-    f"[magenta]\[>> \][/magenta]",
-    f"[magenta]\[>>>\][/magenta]",
-    f"[violet]\[/  \][/violet]",
-    f"[violet]\[// \][/violet]",
-    f"[violet]\[///\][/violet]",
+    f"[mint.soft]\\[=  ][/mint.soft]",
+    f"[mint.soft]\\[== ][/mint.soft]",
+    f"[mint.soft]\\[===][/mint.soft]",
+    f"[magenta]\\[>  ][/magenta]",
+    f"[magenta]\\[>> ][/magenta]",
+    f"[magenta]\\[>>>][/magenta]",
+    f"[violet]\\[/  ][/violet]",
+    f"[violet]\\[// ][/violet]",
+    f"[violet]\\[///][/violet]",
     f"[mint]{Glyphs.BRAND_MARK}[/mint]",
 ]
 
@@ -60,6 +60,9 @@ def branded_progress(
         transient=transient,
         **kwargs
     )
+    
+    # Overwrite the default spinner with our custom sequence if we want to build a custom Spinner class
+    # For simplicity, we use the dots spinner but style it.
     
     try:
         progress.start()

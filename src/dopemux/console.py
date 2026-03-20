@@ -26,15 +26,32 @@ class _ConsoleAdapter:
 
     def info(self, *args, **kwargs) -> None:
         """Log info message to console."""
+        # Check if the string already has a prefix to avoid double-prefixing
+        msg = str(args[0])
+        if not any(msg.startswith(p) for p in ["[mint]", "[text.dim]", "[info]", "[success]", "[warning]", "[error]", "[bold", "[blue", "[green", "[red", "[yellow", "━━━"]):
+            args = (f"[mint][TELEMETRY][/mint] {msg}",) + args[1:]
         self._console.print(*args, **kwargs)
 
     def error(self, *args, **kwargs) -> None:
         """Log error message to console with error styling."""
+        msg = str(args[0])
+        if not any(msg.startswith(p) for p in ["[error]", "[BLOCKER]", "❌", "[red", "[bold red"]):
+            args = (f"[gremlin.pink][BLOCKER][/gremlin.pink] {msg}",) + args[1:]
         self._console.print(*args, style="error", **kwargs)
 
     def warning(self, *args, **kwargs) -> None:
         """Log warning message to console with warning styling."""
+        msg = str(args[0])
+        if not any(msg.startswith(p) for p in ["[warning]", "[HAZARD]", "⚠️", "⚠", "[yellow", "[bold yellow"]):
+            args = (f"[gilt.edge][HAZARD][/gilt.edge] {msg}",) + args[1:]
         self._console.print(*args, style="warning", **kwargs)
+
+    def debug(self, *args, **kwargs) -> None:
+        """Log debug message to console."""
+        msg = str(args[0])
+        if not any(msg.startswith(p) for p in ["[debug]", "[SIGNAL]"]):
+            args = (f"[text.dim][SIGNAL][/text.dim] {msg}",) + args[1:]
+        self._console.print(*args, style="text.dim", **kwargs)
 
 
 # Single console instance with logger adapter - use this everywhere

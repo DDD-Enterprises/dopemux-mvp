@@ -14,6 +14,8 @@ from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
 
+from .action_model import dashboard_tactic_for_snapshot, result_to_dashboard_entry
+from .preflight import preflight
 from .ux_engine import RenderMode, RichTerminalRenderer
 from .queue_drain import pr_apply, pr_merge, pr_approve, pr_ready
 
@@ -78,7 +80,12 @@ class DopemuxDashboard:
             return None
             
         self.state.execution_log = []
-        cmd_args = argparse.Namespace(**{**vars(self.args), "id": pr_id, "execute": True})
+        cmd_args = argparse.Namespace(**{**vars(self.args), "id": pr_id, "execute": True, "allow_dirty": True})
+        if preflight(cmd_args) != 0:
+            self.log_step("EXECUTION BLOCKED BY PREFLIGHT", "ERROR")
+            self.state.status_message = f"Preflight failed for PR #{pr_id}."
+            self.state.last_action_result = "ERROR"
+            return None
         
         try:
             result = None
@@ -119,25 +126,9 @@ class DopemuxDashboard:
                 self.state.last_action_result = result.lifecycle_state
                 # Preserve history if it exists
                 history = self.state.active_pr.get("history", [])
-                
-                return {
-                    "pr_id": result.pr_state.pr_id,
-                    "title": result.pr_state.title,
-                    "lifecycle_state": result.lifecycle_state,
-                    "ci_status": getattr(result.pr_state, "ci_status", "UNKNOWN"),
-                    "unresolved_threads": getattr(result.pr_state, "unresolved_threads", 0),
-                    "risk_score": getattr(result.pr_state, "risk_score", 0.0),
-                    "is_draft": getattr(result.pr_state, "is_draft", False),
-                    "validation_report": result.validation_report.to_dict() if result.validation_report else {},
-                    "history": history,
-                    "merge_strategy": (
-                        result.merge_strategy if hasattr(result, "merge_strategy") else 
-                        (result.merge_decision.action if result.merge_decision else "UNKNOWN")
-                    ),
-                    "rationale": result.merge_decision.reason if result.merge_decision else "",
-                    "blockers": [b.to_dict() for b in result.findings if str(b.kind) == "blocker"],
-                    "warnings": [b.to_dict() for b in result.findings if str(b.kind) == "warning"],
-                }
+                entry = result_to_dashboard_entry(result)
+                entry["history"] = history
+                return entry
         except Exception as e:
             self.log_step(f"CRITICAL EXECUTION ERROR", "ERROR")
             self.log_step(f"REASON: {str(e)[:150]}", "ERROR")
@@ -181,20 +172,7 @@ class DopemuxDashboard:
                     elif self.state.auto_pilot:
                         active = self.state.active_pr
                         if active:
-                            lc_state = str(active.get("lifecycle_state", "discovered")).upper()
-                            unresolved = int(active.get("unresolved_threads", 0))
-                            is_draft = bool(active.get("is_draft", False))
-                            
-                            if is_draft:
-                                choice = "R"
-                            elif "READY" in lc_state or active.get("merge_strategy") == "auto_merge_fallback":
-                                choice = "I"
-                            elif unresolved > 0:
-                                choice = "P"
-                            elif "CONFLICT" in lc_state:
-                                choice = "S"
-                            else:
-                                choice = "V"
+                            choice = dashboard_tactic_for_snapshot(active)
 
                     if choice == "Q":
                         self.state.status_message = "Mission aborted by operator."

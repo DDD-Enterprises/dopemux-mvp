@@ -33,14 +33,25 @@ from ..adhd.context_manager import ContextManager
 # Environment safe commands
 @click.group(name="env")
 def env_group():
-    """Safe environment variable inspection."""
+    """
+    🔒 Environment Guard: Safe environment variable inspection
+
+    Orchestrates the secure inspection and validation of environment 
+    variables. Ensures that sensitive ritual credentials and configuration 
+    signals are correctly synchronized within the cockpit.
+    """
     pass
 
 
 @env_group.command("list")
-@click.option("--status", is_flag=True, help="Show set/empty status")
+@click.option("--status", is_flag=True, help="📊 Reveal State: Show whether each variable is currently set or empty.")
 def env_list(status: bool):
-    """List environment variable keys safely."""
+    """
+    📋 Catalog Environment: List environment variable keys safely
+
+    Displays the index of registered environment variables without 
+    exposing sensitive values. Essential for auditing cockpit connectivity.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -64,7 +75,12 @@ def env_list(status: bool):
 @env_group.command("check")
 @click.argument("key")
 def env_check(key: str):
-    """Check if environment variable exists."""
+    """
+    🔍 Verify Signal: Check if a specific environment variable exists
+
+    Audits the existence of a specific environment coordinate within 
+    the active ritual environment.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -82,7 +98,12 @@ def env_check(key: str):
 
 @env_group.command("count")
 def env_count():
-    """Count environment variables."""
+    """
+    📊 Signal Summary: Count total environment variables
+
+    Retrieves high-fidelity metrics on the density of environment signals, 
+    detailing the total count of set and empty variables.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -100,7 +121,12 @@ def env_count():
 
 @env_group.command("validate")
 def env_validate():
-    """Validate .env file syntax."""
+    """
+    ✅ Verify Integrity: Validate .env file syntax and alignment
+
+    Performs a structural audit of the ritual's environment files to 
+    ensure schema compliance and system stability.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -123,16 +149,27 @@ def env_validate():
 # Session management commands
 @click.group(name="session")
 def session_group():
-    """Session search and management."""
+    """
+    ⏳ Temporal Registry: Session search and management
+
+    Orchestrates the discovery and restoration of historical cockpit 
+    sessions. Synchronizes across temporal coordinates to enable 
+    seamless ritual continuity.
+    """
     pass
 
 
 @session_group.command("find")
 @click.argument("keywords", required=False)
-@click.option("--agent", "-a", help="Filter by agent type")
-@click.option("--limit", "-n", type=int, default=20, help="Limit results")
+@click.option("--agent", "-a", help="🤖 Agent Filter: Filter sessions by specialized agent archetype.")
+@click.option("--limit", "-n", type=int, default=20, help="📊 Telemetry Limit: Maximum sessions to display in the HUD.")
 def session_find(keywords: Optional[str], agent: Optional[str], limit: int):
-    """Search for sessions."""
+    """
+    🔍 Search Archives: Locate past cockpit sessions
+
+    Engages the temporal search engine to find historical ritual sessions 
+    matching the specified keywords or archetypes.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -148,7 +185,12 @@ def session_find(keywords: Optional[str], agent: Optional[str], limit: int):
 @session_group.command("resume")
 @click.argument("session_id")
 def session_resume(session_id: str):
-    """Resume a session by ID."""
+    """
+    ▶️ Re-Engage Ritual: Resume a past session by its unique ID
+
+    Synchronizes the active cockpit with a specific temporal coordinate, 
+    reconstructing the cognitive state of the selected session.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -176,13 +218,23 @@ def session_resume(session_id: str):
 # Safety management commands
 @click.group(name="safe")
 def safe_group():
-    """Safety hook management."""
+    """
+    🛡️ Safety Interlocks: Ritual safety hook management
+
+    Orchestrates the cockpit's defensive systems. Synchronizes safety 
+    hooks to prevent accidental artifact mutation or destructive commands.
+    """
     pass
 
 
 @safe_group.command("status")
 def safe_status():
-    """Show safety hook status."""
+    """
+    📊 Interlock HUD: Show safety hook operational status
+
+    Displays the current calibration and engagement levels of the cockpit's 
+    safety interlocks and focal protection rituals.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -199,9 +251,14 @@ def safe_status():
 
 @safe_group.command("check")
 @click.argument("command")
-@click.option("--confirmed", is_flag=True, help="Mark as confirmed")
+@click.option("--confirmed", is_flag=True, help="⚡ Force Extraction: Mark the command as manually validated.")
 def safe_check(command: str, confirmed: bool):
-    """Check command safety."""
+    """
+    ⚖️ Safety Audit: Check command safety against active interlocks
+
+    Performs a high-fidelity diagnostic audit of a shell ritual before 
+    execution, identifying potential hazards or destructive patterns.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -220,14 +277,25 @@ def safe_check(command: str, confirmed: bool):
 # Vault commands
 @click.group(name="vault")
 def vault_group():
-    """Encrypted environment vault management."""
+    """
+    🔐 Encrypted Sanctuary: Environment vault management
+
+    Orchestrates the secure archival of sensitive environment signals. 
+    Synchronizes encrypted vaults to ensure that high-fidelity ritual 
+    credentials remain protected within the cockpit.
+    """
     pass
 
 
 @vault_group.command("encrypt")
 @click.argument("env_file", default=".env")
 def vault_encrypt(env_file: str):
-    """Encrypt .env file to vault."""
+    """
+    🔒 Seal Signal: Encrypt .env file into the vault sanctuary
+
+    Engages the cryptographic engine to ARCHIVE sensitive environment 
+    signals into a high-fidelity encrypted vault.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -246,7 +314,12 @@ def vault_encrypt(env_file: str):
 @vault_group.command("decrypt")
 @click.argument("vault_file", default=None)
 def vault_decrypt(vault_file: Optional[str]):
-    """Decrypt vault file to .env."""
+    """
+    🔓 Materialize Signal: Decrypt vault file into active .env
+
+    Reconstructs raw environment signals from an encrypted sanctuary, 
+    materializing them into the active ritual environment.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -265,7 +338,12 @@ def vault_decrypt(vault_file: Optional[str]):
 @vault_group.command("sync")
 @click.argument("env_file", default=".env")
 def vault_sync(env_file: str):
-    """Sync environment file to vault."""
+    """
+    🔄 Vault Synchronization: Sync environment file with its vault anchor
+
+    Performs a bidirectional synchronization ritual between the active 
+    environment signals and the encrypted sanctuary.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -283,7 +361,12 @@ def vault_sync(env_file: str):
 
 @vault_group.command("list")
 def vault_list():
-    """List all vault files."""
+    """
+    📋 Catalog Sanctuary: List all available encrypted vaults
+
+    Displays the index of registered vault archives within the 
+    cockpit's secure storage coordinate.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -304,17 +387,28 @@ def vault_list():
 # Agent Communication commands
 @click.group(name="agent")
 def agent_group():
-    """Agent-to-agent communication."""
+    """
+    🧠 Cognitive Uplink: Agent-to-agent communication
+
+    Orchestrates the high-fidelity signal exchange between specialized 
+    agents. Synchronizes cognitive focal points to enable collaborative 
+    ritual execution.
+    """
     pass
 
 
 @agent_group.command("send")
 @click.argument("pane_id")
 @click.argument("message")
-@click.option("--type", "message_type", default="request", help="Message type")
-@click.option("--sync/--async", default=True, help="Synchronous response")
+@click.option("--type", "message_type", default="request", help="📊 Signal Type: Identifier for the communication archetype (e.g. request).")
+@click.option("--sync/--async", default=True, help="⏱️ Ritual Sync: Control whether the uplink wait for a response.")
 def agent_send(pane_id: str, message: str, message_type: str, sync: bool):
-    """Send message to agent in pane."""
+    """
+    📤 Transmit Pulse: Send cognitive signal to an agent focal point
+
+    Initiates a high-fidelity uplink to a specialized agent, transmitting 
+    mission objectives or pattern requests.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -342,9 +436,14 @@ def agent_send(pane_id: str, message: str, message_type: str, sync: bool):
 
 @agent_group.command("receive")
 @click.argument("pane_id")
-@click.option("--timeout", type=float, default=5.0, help="Timeout in seconds")
+@click.option("--timeout", type=float, default=5.0, help="⏳ Temporal Limit: Maximum wait time for the incoming signal.")
 def agent_receive(pane_id: str, timeout: float):
-    """Receive message from agent in pane."""
+    """
+    📥 Ingest Pulse: Receive cognitive signal from an agent focal point
+
+    Synchronizes with an incoming agent signal, materializing the 
+    transmitted patterns or ritual responses in the HUD.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -368,9 +467,14 @@ def agent_receive(pane_id: str, timeout: float):
 @click.argument("primary_pane")
 @click.argument("secondary_pane")
 @click.argument("task_description")
-@click.option("--timeout", type=float, default=300.0, help="Collaboration timeout")
+@click.option("--timeout", type=float, default=300.0, help="⏳ Ritual Timeout: Maximum duration for the collaborative mission.")
 def agent_collaborate(primary_pane: str, secondary_pane: str, task_description: str, timeout: float):
-    """Enable agent collaboration on task."""
+    """
+    🤝 Engage Multi-Agent Ritual: Synchronize agents on a shared mission
+
+    Orchestrates a collaborative sequence between two specialized agents, 
+    pooling their cognitive archetypes to MATERIALISE a complex task.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -392,16 +496,27 @@ def agent_collaborate(primary_pane: str, secondary_pane: str, task_description: 
 # Debugging commands
 @click.group(name="debug")
 def debug_group():
-    """Interactive debugging support."""
+    """
+    🩺 Ritual Apothecary: Interactive debugging support
+
+    Orchestrates high-fidelity diagnostic rituals. Synchronizes with 
+    external debuggers to audit ritual execution and identify focal 
+    disconnects.
+    """
     pass
 
 
 @debug_group.command("start")
 @click.argument("command")
-@click.option("--debugger", type=click.Choice(['pdb', 'gdb', 'lldb']), default='pdb', help="Debugger type")
-@click.option("--pane", help="Specific pane name")
+@click.option("--debugger", type=click.Choice(['pdb', 'gdb', 'lldb']), default='pdb', help="🔬 Debugger Archetype: Select the diagnostic tool for the ritual.")
+@click.option("--pane", help="📍 Signal Anchor: Target a specific cockpit pane for the debug session.")
 def debug_start(command: str, debugger: str, pane: Optional[str]):
-    """Start debugging session."""
+    """
+    🚀 Ignite Diagnostic: Start high-fidelity debugging session
+
+    Materializes a diagnostic focal point, engaging the specified 
+    debugger to audit command execution signals.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -424,7 +539,12 @@ def debug_start(command: str, debugger: str, pane: Optional[str]):
 @click.argument("file_path")
 @click.argument("line", type=int)
 def debug_breakpoint(session_id: str, file_path: str, line: int):
-    """Set breakpoint in debug session."""
+    """
+    📍 Set Signal Anchor: Insert a breakpoint into the debug session
+
+    Writes a stable diagnostic anchor at specific file coordinates to 
+    halt the ritual for deep-tissue inspection.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -450,7 +570,12 @@ def debug_breakpoint(session_id: str, file_path: str, line: int):
 @debug_group.command("continue")
 @click.argument("session_id")
 def debug_continue(session_id: str):
-    """Continue execution in debug session."""
+    """
+    ▶️ Re-Engage Ritual: Continue execution in the debug session
+
+    Resumes the diagnostic sequence, allowing the ritual to proceed to 
+    the next anchor or termination signal.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -471,9 +596,14 @@ def debug_continue(session_id: str):
 
 @debug_group.command("step")
 @click.argument("session_id")
-@click.option("--type", type=click.Choice(['step', 'next']), default='step', help="Step type")
+@click.option("--type", type=click.Choice(['step', 'next']), default='step', help="🔬 Step Aesthetic: Choose between 'step' (into) or 'next' (over).")
 def debug_step(session_id: str, step_type: str):
-    """Step through debug session."""
+    """
+    🦶 Granular Inspection: Step through the diagnostic ritual
+
+    Executes a single ritual step, enabling high-fidelity observation 
+    of signal transitions and cognitive state changes.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -496,7 +626,12 @@ def debug_step(session_id: str, step_type: str):
 @click.argument("session_id")
 @click.argument("variable")
 def debug_inspect(session_id: str, variable: str):
-    """Inspect variable in debug session."""
+    """
+    🔬 Deep Telemetry: Inspect variable state in the debug session
+
+    Retrieves the raw data coordinates for a specific ritual variable, 
+    revealing its current state within the diagnostic HUD.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -518,7 +653,12 @@ def debug_inspect(session_id: str, variable: str):
 @debug_group.command("stack")
 @click.argument("session_id")
 def debug_stack(session_id: str):
-    """Get stack trace from debug session."""
+    """
+    📋 Trace Ritual: Get the current stack trace
+
+    Displays the full sequence of nested rituals leading to the active 
+    diagnostic coordinate.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -542,7 +682,12 @@ def debug_stack(session_id: str):
 @debug_group.command("locals")
 @click.argument("session_id")
 def debug_locals(session_id: str):
-    """Get local variables from debug session."""
+    """
+    📦 Local Registry: Show local variables in the active frame
+
+    Displays the current index of local ritual signals and their 
+    assigned coordinates.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -566,7 +711,12 @@ def debug_locals(session_id: str):
 @debug_group.command("quit")
 @click.argument("session_id")
 def debug_quit(session_id: str):
-    """Quit debug session."""
+    """
+    ⏹️ Halt Diagnostic: Terminate the debug session
+
+    Deactivates the diagnostic focal point and releases its associated 
+    ritual sensors.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")
@@ -588,7 +738,12 @@ def debug_quit(session_id: str):
 @debug_group.command("analyze-error")
 @click.argument("error_text")
 def debug_analyze_error(error_text: str):
-    """Analyze error output for debugging insights."""
+    """
+    🔬 Pattern Synthesis: Analyze error telemetry for insights
+
+    Engages the diagnostic intelligence engine to synthesize causes 
+    and remediation rituals for reported error signals.
+    """
     integration = get_global_integration()
     if not integration:
         console.log("[error]Claude-Code-Tools integration not initialized[/error]")

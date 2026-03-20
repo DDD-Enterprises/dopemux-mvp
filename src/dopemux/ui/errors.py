@@ -31,12 +31,9 @@ def custom_excepthook(exc_type: Type[BaseException], exc_value: BaseException, e
             title=f"{Glyphs.ERROR} [gremlin.pink bold]CRITICAL RITUAL FAILURE[/gremlin.pink bold]",
             border_style="error"
         )
-        console.print("
-")
+        console.print("\n")
         console.print(panel)
-        console.print("
-[text.dim][BLOCKER] Core dump initiated. The Daemon requires immediate intervention.[/text.dim]
-")
+        console.print("\n[text.dim][BLOCKER] Core dump initiated. The Daemon requires immediate intervention.[/text.dim]\n")
     except Exception:
         # Fallback to standard error
         sys.__excepthook__(exc_type, exc_value, exc_traceback)

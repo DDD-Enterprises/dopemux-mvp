@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 from typing import Optional, Dict, Any
 from rich.panel import Panel
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeRemainingColumn
 from rich.text import Text
 from rich.table import Table
