@@ -46,9 +46,14 @@
     "ui-dashboard",
     "config",
     "dashboard",
-    "repo-truth-pack"
+    "repo-truth-pack",
+    "llm-plans",
+    "dopemux_voice_branding_bundle",
+    "proof_bundle"
   ],
   "allowed_root_files": [
+    "SPECIMEN_LEDGER_REGEN_BIG.csv",
+    ".implementer_state.json",
     "CLAUDE_AUTOMATION_INSTRUCTIONS.md",
     "LICENSE",
     "API_SURFACE.json",

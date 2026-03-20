@@ -456,7 +456,7 @@
         "anchor": "L99",
         "excerpt_hash": "3b4ecb647829b28dd60e4e7f21f9f21212cca8fe226cc7c55bb8de4dec068254",
         "excerpt_snippet": "- If boundary enforcement fails: stop immediately.",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_0a6a3a6903b4"
@@ -1051,7 +1051,7 @@
         "anchor": "L98",
         "excerpt_hash": "7de7f3ca2c7e9128e58ed0ce4350265ac3f5ec0729023d1aceffeb3f86b47e78",
         "excerpt_snippet": "- If presence or headings fail: stop immediately.",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_166a653d161a"
@@ -1969,7 +1969,7 @@
         "anchor": "L64",
         "excerpt_hash": "f655b0e63436e5520ebe56fd510de72a6d680611ff74356c115831bcd3780c0f",
         "excerpt_snippet": "Hard rule: TaskX must not be described as owning any of these responsibilities:",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_2c4a7d0a656c"
@@ -4281,7 +4281,7 @@
         "anchor": "L100",
         "excerpt_hash": "5d57d7e5042384b5d0f6078bda3befa7af397fa6b92f00e8db6c91f9c4f3cccc",
         "excerpt_snippet": "- If link integrity fails: stop immediately.",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_66c1ff64fe0f"
@@ -4383,7 +4383,7 @@
         "anchor": "L29",
         "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
         "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_69ba5b68d442"
@@ -9313,7 +9313,7 @@
         "anchor": "L29",
         "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
         "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_dd8299b36bb0"
@@ -9874,7 +9874,7 @@
         "anchor": "L82",
         "excerpt_hash": "f53fee3df267fe2e8dcea6af2c6924f0d4b16b408cf60fa5ba0f5efc8b09a74d",
         "excerpt_snippet": "- Encourage `path:line-range` pointers when available (warning if absent, not hard fail in v0)",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_e7551bcb30c0"
@@ -9925,7 +9925,7 @@
         "anchor": "L69",
         "excerpt_hash": "af169988bfc1ba7b3cfb51180453f848b5f68f1a5b99f74bebdda59b9d7cef06",
         "excerpt_snippet": "Implementation: grep/rg for \"TaskX\" in docs and fail if \"TaskX\" appears within N lines of any forbidden ownership verbs:",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_e7d18a1b58d3"
