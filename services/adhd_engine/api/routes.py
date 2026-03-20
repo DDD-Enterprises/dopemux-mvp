@@ -43,7 +43,7 @@ try:
         raise ImportError("prometheus_client missing metrics API")
 except ImportError:
     PROMETHEUS_AVAILABLE = False
-    logger.warning("Prometheus client not available - metrics disabled")
+    logger.warning(brand_log("Prometheus client not available - metrics disabled"))
 
 from . import schemas
 from ..core.models import ADHDProfile, EnergyLevel, AttentionState
@@ -71,6 +71,14 @@ from .schemas import (
 )
 from ..auth import verify_api_key
 from .websocket import manager, send_heartbeat
+from services.shared.brand_voice import (
+    StatusChip,
+    brand_error,
+    brand_log,
+    brand_payload,
+    tone_name,
+    voice_header,
+)
 
 # Import time for caching
 import time
@@ -85,6 +93,21 @@ ACTIVITY_CACHE_TTL = 60  # 1 minute - activity updates are time-sensitive
 
 # Cache instance (lazy async initialization)
 _cache_instance = None
+
+
+def _brand_meta(chip: StatusChip = StatusChip.LIVE, surface: str = "ui") -> Dict[str, str]:
+    return {
+        "status_chip": chip.label,
+        "tone": tone_name(chip),
+        "voice_header": voice_header(surface),
+    }
+
+
+def _brand_error_payload(message: str, chip: StatusChip = StatusChip.BLOCKER) -> Dict[str, str]:
+    return {
+        "error": brand_error(message, chip=chip),
+        **_brand_meta(chip),
+    }
 
 
 class _InMemoryCache:
@@ -121,7 +144,7 @@ async def get_cache_instance():
         try:
             _cache_instance = await get_cache()
         except Exception as exc:
-            logger.warning("Cache unavailable (%s); using in-memory fallback", exc)
+            logger.warning(brand_log("Cache unavailable (%s); using in-memory fallback", exc))
             _cache_instance = _InMemoryCache()
     return _cache_instance
 
@@ -180,7 +203,7 @@ if PROMETHEUS_AVAILABLE:
     )
     except ValueError as e:
         # Metrics already registered (common in testing)
-        logger.warning(f"Prometheus metrics already registered: {e}")
+        logger.warning(brand_log(f"Prometheus metrics already registered: {e}"))
         PROMETHEUS_AVAILABLE = False
 
 else:
@@ -211,7 +234,7 @@ async def _invalidate_user_caches(user_id: str):
         # For simplicity, we'll skip complex invalidation for now
         logger.debug(f"Cache invalidation requested for user {user_id}")
     except Exception as e:
-        logger.warning(f"Cache invalidation failed for user {user_id}: {e}")
+        logger.warning(brand_log(f"Cache invalidation failed for user {user_id}: {e}"))
 
 
 # Dependency injection for engine instance
@@ -230,7 +253,7 @@ def get_engine():
                 import main as engine_main  # type: ignore
     
     if not engine_main.engine:
-        raise HTTPException(status_code=503, detail="Engine not initialized")
+        raise HTTPException(status_code=503, detail=brand_error("Engine not initialized."))
     return engine_main.engine
 
 
@@ -254,7 +277,7 @@ async def assess_task(
         )
 
         if "error" in result:
-            raise HTTPException(status_code=500, detail=result["error"])
+            raise HTTPException(status_code=500, detail=brand_error(str(result["error"])))
 
         # Add ML predictions if predictive engine is available (IP-005 Days 11-12)
         if engine.predictive_engine:
@@ -267,7 +290,7 @@ async def assess_task(
                     ml_used=energy_conf >= engine.predictive_engine.min_prediction_confidence
                 )
             except Exception as e:
-                logger.warning(f"ML energy prediction failed: {e}")
+                logger.warning(brand_log(f"ML energy prediction failed: {e}", chip=StatusChip.BLOCKER))
 
             try:
                 attention_pred, attention_conf, attention_exp = await engine.predictive_engine.predict_attention_state(request.user_id)
@@ -278,13 +301,14 @@ async def assess_task(
                     ml_used=attention_conf >= engine.predictive_engine.min_prediction_confidence
                 )
             except Exception as e:
-                logger.warning(f"ML attention prediction failed: {e}")
+                logger.warning(brand_log(f"ML attention prediction failed: {e}", chip=StatusChip.BLOCKER))
 
+        result.update(_brand_meta(StatusChip.LOGGED))
         return result
 
     except Exception as e:
-        logger.error(f"Task assessment failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Task assessment failed: {e}", chip=StatusChip.BLOCKER))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/energy-level/{user_id}", response_model=schemas.EnergyLevelResponse)
@@ -340,20 +364,21 @@ async def get_energy_level(user_id: str, engine = Depends(get_engine), api_key: 
                     ML_PREDICTION_CONFIDENCE.labels(endpoint="energy").observe(confidence)
 
             except Exception as e:
-                logger.warning(f"ML energy prediction failed: {e}")
+                logger.warning(brand_log(f"ML energy prediction failed: {e}", chip=StatusChip.BLOCKER))
 
         response = schemas.EnergyLevelResponse(
             energy_level=energy.value if hasattr(energy, 'value') else str(energy),
             confidence=0.8,  # Based on activity data freshness
             last_updated=datetime.now(timezone.utc),
-            ml_prediction=ml_prediction
+            ml_prediction=ml_prediction,
+            **_brand_meta(StatusChip.LIVE),
         )
 
         # Cache the response
         try:
             await cache.set(cache_key, response.model_dump_json(), ttl=ENERGY_CACHE_TTL)
         except Exception as e:
-            logger.warning(f"Cache set failed for energy level: {e}")
+            logger.warning(brand_log(f"Cache set failed for energy level: {e}", chip=StatusChip.BLOCKER))
 
         # Record timing
         if API_REQUEST_DURATION:
@@ -365,8 +390,8 @@ async def get_energy_level(user_id: str, engine = Depends(get_engine), api_key: 
         status = "error"
         if API_REQUESTS_TOTAL:
             API_REQUESTS_TOTAL.labels(endpoint="energy", method="GET", status=status).inc()
-        logger.error(f"Energy level retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Energy level retrieval failed: {e}", chip=StatusChip.BLOCKER))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/attention-state/{user_id}", response_model=schemas.AttentionStateResponse)
@@ -403,26 +428,27 @@ async def get_attention_state(user_id: str, engine = Depends(get_engine), api_ke
                     ml_used=confidence >= engine.predictive_engine.min_prediction_confidence
                 )
             except Exception as e:
-                logger.warning(f"ML attention prediction failed: {e}")
+                logger.warning(brand_log(f"ML attention prediction failed: {e}", chip=StatusChip.BLOCKER))
 
         response = schemas.AttentionStateResponse(
             attention_state=attention.value if hasattr(attention, 'value') else str(attention),
             indicators=indicators,
             last_updated=datetime.now(timezone.utc),
-            ml_prediction=ml_prediction
+            ml_prediction=ml_prediction,
+            **_brand_meta(StatusChip.LIVE),
         )
 
         # Cache the response
         try:
             await cache.set(cache_key, response.model_dump_json(), ttl=ATTENTION_CACHE_TTL)
         except Exception as e:
-            logger.warning(f"Cache set failed for attention state: {e}")
+            logger.warning(brand_log(f"Cache set failed for attention state: {e}", chip=StatusChip.BLOCKER))
 
         return response
 
     except Exception as e:
-        logger.error(f"Attention state retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Attention state retrieval failed: {e}", chip=StatusChip.BLOCKER))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.post("/recommend-break", response_model=schemas.BreakRecommendationResponse)
@@ -458,12 +484,15 @@ async def recommend_break(
             if profile.break_activity_suggestions:
                 suggestions.extend(["Deep breathing", "Eye rest (20-20-20 rule)"])
 
-            message = f"Time for a break after {request.work_duration:.0f} minutes of focused work!"
+            message = f"Time for a break after {request.work_duration:.0f} minutes of focused work."
         else:
             reason = "still_within_optimal"
             urgency = "when_convenient"
             suggestions = []
-            message = f"You're doing great! {profile.optimal_task_duration - int(request.work_duration)} minutes until recommended break."
+            message = (
+                f"You are still inside the safe window. "
+                f"{profile.optimal_task_duration - int(request.work_duration)} minutes until the next recommended break."
+            )
 
         # Get ML prediction if available
         ml_prediction = None
@@ -479,7 +508,7 @@ async def recommend_break(
                     ml_used=confidence >= engine.predictive_engine.min_prediction_confidence
                 )
             except Exception as e:
-                logger.warning(f"ML break prediction failed: {e}")
+                logger.warning(brand_log(f"ML break prediction failed: {e}", chip=StatusChip.BLOCKER))
 
         # Get Zen break strategy recommendation
         zen_break_recommendation = None
@@ -505,7 +534,7 @@ async def recommend_break(
                     ml_used=False  # Zen is AI, not ML
                 )
         except Exception as e:
-            logger.warning(f"Zen break recommendation failed: {e}")
+            logger.warning(brand_log(f"Zen break recommendation failed: {e}", chip=StatusChip.BLOCKER))
 
         response = schemas.BreakRecommendationResponse(
             break_needed=break_needed,
@@ -514,7 +543,8 @@ async def recommend_break(
             urgency=urgency,
             message=message,
             ml_prediction=ml_prediction,
-            zen_break_recommendation=zen_break_recommendation
+            zen_break_recommendation=zen_break_recommendation,
+            **_brand_meta(StatusChip.AFTERCARE if break_needed else StatusChip.LOGGED),
         )
 
         # Cache the response
@@ -522,13 +552,13 @@ async def recommend_break(
             cache_key = _make_cache_key("break", request.user_id, work_duration=int(request.work_duration))
             await cache.set(cache_key, response.model_dump_json(), ttl=BREAK_CACHE_TTL)
         except Exception as e:
-            logger.warning(f"Cache set failed for break recommendation: {e}")
+            logger.warning(brand_log(f"Cache set failed for break recommendation: {e}", chip=StatusChip.BLOCKER))
 
         return response
 
     except Exception as e:
-        logger.error(f"Break recommendation failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Break recommendation failed: {e}", chip=StatusChip.BLOCKER))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.post("/break-recommendation", response_model=schemas.BreakRecommendationResponse)
@@ -583,12 +613,13 @@ async def create_or_update_profile(
         return schemas.UserProfileResponse(
             user_id=request.user_id,
             profile_created=True,
-            message="Profile updated successfully"
+            message="Profile updated successfully.",
+            **_brand_meta(StatusChip.LOGGED),
         )
 
     except Exception as e:
-        logger.error(f"Profile update failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Profile update failed: {e}", chip=StatusChip.BLOCKER))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.put("/activity/{user_id}", response_model=schemas.ActivityUpdateResponse)
@@ -659,27 +690,28 @@ async def update_activity(
                     ml_used=confidence >= engine.predictive_engine.min_prediction_confidence
                 )
             except Exception as e:
-                logger.warning(f"ML activity impact prediction failed: {e}")
+                logger.warning(brand_log(f"ML activity impact prediction failed: {e}", chip=StatusChip.BLOCKER))
 
         response = schemas.ActivityUpdateResponse(
             recorded=True,
             energy_updated=energy_updated,
             attention_updated=attention_updated,
-            message="Activity logged successfully",
-            ml_prediction=ml_prediction
+            message="Activity logged successfully.",
+            ml_prediction=ml_prediction,
+            **_brand_meta(StatusChip.LOGGED),
         )
 
         # Cache the response (short TTL for activity updates)
         try:
             await cache.set(cache_key, response.model_dump_json(), ttl=ACTIVITY_CACHE_TTL)
         except Exception as e:
-            logger.warning(f"Cache set failed for activity update: {e}")
+            logger.warning(brand_log(f"Cache set failed for activity update: {e}", chip=StatusChip.BLOCKER))
 
         return response
 
     except Exception as e:
-        logger.error(f"Activity update failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Activity update failed: {e}", chip=StatusChip.BLOCKER))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 # Dashboard-specific endpoints (Day 2)
@@ -708,16 +740,22 @@ async def get_cognitive_load(
             category = "moderate"
             status = "normal"
         
-        return {
+        payload = {
             "cognitive_load": round(cognitive_load, 2),
             "category": category,
             "threshold_status": status,
             "focus_duration_minutes": await engine._get_session_duration(user_id),
-            "last_updated": datetime.now(timezone.utc).isoformat()
+            "last_updated": datetime.now(timezone.utc).isoformat(),
         }
+        payload.update(_brand_meta(StatusChip.LIVE if category in {"low", "optimal", "moderate"} else StatusChip.BLOCKER))
+        payload["summary"] = brand_payload(
+            f"Cognitive load is {category} at {payload['cognitive_load']}.",
+            chip=StatusChip.LIVE if category in {"low", "optimal", "moderate"} else StatusChip.BLOCKER,
+        )["message"]
+        return payload
     except Exception as e:
-        logger.error(f"Cognitive load retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Cognitive load retrieval failed: {e}", chip=StatusChip.BLOCKER))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/flow-state/{user_id}")
@@ -741,8 +779,8 @@ async def get_flow_state(
             "last_updated": datetime.now(timezone.utc).isoformat()
         }
     except Exception as e:
-        logger.error(f"Flow state retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Flow state retrieval failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/session-time/{user_id}")
@@ -766,8 +804,8 @@ async def get_session_time(
             "last_updated": datetime.now(timezone.utc).isoformat()
         }
     except Exception as e:
-        logger.error(f"Session time retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Session time retrieval failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/breaks/{user_id}")
@@ -795,8 +833,8 @@ async def get_breaks_info(
             "last_updated": datetime.now(timezone.utc).isoformat()
         }
     except Exception as e:
-        logger.error(f"Breaks info retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Breaks info retrieval failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/tasks/{user_id}", response_model=schemas.TasksResponse)
@@ -819,8 +857,8 @@ async def get_tasks_for_user(
             "timestamp": datetime.now(timezone.utc)
         }
     except Exception as e:
-        logger.error(f"Tasks metrics retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Tasks metrics retrieval failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/tasks", response_model=schemas.TasksResponse)
@@ -847,7 +885,7 @@ async def get_user_patterns(
     """
     try:
         if not engine.predictive_engine:
-            raise HTTPException(status_code=503, detail="ML predictions not enabled")
+            raise HTTPException(status_code=503, detail=brand_error("ML predictions not enabled."))
 
         patterns = await engine.predictive_engine.pattern_learner.load_patterns_from_conport(user_id)
 
@@ -869,8 +907,8 @@ async def get_user_patterns(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Pattern retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Pattern retrieval failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.post("/code-complexity", response_model=schemas.ComplexityResponse)
@@ -888,7 +926,7 @@ async def get_code_complexity(
                 data = resp.json()
                 return {"complexity": data["complexity"], "level": data["level"]}
     except Exception as e:
-        logger.warning(f"Serena query failed: {e}")
+        logger.warning(brand_log(f"Serena query failed: {e}"))
         return {"complexity": 0.5, "level": "unknown"}  # Fallback
 
 @router.post("/predict", response_model=schemas.PredictionResponse)
@@ -903,7 +941,7 @@ async def predict(
     """
     try:
         if not engine.predictive_engine:
-            raise HTTPException(status_code=503, detail="ML predictions not enabled")
+            raise HTTPException(status_code=503, detail=brand_error("ML predictions not enabled."))
 
         pred_engine = engine.predictive_engine
 
@@ -924,7 +962,10 @@ async def predict(
             )
             predicted_value = f"{minutes_until_break} minutes"
         else:
-            raise HTTPException(status_code=400, detail=f"Invalid prediction_type: {request.prediction_type}")
+            raise HTTPException(
+                status_code=400,
+                detail=brand_error(f"Invalid prediction_type: {request.prediction_type}"),
+            )
 
         return schemas.PredictionResponse(
             prediction_type=request.prediction_type,
@@ -938,8 +979,8 @@ async def predict(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Prediction failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Prediction failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 # Statusline endpoint for Claude Code statusline integration
@@ -986,7 +1027,7 @@ async def get_statusline_data(
         }
 
     except Exception as e:
-        logger.error(f"Statusline data retrieval failed: {e}")
+        logger.error(brand_log(f"Statusline data retrieval failed: {e}"))
         # Return safe defaults
         return {
             "energy_level": "MEDIUM",
@@ -1061,7 +1102,7 @@ async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
             "data": initial_state
         })
         
-        logger.info(f"📡 WebSocket stream started for user: {user_id}")
+        logger.info(brand_log(f"📡 WebSocket stream started for user: {user_id}"))
         
         # Keep connection alive with heartbeat and handle client messages
         last_heartbeat = datetime.utcnow()
@@ -1084,10 +1125,10 @@ async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
                 continue
                 
     except WebSocketDisconnect:
-        logger.info(f"🔌 WebSocket disconnected normally: {user_id}")
+        logger.info(brand_log(f"🔌 WebSocket disconnected normally: {user_id}"))
         
     except Exception as e:
-        logger.error(f"❌ WebSocket error for {user_id}: {e}")
+        logger.error(brand_log(f"❌ WebSocket error for {user_id}: {e}"))
         
     finally:
         await manager.disconnect(websocket, user_id)
@@ -1123,7 +1164,7 @@ async def _get_current_state(engine, user_id: str) -> dict:
         }
         
     except Exception as e:
-        logger.error(f"Error getting current state: {e}")
+        logger.error(brand_log(f"Error getting current state: {e}"))
         # Return safe defaults
         return {
             "energy_level": "MEDIUM",
@@ -1161,7 +1202,7 @@ async def _handle_client_command(websocket: WebSocket, user_id: str, command: di
         elif cmd_type == "subscribe":
             # Future: Subscribe to specific metrics
             metrics = command.get("metrics", [])
-            logger.info(f"Subscribe request from {user_id}: {metrics}")
+            logger.info(brand_log(f"Subscribe request from {user_id}: {metrics}"))
             await websocket.send_json({
                 "type": "subscribed",
                 "timestamp": datetime.utcnow().isoformat(),
@@ -1169,10 +1210,10 @@ async def _handle_client_command(websocket: WebSocket, user_id: str, command: di
             })
             
         else:
-            logger.warning(f"Unknown command type: {cmd_type}")
+            logger.warning(brand_log(f"Unknown command type: {cmd_type}"))
             
     except Exception as e:
-        logger.error(f"Error handling command: {e}")
+        logger.error(brand_log(f"Error handling command: {e}"))
 
 
 # ============================================================================
@@ -1228,7 +1269,7 @@ async def override_prediction(
             try:
                 await cache.delete(cache_key)
             except Exception as e:
-                logger.warning(f"Failed to invalidate break cache: {e}")
+                logger.warning(brand_log(f"Failed to invalidate break cache: {e}"))
 
         # Record feedback for ML model improvement
         feedback_recorded = False
@@ -1250,7 +1291,7 @@ async def override_prediction(
                 )
                 feedback_recorded = True
             except Exception as e:
-                logger.warning(f"Failed to record feedback: {e}")
+                logger.warning(brand_log(f"Failed to record feedback: {e}"))
 
         return schemas.OverrideResponse(
             override_id=override_id,
@@ -1263,8 +1304,8 @@ async def override_prediction(
         )
 
     except Exception as e:
-        logger.error(f"Prediction override failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Prediction override failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.post("/customization-settings/{user_id}", response_model=schemas.CustomizationSettings)
@@ -1308,13 +1349,13 @@ async def update_customization_settings(
                 }
             )
         except Exception as e:
-            logger.warning(f"Failed to persist settings: {e}")
+            logger.warning(brand_log(f"Failed to persist settings: {e}"))
 
         return settings
 
     except Exception as e:
-        logger.error(f"Customization update failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Customization update failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/customization-settings/{user_id}", response_model=schemas.CustomizationSettings)
@@ -1339,8 +1380,8 @@ async def get_customization_settings(
         )
 
     except Exception as e:
-        logger.error(f"Get customization settings failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Get customization settings failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 # ============================================================================
@@ -1370,8 +1411,8 @@ async def submit_prediction_feedback(
         return {"message": "Feedback recorded successfully"}
 
     except Exception as e:
-        logger.error(f"Feedback submission failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Feedback submission failed: {e}", chip=StatusChip.BLOCKER))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/trust-metrics/{user_id}", response_model=TrustMetricsResponse)
@@ -1382,14 +1423,14 @@ async def get_trust_metrics(
     """Get trust metrics for user."""
     try:
         if not engine.trust_service:
-            raise HTTPException(status_code=503, detail="Trust building service not available")
+            raise HTTPException(status_code=503, detail=brand_error("Trust building service not available."))
 
         metrics = await engine.trust_service.get_trust_metrics(user_id)
         return metrics
 
     except Exception as e:
-        logger.error(f"Trust metrics retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Trust metrics retrieval failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.get("/trust-visualization/{user_id}", response_model=TrustVisualizationResponse)
@@ -1401,14 +1442,14 @@ async def get_trust_visualization(
     """Get trust visualization data."""
     try:
         if not engine.trust_service:
-            raise HTTPException(status_code=503, detail="Trust building service not available")
+            raise HTTPException(status_code=503, detail=brand_error("Trust building service not available."))
 
         data = await engine.trust_service.get_visualization_data(user_id, days)
         return data
 
     except Exception as e:
-        logger.error(f"Trust visualization retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Trust visualization retrieval failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 @router.post("/automation-level/{user_id}")
@@ -1431,11 +1472,11 @@ async def adjust_automation_level(
         if success:
             return {"message": f"Automation level adjusted to {request.automation_level}"}
         else:
-            raise HTTPException(status_code=400, detail="Invalid automation level")
+            raise HTTPException(status_code=400, detail=brand_error("Invalid automation level."))
 
     except Exception as e:
-        logger.error(f"Automation level adjustment failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(brand_log(f"Automation level adjustment failed: {e}"))
+        raise HTTPException(status_code=500, detail=brand_error(str(e)))
 
 
 # ============================================================================
@@ -1481,7 +1522,7 @@ async def get_adhd_state(
         }
         
     except Exception as e:
-        logger.error(f"ADHD state retrieval failed: {e}")
+        logger.error(brand_log(f"ADHD state retrieval failed: {e}"))
         return {
             "energy": "medium",
             "attention": "focused",
@@ -1528,7 +1569,7 @@ async def log_user_intent(
                     }
                 )
             except Exception as e:
-                logger.warning(f"Failed to persist intent: {e}")
+                logger.warning(brand_log(f"Failed to persist intent: {e}"))
         
         # Store in memory for session pattern detection
         if not hasattr(engine, '_intent_buffer'):
@@ -1579,7 +1620,7 @@ async def log_user_intent(
         }
         
     except Exception as e:
-        logger.error(f"Intent logging failed: {e}")
+        logger.error(brand_log(f"Intent logging failed: {e}"))
         return {"recorded": False, "error": str(e)}
 
 
@@ -1616,7 +1657,7 @@ async def save_context_for_hook(
                 )
                 context_saved = True
             except Exception as e:
-                logger.warning(f"Context preserver save failed: {e}")
+                logger.warning(brand_log(f"Context preserver save failed: {e}"))
         
         # Save breadcrumb via WorkingMemorySupport if available
         if hasattr(engine, 'working_memory_support') and engine.working_memory_support:
@@ -1627,7 +1668,7 @@ async def save_context_for_hook(
                 )
                 breadcrumb_saved = True
             except Exception as e:
-                logger.warning(f"Breadcrumb save failed: {e}")
+                logger.warning(brand_log(f"Breadcrumb save failed: {e}"))
         
         # Fallback: Store in local state
         if not context_saved and not breadcrumb_saved:
@@ -1661,7 +1702,7 @@ async def save_context_for_hook(
         }
         
     except Exception as e:
-        logger.error(f"Context save failed: {e}")
+        logger.error(brand_log(f"Context save failed: {e}"))
         return {"saved": False, "error": str(e)}
 
 
@@ -1699,7 +1740,7 @@ async def get_unfinished_work(
                         "last_updated": entry.get("updated_at")
                     })
             except Exception as e:
-                logger.warning(f"Failed to get ConPort progress: {e}")
+                logger.warning(brand_log(f"Failed to get ConPort progress: {e}"))
         
         # Get from UntrackedWorkDetector if available
         if hasattr(engine, 'untracked_detector') and engine.untracked_detector:
@@ -1713,7 +1754,7 @@ async def get_unfinished_work(
                         "confidence": item.get("confidence")
                     })
             except Exception as e:
-                logger.warning(f"Failed to get untracked work: {e}")
+                logger.warning(brand_log(f"Failed to get untracked work: {e}"))
         
         # Deduplicate by id
         seen_ids = set()
@@ -1730,7 +1771,7 @@ async def get_unfinished_work(
         }
         
     except Exception as e:
-        logger.error(f"Unfinished work retrieval failed: {e}")
+        logger.error(brand_log(f"Unfinished work retrieval failed: {e}"))
         return {"count": 0, "items": [], "error": str(e)}
 
 
@@ -1807,7 +1848,7 @@ async def record_progress_from_hook(
         }
         
     except Exception as e:
-        logger.error(f"Progress recording failed: {e}")
+        logger.error(brand_log(f"Progress recording failed: {e}"))
         return {"recorded": False, "error": str(e)}
 
 
@@ -1835,7 +1876,7 @@ async def get_external_activity_metrics(
         }
         
     except Exception as e:
-        logger.error(f"External activity metrics failed: {e}")
+        logger.error(brand_log(f"External activity metrics failed: {e}"))
         return {"available": False, "error": str(e)}
 
 
@@ -1899,5 +1940,5 @@ async def log_git_event(
         }
         
     except Exception as e:
-        logger.error(f"Git event logging failed: {e}")
+        logger.error(brand_log(f"Git event logging failed: {e}"))
         return {"recorded": False, "error": str(e)}

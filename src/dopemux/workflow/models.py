@@ -90,6 +90,9 @@ class WorkflowCheckpoint:
     summary: str = ""
     artifact_path: Optional[str] = None
     verification_commands: List[str] = field(default_factory=list)
+    status_chip: str = "LIVE"
+    tone: str = "live"
+    voice_header: str = ""
     emitted_at: str = field(default_factory=utc_now_iso)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -102,6 +105,9 @@ class WorkflowCheckpoint:
             "summary": self.summary,
             "artifact_path": self.artifact_path,
             "verification_commands": list(self.verification_commands),
+            "status_chip": self.status_chip,
+            "tone": self.tone,
+            "voice_header": self.voice_header,
             "emitted_at": self.emitted_at,
             "metadata": self.metadata,
         }
@@ -116,6 +122,9 @@ class WorkflowCheckpoint:
             summary=str(payload.get("summary", "")),
             artifact_path=payload.get("artifact_path"),
             verification_commands=[str(cmd) for cmd in payload.get("verification_commands", [])],
+            status_chip=str(payload.get("status_chip", "LIVE")),
+            tone=str(payload.get("tone", "live")),
+            voice_header=str(payload.get("voice_header", "")),
             emitted_at=str(payload.get("emitted_at", utc_now_iso())),
             metadata=dict(payload.get("metadata", {})),
         )

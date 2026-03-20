@@ -10,6 +10,7 @@ from typing import Callable, Dict, Iterable, List, Optional
 
 from ..instance_manager import InstanceManager, detect_instances_sync
 from ..tmux.controller import TmuxController
+from ..voice import inject_voice_header
 from .models import (
     WorkflowCheckpoint,
     WorkflowCheckpointStatus,
@@ -74,9 +75,10 @@ class WorkflowOrchestrator:
                 "DOPEMUX_WORKFLOW_MODE": "executor",
             }
         )
+        prompt = inject_voice_header(task.summary, surface="agent")
         command = (
             f"dopemux start --role workflow-executor --no-recovery "
-            f"--prompt {shlex.quote(task.summary)}"
+            f"--prompt {shlex.quote(prompt)}"
         )
         session_name = self.tmux_controller.get_active_session_name() or "dopemux"
         return WorkerLaunchSpec(
