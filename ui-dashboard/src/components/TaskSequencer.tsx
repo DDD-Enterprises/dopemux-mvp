@@ -23,6 +23,7 @@ import {
   Timer,
   Flame,
   Swords,
+  Clock,
 } from 'lucide-react';
 import { brandTokens } from '../theme';
 
@@ -154,6 +155,18 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return brandTokens.colors.serumMint;
   };
 
+  const totalRemainingMinutes = useMemo(() => {
+    const incompleteTasks = tasks.filter(t => t.status !== 'completed');
+    const otherTasksTotal = incompleteTasks
+      .filter(t => t.id !== currentTaskId)
+      .reduce((acc, t) => acc + t.estimatedMinutes, 0);
+
+    const currentTaskEstimate = currentTask?.estimatedMinutes || 0;
+    const elapsedMinutes = taskTimer / 60;
+
+    return Math.ceil(otherTasksTotal + Math.max(0, currentTaskEstimate - elapsedMinutes));
+  }, [tasks, currentTaskId, currentTask, taskTimer]);
+
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
@@ -161,13 +174,30 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
+        <Box
+          role="status"
+          aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
+          sx={{
+            ml: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            color: brandTokens.colors.saintGold,
+          }}
+        >
+          <Clock size={16} aria-hidden="true" />
+          <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+            {totalRemainingMinutes}m
+          </Typography>
+        </Box>
         <Tooltip title="Real-time task synchronization active" arrow>
           <Chip
             size="small"
             label="[LIVE]"
             className="dopemux-chip"
             tabIndex={0}
-            sx={{ ml: 'auto', borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
+            aria-label="Real-time task synchronization active"
+            sx={{ ml: 1, borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
           />
         </Tooltip>
       </Box>
@@ -265,6 +295,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       ) : (
         <Box
           role="status"
+          aria-label="Ritual Complete: All tasks finished"
           sx={{
             mb: 3, p: 2.5, borderRadius: 3, textAlign: 'center',
             border: `1px solid ${brandTokens.colors.serumMint}`,
