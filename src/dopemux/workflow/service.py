@@ -213,6 +213,14 @@ class WorkflowKernel:
         title = prompt.strip().splitlines()[0] if prompt.strip() else "Internal Workflow Brief"
         content = "\n".join(
             [
+                "---",
+                f"id: {self._slugify(title)}",
+                f"title: {title}",
+                "type: brief",
+                "prelude: Automatic local workflow brief.",
+                "---",
+                "# ━━━◆ Ø ◆━━━",
+                "",
                 f"# {title}",
                 "",
                 "## Summary",
