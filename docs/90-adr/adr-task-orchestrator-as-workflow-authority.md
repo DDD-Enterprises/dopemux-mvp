@@ -242,9 +242,9 @@ Specifically:
 
 This decision is necessary because workflow authority is the easiest responsibility to accidentally duplicate.
 
-Leantime has PM entity truth but weak workflow discipline.  
-dopecon-bridge has coordination value but unsafe local workflow-adjacent behavior.  
-ConPort has contextual truth but not execution-law semantics.  
+Leantime has PM entity truth but weak workflow discipline.
+dopecon-bridge has coordination value but unsafe local workflow-adjacent behavior.
+ConPort has contextual truth but not execution-law semantics.
 dope-memory has chronicle truth but not transition authority.
 
 Task Orchestrator is the only subsystem that cleanly fits workflow governance.

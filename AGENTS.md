@@ -9,5 +9,5 @@
 - `queue-drain`: Autonomous queue merging.
 - `self-check`: Integrity and environment verification.
 **Mandate**: Transition from FIFO to WSEMT (Weighted Shortest Expected Merge Time) prioritization. Evidence before mutation.
-**Contract**: [OPERATOR_CONTRACT.md](docs/skills/pr-merge-specialist/OPERATOR_CONTRACT.md)
+**Contract**: [OPERATOR_CONTRACT.md](docs/archive/unclassified-top-level/skills/pr-merge-specialist/operator-contract.md)
 **Skills**: [skills/pr-merge-specialist/SKILL.md](templates/skills/pr-merge-specialist/SKILL.md)

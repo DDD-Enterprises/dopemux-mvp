@@ -549,8 +549,8 @@
  .../extraction/run-v4-from-dopemux-cli.md          |    22 -
  .../DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md |   165 -
  .../DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md   |    55 -
- docs/03-reference/governance/AUTHORITY_MAP.md      |   175 -
- docs/03-reference/governance/CONFLICT_LEDGER.md    |   120 -
+ docs/03-reference/governance/authority-map-2.md      |   175 -
+ docs/03-reference/governance/conflict-ledger-2.md    |   120 -
  .../history/sourceFiles/.QUARANTINED.md            |    14 -
  ...DED__commit_347e523__DEVELOPMENT_SESSION (1).md |   232 -
  ...XPANDED__commit_347e523__DEVELOPMENT_SESSION.md |   232 -
@@ -1918,25 +1918,25 @@
  .../04-explanation/history/sourceFiles/test_doc.md |    16 -
  .../sourceFiles/tmp-doc-ingest__RAGsystem (1).md   |   358 -
  .../sourceFiles/tmp-doc-ingest__RAGsystem.md       |   358 -
- docs/05-audit-reports/DETERMINISM_COMMANDS.md      |    80 -
- docs/05-audit-reports/FINAL_PHASE0_COMMANDS.md     |   149 -
- docs/05-audit-reports/INTEGRATION_TEST_RESULTS.md  |   154 -
+ docs/05-audit-reports/determinism-commands-2.md      |    80 -
+ docs/05-audit-reports/final-phase0-commands-2.md     |   149 -
+ docs/05-audit-reports/integration-test-results-2.md  |   154 -
  .../PHASE0_DETERMINISM_IMPLEMENTATION.md           |   150 -
- docs/05-audit-reports/PHASE0_DETERMINISM_REPORT.md |    30 -
+ docs/05-audit-reports/phase0-determinism-report-2.md |    30 -
  .../PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md       |    30 -
- docs/05-audit-reports/PHASE0_FINAL_SUMMARY.md      |   114 -
- docs/05-audit-reports/PHASE0_GATE_SUMMARY.md       |   112 -
+ docs/05-audit-reports/phase0-final-summary-2.md      |   114 -
+ docs/05-audit-reports/phase0-gate-summary-2.md       |   112 -
  .../PHASE0_SERIALIZATION_REPORT.md                 |    24 -
  .../PHASE0_SERIALIZATION_SUMMARY.md                |    93 -
- docs/05-audit-reports/PHASE0_WORKUNIT_MAP.md       |    63 -
- docs/05-audit-reports/PLAN.md                      |    29 -
+ docs/05-audit-reports/phase0-workunit-map-2.md       |    63 -
+ docs/05-audit-reports/plan-3.md                      |    29 -
  docs/05-audit-reports/PLAN.txt                     |    98 -
- docs/05-audit-reports/PROCESSPOOL_FINAL_SUMMARY.md |   114 -
+ docs/05-audit-reports/processpool-final-summary-2.md |   114 -
  .../PROCESSPOOL_IMPLEMENTATION_SUMMARY.md          |   150 -
  .../PROCESSPOOL_STABILITY_REPORT.md                |   178 -
  .../TP-AUDIT-DOCS-FIXPACK-0001_PROOF.md            |   159 -
  .../TP-EXTR-001C-PROCESSPOOL-STABILIZE-0002.json   |   249 -
- docs/05-audit-reports/VERIFICATION_SUMMARY.md      |   175 -
+ docs/05-audit-reports/verification-summary-2.md      |   175 -
  docs/AUDIT_INITIAL_FINDINGS.md                     |    76 -
  docs/COVERAGE_POLICY.md                            |    46 -
  docs/DOPETASK_KERNEL_INTEGRATION.md                |    82 -

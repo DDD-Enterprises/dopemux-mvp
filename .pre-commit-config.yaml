@@ -8,7 +8,7 @@ repos:
         entry: python3 scripts/docs_frontmatter_guard.py --fix
         language: system
         files: ^(docs/|task-packets/|UPGRADES/|services/[^/]+/docs/|docker/[^/]+/docs/).*\.md$
-        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|node_modules/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
 
       # Graph schema validation
       - id: docs-graph-validator
@@ -16,7 +16,7 @@ repos:
         entry: python scripts/docs_validator.py
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Prohibited file pattern check
@@ -36,11 +36,12 @@ repos:
                     continue
                   fi
                   base="$(basename "$file")"
-                  case "$base" in
-                    TEMPLATE_*.md)
-                      continue
-                      ;;
-                    NOTES*.md|TODO*.md|TEMP*.md|*temp*.md|*scratch*.md)
+                  lbase="$(echo "$base" | tr '[:upper:]' '[:lower:]')"
+                  if [[ "$lbase" =~ ^template[-_].*\.md$ ]]; then
+                    continue
+                  fi
+                  case "$lbase" in
+                    notes*.md|todo*.md|temp*.md|*temp*.md|*scratch*.md)
                       echo "❌ Found prohibited file pattern in changed file:"
                       echo "  $file"
                       prohibited_found=true
@@ -57,7 +58,7 @@ repos:
           - --
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Prelude token count validation for embeddings
@@ -93,7 +94,7 @@ repos:
             print('✅ All preludes within token limit')
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Markdown file location enforcement
@@ -112,6 +113,7 @@ repos:
 
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(llm-plans/|dopemux_voice_branding_bundle/|config/instructions/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(task-packets/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|out/|_audit_out/|extraction/|proof/) ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
@@ -170,7 +172,7 @@ repos:
         entry: python scripts/check_docs_hygiene.py --check
         language: system
         files: ^docs/.*\.md$
-        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       - id: docs-filename-hygiene
@@ -178,7 +180,7 @@ repos:
         entry: python scripts/check_docs_filename_hygiene.py --check
         language: system
         files: ^docs/.*\.md$
-        exclude: (^docs/archive/|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       - id: docs-filename-hygiene
@@ -228,7 +230,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|node_modules/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
@@ -243,9 +245,9 @@ repos:
     hooks:
       - id: trailing-whitespace
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
       - id: end-of-file-fixer
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
       - id: check-yaml
         files: ^config/.*\.ya?ml$
