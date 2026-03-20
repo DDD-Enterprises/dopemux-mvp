@@ -34,6 +34,7 @@ from .github_api import (
     thread_counters,
 )
 from .merge import decide_merge_action, serialize_check_payload
+from .conflict import conflict_recovery_state
 from .policy import (
     PolicyError,
     load_effective_policy,
@@ -200,8 +201,46 @@ def findings_from_pr_state(
     active_threads: int,
     validation_status: ValidationStatus,
     local_validation_required: bool,
+    policy: Dict[str, Any],
 ) -> List[Finding]:
     findings: List[Finding] = []
+    if str(pr.state).upper() == "MERGED":
+        return findings
+    if has_conflicts(pr.mergeable, pr.merge_state_status):
+        recovery_state = conflict_recovery_state(pr, policy)
+        if recovery_state == "semantic_conflict_blocked":
+            findings.append(
+                Finding(
+                    kind=FindingSeverity.BLOCKER,
+                    finding_type="semantic_conflict_blocked",
+                    message="Conflict automation is blocked by the PR's semantic-conflict label.",
+                    details={"labels": pr.labels},
+                    source="local_rebase_simulation",
+                )
+            )
+        elif recovery_state == "manual_conflict_required":
+            findings.append(
+                Finding(
+                    kind=FindingSeverity.BLOCKER,
+                    finding_type="manual_conflict_required",
+                    message="Dirty/conflicted PR is blocked until it opts into mechanical recovery.",
+                    details={"labels": pr.labels},
+                    source="local_rebase_simulation",
+                )
+            )
+        else:
+            findings.append(
+                Finding(
+                    kind=FindingSeverity.BLOCKER,
+                    finding_type=BlockerType.CONFLICT_DETECTED.value,
+                    message="Dirty/conflicted PR is eligible for automated mechanical recovery.",
+                    details={
+                        "labels": pr.labels,
+                        "merge_state_status": pr.merge_state_status,
+                    },
+                    source="local_rebase_simulation",
+                )
+            )
     if pr.is_draft:
         findings.append(
             Finding(
@@ -242,7 +281,8 @@ def findings_from_pr_state(
                 source="github_protection_review",
             )
         )
-    if check_payload.get("review_decision") == "CHANGES_REQUESTED":
+    approval_required = bool(check_payload.get("approval_required", False))
+    if approval_required and check_payload.get("review_decision") == "CHANGES_REQUESTED":
         findings.append(
             Finding(
                 kind=FindingSeverity.BLOCKER,
@@ -251,12 +291,21 @@ def findings_from_pr_state(
                 source="github_protection_review",
             )
         )
-    elif check_payload.get("review_decision") != "APPROVED":
+    elif approval_required and check_payload.get("review_decision") != "APPROVED":
         findings.append(
             Finding(
                 kind=FindingSeverity.BLOCKER,
                 finding_type=BlockerType.APPROVAL_MISSING.value,
                 message="Required approval is missing.",
+                source="github_protection_review",
+            )
+        )
+    elif check_payload.get("review_decision") == "CHANGES_REQUESTED":
+        findings.append(
+            Finding(
+                kind=FindingSeverity.WARNING,
+                finding_type=BlockerType.CHANGES_REQUESTED.value,
+                message="Review state is CHANGES_REQUESTED, but branch protection does not currently require approvals.",
                 source="github_protection_review",
             )
         )
@@ -447,6 +496,7 @@ def build_plan_result(
                 "require_local_validation_for_merge_ready", True
             )
         ),
+        policy=policy,
     )
     fingerprint = plan_fingerprint(
         pr, policy_fp=policy_fingerprint(policy), review_state=review_state
@@ -456,12 +506,28 @@ def build_plan_result(
         pr=pr, findings=findings, validation_report=validation_report
     )
     explain = explain_findings(findings, previous=previous_result)
-    lifecycle_state = lifecycle_for_findings(
-        findings, validation_status=validation_report.status
+    if str(pr.state).upper() == "MERGED":
+        pr_lifecycle_state = PRState.MERGED
+    elif pr.auto_merge_enabled and not any(
+        finding.finding_type
+        not in {"validation_not_executed", BlockerType.REQUIRED_CHECK_PENDING.value}
+        for finding in findings
+        if _severity_value(finding.kind) == FindingSeverity.BLOCKER.value
+    ):
+        pr_lifecycle_state = PRState.QUEUED_FOR_MERGE
+    else:
+        pr_lifecycle_state = lifecycle_for_findings(
+            findings, validation_status=validation_report.status
+        )
+    lifecycle_state = _state_value(pr_lifecycle_state)
+    operator_state = (
+        "queued_for_merge"
+        if pr_lifecycle_state == PRState.QUEUED_FOR_MERGE
+        else ""
     )
     return PRResult(
         run_id=active_run_id,
-        pr_state=replace(pr, lifecycle_state=lifecycle_state),
+        pr_state=replace(pr, lifecycle_state=pr_lifecycle_state),
         lifecycle_state=lifecycle_state,
         apply_actions=[
             f"rebase {pr.head_ref} onto {pr.base_ref}",
@@ -479,7 +545,10 @@ def build_plan_result(
         validation_report=validation_report,
         thread_dispositions=planned_threads,
         fingerprint=fingerprint,
-        artifacts={"explain": json.dumps(explain)},
+        artifacts={
+            "explain": json.dumps(explain),
+            "operator_state": operator_state,
+        },
     )
 
 

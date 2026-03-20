@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from rich.panel import Panel
+from dopemux.ui.progress import branded_progress
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
@@ -218,7 +219,7 @@ class DocumentProcessor:
         atomic_units = []
 
         # ADHD-friendly progress tracking
-        with Progress(
+        with branded_progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
@@ -360,7 +361,7 @@ class DocumentProcessor:
             batch_size = self.config.batch_size
             total_batches = (len(atomic_units) + batch_size - 1) // batch_size
 
-            with Progress(
+            with branded_progress(
                 SpinnerColumn(),
                 TextColumn("[progress.description]{task.description}"),
                 BarColumn(),

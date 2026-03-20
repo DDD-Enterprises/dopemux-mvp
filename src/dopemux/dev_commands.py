@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 @click.command("status")
 def dev_status():
-    """🔍 Show development mode status"""
+    """🔍 Synchronize Telemetry: Show development mode status"""
     status = DevMode.get_status()
 
 
@@ -61,7 +61,7 @@ def dev_status():
 
 @click.command("enable")
 def dev_enable():
-    """✅ Enable development mode"""
+    """⚡ Engage Hot Reload: Enable development mode"""
     import subprocess
 
     # Add to shell profile
@@ -83,7 +83,7 @@ def dev_enable():
 
 @click.command("paths")
 def dev_paths():
-    """📁 Show detected development paths"""
+    """📁 Map Local Artifacts: Show detected development paths"""
     components = DevMode.get_all_dev_components()
 
     if not components:

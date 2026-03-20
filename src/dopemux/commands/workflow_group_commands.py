@@ -13,6 +13,8 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..console import console
@@ -22,7 +24,13 @@ from ..workflow.orchestration import WorkflowOrchestrator
 
 @click.group("workflow")
 def workflow_group():
-    """Workflow planning commands."""
+    """
+    📜 Mission Planning: Orchestrate ritual workflows and ideas
+
+    Manages the lifecycle of cockpit missions, from initial pattern synthesis 
+    to high-fidelity execution. Synchronizes across active workflows, ideas, 
+    and epics to ensure cognitive alignment with mission objectives.
+    """
     pass
 
 
@@ -44,11 +52,11 @@ def _print_workflow_summary(state) -> None:
 
 @workflow_group.command("init")
 @click.argument("prompt", required=False)
-@click.option("--mode", type=click.Choice(["manager", "executor"]), default="manager", show_default=True)
-@click.option("--max-iterations", type=int, default=0, show_default=True)
-@click.option("--max-minutes", type=int, default=0, show_default=True)
-@click.option("--completion-token", default=DEFAULT_COMPLETION_TOKEN, show_default=True)
-@click.option("--force-new", is_flag=True, help="Always create a new workflow even when an active one exists.")
+@click.option("--mode", type=click.Choice(["manager", "executor"]), default="manager", show_default=True, help="🧠 Cognitive Mode: Select manager for planning or executor for materialization.")
+@click.option("--max-iterations", type=int, default=0, show_default=True, help="🚀 Scaling Threshold: Maximum ritual iterations (0 for infinite).")
+@click.option("--max-minutes", type=int, default=0, show_default=True, help="⏳ Temporal Limit: Maximum duration in minutes for the ritual.")
+@click.option("--completion-token", default=DEFAULT_COMPLETION_TOKEN, show_default=True, help="🏁 Signal Completion: Token identifier for ritual termination.")
+@click.option("--force-new", is_flag=True, help="⚡ Force Ignition: Always materialize a new workflow, bypassing existing sessions.")
 def workflow_init(
     prompt: Optional[str],
     mode: str,
@@ -57,7 +65,12 @@ def workflow_init(
     completion_token: str,
     force_new: bool,
 ):
-    """Create or resume a local workflow run for the current workspace."""
+    """
+    🚀 Ignite Mission: Create or resume a local ritual workflow
+
+    Initializes a new cockpit mission or synchronizes with an existing 
+    temporal coordinate to continue an active workflow.
+    """
     kernel = WorkflowKernel(Path.cwd())
     state = kernel.init_workflow(
         prompt=prompt or "",
@@ -71,10 +84,15 @@ def workflow_init(
 
 
 @workflow_group.command("status")
-@click.option("--workflow-id", default=None, help="Explicit workflow id to inspect.")
-@click.option("--json-output", "json_output", is_flag=True, help="Emit machine-readable JSON.")
+@click.option("--workflow-id", default=None, help="🆔 Ritual Session: Explicit identifier for the mission to query.")
+@click.option("--json-output", "json_output", is_flag=True, help="📊 Emit JSON: Output mission telemetry as raw machine-readable data.")
 def workflow_status(workflow_id: Optional[str], json_output: bool):
-    """Show the active workflow bound to the current workspace or instance."""
+    """
+    📊 Mission HUD: Show active workflow status and telemetry
+
+    Retrieves current operational coordinates for the mission bound to 
+    the active workspace, detailing phase progression and gate status.
+    """
     kernel = WorkflowKernel(Path.cwd())
     state = kernel.resolve(workflow_id)
     if not state:
@@ -100,9 +118,14 @@ def workflow_status(workflow_id: Optional[str], json_output: bool):
 
 
 @workflow_group.command("resume")
-@click.option("--workflow-id", default=None, help="Explicit workflow id to rebind.")
+@click.option("--workflow-id", default=None, help="🆔 Ritual Session: Explicit identifier for the mission to rebind.")
 def workflow_resume(workflow_id: Optional[str]):
-    """Rebind the current workspace or instance to an existing workflow."""
+    """
+    ▶️ Re-Engage Mission: Rebind workspace to an existing workflow
+
+    Synchronizes the active cockpit coordinates with a previously 
+    established mission session.
+    """
     kernel = WorkflowKernel(Path.cwd())
     state = kernel.resume(workflow_id)
     if not state:
@@ -111,9 +134,14 @@ def workflow_resume(workflow_id: Optional[str]):
 
 
 @workflow_group.command("cancel")
-@click.option("--workflow-id", default=None, help="Explicit workflow id to cancel.")
+@click.option("--workflow-id", default=None, help="🆔 Ritual Session: Explicit identifier for the mission to cancel.")
 def workflow_cancel(workflow_id: Optional[str]):
-    """Deactivate the current workflow without deleting its artifacts."""
+    """
+    ⏹️ Halt Mission: Deactivate current workflow sequence
+
+    Suspends the active ritual sequence without purging mission artifacts 
+    from the ritual ledger.
+    """
     kernel = WorkflowKernel(Path.cwd())
     state = kernel.cancel(workflow_id)
     if not state:
@@ -122,10 +150,15 @@ def workflow_cancel(workflow_id: Optional[str]):
 
 
 @workflow_group.command("inspect")
-@click.option("--workflow-id", default=None, help="Explicit workflow id to inspect.")
-@click.option("--json-output", "json_output", is_flag=True, help="Emit full structured state.")
+@click.option("--workflow-id", default=None, help="🆔 Ritual Session: Explicit identifier for the mission to audit.")
+@click.option("--json-output", "json_output", is_flag=True, help="📊 Deep Telemetry: Emit full structured mission state.")
 def workflow_inspect(workflow_id: Optional[str], json_output: bool):
-    """Show workflow details, checkpoints, and executor launch preview."""
+    """
+    🔬 Deep Audit: Show mission details, checkpoints, and launch preview
+
+    Performs a high-fidelity audit of the active mission, detailing 
+    temporal checkpoints and materializing a preview of the next ritual step.
+    """
     kernel = WorkflowKernel(Path.cwd())
     state = kernel.resolve(workflow_id)
     if not state:
@@ -183,13 +216,25 @@ def workflow_inspect(workflow_id: Optional[str], json_output: bool):
 
 @workflow_group.group("ideas")
 def workflow_ideas_group():
-    """Workflow idea management."""
+    """
+    💡 Cognitive Seeds: Manage mission ideas and ritual patterns
+
+    Orchestrates the synthesis and cataloging of cockpit ideas. These 
+    seeds can be promoted to active missions once ritual feasibility is 
+    established.
+    """
     pass
 
 
 @workflow_ideas_group.command("add", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
 @click.argument("tokens", nargs=-1, type=click.UNPROCESSED)
 def workflow_ideas_add(tokens: Sequence[str]):
+    """
+    ✨ Seed Idea: Capture a new cockpit observation or pattern
+
+    Writes a new idea signal to the mission ledger, detailing its 
+    title, description, and ritual source.
+    """
     title: Optional[str] = None
     description: Optional[str] = None
     source = "manual"
@@ -242,6 +287,12 @@ def workflow_ideas_promote(
     idea_id: str,
     tokens: Sequence[str],
 ):
+    """
+    🚀 Promote Signal: Elevate an idea to an active mission
+
+    Engages the promotion engine to transform a cognitive seed into 
+    a high-fidelity ritual mission, synchronizing with PM authorities.
+    """
     sync_leantime = True
     priority: Optional[str] = None
     business_value: Optional[str] = None
@@ -294,16 +345,27 @@ def workflow_ideas_promote(
 
 @workflow_group.group("epics")
 def workflow_epics_group():
-    """Workflow epic management."""
+    """
+    📈 Grand Rituals: Manage cockpit epics and long-term missions
+
+    Orchestrates high-level mission groups (epics). Synchronizes 
+    across multiple ritual missions to track long-term cockpit objectives.
+    """
     pass
 
 
 @workflow_epics_group.command("list")
-@click.option("--status", default=None, help="Filter by status")
-@click.option("--priority", default=None, help="Filter by priority")
-@click.option("--tag", default=None, help="Filter by single tag")
-@click.option("--limit", type=int, default=20, show_default=True)
+@click.option("--status", default=None, help="📊 Ritual State: Filter epics by operational status.")
+@click.option("--priority", default=None, help="🎯 Mission Priority: Filter epics by calibration level.")
+@click.option("--tag", default=None, help="🔬 Signal Filter: Filter epics by specific ritual tag.")
+@click.option("--limit", type=int, default=20, show_default=True, help="📊 Telemetry Limit: Maximum epics to render in the HUD.")
 def workflow_epics_list(status: Optional[str], priority: Optional[str], tag: Optional[str], limit: int):
+    """
+    📋 Catalog Epics: List all active grand rituals and missions
+
+    Displays the full index of cockpit epics, detailing their 
+    operational state and mission alignment.
+    """
     params = {"limit": limit}
     if status:
         params["status"] = status

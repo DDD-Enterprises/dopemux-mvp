@@ -34,9 +34,8 @@ except ImportError:  # pragma: no cover
     RoutingConfig = None
 
 from rich.live import Live
-from rich.panel import Panel
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 from rich.text import Text
 
 from . import __version__
@@ -52,6 +51,8 @@ from .ui.theme import (
     styled_panel,
     styled_table,
 )
+from .ui.prompts import dopemux_prompt, dopemux_confirm
+from .ui.voice import VoiceEngine
 
 # Load environment variables from .env file
 load_dotenv()
@@ -455,7 +456,7 @@ def _invoke_switch_role_script(role_key: str) -> None:
 
 
 def show_version(ctx, param, value):
-    """Show version and exit."""
+    """📜 Version Coordinates: Show version and exit."""
     if not value or ctx.resilient_parsing:
         return
     click.echo(f"Dopemux {__version__}")
@@ -497,31 +498,31 @@ def _start_minimal_session(
 @click.option(
     "--version", is_flag=True, expose_value=False, is_eager=True, callback=show_version
 )
-@click.option("--config", "-c", help="Configuration file path")
-@click.option("--verbose", "-v", is_flag=True, help="Verbose output")
+@click.option("--config", "-c", help="🔬 Path to the ritual configuration file (dopemux.toml). Defaults to searching project root or ~/.config/dopemux/.")
+@click.option("--verbose", "-v", is_flag=True, help="📊 Increase verbosity of the ritual logs. Enables deep telemetry for troubleshooting the flight-deck.")
 @click.option(
     "--debug-log",
     type=click.Path(path_type=Path, dir_okay=False),
-    help="Write debug logs to file",
+    help="📜 Specify a direct telemetry line to a file for capturing all internal daemon signals.",
 )
 @click.option(
     "--render-mode",
     type=click.Choice(["rich", "plain", "compact", "audit"]),
     default=None,
-    help="Output rendering mode",
+    help="🎭 Select the HUD aesthetic. 'rich' for high-fidelity interactive feedback, 'plain' for CI/CD compatibility, 'compact' for minimal screen footprint, or 'audit' for security review.",
 )
 @click.option(
     "--compact",
     is_flag=True,
-    help="Compact output (shortcut for --render-mode compact)",
+    help="⚡ Toggle compact HUD rendering. Minimize the visual footprint of the cockpit.",
 )
 @click.option(
-    "--plain", is_flag=True, help="No styling (shortcut for --render-mode plain)"
+    "--plain", is_flag=True, help="🧪 Disable ritual styling. Renders output as raw text for ingestion by other daemons."
 )
 @click.option(
-    "--json", "json_output", is_flag=True, help="Emit JSON output (implies --plain)"
+    "--json", "json_output", is_flag=True, help="📊 Emit ritual state as JSON. Ideal for flight-data analysis or external HUD integration. Implies --plain."
 )
-@click.option("--no-hints", is_flag=True, help="Suppress startup tips")
+@click.option("--no-hints", is_flag=True, help="💧 Silence the flight-deck startup tips. For experienced pilots who have mastered the ritual.")
 @click.pass_context
 def cli(
     ctx,
@@ -535,11 +536,24 @@ def cli(
     no_hints: bool,
 ):
     """
-    🧠 Dopemux - ADHD-optimized development platform
+    🧠 DØPEMÜX - Ritual Daemon of Focused Development
 
-    Provides context preservation, attention monitoring, and task decomposition
-    for enhanced productivity in software development.
+    DØPEMÜX is a flight-deck for neurodivergent developers, engineered to automate
+    context preservation, orchestrate attention monitoring, and decompose complex
+    objectives into ritualistic tasks. This command-line interface acts as your 
+    primary ritual circle, synchronizing daemon states across your workspace,
+    tmux sessions, and mobile devices to ensure zero context decay.
+
+    Invoking this daemon establishes a cockpit environment where focus is a service
+    and distraction is mitigated by architectural design.
     """
+    from .ui.errors import install_error_handlers
+    from .ui.logging import setup_branded_logging
+    import logging
+    
+    install_error_handlers()
+    setup_branded_logging(level=logging.DEBUG if verbose else logging.INFO)
+    
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose
     ctx.obj["config_manager"] = ConfigManager(config_path=config)
@@ -555,6 +569,19 @@ def cli(
     elif plain:
         set_render_mode(RenderMode.PLAIN)
     # else: auto-detect from env (default)
+
+    # Brand banner (interactive terminals only)
+    import atexit
+
+    _voice = VoiceEngine()
+    if not json_output and get_render_mode() == RenderMode.RICH and sys.stderr.isatty():
+        console.print(f"[mint]{Glyphs.BRAND_MARK}[/mint]", justify="center")
+
+        def _aftercare():
+            if get_render_mode() == RenderMode.RICH:
+                console.print(f"\n[violet]{_voice.get_aftercare()}[/violet]")
+
+        atexit.register(_aftercare)
 
     # Startup hints (stderr, only for interactive terminals)
     if not no_hints and not json_output and sys.stderr.isatty():
@@ -593,11 +620,11 @@ def cli(
     type=click.Path(path_type=Path, file_okay=False, dir_okay=True),
     required=False,
 )
-@click.option("--profile", "-p", help="Profile to use (auto-detects if not specified)")
+@click.option("--profile", "-p", help="Select a specific ritual profile (e.g., python, node, rust-mcp) to define the flight-deck capabilities.")
 @click.option(
-    "--force", "-f", is_flag=True, help="Overwrite existing .dopemux/ directory"
+    "--force", "-f", is_flag=True, help="⚡ Overwrite existing .dopemux/ configurations. Useful for hard-resetting the cockpit state."
 )
-@click.option("--template", "-t", help="Claude configuration template")
+@click.option("--template", "-t", help="🔬 Select a Claude configuration template to align the ritual daemon's cognitive patterns.")
 @click.pass_context
 def init(
     ctx,
@@ -607,17 +634,23 @@ def init(
     template: Optional[str],
 ):
     """
-    🚀 Initialize dopemux in current project
+    🚀 Synchronize Flight-Deck: Initialize DØPEMÜX Rituals
 
-    Creates .dopemux/ directory with profile-based configuration.
-    Auto-detects project type and suggests appropriate profile.
+    Scaffolds the .dopemux/ ritual chamber within the target directory. This command
+    provisions the local environment with profile-driven configurations, 
+    auto-detecting project architecture to suggest the most effective ritual circle.
+
+    Effects:
+    - Generates .dopemux/ directory for state and instance persistence.
+    - Provisions .claude/ workspace configuration for deep-linked automation.
+    - Installs git hooks to automate ConPort wiring across worktrees.
 
     \b
     Examples:
-        dopemux init                    # Auto-detect and prompt
-        dopemux init -p python-ml       # Use specific profile
-        dopemux init --force            # Reinitialize existing project
-        dopemux init ../project-2       # Initialize specific directory
+        dopemux init                    # Auto-detect project type and launch setup wizard
+        dopemux init -p python-ml       # Force use of the Python Machine Learning ritual
+        dopemux init --force            # Reconstruct the ritual chamber (overwrites existing)
+        dopemux init ../project-2       # Initialize a distant project coordinate
     """
     config_manager = ctx.obj["config_manager"]
 
@@ -686,14 +719,16 @@ def init(
 
 
 @cli.command()
-@click.option("--instance", "-i", help="Instance id (feature branch name)")
-@click.option("--project", "-p", help="Project root (defaults to CWD)")
+@click.option("--instance", "-i", help="The specific instance identifier (e.g., A, B, C) or feature branch name to target for the uplink.")
+@click.option("--project", "-p", help="The project root coordinate where the ConPort configuration should be wired.")
 def wire_conport(instance: Optional[str], project: Optional[str]):
     """
-    Wire project-level ConPort MCP config for the current worktree.
+    ⚡ Synchronize Uplink: Wire ConPort MCP Terminal
 
-    Writes .claude/claude_config.json with a `conport` stdio server that
-    docker-execs into the correct container (mcp-conport[_<instance>]).
+    Establishes the stdio uplink between the Claude cognitive engine and the
+    ConPort ritual daemon. This command modifies .claude/claude_config.json to 
+    ensure that the cockpit can docker-exec into the correct instance container 
+    (mcp-conport[_<instance>]), bridging the gap between host and containerized state.
     """
     try:
         script = (
@@ -712,95 +747,95 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
 
 
 @cli.command()
-@click.option("--session", "-s", help="Restore specific session ID")
-@click.option("--background", "-b", is_flag=True, help="Launch in background")
-@click.option("--debug", is_flag=True, help="Launch with debug output")
+@click.option("--session", "-s", help="🧪 Restore a specific temporal coordinate (Session ID) to reconstruct past context.")
+@click.option("--background", "-b", is_flag=True, help="⚡ Launch the cockpit in the background as a detached ritual process.")
+@click.option("--debug", is_flag=True, help="🔬 Enable high-fidelity debug output for troubleshooting the ignition sequence.")
 @click.option(
     "--dangerous",
     is_flag=True,
-    help="⚠️  Enable dangerous mode (no approvals, all tools)",
+    help="⚠️  UNRESTRICTED ACCESS: Disables all tool-use approval rituals. USE WITH EXTREME CAUTION.",
 )
 @click.option(
     "--dangerously-skip-permissions",
     is_flag=True,
-    help="⚠️  Skip all permission checks (same as --dangerous)",
+    help="⚠️  Bypass all permission gates. Identical to --dangerous.",
 )
 @click.option(
     "--no-mcp",
     is_flag=True,
-    help="Skip starting MCP servers (not recommended for ADHD experience)",
+    help="💧 Disable MCP server synchronization. Reduces cockpit capabilities (not recommended).",
 )
 @click.option(
     "--no-recovery",
     is_flag=True,
-    help="Skip orphan worktree recovery menu and continue in current location",
+    help="⚡ Skip the orphan worktree recovery ritual and continue at current coordinates.",
 )
 @click.option(
     "--litellm",
     "use_litellm",
     is_flag=True,
-    help="Route Claude Code traffic through LiteLLM proxy",
+    help="🧠 Route all cognitive traffic through the LiteLLM proxy for enhanced routing control.",
 )
 @click.option(
     "--alt-routing",
     "use_alt_routing",
     is_flag=True,
-    help="🚀 Automatic alternative provider routing (OpenRouter, XAI, Minimax) - starts LiteLLM automatically",
+    help="🚀 Engage automatic alternative provider routing (OpenRouter, xAI, Minimax).",
 )
 @click.option(
     "--claude-router/--no-claude-router",
     "use_claude_router",
     default=False,  # Changed to False - OAuth-first design (no routing needed)
-    help="Start Claude Code Router per instance (requires global `ccr`)",
+    help="⚡ Synchronize with the Claude Code Router (CCR) for instance-local routing.",
 )
 @click.option(
     "--role",
     "-r",
-    help="Run Claude with a specific role/persona (e.g. quickfix, act, plan, research, all, orchestrator).",
+    help="🎭 Assume a specific ritual persona (e.g., quickfix, plan, research, orchestrator) to tune cognitive output.",
 )
 @click.option(
     "--dry-run",
     is_flag=True,
-    help="Preview role/profile effects without launching Claude Code.",
+    help="📊 Preview the ritual sequence and profile effects without committing to ignition.",
 )
 @click.option(
     "--grok",
     "use_grok",
     is_flag=True,
-    help="🎯 Route ALL requests to xAI Grok Code Fast 1 (requires XAI_API_KEY)",
+    help="🎯 Direct all cognitive requests to xAI Grok Code Fast 1.",
 )
 @click.option(
     "--codex",
     "use_codex",
     is_flag=True,
-    help="🎯 Route ALL requests to OpenAI GPT-5 Codex via OpenRouter (requires OPENROUTER_API_KEY)",
+    help="🎯 Direct all cognitive requests to OpenAI GPT-5 Codex via OpenRouter.",
 )
 @click.option(
     "--altp",
     "use_altp",
     is_flag=True,
-    help="🎯 Tier-matched routing: opus→GPT-5.2-Codex, sonnet→GPT-5-Mini, haiku→Grok Code Fast 1",
+    help="🎯 Engage tier-matched routing (Opus → Codex, Sonnet → GPT-5-Mini, Haiku → Grok).",
 )
 @click.option(
     "--no-routing-repair",
     is_flag=True,
-    help="Disable automatic routing repair loop (health check only)",
+    help="🔬 Disable automatic routing health checks and repair sequences.",
 )
 @click.option(
     "--routing-repair-max",
     type=int,
     default=3,
-    help="Maximum number of repair attempts (default: 3)",
+    help="⚡ Maximum number of repair ritual attempts before abandoning the uplink.",
 )
 @click.option(
     "--routing-repair-no-sync-keys",
     is_flag=True,
-    help="Do not attempt API key syncing during repair (default: no sync)",
+    help="💧 Skip API key synchronization during the routing repair ritual.",
 )
 @click.option(
     "--routing-fallback-subscription",
     is_flag=True,
-    help="Fall back to subscription mode if routing repair fails (opt-in)",
+    help="🔄 Fall back to direct Anthropic subscription if routing repair fails.",
 )
 @click.pass_context
 def start(
@@ -827,15 +862,23 @@ def start(
     **legacy_kwargs,
 ):
     """
-    🚀 Start Claude Code with ADHD-optimized configuration
+    ⚡ Ignition: Launch the DØPEMÜX Cockpit
 
-    Launches Claude Code with custom MCP servers, restores previous context,
-    and activates attention monitoring for the current project.
+    Initiates the primary ritual sequence, launching the Claude Code cognitive 
+    engine within an ADHD-optimized cockpit. This command synchronizes active 
+    MCP servers, restores temporal context from previous sessions, and engages 
+    the attention monitor daemon to shield your focus.
 
-    Multi-Instance Support:
-        Automatically detects running instances and creates isolated worktrees
-        for parallel ADHD-optimized development workflows.
+    Flight-Deck Capabilities:
+    - Context Reconstruction: Automatically resumes where the last ritual ended.
+    - Instance Multiplexing: Detects active cockpits and provisions isolated 
+      worktrees for parallel feature execution.
+    - Routing Logic: Manages uplinks through LiteLLM, Claude Code Router (CCR), 
+      and alternative providers (Grok, Codex).
     """
+    from .ui.splash import boot_sequence
+    boot_sequence()
+    
     # Track original flag values for subscription mode warnings
     original_grok = use_grok
     original_codex = use_codex
@@ -1861,11 +1904,11 @@ def start(
                     f"\n[info]💡 Multi-instance mode: Creating new worktree for instance {instance_id}[/info]"
                 )
 
-                if click.confirm(
+                if dopemux_confirm(
                     f"Create new worktree on port {port_base}?", default=True
                 ):
                     suggested_branch = f"feature/instance-{instance_id}"
-                    branch_name = click.prompt(
+                    branch_name = dopemux_prompt(
                         "Branch name", default=suggested_branch, show_default=True
                     )
 
@@ -2206,7 +2249,7 @@ def start(
             )
             console.logger.info(f"[text.dim]   Logs: {router_info.log_path}[/text.dim]")
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -2419,15 +2462,16 @@ def start(
 
 
 @cli.command()
-@click.option("--message", "-m", help="Save message/note")
-@click.option("--force", "-f", is_flag=True, help="Force save even if no changes")
+@click.option("--message", "-m", help="📜 Signal Note: Attach a descriptive message to the saved temporal coordinate.")
+@click.option("--force", "-f", is_flag=True, help="⚡ Force Extraction: Overwrite safety interlocks and capture state even if no changes are detected.")
 @click.pass_context
 def save(ctx, message: Optional[str], force: bool):
     """
-    💾 Save current development context
+    💾 Archive Context: Save current development mental model
 
-    Captures open files, cursor positions, mental model, and recent decisions
-    for seamless restoration later.
+    Captures the active state of the flight-deck, including open artifacts, 
+    cursor coordinates, and cognitive decisions. Stores this snapshot in 
+    the ritual ledger for future temporal restoration.
     """
     project_path = Path.cwd()
 
@@ -2437,7 +2481,7 @@ def save(ctx, message: Optional[str], force: bool):
         )
         sys.exit(1)
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -2457,16 +2501,17 @@ def save(ctx, message: Optional[str], force: bool):
 
 
 @cli.command()
-@click.option("--session", "-s", help="Specific session ID to restore")
+@click.option("--session", "-s", help="🧪 Temporal Coordinate: Specific session ID to restore.")
 @click.option(
-    "--list", "-l", "list_sessions", is_flag=True, help="List available sessions"
+    "--list", "-l", "list_sessions", is_flag=True, help="📋 Catalog Archives: List all available saved sessions."
 )
 @click.pass_context
 def restore(ctx, session: Optional[str], list_sessions: bool):
     """
-    🔄 Restore previous development context
+    🔄 Temporal Restoration: Reconstruct past development mental model
 
-    Restores files, cursor positions, and mental model from a previous session.
+    Restores files, cursor coordinates, and cognitive state from a previously 
+    archived session, synchronizing the cockpit with past coordinates.
     """
     project_path = Path.cwd()
 
@@ -2507,7 +2552,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
             )
         return
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -2540,13 +2585,24 @@ from .commands.personas_commands import personas
 
 @cli.group("native-hooks")
 def native_hooks():
-    """Claude Code internal hook management (deterministic)."""
+    """
+    🔗 Protocol Synchronization: Manage Claude Code internal hooks
+
+    Orchestrates the registration and management of high-fidelity internal 
+    hooks. These rituals ensure that Claude Code activity is seamlessly 
+    synchronized with the DØPEMÜX cockpit telemetry.
+    """
     pass
 
 @native_hooks.command("register")
-@click.option("--global", "is_global", is_flag=True, help="Register hooks globally")
+@click.option("--global", "is_global", is_flag=True, help="🌐 Global Calibration: Register ritual hooks in the global configuration ledger.")
 def native_hooks_register(is_global: bool):
-    """Configure Claude Code to use Dopemux native hooks."""
+    """
+    ⚡ Synchronize Protocol: Register DØPEMÜX hooks in Claude settings
+
+    Automates the injection of ritual hook coordinates into the Claude 
+    Code configuration ledger, enabling real-time signal detection.
+    """
     import json
     from pathlib import Path
     
@@ -2617,36 +2673,13 @@ cli.add_command(native_hooks, "native-hooks")
 @cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
 def pr_merge_command(args):
-    """🚀 PR Merge Specialist - Managed remediation and merging."""
-    import sys
+    """
+    🚀 Policy-Governed Enforcement: PR Merge Specialist
 
-    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
-
-    # Bridge to the specialist's argparse CLI
-    sys.argv = ["dopemux pr-merge"] + list(args)
-    try:
-        pr_merge_main()
-    except SystemExit as e:
-        sys.exit(e.code)
-
-@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
-@click.argument("args", nargs=-1, type=click.UNPROCESSED)
-def pr_merge_command(args):
-    """🚀 PR Merge Specialist - Managed remediation and merging."""
-    import sys
-    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
-    
-    # Bridge to the specialist's argparse CLI
-    sys.argv = ["dopemux pr-merge"] + list(args)
-    try:
-        pr_merge_main()
-    except SystemExit as e:
-        sys.exit(e.code)
-
-@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
-@click.argument("args", nargs=-1, type=click.UNPROCESSED)
-def pr_merge_command(args):
-    """🚀 PR Merge Specialist - Managed remediation and merging."""
+    Engages the PR remediation and queue diagnosis engine. This specialist 
+    synchronizes across active pull requests, performing WSEMT-prioritized 
+    merging and automated conflict resolution.
+    """
     import sys
     from dopemux_pr_merge_specialist.cli import main as pr_merge_main
     
@@ -2659,15 +2692,17 @@ def pr_merge_command(args):
 
 
 @cli.command()
-@click.option("--attention", "-a", is_flag=True, help="Show attention metrics")
-@click.option("--context", "-c", is_flag=True, help="Show context information")
-@click.option("--tasks", "-t", is_flag=True, help="Show task progress")
-@click.option("--mobile", "-m", is_flag=True, help="Show Happy mobile status")
+@click.option("--attention", "-a", is_flag=True, help="🧠 Cognitive Load: Show attention metrics and focus state.")
+@click.option("--context", "-c", is_flag=True, help="🔬 Mental Model: Show active mental model and context density.")
+@click.option("--tasks", "-t", is_flag=True, help="📊 Mission Progress: Show task completion and ritual velocity.")
+@click.option("--mobile", "-m", is_flag=True, help="📱 Satellite Link: Show Happy mobile synchronization status.")
 @click.pass_context
 def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
     """
-    📊 Show current session status and metrics
+    📊 Diagnostic HUD: Show current session status and metrics
 
+    Retrieves high-fidelity telemetry from the active cockpit session, 
+    detailing attention levels, mental model depth, and ritual progression.
     Displays attention state, context information, task progress, and
     ADHD accommodation effectiveness.
     """
@@ -2812,17 +2847,23 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
 @click.option(
     "--cwd",
     type=click.Path(file_okay=False, dir_okay=True),
-    help="Working directory for the test command",
+    help="🔬 Execution Coordinate: Working directory for the test ritual.",
 )
 @click.option(
     "--label",
     default="Test run",
     show_default=True,
-    help="Notification label for this test run",
+    help="🏷️  Ritual Label: Notification identifier for this test run.",
 )
 @click.pass_context
 def run_tests(ctx, command: Sequence[str], cwd: Optional[str], label: str):
-    """Run automated tests and send mobile notifications."""
+    """
+    🧪 Validation Ritual: Run automated tests and send satellite notifications
+
+    Executes the prescribed test sequence while synchronizing cognitive 
+    telemetry. Automatically tracks focus state and transmits ritual results 
+    to the satellite HUD.
+    """
 
     args = list(command) if command else ["pytest"]
     task_label = label or "Test run"
@@ -2851,17 +2892,22 @@ def run_tests(ctx, command: Sequence[str], cwd: Optional[str], label: str):
 @click.option(
     "--cwd",
     type=click.Path(file_okay=False, dir_okay=True),
-    help="Working directory for the build command",
+    help="🔬 Execution Coordinate: Working directory for the build ritual.",
 )
 @click.option(
     "--label",
     default="Build",
     show_default=True,
-    help="Notification label for this build run",
+    help="🏷️  Ritual Label: Notification identifier for this build run.",
 )
 @click.pass_context
 def run_build(ctx, command: Sequence[str], cwd: Optional[str], label: str):
-    """Run a build command and send mobile notifications."""
+    """
+    🏗️  Materialization Ritual: Run a build command and send satellite notifications
+
+    Engages the materialization engine to execute the specified build 
+    ritual while synchronizing cognitive telemetry.
+    """
 
     # Default to npm build if no command provided
     args = list(command) if command else ["npm", "run", "build"]
@@ -2895,25 +2941,20 @@ cli.add_command(kernel)
 
 @cli.command()
 @click.argument("description", required=False)
-@click.option("--duration", "-d", type=int, default=25, help="Task duration in minutes")
+@click.option("--duration", "-d", type=int, default=25, help="⏱️ Ritual Duration: Session length in minutes (default: 25).")
 @click.option(
-    "--priority", "-p", type=click.Choice(["low", "medium", "high"]), default="medium"
+    "--priority", "-p", type=click.Choice(["low", "medium", "high"]), default="medium", help="📊 Mission Priority: Calibration level for the task (default: medium)."
 )
-@click.option("--list", "-l", "list_tasks", is_flag=True, help="List current tasks")
+@click.option("--list", "-l", "list_tasks", is_flag=True, help="📋 Catalog Missions: List current active ritual tasks.")
 @click.pass_context
 def task(
     ctx, description: Optional[str], duration: int, priority: str, list_tasks: bool
 ):
     """
-    📋 DEPRECATED - Use SuperClaude /dx: commands instead
+    📋 Legacy Ritual: Manage tasks (DEPRECATED - Use SuperClaude /dx: commands)
 
-    This command has been replaced by:
-    - /dx:implement - Start ADHD-optimized implementation session
-    - /dx:session start/end/break - Session management
-    - /dx:load - Load tasks from ConPort
-    - /dx:stats - View ADHD metrics and progress
-
-    See: docs/90-adr/ADR-XXXX-path-c-migration.md
+    Note: This command is preserved for backward compatibility but is being 
+    phased out in favor of the SuperClaude cognitive interface.
     """
     console.logger.info("[warning]" + "=" * 60 + "[/warning]")
     console.logger.info("[error]⚠️  DEPRECATED COMMAND[/error]")
@@ -3092,15 +3133,15 @@ cli.add_command(audit)
 # from src/dopemux/commands/extract_commands.py
 @cli.command()
 @click.argument("directory", default=".")
-@click.option("--output", "-o", help="Output directory for analysis results")
+@click.option("--output", "-o", help="📂 Harvest Coordinate: Output directory for high-fidelity analysis results.")
 @click.option(
-    "--embedding-model", "-m", default="voyage-context-3", help="Embedding model to use"
+    "--embedding-model", "-m", default="voyage-context-3", help="🧠 Cognitive Model: Select the embedding model for ritual analysis (default: voyage-context-3)."
 )
-@click.option("--milvus-uri", help="Milvus database URI (file path for Lite mode)")
-@click.option("--max-files", type=int, help="Maximum number of files to process")
-@click.option("--batch-size", type=int, default=10, help="Batch size for processing")
-@click.option("--extensions", help="Comma-separated list of file extensions to include")
-@click.option("--exclude", help="Comma-separated list of patterns to exclude")
+@click.option("--milvus-uri", help="📜 Vector Anchor: Milvus database URI or local coordinate for Lite mode.")
+@click.option("--max-files", type=int, help="📊 Artifact Limit: Maximum number of files to process during the ritual.")
+@click.option("--batch-size", type=int, default=10, help="📊 Signal Density: Artifacts per processing batch.")
+@click.option("--extensions", help="🔬 Signal Filter: Comma-separated list of allowed file extensions.")
+@click.option("--exclude", help="🛡️  Bypass Patterns: Comma-separated list of coordinates to exclude from the ritual.")
 @click.pass_context
 def analyze(
     ctx,
@@ -3114,11 +3155,11 @@ def analyze(
     exclude: Optional[str],
 ):
     """
-    🔍 Analyze codebase with multi-angle document processing
+    🔬 Deep Inspection: Run high-fidelity codebase analysis and embedding
 
-    Processes documents in the specified directory, extracting features,
-    components, subsystems, and research insights with semantic embeddings
-    for intelligent code navigation and ADHD-friendly analysis.
+    Engages the semantic analysis engine to audit the codebase and generate 
+    high-fidelity embeddings. Synchronizes artifacts with the vector 
+    database to enable cross-workspace ritual search.
     """
     from .analysis import DocumentProcessor, ProcessingConfig
 
@@ -3213,13 +3254,13 @@ cli.add_command(servers)
 
 
 @cli.command()
-@click.option("--detailed", "-d", is_flag=True, help="Show detailed health information")
-@click.option("--service", "-s", help="Check specific service only")
-@click.option("--fix", "-f", is_flag=True, help="Attempt to fix unhealthy services")
-@click.option("--cleanup", "-c", is_flag=True, help="Clean up orphaned MCP processes")
-@click.option("--watch", "-w", is_flag=True, help="Continuous monitoring mode")
+@click.option("--detailed", "-d", is_flag=True, help="📊 Deep Telemetry: Show high-fidelity health diagnostics for all subsystems.")
+@click.option("--service", "-s", help="🔬 Target Daemon: Check the health of a specific ritual service.")
+@click.option("--fix", "-f", is_flag=True, help="🔧 Auto-Remediation: Attempt to restore unhealthy services to stable coordinates.")
+@click.option("--cleanup", "-c", is_flag=True, help="🧹 Purge Orphans: Find and terminate abandoned MCP server processes.")
+@click.option("--watch", "-w", is_flag=True, help="👁️  Continuous HUD: Engage persistent monitoring mode.")
 @click.option(
-    "--interval", "-i", type=int, default=30, help="Watch interval in seconds"
+    "--interval", "-i", type=int, default=30, help="⏱️ Scan Frequency: Watch interval in seconds (default: 30)."
 )
 @click.pass_context
 def health(
@@ -3232,12 +3273,11 @@ def health(
     interval: int,
 ):
     """
-    🏥 Comprehensive health check for Dopemux ecosystem
+    🏥 Diagnostic HUD: Comprehensive health check for the DØPEMÜX ecosystem
 
-    Monitors Dopemux core, Claude Code, MCP servers, Docker services,
-    system resources, and ADHD feature effectiveness with ADHD-friendly reporting.
-
-    Use --cleanup to find and kill orphaned MCP server processes.
+    Monitors core daemon health, Claude Code integration, MCP server 
+    stability, Docker service status, and ADHD cockpit effectiveness. 
+    Synchronizes across all subsystems to ensure a stable ritual environment.
     """
     project_path = Path.cwd()
     health_checker = HealthChecker(project_path, console)
@@ -3341,7 +3381,7 @@ def health(
             return
 
     # Single health check
-    with Progress(
+    with branded_progress(
         SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -3395,7 +3435,7 @@ def health(
     if fix:
         console.logger.info("\n[info]🔧 Attempting to fix unhealthy services...[/info]")
 
-        with Progress(
+        with branded_progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
@@ -3769,15 +3809,16 @@ def _start_mcp_servers_with_progress(
 
 
 @cli.command()
-@click.option("--message", "-m", help="Save message/note")
-@click.option("--force", "-f", is_flag=True, help="Force save even if no changes")
+@click.option("--message", "-m", help="📜 Signal Note: Attach a descriptive message to the saved temporal coordinate.")
+@click.option("--force", "-f", is_flag=True, help="⚡ Force Extraction: Overwrite safety interlocks and capture state even if no changes are detected.")
 @click.pass_context
 def save(ctx, message: Optional[str], force: bool):
     """
-    💾 Save current development context
+    💾 Archive Context: Save current development mental model
 
-    Captures open files, cursor positions, mental model, and recent decisions
-    for seamless restoration later.
+    Captures the active state of the flight-deck, including open artifacts, 
+    cursor coordinates, and cognitive decisions. Stores this snapshot in 
+    the ritual ledger for future temporal restoration.
     """
     project_path = Path.cwd()
 
@@ -3787,7 +3828,7 @@ def save(ctx, message: Optional[str], force: bool):
         )
         sys.exit(1)
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -3807,16 +3848,17 @@ def save(ctx, message: Optional[str], force: bool):
 
 
 @cli.command()
-@click.option("--session", "-s", help="Specific session ID to restore")
+@click.option("--session", "-s", help="🧪 Temporal Coordinate: Specific session ID to restore.")
 @click.option(
-    "--list", "-l", "list_sessions", is_flag=True, help="List available sessions"
+    "--list", "-l", "list_sessions", is_flag=True, help="📋 Catalog Archives: List all available saved sessions."
 )
 @click.pass_context
 def restore(ctx, session: Optional[str], list_sessions: bool):
     """
-    🔄 Restore previous development context
+    🔄 Temporal Restoration: Reconstruct past development mental model
 
-    Restores files, cursor positions, and mental model from a previous session.
+    Restores files, cursor coordinates, and cognitive state from a previously 
+    archived session, synchronizing the cockpit with past coordinates.
     """
     project_path = Path.cwd()
 
@@ -3857,7 +3899,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
             )
         return
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -3890,13 +3932,24 @@ from .commands.personas_commands import personas
 
 @cli.group("native-hooks")
 def native_hooks():
-    """Claude Code internal hook management (deterministic)."""
+    """
+    🔗 Protocol Synchronization: Manage Claude Code internal hooks
+
+    Orchestrates the registration and management of high-fidelity internal 
+    hooks. These rituals ensure that Claude Code activity is seamlessly 
+    synchronized with the DØPEMÜX cockpit telemetry.
+    """
     pass
 
 @native_hooks.command("register")
-@click.option("--global", "is_global", is_flag=True, help="Register hooks globally")
+@click.option("--global", "is_global", is_flag=True, help="🌐 Global Calibration: Register ritual hooks in the global configuration ledger.")
 def native_hooks_register(is_global: bool):
-    """Configure Claude Code to use Dopemux native hooks."""
+    """
+    ⚡ Synchronize Protocol: Register DØPEMÜX hooks in Claude settings
+
+    Automates the injection of ritual hook coordinates into the Claude 
+    Code configuration ledger, enabling real-time signal detection.
+    """
     import json
     from pathlib import Path
     
@@ -3963,1378 +4016,6 @@ cli.add_command(instances, "instances")
 cli.add_command(personas, "personas")
 cli.add_command(native_hooks, "native-hooks")
 
-
-@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
-@click.argument("args", nargs=-1, type=click.UNPROCESSED)
-def pr_merge_command(args):
-    """🚀 PR Merge Specialist - Managed remediation and merging."""
-    import sys
-
-    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
-
-    # Bridge to the specialist's argparse CLI
-    sys.argv = ["dopemux pr-merge"] + list(args)
-    try:
-        pr_merge_main()
-    except SystemExit as e:
-        sys.exit(e.code)
-
-@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
-@click.argument("args", nargs=-1, type=click.UNPROCESSED)
-def pr_merge_command(args):
-    """🚀 PR Merge Specialist - Managed remediation and merging."""
-    import sys
-    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
-    
-    # Bridge to the specialist's argparse CLI
-    sys.argv = ["dopemux pr-merge"] + list(args)
-    try:
-        pr_merge_main()
-    except SystemExit as e:
-        sys.exit(e.code)
-
-@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
-@click.argument("args", nargs=-1, type=click.UNPROCESSED)
-def pr_merge_command(args):
-    """🚀 PR Merge Specialist - Managed remediation and merging."""
-    import sys
-    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
-    
-    # Bridge to the specialist's argparse CLI
-    sys.argv = ["dopemux pr-merge"] + list(args)
-    try:
-        pr_merge_main()
-    except SystemExit as e:
-        sys.exit(e.code)
-
-
-@cli.command()
-@click.option("--attention", "-a", is_flag=True, help="Show attention metrics")
-@click.option("--context", "-c", is_flag=True, help="Show context information")
-@click.option("--tasks", "-t", is_flag=True, help="Show task progress")
-@click.option("--mobile", "-m", is_flag=True, help="Show Happy mobile status")
-@click.pass_context
-def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
-    """
-    📊 Show current session status and metrics
-
-    Displays attention state, context information, task progress, and
-    ADHD accommodation effectiveness.
-    """
-    project_path = Path.cwd()
-
-    if not (project_path / ".dopemux").exists():
-        console.logger.info(
-            "[error]No Dopemux project found in current directory[/error]"
-        )
-        sys.exit(1)
-
-    # Show all by default if no specific flags
-    if not any([attention, context, tasks, mobile]):
-        attention = context = tasks = mobile = True
-
-    if attention:
-        monitor = AttentionMonitor(project_path)
-        metrics = monitor.get_current_metrics()
-
-        table = styled_table(
-            "🧠 Attention Metrics",
-            ("Metric", {"style": "mint"}),
-            ("Value", {"style": "mint.soft"}),
-            ("Status", {"style": "gold"}),
-        )
-
-        table.add_row(
-            "Current State",
-            metrics.get("attention_state", "unknown"),
-            _get_attention_emoji(metrics.get("attention_state")),
-        )
-        table.add_row(
-            "Session Duration", f"{metrics.get('session_duration', 0):.1f} min", "⏱️"
-        )
-        table.add_row("Focus Score", f"{metrics.get('focus_score', 0):.1%}", "🎯")
-        table.add_row("Context Switches", str(metrics.get("context_switches", 0)), "🔄")
-
-        console.logger.info(table)
-
-    if context:
-        context_manager = ContextManager(project_path)
-        current_context = context_manager.get_current_context()
-
-        table = styled_table(
-            "📍 Context Information",
-            ("Item", {"style": "mint"}),
-            ("Value", {"style": "mint.soft"}),
-        )
-
-        table.add_row("Current Goal", current_context.get("current_goal", "Not set"))
-        table.add_row("Open Files", str(len(current_context.get("open_files", []))))
-        table.add_row("Last Save", current_context.get("last_save", "Never"))
-        table.add_row("Git Branch", current_context.get("git_branch", "unknown"))
-
-        console.logger.info(table)
-
-    if tasks:
-        decomposer = TaskDecomposer(project_path)
-        progress_info = decomposer.get_progress()
-
-        if progress_info:
-            table = styled_table(
-                "📋 Task Progress",
-                ("Task", {"style": "mint"}),
-                ("Status", {"style": "mint.soft"}),
-                ("Progress", {"style": "gold"}),
-            )
-
-            for task in progress_info.get("tasks", []):
-                status_emoji = (
-                    "✅" if task["completed"] else "🔄" if task["in_progress"] else "⏳"
-                )
-                table.add_row(
-                    task["name"], status_emoji, f"{task.get('progress', 0):.0%}"
-                )
-
-            console.logger.info(table)
-        else:
-            console.logger.info("[warning]No active tasks found[/warning]")
-
-    if mobile:
-        from .mobile.runtime import check_cli_health, list_mobile_panes
-        from .mobile.tmux_utils import TmuxError
-
-        cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
-        mobile_cfg = cfg_manager.get_mobile_config()
-
-        happy_ok = check_cli_health("happy")
-        claude_ok = check_cli_health("claude")
-
-        try:
-            panes = list_mobile_panes()
-            tmux_error = None
-        except TmuxError as exc:
-            panes = []
-            tmux_error = str(exc)
-
-            logger.error(f"Error: {e}")
-        mobile_table = styled_table(
-            "📱 Mobile Status",
-            ("Check", {"style": "mint"}),
-            ("Status", {"style": "mint.soft"}),
-        )
-
-        mobile_table.add_row(
-            "Mobile Enabled", "✅ Enabled" if mobile_cfg.enabled else "❌ Disabled"
-        )
-        mobile_table.add_row(
-            "Happy CLI", "✅ Healthy" if happy_ok else "❌ Unavailable"
-        )
-        mobile_table.add_row(
-            "Claude CLI", "✅ Healthy" if claude_ok else "⚠️ Check setup"
-        )
-
-        if tmux_error:
-            mobile_table.add_row("tmux", f"⚠️ {tmux_error}")
-        else:
-            mobile_table.add_row("Active Sessions", str(len(panes)))
-
-        console.logger.info(mobile_table)
-
-        if not tmux_error and panes:
-            sessions_table = styled_table(
-                "📱 Active Happy Sessions",
-                ("Pane", {"style": "mint"}),
-                ("Window", {"style": "mint.soft"}),
-                ("Path", {"style": "text.dim"}),
-            )
-
-            for pane in panes:
-                sessions_table.add_row(
-                    pane.title or "(unnamed)",
-                    pane.window or "?",
-                    pane.path or "",
-                )
-
-            console.logger.info(sessions_table)
-
-
-@cli.command("run-tests")
-@click.argument("command", nargs=-1)
-@click.option(
-    "--cwd",
-    type=click.Path(file_okay=False, dir_okay=True),
-    help="Working directory for the test command",
-)
-@click.option(
-    "--label",
-    default="Test run",
-    show_default=True,
-    help="Notification label for this test run",
-)
-@click.pass_context
-def run_tests(ctx, command: Sequence[str], cwd: Optional[str], label: str):
-    """Run automated tests and send mobile notifications."""
-
-    args = list(command) if command else ["pytest"]
-    task_label = label or "Test run"
-
-    with mobile_task_notification(
-        ctx,
-        task_label,
-        success_message=f"✅ {task_label} complete",
-        failure_message=f"❌ {task_label} failed",
-    ):
-        result = subprocess.run(args, cwd=cwd, check=False)
-        cmd_display = " ".join(args)
-
-        if result.returncode == 0:
-            console.logger.info(f"[success]✅ Tests passed ({cmd_display})[/success]")
-        else:
-            console.logger.error(f"[error]❌ Tests failed ({cmd_display})[/error]")
-            sys.exit(result.returncode)
-
-    cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
-    update_tmux_mobile_indicator(cfg_manager)
-
-
-@cli.command("run-build")
-@click.argument("command", nargs=-1)
-@click.option(
-    "--cwd",
-    type=click.Path(file_okay=False, dir_okay=True),
-    help="Working directory for the build command",
-)
-@click.option(
-    "--label",
-    default="Build",
-    show_default=True,
-    help="Notification label for this build run",
-)
-@click.pass_context
-def run_build(ctx, command: Sequence[str], cwd: Optional[str], label: str):
-    """Run a build command and send mobile notifications."""
-
-    # Default to npm build if no command provided
-    args = list(command) if command else ["npm", "run", "build"]
-    task_label = label or "Build"
-
-    with mobile_task_notification(
-        ctx,
-        task_label,
-        success_message=f"✅ {task_label} complete",
-        failure_message=f"❌ {task_label} failed",
-    ):
-        result = subprocess.run(args, cwd=cwd, check=False)
-        cmd_display = " ".join(args)
-
-        if result.returncode == 0:
-            console.logger.info(
-                f"[success]✅ Build succeeded ({cmd_display})[/success]"
-            )
-        else:
-            console.logger.error(f"[error]❌ Build failed ({cmd_display})[/error]")
-            sys.exit(result.returncode)
-
-    cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
-    update_tmux_mobile_indicator(cfg_manager)
-
-
-from .commands.kernel_commands import kernel
-
-cli.add_command(kernel)
-
-
-@cli.command()
-@click.argument("description", required=False)
-@click.option("--duration", "-d", type=int, default=25, help="Task duration in minutes")
-@click.option(
-    "--priority", "-p", type=click.Choice(["low", "medium", "high"]), default="medium"
-)
-@click.option("--list", "-l", "list_tasks", is_flag=True, help="List current tasks")
-@click.pass_context
-def task(
-    ctx, description: Optional[str], duration: int, priority: str, list_tasks: bool
-):
-    """
-    📋 DEPRECATED - Use SuperClaude /dx: commands instead
-
-    This command has been replaced by:
-    - /dx:implement - Start ADHD-optimized implementation session
-    - /dx:session start/end/break - Session management
-    - /dx:load - Load tasks from ConPort
-    - /dx:stats - View ADHD metrics and progress
-
-    See: docs/90-adr/ADR-XXXX-path-c-migration.md
-    """
-    console.logger.info("[warning]" + "=" * 60 + "[/warning]")
-    console.logger.info("[error]⚠️  DEPRECATED COMMAND[/error]")
-    console.logger.info("[warning]" + "=" * 60 + "[/warning]")
-    console.logger.info()
-    console.logger.info(
-        "The 'dopemux task' command has been replaced by SuperClaude /dx: commands:"
-    )
-    console.logger.info()
-    console.logger.info(
-        "  [info]/dx:implement[/info] - Start ADHD-optimized implementation session"
-    )
-    console.logger.info("  [info]/dx:session start[/info] - Begin work session")
-    console.logger.info("  [info]/dx:load[/info] - Load tasks from ConPort")
-    console.logger.info("  [info]/dx:stats[/info] - View ADHD metrics and progress")
-    console.logger.info()
-    console.logger.info("Migration completed: October 2025")
-    console.logger.info("See: [info]docs/90-adr/ADR-XXXX-path-c-migration.md[/info]")
-    console.logger.info()
-    console.logger.info("[warning]" + "=" * 60 + "[/warning]")
-
-    project_path = Path.cwd()
-    if not (project_path / ".dopemux").exists():
-        console.logger.info(
-            "[error]No Dopemux project found in current directory[/error]"
-        )
-        sys.exit(1)
-
-    decomposer = TaskDecomposer(project_path)
-
-    if list_tasks:
-        tasks = decomposer.list_tasks()
-        if not tasks:
-            console.logger.info("[warning]No tasks found[/warning]")
-            return
-
-        table = styled_table(
-            f"{Glyphs.INFO} Current Tasks",
-            ("Task", {"style": "mint"}),
-            ("Priority", {"style": "gold"}),
-            ("Duration", {"style": "mint.soft"}),
-            ("Status", {"style": "violet"}),
-        )
-
-        for task in tasks:
-            status = (
-                "✅ Complete"
-                if task.get("status") == "completed"
-                else (
-                    "🔄 In Progress"
-                    if task.get("status") == "in_progress"
-                    else "⏳ Pending"
-                )
-            )
-            table.add_row(
-                task["description"],
-                task["priority"],
-                f"{task['estimated_duration']}m",
-                status,
-            )
-
-        console.logger.info(table)
-        return
-
-    # Check if description is provided for adding new task
-    if not description:
-        console.logger.info(
-            "[error]Description required when not listing tasks[/error]"
-        )
-        console.logger.info("Use 'dopemux task --list' to list current tasks")
-        sys.exit(1)
-
-    # Add new task
-    task_id = decomposer.add_task(
-        description=description, duration=duration, priority=priority
-    )
-
-    console.logger.info(f"[success]✅ Task added: {description}[/success]")
-    console.logger.info(f"[info]🆔 ID: {task_id}[/info]")
-    console.logger.info(f"[warning]⏱️ Duration: {duration} minutes[/warning]")
-    console.logger.info(f"[info]🎯 Priority: {priority}[/info]")
-
-
-from .commands.autoresponder_commands import autoresponder
-
-cli.add_command(autoresponder)
-
-
-from .commands.extract_commands import extract
-
-cli.add_command(extract, "extract")
-
-
-from .commands.update_commands import update
-
-cli.add_command(update)
-
-
-from .commands.profile_commands import profile
-
-cli.add_command(profile)
-try:
-    from .profile_commands import use_profile as _use_profile
-
-    cli.add_command(_use_profile, "switch")
-except ImportError:
-    pass
-
-
-from .commands.decisions_commands import decisions
-
-cli.add_command(decisions)
-
-
-from .commands.dev_commands import dev
-
-cli.add_command(dev)
-cli.add_command(mobile_commands, "mobile")
-cli.add_command(mobile_env_commands, "mobile-env")
-if genetic_group:
-    cli.add_command(genetic_group, "genetic")
-
-
-from .commands.code_commands import code
-
-cli.add_command(code)
-cli.add_command(tmux_commands, "tmux")
-from .claude_tools.cli import register_commands
-
-register_commands(cli)
-
-
-from .commands.memory_commands import memory
-
-cli.add_command(memory)
-
-
-from .commands.trigger_group_commands import trigger_group
-
-cli.add_command(trigger_group, "trigger")
-
-
-from .commands.capture_group_commands import capture_group
-
-cli.add_command(capture_group, "capture")
-
-
-from .commands.workflow_group_commands import workflow_group
-
-cli.add_command(workflow_group, "workflow")
-
-
-from .commands.upgrades_commands import upgrades
-
-cli.add_command(upgrades)
-
-
-from .commands.extractor_commands import (
-    _run_extractor_runner,
-    _run_repscan_runner,
-    extractor,
-)
-
-cli.add_command(extractor)
-
-from .commands.audit_commands import audit
-
-cli.add_command(audit)
-
-
-# ============================================================
-# Commands extracted back from submodules (use @cli.command)
-# ============================================================
-
-
-# from src/dopemux/commands/extract_commands.py
-@cli.command()
-@click.argument("directory", default=".")
-@click.option("--output", "-o", help="Output directory for analysis results")
-@click.option(
-    "--embedding-model", "-m", default="voyage-context-3", help="Embedding model to use"
-)
-@click.option("--milvus-uri", help="Milvus database URI (file path for Lite mode)")
-@click.option("--max-files", type=int, help="Maximum number of files to process")
-@click.option("--batch-size", type=int, default=10, help="Batch size for processing")
-@click.option("--extensions", help="Comma-separated list of file extensions to include")
-@click.option("--exclude", help="Comma-separated list of patterns to exclude")
-@click.pass_context
-def analyze(
-    ctx,
-    directory: str,
-    output: Optional[str],
-    embedding_model: str,
-    milvus_uri: Optional[str],
-    max_files: Optional[int],
-    batch_size: int,
-    extensions: Optional[str],
-    exclude: Optional[str],
-):
-    """
-    🔍 Analyze codebase with multi-angle document processing
-
-    Processes documents in the specified directory, extracting features,
-    components, subsystems, and research insights with semantic embeddings
-    for intelligent code navigation and ADHD-friendly analysis.
-    """
-    from .analysis import DocumentProcessor, ProcessingConfig
-
-    # Prepare configuration
-    source_path = Path(directory).resolve()
-    if not source_path.exists():
-        console.logger.info(
-            f"[error]❌ Directory does not exist: {source_path}[/error]"
-        )
-        sys.exit(1)
-
-    # Set output directory
-    if output:
-        output_path = Path(output).resolve()
-    else:
-        output_path = source_path / ".dopemux" / "analysis"
-
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    # Parse extensions
-    file_extensions = None
-    if extensions:
-        file_extensions = [
-            f".{ext.strip().lstrip('.')}" for ext in extensions.split(",")
-        ]
-
-    # Parse exclusion patterns
-    exclude_patterns = None
-    if exclude:
-        exclude_patterns = [pattern.strip() for pattern in exclude.split(",")]
-
-    # Create configuration
-    config = ProcessingConfig(
-        source_directory=source_path,
-        output_directory=output_path,
-        max_files=max_files,
-        file_extensions=file_extensions,
-        exclude_patterns=exclude_patterns,
-        embedding_model=embedding_model,
-        milvus_uri=milvus_uri,
-        batch_size=batch_size,
-        show_progress=True,
-        gentle_feedback=True,
-    )
-
-    # Initialize and run processor
-    console.logger.info(
-        f"[info]🧠 Starting ADHD-optimized analysis of {source_path}[/info]"
-    )
-    console.logger.info(f"[text.dim]Output: {output_path}[/text.dim]")
-
-    try:
-        processor = DocumentProcessor(config)
-        results = processor.analyze_directory()
-
-        if results["success"]:
-            console.print(
-                f"[success]✅ Analysis complete! Results saved to {output_path}[/success]"
-            )
-            console.print(
-                f"[info]📊 Processing time: {results['processing_time']:.1f}s[/info]"
-            )
-
-            # Show usage suggestions
-            console.print(
-                styled_panel(
-                    f"🎯 Next steps:\n\n"
-                    f"• Browse results in {output_path}\n"
-                    f"• Use semantic search with embeddings\n"
-                    f"• Explore feature and component registries\n"
-                    f"• Review evidence links for traceability",
-                    title=f"{Glyphs.SUCCESS} Ready to Explore",
-                )
-            )
-        else:
-            console.logger.error("[error]❌ Analysis failed[/error]")
-            sys.exit(1)
-
-    except Exception as e:
-        console.logger.error(f"[error]❌ Analysis error: {e}[/error]")
-        if ctx.obj.get("verbose"):
-            import traceback
-
-            traceback.print_exc()
-        sys.exit(1)
-
-
-from .commands.mcp_commands import mcp, servers
-
-cli.add_command(mcp)
-cli.add_command(servers)
-
-
-@cli.command()
-@click.option("--detailed", "-d", is_flag=True, help="Show detailed health information")
-@click.option("--service", "-s", help="Check specific service only")
-@click.option("--fix", "-f", is_flag=True, help="Attempt to fix unhealthy services")
-@click.option("--cleanup", "-c", is_flag=True, help="Clean up orphaned MCP processes")
-@click.option("--watch", "-w", is_flag=True, help="Continuous monitoring mode")
-@click.option(
-    "--interval", "-i", type=int, default=30, help="Watch interval in seconds"
-)
-@click.pass_context
-def health(
-    ctx,
-    detailed: bool,
-    service: Optional[str],
-    fix: bool,
-    cleanup: bool,
-    watch: bool,
-    interval: int,
-):
-    """
-    🏥 Comprehensive health check for Dopemux ecosystem
-
-    Monitors Dopemux core, Claude Code, MCP servers, Docker services,
-    system resources, and ADHD feature effectiveness with ADHD-friendly reporting.
-
-    Use --cleanup to find and kill orphaned MCP server processes.
-    """
-    project_path = Path.cwd()
-    health_checker = HealthChecker(project_path, console)
-
-    # Handle cleanup flag first
-    if cleanup:
-        console.logger.info("[info]🧹 Cleaning up orphaned MCP processes...[/info]")
-
-        try:
-            # Find orphaned MCP processes
-            result = subprocess.run(
-                ["ps", "aux"], capture_output=True, text=True, check=True
-            )
-
-            orphaned_pids = []
-            mcp_patterns = [
-                "conport-mcp",
-                "serena/v2/mcp_server.py",
-                "src.mcp.server",
-                "dopemux-gpt-researcher",
-            ]
-
-            for line in result.stdout.split("\n"):
-                # Check if it's an MCP process
-                if any(pattern in line for pattern in mcp_patterns):
-                    # Extract PID
-                    parts = line.split()
-                    if len(parts) > 1:
-                        pid = parts[1]
-                        # Check if parent process (Claude Code) is still running
-                        try:
-                            parent_check = subprocess.run(
-                                ["ps", "-o", "ppid=", "-p", pid],
-                                capture_output=True,
-                                text=True,
-                            )
-                            ppid = parent_check.stdout.strip()
-                            if ppid:
-                                parent_cmd = subprocess.run(
-                                    ["ps", "-o", "comm=", "-p", ppid],
-                                    capture_output=True,
-                                    text=True,
-                                )
-                                # If parent is not Claude Code, it's orphaned
-                                if "claude" not in parent_cmd.stdout.lower():
-                                    orphaned_pids.append(pid)
-                        except (subprocess.SubprocessError, OSError) as e:
-                            logger.error(f"Process parent check failed: {e}")
-                        except Exception:
-                            logger.error(
-                                "Unexpected process parent check error", exc_info=True
-                            )
-            if orphaned_pids:
-                console.print(
-                    f"[warning]Found {len(orphaned_pids)} orphaned MCP processes[/warning]"
-                )
-
-                if click.confirm("Kill these processes?", default=True):
-                    killed = 0
-                    for pid in orphaned_pids:
-                        try:
-                            os.kill(int(pid), signal.SIGTERM)
-                            killed += 1
-                        except (OSError, ValueError):
-                            pass
-
-                    console.print(
-                        f"[success]✅ Cleaned up {killed} orphaned processes[/success]"
-                    )
-                else:
-                    console.print("[warning]Cleanup cancelled[/warning]")
-            else:
-                console.print("[success]✅ No orphaned MCP processes found[/success]")
-
-        except Exception as e:
-            console.print(f"[error]❌ Cleanup failed: {e}[/error]")
-
-        # Exit after cleanup unless combined with other flags
-        if not (detailed or service or fix or watch):
-            return
-
-    if watch:
-        console.print(
-            f"[info]👁️ Starting continuous health monitoring (interval: {interval}s)[/info]"
-        )
-        console.print("[text.dim]Press Ctrl+C to stop[/text.dim]")
-
-        try:
-            while True:
-                console.clear()
-                console.print(
-                    f"[text.dim]Last check: {datetime.now().strftime('%H:%M:%S')}[/text.dim]"
-                )
-
-                results = health_checker.check_all(detailed=detailed)
-                health_checker.display_health_report(results, detailed=detailed)
-
-                time.sleep(interval)
-        except KeyboardInterrupt:
-            console.print("\n[warning]🛑 Health monitoring stopped[/warning]")
-            return
-
-    # Single health check
-    with Progress(
-        SpinnerColumn(spinner_name="dots12", style="spinner"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("Running health checks...", total=None)
-
-        if service:
-            # Check specific service
-            checker_method = getattr(health_checker, f"_check_{service}", None)
-            if not checker_method:
-                console.logger.info(f"[error]❌ Unknown service: {service}[/error]")
-                console.print(
-                    f"[warning]Available services: {', '.join(health_checker.checks.keys())}[/warning]"
-                )
-                sys.exit(1)
-
-            result = checker_method(detailed=detailed)
-            results = {service: result}
-        else:
-            # Check all services
-            results = health_checker.check_all(detailed=detailed)
-
-        progress.update(task, description="Health checks complete!", completed=True)
-
-    # Display results
-    def _rich_health():
-        health_checker.display_health_report(results, detailed=detailed)
-
-    emit(
-        ctx,
-        data={
-            "services": {
-                name: {
-                    "status": h.status.value[0],
-                    "message": h.message,
-                    "response_time_ms": h.response_time_ms,
-                }
-                for name, h in results.items()
-            },
-            "critical": sum(
-                1 for h in results.values() if h.status.value[0] == "critical"
-            ),
-            "healthy": sum(
-                1 for h in results.values() if h.status.value[0] == "healthy"
-            ),
-        },
-        rich_render=_rich_health,
-    )
-
-    # Fix unhealthy services if requested
-    if fix:
-        console.logger.info("\n[info]🔧 Attempting to fix unhealthy services...[/info]")
-
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            fix_task = progress.add_task("Fixing services...", total=None)
-
-            restarted = health_checker.restart_unhealthy_services()
-
-            progress.update(
-                fix_task, description="Fix attempts complete!", completed=True
-            )
-
-        if restarted:
-            console.print(
-                f"[success]✅ Restarted services: {', '.join(restarted)}[/success]"
-            )
-            console.logger.info(
-                "[info]💡 Run 'dopemux health' again to verify fixes[/info]"
-            )
-        else:
-            console.logger.info(
-                "[warning]⚠️ No services could be automatically fixed[/warning]"
-            )
-            console.logger.info(
-                "[text.dim]Manual intervention may be required[/text.dim]"
-            )
-
-    # Exit with appropriate code for scripting
-    critical_count = sum(1 for h in results.values() if h.status.value[0] == "critical")
-    if critical_count > 0:
-        sys.exit(1)
-
-
-def _get_attention_emoji(state: Optional[str]) -> str:
-    """Get emoji for attention state."""
-    emoji_map = {
-        "focused": "🎯",
-        "scattered": "🌪️",
-        "hyperfocus": "🔥",
-        "normal": "😊",
-        "distracted": "😵‍💫",
-    }
-    return emoji_map.get(state, "❓")
-
-
-def _configure_openrouter_litellm():
-    """Configure environment for OpenRouter via LiteLLM"""
-    # Set up OpenRouter models for LiteLLM
-    openrouter_models = [
-        "openrouter-xai-grok-code-fast",
-        "openrouter-openai-gpt-5",
-        "openrouter-openai-gpt-5-mini",
-        "openrouter-openai-gpt-5-codex",
-        "openrouter-google-gemini-2-flash",
-        "openrouter-meta-llama-3.1-405b",
-    ]
-
-    # Update environment
-    os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
-    os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
-    os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(openrouter_models)
-
-    # Ensure Zen MCP uses LiteLLM
-    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
-    os.environ["ZEN_FALLBACK_MODELS"] = (
-        "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
-    )
-
-    # Set up LiteLLM proxy URL
-    os.environ["LITELLM_PROXY_URL"] = "http://localhost:4000"
-
-    # Configure Claude Code to use LiteLLM
-    os.environ["CLAUDE_CODE_LLM_PROVIDER"] = "litellm"
-    os.environ["CLAUDE_CODE_LLM_BASE_URL"] = "http://localhost:4000"
-    os.environ["CLAUDE_CODE_LLM_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
-
-    console.logger.info(
-        "[success]✅ OpenRouter via LiteLLM configuration applied[/success]"
-    )
-
-
-def _resolve_mcp_dir(project_path: Path) -> Optional[Path]:
-    """
-    Resolve MCP stack directory using MCPProvisioner.
-    Auto-provisions if missing.
-    """
-    from .mcp.provision import MCPProvisioner
-
-    provisioner = MCPProvisioner(project_path)
-    try:
-        return provisioner.ensure_stack_present()
-    except Exception as e:
-        console.logger.error(f"[error]❌ MCP Provisioning failed: {e}[/error]")
-        return None
-
-
-def _start_mcp_servers_with_progress(
-    project_path: Path, instance_id: str = "A", instance_env: Optional[dict] = None, wizard=None
-):
-    """
-    Start MCP servers with auto-provisioning, instance-scoped overlays, and Phase 0 gate.
-    """
-    if os.getenv("DOPEMUX_SKIP_MCP_START", "0").lower() in {"1", "true", "yes"}:
-        console.logger.info(
-            "[warning]⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)[/warning]"
-        )
-        return
-
-    # 1. Provision stack if missing
-    mcp_dir = _resolve_mcp_dir(project_path)
-    if not mcp_dir:
-        raise click.ClickException("MCP stack provisioning failed.")
-
-    # 2. Materialize instance overlay
-    from .mcp.instance_overlay import InstanceOverlayManager
-
-    overlay_manager = InstanceOverlayManager(project_path, instance_id)
-    overlay = overlay_manager.materialize()
-
-    # 3. Prepare environment
-    env_for_subprocess = os.environ.copy()
-    if instance_env:
-        env_for_subprocess.update(instance_env)
-
-    # Load mcp.env values into subprocess env
-    try:
-        import dotenv
-
-        env_vars = dotenv.dotenv_values(overlay["env_path"])
-        env_for_subprocess.update({k: v for k, v in env_vars.items() if v is not None})
-    except ImportError:
-        # Fallback if python-dotenv not installed (unlikely but safe)
-        pass
-
-    console.logger.info(
-        f"\n[info]🔌 Starting MCP Servers (Instance {instance_id})[/info]"
-    )
-    console.logger.info(
-        f"[text.dim]Project: {overlay['compose_project_name']}[/text.dim]"
-    )
-    console.logger.info(
-        f"[text.dim]Ports: PAL={overlay['port_map']['PAL']}, ConPort={overlay['port_map']['ConPort']}[/text.dim]\n"
-    )
-
-    # Start docker-compose with overlay
-    status_text = Text()
-    status_text.append("🚀 ", style="info")
-    status_text.append("Launching containers...")
-    if wizard:
-        wizard.update_boot_step("Connecting to Docker", "LOADING")
-        wizard.update_boot_step("Booting MCP Services", "LOADING")
-
-    startup_successful = False
-    output_lines = []
-
-    try:
-        with Live(status_text, console=console, refresh_per_second=4) as live:
-            # 3. Resolve the canonical compose files
-            compose_files = []
-            
-            # Primary core stack
-            core_file = project_path / "docker" / "compose.core.yml"
-            if core_file.exists():
-                compose_files.append("-f")
-                compose_files.append(str(core_file))
-            else:
-                # Fallback to legacy path if root compose.yml is missing
-                legacy_file = project_path / "compose.yml"
-                if legacy_file.exists():
-                    compose_files.append("-f")
-                    compose_files.append(str(legacy_file))
-                else:
-                    # Final fallback to mcp_dir
-                    fallback = mcp_dir / "compose.yml"
-                    if not fallback.exists():
-                        fallback = mcp_dir / "docker-compose.yml"
-                    compose_files.append("-f")
-                    compose_files.append(str(fallback))
-
-            # Add instance overlay
-            compose_files.append("-f")
-            compose_files.append(overlay["compose_path"])
-
-            cmd = [
-                "docker",
-                "compose",
-            ] + compose_files + [
-                "--project-name",
-                overlay["compose_project_name"],
-                "up",
-                "-d",
-                "--remove-orphans",
-            ]
-
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                env=env_for_subprocess,
-                cwd=str(project_path),
-            )
-
-            for line in process.stdout:
-                line = line.strip()
-                if line:
-                    output_lines.append(line)
-                    if len(output_lines) > 5:
-                        output_lines.pop(0)
-
-                    status_text = Text()
-                    status_text.append("🚀 ", style="info")
-                    status_text.append("Launching containers...\n")
-                    for out in output_lines:
-                        status_text.append(f"  [text.dim]{out}[/text.dim]\n")
-                    live.update(status_text)
-
-            process.wait()
-            if process.returncode == 0:
-                startup_successful = True
-                status_text.append("\n✅ Containers launched!", style="success")
-                live.update(status_text)
-            else:
-                status_text.append(
-                    f"\n❌ Startup failed (exit {process.returncode})", style="error"
-                )
-                live.update(status_text)
-                raise RuntimeError(
-                    f"Docker compose failed with exit code {process.returncode}"
-                )
-
-        # 4. Phase 0 Discovery Gate
-        console.logger.info("[info]🛡️ Running Phase 0 Discovery Gate...[/info]")
-        from .mcp.gate import DiscoveryGate
-
-        # We need to wait a few seconds for servers to actually start listening
-        time.sleep(3)
-
-        # Point the gate to use the resolved ports for this instance
-        for srv_name, port in overlay["port_map"].items():
-            env_var = f"DOPMUX_{srv_name.upper().replace('-', '_')}_URL"
-            os.environ[env_var] = (
-                f"http://127.0.0.1:{port}/mcp"
-                if srv_name != "LiteLLM"
-                else f"http://127.0.0.1:{port}"
-            )
-
-        gate = DiscoveryGate(
-            project_path, run_id=f"start-{instance_id}-{int(time.time())}"
-        )
-        if not asyncio.run(gate.run()):
-            gate.print_block_report()
-            raise click.ClickException(
-                "MCP Phase 0 Discovery Gate failed. Mandatory tools not available."
-            )
-
-        console.logger.info("[success]✅ Phase 0 Discovery Gate passed![/success]")
-
-    except Exception as e:
-        console.logger.error(f"[error]❌ MCP Startup failed: {e}[/error]")
-        if output_lines:
-            console.print("[text.dim]Last output lines:[/text.dim]")
-            for line in output_lines[-10:]:
-                console.print(f"  [text.dim]{line}[/text.dim]")
-        raise click.ClickException(f"Failed to start MCP stack: {e}")
-
-
-def _trigger_dope_context_autoindex_startup(
-    workspace_path: Path,
-    *,
-    force: bool = False,
-) -> Optional[dict]:
-    """
-    Trigger dope-context startup autoindex bootstrap for the current workspace.
-    """
-    enabled = os.getenv("DOPEMUX_AUTO_INDEX_ON_STARTUP", "1").lower() not in {
-        "0",
-        "false",
-        "no",
-    }
-    if not enabled:
-        return None
-
-    base_url = os.getenv("DOPE_CONTEXT_URL", "http://localhost:3010").rstrip("/")
-    endpoint = f"{base_url}/autoindex/bootstrap"
-    payload = {
-        "workspace_path": str(workspace_path.resolve()),
-        "force": force,
-        "wait_for_completion": False,
-        "debounce_seconds": float(
-            os.getenv("DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS", "5.0")
-        ),
-        "periodic_interval": int(
-            os.getenv("DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS", "600")
-        ),
-        "trigger": "dopemux_cli_startup",
-    }
-
-    try:
-        import requests
-
-        response = requests.post(endpoint, json=payload, timeout=5)
-        if response.status_code >= 400:
-            console.logger.info(
-                f"[warning]⚠️  Autoindex bootstrap request failed ({response.status_code})[/warning]"
-            )
-            return {
-                "status": "http_error",
-                "status_code": response.status_code,
-                "endpoint": endpoint,
-            }
-        result = response.json()
-        return result if isinstance(result, dict) else {"status": "unknown_response"}
-    except Exception as exc:
-        logger.warning("Failed to trigger dope-context autoindex bootstrap: %s", exc)
-        return {
-            "status": "request_failed",
-            "error": str(exc),
-            "endpoint": endpoint,
-        }
-
-
-def _activate_dangerous_mode():
-    """
-    Activate dangerous mode with proper security safeguards.
-
-    This temporarily overrides the default safe mode settings for the current
-    session only. Changes are not persisted to the .env file.
-
-    Security Features:
-    - Time-limited session (1 hour max)
-    - Explicit user confirmation required
-    - Clear warnings about risks
-    - Environment isolation
-    """
-    # Check if already in dangerous mode
-    if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
-        expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
-        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
-
-        if time.time() < expires_timestamp:
-            console.logger.info("[warning]⚠️  Dangerous mode already active[/warning]")
-            remaining_minutes = int((expires_timestamp - time.time()) / 60)
-            console.logger.info(
-                f"[text.dim]Expires in {remaining_minutes} minutes[/text.dim]"
-            )
-            return
-        else:
-            # Expired, clear old settings
-            _deactivate_dangerous_mode()
-
-    # Show serious warning
-    console.print(
-        styled_panel(
-            "[error]{Glyphs.WARNING}  DANGER: This will disable ALL security restrictions![/error]\n\n"
-            "[warning]This mode will:[/warning]\n"
-            "• Skip all permission checks\n"
-            "• Disable role enforcement\n"
-            "• Bypass budget limits\n"
-            "• Allow unrestricted tool access\n\n"
-            "[error]Use ONLY in isolated, trusted environments![/error]\n"
-            "[warning]Session will expire automatically in 1 hour.[/warning]",
-            title=f"{Glyphs.WARNING} Security Warning",
-            border_style="error",
-        )
-    )
-
-    # Require explicit confirmation
-    if not click.confirm(
-        "\nDo you understand the risks and want to proceed?", default=False
-    ):
-        console.logger.info(
-            "[success]Dangerous mode cancelled. Staying in safe mode.[/success]"
-        )
-        return
-
-    if not click.confirm("Are you in an isolated, trusted environment?", default=False):
-        console.logger.info("[success]Dangerous mode cancelled for security.[/success]")
-        return
-
-    # Set time-limited dangerous mode (1 hour)
-    expiry_time = time.time() + 3600  # 1 hour
-
-    os.environ["DOPEMUX_DANGEROUS_MODE"] = "true"
-    os.environ["DOPEMUX_DANGEROUS_EXPIRES"] = str(expiry_time)
-    os.environ["DOPEMUX_DANGEROUS_PID"] = str(os.getpid())  # Track process
-
-    # Set security bypass flags
-    os.environ["HOOKS_ENABLE_ADAPTIVE_SECURITY"] = "0"
-    os.environ["CLAUDE_CODE_SKIP_PERMISSIONS"] = "true"
-    os.environ["METAMCP_ROLE_ENFORCEMENT"] = "false"
-    os.environ["METAMCP_APPROVAL_REQUIRED"] = "false"
-    os.environ["METAMCP_BUDGET_ENFORCEMENT"] = "false"
-
-    # Traditional dangerous flags for compatibility
-    os.environ["CLAUDE_DANGEROUS"] = "true"
-    os.environ["SKIP_PERMISSIONS"] = "true"
-
-    # Log for audit trail (but not sensitive info)
-    expiry_str = datetime.fromtimestamp(expiry_time).strftime("%H:%M:%S")
-    console.logger.info(
-        f"[red bold]⚠️  DANGEROUS MODE ACTIVE until {expiry_str}[/red bold]"
-    )
-
-
-def _deactivate_dangerous_mode():
-    """Deactivate dangerous mode and clean up environment."""
-    dangerous_vars = [
-        "DOPEMUX_DANGEROUS_MODE",
-        "DOPEMUX_DANGEROUS_EXPIRES",
-        "DOPEMUX_DANGEROUS_PID",
-        "HOOKS_ENABLE_ADAPTIVE_SECURITY",
-        "CLAUDE_CODE_SKIP_PERMISSIONS",
-        "METAMCP_ROLE_ENFORCEMENT",
-        "METAMCP_APPROVAL_REQUIRED",
-        "METAMCP_BUDGET_ENFORCEMENT",
-        "CLAUDE_DANGEROUS",
-        "SKIP_PERMISSIONS",
-    ]
-
-    for var in dangerous_vars:
-        os.environ.pop(var, None)
-
-    console.logger.info("[success]✅ Dangerous mode deactivated[/success]")
-
-
-def _check_dangerous_mode_expiry():
-    """Check if dangerous mode has expired and clean up if needed."""
-    if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
-        expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
-        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
-
-        if time.time() >= expires_timestamp:
-            console.logger.info(
-                "[warning]⏰ Dangerous mode expired, returning to safe mode[/warning]"
-            )
-            _deactivate_dangerous_mode()
-            return True
-    return False
-
-
-@cli.command("backup")
-@click.option(
-    "--dest",
-    help="Destination directory for tar backups (defaults to docker/mcp-servers/backups/volumes_<timestamp>)",
-)
-@click.option(
-    "--pattern", help="Regex to filter volume names (default: ^(mcp_|dopemux_))"
-)
-@click.option("--no-pull", is_flag=True, help="Do not pull alpine image if missing")
-@click.option(
-    "--schedule",
-    type=click.Choice(["daily", "weekly"]),
-    help="Print a cron entry to run backups on a schedule",
-)
-@click.option(
-    "--apply", is_flag=True, help="Attempt to install the cron entry into your crontab"
-)
-@click.pass_context
-def backup(
-    ctx,
-    dest: Optional[str],
-    pattern: Optional[str],
-    no_pull: bool,
-    schedule: Optional[str],
-    apply: bool,
-):
-    """
-    📦 Back up all Docker named volumes used by Dopemux (mcp_*/dopemux_*).
-
-    Creates .tgz archives and a SHA256SUMS.txt manifest in the destination.
-    Use --schedule to print or install a cron job for daily/weekly backups.
-    """
-    import hashlib
-    import re
-
-    from .workspace_utils import get_workspace_root
-
-    # Scheduling path only
-    if schedule:
-        _print_or_apply_cron(schedule, apply)
-        return
-
-    with mobile_task_notification(
-        ctx,
-        "Docker volume backup",
-        success_message="✅ Docker volume backup complete",
-        failure_message="❌ Docker volume backup failed",
-    ):
-        _run_volume_backup(dest, pattern, no_pull, get_workspace_root)
-
-
-def _run_volume_backup(
-    dest: Optional[str], pattern: Optional[str], no_pull: bool, get_workspace_root
-):
-    import hashlib
-    import re
-
-    workspace = get_workspace_root()
-    ts = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    default_dest = workspace / "docker" / "mcp-servers" / "backups" / f"volumes_{ts}"
-    dest_path = Path(dest).expanduser().resolve() if dest else default_dest
-    dest_path.mkdir(parents=True, exist_ok=True)
-
-    vol_pattern = re.compile(pattern or r"^(mcp_|dopemux_)")
-
-    try:
-        result = subprocess.run(
-            ["docker", "volume", "ls", "--format", "{{.Name}}"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except Exception as e:
-        console.logger.info(f"[error]❌ Docker not available: {e}[/error]")
-        sys.exit(1)
-
-    volumes = [
-        v.strip()
-        for v in result.stdout.splitlines()
-        if v.strip() and vol_pattern.search(v.strip())
-    ]
-    if not volumes:
-        console.logger.info("[warning]No matching volumes found[/warning]")
-        return
-
-    console.logger.info(
-        f"[info]== Backing up {len(volumes)} volumes to {dest_path} ==[/info]"
-    )
-
-    if not no_pull:
-        try:
-            subprocess.run(
-                ["docker", "image", "inspect", "alpine:latest"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-        except subprocess.CalledProcessError:
-            console.logger.info("[text.dim]Pulling alpine:latest ...[/text.dim]")
-            subprocess.run(["docker", "pull", "alpine:latest"], check=False)
-
-    ok = 0
-    fail = 0
-    for vol in volumes:
-        console.logger.info(f"Backing up [info]{vol}[/info] ...")
-        cmd = [
-            "docker",
-            "run",
-            "--rm",
-            "-v",
-            f"{vol}:/data:ro",
-            "-v",
-            f"{str(dest_path)}:/backup",
-            "alpine",
-            "sh",
-            "-lc",
-            f"cd /data 2>/dev/null || mkdir -p /data; tar czf '/backup/{vol}.tgz' -C /data .",
-        ]
-        try:
-            subprocess.run(cmd, check=True)
-            console.logger.info(
-                f"[success]✓ {vol}[/success] → {dest_path / (vol + '.tgz')}"
-            )
-            ok += 1
-        except subprocess.CalledProcessError:
-            console.logger.error(f"[error]✗ Failed to back up {vol}[/error]")
-            fail += 1
-
-    try:
-        sums_path = dest_path / "SHA256SUMS.txt"
-        with sums_path.open("w") as f:
-            for tgz in sorted(dest_path.glob("*.tgz")):
-                h = hashlib.sha256()
-                with tgz.open("rb") as tf:
-                    for chunk in iter(lambda: tf.read(1024 * 1024), b""):
-                        h.update(chunk)
-                f.write(f"{h.hexdigest()}  {tgz.name}\n")
-        console.logger.info(f"[success]Manifest written:[/success] {sums_path}")
-    except Exception as e:
-        console.logger.info(
-            f"[warning]⚠️  Could not write checksum manifest: {e}[/warning]"
-        )
-
-    console.logger.error(
-        f"\n[bold]Summary[/bold]: Backed up {ok} volumes, {fail} failed"
-    )
-
-
 def _print_or_apply_cron(frequency: str, apply: bool) -> None:
     """Print or install a cron job to run 'dopemux backup' on the desired schedule."""
     # Defaults: run at 02:30 local time
@@ -5385,26 +4066,26 @@ def _print_or_apply_cron(frequency: str, apply: bool) -> None:
 
 @cli.command("extract-chatlog")
 @click.argument("directory", default=".")
-@click.option("--output", "-o", help="Output directory for extraction results")
+@click.option("--output", "-o", help="📂 Harvest Coordinate: Output directory for extraction results.")
 @click.option(
     "--confidence",
     "-c",
     type=float,
     default=0.5,
-    help="Minimum confidence threshold (0.0-1.0)",
+    help="🎯 Confidence Gate: Minimum threshold for signal extraction (0.0-1.0).",
 )
 @click.option(
     "--batch-size",
     "-b",
     type=int,
     default=10,
-    help="Number of files to process per batch",
+    help="📊 Signal Density: Number of artifacts to process per batch.",
 )
 @click.option(
-    "--max-workers", "-w", type=int, default=4, help="Maximum parallel workers"
+    "--max-workers", "-w", type=int, default=4, help="⚡ Extraction Workers: Maximum parallel ritual workers.",
 )
-@click.option("--archive", "-a", help="Archive directory for processed files")
-@click.option("--workspace-id", help="ConPort workspace ID for persistence")
+@click.option("--archive", "-a", help="📦 Temporal Archive: Directory for processed artifact storage.")
+@click.option("--workspace-id", help="🆔 Ritual Chamber: ConPort workspace ID for persistent synchronization.")
 @click.pass_context
 def extract_chatlog(
     ctx,
@@ -5417,16 +4098,11 @@ def extract_chatlog(
     workspace_id: Optional[str],
 ):
     """
-    📄 Extract structured data from chatlog conversations (Basic Mode)
+    📥 Harvest Telemetry: Extract high-fidelity intelligence from chat logs
 
-    Process chatlog files using core extractors (decisions, features, research)
-    with adaptive document synthesis. Includes batch processing with phase
-    synchronization and automatic archiving of processed files.
-
-    Basic extractors:
-    • Decision extraction (conclusions, agreements, next steps)
-    • Feature extraction (requirements, user stories, acceptance criteria)
-    • Research extraction (findings, references, methodologies)
+    Engages the semantic extraction engine to harvest decisions, patterns, 
+    and ritual progress from local chat log artifacts. Synchronizes the 
+    extracted intelligence with the persistent knowledge graph.
     """
     with mobile_task_notification(
         ctx,
@@ -5514,7 +4190,7 @@ def _run_extract_chatlog(
     console.logger.info(f"[info]📤 Output: {output_path}[/info]")
     console.logger.info(f"[info]🎯 Extractors: Decision, Feature, Research[/info]")
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -5599,28 +4275,28 @@ def _run_extract_chatlog(
 
 @cli.command()
 @click.argument("directory", default=".")
-@click.option("--output", "-o", help="Output directory for extraction results")
+@click.option("--output", "-o", help="📂 Harvest Coordinate: Output directory for high-fidelity extraction results.")
 @click.option(
     "--confidence",
     "-c",
     type=float,
     default=0.4,
-    help="Minimum confidence threshold (0.0-1.0)",
+    help="🎯 Confidence Gate: Minimum threshold for signal extraction (0.0-1.0).",
 )
 @click.option(
     "--batch-size",
     "-b",
     type=int,
     default=15,
-    help="Number of files to process per batch",
+    help="📊 Signal Density: Number of artifacts to process per batch.",
 )
 @click.option(
-    "--max-workers", "-w", type=int, default=6, help="Maximum parallel workers"
+    "--max-workers", "-w", type=int, default=6, help="⚡ Extraction Workers: Maximum parallel ritual workers.",
 )
-@click.option("--archive", "-a", help="Archive directory for processed files")
-@click.option("--workspace-id", help="ConPort workspace ID for persistence")
+@click.option("--archive", "-a", help="📦 Temporal Archive: Directory for processed artifact storage.")
+@click.option("--workspace-id", help="🆔 Ritual Chamber: ConPort workspace ID for persistent synchronization.")
 @click.option(
-    "--max-documents", "-d", type=int, default=8, help="Maximum documents to generate"
+    "--max-documents", "-d", type=int, default=8, help="📜 Materialization Limit: Maximum documents to synthesize during the ritual."
 )
 @click.pass_context
 def extractPro(
@@ -5635,24 +4311,11 @@ def extractPro(
     max_documents: int,
 ):
     """
-    🔬 Extract comprehensive data from chatlog conversations (Pro Mode)
+    🔬 Deep Harvest: Extract high-fidelity repository intelligence (Pro Mode)
 
-    Process chatlog files using ALL extractors with advanced analysis capabilities.
-    Includes full synthesis suite, knowledge graph construction, and comprehensive
-    reporting with pre-commit review integration.
-
-    Pro extractors include ALL basic extractors PLUS:
-    • Constraint extraction (technical/business limitations, dependencies)
-    • Stakeholder extraction (roles, responsibilities, decision makers)
-    • Risk extraction (threats, mitigations, impact assessments)
-    • Security extraction (auth requirements, compliance, vulnerabilities)
-
-    Pro features:
-    • Lower confidence threshold for broader coverage
-    • More parallel processing power
-    • Advanced document synthesis (8+ document types)
-    • Knowledge graph with relationship mapping
-    • Comprehensive quality metrics and reporting
+    Engages the full semantic extraction suite to harvest constraints, 
+    dependencies, and architectural patterns from chat logs. Synthesizes a 
+    comprehensive knowledge graph and materializes high-fidelity reports.
     """
     with mobile_task_notification(
         ctx,
@@ -5751,7 +4414,7 @@ def _run_extract_pro(
         f"[info]🎯 Extractors: All 7 (Decision, Feature, Research, Constraint, Stakeholder, Risk, Security)[/info]"
     )
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(spinner_name="dots12", style="spinner"),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -5863,14 +4526,15 @@ def _run_extract_pro(
     type=click.Choice(
         ["ALL", "A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
     ),
+    help="📊 Target Phase: Phase code or ALL for the repo scan ritual.",
 )
-@click.option("--run-id", type=str)
-@click.option("--promptgen", type=click.Choice(["off", "v1", "v2", "auto"]))
-@click.option("--promptpack", type=str)
-@click.option("--promptgen-only", is_flag=True)
-@click.option("--prompt-root", type=str)
-@click.option("--profiles-dir", type=str)
-@click.option("--legacy-runner", type=str)
+@click.option("--run-id", type=str, help="🆔 Ritual Session: Unique identifier for the scan run.")
+@click.option("--promptgen", type=click.Choice(["off", "v1", "v2", "auto"]), help="🧠 Prompt Synthesis: Mode for automated prompt generation.")
+@click.option("--promptpack", type=str, help="📦 Prompt Package: Specific promptpack to use for the ritual.")
+@click.option("--promptgen-only", is_flag=True, help="⚡ Synthesis Only: Execute only the prompt generation phase.")
+@click.option("--prompt-root", type=str, help="🔬 Prompt Source: Root directory for ritual prompts.")
+@click.option("--profiles-dir", type=str, help="📂 Profile Registry: Path to the ritual profiles directory.")
+@click.option("--legacy-runner", type=str, help="⏪ Legacy Engine: Path to the legacy v3 runner.")
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
 def repscan_passthrough(
     phase: Optional[str],
@@ -5883,7 +4547,12 @@ def repscan_passthrough(
     legacy_runner: Optional[str],
     args: tuple[str, ...],
 ) -> None:
-    """Run deterministic repo scan/promptgen wrapper over v3 extraction."""
+    """
+    🔬 Repository Audit: Run deterministic repo scan and prompt synthesis
+
+    Engages the deterministic repository scanner to audit the codebase and 
+    synthesize high-fidelity prompts for extraction rituals.
+    """
     forwarded: List[str] = [*args]
     if phase:
         forwarded.extend(["--phase", phase])
@@ -5947,7 +4616,12 @@ def _resolved_pipeline_version(
 @_pipeline_version_options
 @click.pass_context
 def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[str]):
-    """List phases and effective pipeline order."""
+    """
+    📋 Catalog Phases: List ritual phases and effective pipeline order
+
+    Displays the full sequence of extraction phases, detailing the 
+    prescribed order of operations for the active ritual pipeline.
+    """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
     )
@@ -5974,46 +4648,48 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
 
 @upgrades.command("run")
 @_pipeline_version_options
-@click.option("--phase", default="ALL", show_default=True, help="Phase code or ALL")
-@click.option("--run-id", default=None, help="Run ID")
-@click.option("--dry-run/--execute", default=True, show_default=True)
-@click.option("--resume/--no-resume", default=True, show_default=True)
-@click.option("--partition-workers", type=int, default=1, show_default=True)
+@click.option("--phase", default="ALL", show_default=True, help="📊 Target Phase: Phase code or ALL (default: ALL).")
+@click.option("--run-id", default=None, help="🆔 Ritual Session: Unique identifier for the extraction run.")
+@click.option("--dry-run/--execute", default=True, show_default=True, help="🔬 Ritual Preview: Preview the extraction without committing to disk (default: dry-run).")
+@click.option("--resume/--no-resume", default=True, show_default=True, help="⏯️  Resume Sequence: Resume a suspended ritual, skipping validated partitions.")
+@click.option("--partition-workers", type=int, default=1, show_default=True, help="⚡ Ritual Workers: Number of concurrent workers for partitioning (default: 1).")
 @click.option(
     "--routing-policy",
     type=click.Choice(_ROUTING_POLICY_CHOICES),
     default=None,
     show_default=False,
-    help="Routing policy (default: balanced_openrouter for v5; cost for v4/v3).",
+    help="🧠 Cognitive Routing: LLM policy for extraction (default: model-map balanced).",
 )
-@click.option("--disable-escalation", is_flag=True, default=False, show_default=True)
-@click.option("--escalation-max-hops", type=int, default=2, show_default=True)
-@click.option("--batch-mode", is_flag=True, default=False, show_default=True)
+@click.option("--disable-escalation", is_flag=True, default=False, show_default=True, help="🛡️  Enforce Constraints: Disable automatic model escalation on failure.")
+@click.option("--escalation-max-hops", type=int, default=2, show_default=True, help="🚀 Scaling Threshold: Maximum model escalation hops (default: 2).")
+@click.option("--batch-mode", is_flag=True, default=False, show_default=True, help="⚡ Asynchronous Batch: Engage provider-level batching for high-volume extraction.")
 @click.option(
     "--batch-provider",
     type=click.Choice(["auto", "openai", "gemini", "xai"]),
     default="auto",
     show_default=True,
+    help="🧪 Batch Alchemist: Specific provider for asynchronous processing (default: auto).",
 )
-@click.option("--batch-poll-seconds", type=int, default=30, show_default=True)
+@click.option("--batch-poll-seconds", type=int, default=30, show_default=True, help="⏱️  Heartbeat Frequency: Polling interval for batch status updates (default: 30s).")
 @click.option(
-    "--batch-wait-timeout-seconds", type=int, default=86400, show_default=True
+    "--batch-wait-timeout-seconds", type=int, default=86400, show_default=True, help="⏳ Ritual Timeout: Maximum wait time for batch completion (default: 24h)."
 )
-@click.option("--batch-max-requests-per-job", type=int, default=2000, show_default=True)
+@click.option("--batch-max-requests-per-job", type=int, default=2000, show_default=True, help="📊 Payload Limit: Maximum requests per batch job (default: 2000).")
 @click.option(
     "--ui",
     type=click.Choice(["auto", "rich", "plain"]),
     default="auto",
     show_default=True,
+    help="🎭 HUD Aesthetic: User interface style for telemetry streaming (default: auto).",
 )
-@click.option("--pretty", is_flag=True, default=False, show_default=True)
-@click.option("--quiet", is_flag=True, default=False, show_default=True)
-@click.option("--jsonl-events", is_flag=True, default=False, show_default=True)
+@click.option("--pretty", is_flag=True, default=False, show_default=True, help="✨ Polish Output: Apply high-fidelity formatting to the telemetry stream.")
+@click.option("--quiet", is_flag=True, default=False, show_default=True, help="🔇 Silence HUD: Suppress telemetry output during the ritual.")
+@click.option("--jsonl-events", is_flag=True, default=False, show_default=True, help="📊 Emit Event Stream: Save ritual telemetry as JSONL for later analysis.")
 @click.option(
     "--sync/--no-sync",
     default=True,
     show_default=True,
-    help="v4 only: sync into extraction/repo-truth-extractor/v4",
+    help="🔄 State Sync: Sync local artifacts before ignition (v4 only).",
 )
 @click.pass_context
 def extractor_run(
@@ -6040,13 +4716,10 @@ def extractor_run(
     sync: bool,
 ):
     """
-    Run Repo Truth Extractor pipeline (resumable).
+    🚀 Ignite Pipeline: Run the Repo Truth Extractor (resumable)
 
-    \b
-    Examples:
-      dopemux upgrades run --pipeline-version v5 --phase A --run-id local_a --dry-run --resume
-      dopemux upgrades run --pipeline-version v5 --phase ALL --run-id full_001 --execute --resume
-      dopemux upgrades run --pipeline-version v5 --phase C --execute --batch-mode --ui rich
+    Engages the high-fidelity extraction engines to process the codebase 
+    according to the active ritual promptset and routing policies.
     """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
@@ -6094,12 +4767,12 @@ def extractor_run(
 
 @upgrades.command("doctor")
 @_pipeline_version_options
-@click.option("--run-id", default=None, help="Run ID")
-@click.option("--auto-reprocess/--no-auto-reprocess", default=False, show_default=True)
+@click.option("--run-id", default=None, help="🆔 Ritual Session: Unique identifier for the extraction run to diagnose.")
+@click.option("--auto-reprocess/--no-auto-reprocess", default=False, show_default=True, help="🔧 Auto-Remediation: Automatically re-process failed partitions identified during the audit.")
 @click.option(
-    "--reprocess-dry-run/--no-reprocess-dry-run", default=False, show_default=True
+    "--reprocess-dry-run/--no-reprocess-dry-run", default=False, show_default=True, help="🔬 Ritual Preview: Simulate the re-processing sequence without committing to disk."
 )
-@click.option("--reprocess-phases", default="", help="Comma-separated phase list")
+@click.option("--reprocess-phases", default="", help="📊 Targeted Phases: Comma-separated list of extraction phases to audit.")
 @click.pass_context
 def extractor_doctor(
     ctx,
@@ -6111,11 +4784,11 @@ def extractor_doctor(
     reprocess_phases: str,
 ):
     """
-    Run doctor diagnostics and deterministic reprocess planning for a run.
+    🏥 Extraction Apothecary: Run diagnostics and deterministic re-process planning
 
-    \b
-    Example:
-      dopemux upgrades doctor --pipeline-version v4 --run-id <RUN_ID> --auto-reprocess --reprocess-dry-run
+    Performs a high-fidelity audit of an extraction session, identifying 
+    structural hazards and proposing a deterministic re-synchronization plan 
+    for failed partitions.
     """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
@@ -6134,8 +4807,8 @@ def extractor_doctor(
 
 @upgrades.command("status")
 @_pipeline_version_options
-@click.option("--run-id", default=None, help="Run ID")
-@click.option("--json", "status_json", is_flag=True, help="Emit JSON status")
+@click.option("--run-id", default=None, help="🆔 Ritual Session: Unique identifier for the extraction run to query.")
+@click.option("--json", "status_json", is_flag=True, help="📊 Emit JSON: Output the ritual status as raw machine-readable data.")
 @click.pass_context
 def extractor_status(
     ctx,
@@ -6144,7 +4817,12 @@ def extractor_status(
     run_id: Optional[str],
     status_json: bool,
 ):
-    """Show run status or a machine-readable JSON status payload."""
+    """
+    📊 Ritual Status: Show status of an extraction run
+
+    Retrieves current cockpit telemetry for a specific extraction session, 
+    detailing phase progression and partition status.
+    """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
     )
@@ -6156,8 +4834,8 @@ def extractor_status(
 
 @upgrades.command("preflight")
 @_pipeline_version_options
-@click.option("--run-id", default=None, help="Run ID")
-@click.option("--auth-doctor", is_flag=True, help="Also run auth diagnostics")
+@click.option("--run-id", default=None, help="🆔 Ritual Session: Unique identifier for the preflight session.")
+@click.option("--auth-doctor", is_flag=True, help="🩺 Auth Apothecary: Also execute high-fidelity provider authentication diagnostics.")
 @click.pass_context
 def extractor_preflight(
     ctx,
@@ -6166,7 +4844,12 @@ def extractor_preflight(
     run_id: Optional[str],
     auth_doctor: bool,
 ):
-    """Run provider preflight checks and optional auth diagnostics."""
+    """
+    🛫 Pre-Ignition Check: Run pre-flight diagnostics for an extraction run
+
+    Executes a comprehensive sensor audit before starting an extraction 
+    ritual, ensuring all directories are mounted and providers are synchronized.
+    """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
     )
@@ -6189,7 +4872,7 @@ def upgrades_promptset_group():
 
 @upgrades_promptset_group.command("audit")
 @_pipeline_version_options
-@click.option("--strict/--no-strict", default=True, show_default=True)
+@click.option("--strict/--no-strict", default=True, show_default=True, help="🛡️  Enforce Constraints: Perform a strict structural audit of the promptset artifacts.")
 @click.pass_context
 def extractor_promptset_audit(
     ctx,
@@ -6198,7 +4881,10 @@ def extractor_promptset_audit(
     strict: bool,
 ):
     """
-    Audit promptset contract compliance (required sections, schemas, determinism).
+    ⚖️ Ritual Integrity: Audit promptset contract compliance
+
+    Performs a deep-tissue audit of the promptset to ensure compliance with 
+    ritual contracts, including required sections, schemas, and determinism.
 
     \b
     Example:
@@ -6243,21 +4929,21 @@ def extractor_trace(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
 
 @cli.command("truth")
 @click.option(
-    "--dry-run", is_flag=True, default=True, help="Simulate execution (default)"
+    "--dry-run", is_flag=True, default=True, help="🔬 Ritual Preview: Simulate execution without committing to disk (default)."
 )
-@click.option("--execute", is_flag=True, help="Actually call LLM providers")
+@click.option("--execute", is_flag=True, help="⚡ Ignite Ritual: Actually call LLM providers for extraction.")
 @click.option(
-    "--deep", is_flag=True, help="Enable deep mode (includes historical/archived docs)"
+    "--deep", is_flag=True, help="🌊 Deep Harvest: Enable deep mode (includes historical/archived artifacts)."
 )
-@click.option("--resume", is_flag=True, help="Resume a previous extraction run")
+@click.option("--resume", is_flag=True, help="⏯️  Resume Sequence: Resume a previously suspended extraction run.")
 @click.option(
-    "--workers", type=int, default=1, help="Number of parallel workers (default: 1)"
+    "--workers", type=int, default=1, help="⚡ Ritual Workers: Number of parallel extraction workers (default: 1)."
 )
 @click.option(
     "--routing-policy",
     type=click.Choice(["cost", "balanced", "quality", "optimal"]),
     default="cost",
-    help="Intelligence routing policy (default: cost)",
+    help="🧠 Cognitive Routing: Intelligence routing policy (default: cost).",
 )
 @click.pass_context
 def truth_command(
@@ -6270,10 +4956,11 @@ def truth_command(
     routing_policy: str,
 ):
     """
-    Generate a Repository Ground Truth pack for LLM context.
+    👁️  Truth Extraction: Universal Repo Truth Extractor (Shortcut)
 
-    This command runs the full multi-phase extraction pipeline (Phases A-S)
-    to build a comprehensive map of the project's logic, docs, and boundaries.
+    Engages the high-fidelity intelligence harvesting ritual. This command 
+    synchronizes multiple extraction layers to materialise the canonical 
+    truth of the repository.
     """
     project_path = Path.cwd()
     if execute:
@@ -6313,35 +5000,27 @@ extractor_promptset_group.add_command(extractor_promptset_audit, "audit")
         ["minimal", "standard", "full", "dope-muted", "dope-neon", "dope-house"]
     ),
     default="standard",
-    help="Launch preset configuration",
+    help="🎭 HUD Preset: Select an opinionated cockpit configuration for ignition.",
 )
 @click.option(
-    "--attach/--no-attach", default=True, help="Attach to session after creation"
+    "--attach/--no-attach", default=True, help="⚡ Auto-Attach: Immediately engage the cockpit after materialization."
 )
 @click.pass_context
 def launch(ctx, preset: str, attach: bool):
     """
-    🚀 Quick launch with opinionated presets.
+    🚀 Ignite Cockpit: Quick launch with opinionated presets
 
-    Presets:
-
-      minimal     - Just Claude Code, no tmux
-      standard    - Medium layout with default theme
-      full        - DOPE layout with all features
-      dope-muted  - DOPE layout + muted theme (recommended)
-      dope-neon   - DOPE layout + neon theme
-      dope-house  - DOPE layout + house theme
-
-    Examples:
-
-      dopemux launch                    # Standard setup
-      dopemux launch --preset full      # Full DOPE layout
-      dopemux launch --preset dope-muted  # DOPE with muted colors
+    Materializes the DØPEMÜX cockpit using high-fidelity presets. 
+    Synchronizes layout, themes, and daemon configurations to align 
+    with the selected mission profile.
     """
     import subprocess
     import time
 
     from .tmux.controller import TmuxController
+    from .ui.splash import boot_sequence
+    
+    boot_sequence()
 
     console.logger.info(
         f"[info]🚀 Launching Dopemux with '{preset}' preset...[/info]\n"
@@ -6406,26 +5085,16 @@ def launch(ctx, preset: str, attach: bool):
     "--theme",
     type=click.Choice(["muted", "neon", "house"]),
     default="muted",
-    help="Visual theme to apply",
+    help="🎭 Ritual Aesthetic: Select the visual theme for the DOPE layout.",
 )
-@click.option("--attach/--no-attach", default=True, help="Attach to session")
+@click.option("--attach/--no-attach", default=True, help="⚡ Auto-Attach: Immediately engage the cockpit after materialization.")
 @click.pass_context
 def dope(ctx, theme: str, attach: bool):
     """
-    🔥 Launch full DOPE layout (shortcut for: launch --preset dope-{theme})
+    🔥 Engage DOPE Ritual: Launch full high-fidelity cockpit (Shortcut)
 
-    This is the complete Dopemux experience:
-      ✓ Full DOPE layout with all monitors
-      ✓ Orchestrator + dual agents
-      ✓ Dashboard panels
-      ✓ Auto-bootstrap services
-      ✓ Your choice of theme
-
-    Examples:
-
-      dopemux dope              # DOPE with muted theme (default)
-      dopemux dope --theme neon # DOPE with neon theme
-      dopemux dope --theme house # DOPE with house theme
+    Materializes the complete DØPEMÜX experience, including the full DOPE 
+    layout, dual-agent orchestrators, and high-fidelity dashboard panels.
     """
     preset = f"dope-{theme}"
     ctx.invoke(launch, preset=preset, attach=attach)
@@ -6435,14 +5104,10 @@ def dope(ctx, theme: str, attach: bool):
 @click.pass_context
 def quick(ctx):
     """
-    ⚡ Fastest start - medium layout, no bells and whistles.
+    ⚡ Streamlined Ignition: Fastest cockpit launch (Shortcut)
 
-    Perfect for:
-      • Quick coding sessions
-      • Testing something fast
-      • Don't need full monitoring
-
-    Equivalent to: dopemux tmux start --layout medium
+    Engages the high-velocity startup sequence, materializing a medium 
+    layout cockpit for rapid ritual execution without full monitoring overhead.
     """
     console.print("[info]⚡ Quick start - medium layout[/info]\n")
     import subprocess
@@ -6464,20 +5129,13 @@ def quick(ctx):
 @click.argument("shell_type", type=click.Choice(["bash", "zsh"], case_sensitive=False))
 @click.pass_context
 def shell_setup_cmd(ctx, shell_type: str):
-    """🐚 Output shell integration code for worktree switching.
+    """
+    🐚 Engage Shell Uplink: Output integration code for worktree switching
 
-    This command outputs shell functions that enable proper worktree switching.
-    Python subprocesses cannot change the parent shell's directory, so we provide
-    shell functions that execute 'cd' in the shell's context.
-
-    Usage:
-        dopemux shell-setup bash >> ~/.bashrc && source ~/.bashrc
-        dopemux shell-setup zsh >> ~/.zshrc && source ~/.zshrc
-
-    Then use:
-        dwt <branch>   # Switch to worktree with fuzzy matching
-        dwtls          # List all worktrees
-        dwtcur         # Show current worktree
+    Materializes high-fidelity shell functions to enable seamless worktree 
+    transitions. Since Python daemons cannot directly manipulate the 
+    parent shell's coordinates, these rituals provide the necessary hooks 
+    for contextual 'cd' operations.
     """
     import importlib.resources
 
@@ -6529,27 +5187,15 @@ def shell_setup_cmd(ctx, shell_type: str):
 
 @cli.command("dashboard")
 @click.option(
-    "--demo", is_flag=True, help="Run with mock data (no live services required)"
+    "--demo", is_flag=True, help="🧪 Simulation Ritual: Run with mock telemetry (no live daemons required)."
 )
 def dashboard_cmd(demo: bool):
-    """📊 Launch the ADHD-optimized TUI dashboard.
+    """
+    📊 Cockpit HUD: Launch the high-fidelity TUI dashboard
 
-    Real-time monitoring of ADHD state, productivity metrics, service health,
-    and cognitive load trends.
-
-    \b
-    Keybindings:
-        q — Quit
-        t — Toggle tasks panel
-        s — Toggle services panel
-        p — Toggle trends panel
-        d — Open detail popup (requires tmux)
-        r — Force refresh
-
-    \b
-    Examples:
-        dopemux dashboard          # Live dashboard
-        dopemux dashboard --demo   # Preview with mock data
+    Engages the real-time monitoring HUD for ADHD state, ritual productivity 
+    metrics, daemon health, and cognitive load trends. Synchronizes across 
+    all active sensors to provide a unified telemetry stream.
     """
     from .ui.dashboard import run_dashboard
 
@@ -6561,19 +5207,17 @@ def dashboard_cmd(demo: bool):
 
 
 @cli.command("doctor")
-@click.option("--worktree", is_flag=True, help="Run worktree-specific diagnostics")
-@click.option("--verbose", "-v", is_flag=True, help="Show detailed information")
+@click.option("--worktree", is_flag=True, help="🔬 Focus Chamber: Run worktree-specific diagnostics.")
+@click.option("--verbose", "-v", is_flag=True, help="📊 Deep Telemetry: Show high-fidelity diagnostic information.")
 @click.pass_context
 def doctor_cmd(ctx, worktree: bool, verbose: bool):
-    """🏥 Run system diagnostics and health checks.
+    """
+    🏥 System Apothecary: Run diagnostics and health checks
 
-    Comprehensive health check for Dopemux configuration, workspace detection,
-    MCP servers, and worktree system.
-
-    Examples:
-        dopemux doctor                # General health check
-        dopemux doctor --worktree     # Worktree system check
-        dopemux doctor --worktree -v  # Detailed worktree diagnostics
+    Performs a comprehensive structural audit of the DØPEMÜX configuration, 
+    workspace detection sensors, MCP server stability, and worktree 
+    synchronization. Ensures the ritual chamber is primed for high-fidelity 
+    execution.
     """
     if worktree:
         # Phase 1-3 worktree diagnostics
@@ -6711,9 +5355,11 @@ def doctor_cmd(ctx, worktree: bool, verbose: bool):
 @cli.command("layouts")
 def layouts():
     """
-    📐 Show available layouts and themes with examples.
+    📐 Catalog Cockpit Architectures: Show available layouts and themes
 
-    Educational command to learn what's available.
+    Displays the index of available cockpit layouts and visual themes. 
+    Provides high-fidelity descriptions and usage guidelines for optimizing 
+    the cockpit aesthetic and structural alignment.
     """
     from rich.markdown import Markdown
 
@@ -6830,32 +5476,32 @@ def main():
 
 
 @cli.command("hooks")
-@click.option("--setup", is_flag=True, help="Start monitoring Claude Code activity")
-@click.option("--teardown", is_flag=True, help="Stop monitoring")
-@click.option("--status", is_flag=True, help="Show current hook status")
+@click.option("--setup", is_flag=True, help="🚀 Ignite Sensors: Start monitoring Claude Code activity signals.")
+@click.option("--teardown", is_flag=True, help="⏹️ Halt Sensors: Stop monitoring Claude Code activity.")
+@click.option("--status", is_flag=True, help="📊 Sensor HUD: Show current hook operational status.")
 @click.option(
     "--enable",
-    help="Enable specific hook type (session-start, file-change, shell-command, git-commit)",
+    help="⚡ Engage Sensor: Enable specific hook type (session-start, file-change, shell-command, git-commit).",
 )
 @click.option(
     "--disable",
-    help="Disable specific hook type (session-start, file-change, shell-command, git-commit)",
+    help="⏸️  Silence Sensor: Disable specific hook type.",
 )
-@click.option("--shell-scripts", is_flag=True, help="Generate shell hook scripts")
+@click.option("--shell-scripts", is_flag=True, help="🐚 Generate Rituals: Generate shell hook scripts for manual uplink.")
 @click.option(
-    "--install-shell-hooks", is_flag=True, help="Install shell hooks in shell config"
+    "--install-shell-hooks", is_flag=True, help="⚡ Commit Uplink: Install shell hooks into system shell configuration."
 )
 @click.option(
     "--uninstall-shell-hooks",
     is_flag=True,
-    help="Uninstall shell hooks from shell config",
+    help="🔌 Sever Uplink: Uninstall shell hooks from shell configuration.",
 )
 @click.option(
     "--workspace",
     type=click.Path(exists=True, file_okay=False, dir_okay=True),
-    help="Set workspace to monitor",
+    help="🔬 Ritual Chamber: Target workspace for hook synchronization.",
 )
-@click.option("--force", is_flag=True, help="Force operations (e.g., reinstall)")
+@click.option("--force", is_flag=True, help="⚡ Force Extraction: Overwrite safety interlocks for hook operations.")
 @click.pass_context
 def hooks_cmd(
     ctx,
@@ -6871,10 +5517,11 @@ def hooks_cmd(
     force,
 ):
     """
-    Manage Dopemux hook system for Claude Code integration.
+    🔗 Event Synchronization: Manage Claude Code integration hooks
 
-    Provides external monitoring and triggering of Dopemux workflows
-    based on Claude Code activity without interfering with the CLI.
+    Orchestrates the high-fidelity monitoring of Claude Code activity signals. 
+    This system synchronizes shell rituals, file system modifications, and 
+    git telemetry into the per-project Chronicle ledger.
     """
     try:
         from .hooks.claude_code_hooks import claude_hooks, get_shell_hook_scripts

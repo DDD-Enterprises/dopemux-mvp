@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 import click
 import yaml
 from rich.panel import Panel
-from rich.prompt import Confirm, Prompt
+from dopemux.ui.prompts import dopemux_confirm, dopemux_prompt
 
 from .console import console
 from .profile_analyzer import GitHistoryAnalyzer
@@ -78,7 +78,7 @@ class ProfileWizard:
         # Step 2: Ask for profile name
         if not profile_name:
             console.logger.info("\n[bold]Question 1 of 3:[/bold] What should we call this profile?")
-            profile_name = Prompt.ask(
+            profile_name = dopemux_prompt(
                 "Profile name",
                 default="my-workflow",
                 show_default=True
@@ -88,7 +88,7 @@ class ProfileWizard:
         console.logger.info(f"\n[bold]Question 2 of 3:[/bold] Which MCP servers do you want?")
         console.logger.info(f"[text.dim]Based on your git history, I recommend: {', '.join(analysis.suggested_mcps)}[/text.dim]")
 
-        mcp_choice = Prompt.ask(
+        mcp_choice = dopemux_prompt(
             "MCP selection",
             choices=["recommended", "minimal", "full", "custom"],
             default="recommended"
@@ -105,7 +105,7 @@ class ProfileWizard:
             for i, mcp in enumerate(self.ALL_MCPS, 1):
                 console.logger.info(f"  {i}. {mcp}")
             console.logger.info("\n[text.dim]Enter numbers separated by commas (e.g., 1,2,4)[/text.dim]")
-            selection = Prompt.ask("MCP numbers")
+            selection = dopemux_prompt("MCP numbers")
             indices = [int(x.strip()) - 1 for x in selection.split(',') if x.strip().isdigit()]
             selected_mcps = [self.ALL_MCPS[i] for i in indices if 0 <= i < len(self.ALL_MCPS)]
 
@@ -113,7 +113,7 @@ class ProfileWizard:
         console.logger.info(f"\n[bold]Question 3 of 3:[/bold] ADHD session preferences")
         console.logger.info(f"[text.dim]Suggested: {analysis.suggested_session_duration} min sessions, {analysis.suggested_energy_level} energy[/text.dim]")
 
-        use_suggested = Confirm.ask(
+        use_suggested = dopemux_confirm(
             "Use suggested ADHD settings?",
             default=True
         )
@@ -122,11 +122,11 @@ class ProfileWizard:
             session_duration = analysis.suggested_session_duration
             energy_level = analysis.suggested_energy_level
         else:
-            session_duration = int(Prompt.ask(
+            session_duration = int(dopemux_prompt(
                 "Session duration (minutes)",
                 default=str(analysis.suggested_session_duration)
             ))
-            energy_level = Prompt.ask(
+            energy_level = dopemux_prompt(
                 "Energy level",
                 choices=["low", "medium", "high"],
                 default=analysis.suggested_energy_level
@@ -156,7 +156,7 @@ class ProfileWizard:
         console.logger.info(f"   • Energy: [info]{energy_level}[/info]")
         console.logger.info(f"   • File: [text.dim]{output_file}[/text.dim]")
 
-        if not Confirm.ask(f"\nSave profile to {output_file}?", default=True):
+        if not dopemux_confirm(f"\nSave profile to {output_file}?", default=True):
             console.logger.info("[warning]❌ Profile creation cancelled[/warning]")
             return None
 

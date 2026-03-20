@@ -19,6 +19,7 @@ from enum import Enum
 import click
 import yaml
 from rich.console import Console
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, TaskID
 
 from ..config.base import Config

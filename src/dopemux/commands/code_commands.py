@@ -12,8 +12,9 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
 
@@ -21,35 +22,29 @@ from ..console import console
 @click.pass_context
 def code(ctx):
     """
-    🧠 AI Code Repair - Vanilla Agent
+    🧠 Cognitive Repair: Vanilla Agent Code Repair
 
-    Quick and reliable code fixes using traditional LLM-based iterative repair.
-    Best for straightforward bugs and rapid development cycles.
-
-    Examples:
-        dopemux code repair "undefined variable error" --file script.py
-        dopemux code analyze "null pointer issue" --file app.py
-        dopemux code status
+    Orchestrates traditional LLM-based iterative code fixes. Best for 
+    straightforward bugs and rapid development cycles, synchronizing 
+    automated repair rituals across the project workspace.
     """
     pass
 
 
 @code.command()
 @click.argument('bug_description')
-@click.option('--file', '-f', 'file_path', help='Path to file containing the bug')
-@click.option('--line', '-l', type=int, help='Line number where bug occurs')
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
-@click.option('--dry-run', is_flag=True, help='Show what would be done without making changes')
+@click.option('--file', '-f', 'file_path', help='🔬 Artifact Coordinate: Path to the file containing the reported bug.')
+@click.option('--line', '-l', type=int, help='📍 Signal Anchor: Specific line number where the bug manifests.')
+@click.option('--verbose', '-v', is_flag=True, help='📊 Deep Telemetry: Enable verbose output for high-fidelity diagnostics.')
+@click.option('--dry-run', is_flag=True, help='🔬 Ritual Preview: Simulate repair operations without mutating artifacts.')
 @click.pass_context
 def repair(ctx, bug_description, file_path, line, verbose, dry_run):
     """
-    Repair code using the vanilla agent.
+    💊 Execute Remediation: Run the vanilla agent code repair ritual
 
-    BUG_DESCRIPTION: Description of the bug to fix
-
-    Examples:
-        dopemux code repair "variable not defined" --file script.py --line 42
-        dopemux code repair "null pointer exception" --file app.py --verbose
+    Initiates an iterative repair sequence to resolve the specified bug. 
+    Synchronizes across file coordinates and reported signals to MATERIALISE 
+    a high-fidelity fix.
     """
     # Import here to avoid circular dependencies
     try:
@@ -109,15 +104,16 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
 
 @code.command()
 @click.argument('bug_description')
-@click.option('--file', '-f', 'file_path', help='Path to file to analyze')
-@click.option('--line', '-l', type=int, help='Line number to analyze')
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.option('--file', '-f', 'file_path', help='🔬 Artifact Coordinate: Target file path for diagnostic analysis.')
+@click.option('--line', '-l', type=int, help='📍 Signal Anchor: Target line number for isolated analysis.')
+@click.option('--verbose', '-v', is_flag=True, help='📊 Deep Telemetry: Enable detailed analytic readout.')
 @click.pass_context
 def analyze(ctx, bug_description, file_path, line, verbose):
     """
-    Analyze a bug without attempting repair.
+    🔬 Pattern Synthesis: Analyze bug surface area without executing repairs
 
-    Provides insights, complexity assessment, and repair strategy recommendations.
+    Generates cognitive insights, ritual complexity assessments, and 
+    recommended repair strategies for manual remediation.
     """
     try:
         services_path = Path(__file__).resolve().parent.parent / 'services'
@@ -155,11 +151,14 @@ def analyze(ctx, bug_description, file_path, line, verbose):
 
 
 @code.command()
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.option('--verbose', '-v', is_flag=True, help='📊 Deep Telemetry: Enable verbose diagnostic output.')
 @click.pass_context
 def code_agent_status_cmd(ctx, verbose):
     """
-    Show code agent status and configuration.
+    📊 Monitoring HUD: Show code agent status and configuration
+
+    Displays the current operational state, cognitive parameters, and 
+    service connectivity for the vanilla code agent daemon.
     """
     try:
         services_path = Path(__file__).resolve().parent.parent / 'services'
