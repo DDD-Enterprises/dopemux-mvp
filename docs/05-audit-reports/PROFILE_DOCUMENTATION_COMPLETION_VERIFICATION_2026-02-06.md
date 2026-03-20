@@ -25,7 +25,7 @@ Updated active docs:
 1. `/Users/hue/code/dopemux-mvp/docs/01-tutorials/profile-user-guide.md`
 1. `/Users/hue/code/dopemux-mvp/docs/01-tutorials/profile-migration-guide.md`
 1. `/Users/hue/code/dopemux-mvp/docs/03-reference/profile-developer-guide.md`
-1. `/Users/hue/code/dopemux-mvp/docs/02-how-to/PROFILE-USAGE.md`
+1. `/Users/hue/code/dopemux-mvp/docs/02-how-to/profile-usage-3.md`
 1. `/Users/hue/code/dopemux-mvp/docs/docs_index.yaml`
 
 ## Verification Commands

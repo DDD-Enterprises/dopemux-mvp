@@ -3007,7 +3007,7 @@
   {
     "name": "TMUX",
     "default": null,
-    "location": "./docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md:187"
+    "location": "./docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md:187"
   },
   {
     "name": "LOCALE",
@@ -5352,27 +5352,27 @@
   {
     "name": "DOPE_MEMORY_INPUT_STREAM",
     "default": "activity.events.v1",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:44"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:44"
   },
   {
     "name": "REDIS_PASSWORD",
     "default": null,
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:45"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:45"
   },
   {
     "name": "DOPE_MEMORY_INPUT_STREAM",
     "default": "activity.events.v1",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:62"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:62"
   },
   {
     "name": "DOPE_MEMORY_OUTPUT_STREAM",
     "default": "memory.derived.v1",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:63"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:63"
   },
   {
     "name": "DOPE_MEMORY_CONSUMER_GROUP",
     "default": "dope-memory-ingestor",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:64"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md:64"
   },
   {
     "name": "ADHD_ENGINE_URL",
@@ -5387,12 +5387,12 @@
   {
     "name": "ENABLE_RETENTION_JOB",
     "default": "true",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06_DOPE_MEMORY_PROMOTION_RETENTION_PROVENANCE.md:114"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06-dope-memory-promotion-retention-provenance-2.md:114"
   },
   {
     "name": "RETENTION_INTERVAL_SEC",
     "default": "3600",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06_DOPE_MEMORY_PROMOTION_RETENTION_PROVENANCE.md:115"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06-dope-memory-promotion-retention-provenance-2.md:115"
   },
   {
     "name": "POSTGRES_HOST",
@@ -5422,6 +5422,6 @@
   {
     "name": "ADHD_FORCE_INMEMORY_CACHE",
     "default": "\"\"",
-    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/08_ADHD_COGNITIVE_PLANE_SURFACES.md:33"
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/08-adhd-cognitive-plane-surfaces-2.md:33"
   }
 ]

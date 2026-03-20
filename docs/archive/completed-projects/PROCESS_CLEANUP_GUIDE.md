@@ -292,7 +292,7 @@ def _signal_handler(self, signum, frame):
 
 ## 📝 Related Documentation
 
-- **Worktree Guide**: `docs/WORKTREE_SWITCHING_GUIDE.md`
+- **Worktree Guide**: `docs/worktree-switching-guide.md`
 - **Shell Integration**: `dopemux shell-setup --help`
 - **Health Monitoring**: `dopemux health --help`
 

@@ -17,7 +17,7 @@ Implement the missing ADR-197 Stage-1 (`Idea`) and Stage-2 (`Epic`) runtime surf
 
 ## Current Truth Baseline (2026-02-06)
 
-- `docs/90-adr/ADR-197-task-epic-workflow-system.md` defines `workflow_ideas` and `workflow_epics` categories and promotion flow.
+- `docs/90-adr/adr-197-task-epic-workflow-system-3.md` defines `workflow_ideas` and `workflow_epics` categories and promotion flow.
 - Runtime gap is confirmed in active code paths: there are no Stage-1/Stage-2 workflow endpoints in `services/task-orchestrator/app/main.py`.
 - `services/task-orchestrator/conport_mcp_client.py` supports reading custom data (`get_custom_data`) but has no typed Stage-1/Stage-2 workflow operations.
 - `src/dopemux/cli.py` currently has no `workflow` command group for idea/epic lifecycle.
@@ -231,7 +231,7 @@ New optional env vars (existing behavior unchanged if absent):
 - `tests/integration/test_workflow_idea_epic_flow.py` (new)
 - `docs/02-how-to/workflow-idea-to-epic.md` (new)
 - `docs/03-reference/workflow-schema.md` (new)
-- `docs/04-explanation/architecture/architecture-3.0-implementation.md` (update)
+- `docs/04-explanation/architecture/architecture-3-0-implementation-2.md` (update)
 
 ### Acceptance
 - End-to-end: create idea -> promote to epic -> list epic.

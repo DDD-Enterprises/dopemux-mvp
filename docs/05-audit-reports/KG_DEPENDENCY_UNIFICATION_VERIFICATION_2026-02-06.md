@@ -38,7 +38,7 @@ This verification covers the `kg_dependency_unification` cluster (`7` items) fro
 | `2.2.3: Validate embedding quality & schema` \| `partial` \| `src/dopemux/extraction/consensus_validator.py`, `services/dope-context/src/pipeline/indexing_pipeline.py` | no dedicated conport decision embedding regression benchmark |
 | `2.2.2: Write & run migration script (re-embed decisions)` \| `partial` \| `scripts/deploy/migration/backfill_embeddings.py` | script exists; no current-wave run artifact against target dataset |
 | `2.2.1: Remove ConPort embedding_service, import from core` \| `partial` \| `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | embedding-service path is now hard-deprecated with keyword fallback, but compatibility shim is still present (not removed) |
-| `2.1.2: Update docs & add deprecation warnings` \| `implemented` \| `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3.0-implementation.md`, `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | none for current deprecation-label requirement |
+| `2.1.2: Update docs & add deprecation warnings` \| `implemented` \| `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3-0-implementation-2.md`, `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | none for current deprecation-label requirement |
 
 ## Summary
 

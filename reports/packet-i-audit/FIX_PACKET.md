@@ -38,8 +38,8 @@ Documentation was not updated when `error`, `workflow_transition`, `task_event` 
 
 ### Minimal Diff
 ```diff
---- a/docs/spec/dope-memory/v1/07_mcp_contracts.md
-+++ b/docs/spec/dope-memory/v1/07_mcp_contracts.md
+--- a/docs/spec/dope-memory/v1/07-mcp-contracts.md
++++ b/docs/spec/dope-memory/v1/07-mcp-contracts.md
 @@ -77,7 +77,7 @@
    "workspace_id": "string",
    "instance_id": "string",

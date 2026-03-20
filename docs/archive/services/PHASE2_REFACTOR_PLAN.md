@@ -34,7 +34,7 @@ prelude: Phase2_Refactor_Plan (explanation) for dopemux documentation and develo
 - Emit `memory.pulse` events (30-60min cadence + session end)
 - Emit `reflection.created` events when reflections are generated
 
-**Event Schemas** (per `docs/spec/dope-memory/v1/04_event_taxonomy.md`):
+**Event Schemas** (per `docs/spec/dope-memory/v1/04-event-taxonomy.md`):
 
 ```python
 # memory.pulse event

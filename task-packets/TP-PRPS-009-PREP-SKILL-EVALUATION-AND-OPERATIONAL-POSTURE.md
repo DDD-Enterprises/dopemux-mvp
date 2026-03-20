@@ -64,9 +64,9 @@ Non-goals
 ⸻
 
 Deliverables
-    1.    docs/pr_prep/EVALUATION_MODEL.md
-    2.    docs/pr_prep/POST_PILOT_GO_NO_GO_CRITERIA.md
-    3.    docs/pr_prep/OPERATIONAL_POSTURE_OPTIONS.md
+    1.    docs/pr_prep/evaluation-model.md
+    2.    docs/pr_prep/post-pilot-go-no-go-criteria.md
+    3.    docs/pr_prep/operational-posture-options.md
     4.    proof/pr_prep/eval/PREP_SKILL_EVALUATION_REPORT.json
     5.    proof/pr_prep/eval/PILOT_ACCEPTANCE_SUMMARY.json
     6.    proof/pr_prep/eval/OVERRIDE_ANALYSIS.json
@@ -373,9 +373,9 @@ Acceptance checks
 Proof requirements
 
 Required artifacts:
-    •    docs/pr_prep/EVALUATION_MODEL.md
-    •    docs/pr_prep/POST_PILOT_GO_NO_GO_CRITERIA.md
-    •    docs/pr_prep/OPERATIONAL_POSTURE_OPTIONS.md
+    •    docs/pr_prep/evaluation-model.md
+    •    docs/pr_prep/post-pilot-go-no-go-criteria.md
+    •    docs/pr_prep/operational-posture-options.md
     •    proof/pr_prep/eval/PREP_SKILL_EVALUATION_REPORT.json
     •    proof/pr_prep/eval/PILOT_ACCEPTANCE_SUMMARY.json
     •    proof/pr_prep/eval/OVERRIDE_ANALYSIS.json

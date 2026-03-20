@@ -75,7 +75,7 @@ prelude: Dopeconbridge_Zen_Integration_Plan (explanation) for dopemux documentat
 
 #### 3.2 Architecture Documentation
 **Files to update:**
-- [ ] `docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md`
+- [ ] `docs/04-explanation/architecture/dopemux-architecture-overview-3.md`
 - [ ] `docs/04-explanation/architecture/ARCHITECTURE_3.0_COMPLETE.md`
 - [ ] `docs/94-architecture/system-bible.md`
 - [ ] `docs/94-architecture/unified-architecture-guide.md`

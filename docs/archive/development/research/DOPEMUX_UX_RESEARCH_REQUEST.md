@@ -406,7 +406,7 @@ Since HYPERFOCUS REVIVAL is the flagship feature, ensure deep integration:
 - Interactive actions: Track, Revive, Design-First, Archive
 
 **Reference Documents:**
-- `docs/03-reference/F001-ENHANCED-untracked-work-system.md`
+- `docs/03-reference/f001-enhanced-untracked-work-system-3.md`
 - `docs/development/research/HYPERFOCUS_REVIVAL_RESEARCH_REQUEST.md`
 
 ---

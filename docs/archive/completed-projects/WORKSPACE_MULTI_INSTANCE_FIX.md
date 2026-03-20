@@ -321,7 +321,7 @@ This fix addresses multiple user-reported issues:
 
 - Decision #TBD: Workspace & multi-instance detection fixes (in ConPort)
 - `src/dopemux/workspace_utils.py`: Git root detection implementation
-- `docs/WORKTREE_SWITCHING_GUIDE.md`: Worktree usage guide
+- `docs/worktree-switching-guide.md`: Worktree usage guide
 - ADR-007: Routing Logic (MCP server coordination)
 
 ---

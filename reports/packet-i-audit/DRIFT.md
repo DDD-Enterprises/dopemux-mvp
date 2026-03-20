@@ -44,7 +44,7 @@ Auditor: Claude Opus 4.6
   - `07_mcp_contracts.md:79`: `"entry_type": "manual_note|decision|blocker|resolution|milestone"`
   - `schema.sql:43-45`: `CHECK (entry_type IN ('decision', 'blocker', 'resolution', 'milestone', 'error', 'workflow_transition', 'manual_note', 'task_event'))`
 - Evidence:
-  - docs/spec/dope-memory/v1/07_mcp_contracts.md:79
+  - docs/spec/dope-memory/v1/07-mcp-contracts.md:79
   - services/working-memory-assistant/chronicle/schema.sql:43-45
 - Impact: Docs missing 3 entry_types: `error`, `workflow_transition`, `task_event`
 - Fix (minimal): Update line 79 of 07_mcp_contracts.md to match schema.sql CHECK constraint

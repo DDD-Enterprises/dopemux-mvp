@@ -16,9 +16,9 @@ prelude: Repository-wide verified baseline of components, features, integrations
 
 This report reconciles:
 
-1. `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md`
-1. `docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md`
-1. `docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md`
+1. `docs/04-explanation/history/design-evolution-2026-2.md`
+1. `docs/04-explanation/history/project-archaeology-report-2.md`
+1. `docs/04-explanation/history/unbuilt-features-and-roadmap-2.md`
 1. Current code state in `services/`, `src/dopemux/`, `docker/mcp-servers/`, and UI directories
 1. Current architecture contracts in `services/registry.yaml`, `compose.yml`, and `docker-compose.smoke.yml`
 1. Historical service master histories in `docs/archive/services/history/`
@@ -400,7 +400,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 1. Serena KG-related regression harnesses were unblocked by fixing annotation-time import failures and async test execution defaults; targeted suites now run green (`13` passed):
    `services/serena/intelligence/database.py`, `services/serena/tree_sitter_analyzer.py`, `pytest.ini`.
 1. ConPort semantic-search compatibility paths are now explicitly hard-deprecated in runtime responses/logging and active architecture docs, reducing ambiguity while preserving backward compatibility:
-   `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py`, `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3.0-implementation.md`.
+   `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py`, `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3-0-implementation-2.md`.
 1. A caller inventory for deprecated ConPort semantic-search paths is now captured to guide safe shim removal sequencing:
    `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`.
 1. Live ConPort backlog delta recheck (`2026-02-08` vs `2026-02-07`) confirms no

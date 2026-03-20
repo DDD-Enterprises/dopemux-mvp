@@ -2,9 +2,9 @@
 set -euo pipefail
 
 EVD_DIR="docs/planes/pm/_evidence/PM-INV-00.outputs"
-INV="docs/planes/pm/PM_PLANE_INVENTORY.md"
-GAPS="docs/planes/pm/PM_PLANE_GAPS.md"
-LEDGER="docs/planes/pm/PM_PHASE0_CLAIMS_LEDGER.md"
+INV="docs/planes/pm/pm-plane-inventory-2.md"
+GAPS="docs/planes/pm/pm-plane-gaps-2.md"
+LEDGER="docs/planes/pm/pm-phase0-claims-ledger-2.md"
 
 fail() { echo "FAIL: $1" >&2; exit 1; }
 

@@ -334,7 +334,7 @@ git push origin feature/improve-thinkdeep
 - [ ] Write docs/INSTALLATION.md
 - [ ] Write docs/MULTI_PROJECT.md
 - [ ] Write docs/PROFILES.md
-- [ ] Write docs/CONTRIBUTING_ZEN.md
+- [ ] Write docs/contributing-zen.md
 - [ ] Update README.md with new installation
 - [ ] Add Quick Start section
 

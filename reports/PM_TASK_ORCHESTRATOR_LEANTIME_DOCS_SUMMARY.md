@@ -3,10 +3,10 @@
 ## Document Locations
 
 ### PM Plane (Hub)
-- **HUB**: `docs/planes/pm/HUB.md` — Entry point, phase structure, deliverables
-- **SUPERVISOR**: `docs/planes/pm/SUPERVISOR.md` — Phase 0 audit instructions
-- **PM_ARCHITECTURE**: `docs/planes/pm/PM_ARCHITECTURE.md` — Canonical task object, lifecycle, storage model
-- **PM_ADHD_REQUIREMENTS**: `docs/planes/pm/PM_ADHD_REQUIREMENTS.md` — ADHD-safe requirements, signals contract
+- **HUB**: `docs/planes/pm/hub-3.md` — Entry point, phase structure, deliverables
+- **SUPERVISOR**: `docs/planes/pm/supervisor-3.md` — Phase 0 audit instructions
+- **PM_ARCHITECTURE**: `docs/planes/pm/pm-architecture-2.md` — Canonical task object, lifecycle, storage model
+- **PM_ADHD_REQUIREMENTS**: `docs/planes/pm/pm-adhd-requirements-2.md` — ADHD-safe requirements, signals contract
 
 ### Task Orchestrator Service
 - **Service README**: `services/task-orchestrator/README.md` (not yet viewed)
@@ -16,12 +16,12 @@
 - **Suppression Telemetry**: `services/task-orchestrator/SUPPRESSION_TELEMETRY.md`
 
 ### PM Plane Derived Docs
-- **PM_PLANE_INVENTORY**: `docs/planes/pm/PM_PLANE_INVENTORY.md` — Services, CLIs, stores (Phase 0)
-- **PM_PLANE_GAPS**: `docs/planes/pm/PM_PLANE_GAPS.md` — Missing components, risks (Phase 0)
-- **PM_FRICTION_MAP**: `docs/planes/pm/PM_FRICTION_MAP.md` — Pain points (Phase 1)
-- **SIGNAL_VS_NOISE_ANALYSIS**: `docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md` — Event filtering (Phase 1)
-- **PM_OUTPUT_BOUNDARIES**: `docs/planes/pm/PM_OUTPUT_BOUNDARIES.md` — Minimal output policy
-- **PM_WORKFLOWS_DERIVED**: `docs/planes/pm/PM_WORKFLOWS_DERIVED.md` — User workflows (Phase 5)
+- **PM_PLANE_INVENTORY**: `docs/planes/pm/pm-plane-inventory-2.md` — Services, CLIs, stores (Phase 0)
+- **PM_PLANE_GAPS**: `docs/planes/pm/pm-plane-gaps-2.md` — Missing components, risks (Phase 0)
+- **PM_FRICTION_MAP**: `docs/planes/pm/pm-friction-map-2.md` — Pain points (Phase 1)
+- **SIGNAL_VS_NOISE_ANALYSIS**: `docs/planes/pm/signal-vs-noise-analysis-2.md` — Event filtering (Phase 1)
+- **PM_OUTPUT_BOUNDARIES**: `docs/planes/pm/pm-output-boundaries-2.md` — Minimal output policy
+- **PM_WORKFLOWS_DERIVED**: `docs/planes/pm/pm-workflows-derived-2.md` — User workflows (Phase 5)
 
 ---
 
