@@ -476,7 +476,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     add_common_arguments(flight_parser)
     flight_parser.add_argument(
-        "--limit", type=int, default=10, help="📊 HUD Limit: Maximum PRs to render in the dashboard."
+        "--limit", type=int, default=50, help="📊 HUD Limit: Maximum PRs to render in the dashboard."
     )
     flight_parser.add_argument(
         "--strategy", choices=["simple", "hybrid"], default="hybrid", help="🧠 Sorting Ritual: Cognitive strategy for prioritization."
