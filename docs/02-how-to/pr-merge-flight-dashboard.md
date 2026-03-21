@@ -24,10 +24,21 @@ dopemux-pr-merge flight
 ## Dashboard Layout
 
 - **Header**: Live mission timer and `[LIVE]` status chip.
-- **Queue Status**: Scrollable list of PRs in the current run, highlighting the active PR with a Neon Cyan background.
+- **Queue Status**: Dynamic viewport that follows the active PR as you scroll.
 - **Mission Intelligence**: Strategy, rationale, and metadata for the active PR.
-- **Tactical Insights**: Real-time blocker status and automated check results.
+- **Tactical Insights**: A requirements checklist showing progress (CI, Validation, Conflicts, Threads).
 - **Tactical Controls**: Keymap for operator actions.
+
+## Advanced Orchestration
+
+### Speculative Rebase Train (Merge Train)
+The dashboard automatically attempts to "ignite" a speculative rebase train for all `READY` PRs at the start of a pass. Instead of rebasing one-by-one, it rebases them in a chain (e.g., PR B onto PR A). This allows multiple PRs to pass CI and merge simultaneously, significantly increasing integration velocity.
+
+### Global CI Remediation
+If multiple PRs fail CI with the same error, the orchestrator identifies the "Failure Fingerprint". Instead of fixing each PR individually, it spawns a `ci-remediation-specialist` to fix the issue in `main` and opens a single `global-ci-fix` PR. Other failing PRs will wait for this fix to merge, then automatically rebase and heal.
+
+### Optimistic Lifecycle
+The dashboard uses an "optimistic" state model. If local validation passes, the PR is marked as `READY` (🟢) in the UI immediately, even if GitHub's CI status is still lagging or pending.
 
 ## Controls
 

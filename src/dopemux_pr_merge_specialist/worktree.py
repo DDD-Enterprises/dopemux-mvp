@@ -289,6 +289,42 @@ def attempt_rebase(
     return True, False, "rebase updated and worktree refreshed"
 
 
+def attempt_speculative_rebase(
+    *,
+    worktree_path: Path,
+    onto_ref: str,
+    commands_log: Path,
+    execute: bool,
+    policy: Dict[str, Any],
+) -> Tuple[bool, str]:
+    """
+    Perform a local rebase of the current HEAD onto an arbitrary onto_ref.
+    Used for speculative 'Train' rebasing.
+    """
+    if not execute:
+        return True, "dry-run"
+
+    timeout_seconds = int(policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600)
+    
+    # Enable rerere
+    run_command(["git", "config", "rerere.enabled", "true"], cwd=worktree_path, timeout_seconds=timeout_seconds)
+    run_command(["git", "config", "rerere.autoupdate", "true"], cwd=worktree_path, timeout_seconds=timeout_seconds)
+
+    rebase = run_command(
+        ["git", "rebase", onto_ref],
+        cwd=worktree_path,
+        timeout_seconds=timeout_seconds,
+    )
+    append_command_log(commands_log, rebase)
+    
+    if rebase.returncode == 0:
+        return True, "speculative rebase succeeded"
+    
+    # Rebase failed (conflict). Abort.
+    run_command(["git", "rebase", "--abort"], cwd=worktree_path, timeout_seconds=timeout_seconds)
+    return False, rebase.stderr.strip() or "speculative rebase failed with conflicts"
+
+
 def push_rebased_head(
     *,
     worktree_path: Path,

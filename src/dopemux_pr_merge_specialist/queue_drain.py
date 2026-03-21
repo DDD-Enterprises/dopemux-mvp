@@ -968,6 +968,99 @@ def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, wo
                     object.__setattr__(r, "blocked_by_global_fix_pr", new_pr_number)
 
 
+def _ignite_speculative_train(
+    results: List[PRResult], 
+    client: GitHubClient, 
+    repo_root: Path, 
+    active_run_id: str,
+    commands_log: Path,
+    policy: Dict[str, Any],
+    execute: bool
+) -> Tuple[List[int], List[int]]:
+    """
+    Attempts to rebase a chain of READY PRs onto each other speculatively.
+    Returns (merged_ids, queued_ids).
+    """
+    # 1. Identify READY PRs with green CI and no blockers
+    # We only include PRs where the merge action would be REBASE_MERGE or AUTO_MERGE_FALLBACK
+    train_candidates = [
+        r for r in results 
+        if r.lifecycle_state in (PRState.MERGE_READY.value, PRState.QUEUED_FOR_MERGE.value)
+        and r.pr_state.ci_status == "SUCCESS"
+        and r.pr_state.active_unresolved_threads == 0
+    ]
+    
+    if len(train_candidates) < 2:
+        return [], []
+
+    print(f"\n🚂 IGNITING SPECULATIVE REBASE TRAIN ({len(train_candidates)} PRs)...")
+    
+    merged_ids = []
+    queued_ids = []
+    current_base = "origin/main"
+    
+    for i, result in enumerate(train_candidates):
+        pr = result.pr_state
+        print(f"  [Train {i+1}] Speculative Rebase for PR #{pr.pr_id}...")
+        
+        # Prepare worktree
+        worktree_path, branch, err = prepare_worktree(repo_root, pr.pr_id, active_run_id, commands_log, policy)
+        if err:
+            print(f"    ❌ Worktree preparation failed: {err}")
+            break
+            
+        try:
+            # Rebase onto current_base
+            ok, msg = attempt_speculative_rebase(
+                worktree_path=worktree_path,
+                onto_ref=current_base,
+                commands_log=commands_log,
+                execute=execute,
+                policy=policy
+            )
+            
+            if not ok:
+                print(f"    ❌ Speculative rebase failed: {msg}")
+                break
+                
+            # Push rebased head
+            if execute:
+                push_ok, push_msg = push_rebased_head(
+                    worktree_path=worktree_path,
+                    head_ref=pr.head_ref,
+                    commands_log=commands_log,
+                    execute=True,
+                    policy=policy
+                )
+                if not push_ok:
+                    print(f"    ❌ Push failed: {push_msg}")
+                    break
+                
+                # Trigger merge --auto
+                merge_cmd = ["gh", "pr", "merge", str(pr.pr_id), "--auto", "--rebase", "--delete-branch"]
+                if client.repo:
+                    merge_cmd.extend(["--repo", client.repo])
+                
+                merge_res = execute_or_dry_run(merge_cmd, execute=True, cwd=repo_root, commands_log=commands_log)
+                if merge_res.returncode == 0:
+                    print(f"    ✅ Speculative rebase & auto-merge triggered.")
+                    queued_ids.append(pr.pr_id)
+                    # Next PR rebases onto THIS PR's branch
+                    current_base = f"origin/{pr.head_ref}"
+                else:
+                    print(f"    ⚠️ Auto-merge trigger failed: {merge_res.stderr}")
+                    break
+            else:
+                print(f"    (Dry-run) Would rebase and trigger auto-merge.")
+                current_base = f"origin/{pr.head_ref}"
+                queued_ids.append(pr.pr_id)
+                
+        finally:
+            cleanup_worktree(repo_root, worktree_path, branch, commands_log, policy)
+            
+    return merged_ids, queued_ids
+
+
 def queue_drain(args: argparse.Namespace) -> int:
     from .closed_loop_engine import ClosedLoopEngine
     repo_root = Path.cwd()
@@ -1002,6 +1095,14 @@ def queue_drain(args: argparse.Namespace) -> int:
                 break
                 
             _handle_global_ci_blockers(results, client, repo_root)
+            
+            # Ignite speculative rebase train for READY PRs
+            pass_commands_log = run_dir / f"PASS_{pass_idx + 1}_TRAIN_COMMANDS.txt"
+            train_merged, train_queued = _ignite_speculative_train(
+                results, client, repo_root, active_run_id, pass_commands_log, policy, execute
+            )
+            merged_ids.update(train_merged)
+            queued_ids.update(train_queued)
             
             # Reset failed IDs for this pass to allow retries if state changed
             failed_remediation_ids = set()
