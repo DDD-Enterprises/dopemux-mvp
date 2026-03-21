@@ -1,0 +1,151 @@
+name: 🐳 Container Build & Publish (GHCR)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - 'Dockerfile.frontend'
+      - 'services/**/Dockerfile*'
+      - 'docker/**/Dockerfile*'
+      - '.github/workflows/containers.yml'
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'Dockerfile.frontend'
+      - 'services/**/Dockerfile*'
+      - 'docker/**/Dockerfile*'
+      - '.github/workflows/containers.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  NAMESPACE: ghcr.io/ddd-enterprises/dopemux-mvp
+
+jobs:
+  build:
+    name: "🐳 Build ${{ matrix.service }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # ── Core backend
+          - service: dopemux-backend
+            dockerfile: Dockerfile
+            context: .
+
+          # ── Frontend
+          - service: dopemux-frontend
+            dockerfile: Dockerfile.frontend
+            context: .
+
+          # ── MCP: ConPort
+          - service: conport
+            dockerfile: docker/mcp-servers-source/conport/Dockerfile
+            context: docker/mcp-servers-source/conport
+
+          # ── MCP: LiteLLM proxy
+          - service: litellm
+            dockerfile: docker/mcp-servers-source/litellm/Dockerfile
+            context: docker/mcp-servers-source/litellm
+
+          # ── Cognitive: Task Orchestrator
+          - service: task-orchestrator
+            dockerfile: services/task-orchestrator/Dockerfile
+            context: .
+
+          # ── Cognitive: Claude Brain
+          - service: claude-brain
+            dockerfile: services/claude_brain/Dockerfile
+            context: services/claude_brain
+
+          # ── Cognitive: ADHD Engine
+          - service: adhd-engine
+            dockerfile: services/adhd_engine/Dockerfile
+            context: .
+
+          # ── Coordination: DopeconBridge
+          - service: dopecon-bridge
+            dockerfile: services/dopecon-bridge/Dockerfile
+            context: services/dopecon-bridge
+
+          # ── Integration: Webhook Receiver
+          - service: webhook-receiver
+            dockerfile: services/webhook_receiver/Dockerfile
+            context: .
+
+          # ── Memory: Dope Memory
+          - service: dope-memory
+            dockerfile: services/working-memory-assistant/Dockerfile
+            context: services/working-memory-assistant
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔒 Log in to Docker Hardened Images (dhi.io)
+        if: ${{ secrets.DHI_TOKEN != '' }}
+        uses: docker/login-action@v3
+        with:
+          registry: dhi.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.DHI_TOKEN }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.NAMESPACE }}/${{ matrix.service }}
+          tags: |
+            # Tag as 'latest' on main branch pushes
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            # Always tag with the git SHA (short)
+            type=sha,prefix=,format=short
+            # Tag PRs with pr-<number>
+            type=ref,event=pr
+
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ Build & push ${{ matrix.service }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          # Push only on main branch; PRs build only (no push)
+          push: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Layer cache via GHA cache backend
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          provenance: true
+          sbom: true
+
+      - name: 📊 Build Summary
+        if: always()
+        run: |
+          echo "## 🐳 ${{ matrix.service }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | \`${{ env.NAMESPACE }}/${{ matrix.service }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tags | ${{ steps.meta.outputs.tags }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Pushed | ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }} |" >> $GITHUB_STEP_SUMMARY

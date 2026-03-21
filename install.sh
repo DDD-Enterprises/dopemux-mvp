@@ -110,7 +110,7 @@ FULL_STACK_ESTIMATE="~10-15 minutes"
 
 
 # Required versions
-REQUIRED_PYTHON_VERSION="3.10"
+REQUIRED_PYTHON_VERSION="3.11"
 REQUIRED_DOCKER_VERSION="20.10"
 REQUIRED_GIT_VERSION="2.30"
 
@@ -823,7 +823,7 @@ install_dependencies() {
             ;;
         *)
             warning "Unknown package manager. Please install dependencies manually:"
-            echo "  - Python 3.10+"
+            echo "  - Python 3.11+"
             echo "  - Git 2.30+"
             echo "  - Docker 20.10+"
             echo "  - tmux, jq, curl, sqlite3 (optional)"
@@ -1354,7 +1354,7 @@ quick_install() {
     SELECTED_STACK="core"
 
     detect_platform
-    check_python || fatal "Python 3.10+ required"
+    check_python || fatal "Python 3.11+ required"
     check_git || fatal "Git required"
     check_docker || fatal "Docker required"
     check_optional_tools
