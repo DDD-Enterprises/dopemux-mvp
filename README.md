@@ -73,7 +73,7 @@ source ~/.zshrc && dopemux start
 dopemux truth
 ```
 
-See [INSTALL.md](INSTALL.md) and [docs/USER_JOURNEY.md](docs/04-explanation/root-relocated/user-journey.md) for detailed onboarding paths.
+See [INSTALL.md](INSTALL.md) and [docs/USER_JOURNEY.md](docs/USER_JOURNEY.md) for detailed onboarding paths.
 
 ---
 
