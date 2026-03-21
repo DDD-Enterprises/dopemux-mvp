@@ -179,7 +179,7 @@ Until that standardization is complete:
 
 ### Immediate policy
 
-For now, ConPort remains canonical **despite** callable surface drift.  
+For now, ConPort remains canonical **despite** callable surface drift.
 But hardening and standardization are required follow-up work.
 
 ## Normalization rule
