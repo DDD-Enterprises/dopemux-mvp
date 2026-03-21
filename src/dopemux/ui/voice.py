@@ -1,143 +1,162 @@
-"""Dopemux Voice Engine — programmatic brand copy for all surfaces.
-
-Usage:
-    from dopemux.ui.voice import VoiceMode, CopyLibrary, validate_output
-
-    copy = CopyLibrary()
-    console.print(copy.banner("extract"))
-    console.print(copy.random_aftercare())
-    violations = validate_output("maybe this works")
+"""
+Dopemux Brand System — Voice and Tone Engine.
+Phase 1: Thematic Persona Engine (Merged Opus + Specialist).
 """
 
-from __future__ import annotations
-
 import csv
-import enum
+import os
 import random
 import re
-from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
-from typing import Sequence
+from typing import Dict, List, Optional, Set
 
-import yaml
+from .theme import StatusChip, Glyphs
 
-
-class VoiceMode(enum.Enum):
-    """Brand voice modes from BRAND_VOICE_BIBLE.md."""
-    FILTH_DAEMON = "FilthDaemon"
-    CLINICAL_FORENSICS = "ClinicalForensics"
-    UX_SCOLD = "UXScold"
-    UI_STRICT = "UIStrict"
-    BANNER_ONE_LINER = "BannerOneLiner"
-    KINK_ACCENT = "KinkAccent"
-
-
-@dataclass
-class VoiceViolation:
-    """A voice gate violation found in output text."""
-    gate_type: str          # "hard_avoid" | "soft_avoid" | "missing_closer"
-    matched_text: str       # The offending text or missing element
-    severity: str           # "error" | "warning"
-    suggestion: str         # What to do instead
+class VoiceMode(Enum):
+    """Thematic voice modes from the Brand System spec."""
+    FILTH_DAEMON = "FilthDaemon"  # Drift, untagged, consequence + imperative
+    CLINICAL_FORENSICS = "ClinicalForensics"  # MUST/thresholds + UNKNOWN+TODO
+    UX_SCOLD = "UXScold"  # Roast + one step + evidence request
+    UI_STRICT = "UIStrict"  # Form fields, labels - no threats
+    BANNER_ONE_LINER = "BannerOneLiner"  # Punch lines then utility
+    KINK_ACCENT = "KinkAccent"  # Optional spice layer
 
 
-class CopyLibrary:
-    """Brand copy sourced from enriched specimen ledger."""
+# Voice Gates from Resource Pack
+HARD_AVOID = [
+    r"as an ai",
+    r"probably",
+    r"maybe",
+    r"generally speaking",
+]
 
-    def __init__(self, ledger_path: Path | None = None) -> None:
-        # Default: look for enriched CSV relative to repo root
-        if ledger_path is None:
-            ledger_path = Path(__file__).resolve().parents[3] / (
-                "dopemux_voice_branding_bundle/SPECIMEN_LEDGER_ENRICHED.csv"
-            )
-        self._ledger_path = ledger_path
-        self._specimens: dict[str, list[str]] = {}  # usable_as -> [excerpts]
-        self._loaded = False
+SOFT_AVOID = [
+    r"no worries",
+    r"it's okay",
+    r"don't worry",
+    r"hope you're doing well",
+]
 
-    def _ensure_loaded(self) -> None:
-        if self._loaded:
+REQUIRED_CLOSERS = ["NEXT:", "Next:", "Receipt:", "PROGRESS"]
+
+
+class Specimen:
+    """A single brand specimen from the ledger."""
+    def __init__(self, id: str, excerpt: str, tags: Set[str], affinity: float):
+        self.id = id
+        self.excerpt = excerpt
+        self.tags = tags
+        self.affinity = affinity
+
+
+class VoiceEngine:
+    """
+    Stateful engine that produces brand-aligned copy and visuals.
+    Adjusts output based on user's cognitive load (ADHD state).
+    """
+
+    def __init__(
+        self, 
+        mode: VoiceMode = VoiceMode.CLINICAL_FORENSICS,
+        is_scattered: bool = False
+    ):
+        self.mode = mode
+        self.is_scattered = is_scattered
+        self.specimens: List[Specimen] = []
+        self._load_ledger()
+
+    def _load_ledger(self):
+        """Load the 184-specimen enriched ledger."""
+        ledger_path = Path("dopemux_voice_branding_bundle/SPECIMEN_LEDGER_ENRICHED.csv")
+        if not ledger_path.exists():
             return
-        self._loaded = True
-        if not self._ledger_path.exists():
-            return
-        with open(self._ledger_path, newline="", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                category = row.get("usable_as", "").strip()
-                excerpt = row.get("excerpt", "").strip()
-                if category and excerpt:
-                    self._specimens.setdefault(category, []).append(excerpt)
 
-    def random_roast(self) -> str:
-        self._ensure_loaded()
-        pool = self._specimens.get("roast", [])
-        return random.choice(pool) if pool else "[UXScold] You're still here? Ship something."
+        try:
+            with open(ledger_path, mode='r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    self.specimens.append(Specimen(
+                        id=row['specimen_id'],
+                        excerpt=row['excerpt'],
+                        tags=set(row['context_tags'].split('|') if row['context_tags'] else []),
+                        affinity=float(row.get('brand_affinity', 0.5))
+                    ))
+        except Exception:
+            pass
 
-    def random_aftercare(self) -> str:
-        self._ensure_loaded()
-        pool = self._specimens.get("aftercare", [])
-        if pool:
-            return random.choice(pool)
-        return random.choice([
-            "💧 Hydrate. You earned it.",
-            "💊 Session logged. Go touch grass.",
-            "🧠 Context saved. Take a break.",
-            "💧 Water check. Posture check. You shipped.",
-        ])
+    def get_roast(self) -> str:
+        """Get a random self-aware or user-facing roast."""
+        roasts = [s for s in self.specimens if 'roast' in s.tags or 'UXScold' in s.tags]
+        if not roasts:
+            return "You're still here? Ship something."
+        return random.choice(roasts).excerpt
 
-    def banner(self, command: str) -> str:
-        self._ensure_loaded()
-        pool = self._specimens.get("banner", [])
-        if pool:
-            return random.choice(pool)
-        return f"━━━◆ Ø ◆━━━  dopemux {command}"
+    def get_aftercare(self) -> str:
+        """Mode-aware aftercare message."""
+        if self.is_scattered:
+            return "Logged. Hydrate. That's enough for now."
+        return f"Task complete. Ritual preserved. {Glyphs.SUCCESS}"
 
-    def error_copy(self, error_type: str) -> str:
-        self._ensure_loaded()
-        pool = self._specimens.get("error", [])
-        return random.choice(pool) if pool else f"[BLOCKER] {error_type}"
+    def banner(self, title: str = "") -> str:
+        """Generate a brand-mark banner with optional one-liner."""
+        mark = Glyphs.BRAND_MARK
+        one_liners = [s.excerpt for s in self.specimens if 'banner' in s.tags or 'tagline' in s.tags]
+        punch = random.choice(one_liners) if one_liners else "All memory. No mercy."
+        
+        banner = f"{mark}  {punch}"
+        if title:
+            banner += f"\n[mint]{title.upper()}[/mint]"
+        return banner
 
-    def success_copy(self, action: str) -> str:
-        self._ensure_loaded()
-        pool = self._specimens.get("success", [])
-        return random.choice(pool) if pool else f"[LOGGED] {action}"
-
-
-def _load_voice_gates() -> dict:
-    """Load VOICE_GATES.yaml from the branding bundle."""
-    gates_path = Path(__file__).resolve().parents[3] / (
-        "dopemux_voice_branding_bundle/VOICE_GATES.yaml"
-    )
-    if not gates_path.exists():
-        return {"lexical_gates": {}, "structure_gates": {}}
-    with open(gates_path, encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+    def chip(self, chip_type: str, message: str = "") -> str:
+        """Render a StatusChip from theme.py."""
+        try:
+            chip = StatusChip[chip_type.upper()]
+            return chip.render(message)
+        except KeyError:
+            return f"[{chip_type.upper()}] {message}"
 
 
-def validate_output(text: str) -> list[VoiceViolation]:
-    """Check text against VOICE_GATES.yaml. Returns list of violations."""
-    gates = _load_voice_gates()
-    violations: list[VoiceViolation] = []
+def validate_output(text: str) -> List[str]:
+    """Check text for brand violations and voice gate compliance."""
+    violations = []
     text_lower = text.lower()
 
-    # Hard avoids
-    for phrase in gates.get("lexical_gates", {}).get("hard_avoid_phrases", []):
-        if phrase.lower() in text_lower:
-            violations.append(VoiceViolation(
-                gate_type="hard_avoid",
-                matched_text=phrase,
-                severity="error",
-                suggestion=f"Remove '{phrase}'. Use direct language instead.",
-            ))
+    # Hard Avoid Check
+    for pattern in HARD_AVOID:
+        if re.search(pattern, text_lower):
+            violations.append(f"HARD_AVOID: Detected forbidden hedge/robot-speak ('{pattern}')")
 
-    # Soft avoids
-    for phrase in gates.get("lexical_gates", {}).get("soft_avoid_phrases", []):
-        if phrase.lower() in text_lower:
-            violations.append(VoiceViolation(
-                gate_type="soft_avoid",
-                matched_text=phrase,
-                severity="warning",
-                suggestion=f"Consider removing '{phrase}'. Too soft for dopemux voice.",
-            ))
+    # Soft Avoid Check
+    for pattern in SOFT_AVOID:
+        if re.search(pattern, text_lower):
+            violations.append(f"SOFT_AVOID: Detected corporate/filler fluff ('{pattern}')")
 
     return violations
+
+
+class VoiceEnforcer:
+    """Middleware for sanitizing LLM responses into brand voice."""
+    
+    @staticmethod
+    def clean(text: str) -> str:
+        """Strips apologetic AI jargon from responses."""
+        import re
+        patterns = [
+            r"(?i)^(as an ai[, ]*|i am an ai[, ]*|i am a language model[, ]*)",
+            r"(?i)^(i'm sorry[, ]*|my apologies[, ]*|i apologize[, ]*)",
+            r"(?i)^(here is the.*you requested:?\n*)",
+            r"(?i)^(certainly!|sure thing!|of course!)\n*",
+        ]
+        
+        cleaned = text
+        for pattern in patterns:
+            cleaned = re.sub(pattern, "", cleaned).lstrip()
+            
+        # Ensure it starts with a status chip if it looks like a completion
+        if "complete" in cleaned.lower() and not cleaned.startswith("["):
+            from .theme import StatusChip
+            cleaned = f"{StatusChip.LOGGED.render(cleaned)}"
+            
+        return cleaned

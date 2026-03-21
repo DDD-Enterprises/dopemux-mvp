@@ -11,16 +11,27 @@ import httpx
 from textual.app import App, ComposeResult
 from textual.widgets import DataTable, Footer, Log, TabbedContent, TabPane
 
+from .theme import Glyphs
+from .voice import VoiceEngine, VoiceMode
+
+
+VOICE = VoiceEngine(mode=VoiceMode.CLINICAL_FORENSICS, is_scattered=True)
+
 
 class DetailApp(App):
     """Detailed view for Dopemux popup."""
 
     CSS_PATH = "dopemux.tcss"
-    TITLE = "Dopemux Details"
+    TITLE = f"{Glyphs.BRAND_MARK} Dopemux Details"
+    SUB_TITLE = "Flight deck detail feed"
 
     BINDINGS = [
         ("q", "quit", "Close Popup"),
     ]
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._warned_feeds: set[str] = set()
 
     def compose(self) -> ComposeResult:
         with TabbedContent(initial="tasks"):
@@ -38,6 +49,11 @@ class DetailApp(App):
 
         health_table = self.query_one("#health_table", DataTable)
         health_table.add_columns("Service", "Status", "Latency (ms)", "Version")
+
+        activity_log = self.query_one("#activity_log", Log)
+        activity_log.write_line(VOICE.banner("detail"))
+        activity_log.write_line("[LOGGED] Detail cockpit live. Receipt: data refresh every 2s.")
+        activity_log.write_line(f"[AFTERCARE] {VOICE.get_aftercare()}")
 
         self.set_interval(2.0, self.refresh_data)
         await self.refresh_data()
@@ -59,7 +75,11 @@ class DetailApp(App):
                             t.get("status", ""),
                         )
             except Exception:
-                pass
+                if "tasks" not in self._warned_feeds:
+                    self.query_one("#activity_log", Log).write_line(
+                        "[BLOCKER] Task feed offline. Receipt: cached detail view only."
+                    )
+                    self._warned_feeds.add("tasks")
 
             # Decisions (ConPort)
             try:
@@ -77,7 +97,11 @@ class DetailApp(App):
                             "Logged",
                         )
             except Exception:
-                pass
+                if "decisions" not in self._warned_feeds:
+                    self.query_one("#activity_log", Log).write_line(
+                        "[EDGE] Decision feed quiet. NEXT: verify ConPort health if this persists."
+                    )
+                    self._warned_feeds.add("decisions")
 
             # Health
             health_table = self.query_one("#health_table", DataTable)

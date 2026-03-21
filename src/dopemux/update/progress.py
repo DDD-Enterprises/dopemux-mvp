@@ -18,6 +18,7 @@ from enum import Enum
 from typing import Optional, Dict, Any
 
 from rich.console import Console
+from dopemux.ui.progress import branded_progress
 from rich.progress import (
     Progress, TaskID, BarColumn, TextColumn, TimeElapsedColumn,
     TimeRemainingColumn, SpinnerColumn

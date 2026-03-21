@@ -19,6 +19,7 @@ from ..config.manager import (
     TmuxPresetConfig,
 )
 from .common import PaneInfo, TmuxError
+from .theme import TMUX_TITLE_BG, TMUX_TITLE_FG
 
 try:  # pragma: no cover - optional dependency
     import libtmux  # type: ignore
@@ -385,8 +386,8 @@ class CliTmuxBackend(BaseTmuxBackend):
             "pane-border-format",
             "#[default]"
             "#{?pane_active,#[bold],#[text.dim]}"
-            "#[bg=#{@dopemux_title_bg:-#1e1e2e}]"
-            "#[fg=#{@dopemux_title_fg:-#cdd6f4}] "
+            f"#[bg=#{{@dopemux_title_bg:-{TMUX_TITLE_BG}}}]"
+            f"#[fg=#{{@dopemux_title_fg:-{TMUX_TITLE_FG}}}] "
             "#{pane_title} "
             "#[default]"
         ])

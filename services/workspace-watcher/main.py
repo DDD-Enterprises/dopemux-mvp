@@ -27,7 +27,6 @@ import asyncio
 import logging
 import argparse
 import signal
-import sys
 from typing import Optional
 
 from app_detector import AppDetector
@@ -228,13 +227,55 @@ async def run_watcher(poll_interval: int = 5):
     await watcher.start()
 
 
+async def emit_manual_workspace_switch(
+    redis_url: str,
+    from_app: str,
+    to_app: str,
+    from_workspace: Optional[str],
+    to_workspace: Optional[str],
+):
+    """Emit a single workspace switch for smoke tests and compose validation."""
+    emitter = WorkspaceSwitchEmitter(redis_url=redis_url)
+    checker = FileActivityChecker(recency_threshold=30)
+
+    await emitter.initialize()
+    try:
+        file_activity = checker.check_recent_activity(to_workspace) if to_workspace else None
+        await emitter.emit_workspace_switch(
+            from_workspace=from_workspace,
+            to_workspace=to_workspace,
+            from_app=from_app,
+            to_app=to_app,
+            file_activity=file_activity,
+        )
+    finally:
+        await emitter.close()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Workspace Watcher - Automatic workspace switch detection")
     parser.add_argument("--interval", type=int, default=5, help="Poll interval in seconds (default: 5)")
     parser.add_argument("--daemon", action="store_true", help="Run in background (no-op, always runs until Ctrl+C)")
+    parser.add_argument("--emit-switch", action="store_true", help="Emit a single workspace.switched event and exit")
+    parser.add_argument("--redis-url", default="redis://localhost:6379", help="Redis connection URL for manual emission")
+    parser.add_argument("--from-app", default="Terminal", help="Source application for manual emission")
+    parser.add_argument("--to-app", default="Claude Code", help="Destination application for manual emission")
+    parser.add_argument("--from-workspace", default=None, help="Source workspace path for manual emission")
+    parser.add_argument("--to-workspace", default="/Users/hue/code/dopemux-mvp", help="Destination workspace path for manual emission")
     args = parser.parse_args()
 
     try:
-        asyncio.run(run_watcher(poll_interval=args.interval))
+        if args.emit_switch:
+            asyncio.run(
+                emit_manual_workspace_switch(
+                    redis_url=args.redis_url,
+                    from_app=args.from_app,
+                    to_app=args.to_app,
+                    from_workspace=args.from_workspace,
+                    to_workspace=args.to_workspace,
+                )
+            )
+        else:
+            asyncio.run(run_watcher(poll_interval=args.interval))
     except KeyboardInterrupt:
         logger.info("Stopped by user")

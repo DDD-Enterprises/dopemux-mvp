@@ -98,11 +98,12 @@ class VerificationExecutor:
             print(f"  ⚡ Executing: {req.mapped_command}")
             start_time = time.time()
 
-            # Execute with timeout
+            # Execute with timeout (use shlex to avoid shell injection)
             try:
+                import shlex
+
                 res = subprocess.run(
-                    req.mapped_command,
-                    shell=True,
+                    shlex.split(req.mapped_command),
                     capture_output=True,
                     text=True,
                     timeout=300,  # 5 min limit

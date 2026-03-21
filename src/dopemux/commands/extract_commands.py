@@ -17,23 +17,23 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
-from rich import box
-from rich.panel import Panel
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
-from rich.table import Table
 from rich.text import Text
 
 from ..console import console
-from ..ui.theme import styled_panel, styled_table
+from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 @click.group()
 @click.pass_context
 def extract(ctx):
-    """
-    📄 Document extraction with ADHD-optimized patterns
+    """📄 Ritual Daemon: Document extraction with ADHD-optimized patterns.
 
-    Extract entities, configurations, and patterns from documentation
-    using specialized extractors for markdown, YAML, and ADHD content.
+    Engage the cockpit for high-precision entity extraction, configuration harvesting,
+    and pattern recognition. This subsystem synchronizes through markdown, YAML,
+    and ADHD-specific content streams to build a high-fidelity model of your
+    documentation corpus.
     """
     pass
 
@@ -41,21 +41,41 @@ def extract(ctx):
 @extract.command("docs")
 @click.argument("directory", default=".")
 @click.option(
-    "--mode", "-m",
+    "--mode",
+    "-m",
     type=click.Choice(["basic", "detailed", "adhd"]),
     default="basic",
-    help="Extraction mode: basic (key-value), detailed (all patterns), adhd (ADHD-specific)"
+    help="📊 Calibration mode for the extraction ritual: basic (key-value), detailed (all patterns), or adhd (ADHD-specific patterns).",
 )
 @click.option(
-    "--format", "-f",
+    "--format",
+    "-f",
     type=click.Choice(["json", "csv", "markdown", "yaml"]),
     default="json",
-    help="Output format for extracted entities"
+    help="🛠️  Output format for the extracted payload: json, csv, markdown, or yaml.",
 )
-@click.option("--output", "-o", help="Output file path (default: print to stdout)")
-@click.option("--confidence", "-c", type=float, default=0.5, help="Minimum confidence threshold (0.0-1.0)")
-@click.option("--extensions", help="File extensions to process (default: .md,.yaml,.yml)")
-@click.option("--adhd-profile", "-p", is_flag=True, help="Extract ADHD accommodation profile")
+@click.option(
+    "--output",
+    "-o",
+    help="📂 Target file path for the extraction payload (default: telemetry stream to stdout).",
+)
+@click.option(
+    "--confidence",
+    "-c",
+    type=float,
+    default=0.5,
+    help="🎯 Minimum confidence threshold for entity validation (0.0 to 1.0).",
+)
+@click.option(
+    "--extensions",
+    help="🧪 Specific file extensions to be analyzed by the ritual sensors (default: .md,.yaml,.yml).",
+)
+@click.option(
+    "--adhd-profile",
+    "-p",
+    is_flag=True,
+    help="🧠 Enable extraction of specialized ADHD accommodation profiles and cognitive load assessments.",
+)
 @click.pass_context
 def extract_docs(
     ctx,
@@ -65,13 +85,14 @@ def extract_docs(
     output: Optional[str],
     confidence: float,
     extensions: Optional[str],
-    adhd_profile: bool
+    adhd_profile: bool,
 ):
-    """
-    📄 Extract entities from documentation files
+    """📄 Flight-Deck: Execute a targeted document extraction ritual.
 
-    Process markdown and YAML files to extract structured information
-    using ADHD-optimized patterns and confidence scoring.
+    Process markdown and YAML assets to synthesize structured intelligence
+    using ADHD-optimized patterns and adaptive confidence scoring.
+    This command calibrates the extraction engines for specific document
+    clusters to ensure high-fidelity harvesting of entities and metadata.
     """
     with mobile_task_notification(
         ctx,
@@ -123,7 +144,7 @@ def _run_extract_docs(
     if not extensions:
         extensions = ".md,.yaml,.yml,.json"
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -270,63 +291,77 @@ def _run_extract_docs(
 
 @extract.command("pipeline")
 @click.argument("directory", default=".")
-@click.option("--output", "-o", help="Output directory for pipeline results", default="./output")
+@click.option(
+    "--output",
+    "-o",
+    help="📂 Target directory for the complete pipeline payload and generated artifacts.",
+    default="./output",
+)
 @click.option(
     "--adhd/--no-adhd",
     default=True,
-    help="Enable/disable ADHD-specific extraction patterns"
+    help="🧠 Toggle synchronization of specialized ADHD-specific extraction patterns.",
 )
 @click.option(
     "--multi-angle/--no-multi-angle",
     default=True,
-    help="Enable/disable multi-angle entity extraction"
+    help="📐 Enable multi-angle entity extraction for higher fidelity across diverse structures.",
 )
 @click.option(
     "--embeddings/--no-embeddings",
     default=True,
-    help="Enable/disable vector embedding generation"
+    help="🔍 Generate vector embeddings for the extracted corpus to enable semantic HUD search.",
 )
 @click.option(
     "--tsv/--no-tsv",
     default=True,
-    help="Enable/disable TSV registry generation"
+    help="📊 Generate atomic TSV registries for rapid metadata indexing and cross-referencing.",
 )
 @click.option(
-    "--confidence", "-c",
+    "--confidence",
+    "-c",
     type=float,
     default=0.5,
-    help="Minimum confidence threshold for entities (0.0-1.0)"
+    help="🎯 Minimum confidence threshold for entity validation throughout the pipeline ritual.",
 )
 @click.option(
-    "--embedding-model", "-m",
+    "--embedding-model",
+    "-m",
     default="voyage-context-3",
-    help="Embedding model to use"
+    help="🧪 Specify the high-fidelity embedding model for vector synthesis.",
 )
-@click.option("--milvus-uri", help="Milvus database URI for vector storage")
-@click.option("--extensions", help="File extensions to process (default: .md,.yaml,.yml,.json,.txt)")
 @click.option(
-    "--format", "-f",
+    "--milvus-uri",
+    help="🗄️  Milvus database URI for long-term vector storage and retrieval telemetry.",
+)
+@click.option(
+    "--extensions",
+    help="🧪 Specific file extensions to be ingested by the pipeline sensors (default: .md,.yaml,.yml,.json,.txt).",
+)
+@click.option(
+    "--format",
+    "-f",
     type=click.Choice(["json", "csv", "markdown"]),
     default="json",
-    help="Output format for extraction results"
+    help="🛠️  Primary output format for the extraction metadata: json, csv, or markdown.",
 )
 @click.option(
     "--synthesis/--no-synthesis",
     default=True,
-    help="Enable/disable document synthesis generation"
+    help="⚡ Enable LLM-powered document synthesis and executive summaries for the flight-deck.",
 )
 @click.option(
     "--synthesis-types",
     multiple=True,
     type=click.Choice(["executive", "adhd", "technical", "all"]),
     default=["executive", "adhd"],
-    help="Types of synthesis to generate (can specify multiple)"
+    help="📊 Calibration types for document synthesis: executive, adhd, or technical.",
 )
 @click.option(
     "--synthesis-format",
     type=click.Choice(["markdown", "json", "both"]),
     default="markdown",
-    help="Output format for synthesis results"
+    help="🛠️  Output format for the synthesized reports: markdown, json, or both.",
 )
 @click.pass_context
 def extract_pipeline(
@@ -344,14 +379,14 @@ def extract_pipeline(
     format: str,
     synthesis: bool,
     synthesis_types: tuple,
-    synthesis_format: str
+    synthesis_format: str,
 ):
-    """
-    🚀 Complete document processing pipeline
+    """🚀 Ritual Daemon: Engage the full unified document processing pipeline.
 
-    Run the full unified pipeline including multi-layer extraction,
+    This command ignites the complete multi-layer extraction sequence:
     atomic unit normalization, TSV registry generation, and vector
-    embeddings. Integrates all extraction systems into a single workflow.
+    embedding synthesis. It integrates all cockpit extraction systems
+    into a single, high-fidelity workflow for corpus-level intelligence.
     """
     with mobile_task_notification(
         ctx,
@@ -443,7 +478,7 @@ def _run_extract_pipeline(
     console.logger.info(f"[info]📁 Source: {source_path}[/info]")
     console.logger.info(f"[info]📤 Output: {output_path}[/info]")
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -512,27 +547,29 @@ def _run_extract_pipeline(
 @click.option(
     "--dry-run/--execute",
     default=True,
-    help="Preview cleanup without removing files (default: dry-run)"
+    help="🛡️  Preview the cleanup ritual without purging any assets (default: dry-run).",
 )
 @click.option(
     "--cleanup-types",
     multiple=True,
     type=click.Choice(["temporary", "cache", "outputs", "interim", "all"]),
     default=["temporary", "cache", "interim"],
-    help="Types of files to clean (can specify multiple)"
+    help="📊 Categorization of files to be purged: temporary, cache, outputs, or interim.",
 )
 @click.option(
     "--include-outputs/--preserve-outputs",
     default=False,
-    help="Include output files in cleanup (default: preserve)"
+    help="🔥 Force the inclusion of final output files in the cleanup purge.",
 )
 @click.option(
     "--report-format",
     type=click.Choice(["table", "json", "detailed"]),
     default="detailed",
-    help="Format for cleanup report"
+    help="🛠️  Output format for the cleanup diagnostic report: table, json, or detailed.",
 )
-@click.option("--report-file", help="Save cleanup report to file")
+@click.option(
+    "--report-file", help="📂 Target file path for saving the cleanup diagnostic report."
+)
 @click.pass_context
 def extract_cleanup(
     ctx,
@@ -541,14 +578,13 @@ def extract_cleanup(
     cleanup_types: tuple,
     include_outputs: bool,
     report_format: str,
-    report_file: Optional[str]
+    report_file: Optional[str],
 ):
-    """
-    🧹 Clean pipeline files and generate activity report
+    """🧹 Flight-Deck: Execute pipeline cleanup ritual and generate activity report.
 
-    Remove temporary, cache, and interim files created during pipeline processing.
-    Provides detailed reporting on files removed, created, changed, and output.
-
+    Purge temporary assets, cache files, and interim artifacts generated
+    during the pipeline processing. This command ensures the cockpit remains
+    clear of stale data and provides a detailed audit of the cleanup operation.
     Default behavior preserves output files and runs in dry-run mode for safety.
     """
     with mobile_task_notification(
@@ -616,7 +652,7 @@ def _run_extract_cleanup(
     if dry_run:
         console.logger.info("[warning]⚠️  DRY RUN: No files will actually be removed[/warning]")
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -803,18 +839,62 @@ def _hygiene_severity_color(level: str) -> str:
 # ---------------------------------------------------------------------------
 
 @extract.command("truth-run")
-@click.option("--run-id", default=None, help="Extraction run ID (default: auto timestamp)")
-@click.option("--phase", default="ALL", show_default=True, help="Extraction phase(s) to run (e.g. A, A,B, ALL)")
-@click.option("--workers", "-w", default=10, show_default=True, help="Partition worker count")
-@click.option("--routing-policy", default="balanced_openrouter", show_default=True, help="LLM routing policy")
-@click.option("--doctor", is_flag=True, help="Run provider preflight doctor checks")
-@click.option("--resume", is_flag=True, help="Resume a previous run, skipping already-completed partitions")
-@click.option("--import-v3", "import_v3_run_id", default=None, metavar="RUN_ID",
-              help="Migrate a v3 run into the v5 runs directory before resuming. "
-                   "Copies artifacts, sets --resume, and uses RUN_ID as the run-id.")
-@click.option("--skip-hygiene", is_flag=True, help="Skip pre-flight hygiene scan")
-@click.option("--apply-cleanup", is_flag=True, help="Apply quarantine cleanup if hygiene scan finds hazards")
-@click.option("--force", is_flag=True, help="Run extraction even if hygiene scan reports errors")
+@click.option(
+    "--run-id",
+    default=None,
+    help="🆔 Unique session identifier for the ritual run (defaults to auto-generated timestamp).",
+)
+@click.option(
+    "--phase",
+    default="ALL",
+    show_default=True,
+    help="📊 Specific extraction phase(s) to engage (e.g. A, A,B, ALL).",
+)
+@click.option(
+    "--workers",
+    "-w",
+    default=10,
+    show_default=True,
+    help="⚡ Number of concurrent ritual workers allocated for the partitioning phase.",
+)
+@click.option(
+    "--routing-policy",
+    default="balanced_openrouter",
+    show_default=True,
+    help="📊 LLM routing policy for the extraction ritual (e.g., balanced_openrouter, high_fidelity).",
+)
+@click.option(
+    "--doctor",
+    is_flag=True,
+    help="🩺 Execute provider preflight doctor diagnostics before starting the ritual.",
+)
+@click.option(
+    "--resume",
+    is_flag=True,
+    help="⏯️  Resume a suspended ritual run, skipping already-validated partitions.",
+)
+@click.option(
+    "--import-v3",
+    "import_v3_run_id",
+    default=None,
+    metavar="RUN_ID",
+    help="📦 Migrate a legacy v3 ritual run into the v5 runs directory before resuming. Copies artifacts, sets --resume, and pins the session ID.",
+)
+@click.option(
+    "--skip-hygiene",
+    is_flag=True,
+    help="⏩ Skip the pre-flight hygiene scan and proceed directly to extraction (use with caution).",
+)
+@click.option(
+    "--apply-cleanup",
+    is_flag=True,
+    help="🧹 Apply quarantine cleanup and purge hazards identified during the hygiene scan.",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="🚀 Force the extraction ritual to proceed even if hygiene diagnostics report critical errors.",
+)
 @click.pass_context
 def truth_run(
     ctx,
@@ -829,22 +909,22 @@ def truth_run(
     apply_cleanup: bool,
     force: bool,
 ):
-    """
-    🔬 Full extraction workflow: hygiene scan → optional cleanup → v5 extraction run.
+    """🔬 Ritual Daemon: Full extraction workflow — Hygiene scan → Optional cleanup → v5 Extraction execution.
 
-    Runs the complete repo-truth-extractor pipeline with a pre-flight hygiene
-    check to catch stale artifacts, noisy paths, and version/path mismatches
-    before they contaminate extraction output.
-
-    \b
-    Steps:
-      0. (Optional) Migrate a v3 run into v5 directory (--import-v3 RUN_ID)
-      1. Pre-flight hygiene scan (read-only, skippable with --skip-hygiene)
-      2. Optional cleanup / quarantine (requires --apply-cleanup)
-      3. Launch run_extraction_v5.py with live streaming output
+    Engage the ultimate repo-truth-extractor sequence. This ritual synchronizes
+    pre-flight hygiene checks to catch stale artifacts, noisy paths, and
+    version/path mismatches before they contaminate extraction output.
+    The cockpit monitors and streams live telemetry during the v5 extraction.
 
     \b
-    Resume a v3 FULL_RUN in v5:
+    Ritual Phases:
+      0. (Optional) Migrate legacy v3 session into v5 cockpit (--import-v3 RUN_ID)
+      1. Pre-flight hygiene diagnostic scan (read-only sensors)
+      2. Optional quarantine cleanup and hazard purging (requires --apply-cleanup)
+      3. Ignite v5 extraction engines with live telemetry streaming output
+
+    \b
+    To resume a legacy v3 session in the v5 cockpit:
       dopemux extract truth-run --import-v3 FULL_RUN --resume
     """
     import shutil
@@ -862,12 +942,11 @@ def truth_run(
             run_id = import_v3_run_id
 
         console.print()
-        console.print(Panel(
-            Text.from_markup(
-                f"[bold magenta]Phase 0 · Migrate v3 → v5[/bold magenta]\n"
-                f"[dim]Importing run[/dim] [bold]{import_v3_run_id}[/bold] "
-                f"[dim]from v3 into v5 runs directory[/dim]"
-            ),
+        console.print(styled_panel(
+            f"[magenta]Phase 0 · Migrate v3 → v5[/magenta]\n"
+            f"[text.dim]Importing run[/text.dim] [bold]{import_v3_run_id}[/bold] "
+            f"[text.dim]from v3 into v5 runs directory[/text.dim]",
+            title="Phase 0",
             border_style="magenta",
         ))
 
@@ -877,7 +956,7 @@ def truth_run(
         v5_latest = _v5_root / "latest_run_id.txt"
 
         if not v3_run_src.exists():
-            console.print(f"[bold red]❌ v3 run not found:[/bold red] {v3_run_src}")
+            console.print(f"[error]❌ v3 run not found:[/error] {v3_run_src}")
             console.print(f"[dim]Available v3 runs:[/dim]")
             if (_v3_root / "runs").exists():
                 for d in sorted((_v3_root / "runs").iterdir()):
@@ -887,8 +966,8 @@ def truth_run(
 
         if v5_run_dst.exists():
             console.print(
-                f"[yellow]⚠️  v5 run already exists:[/yellow] [dim]{v5_run_dst}[/dim]\n"
-                f"[dim]Skipping copy — will resume using existing v5 artifacts.[/dim]"
+                f"[warning]⚠️  v5 run already exists:[/warning] [text.dim]{v5_run_dst}[/text.dim]\n"
+                f"[text.dim]Skipping copy — will resume using existing v5 artifacts.[/text.dim]"
             )
         else:
             # Count what we're copying for the progress display
@@ -897,11 +976,11 @@ def truth_run(
             n_phases = sum(1 for d in v3_run_src.iterdir() if d.is_dir() and not d.name.startswith("."))
 
             console.print(
-                f"[cyan]📦 Copying[/cyan] [bold]{n_files}[/bold] files across "
+                f"[info]📦 Copying[/info] [bold]{n_files}[/bold] files across "
                 f"[bold]{n_phases}[/bold] phase dirs…"
             )
 
-            with Progress(
+            with branded_progress(
                 SpinnerColumn(),
                 TextColumn("[progress.description]{task.description}"),
                 TimeElapsedColumn(),
@@ -916,7 +995,7 @@ def truth_run(
                 shutil.copytree(str(v3_run_src), str(v5_run_dst))
                 progress.update(task, completed=True)
 
-            console.print(f"[bold green]✅ Copied:[/bold green] {v3_run_src} → {v5_run_dst}")
+            console.print(f"[success]✅ Copied:[/success] {v3_run_src} → {v5_run_dst}")
 
         # Show phase summary table
         _display_v3_migration_summary(v5_run_dst, import_v3_run_id, console)
@@ -928,18 +1007,16 @@ def truth_run(
 
     auto_run_id = run_id or datetime.now().strftime("RUN-%Y%m%dT%H%M%S")
 
-    resume_indicator = " [bold green]+resume[/bold green]" if resume else ""
-    console.print(Panel(
-        Text.from_markup(
-            f"[bold cyan]🔬 dopemux extract truth-run[/bold cyan]\n"
-            f"[dim]run_id=[/dim][bold]{auto_run_id}[/bold]  "
-            f"[dim]phase=[/dim][bold]{phase}[/bold]  "
-            f"[dim]workers=[/dim][bold]{workers}[/bold]  "
-            f"[dim]routing=[/dim][bold magenta]{routing_policy}[/bold magenta]"
-            f"{resume_indicator}"
-        ),
-        box=box.DOUBLE_EDGE,
-        border_style="bright_cyan",
+    resume_indicator = " [success]+resume[/success]" if resume else ""
+    console.print(styled_panel(
+        f"[mint]🔬 dopemux extract truth-run[/mint]\n"
+        f"[text.dim]run_id=[/text.dim][bold]{auto_run_id}[/bold]  "
+        f"[text.dim]phase=[/text.dim][bold]{phase}[/bold]  "
+        f"[text.dim]workers=[/text.dim][bold]{workers}[/bold]  "
+        f"[text.dim]routing=[/text.dim][magenta]{routing_policy}[/magenta]"
+        f"{resume_indicator}",
+        title="🔬 Truth Run",
+        border_style="panel.border",
     ))
 
     # ------------------------------------------------------------------
@@ -952,19 +1029,19 @@ def truth_run(
         repo_root = Path.cwd()
     else:
         console.print()
-        console.print(Panel("[bold blue]Phase 1 · Pre-flight Hygiene Scan[/bold blue]", border_style="blue"))
+        console.print(styled_panel("[mint]Phase 1 · Pre-flight Hygiene Scan[/mint]", title="Phase 1"))
 
-        with Progress(
+        with branded_progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             TimeElapsedColumn(),
             console=console,
             transient=True,
         ) as progress:
-            task = progress.add_task("[cyan]Scanning repo surfaces…", total=None)
+            task = progress.add_task("[info]Scanning repo surfaces…", total=None)
             mod, repo_root = _load_hygiene_module()
             if mod is None:
-                console.print("[bold red]❌ extraction_hygiene.py not found — cannot run pre-flight scan.[/bold red]")
+                console.print("[error]❌ extraction_hygiene.py not found — cannot run pre-flight scan.[/error]")
                 console.print("[dim]Hint: expected at services/repo-truth-extractor/extraction_hygiene.py[/dim]")
                 if not force:
                     sys.exit(1)
@@ -981,48 +1058,45 @@ def truth_run(
 
             if error_count > 0 and not force:
                 console.print(
-                    f"\n[bold red]🚫 Hygiene scan found {error_count} error(s). "
-                    "Aborting. Use --force to override.[/bold red]"
+                    f"\n[error]🚫 Hygiene scan found {error_count} error(s). "
+                    "Aborting. Use --force to override.[/error]"
                 )
                 sys.exit(1)
             elif error_count > 0:
-                console.print(f"\n[bold yellow]⚠️  {error_count} error(s) found — proceeding anyway (--force)[/bold yellow]")
+                console.print(f"\n[warning]⚠️  {error_count} error(s) found — proceeding anyway (--force)[/warning]")
             elif warn_count > 0:
-                console.print(f"\n[yellow]⚠️  {warn_count} warning(s) found.[/yellow]")
+                console.print(f"\n[warning]⚠️  {warn_count} warning(s) found.[/warning]")
             else:
-                console.print("\n[bold green]✅ Hygiene scan clean — no issues found.[/bold green]")
+                console.print("\n[success]✅ Hygiene scan clean — no issues found.[/success]")
 
     # ------------------------------------------------------------------
     # Phase 2: Optional cleanup
     # ------------------------------------------------------------------
     if apply_cleanup and mod is not None and scan is not None:
         console.print()
-        console.print(Panel("[bold yellow]Phase 2 · Quarantine Cleanup[/bold yellow]", border_style="yellow"))
+        console.print(styled_panel("[warning]Phase 2 · Quarantine Cleanup[/warning]", title="Phase 2"))
 
-        with Progress(
+        with branded_progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             TimeElapsedColumn(),
             console=console,
             transient=True,
         ) as progress:
-            task = progress.add_task("[yellow]Applying cleanup…", total=None)
+            task = progress.add_task("[warning]Applying cleanup…", total=None)
             plan = mod.run_apply(repo_root=repo_root, dry_run=False)
             progress.update(task, completed=True)
 
         moved = [a for a in plan.applied_actions if a.action == "move_to_quarantine"]
         if moved:
-            tbl = Table(box=box.SIMPLE, border_style="yellow")
-            tbl.add_column("Action", style="yellow")
-            tbl.add_column("Path", style="dim")
-            tbl.add_column("Reason", style="cyan")
+            tbl = styled_table("Quarantine Actions", "Action", ("Path", {"style": "text.dim"}), ("Reason", {"style": "info"}), compact=True)
             for a in moved:
                 tbl.add_row("→ quarantined", str(a.source.relative_to(repo_root)), a.reason)
             console.print(tbl)
             if plan.manifest_path:
                 console.print(f"[dim]📄 Manifest: {plan.manifest_path}[/dim]")
         else:
-            console.print("[green]✅ Nothing to quarantine.[/green]")
+            console.print("[success]✅ Nothing to quarantine.[/success]")
     elif apply_cleanup and (mod is None or scan is None):
         console.print("[dim]⏩ Cleanup skipped (hygiene module unavailable).[/dim]")
 
@@ -1030,17 +1104,16 @@ def truth_run(
     # Phase 3: Launch extraction
     # ------------------------------------------------------------------
     console.print()
-    console.print(Panel(
-        Text.from_markup(
-            f"[bold green]Phase 3 · Running v5 Extraction[/bold green]\n"
-            f"[dim]Launching run_extraction_v5.py — output streams below[/dim]"
-        ),
-        border_style="green",
+    console.print(styled_panel(
+        f"[success]Phase 3 · Running v5 Extraction[/success]\n"
+        f"[text.dim]Launching run_extraction_v5.py — output streams below[/text.dim]",
+        title="Phase 3",
+        border_style="success",
     ))
 
     runner_path = _find_runner(repo_root if not skip_hygiene else Path.cwd())
     if runner_path is None:
-        console.print("[bold red]❌ run_extraction_v5.py not found. Check services/repo-truth-extractor/.[/bold red]")
+        console.print("[error]❌ run_extraction_v5.py not found. Check services/repo-truth-extractor/.[/error]")
         sys.exit(1)
 
     cmd = [sys.executable, str(runner_path), "--phase", phase, "--partition-workers", str(workers),
@@ -1061,12 +1134,12 @@ def truth_run(
             print(line, end="", flush=True)
         proc.wait()
         if proc.returncode != 0:
-            console.print(f"\n[bold red]❌ Extraction exited with code {proc.returncode}[/bold red]")
+            console.print(f"\n[error]❌ Extraction exited with code {proc.returncode}[/error]")
             sys.exit(proc.returncode)
         else:
-            console.print("\n[bold green]✅ Extraction complete.[/bold green]")
+            console.print("\n[success]✅ Extraction complete.[/success]")
     except KeyboardInterrupt:
-        console.print("\n[yellow]⚠️  Interrupted.[/yellow]")
+        console.print("\n[warning]⚠️  Interrupted.[/warning]")
         sys.exit(130)
 
 
@@ -1085,35 +1158,27 @@ def _find_runner(repo_root: Path) -> Optional[Path]:
 
 def _display_scan_results(scan, console) -> None:
     """Render hygiene scan results to the console."""
-    from rich.table import Table
-    from rich import box as rbox
-
     # Version path
     if scan.version_path_issues:
         for issue in scan.version_path_issues:
-            console.print(f"[bold red]🔗 VERSION_PATH_MISMATCH:[/bold red] {issue.message}")
+            console.print(f"[error]🔗 VERSION_PATH_MISMATCH:[/error] {issue.message}")
     else:
-        console.print("[green]🔗 Version/path wiring:[/green] [bold green]v5 code → v5 output ✅[/bold green]")
+        console.print("[success]🔗 Version/path wiring:[/success] [success]v5 code → v5 output ✅[/success]")
 
     # Noise paths
     if scan.noise_paths:
-        tbl = Table(title="⚠️  Noisy Paths Detected", box=rbox.SIMPLE, border_style="yellow")
-        tbl.add_column("Path", style="dim")
-        tbl.add_column("Category", style="yellow")
+        tbl = styled_table("⚠️  Noisy Paths Detected", "Path", ("Category", {"style": "warning"}), compact=True)
         for np in scan.noise_paths[:20]:
             tbl.add_row(np.path, np.category)
         if len(scan.noise_paths) > 20:
             tbl.add_row(f"… and {len(scan.noise_paths) - 20} more", "")
         console.print(tbl)
     else:
-        console.print("[green]📁 Noise paths:[/green] [bold green]none found ✅[/bold green]")
+        console.print("[success]📁 Noise paths:[/success] [success]none found ✅[/success]")
 
     # Resume hazards
     if scan.resume_state_issues:
-        tbl = Table(title="⚠️  Resume-State Hazards", box=rbox.SIMPLE, border_style="red")
-        tbl.add_column("Severity", style="bold red")
-        tbl.add_column("Type", style="red")
-        tbl.add_column("Path", style="dim")
+        tbl = styled_table("⚠️  Resume-State Hazards", ("Severity", {"style": "error"}), ("Type", {"style": "error"}), ("Path", {"style": "text.dim"}), compact=True)
         shown = scan.resume_state_issues[:15]
         for ri in shown:
             tbl.add_row(ri.severity, ri.issue_type, str(ri.path))
@@ -1123,9 +1188,7 @@ def _display_scan_results(scan, console) -> None:
 
     # Authority summary
     if scan.authority_summary:
-        tbl = Table(title="📚 Authority Classification Summary", box=rbox.SIMPLE, border_style="cyan")
-        tbl.add_column("Tier", style="bold cyan")
-        tbl.add_column("Count", justify="right")
+        tbl = styled_table("📚 Authority Classification Summary", ("Tier", {"style": "mint"}), ("Count", {"justify": "right"}), compact=True)
         for tier, count in sorted(scan.authority_summary.items()):
             tbl.add_row(tier, str(count))
         console.print(tbl)
@@ -1133,9 +1196,6 @@ def _display_scan_results(scan, console) -> None:
 
 def _display_v3_migration_summary(v5_run_dir: "Path", run_id: str, console: "Console") -> None:
     """Show a table summarising phases found in the migrated run directory."""
-    from rich.table import Table
-    from rich import box as rbox
-
     if not v5_run_dir.exists():
         return
 
@@ -1146,16 +1206,14 @@ def _display_v3_migration_summary(v5_run_dir: "Path", run_id: str, console: "Con
     if not phase_dirs:
         return
 
-    tbl = Table(
-        title=f"📊 Migrated run: {run_id}",
-        box=rbox.SIMPLE_HEAVY,
-        border_style="magenta",
+    tbl = styled_table(
+        f"📊 Migrated run: {run_id}",
+        ("Phase dir", {"style": "bold"}),
+        ("Raw outputs", {"justify": "right", "style": "success"}),
+        ("FAILED markers", {"justify": "right", "style": "error"}),
+        ("Norm outputs", {"justify": "right", "style": "info"}),
+        ("QA outputs", {"justify": "right", "style": "info"}),
     )
-    tbl.add_column("Phase dir", style="bold")
-    tbl.add_column("Raw outputs", justify="right", style="green")
-    tbl.add_column("FAILED markers", justify="right", style="red")
-    tbl.add_column("Norm outputs", justify="right", style="cyan")
-    tbl.add_column("QA outputs", justify="right", style="blue")
 
     for phase_dir in phase_dirs:
         raw_dir = phase_dir / "raw"
@@ -1176,6 +1234,6 @@ def _display_v3_migration_summary(v5_run_dir: "Path", run_id: str, console: "Con
 
     console.print(tbl)
     console.print(
-        f"[dim]Phases with existing raw/*.json will be [bold green]skipped[/bold green] "
-        f"by v5 resume. Failed partitions will be [bold yellow]retried[/bold yellow].[/dim]"
+        f"[text.dim]Phases with existing raw/*.json will be [success]skipped[/success] "
+        f"by v5 resume. Failed partitions will be [warning]retried[/warning].[/text.dim]"
     )

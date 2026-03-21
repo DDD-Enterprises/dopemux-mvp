@@ -69,7 +69,7 @@ DataTable > .datatable--header {
 
 TabbedContent {
     background: $mantle;
-    border: solid $mint-dim;
+    border: solid $blue;
 }
 
 TabPane {
@@ -81,9 +81,37 @@ Log {
     background: $base;
     color: $text;
     border: solid $mint-dim;
+    text-style: bold;
 }
 
-/* ── Demo banner ── */
+/* ── Animations ── */
+
+@keyframes blink {
+    0% { opacity: 1.0; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1.0; }
+}
+
+.blink {
+    animation: blink 1.5s linear infinite;
+}
+
+.status-active {
+    color: $blue;
+    text-style: bold;
+    animation: blink 2.0s linear infinite;
+}
+
+.status-error {
+    color: $red;
+    text-style: bold;
+    animation: blink 1.0s linear infinite;
+}
+
+.status-warning {
+    color: $yellow;
+    text-style: bold;
+}
 
 #demo-banner {
     height: 1;

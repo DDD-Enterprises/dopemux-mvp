@@ -30,7 +30,7 @@ from .console import console
 from .main_worktree_detector import MainWorktreeDetector, ProtectionTrigger
 from .worktree_name_inferrer import WorktreeNameInferrer, suggest_worktree_name
 from rich.panel import Panel
-from rich.prompt import Confirm
+from dopemux.ui.prompts import dopemux_confirm
 
 logger = logging.getLogger(__name__)
 

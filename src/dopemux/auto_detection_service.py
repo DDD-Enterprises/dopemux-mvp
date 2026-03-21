@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Dict, Optional, Set
 import json
 
-from rich.prompt import Confirm
+from dopemux.ui.prompts import dopemux_confirm
 
 from .console import console
 from .profile_detector import ProfileDetector, DetectionContext, format_match_summary

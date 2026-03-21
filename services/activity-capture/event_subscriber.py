@@ -10,6 +10,7 @@ import logging
 from typing import Optional
 
 import redis.asyncio as redis
+from event_normalization import normalize_event
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class EventSubscriber:
 
     async def initialize(self):
         """Initialize Redis connection."""
-        self.redis_client = redis.from_url(self.redis_url)
+        self.redis_client = redis.from_url(self.redis_url, decode_responses=True)
 
         # Create consumer group if it doesn't exist
         try:
@@ -119,6 +120,14 @@ class EventSubscriber:
         """
         event_type = message_data.get("type", "")
         event_data = message_data.get("data", {})
+
+        if isinstance(event_data, str):
+            try:
+                event_data = json.loads(event_data)
+            except json.JSONDecodeError:
+                event_data = {}
+
+        event_type, event_data = normalize_event(event_type, event_data)
 
         logger.debug(f"Processing event: {event_type}")
 

@@ -184,8 +184,8 @@ repos:
         pass_filenames: true
 
       - id: docs-filename-hygiene
-        name: Enforce docs filename hygiene (kebab-case, full-tree)
-        entry: python scripts/check_docs_filename_hygiene.py --check --all-files
+        name: Audit docs filename hygiene (kebab-case, full-tree legacy debt)
+        entry: python scripts/check_docs_filename_hygiene.py --audit --all-files --audit-out /tmp/dopemux-precommit-full-tree-filename-audit.json
         language: system
         pass_filenames: false
         always_run: true

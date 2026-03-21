@@ -3,8 +3,8 @@ id: README
 title: Readme
 type: how-to
 owner: '@hu3mann'
-last_review: '2025-11-10'
-next_review: '2026-02-08'
+last_review: '2026-03-19'
+next_review: '2026-06-19'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: Readme (how-to) for dopemux documentation and developer workflows.
@@ -59,6 +59,7 @@ Day-to-day operational tasks and workflows.
 - **[Role Switching Quickstart](role-switching-quickstart.md)** - Switch between development roles
 - **[Instance Slash Commands](instance-slash-commands.md)** - Command reference
 - **[PR Merge Flight Dashboard](pr-merge-flight-dashboard.md)** - Tactical PR queue management
+- **[Internal Workflow Kit](internal-workflow-kit.md)** - Run phase-gated manager and executor workflows
 
 ### ADHD Engine
 - **[Serena V2 Deployment](serena-v2-production-deployment.md#-quick-start---production-deployment)** - Deploy ADHD intelligence

@@ -77,21 +77,27 @@ def _pane_shell_complete(ctx: click.Context, param: click.Parameter, incomplete:
 @click.group()
 @click.pass_context
 def mobile(ctx: click.Context):
-    """📱 Happy mobile client integration commands."""
+    """
+    📱 Satellite HUD: Manage Dopemux mobile (Happy) integration
+
+    Orchestrates the high-fidelity link between the cockpit and satellite 
+    mobile devices. Synchronizes agent focal points with mobile mirrors 
+    (Happy) to provide persistent focal awareness outside the primary HUD.
+    """
 
 
 @mobile.command()
-@click.option("--all", "launch_all", is_flag=True, help="Launch Happy for all Claude panes")
+@click.option("--all", "launch_all", is_flag=True, help="🚀 Ignite All: Launch Happy mirrors for all detected Claude panes.")
 @click.option(
     "--pane",
     "pane",
     multiple=True,
-    help="Target specific Claude pane names or IDs",
+    help="📍 Signal Anchor: Target specific Claude pane identifiers or coordinates.",
     shell_complete=_pane_shell_complete,
 )
-@click.option("--map", "mapping", type=click.Choice(["agents"]), help="Apply a session mapping strategy")
-@click.option("--label", "labels", multiple=True, help="Custom label for Happy panes (repeat per pane)")
-@click.option("--yes", "assume_yes", is_flag=True, help="Skip confirmation prompts")
+@click.option("--map", "mapping", type=click.Choice(["agents"]), help="🧠 Mapping Ritual: Apply a specific session synchronization strategy.")
+@click.option("--label", "labels", multiple=True, help="🏷️  Ritual Label: Custom identifier for the materialised Happy panes.")
+@click.option("--yes", "assume_yes", is_flag=True, help="⚡ Force Ignition: Skip confirmation prompts for high-volume sessions.")
 @click.pass_context
 def start(
     ctx: click.Context,
@@ -101,7 +107,12 @@ def start(
     labels: Sequence[str],
     assume_yes: bool,
 ):
-    """Launch Happy sessions and pair mobile devices."""
+    """
+    🚀 Ignite Satellite: Launch Happy sessions and pair mobile devices
+
+    Activates the satellite uplink sequence, materializing interactive 
+    Happy mirrors for the selected agent focal points.
+    """
 
     cfg_manager = _get_config_manager(ctx)
     mobile_cfg = cfg_manager.get_mobile_config()
@@ -164,11 +175,16 @@ def start(
 
 
 @mobile.command()
-@click.option("--pane", "pane", multiple=True, help="Detach specific Happy pane labels")
-@click.option("--all", "detach_all", is_flag=True, help="Detach all mobile Happy sessions")
+@click.option("--pane", "pane", multiple=True, help="🔌 Detach Specific: Target specific Happy pane labels for decommissioning.")
+@click.option("--all", "detach_all", is_flag=True, help="⚡ Mass Decommission: Detach all active mobile Happy sessions.")
 @click.pass_context
 def detach(ctx: click.Context, pane: Sequence[str], detach_all: bool):
-    """Stop Happy processes running in Dopemux mobile panes."""
+    """
+    👋 Sever Uplink: Stop Happy processes running in mobile panes
+
+    Safely deactivates the satellite mirrors, terminating the remote 
+    Happy processes and releasing cockpit resources.
+    """
 
     cfg_manager = _get_config_manager(ctx)
     mobile_cfg = cfg_manager.get_mobile_config()
@@ -196,7 +212,12 @@ def detach(ctx: click.Context, pane: Sequence[str], detach_all: bool):
 @click.argument("message", nargs=-1, required=True)
 @click.pass_context
 def notify(ctx: click.Context, message: Sequence[str]):
-    """Send a push notification via Happy."""
+    """
+    🔔 Transmit Signal: Send a push notification via Happy
+
+    Transmits a high-fidelity ritual signal to all paired satellite 
+    devices using the Happy notification infrastructure.
+    """
 
     cfg_manager = _get_config_manager(ctx)
     env = env_for_happy(cfg_manager.get_mobile_config())
@@ -217,12 +238,17 @@ def notify(ctx: click.Context, message: Sequence[str]):
 
 
 @mobile.command()
-@click.option("--json", "as_json", is_flag=True, help="Output status as JSON")
-@click.option("--watch", is_flag=True, help="Refresh status continuously until interrupted")
-@click.option("--interval", type=float, default=5.0, show_default=True, help="Seconds between watch refreshes")
+@click.option("--json", "as_json", is_flag=True, help="📊 Emit JSON: Output status as machine-readable telemetry data.")
+@click.option("--watch", is_flag=True, help="👁️  Continuous HUD: Refresh status continuously until ritual termination.")
+@click.option("--interval", type=float, default=5.0, show_default=True, help="⏱️  Scan Frequency: Seconds between HUD refreshes (default: 5.0).")
 @click.pass_context
 def status(ctx: click.Context, as_json: bool, watch: bool, interval: float):
-    """Show Happy CLI health and active Dopemux mobile sessions."""
+    """
+    📊 Satellite HUD: Show Happy CLI health and active mobile sessions
+
+    Retrieves current operational coordinates for all paired satellite 
+    devices, detailing link stability and active focal points.
+    """
 
     if watch and as_json:
         click.echo("❌ --watch cannot be combined with --json output.")
