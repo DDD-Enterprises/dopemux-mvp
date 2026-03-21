@@ -8,21 +8,24 @@ import sys
 from pathlib import Path
 
 import click
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
 from ..config import ConfigManager
+from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 
 @click.group()
 @click.pass_context
 def autoresponder(ctx):
     """
-    🤖 Manage Claude Auto Responder integration
+    🤖 Auto-Response Ritual: Manage Claude Auto Responder integration
 
-    Automatic confirmation responses for Claude Code prompts with
-    ADHD-optimized controls and attention-aware features.
+    Orchestrates the automatic confirmation response system for Claude Code. 
+    This system synchronizes ADHD-optimized attention patterns with CLI 
+    prompts, providing a seamless, automated feedback loop within the cockpit.
     """
 
 
@@ -39,21 +42,21 @@ def _get_autoresponder_config_manager(ctx, project_path: Path) -> ConfigManager:
     "--terminal-scope",
     "-t",
     type=click.Choice(["current", "all", "project"]),
-    help="Terminal scope for monitoring",
+    help="📡 Monitoring Scope: Terminal boundaries for signal detection.",
 )
-@click.option("--delay", "-d", type=float, help="Response delay in seconds (0-10)")
-@click.option("--timeout", type=int, help="Auto-stop timeout in minutes")
+@click.option("--delay", "-d", type=float, help="⏱️ Ritual Delay: Response latency in seconds (0-10).")
+@click.option("--timeout", type=int, help="⏳ Auto-Stop: Duration in minutes before halting the ritual.")
 @click.option(
-    "--whitelist/--no-whitelist", default=None, help="Enable/disable tool whitelisting"
+    "--whitelist/--no-whitelist", default=None, help="🛡️  Tool Validation: Enable high-fidelity whitelisting for responses."
 )
-@click.option("--debug/--no-debug", default=None, help="Enable/disable debug mode")
+@click.option("--debug/--no-debug", default=None, help="📜 Deep Telemetry: Toggle debug mode for internal signals.")
 @click.pass_context
 def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
     """
-    🚀 Start Claude Auto Responder
+    🚀 Ignite Responder: Start Claude Auto Responder
 
-    Begins automatic confirmation of Claude Code prompts with current
-    configuration settings and ADHD optimizations.
+    Activates the automatic confirmation sequence, synchronizing 
+    ADHD-optimized heuristics with the active Claude Code session.
     """
     project_path = Path.cwd()
     config_manager = _get_autoresponder_config_manager(ctx, project_path)
@@ -82,7 +85,7 @@ def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
 
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -120,9 +123,10 @@ def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
 @click.pass_context
 def autoresponder_stop(ctx):
     """
-    ⏹️ Stop Claude Auto Responder
+    ⏹️ Halt Ritual: Stop Claude Auto Responder
 
-    Stops automatic confirmation and displays session statistics.
+    Deactivates the automatic confirmation sequence and renders a 
+    diagnostic summary of the session telemetry.
     """
     project_path = Path.cwd()
     config_manager = _get_autoresponder_config_manager(ctx, project_path)
@@ -139,7 +143,7 @@ def autoresponder_stop(ctx):
         console.logger.info("[warning]Auto responder is not running[/warning]")
         return
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -172,9 +176,10 @@ def autoresponder_stop(ctx):
 @click.pass_context
 def autoresponder_status(ctx):
     """
-    📊 Show auto responder status
+    📊 Monitoring HUD: Show auto responder status
 
-    Displays current status, configuration, and performance metrics.
+    Displays the current operational coordinates, cognitive configuration, 
+    and performance metrics of the responder daemon.
     """
     project_path = Path.cwd()
     config_manager = _get_autoresponder_config_manager(ctx, project_path)
@@ -189,12 +194,14 @@ def autoresponder_status(ctx):
     status = autoresponder_manager.get_status()
 
     # Status overview
-    status_color = "green" if status["running"] else "yellow"
+    status_color = "success" if status["running"] else "warning"
     status_emoji = "🟢" if status["running"] else "🟡"
 
-    table = Table(title="🤖 Claude Auto Responder Status")
-    table.add_column("Property", style="info")
-    table.add_column("Value", style=status_color)
+    table = styled_table(
+        "🤖 Claude Auto Responder Status",
+        ("Property", {"style": "info"}),
+        ("Value", {"style": status_color}),
+    )
 
     table.add_row("Status", f"{status_emoji} {status['status'].title()}")
     table.add_row("Running", "Yes" if status["running"] else "No")
@@ -211,9 +218,11 @@ def autoresponder_status(ctx):
     console.logger.info(table)
 
     # Configuration table
-    config_table = Table(title="⚙️ Configuration")
-    config_table.add_column("Setting", style="info")
-    config_table.add_column("Value", style="success")
+    config_table = styled_table(
+        "⚙️ Configuration",
+        ("Setting", {"style": "info"}),
+        ("Value", {"style": "success"}),
+    )
 
     config = status["config"]
     config_table.add_row("Enabled", "Yes" if config["enabled"] else "No")
@@ -232,9 +241,10 @@ def autoresponder_status(ctx):
 @click.pass_context
 def autoresponder_setup(ctx):
     """
-    🔧 Setup Claude Auto Responder
+    🔧 Ritual Preparation: Setup Claude Auto Responder
 
-    Downloads and configures the ClaudeAutoResponder tool for use with Dopemux.
+    Downloads and calibrates the ClaudeAutoResponder tool for high-fidelity 
+    integration with the DØPEMÜX cockpit.
     """
     project_path = Path.cwd()
     config_manager = _get_autoresponder_config_manager(ctx, project_path)
@@ -247,7 +257,7 @@ def autoresponder_setup(ctx):
 
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -271,33 +281,34 @@ def autoresponder_setup(ctx):
 @click.option(
     "--enabled/--disabled",
     default=None,
-    help="Enable or disable auto responder",
+    help="⚡ Toggle Ritual: Enable or disable the auto responder daemon.",
 )
 @click.option(
     "--terminal-scope",
     type=click.Choice(["current", "all", "project"]),
-    help="Terminal monitoring scope",
+    help="📡 Monitoring Scope: Terminal boundaries for signal detection.",
 )
-@click.option("--delay", type=float, help="Response delay in seconds (0-10)")
-@click.option("--timeout", type=int, help="Auto-stop timeout in minutes")
+@click.option("--delay", type=float, help="⏱️ Ritual Delay: Response latency in seconds (0-10).")
+@click.option("--timeout", type=int, help="⏳ Auto-Stop: Duration in minutes before halting the ritual.")
 @click.option(
     "--whitelist/--no-whitelist",
     default=None,
-    help="Enable/disable tool whitelisting",
+    help="🛡️  Tool Validation: Enable high-fidelity whitelisting for responses.",
 )
 @click.option(
     "--debug/--no-debug",
     default=None,
-    help="Enable/disable debug mode",
+    help="📜 Deep Telemetry: Toggle debug mode for internal signals.",
 )
 @click.pass_context
 def autoresponder_config(
     ctx, enabled, terminal_scope, delay, timeout, whitelist, debug
 ):
     """
-    ⚙️ Configure auto responder settings
+    ⚙️ Cognitive Tuning: Configure auto responder settings
 
-    Update configuration options for Claude Auto Responder integration.
+    Updates the internal heuristics and operational parameters for 
+    the Claude Auto Responder integration.
     """
     project_path = Path.cwd()
     config_manager = _get_autoresponder_config_manager(ctx, project_path)
@@ -320,9 +331,11 @@ def autoresponder_config(
         # Show current config
         current_config = config_manager.get_claude_autoresponder_config()
 
-        table = Table(title="🤖 Auto Responder Configuration")
-        table.add_column("Setting", style="info")
-        table.add_column("Value", style="success")
+        table = styled_table(
+            "🤖 Auto Responder Configuration",
+            ("Setting", {"style": "info"}),
+            ("Value", {"style": "success"}),
+        )
 
         table.add_row("Enabled", "Yes" if current_config.enabled else "No")
         table.add_row("Terminal Scope", current_config.terminal_scope)

@@ -22,7 +22,7 @@ import tempfile
 from pathlib import Path
 from typing import Optional, List
 import click
-from rich.prompt import Prompt, Confirm
+from dopemux.ui.prompts import dopemux_prompt, dopemux_confirm
 from rich.panel import Panel
 
 from .console import console
@@ -120,7 +120,7 @@ class ProjectInitializer:
         if self.dopemux_dir.is_dir() and not force:
             console.logger.info(f"\n[warning]⚠️  Project already initialized (.dopemux/ exists)[/warning]")
 
-            if not Confirm.ask("Reinitialize?", default=False):
+            if not dopemux_confirm("Reinitialize?", default=False):
                 console.logger.info("[text.dim]Cancelled. Use --force to skip confirmation.[/text.dim]")
                 return False
 
@@ -135,7 +135,7 @@ class ProjectInitializer:
                 console.logger.info(f"\n🔍 [bold]Detected project type:[/bold] {detected}")
 
                 if interactive:
-                    if Confirm.ask(f"Use profile '{detected}'?", default=True):
+                    if dopemux_confirm(f"Use profile '{detected}'?", default=True):
                         profile_name = detected
                     else:
                         profile_name = self._prompt_profile_selection(profiles)
@@ -246,7 +246,7 @@ class ProjectInitializer:
         for i, p in enumerate(profiles, 1):
             console.logger.info(f"  {i}. [info]{p.name}[/info] - {p.description}")
 
-        choice = Prompt.ask(
+        choice = dopemux_prompt(
             "\nSelect profile",
             choices=[str(i) for i in range(1, len(profiles) + 1)],
             default="1"

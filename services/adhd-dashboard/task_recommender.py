@@ -16,6 +16,7 @@ import logging
 import aiohttp
 from datetime import datetime
 from typing import Dict, Any, List, Optional
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,8 @@ class TaskRecommender:
     def __init__(
         self,
         adhd_engine_url: str = "http://localhost:8095",
-        user_id: str = "hue"
+        user_id: str = "default",
+        api_key: Optional[str] = None,
     ):
         """
         Initialize task recommender.
@@ -41,6 +43,14 @@ class TaskRecommender:
         """
         self.adhd_engine_url = adhd_engine_url
         self.user_id = user_id
+        self.api_key = api_key or os.getenv("ADHD_ENGINE_API_KEY")
+
+    @property
+    def _headers(self) -> Dict[str, str]:
+        headers: Dict[str, str] = {}
+        if self.api_key:
+            headers["X-API-Key"] = self.api_key
+        return headers
 
     async def assess_task(
         self,
@@ -64,7 +74,7 @@ class TaskRecommender:
             Assessment with suitability score and recommendations
         """
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(headers=self._headers) as session:
                 payload = {
                     "user_id": self.user_id,
                     "task_id": task_id,
@@ -137,7 +147,7 @@ class TaskRecommender:
         """
         try:
             # Get current ADHD state
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(headers=self._headers) as session:
                 async with session.get(f"{self.adhd_engine_url}/api/v1/energy-level/{self.user_id}") as response:
                     energy_data = await response.json() if response.status == 200 else {}
 

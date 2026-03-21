@@ -12,26 +12,21 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
+from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 @click.group()
 def decisions():
     """
-    📊 Decision tracking and analytics
+    📊 Decision Governance: Track and analyze cockpit conclusions
 
-    Manage and analyze decisions logged in ConPort with ADHD-optimized
-    visualizations and review workflows.
-
-    \b
-    Quick Win Commands:
-        review    - Review decisions pending attention
-        stats     - Show decision statistics with charts
-        energy    - Energy level tracking commands
-
-    Part of ConPort Enhancement roadmap (Phase 1-5).
+    Orchestrates the logging and analysis of ritual decisions within the 
+    persistent knowledge graph. Synchronizes ADHD-optimized visualizations 
+    with review workflows to ensure high-fidelity cognitive alignment.
     """
     pass
 
@@ -39,10 +34,11 @@ def decisions():
 @decisions.group()
 def energy():
     """
-    ⚡ Energy level tracking (ADHD optimization)
+    ⚡ Vitality Telemetry: Track ritual energy levels
 
-    Track your energy levels throughout the day to discover patterns
-    and optimize decision-making timing.
+    Synchronizes ADHD-optimized energy tracking rituals. Monitors cognitive 
+    vitality patterns throughout the temporal cycle to optimize 
+    decision-making timing and ritual efficiency.
     """
     pass
 
@@ -50,13 +46,11 @@ def energy():
 @decisions.group()
 def patterns():
     """
-    🔍 Pattern detection and learning (Phase 3)
+    🔍 Cognitive Synthesis: Pattern detection and learning
 
-    Auto-detect decision patterns from history:
-    - Tag clustering (co-occurring tags)
-    - Decision chains (sequential patterns)
-    - Timing patterns (time-of-day, duration)
-    - Energy correlation (energy vs quality)
+    Engages the pattern detection engine to synthesize insights from 
+    decision history. Automatically clusters ritual tags, identifies 
+    sequential chains, and correlates energy telemetry with ritual quality.
     """
     pass
 

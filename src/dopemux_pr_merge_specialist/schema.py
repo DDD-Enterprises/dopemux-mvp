@@ -24,6 +24,7 @@ class PRState(str, Enum):
     APPLIED = "applied"
     MERGE_READY = "merge_ready"
     MERGE_BLOCKED = "merge_blocked"
+    QUEUED_FOR_MERGE = "queued_for_merge"
     MERGED = "merged"
     ESCALATED = "escalated"
     ABORTED = "aborted"
@@ -313,6 +314,7 @@ class PullRequestState:
     labels: List[str] = field(default_factory=list)
     updated_at: str = ""
     is_draft: bool = False
+    auto_merge_enabled: bool = False
     additions: int = 0
     deletions: int = 0
     changed_files: int = 0
@@ -534,7 +536,11 @@ class PRResult:
         return {
             "run_id": self.run_id,
             "pr_state": self.pr_state.to_dict(),
-            "lifecycle_state": self.lifecycle_state,
+            "lifecycle_state": (
+                self.lifecycle_state.value
+                if isinstance(self.lifecycle_state, PRState)
+                else str(self.lifecycle_state)
+            ),
             "apply_actions": self.apply_actions,
             "merge_decision": (
                 None if self.merge_decision is None else self.merge_decision.to_dict()

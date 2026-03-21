@@ -10,6 +10,7 @@ ADHD Benefit: Automatic workspace switch detection without manual tracking.
 import subprocess
 import platform
 import logging
+import os
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,10 @@ class AppDetector:
             Application name (e.g., "Claude Code", "Visual Studio Code")
             or None if detection fails
         """
+        override = os.getenv("WORKSPACE_WATCHER_ACTIVE_APP")
+        if override:
+            return override
+
         if IS_MACOS:
             return self._get_active_app_macos()
         elif IS_LINUX:
@@ -51,6 +56,10 @@ class AppDetector:
         Uses thread pool execution to avoid blocking async event loops.
         Preferred in async contexts.
         """
+        override = os.getenv("WORKSPACE_WATCHER_ACTIVE_APP")
+        if override:
+            return override
+
         if IS_MACOS:
             return await self._get_active_app_macos_async()
         elif IS_LINUX:

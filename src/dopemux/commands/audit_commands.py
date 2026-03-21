@@ -8,44 +8,54 @@ from pathlib import Path
 from typing import Optional
 
 import click
-from rich.panel import Panel
 
 from ..console import console
+from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 
 @click.group()
 @click.pass_context
 def audit(ctx):
-    """🔬 Documentation audit and guided extraction wizard.
+    """
+    🔬 Documentation Audit: Corpus analysis and guided extraction HUD
 
-    Analyze your repository's documentation corpus, estimate costs,
-    and run guided extraction with the repo-truth-extractor pipeline.
+    Orchestrates the high-fidelity analysis of the project's documentation 
+    corpus. Synchronizes daemon sensors to estimate costs, identify 
+    authority classes, and prepare the cockpit for extraction rituals.
     """
     pass
 
 
 @audit.command()
-@click.option("--verbose", "-v", is_flag=True, help="Show detailed output")
-@click.option("--force", is_flag=True, help="Skip corpus size safety limit")
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    help="📊 Deep Telemetry: Enable high-fidelity signal monitoring during the scan.",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="🚀 Force Extraction: Override corpus size safety limits and proceed with the ritual.",
+)
 @click.option(
     "--config",
     type=click.Path(exists=True),
     default=None,
-    help="Custom TOML config path",
+    help="🛠️  Ritual Config: Specify a custom configuration coordinate for the scan.",
 )
 @click.pass_context
 def prescan(ctx, verbose: bool, force: bool, config: Optional[str]):
-    """📊 Run documentation corpus pre-scan audit.
+    """
+    📊 Pre-Ignition Audit: Execute non-destructive documentation corpus scan
 
-    Walks the repository, classifies files by authority class,
-    and generates corpus statistics without making any API calls.
-
-    Outputs go to extraction/prescan/:
-    corpus_manifest.json, corpus_stats.json, run_metadata.json
+    Activates cockpit sensors to classify documentation artifacts by 
+    authority class. Generates corpus statistics and estimates ritual 
+    costs without engaging external LLM providers.
     """
     script = Path("scripts/doc_audit_prescan.py")
     if not script.exists():
-        console.print("[bold red]❌  scripts/doc_audit_prescan.py not found[/bold red]")
+        console.print("[error]❌  scripts/doc_audit_prescan.py not found[/error]")
         raise SystemExit(1)
 
     cmd = [sys.executable, str(script), "dry-run"]
@@ -57,9 +67,9 @@ def prescan(ctx, verbose: bool, force: bool, config: Optional[str]):
         cmd.extend(["--config", config])
 
     console.print(
-        Panel(
-            "[bold cyan]📊  Running corpus pre-scan audit…[/bold cyan]",
-            border_style="cyan",
+        styled_panel(
+            "[mint]📊  Running corpus pre-scan audit…[/mint]",
+            border_style="panel.border",
         )
     )
     result = subprocess.run(cmd, cwd=str(Path.cwd()))
@@ -70,35 +80,34 @@ def prescan(ctx, verbose: bool, force: bool, config: Optional[str]):
 @click.option(
     "--execute",
     is_flag=True,
-    help="Enable actual extraction (default: preview only)",
+    help="⚡ Ignite Engines: Engage LLM providers for actual extraction (default: preview only).",
 )
 @click.option(
     "--educate/--no-educate",
     default=True,
-    help="Show educational explanations at each stage",
+    help="🧠 Cognitive Overlay: Provide educational HUD tips at each ritual stage.",
 )
 @click.option(
     "--routing-policy",
     default="balanced_openrouter",
     show_default=True,
-    help="LLM routing policy for extraction",
+    help="🧠 Cognitive Routing: LLM policy for the extraction ritual.",
 )
 @click.option(
     "--workers",
     "-w",
     default=10,
     show_default=True,
-    help="Partition worker count",
+    help="⚡ Ritual Workers: Number of concurrent workers for partitioning.",
 )
 @click.pass_context
 def wizard(ctx, execute: bool, educate: bool, routing_policy: str, workers: int):
-    """🧙 Guided extraction wizard — interactive walkthrough.
+    """
+    🧙 Ritual Guide: Guided extraction flight-deck walkthrough
 
-    Walks you through the complete extraction pipeline:
-    repo health → corpus audit → prompt setup → cost selection →
-    partition preview → phase-by-phase extraction.
-
-    Default mode is preview-only. Use --execute to enable actual extraction.
+    Engages the interactive cockpit walkthrough for the extraction pipeline. 
+    Synchronizes across ritual phases, from health assessment to 
+    high-fidelity materialization.
     """
     from ..ux.wizard import WizardRunner
 
@@ -114,10 +123,15 @@ def wizard(ctx, execute: bool, educate: bool, routing_policy: str, workers: int)
 @audit.command()
 @click.pass_context
 def status(ctx):
-    """📋 Show status of last extraction run."""
+    """
+    📋 Diagnostic HUD: Show telemetry from the latest ritual session
+
+    Retrieves current cockpit telemetry for the most recent repo-truth-extractor 
+    run, detailing phase progression and total payload size.
+    """
     latest_file = Path("extraction/repo-truth-extractor/v5/latest_run_id.txt")
     if not latest_file.exists():
-        console.print("[yellow]No extraction runs found.[/yellow]")
+        console.print("[warning]No extraction runs found.[/warning]")
         raise SystemExit(0)
 
     run_id = latest_file.read_text().strip()
@@ -142,4 +156,4 @@ def status(ctx):
         )
         console.print(f"[bold]Total size:[/bold] {total_size / (1024 * 1024):.1f} MB")
     else:
-        console.print(f"[yellow]Run directory not found: {run_dir}[/yellow]")
+        console.print(f"[warning]Run directory not found: {run_dir}[/warning]")

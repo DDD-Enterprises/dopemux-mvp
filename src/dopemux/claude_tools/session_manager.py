@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 
 from rich.console import Console
 from rich.table import Table
-from rich.prompt import Prompt, Confirm
+from dopemux.ui.prompts import dopemux_prompt, dopemux_confirm
 from rich import box
 
 import logging

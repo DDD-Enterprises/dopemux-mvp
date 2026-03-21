@@ -19,17 +19,25 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
-from rich.panel import Panel
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
+from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 
 @click.group()
 @click.pass_context
 def extractor(ctx):
-    """Universal Repo-Truth-Extractor — analyze any codebase."""
+    """🧪 Ritual Daemon: Universal Repo-Truth-Extractor flight-deck.
+
+    Engage the universal cockpit for multi-layered codebase analysis and high-fidelity
+    intelligence harvesting. This system synchronizes fingerprinting, interactive
+    feature discovery, and automated prompt synthesis to prepare any repository
+    for intensive extraction rituals.
+    """
     if ctx.invoked_subcommand:
         click.echo("`dopemux extractor` is legacy. Use `dopemux upgrades`.")
 
@@ -39,47 +47,50 @@ def extractor(ctx):
 
 @extractor.command()
 @click.option(
-    "--repo", "-r",
+    "--repo",
+    "-r",
     type=click.Path(exists=True, file_okay=False),
     default=".",
-    help="Path to the target repository (default: current directory).",
+    help="📂 Target repository path for the intelligence audit (defaults to the current cockpit directory).",
 )
 @click.option(
-    "--output", "-o",
+    "--output",
+    "-o",
     type=click.Path(file_okay=False),
     default=None,
-    help="Output directory for prescan intelligence (default: extraction/prescan).",
+    help="📂 Target directory for storing the generated prescan intelligence and metadata (default: extraction/prescan).",
 )
 @click.option(
     "--passes",
     type=str,
     default=None,
-    help="Grok passes to run (comma-separated: dedup,discover,feasibility,optimize).",
+    help="📊 Specific grok passes to engage during the audit (e.g., dedup, discover, feasibility, optimize).",
 )
 @click.option(
     "--code/--no-code",
     default=True,
-    help="Enable code-focused prescan (default: True).",
+    help="🧪 Toggle high-fidelity code-focused sensor analysis for the prescan ritual.",
 )
 @click.option(
     "--git/--no-git",
     default=True,
-    help="Enable git metadata enrichment (default: True).",
+    help="📈 Enrich the intelligence payload with git metadata and historical telemetry.",
 )
 @click.option(
     "--incremental",
     is_flag=True,
-    help="Incremental prescan based on git diff.",
+    help="⏯️  Perform an incremental prescan ritual by analyzing changes since the last git synchronization.",
 )
 @click.option(
     "--cost-estimate",
     is_flag=True,
-    help="Print estimated extraction cost and exit.",
+    help="💰 Print a detailed cost-to-fidelity estimate for the extraction ritual and exit.",
 )
 @click.option(
-    "--verbose", "-v",
+    "--verbose",
+    "-v",
     is_flag=True,
-    help="Verbose output.",
+    help="⚡ Enable high-fidelity telemetry for detailed diagnostic output during the scan.",
 )
 def prescan(
     repo: str,
@@ -91,7 +102,14 @@ def prescan(
     cost_estimate: bool,
     verbose: bool,
 ):
-    """Run pre-extraction intelligence audit."""
+    """📊 Flight-Deck: Execute a pre-extraction intelligence audit.
+
+    Activate the cockpit sensors to perform deep-tissue codebase analysis. This command
+    calibrates the extraction sensors through multiple grok passes—identifying
+    redundancy, discovering hidden features, and assessing ritual feasibility.
+    It provides a comprehensive diagnostic report and a detailed cost-to-fidelity
+    estimate for the upcoming extraction sessions.
+    """
     repo_path = Path(repo).resolve()
     extractor_root = _resolve_extractor_root(repo_path)
 
@@ -101,7 +119,7 @@ def prescan(
             "Make sure you're in a dopemux workspace or pass --repo."
         )
 
-    console.print(Panel(
+    console.print(styled_panel(
         f"[mint]Running prescan for[/mint] {repo_path.name}",
         title="[bold]DØPEMÜX Extractor Prescan[/bold]",
         border_style="info",
@@ -126,7 +144,7 @@ def prescan(
     
     pass_list = [p.strip() for p in passes.split(",")] if passes else None
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -175,49 +193,52 @@ def prescan(
 
 @extractor.command()
 @click.option(
-    "--repo", "-r",
+    "--repo",
+    "-r",
     type=click.Path(exists=True, file_okay=False),
     default=".",
-    help="Path to the target repository (default: current directory).",
+    help="📂 Target repository path for the initialization ritual.",
 )
 @click.option(
-    "--output", "-o",
+    "--output",
+    "-o",
     type=click.Path(file_okay=False),
     default=None,
-    help="Output directory for generated promptset.",
+    help="📂 Target directory for the synthesized promptset and generated artifacts.",
 )
 @click.option(
     "--prescan",
     type=click.Path(exists=True, file_okay=False),
     default=None,
-    help="Path to prescan output directory.",
+    help="📂 Path to the existing prescan intelligence directory to accelerate initialization.",
 )
 @click.option(
-    "--interactive/--no-interactive", "-i",
+    "--interactive/--no-interactive",
+    "-i",
     default=True,
-    help="Run interactive feature discovery (default: True).",
+    help="🧠 Engage the interactive feature discovery module for manual sensor calibration.",
 )
 @click.option(
     "--enrich",
     is_flag=True,
     default=False,
-    help="Enable optional LLM enrichment pass.",
+    help="⚡ Enable an optional LLM enrichment pass to synthesize higher-fidelity feature descriptions.",
 )
 @click.option(
     "--feature-map",
     type=click.Path(exists=True, dir_okay=False),
     default=None,
-    help="Pre-authored FEATURE_MAP.json (skips interactive discovery).",
+    help="🗺️  Inject a pre-authored FEATURE_MAP.json to skip the interactive discovery phase.",
 )
 @click.option(
     "--force-include",
     multiple=True,
-    help="Force-include phases (e.g., --force-include H --force-include T).",
+    help="🔥 Force-include specific ritual phases (e.g., --force-include H --force-include T) into the synthesized promptset.",
 )
 @click.option(
     "--force-skip",
     multiple=True,
-    help="Force-skip phases (e.g., --force-skip B --force-skip W).",
+    help="🛡️  Force-skip specific ritual phases (e.g., --force-skip B --force-skip W) to optimize the extraction sequence.",
 )
 def init(
     repo: str,
@@ -229,7 +250,14 @@ def init(
     force_include: tuple,
     force_skip: tuple,
 ):
-    """Initialize extraction — fingerprint, discover features, generate prompts."""
+    """🧪 Ritual Daemon: Initialize the extraction cockpit — Fingerprint, discover, and synthesize.
+
+    Execute the complete initialization sequence for your repository. This ritual
+    synchronizes fingerprinting, engages in interactive feature discovery,
+    and synthesizes the final promptset. It prepares the flight-deck for live
+    extraction rituals by calibrating the model-map, artifacts, and routing-policies
+    required for high-fidelity truth extraction.
+    """
     repo_path = Path(repo).resolve()
     extractor_root = _resolve_extractor_root(repo_path)
 
@@ -239,7 +267,7 @@ def init(
             "Make sure you're in a dopemux workspace or pass --repo."
         )
 
-    console.print(Panel(
+    console.print(styled_panel(
         f"[mint]Initializing extractor for[/mint] {repo_path.name}",
         title="[bold]DØPEMÜX Extractor Init[/bold]",
         border_style="info",
@@ -253,7 +281,7 @@ def init(
     feature_map_path = Path(feature_map) if feature_map else None
     prescan_path = Path(prescan) if prescan else None
 
-    with Progress(
+    with branded_progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
@@ -306,28 +334,39 @@ def init(
     "--promptset-root",
     type=click.Path(exists=True, file_okay=False),
     default=None,
-    help="Path to a generated promptset directory (from `extractor init`).",
+    help="📂 Path to the synthesized promptset directory (generated from `extractor init`) for the extraction ritual.",
 )
 @click.option(
     "--prescan",
     type=click.Path(exists=True, file_okay=False),
     default=None,
-    help="Path to prescan output directory.",
+    help="📂 Path to the prescan intelligence directory used to calibrate the runner sensors.",
 )
 @click.option(
-    "--pipeline", "-p",
+    "--pipeline",
+    "-p",
     type=click.Choice(["v3", "v4", "v5"]),
     default="v5",
-    help="Pipeline version to use (default: v5).",
+    help="📊 Specify the pipeline engine version (v3, v4, or v5) to ignite for the ritual.",
 )
 @click.argument("runner_args", nargs=-1, type=click.UNPROCESSED)
-def run(promptset_root: Optional[str], prescan: Optional[str], pipeline: str, runner_args: tuple):
-    """Run the extraction pipeline with a generated or default promptset."""
-    console.print(Panel(
-        f"[mint]Running extraction pipeline {pipeline}[/mint]",
-        title="[bold]DØPEMÜX Extractor Run[/bold]",
-        border_style="info",
-    ))
+def run(
+    promptset_root: Optional[str], prescan: Optional[str], pipeline: str, runner_args: tuple
+):
+    """🚀 Ritual Daemon: Run the extraction pipeline with a synthesized or default promptset.
+
+    Engage the extraction engines using a generated promptset or legacy v4 configurations.
+    This command initiates the actual truth-extraction ritual across the specified
+    pipeline version. Note: Direct execution of extraction scripts from the cockpit
+    is typically restricted to prevent unintended provider telemetry costs.
+    """
+    console.print(
+        styled_panel(
+            f"[mint]Running extraction pipeline {pipeline}[/mint]",
+            title="[bold]DØPEMÜX Extractor Run[/bold]",
+            border_style="info",
+        )
+    )
 
     # SAFETY: Never execute extraction scripts — warn and exit
     console.print(
@@ -352,10 +391,15 @@ def run(promptset_root: Optional[str], prescan: Optional[str], pipeline: str, ru
     "--output-dir", "-o",
     type=click.Path(exists=True, file_okay=False),
     default=None,
-    help="Path to a generated promptset directory.",
+    help="🔬 Archive Coordinate: Path to a generated promptset directory.",
 )
 def status(output_dir: Optional[str]):
-    """Show status of a generated promptset."""
+    """
+    📊 Ritual Status: Show status of a generated promptset
+
+    Retrieves the current synchronization state and manifest telemetry 
+    for a specific extraction promptset.
+    """
     if output_dir is None:
         console.print("[warning]No --output-dir specified. Looking for latest...[/warning]")
         # Try to find the most recent generated promptset
@@ -379,9 +423,11 @@ def status(output_dir: Optional[str]):
         with open(manifest_path) as f:
             manifest = json.load(f)
 
-        table = Table(title="Sync Manifest", border_style="info")
-        table.add_column("Field", style="bold")
-        table.add_column("Value")
+        table = styled_table(
+            "Sync Manifest",
+            ("Field", {"style": "bold"}),
+            "Value",
+        )
 
         table.add_row("Success", "✓" if manifest.get("success") else "✗")
         table.add_row("Run ID", manifest.get("run_id", "?"))
@@ -415,10 +461,15 @@ def status(output_dir: Optional[str]):
     "--output-dir", "-o",
     type=click.Path(exists=True, file_okay=False),
     required=True,
-    help="Path to the generated promptset directory to validate.",
+    help="🔬 Archive Coordinate: Path to the generated promptset directory to validate.",
 )
 def validate(output_dir: str):
-    """Validate a generated promptset for referential integrity."""
+    """
+    ✅ Verify Integrity: Validate a generated promptset for referential integrity
+
+    Performs a strict structural audit of promptset artifacts to ensure 
+    schema compliance and system compatibility.
+    """
     output_path = Path(output_dir)
 
     required_files = ["promptset.yaml", "artifacts.yaml", "model_map.yaml"]
@@ -432,7 +483,7 @@ def validate(output_dir: str):
 
     from lib.promptgen.integrity_validator import validate_from_files
 
-    console.print(Panel(
+    console.print(styled_panel(
         f"[mint]Validating[/mint] {output_path}",
         title="[bold]DØPEMÜX Extractor Validate[/bold]",
         border_style="info",

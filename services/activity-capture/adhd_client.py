@@ -42,7 +42,8 @@ class ADHDEngineClient:
 
     async def initialize(self):
         """Initialize HTTP session."""
-        self.session = aiohttp.ClientSession(headers=self.headers)
+        if self.session is None:
+            self.session = aiohttp.ClientSession(headers=self.headers)
 
     async def close(self):
         """Close HTTP session."""
@@ -52,6 +53,8 @@ class ADHDEngineClient:
     async def check_health(self) -> bool:
         """Check if ADHD Engine is healthy."""
         try:
+            if self.session is None:
+                await self.initialize()
             async with self.session.get(f"{self.base_url}/health") as response:
                 return response.status == 200
         except Exception as e:
@@ -66,13 +69,18 @@ class ADHDEngineClient:
             activity_data: Activity data to send
         """
         try:
+            if self.session is None:
+                await self.initialize()
+
             payload = {
                 "user_id": self.user_id,
-                "activity_data": activity_data,
-                "timestamp": activity_data.get("timestamp", asyncio.get_event_loop().time())
+                "completion_rate": activity_data.get("completion_rate"),
+                "context_switches": activity_data.get("context_switches"),
+                "break_compliance": activity_data.get("break_compliance"),
+                "minutes_since_break": activity_data.get("minutes_since_break"),
             }
 
-            async with self.session.post(
+            async with self.session.put(
                 f"{self.base_url}/api/v1/activity/{self.user_id}",
                 json=payload
             ) as response:
@@ -92,6 +100,8 @@ class ADHDEngineClient:
             Dict with accommodation recommendations
         """
         try:
+            if self.session is None:
+                await self.initialize()
             async with self.session.get(
                 f"{self.base_url}/api/v1/recommend-break?user_id={self.user_id}"
             ) as response:

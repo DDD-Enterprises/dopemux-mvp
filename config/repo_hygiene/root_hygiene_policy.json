@@ -49,7 +49,8 @@
     "repo-truth-pack",
     "llm-plans",
     "dopemux_voice_branding_bundle",
-    "proof_bundle"
+    "proof_bundle",
+    "llm-docs"
   ],
   "allowed_root_files": [
     "SPECIMEN_LEDGER_REGEN_BIG.csv",
@@ -104,6 +105,7 @@
     "DAO_SURFACE.json",
     "CONCURRENCY_RISK_LOCATIONS.json",
     "compose.yml",
+    "compose.adhd-stack.yml",
     "AG-master_plan.md",
     "install.sh",
     "CHANGELOG.md",

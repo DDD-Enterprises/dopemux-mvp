@@ -145,6 +145,25 @@ DEFAULT_POLICY: Dict[str, Any] = {
             "keep the deterministic head side",
             "keep the wrapper implementation already in head",
         ],
+        "auto_recovery": {
+            "require_opt_in_label": True,
+            "opt_in_labels": ["conflict:mechanical"],
+            "blocked_labels": ["conflict:semantic"],
+            "max_conflict_files": 5,
+            "prefer_side": "theirs",
+            "safe_path_prefixes": ["docs/", "tests/"],
+            "safe_filenames": [
+                "package.json",
+                "package-lock.json",
+                "yarn.lock",
+                "pnpm-lock.yaml",
+                "poetry.lock",
+                "uv.lock",
+                "requirements.txt",
+                "requirements-dev.txt",
+                "requirements-test.txt",
+            ],
+        },
     },
     "safety": {
         "negative_allowlist": [

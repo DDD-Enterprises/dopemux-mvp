@@ -19,6 +19,7 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from typing import Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,6 +39,7 @@ logger = logging.getLogger(__name__)
 event_subscriber: EventSubscriber = None
 activity_tracker: ActivityTracker = None
 adhd_client: ADHDEngineClient = None
+subscriber_task: Optional[asyncio.Task] = None
 
 
 @asynccontextmanager
@@ -55,7 +57,8 @@ async def lifespan(app: FastAPI):
     - Flush pending activities
     - Close connections
     """
-    global event_subscriber, activity_tracker, adhd_client
+    del app
+    global event_subscriber, activity_tracker, adhd_client, subscriber_task
 
     # STARTUP
     logger.info("=" * 60)
@@ -81,8 +84,10 @@ async def lifespan(app: FastAPI):
         # Initialize ADHD Engine client
         adhd_client = ADHDEngineClient(
             base_url=adhd_engine_url,
-            user_id=user_id
+            user_id=user_id,
+            api_key=os.getenv("ADHD_ENGINE_API_KEY"),
         )
+        await adhd_client.initialize()
         logger.info("✅ ADHD Engine client initialized")
 
         # Initialize activity tracker
@@ -101,9 +106,12 @@ async def lifespan(app: FastAPI):
             activity_tracker=activity_tracker
         )
 
-        # Start subscribing to events
-        await event_subscriber.start()
-        logger.info("✅ Event subscriber started (dopemux:events)")
+        # Start subscribing to events in the background so FastAPI startup can complete.
+        subscriber_task = asyncio.create_task(
+            event_subscriber.start(),
+            name="activity-capture-event-subscriber",
+        )
+        logger.info("✅ Event subscriber task started (dopemux:events)")
 
         logger.info("")
         logger.info("🎉 Activity Capture Service ready!")
@@ -126,9 +134,18 @@ async def lifespan(app: FastAPI):
             await event_subscriber.stop()
             logger.info("✅ Event subscriber stopped")
 
+        if subscriber_task:
+            subscriber_task.cancel()
+            await asyncio.gather(subscriber_task, return_exceptions=True)
+            subscriber_task = None
+
         if activity_tracker:
             await activity_tracker.flush_all()
             logger.info("✅ Activity tracker flushed")
+
+        if adhd_client:
+            await adhd_client.close()
+            logger.info("✅ ADHD Engine client closed")
 
         logger.info("✅ Shutdown complete")
 

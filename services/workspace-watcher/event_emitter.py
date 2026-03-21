@@ -18,11 +18,11 @@ from pathlib import Path
 from typing import Optional
 
 # Add DopeconBridge to path for EventBus
-bridge_path = Path(__file__).parent.parent.parent / "services" / "mcp-dopecon-bridge"
+bridge_path = Path(__file__).parent.parent / "dopecon-bridge"
 if str(bridge_path) not in sys.path:
     sys.path.insert(0, str(bridge_path))
 
-from event_bus import Event, EventBus
+from dopecon_bridge.event_bus import Event, EventBus
 
 logger = logging.getLogger(__name__)
 
@@ -103,11 +103,12 @@ class WorkspaceSwitchEmitter:
                     "switch_type": "automatic",  # Detected by watcher
                     "context_data": {},
                     "workspace_id": to_workspace or "unknown",
+                    "file_activity": file_activity or {},
                     "adhd_context_capture": {
                         "timestamp": f"{time.time()}",
                         "recovery_priority": "high" if from_workspace and to_workspace else "low",
                         "detection_method": "workspace_watcher",
-                        "file_activity": file_activity  # Include file modification data
+                        "file_activity": file_activity or {},
                     }
                 },
                 source="workspace-watcher"
