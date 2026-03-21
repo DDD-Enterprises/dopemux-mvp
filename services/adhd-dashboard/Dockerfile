@@ -1,6 +1,4 @@
-"""
-Dockerfile for ADHD Dashboard
-"""
+# Dockerfile for ADHD Dashboard
 FROM python:3.11-slim
 
 WORKDIR /app

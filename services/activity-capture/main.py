@@ -18,12 +18,19 @@ ADHD Benefits:
 import asyncio
 import logging
 import os
+import sys
+from pathlib import Path
 from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_log, brand_payload, voice_header
 from event_subscriber import EventSubscriber
 from activity_tracker import ActivityTracker
 from adhd_client import ADHDEngineClient
@@ -61,9 +68,9 @@ async def lifespan(app: FastAPI):
     global event_subscriber, activity_tracker, adhd_client, subscriber_task
 
     # STARTUP
-    logger.info("=" * 60)
-    logger.info("🎯 Activity Capture Service - Starting...")
-    logger.info("=" * 60)
+    logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
+    logger.info(brand_log("🎯 Activity Capture Service - Starting...", chip=StatusChip.LIVE))
+    logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
 
     try:
         # Read configuration from environment
@@ -75,11 +82,11 @@ async def lifespan(app: FastAPI):
         consumer_name = os.getenv("CONSUMER_NAME", "activity-capture-1")
         aggregation_window = int(os.getenv("AGGREGATION_WINDOW_SECONDS", "300"))
 
-        logger.info(f"📋 Configuration:")
-        logger.info(f"   Redis: {redis_url}")
-        logger.info(f"   ADHD Engine: {adhd_engine_url}")
-        logger.info(f"   User: {user_id}")
-        logger.info(f"   Stream: {stream_name}")
+        logger.info(brand_log(f"📋 Configuration:", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"   Redis: {redis_url}", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"   ADHD Engine: {adhd_engine_url}", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"   User: {user_id}", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"   Stream: {stream_name}", chip=StatusChip.LIVE))
 
         # Initialize ADHD Engine client
         adhd_client = ADHDEngineClient(
@@ -88,14 +95,14 @@ async def lifespan(app: FastAPI):
             api_key=os.getenv("ADHD_ENGINE_API_KEY"),
         )
         await adhd_client.initialize()
-        logger.info("✅ ADHD Engine client initialized")
+        logger.info(brand_log("✅ ADHD Engine client initialized", chip=StatusChip.LIVE))
 
         # Initialize activity tracker
         activity_tracker = ActivityTracker(
             adhd_client=adhd_client,
             aggregation_window_seconds=aggregation_window
         )
-        logger.info(f"✅ Activity tracker initialized ({aggregation_window}s windows)")
+        logger.info(brand_log(f"✅ Activity tracker initialized ({aggregation_window}s windows)", chip=StatusChip.LIVE))
 
         # Initialize event subscriber
         event_subscriber = EventSubscriber(
@@ -111,28 +118,28 @@ async def lifespan(app: FastAPI):
             event_subscriber.start(),
             name="activity-capture-event-subscriber",
         )
-        logger.info("✅ Event subscriber task started (dopemux:events)")
+        logger.info(brand_log("✅ Event subscriber task started (dopemux:events)", chip=StatusChip.LIVE))
 
-        logger.info("")
-        logger.info("🎉 Activity Capture Service ready!")
-        logger.info(f"📊 Health check: http://localhost:{os.getenv('API_PORT', '8096')}/health")
-        logger.info("")
+        logger.info(brand_log("", chip=StatusChip.LIVE))
+        logger.info(brand_log("🎉 Activity Capture Service ready!", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"📊 Health check: http://localhost:{os.getenv('API_PORT', '8096')}/health", chip=StatusChip.LIVE))
+        logger.info(brand_log("", chip=StatusChip.LIVE))
 
     except Exception as e:
-        logger.error(f"❌ Startup failed: {e}")
+        logger.error(brand_log(f"❌ Startup failed: {e}", chip=StatusChip.BLOCKER))
         raise
 
     yield
 
     # SHUTDOWN
-    logger.info("=" * 60)
-    logger.info("🛑 Activity Capture Service - Shutting down...")
-    logger.info("=" * 60)
+    logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
+    logger.info(brand_log("🛑 Activity Capture Service - Shutting down...", chip=StatusChip.LIVE))
+    logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
 
     try:
         if event_subscriber:
             await event_subscriber.stop()
-            logger.info("✅ Event subscriber stopped")
+            logger.info(brand_log("✅ Event subscriber stopped", chip=StatusChip.LIVE))
 
         if subscriber_task:
             subscriber_task.cancel()
@@ -141,16 +148,16 @@ async def lifespan(app: FastAPI):
 
         if activity_tracker:
             await activity_tracker.flush_all()
-            logger.info("✅ Activity tracker flushed")
+            logger.info(brand_log("✅ Activity tracker flushed", chip=StatusChip.LIVE))
 
         if adhd_client:
             await adhd_client.close()
-            logger.info("✅ ADHD Engine client closed")
+            logger.info(brand_log("✅ ADHD Engine client closed", chip=StatusChip.LIVE))
 
-        logger.info("✅ Shutdown complete")
+        logger.info(brand_log("✅ Shutdown complete", chip=StatusChip.LIVE))
 
     except Exception as e:
-        logger.error(f"⚠️ Shutdown error: {e}")
+        logger.error(brand_log(f"⚠️ Shutdown error: {e}", chip=StatusChip.BLOCKER))
 
 
 # Create FastAPI application
@@ -188,7 +195,8 @@ async def root():
             "workspace.switched (Desktop-Commander)",
             "progress.updated (ConPort - future)"
         ],
-        "adhd_engine": os.getenv("ADHD_ENGINE_URL", "http://adhd-engine:8095")
+        "adhd_engine": os.getenv("ADHD_ENGINE_URL", "http://adhd-engine:8095"),
+        **brand_payload("Activity Capture is auditing signals.")
     }
 
 
@@ -255,7 +263,7 @@ async def metrics():
 if __name__ == "__main__":
     import uvicorn
 
-    logger.info("🔧 Starting in development mode...")
+    logger.info(brand_log("🔧 Starting in development mode...", chip=StatusChip.LIVE))
 
     port = int(os.getenv("API_PORT", "8096"))
     uvicorn.run(

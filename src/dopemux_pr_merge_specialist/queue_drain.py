@@ -172,6 +172,13 @@ def _merge_prepared_result(
 
     _refresh_client_state(client, pr_id)
     raw, threads, pr, check_payload = _load_pr_context(client=client, pr_id=pr_id)
+    
+    # Check if prepared_result had locally resolved threads
+    threads_resolved = any(
+        f.finding_type == "threads_resolved_locally" 
+        for f in getattr(prepared_result, "findings", [])
+    )
+    
     result = build_plan_result(
         active_run_id=active_run_id,
         pr=pr,
@@ -190,6 +197,7 @@ def _merge_prepared_result(
             remediation_applied=False,
         ),
         policy=policy,
+        threads_resolved_locally=threads_resolved,
     )
     result = replace(result, merge_decision=executed_decision)
     write_pr_state_artifact(pr_dir, result)
@@ -463,6 +471,25 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
             write_pr_state_artifact(pr_dir, result)
             return result
 
+        # Phase 1: Apply Thread Suggestions (Resolved Comments)
+        log("Applying thread dispositions...")
+        threads_by_id = {thread.id: thread for thread in threads}
+        applied_threads = apply_thread_dispositions(
+            dispositions=thread_dispositions,
+            threads_by_id=threads_by_id,
+            worktree_path=worktree_path,
+            base_ref=pr.base_ref,
+            execute=execute,
+            commands_log=commands_log,
+            repo_root=repo_root,
+            policy=policy
+        )
+        if any(d.disposition == ThreadDispositionType.IMPLEMENT for d in applied_threads):
+            log("Pushing implemented suggestions...")
+            if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy):
+                _refresh_client_state(client, pr.pr_id)
+
+        # Phase 2: Rebase on Base Branch
         log(f"Attempting rebase on {pr.base_ref}...")
         rebase_ok, rebase_diverged, rebase_error = attempt_rebase(pr_id=pr.pr_id, worktree_path=worktree_path, base_ref=pr.base_ref, head_ref=pr.head_ref, commands_log=commands_log, execute=execute, repo=getattr(args, "repo", None), policy=policy)
         if rebase_ok and rebase_diverged:
@@ -535,23 +562,7 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
                 write_pr_state_artifact(pr_dir, result)
                 return result
 
-        log("Applying thread dispositions...")
-        threads_by_id = {thread.id: thread for thread in threads}
-        applied_threads = apply_thread_dispositions(
-            dispositions=thread_dispositions,
-            threads_by_id=threads_by_id,
-            worktree_path=worktree_path,
-            base_ref=pr.base_ref,
-            execute=execute,
-            commands_log=commands_log,
-            repo_root=repo_root,
-            policy=policy
-        )
-        if any(d.disposition == ThreadDispositionType.IMPLEMENT for d in applied_threads):
-            log("Pushing implemented suggestions...")
-            if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy):
-                _refresh_client_state(client, pr.pr_id)
-
+        # Phase 3: Validation
         log("Running validation suite...", "START")
         validation = run_validation(
             repo_root=repo_root,
@@ -621,6 +632,7 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
             check_payload=refreshed_checks,
             validation_report=validation,
             policy=policy,
+            threads_resolved_locally=validation.passed and any(d.applied for d in applied_threads)
         )
         if operator_state:
             result = _with_operator_state(result, operator_state)

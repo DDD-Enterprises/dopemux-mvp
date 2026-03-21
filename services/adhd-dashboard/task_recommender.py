@@ -17,6 +17,14 @@ import aiohttp
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 import os
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_log, brand_text, voice_header
 
 logger = logging.getLogger(__name__)
 
@@ -95,11 +103,11 @@ class TaskRecommender:
                         return await response.json()
                     else:
                         error = await response.text()
-                        logger.error(f"Task assessment failed: {error}")
+                        logger.error(brand_log(f"Task assessment failed: {error}", chip=StatusChip.BLOCKER))
                         return {"error": error}
 
         except Exception as e:
-            logger.error(f"Failed to assess task: {e}")
+            logger.error(brand_log(f"Failed to assess task: {e}", chip=StatusChip.BLOCKER))
             return {"error": str(e)}
 
     async def recommend_from_list(
@@ -164,11 +172,14 @@ class TaskRecommender:
                 "energy": energy,
                 "attention": attention,
                 "recommendation": recommendation,
+                "status_chip": "LIVE",
+                "tone": "live",
+                "voice_header": voice_header("Task Recommender"),
                 "timestamp": datetime.now().isoformat()
             }
 
         except Exception as e:
-            logger.error(f"Failed to get recommendation: {e}")
+            logger.error(brand_log(f"Failed to get recommendation: {e}", chip=StatusChip.BLOCKER))
             return {"error": str(e)}
 
     def _generate_recommendation(self, energy: str, attention: str) -> Dict[str, Any]:
@@ -186,7 +197,7 @@ class TaskRecommender:
         if energy in ["high", "hyperfocus"] and attention == "focused":
             return {
                 "work_type": "complex_coding",
-                "suggestion": "Perfect time for challenging tasks! High energy + deep focus.",
+                "suggestion": brand_text("Perfect coordinates for complex ritual execution. High energy + deep focus detected.", chip=StatusChip.LIVE),
                 "task_types": ["Architecture design", "Complex refactoring", "New feature implementation"],
                 "avoid": []
             }
@@ -195,7 +206,7 @@ class TaskRecommender:
         elif energy == "medium" and attention == "focused":
             return {
                 "work_type": "standard_coding",
-                "suggestion": "Good time for regular development work.",
+                "suggestion": brand_text("Stable operational state. Good time for standard development rituals.", chip=StatusChip.LOGGED),
                 "task_types": ["Bug fixes", "Code reviews", "Documentation", "Unit tests"],
                 "avoid": ["Complex architecture decisions"]
             }
@@ -204,7 +215,7 @@ class TaskRecommender:
         elif energy in ["low", "very_low"] or attention in ["scattered", "transitioning"]:
             return {
                 "work_type": "simple_tasks",
-                "suggestion": "Low energy or scattered attention. Stick to simple tasks.",
+                "suggestion": brand_text("Cognitive signal low or scattered. Limit focus to low-complexity maintenance tasks.", chip=StatusChip.EDGE),
                 "task_types": ["Code cleanup", "Minor bug fixes", "Documentation updates", "Code reading"],
                 "avoid": ["Complex coding", "Architecture design", "Deep debugging"]
             }
@@ -213,7 +224,7 @@ class TaskRecommender:
         elif attention == "overwhelmed":
             return {
                 "work_type": "break_needed",
-                "suggestion": "You're overwhelmed. Take a break before continuing.",
+                "suggestion": brand_text("Cognitive overwhelm detected. Halt rituals immediately. Initiate 10-minute reset sequence.", chip=StatusChip.BLOCKER),
                 "task_types": ["Take a walk", "Hydrate", "Short break"],
                 "avoid": ["Any coding work"]
             }
@@ -222,11 +233,11 @@ class TaskRecommender:
         else:
             return {
                 "work_type": "moderate_tasks",
-                "suggestion": "Moderate state. Choose medium-complexity tasks.",
+                "suggestion": brand_text("Moderate cognitive state. Select medium-complexity rituals.", chip=StatusChip.LOGGED),
                 "task_types": ["Bug fixes", "Refactoring", "Tests"],
                 "avoid": ["Very complex work"]
             }
 
 
 if __name__ == "__main__":
-    logger.info("TaskRecommender module loaded. Import TaskRecommender in a service entrypoint.")
+    logger.info(brand_log("TaskRecommender module loaded. Import TaskRecommender in a service entrypoint.", chip=StatusChip.LIVE))

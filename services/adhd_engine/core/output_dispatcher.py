@@ -21,7 +21,7 @@ from typing import Dict, Any, List, Optional, Protocol
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from services.shared.brand_voice import StatusChip, brand_list, brand_text
+from services.shared.brand_voice import StatusChip, brand_list, brand_text, brand_log
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,7 @@ class ConsoleChannel(OutputChannel):
             print(f"{color}[ADHD {icon}] {finding.message}{self.RESET}")
             return True
         except Exception as e:
-            logger.warning(f"Console channel error: {e}")
+            logger.warning(brand_log(f"Console channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -144,7 +144,7 @@ class TmuxStatusChannel(OutputChannel):
         except subprocess.TimeoutExpired:
             return False
         except Exception as e:
-            logger.warning(f"Tmux status channel error: {e}")
+            logger.warning(brand_log(f"Tmux status channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -191,7 +191,7 @@ class TmuxPopupChannel(OutputChannel):
         except subprocess.TimeoutExpired:
             return True  # Popup is intentionally blocking
         except Exception as e:
-            logger.warning(f"Tmux popup channel error: {e}")
+            logger.warning(brand_log(f"Tmux popup channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -257,7 +257,7 @@ class VoiceChannel(OutputChannel):
             asyncio.create_task(self._wait_for_speech(proc))
             return True
         except Exception as e:
-            logger.warning(f"Voice channel error: {e}")
+            logger.warning(brand_log(f"Voice channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
     
     async def _wait_for_speech(self, proc):
@@ -302,7 +302,7 @@ class DashboardWebSocketChannel(OutputChannel):
             })
             return True
         except Exception as e:
-            logger.warning(f"Dashboard channel error: {e}")
+            logger.warning(brand_log(f"Dashboard channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -352,7 +352,7 @@ class NtfyPushChannel(OutputChannel):
             logger.debug("httpx not available for push notifications")
             return False
         except Exception as e:
-            logger.warning(f"Ntfy push channel error: {e}")
+            logger.warning(brand_log(f"Ntfy push channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -443,7 +443,7 @@ class ADHDOutputDispatcher:
                         self.stats["by_channel"][channel_name] = \
                             self.stats["by_channel"].get(channel_name, 0) + 1
                 except Exception as e:
-                    logger.warning(f"Channel {channel_name} failed: {e}")
+                    logger.warning(brand_log(f"Channel {channel_name} failed: {e}", chip=StatusChip.AFTERCARE))
                     self.stats["failures"] += 1
         
         # Update global stats
@@ -459,7 +459,7 @@ class ADHDOutputDispatcher:
         channel = self.channels.get(channel_name)
         if hasattr(channel, 'enabled'):
             channel.enabled = enabled
-            logger.info(f"Channel {channel_name} {'enabled' if enabled else 'disabled'}")
+            logger.info(brand_log(f"Channel {channel_name} {'enabled' if enabled else 'disabled'}", chip=StatusChip.LIVE))
     
     def add_routing(self, finding_type: str, channels: List[str]):
         """Add or update routing for a finding type."""
@@ -491,6 +491,8 @@ def create_output_dispatcher(
         enable_push=enable_push,
         ws_manager=ws_manager
     )
-    logger.info("✅ ADHD Output Dispatcher initialized with channels: " + 
-                ", ".join(dispatcher.channels.keys()))
+    logger.info(
+        brand_log("✅ ADHD Output Dispatcher initialized with channels: " + 
+                  ", ".join(dispatcher.channels.keys()), chip=StatusChip.LIVE)
+    )
     return dispatcher

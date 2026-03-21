@@ -9,6 +9,14 @@ import asyncio
 import logging
 import sys
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_log
+import sys
+from pathlib import Path
 from typing import Optional, Any
 
 logger = logging.getLogger(__name__)
@@ -39,10 +47,10 @@ def initialize_integration(workspace_id: str, event_bus_url: str = "redis://loca
         # Initialize EventBus and start background worker
         asyncio.create_task(_initialize_async(event_bus, _integration_manager))
 
-        logger.info(f"✅ ADHD Engine integration enabled (buffered 30s)")
+        logger.info(brand_log(f"✅ ADHD Engine integration enabled (buffered 30s)", chip=StatusChip.LIVE))
 
     except Exception as e:
-        logger.warning(f"⚠️  ADHD Engine integration disabled: {e}")
+        logger.warning(brand_log(f"⚠️  ADHD Engine integration disabled: {e}", chip=StatusChip.AFTERCARE))
         _integration_enabled = False
 
 
@@ -52,7 +60,7 @@ async def _initialize_async(event_bus, manager):
         await event_bus.initialize()
         await manager.start_background_worker()
     except Exception as e:
-        logger.error(f"ADHD Engine integration initialization failed: {e}")
+        logger.error(brand_log(f"ADHD Engine integration initialization failed: {e}", chip=StatusChip.BLOCKER))
 
 
 async def emit_state_update(attention_state: str, energy_level: str, cognitive_load: float):

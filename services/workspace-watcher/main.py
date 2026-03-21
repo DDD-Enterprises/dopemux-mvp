@@ -27,8 +27,16 @@ import asyncio
 import logging
 import argparse
 import signal
+import sys
+import os
+from pathlib import Path
 from typing import Optional
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_log, voice_header
 from app_detector import AppDetector
 from workspace_mapper import WorkspaceMapper
 from event_emitter import WorkspaceSwitchEmitter
@@ -87,33 +95,33 @@ class WorkspaceWatcher:
 
     async def initialize(self):
         """Initialize event emitter connection"""
-        logger.info("=" * 60)
-        logger.info("Workspace Watcher - Initializing...")
-        logger.info("=" * 60)
+        logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
+        logger.info(brand_log("Workspace Watcher - Initializing...", chip=StatusChip.LIVE))
+        logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
 
         await self.event_emitter.initialize()
 
-        logger.info(f"Poll interval: {self.poll_interval}s")
-        logger.info(f"OS: {self.app_detector.os_type}")
-        logger.info(f"Workspace mappings: {len(self.workspace_mapper.mappings)}")
-        logger.info("")
+        logger.info(brand_log(f"Poll interval: {self.poll_interval}s", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"OS: {self.app_detector.os_type}", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"Workspace mappings: {len(self.workspace_mapper.mappings)}", chip=StatusChip.LIVE))
+        logger.info(brand_log("", chip=StatusChip.LIVE))
 
     async def start(self):
         """Start monitoring active application"""
         self.running = True
-        logger.info("Workspace watcher started")
-        logger.info("Monitoring active application for workspace switches...")
-        logger.info("")
+        logger.info(brand_log("Workspace watcher started", chip=StatusChip.LIVE))
+        logger.info(brand_log("Monitoring active application for workspace switches...", chip=StatusChip.LIVE))
+        logger.info(brand_log("", chip=StatusChip.LIVE))
 
         # Get initial state (use sync version for startup)
         self.current_app = self.app_detector.get_active_app()
         if self.current_app:
             self.current_workspace = self.workspace_mapper.get_workspace(self.current_app)
-            logger.info(f"Initial state: {self.current_app} → {self.current_workspace or 'N/A'}")
+            logger.info(brand_log(f"Initial state: {self.current_app} → {self.current_workspace or 'N/A'}", chip=StatusChip.LIVE))
         else:
-            logger.warning("Could not detect initial app")
+            logger.warning(brand_log("Could not detect initial app", chip=StatusChip.AFTERCARE))
 
-        logger.info("")
+        logger.info(brand_log("", chip=StatusChip.LIVE))
 
         # Main polling loop
         while self.running:
@@ -122,10 +130,10 @@ class WorkspaceWatcher:
                 await asyncio.sleep(self.poll_interval)
 
             except asyncio.CancelledError:
-                logger.info("Watcher loop cancelled")
+                logger.info(brand_log("Watcher loop cancelled", chip=StatusChip.LIVE))
                 break
             except Exception as e:
-                logger.error(f"Polling error: {e}")
+                logger.error(brand_log(f"Polling error: {e}", chip=StatusChip.BLOCKER))
                 await asyncio.sleep(self.poll_interval)
 
     async def _poll_and_check(self):
@@ -141,7 +149,7 @@ class WorkspaceWatcher:
 
         # Check if app changed
         if active_app != self.current_app:
-            logger.info(f"App change detected: {self.current_app or '?'} → {active_app}")
+            logger.info(brand_log(f"App change detected: {self.current_app or '?'} → {active_app}", chip=StatusChip.LIVE))
 
             # Map to workspaces
             from_workspace = self.current_workspace
@@ -153,8 +161,11 @@ class WorkspaceWatcher:
                 file_activity = self.file_checker.check_recent_activity(to_workspace)
                 if file_activity["has_recent_activity"]:
                     logger.info(
-                        f"  File activity: {file_activity['files_modified']} files modified "
-                        f"({file_activity['seconds_since_last_save']}s ago)"
+                        brand_log(
+                            f"  File activity: {file_activity['files_modified']} files modified "
+                            f"({file_activity['seconds_since_last_save']}s ago)",
+                            chip=StatusChip.LOGGED
+                        )
                     )
 
             # Emit event
@@ -178,21 +189,21 @@ class WorkspaceWatcher:
 
     async def stop(self):
         """Stop monitoring"""
-        logger.info("")
-        logger.info("=" * 60)
-        logger.info("Workspace Watcher - Shutting down...")
-        logger.info("=" * 60)
+        logger.info(brand_log("", chip=StatusChip.LIVE))
+        logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
+        logger.info(brand_log("Workspace Watcher - Shutting down...", chip=StatusChip.LIVE))
+        logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
 
         self.running = False
 
         # Show final metrics
         metrics = self.get_metrics()
-        logger.info(f"Total polls: {metrics['polls']}")
-        logger.info(f"Switches detected: {metrics['switches_detected']}")
-        logger.info(f"Events emitted: {metrics['events_emitted']}")
+        logger.info(brand_log(f"Total polls: {metrics['polls']}", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"Switches detected: {metrics['switches_detected']}", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"Events emitted: {metrics['events_emitted']}", chip=StatusChip.LIVE))
 
         await self.event_emitter.close()
-        logger.info("Shutdown complete")
+        logger.info(brand_log("Shutdown complete", chip=StatusChip.LIVE))
 
     def get_metrics(self) -> dict:
         """Get watcher metrics"""
@@ -216,7 +227,7 @@ async def run_watcher(poll_interval: int = 5):
     loop = asyncio.get_event_loop()
 
     def shutdown():
-        logger.info("Received shutdown signal")
+        logger.info(brand_log("Received shutdown signal", chip=StatusChip.LIVE))
         asyncio.create_task(watcher.stop())
 
     for sig in (signal.SIGTERM, signal.SIGINT):
@@ -278,4 +289,4 @@ if __name__ == "__main__":
         else:
             asyncio.run(run_watcher(poll_interval=args.interval))
     except KeyboardInterrupt:
-        logger.info("Stopped by user")
+        logger.info(brand_log("Stopped by user", chip=StatusChip.LIVE))
