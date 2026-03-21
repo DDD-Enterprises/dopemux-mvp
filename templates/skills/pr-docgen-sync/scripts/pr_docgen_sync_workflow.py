@@ -10,11 +10,16 @@ import json
 import subprocess
 import sys
 import urllib.error
+import re
 import urllib.request
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 import yaml
+
+# Pre-compile the regex to find YAML frontmatter.
+# This is optimized for performance when scanning many files.
+_FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 
 
 CANONICAL_INDEXES: List[str] = [
@@ -257,14 +262,20 @@ def _is_active_doc(path: str) -> bool:
 def _parse_frontmatter_type(file_path: Path) -> str | None:
     if not file_path.exists() or file_path.suffix.lower() != ".md":
         return None
-    text = file_path.read_text(encoding="utf-8", errors="replace")
-    if not text.startswith("---\n"):
-        return None
-    end = text.find("\n---\n", 4)
-    if end == -1:
-        return None
+    # Frontmatter is expected to be at the beginning and typically small.
+    # Reading only the first 16KB avoids loading massive files into memory.
     try:
-        data = yaml.safe_load(text[4:end])
+        with file_path.open("r", encoding="utf-8", errors="replace") as f:
+            text = f.read(16384)
+    except OSError:
+        return None
+
+    match = _FRONTMATTER_RE.match(text)
+    if not match:
+        return None
+
+    try:
+        data = yaml.safe_load(match.group(1))
     except Exception:
         return None
     if isinstance(data, dict) and isinstance(data.get("type"), str):
