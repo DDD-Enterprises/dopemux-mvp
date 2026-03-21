@@ -24,7 +24,7 @@ import json
 import os
 import sys
 import importlib
-import asyncio
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -47,14 +47,6 @@ except ImportError:
 
 from . import schemas
 from ..core.models import ADHDProfile, EnergyLevel, AttentionState
-
-# Event emission for implicit triggers (Phase 7)
-try:
-    from event_emitter import emit_claude_prompt, emit_claude_tool, emit_context_saved
-    EVENT_EMISSION_AVAILABLE = True
-except ImportError:
-    EVENT_EMISSION_AVAILABLE = False
-    logger.debug("Event emission not available - hooks won't trigger EventBus")
 
 # Event emission for implicit triggers (Phase 7)
 try:
@@ -173,11 +165,11 @@ if PROMETHEUS_AVAILABLE:
         )
 
         ML_PREDICTION_CONFIDENCE = Histogram(
-        'adhd_ml_prediction_confidence',
-        'ML prediction confidence scores',
-        ['endpoint'],
-        buckets=[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-    )
+            'adhd_ml_prediction_confidence',
+            'ML prediction confidence scores',
+            ['endpoint'],
+            buckets=[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        )
     except ValueError as e:
         # Metrics already registered (common in testing)
         logger.warning(f"Prometheus metrics already registered: {e}")
@@ -191,7 +183,6 @@ else:
     API_REQUEST_DURATION = None
     ML_PREDICTIONS_TOTAL = None
     ML_PREDICTION_CONFIDENCE = None
-    CACHE_SIZE = None
     CACHE_SIZE = None
 
 def _make_cache_key(endpoint: str, user_id: str, **params) -> str:
