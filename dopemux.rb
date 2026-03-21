@@ -16,7 +16,7 @@ class Dopemux < Formula
   head "https://github.com/dopemux/dopemux-mvp.git", branch: "main"
   
   # System dependencies
-  depends_on "python@3.10"
+  depends_on "python@3.11"
   depends_on "git"
   depends_on "tmux"
   depends_on "jq"
@@ -37,7 +37,7 @@ class Dopemux < Formula
     libexec.install Dir["*"]
     
     # Create Python virtualenv
-    virtualenv_create(libexec, "python3.10")
+    virtualenv_create(libexec, "python3.11")
     
     # Install Python dependencies
     system libexec/"bin/pip", "install", "-r", libexec/"requirements.txt"
