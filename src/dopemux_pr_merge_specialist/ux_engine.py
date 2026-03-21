@@ -2,6 +2,8 @@ import sys
 from enum import Enum, auto
 from typing import Any, Dict, List, Mapping, Optional
 
+from rich.console import Console
+
 
 class RenderMode(Enum):
     RICH = auto()
@@ -65,7 +67,6 @@ def dashboard_status_icon(snapshot: Mapping[str, Any]) -> str:
 
     # Check for Rich support
     try:
-        from rich.console import Console
 
         console = Console()
         if console.width < 80:
@@ -102,7 +103,6 @@ class RichTerminalRenderer(TerminalRenderer):
 
     def __init__(self, mode: Optional[RenderMode] = None):
         super().__init__(mode)
-        from rich.console import Console
 
         self.console = Console()
 
@@ -141,7 +141,7 @@ class RichTerminalRenderer(TerminalRenderer):
         )
         print(Panel(content, title="NEXT ACTION", border_style=color))
 
-    def render_dashboard_layout(self, state: Any) -> Any:
+    def render_dashboard_layout(self, state: Any, console: Optional[Console] = None) -> Any:
         """Assemble the entire Grand Dashboard layout using rich.layout.Layout."""
         from rich.layout import Layout
         from rich.panel import Panel
@@ -149,6 +149,9 @@ class RichTerminalRenderer(TerminalRenderer):
         from rich.text import Text
         from rich.align import Align
         import time
+
+        con = console or self.console
+        term_height = con.height
 
         layout = Layout()
         layout.split_column(
@@ -186,10 +189,8 @@ class RichTerminalRenderer(TerminalRenderer):
         table.add_column("Title", ratio=1)
         table.add_column("Status", justify="center")
 
-        from rich.console import Console
-        term_height = Console().size.height
         # Deduct space for header (3), footer (3), panel borders, and some padding
-        max_visible = max(5, term_height - 12)
+        max_visible = max(5, term_height - 10)
 
         total_prs = len(state.prs)
         
