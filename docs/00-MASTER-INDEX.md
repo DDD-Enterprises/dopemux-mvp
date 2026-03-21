@@ -3,12 +3,16 @@ id: 00-MASTER-INDEX
 title: 00 Master Index
 type: explanation
 owner: '@hu3mann'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
+last_review: '2026-03-19'
+next_review: '2026-06-19'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: 00 Master Index (explanation) for dopemux documentation and developer workflows.
 ---
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Topology Complete
+
 # Dopemux Documentation - Master Index
 
 **Quick Navigation:** [Getting Started](#getting-started) | [How-To Guides](#how-to) | [Systems](#systems) | [Architecture](#architecture) | [Research Progress](04-explanation/technical-deep-dives/research-leaderboard.md) | [Archive](#archive)
@@ -47,6 +51,9 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Multi-Instance Workflow](02-how-to/multi-instance-workflow.md)
 - [Instance State Persistence](02-how-to/instance-state-persistence.md)
 - [Orchestrator Dashboard Quickstart](02-how-to/orchestrator-dashboard.md)
+- [PR Merge Flight Dashboard Quickstart](02-how-to/pr-merge-flight-dashboard.md)
+- [CI Remediation Specialist Reference](03-reference/ci-remediation-specialist.md)
+- [Internal Workflow Kit](02-how-to/internal-workflow-kit.md)
 - [Workflow Idea to Epic Lifecycle](02-how-to/operations/workflow-idea-epic-lifecycle.md)
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
 - [Repo Truth Extractor CLI Runbook](02-how-to/extraction/run-v4-from-dopemux-cli.md) - canonical command namespace: `dopemux upgrades ...` (`extractor` is legacy alias)
@@ -67,6 +74,10 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Integration Quickstart](02-how-to/mcp-service-discovery-guide.md)
 - [Comparison Matrix](05-audit-reports/service-maturity-gap-analysis.md)
 - [Full Documentation](03-reference/systems/conport/conport-kg-status.md)
+- [Callable Surface Inventory](systems/conport/callable-surface-inventory.md)
+- [Surface Equivalence and Drift](systems/conport/surface-equivalence-and-drift.md)
+- [Preferred Canonical Surface](systems/conport/preferred-canonical-surface.md)
+- [Authority Invariants and Dark Methods](systems/conport/authority-invariants-and-dark-methods.md)
 
 ### Dashboard System
 **Location:** `03-reference/systems/dashboard/`
@@ -89,6 +100,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 
 ### Architecture Decision Records (ADRs)
 **Location:** `90-adr/`
+- [ADR Index](90-adr/adr-index.md)
 - [ADR-207: Architecture 3.0](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
 - [ADR-203: Task Orchestrator](90-adr/adr-203-task-orchestrator-un-deprecation-2.md)
 - [ADR-202: Serena V2 Validation](90-adr/adr-202-serena-v2-production-validation-2.md)
@@ -100,6 +112,17 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [ADR: Leantime JSON-RPC + Plugin Integration Strategy](90-adr/adr-leantime-json-rpc-plus-plugin-integration-strategy.md)
 - [ADR: Task Orchestrator Workflow Authority](90-adr/adr-task-orchestrator-as-workflow-authority.md)
 - [ADR: Memory Trinity Authority and Interaction Model](90-adr/adr-memory-trinity-authority-and-interaction-model.md)
+- [ADR: Serena Technical Context Plane](90-adr/adr-serena-as-technical-context-plane.md)
+- [ADR: dope-context Search and Retrieval Plane](90-adr/adr-dope-context-as-search-and-retrieval-plane.md)
+
+### PM Plane Contracts
+**Location:** `planes/pm/`
+- [PM Plane Hub](planes/pm/hub-2.md)
+- [PM Plane Write Adjudication Model](planes/pm/pm-plane-write-adjudication-model.md)
+- [PM Plane Write Matrix](planes/pm/pm-plane-write-matrix.md)
+- [PM Plane Normalized Tool Surface](planes/pm/pm-plane-normalized-tool-surface.md)
+- [PM Plane Read Matrix](planes/pm/pm-plane-read-matrix.md)
+- [PM Plane Write Surface Policy](planes/pm/pm-plane-write-surface-policy.md)
 
 ---
 
@@ -138,6 +161,8 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Task Orchestrator Service Reference](03-reference/services/task-orchestrator.md)
 - [Dope-Context Docs Contextual Embedding Contract](03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md)
 - [Dope-Context Architecture and Trinity Boundaries](03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md)
+- [Internal Workflow Kit Reference](03-reference/internal-workflow-kit.md)
+- [CI Remediation Specialist Reference](03-reference/ci-remediation-specialist.md)
 
 ### Features
 - [Features Index](03-reference/features/features-index.md)
@@ -155,6 +180,11 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md)
 - [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md)
 - [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md)
+- [Workflow Kit Architecture](04-explanation/workflow-kit-architecture.md)
+- [PR Merge Queue Orchestration](04-explanation/pr-merge-queue-orchestration.md)
+
+### RFCs
+- [Workflow Kit Pickle Mechanics Transfer](91-rfc/workflow-kit-pickle-mechanics-transfer.md)
 
 ---
 
