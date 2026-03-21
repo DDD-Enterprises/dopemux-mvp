@@ -5,9 +5,25 @@ from datetime import datetime, timedelta
 import sys
 import os
 
+# Try to use the real httpx if available, otherwise mock it.
+# This prevents metaclass conflicts in environments where httpx is present (like CI).
+try:
+    import httpx
+    mock_httpx = httpx
+    HAS_HTTPX = True
+except ImportError:
+    mock_httpx = MagicMock()
+    mock_httpx.AsyncClient.return_value.aclose = AsyncMock() # Ensure aclose is awaitable
+    mock_httpx.TimeoutException = type('TimeoutException', (Exception,), {})
+    sys.modules['httpx'] = mock_httpx
+    HAS_HTTPX = False
+
+# Add current directory to sys.path
+sys.path.append(os.getcwd())
+
 from dashboard.api_client import APIClient, APIConfig, CacheEntry
 
-mock_httpx.AsyncClient.return_value.aclose = AsyncMock()  # Ensure aclose is awaitable
+class TestAPIClient(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.api_config = APIConfig(
             base_url="http://api.example.com",
@@ -18,9 +34,6 @@ mock_httpx.AsyncClient.return_value.aclose = AsyncMock()  # Ensure aclose is awa
         self.api_client = APIClient(self.api_config)
 
     async def asyncTearDown(self):
-        # We need to make sure the mock client's aclose is awaitable
-        # The constructor of APIClient creates self.client = httpx.AsyncClient(...)
-        # which returns a MagicMock since we mocked httpx.AsyncClient
         await self.api_client.close()
 
     async def test_api_client_initialization(self):
