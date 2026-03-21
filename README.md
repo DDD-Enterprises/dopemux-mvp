@@ -1,5 +1,9 @@
 
 
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Core Manifest Stable
+
 # Dopemux MVP — Cognitive Ops Stack
 ![Version](https://img.shields.io/badge/version-0.1.0-blue) ![Python](https://img.shields.io/badge/python-3.10+-green) ![License](https://img.shields.io/badge/license-MIT-lightgrey) ![PyPI](https://img.shields.io/badge/pypi-dopemux-blue) ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)
 

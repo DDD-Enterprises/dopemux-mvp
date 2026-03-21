@@ -1,3 +1,7 @@
+# ━━━◆ Ø ◆━━━
+
+Status: [LIVE] PR Merge Specialist Active
+
 # Gemini CLI: PR Merge Specialist
 
 ## When to Use

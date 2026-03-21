@@ -1,3 +1,7 @@
+# ━━━◆ Ø ◆━━━
+
+Status: [LIVE] Quick Start Ready
+
 # Dopemux MVP Quick Start
 
 This quick start brings up the ADHD MVP inner loop:
