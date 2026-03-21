@@ -9,12 +9,6 @@ model_list:
     model: xai/grok-code-fast-1
     api_key: os.environ/XAI_API_KEY
     max_tokens: 131072
-# TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: comparison lane model
-- model_name: grok-4.20-beta
-  litellm_params:
-    model: xai/grok-4.20-beta
-    api_key: os.environ/XAI_API_KEY
-    max_tokens: 131072
 - model_name: minimax-m2-free
   litellm_params:
     model: openrouter/minimax/minimax-m2:free

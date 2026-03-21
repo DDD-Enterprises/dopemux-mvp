@@ -127,8 +127,8 @@ def _timer(seconds, title="Break"):
         _notify("Dopemux Break", f"{title} complete! Time to refocus.")
         
         # Play sound on mac
-        import subprocess
-        subprocess.run(['afplay', '/System/Library/Sounds/Glass.aiff'], check=False)
+        import os
+        os.system('afplay /System/Library/Sounds/Glass.aiff')
         
     except KeyboardInterrupt:
         console.print(f"\n[yellow]{title} ended early.[/yellow]")

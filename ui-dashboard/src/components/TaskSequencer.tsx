@@ -116,16 +116,20 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const completeTask = (taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t));
-    const next = optimizedTasks.find(t => t.id !== taskId);
-    setCurrentTaskId(next ? next.id : null);
+    setTasks((prev) =>
+      prev.map((task) => (task.id === taskId ? { ...task, status: 'completed' } : task))
+    );
+    const currentIndex = optimizedTasks.findIndex((task) => task.id === taskId);
+    if (currentIndex < optimizedTasks.length - 1) {
+      setCurrentTaskId(optimizedTasks[currentIndex + 1].id);
+    }
   };
 
   const skipTask = (taskId: string) => {
-    if (optimizedTasks.length <= 1) return;
-    const currentIndex = optimizedTasks.findIndex(t => t.id === taskId);
-    const nextIndex = (currentIndex + 1) % optimizedTasks.length;
-    setCurrentTaskId(optimizedTasks[nextIndex].id);
+    const currentIndex = optimizedTasks.findIndex((task) => task.id === taskId);
+    if (currentIndex < optimizedTasks.length - 1) {
+      setCurrentTaskId(optimizedTasks[currentIndex + 1].id);
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -175,7 +179,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         Your backlog is feral. I muzzle it with ritual order and velvet threats.
       </Typography>
 
-      {currentTask ? (
+      {currentTask && (
         <Box
           sx={{
             mb: 3,
@@ -261,23 +265,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               </Button>
             </Tooltip>
           </Box>
-        </Box>
-      ) : (
-        <Box
-          role="status"
-          sx={{
-            mb: 3, p: 2.5, borderRadius: 3, textAlign: 'center',
-            border: `1px solid ${brandTokens.colors.serumMint}`,
-            background: 'rgba(148, 250, 219, 0.05)',
-          }}
-        >
-          <CheckCircle size={32} color={brandTokens.colors.serumMint} style={{ marginBottom: 8 }} />
-          <Typography variant="h6" sx={{ color: brandTokens.colors.serumMint, mb: 1 }}>
-            Ritual Complete
-          </Typography>
-          <Typography variant="body2">
-            All muzzled. Your backlog is silent... for now.
-          </Typography>
         </Box>
       )}
 

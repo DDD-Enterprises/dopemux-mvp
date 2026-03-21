@@ -17,15 +17,3 @@
 ## 2026-03-06 - [Contextual Shorthand Indicators]
 **Learning:** High-density dashboards often use shorthand status chips (like "[LIVE]" or "[EDGE]") to save space. While visually efficient, they lack context for new users and are inaccessible to keyboard users if they are not focusable. Adding a descriptive Tooltip and `tabIndex={0}` bridges the gap between shorthand brevity and clarity while ensuring accessibility.
 **Action:** Always wrap shorthand status indicators in descriptive Tooltips and ensure they have `tabIndex={0}` to be keyboard focusable.
-
-## 2026-03-07 - [Refining Progress and Tooltip Consistency]
-**Learning:** In Material UI, `LinearProgress` defaults `aria-valuemin` to 0 and `aria-valuemax` to 100, making explicit attributes redundant. Additionally, consistent use of the `arrow` prop on `Tooltip` components provides a more polished and directed visual cue for users interacting with dense dashboard metrics.
-**Action:** Omit redundant ARIA defaults for MUI progress bars and consistently apply the `arrow` prop to Tooltips for improved directional feedback.
-
-## 2026-03-10 - [Metric Card Keyboard Discoverability]
-**Learning:** Core dashboard metrics (Energy, Attention, Load) are often purely visual. By adding `tabIndex={0}` and descriptive Tooltips, these cards become accessible to keyboard users and provide "hidden" context that might not fit in the compact visual layout. Using `cursor: 'help'` also signals to mouse users that more info is available.
-**Action:** Enhance visual-only metric displays with `tabIndex={0}` and `Tooltip` to support keyboard navigation and provide supplemental context without cluttering the UI.
-
-## 2026-03-11 - [Closing the Task Feedback Loop]
-**Learning:** In task-oriented interfaces, failing to provide a clear "success" or "empty" state after finishing a sequence can lead to user confusion or a sense of "unmet expectation." Providing a satisfying "Ritual Complete" visual (like a check icon and positive reinforcement text) creates a distinct sense of closure and progress.
-**Action:** Always implement explicit success and empty states for sequential task components to provide closure and guidance when a workflow is completed or empty.
