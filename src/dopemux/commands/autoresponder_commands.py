@@ -193,48 +193,27 @@ def autoresponder_status(ctx):
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
     status = autoresponder_manager.get_status()
 
-    # Status overview
-    status_color = "success" if status["running"] else "warning"
     status_emoji = "🟢" if status["running"] else "🟡"
-
-    table = styled_table(
-        "🤖 Claude Auto Responder Status",
-        ("Property", {"style": "info"}),
-        ("Value", {"style": status_color}),
-    )
-
-    table.add_row("Status", f"{status_emoji} {status['status'].title()}")
-    table.add_row("Running", "Yes" if status["running"] else "No")
-
+    click.echo("Claude Auto Responder Status")
+    click.echo(f"Status: {status_emoji} {status['status'].title()}")
+    click.echo(f"Running: {'Yes' if status['running'] else 'No'}")
     if status["running"]:
-        table.add_row("Uptime", f"{status['uptime_minutes']:.1f} minutes")
-        table.add_row("Responses Sent", str(status["responses_sent"]))
-        table.add_row("Response Rate", f"{status['responses_per_minute']:.1f}/min")
-        table.add_row("Attention State", status["attention_state"])
+        click.echo(f"Uptime: {status['uptime_minutes']:.1f} minutes")
+        click.echo(f"Responses Sent: {status['responses_sent']}")
+        click.echo(f"Response Rate: {status['responses_per_minute']:.1f}/min")
+        click.echo(f"Attention State: {status['attention_state']}")
 
         if status["last_response"]:
-            table.add_row("Last Response", status["last_response"])
-
-    console.logger.info(table)
-
-    # Configuration table
-    config_table = styled_table(
-        "⚙️ Configuration",
-        ("Setting", {"style": "info"}),
-        ("Value", {"style": "success"}),
-    )
+            click.echo(f"Last Response: {status['last_response']}")
 
     config = status["config"]
-    config_table.add_row("Enabled", "Yes" if config["enabled"] else "No")
-    config_table.add_row("Terminal Scope", config["terminal_scope"])
-    config_table.add_row("Response Delay", f"{config['response_delay']}s")
-    config_table.add_row("Timeout", f"{config['timeout_minutes']} minutes")
-    config_table.add_row(
-        "Whitelist Tools", "Yes" if config["whitelist_tools"] else "No"
-    )
-    config_table.add_row("Debug Mode", "Yes" if config["debug_mode"] else "No")
-
-    console.logger.info(config_table)
+    click.echo("Configuration")
+    click.echo(f"Enabled: {'Yes' if config['enabled'] else 'No'}")
+    click.echo(f"Terminal Scope: {config['terminal_scope']}")
+    click.echo(f"Response Delay: {config['response_delay']}s")
+    click.echo(f"Timeout: {config['timeout_minutes']} minutes")
+    click.echo(f"Whitelist Tools: {'Yes' if config['whitelist_tools'] else 'No'}")
+    click.echo(f"Debug Mode: {'Yes' if config['debug_mode'] else 'No'}")
 
 
 @autoresponder.command("setup")
@@ -330,23 +309,15 @@ def autoresponder_config(
     if not updates:
         # Show current config
         current_config = config_manager.get_claude_autoresponder_config()
-
-        table = styled_table(
-            "🤖 Auto Responder Configuration",
-            ("Setting", {"style": "info"}),
-            ("Value", {"style": "success"}),
+        click.echo("Auto Responder Configuration")
+        click.echo(f"Enabled: {'Yes' if current_config.enabled else 'No'}")
+        click.echo(f"Terminal Scope: {current_config.terminal_scope}")
+        click.echo(f"Response Delay: {current_config.response_delay}s")
+        click.echo(f"Timeout: {current_config.timeout_minutes} minutes")
+        click.echo(
+            f"Whitelist Tools: {'Yes' if current_config.whitelist_tools else 'No'}"
         )
-
-        table.add_row("Enabled", "Yes" if current_config.enabled else "No")
-        table.add_row("Terminal Scope", current_config.terminal_scope)
-        table.add_row("Response Delay", f"{current_config.response_delay}s")
-        table.add_row("Timeout", f"{current_config.timeout_minutes} minutes")
-        table.add_row(
-            "Whitelist Tools", "Yes" if current_config.whitelist_tools else "No"
-        )
-        table.add_row("Debug Mode", "Yes" if current_config.debug_mode else "No")
-
-        console.logger.info(table)
+        click.echo(f"Debug Mode: {'Yes' if current_config.debug_mode else 'No'}")
         return
 
     # Apply updates

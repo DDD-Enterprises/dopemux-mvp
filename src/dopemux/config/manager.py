@@ -481,9 +481,14 @@ class ConfigManager:
     def update_claude_autoresponder(self, **kwargs) -> None:
         """Update Claude Auto Responder settings."""
         config = self.load_config()
-        for key, value in kwargs.items():
-            if hasattr(config.claude_autoresponder, key):
-                setattr(config.claude_autoresponder, key, value)
+        updates = {
+            key: value
+            for key, value in kwargs.items()
+            if hasattr(config.claude_autoresponder, key)
+        }
+        if updates:
+            merged = {**config.claude_autoresponder.model_dump(), **updates}
+            config.claude_autoresponder = ClaudeAutoResponderConfig(**merged)
         self.save_user_config(config)
 
     def get_claude_settings(self) -> Dict[str, Any]:

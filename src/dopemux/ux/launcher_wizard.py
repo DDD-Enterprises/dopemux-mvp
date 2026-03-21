@@ -12,7 +12,10 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import readchar
+try:
+    import readchar
+except ImportError:  # pragma: no cover - exercised in integration environments without optional TUI deps
+    readchar = None
 from rich.align import Align
 from rich.console import Console, Group
 from rich.layout import Layout
@@ -246,6 +249,8 @@ class LauncherWizard:
         Runs the interactive loop for role selection.
         Returns the selected role key or None if the user quits.
         """
+        if readchar is None:
+            raise RuntimeError("readchar is required for interactive role selection")
         try:
             while True:
                 key = readchar.readkey()
@@ -314,9 +319,7 @@ def start_wizard() -> Optional[Tuple[str, LauncherWizard]]:
         A tuple of (role_key, wizard_instance) if a role is selected.
         (None, None) if the user quits.
     """
-    try:
-        import readchar
-    except ImportError:
+    if readchar is None:
         console.print(StatusChip.BLOCKER.render("Missing dependency: readchar"))
         console.print(StatusChip.LIVE.render("Fix: pip install readchar"))
         return None, None
