@@ -7,6 +7,14 @@ Tracks development activity and sends to ADHD Engine for accommodation adjustmen
 import asyncio
 import json
 import logging
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_log
 import time
 from collections import defaultdict
 from typing import Dict, Any, List
@@ -48,7 +56,7 @@ class ActivityTracker:
 
     async def handle_workspace_switch(self, event_data: dict):
         """Handle workspace switch event."""
-        logger.info(f"Workspace switch: {event_data}")
+        logger.info(brand_log(f"Workspace switch: {event_data}", chip=StatusChip.LIVE))
 
         self.workspace_switches += 1
 
@@ -89,7 +97,7 @@ class ActivityTracker:
 
     async def handle_session_start(self, event_data: dict):
         """Handle session start event."""
-        logger.info(f"Session started: {event_data}")
+        logger.info(brand_log(f"Session started: {event_data}", chip=StatusChip.LIVE))
 
         self.current_session = event_data.get("session_id", "unknown")
         self.session_start_time = time.time()
@@ -102,7 +110,7 @@ class ActivityTracker:
 
     async def handle_break_taken(self, event_data: dict):
         """Handle break taken event."""
-        logger.info(f"Break taken: {event_data}")
+        logger.info(brand_log(f"Break taken: {event_data}", chip=StatusChip.LIVE))
 
         self.break_events += 1
 
@@ -154,14 +162,14 @@ class ActivityTracker:
         # Send to ADHD Engine
         try:
             await self.adhd_client.send_activity_data(activity_summary)
-            logger.info(f"Sent activity summary: {activity_summary}")
+            logger.info(brand_log(f"Sent activity summary: {activity_summary}", chip=StatusChip.LIVE))
             self.summaries_sent += 1
 
             # Clear pending activities after successful send
             self.pending_activities = []
 
         except Exception as e:
-            logger.error(f"Failed to send activity data: {e}")
+            logger.error(brand_log(f"Failed to send activity data: {e}", chip=StatusChip.BLOCKER))
 
     async def flush_all(self):
         """Flush all pending activities (for shutdown)."""

@@ -7,6 +7,14 @@ Subscribes to Redis Streams and routes events to activity tracker.
 import asyncio
 import json
 import logging
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_log
 from typing import Optional
 
 import redis.asyncio as redis
@@ -66,7 +74,7 @@ class EventSubscriber:
                 "$",
                 mkstream=True
             )
-            logger.info(f"Created consumer group: {self.consumer_group}")
+            logger.info(brand_log(f"Created consumer group: {self.consumer_group}", chip=StatusChip.LIVE))
         except redis.ResponseError as e:
             if "BUSYGROUP" not in str(e):
                 raise
@@ -77,7 +85,7 @@ class EventSubscriber:
             await self.initialize()
 
         self.running = True
-        logger.info(f"Starting event subscription to {self.stream_name}")
+        logger.info(brand_log(f"Starting event subscription to {self.stream_name}", chip=StatusChip.LIVE))
 
         while self.running:
             try:
@@ -104,11 +112,11 @@ class EventSubscriber:
                             )
 
                         except Exception as e:
-                            logger.error(f"Error processing message {message_id}: {e}")
+                            logger.error(brand_log(f"Error processing message {message_id}: {e}", chip=StatusChip.BLOCKER))
                             self.errors += 1
 
             except Exception as e:
-                logger.error(f"Error in event subscription loop: {e}")
+                logger.error(brand_log(f"Error in event subscription loop: {e}", chip=StatusChip.BLOCKER))
                 self.errors += 1
                 await asyncio.sleep(5)  # Back off on errors
 
@@ -149,4 +157,4 @@ class EventSubscriber:
         if self.redis_client:
             await self.redis_client.close()
 
-        logger.info("Event subscriber stopped")
+        logger.info(brand_log("Event subscriber stopped", chip=StatusChip.LIVE))

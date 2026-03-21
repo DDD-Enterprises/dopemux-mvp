@@ -14,7 +14,7 @@ from datetime import datetime
 import logging
 import asyncio
 
-from services.shared.brand_voice import StatusChip, brand_text
+from services.shared.brand_voice import StatusChip, brand_text, brand_log
 
 from .task_decomposition_assistant import (
     TaskDecompositionAssistant,
@@ -79,7 +79,7 @@ class DecompositionCoordinator:
         self.consent_provider = consent_provider
         self.pending_requests: Dict[str, DecompositionRequest] = {}
         
-        logger.info("DecompositionCoordinator initialized")
+        logger.info(brand_log("DecompositionCoordinator initialized", chip=StatusChip.LIVE))
     
     async def should_auto_decompose(
         self,
@@ -150,7 +150,7 @@ class DecompositionCoordinator:
                         f"Task stalled in TODO for {age_hours:.1f}h - possible paralysis"
                     )
             except (ValueError, TypeError) as e:
-                logger.warning(f"Could not parse created_at timestamp: {e}")
+                logger.warning(brand_log(f"Could not parse created_at timestamp: {e}", chip=StatusChip.AFTERCARE))
         
         # 5. Procrastination pattern (future: integrate with procrastination_detector)
         # if self.procrastination_detector:
@@ -201,8 +201,11 @@ class DecompositionCoordinator:
         # Don't interrupt hyperfocus - queue for later
         if attention == "hyperfocus":
             logger.info(
-                f"Queueing decomposition consent request for task {task_id} "
-                "(user in hyperfocus, will ask later)"
+                brand_log(
+                    f"Queueing decomposition consent request for task {task_id} "
+                    "(user in hyperfocus, will ask later)",
+                    chip=StatusChip.LOGGED
+                )
             )
             self.pending_requests[task_id] = request
             return False
@@ -238,8 +241,11 @@ Would you like to decompose this task?
 Your choice: """, chip=StatusChip.EDGE)
         
         logger.info(
-            f"{'Gentle' if attention == 'distracted' else 'Standard'} decomposition consent request: "
-            f"{message[:120]}..."
+            brand_log(
+                f"{'Gentle' if attention == 'distracted' else 'Standard'} decomposition consent request: "
+                f"{message[:120]}...",
+                chip=StatusChip.LIVE
+            )
         )
         response = await self._resolve_consent_response(request, default_response="y")
         
@@ -247,7 +253,7 @@ Your choice: """, chip=StatusChip.EDGE)
         response_lower = str(response).lower().strip()
         
         if response_lower in ["y", "yes", ""]:
-            logger.info(f"User consented to decompose task {task_id}")
+            logger.info(brand_log(f"User consented to decompose task {task_id}", chip=StatusChip.LIVE))
             return True
         elif response_lower in ["p", "preview"]:
             preview = self.decomposer.decompose_task(
@@ -258,12 +264,15 @@ Your choice: """, chip=StatusChip.EDGE)
             )
             preview_steps = [mt.description for mt in preview.micro_tasks[:3]]
             logger.info(
-                f"Decomposition preview for {task_id}: "
-                f"{' | '.join(preview_steps) if preview_steps else 'no micro-tasks generated'}"
+                brand_log(
+                    f"Decomposition preview for {task_id}: "
+                    f"{' | '.join(preview_steps) if preview_steps else 'no micro-tasks generated'}",
+                    chip=StatusChip.LOGGED
+                )
             )
             return True
         else:
-            logger.info(f"User declined decomposition for task {task_id}")
+            logger.info(brand_log(f"User declined decomposition for task {task_id}", chip=StatusChip.LIVE))
             return False
     
     async def decompose_task(
@@ -303,7 +312,7 @@ Your choice: """, chip=StatusChip.EDGE)
                 "conport_persisted": true
             }
         """
-        logger.info(f"Starting decomposition for task {task_id} with method: {method}")
+        logger.info(brand_log(f"Starting decomposition for task {task_id} with method: {method}", chip=StatusChip.LIVE))
         
         # Get current ADHD state if not provided
         if adhd_context is None:
@@ -328,8 +337,11 @@ Your choice: """, chip=StatusChip.EDGE)
             )
             complexity_score = self._complexity_level_to_score(complexity_level)
             logger.info(
-                f"Task complexity: {complexity_score:.2f} "
-                f"({complexity_level.value})"
+                brand_log(
+                    f"Task complexity: {complexity_score:.2f} "
+                    f"({complexity_level.value})",
+                    chip=StatusChip.LOGGED
+                )
             )
             
             # Determine decomposition method
@@ -375,13 +387,16 @@ Your choice: """, chip=StatusChip.EDGE)
                     },
                     source="adhd-engine"
                 )
-                logger.info(f"Published decomposition.completed event for task {task_id}")
+                logger.info(brand_log(f"Published decomposition.completed event for task {task_id}", chip=StatusChip.LIVE))
             except Exception as e:
-                logger.error(f"Failed to publish decomposition event: {e}")
+                logger.error(brand_log(f"Failed to publish decomposition event: {e}", chip=StatusChip.BLOCKER))
         
         logger.info(
-            f"Decomposition complete for task {task_id}: "
-            f"{len(breakdown.get('subtask_ids', []))} subtasks created"
+            brand_log(
+                f"Decomposition complete for task {task_id}: "
+                f"{len(breakdown.get('subtask_ids', []))} subtasks created",
+                chip=StatusChip.LOGGED
+            )
         )
         
         return breakdown
@@ -410,10 +425,10 @@ Your choice: """, chip=StatusChip.EDGE)
         task_id = task_data.get("id")
         
         if not task_id:
-            logger.warning(f"Received {event_type} event without task ID")
+            logger.warning(brand_log(f"Received {event_type} event without task ID", chip=StatusChip.AFTERCARE))
             return
         
-        logger.info(f"Processing {event_type} for task {task_id}")
+        logger.info(brand_log(f"Processing {event_type} for task {task_id}", chip=StatusChip.LIVE))
         
         # Get current ADHD state
         adhd_state = await self._get_current_adhd_state()
@@ -427,7 +442,7 @@ Your choice: """, chip=StatusChip.EDGE)
             logger.debug(f"Task {task_id} does not need decomposition: {reason}")
             return
         
-        logger.info(f"Task {task_id} needs decomposition: {reason}")
+        logger.info(brand_log(f"Task {task_id} needs decomposition: {reason}", chip=StatusChip.LIVE))
         
         # Estimate subtask count for consent message
         complexity_level, _ = self.decomposer.analyze_task_complexity(
@@ -448,11 +463,11 @@ Your choice: """, chip=StatusChip.EDGE)
             # Trigger decomposition
             try:
                 await self.decompose_task(task_id, method="ai", adhd_context=adhd_state)
-                logger.info(f"Auto-decomposition completed for task {task_id}")
+                logger.info(brand_log(f"Auto-decomposition completed for task {task_id}", chip=StatusChip.LIVE))
             except Exception as e:
-                logger.error(f"Auto-decomposition failed for task {task_id}: {e}")
+                logger.error(brand_log(f"Auto-decomposition failed for task {task_id}: {e}", chip=StatusChip.BLOCKER))
         else:
-            logger.info(f"User declined auto-decomposition for task {task_id}")
+            logger.info(brand_log(f"User declined auto-decomposition for task {task_id}", chip=StatusChip.LIVE))
 
     def _complexity_level_to_score(self, level: TaskComplexity) -> float:
         """Map TaskComplexity enum to normalized 0.0-1.0 score."""
@@ -480,7 +495,7 @@ Your choice: """, chip=StatusChip.EDGE)
                 response = await response
             return response
         except Exception as exc:
-            logger.warning(f"Consent provider failed, using default response: {exc}")
+            logger.warning(brand_log(f"Consent provider failed, using default response: {exc}", chip=StatusChip.AFTERCARE))
             return default_response
 
     async def _get_current_adhd_state(self) -> Dict[str, Any]:
@@ -495,7 +510,7 @@ Your choice: """, chip=StatusChip.EDGE)
                 if isinstance(state, dict) and state:
                     return state
             except Exception as exc:
-                logger.warning(f"ADHD state provider failed, using fallback state: {exc}")
+                logger.warning(brand_log(f"ADHD state provider failed, using fallback state: {exc}", chip=StatusChip.AFTERCARE))
 
         return {
             "energy_level": "medium",

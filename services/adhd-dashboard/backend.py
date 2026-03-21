@@ -14,7 +14,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from fastapi.security import APIKeyHeader
 import uvicorn
+from pathlib import Path
+import sys
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_log, brand_error, brand_payload, voice_header
 from task_recommender import TaskRecommender
 
 try:
@@ -127,7 +134,7 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
     if API_KEY is None:
         return None
     if api_key != API_KEY:
-        raise HTTPException(status_code=403, detail="Invalid API key")
+        raise HTTPException(status_code=403, detail=brand_error("Invalid API key"))
     return api_key
 
 
@@ -142,7 +149,7 @@ async def _get_json(
             text = await response.text()
             return {"error": f"upstream_status={response.status}", "detail": text[:200]}
     except Exception as exc:
-        logger.error("Upstream GET failed for %s: %s", url, exc)
+        logger.error(brand_log("Upstream GET failed for %s: %s", url, exc, chip=StatusChip.BLOCKER))
         return {"error": str(exc)}
 
 
@@ -233,7 +240,7 @@ def _record_state_metrics(message: Dict[str, Any]) -> None:
 
 async def redis_pubsub_reader():
     """Broadcast ADHD state changes produced by the engine."""
-    logger.info("Starting Redis Pub/Sub reader for ADHD state changes")
+    logger.info(brand_log("Starting Redis Pub/Sub reader for ADHD state changes", chip=StatusChip.LIVE))
     pubsub = redis_client.pubsub()
     await pubsub.psubscribe("adhd:state_changes:*")
 
@@ -256,7 +263,7 @@ async def redis_pubsub_reader():
     except asyncio.CancelledError:
         raise
     except Exception as exc:
-        logger.error("Redis Pub/Sub error: %s", exc)
+        logger.error(brand_log("Redis Pub/Sub error: %s", exc, chip=StatusChip.BLOCKER))
     finally:
         await pubsub.unpsubscribe("adhd:state_changes:*")
         await pubsub.close()
@@ -297,7 +304,7 @@ async def redis_stream_reader(stream: str, consumer_group: str, consumer_name: s
         except asyncio.CancelledError:
             raise
         except Exception as exc:
-            logger.error("Redis stream reader failed for %s: %s", stream, exc)
+            logger.error(brand_log("Redis stream reader failed for %s: %s", stream, exc, chip=StatusChip.BLOCKER))
             await asyncio.sleep(1)
 
 
@@ -363,6 +370,7 @@ async def root():
             "/metrics",
             "/health",
         ],
+        **brand_payload("ADHD Dashboard Backend is operational."),
     }
 
 
@@ -389,7 +397,7 @@ async def get_metrics(api_key: str = Security(verify_api_key)):
         return payload
     except Exception as exc:
         _record_request("/api/metrics", "error", start_time)
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(status_code=502, detail=brand_error(str(exc))) from exc
 
 
 @app.get("/api/task-recommendations")
@@ -402,7 +410,7 @@ async def get_task_recommendations(api_key: str = Security(verify_api_key)):
         return payload
     except Exception as exc:
         _record_request("/api/task-recommendations", "error", start_time)
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(status_code=502, detail=brand_error(str(exc))) from exc
 
 
 @app.get("/api/cognitive-load")
@@ -468,7 +476,7 @@ async def get_today_sessions(api_key: str = Security(verify_api_key)):
 @app.get("/metrics")
 async def metrics():
     if not PROMETHEUS_AVAILABLE:
-        raise HTTPException(status_code=503, detail="prometheus_client not installed")
+        raise HTTPException(status_code=503, detail=brand_error("prometheus_client not installed"))
     return PlainTextResponse(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 

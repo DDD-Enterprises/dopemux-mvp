@@ -25,7 +25,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 import logging
 
-from services.shared.brand_voice import StatusChip, brand_list, brand_text
+from services.shared.brand_voice import StatusChip, brand_list, brand_text, brand_log
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +157,7 @@ class OverwhelmDetector:
             # Keep last 100 signals
             self.overwhelm_history = self.overwhelm_history[-100:]
         
-        logger.info(f"Overwhelm check: {level.value}, {len(signals)} signals")
+        logger.info(brand_log(f"Overwhelm check: {level.value}, {len(signals)} signals", chip=StatusChip.LIVE))
         return level, signals
     
     def _check_rapid_switching(self, state: Dict[str, Any]) -> Optional[OverwhelmSignal]:
@@ -382,7 +382,7 @@ class OverwhelmDetector:
         """Reset detector state (e.g., after break or session end)."""
         self.recent_switches = []
         self.break_refusals = 0
-        logger.info("Overwhelm detector state reset")
+        logger.info(brand_log("Overwhelm detector state reset", chip=StatusChip.LIVE))
 
 
 # Convenience function

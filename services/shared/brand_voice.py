@@ -123,3 +123,59 @@ def hyperfocus_copy(duration_minutes: int) -> tuple[str, str, str]:
         fallback="Hyperfocus guard. Step out for fifteen minutes and reset.",
     )
     return title, body, speech
+
+def brand_payload(
+    message: str,
+    *,
+    chip: StatusChip = StatusChip.LIVE,
+    surface: str = "ui",
+) -> Mapping[str, Any]:
+    """Return a dictionary of brand metadata for API response augmentation."""
+    from dopemux.voice.agent_headers import HEADERS
+    return {
+        "status_chip": chip.label,
+        "tone": chip.label.lower(),
+        "voice_header": HEADERS.get(surface, HEADERS["agent"]),
+        "branded_message": brand_text(message, chip=chip, surface=surface),
+    }
+
+
+def brand_log(
+    message: str,
+    *,
+    chip: StatusChip = StatusChip.LOGGED,
+    surface: str = "cli",
+) -> str:
+    """Return a voice-safe log message with chip notation."""
+    return brand_text(message, chip=chip, surface=surface)
+
+
+def brand_error(
+    message: str,
+    *,
+    chip: StatusChip = StatusChip.BLOCKER,
+    surface: str = "ui",
+) -> str:
+    """Return a voice-safe error message with chip notation."""
+    return brand_text(message, chip=chip, surface=surface)
+
+
+def voice_header(title: str) -> str:
+    """Return a branded voice header for logs."""
+    return f"━━━◆ Ø ◆━━━  {title}"
+
+
+__all__ = [
+    "StatusChip",
+    "VOICE",
+    "aftercare_text",
+    "brand_error",
+    "brand_list",
+    "brand_log",
+    "brand_payload",
+    "brand_text",
+    "brand_title",
+    "break_copy",
+    "hyperfocus_copy",
+    "voice_header",
+]

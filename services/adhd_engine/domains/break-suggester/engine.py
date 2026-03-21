@@ -25,7 +25,7 @@ from typing import Dict, List, Optional
 from collections import deque
 from statistics import mean, stdev
 
-from services.shared.brand_voice import StatusChip, brand_text
+from services.shared.brand_voice import StatusChip, brand_text, brand_log
 
 logger = logging.getLogger(__name__)
 
@@ -360,7 +360,7 @@ class BreakSuggestionEngine:
         # Check if suggestion needed (returns suggestion if triggered)
         suggestion = await self._evaluate_suggestion_triggers()
         if suggestion:
-            logger.info(f"Break suggestion from complexity event: {suggestion.message}")
+            logger.info(brand_log(f"Break suggestion from complexity event: {suggestion.message}", chip=StatusChip.LIVE))
         return suggestion
 
     async def on_cognitive_state_change(self, event: Dict):
@@ -389,20 +389,20 @@ class BreakSuggestionEngine:
         # Check if suggestion needed (returns suggestion if triggered)
         suggestion = await self._evaluate_suggestion_triggers()
         if suggestion:
-            logger.info(f"Break suggestion from cognitive change: {suggestion.message}")
+            logger.info(brand_log(f"Break suggestion from cognitive change: {suggestion.message}", chip=StatusChip.LIVE))
         return suggestion
 
     async def on_session_start(self, timestamp: Optional[datetime] = None):
         """Mark session start time."""
         self.cognitive_window.session_start = timestamp or datetime.now(timezone.utc)
-        logger.info(f"Session started at {self.cognitive_window.session_start}")
+        logger.info(brand_log(f"Session started at {self.cognitive_window.session_start}", chip=StatusChip.LIVE))
 
     async def on_break_taken(self, timestamp: Optional[datetime] = None):
         """Mark break taken (resets suggestion timer)."""
         self.cognitive_window.last_break = timestamp or datetime.now(timezone.utc)
 
         if self.celebration_mode:
-            logger.info(f"✅ Great job taking a break! Keep it up!")
+            logger.info(brand_log(f"✅ Great job taking a break! Keep it up!", chip=StatusChip.LIVE))
 
     async def _evaluate_suggestion_triggers(self) -> Optional[BreakSuggestion]:
         """
@@ -492,7 +492,7 @@ class BreakSuggestionEngine:
         self.last_suggestion = now
         self.suggestion_history.append(suggestion)
 
-        logger.info(f"⚠️ Break suggestion triggered: {suggestion.message}")
+        logger.info(brand_log(f"⚠️ Break suggestion triggered: {suggestion.message}", chip=StatusChip.LIVE))
 
         return suggestion
 

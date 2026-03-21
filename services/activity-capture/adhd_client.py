@@ -7,6 +7,14 @@ Handles communication with the ADHD Accommodation Engine API.
 import asyncio
 import json
 import logging
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_log
 from typing import Dict, Any, Optional
 
 import aiohttp
@@ -58,7 +66,7 @@ class ADHDEngineClient:
             async with self.session.get(f"{self.base_url}/health") as response:
                 return response.status == 200
         except Exception as e:
-            logger.error(f"Health check failed: {e}")
+            logger.error(brand_log(f"Health check failed: {e}", chip=StatusChip.BLOCKER))
             return False
 
     async def send_activity_data(self, activity_data: Dict[str, Any]):
@@ -87,10 +95,10 @@ class ADHDEngineClient:
                 if response.status == 200:
                     logger.debug("Activity data sent successfully")
                 else:
-                    logger.warning(f"Failed to send activity data: {response.status}")
+                    logger.warning(brand_log(f"Failed to send activity data: {response.status}", chip=StatusChip.AFTERCARE))
 
         except Exception as e:
-            logger.error(f"Error sending activity data: {e}")
+            logger.error(brand_log(f"Error sending activity data: {e}", chip=StatusChip.BLOCKER))
 
     async def get_accommodation_recommendations(self) -> Dict[str, Any]:
         """
@@ -108,9 +116,9 @@ class ADHDEngineClient:
                 if response.status == 200:
                     return await response.json()
                 else:
-                    logger.warning(f"Failed to get recommendations: {response.status}")
+                    logger.warning(brand_log(f"Failed to get recommendations: {response.status}", chip=StatusChip.AFTERCARE))
                     return {}
 
         except Exception as e:
-            logger.error(f"Error getting recommendations: {e}")
+            logger.error(brand_log(f"Error getting recommendations: {e}", chip=StatusChip.BLOCKER))
             return {}
