@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import re
 import subprocess
 import sys
 import textwrap
@@ -27,7 +26,7 @@ from typing import Iterable
 
 DEFAULT_REPO = "DDD-Enterprises/dopemux-mvp"
 DEFAULT_JULES_BIN = "/opt/homebrew/bin/jules"
-SESSION_LIMIT = 4
+DEFAULT_JULES_BIN = "jules"
 
 
 COMMON_INVARIANTS = (
@@ -843,7 +842,15 @@ def list_remote_sessions(jules_bin: str) -> str:
         check=False,
     )
     return (result.stdout or "") + (result.stderr or "")
-
+output = (result.stdout or "") + (result.stderr or "")
+    if result.returncode != 0:
+        raise SystemExit(
+            "Failed to list remote Jules sessions "
+            f"(exit code {result.returncode}) for command "
+            f'"{jules_bin} remote list --session".\n'
+            f"Output:\n{output.strip()}"
+        )
+    return output
 
 def packet_ids_in_remote_sessions(jules_bin: str) -> set[str]:
     output = list_remote_sessions(jules_bin)
@@ -981,16 +988,41 @@ def main(argv: list[str]) -> int:
             and open_pr_count > args.require_open_pr_count_at_most
         ):
             print(
-                "Refusing real submission because the open PR count gate was not met: "
-                f"{open_pr_count} > {args.require_open_pr_count_at_most}",
-                file=sys.stderr,
-            )
-            return 2
-
-        exit_code = 0
+# Track packets that are known to exist remotely or have been submitted
+        submitted_ids: set[str] = set()
         for packet in packets:
             if packet.id in existing_remote:
                 print(f"Skipping {packet.id}: matching Jules session already exists.")
+                submitted_ids.add(packet.id)
+                continue
+
+            # Enforce submit_after dependencies: each dependency must either already
+            # exist remotely or have been submitted earlier in this run.
+            missing_dependencies = [
+                dep
+                for dep in packet.submit_after
+                if dep not in existing_remote and dep not in submitted_ids
+            ]
+            if missing_dependencies:
+                print(
+                    "Refusing to submit "
+                    f"{packet.id}: submit_after dependencies not satisfied: "
+                    f"{', '.join(missing_dependencies)}",
+                    file=sys.stderr,
+                )
+                # Preserve any previous non-zero exit code if present; otherwise use 2
+                if exit_code == 0:
+                    exit_code = 2
+                continue
+
+            print(f"Submitting {packet.id} to Jules...")
+            result = submit_packet(args.jules_bin, args.repo, packet)
+            combined = ((result.stdout or "") + (result.stderr or "")).strip()
+            print(f"Submission result for {packet.id}:")
+            print(combined or "<no output>")
+            if result.returncode == 0:
+                submitted_ids.add(packet.id)
+            else:
                 continue
             print(f"Submitting {packet.id} to Jules...")
             result = submit_packet(args.jules_bin, args.repo, packet)
