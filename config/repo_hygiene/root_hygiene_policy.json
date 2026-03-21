@@ -46,7 +46,8 @@
     "ui-dashboard",
     "config",
     "dashboard",
-    "repo-truth-pack"
+    "repo-truth-pack",
+    "llm-plans"
   ],
   "allowed_root_files": [
     "CLAUDE_AUTOMATION_INSTRUCTIONS.md",
