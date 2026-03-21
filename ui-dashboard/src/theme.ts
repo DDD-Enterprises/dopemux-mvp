@@ -12,9 +12,28 @@ export const brandTokens = {
     saintGold: '#FFCF78',
     aftercareViolet: '#9B78FF',
   },
+  text: {
+    primary: '#F6F7FB',
+    secondary: alpha('#F6F7FB', 0.65),
+  },
   gradients: {
     halo: 'radial-gradient(circle at 20% 20%, rgba(125, 251, 246, 0.25), rgba(2, 6, 23, 0.95))',
     velvet: 'linear-gradient(135deg, rgba(4, 22, 40, 0.9), rgba(26, 5, 32, 0.9))',
+    focusCard: 'linear-gradient(155deg, rgba(4, 22, 40, 0.92), rgba(26, 5, 32, 0.82))',
+  },
+  borders: {
+    cyan: alpha('#7DFBF6', 0.6),
+    mint: alpha('#94FADB', 0.55),
+    gold: alpha('#FFCF78', 0.7),
+    subtle: alpha('#F6F7FB', 0.12),
+  },
+  shadows: {
+    panel: '0 30px 80px rgba(4, 3, 31, 0.45)',
+    goldBloom: '0 0 24px rgba(255, 207, 120, 0.2)',
+  },
+  surfaces: {
+    chip: alpha('#041628', 0.72),
+    panel: alpha('#041628', 0.5),
   },
   chips: {
     live: '[LIVE]',
@@ -32,10 +51,30 @@ export const brandTokens = {
 };
 
 export const statusStyles = {
-  low: { color: brandTokens.status.low, label: 'Gentle Glide' },
-  optimal: { color: brandTokens.status.optimal, label: 'Flow Ritual' },
-  high: { color: brandTokens.status.high, label: 'Pressure Build' },
-  critical: { color: brandTokens.status.critical, label: 'Break. Now.' },
+  low: {
+    color: brandTokens.status.low,
+    label: 'Gentle Glide',
+    border: alpha(brandTokens.status.low, 0.5),
+    shadow: `0 0 24px ${alpha(brandTokens.status.low, 0.14)}`,
+  },
+  optimal: {
+    color: brandTokens.status.optimal,
+    label: 'Flow Ritual',
+    border: alpha(brandTokens.status.optimal, 0.5),
+    shadow: `0 0 24px ${alpha(brandTokens.status.optimal, 0.14)}`,
+  },
+  high: {
+    color: brandTokens.status.high,
+    label: 'Pressure Build',
+    border: alpha(brandTokens.status.high, 0.55),
+    shadow: `0 0 24px ${alpha(brandTokens.status.high, 0.18)}`,
+  },
+  critical: {
+    color: brandTokens.status.critical,
+    label: 'Break. Now.',
+    border: alpha(brandTokens.status.critical, 0.55),
+    shadow: `0 0 24px ${alpha(brandTokens.status.critical, 0.18)}`,
+  },
 } as const;
 
 const theme = createTheme({
@@ -52,8 +91,8 @@ const theme = createTheme({
       paper: brandTokens.colors.voidNavy,
     },
     text: {
-      primary: '#F6F7FB',
-      secondary: alpha('#F6F7FB', 0.65),
+      primary: brandTokens.text.primary,
+      secondary: brandTokens.text.secondary,
     },
     warning: {
       main: brandTokens.colors.giltEdge,
@@ -89,7 +128,7 @@ const theme = createTheme({
         root: {
           background: brandTokens.gradients.velvet,
           border: `1px solid ${alpha(brandTokens.colors.ritualCyan, 0.25)}`,
-          boxShadow: '0 30px 80px rgba(4, 3, 31, 0.45)',
+          boxShadow: brandTokens.shadows.panel,
         },
       },
     },
