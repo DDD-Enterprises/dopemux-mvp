@@ -214,6 +214,7 @@ function App() {
                   />
                 }
                 label={`${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
+                aria-label={`System is actively monitoring ritual state: ${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
                 className="dopemux-chip"
                 color="primary"
                 tabIndex={0}
