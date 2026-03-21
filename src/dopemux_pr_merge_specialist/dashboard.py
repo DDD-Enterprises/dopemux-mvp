@@ -17,7 +17,15 @@ from rich.live import Live
 from .action_model import dashboard_tactic_for_snapshot, result_to_dashboard_entry
 from .preflight import preflight
 from .ux_engine import RenderMode, RichTerminalRenderer
-from .queue_drain import pr_apply, pr_merge, pr_approve, pr_ready
+from .queue_drain import (
+    pr_apply, 
+    pr_merge, 
+    pr_approve, 
+    pr_ready, 
+    _inflate_pr_result, 
+    _ignite_speculative_train,
+    build_run_paths
+)
 
 
 @dataclass
@@ -170,6 +178,29 @@ class DopemuxDashboard:
                         else:
                             choice = char.upper()
                     elif self.state.auto_pilot:
+                        # 1. Periodically check for 'Train' opportunities in Bulk
+                        ready_count = sum(1 for pr in self.state.prs if dashboard_tactic_for_snapshot(pr) in ("I", "R"))
+                        if ready_count >= 2:
+                            self.state.status_message = f"🚂 Autopilot: Train opportunity detected ({ready_count} PRs)..."
+                            live.update(self.render())
+                            
+                            # Reconstruct PRResult objects from snapshots
+                            results_to_train = [_inflate_pr_result(pr) for pr in self.state.prs]
+                            repo_root = Path.cwd()
+                            _, _, pr_root = build_run_paths(self.args.out_dir, self.state.run_id)
+                            commands_log = pr_root / "AUTOPILOT_TRAIN_COMMANDS.txt"
+                            
+                            train_merged, train_queued = _ignite_speculative_train(
+                                results_to_train, self.manager, repo_root, self.state.run_id, commands_log, self.policy, True
+                            )
+                            
+                            if train_merged or train_queued:
+                                self.state.status_message = f"🚂 Train integration successful. {len(train_merged)+len(train_queued)} PRs moving."
+                                # We'll let the next individual cycle refresh the PR states from GitHub
+                                time.sleep(2)
+                                continue
+
+                        # 2. Otherwise, fall back to individual tactic selection
                         active = self.state.active_pr
                         if active:
                             choice = dashboard_tactic_for_snapshot(active)
