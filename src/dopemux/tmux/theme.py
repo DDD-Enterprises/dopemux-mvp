@@ -121,12 +121,12 @@ def _status_left(neon: bool) -> str:
 
 def _status_right(neon: bool) -> str:
     return (
-        f"{tmux_segment('#{{@dopemux_mobile_indicator:-📱 idle}}', fg=TMUX_SUCCESS)} #[default]"
-        f"{tmux_segment('#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo \"🤖\")', fg=TMUX_GOLD if neon else TMUX_AFTERCARE)} #[default]"
-        f"{tmux_segment('  %R', fg=TMUX_AFTERCARE)} "
-        f"{tmux_segment('%a %b %d', fg=TMUX_ACCENT)} "
-        f"{tmux_segment('#{{window_index}}:#{{window_name}}', fg=TMUX_FOREGROUND if neon else TMUX_MUTED)} "
-        f"{tmux_segment('#{{pane_index}}:#{{pane_title}}', fg=TMUX_WARNING)}"
+        tmux_segment('#{{@dopemux_mobile_indicator:-📱 idle}}', fg=TMUX_SUCCESS) + " #[default]"
+        + tmux_segment('#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo "🤖")', fg=TMUX_GOLD if neon else TMUX_AFTERCARE) + " #[default]"
+        + tmux_segment('  %R', fg=TMUX_AFTERCARE) + " "
+        + tmux_segment('%a %b %d', fg=TMUX_ACCENT) + " "
+        + tmux_segment('#{{window_index}}:#{{window_name}}', fg=TMUX_FOREGROUND if neon else TMUX_MUTED) + " "
+        + tmux_segment('#{{pane_index}}:#{{pane_title}}', fg=TMUX_WARNING)
     )
 
 
