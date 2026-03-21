@@ -27,34 +27,27 @@ from rich.text import Text
 from rich.theme import Theme
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Color Constants
+# Color Constants: Pastel Neon Dreams Against Rich Black
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# ── Mint / Cyan family (hero) ──
-RITUAL_CYAN = "#7DFBF6"
-SERUM_MINT = "#94FADB"
-MINT_BRIGHT = "#B4FFEE"
-MINT_DIM = "#4A9E94"
-
-# ── Accent pops (magenta / violet) ──
-GREMLIN_PINK = "#FF8BD1"
-AFTERCARE_VIOLET = "#9B78FF"
-VIOLET_DIM = "#6B4FBF"
-
-# ── Warm tones (warnings only) ──
-GILT_EDGE = "#F5F26D"
-SAINT_GOLD = "#FFCF78"
+# ── Neon family ──
+RITUAL_CYAN = "#00FFFF"      # Pure Neon Cyan
+GREMLIN_PINK = "#FF00FF"     # Pure Neon Magenta
+MINT_BRIGHT = "#B2FFFF"      # Pastel Cyan
+SERUM_MINT = "#7FFFD4"       # Aquamarine / Pastel Green
+VIOLET_PASTEL = "#FFB2FF"    # Pastel Magenta
+ERROR_HOT_PINK = "#FF69B4"   # Hot Pink (Pastel Red)
 
 # ── Surfaces ──
-INK_BLACK = "#020617"
-VOID_NAVY = "#041628"
-VELVET_PLUM = "#1A0520"
+INK_BLACK = "#000000"        # Rich Black
+VOID_NAVY = "#080808"        # Deep Charcoal
+VELVET_PLUM = "#1A001A"      # Deepest Purple
 
 # ── Text hierarchy ──
-TEXT_PRIMARY = "#E2E8F0"
-TEXT_SECONDARY = "#94A3B8"
-TEXT_MUTED = "#64748B"
-TEXT_DISABLED = "#475569"
+TEXT_PRIMARY = "#E5E5E5"     # Light Grey
+TEXT_SECONDARY = "#A9A9A9"   # Dark Grey
+TEXT_EMPHASIS = "#FFFFFF"    # Pure White
+TEXT_DISABLED = "#4D4D4D"    # Muted Grey
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Rich Theme
@@ -62,60 +55,64 @@ TEXT_DISABLED = "#475569"
 
 DOPEMUX_THEME = Theme(
     {
-        # ── Mint family (hero) ──
+        # ── Mint/Cyan family (hero) ──
         "mint": f"bold {RITUAL_CYAN}",
         "mint.soft": SERUM_MINT,
         "mint.bright": f"bold {MINT_BRIGHT}",
-        "mint.dim": MINT_DIM,
+        "mint.dim": TEXT_SECONDARY,
         # ── Accent pops ──
         "magenta": f"bold {GREMLIN_PINK}",
-        "violet": AFTERCARE_VIOLET,
-        "violet.dim": VIOLET_DIM,
-        # ── Warm (warnings only) ──
-        "gold": GILT_EDGE,
-        "amber": SAINT_GOLD,
+        "violet": VIOLET_PASTEL,
+        "violet.dim": "#800080",
+        "gremlin.pink": GREMLIN_PINK,
         # ── Text hierarchy ──
         "text": TEXT_PRIMARY,
         "text.dim": TEXT_SECONDARY,
-        "text.muted": TEXT_MUTED,
+        "text.muted": TEXT_SECONDARY,
         "text.disabled": TEXT_DISABLED,
-        "text.emphasis": f"bold {SERUM_MINT}",
+        "text.emphasis": f"bold {TEXT_EMPHASIS}",
         # ── Headings ──
         "heading": f"bold {RITUAL_CYAN}",
         "subheading": f"bold {SERUM_MINT}",
         "label": TEXT_SECONDARY,
         # ── Status (semantic) ──
         "success": SERUM_MINT,
-        "error": f"bold {GREMLIN_PINK}",
-        "warning": GILT_EDGE,
-        "info": RITUAL_CYAN,
-        "debug": AFTERCARE_VIOLET,
+        "error": f"bold {ERROR_HOT_PINK}",
+        "warning": "#FFFFE0", # Light Yellow for contrast
+        "info": MINT_BRIGHT,
+        "debug": VIOLET_PASTEL,
+        "hazard": "#FFFFE0",
+        "gilt.edge": "#FFFFE0",
         # ── Status chips ──
         "chip.live": f"bold {RITUAL_CYAN}",
-        "chip.override": f"bold {GILT_EDGE}",
-        "chip.blocker": f"bold {GREMLIN_PINK}",
+        "chip.override": "bold #FFFFE0",
+        "chip.blocker": f"bold {ERROR_HOT_PINK}",
         "chip.logged": SERUM_MINT,
-        "chip.aftercare": AFTERCARE_VIOLET,
-        "chip.edge": f"bold {RITUAL_CYAN}",
+        "chip.aftercare": VIOLET_PASTEL,
+        "chip.edge": f"bold {MINT_BRIGHT}",
+        # ── Surfaces ──
+        "surface.black": INK_BLACK,
+        "surface.navy": VOID_NAVY,
+        "surface.plum": VELVET_PLUM,
         # ── Tables ──
         "table.header": f"bold {RITUAL_CYAN}",
-        "table.border": MINT_DIM,
+        "table.border": TEXT_SECONDARY,
         "table.row.alt": f"on {VOID_NAVY}",
         # ── Panels ──
-        "panel.border": MINT_DIM,
-        "panel.title": f"bold {SERUM_MINT}",
+        "panel.border": RITUAL_CYAN,
+        "panel.title": f"bold {MINT_BRIGHT}",
         # ── Progress ──
         "bar.complete": RITUAL_CYAN,
-        "bar.remaining": VELVET_PLUM,
+        "bar.remaining": VOID_NAVY,
         "bar.pulse": GREMLIN_PINK,
         "spinner": RITUAL_CYAN,
         # ── Severity ──
         "severity.healthy": SERUM_MINT,
-        "severity.warning": GILT_EDGE,
-        "severity.critical": f"bold {GREMLIN_PINK}",
-        "severity.unknown": TEXT_MUTED,
+        "severity.warning": "#FFFFE0",
+        "severity.critical": f"bold {ERROR_HOT_PINK}",
+        "severity.unknown": TEXT_DISABLED,
         # ── Rule lines ──
-        "rule.line": MINT_DIM,
+        "rule.line": TEXT_SECONDARY,
     }
 )
 
