@@ -19,7 +19,7 @@ import yaml
 
 # Pre-compile the regex to find YAML frontmatter.
 # This is optimized for performance when scanning many files.
-_FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+_FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 
 
 CANONICAL_INDEXES: List[str] = [
@@ -263,10 +263,11 @@ def _parse_frontmatter_type(file_path: Path) -> str | None:
     if not file_path.exists() or file_path.suffix.lower() != ".md":
         return None
     # Frontmatter is expected to be at the beginning and typically small.
-    # Reading only the first 16KB avoids loading massive files into memory.
+    # Reading the first 64KB is a safe balance that avoids loading massive
+    # files while being extremely unlikely to cut off valid frontmatter.
     try:
         with file_path.open("r", encoding="utf-8", errors="replace") as f:
-            text = f.read(16384)
+            text = f.read(65536)
     except OSError:
         return None
 
