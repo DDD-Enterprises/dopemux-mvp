@@ -13,7 +13,7 @@ repos:
       # Graph schema validation
       - id: docs-graph-validator
         name: Validate documentation against knowledge graph schema
-        entry: python scripts/docs_validator.py
+        entry: python3 scripts/docs_validator.py
         language: system
         files: ^(docs/|task-packets/).*\.md$
         exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
@@ -64,7 +64,7 @@ repos:
       # Prelude token count validation for embeddings
       - id: docs-prelude-tokens
         name: Validate prelude ≤100 tokens for efficient embeddings
-        entry: python -c
+        entry: python3 -c
         args:
           - |
             import sys, yaml, os
@@ -169,7 +169,7 @@ repos:
 
       - id: docs-placement-hygiene
         name: Enforce docs placement hygiene (changed files)
-        entry: python scripts/check_docs_hygiene.py --check
+        entry: python3 scripts/check_docs_hygiene.py --check
         language: system
         files: ^docs/.*\.md$
         exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
@@ -177,7 +177,7 @@ repos:
 
       - id: docs-filename-hygiene
         name: Enforce docs filename hygiene (kebab-case)
-        entry: python scripts/check_docs_filename_hygiene.py --check
+        entry: python3 scripts/check_docs_filename_hygiene.py --check
         language: system
         files: ^docs/.*\.md$
         exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
@@ -185,7 +185,7 @@ repos:
 
       - id: docs-filename-hygiene
         name: Audit docs filename hygiene (kebab-case, full-tree legacy debt)
-        entry: python scripts/check_docs_filename_hygiene.py --audit --all-files --audit-out /tmp/dopemux-precommit-full-tree-filename-audit.json
+        entry: python3 scripts/check_docs_filename_hygiene.py --audit --all-files --audit-out /tmp/dopemux-precommit-full-tree-filename-audit.json
         language: system
         pass_filenames: false
         always_run: true
@@ -220,7 +220,7 @@ repos:
       # Repo root hygiene enforcement
       - id: root-hygiene
         name: Enforce repository root hygiene (no random root files)
-        entry: python scripts/check_root_hygiene.py
+        entry: python3 scripts/check_root_hygiene.py
         language: system
         files: .*
         pass_filenames: true
