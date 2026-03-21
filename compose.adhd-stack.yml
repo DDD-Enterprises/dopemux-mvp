@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: dopemux-age-local-2026
       POSTGRES_DB: dopemux_knowledge_graph
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - adhd_pg_age_data:/var/lib/postgresql/data
       - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
@@ -22,7 +22,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "56379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -44,7 +44,7 @@ services:
       CONPORT_URL: http://conport:3004
       ALLOWED_ORIGINS: http://localhost:5173,http://localhost:8097
     ports:
-      - "3016:3016"
+      - "3316:3016"
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,9 +71,9 @@ services:
       AGE_PASSWORD: dopemux-age-local-2026
       REDIS_URL: redis://redis:6379
     ports:
-      - "3004:3004"
-      - "3005:3005"
-      - "4004:4004"
+      - "3304:3004"
+      - "3305:3005"
+      - "4404:4004"
     depends_on:
       postgres:
         condition: service_healthy
@@ -119,8 +119,8 @@ services:
 
   activity-capture:
     build:
-      context: ./services/activity-capture
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/activity-capture/Dockerfile
     environment:
       API_PORT: 8096
       ADHD_ENGINE_URL: http://adhd-engine:8095
@@ -147,8 +147,8 @@ services:
 
   adhd-dashboard:
     build:
-      context: ./services/adhd-dashboard
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/adhd-dashboard/Dockerfile
     environment:
       REDIS_URL: redis://redis:6379
       ADHD_ENGINE_URL: http://adhd-engine:8095
@@ -166,7 +166,13 @@ services:
       activity-capture:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8097/health || exit 1"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://localhost:8097/health', timeout=5).status == 200 else 1)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3

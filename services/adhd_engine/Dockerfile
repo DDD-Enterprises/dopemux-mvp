@@ -19,6 +19,7 @@ RUN python -m venv /app/venv && /app/venv/bin/pip install --no-cache-dir -r /app
 COPY services/adhd_engine /app/services/adhd_engine
 COPY services/adhd_engine/mcp_stdio.py /app/mcp_stdio.py
 COPY services/shared /app/services/shared
+COPY src/dopemux /app/src/dopemux
 # Copy repo root shared/ for monitoring module
 COPY shared /app/shared
 
@@ -38,12 +39,13 @@ RUN apk add --no-cache curl
 # DHI runtime may be non-root by default; ensure files are readable
 COPY --from=builder /app/venv /app/venv
 COPY --from=builder /app/services /app/services
+COPY --from=builder /app/src /app/src
 COPY --from=builder /app/shared /app/shared
 COPY --from=builder /app/mcp_stdio.py /app/mcp_stdio.py
 ENV PATH="/app/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=/app \
+    PYTHONPATH=/app:/app/src \
     API_PORT=8095
 
 # Expose API port (8095 for ADHD Engine)

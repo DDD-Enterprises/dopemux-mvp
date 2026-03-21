@@ -17,9 +17,24 @@ import uvicorn
 from pathlib import Path
 import sys
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+def _configure_import_paths() -> Path:
+    current = Path(__file__).resolve()
+    candidates = [current.parent, *current.parents]
+    repo_root = next(
+        (
+            candidate for candidate in candidates
+            if (candidate / "services" / "shared").exists() or (candidate / "src" / "dopemux").exists()
+        ),
+        current.parent,
+    )
+    for path in (repo_root, repo_root / "src"):
+        path_str = str(path)
+        if path.exists() and path_str not in sys.path:
+            sys.path.insert(0, path_str)
+    return repo_root
+
+
+REPO_ROOT = _configure_import_paths()
 
 from services.shared.brand_voice import StatusChip, brand_log, brand_error, brand_payload, voice_header
 from task_recommender import TaskRecommender

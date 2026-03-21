@@ -25,6 +25,9 @@ keep_docs_root_files:
   - docs/00-MASTER-INDEX.md
   - docs/INDEX.md
 
+filename_exemptions:
+  - QUICK_START.md
+
 unknown_top_level_fallback_dir: docs/archive/unclassified-top-level
 default_root_target_dir: docs/04-explanation/root-relocated
 
