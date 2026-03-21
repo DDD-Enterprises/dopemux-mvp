@@ -13,10 +13,13 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY services/workspace-watcher /app/services/workspace-watcher
 COPY services/dopecon-bridge /app/services/dopecon-bridge
+COPY services/shared /app/services/shared
+COPY src/dopemux /app/src/dopemux
 
 WORKDIR /app/services/workspace-watcher
 
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app:/app/src
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD pgrep -f "python main.py" >/dev/null || exit 1

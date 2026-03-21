@@ -22,6 +22,18 @@ bridge_path = Path(__file__).parent.parent / "dopecon-bridge"
 if str(bridge_path) not in sys.path:
     sys.path.insert(0, str(bridge_path))
 
+repo_root = next(
+    (
+        candidate for candidate in [Path(__file__).resolve().parent, *Path(__file__).resolve().parents]
+        if (candidate / "services" / "shared").exists() or (candidate / "src" / "dopemux").exists()
+    ),
+    Path(__file__).resolve().parent,
+)
+for path in (repo_root, repo_root / "src"):
+    path_str = str(path)
+    if path.exists() and path_str not in sys.path:
+        sys.path.insert(0, path_str)
+
 from dopecon_bridge.event_bus import Event, EventBus
 from services.shared.brand_voice import StatusChip, brand_log
 
