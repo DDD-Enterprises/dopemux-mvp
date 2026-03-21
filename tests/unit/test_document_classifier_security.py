@@ -1,54 +1,73 @@
-try:
-    import pytest
-except ImportError:
-    pytest = None
 from unittest.mock import MagicMock
 import sys
-from pathlib import Path
 
 # Mock missing dependencies
-sys.modules['markdown_patterns'] = MagicMock()
-sys.modules['yaml_extractor'] = MagicMock()
-sys.modules['extraction.markdown_patterns'] = MagicMock()
-sys.modules['extraction.yaml_extractor'] = MagicMock()
+from unittest.mock import MagicMock, patch
+import sys
+from pathlib import Path
+import importlib
 
-from extraction.document_classifier import DocumentClassifier
+# Note: dependency modules are mocked within individual tests using patch.dict
+# to avoid mutating sys.modules at import time.
+
 
 def test_quote_identifier():
-    classifier = DocumentClassifier()
+    with patch.dict(
+        sys.modules,
+        {
+            "markdown_patterns": MagicMock(),
+            "yaml_extractor": MagicMock(),
+            "extraction.markdown_patterns": MagicMock(),
+            "extraction.yaml_extractor": MagicMock(),
+        },
+    ):
+        import extraction.document_classifier as document_classifier
 
-    # Simple name
-    assert classifier._quote_identifier("users") == '"users"'
+        importlib.reload(document_classifier)
+        classifier = document_classifier.DocumentClassifier()
 
-    # Name with spaces
-    assert classifier._quote_identifier("user profiles") == '"user profiles"'
+        # Simple name
+        assert classifier._quote_identifier("users") == '"users"'
 
-    # Name with double quotes (the injection vector)
-    assert classifier._quote_identifier('users"; DROP TABLE secrets; --') == '"users""; DROP TABLE secrets; --"'
+        # Name with spaces
+        assert classifier._quote_identifier("user profiles") == '"user profiles"'
 
-    # Name with already doubled quotes
-    assert classifier._quote_identifier('my""table') == '"my""""table"'
+        # Name with double quotes (the injection vector)
+        assert (
+            classifier._quote_identifier('users"; DROP TABLE secrets; --')
+            == '"users""; DROP TABLE secrets; --"'
+        )
 
-    # Reserved words
-    assert classifier._quote_identifier("select") == '"select"'
+        # Name with already doubled quotes
+        assert classifier._quote_identifier('my""table') == '"my""""table"'
+
+        # Reserved words
+        assert classifier._quote_identifier("select") == '"select"'
+
 
 def test_quote_identifier_extreme():
-    classifier = DocumentClassifier()
+    with patch.dict(
+        sys.modules,
+        {
+            "markdown_patterns": MagicMock(),
+            "yaml_extractor": MagicMock(),
+            "extraction.markdown_patterns": MagicMock(),
+            "extraction.yaml_extractor": MagicMock(),
+        },
+    ):
+        import extraction.document_classifier as document_classifier
 
-    # Empty string
-    assert classifier._quote_identifier("") == '""'
+        importlib.reload(document_classifier)
+        classifier = document_classifier.DocumentClassifier()
 
-    # Only quotes
-    assert classifier._quote_identifier('"""') == '""""""""'
+        # Empty string
+        assert classifier._quote_identifier("") == '""'
 
-    # Unicode
-    assert classifier._quote_identifier('τάμπλα') == '"τάμπλα"'
+        # Only quotes
+        assert classifier._quote_identifier('"""') == '""""""""'
 
-if __name__ == "__main__":
-    # Run tests manually if pytest is not available or having issues
-    try:
-        test_quote_identifier()
-        test_quote_identifier_extreme()
+        # Unicode
+        assert classifier._quote_identifier("τάμπλα") == '"τάμπλα"'
         print("Manual security tests passed!")
     except AssertionError as e:
         print(f"Manual security tests failed: {e}")
