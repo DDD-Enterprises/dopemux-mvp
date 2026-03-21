@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the PR Merge Specialist will be documented in this file.
+All notable changes to Dopemux (including the PR Merge Specialist) will be documented in this file.
 
 ## [Unreleased]
 ### Added
