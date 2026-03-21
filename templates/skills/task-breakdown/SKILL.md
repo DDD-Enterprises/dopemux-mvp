@@ -28,3 +28,10 @@ Emit:
 ```xml
 <workflow-checkpoint phase="breakdown" status="complete" task="task-001" summary="Task mirror created" artifact="/abs/path/tasks/task-001/task.md" />
 ```
+
+## Stop Protocol (Orchestrator Enforcement)
+
+- **CRITICAL**: You are executing a SINGLE PHASE of a larger orchestrated loop.
+- Once you emit the `<workflow-checkpoint>` XML, you MUST yield control back to the orchestrator.
+- Do NOT proceed to the next phase (e.g., research, plan, implement). 
+- End your response with `[STOP_TURN]` to explicitly signal phase completion.

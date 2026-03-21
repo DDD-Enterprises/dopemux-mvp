@@ -248,6 +248,7 @@ class DopemuxConfig(BaseModel):
     """Main Dopemux configuration."""
 
     version: str = "1.0"
+    theme: str = "pastel-neon-dreams"
     mcp_mode: Literal["auto", "docker", "local"] = "auto"
     adhd_profile: ADHDProfile = Field(default_factory=ADHDProfile)
     mcp_servers: Dict[str, MCPServerConfig] = Field(default_factory=dict)
@@ -454,6 +455,12 @@ class ConfigManager:
             self.save_user_config(config)
             return True
         return False
+
+    def set_theme(self, theme_name: str) -> None:
+        """Update the active theme in the user configuration."""
+        config = self.load_config()
+        config.theme = theme_name
+        self.save_user_config(config)
 
     def update_adhd_profile(self, **kwargs) -> None:
         """Update ADHD profile settings."""

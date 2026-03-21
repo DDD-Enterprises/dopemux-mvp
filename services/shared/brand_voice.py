@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Iterable, List
+from typing import Any, Iterable, List, Mapping
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC_ROOT = REPO_ROOT / "src"
@@ -12,25 +12,43 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from dopemux.ui.theme import StatusChip
-from dopemux.ui.voice import VoiceEngine, VoiceMode
-from dopemux.voice import validate_or_fallback
+from dopemux.voice import HEADERS, validate_or_fallback
 
-VOICE = VoiceEngine(mode=VoiceMode.UI_STRICT, is_scattered=True)
+TONE_BY_CHIP = {
+    StatusChip.LIVE: "live",
+    StatusChip.BLOCKER: "blocker",
+    StatusChip.OVERRIDE: "override",
+    StatusChip.LOGGED: "logged",
+    StatusChip.AFTERCARE: "aftercare",
+    StatusChip.EDGE: "edge",
+}
 
 
 def _chip_text(chip: StatusChip) -> str:
     return f"[{chip.label}]"
 
 
+def tone_name(chip: StatusChip, tone: str | None = None) -> str:
+    """Return a stable tone label for a chip."""
+    return tone or TONE_BY_CHIP.get(chip, "live")
+
+
+def voice_header(surface: str = "ui") -> str:
+    """Return the configured voice header for a surface."""
+    return HEADERS.get(surface, HEADERS["ui"])
+
+
 def _fallback_for(chip: StatusChip) -> str:
     if chip is StatusChip.AFTERCARE:
-        return VOICE.get_aftercare()
+        return "Session logged. Protect the recovery block."
     if chip is StatusChip.BLOCKER:
-        return "Blocked. Check the trace and retry cleanly."
+        return "Blocked. Check the trace and retry with one clean next step."
+    if chip is StatusChip.OVERRIDE:
+        return "Override recorded. Confirm the next action before proceeding."
+    if chip is StatusChip.LOGGED:
+        return "Logged. Receipt captured. Keep the next step visible."
     if chip is StatusChip.EDGE:
         return "Edge signal logged. Keep the next small step visible."
-    if chip is StatusChip.LOGGED:
-        return "Logged. Receipt captured. Keep moving."
     return "Live signal locked. Keep the next step visible."
 
 
@@ -70,16 +88,55 @@ def brand_list(
     chip: StatusChip = StatusChip.EDGE,
     surface: str = "ui",
 ) -> List[str]:
-    """Return a list of voice-safe suggestions while preserving the list schema."""
+    """Return a list of voice-safe suggestions while preserving list shape."""
     return [
         brand_text(item, chip=chip, surface=surface)
         for item in items
     ]
 
 
+def brand_error(
+    message: str,
+    *,
+    chip: StatusChip = StatusChip.BLOCKER,
+    surface: str = "ui",
+    fallback: str | None = None,
+    include_chip: bool = True,
+) -> str:
+    """Return deterministic branded error copy."""
+    return brand_text(
+        message,
+        chip=chip,
+        surface=surface,
+        fallback=fallback or _fallback_for(chip),
+        include_chip=include_chip,
+    )
+
+
+def brand_log(
+    message: str,
+    *,
+    chip: StatusChip = StatusChip.LIVE,
+    surface: str = "ui",
+    fallback: str | None = None,
+    include_chip: bool = True,
+) -> str:
+    """Return branded operator log text."""
+    return brand_text(
+        message,
+        chip=chip,
+        surface=surface,
+        fallback=fallback,
+        include_chip=include_chip,
+    )
+
+
 def aftercare_text(message: str | None = None) -> str:
     """Return a deterministic aftercare message with chip notation."""
-    return brand_text(message or VOICE.get_aftercare(), chip=StatusChip.AFTERCARE)
+    return brand_text(
+        message or "Session logged. Take the next recovery beat.",
+        chip=StatusChip.AFTERCARE,
+    )
 
 
 def break_copy(duration_minutes: int, *, urgent: bool = False) -> tuple[str, str, str]:
@@ -130,44 +187,22 @@ def brand_payload(
     chip: StatusChip = StatusChip.LIVE,
     surface: str = "ui",
 ) -> Mapping[str, Any]:
-    """Return a dictionary of brand metadata for API response augmentation."""
-    from dopemux.voice.agent_headers import HEADERS
+    """Return additive branded payload metadata for API and event surfaces."""
     return {
+        "message": brand_text(
+            message,
+            chip=chip,
+            surface=surface,
+        ),
         "status_chip": chip.label,
-        "tone": chip.label.lower(),
-        "voice_header": HEADERS.get(surface, HEADERS["agent"]),
-        "branded_message": brand_text(message, chip=chip, surface=surface),
+        "tone": tone_name(chip),
+        "voice_header": voice_header(surface),
     }
-
-
-def brand_log(
-    message: str,
-    *,
-    chip: StatusChip = StatusChip.LOGGED,
-    surface: str = "cli",
-) -> str:
-    """Return a voice-safe log message with chip notation."""
-    return brand_text(message, chip=chip, surface=surface)
-
-
-def brand_error(
-    message: str,
-    *,
-    chip: StatusChip = StatusChip.BLOCKER,
-    surface: str = "ui",
-) -> str:
-    """Return a voice-safe error message with chip notation."""
-    return brand_text(message, chip=chip, surface=surface)
-
-
-def voice_header(title: str) -> str:
-    """Return a branded voice header for logs."""
-    return f"━━━◆ Ø ◆━━━  {title}"
 
 
 __all__ = [
     "StatusChip",
-    "VOICE",
+    "TONE_BY_CHIP",
     "aftercare_text",
     "brand_error",
     "brand_list",
@@ -177,5 +212,6 @@ __all__ = [
     "brand_title",
     "break_copy",
     "hyperfocus_copy",
+    "tone_name",
     "voice_header",
 ]
