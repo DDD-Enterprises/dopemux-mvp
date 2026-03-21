@@ -35,6 +35,7 @@ DOPEMUX_SPINNER = [
 
 @contextmanager
 def branded_progress(
+    *columns: Any,
     console: Optional[Console] = None,
     transient: bool = False,
     description: str = "Processing",
@@ -50,12 +51,16 @@ def branded_progress(
         console = default_console._console if hasattr(default_console, "_console") else default_console
 
     # If the user passed their own console, use it, otherwise rely on the default
-    progress = Progress(
-        SpinnerColumn(spinner_name="dots", style="mint"), # Fallback
+    progress_columns = columns or (
+        SpinnerColumn(spinner_name="dots", style="mint"),
         TextColumn("[mint]{task.description}[/mint]"),
         BarColumn(complete_style="mint", finished_style="mint.soft"),
         TaskProgressColumn(),
         TimeElapsedColumn(),
+    )
+
+    progress = Progress(
+        *progress_columns,
         console=console,
         transient=transient,
         **kwargs
