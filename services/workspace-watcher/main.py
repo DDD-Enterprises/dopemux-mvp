@@ -32,9 +32,24 @@ import os
 from pathlib import Path
 from typing import Optional
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+def _configure_import_paths() -> Path:
+    current = Path(__file__).resolve()
+    candidates = [current.parent, *current.parents]
+    repo_root = next(
+        (
+            candidate for candidate in candidates
+            if (candidate / "services" / "shared").exists() or (candidate / "src" / "dopemux").exists()
+        ),
+        current.parent,
+    )
+    for path in (repo_root, repo_root / "src"):
+        path_str = str(path)
+        if path.exists() and path_str not in sys.path:
+            sys.path.insert(0, path_str)
+    return repo_root
+
+
+REPO_ROOT = _configure_import_paths()
 
 from services.shared.brand_voice import StatusChip, brand_log, voice_header
 from app_detector import AppDetector
@@ -219,9 +234,9 @@ class WorkspaceWatcher:
         }
 
 
-async def run_watcher(poll_interval: int = 5):
+async def run_watcher(poll_interval: int = 5, redis_url: str = "redis://localhost:6379"):
     """Run workspace watcher"""
-    watcher = WorkspaceWatcher(poll_interval=poll_interval)
+    watcher = WorkspaceWatcher(poll_interval=poll_interval, redis_url=redis_url)
 
     # Setup signal handlers for graceful shutdown
     loop = asyncio.get_event_loop()
@@ -266,9 +281,9 @@ async def emit_manual_workspace_switch(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Workspace Watcher - Automatic workspace switch detection")
     parser.add_argument("--interval", type=int, default=5, help="Poll interval in seconds (default: 5)")
+    parser.add_argument("--redis-url", default=os.getenv("REDIS_URL", "redis://localhost:6379"), help="Redis connection URL")
     parser.add_argument("--daemon", action="store_true", help="Run in background (no-op, always runs until Ctrl+C)")
     parser.add_argument("--emit-switch", action="store_true", help="Emit a single workspace.switched event and exit")
-    parser.add_argument("--redis-url", default="redis://localhost:6379", help="Redis connection URL for manual emission")
     parser.add_argument("--from-app", default="Terminal", help="Source application for manual emission")
     parser.add_argument("--to-app", default="Claude Code", help="Destination application for manual emission")
     parser.add_argument("--from-workspace", default=None, help="Source workspace path for manual emission")
@@ -287,6 +302,6 @@ if __name__ == "__main__":
                 )
             )
         else:
-            asyncio.run(run_watcher(poll_interval=args.interval))
+            asyncio.run(run_watcher(poll_interval=args.interval, redis_url=args.redis_url))
     except KeyboardInterrupt:
         logger.info(brand_log("Stopped by user", chip=StatusChip.LIVE))

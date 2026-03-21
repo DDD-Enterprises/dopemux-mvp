@@ -20,8 +20,10 @@ from .config import settings
 logger = logging.getLogger(__name__)
 
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing context for the bridge's in-memory dev user store.
+# Use a passlib builtin scheme so startup does not depend on the external
+# bcrypt backend compatibility matrix.
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 # Security scheme
 security = HTTPBearer()

@@ -28,8 +28,9 @@ import asyncio
 
 logger = logging.getLogger(__name__)
 
-# Import cache utility for Redis caching
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'docker', 'mcp-servers', 'shared'))
+# Import cache utility for Redis caching. Insert ahead of repo-root entries so
+# the engine-local shared cache module wins over unrelated top-level modules.
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'docker', 'mcp-servers', 'shared'))
 from cache import get_cache
 
 # Import Prometheus metrics (avoid conflicts with repo-local prometheus_client.py)
@@ -43,7 +44,7 @@ try:
         raise ImportError("prometheus_client missing metrics API")
 except ImportError:
     PROMETHEUS_AVAILABLE = False
-    logger.warning(brand_log("Prometheus client not available - metrics disabled"))
+    logger.warning("Prometheus client not available - metrics disabled")
 
 from . import schemas
 from ..core.models import ADHDProfile, EnergyLevel, AttentionState
@@ -144,7 +145,7 @@ async def get_cache_instance():
         try:
             _cache_instance = await get_cache()
         except Exception as exc:
-            logger.warning(brand_log("Cache unavailable (%s); using in-memory fallback", exc))
+            logger.warning(brand_log(f"Cache unavailable ({exc}); using in-memory fallback"))
             _cache_instance = _InMemoryCache()
     return _cache_instance
 

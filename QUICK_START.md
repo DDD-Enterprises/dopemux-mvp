@@ -39,7 +39,7 @@ docker compose -f compose.adhd-stack.yml ps
 curl http://localhost:8095/health
 curl http://localhost:8096/health
 curl http://localhost:8097/health
-curl http://localhost:3016/health
+curl http://localhost:3316/health
 ```
 
 ## 2. Start the dashboard UI
@@ -109,14 +109,14 @@ docker compose -f compose.adhd-stack.yml exec redis \
 Unauthenticated KG and event inspection routes should fail:
 
 ```bash
-curl -i http://localhost:3016/kg/decisions
-curl -i http://localhost:3016/events/history
+curl -i http://localhost:3316/kg/decisions
+curl -i http://localhost:3316/events/history
 ```
 
 Fetch a dev JWT:
 
 ```bash
-curl -s -X POST http://localhost:3016/auth/token \
+curl -s -X POST http://localhost:3316/auth/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "username=dopemux-dev-admin&password=dopemux-bridge-local-2026"
 ```
@@ -126,7 +126,7 @@ Use the returned bearer token:
 ```bash
 TOKEN="<paste-access-token>"
 
-curl -s http://localhost:3016/events/history \
+curl -s http://localhost:3316/events/history \
   -H "Authorization: Bearer ${TOKEN}" | jq
 ```
 
@@ -169,6 +169,18 @@ docker compose -f compose.adhd-stack.yml logs adhd-dashboard
 docker compose -f compose.adhd-stack.yml logs activity-capture
 docker compose -f compose.adhd-stack.yml logs adhd-engine
 ```
+
+Host port map for this MVP stack:
+
+- Postgres: `55432`
+- Redis: `56379`
+- ConPort REST: `3304`
+- ConPort MCP: `3305`
+- ConPort info: `4404`
+- DopeconBridge: `3316`
+- ADHD Engine: `8095`
+- Activity Capture: `8096`
+- ADHD Dashboard: `8097`
 
 If the watcher container cannot see host focus changes, use the manual `--emit-switch` command above for smoke tests. That is the expected MVP fallback in containerized local dev.
 
