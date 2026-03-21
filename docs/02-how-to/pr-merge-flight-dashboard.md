@@ -11,7 +11,7 @@ prelude: PR Merge Flight Dashboard (how-to) for dopemux documentation and develo
 ---
 # PR Merge Flight Dashboard Quickstart
 
-The PR Merge Flight Dashboard (`dopemux-pr-merge flight`) is a persistent TUI for managing the pull request queue in real-time. It provides a visual representation of the queue and a tactical cockpit for active PR remediation.
+The PR Merge Flight Dashboard (`dopemux-pr-merge flight`) is a persistent TUI for managing the pull request queue in real-time. It provides a visual representation of the queue and a tactical cockpit for active PR remediation, validation, approval, and merge-queue handoff.
 
 ## Launching
 
@@ -26,19 +26,31 @@ dopemux-pr-merge flight
 - **Header**: Live mission timer and `[LIVE]` status chip.
 - **Queue Status**: Dynamic viewport that follows the active PR as you scroll.
 - **Mission Intelligence**: Strategy, rationale, and metadata for the active PR.
-- **Tactical Insights**: A requirements checklist showing progress (CI, Validation, Conflicts, Threads).
+- **Tactical Insights**: A requirements checklist showing progress (CI, Validation, Approval, Conflicts, Threads).
 - **Tactical Controls**: Keymap for operator actions.
+- **Status Icons**: Distinct icons for validation-pending, approval-required, queued, blocked, and merged states.
 
 ## Advanced Orchestration
 
 ### Speculative Rebase Train (Merge Train)
-The dashboard automatically attempts to "ignite" a speculative rebase train for all `READY` PRs at the start of a pass. Instead of rebasing one-by-one, it rebases them in a chain (e.g., PR B onto PR A). This allows multiple PRs to pass CI and merge simultaneously, significantly increasing integration velocity.
+The dashboard automatically attempts to "ignite" a speculative rebase train for merge-ready PRs at the start of a pass. Each candidate is rebased against the latest `origin/main`, then queued for GitHub auto-merge if the rebase succeeds.
+
+Important behavior:
+
+- the train does not treat another speculative branch as the base of truth
+- a failed speculative rebase or push skips that PR and continues evaluating the remaining train candidates
+- GitHub remains the final merge authority when auto-merge or merge queue is enabled
 
 ### Global CI Remediation
-If multiple PRs fail CI with the same error, the orchestrator identifies the "Failure Fingerprint". Instead of fixing each PR individually, it spawns a `ci-remediation-specialist` to fix the issue in `main` and opens a single `global-ci-fix` PR. Other failing PRs will wait for this fix to merge, then automatically rebase and heal.
+If multiple PRs fail CI with the same error, the orchestrator identifies a stable failure fingerprint from the failing validation step and error output. Instead of fixing each PR individually, it invokes the `ci-remediation-specialist` against `main` and opens or reuses a single `global-ci-fix` PR. Other failing PRs wait on that shared fix path instead of duplicating remediation.
 
 ### Optimistic Lifecycle
-The dashboard uses an "optimistic" state model. If local validation passes, the PR is marked as `READY` (🟢) in the UI immediately, even if GitHub's CI status is still lagging or pending.
+The dashboard uses a state model that distinguishes local proof from GitHub lag:
+
+- `🟡` validation pending: local verification still required
+- `🟣` approval required: reviewer consent is the remaining gate
+- `🔵` queued: local work is done and GitHub is handling the final queue/check path
+- `🟢` ready or merged: no local blocker remains
 
 ## Controls
 
@@ -51,6 +63,15 @@ The dashboard features non-blocking input handling. Simply press the correspondi
 - **[V] Verify**: Run verification pipeline on the active PR.
 - **[S] Skip**: Skip to the next PR in the queue.
 - **[Q] Quit**: Gracefully exit the dashboard and restore terminal state.
+
+## Verification
+
+After launching the dashboard:
+
+1. Confirm the queue viewport follows the active PR instead of truncating unexpectedly.
+1. Confirm validation-only PRs appear as `🟡` rather than queued.
+1. Confirm approval-only PRs appear as `🟣`.
+1. Confirm already queued auto-merge PRs appear as `🔵`.
 
 ## ADHD Optimization
 

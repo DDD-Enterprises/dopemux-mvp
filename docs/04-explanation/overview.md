@@ -24,6 +24,7 @@ Explanation docs provide architecture and design context for why the system work
 ## Highlighted Active Topics
 
 - [Workflow Kit Architecture](workflow-kit-architecture.md)
+- [PR Merge Queue Orchestration](pr-merge-queue-orchestration.md)
 - [Workflow Kit Transfer RFC](../91-rfc/workflow-kit-pickle-mechanics-transfer.md)
 
 ## Update Policy
