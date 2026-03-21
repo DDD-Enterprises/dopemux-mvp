@@ -37,6 +37,9 @@ MINT_BRIGHT = "#B2FFFF"      # Pastel Cyan
 SERUM_MINT = "#7FFFD4"       # Aquamarine / Pastel Green
 VIOLET_PASTEL = "#FFB2FF"    # Pastel Magenta
 ERROR_HOT_PINK = "#FF69B4"   # Hot Pink (Pastel Red)
+SAINT_GOLD = "#FFFFE0"       # Pale gold / warning highlight
+GILT_EDGE = SAINT_GOLD       # Shared warning alias for cross-surface theme consumers
+AFTERCARE_VIOLET = VIOLET_PASTEL
 
 # ── Surfaces ──
 INK_BLACK = "#000000"        # Rich Black
@@ -48,6 +51,7 @@ TEXT_PRIMARY = "#E5E5E5"     # Light Grey
 TEXT_SECONDARY = "#A9A9A9"   # Dark Grey
 TEXT_EMPHASIS = "#FFFFFF"    # Pure White
 TEXT_DISABLED = "#4D4D4D"    # Muted Grey
+MINT_DIM = TEXT_SECONDARY
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Rich Theme
