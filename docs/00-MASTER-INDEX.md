@@ -52,6 +52,7 @@ Status: [LOGGED] Topology Complete
 - [Instance State Persistence](02-how-to/instance-state-persistence.md)
 - [Orchestrator Dashboard Quickstart](02-how-to/orchestrator-dashboard.md)
 - [PR Merge Flight Dashboard Quickstart](02-how-to/pr-merge-flight-dashboard.md)
+- [CI Remediation Specialist Reference](03-reference/ci-remediation-specialist.md)
 - [Internal Workflow Kit](02-how-to/internal-workflow-kit.md)
 - [Workflow Idea to Epic Lifecycle](02-how-to/operations/workflow-idea-epic-lifecycle.md)
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
@@ -161,6 +162,7 @@ Status: [LOGGED] Topology Complete
 - [Dope-Context Docs Contextual Embedding Contract](03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md)
 - [Dope-Context Architecture and Trinity Boundaries](03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md)
 - [Internal Workflow Kit Reference](03-reference/internal-workflow-kit.md)
+- [CI Remediation Specialist Reference](03-reference/ci-remediation-specialist.md)
 
 ### Features
 - [Features Index](03-reference/features/features-index.md)
@@ -179,6 +181,7 @@ Status: [LOGGED] Topology Complete
 - [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md)
 - [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md)
 - [Workflow Kit Architecture](04-explanation/workflow-kit-architecture.md)
+- [PR Merge Queue Orchestration](04-explanation/pr-merge-queue-orchestration.md)
 
 ### RFCs
 - [Workflow Kit Pickle Mechanics Transfer](91-rfc/workflow-kit-pickle-mechanics-transfer.md)

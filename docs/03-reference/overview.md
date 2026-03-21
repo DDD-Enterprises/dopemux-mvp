@@ -46,6 +46,7 @@ Detailed reference for Dopemux components.
 
 ### Workflow Kit
 - **[Internal Workflow Kit Reference](internal-workflow-kit.md)** - Phases, state schema, checkpoint tokens, and role assets
+- **[CI Remediation Specialist Skill](ci-remediation-specialist.md)** - Runbook, invocation contract, and queue integration
 
 ---
 

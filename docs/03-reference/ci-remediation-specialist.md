@@ -11,7 +11,7 @@ prelude: Documentation for the CI Remediation Specialist skill used by Dopemux.
 ---
 # CI Remediation Specialist Skill
 
-The `ci-remediation-specialist` is a highly disciplined agentic skill designed to diagnose and resolve CI/CD failures autonomously. It is integrated into the `dopemux-pr-merge` engine but can also be invoked manually.
+The `ci-remediation-specialist` is a constrained agentic skill designed to diagnose and resolve CI/CD failures autonomously. It is integrated into `dopemux-pr-merge` as the canonical remediation worker for repeated validation failures and can also be invoked manually.
 
 ## Core Mandates
 
@@ -40,7 +40,32 @@ Re-runs the failing command. If it passes, the mission is complete. If it fails 
 
 ## Integration with PR Merge
 
-In the **Flight Deck**, when a PR shows a `❌ CI Checks Failed` status, triggering **[P] Patch** or **[V] Verify** may engage this specialist. It operates in a dedicated worktree to ensure your main workspace remains clean.
+In the **Flight Deck**, when a PR shows a failed validation path, triggering **[P] Patch** or **[V] Verify** may engage this specialist. It operates in a dedicated worktree so the main workspace stays isolated from speculative fixes.
 
 ### Global Fixes
-If the specialist identifies a "Global CI Blocker" (the same failure across multiple PRs), it will automatically target the `main` branch to fix the issue at the source, opening a `global-ci-fix` PR.
+If the orchestrator detects the same failure fingerprint across multiple PRs, it treats that as a global blocker:
+
+- the fingerprint is computed from the failing validation step name plus a bounded slice of error output
+- open fix PRs are discovered by the `global-ci-fix` label plus the bot fingerprint marker in the PR body
+- if a matching fix PR already exists, blocked PRs record that dependency instead of spawning duplicate fixes
+- if no matching fix PR exists, the specialist targets `main` and opens one shared remediation PR
+
+## Invocation Contract
+
+The specialist is currently invoked through Gemini CLI with:
+
+```bash
+gemini -p "<prompt>" --skill ci-remediation-specialist --yolo
+```
+
+The prompt is expected to include:
+
+- the exact failing command
+- bounded error output
+- an instruction to follow the reproduce -> auto-fix -> diagnose -> verify runbook
+
+## Writer and Reader Boundaries
+
+- Canonical writer of the skill instructions: `templates/skills/ci-remediation-specialist/SKILL.md`
+- Canonical reader in orchestration: `src/dopemux_pr_merge_specialist/queue_drain.py`
+- Advisory design plan: `llm-plans/GLOBAL_CI_REMEDIATION.md`
