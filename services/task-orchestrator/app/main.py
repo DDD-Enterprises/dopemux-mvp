@@ -288,7 +288,7 @@ async def health_check():
 @app.get("/info")
 async def service_info():
     """Service discovery endpoint - auto-config support (ADR-208)"""
-    port = int(os.getenv("MCP_SERVER_PORT", 8000))
+    port = int(os.getenv("PORT", 3014))
     return {
         "name": SERVICE_NAME,
         "version": "1.0.0",
