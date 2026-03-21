@@ -160,6 +160,8 @@
     "mcp-proxy-config*.yaml",
     "CHECKLIST.md",
     ".dockerignore"
+    ,
+    ".python-version"
   ],
   "legacy_root_files": [],
   "blocked_root_file_patterns": [
