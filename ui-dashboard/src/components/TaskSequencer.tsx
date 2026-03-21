@@ -155,19 +155,23 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const currentTask = tasks.find((task) => task.id === currentTaskId);
   const statusTone = statusStyles[cognitiveState.status];
 
-  const totalRemainingMinutes = useMemo(() => {
-    const totalEstimatedMinutes = tasks
-      .filter((task) => task.status !== 'completed')
-      .reduce((sum, task) => sum + task.estimatedMinutes, 0);
-
-    return Math.max(0, Math.ceil(totalEstimatedMinutes - (taskTimer / 60)));
-  }, [tasks, taskTimer]);
-
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
     if (complexity > 0.5) return brandTokens.colors.giltEdge;
     return brandTokens.colors.serumMint;
   };
+
+  const totalRemainingMinutes = useMemo(() => {
+    const incompleteTasks = tasks.filter(t => t.status !== 'completed');
+    const otherTasksTotal = incompleteTasks
+      .filter(t => t.id !== currentTaskId)
+      .reduce((acc, t) => acc + t.estimatedMinutes, 0);
+
+    const currentTaskEstimate = currentTask?.estimatedMinutes || 0;
+    const elapsedMinutes = taskTimer / 60;
+
+    return Math.ceil(otherTasksTotal + Math.max(0, currentTaskEstimate - elapsedMinutes));
+  }, [tasks, currentTaskId, currentTask, taskTimer]);
 
   return (
     <Paper
@@ -186,6 +190,22 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
+        <Box
+          role="status"
+          aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
+          sx={{
+            ml: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            color: brandTokens.colors.saintGold,
+          }}
+        >
+          <Clock size={16} aria-hidden="true" />
+          <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+            {totalRemainingMinutes}m
+          </Typography>
+        </Box>
         <Tooltip title="Real-time task synchronization active" arrow>
           <Chip
             size="small"
@@ -198,6 +218,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               color: brandTokens.colors.ritualCyan,
               bgcolor: alpha(brandTokens.colors.ritualCyan, 0.08),
             }}
+            aria-label="Real-time task synchronization active"
           />
         </Tooltip>
       </Box>
@@ -297,6 +318,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       ) : (
         <Box
           role="status"
+          aria-label="Ritual Complete: All tasks finished"
           sx={{
             mb: 3,
             p: 2.5,

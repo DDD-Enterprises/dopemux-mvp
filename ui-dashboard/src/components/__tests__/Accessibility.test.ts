@@ -39,10 +39,11 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toMatch(/<Tooltip[^>]*title="AI-generated team coordination insights"[^>]*arrow/);
 });
 
-test('App.tsx exposes metric card tooltips with focus indicators', () => {
+test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
   const appContent = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
   expect(appContent).toContain('<Tooltip title={metric.tooltip} arrow>');
   expect(appContent).toMatch(/<Tooltip title=\{metric\.tooltip\} arrow>[\s\S]*tabIndex=\{0\}/);
+  expect(appContent).toContain('aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : \'N/A\'}%`}');
   expect(appContent).toContain('&:focus-visible');
 });
 
@@ -57,11 +58,12 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   // Timer accessibility
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
+  expect(content).toContain('aria-label="Real-time task synchronization active"');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
-  // Total remaining duration accessibility
+  // Total remaining duration display and completed-state accessibility
   expect(content).toContain('role="status"');
   expect(content).toContain('aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}');
-  expect(content).toMatch(/<Tooltip title=\{`Total remaining duration: \$\{totalRemainingMinutes\} minutes`\} arrow>/);
+  expect(content).toContain('aria-label="Ritual Complete: All tasks finished"');
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
@@ -90,6 +92,7 @@ test('TaskSequencer.tsx displays total remaining duration with accessibility', (
 test('App.tsx has accessible header chips and skip link', () => {
   const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
   expect(appContent).toContain('href="#main-dashboard"');
+  expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
   expect(appContent).toContain('<Tooltip title="AI-generated recommendation based on current load" arrow>');
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
