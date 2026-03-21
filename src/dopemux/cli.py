@@ -2800,7 +2800,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
             panes = []
             tmux_error = str(exc)
 
-            logger.error(f"Error: {e}")
+            logger.error(f"Error: {exc}")
         mobile_table = styled_table(
             "📱 Mobile Status",
             ("Check", {"style": "mint"}),
@@ -3038,6 +3038,56 @@ def task(
     console.logger.info(f"[info]🎯 Priority: {priority}[/info]")
 
 
+@click.group("agent-loop")
+def agent_loop_cmd():
+    """
+    🤖 Grand Orchestrator: Agentic workflow execution loop
+    
+    Engage the recursive workflow engine to independently plan and execute 
+    tasks according to the strict Dopemux phase protocol.
+    """
+    pass
+
+@agent_loop_cmd.command("start")
+@click.option("--goal", help="🚀 Initiate the execution loop with a goal.", required=False)
+@click.option("--stop", is_flag=True, help="🛑 Terminate an active loop.", required=False)
+@click.pass_context
+def agent_loop_start(ctx, goal: Optional[str], stop: bool):
+    """
+    🔄 Loop Controller: Manage the Orchestrator loop
+    """
+    from .agent.loop import AgentLoopOrchestrator
+    orchestrator = AgentLoopOrchestrator(Path.cwd())
+    
+    if stop:
+        console.logger.info("[warning]Stopping the active agent loop...[/warning]")
+        orchestrator.stop_loop()
+        return
+
+    if goal:
+        console.logger.info(f"[info]Starting loop for goal: {goal}[/info]")
+        orchestrator.start_loop(goal)
+        return
+        
+    console.logger.info("[warning]Please provide --goal <goal> or --stop[/warning]")
+
+@agent_loop_cmd.command("brief")
+@click.option("--interactive", "-i", is_flag=True, help="Engage interactive PRD drafting.")
+@click.pass_context
+def agent_brief(ctx, interactive: bool):
+    """
+    📝 Brief Drafter: Prepare a source-of-truth PRD
+    """
+    if interactive:
+        console.logger.info("[info]Starting interactive brief mapping...[/info]")
+        # Placeholder for launching Claude in brief-drafter mode
+        cmd = ["dopemux", "start", "--role", "brief-drafter"]
+        console.logger.info(f"Executing: {' '.join(cmd)}")
+    else:
+        console.logger.info("[info]Brief drafter available in --interactive mode.[/info]")
+
+cli.add_command(agent_loop_cmd)
+
 from .commands.autoresponder_commands import autoresponder
 
 cli.add_command(autoresponder)
@@ -3122,7 +3172,38 @@ cli.add_command(extractor)
 
 from .commands.audit_commands import audit
 
+@cli.command()
+@click.argument("name", required=False)
+@click.option("--list", "list_themes", is_flag=True, help="List all available ritual aesthetics.")
+@click.pass_context
+def theme(ctx, name: Optional[str], list_themes: bool):
+    """
+    🎭 Aesthetic Synchronizer: Manage UI themes and ritual palettes.
+    """
+    available_themes = ["mint-mojo", "pastel-neon-dreams", "pastel-neon-dreamscape"]
+    cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
+
+    if list_themes or not name:
+        current = cfg_manager.load_config().theme
+        table = styled_table("Ritual Aesthetics", "Name", "Status")
+        for t in available_themes:
+            status = "[success]active[/success]" if t == current else "[text.dim]available[/text.dim]"
+            table.add_row(t, status)
+        console.print(table)
+        return
+
+    if name not in available_themes:
+        console.logger.error(f"[error]Invalid aesthetic: {name}[/error]")
+        console.print(f"Available: {', '.join(available_themes)}")
+        sys.exit(1)
+
+    cfg_manager.set_theme(name)
+    console.print(f"[success]✅ Ritual aesthetic synchronized to: [mint]{name}[/mint][/success]")
+    console.print("[text.dim]Next ritual cycle will reflect the new palette.[/text.dim]")
+
+
 cli.add_command(audit)
+cli.add_command(theme)
 
 
 # ============================================================

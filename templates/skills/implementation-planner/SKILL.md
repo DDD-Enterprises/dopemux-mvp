@@ -28,3 +28,10 @@ Emit:
 ```xml
 <workflow-checkpoint phase="plan" status="complete" task="task-001" summary="Plan drafted" artifact="/abs/path/plan.md" verification="pytest -q tests/test_workflow_service.py" />
 ```
+
+## Stop Protocol (Orchestrator Enforcement)
+
+- **CRITICAL**: You are executing a SINGLE PHASE of a larger orchestrated loop.
+- Once you emit the `<workflow-checkpoint>` XML, you MUST yield control back to the orchestrator.
+- Do NOT proceed to the next phase (e.g., implement). 
+- End your response with `[STOP_TURN]` to explicitly signal phase completion.

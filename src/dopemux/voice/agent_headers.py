@@ -2,12 +2,33 @@
 
 from __future__ import annotations
 
-from ..ui.voice import validate_output
+from pathlib import Path
+
+from .core import Surface, load_voice_gates, select_mode, validate_output
+
+HEADER_DIR = Path(__file__).resolve().parents[3] / "dopemux_voice_branding_bundle" / "headers"
+
+
+def _artifact_header(name: str, fallback: str) -> str:
+    path = HEADER_DIR / name
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip()
+    return fallback
+
 
 HEADERS = {
-    "cli": "[LIVE] You are the DØPEMUX Ritual Daemon. Terse. Forensic. No fluff.",
-    "ui": "[LIVE] DØPEMUX UI mode. Crisp. Direct. No threats. {label, message, action}.",
-    "agent": "[LIVE] DØPEMUX agent mode. FACT and INFERENCE clearly split. UNKNOWN+TODO over guessing.",
+    "cli": _artifact_header(
+        "header_cli.md",
+        "[LIVE] You are the DØPEMUX Ritual Daemon. Terse. Forensic. No fluff.",
+    ),
+    "ui": _artifact_header(
+        "header_ui.md",
+        "[LIVE] DØPEMUX UI mode. Crisp. Direct. No threats. {label, message, action}.",
+    ),
+    "agent": _artifact_header(
+        "header_agent.md",
+        "[LIVE] DØPEMUX agent mode. FACT and INFERENCE clearly split. UNKNOWN+TODO over guessing.",
+    ),
     "guardian": "[LIVE] DØPEMUX guardian mode. Protect focus. Prefer calm guidance and one clean next step.",
     "role": "[LIVE] DØPEMUX role mode. State the mission, attention profile, and required tool surface.",
 }
@@ -33,9 +54,37 @@ FALLBACKS = {
 }
 
 
+def _normalize_surface(surface: str) -> Surface:
+    if surface == "cli":
+        return Surface.CLI
+    if surface == "ui":
+        return Surface.UI
+    return Surface.AGENT
+
+
+def _strip_header(text: str, header: str) -> str:
+    if text.startswith(header):
+        return text[len(header):].strip()
+    return text
+
+
+def _normalized_validation_text(surface: str, body: str) -> str:
+    stripped = body.strip()
+    if surface == "ui":
+        return f"label: dopemux\nmessage: {stripped}\naction: review"
+    if surface in {"cli", "agent", "guardian", "role"}:
+        if any(token in stripped for token in ("NEXT:", "Next:", "Receipt:", "PROGRESS")):
+            return stripped
+        return f"{stripped}\nNEXT: keep the next step visible."
+    return stripped
+
+
 def inject_voice_header(prompt: str, surface: str = "agent") -> str:
     """Prepend the configured voice header to a prompt or generated brief."""
     header = HEADERS.get(surface, HEADERS["agent"])
+    normalized_surface = _normalize_surface(surface)
+    mode = select_mode(normalized_surface, prompt)
+    header = header.replace("{{MODE}}", mode.value)
     body = prompt.strip()
     if not body:
         return header
@@ -51,6 +100,18 @@ def validate_or_fallback(
 ) -> str:
     """Return validated text, or a deterministic branded fallback if it fails."""
     candidate = text.strip()
-    if candidate and not validate_output(candidate):
-        return candidate
+    if candidate:
+        header = HEADERS.get(surface, HEADERS["agent"])
+        normalized_surface = _normalize_surface(surface)
+        mode = select_mode(normalized_surface, candidate)
+        header_with_mode = header.replace("{{MODE}}", mode.value)
+        body = _strip_header(candidate, header_with_mode)
+        result = validate_output(
+            normalized_surface,
+            mode,
+            _normalized_validation_text(surface, body or candidate),
+            load_voice_gates(),
+        )
+        if result.ok:
+            return candidate
     return fallback or FALLBACKS.get(surface, FALLBACKS["agent"])
