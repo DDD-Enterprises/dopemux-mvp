@@ -175,6 +175,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           Task Sequencer
         </Typography>
         <Box
+          role="status"
+          aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
           sx={{
             ml: 'auto',
             display: 'flex',
