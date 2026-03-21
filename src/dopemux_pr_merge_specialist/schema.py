@@ -266,6 +266,24 @@ class ValidationResult:
         ) == ValidationStatus.PASSED.value
 
     @property
+    def failing_step(self) -> Optional[ValidationStepResult]:
+        if self.passed or not self.steps:
+            return None
+        # Return the last step, since validation loop breaks on the first failure
+        return self.steps[-1]
+
+    @property
+    def failure_fingerprint(self) -> Optional[str]:
+        step = self.failing_step
+        if not step:
+            return None
+        error_output = (step.stderr or "").strip() or (step.stdout or "").strip()
+        significant_error_part = error_output.encode("utf-8")[-512:]
+        fingerprint_source = f"{step.name}:{significant_error_part.decode('utf-8', errors='ignore')}".encode("utf-8")
+        import hashlib
+        return hashlib.sha256(fingerprint_source).hexdigest()
+
+    @property
     def input_fingerprint(self) -> Optional[Fingerprint]:
         return self.fingerprint
 
@@ -284,6 +302,7 @@ class ValidationResult:
             "input_fingerprint": (
                 None if self.fingerprint is None else self.fingerprint.to_dict()
             ),
+            "failure_fingerprint": self.failure_fingerprint,
         }
 
 
@@ -501,6 +520,7 @@ class PRResult:
     thread_dispositions: List[ThreadDisposition] = field(default_factory=list)
     fingerprint: Optional[Fingerprint] = None
     artifacts: Dict[str, str] = field(default_factory=dict)
+    blocked_by_global_fix_pr: Optional[int] = None
 
     def to_dict(self) -> Dict[str, Any]:
         blockers = [
@@ -563,6 +583,7 @@ class PRResult:
                 None if self.fingerprint is None else self.fingerprint.to_dict()
             ),
             "artifacts": self.artifacts,
+            "blocked_by_global_fix_pr": self.blocked_by_global_fix_pr,
         }
 
 

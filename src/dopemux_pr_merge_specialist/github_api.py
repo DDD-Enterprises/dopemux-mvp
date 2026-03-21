@@ -184,6 +184,32 @@ class GitHubClient:
         self.cache["auth_user"] = user
         return user
 
+    def find_global_fix_prs(self) -> List[Dict[str, Any]]:
+        """
+        Finds pull requests that are global fixes for CI failures.
+        These are identified by the 'global-ci-fix' label and authored by the bot.
+        """
+        command = [
+            "gh",
+            "pr",
+            "list",
+            "--label",
+            "global-ci-fix",
+            "--author",
+            "@me",  # Ensure we only find PRs opened by the bot.
+            "--state",
+            "open",
+            "--json",
+            "number,title,author,body,headRefName",
+        ]
+        command.extend(self._repo_args())
+        result = self._run(command)
+        if result.returncode != 0:
+            return []
+        if not result.stdout.strip():
+            return []
+        return json.loads(result.stdout)
+
     def fetch_pr(self, pr_id: int) -> Dict[str, Any]:
         cache_key = f"pr:{pr_id}"
         cached = self._cache_get(cache_key)
