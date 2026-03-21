@@ -1,6 +1,6 @@
 ## Canonical Integration Design
 
-This design is an evidence-backed inference from the two repo truth packs. It intentionally avoids claiming implementation details that the packs do not prove.
+This design is an evidence-backed inference from the merged truth-pack and PM-pack evidence. It intentionally avoids claiming implementation details the packs do not prove.
 
 ## 1. Canonical authority model
 
@@ -10,15 +10,15 @@ This design is an evidence-backed inference from the two repo truth packs. It in
 
 ## 2. Operating rule
 
-All workflow-significant changes should be adjudicated by `Task Orchestrator` before they are reflected into `Leantime`.
+All workflow-significant changes should be adjudicated by `Task Orchestrator` before they are reflected into `Leantime`, and that adjudication must use Task Orchestrator’s sanctioned transition paths rather than raw role writes.
 
 Why this is the strongest model:
 
 - Leantime does not enforce legal transitions or blockers.
-- Task Orchestrator does enforce legal transitions, blockers, and gated advancement.
+- Task Orchestrator does enforce legal transitions, blockers, and gated advancement on its transition-path tools.
 - Leantime is explicitly the PM record authority for human-facing entities.
 
-Evidence: `reports/leantime-repo-truth-pack/INTEGRATION_NOTES.md`, `reports/leantime-repo-truth-pack/LEANTIME_WORKFLOW_AND_GATES.md`, `reports/task-orchestratorrepo-truth-pack/WORKFLOW_AND_GATES.md`, `reports/task-orchestratorrepo-truth-pack/EXECUTIVE_SUMMARY.md`.
+Evidence: `reports/leantime-repo-truth-pack/INTEGRATION_NOTES.md`, `reports/leantime-pm-workflow-pack/02-workflow-and-transition-analysis.md`, `reports/task-orchestratorrepo-truth-pack/WORKFLOW_AND_GATES.md`, `reports/task-orchestrator-pm-workflow-pack/02-workflow-legality-and-transition-analysis.md`.
 
 ## 3. Canonical ownership by concern
 
@@ -30,9 +30,9 @@ Task Orchestrator may maintain an internal execution graph, but that graph shoul
 
 ### Workflow legality
 
-Write canon: `Task Orchestrator`
+Write canon: `Task Orchestrator transition tools only`
 
-No direct Leantime status transition should be considered authoritative for legality by itself.
+No direct Leantime status transition should be considered authoritative for legality by itself, and no direct Task Orchestrator role write should be treated as legality-bearing by itself.
 
 ### Blockers / dependencies
 
@@ -77,6 +77,7 @@ This is an inference from the evidence, not a directly implemented flow in eithe
 - A Task Orchestrator dependency edge is the only canonical blocker relation.
 - A Leantime PM record and a Task Orchestrator work item must remain explicitly linkable; otherwise dual-store drift cannot be audited.
 - Direct Leantime edits that bypass Task Orchestrator should be treated as reconciliation events, not quiet truth.
+- Direct Task Orchestrator role writes that bypass the transition engine should be forbidden or treated as reconciliation events, not canonical workflow moves.
 - A single merged audit stream should not replace the native ledgers; cross-linking is safer than collapsing semantics.
 
 ## 6. Why this model is optimal from the evidence
@@ -84,9 +85,10 @@ This is an inference from the evidence, not a directly implemented flow in eithe
 It is the only model that aligns with both packs without forcing either repo to pretend it implements something it does not:
 
 - It keeps Leantime in the role its pack explicitly assigns to it.
-- It keeps Task Orchestrator in the role its pack explicitly assigns to it.
+- It keeps Task Orchestrator in the role its packs explicitly assign to it.
 - It avoids inventing blocker or workflow semantics inside Leantime.
 - It avoids inventing PM-record authority inside Task Orchestrator.
+- It incorporates the PM-pack warning that the authority split is not self-enforcing unless bypass paths are constrained.
 
 ## 7. Explicit unresolved items
 
