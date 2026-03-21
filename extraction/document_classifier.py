@@ -239,6 +239,20 @@ class DocumentClassifier:
                 error_message=f"JSON parsing error: {e}"
             )
 
+    def _quote_identifier(self, identifier: str) -> str:
+        """
+        Safely quote a SQL identifier (like a table name) for SQLite.
+
+        Args:
+            identifier: The name to quote
+
+        Returns:
+            A safely quoted identifier string
+        """
+        # SQLite uses double quotes for identifiers.
+        # To escape a double quote, you use two double quotes.
+        return '"' + identifier.replace('"', '""') + '"'
+
     def _extract_text(self, doc_info: DocumentInfo) -> ExtractionResult:
         """Extract entities from plain text document."""
         # For plain text, try markdown patterns but with lower confidence
@@ -280,13 +294,14 @@ class DocumentClassifier:
 
             for table_name in tables:
                 table_name = table_name[0]
+                quoted_table_name = self._quote_identifier(table_name)
 
                 # Get table info
-                cursor.execute(f"PRAGMA table_info({table_name});")
+                cursor.execute(f"PRAGMA table_info({quoted_table_name});")
                 columns = cursor.fetchall()
 
                 # Get row count
-                cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
+                cursor.execute(f"SELECT COUNT(*) FROM {quoted_table_name};")
                 row_count = cursor.fetchone()[0]
 
                 entities['database_info'].append({
