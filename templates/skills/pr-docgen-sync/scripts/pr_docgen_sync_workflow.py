@@ -257,7 +257,14 @@ def _is_active_doc(path: str) -> bool:
 def _parse_frontmatter_type(file_path: Path) -> str | None:
     if not file_path.exists() or file_path.suffix.lower() != ".md":
         return None
-    text = file_path.read_text(encoding="utf-8", errors="replace")
+    # Frontmatter is expected to be at the beginning and typically small.
+    # Reading only the first 16KB avoids loading massive files into memory.
+    try:
+        with file_path.open("r", encoding="utf-8", errors="replace") as f:
+            text = f.read(16384)
+    except Exception:
+        return None
+
     if not text.startswith("---\n"):
         return None
     end = text.find("\n---\n", 4)
