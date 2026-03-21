@@ -1,5 +1,9 @@
 
 
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Core Manifest Stable
+
 # Dopemux MVP — Cognitive Ops Stack
 ![Version](https://img.shields.io/badge/version-0.1.0-blue) ![Python](https://img.shields.io/badge/python-3.10+-green) ![License](https://img.shields.io/badge/license-MIT-lightgrey) ![PyPI](https://img.shields.io/badge/pypi-dopemux-blue) ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)
 
@@ -52,31 +56,24 @@ If you want your terminal, services, and dashboard to work together to keep you 
 
 ## Quick Start
 
-**For detailed installation instructions, see [docs/04-installation.md](docs/04-installation.md).**
+**The recommended way to get started is the one-command installer:**
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/DDD-Enterprises/dopemux-mvp
 cd dopemux-mvp
 
-# 2. Install dependencies (single source of truth)
-python -m pip install --upgrade pip
-pip install -e ".[dev]"
-pre-commit install --install-hooks
+# 2. Run the universal installer (Core stack recommended for 8GB RAM)
+./install.sh --quick
 
-# 3. Generate workspace configs and set up environment
-python scripts/render_workspace_configs.py --set-default
-source "$(python scripts/workspace_env_path.py)"
+# 3. Initialize your environment
+source ~/.zshrc && dopemux start
 
-# 4. Start services
-scripts/smoke_up.sh
-python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
-
-# 5. Run CLI
-dopemux --help
+# 4. Generate your repository Ground Truth pack
+dopemux truth
 ```
 
-See [docs/04-installation.md](docs/04-installation.md), [INSTALL.md](INSTALL.md), and [QUICK_START.md](QUICK_START.md) for more.
+See [INSTALL.md](INSTALL.md) and [docs/USER_JOURNEY.md](docs/04-explanation/root-relocated/user-journey.md) for detailed onboarding paths.
 
 ---
 
@@ -126,9 +123,9 @@ Dopemux uses a two-plane architecture:
 All cross-service communication is event-driven (Redis PubSub), and shared schemas are reused from [services/shared/src/dopemux_services_shared](services/shared/src/dopemux_services_shared). Service registry and entrypoints are defined in [services/registry.yaml](services/registry.yaml).
 
 > **Diagram:**
-> ![Architecture Diagram Placeholder](docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
+> ![Architecture Diagram Placeholder](docs/04-explanation/architecture/dopemux-architecture-overview-3.md)
 
-See [Architecture Overview](docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md) and [System Bible](docs/94-architecture/system-bible.md) for diagrams and details.
+See [Architecture Overview](docs/04-explanation/architecture/dopemux-architecture-overview-3.md) and [System Bible](docs/94-architecture/system-bible.md) for diagrams and details.
 
 ---
 
@@ -198,6 +195,7 @@ See [docs/03-reference/00-repo-map.md](docs/03-reference/00-repo-map.md) for a f
 - **Autonomous code/docs semantic search** (dope-context)
 - **Unified ConPort client and multi-session support**
 - **Mobile mode with Happy client**
+- **PR Merge Specialist flight deck** with validation-aware queue states, speculative train handling, and global CI remediation
 
 > **Screenshot/Diagram Placeholder:**
 > ![Dashboard Screenshot Placeholder](docs/SCREENSHOT_DASHBOARD_PLACEHOLDER.png)
@@ -314,7 +312,7 @@ For more, see [Troubleshooting Guide](docs/92-runbooks/workspaces.md).
 ## Further Reading
 
 - [Documentation Index](docs/INDEX.md)
-- [Architecture Overview](docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
+- [Architecture Overview](docs/04-explanation/architecture/dopemux-architecture-overview-3.md)
 - [ConPort Technical Deep Dive](docs/04-explanation/conport-technical-deep-dive.md)
 - [Serena LSP Deep Dive](docs/04-explanation/serena-v2-technical-deep-dive.md)
 - [ADHD Engine](docs/ADHD-ENGINE-DEEP-DIVE-PART1.md)
