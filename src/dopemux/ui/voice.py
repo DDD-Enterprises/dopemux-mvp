@@ -3,46 +3,26 @@ Dopemux Brand System — Voice and Tone Engine.
 Phase 1: Thematic Persona Engine (Merged Opus + Specialist).
 """
 
+from __future__ import annotations
+
 import csv
-import os
-import random
-import re
-from enum import Enum
+import hashlib
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import List, Set
 
 from .theme import StatusChip, Glyphs
-
-class VoiceMode(Enum):
-    """Thematic voice modes from the Brand System spec."""
-    FILTH_DAEMON = "FilthDaemon"  # Drift, untagged, consequence + imperative
-    CLINICAL_FORENSICS = "ClinicalForensics"  # MUST/thresholds + UNKNOWN+TODO
-    UX_SCOLD = "UXScold"  # Roast + one step + evidence request
-    UI_STRICT = "UIStrict"  # Form fields, labels - no threats
-    BANNER_ONE_LINER = "BannerOneLiner"  # Punch lines then utility
-    KINK_ACCENT = "KinkAccent"  # Optional spice layer
-
-
-# Voice Gates from Resource Pack
-HARD_AVOID = [
-    r"as an ai",
-    r"probably",
-    r"maybe",
-    r"generally speaking",
-]
-
-SOFT_AVOID = [
-    r"no worries",
-    r"it's okay",
-    r"don't worry",
-    r"hope you're doing well",
-]
-
-REQUIRED_CLOSERS = ["NEXT:", "Next:", "Receipt:", "PROGRESS"]
+from ..voice.core import (
+    Surface,
+    VoiceMode,
+    load_voice_gates as core_load_voice_gates,
+    select_mode as core_select_mode,
+    validate_output as core_validate_output,
+)
 
 
 class Specimen:
     """A single brand specimen from the ledger."""
+
     def __init__(self, id: str, excerpt: str, tags: Set[str], affinity: float):
         self.id = id
         self.excerpt = excerpt
@@ -85,12 +65,22 @@ class VoiceEngine:
         except Exception:
             pass
 
+    def _deterministic_excerpt(self, pool: List[Specimen], *, seed: str, fallback: str) -> str:
+        if not pool:
+            return fallback
+        ordered = sorted(pool, key=lambda specimen: (specimen.id, specimen.excerpt))
+        digest = hashlib.sha256(seed.encode("utf-8")).digest()
+        index = int.from_bytes(digest[:4], "big") % len(ordered)
+        return ordered[index].excerpt
+
     def get_roast(self) -> str:
-        """Get a random self-aware or user-facing roast."""
+        """Get a deterministic self-aware or user-facing roast."""
         roasts = [s for s in self.specimens if 'roast' in s.tags or 'UXScold' in s.tags]
-        if not roasts:
-            return "You're still here? Ship something."
-        return random.choice(roasts).excerpt
+        return self._deterministic_excerpt(
+            roasts,
+            seed=f"roast:{self.mode.value}:{int(self.is_scattered)}",
+            fallback="You're still here? Ship something.",
+        )
 
     def get_aftercare(self) -> str:
         """Mode-aware aftercare message."""
@@ -102,7 +92,11 @@ class VoiceEngine:
         """Generate a brand-mark banner with optional one-liner."""
         mark = Glyphs.BRAND_MARK
         one_liners = [s.excerpt for s in self.specimens if 'banner' in s.tags or 'tagline' in s.tags]
-        punch = random.choice(one_liners) if one_liners else "All memory. No mercy."
+        punch = self._deterministic_excerpt(
+            [Specimen(str(index), excerpt, set(), 1.0) for index, excerpt in enumerate(one_liners)],
+            seed=f"banner:{self.mode.value}:{title}",
+            fallback="All memory. No mercy.",
+        )
         
         banner = f"{mark}  {punch}"
         if title:
@@ -119,21 +113,11 @@ class VoiceEngine:
 
 
 def validate_output(text: str) -> List[str]:
-    """Check text for brand violations and voice gate compliance."""
-    violations = []
-    text_lower = text.lower()
-
-    # Hard Avoid Check
-    for pattern in HARD_AVOID:
-        if re.search(pattern, text_lower):
-            violations.append(f"HARD_AVOID: Detected forbidden hedge/robot-speak ('{pattern}')")
-
-    # Soft Avoid Check
-    for pattern in SOFT_AVOID:
-        if re.search(pattern, text_lower):
-            violations.append(f"SOFT_AVOID: Detected corporate/filler fluff ('{pattern}')")
-
-    return violations
+    """Compatibility wrapper returning string violations for legacy callers."""
+    gates = core_load_voice_gates()
+    mode = core_select_mode(Surface.AGENT, text)
+    result = core_validate_output(Surface.AGENT, mode, text, gates)
+    return [f"{item.code}: {item.message}" for item in result.violations]
 
 
 class VoiceEnforcer:
@@ -160,3 +144,12 @@ class VoiceEnforcer:
             cleaned = f"{StatusChip.LOGGED.render(cleaned)}"
             
         return cleaned
+
+
+__all__ = [
+    "Surface",
+    "VoiceEngine",
+    "VoiceEnforcer",
+    "VoiceMode",
+    "validate_output",
+]

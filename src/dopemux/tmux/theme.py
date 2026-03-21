@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..ui.theme import (
+from dopemux.ui.theme import (
     AFTERCARE_VIOLET,
     GILT_EDGE,
     GREMLIN_PINK,
@@ -120,9 +120,10 @@ def _status_left(neon: bool) -> str:
 
 
 def _status_right(neon: bool) -> str:
+    tracker_segment = '#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo "🤖")'
     return (
         f"{tmux_segment('#{{@dopemux_mobile_indicator:-📱 idle}}', fg=TMUX_SUCCESS)} #[default]"
-        f"{tmux_segment('#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo \"🤖\")', fg=TMUX_GOLD if neon else TMUX_AFTERCARE)} #[default]"
+        f"{tmux_segment(tracker_segment, fg=TMUX_GOLD if neon else TMUX_AFTERCARE)} #[default]"
         f"{tmux_segment('  %R', fg=TMUX_AFTERCARE)} "
         f"{tmux_segment('%a %b %d', fg=TMUX_ACCENT)} "
         f"{tmux_segment('#{{window_index}}:#{{window_name}}', fg=TMUX_FOREGROUND if neon else TMUX_MUTED)} "

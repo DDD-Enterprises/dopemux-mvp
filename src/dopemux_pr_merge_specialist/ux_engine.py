@@ -3,7 +3,7 @@ from enum import Enum, auto
 from typing import Any, Dict, List, Mapping, Optional
 
 from rich.console import Console
-from ..ui.theme import DOPEMUX_THEME
+from dopemux.ui.theme import DOPEMUX_THEME
 
 
 class RenderMode(Enum):
@@ -176,7 +176,7 @@ class RichTerminalRenderer(TerminalRenderer):
         elapsed = int(time.time() - state.start_time)
         timer = Text(f"MISSION TIME: {elapsed//60:02d}:{elapsed%60:02d}", style="text.dim")
         grid.add_row(title, timer)
-        layout["header"].update(Panel(grid, style="on surface.black"))
+        layout["header"].update(Panel(grid, style="bg.black"))
 
         # Body
         layout["body"].split_row(
@@ -206,7 +206,7 @@ class RichTerminalRenderer(TerminalRenderer):
         for i in range(start_idx, end_idx):
             pr = state.prs[i]
             is_active = i == state.active_index
-            row_style = "bold text.emphasis on surface.navy" if is_active else "text.dim"
+            row_style = "row.active" if is_active else "text.dim"
             
             status_icon = dashboard_status_icon(pr)
             
