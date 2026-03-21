@@ -26,6 +26,10 @@
 **Learning:** Core dashboard metrics (Energy, Attention, Load) are often purely visual. By adding `tabIndex={0}` and descriptive Tooltips, these cards become accessible to keyboard users and provide "hidden" context that might not fit in the compact visual layout. Using `cursor: 'help'` also signals to mouse users that more info is available.
 **Action:** Enhance visual-only metric displays with `tabIndex={0}` and `Tooltip` to support keyboard navigation and provide supplemental context without cluttering the UI.
 
+## 2026-03-12 - [Metric Labeling for Focusable Containers]
+**Learning:** When adding `tabIndex={0}` and an `aria-label` to a container (like a metric card), the `aria-label` completely overrides the container's child text nodes for most screen readers. This can mask critical data like percentages or status values.
+**Action:** Ensure that `aria-label` on focusable containers includes both the descriptive label and the current value or state (e.g., `aria-label={\`${metric.label}: ${value}%\`}`) to maintain full context for assistive technology.
+
 ## 2026-03-11 - [Closing the Task Feedback Loop]
 **Learning:** In task-oriented interfaces, failing to provide a clear "success" or "empty" state after finishing a sequence can lead to user confusion or a sense of "unmet expectation." Providing a satisfying "Ritual Complete" visual (like a check icon and positive reinforcement text) creates a distinct sense of closure and progress.
 **Action:** Always implement explicit success and empty states for sequential task components to provide closure and guidance when a workflow is completed or empty.
