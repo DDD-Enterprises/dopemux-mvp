@@ -68,7 +68,7 @@ class DopemuxDashboard:
     def render(self) -> Any:
         """Assemble the entire Grand Dashboard layout."""
         if hasattr(self.ux, "render_dashboard_layout"):
-            return self.ux.render_dashboard_layout(self.state)
+            return self.ux.render_dashboard_layout(self.state, console=self.console)
         return Layout()
 
     def log_step(self, message: str, step_type: str = "INFO"):
