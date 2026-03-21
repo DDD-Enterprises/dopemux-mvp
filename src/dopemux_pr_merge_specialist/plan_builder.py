@@ -1,93 +1,49 @@
 from __future__ import annotations
 
-import argparse
-import html
 import json
-import os
-import re
-import tempfile
-import time
-from collections import defaultdict, deque
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .classification import (
-    CLASS_PRIORITY,
     TRUTH_PRECEDENCE,
-    VALID_TRANSITIONS,
     _severity_value,
     _state_value,
     _status_value,
-    build_pr_state,
-    classify_pr,
-    ensure_transition,
     has_conflicts,
     lifecycle_for_findings,
-    risk_score,
 )
 from .github_api import (
-    BOT_AUTHORS,
-    GitHubClient,
-    ci_status,
-    summarize_checks,
     thread_counters,
 )
 from .merge import decide_merge_action, serialize_check_payload
 from .conflict import conflict_recovery_state
 from .policy import (
-    PolicyError,
-    load_effective_policy,
-    policy_artifact_payload,
     policy_fingerprint,
 )
 from .runtime import (
-    CommandResult,
-    append_command_log,
-    execute_or_dry_run,
     fingerprint_payload,
-    pid_is_running,
     run_command,
-    run_id,
-    shell_join,
-    snapshot_environment,
     utc_now,
     write_json,
-    write_text,
 )
 from .schema import (
-    ARTIFACT_VERSION,
-    POLICY_SCHEMA_VERSION,
-    TOOL_VERSION,
     ArtifactMeta,
     BlockerType,
-    FallbackReason,
     Finding,
     FindingSeverity,
     Fingerprint,
-    MergeActionType,
     MergeDecision,
-    OverrideRecord,
-    PhaseRecord,
-    PreflightCheck,
-    PreflightResult,
     PRResult,
     PRState,
-    PRStateData,
     PullRequestState,
-    QueueOrderingLayer,
     ReviewThread,
-    RunManifest,
-    ThreadComment,
     ThreadDisposition,
-    ThreadDispositionType,
     TruthSource,
     ValidationReport,
     ValidationStatus,
 )
-from .strategy_library import STRATEGY_LIBRARY
 from .thread_resolution import decide_thread_disposition
-from .validation import run_validation, validation_report_md
 
 __all__ = [
     "artifact_meta",
@@ -168,14 +124,14 @@ def artifact_meta(
 
 
 def plan_fingerprint(
-    pr: PullRequestState, *, policy_fp: str, review_state: Dict[str, Any]
+    pr: PullRequestState, *, policy_fp: str, plan_review_state: Dict[str, Any]
 ) -> Fingerprint:
     digest = fingerprint_payload(
         {
             "pr_id": pr.pr_id,
             "head_sha": pr.head_sha,
             "base_sha": pr.base_sha,
-            "review_state": review_state,
+            "plan_review_state": plan_review_state,
             "policy_fingerprint": policy_fp,
         }
     )
@@ -297,15 +253,27 @@ def findings_from_pr_state(
                 )
             )
     elif summary.required_pending > 0:
-        findings.append(
-            Finding(
-                kind=FindingSeverity.BLOCKER,
-                finding_type=BlockerType.REQUIRED_CHECK_PENDING.value,
-                message="Required checks are still pending.",
-                details=serialize_check_payload(check_payload),
-                source="github_protection_review",
+        # OPTIMISTIC OVERRIDE: If local validation passed, we assume it will eventually turn green on GH.
+        if _status_value(validation_status) == ValidationStatus.PASSED.value:
+            findings.append(
+                Finding(
+                    kind=FindingSeverity.WARNING,
+                    finding_type="ci_pending_but_local_passed",
+                    message="GitHub CI is pending, but local validation passed.",
+                    details=serialize_check_payload(check_payload),
+                    source="local_validation",
+                )
             )
-        )
+        else:
+            findings.append(
+                Finding(
+                    kind=FindingSeverity.BLOCKER,
+                    finding_type=BlockerType.REQUIRED_CHECK_PENDING.value,
+                    message="Required checks are still pending.",
+                    details=serialize_check_payload(check_payload),
+                    source="github_protection_review",
+                )
+            )
     approval_required = bool(check_payload.get("approval_required", False))
     if approval_required and check_payload.get("review_decision") == "CHANGES_REQUESTED":
         findings.append(
@@ -494,7 +462,7 @@ def build_plan_result(
     threads_resolved_locally: bool = False,
 ) -> PRResult:
     unresolved_total, active_threads, outdated_threads = thread_counters(threads)
-    review_state = {
+    plan_review_state = {
         "unresolved_total": unresolved_total,
         "active_threads": active_threads,
         "outdated_threads": outdated_threads,
@@ -526,7 +494,7 @@ def build_plan_result(
         threads_resolved_locally=threads_resolved_locally,
     )
     fingerprint = plan_fingerprint(
-        pr, policy_fp=policy_fingerprint(policy), review_state=review_state
+        pr, policy_fp=policy_fingerprint(policy), plan_review_state=plan_review_state
     )
     truth = truth_sources_for(check_payload, validation_report, policy)
     decision = decide_merge_action(
@@ -535,11 +503,14 @@ def build_plan_result(
     explain = explain_findings(findings, previous=previous_result)
     if str(pr.state).upper() == "MERGED":
         pr_lifecycle_state = PRState.MERGED
-    elif pr.auto_merge_enabled and not any(
-        finding.finding_type
-        not in {"validation_not_executed", BlockerType.REQUIRED_CHECK_PENDING.value}
-        for finding in findings
-        if _severity_value(finding.kind) == FindingSeverity.BLOCKER.value
+    elif (
+        pr.auto_merge_enabled 
+        and _status_value(validation_report.status) == ValidationStatus.PASSED.value
+        and not any(
+            finding.finding_type != BlockerType.REQUIRED_CHECK_PENDING.value
+            for finding in findings
+            if _severity_value(finding.kind) == FindingSeverity.BLOCKER.value
+        )
     ):
         pr_lifecycle_state = PRState.QUEUED_FOR_MERGE
     else:

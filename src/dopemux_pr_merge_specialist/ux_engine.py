@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 
 class RenderMode(Enum):
@@ -14,6 +14,54 @@ def detect_render_mode() -> RenderMode:
     """Determine the best rendering mode based on terminal capabilities."""
     if not sys.stdout.isatty():
         return RenderMode.PLAIN
+
+
+VALIDATION_BLOCKER_TYPES = {"validation_not_executed", "required_check_pending"}
+
+
+def dashboard_status_kind(snapshot: Mapping[str, Any]) -> str:
+    blockers = {
+        str(item.get("type") or item.get("finding_type") or "")
+        for item in (snapshot.get("blockers") or [])
+        if isinstance(item, Mapping)
+    }
+    lifecycle_state = str(snapshot.get("lifecycle_state") or "").upper()
+    operator_state = str(snapshot.get("operator_state") or "")
+    mergeable = str(snapshot.get("mergeable") or "").upper()
+    merge_state_status = str(snapshot.get("merge_state_status") or "").upper()
+
+    if bool(snapshot.get("is_draft")):
+        return "draft"
+    if operator_state == "queued_for_merge" or lifecycle_state == "QUEUED_FOR_MERGE":
+        return "queued"
+    if blockers == {"approval_missing"}:
+        return "approval_required"
+    if blockers and blockers <= VALIDATION_BLOCKER_TYPES:
+        return "validation_pending"
+    if mergeable == "CONFLICTING" or merge_state_status in {"DIRTY", "HAS_HOOKS"}:
+        return "conflict"
+    if "MERGED" in lifecycle_state:
+        return "merged"
+    if "READY" in lifecycle_state:
+        return "ready"
+    if "BLOCKED" in lifecycle_state:
+        return "blocked"
+    return "pending"
+
+
+def dashboard_status_icon(snapshot: Mapping[str, Any]) -> str:
+    status = dashboard_status_kind(snapshot)
+    return {
+        "draft": "📝",
+        "queued": "🔵",
+        "approval_required": "🟣",
+        "validation_pending": "🟡",
+        "conflict": "🔴",
+        "blocked": "🔴",
+        "ready": "🟢",
+        "merged": "🟢",
+        "pending": "⏳",
+    }.get(status, "⏳")
 
     # Check for Rich support
     try:
@@ -138,8 +186,12 @@ class RichTerminalRenderer(TerminalRenderer):
         table.add_column("Title", ratio=1)
         table.add_column("Status", justify="center")
 
+        from rich.console import Console
+        term_height = Console().size.height
+        # Deduct space for header (3), footer (3), panel borders, and some padding
+        max_visible = max(5, term_height - 12)
+
         total_prs = len(state.prs)
-        max_visible = 15
         
         start_idx = 0
         if total_prs > max_visible:
@@ -154,17 +206,7 @@ class RichTerminalRenderer(TerminalRenderer):
             is_active = i == state.active_index
             row_style = "bold white on grey15" if is_active else "dim"
             
-            step = str(pr.get("lifecycle_state", "discovered")).upper()
-            is_draft = bool(pr.get("is_draft", False))
-            
-            if is_draft:
-                status_icon = "📝"
-            elif "READY" in step or "MERGED" in step:
-                status_icon = "🟢"
-            elif "BLOCKED" in step or "CONFLICT" in step:
-                status_icon = "🔴"
-            else:
-                status_icon = "⏳"
+            status_icon = dashboard_status_icon(pr)
             
             table.add_row(
                 f"{'> ' if is_active else '  '}{pr.get('pr_id', '???')}",
@@ -201,25 +243,81 @@ class RichTerminalRenderer(TerminalRenderer):
             intel_text.append(f"RATIONALE: {active.get('rationale', 'Standard rebase.')[:150]}...", style="dim")
             cockpit["top"]["intel"].update(Panel(intel_text, title="MISSION INTEL", border_style="magenta"))
             
-            # Blockers & Warnings
+            # Blockers & Warnings -> Tactical Checklist
             blocker_text = Text()
             blockers = active.get("blockers", [])
             warnings = active.get("warnings", [])
             history = active.get("history", [])
+            blocker_types = {
+                str(item.get("type") or item.get("finding_type") or "")
+                for item in blockers
+                if isinstance(item, dict)
+            }
+            approval_blocked = blocker_types == {"approval_missing"}
+            validation_only_blocked = bool(blocker_types) and blocker_types <= VALIDATION_BLOCKER_TYPES
+            queued_for_merge = (
+                str(active.get("operator_state", "")) == "queued_for_merge"
+                or str(active.get("lifecycle_state", "")).upper() == "QUEUED_FOR_MERGE"
+            )
             
-            if not blockers:
-                blocker_text.append("✅ ALL SYSTEMS NOMINAL\n", style="bold green")
-                if warnings:
-                    blocker_text.append(f"⚠️ {len(warnings)} Advisory Warnings\n", style="yellow")
-                else:
-                    blocker_text.append("Ready for integration.\n", style="dim green")
+            # 1. CI Status
+            ci = active.get("ci_status", "UNKNOWN")
+            if ci == "SUCCESS":
+                blocker_text.append("✅ CI Checks Passed\n", style="green")
+            elif ci == "PENDING":
+                blocker_text.append("⏳ CI Checks Pending\n", style="yellow")
             else:
-                for b in blockers[:3]:
-                    b_type = str(b.get('type', '???')).replace('_', ' ').upper()
-                    b_name = b.get('name', b.get('description', 'Blocker'))
-                    blocker_text.append(f"❌ {b_type}: ", style="bold red")
-                    blocker_text.append(f"{b_name[:40]}\n", style="white")
-            
+                blocker_text.append("❌ CI Checks Failed\n", style="bold red")
+
+            # 1.5 Approval status
+            review_decision = str(active.get("review_decision", "") or "")
+            if approval_blocked:
+                blocker_text.append("🟣 Approval Required\n", style="magenta")
+            elif review_decision == "APPROVED":
+                blocker_text.append("✅ Approval Satisfied\n", style="green")
+            elif review_decision == "CHANGES_REQUESTED":
+                blocker_text.append("❌ Changes Requested\n", style="bold red")
+                
+            # 2. Local Validation
+            v_report = active.get("validation_report", {})
+            v_status = v_report.get("status", "NOT_EXECUTED").upper() if isinstance(v_report, dict) else "NOT_EXECUTED"
+            if "PASSED" in v_status:
+                blocker_text.append("✅ Local Validation Passed\n", style="green")
+            elif "FAILED" in v_status:
+                blocker_text.append("❌ Local Validation Failed\n", style="bold red")
+            else:
+                blocker_text.append("⏳ Local Validation Pending\n", style="dim white")
+
+            if queued_for_merge:
+                blocker_text.append("🔵 Auto-merge Queued\n", style="blue")
+                
+            # 3. Conflicts
+            mergeable = str(active.get("mergeable", "")).upper()
+            state_status = str(active.get("merge_state_status", "")).upper()
+            if mergeable == "CONFLICTING" or state_status in ("DIRTY", "HAS_HOOKS"):
+                blocker_text.append("❌ Merge Conflicts\n", style="bold red")
+            else:
+                blocker_text.append("✅ No Merge Conflicts\n", style="green")
+                
+            # 4. Threads
+            threads = active.get("unresolved_threads", 0)
+            if threads == 0:
+                blocker_text.append("✅ All Threads Resolved\n", style="green")
+            else:
+                blocker_text.append(f"❌ {threads} Unresolved Threads\n", style="bold red")
+                
+            # 5. Draft Status
+            if active.get("is_draft"):
+                blocker_text.append("❌ PR is Draft\n", style="yellow")
+                
+            # Other blockers
+            other_blockers = [b for b in blockers if b.get("type") not in ("validation_not_executed", "required_check_pending", "required_check_failed", "active_thread", "conflict_detected", "draft_pr")]
+            if other_blockers:
+                blocker_text.append("\n⚠️ Other Blockers:\n", style="bold yellow")
+                for b in other_blockers[:2]:
+                    b_name = b.get('name', b.get('type', 'Blocker'))
+                    blocker_text.append(f"  • {b_name[:40]}\n", style="red")
+
             if history:
                 blocker_text.append("\n📜 MISSION HISTORY:\n", style="bold cyan")
                 for h in history[-2:]:
@@ -259,6 +357,15 @@ class RichTerminalRenderer(TerminalRenderer):
                 if is_draft:
                     obj_text.append("🎯 OBJECTIVE: Transition PR out of DRAFT mode.\n", style="bold yellow")
                     obj_text.append("NEXT STEP: Press [R] to mark as READY FOR REVIEW.", style="white")
+                elif queued_for_merge:
+                    obj_text.append("🎯 OBJECTIVE: Wait for GitHub to complete queued auto-merge.\n", style="bold blue")
+                    obj_text.append("NEXT STEP: No local verification needed here; monitor checks/queue state.", style="white")
+                elif approval_blocked:
+                    obj_text.append("🎯 OBJECTIVE: Satisfy the missing approval gate.\n", style="bold magenta")
+                    obj_text.append("NEXT STEP: Press [A] to approve. Auto-merge should proceed after approval if all other gates stay green.", style="white")
+                elif validation_only_blocked:
+                    obj_text.append("🎯 OBJECTIVE: Run local verification before merge readiness.\n", style="bold yellow")
+                    obj_text.append("NEXT STEP: Press [V] to execute validation. Merge follows only after validation passes.", style="white")
                 elif "READY" in lc_state:
                     obj_text.append("🎯 OBJECTIVE: Final sign-off and integration.\n", style="bold green")
                     obj_text.append("NEXT STEP: Press [A] to Approve or [I] to Implement Merge.", style="white")

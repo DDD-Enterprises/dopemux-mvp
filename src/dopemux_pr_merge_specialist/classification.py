@@ -150,12 +150,22 @@ def lifecycle_for_findings(
         for item in findings
         if _severity_value(item.kind) == FindingSeverity.BLOCKER.value
     ]
-    if blockers:
+    
+    # If the only blockers are validation related, we are APPLY_READY (Verification Pending)
+    non_val_blockers = [
+        b for b in blockers 
+        if b.finding_type not in {"validation_not_executed", "required_check_pending"}
+    ]
+
+    if non_val_blockers:
         return PRState.APPLY_BLOCKED
+        
     if _status_value(validation_status) == ValidationStatus.PASSED.value:
         return PRState.MERGE_READY
-    if _status_value(validation_status) == ValidationStatus.NOT_EXECUTED.value:
+        
+    if _status_value(validation_status) == ValidationStatus.NOT_EXECUTED.value or blockers:
         return PRState.APPLY_READY
+        
     return PRState.MERGE_BLOCKED
 
 

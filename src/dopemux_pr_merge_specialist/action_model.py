@@ -75,12 +75,24 @@ def allowed_actions_for_snapshot(snapshot: Mapping[str, Any]) -> List[str]:
 
     if pr_state == "MERGED" or lifecycle_state == PRState.MERGED.value:
         return []
-    if lifecycle_state == PRState.QUEUED_FOR_MERGE.value:
+        
+    # If we need to run validation, we should never be purely passive, even if queued for merge.
+    needs_validation = bool(blockers & VALIDATION_BLOCKERS)
+
+    if lifecycle_state == PRState.QUEUED_FOR_MERGE.value and not needs_validation:
         return []
-    if str(snapshot.get("operator_state") or "") in QUEUED_OPERATOR_STATES:
+        
+    if auto_merge_enabled:
+        if needs_validation:
+            # We must run validation. Fall through to return APPLY_FIX.
+            pass
+        elif blockers <= AUTO_MERGE_PASSIVE_BLOCKERS:
+            # All validation is done, just waiting on GitHub CI
+            return []
+            
+    if str(snapshot.get("operator_state") or "") in QUEUED_OPERATOR_STATES and not needs_validation:
         return []
-    if auto_merge_enabled and blockers <= AUTO_MERGE_PASSIVE_BLOCKERS:
-        return []
+            
     if merge_strategy == MergeActionType.AUTO_MERGE_FALLBACK.value and not blockers:
         return []
     if is_draft:
@@ -116,7 +128,7 @@ def dashboard_tactic_for_snapshot(snapshot: Mapping[str, Any]) -> str:
     if "APPROVE" in allowed:
         return "A"
     if "APPLY_FIX" in allowed:
-        if blockers and blockers <= VALIDATION_BLOCKERS:
+        if blockers and blockers <= {*VALIDATION_BLOCKERS, BlockerType.REQUIRED_CHECK_PENDING.value}:
             return "V"
         return "P"
     return "S"
