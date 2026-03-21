@@ -334,8 +334,14 @@ Output/Error:
 ```
 
 Please diagnose the issue and FIX IT. You are running in YOLO mode with full tool access. 
-Identify the root cause, modify the necessary files, and verify your fix if possible.
-Your goal is to make the command `{step.command}` pass.
+
+CRITICAL: You MUST follow the ci-remediation-specialist runbook:
+1. REPRODUCE the failure locally first by running the command `{step.command}`.
+2. USE AUTO-FIXERS if applicable (e.g., ruff check --fix).
+3. APPLY a minimal surgical fix if reproduction succeeds.
+4. VERIFY that your fix makes `{step.command}` pass.
+
+Identify the root cause, modify the necessary files, and ensure the command passes.
 """
     
     log(f"Launching Gemini CLI agent in YOLO mode (worktree: {worktree_path.name})...")
@@ -997,6 +1003,8 @@ def _ignite_speculative_train(
     
     merged_ids = []
     queued_ids = []
+    # Always rebase against the latest origin/main for the train
+    # Speculative chaining (current_base = pr.head_ref) is risky with GitHub's native Merge Queue
     current_base = "origin/main"
     
     for i, result in enumerate(train_candidates):
@@ -1010,7 +1018,7 @@ def _ignite_speculative_train(
             break
             
         try:
-            # Rebase onto current_base
+            # Rebase onto origin/main
             ok, msg = attempt_speculative_rebase(
                 worktree_path=worktree_path,
                 onto_ref=current_base,
@@ -1021,7 +1029,7 @@ def _ignite_speculative_train(
             
             if not ok:
                 print(f"    ❌ Speculative rebase failed: {msg}")
-                break
+                continue # Skip this PR but try the next one in the train
                 
             # Push rebased head
             if execute:
@@ -1034,9 +1042,10 @@ def _ignite_speculative_train(
                 )
                 if not push_ok:
                     print(f"    ❌ Push failed: {push_msg}")
-                    break
+                    continue
                 
                 # Trigger merge --auto
+                # If the repo uses Merge Queue, this will add it to the queue.
                 merge_cmd = ["gh", "pr", "merge", str(pr.pr_id), "--auto", "--rebase", "--delete-branch"]
                 if client.repo:
                     merge_cmd.extend(["--repo", client.repo])
@@ -1045,14 +1054,10 @@ def _ignite_speculative_train(
                 if merge_res.returncode == 0:
                     print(f"    ✅ Speculative rebase & auto-merge triggered.")
                     queued_ids.append(pr.pr_id)
-                    # Next PR rebases onto THIS PR's branch
-                    current_base = f"origin/{pr.head_ref}"
                 else:
                     print(f"    ⚠️ Auto-merge trigger failed: {merge_res.stderr}")
-                    break
             else:
                 print(f"    (Dry-run) Would rebase and trigger auto-merge.")
-                current_base = f"origin/{pr.head_ref}"
                 queued_ids.append(pr.pr_id)
                 
         finally:
