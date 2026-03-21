@@ -1,0 +1,1 @@
+unable to get image 'dopemux-adhd-mvp-conport': Cannot connect to the Docker daemon at unix:///Users/hue/.docker/run/docker.sock. Is the docker daemon running?
