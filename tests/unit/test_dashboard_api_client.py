@@ -5,18 +5,9 @@ from datetime import datetime, timedelta
 import sys
 import os
 
-# Mock httpx BEFORE importing api_client
-mock_httpx = MagicMock()
-mock_httpx.AsyncClient.return_value.aclose = AsyncMock() # Ensure aclose is awaitable
-mock_httpx.TimeoutException = type('TimeoutException', (Exception,), {})
-sys.modules['httpx'] = mock_httpx
-
-# Add current directory to sys.path
-sys.path.append(os.getcwd())
-
 from dashboard.api_client import APIClient, APIConfig, CacheEntry
 
-class TestAPIClient(unittest.IsolatedAsyncioTestCase):
+mock_httpx.AsyncClient.return_value.aclose = AsyncMock()  # Ensure aclose is awaitable
     def setUp(self):
         self.api_config = APIConfig(
             base_url="http://api.example.com",
