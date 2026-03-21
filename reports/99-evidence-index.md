@@ -1,6 +1,6 @@
 ## Evidence Index
 
-This synthesis used only the two repo truth packs below.
+This merged synthesis used both the repo truth packs and the PM workflow packs below.
 
 ## Leantime truth-pack files used
 
@@ -26,9 +26,21 @@ This synthesis used only the two repo truth packs below.
 | `reports/task-orchestratorrepo-truth-pack/INTEGRATION_NOTES.md` | Evidence of internal v2/v3 runtime split risk and routing semantics. |
 | `reports/task-orchestratorrepo-truth-pack/APPENDIX_C_OPEN_QUESTIONS.md` | Limits on unresolved transport/auth and response-schema behavior. |
 
-## Files restored but intentionally not used as primary evidence
+## PM workflow-pack files used
 
-The following directories were restored into `reports/`, but excluded from the synthesis to stay inside the original source boundary of the two repo truth packs:
+| File | Used For |
+| --- | --- |
+| `reports/leantime-pm-workflow-pack/02-workflow-and-transition-analysis.md` | PM-pack evidence that Leantime workflow legality is mostly not enforced centrally. |
+| `reports/leantime-pm-workflow-pack/03-action-blocker-progress-analysis.md` | PM-pack evidence for advisory blocker semantics and absent next-action computation in Leantime. |
+| `reports/leantime-pm-workflow-pack/04-history-audit-and-chronicle.md` | PM-pack evidence for Leantime’s broader PM chronicle. |
+| `reports/task-orchestrator-pm-workflow-pack/02-workflow-legality-and-transition-analysis.md` | PM-pack evidence that Task Orchestrator’s legality engine exists but can be bypassed through direct role writes. |
+| `reports/task-orchestrator-pm-workflow-pack/03-gates-actions-and-progress.md` | PM-pack evidence for blockers, next-action derivation, and progress semantics in Task Orchestrator. |
+| `reports/task-orchestrator-pm-workflow-pack/04-audit-history-and-chronicle.md` | PM-pack evidence for workflow audit scope and audit-write reliability caveat. |
+| `reports/task-orchestrator-pm-workflow-pack/05-runtime-variants-and-local-split-brain-risks.md` | PM-pack evidence for internal runtime and write-path split-brain risks. |
+
+## Files restored and used as secondary constraint evidence
+
+The following directories were restored into `reports/` and are part of the merged canonical synthesis:
 
 - `reports/leantime-pm-workflow-pack/`
 - `reports/task-orchestrator-pm-workflow-pack/`
