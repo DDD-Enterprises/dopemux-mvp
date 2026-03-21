@@ -3,8 +3,8 @@ id: README
 title: Readme
 type: reference
 owner: '@hu3mann'
-last_review: '2025-11-10'
-next_review: '2026-02-08'
+last_review: '2026-03-19'
+next_review: '2026-06-19'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: Readme (reference) for dopemux documentation and developer workflows.
@@ -40,6 +40,14 @@ Detailed reference for Dopemux components.
 
 *To be organized: Component interfaces, metrics, events*
 
+### ConPort Surface Contracts
+- **[ConPort Callable Surface Inventory](../systems/conport/callable-surface-inventory.md)** - Active REST, JSON-RPC, and FastMCP surfaces
+- **[ConPort Surface Equivalence and Drift](../systems/conport/surface-equivalence-and-drift.md)** - Evidence-backed surface map and drift matrix
+
+### Workflow Kit
+- **[Internal Workflow Kit Reference](internal-workflow-kit.md)** - Phases, state schema, checkpoint tokens, and role assets
+- **[CI Remediation Specialist Skill](ci-remediation-specialist.md)** - Runbook, invocation contract, and queue integration
+
 ---
 
 ## Configuration
@@ -57,6 +65,12 @@ Configuration schemas and references.
 - **PR Docgen Sync Skill (Core Template)** - `templates/skills/pr-docgen-sync/`
 - **Gemini/Copilot/Claude Wrappers** - `templates/skills/pr-docgen-sync-*/`
 - **Skill Sync Script** - `scripts/skills/sync_repo_skills.py`
+- **Workflow Skill Pack** - `templates/skills/{brief-drafter,task-breakdown,code-researcher,research-reviewer,implementation-planner,plan-reviewer,code-implementer,quality-refactorer}/`
+
+### PM Plane Contracts
+- **[PM Plane Write Matrix](../planes/pm/pm-plane-write-matrix.md)** - Canonical mutation writers, prechecks, mirrors, and forbidden paths
+- **[PM Plane Read Matrix](../planes/pm/pm-plane-read-matrix.md)** - Canonical read sources, normalization, and provenance expectations
+- **[PM Plane Write Surface Policy](../planes/pm/pm-plane-write-surface-policy.md)** - Tool classification and raw-surface exposure policy
 
 ---
 
@@ -71,6 +85,7 @@ Feature specifications and capabilities.
 - **[F001: Untracked Work Detection](f001-enhanced-untracked-work-system-2.md)** - Enhanced work tracking
 - **[F001: Basic Untracked Work (Historical)](../archive/sessions/serena/v2/f001-usage-examples.md)** - Early implementation notes
 - **[F002: Multi-Session Support](f002-multi-session-support-2.md)** - Multiple session handling
+- **[PR Merge Flight Dashboard Reference](../systems/dashboard/overview.md)** - Technical architecture for the PR merge TUI
 
 ### Research & Background
 - **[Python Tmux Research](python-tmux-research.md)** - Technical research on tmux integration
