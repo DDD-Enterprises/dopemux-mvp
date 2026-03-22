@@ -151,7 +151,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const totalRemainingMinutes = useMemo(() => {
     const otherTasksTotal = tasks
-.filter((t) => t.status !== 'completed' && t.id !== currentTaskId)
+      .filter((t) => t.status === 'pending' && t.id !== currentTaskId)
       .reduce((acc, t) => acc + t.estimatedMinutes, 0);
 
     const currentTaskRemaining = currentTask
@@ -178,8 +178,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           <Tooltip title="Total remaining time for all tasks" arrow>
             <Box
               role="status"
-aria-label={`Total remaining time: ${totalRemainingMinutes} minutes`}
-              aria-live="off"
+              aria-label={`Total remaining time: ${totalRemainingMinutes} minutes`}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -203,7 +202,7 @@ aria-label={`Total remaining time: ${totalRemainingMinutes} minutes`}
         <Tooltip title="Real-time task synchronization active" arrow>
           <Chip
             size="small"
-aria-label={`System is actively monitoring ritual state: ${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
+            label="[LIVE]"
             aria-label="System is actively monitoring ritual state: LIVE DØPEMÜX Ritual Daemon"
             className="dopemux-chip"
             tabIndex={0}
