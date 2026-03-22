@@ -587,7 +587,7 @@ class TestCLIIntegrationWorkflow:
                                                         {
                                                             "name": "Implement authentication",
                                                             "completed": False,
-                                                            "IN_PROGRESS": True,
+                                                            "in_progress": True,
                                                             "progress": 0.3,
                                                         }
                                                     ]
