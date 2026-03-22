@@ -29,3 +29,11 @@
 ## 2026-03-11 - [Closing the Task Feedback Loop]
 **Learning:** In task-oriented interfaces, failing to provide a clear "success" or "empty" state after finishing a sequence can lead to user confusion or a sense of "unmet expectation." Providing a satisfying "Ritual Complete" visual (like a check icon and positive reinforcement text) creates a distinct sense of closure and progress.
 **Action:** Always implement explicit success and empty states for sequential task components to provide closure and guidance when a workflow is completed or empty.
+
+## 2026-03-12 - [ADHD-Aware Temporal Anchors ("End of the Tunnel")]
+**Learning:** For users with ADHD, "time blindness" can make a long list of tasks feel overwhelming or infinite. Providing a "Total Remaining Duration" that dynamically updates (subtracting elapsed time from the current task) creates a "light at the end of the tunnel" effect. Calculating this monotonically (capping current task contribution at zero) prevents demoralizing "jumps" in the total time estimate if a task takes longer than expected.
+**Action:** Implement aggregate duration displays for task sequences that update in real-time and use monotonic logic to ensure the estimate only ever decreases or stays the same.
+
+## 2026-03-13 - [Screen Reader Context for Shorthand Metrics]
+**Learning:** Shorthand metrics (like "Energy: 85%") or status chips ("[LIVE]") are visually efficient but can be ambiguous for screen reader users. Adding a descriptive `aria-label` that spells out the metric name and its value (e.g., `aria-label="Energy level: 85%"`) or the full meaning of a status chip ensures clarity for users relying on assistive technology.
+**Action:** Provide explicit, descriptive `aria-label` attributes for dashboard metric cards and status indicators to bridge the gap between visual brevity and semantic clarity.
