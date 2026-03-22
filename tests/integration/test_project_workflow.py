@@ -386,7 +386,7 @@ if __name__ == "__main__":
 
             # Verify state persistence
             task1 = decomposer2._tasks[task_id1]
-            assert task1.status.value == "in_progress"
+            assert task1.status.value == "IN_PROGRESS"
 
     def test_attention_monitor_data_persistence(self):
         """Test attention monitor data persistence."""
@@ -587,7 +587,7 @@ class TestCLIIntegrationWorkflow:
                                                         {
                                                             "name": "Implement authentication",
                                                             "completed": False,
-                                                            "in_progress": True,
+                                                            "IN_PROGRESS": True,
                                                             "progress": 0.3,
                                                         }
                                                     ]
