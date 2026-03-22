@@ -338,6 +338,8 @@ class WorkflowService:
             adhd_metadata=request.adhd_metadata,
             created_at=now,
             updated_at=now,
+            version=1,
+            idempotency_key=getattr(request, "idempotency_key", None),
         )
 
         sync_to_leantime = request.sync_to_leantime and self.default_sync_to_leantime
