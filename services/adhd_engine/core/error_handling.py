@@ -177,6 +177,7 @@ class CircuitBreaker:
             self._record_failure(e)
             raise
 
+            logger.error(f"Error: {e}")
     def _should_allow_request(self) -> bool:
         """Determine if request should be allowed based on circuit state."""
         if self.state == CircuitBreakerState.CLOSED:

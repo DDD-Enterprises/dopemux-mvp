@@ -148,7 +148,7 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 **Integration Boundaries:**
 - **Hands off to**: Task-Orchestrator for dependency analysis and execution planning
 - **Coordinates with**: ConPort for decision logging, DopeconBridge for workflow orchestration
-- **Does NOT**: Act as PM entity authority (Leantime authority), handle code context (Serena authority)
+- **Does NOT**: Manage task status (Leantime authority), handle code context (Serena authority)
 
 ### Task Orchestrator - Dependency Analysis & Task Orchestration
 - **Container**: `mcp-task-orchestrator`
@@ -177,7 +177,7 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 - **Hands off to**: Leantime Bridge for status management and team coordination
 - **Provides to**: Serena LSP for file and symbol context during development
 - **Coordinates with**: DopeconBridge for execution workflow, ConPort for dependency decisions
-- **Does NOT**: Create or modify tasks (Task-Master authority), act as PM entity authority (Leantime authority)
+- **Does NOT**: Create or modify tasks (Task-Master authority), manage status (Leantime authority)
 
 ### Serena - ADHD-Optimized Code Navigation & Project Memory
 - **Container**: `mcp-serena`
@@ -352,7 +352,7 @@ optimization: "min_query_length: 10, max_results: 3"
 project_management_plane:
   - task_master_ai: "PRD breakdown and analysis"
   - task_orchestrator: "Dependency analysis with 37 tools"
-  - leantime_bridge: "PM entity authority and team dashboards"
+  - leantime_bridge: "Status authority and team dashboards"
 
 cognitive_plane:
   - serena: "LSP server with ADHD code navigation"
@@ -361,12 +361,12 @@ cognitive_plane:
 coordination: "DopeconBridge manages data flow between planes"
 ```
 
-### Leantime Bridge - PM Entity Authority
+### Leantime Bridge - Status Authority
 - **Container**: `dopemux-mcp-leantime-bridge`
 - **Port**: `3015`
 - **Role**: `workflow`
 - **Package**: Custom Python MCP bridge
-- **Description**: Canonical PM operational system of record
+- **Description**: Master authority for task status and team coordination
 - **Health Check**: `http://localhost:3015/health`
 
 ### Plane Coordinator - Two-Plane API
