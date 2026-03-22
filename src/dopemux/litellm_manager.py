@@ -35,6 +35,7 @@ class LiteLLMProcessInfo:
         instance_id: str,
         port: int,
         config_path: Path,
+        config_data: Dict[str, Any],
         log_path: Path,
         master_key: str,
         process: subprocess.Popen,
@@ -44,6 +45,7 @@ class LiteLLMProcessInfo:
         self.instance_id = instance_id
         self.port = port
         self.config_path = config_path
+        self.config_data = config_data
         self.log_path = log_path
         self.master_key = master_key
         self.process = process
@@ -153,11 +155,20 @@ class LiteLLMHealthMonitor:
             if process_info.instance_id in self.manager._processes:
                 del self.manager._processes[process_info.instance_id]
             
+            # Load config data from disk as start_instance expects a dictionary
+            # This fix addresses the Path vs Dict conflict in recovery logic
+            config_data = {}
+            if process_info.config_path.exists():
+                try:
+                    config_data = yaml.safe_load(process_info.config_path.read_text())
+                except Exception as e:
+                    logger.error(f"Failed to load config for recovery: {e}")
+
             # Attempt to restart
             self.manager.start_instance(
                 process_info.instance_id,
                 process_info.port,
-                process_info.config_path,
+                config_data,
                 process_info.db_enabled,
                 process_info.db_url
             )
@@ -245,6 +256,7 @@ class LiteLLMManager:
                 instance_id=instance_id,
                 port=port,
                 config_path=config_path,
+                config_data=config_data,
                 log_path=log_path,
                 master_key=master_key,
                 process=process,
