@@ -893,15 +893,12 @@ class ConPortEventAdapter:
         try:
             # Update active context with current ADHD state
             if not self.conport_client:
-                raise ValueError("ConPort client not configured")
-
-            await self.conport_client.update_active_context(content={"current_energy": energy_level, "current_attention": attention_level, "state_updated_at": datetime.now().isoformat()})
-                logger.info(f"✅ Updated ADHD state in ConPort: energy={energy_level}, attention={attention_level}")
-                return True
-            else:
                 logger.warning("ConPort client not configured")
                 return False
 
+            await self.conport_client.update_active_context(content={"current_energy": energy_level, "current_attention": attention_level, "state_updated_at": datetime.now().isoformat()})
+            logger.info(f"✅ Updated ADHD state in ConPort: energy={energy_level}, attention={attention_level}")
+            return True
         except Exception as e:
             logger.error(f"Failed to adjust task recommendations: {e}")
             return False
