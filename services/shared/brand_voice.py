@@ -33,11 +33,24 @@ def tone_name(chip: StatusChip, tone: str | None = None) -> str:
     return tone or TONE_BY_CHIP.get(chip, "live")
 
 
-def voice_header(surface: str = "ui") -> str:
-    """Return the configured voice header for a surface."""
-    return HEADERS.get(surface, HEADERS["ui"])
+def voice_header(value: str = "ui") -> str:
+    """Return a voice header for a surface or legacy title string.
 
+    Backward compatibility:
+    - If `value` matches a known surface key in HEADERS, treat it as a surface
+      and return the configured header.
+    - Otherwise, treat `value` as a title and return a voice-safe header string.
+    """
+    # New behavior: surface-based headers
+    if value in HEADERS:
+        return HEADERS[value]
 
+    # Backward compatibility: legacy callers passing a title string
+    return validate_or_fallback(
+        value,
+        surface="ui",
+        fallback="Dopemux update",
+    )
 def _fallback_for(chip: StatusChip) -> str:
     if chip is StatusChip.AFTERCARE:
         return "Session logged. Protect the recovery block."
