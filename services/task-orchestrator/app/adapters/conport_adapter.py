@@ -735,19 +735,15 @@ class ConPortEventAdapter:
             }
 
             if not self.conport_client:
-                raise ValueError("ConPort client not configured")
-
-            await self.conport_client.update_active_context(content=sprint_context)
-                logger.info(f"🎯 ConPort context activated for sprint: {sprint_id}")
-                return True
-            else:
                 logger.warning("ConPort client not configured")
                 return False
 
+            await self.conport_client.update_active_context(content=sprint_context)
+            logger.info(f"🎯 ConPort context activated for sprint: {sprint_id}")
+            return True
         except Exception as e:
             logger.error(f"Failed to activate sprint context: {e}")
             return False
-
     # ------------------------------------------------------------------------
     # Event Handler Helper Methods (Component 4)
     # ------------------------------------------------------------------------
