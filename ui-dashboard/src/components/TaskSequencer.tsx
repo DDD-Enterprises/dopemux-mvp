@@ -23,6 +23,7 @@ import {
   Timer,
   Flame,
   Swords,
+  Clock,
 } from 'lucide-react';
 import { brandTokens } from '../theme';
 
@@ -148,6 +149,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
 
+  const totalRemainingMinutes = useMemo(() => {
+    const incompleteTasks = tasks.filter((t) => t.status !== 'completed');
+    const otherTasksTotal = incompleteTasks
+      .filter((t) => t.id !== currentTaskId)
+      .reduce((acc, t) => acc + t.estimatedMinutes, 0);
+
+    if (!currentTaskId || !currentTask) return otherTasksTotal;
+
+    const elapsedMinutes = taskTimer / 60;
+    const currentTaskRemaining = Math.max(0, currentTask.estimatedMinutes - elapsedMinutes);
+    return Math.ceil(otherTasksTotal + currentTaskRemaining);
+  }, [tasks, currentTaskId, currentTask, taskTimer]);
+
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
     if (complexity > 0.5) return brandTokens.colors.giltEdge;
@@ -161,13 +175,29 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
+        <Box
+          role="status"
+          aria-label={`Total remaining duration: ${totalRemainingMinutes} ${totalRemainingMinutes === 1 ? 'minute' : 'minutes'}`}
+          sx={{
+            ml: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            color: brandTokens.colors.ritualCyan,
+            fontSize: '0.875rem',
+            fontWeight: 'bold',
+          }}
+        >
+          <Clock size={16} aria-hidden="true" />
+          {totalRemainingMinutes}m
+        </Box>
         <Tooltip title="Real-time task synchronization active" arrow>
           <Chip
             size="small"
             label="[LIVE]"
             className="dopemux-chip"
             tabIndex={0}
-            sx={{ ml: 'auto', borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
+            sx={{ ml: 1, borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
           />
         </Tooltip>
       </Box>
