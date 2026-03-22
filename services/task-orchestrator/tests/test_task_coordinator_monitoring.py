@@ -18,7 +18,7 @@ import sys
 # Add the task-orchestrator to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from enhanced_orchestrator import OrchestrationTask, TaskStatus, AgentType
+from task_orchestrator.models import OrchestrationTask, TaskStatus, AgentType
 from app.services.task_coordinator import TaskCoordinator
 
 
@@ -80,13 +80,12 @@ def create_fast_monitor(coordinator, simulated_duration=1.0, sleep_interval=0.2,
         start_time = datetime.now()
         
         while (datetime.now() - start_time).total_seconds() < simulated_duration:
-            elapsed = (datetime.now() - coordinator.coordination_state.session_start_time).total_seconds()
-            coordinator.coordination_state.focus_session_timer = int(elapsed)
+            await asyncio.sleep(sleep_interval)
+            elapsed = (datetime.now() - start_time).total_seconds()
+            coordinator.coordination_state.focus_session_timer += int(max(1, elapsed))
             
             if check_threshold and coordinator.coordination_state.focus_session_timer >= coordinator.focus_session_duration:
                 break
-                
-            await asyncio.sleep(sleep_interval)
     
     return fast_monitor_execution
 

@@ -14,10 +14,13 @@ Events emitted:
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from event_bus import Event, EventBus
+
+from dopemux.pm.store import InMemoryPMTaskStore
+from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +55,7 @@ class TaskOrchestratorEventEmitter:
         self.event_bus = event_bus
         self.workspace_id = workspace_id
         self.enable_events = enable_events
+        self.pm_store = InMemoryPMTaskStore()
 
         # Metrics
         self.events_emitted = 0
@@ -316,7 +320,7 @@ class TaskOrchestratorIntegrationManager:
         energy_required: Optional[str] = None
     ):
         """
-        Handle task status change.
+        Handle task status change safely using Canonical PM store invariants.
 
         Args:
             task_id: Task identifier
@@ -328,6 +332,38 @@ class TaskOrchestratorIntegrationManager:
             energy_required: Optional energy level
         """
         if not self.enable_progress_events:
+            return
+
+        # Enforce Idempotency and State via Canonical Store
+        try:
+            from dopemux.pm.mapping import ORCHESTRATOR_TO_CANONICAL
+            canonical_status = ORCHESTRATOR_TO_CANONICAL.get(new_status.lower(), PMTaskStatus.TODO)
+            pm_task = self.emitter.pm_store.get(task_id)
+            
+            if pm_task is None:
+                # Mock create if we are just tracking states independently for demo events
+                pm_task = PMTask(
+                    task_id=task_id,
+                    title=task_title,
+                    status=PMTaskStatus.TODO,
+                    source="task-orchestrator",
+                    created_at_utc=datetime.now(timezone.utc),
+                    updated_at_utc=datetime.now(timezone.utc),
+                )
+                self.emitter.pm_store.create(pm_task)
+                
+            pm_task = self.emitter.pm_store.transition(
+                task_id=task_id,
+                req=PMTransitionRequest(
+                    idempotency_key=f"status-{task_id}-{canonical_status.value}",
+                    expected_version=pm_task.version,
+                    new_status=canonical_status,
+                    ts_utc=datetime.now(timezone.utc),
+                    source="task-orchestrator",
+                )
+            )
+        except Exception as e:
+            logger.error(f"Canonical store transition failed: {e}")
             return
 
         # Emit progress update event
