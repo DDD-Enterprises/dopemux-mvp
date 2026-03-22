@@ -145,6 +145,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+try:
+    from .api import project_workflow
+except ImportError:
+    from app.api import project_workflow
+
+app.include_router(project_workflow.router)
+
 # CORS middleware for web integration
 app.add_middleware(
     CORSMiddleware,
