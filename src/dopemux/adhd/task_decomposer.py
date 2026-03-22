@@ -28,8 +28,7 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-from dopemux.pm.models import PMTaskStatus, PMTask, PMTransitionRequest, content_hash_task_id
-from dopemux.pm.store import InMemoryPMTaskStore
+from dopemux.pm.models import PMTaskStatus
 
 class TaskStatus(Enum):
     """Simple task lifecycle states mapping to Canonical PM status."""
@@ -52,7 +51,6 @@ class TaskRecord:
     created_at: str = field(default_factory=_now)
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
-    version: int = 1
 
     def to_dict(self) -> Dict[str, object]:
         """Convert to JSON-friendly dict."""
@@ -79,7 +77,6 @@ class TaskRecord:
             created_at=str(data.get("created_at", _now())),
             started_at=data.get("started_at"),
             completed_at=data.get("completed_at"),
-            version=int(data.get("version", 1)),
         )
 
 
@@ -120,7 +117,6 @@ class TaskDecomposer:
             self.tasks_dir.mkdir(parents=True, exist_ok=True)
 
         self._tasks: Dict[str, TaskRecord] = {}
-        self._store = InMemoryPMTaskStore()
         self._load()
 
     # --------------------------------------------------------------------- #
@@ -144,24 +140,11 @@ class TaskDecomposer:
             extra: Unused legacy parameters (accepted for compatibility).
         """
         task_id = f"task-{uuid.uuid4().hex[:8]}"
-        
-        # Sync to PM Store
-        pm_task = PMTask(
-            task_id=task_id,
-            title=description,
-            status=PMTaskStatus.TODO,
-            source="cli",
-            created_at_utc=datetime.now(timezone.utc),
-            updated_at_utc=datetime.now(timezone.utc),
-        )
-        pm_task = self._store.create(pm_task)
-
         record = TaskRecord(
             id=task_id,
             description=description,
             estimated_duration=max(1, int(duration)),
             priority=str(priority),
-            version=pm_task.version
         )
         self._tasks[task_id] = record
         self._save()
@@ -213,23 +196,6 @@ class TaskDecomposer:
         if not task:
             return False
 
-        try:
-            # Sync via Canonical Store with Idempotency invariant
-            pm_task = self._store.transition(
-                task_id,
-                PMTransitionRequest(
-                    idempotency_key=f"start-{task_id}",
-                    expected_version=task.version,
-                    new_status=PMTaskStatus.IN_PROGRESS,
-                    ts_utc=datetime.now(timezone.utc),
-                    source="cli"
-                )
-            )
-            task.version = pm_task.version
-        except Exception as e:
-            logger.error(f"Store transition failed: {e}")
-            return False
-
         task.status = TaskStatus.IN_PROGRESS
         task.started_at = _now()
         if task.progress <= 0.0:
@@ -241,22 +207,6 @@ class TaskDecomposer:
         """Mark a task as completed."""
         task = self._tasks.get(task_id)
         if not task:
-            return False
-
-        try:
-            pm_task = self._store.transition(
-                task_id,
-                PMTransitionRequest(
-                    idempotency_key=f"complete-{task_id}",
-                    expected_version=task.version,
-                    new_status=PMTaskStatus.DONE,
-                    ts_utc=datetime.now(timezone.utc),
-                    source="cli"
-                )
-            )
-            task.version = pm_task.version
-        except Exception as e:
-            logger.error(f"Store transition failed: {e}")
             return False
 
         task.status = TaskStatus.COMPLETED
@@ -276,40 +226,12 @@ class TaskDecomposer:
         normalized = max(0.0, min(1.0, float(progress)))
         task.progress = normalized
 
-        target_status = None
-        idemp_prefix = None
-
         if normalized >= 1.0:
-            target_status = PMTaskStatus.DONE
-            idemp_prefix = "complete"
+            task.status = TaskStatus.COMPLETED
+            task.completed_at = task.completed_at or _now()
         elif normalized > 0 and task.status is TaskStatus.PENDING:
-            target_status = PMTaskStatus.IN_PROGRESS
-            idemp_prefix = "start"
-
-        if target_status:
-            try:
-                pm_task = self._store.transition(
-                    task_id,
-                    PMTransitionRequest(
-                        idempotency_key=f"{idemp_prefix}-{task_id}",
-                        expected_version=task.version,
-                        new_status=target_status,
-                        ts_utc=datetime.now(timezone.utc),
-                        source="cli"
-                    )
-                )
-                task.version = pm_task.version
-                
-                if target_status == PMTaskStatus.DONE:
-                    task.status = TaskStatus.COMPLETED
-                    task.completed_at = task.completed_at or _now()
-                elif target_status == PMTaskStatus.IN_PROGRESS:
-                    task.status = TaskStatus.IN_PROGRESS
-                    task.started_at = task.started_at or _now()
-
-            except Exception as e:
-                logger.error(f"Store transition failed: {e}")
-                return False
+            task.status = TaskStatus.IN_PROGRESS
+            task.started_at = task.started_at or _now()
 
         self._save()
         return True
@@ -334,18 +256,6 @@ class TaskDecomposer:
             try:
                 record = TaskRecord.from_dict(entry)
                 self._tasks[record.id] = record
-                
-                # Sync into in-memory store
-                pm_task = PMTask(
-                    task_id=record.id,
-                    title=record.description,
-                    status=PMTaskStatus(record.status.value),
-                    source="cli",
-                    created_at_utc=datetime.fromisoformat(record.created_at) if record.created_at else datetime.now(timezone.utc),
-                    updated_at_utc=datetime.fromisoformat(record.completed_at or record.started_at or record.created_at or _now()),
-                    version=record.version
-                )
-                self._store.create(pm_task)
             except Exception as e:
                 continue
 

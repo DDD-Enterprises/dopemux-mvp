@@ -112,6 +112,10 @@ async def test_focus_session_timer_updated(task_coordinator, sample_tasks):
     """Test that focus_session_timer is correctly updated during monitoring."""
     task = sample_tasks[0]
     
+    # Set session_start_time to 5 seconds ago to ensure int(elapsed) > 0
+    from datetime import timedelta
+    task_coordinator.coordination_state.session_start_time = datetime.now() - timedelta(seconds=5)
+    
     # Use fast monitoring for testing (1 second)
     task_coordinator._monitor_execution = create_fast_monitor(task_coordinator, simulated_duration=1.0, sleep_interval=0.2)
     

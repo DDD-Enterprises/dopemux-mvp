@@ -5,8 +5,8 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-02-12'
-last_review: '2026-02-12'
-next_review: '2026-05-13'
+last_review: '2026-03-22'
+next_review: '2026-06-20'
 prelude: Status (explanation) for dopemux documentation and developer workflows.
 ---
 📊 Dopemux Execution Status
@@ -39,6 +39,21 @@ None
 Notes:
 Candidate for next PRIMER-driven investigation
 No known determinism leaks
+────────────────────
+Workflow / Execution Control Plane
+Status: 🟡 In Progress
+Active Packets:
+TP-SIA-EXEC-0001 — Packet Execution Domain Models + Lease Store
+TP-SIA-EXEC-0002 — Packet Manifest V2 + Sidecar Contract
+TP-SIA-EXEC-0003 — Explicit Routing Slots + Cost Policy
+TP-SIA-EXEC-0004 — Supervisor Service + Canonical Commit Flow
+TP-SIA-EXEC-0005 — Implementer Runner Adapter Contract
+TP-SIA-EXEC-0006 — Auditor Runner + Proof Bundle Manifest
+TP-SIA-EXEC-0007 — Manual Handoff + Operator Resume Semantics
+TP-SIA-EXEC-0008 — Replay Repro Suite + Projection Hardening
+Notes:
+Execution architecture frozen in ADR; implementation sequence staged and ready
+Critical risk remains queue-loss versus canonical truth until the series is executed
 ────────────────────
 ADHD Support Plane
 Status: 🟢 Stable
