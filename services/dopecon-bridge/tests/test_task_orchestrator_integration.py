@@ -5,7 +5,12 @@ Validates task progress event emission and bidirectional communication
 
 import asyncio
 import pytest
+import sys
+from pathlib import Path
 from unittest.mock import Mock, AsyncMock
+
+# Add the parent directory to path so integrations can be imported
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from event_bus import Event, EventBus
 from integrations.task_orchestrator import (
