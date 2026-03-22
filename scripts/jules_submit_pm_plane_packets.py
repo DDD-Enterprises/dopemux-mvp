@@ -829,7 +829,8 @@ def fetch_open_pr_count(repo: str, token: str | None) -> int | None:
             return len(__import__("json").load(response))
     except (urllib.error.URLError, TimeoutError):
         return None
-
+DEFAULT_JULES_BIN = "jules"
+SESSION_LIMIT = 5
 
 def list_remote_sessions(jules_bin: str) -> str:
     result = subprocess.run(
@@ -838,7 +839,7 @@ def list_remote_sessions(jules_bin: str) -> str:
         text=True,
         check=False,
     )
-output = (result.stdout or "") + (result.stderr or "")
+    output = (result.stdout or "") + (result.stderr or "")
     if result.returncode != 0:
         raise SystemExit(
             "Failed to list remote Jules sessions "
@@ -847,6 +848,7 @@ output = (result.stdout or "") + (result.stderr or "")
             f"Output:\n{output.strip()}"
         )
     return output
+
 
 def packet_ids_in_remote_sessions(jules_bin: str) -> set[str]:
     output = list_remote_sessions(jules_bin)
