@@ -36,6 +36,17 @@ def normalize_tags(tags: Optional[List[str]]) -> List[str]:
     return result
 
 
+class LeantimeReflection(BaseModel):
+    """Provenance and reconciliation state for Leantime mirroring."""
+
+    status: Literal["pending", "success", "failed", "degraded"] = "pending"
+    warning: Optional[str] = None
+    last_synced_at: Optional[str] = None
+    leantime_project_id: Optional[int] = None
+    sync_direction: str = "local→leantime"
+    drift_detected: bool = False
+
+
 class ADHDMetadata(BaseModel):
     """ADHD-oriented metadata attached to epics."""
 
@@ -94,6 +105,7 @@ class WorkflowEpic(BaseModel):
     status: EpicStatus = "planned"
     created_from_idea_id: Optional[str] = None
     leantime_project_id: Optional[int] = None
+    leantime_reflection: Optional[LeantimeReflection] = None
     tags: List[str] = Field(default_factory=list)
     adhd_metadata: ADHDMetadata = Field(default_factory=ADHDMetadata)
     created_at: str = Field(default_factory=utc_now_iso)
@@ -191,6 +203,7 @@ class UpdateEpicRequest(BaseModel):
     status: Optional[EpicStatus] = None
     tags: Optional[List[str]] = None
     leantime_project_id: Optional[int] = None
+    leantime_reflection: Optional[LeantimeReflection] = None
     adhd_metadata: Optional[ADHDMetadata] = None
 
     @validator("acceptance_criteria", pre=True, always=False)
