@@ -929,25 +929,26 @@ class ConPortEventAdapter:
             Tags: ["oauth", "authentication", "security"]
             Returns: [{"id": 145, "summary": "Use OAuth 2.0 PKCE", ...}]
         """
-        if not self.conport_client:
-            raise ValueError("ConPort client not configured, cannot query decisions")
+        try:
+            if not self.conport_client:
+                raise ValueError("ConPort client not configured, cannot query decisions")
 
-        logger.info(f"🔍 Querying ConPort decisions for task '{task.title}' with tags: {tags}")
+            logger.info(f"🔍 Querying ConPort decisions for task '{task.title}' with tags: {tags}")
 
-        # Query ConPort for decisions matching any of the tags
-        result = await self.conport_client.get_decisions(
-            tags=tags,
-            limit=10
-        )
+            # Query ConPort for decisions matching any of the tags
+            result = await self.conport_client.get_decisions(
+                tags=tags,
+                limit=10
+            )
 
-        # Extract decisions from result based on typical return format
-        if hasattr(result, "get") and callable(result.get):
-             decisions = result.get("result", [])
-        else:
-             decisions = result if isinstance(result, list) else [result] if result else []
-             decisions = [d.dict() if hasattr(d, "dict") else d for d in decisions]
-             
-        logger.info(f"📚 Found {len(decisions)} relevant decisions")
+            # Extract decisions from result based on typical return format
+            if hasattr(result, "get") and callable(result.get):
+                 decisions = result.get("result", [])
+            else:
+                 decisions = result if isinstance(result, list) else [result] if result else []
+                 decisions = [d.dict() if hasattr(d, "dict") else d for d in decisions]
+                 
+            logger.info(f"📚 Found {len(decisions)} relevant decisions")
 
             # Optionally link decisions to task in ConPort
             if decisions and hasattr(task, 'conport_id') and task.conport_id:
@@ -965,7 +966,6 @@ class ConPortEventAdapter:
                         logger.debug(f"Could not link decision {decision['id']} to task: {e}")
 
             return decisions
-
         except Exception as e:
             logger.error(f"❌ Failed to query decisions: {e}")
             return []
@@ -992,24 +992,25 @@ class ConPortEventAdapter:
             Complexity: 0.6
             Returns: [{"name": "ADHD Error Message Structure", ...}]
         """
-        if not self.conport_client:
-            raise ValueError("ConPort client not configured, cannot query patterns")
+        try:
+            if not self.conport_client:
+                raise ValueError("ConPort client not configured, cannot query patterns")
 
-        # Parse domain tags
-        domain_tags = [tag.strip() for tag in task_domain.split(",")]
-        logger.info(f"🔍 Querying ConPort patterns for domain: {domain_tags}, complexity: {complexity}")
+            # Parse domain tags
+            domain_tags = [tag.strip() for tag in task_domain.split(",")]
+            logger.info(f"🔍 Querying ConPort patterns for domain: {domain_tags}, complexity: {complexity}")
 
-        # Query ConPort for patterns matching domain
-        result = await self.conport_client.get_system_patterns(
-            tags=domain_tags,
-            limit=5
-        )
+            # Query ConPort for patterns matching domain
+            result = await self.conport_client.get_system_patterns(
+                tags=domain_tags,
+                limit=5
+            )
 
-        # ConPort returns different format - extract patterns
-        if isinstance(result, dict):
-            patterns = result.get("patterns", result.get("result", []))
-        else:
-            patterns = [d.dict() if hasattr(d, "dict") else d for d in result] if isinstance(result, list) else []
+            # ConPort returns different format - extract patterns
+            if isinstance(result, dict):
+                patterns = result.get("patterns", result.get("result", []))
+            else:
+                patterns = [d.dict() if hasattr(d, "dict") else d for d in result] if isinstance(result, list) else []
 
             logger.info(f"📐 Found {len(patterns)} applicable patterns")
             return patterns
@@ -1032,31 +1033,32 @@ class ConPortEventAdapter:
             Returns: {"energy": "low", "attention": "scattered", "mode": "PLAN"}
             Adapt: Suggest lower-complexity tasks, shorter sessions
         """
-        if not self.conport_client:
-            raise ValueError("ConPort client not configured, using default ADHD state")
-
-        logger.debug("🔍 Querying ConPort active context for ADHD state")
-
-        result = await self.conport_client.get_active_context()
-
-        # Extract ADHD state from active context
-        if hasattr(result, "content") and result.content:
-             result_content = result.content
-        elif hasattr(result, "get") and callable(result.get):
-             result_content = result
-        else:
-             result_content = {}
-             
-        energy = result_content.get("current_energy", "medium")
-        attention = result_content.get("current_attention", "normal")
-        mode = result_content.get("mode", "ACT")
-
+        try:
+            if not self.conport_client:
+                raise ValueError("ConPort client not configured, using default ADHD state")
+    
+            logger.debug("🔍 Querying ConPort active context for ADHD state")
+    
+            result = await self.conport_client.get_active_context()
+    
+            # Extract ADHD state from active context
+            if hasattr(result, "content") and result.content:
+                 result_content = result.content
+            elif hasattr(result, "get") and callable(result.get):
+                 result_content = result
+            else:
+                 result_content = {}
+                 
+            energy = result_content.get("current_energy", "medium")
+            attention = result_content.get("current_attention", "normal")
+            mode = result_content.get("mode", "ACT")
+    
             adhd_state = {
                 "energy": energy,
                 "attention": attention,
                 "mode": mode
             }
-
+    
             logger.info(f"🧠 Current ADHD state: energy={energy}, attention={attention}, mode={mode}")
             return adhd_state
 
@@ -1086,23 +1088,24 @@ class ConPortEventAdapter:
                 {"type": "progress_entry", "id": 157, "relationship": "blocked_by"}
             ]
         """
-        if not self.conport_client:
-            raise ValueError("ConPort client not configured, cannot query dependencies")
+        try:
+            if not self.conport_client:
+                raise ValueError("ConPort client not configured, cannot query dependencies")
 
-        logger.info(f"🔍 Querying ConPort knowledge graph for task {task_id}")
+            logger.info(f"🔍 Querying ConPort knowledge graph for task {task_id}")
 
-        # Query linked items
-        result = await self.conport_client.get_linked_items(
-            item_type="progress_entry",
-            item_id=task_id,
-            limit=20
-        )
+            # Query linked items
+            result = await self.conport_client.get_linked_items(
+                item_type="progress_entry",
+                item_id=task_id,
+                limit=20
+            )
 
-        # Extract linked items
-        if isinstance(result, dict):
-            linked_items = result.get("links", result.get("result", []))
-        else:
-            linked_items = [d.dict() if hasattr(d, "dict") else d for d in result] if isinstance(result, list) else []
+            # Extract linked items
+            if isinstance(result, dict):
+                linked_items = result.get("links", result.get("result", []))
+            else:
+                linked_items = [d.dict() if hasattr(d, "dict") else d for d in result] if isinstance(result, list) else []
 
             logger.info(f"🕸️ Found {len(linked_items)} linked items")
             return linked_items
@@ -1137,23 +1140,24 @@ class ConPortEventAdapter:
                 "score": 0.89
             }]
         """
-        if not self.conport_client:
-            raise ValueError("ConPort client not configured, cannot search tasks")
+        try:
+            if not self.conport_client:
+                raise ValueError("ConPort client not configured, cannot search tasks")
 
-        logger.info(f"🔍 Semantic search for similar tasks: '{task_description}'")
+            logger.info(f"🔍 Semantic search for similar tasks: '{task_description}'")
 
-        # Semantic search ConPort for similar progress entries
-        result = await self.conport_client.semantic_search(
-            query_text=task_description,
-            top_k=limit,
-            filter_item_types=["progress_entry"]
-        )
+            # Semantic search ConPort for similar progress entries
+            result = await self.conport_client.semantic_search(
+                query_text=task_description,
+                top_k=limit,
+                filter_item_types=["progress_entry"]
+            )
 
-        # Extract results
-        if isinstance(result, dict):
-            similar_tasks = result.get("results", [])
-        else:
-            similar_tasks = [d.dict() if hasattr(d, "dict") else d for d in result] if isinstance(result, list) else []
+            # Extract results
+            if isinstance(result, dict):
+                similar_tasks = result.get("results", [])
+            else:
+                similar_tasks = [d.dict() if hasattr(d, "dict") else d for d in result] if isinstance(result, list) else []
 
             # Filter for DONE tasks only (learn from completed work)
             completed_tasks = [
