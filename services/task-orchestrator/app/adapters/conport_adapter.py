@@ -23,6 +23,8 @@ from typing import Any, Dict, List, Optional
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add services directory to find shared.conport_client
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from task_orchestrator.models import OrchestrationTask, TaskStatus, AgentType
 from shared.conport_client.client import ConPortClient
@@ -918,24 +920,17 @@ class ConPortEventAdapter:
         Use before task execution to provide decision context and guidance.
 
         Args:
-            task: OrchestrationTask to enrich
-            tags: Tags to filter decisions (e.g., ["oauth", "authentication"])
+            task: The task to enrich
+            tags: Relevant decision tags to filter by
 
         Returns:
-            List of relevant decision dicts with summary, rationale, tags
-
-        Example:
-            Task: "Implement OAuth authentication"
-            Tags: ["oauth", "authentication", "security"]
-            Returns: [{"id": 145, "summary": "Use OAuth 2.0 PKCE", ...}]
+            List of relevant decisions
         """
+        if not self.conport_client:
+            return []
+
         try:
-            if not self.conport_client:
-                raise ValueError("ConPort client not configured, cannot query decisions")
-
-            logger.info(f"🔍 Querying ConPort decisions for task '{task.title}' with tags: {tags}")
-
-            # Query ConPort for decisions matching any of the tags
+            # Search for relevant decisions in ConPort
             result = await self.conport_client.get_decisions(
                 tags=tags,
                 limit=10
@@ -943,11 +938,11 @@ class ConPortEventAdapter:
 
             # Extract decisions from result based on typical return format
             if hasattr(result, "get") and callable(result.get):
-                 decisions = result.get("result", [])
+                decisions = result.get("result", [])
             else:
-                 decisions = result if isinstance(result, list) else [result] if result else []
-                 decisions = [d.dict() if hasattr(d, "dict") else d for d in decisions]
-                 
+                decisions = result if isinstance(result, list) else [result] if result else []
+            
+            decisions = [d.dict() if hasattr(d, "dict") else d for d in decisions]
             logger.info(f"📚 Found {len(decisions)} relevant decisions")
 
             # Optionally link decisions to task in ConPort
@@ -956,16 +951,17 @@ class ConPortEventAdapter:
                     try:
                         await self._link_conport_items(
                             source_item_type="decision",
-                            source_item_id=str(decision['id']),
+                            source_item_id=str(decision.get('id', '')),
                             target_item_type="progress_entry",
                             target_item_id=str(task.conport_id),
                             relationship_type="informs",
                             description=f"Decision informs task implementation"
                         )
-                    except Exception as e:
-                        logger.debug(f"Could not link decision {decision['id']} to task: {e}")
+                    except Exception as le:
+                        logger.debug(f"Could not link decision to task: {le}")
 
             return decisions
+
         except Exception as e:
             logger.error(f"❌ Failed to query decisions: {e}")
             return []
