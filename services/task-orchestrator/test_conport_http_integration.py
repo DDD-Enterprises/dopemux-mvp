@@ -6,8 +6,8 @@ Test script to validate ConPort HTTP API integration for task-orchestrator servi
 import asyncio
 import logging
 import os
-from adapters.conport_adapter import ConPortEventAdapter
-from enhanced_orchestrator import OrchestrationTask, TaskStatus
+from app.adapters.conport_adapter import ConPortEventAdapter
+from task_orchestrator.models import OrchestrationTask, TaskStatus
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

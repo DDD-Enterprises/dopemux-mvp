@@ -28,12 +28,14 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-class TaskStatus(Enum):
-    """Simple task lifecycle states."""
+from dopemux.pm.models import PMTaskStatus
 
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
+class TaskStatus(Enum):
+    """Simple task lifecycle states mapping to Canonical PM status."""
+
+    PENDING = PMTaskStatus.TODO.value
+    IN_PROGRESS = PMTaskStatus.IN_PROGRESS.value
+    COMPLETED = PMTaskStatus.DONE.value
 
 
 @dataclass
