@@ -26,6 +26,7 @@ from typing import Iterable
 
 DEFAULT_REPO = "DDD-Enterprises/dopemux-mvp"
 DEFAULT_JULES_BIN = "jules"
+SESSION_LIMIT = 5
 COMMON_INVARIANTS = (
     "Do not redesign the PM-plane authority model. Implement the documented target only.",
     "Touch only owned paths and directly adjacent tests/docs for those paths. If additional subsystem files are required, stop and report.",
@@ -838,7 +839,7 @@ def list_remote_sessions(jules_bin: str) -> str:
         text=True,
         check=False,
     )
-output = (result.stdout or "") + (result.stderr or "")
+    output = (result.stdout or "") + (result.stderr or "")
     if result.returncode != 0:
         raise SystemExit(
             "Failed to list remote Jules sessions "
@@ -984,6 +985,10 @@ def main(argv: list[str]) -> int:
             and open_pr_count > args.require_open_pr_count_at_most
         ):
             print(
+                f"Refusing to submit: too many open PRs ({open_pr_count} > {args.require_open_pr_count_at_most}).",
+                file=sys.stderr,
+            )
+            return 2
 # Track packets that are known to exist remotely or have been submitted
         submitted_ids: set[str] = set()
         for packet in packets:
