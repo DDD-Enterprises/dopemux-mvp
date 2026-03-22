@@ -25,10 +25,7 @@ from typing import Iterable
 
 
 DEFAULT_REPO = "DDD-Enterprises/dopemux-mvp"
-DEFAULT_JULES_BIN = "/opt/homebrew/bin/jules"
 DEFAULT_JULES_BIN = "jules"
-
-
 COMMON_INVARIANTS = (
     "Do not redesign the PM-plane authority model. Implement the documented target only.",
     "Touch only owned paths and directly adjacent tests/docs for those paths. If additional subsystem files are required, stop and report.",
@@ -844,9 +841,7 @@ def list_remote_sessions(jules_bin: str) -> str:
     return (result.stdout or "") + (result.stderr or "")
 output = (result.stdout or "") + (result.stderr or "")
     if result.returncode != 0:
-        raise SystemExit(
-            "Failed to list remote Jules sessions "
-            f"(exit code {result.returncode}) for command "
+output = (result.stdout or "") + (result.stderr or "")
             f'"{jules_bin} remote list --session".\n'
             f"Output:\n{output.strip()}"
         )
@@ -1028,13 +1023,9 @@ def main(argv: list[str]) -> int:
             result = submit_packet(args.jules_bin, args.repo, packet)
             combined = ((result.stdout or "") + (result.stderr or "")).strip()
             print(f"Submission result for {packet.id}:")
-            print(combined or "<no output>")
-            if result.returncode != 0:
-                exit_code = result.returncode
-        return exit_code
-
-    return 0
-
-
+# Preserve any previous non-zero exit code if present
+                if exit_code == 0:
+                    exit_code = result.returncode
+                continue
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
