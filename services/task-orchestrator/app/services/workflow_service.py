@@ -260,6 +260,8 @@ class WorkflowService:
             if epic.leantime_project_id is not None and epic.leantime_project_id != request.leantime_project_id:
                 raise WorkflowConflictError("conflicting linked-ID overwrite fails closed")
             epic.leantime_project_id = request.leantime_project_id
+        if request.leantime_reflection is not None:
+            epic.leantime_reflection = request.leantime_reflection
         if request.adhd_metadata is not None:
             epic.adhd_metadata = request.adhd_metadata
 
@@ -345,11 +347,27 @@ class WorkflowService:
         sync_to_leantime = request.sync_to_leantime and self.default_sync_to_leantime
         warning: Optional[str] = None
         if sync_to_leantime:
+            from app.models.workflow import LeantimeReflection, utc_now_iso as iso_time
             leantime_project_id, warning = await self._sync_epic_to_leantime(epic)
             epic.leantime_project_id = leantime_project_id
+            
             if warning:
                 logger.warning("Workflow promotion Leantime sync degraded: %s", warning)
                 self.metrics["workflow_promotion_failures_total"] += 1
+                epic.leantime_reflection = LeantimeReflection(
+                    status="degraded",
+                    warning=warning,
+                    last_synced_at=iso_time(),
+                    leantime_project_id=leantime_project_id,
+                    drift_detected=True
+                )
+            else:
+                epic.leantime_reflection = LeantimeReflection(
+                    status="success",
+                    last_synced_at=iso_time(),
+                    leantime_project_id=leantime_project_id,
+                    drift_detected=False
+                )
 
         await self._save_epic_or_raise(epic)
 
