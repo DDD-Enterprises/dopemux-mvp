@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, root_validator, validator
 
@@ -178,6 +178,52 @@ class CreateEpicRequest(BaseModel):
         return [item.strip() for item in value if str(item).strip()]
 
     _normalize_tags = validator("tags", pre=True, allow_reuse=True)(normalize_tags)
+
+
+class TransitionWorkflowRequest(BaseModel):
+    """API request for transitioning a workflow."""
+
+    workflow_id: str
+    transition: str
+    actor: Optional[str] = None
+    idempotency_key: Optional[str] = None
+
+
+class WorkflowEnvelopeBase(BaseModel):
+    """Base response envelope for project-scoped workflow API."""
+
+    project_id: str
+    workflow_id: Optional[str] = None
+    linked_ids: Dict[str, str] = Field(default_factory=dict)
+    legality_result: Optional[str] = None
+    blockers: List[str] = Field(default_factory=list)
+    next_action: Optional[Dict[str, Any]] = None
+
+
+class PriorityQueueResult(WorkflowEnvelopeBase):
+    """Response envelope for workflow priority queue."""
+
+    queue_items: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+class BlockersResult(WorkflowEnvelopeBase):
+    """Response envelope for workflow blockers."""
+
+    active_blockers: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+class WorkflowStateResult(WorkflowEnvelopeBase):
+    """Response envelope for workflow state snapshot."""
+
+    state: Dict[str, Any] = Field(default_factory=dict)
+    allowed_transitions: List[str] = Field(default_factory=list)
+
+
+class TransitionResult(WorkflowEnvelopeBase):
+    """Response envelope for workflow state transition."""
+
+    transition_receipt: Dict[str, Any] = Field(default_factory=dict)
+    resulting_state: Dict[str, Any] = Field(default_factory=dict)
 
 
 class UpdateEpicRequest(BaseModel):

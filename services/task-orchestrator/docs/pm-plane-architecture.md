@@ -52,8 +52,8 @@ The PM Plane represents a sophisticated two-plane architecture designed to seaml
 
 #### Task Orchestrator (Coordination Hub)
 - **Purpose**: Intelligent task routing and ADHD optimization
-- **Components**: Agent dispatch, ADHD accommodations, sync management
-- **Integration**: Connects all components with event-driven architecture
+- **Components**: Agent dispatch, ADHD accommodations, sync management, project-scoped workflow API
+- **Integration**: Connects all components with event-driven architecture. It exposes canonical project-scoped workflow endpoints (`/api/projects/{project_id}/workflow/*`) to manage queue, blockers, state, and transitions while preserving fail-closed behavior.
 
 #### Taskmaster AI (Intelligent Analysis)
 - **Purpose**: AI-powered task decomposition and complexity assessment
