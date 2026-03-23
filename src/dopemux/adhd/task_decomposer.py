@@ -1,10 +1,10 @@
 """
-Legacy-compatible task manager for CLI and test workflows.
+Canonical PM-plane task manager for CLI and test workflows.
 
-This lightweight implementation keeps the original Dopemux task CLI working
-while the new ConPort-first flow rolls out. It persists tasks to
-``{workspace}/.dopemux/tasks/tasks.json`` and exposes the handful of methods
-that existing tests exercise.
+This implementation acts as an offline-first caching layer for task lifecycle
+while synchronizing directly to the Dopemux PM plane. It persists tasks to
+``{workspace}/.dopemux/tasks/tasks.json`` and forwards create, transition,
+and completion events to canonical PM authorities.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from dataclasses import dataclass, asdict, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 
 logger = logging.getLogger(__name__)
@@ -29,6 +29,11 @@ def _now() -> str:
 
 
 from dopemux.pm.models import PMTaskStatus
+from dopemux.pm.writes import (
+    PMWriteConfig,
+    pm_transition_work_item,
+    pm_update_work_item,
+)
 
 class TaskStatus(Enum):
     """Simple task lifecycle states mapping to Canonical PM status."""
@@ -51,6 +56,8 @@ class TaskRecord:
     created_at: str = field(default_factory=_now)
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
+    sync_pending: bool = True
+    last_sync_error: Optional[str] = None
 
     def to_dict(self) -> Dict[str, object]:
         """Convert to JSON-friendly dict."""
@@ -77,21 +84,23 @@ class TaskRecord:
             created_at=str(data.get("created_at", _now())),
             started_at=data.get("started_at"),
             completed_at=data.get("completed_at"),
+            sync_pending=bool(data.get("sync_pending", True)),
+            last_sync_error=data.get("last_sync_error"),
         )
 
 
 class TaskDecomposer:
     """
-    Backwards-compatible task tracker used by the CLI.
+    Canonical PM-plane-backed task tracker used by the CLI.
 
-    The original TaskDecomposer class lived under ``dopemux.adhd`` and stored
-    JSON next to project metadata. The newer architecture has moved that logic
-    into ConPort and MetaMCP, but the CLI (and associated tests) still rely on
-    a thin synchronous manager. This implementation keeps that interface alive.
+    The original TaskDecomposer class persisted exclusively to local disk.
+    Now, it acts as a queue/offline cache while delegating real authority to 
+    the PM Plane's normalized transition paths (Leantime, Task Orchestrator, ConPort).
     """
 
-    def __init__(self, workspace: Path | str):
+    def __init__(self, workspace: Path | str, pm_config: Optional[PMWriteConfig] = None):
         self.workspace = Path(workspace).expanduser()
+        self.pm_config = pm_config
         fallback = None
         try:
             self.workspace = self.workspace.resolve()
@@ -118,6 +127,56 @@ class TaskDecomposer:
 
         self._tasks: Dict[str, TaskRecord] = {}
         self._load()
+
+    # --------------------------------------------------------------------- #
+    # PM Plane Canonical Synchronization
+    # --------------------------------------------------------------------- #
+
+    def _sync_to_pm_plane(self, task: TaskRecord, is_transition: bool = False, is_creation: bool = False) -> None:
+        """Attempt to synchronize a task update to the canonical PM plane."""
+        if not self.pm_config:
+            # If no PM config, mark task as needing sync and bail.
+            # Local disk remains offline queue.
+            task.sync_pending = True
+            task.last_sync_error = "No PM config available"
+            return
+
+        idempotency_key = f"{task.id}-{task.status.value}-{task.progress}"
+        
+        # Translate to Canonical Status
+        new_status = PMTaskStatus(task.status.value)
+        
+        try:
+            if is_creation:
+                pm_update_work_item(
+                    config=self.pm_config,
+                    task_id=task.id,
+                    updates={"title": task.description, "description": task.description},
+                    idempotency_key=f"create-{idempotency_key}",
+                )
+                
+            if is_transition or is_creation:
+                pm_transition_work_item(
+                    config=self.pm_config,
+                    task_id=task.id,
+                    new_status=new_status,
+                    reason="cli_task_update",
+                    idempotency_key=f"transition-{idempotency_key}",
+                    expected_version=1, # CLI cache uses version 1 as naive stub
+                )
+            
+            # Record explicit sync success
+            task.sync_pending = False
+            task.last_sync_error = None
+        except Exception as e:
+            # Explicit fail-closed offline queue behavior: record the failure on the record.
+            # Avoids shadow authority by explicitly marking state pending.
+            task.sync_pending = True
+            task.last_sync_error = str(e)
+            logger.debug(f"PM sync failed, queued offline: {e}")
+            
+        self._save()
+
 
     # --------------------------------------------------------------------- #
     # CRUD operations
@@ -148,6 +207,9 @@ class TaskDecomposer:
         )
         self._tasks[task_id] = record
         self._save()
+        
+        # Sync creation
+        self._sync_to_pm_plane(record, is_creation=True)
         return task_id
 
     def list_tasks(self) -> List[Dict[str, object]]:
@@ -201,6 +263,9 @@ class TaskDecomposer:
         if task.progress <= 0.0:
             task.progress = 0.01
         self._save()
+        
+        # Sync transition
+        self._sync_to_pm_plane(task, is_transition=True)
         return True
 
     def complete_task(self, task_id: str) -> bool:
@@ -215,6 +280,9 @@ class TaskDecomposer:
         if task.started_at is None:
             task.started_at = task.completed_at
         self._save()
+        
+        # Sync transition
+        self._sync_to_pm_plane(task, is_transition=True)
         return True
 
     def update_progress(self, task_id: str, progress: float) -> bool:
@@ -225,16 +293,55 @@ class TaskDecomposer:
 
         normalized = max(0.0, min(1.0, float(progress)))
         task.progress = normalized
+        
+        status_changed = False
 
         if normalized >= 1.0:
+            if task.status != TaskStatus.COMPLETED:
+                status_changed = True
             task.status = TaskStatus.COMPLETED
             task.completed_at = task.completed_at or _now()
         elif normalized > 0 and task.status is TaskStatus.PENDING:
+            status_changed = True
             task.status = TaskStatus.IN_PROGRESS
             task.started_at = task.started_at or _now()
 
         self._save()
+        
+        # Sync progress/transition
+        self._sync_to_pm_plane(task, is_transition=status_changed)
         return True
+
+    # --------------------------------------------------------------------- #
+    # Importer / Backfill
+    # --------------------------------------------------------------------- #
+
+    def backfill_to_pm_plane(self) -> int:
+        """
+        Backfill all currently local tasks to the PM plane.
+        Useful when transitioning an existing workspace to the PM-plane architecture,
+        or recovering after being offline.
+        
+        Returns the number of tasks successfully synced.
+        """
+        if not self.pm_config:
+            return 0
+            
+        success_count = 0
+        for task in self._tasks.values():
+            if not task.sync_pending:
+                continue
+                
+            try:
+                # We do both a metadata update and a status transition to ensure fully synced
+                self._sync_to_pm_plane(task, is_creation=True)
+                if not task.sync_pending:
+                    success_count += 1
+            except Exception as e:
+                logger.error(f"Failed to backfill task {task.id}: {e}")
+                
+        return success_count
+
 
     # --------------------------------------------------------------------- #
     # Internal helpers
