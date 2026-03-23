@@ -18,21 +18,6 @@ from rich.progress import (
 from rich.console import Console
 from .theme import Glyphs
 
-# Custom Matrix/Glitch sequence for the ritual daemon
-DOPEMUX_SPINNER = [
-    f"[mint]{Glyphs.BRAND_MARK}[/mint]",
-    f"[mint.soft]\\[=  ][/mint.soft]",
-    f"[mint.soft]\\[== ][/mint.soft]",
-    f"[mint.soft]\\[===][/mint.soft]",
-    f"[magenta]\\[>  ][/magenta]",
-    f"[magenta]\\[>> ][/magenta]",
-    f"[magenta]\\[>>>][/magenta]",
-    f"[violet]\\[/  ][/violet]",
-    f"[violet]\\[// ][/violet]",
-    f"[violet]\\[///][/violet]",
-    f"[mint]{Glyphs.BRAND_MARK}[/mint]",
-]
-
 @contextmanager
 def branded_progress(
     *columns: Any,
@@ -50,24 +35,22 @@ def branded_progress(
         # rich.progress expects a rich.console.Console, so we unwrap our adapter
         console = default_console._console if hasattr(default_console, "_console") else default_console
 
-    # If the user passed their own console, use it, otherwise rely on the default
-    progress_columns = columns or (
-        SpinnerColumn(spinner_name="dots", style="mint"),
-        TextColumn("[mint]{task.description}[/mint]"),
-        BarColumn(complete_style="mint", finished_style="mint.soft"),
-        TaskProgressColumn(),
-        TimeElapsedColumn(),
-    )
+    # If columns are provided, use them. Otherwise use defaults.
+    if not columns:
+        columns = (
+            SpinnerColumn(spinner_name="dots", style="mint"),
+            TextColumn("[mint]{task.description}[/mint]"),
+            BarColumn(complete_style="mint", finished_style="mint.soft"),
+            TaskProgressColumn(),
+            TimeElapsedColumn(),
+        )
 
     progress = Progress(
-        *progress_columns,
+        *columns,
         console=console,
         transient=transient,
         **kwargs
     )
-    
-    # Overwrite the default spinner with our custom sequence if we want to build a custom Spinner class
-    # For simplicity, we use the dots spinner but style it.
     
     try:
         progress.start()

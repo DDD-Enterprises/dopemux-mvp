@@ -3,7 +3,7 @@ from enum import Enum, auto
 from typing import Any, Dict, List, Mapping, Optional
 
 from rich.console import Console
-from ..ui.theme import DOPEMUX_THEME
+from dopemux.ui.theme import DOPEMUX_THEME
 
 
 class RenderMode(Enum):
