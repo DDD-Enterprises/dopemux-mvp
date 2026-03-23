@@ -298,29 +298,20 @@ async def parse_prd(request: PRDParseRequest, http_request: Request):
 
 @tasks_router.get("/next/{project_id}")
 async def get_next_tasks(project_id: str, limit: int = Query(5, ge=1, le=20)):
-    """Get next actionable tasks for ADHD-friendly workflow."""
-    from .services.task_integration import task_service
+    """Get next actionable tasks for ADHD-friendly workflow via normalized PM-plane reads."""
+    from dopemux.pm.reads import pm_get_priority_queue
     
     try:
-        tasks = await task_service.get_next_actionable_tasks(project_id, limit)
+        result = await pm_get_priority_queue(project_id)
         
         return {
             "success": True,
             "project_id": project_id,
-            "count": len(tasks),
-            "tasks": [
-                {
-                    "id": t.id,
-                    "title": t.title,
-                    "description": t.description[:200] if t.description else None,
-                    "priority": t.priority.value,
-                    "estimated_hours": t.estimated_hours
-                }
-                for t in tasks
-            ]
+            "count": len(result.queue_items[:limit]),
+            "tasks": result.queue_items[:limit]
         }
     except Exception as e:
-        logger.error(f"Get next tasks failed: {e}")
+        logger.error(f"Failed to get next tasks: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
