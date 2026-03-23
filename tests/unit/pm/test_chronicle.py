@@ -4,7 +4,7 @@ import pytest
 import httpx
 from unittest.mock import AsyncMock, MagicMock
 
-import dopemux.pm.chronicle
+from dopemux.pm import chronicle
 from dopemux.pm.chronicle import (
     pm_get_work_chronicle,
     pm_append_work_chronicle,
@@ -16,7 +16,7 @@ from dopemux.pm.chronicle_models import PMChronicleReadResult, PMChronicleWriteR
 @pytest.fixture
 def mock_adapter(monkeypatch):
     adapter_mock = AsyncMock()
-    monkeypatch.setattr(dopemux.pm.chronicle, "_adapter", adapter_mock)
+    monkeypatch.setattr(chronicle, "_adapter", adapter_mock)
     return adapter_mock
 
 @pytest.mark.asyncio
