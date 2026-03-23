@@ -147,10 +147,13 @@ app = FastAPI(
 
 try:
     from .api import project_workflow
+    from .api import pm_tools
 except ImportError:
     from app.api import project_workflow
+    from app.api import pm_tools
 
 app.include_router(project_workflow.router)
+app.include_router(pm_tools.router)
 
 # CORS middleware for web integration
 app.add_middleware(
