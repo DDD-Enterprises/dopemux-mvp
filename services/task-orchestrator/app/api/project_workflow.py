@@ -12,6 +12,11 @@ from app.models.workflow import (
     WorkflowStateResult,
 )
 
+from dopemux.pm.reads import (
+    pm_get_priority_queue,
+    pm_get_blockers,
+    pm_get_workflow_state,
+)
 
 router = APIRouter(prefix="/api/projects/{project_id}/workflow", tags=["project-workflow"])
 
@@ -24,25 +29,21 @@ async def get_project_workflow_queue(project_id: str):
     Returns prioritized next actions / queue items, blocker summary if queue
     generation depends on blocker analysis, and next-action data.
     """
-    # This is currently a stub for testing the PM-plane contract
-    # In a full implementation, this would retrieve actual workflow data
-    # For fail-closed behavior, raise an error if project_id is missing or data is not found
-    
-    # Simulate data check
     if not project_id or project_id == "unknown":
         raise HTTPException(status_code=404, detail="project not found")
         
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
         
-    # Stub response
+    result = await pm_get_priority_queue(project_id)
+
     return PriorityQueueResult(
-        project_id=project_id,
-        linked_ids={},
+        project_id=result.project_id,
+        linked_ids=result.linked_ids,
         legality_result="allowed",
         blockers=[],
-        next_action=None,
-        queue_items=[]
+        next_action=result.next_action,
+        queue_items=result.queue_items
     )
 
 
@@ -59,14 +60,15 @@ async def get_project_workflow_blockers(project_id: str):
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
         
-    # Stub response
+    result = await pm_get_blockers(project_id)
+
     return BlockersResult(
-        project_id=project_id,
-        linked_ids={},
+        project_id=result.project_id,
+        linked_ids=result.linked_ids,
         legality_result="allowed",
         blockers=[],
         next_action=None,
-        active_blockers=[]
+        active_blockers=result.active_blockers
     )
 
 
@@ -84,15 +86,16 @@ async def get_project_workflow_state(project_id: str):
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
         
-    # Stub response
+    result = await pm_get_workflow_state(project_id)
+
     return WorkflowStateResult(
-        project_id=project_id,
-        linked_ids={},
+        project_id=result.project_id,
+        linked_ids=result.linked_ids,
         legality_result="allowed",
         blockers=[],
         next_action=None,
-        state={},
-        allowed_transitions=[]
+        state=result.state,
+        allowed_transitions=result.allowed_transitions
     )
 
 
