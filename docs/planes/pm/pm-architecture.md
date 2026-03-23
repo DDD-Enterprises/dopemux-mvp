@@ -35,6 +35,37 @@ Scope: architecture and ADR decisions only; no implementation or schema changes 
 - Leantime and taskmaster integration surfaces exist under `src/integrations/` and include bidirectional sync routines.
   Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L2-L20`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L38-L110`.
 
+## PM Plane Authority Boundaries
+
+As defined in `adr-pm-plane-authority-boundaries.md`, the Dopemux PM plane uses the following canonical authority model to prevent split-brain state and clarify integration routing:
+
+1. **Leantime is the canonical PM operational system of record.**
+   - Authoritative for: projects, goals, milestones, tasks, user-facing PM state.
+   - Not authoritative for: workflow rules, durable memory.
+2. **Task Orchestrator is the canonical workflow authority.**
+   - Authoritative for: workflow rules, blockers, next-action computation, state progression policy.
+   - Not authoritative for: PM entity storage.
+3. **ConPort is the canonical authority for decisions, progress, and structured durable project context.**
+   - Authoritative for: decisions, progress records, context meant for reuse across systems.
+   - Not authoritative for: PM task lifecycle, workflow transitions.
+4. **dope-memory is the canonical authority for chronological work chronicle memory.**
+   - Authoritative for: work-log chronology, replay/reconstruction, trajectory state.
+   - Not authoritative for: PM task truth, workflow state, or the decisions themselves.
+5. **dopecon-bridge is an adapter/router/translator only.**
+   - Must not be treated as canonical for tasks, next-action, decisions, workflow state, or PM entities.
+   - Current mixed-authority behavior is architectural debt.
+
+Any tools or integration adapters must respect these boundaries and route reads/writes to the correct canonical backend.
+
+## Current Runtime Gaps (Downstream Packet Warning)
+
+The current implementation has drift from the authority model defined above. Downstream packets implementing PM features **must** honor the target architecture while working around or remediating these gaps:
+
+- `dopecon-bridge` currently maintains mixed-authority shadow state (e.g., local tasks/decisions) and unauthenticated write surfaces. These must be treated as non-canonical or removed.
+- `conport-kg` is currently blocked and non-canonical. Do not use it as a context authority until remediation is complete.
+- Explicit policy wrappers around PM-plane writes are missing. Tools should use JSON-RPC to Leantime and MCP/API to ConPort or Task Orchestrator rather than direct unvalidated DB writes.
+- Multiple task-creation entrypoints exist across the CLI and wrappers. They should all eventually converge to route through the Task Orchestrator workflow engine or write directly to Leantime.
+
 ## Canonical Task Object (Proposal)
 
 The PM plane defines one canonical task object used for deterministic lifecycle transitions.
