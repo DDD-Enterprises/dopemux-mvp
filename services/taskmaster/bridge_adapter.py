@@ -22,6 +22,9 @@ from dopecon_bridge_client import (
     DopeconBridgeConfig,
 )
 
+from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest, content_hash_task_id
+from dopemux.pm.store import InMemoryPMTaskStore
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,6 +49,7 @@ class TaskMasterBridgeAdapter:
             )
         
         self.client = AsyncDopeconBridgeClient(config=config)
+        self.pm_store = InMemoryPMTaskStore()
         logger.info(f"✅ TaskMaster DopeconBridge adapter initialized (workspace: {workspace_id})")
     
     async def __aenter__(self):
@@ -62,26 +66,45 @@ class TaskMasterBridgeAdapter:
         tags: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Create task via DopeconBridge"""
+        """Create task via DopeconBridge and PM Task Store"""
         try:
+            task_id = content_hash_task_id("taskmaster", None, title, description)
+
+            pm_task = PMTask(
+                task_id=task_id,
+                title=title,
+                description=description,
+                status=PMTaskStatus.TODO,
+                source="taskmaster",
+                created_at_utc=datetime.utcnow(),
+                updated_at_utc=datetime.utcnow(),
+            )
+            pm_task = self.pm_store.create(pm_task)
+
             result = await self.client.create_progress_entry(
                 description=f"{title}: {description}",
-                status="TODO",
+                status=PMTaskStatus.TODO.value,
                 metadata={
                     "taskmaster_task": True,
                     "priority": priority,
                     "tags": tags or [],
                     "title": title,
+                    "canonical_id": pm_task.task_id,
+                    "canonical_version": pm_task.version,
                     **(metadata or {}),
                 },
                 workspace_id=self.workspace_id,
             )
             
+            # Fallback update client ID if returned by Dopecon bridge differently
+            canonical_task_id = pm_task.task_id
+
             # Publish event
             await self.client.publish_event(
                 event_type="taskmaster.task.created",
                 data={
-                    "task_id": result.get("id"),
+                    "task_id": canonical_task_id,
+                    "bridge_id": result.get("id"),
                     "title": title,
                     "priority": priority,
                     "workspace_id": self.workspace_id,
@@ -90,6 +113,10 @@ class TaskMasterBridgeAdapter:
             )
             
             logger.info(f"Created task: {title} (priority: {priority})")
+
+            # Add canonical fields to return
+            result["canonical_id"] = pm_task.task_id
+            result["canonical_version"] = pm_task.version
             return result
         except Exception as e:
             logger.error(f"Failed to create task: {e}")
@@ -124,8 +151,31 @@ class TaskMasterBridgeAdapter:
         task_id: str,
         new_status: str,
     ) -> bool:
-        """Update task status"""
+        """Update task status idempotently via Canonical Store"""
         try:
+            task = self.pm_store.get(task_id)
+            if not task:
+                logger.error(f"Task {task_id} not found in store")
+                return False
+
+            from dopemux.pm.mapping import TASKMASTER_TO_CANONICAL
+            canonical_status = TASKMASTER_TO_CANONICAL.get(new_status, PMTaskStatus.TODO)
+
+            try:
+                task = self.pm_store.transition(
+                    task_id=task_id,
+                    req=PMTransitionRequest(
+                        idempotency_key=f"status-{task_id}-{canonical_status.value}",
+                        expected_version=task.version,
+                        new_status=canonical_status,
+                        ts_utc=datetime.utcnow(),
+                        source="taskmaster",
+                    )
+                )
+            except Exception as e:
+                logger.error(f"Store transition failed: {e}")
+                return False
+
             # Create a new progress entry with updated status
             # (In real implementation, would update existing entry)
             await self.client.publish_event(
@@ -133,6 +183,7 @@ class TaskMasterBridgeAdapter:
                 data={
                     "task_id": task_id,
                     "new_status": new_status,
+                    "canonical_version": task.version,
                     "updated_at": datetime.utcnow().isoformat(),
                     "workspace_id": self.workspace_id,
                 },
@@ -149,38 +200,55 @@ class TaskMasterBridgeAdapter:
         self,
         task_id: str,
     ) -> bool:
-        """Sync task to PM plane (Leantime/etc)"""
+        """Sync task to PM plane with canonical linked IDs validation"""
+        from dopemux.pm.models import PMLinkedIDUpdateRequest
+
         try:
-            # Get task details
-            tasks = await self.get_tasks()
-            task = next((t for t in tasks if t.get("id") == task_id), None)
-            
-            if not task:
-                logger.error(f"Task {task_id} not found")
+            pm_task = self.pm_store.get(task_id)
+            if not pm_task:
+                logger.error(f"Task {task_id} not found in store")
                 return False
-            
+
             # Route to PM plane
             response = await self.client.route_pm(
                 operation="taskmaster.sync_task",
                 data={
-                    "task_id": task_id,
-                    "title": task.get("metadata", {}).get("title", "Untitled"),
-                    "description": task.get("description", ""),
-                    "priority": task.get("metadata", {}).get("priority", 3),
-                    "status": task.get("status", "TODO"),
+                    "task_id": pm_task.task_id,
+                    "title": pm_task.title,
+                    "description": pm_task.description,
+                    "priority": 3,
+                    "status": pm_task.status.value,
                 },
                 requester="taskmaster",
             )
             
             if response.success:
-                # Save sync record
+                pm_task_id = response.data.get("pm_task_id")
+
+                # Update linked IDs canonically
+                try:
+                    self.pm_store.update_linked_ids(
+                        task_id=task_id,
+                        req=PMLinkedIDUpdateRequest(
+                            idempotency_key=f"sync-{task_id}-{pm_task_id}",
+                            expected_version=pm_task.version,
+                            linked_ids={"leantime": pm_task_id},
+                            ts_utc=datetime.utcnow(),
+                            source="taskmaster",
+                        )
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to update linked IDs: {e}")
+                    return False
+
+                # Save sync record (legacy)
                 await self.client.save_custom_data(
                     workspace_id=self.workspace_id,
                     category="taskmaster_pm_sync",
                     key=task_id,
                     value={
                         "task_id": task_id,
-                        "pm_task_id": response.data.get("pm_task_id"),
+                        "pm_task_id": pm_task_id,
                         "synced_at": datetime.utcnow().isoformat(),
                     },
                 )

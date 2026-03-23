@@ -52,6 +52,7 @@ class PMTask(BaseModel):
 
     description: Optional[str] = None
     source_task_id: Optional[str] = None
+    linked_ids: Dict[str, str] = Field(default_factory=dict)
     refs: Dict[str, Any] = Field(default_factory=dict)
     meta: Dict[str, Any] = Field(default_factory=dict)
 
@@ -72,6 +73,24 @@ class PMTransitionRequest(BaseModel):
     ts_utc: datetime
     source: str
     reason: Optional[str] = None
+
+    model_config = {"frozen": True}
+
+
+class PMLinkedIDUpdateRequest(BaseModel):
+    """Request to update linked IDs for a PM task.
+
+    Invariants:
+    - idempotency_key is required.
+    - expected_version is required.
+    - Silent overwriting of existing distinct values is prohibited.
+    """
+
+    idempotency_key: str
+    expected_version: int = Field(ge=1)
+    linked_ids: Dict[str, str]
+    ts_utc: datetime
+    source: str
 
     model_config = {"frozen": True}
 
