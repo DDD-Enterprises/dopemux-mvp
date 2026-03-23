@@ -37,3 +37,21 @@ __all__ = [
     "pm_get_sprint_snapshot",
     "pm_get_decision_context",
 ]
+
+from .writes import (
+    pm_update_work_item,
+    pm_transition_work_item,
+    pm_log_progress,
+    CanonicalReceipt,
+    MirrorReceipt,
+    PMWriteConfig,
+)
+
+__all__.extend([
+    "pm_update_work_item",
+    "pm_transition_work_item",
+    "pm_log_progress",
+    "CanonicalReceipt",
+    "MirrorReceipt",
+    "PMWriteConfig",
+])
