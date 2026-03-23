@@ -124,6 +124,88 @@ class ConPortClient:
             linked_item_id=linked_item_id,
         )
 
+    async def update_progress(
+        self,
+        progress_id: int,
+        updates: Dict[str, Any]
+    ) -> bool:
+        """Update progress entry."""
+        if hasattr(self.backend, 'update_progress'):
+            return await self.backend.update_progress(
+                workspace_id=self.config.workspace_id,
+                progress_id=progress_id,
+                updates=updates
+            )
+        return False
+
+    async def link_items(
+        self,
+        source_item_type: str,
+        source_item_id: str,
+        target_item_type: str,
+        target_item_id: str,
+        relationship_type: str,
+        description: str
+    ) -> bool:
+        """Link two items in the knowledge graph."""
+        if hasattr(self.backend, 'link_items'):
+            return await self.backend.link_items(
+                workspace_id=self.config.workspace_id,
+                source_item_type=source_item_type,
+                source_item_id=source_item_id,
+                target_item_type=target_item_type,
+                target_item_id=target_item_id,
+                relationship_type=relationship_type,
+                description=description
+            )
+        return False
+
+    async def semantic_search(
+        self,
+        query_text: str,
+        top_k: int = 5,
+        filter_item_types: Optional[List[str]] = None
+    ) -> List[Dict]:
+        """Semantic search."""
+        if hasattr(self.backend, 'semantic_search'):
+            return await self.backend.semantic_search(
+                workspace_id=self.config.workspace_id,
+                query_text=query_text,
+                top_k=top_k,
+                filter_item_types=filter_item_types
+            )
+        return []
+
+    async def get_system_patterns(
+        self,
+        tags: Optional[List[str]] = None,
+        limit: int = 5
+    ) -> List[Dict]:
+        """Get system patterns."""
+        if hasattr(self.backend, 'get_system_patterns'):
+            return await self.backend.get_system_patterns(
+                workspace_id=self.config.workspace_id,
+                tags=tags,
+                limit=limit
+            )
+        return []
+
+    async def get_linked_items(
+        self,
+        item_type: str,
+        item_id: str,
+        limit: int = 20
+    ) -> List[Dict]:
+        """Get linked items."""
+        if hasattr(self.backend, 'get_linked_items'):
+            return await self.backend.get_linked_items(
+                workspace_id=self.config.workspace_id,
+                item_type=item_type,
+                item_id=item_id,
+                limit=limit
+            )
+        return []
+
     async def get_progress(
         self,
         status_filter: Optional[str] = None,
