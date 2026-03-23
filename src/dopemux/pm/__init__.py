@@ -19,3 +19,21 @@ __all__ = [
     "TaskNotFoundError",
     "StaleWriteError",
 ]
+
+from .writes import (
+    pm_update_work_item,
+    pm_transition_work_item,
+    pm_log_progress,
+    CanonicalReceipt,
+    MirrorReceipt,
+    PMWriteConfig,
+)
+
+__all__.extend([
+    "pm_update_work_item",
+    "pm_transition_work_item",
+    "pm_log_progress",
+    "CanonicalReceipt",
+    "MirrorReceipt",
+    "PMWriteConfig",
+])
