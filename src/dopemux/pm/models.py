@@ -33,6 +33,13 @@ class PMTaskStatus(str, Enum):
     CANCELED = "CANCELED"
 
 
+# Fields requiring optimistic concurrency control (version bumps)
+WORKFLOW_SIGNIFICANT_FIELDS = frozenset({"status", "version", "blocked_reason", "dependencies"})
+
+# Fields supporting a last-write-wins update strategy
+METADATA_ONLY_FIELDS = frozenset({"title", "description", "assignee", "labels", "milestone", "meta", "linked_ids", "refs", "source_task_id"})
+
+
 class PMTask(BaseModel):
     """Canonical PM task — single source of lifecycle truth.
 
@@ -52,6 +59,9 @@ class PMTask(BaseModel):
 
     description: Optional[str] = None
     source_task_id: Optional[str] = None
+    assignee: Optional[str] = None
+    labels: list[str] = Field(default_factory=list)
+    milestone: Optional[str] = None
     linked_ids: Dict[str, str] = Field(default_factory=dict)
     refs: Dict[str, Any] = Field(default_factory=dict)
     meta: Dict[str, Any] = Field(default_factory=dict)
