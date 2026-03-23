@@ -16,7 +16,10 @@ from typing import Any, Dict, List, Optional
 # Import from parent directory
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+publisher_file = Path(__file__).resolve()
+sys.path.insert(0, str(publisher_file.parents[1])) # services/task-orchestrator/app
+sys.path.insert(0, str(publisher_file.parents[2])) # services/task-orchestrator
+sys.path.insert(0, str(publisher_file.parents[3])) # services/
 
 from task_orchestrator.models import AgentType
 from shared.conport_client.client import ConPortClient
