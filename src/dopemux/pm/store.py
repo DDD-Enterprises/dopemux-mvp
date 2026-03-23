@@ -7,8 +7,9 @@ per ADR-PM-001 invariants.
 
 from abc import ABC, abstractmethod
 from typing import Dict, Optional, Tuple, Any
+from datetime import datetime, timezone
 
-from .models import PMTask, PMTransitionRequest, PMLinkedIDUpdateRequest
+from .models import PMTask, PMTransitionRequest, PMLinkedIDUpdateRequest, METADATA_ONLY_FIELDS
 
 
 class TaskNotFoundError(Exception):
@@ -81,6 +82,18 @@ class PMTaskStore(ABC):
 
         Idempotency: duplicate (task_id, idempotency_key) returns
         the previously produced result without mutation.
+        """
+        ...
+
+    @abstractmethod
+    def patch_metadata(self, task_id: str, patch: dict[str, Any]) -> PMTask:
+        """Apply passive metadata updates without bumping the canonical version.
+        
+        Only fields in METADATA_ONLY_FIELDS will be updated.
+        Fields in WORKFLOW_SIGNIFICANT_FIELDS will be silently ignored.
+        
+        Raises:
+            TaskNotFoundError: task_id does not exist.
         """
         ...
 
@@ -187,4 +200,25 @@ class InMemoryPMTaskStore(PMTaskStore):
         task.updated_at_utc = req.ts_utc
         self._replay_log[replay_key] = (task.version, req_hash)
         
+        return task.model_copy()
+
+    def patch_metadata(self, task_id: str, patch: dict[str, Any]) -> PMTask:
+        """Apply passive metadata updates without bumping the canonical version."""
+        task = self._tasks.get(task_id)
+        if task is None:
+            raise TaskNotFoundError(task_id)
+
+        changed = False
+        for key, value in patch.items():
+            if key in METADATA_ONLY_FIELDS:
+                if hasattr(task, key) or key in task.model_fields:
+                    setattr(task, key, value)
+                    changed = True
+                elif key in ["meta", "refs", "linked_ids"] and isinstance(value, dict):
+                    getattr(task, key).update(value)
+                    changed = True
+
+        if changed:
+            task.updated_at_utc = datetime.now(timezone.utc)
+
         return task.model_copy()
