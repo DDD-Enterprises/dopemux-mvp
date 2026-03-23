@@ -222,3 +222,13 @@ class InMemoryPMTaskStore(PMTaskStore):
             task.updated_at_utc = datetime.now(timezone.utc)
 
         return task.model_copy()
+
+
+_store_instance: Optional[PMTaskStore] = None
+
+def get_pm_store() -> PMTaskStore:
+    global _store_instance
+    if _store_instance is None:
+        _store_instance = InMemoryPMTaskStore()
+    return _store_instance
+

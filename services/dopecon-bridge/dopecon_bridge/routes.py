@@ -151,14 +151,31 @@ async def publish_event(request: PublishEventRequest):
     """Publish event to Redis Stream for cross-service coordination."""
     try:
         from .event_bus import EventBus, Event
+        from dopemux.pm.adapters.core import taskmaster_event_to_pm, orchestrator_event_to_pm, pm_to_bus_event
         
         event_bus = EventBus()
         await event_bus.initialize()
         
+        event_type = request.event_type
+        data = request.data
+        source = request.source or settings.service_name
+        
+        # Normalize to PM Plane if applicable
+        if event_type.startswith("taskmaster."):
+            envelope = taskmaster_event_to_pm(event_type, data, source)
+            bus_event = pm_to_bus_event(envelope)
+            event_type = bus_event["namespace"]
+            data = bus_event["payload"]
+        elif event_type.startswith("task_") or event_type in ["task_created", "task_updated", "task_completed"]:
+            envelope = orchestrator_event_to_pm({"type": event_type, "data": data}, source)
+            bus_event = pm_to_bus_event(envelope)
+            event_type = bus_event["namespace"]
+            data = bus_event["payload"]
+        
         event = Event(
-            type=request.event_type,
-            data=request.data,
-            source=request.source or settings.service_name
+            type=event_type,
+            data=data,
+            source=source
         )
         
         msg_id = await event_bus.publish(request.stream, event)
@@ -167,7 +184,7 @@ async def publish_event(request: PublishEventRequest):
             "success": True,
             "message_id": msg_id,
             "stream": request.stream,
-            "event_type": request.event_type
+            "event_type": event_type
         }
     except Exception as e:
         logger.error(f"Event publish failed: {e}")
