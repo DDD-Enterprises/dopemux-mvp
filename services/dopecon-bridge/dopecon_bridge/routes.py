@@ -9,7 +9,7 @@ import logging
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field
@@ -263,10 +263,21 @@ async def publish_progress_updated(task_id: str, status: str, progress: float):
 # ============================================================================
 
 @tasks_router.post("/parse-prd")
-async def parse_prd(request: PRDParseRequest, http_request: Request):
+async def parse_prd(
+    request: PRDParseRequest,
+    http_request: Request,
+    x_source_plane: Optional[str] = Header(None)
+):
     """Parse PRD document into tasks across all systems with ADHD context preservation."""
     from .services.task_integration import task_service
     
+    # Enforce cognitive plane authority for writes
+    if x_source_plane != "cognitive_plane":
+        raise HTTPException(
+            status_code=403,
+            detail="PRD parsing requires cognitive_plane authority"
+        )
+
     try:
         # Update context for ADHD tracking
         update_context_delta(
@@ -297,8 +308,15 @@ async def parse_prd(request: PRDParseRequest, http_request: Request):
 
 
 @tasks_router.get("/next/{project_id}")
-async def get_next_tasks(project_id: str, limit: int = Query(5, ge=1, le=20)):
+async def get_next_tasks(
+    project_id: str,
+    limit: int = Query(5, ge=1, le=20),
+    x_source_plane: Optional[str] = Header(None)
+):
     """Get next actionable tasks for ADHD-friendly workflow."""
+    if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
+        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+
     from .services.task_integration import task_service
     
     try:
@@ -328,9 +346,17 @@ async def get_next_tasks(project_id: str, limit: int = Query(5, ge=1, le=20)):
 async def update_task_status(
     task_id: str,
     request: TaskUpdateRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_source_plane: Optional[str] = Header(None)
 ):
     """Update task status across all systems."""
+    # Enforce cognitive plane authority for writes
+    if x_source_plane != "cognitive_plane":
+        raise HTTPException(
+            status_code=403,
+            detail="Task status update requires cognitive_plane authority"
+        )
+
     from .services.task_integration import task_service
     
     try:
@@ -355,34 +381,28 @@ async def update_task_status(
 @ddg_router.get("/decisions")
 async def ddg_recent_decisions(
     workspace_id: Optional[str] = None,
-    limit: int = Query(20, ge=1, le=100)
+    limit: int = Query(20, ge=1, le=100),
+    x_source_plane: Optional[str] = Header(None)
 ):
     """Get recent decisions from the decision graph."""
-    from sqlalchemy import select
-    from .models import DdgDecision
-    
+    if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
+        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+
     try:
-        async with await db_manager.get_session() as session:
-            query = select(DdgDecision).order_by(DdgDecision.created_at.desc()).limit(limit)
-            if workspace_id:
-                query = query.where(DdgDecision.workspace_id == workspace_id)
-            
-            result = await session.execute(query)
-            decisions = result.scalars().all()
-            
-            return {
-                "count": len(decisions),
-                "decisions": [
-                    {
-                        "id": d.id,
-                        "summary": d.summary,
-                        "tags": d.tags or [],
-                        "workspace_id": d.workspace_id,
-                        "created_at": d.created_at.isoformat()
-                    }
-                    for d in decisions
-                ]
-            }
+        # Route to canonical backend via MCP client
+        from .clients import mcp_client
+
+        # We proxy to mcp_client.get_decisions which gets from Conport
+        decisions = await mcp_client.call_tool(
+            "conport",
+            "get_decisions",
+            {"workspace_id": workspace_id, "limit": limit}
+        )
+
+        return {
+            "count": len(decisions.get("decisions", [])),
+            "decisions": decisions.get("decisions", [])
+        }
     except Exception as e:
         logger.error(f"DDG decisions query failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -392,37 +412,29 @@ async def ddg_recent_decisions(
 async def ddg_search_decisions(
     q: str,
     workspace_id: Optional[str] = None,
-    limit: int = Query(20, ge=1, le=100)
+    limit: int = Query(20, ge=1, le=100),
+    x_source_plane: Optional[str] = Header(None)
 ):
     """Search decisions by text query."""
-    from sqlalchemy import select
-    from .models import DdgDecision
-    
+    if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
+        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+
     try:
-        async with await db_manager.get_session() as session:
-            query = select(DdgDecision).where(
-                DdgDecision.summary.ilike(f"%{q}%")
-            ).order_by(DdgDecision.created_at.desc()).limit(limit)
-            
-            if workspace_id:
-                query = query.where(DdgDecision.workspace_id == workspace_id)
-            
-            result = await session.execute(query)
-            decisions = result.scalars().all()
-            
-            return {
-                "query": q,
-                "count": len(decisions),
-                "decisions": [
-                    {
-                        "id": d.id,
-                        "summary": d.summary,
-                        "tags": d.tags or [],
-                        "workspace_id": d.workspace_id
-                    }
-                    for d in decisions
-                ]
-            }
+        # Route to canonical backend via MCP client
+        from .clients import mcp_client
+
+        # We proxy to mcp_client.query_knowledge_graph
+        decisions = await mcp_client.call_tool(
+            "conport",
+            "query_knowledge_graph",
+            {"query": q, "workspace_id": workspace_id, "limit": limit}
+        )
+
+        return {
+            "query": q,
+            "count": len(decisions.get("decisions", [])),
+            "decisions": decisions.get("decisions", [])
+        }
     except Exception as e:
         logger.error(f"DDG search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
