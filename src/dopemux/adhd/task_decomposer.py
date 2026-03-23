@@ -18,7 +18,7 @@ from dataclasses import dataclass, asdict, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional
 
 
 logger = logging.getLogger(__name__)
