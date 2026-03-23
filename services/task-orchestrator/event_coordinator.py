@@ -15,7 +15,10 @@ from dataclasses import dataclass, asdict, field
 from enum import Enum
 from collections import deque
 
-import redis.asyncio as redis
+try:
+    import redis.asyncio as redis
+except ImportError:
+    redis = None
 
 logger = logging.getLogger(__name__)
 
