@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, root_validator, validator
 
@@ -44,6 +44,23 @@ class ADHDMetadata(BaseModel):
     can_work_parallel: bool = True
 
 
+class TransitionAuditRecord(BaseModel):
+    """Immutable audit record for a workflow state transition."""
+
+    id: str
+    entity_id: str
+    transition_type: str
+    from_state: str
+    to_state: str
+    actor: str = "system"
+    timestamp: str = Field(default_factory=utc_now_iso)
+    idempotency_key: Optional[str] = None
+    version_before: int
+    version_after: int
+    linked_ids_snapshot: Dict[str, Optional[str]] = Field(default_factory=dict)
+    receipt_id: Optional[str] = None
+
+
 class WorkflowIdea(BaseModel):
     """Stage-1 workflow idea persisted in ConPort custom_data."""
 
@@ -57,6 +74,8 @@ class WorkflowIdea(BaseModel):
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
     promoted_to_epic_id: Optional[str] = None
+    version: int = Field(default=1)
+    idempotency_key: Optional[str] = None
 
     @validator("id")
     def validate_id(cls, value: str) -> str:
@@ -98,6 +117,8 @@ class WorkflowEpic(BaseModel):
     adhd_metadata: ADHDMetadata = Field(default_factory=ADHDMetadata)
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
+    version: int = Field(default=1)
+    idempotency_key: Optional[str] = None
 
     @validator("id")
     def validate_id(cls, value: str) -> str:
@@ -137,6 +158,7 @@ class CreateIdeaRequest(BaseModel):
     source: IdeaSource = "other"
     creator: str = Field("system", min_length=1)
     tags: List[str] = Field(default_factory=list)
+    idempotency_key: Optional[str] = None
 
     _normalize_tags = validator("tags", pre=True, allow_reuse=True)(normalize_tags)
 
@@ -148,6 +170,8 @@ class UpdateIdeaRequest(BaseModel):
     description: Optional[str] = None
     status: Optional[IdeaStatus] = None
     tags: Optional[List[str]] = None
+    version: Optional[int] = None
+    idempotency_key: Optional[str] = None
 
     _normalize_tags = validator("tags", pre=True, allow_reuse=True)(normalize_tags)
 
@@ -170,6 +194,7 @@ class CreateEpicRequest(BaseModel):
     created_from_idea_id: Optional[str] = None
     tags: List[str] = Field(default_factory=list)
     adhd_metadata: ADHDMetadata = Field(default_factory=ADHDMetadata)
+    idempotency_key: Optional[str] = None
 
     @validator("acceptance_criteria", pre=True, always=True)
     def normalize_criteria(cls, value: Optional[List[str]]) -> List[str]:
@@ -192,6 +217,8 @@ class UpdateEpicRequest(BaseModel):
     tags: Optional[List[str]] = None
     leantime_project_id: Optional[int] = None
     adhd_metadata: Optional[ADHDMetadata] = None
+    version: Optional[int] = None
+    idempotency_key: Optional[str] = None
 
     @validator("acceptance_criteria", pre=True, always=False)
     def normalize_criteria(cls, value: Optional[List[str]]) -> Optional[List[str]]:
@@ -230,6 +257,7 @@ class PromoteIdeaRequest(BaseModel):
     priority: EpicPriority = "medium"
     tags: Optional[List[str]] = None
     adhd_metadata: ADHDMetadata = Field(default_factory=ADHDMetadata)
+    idempotency_key: Optional[str] = None
 
     @validator("acceptance_criteria", pre=True, always=True)
     def normalize_criteria(cls, value: Optional[List[str]]) -> List[str]:

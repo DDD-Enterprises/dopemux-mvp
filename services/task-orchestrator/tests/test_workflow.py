@@ -1,0 +1,125 @@
+import pytest
+from app.models.workflow import CreateIdeaRequest, UpdateIdeaRequest, PromoteIdeaRequest, CreateEpicRequest, UpdateEpicRequest, WorkflowIdea
+from app.services.workflow_service import WorkflowService, WorkflowConflictError, WorkflowUnavailableError
+
+class MockStore:
+    def __init__(self):
+        self.ideas = {}
+        self.epics = {}
+        self.audits = {}
+        self.fail_audit = False
+
+    async def get_idea(self, idea_id):
+        return self.ideas.get(idea_id)
+
+    async def get_epic(self, epic_id):
+        return self.epics.get(epic_id)
+
+    async def get_idea_by_idempotency_key(self, key):
+        for val in self.ideas.values():
+            if val.get("idempotency_key") == key:
+                return val
+        return None
+
+    async def get_epic_by_idempotency_key(self, key):
+        for val in self.epics.values():
+            if val.get("idempotency_key") == key:
+                return val
+        return None
+
+    async def save_idea(self, idea_data):
+        self.ideas[idea_data["id"]] = idea_data
+        return True
+
+    async def save_epic(self, epic_data):
+        self.epics[epic_data["id"]] = epic_data
+        return True
+
+    async def save_audit_record(self, record):
+        if self.fail_audit:
+            return False
+        self.audits[record["id"]] = record
+        return True
+
+    async def close(self):
+        pass
+
+@pytest.fixture
+def mock_store():
+    return MockStore()
+
+@pytest.fixture
+def service(mock_store):
+    svc = WorkflowService(workspace_id="test", store=mock_store)
+    return svc
+
+@pytest.mark.asyncio
+async def test_direct_status_mutation_blocked_idea(service):
+    idea = await service.create_idea(CreateIdeaRequest(title="T", description="D"))
+    with pytest.raises(WorkflowConflictError, match="direct status mutation blocked"):
+        await service.update_idea(idea.id, UpdateIdeaRequest(status="promoted"))
+
+@pytest.mark.asyncio
+async def test_duplicate_create(service):
+    req1 = CreateIdeaRequest(title="T1", description="D1", idempotency_key="create_key")
+    idea1 = await service.create_idea(req1)
+
+    req2 = CreateIdeaRequest(title="T2", description="D2", idempotency_key="create_key")
+    idea2 = await service.create_idea(req2)
+
+    # Should return the same idea and not duplicate mutation
+    assert idea1.id == idea2.id
+    assert idea2.title == "T1"
+
+@pytest.mark.asyncio
+async def test_stale_version_rejected(service):
+    idea = await service.create_idea(CreateIdeaRequest(title="T", description="D"))
+    req = UpdateIdeaRequest(title="T2")
+    req.version = idea.version - 1
+    with pytest.raises(WorkflowConflictError, match="stale version update rejected"):
+        await service.update_idea(idea.id, req)
+
+@pytest.mark.asyncio
+async def test_idempotent_idea_update(service):
+    idea = await service.create_idea(CreateIdeaRequest(title="T", description="D"))
+
+    req1 = UpdateIdeaRequest(title="T2", idempotency_key="update_key")
+    idea1 = await service.update_idea(idea.id, req1)
+
+    # Same update idempotency key
+    req2 = UpdateIdeaRequest(title="T3", idempotency_key="update_key")
+    idea2 = await service.update_idea(idea.id, req2)
+
+    assert idea1.title == "T2"
+    assert idea2.title == "T2"
+    assert idea1.version == idea2.version
+
+@pytest.mark.asyncio
+async def test_conflicting_linked_id_overwrite(service):
+    epic = await service.create_epic(CreateEpicRequest(title="E1", description="D1", business_value="BV"))
+
+    # First update sets leantime_project_id
+    req1 = UpdateEpicRequest(leantime_project_id=10)
+    epic = await service.update_epic(epic.id, req1)
+
+    # Second update conflicts
+    req2 = UpdateEpicRequest(leantime_project_id=20)
+    with pytest.raises(WorkflowConflictError, match="conflicting linked-ID overwrite fails closed"):
+        await service.update_epic(epic.id, req2)
+
+    # Second update matches (should succeed)
+    req3 = UpdateEpicRequest(leantime_project_id=10)
+    epic = await service.update_epic(epic.id, req3)
+    assert epic.leantime_project_id == 10
+
+@pytest.mark.asyncio
+async def test_promote_idea_audit_failure(service, mock_store):
+    idea = await service.create_idea(CreateIdeaRequest(title="T", description="D"))
+    mock_store.fail_audit = True
+
+    with pytest.raises(WorkflowUnavailableError, match="failed to persist workflow transition audit"):
+        await service.promote_idea(idea.id, PromoteIdeaRequest(business_value="test value"))
+
+    # Check that idea was not promoted
+    stored_idea = await service.get_idea(idea.id)
+    assert stored_idea.status == "new"
