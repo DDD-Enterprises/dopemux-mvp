@@ -25,6 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from task_orchestrator.models import OrchestrationTask, TaskStatus, AgentType
+from shared.conport_client.client import ConPortClient
 
 logger = logging.getLogger(__name__)
 
@@ -356,18 +357,25 @@ class ConPortEventAdapter:
         tasks = await adapter.get_all_tasks_from_conport()
     """
 
-    def __init__(self, workspace_id: str, conport_url: str = "http://localhost:8005"):
+    def __init__(self, workspace_id: str, conport_url: str = "http://localhost:8005", conport_client: Optional[Any] = None):
         """
         Initialize ConPort adapter.
 
         Args:
             workspace_id: Absolute path to workspace
             conport_url: ConPort HTTP API base URL
+            conport_client: Shared ConPortClient instance
         """
         self.workspace_id = workspace_id
         self.conport_url = conport_url.rstrip('/')
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.local_cache: Dict[str, Dict] = {}  # Fallback cache if ConPort unavailable
+
+        # Initialize default shared client if none provided
+        if conport_client is None:
+            self.conport_client = ConPortClient(workspace_id=workspace_id)
+        else:
+            self.conport_client = conport_client
 
     async def __aenter__(self):
         """Async context manager entry"""
@@ -574,46 +582,17 @@ class ConPortEventAdapter:
 
     async def _resilient_log_progress(self, progress_data: Dict) -> Optional[int]:
         """
-        Log progress to ConPort via HTTP API with retry logic.
-
-        Returns ConPort progress_entry ID if successful, None otherwise.
+        Send log_progress to ConPort with resilience.
+        Uses shared ConPortClient instead of raw HTTP.
         """
-        if not self.http_session:
-            await self.initialize()
+        if not self.conport_client:
+            raise ValueError("No conport_client configured for _resilient_log_progress")
 
-        max_retries = 3
-
-        for attempt in range(max_retries):
-            try:
-                url = f"{self.conport_url}/api/progress/log"
-                params = {"workspace_id": self.workspace_id}
-
-                async with self.http_session.post(url, params=params, json=progress_data) as response:
-                    if response.status == 200:
-                        result = await response.json()
-                        if result.get("success") and "progress_id" in result:
-                            return result["progress_id"]
-                        else:
-                            logger.error(f"Invalid ConPort response format: {result}")
-                            return None
-                    else:
-                        error_text = await response.text()
-                        logger.error(f"ConPort HTTP error {response.status}: {error_text}")
-                        return None
-
-            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                if attempt < max_retries - 1:
-                    wait_time = 2 ** attempt  # Exponential backoff
-                    logger.warning(f"ConPort connection failed (attempt {attempt+1}/{max_retries}), retrying in {wait_time}s...")
-                    await asyncio.sleep(wait_time)
-                else:
-                    logger.error(f"ConPort unavailable after {max_retries} attempts: {e}")
-                    return None
-
-            except Exception as e:
-                logger.error(f"ConPort API error: {e}")
-                return None
-
+        result = await self.conport_client.log_progress(**progress_data)
+        if hasattr(result, "id"):
+            return result.id
+        elif isinstance(result, dict) and "id" in result:
+            return result["id"]
         return None
 
     async def _resilient_update_progress(
@@ -623,49 +602,21 @@ class ConPortEventAdapter:
         description: Optional[str] = None
     ) -> bool:
         """
-        Update progress in ConPort via HTTP API with retry logic.
-
-        Returns True if successful, False otherwise.
+        Update progress in ConPort via shared ConPortClient.
         """
-        if not self.http_session:
-            await self.initialize()
+        if not self.conport_client:
+            raise ValueError("No conport_client configured for _resilient_update_progress")
 
-        max_retries = 3
+        update_data = {}
+        if status is not None:
+            update_data["status"] = status
+        if description is not None:
+            update_data["description"] = description
 
-        for attempt in range(max_retries):
-            try:
-                url = f"{self.conport_url}/api/progress/{progress_id}"
-                params = {"workspace_id": self.workspace_id}
-                update_data = {}
-
-                if status is not None:
-                    update_data["status"] = status
-                if description is not None:
-                    update_data["description"] = description
-
-                async with self.http_session.put(url, params=params, json=update_data) as response:
-                    if response.status == 200:
-                        result = await response.json()
-                        return result.get("success", False)
-                    else:
-                        error_text = await response.text()
-                        logger.error(f"ConPort HTTP error {response.status}: {error_text}")
-                        return False
-
-            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                if attempt < max_retries - 1:
-                    wait_time = 2 ** attempt
-                    logger.warning(f"ConPort update failed (attempt {attempt+1}/{max_retries}), retrying in {wait_time}s...")
-                    await asyncio.sleep(wait_time)
-                else:
-                    logger.error(f"ConPort unavailable after {max_retries} attempts: {e}")
-                    return False
-
-            except Exception as e:
-                logger.error(f"ConPort update error: {e}")
-                return False
-
-        return False
+        return await self.conport_client.update_progress(
+            progress_id=progress_id,
+            updates=update_data
+        )
 
     async def _get_progress_from_conport(
         self,
@@ -673,39 +624,25 @@ class ConPortEventAdapter:
         tags_filter: Optional[List[str]] = None
     ) -> List[Dict]:
         """
-        Get progress entries from ConPort via HTTP API.
+        Get progress entries from ConPort via shared ConPortClient.
         """
-        if not self.http_session:
-            await self.initialize()
+        if not self.conport_client:
+            return []
 
         try:
-            url = f"{self.conport_url}/api/progress"
-            params = {"workspace_id": self.workspace_id}
+            results = await self.conport_client.get_progress(status_filter=status_filter)
 
-            if status_filter:
-                params["status_filter"] = status_filter
+            # Map back to dict if they are objects
+            entries = [d.dict() if hasattr(d, "dict") else d for d in results]
 
-            async with self.http_session.get(url, params=params) as response:
-                if response.status == 200:
-                    result = await response.json()
-                    if isinstance(result, dict) and "progress_entries" in result:
-                        entries = result["progress_entries"]
-                        # Filter by tags if specified
-                        if tags_filter:
-                            filtered = []
-                            for entry in entries:
-                                entry_tags = entry.get("tags", [])
-                                if any(tag in entry_tags for tag in tags_filter):
-                                    filtered.append(entry)
-                            return filtered
-                        return entries
-                    else:
-                        logger.error(f"Invalid ConPort get_progress response: {result}")
-                        return []
-                else:
-                    error_text = await response.text()
-                    logger.error(f"ConPort HTTP error {response.status}: {error_text}")
-                    return []
+            if tags_filter:
+                filtered = []
+                for entry in entries:
+                    entry_tags = entry.get("tags", [])
+                    if any(tag in entry_tags for tag in tags_filter):
+                        filtered.append(entry)
+                return filtered
+            return entries
 
         except Exception as e:
             logger.error(f"Failed to get progress from ConPort: {e}")
@@ -719,36 +656,26 @@ class ConPortEventAdapter:
         description: str
     ) -> bool:
         """
-        Create relationship link between ConPort items via HTTP API.
+        Create relationship link between ConPort items via shared ConPortClient.
         """
-        if not self.http_session:
-            await self.initialize()
+        if not self.conport_client:
+            return False
 
         try:
-            url = f"{self.conport_url}/api/links"
-            params = {"workspace_id": self.workspace_id}
-            link_data = {
-                "source_item_type": "progress_entry",
-                "source_item_id": str(source_id),
-                "target_item_type": "progress_entry",
-                "target_item_id": str(target_id),
-                "relationship_type": relationship_type,
-                "description": description
-            }
-
-            async with self.http_session.post(url, params=params, json=link_data) as response:
-                if response.status == 200:
-                    result = await response.json()
-                    if result.get("success"):
-                        logger.info(f"📎 Linked: {source_id} -{relationship_type}-> {target_id}")
-                        return True
-                    else:
-                        logger.error(f"Failed to create link: {result}")
-                        return False
-                else:
-                    error_text = await response.text()
-                    logger.error(f"ConPort HTTP error {response.status}: {error_text}")
-                    return False
+            if hasattr(self.conport_client, 'link_items'):
+                await self.conport_client.link_items(
+                    source_item_type="progress_entry",
+                    source_item_id=str(source_id),
+                    target_item_type="progress_entry",
+                    target_item_id=str(target_id),
+                    relationship_type=relationship_type,
+                    description=description
+                )
+                logger.info(f"📎 Linked: {source_id} -{relationship_type}-> {target_id}")
+                return True
+            else:
+                logger.warning("ConPort client lacks link_items method")
+                return False
 
         except Exception as e:
             logger.error(f"Failed to link items: {e}")
@@ -827,8 +754,7 @@ class ConPortEventAdapter:
             if self.conport_client:
                 # Call ConPort MCP
                 await self.conport_client.update_active_context(
-                    workspace_id=self.workspace_id,
-                    patch_content=sprint_context
+                    content=sprint_context
                 )
                 logger.info(f"🎯 ConPort context activated for sprint: {sprint_id}")
                 return True
@@ -990,8 +916,7 @@ class ConPortEventAdapter:
             # Update active context with current ADHD state
             if self.conport_client:
                 await self.conport_client.update_active_context(
-                    workspace_id=self.workspace_id,
-                    patch_content={
+                    content={
                         "current_energy": energy_level,
                         "current_attention": attention_level,
                         "state_updated_at": datetime.now().isoformat()
@@ -1042,12 +967,19 @@ class ConPortEventAdapter:
 
             # Query ConPort for decisions matching any of the tags
             result = await self.conport_client.get_decisions(
-                workspace_id=self.workspace_id,
-                tags_filter_include_any=tags,
+                tags=tags,
                 limit=10
             )
 
-            decisions = result.get("result", [])
+            # Extract decisions from result based on typical return format
+            if hasattr(result, "get") and callable(result.get):
+                 decisions = result.get("result", [])
+            else:
+                 decisions = result if isinstance(result, list) else [result] if result else []
+                 # try to map object values back to dictionary as original did
+                 decisions = [d.dict() if hasattr(d, "dict") else d for d in decisions]
+
+
             logger.info(f"📚 Found {len(decisions)} relevant decisions")
 
             # Optionally link decisions to task in ConPort
@@ -1104,10 +1036,9 @@ class ConPortEventAdapter:
 
             # Query ConPort for patterns matching domain
             result = await self.conport_client.get_system_patterns(
-                workspace_id=self.workspace_id,
                 tags_filter_include_any=domain_tags,
                 limit=5
-            )
+            ) if hasattr(self.conport_client, 'get_system_patterns') else []
 
             # ConPort returns different format - extract patterns
             if isinstance(result, dict):
@@ -1143,14 +1074,19 @@ class ConPortEventAdapter:
         try:
             logger.debug("🔍 Querying ConPort active context for ADHD state")
 
-            result = await self.conport_client.get_active_context(
-                workspace_id=self.workspace_id
-            )
+            result = await self.conport_client.get_active_context()
 
             # Extract ADHD state from active context
-            energy = result.get("current_energy", "medium")
-            attention = result.get("current_attention", "normal")
-            mode = result.get("mode", "ACT")
+            if hasattr(result, "content") and result.content:
+                 result_content = result.content
+            elif hasattr(result, "get") and callable(result.get):
+                 result_content = result
+            else:
+                 result_content = {}
+
+            energy = result_content.get("current_energy", "medium")
+            attention = result_content.get("current_attention", "normal")
+            mode = result_content.get("mode", "ACT")
 
             adhd_state = {
                 "energy": energy,
@@ -1200,7 +1136,7 @@ class ConPortEventAdapter:
                 item_type="progress_entry",
                 item_id=task_id,
                 limit=20
-            )
+            ) if hasattr(self.conport_client, 'get_linked_items') else {}
 
             # Extract linked items
             if isinstance(result, dict):
@@ -1254,7 +1190,7 @@ class ConPortEventAdapter:
                 query_text=task_description,
                 top_k=limit,
                 filter_item_types=["progress_entry"]
-            )
+            ) if hasattr(self.conport_client, 'semantic_search_conport') else {}
 
             # Extract results
             if isinstance(result, dict):

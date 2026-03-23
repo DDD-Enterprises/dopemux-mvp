@@ -19,6 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from task_orchestrator.models import AgentType
+from shared.conport_client.client import ConPortClient
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +112,11 @@ class ConPortInsightPublisher:
             conport_client: ConPort MCP client (optional, uses placeholder if None)
         """
         self.workspace_id = workspace_id
-        self.conport_client = conport_client
+        if conport_client is None:
+            self.conport_client = ConPortClient(workspace_id=workspace_id)
+        else:
+            self.conport_client = conport_client
+
         self.decision_cache: Dict[str, AIDecisionEvent] = {}  # Local cache
 
     # ------------------------------------------------------------------------
@@ -296,36 +301,27 @@ class ConPortInsightPublisher:
 
     async def _resilient_log_decision(self, decision_data: Dict) -> Optional[int]:
         """
-        Log decision to ConPort with retry logic.
+        Log decision to ConPort using shared ConPortClient.
 
         Returns ConPort decision ID if successful, None otherwise.
         """
-        max_retries = 3
+        if not self.conport_client:
+            raise ValueError("ConPort client not configured for decision logging")
 
-        for attempt in range(max_retries):
-            try:
-                if self.conport_client:
-                    # Call actual ConPort MCP client
-                    result = await self.conport_client.log_decision(**decision_data)
-                    return result.get("id")
-                else:
-                    # Placeholder: No client available
-                    logger.warning("ConPort client not configured for decision logging")
-                    return None
+        summary = decision_data.get("summary", "")
+        rationale = decision_data.get("rationale")
+        tags = decision_data.get("tags", [])
 
-            except ConnectionError as e:
-                if attempt < max_retries - 1:
-                    wait_time = 2 ** attempt  # Exponential backoff
-                    logger.warning(f"ConPort connection failed (attempt {attempt+1}/{max_retries}), retrying in {wait_time}s...")
-                    await asyncio.sleep(wait_time)
-                else:
-                    logger.error(f"ConPort unavailable after {max_retries} attempts: {e}")
-                    return None
+        result = await self.conport_client.log_decision(
+            summary=summary,
+            rationale=rationale,
+            tags=tags
+        )
 
-            except Exception as e:
-                logger.error(f"ConPort API error: {e}")
-                return None
-
+        if hasattr(result, "id"):
+            return result.id
+        elif isinstance(result, dict) and "id" in result:
+            return result["id"]
         return None
 
     # ------------------------------------------------------------------------
