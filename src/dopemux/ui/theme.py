@@ -280,6 +280,10 @@ class Glyphs:
     DOCKER = "\uf308"  # nf-linux-docker
     SERVER = "\uf233"  # nf-fa-server
     DATABASE = "\uf1c0"  # nf-fa-database
+    FIRE = "\ud83d\udd25"  # 🔥
+    ROCKET = "\ud83d\ude80"  # 🚀
+    TARGET = "\ud83c\udfaf"  # 🎯
+
 
     # ── Navigation ──
     ARROW_RIGHT = "\uf054"  # nf-fa-chevron_right

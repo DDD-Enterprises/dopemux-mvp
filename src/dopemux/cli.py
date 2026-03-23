@@ -877,6 +877,8 @@ def start(
     - Routing Logic: Manages uplinks through LiteLLM, Claude Code Router (CCR), 
       and alternative providers (Grok, Codex).
     """
+    cwd_path = Path.cwd()
+    project_path = cwd_path
     from .ui.splash import boot_sequence
     boot_sequence()
     
@@ -1767,8 +1769,8 @@ def start(
         pass
 
         logger.error(f"Error: {e}")
-    cwd_path = Path.cwd()
-    project_path = cwd_path
+    # cwd_path already initialized
+    # project_path already initialized
 
     try:
         dopemux_exists = Path.exists(project_path / ".dopemux")
@@ -5278,6 +5280,50 @@ def dashboard_cmd(demo: bool):
 # Worktree Diagnostics Command
 # =============================================================================
 
+
+
+def _activate_dangerous_mode():
+    """
+    Activate dangerous mode with proper security safeguards.
+    """
+    if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
+        expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
+        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+        if time.time() < expires_timestamp:
+            return
+            
+    expires = time.time() + 3600  # 1 hour
+    os.environ["DOPEMUX_DANGEROUS_MODE"] = "true"
+    os.environ["DOPEMUX_DANGEROUS_EXPIRES"] = str(expires)
+    os.environ["CLAUDE_DANGEROUS"] = "1"
+    os.environ["SKIP_PERMISSIONS"] = "1"
+
+def _deactivate_dangerous_mode():
+    """Deactivate dangerous mode and clean up environment."""
+    dangerous_vars = [
+        "DOPEMUX_DANGEROUS_MODE",
+        "DOPEMUX_DANGEROUS_EXPIRES",
+        "DOPEMUX_DANGEROUS_PID",
+        "HOOKS_ENABLE_ADAPTIVE_SECURITY",
+        "CLAUDE_CODE_SKIP_PERMISSIONS",
+        "METAMCP_ROLE_ENFORCEMENT",
+        "METAMCP_APPROVAL_REQUIRED",
+        "METAMCP_BUDGET_ENFORCEMENT",
+        "CLAUDE_DANGEROUS",
+        "SKIP_PERMISSIONS"
+    ]
+    for var in dangerous_vars:
+        os.environ.pop(var, None)
+
+def _check_dangerous_mode_expiry():
+    """Check if dangerous mode has expired and clean up if needed."""
+    if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
+        expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
+        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+        if time.time() >= expires_timestamp:
+            _deactivate_dangerous_mode()
+            return True
+    return False
 
 @cli.command("doctor")
 @click.option("--worktree", is_flag=True, help="🔬 Focus Chamber: Run worktree-specific diagnostics.")

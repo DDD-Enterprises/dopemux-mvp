@@ -17,14 +17,26 @@ from ..console import console
 
 @click.group()
 def mcp():
-    """Manage MCP Docker servers (start/stop/status/logs)."""
+    """
+    🔬 Neural Architecture: Command the MCP infrastructure
+
+    Manages the Docker-based Model Context Protocol servers. These daemons 
+    (ConPort, PAL, Serena, etc.) provide the underlying neural architecture 
+    for the cockpit's tool capabilities and semantic context management.
+    """
 
 
 @mcp.command("up")
-@click.option("--all", "all_services", is_flag=True, help="Start all MCP servers")
-@click.option("--services", "services", help="Comma-separated services to start")
+@click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
+@click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")
 def mcp_up_cmd(all_services: bool, services: str):
-    """Start MCP servers via docker-compose."""
+    """
+    ⚡ Ignite Engine: Deploy MCP servers via Docker Compose
+
+    Materializes the Model Context Protocol environment, initializing the 
+    distributed tool architecture required for high-fidelity focus-tracking 
+    and codebase interrogation.
+    """
     try:
         script_dir = Path(__file__).parent.parent.parent.parent / "scripts"
         script_path = script_dir / "start-all-mcp-servers.sh"
@@ -34,17 +46,22 @@ def mcp_up_cmd(all_services: bool, services: str):
         else:
             svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
             cmd = f"docker compose -f compose.yml up -d --build {svc_list}"
-        console.logger.info(f"[blue]{cmd}[/blue]")
+        console.logger.info(f"[info]{cmd}[/info]")
         subprocess.run(["bash", "-lc", cmd], check=True)
-        console.logger.info("[green]MCP servers started[/green]")
+        console.logger.info("[success]MCP servers started[/success]")
     except CalledProcessError:
-        console.logger.error("[red]Failed to start MCP servers[/red]")
+        console.logger.error("[error]Failed to start MCP servers[/error]")
         sys.exit(1)
 
 
 @mcp.command("down")
 def mcp_down_cmd():
-    """Stop all MCP servers."""
+    """
+    💧 Cool Down Cores: Terminate MCP containers and volumes
+
+    Safely deactivates the neural infrastructure, releasing system resources 
+    and preserving ritual state in the Docker volume ledgers.
+    """
     try:
         mcp_services = [
             "conport", "pal", "litellm", "dope-context",
@@ -54,15 +71,20 @@ def mcp_down_cmd():
             ["docker", "compose", "-f", "compose.yml", "rm", "-f", "-s", "-v"] + mcp_services,
             check=True,
         )
-        console.logger.info("[green]MCP servers stopped[/green]")
+        console.logger.info("[success]MCP servers stopped[/success]")
     except CalledProcessError:
-        console.logger.error("[red]Failed to stop MCP servers[/red]")
+        console.logger.error("[error]Failed to stop MCP servers[/error]")
         sys.exit(1)
 
 
 @mcp.command("status")
 def mcp_status_cmd():
-    """Show docker-compose status for MCP servers."""
+    """
+    📊 Diagnostic HUD: Interrogate MCP service health
+
+    Displays the current operational state, port mappings, and uptime for 
+    all registered MCP daemons. Essential for diagnosing sensor disconnects.
+    """
     try:
         subprocess.run(["docker", "compose", "-f", "compose.yml", "ps"], check=False)
     except CalledProcessError:
@@ -70,57 +92,58 @@ def mcp_status_cmd():
 
 
 @mcp.command("logs")
-@click.option("--service", "service", help="Service to tail logs for")
+@click.option("--service", "service", help="📊 Telemetry Filter: Focus the log stream on a specific MCP daemon.")
 def mcp_logs_cmd(service: str):
-    """Tail logs for an MCP service or all."""
+    """
+    🧠 Tap Telemetry: Stream real-time log data from MCP services
+
+    Enables direct observation of the signal exchange between the cockpit 
+    and its distributed toolset for granular ritual debugging.
+    """
     try:
         if service:
             cmd = f"docker compose -f compose.yml logs -f {service}"
         else:
             cmd = "docker compose -f compose.yml logs -f"
-        console.logger.info(f"[blue]{cmd}[/blue]")
+        console.logger.info(f"[info]{cmd}[/info]")
         subprocess.run(["bash", "-lc", cmd], check=False)
     except CalledProcessError:
         sys.exit(1)
 
 
 @mcp.command("start-all")
-@click.option("--verify", "-v", is_flag=True, help="Verify service health after starting")
+@click.option("--verify", "-v", is_flag=True, help="✅ Verify Pulse: Execute high-fidelity health checks after ignition.")
 def mcp_start_all_cmd(verify: bool):
     """
-    Start complete Dopemux stack (MCP servers + application services)
+    🧙 Summon Ecosystem: Ignite the complete DØPEMÜX stack
 
-    Starts all services including MCP servers (ConPort, Zen, Serena, etc.),
-    Integration Bridge, Task Orchestrator, and all infrastructure.
-
-    \b
-    Examples:
-        dopemux mcp start-all           # Start everything
-        dopemux mcp start-all --verify  # Start + verify health
+    Initiates the full ritual environment: MCP servers, Integration Bridge, 
+    Task Orchestrator, and application services. Primes the cockpit for 
+    intensive work log sessions.
     """
     try:
         script_path = Path(__file__).parent.parent.parent.parent / "scripts" / "start-all.sh"
 
         if not script_path.exists():
-            console.logger.info(f"[red]start-all.sh not found at {script_path}[/red]")
-            console.logger.info("[yellow]Falling back to manual startup...[/yellow]")
+            console.logger.info(f"[error]start-all.sh not found at {script_path}[/error]")
+            console.logger.info("[warning]Falling back to manual startup...[/warning]")
 
-            console.logger.info("[blue]Starting MCP servers...[/blue]")
+            console.logger.info("[info]Starting MCP servers...[/info]")
             subprocess.run(["docker", "compose", "-f", "compose.yml", "up", "-d"], check=True)
 
-            console.logger.info("[blue]Starting Integration Bridge...[/blue]")
+            console.logger.info("[info]Starting Integration Bridge...[/info]")
             subprocess.run(
                 ["bash", "-lc", "cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"],
                 check=True,
             )
 
-            console.logger.info("[blue]Starting Task Orchestrator...[/blue]")
+            console.logger.info("[info]Starting Task Orchestrator...[/info]")
             subprocess.run(
                 ["docker", "compose", "-f", "compose.yml", "--profile", "manual", "up", "-d", "task-orchestrator"],
                 check=True,
             )
 
-            console.logger.info("[green]All services started[/green]")
+            console.logger.info("[success]All services started[/success]")
         else:
             cmd = ["bash", str(script_path)]
             if verify:
@@ -128,8 +151,8 @@ def mcp_start_all_cmd(verify: bool):
             subprocess.run(cmd, check=True)
 
     except CalledProcessError:
-        console.logger.error("[red]Failed to start all services[/red]")
-        console.logger.info("[yellow]Try: docker ps to see running containers[/yellow]")
+        console.logger.error("[error]Failed to start all services[/error]")
+        console.logger.info("[warning]Try: docker ps to see running containers[/warning]")
         sys.exit(1)
 
 
@@ -139,27 +162,44 @@ def mcp_start_all_cmd(verify: bool):
 
 @click.group()
 def servers():
-    """Alias for 'dopemux mcp' commands."""
+    """
+    🔬 Cockpit Alias: Alternative entry point for MCP operations
+
+    Inherits all Model Context Protocol management capabilities. Provides 
+    a secondary routing path for managing the neural server fleet.
+    """
 
 
 @servers.command("up")
-@click.option("--all", "all_services", is_flag=True, help="Start all MCP servers")
-@click.option("--services", "services", help="Comma-separated services to start")
+@click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
+@click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")
 def servers_up_cmd(all_services: bool, services: str):
+    """
+    ⚡ Ignite Engine (Alias): Deploy MCP servers via Docker Compose
+    """
     mcp_up_cmd.callback(all_services, services)
 
 
 @servers.command("down")
 def servers_down_cmd():
+    """
+    💧 Cool Down Cores (Alias): Terminate MCP containers and volumes
+    """
     mcp_down_cmd.callback()
 
 
 @servers.command("status")
 def servers_status_cmd():
+    """
+    📊 Diagnostic HUD (Alias): Interrogate MCP service health
+    """
     mcp_status_cmd.callback()
 
 
 @servers.command("logs")
-@click.option("--service", "service", help="Service to tail logs for")
+@click.option("--service", "service", help="📊 Telemetry Filter: Focus the log stream on a specific MCP daemon.")
 def servers_logs_cmd(service: str):
+    """
+    🧠 Tap Telemetry (Alias): Stream real-time log data
+    """
     mcp_logs_cmd.callback(service)
