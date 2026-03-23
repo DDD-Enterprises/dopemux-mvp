@@ -191,3 +191,72 @@ class TestTransition:
         result.title = "mutated"
         stored = store.get("task-001")
         assert stored.title == "Test task"
+
+
+class TestPatchMetadata:
+    """patch_metadata() updates specific fields without touching version/status."""
+
+    def test_successful_metadata_patch(self, store, sample_task):
+        store.create(sample_task)
+        initial_version = sample_task.version
+        initial_updated_at = sample_task.updated_at_utc
+        
+        patch = {
+            "title": "Updated Title",
+            "description": "Updated Description",
+            "labels": ["urgent"]
+        }
+        
+        # Ensure some time passes for timestamp check
+        # (Though InMemoryPMTaskStore uses datetime.now which is fine)
+        result = store.patch_metadata("task-001", patch)
+        
+        assert result.title == "Updated Title"
+        assert result.description == "Updated Description"
+        assert result.labels == ["urgent"]
+        # Version should NOT increment for a metadata patch
+        assert result.version == initial_version
+        assert result.updated_at_utc > initial_updated_at
+        
+        stored = store.get("task-001")
+        assert stored.title == "Updated Title"
+
+    def test_patch_merges_dictionary_fields(self, store, sample_task):
+        """Verify that patching dict fields merges rather than replaces."""
+        sample_task.meta = {"existing_key": "old_value"}
+        store.create(sample_task)
+        
+        patch = {
+            "meta": {
+                "new_key": "new_value",
+                "existing_key": "updated_value"
+            }
+        }
+        
+        result = store.patch_metadata("task-001", patch)
+        
+        assert result.meta["existing_key"] == "updated_value"
+        assert result.meta["new_key"] == "new_value"
+
+    def test_workflow_fields_are_ignored(self, store, sample_task):
+        store.create(sample_task)
+        initial_version = sample_task.version
+        initial_status = sample_task.status
+        
+        patch = {
+            "title": "Title Update",
+            "status": "DONE",  # Workflow field
+            "version": 99,     # Workflow field
+        }
+        
+        result = store.patch_metadata("task-001", patch)
+        
+        # Valid metadata updated
+        assert result.title == "Title Update"
+        # Workflow fields silently ignored
+        assert result.status == initial_status
+        assert result.version == initial_version
+
+    def test_missing_task_raises(self, store):
+        with pytest.raises(TaskNotFoundError):
+            store.patch_metadata("ghost", {"title": "Update"})
