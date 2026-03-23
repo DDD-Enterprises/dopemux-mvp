@@ -7,5 +7,6 @@ and managing MCP server integrations.
 
 from .configurator import ClaudeConfigurator
 from .launcher import ClaudeLauncher, ClaudeNotFoundError
+from .instruction_manager import InstructionManager
 
-__all__ = ["ClaudeLauncher", "ClaudeNotFoundError", "ClaudeConfigurator"]
+__all__ = ["ClaudeLauncher", "ClaudeNotFoundError", "ClaudeConfigurator", "InstructionManager"]

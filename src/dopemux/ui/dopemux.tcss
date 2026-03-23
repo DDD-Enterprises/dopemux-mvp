@@ -1,0 +1,122 @@
+/* Dopemux Neon Mint Palette — shared Textual CSS
+ *
+ * Source of truth: src/dopemux/ui/theme.py
+ * Used by: dashboard.py, dashboard_detail.py
+ */
+
+$base: #020617;
+$mantle: #041628;
+$crust: #0a0e1a;
+$text: #E2E8F0;
+$text-dim: #94A3B8;
+$text-muted: #64748B;
+$green: #94FADB;
+$blue: #7DFBF6;
+$mauve: #9B78FF;
+$red: #FF8BD1;
+$peach: #FFCF78;
+$yellow: #F5F26D;
+$mint-dim: #4A9E94;
+
+/* ── Global ── */
+
+Screen {
+    background: $base;
+    color: $text;
+}
+
+/* ── DataTable ── */
+
+DataTable {
+    background: $mantle;
+    color: $text;
+    border: none;
+}
+
+DataTable > .datatable--header {
+    background: $crust;
+    color: $mauve;
+    text-style: bold;
+}
+
+/* ── Panels ── */
+
+#adhd-state {
+    height: 6;
+    border: solid $green;
+    background: $mantle;
+}
+
+#productivity {
+    height: 6;
+    border: solid $blue;
+    background: $mantle;
+}
+
+#services {
+    height: 8;
+    border: solid $mauve;
+    background: $mantle;
+}
+
+#trends {
+    height: 6;
+    border: solid $peach;
+    background: $mantle;
+}
+
+/* ── Detail view ── */
+
+TabbedContent {
+    background: $mantle;
+    border: solid $blue;
+}
+
+TabPane {
+    background: $mantle;
+    padding: 1;
+}
+
+Log {
+    background: $base;
+    color: $text;
+    border: solid $mint-dim;
+    text-style: bold;
+}
+
+/* ── Animations ── */
+
+@keyframes blink {
+    0% { opacity: 1.0; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1.0; }
+}
+
+.blink {
+    animation: blink 1.5s linear infinite;
+}
+
+.status-active {
+    color: $blue;
+    text-style: bold;
+    animation: blink 2.0s linear infinite;
+}
+
+.status-error {
+    color: $red;
+    text-style: bold;
+    animation: blink 1.0s linear infinite;
+}
+
+.status-warning {
+    color: $yellow;
+    text-style: bold;
+}
+
+#demo-banner {
+    height: 1;
+    background: $yellow;
+    color: $base;
+    text-align: center;
+    text-style: bold;
+}

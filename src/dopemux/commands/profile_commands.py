@@ -12,25 +12,40 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
+from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 @click.group()
 def profile():
-    """📋 Manage MCP profiles for context-aware tool selection."""
+    """
+    📋 Contextual Attunement: Manage MCP profiles for tool selection
+
+    Orchestrates the selection and application of ritual profiles. These 
+    profiles define the cognitive capabilities of the cockpit, mounting specific 
+    MCP servers and tuning ADHD-optimized attention parameters to align with 
+    the active mission profile.
+
+    Capabilities:
+    - Profile Lifecycle: List, initialize, validate, and apply ritual profiles.
+    - Auto-Detection: Engage the suggestion daemon for context-aware switches.
+    - Usage Analytics: Analyze temporal patterns to optimize ritual efficiency.
+    """
     pass
 
 
 @profile.command("list")
-@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
+@click.option("--profile-dir", "-d", help="🔬 Archive Coordinate: Override the default ritual profile directory.", type=click.Path(exists=True))
 @click.pass_context
 def profile_list_cmd(ctx, profile_dir: Optional[str]):
-    """📋 List all available profiles.
+    """
+    📋 Catalog Rituals: List all available cognitive profiles
 
-    Shows all profiles with their MCP server counts and descriptions.
-    Profiles can be applied with: dopemux profile apply <name>
+    Displays the full index of registered profiles, detailing their 
+    prescribed MCP server stacks and behavioral metadata.
     """
     try:
         # Get profiles directory
@@ -42,20 +57,22 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
         profile_set = parser.parse_directory(profiles_directory, pattern="*.yaml")
 
         if not profile_set.profiles:
-            console.logger.info("[yellow]⚠️  No valid profiles found[/yellow]")
-            console.logger.info(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
-            console.logger.info("\n[cyan]💡 Get started:[/cyan]")
+            console.logger.info("[warning]⚠️  No valid profiles found[/warning]")
+            console.logger.info(f"\n[text.dim]Profile directory: {profiles_directory}[/text.dim]")
+            console.logger.info("\n[info]💡 Get started:[/info]")
             console.logger.info(f"   • Create personalized profile: [white]dopemux profile init[/white]")
             console.logger.info(f"   • See examples: [white]dopemux profile --help[/white]")
             console.logger.info(f"   • Read guide: [white]docs/guides/PROFILE_USER_GUIDE.md[/white]")
             sys.exit(1)
 
         # Display profiles in a rich table
-        table = Table(title="📋 Available Profiles", show_header=True, header_style="bold cyan")
-        table.add_column("Name", style="green")
-        table.add_column("Display Name", style="cyan")
-        table.add_column("MCPs", style="yellow")
-        table.add_column("Description", style="white", no_wrap=False)
+        table = styled_table(
+            "Available Profiles",
+            ("Name", {"style": "success"}),
+            ("Display Name", {"style": "info"}),
+            ("MCPs", {"style": "warning"}),
+            ("Description", {"style": "text", "no_wrap": False}),
+        )
 
         for p in profile_set.profiles:
             mcp_count = len(p.mcps)
@@ -67,20 +84,20 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
             )
 
         console.logger.info(table)
-        console.logger.info(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
-        console.logger.info(f"[dim]Total profiles: {len(profile_set.profiles)}[/dim]")
+        console.logger.info(f"\n[text.dim]Profile directory: {profiles_directory}[/text.dim]")
+        console.logger.info(f"[text.dim]Total profiles: {len(profile_set.profiles)}[/text.dim]")
 
         # Add helpful tips
-        console.logger.info(f"\n[cyan]💡 Quick Tips:[/cyan]")
+        console.logger.info(f"\n[info]💡 Quick Tips:[/info]")
         console.logger.info(f"   • View details: [white]dopemux profile show <name>[/white]")
         console.logger.info(f"   • Apply profile: [white]dopemux profile apply <name>[/white]")
         console.logger.info(f"   • Create custom: [white]dopemux profile init[/white]")
 
     except FileNotFoundError as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.logger.error(f"[error]Error: {e}[/error]")
         sys.exit(1)
     except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
+        console.logger.error(f"[error]Unexpected error: {e}[/error]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -88,10 +105,15 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
 
 @profile.command("init")
 @click.argument("profile_name", required=False)
-@click.option("--output-dir", "-o", help="Output directory for profile", type=click.Path())
+@click.option("--output-dir", "-o", help="📂 Ritual Chamber: Output directory for the new profile.", type=click.Path())
 @click.pass_context
 def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]):
-    """✨ Create a personalized profile using git history analysis."""
+    """
+    ✨ Forge Persona: Create a personalized profile using history analysis
+
+    Launches the profile synthesis wizard to generate a new ritual profile 
+    based on git history patterns and cognitive preferences.
+    """
     try:
         from ..profile_wizard import ProfileWizard
 
@@ -108,21 +130,26 @@ def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]
             sys.exit(1)
 
     except KeyboardInterrupt:
-        console.logger.info("\n[yellow]❌ Profile creation cancelled[/yellow]")
+        console.logger.info("\n[warning]❌ Profile creation cancelled[/warning]")
         sys.exit(1)
     except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
+        console.logger.error(f"[error]Unexpected error: {e}[/error]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
 
 
 @profile.command("auto-enable")
-@click.option("--check-interval", "-i", type=int, help="Check interval in seconds (default: 300)")
-@click.option("--threshold", "-t", type=float, help="Confidence threshold (default: 0.85)")
+@click.option("--check-interval", "-i", type=int, help="⏱️ Scan Frequency: Check interval in seconds (default: 300).")
+@click.option("--threshold", "-t", type=float, help="🎯 Confidence Gate: Threshold for auto-detection (default: 0.85).")
 @click.pass_context
 def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optional[float]):
-    """🔍 Enable auto-detection with gentle profile suggestions."""
+    """
+    🔍 Engage Suggestion Daemon: Enable context-aware profile detection
+
+    Activates the background monitoring daemon to suggest profile transitions 
+    based on active directory coordinates and file system rituals.
+    """
     try:
         from ..auto_detection_service import AutoDetectionService, create_default_settings
 
@@ -142,15 +169,15 @@ def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optio
         service.config.enabled = True
         service.config.save(config_file)
 
-        console.logger.info("[green]✅ Auto-detection enabled[/green]")
+        console.logger.info("[success]✅ Auto-detection enabled[/success]")
         console.logger.info(f"   Check interval: {service.config.check_interval_seconds}s ({service.config.check_interval_seconds // 60} min)")
         console.logger.info(f"   Confidence threshold: {service.config.confidence_threshold:.0%}")
         console.logger.info(f"   Quiet hours: {service.config.quiet_hours_start}-{service.config.quiet_hours_end}")
-        console.logger.info(f"\n[dim]💡 Service will suggest profile switches when confidence >{service.config.confidence_threshold:.0%}[/dim]")
-        console.logger.info(f"[dim]💡 Edit settings: {config_file}[/dim]")
+        console.logger.info(f"\n[text.dim]💡 Service will suggest profile switches when confidence >{service.config.confidence_threshold:.0%}[/text.dim]")
+        console.logger.info(f"[text.dim]💡 Edit settings: {config_file}[/text.dim]")
 
     except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.logger.error(f"[error]Error: {e}[/error]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -159,12 +186,17 @@ def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optio
 @profile.command("auto-disable")
 @click.pass_context
 def profile_auto_disable_cmd(ctx):
-    """⏸️  Disable auto-detection suggestions."""
+    """
+    ⏸️  Silence Suggestion Daemon: Disable auto-detection rituals
+
+    Deactivates the background monitoring daemon, halting all automatic 
+    profile transition suggestions.
+    """
     try:
         config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
 
         if not config_file.exists():
-            console.logger.info("[yellow]Auto-detection not configured[/yellow]")
+            console.logger.info("[warning]Auto-detection not configured[/warning]")
             return
 
         from ..auto_detection_service import AutoDetectionConfig
@@ -173,61 +205,71 @@ def profile_auto_disable_cmd(ctx):
         config.enabled = False
         config.save(config_file)
 
-        console.logger.info("[green]✅ Auto-detection disabled[/green]")
+        console.logger.info("[success]✅ Auto-detection disabled[/success]")
 
     except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.logger.error(f"[error]Error: {e}[/error]")
         sys.exit(1)
 
 
 @profile.command("auto-status")
 @click.pass_context
 def profile_auto_status_cmd(ctx):
-    """📊 Show auto-detection configuration and status."""
+    """
+    📊 Monitoring HUD: Show auto-detection configuration and status
+
+    Displays the current operational state and configuration parameters 
+    of the profile suggestion daemon.
+    """
     try:
         config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
 
         if not config_file.exists():
-            console.logger.info("[yellow]Auto-detection not configured[/yellow]")
-            console.logger.info(f"\n[dim]Run 'dopemux profile auto-enable' to set up[/dim]")
+            console.logger.info("[warning]Auto-detection not configured[/warning]")
+            console.logger.info(f"\n[text.dim]Run 'dopemux profile auto-enable' to set up[/text.dim]")
             return
 
         from ..auto_detection_service import AutoDetectionConfig
 
         config = AutoDetectionConfig(config_file)
 
-        status = "[green]Enabled[/green]" if config.enabled else "[red]Disabled[/red]"
+        status = "[success]Enabled[/success]" if config.enabled else "[error]Disabled[/error]"
         console.logger.info(f"\n[bold]Auto-Detection Status:[/bold] {status}")
-        console.logger.info(f"\n[cyan]Settings:[/cyan]")
+        console.logger.info(f"\n[info]Settings:[/info]")
         console.logger.info(f"   Check interval: {config.check_interval_seconds}s ({config.check_interval_seconds // 60} min)")
         console.logger.info(f"   Confidence threshold: {config.confidence_threshold:.0%}")
         console.logger.info(f"   Debounce period: {config.debounce_minutes} min")
         console.logger.info(f"   Quiet hours: {config.quiet_hours_start}-{config.quiet_hours_end}")
 
         if config.never_suggest:
-            console.logger.info(f"\n[yellow]Never Suggest:[/yellow]")
+            console.logger.info(f"\n[warning]Never Suggest:[/warning]")
             for profile in sorted(config.never_suggest):
                 console.logger.info(f"   • {profile}")
 
-        console.logger.info(f"\n[dim]Config file: {config_file}[/dim]")
+        console.logger.info(f"\n[text.dim]Config file: {config_file}[/text.dim]")
 
     except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.logger.error(f"[error]Error: {e}[/error]")
         sys.exit(1)
 
 
 @profile.command("stats")
-@click.option("--days", "-d", type=int, default=30, help="Days of history to analyze (default: 30)")
+@click.option("--days", "-d", type=int, default=30, help="⏳ Temporal Window: Days of history to analyze (default: 30).")
 @click.pass_context
 def profile_stats_cmd(ctx, days: int):
-    """📊 Show profile usage analytics and trends."""
+    """
+    📊 Ritual Analytics: Show profile usage trends and patterns
+
+    Renders a high-fidelity dashboard of profile transition history, 
+    accuracy metrics, and optimization suggestions.
+    """
     try:
         from ..profile_analytics import get_stats_sync, display_stats
 
         workspace_id = str(Path.cwd())
 
         # Get stats from ConPort
-        console.logger.info(f"[cyan]📊 Analyzing profile usage (last {days} days)...[/cyan]\n")
+        console.logger.info(f"[info]📊 Analyzing profile usage (last {days} days)...[/info]\n")
         stats = get_stats_sync(workspace_id, days_back=days)
 
         # Display with visual dashboard
@@ -239,43 +281,48 @@ def profile_stats_cmd(ctx, days: int):
 
             # Suggest based on patterns
             if stats.switch_accuracy < 70:
-                console.logger.info(f"   • [yellow]Low accuracy ({stats.switch_accuracy:.0f}%)[/yellow]: Consider refining auto-detection rules")
+                console.logger.info(f"   • [warning]Low accuracy ({stats.switch_accuracy:.0f}%)[/warning]: Consider refining auto-detection rules")
 
             if stats.auto_switches == 0 and stats.total_switches > 20:
-                console.logger.info(f"   • [cyan]All manual switches[/cyan]: Try 'dopemux profile auto-enable' for suggestions")
+                console.logger.info(f"   • [info]All manual switches[/info]: Try 'dopemux profile auto-enable' for suggestions")
 
             if stats.suggestion_declined > stats.suggestion_accepted * 2:
-                console.logger.info(f"   • [yellow]Many declined suggestions[/yellow]: Lower confidence threshold or adjust profile rules")
+                console.logger.info(f"   • [warning]Many declined suggestions[/warning]: Lower confidence threshold or adjust profile rules")
 
             # Suggest creating a new profile for common patterns
             if stats.most_used_profile and stats.usage_by_profile.get(stats.most_used_profile, 0) > stats.total_switches * 0.7:
-                console.logger.info(f"   • [green]Stable workflow detected[/green]: Your '{stats.most_used_profile}' profile is well-matched!")
+                console.logger.info(f"   • [success]Stable workflow detected[/success]: Your '{stats.most_used_profile}' profile is well-matched!")
 
     except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.logger.error(f"[error]Error: {e}[/error]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
 
 
 @profile.command("analyze-usage")
-@click.option("--days", "days_back", type=click.IntRange(1), default=90, show_default=True, help="Days of git history to analyze")
+@click.option("--days", "days_back", type=click.IntRange(1), default=90, show_default=True, help="⏳ History Window: Days of git history to analyze.")
 @click.option(
     "--max-commits",
     type=click.IntRange(1),
     default=500,
     show_default=True,
-    help="Maximum commits to scan",
+    help="⚡ Scan Depth: Maximum commits to analyze for pattern synthesis.",
 )
 @click.option(
     "--repo-path",
     type=click.Path(exists=True, file_okay=False, path_type=Path),
     default=None,
-    help="Repository path (defaults to current directory)",
+    help="🔬 Repository Coordinate: Target path for git history analysis.",
 )
 @click.pass_context
 def profile_analyze_usage_cmd(ctx, days_back: int, max_commits: int, repo_path: Optional[Path]):
-    """Analyze git usage patterns to suggest profile defaults."""
+    """
+    🔬 Pattern Synthesis: Analyze git usage to suggest profile defaults
+
+    Performs deep inspection of repository history to identify common 
+    rituals and suggest the most effective default profiles.
+    """
     try:
         from ..profile_analyzer import GitHistoryAnalyzer
 
@@ -283,7 +330,7 @@ def profile_analyze_usage_cmd(ctx, days_back: int, max_commits: int, repo_path: 
         analysis = analyzer.analyze(days_back=days_back, max_commits=max_commits)
         analyzer.display_analysis(analysis)
     except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.logger.error(f"[error]Error: {e}[/error]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -291,11 +338,16 @@ def profile_analyze_usage_cmd(ctx, days_back: int, max_commits: int, repo_path: 
 
 @profile.command("show")
 @click.argument("profile_name")
-@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
-@click.option("--raw", "-r", is_flag=True, help="Show raw YAML content")
+@click.option("--profile-dir", "-d", help="🔬 Archive Coordinate: Override the default ritual profile directory.", type=click.Path(exists=True))
+@click.option("--raw", "-r", is_flag=True, help="🧪 Inspect Raw Schema: Show unformatted YAML content.")
 @click.pass_context
 def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bool):
-    """📄 Show detailed profile information."""
+    """
+    📄 Inspect Persona: Show detailed profile information
+
+    Displays the complete architectural specification for a single 
+    ritual profile, including all cognitive constraints and MCP servers.
+    """
     try:
         parser = ProfileParser(Path(profile_dir) if profile_dir else None)
         profile_paths = parser.discover_profiles()
@@ -308,7 +360,7 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
                 break
 
         if not profile_path:
-            console.logger.info(f"[red]Profile '{profile_name}' not found[/red]")
+            console.logger.info(f"[error]Profile '{profile_name}' not found[/error]")
             console.logger.info(f"\nAvailable profiles in {parser.profile_dir}:")
             for path in profile_paths:
                 console.logger.info(f"  • {path.stem}")
@@ -316,8 +368,8 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
 
         # Show raw YAML if requested
         if raw:
-            console.logger.info(f"\n[cyan]Profile: {profile_name}[/cyan]")
-            console.logger.info(f"[dim]Path: {profile_path}[/dim]\n")
+            console.logger.info(f"\n[info]Profile: {profile_name}[/info]")
+            console.logger.info(f"[text.dim]Path: {profile_path}[/text.dim]\n")
             with open(profile_path, 'r') as f:
                 console.logger.info(f.read())
             return
@@ -326,9 +378,9 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
         p = parser.load_profile(profile_path)
 
         # Display formatted profile info
-        console.logger.info(f"\n[bold cyan]Profile: {p.display_name}[/bold cyan]")
-        console.logger.info(f"[dim]Name: {p.name}[/dim]")
-        console.logger.info(f"[dim]File: {profile_path}[/dim]\n")
+        console.logger.info(f"\n[mint]Profile: {p.display_name}[/mint]")
+        console.logger.info(f"[text.dim]Name: {p.name}[/text.dim]")
+        console.logger.info(f"[text.dim]File: {profile_path}[/text.dim]\n")
 
         console.logger.info(f"[bold]Description:[/bold] {p.description}\n")
 
@@ -364,18 +416,18 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
                 for window in p.auto_detection.time_windows:
                     console.logger.info(f"    • {window}")
 
-        console.logger.info(f"\n[green]✓ Profile is valid[/green]")
+        console.logger.info(f"\n[success]✓ Profile is valid[/success]")
 
     except ProfileValidationError as e:
-        console.logger.error(f"[red]Validation Error:[/red] {e.reason}")
+        console.logger.error(f"[error]Validation Error:[/error] {e.reason}")
         if e.fix_suggestion:
-            console.logger.info(f"[yellow]Suggestion:[/yellow] {e.fix_suggestion}")
+            console.logger.info(f"[warning]Suggestion:[/warning] {e.fix_suggestion}")
         sys.exit(1)
     except FileNotFoundError as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.logger.error(f"[error]Error: {e}[/error]")
         sys.exit(1)
     except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
+        console.logger.error(f"[error]Unexpected error: {e}[/error]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -383,33 +435,40 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
 
 @profile.command("validate")
 @click.argument("profile_name", required=False)
-@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
-@click.option("--all", "-a", is_flag=True, help="Validate all profiles")
+@click.option("--profile-dir", "-d", help="🔬 Archive Coordinate: Override the default ritual profile directory.", type=click.Path(exists=True))
+@click.option("--all", "-a", is_flag=True, help="⚡ Batch Validation: Inspect all profiles in the registry.")
 @click.pass_context
 def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional[str], all: bool):
-    """✅ Validate profile YAML and configuration."""
+    """
+    ✅ Verify Integrity: Validate profile YAML and configuration
+
+    Performs a strict structural audit of profile artifacts to ensure 
+    schema compliance and system compatibility.
+    """
     try:
         parser = ProfileParser(Path(profile_dir) if profile_dir else None)
 
         if all:
             # Validate all profiles
-            console.logger.info("[cyan]Validating all profiles...[/cyan]\n")
+            console.logger.info("[info]Validating all profiles...[/info]\n")
             profile_set = parser.load_all_profiles(fail_fast=False)
 
             # Show results
-            table = Table(title="Validation Results", show_header=True, header_style="bold cyan")
-            table.add_column("Profile", style="cyan")
-            table.add_column("Status", style="white")
-            table.add_column("Message", style="white", no_wrap=False)
+            table = styled_table(
+                "Validation Results",
+                ("Profile", {"style": "info"}),
+                ("Status", {"style": "text"}),
+                ("Message", {"style": "text", "no_wrap": False}),
+            )
 
             for p in profile_set.profiles:
-                table.add_row(p.name, "[green]✓ Valid[/green]", f"{len(p.mcps)} MCP servers")
+                table.add_row(p.name, "[success]✓ Valid[/success]", f"{len(p.mcps)} MCP servers")
 
             for path, error in profile_set.errors:
                 error_msg = str(error)
                 if isinstance(error, ProfileValidationError):
                     error_msg = f"{error.reason}"
-                table.add_row(path.stem, "[red]✗ Invalid[/red]", error_msg)
+                table.add_row(path.stem, "[error]✗ Invalid[/error]", error_msg)
 
             console.logger.info(table)
 
@@ -424,7 +483,7 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
         else:
             # Validate single profile
             if not profile_name:
-                console.logger.error("[red]Error: Provide a profile name or use --all[/red]")
+                console.logger.error("[error]Error: Provide a profile name or use --all[/error]")
                 console.logger.info("Usage: dopemux profile validate <profile_name>")
                 console.logger.info("   or: dopemux profile validate --all")
                 sys.exit(1)
@@ -437,34 +496,34 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
                     break
 
             if not profile_path:
-                console.logger.info(f"[red]Profile '{profile_name}' not found[/red]")
+                console.logger.info(f"[error]Profile '{profile_name}' not found[/error]")
                 sys.exit(1)
 
-            console.logger.info(f"[cyan]Validating profile: {profile_name}[/cyan]\n")
+            console.logger.info(f"[info]Validating profile: {profile_name}[/info]\n")
 
             # Load and validate
             p = parser.load_profile(profile_path)
 
-            console.logger.info(f"[green]✓ YAML syntax is valid[/green]")
-            console.logger.info(f"[green]✓ Profile schema is valid[/green]")
-            console.logger.info(f"[green]✓ All {len(p.mcps)} MCP servers are configured[/green]")
+            console.logger.info(f"[success]✓ YAML syntax is valid[/success]")
+            console.logger.info(f"[success]✓ Profile schema is valid[/success]")
+            console.logger.info(f"[success]✓ All {len(p.mcps)} MCP servers are configured[/success]")
             if p.adhd_config:
-                console.logger.info(f"[green]✓ ADHD configuration is valid[/green]")
+                console.logger.info(f"[success]✓ ADHD configuration is valid[/success]")
             if p.auto_detection:
-                console.logger.info(f"[green]✓ Auto-detection rules are valid[/green]")
+                console.logger.info(f"[success]✓ Auto-detection rules are valid[/success]")
 
-            console.logger.info(f"\n[bold green]Profile '{profile_name}' is valid ✓[/bold green]")
+            console.logger.info(f"\n[success]Profile '{profile_name}' is valid ✓[/success]")
 
     except ProfileValidationError as e:
-        console.logger.error(f"[red]✗ Validation failed:[/red] {e.reason}")
+        console.logger.error(f"[error]✗ Validation failed:[/error] {e.reason}")
         if e.fix_suggestion:
-            console.logger.info(f"[yellow]💡 Suggestion:[/yellow] {e.fix_suggestion}")
+            console.logger.info(f"[warning]💡 Suggestion:[/warning] {e.fix_suggestion}")
         sys.exit(1)
     except FileNotFoundError as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.logger.error(f"[error]Error: {e}[/error]")
         sys.exit(1)
     except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
+        console.logger.error(f"[error]Unexpected error: {e}[/error]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
