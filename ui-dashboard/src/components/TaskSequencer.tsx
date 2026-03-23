@@ -21,6 +21,7 @@ import {
   Pause,
   SkipForward,
   Timer,
+  Clock,
   Flame,
   Swords,
 } from 'lucide-react';
@@ -108,6 +109,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return sortedTasks.sort((a, b) => a.complexity - b.complexity);
   }, [tasks, cognitiveState.status]);
 
+  const totalRemainingMinutes = useMemo(() => {
+    const incompleteTasks = tasks.filter((task) => task.status !== 'completed');
+    const otherTasksTotal = incompleteTasks
+      .filter((task) => task.id !== currentTaskId)
+      .reduce((sum, task) => sum + task.estimatedMinutes, 0);
+
+    const currentTask = tasks.find((task) => task.id === currentTaskId);
+    const currentTaskEstimate = currentTask ? currentTask.estimatedMinutes : 0;
+    const elapsedMinutes = taskTimer / 60;
+
+    return Math.ceil(otherTasksTotal + Math.max(0, currentTaskEstimate - elapsedMinutes));
+  }, [tasks, currentTaskId, taskTimer]);
+
   const startTask = (taskId: string) => {
     setTasks((prev) =>
       prev.map((task) => (task.id === taskId ? { ...task, status: 'in_progress' } : task))
@@ -146,6 +160,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return `Time elapsed: ${secLabel}`;
   };
 
+  const getRemainingTimeAriaLabel = (minutes: number): string => {
+    return `Total remaining time: ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+  };
+
   const currentTask = tasks.find((task) => task.id === currentTaskId);
 
   const complexityColor = (complexity: number) => {
@@ -161,6 +179,30 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
+        {totalRemainingMinutes > 0 && (
+          <Tooltip title="Total remaining duration for all incomplete tasks" arrow>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 2,
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+              role="status"
+              aria-label={getRemainingTimeAriaLabel(totalRemainingMinutes)}
+              tabIndex={0}
+            >
+              <Clock size={14} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+              <Typography variant="caption" sx={{ fontWeight: 'bold', color: brandTokens.colors.ritualCyan }}>
+                {totalRemainingMinutes}m
+              </Typography>
+            </Box>
+          </Tooltip>
+        )}
         <Tooltip title="Real-time task synchronization active" arrow>
           <Chip
             size="small"
