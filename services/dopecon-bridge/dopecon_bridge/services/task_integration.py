@@ -13,8 +13,6 @@ from dataclasses import asdict
 from datetime import datetime
 from typing import Any, Dict, List
 
-from sqlalchemy import bindparam
-
 from ..clients import mcp_client
 from ..config import settings
 from ..models import Task, TaskPriority, TaskStatus

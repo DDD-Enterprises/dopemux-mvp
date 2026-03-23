@@ -268,7 +268,10 @@ async def parse_prd(
     http_request: Request,
     x_source_plane: Optional[str] = Header(None)
 ):
-    """Parse PRD document into tasks across all systems with ADHD context preservation."""
+    """
+    Parse PRD document into tasks and route directly to canonical PM backend (Leantime).
+    This adapter endpoint ensures ADHD context preservation.
+    """
     from .services.task_integration import task_service
     
     # Enforce cognitive plane authority for writes
@@ -313,7 +316,10 @@ async def get_next_tasks(
     limit: int = Query(5, ge=1, le=20),
     x_source_plane: Optional[str] = Header(None)
 ):
-    """Get next actionable tasks for ADHD-friendly workflow."""
+    """
+    Route request to canonical PM backend (Leantime) to get next actionable tasks
+    for an ADHD-friendly workflow.
+    """
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
         raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
 
@@ -349,7 +355,10 @@ async def update_task_status(
     current_user: dict = Depends(get_current_user),
     x_source_plane: Optional[str] = Header(None)
 ):
-    """Update task status across all systems."""
+    """
+    Route task status update to canonical backend (Leantime) via adapter,
+    incorporating automatic next-action suggestions.
+    """
     # Enforce cognitive plane authority for writes
     if x_source_plane != "cognitive_plane":
         raise HTTPException(
@@ -384,7 +393,10 @@ async def ddg_recent_decisions(
     limit: int = Query(20, ge=1, le=100),
     x_source_plane: Optional[str] = Header(None)
 ):
-    """Get recent decisions from the decision graph."""
+    """
+    Adapter endpoint to get recent decisions from the canonical decision graph
+    backend (Conport).
+    """
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
         raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
 
@@ -415,7 +427,10 @@ async def ddg_search_decisions(
     limit: int = Query(20, ge=1, le=100),
     x_source_plane: Optional[str] = Header(None)
 ):
-    """Search decisions by text query."""
+    """
+    Adapter endpoint to search decisions by text query from the canonical decision graph
+    backend (Conport).
+    """
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
         raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
 
