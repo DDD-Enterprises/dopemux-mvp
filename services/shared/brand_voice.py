@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Mapping, Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC_ROOT = REPO_ROOT / "src"
@@ -124,6 +124,15 @@ def hyperfocus_copy(duration_minutes: int) -> tuple[str, str, str]:
     )
     return title, body, speech
 
+def tone_name(chip: StatusChip) -> str:
+    """Return the canonical tone name for a status chip."""
+    return chip.label.lower()
+
+def voice_header(surface: str) -> str:
+    """Return a branded voice header for a surface."""
+    from dopemux.voice.agent_headers import HEADERS
+    return HEADERS.get(surface, HEADERS["agent"])
+
 def brand_payload(
     message: str,
     *,
@@ -131,12 +140,11 @@ def brand_payload(
     surface: str = "ui",
 ) -> Mapping[str, Any]:
     """Return a dictionary of brand metadata for API response augmentation."""
-    from dopemux.voice.agent_headers import HEADERS
     return {
         "status_chip": chip.label,
-        "tone": chip.label.lower(),
-        "voice_header": HEADERS.get(surface, HEADERS["agent"]),
-        "branded_message": brand_text(message, chip=chip, surface=surface),
+        "tone": tone_name(chip),
+        "voice_header": voice_header(surface),
+        "message": brand_text(message, chip=chip, surface=surface),
     }
 
 
@@ -160,11 +168,6 @@ def brand_error(
     return brand_text(message, chip=chip, surface=surface)
 
 
-def voice_header(title: str) -> str:
-    """Return a branded voice header for logs."""
-    return f"━━━◆ Ø ◆━━━  {title}"
-
-
 __all__ = [
     "StatusChip",
     "VOICE",
@@ -177,5 +180,6 @@ __all__ = [
     "brand_title",
     "break_copy",
     "hyperfocus_copy",
+    "tone_name",
     "voice_header",
 ]
