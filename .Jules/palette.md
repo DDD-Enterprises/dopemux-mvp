@@ -29,3 +29,7 @@
 ## 2026-03-11 - [Closing the Task Feedback Loop]
 **Learning:** In task-oriented interfaces, failing to provide a clear "success" or "empty" state after finishing a sequence can lead to user confusion or a sense of "unmet expectation." Providing a satisfying "Ritual Complete" visual (like a check icon and positive reinforcement text) creates a distinct sense of closure and progress.
 **Action:** Always implement explicit success and empty states for sequential task components to provide closure and guidance when a workflow is completed or empty.
+
+## 2026-03-12 - [Focus Visible for Keyboard-Only Indicators]
+**Learning:** Using the `&:focus` pseudo-class for custom focus indicators can create visual noise for mouse users who don't expect a permanent ring after clicking. Switching to `&:focus-visible` ensures that focus indicators only appear during keyboard navigation or when otherwise appropriate, providing a cleaner experience for mouse users while maintaining full accessibility.
+**Action:** Prefer `&:focus-visible` over `&:focus` for custom interactive element outlines to reduce visual clutter for mouse users.
