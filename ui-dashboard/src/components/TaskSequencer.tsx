@@ -23,6 +23,7 @@ import {
   Timer,
   Flame,
   Swords,
+  Clock,
 } from 'lucide-react';
 import { brandTokens } from '../theme';
 
@@ -147,6 +148,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
+
+  const totalRemainingMinutes = useMemo(() => {
+    const otherTasksTotal = optimizedTasks
+      .filter((t) => t.id !== currentTaskId)
+      .reduce((sum, t) => sum + t.estimatedMinutes, 0);
+
+    if (!currentTask) return otherTasksTotal;
+
+    const elapsedMinutes = taskTimer / 60;
+    const currentTaskRemaining = Math.max(0, currentTask.estimatedMinutes - elapsedMinutes);
+
+    return Math.ceil(otherTasksTotal + currentTaskRemaining);
+  }, [optimizedTasks, currentTask, currentTaskId, taskTimer]);
 
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
@@ -285,6 +299,35 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
+        {totalRemainingMinutes > 0 && (
+          <Tooltip title="Total estimated time remaining for all incomplete tasks" arrow>
+            <Box
+              role="status"
+              aria-label={`Total remaining time: ${totalRemainingMinutes} ${totalRemainingMinutes === 1 ? 'minute' : 'minutes'}`}
+              tabIndex={0}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                ml: 1,
+                color: brandTokens.colors.ritualCyan,
+                bgcolor: alpha(brandTokens.colors.ritualCyan, 0.1),
+                px: 1,
+                py: 0.25,
+                borderRadius: 1,
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                '&:focus-visible': {
+                  outline: `2px solid ${brandTokens.colors.ritualCyan}`,
+                  outlineOffset: '2px',
+                },
+              }}
+            >
+              <Clock size={14} aria-hidden="true" />
+              {totalRemainingMinutes}m
+            </Box>
+          </Tooltip>
+        )}
         <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
           <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
