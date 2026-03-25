@@ -21,6 +21,7 @@ import {
   Pause,
   SkipForward,
   Timer,
+  Clock,
   Flame,
   Swords,
 } from 'lucide-react';
@@ -154,20 +155,62 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return brandTokens.colors.serumMint;
   };
 
+  const totalRemainingMinutes = useMemo(() => {
+    const incompleteTasks = tasks.filter((t) => t.status !== 'completed');
+    const otherTasksTotal = incompleteTasks
+      .filter((t) => t.id !== currentTaskId)
+      .reduce((sum, t) => sum + t.estimatedMinutes, 0);
+
+    const currentTaskInIncomplete = incompleteTasks.find((t) => t.id === currentTaskId);
+    const currentRemaining = currentTaskInIncomplete
+      ? Math.max(0, currentTaskInIncomplete.estimatedMinutes - taskTimer / 60)
+      : 0;
+
+    return Math.ceil(otherTasksTotal + currentRemaining);
+  }, [tasks, currentTaskId, taskTimer]);
+
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
         <Timer size={24} aria-hidden="true" />
-        <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
+        <Typography variant="h6" sx={{ letterSpacing: '0.16em', flexGrow: 1 }}>
           Task Sequencer
         </Typography>
+        {totalRemainingMinutes > 0 && (
+          <Tooltip title="Total remaining duration for all tasks in sequence" arrow>
+            <Box
+              role="status"
+              tabIndex={0}
+              aria-label={`Total remaining time: ${totalRemainingMinutes} ${
+                totalRemainingMinutes === 1 ? 'minute' : 'minutes'
+              }`}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                color: brandTokens.colors.saintGold,
+                fontWeight: 'bold',
+                fontSize: '0.75rem',
+                fontFamily: '"JetBrains Mono", monospace',
+                outline: 'none',
+                '&:focus-visible': {
+                  borderRadius: 1,
+                  boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+                },
+              }}
+            >
+              <Clock size={14} aria-hidden="true" />
+              {totalRemainingMinutes}m
+            </Box>
+          </Tooltip>
+        )}
         <Tooltip title="Real-time task synchronization active" arrow>
           <Chip
             size="small"
             label="[LIVE]"
             className="dopemux-chip"
             tabIndex={0}
-            sx={{ ml: 'auto', borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
+            sx={{ borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
           />
         </Tooltip>
       </Box>
