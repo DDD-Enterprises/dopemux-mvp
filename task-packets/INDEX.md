@@ -33,7 +33,6 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
-| TP-SIA-EXEC-0001 | Workflow Plane | Packet Execution Domain Models + Lease Store | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0002 | Workflow Plane | Packet Manifest V2 + Sidecar Contract | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0003 | Workflow Plane | Explicit Routing Slots + Cost Policy | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0004 | Workflow Plane | Supervisor Service + Canonical Commit Flow | Ready | SIA Packet Execution ADR |
@@ -49,7 +48,8 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Completion Date | Outcome |
 | --- | --- | --- | --- | --- |
-| PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
+| TP-SIA-EXEC-0001 | Workflow Plane | Packet Execution Domain Models + Lease Store | 2026-03-25 | Accepted |
+| PM-INT-30 | PM Plane | Build PM-plane end-to-end integration suite | 2026-03-22 | Accepted |
 | PACKET_024 | Infra | MCP Health Surface Hardening | 2026-01-26 | Accepted |
 
 ────────────────────────────────────────────────────────────
