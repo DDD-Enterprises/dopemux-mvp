@@ -1,10 +1,9 @@
 import re
-from typing import Any, Dict, List, Optional
+from typing import List
 
 from .schema import (
     ChecklistItem,
     PRMetadataUpdate,
-    VerificationRequest,
     VerificationResult,
 )
 

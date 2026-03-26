@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, auto
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 from rich.console import Console
 
@@ -64,16 +64,6 @@ def dashboard_status_icon(snapshot: Mapping[str, Any]) -> str:
         "merged": "🟢",
         "pending": "⏳",
     }.get(status, "⏳")
-
-    # Check for Rich support
-    try:
-
-        console = Console()
-        if console.width < 80:
-            return RenderMode.COMPACT
-        return RenderMode.RICH
-    except ImportError:
-        return RenderMode.PLAIN
 
 
 class TerminalRenderer:
@@ -159,19 +149,19 @@ class RichTerminalRenderer(TerminalRenderer):
             Layout(name="body", ratio=1),
             Layout(name="footer", size=3)
         )
-        
+
         # Header
         grid = Table.grid(expand=True)
         grid.add_column(justify="left", ratio=1)
         grid.add_column(justify="right")
-        
+
         title = Text.assemble(
             ("🚀 ", "bold yellow"),
             ("DOPEMUX ", "bold cyan"),
             ("PR-MERGE ", "bold magenta"),
             ("GRAND ORCHESTRATOR", "bold white")
         )
-        
+
         elapsed = int(time.time() - state.start_time)
         timer = Text(f"MISSION TIME: {elapsed//60:02d}:{elapsed%60:02d}", style="dim yellow")
         grid.add_row(title, timer)
@@ -193,33 +183,33 @@ class RichTerminalRenderer(TerminalRenderer):
         max_visible = max(5, term_height - 10)
 
         total_prs = len(state.prs)
-        
+
         start_idx = 0
         if total_prs > max_visible:
             start_idx = max(0, state.active_index - (max_visible // 2))
             if start_idx + max_visible > total_prs:
                 start_idx = total_prs - max_visible
-        
+
         end_idx = min(total_prs, start_idx + max_visible)
 
         for i in range(start_idx, end_idx):
             pr = state.prs[i]
             is_active = i == state.active_index
             row_style = "bold white on grey15" if is_active else "dim"
-            
+
             status_icon = dashboard_status_icon(pr)
-            
+
             table.add_row(
                 f"{'> ' if is_active else '  '}{pr.get('pr_id', '???')}",
                 pr.get("title", "Unknown Title"),
                 status_icon,
                 style=row_style
             )
-        
+
         q_title = f"[ QUEUE STATUS ({total_prs}) ]"
         if total_prs > max_visible:
             q_title = f"[ QUEUE STATUS ({start_idx+1}-{end_idx} of {total_prs}) ]"
-            
+
         layout["queue"].update(Panel(table, title=q_title, border_style="cyan"))
 
         # Cockpit
@@ -235,7 +225,7 @@ class RichTerminalRenderer(TerminalRenderer):
                 Layout(name="intel", ratio=3),
                 Layout(name="blockers", ratio=2)
             )
-            
+
             # Intel
             intel_text = Text()
             intel_text.append(f"#{active.get('pr_id')} | ", style="bold cyan")
@@ -243,7 +233,7 @@ class RichTerminalRenderer(TerminalRenderer):
             intel_text.append(f"STRATEGY : {active.get('merge_strategy', 'MECHANICAL')}\n", style="bold magenta")
             intel_text.append(f"RATIONALE: {active.get('rationale', 'Standard rebase.')[:150]}...", style="dim")
             cockpit["top"]["intel"].update(Panel(intel_text, title="MISSION INTEL", border_style="magenta"))
-            
+
             # Blockers & Warnings -> Tactical Checklist
             blocker_text = Text()
             blockers = active.get("blockers", [])
@@ -260,7 +250,7 @@ class RichTerminalRenderer(TerminalRenderer):
                 str(active.get("operator_state", "")) == "queued_for_merge"
                 or str(active.get("lifecycle_state", "")).upper() == "QUEUED_FOR_MERGE"
             )
-            
+
             # 1. CI Status
             ci = active.get("ci_status", "UNKNOWN")
             if ci == "SUCCESS":
@@ -278,7 +268,7 @@ class RichTerminalRenderer(TerminalRenderer):
                 blocker_text.append("✅ Approval Satisfied\n", style="green")
             elif review_decision == "CHANGES_REQUESTED":
                 blocker_text.append("❌ Changes Requested\n", style="bold red")
-                
+
             # 2. Local Validation
             v_report = active.get("validation_report", {})
             v_status = v_report.get("status", "NOT_EXECUTED").upper() if isinstance(v_report, dict) else "NOT_EXECUTED"
@@ -291,7 +281,7 @@ class RichTerminalRenderer(TerminalRenderer):
 
             if queued_for_merge:
                 blocker_text.append("🔵 Auto-merge Queued\n", style="blue")
-                
+
             # 3. Conflicts
             mergeable = str(active.get("mergeable", "")).upper()
             state_status = str(active.get("merge_state_status", "")).upper()
@@ -299,18 +289,18 @@ class RichTerminalRenderer(TerminalRenderer):
                 blocker_text.append("❌ Merge Conflicts\n", style="bold red")
             else:
                 blocker_text.append("✅ No Merge Conflicts\n", style="green")
-                
+
             # 4. Threads
             threads = active.get("unresolved_threads", 0)
             if threads == 0:
                 blocker_text.append("✅ All Threads Resolved\n", style="green")
             else:
                 blocker_text.append(f"❌ {threads} Unresolved Threads\n", style="bold red")
-                
+
             # 5. Draft Status
             if active.get("is_draft"):
                 blocker_text.append("❌ PR is Draft\n", style="yellow")
-                
+
             # Other blockers
             other_blockers = [b for b in blockers if b.get("type") not in ("validation_not_executed", "required_check_pending", "required_check_failed", "active_thread", "conflict_detected", "draft_pr")]
             if other_blockers:
@@ -324,7 +314,7 @@ class RichTerminalRenderer(TerminalRenderer):
                 for h in history[-2:]:
                     blocker_text.append(f"  • {h.get('event')} ", style="dim white")
                     blocker_text.append(f"({h.get('timestamp')})\n", style="dim cyan")
-            
+
             cockpit["top"]["blockers"].update(Panel(blocker_text, title="TACTICAL INSIGHTS", border_style="red" if blockers else "green"))
 
             # Middle row: Integrated Metrics & Stats
@@ -333,19 +323,19 @@ class RichTerminalRenderer(TerminalRenderer):
             middle_grid.add_column(ratio=1)
             middle_grid.add_column(ratio=1)
             middle_grid.add_column(ratio=1)
-            
+
             ci = active.get("ci_status", "UNKNOWN")
             ci_text = Text.assemble(("CI: ", "bold"), (ci, "green" if ci == "SUCCESS" else "red" if ci == "FAILURE" else "yellow"))
-            
+
             v_report = active.get("validation_report", {})
             v_status = v_report.get("status", "NOT_EXECUTED").upper() if isinstance(v_report, dict) else "NOT_EXECUTED"
             v_text = Text.assemble(("VERIFY: ", "bold"), (v_status, "green" if "PASSED" in v_status else "red" if "FAILED" in v_status else "dim white"))
-            
+
             threads_text = Text.assemble(("THREADS: ", "bold"), (f"{active.get('unresolved_threads', 0)}", "cyan"))
-            
+
             is_draft = bool(active.get("is_draft", False))
             draft_text = Text.assemble(("DRAFT: ", "bold"), ("YES" if is_draft else "NO", "yellow" if is_draft else "dim white"))
-            
+
             middle_grid.add_row(Align.center(ci_text), Align.center(v_text), Align.center(threads_text), Align.center(draft_text))
             cockpit["middle"].update(Panel(middle_grid, title="SYSTEM METRICS", border_style="blue"))
 
@@ -382,7 +372,7 @@ class RichTerminalRenderer(TerminalRenderer):
                 else:
                     obj_text.append(f"🎯 OBJECTIVE: Advance PR from {lc_state} state.\n", style="bold cyan")
                     obj_text.append("NEXT STEP: Perform system verification [V] to refresh state.", style="white")
-                
+
                 cockpit["bottom"].update(Panel(obj_text, title="MISSION OBJECTIVE", border_style="cyan"))
             else:
                 for step in execution_log[-5:]:
@@ -391,9 +381,9 @@ class RichTerminalRenderer(TerminalRenderer):
                     s_ts = step.get("timestamp", "")
                     color = "green" if s_type == "SUCCESS" else "red" if s_type == "ERROR" else "yellow" if s_type == "START" else "white"
                     log_text.append(f"[{s_ts}] {s_msg}\n", style=color)
-                
+
                 cockpit["bottom"].update(Panel(log_text, title="EXECUTION LOG", border_style="yellow"))
-            
+
             layout["cockpit"].update(cockpit)
         else:
             layout["cockpit"].update(
@@ -414,7 +404,7 @@ class RichTerminalRenderer(TerminalRenderer):
             ("[Q] ", "bold red"), "Quit"
         )
         footer_grid = Table.grid(expand=True)
-        
+
         ap_status = Text("AUTO-PILOT: ", style="bold")
         if getattr(state, "auto_pilot", False):
             ap_status.append("ENGAGED", style="blink bold green")

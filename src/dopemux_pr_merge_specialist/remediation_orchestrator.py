@@ -1,8 +1,7 @@
-import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .action_model import blocker_findings
-from .schema import PRMergeReport, RemediationFlowTrace, RemediationStageResult
+from .schema import PRMergeReport, RemediationFlowTrace
 
 
 class RemediationOrchestrator:
@@ -19,15 +18,13 @@ class RemediationOrchestrator:
         # In this project, GitHubClient is the manager in many contexts.
         # We need to adapt to the fact that it doesn't have process_pr.
         # If the manager is a GitHubClient, we'll use plan_builder/classification helpers.
-        
+
         from .github_api import GitHubClient
         if isinstance(self.manager, GitHubClient):
             from .plan_builder import build_plan_result
             from .classification import build_pr_state
             from .github_api import thread_counters
-            from .policy import load_effective_policy
-            from pathlib import Path
-            
+
             client = self.manager
             policy = client.policy
             raw = client.fetch_pr(int(pr_id))
@@ -35,7 +32,7 @@ class RemediationOrchestrator:
             unresolved_total, active_threads, outdated_threads = thread_counters(threads)
             pr_state_obj = build_pr_state(raw, unresolved_total, active_threads, outdated_threads)
             check_payload = client.query_checks(int(pr_id))
-            
+
             from .schema import ValidationReport, ValidationStatus
             validation = ValidationReport(
                 status=ValidationStatus.NOT_EXECUTED,
@@ -44,12 +41,12 @@ class RemediationOrchestrator:
                 attempts=0,
                 remediation_applied=False,
             )
-            
+
             result = build_plan_result(active_run_id=run_id, pr=pr_state_obj, threads=threads, check_payload=check_payload, validation_report=validation, policy=policy)
-            
+
             # Map PRResult to PRMergeReport for compatibility with the Wizard's expectations
             blockers = [finding.as_blocker() for finding in blocker_findings(result.findings)]
-            
+
             report = PRMergeReport(
                 pr_id=pr_id,
                 status="blocked" if blockers else "merge_ready",
@@ -64,5 +61,5 @@ class RemediationOrchestrator:
         if hasattr(self.manager, "process_pr"):
             report = self.manager.process_pr(pr_id, run_id)
             return report
-            
+
         raise AttributeError(f"Manager {type(self.manager)} does not support PR processing.")

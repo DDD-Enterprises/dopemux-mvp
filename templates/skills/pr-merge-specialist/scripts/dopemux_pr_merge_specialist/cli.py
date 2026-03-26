@@ -616,9 +616,6 @@ def cmd_fusion(args: argparse.Namespace) -> int:
 
 def cmd_ops(args: argparse.Namespace) -> int:
     """📊 Show Flight Deck operational metrics and health."""
-    import json
-    from pathlib import Path
-
     ops_dir = Path("proof/pr_merge/flight_deck/ops")
 
     print("📊 Flight Deck Operational Metrics")

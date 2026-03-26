@@ -2,9 +2,9 @@ from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
 
-from src.dopemux_pr_merge_specialist.dashboard import DopemuxDashboard, QueueState
-from src.dopemux_pr_merge_specialist.queue_drain import _ignite_speculative_train
-from src.dopemux_pr_merge_specialist.schema import PullRequestState, PRResult
+from dopemux_pr_merge_specialist.dashboard import DopemuxDashboard, QueueState
+from dopemux_pr_merge_specialist.queue_drain import _ignite_speculative_train
+from dopemux_pr_merge_specialist.schema import PullRequestState, PRResult
 
 
 def _pr_result(pr_id: int, *, lifecycle_state: str = "merge_ready") -> PRResult:
@@ -65,9 +65,16 @@ def test_speculative_train_rebases_against_origin_main_and_continues(monkeypatch
     def fake_cleanup(repo_root, worktree_path, branch, commands_log, policy):
         cleanup_calls.append((worktree_path.name, branch))
 
-    monkeypatch.setattr("src.dopemux_pr_merge_specialist.queue_drain.prepare_worktree", fake_prepare)
-    monkeypatch.setattr("src.dopemux_pr_merge_specialist.queue_drain.attempt_speculative_rebase", fake_rebase)
-    monkeypatch.setattr("src.dopemux_pr_merge_specialist.queue_drain.cleanup_worktree", fake_cleanup)
+    monkeypatch.setattr(
+        "dopemux_pr_merge_specialist.queue_drain.prepare_worktree", fake_prepare
+    )
+    monkeypatch.setattr(
+        "dopemux_pr_merge_specialist.queue_drain.attempt_speculative_rebase",
+        fake_rebase,
+    )
+    monkeypatch.setattr(
+        "dopemux_pr_merge_specialist.queue_drain.cleanup_worktree", fake_cleanup
+    )
 
     merged_ids, queued_ids = _ignite_speculative_train(
         results=results,
