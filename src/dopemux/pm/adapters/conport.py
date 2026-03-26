@@ -11,8 +11,8 @@ class ConPortAdapter:
     """Adapter for communicating with the ConPort (Decision Graph) HTTP API."""
 
     def __init__(self, base_url: Optional[str] = None):
-        # Default to PORT_BASE+16 (3016)
-        self.base_url = (base_url or os.getenv("CONPORT_URL", "http://localhost:3016")).rstrip("/")
+        # ConPort HTTP service is exposed on 3004 by default.
+        self.base_url = (base_url or os.getenv("CONPORT_URL", "http://localhost:3004")).rstrip("/")
 
     async def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
         """Helper to make an HTTP request."""
@@ -70,15 +70,29 @@ class ConPortAdapter:
     async def search_decisions(self, tag: Optional[str] = None, text: Optional[str] = None, limit: int = 5) -> Dict[str, Any]:
         """Search decisions in the knowledge graph."""
         params = {"limit": limit}
-        if tag:
-            params["tag"] = tag
-        if text:
-            params["text"] = text
             
         try:
-            response = await self._request("GET", "/kg/decisions/search", params=params)
+            response = await self._request("GET", "/api/decisions", params=params)
             response.raise_for_status()
-            return response.json()
+            payload = response.json()
+            decisions = payload.get("decisions", [])
+            if tag:
+                decisions = [
+                    item for item in decisions
+                    if tag in [str(entry) for entry in item.get("tags", [])]
+                ]
+            if text:
+                lowered = text.lower()
+                decisions = [
+                    item for item in decisions
+                    if lowered in str(item.get("summary", "")).lower()
+                    or lowered in str(item.get("rationale", "")).lower()
+                ]
+            return {
+                **payload,
+                "decisions": decisions[:limit],
+                "count": len(decisions[:limit]),
+            }
         except Exception as e:
             logger.error(f"Failed to search decisions in ConPort: {e}")
             raise
