@@ -39,18 +39,18 @@ def _write_prompt(path: Path, step_id: str) -> None:
 
 def _make_prompt_root(tmp_path: Path, *, with_registry: bool, invalid_registry: bool = False) -> Path:
     prompt_root = tmp_path / "prompts"
-    for step_id in [f"S{i}" for i in range(7)]:
+    for step_id in [f"S{i}" for i in range(13)]:
         _write_prompt(prompt_root / f"PROMPT_{step_id}_LEGACY.md", step_id)
     if with_registry:
         registry_root = prompt_root / "phase_s"
         registry_root.mkdir(parents=True, exist_ok=True)
         steps = {}
-        for step_id in [f"S{i}" for i in range(7)]:
+        for step_id in [f"S{i}" for i in range(13)]:
             filename = f"PROMPT_{step_id}_REGISTRY.md"
             _write_prompt(registry_root / filename, step_id)
             steps[step_id] = {"prompt_path": filename, "tier": "synthesis"}
         if invalid_registry:
-            steps["S7"] = {"prompt_path": "PROMPT_S7.md", "tier": "synthesis"}
+            steps["S13"] = {"prompt_path": "PROMPT_S13.md", "tier": "synthesis"}
         payload = {"version": 1, "phase": "S", "steps": steps}
         (registry_root / "registry.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return prompt_root
@@ -89,7 +89,7 @@ def test_auto_uses_registry_when_present(monkeypatch: pytest.MonkeyPatch, tmp_pa
     monkeypatch.setenv(runner.PROMPT_ROOT_ENV_VAR, str(prompt_root))
     runner.set_active_s_prompts_mode("auto")
     specs = runner.get_phase_prompts("S")
-    assert {spec.step_id for spec in specs} == {f"S{i}" for i in range(7)}
+    assert {spec.step_id for spec in specs} == {f"S{i}" for i in range(13)}
     assert all(spec.source == "registry" for spec in specs)
     assert all(spec.tier_override == "synthesis" for spec in specs)
 
