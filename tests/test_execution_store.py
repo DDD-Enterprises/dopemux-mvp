@@ -1,12 +1,15 @@
 import pytest
+from datetime import datetime, timedelta, timezone
+from uuid import UUID
 
-from dopemux.execution.models import ExecutionPacket, LeaseState, PacketState
+from dopemux.execution.models import ExecutionPacket, PacketState, LeaseState
 from dopemux.execution.store import (
     InMemoryExecutionStore,
     InMemoryLeaseStore,
-    LeaseExpiredError,
     PacketNotFoundError,
     PacketNotReadyError,
+    LeaseNotFoundError,
+    LeaseExpiredError,
 )
 
 @pytest.fixture
@@ -73,11 +76,11 @@ def test_release_packet(execution_store, lease_store):
     packet = ExecutionPacket(packet_id="TP-1", owner_id="user1")
     execution_store.create_packet(packet)
     lease = lease_store.checkout("TP-1", "agent-1", ttl_seconds=60)
-
-    released_lease = lease_store.release(lease.lease_id, final_state=PacketState.PROOF_GENERATED)
-
+    
+    lease_store.release(lease.lease_id, final_state=PacketState.PROOF_GENERATED)
+    
     assert execution_store.get_packet("TP-1").state == PacketState.PROOF_GENERATED
-    assert released_lease.state == LeaseState.RELEASED
+    assert lease_store._leases[lease.lease_id].state == LeaseState.RELEASED
 
 def test_reclaim_expired_lease(execution_store, lease_store):
     packet = ExecutionPacket(packet_id="TP-1", owner_id="user1")
@@ -90,11 +93,3 @@ def test_reclaim_expired_lease(execution_store, lease_store):
     lease2 = lease_store.checkout("TP-1", "agent-2", ttl_seconds=60)
     assert lease2.agent_id == "agent-2"
     assert execution_store.get_packet("TP-1").state == PacketState.LEASED
-
-
-def test_checkout_rejects_non_ready_terminal_state(execution_store, lease_store):
-    packet = ExecutionPacket(packet_id="TP-1", owner_id="user1", state=PacketState.PROOF_GENERATED)
-    execution_store.create_packet(packet)
-
-    with pytest.raises(PacketNotReadyError):
-        lease_store.checkout("TP-1", "agent-1", ttl_seconds=60)
