@@ -17,6 +17,16 @@ FAMILIES: Dict[str, List[str]] = {
         "pr-docgen-sync-copilot",
         "pr-docgen-sync-claude",
     ],
+    "workflow-kit": [
+        "brief-drafter",
+        "task-breakdown",
+        "code-researcher",
+        "research-reviewer",
+        "implementation-planner",
+        "plan-reviewer",
+        "code-implementer",
+        "quality-refactorer",
+    ],
 }
 
 
@@ -79,7 +89,7 @@ def main() -> int:
         "--family",
         action="append",
         default=[],
-        help="Skill family to sync (repeatable): testgen, pr-docgen-sync, all",
+        help="Skill family to sync (repeatable): testgen, pr-docgen-sync, workflow-kit, all",
     )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()

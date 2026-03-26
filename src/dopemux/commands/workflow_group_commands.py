@@ -16,6 +16,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from ..console import console
+from ..workflow import WorkflowStore
 from .capture_group_commands import _workflow_request
 
 @click.group("workflow")
@@ -156,3 +157,184 @@ def workflow_epics_list(status: Optional[str], priority: Optional[str], tag: Opt
         params["tag"] = tag
 
     _workflow_request("GET", "/api/workflow/epics", params=params)
+
+
+def _resolve_instance_id(value: Optional[str]) -> str:
+    return value or os.environ.get("DOPEMUX_INSTANCE_ID") or "main"
+
+
+def _workflow_store_for_path(path: Optional[str]) -> WorkflowStore:
+    return WorkflowStore.for_path(Path(path) if path else None)
+
+
+def _load_workflow_state(
+    *,
+    path: Optional[str],
+    workflow_id: Optional[str],
+    instance_id: Optional[str],
+) -> tuple[WorkflowStore, object]:
+    store = _workflow_store_for_path(path)
+    if workflow_id:
+        state = store.load(workflow_id)
+    else:
+        resolved_instance_id = _resolve_instance_id(instance_id)
+        state = store.resolve_active(resolved_instance_id)
+        if state is None:
+            raise click.ClickException(
+                f"No active workflow found for instance '{resolved_instance_id}' in {store.workspace_root}"
+            )
+    return store, state
+
+
+@workflow_group.command("init")
+@click.option("--workflow-id", default=None, help="Explicit workflow identifier")
+@click.option("--mode", default="internal", show_default=True)
+@click.option("--instance-id", default=None, help="Workflow instance ID")
+@click.option("--max-iterations", type=int, default=50, show_default=True)
+@click.option("--max-minutes", type=int, default=120, show_default=True)
+@click.option("--completion-token", default="WORKFLOW_COMPLETE", show_default=True)
+@click.option("--path", "workspace_path", default=None, help="Workspace or child path")
+def workflow_init(
+    workflow_id: Optional[str],
+    mode: str,
+    instance_id: Optional[str],
+    max_iterations: int,
+    max_minutes: int,
+    completion_token: str,
+    workspace_path: Optional[str],
+) -> None:
+    """Create or resume the active local workflow for the current workspace."""
+    store = _workflow_store_for_path(workspace_path)
+    state = store.create_or_resume(
+        workflow_id=workflow_id,
+        instance_id=_resolve_instance_id(instance_id),
+        mode=mode,
+        max_iterations=max_iterations,
+        max_minutes=max_minutes,
+        completion_token=completion_token,
+    )
+    click.echo(
+        yaml.safe_dump(
+            {
+                "workflow_id": state.workflow_id,
+                "workspace_root": state.workspace_root,
+                "instance_id": state.instance_id,
+                "status": state.status.value,
+                "phase": state.phase.value,
+            },
+            sort_keys=False,
+        ).rstrip()
+    )
+
+
+@workflow_group.command("status")
+@click.option("--workflow-id", default=None, help="Explicit workflow identifier")
+@click.option("--instance-id", default=None, help="Workflow instance ID")
+@click.option("--path", "workspace_path", default=None, help="Workspace or child path")
+def workflow_status(
+    workflow_id: Optional[str],
+    instance_id: Optional[str],
+    workspace_path: Optional[str],
+) -> None:
+    """Show concise local workflow status."""
+    _, state = _load_workflow_state(
+        path=workspace_path,
+        workflow_id=workflow_id,
+        instance_id=instance_id,
+    )
+    click.echo(
+        yaml.safe_dump(
+            {
+                "workflow_id": state.workflow_id,
+                "workspace_root": state.workspace_root,
+                "instance_id": state.instance_id,
+                "status": state.status.value,
+                "phase": state.phase.value,
+                "current_task_id": state.current_task_id,
+                "iteration": state.iteration,
+                "max_iterations": state.max_iterations,
+                "max_minutes": state.max_minutes,
+            },
+            sort_keys=False,
+        ).rstrip()
+    )
+
+
+@workflow_group.command("resume")
+@click.option("--workflow-id", default=None, help="Explicit workflow identifier")
+@click.option("--instance-id", default=None, help="Workflow instance ID")
+@click.option("--path", "workspace_path", default=None, help="Workspace or child path")
+def workflow_resume(
+    workflow_id: Optional[str],
+    instance_id: Optional[str],
+    workspace_path: Optional[str],
+) -> None:
+    """Resolve a workflow by cwd ancestry or explicit ID and print its state."""
+    _, state = _load_workflow_state(
+        path=workspace_path,
+        workflow_id=workflow_id,
+        instance_id=instance_id,
+    )
+    click.echo(
+        yaml.safe_dump(
+            {
+                "workflow_id": state.workflow_id,
+                "workspace_root": state.workspace_root,
+                "instance_id": state.instance_id,
+                "status": state.status.value,
+                "phase": state.phase.value,
+                "current_task_id": state.current_task_id,
+            },
+            sort_keys=False,
+        ).rstrip()
+    )
+
+
+@workflow_group.command("cancel")
+@click.option("--workflow-id", default=None, help="Explicit workflow identifier")
+@click.option("--instance-id", default=None, help="Workflow instance ID")
+@click.option("--path", "workspace_path", default=None, help="Workspace or child path")
+@click.option("--reason", default="Cancelled by operator", show_default=True)
+def workflow_cancel(
+    workflow_id: Optional[str],
+    instance_id: Optional[str],
+    workspace_path: Optional[str],
+    reason: str,
+) -> None:
+    """Deactivate a workflow without deleting its state."""
+    store, state = _load_workflow_state(
+        path=workspace_path,
+        workflow_id=workflow_id,
+        instance_id=instance_id,
+    )
+    updated = store.cancel(state, reason)
+    click.echo(
+        yaml.safe_dump(
+            {
+                "workflow_id": updated.workflow_id,
+                "status": updated.status.value,
+                "phase": updated.phase.value,
+                "reason": reason,
+            },
+            sort_keys=False,
+        ).rstrip()
+    )
+
+
+@workflow_group.command("inspect")
+@click.option("--workflow-id", default=None, help="Explicit workflow identifier")
+@click.option("--instance-id", default=None, help="Workflow instance ID")
+@click.option("--path", "workspace_path", default=None, help="Workspace or child path")
+def workflow_inspect(
+    workflow_id: Optional[str],
+    instance_id: Optional[str],
+    workspace_path: Optional[str],
+) -> None:
+    """Print detailed workflow checkpoints and validation status."""
+    store, state = _load_workflow_state(
+        path=workspace_path,
+        workflow_id=workflow_id,
+        instance_id=instance_id,
+    )
+    inspection = store.inspect(state)
+    click.echo(yaml.safe_dump(inspection, sort_keys=False).rstrip())

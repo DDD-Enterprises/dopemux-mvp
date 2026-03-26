@@ -44,7 +44,15 @@ class TaskPriority(Enum):
 # ============================================================================
 
 class TaskRecord(Base):
-    """Shared task record across all Dopemux instances."""
+    """
+    DEPRECATED: Local shadow authority for tasks.
+    
+    This model represents the legacy SQL-based task storage within the bridge. 
+    It is now considered NON-CANONICAL. The authority for task lifecycle 
+    and workflow state has moved to the Task-Orchestrator and PM Plane pillars.
+    
+    Use this for legacy data migration only.
+    """
     __tablename__ = "tasks"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -65,7 +73,12 @@ class TaskRecord(Base):
 
 
 class ProjectRecord(Base):
-    """Shared project record across all Dopemux instances."""
+    """
+    DEPRECATED: Local shadow authority for projects.
+    
+    This model represents legacy project storage. Authority has moved to the 
+    Task-Orchestrator and ConPort Knowledge Graph.
+    """
     __tablename__ = "projects"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -79,7 +92,12 @@ class ProjectRecord(Base):
 
 
 class DdgDecision(Base):
-    """Dope Decision Graph - Decision records."""
+    """
+    DEPRECATED: Local shadow authority for decisions.
+    
+    Authority for architectural decisions and historical context has moved 
+    to the ConPort Knowledge Graph authority.
+    """
     __tablename__ = "ddg_decisions"
 
     id = Column(String, primary_key=True)
@@ -93,7 +111,12 @@ class DdgDecision(Base):
 
 
 class DdgProgress(Base):
-    """Dope Decision Graph - Progress records."""
+    """
+    DEPRECATED: Local shadow authority for progress.
+    
+    Authority for progress tracking and historical ledger entries has 
+    moved to the ConPort / Dope-Memory Chronicle authority.
+    """
     __tablename__ = "ddg_progress"
 
     id = Column(String, primary_key=True)

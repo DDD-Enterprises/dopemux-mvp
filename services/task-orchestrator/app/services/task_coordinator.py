@@ -48,6 +48,9 @@ from dopemux.pm.store import InMemoryPMTaskStore
 from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest, content_hash_task_id
 from dopemux.pm.mapping import ORCHESTRATOR_TO_CANONICAL, CANONICAL_TO_ORCHESTRATOR
 
+from dopemux.execution.store import get_execution_store, get_lease_store, PacketNotFoundError, PacketNotReadyError
+from dopemux.execution.models import ExecutionPacket, PacketState
+
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -491,6 +494,9 @@ class TaskCoordinator:
             "context_switches": 0
         }
 
+        execution_store = get_execution_store()
+        lease_store = get_lease_store()
+
         for task_id in sequenced_tasks:
             # Execute task (placeholder - actual execution via agents)
             # Find the task object from internal storage
@@ -500,6 +506,20 @@ class TaskCoordinator:
                 results["failed"].append(task_id)
                 continue
             try:
+                # 1. Ensure ExecutionPacket exists in the Execution Plane
+                if not execution_store.get_packet(task_id):
+                    execution_store.create_packet(ExecutionPacket(
+                        packet_id=task_id,
+                        owner_id="orchestrator",
+                        state=PacketState.READY,
+                        metadata={"title": task.title}
+                    ))
+                
+                # 2. Acquire Lease
+                agent_id = task.assigned_agent.value if task.assigned_agent else "unassigned-agent"
+                lease = lease_store.checkout(task_id, agent_id, ttl_seconds=300)
+                logger.info(f"🔑 Leased packet {task_id} to {agent_id} (Lease ID: {lease.lease_id})")
+
                 # Sync status transition idempotently via Canonical Store
                 try:
                     pm_task = self.pm_store.get(task_id)
@@ -521,9 +541,8 @@ class TaskCoordinator:
                 
                 results["in_progress"].append(task_id)
 
-                # Simulate execution with monitoring
-                # We await this to maintain sequential execution order
-                await self._monitor_execution(task)
+                # Simulate execution with monitoring and heartbeats
+                await self._monitor_execution(task, lease_id=lease.lease_id)
 
                 # Mark task as completed after successful monitoring idempotently
                 try:
@@ -544,12 +563,20 @@ class TaskCoordinator:
                     logger.warning(f"Failed canonical transition to COMPLETED for {task_id}: {e}")
                     task.status = TaskStatus.COMPLETED
 
+                # 3. Release Lease
+                lease_store.release(lease.lease_id, final_state=PacketState.PROOF_GENERATED)
+                logger.info(f"✅ Released lease for packet {task_id}")
+
                 results["completed"].append(task_id)
                 results["in_progress"].remove(task_id)
 
                 # Sync to ConPort
                 await self.conport_adapter.update_task_in_conport(task)
 
+            except (PacketNotReadyError, PacketNotFoundError) as e:
+                logger.warning(f"⚠️ Could not lease packet {task_id}: {e}")
+                results["failed"].append(task_id)
+                continue
             except Exception as e:
                 logger.error(f"❌ Task execution failed {task_id}: {e}")
                 task.status = TaskStatus.FAILED
@@ -587,9 +614,9 @@ class TaskCoordinator:
         energy_cost = base_cost * energy_modifiers.get(adhd_state.get('energy'), 1.0)
         return min(1.0, energy_cost)  # Cap at 1.0
 
-    async def _monitor_execution(self, task: OrchestrationTask):
+    async def _monitor_execution(self, task: OrchestrationTask, lease_id: Optional[UUID] = None):
         """
-        Monitor task execution with ADHD-aware breaks.
+        Monitor task execution with ADHD-aware breaks and lease heartbeats.
         """
         # Simulate task duration (demo mode)
         # In a real system, this would monitor an actual agent's progress
@@ -598,8 +625,19 @@ class TaskCoordinator:
         if self.coordination_state.session_start_time is None:
             self.coordination_state.session_start_time = start_time
 
+        lease_store = get_lease_store()
+
         # Check energy decay over time
         while (datetime.now() - start_time).total_seconds() < simulated_duration:
+            # Pulse heartbeat if we have a lease
+            if lease_id:
+                try:
+                    lease_store.heartbeat(lease_id)
+                    logger.debug(f"💓 Heartbeat for lease {lease_id}")
+                except Exception as e:
+                    logger.error(f"💔 Heartbeat failed for lease {lease_id}: {e}")
+                    raise
+
             # Update global session timer based on elapsed time since session start
             elapsed = (datetime.now() - self.coordination_state.session_start_time).total_seconds()
             self.coordination_state.focus_session_timer = int(elapsed)

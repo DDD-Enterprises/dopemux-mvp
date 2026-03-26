@@ -33,7 +33,6 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
-| TP-SIA-EXEC-0001 | Workflow Plane | Packet Execution Domain Models + Lease Store | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0002 | Workflow Plane | Packet Manifest V2 + Sidecar Contract | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0003 | Workflow Plane | Explicit Routing Slots + Cost Policy | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0004 | Workflow Plane | Supervisor Service + Canonical Commit Flow | Ready | SIA Packet Execution ADR |
@@ -49,8 +48,25 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Completion Date | Outcome |
 | --- | --- | --- | --- | --- |
-| PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
+| TP-SIA-EXEC-0001 | Workflow Plane | Packet Execution Domain Models + Lease Store | 2026-03-25 | Accepted |
+| PM-INT-30 | PM Plane | Build PM-plane end-to-end integration suite | 2026-03-22 | Accepted |
+| PM-INT-31 | PM Plane | Add PM-plane readiness and observability | 2026-03-22 | Accepted |
+| PM-INT-32 | PM Plane | Rollout and deprecate legacy PM-plane surfaces | 2026-03-22 | Accepted |
+| PM-INT-23 | PM Plane | Migrate taskmaster onto canonical PM-plane contract | 2026-03-22 | Accepted |
+| PM-INT-24 | PM Plane | Migrate CLI TaskRecord flow onto canonical PM plane | 2026-03-22 | Accepted |
+| PM-INT-25 | PM Plane | Normalize PM-plane event taxonomy | 2026-03-22 | Accepted |
+| PM-INT-20 | PM Plane | Narrow dopecon-bridge to adapter-only role | 2026-03-22 | Accepted |
+| PM-INT-21 | PM Plane | Implement normalized PM-plane reads | 2026-03-22 | Accepted |
+| PM-INT-22 | PM Plane | Implement normalized PM-plane writes | 2026-03-22 | Accepted |
+| PM-INT-10 | PM Plane | Lock Task Orchestrator runtime for PM plane | 2026-03-22 | Accepted |
+| PM-INT-11 | PM Plane | Remove Task Orchestrator workflow bypasses | 2026-03-22 | Accepted |
+| PM-INT-12 | PM Plane | Add project-scoped workflow APIs to Task Orchestrator | 2026-03-22 | Accepted |
+| PM-INT-13 | PM Plane | Implement canonical task object and status normalization | 2026-03-22 | Accepted |
+| PM-INT-14 | PM Plane | Harden Leantime reflection and reconciliation | 2026-03-22 | Accepted |
+| PM-INT-15 | PM Plane | Make ConPort the live PM-plane context backend | 2026-03-22 | Accepted |
+| PM-INT-16 | PM Plane | Implement dope-memory chronicle lane | 2026-03-22 | Accepted |
 | PACKET_024 | Infra | MCP Health Surface Hardening | 2026-01-26 | Accepted |
+| PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
 
 ────────────────────────────────────────────────────────────
 ⚪ Superseded Task Packets

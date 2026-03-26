@@ -34,23 +34,36 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 class PRDParseRequest(BaseModel):
-    \"\"\"Request to parse a PRD document.\"\"\"
-    content: str = Field(..., description=\"PRD content to parse\")
-    project_id: str = Field(..., description=\"Project ID for task creation\")
+    """Request to parse a PRD document.
+
+    This payload is used by the `parse-prd` endpoint to trigger automated 
+    decomposition of requirements into structured tasks.
+    """
+    content: str = Field(..., description="PRD content to parse")
+    project_id: str = Field(..., description="Project ID for task creation")
 
 
 class PublishEventRequest(BaseModel):
-    \"\"\"Request to publish an event.\"\"\"
-    stream: str = Field(default=\"dopemux:events\", description=\"Redis Stream name\")
-    event_type: str = Field(..., description=\"Event type (e.g., tasks_imported)\")
-    data: Dict[str, Any] = Field(..., description=\"Event data payload\")
-    source: Optional[str] = Field(None, description=\"Event source identifier\")
+    """Request to publish an event to the global event bus.
+
+    This model supports both raw event publication and the automated 
+    PM Plane normalization layer for `taskmaster.*` and `task_*` events.
+    """
+    stream: str = Field(default="dopemux:events", description="Redis Stream name")
+    event_type: str = Field(..., description="Event type (e.g., tasks_imported)")
+    data: Dict[str, Any] = Field(..., description="Event data payload")
+    source: Optional[str] = Field(None, description="Event source identifier")
 
 
 class TaskUpdateRequest(BaseModel):
-    \"\"\"Request to update task status.\"\"\"
-    status: str = Field(..., description=\"New task status\")
-    assigned_to: Optional[str] = Field(None, description=\"User assignment\")
+    """Request to update task status.
+
+    This payload is used to trigger authoritative transitions in the 
+    PM Plane via the bridge adapter.
+    """
+    status: str = Field(..., description="New task status")
+    assigned_to: Optional[str] = Field(None, description="User assignment")
+
 
 
 # ============================================================================
@@ -148,7 +161,17 @@ async def root():
 
 @events_router.post(\"\")
 async def publish_event(request: PublishEventRequest):
-    \"\"\"Publish event to Redis Stream for cross-service coordination.\"\"\"
+    """
+    Publish an event to Redis Streams for cross-service coordination.
+
+    This route includes an automatic normalization layer:
+    - `taskmaster.*` events are transformed into canonical `pm.*` envelopes.
+    - `task_*` (orchestrator) events are transformed into canonical `pm.*` envelopes.
+
+    This ensures that all downstream consumers (ConPort, Chronicle) receive 
+    standardized PM Plane events regardless of the producer's native dialect.
+    """
+
     try:
         from .event_bus import EventBus, Event
         
@@ -268,7 +291,16 @@ async def parse_prd(
     http_request: Request,
     x_source_plane: Optional[str] = Header(None)
 ):
-    \"\"\"Parse PRD document into tasks across all systems with ADHD context preservation.\"\"\"
+    """
+    DEPRECATED: Authority moved to Task-Orchestrator.
+    Parse PRD document into tasks across all systems with ADHD context preservation.
+
+    This route enforces the Two-Plane authority model, requiring a 
+    `cognitive_plane` authorization header for writes. It delegates the parsing
+    to the `task_service` adapter, which utilizes Task-Master-AI and 
+    Leantime pillars.
+    """
+
     from .services.task_integration import task_service
     
     # Enforce cognitive plane authority for writes
@@ -313,7 +345,20 @@ async def get_next_tasks(
     limit: int = Query(5, ge=1, le=20),
     x_source_plane: Optional[str] = Header(None)
 ):
-    \"\"\"Get next actionable tasks for ADHD-friendly workflow via normalized PM-plane reads.\"\"\"
+    """
+    DEPRECATED: Authority moved to Task-Orchestrator.
+    Get next actionable tasks for ADHD-friendly workflow via normalized PM-plane reads.
+
+    This route retrieves prioritized tasks by delegating to the `task_service` 
+    adapter, ensuring recommendations are grounded in the authoritative PM 
+    Plane state.
+
+    Args:
+        project_id: Project to query.
+        limit: Max tasks to return.
+        x_source_plane: Authority header (`pm_plane` or `cognitive_plane`).
+    """
+
     if x_source_plane and x_source_plane not in [\"pm_plane\", \"cognitive_plane\"]:
         raise HTTPException(status_code=403, detail=f\"Invalid source plane: {x_source_plane}\")
 
@@ -340,7 +385,16 @@ async def update_task_status(
     current_user: dict = Depends(get_current_user),
     x_source_plane: Optional[str] = Header(None)
 ):
-    \"\"\"Update task status across all systems.\"\"\"
+    """
+    DEPRECATED: Authority moved to Task-Orchestrator.
+    Update task status across all authorities.
+
+    This route executes a dual-update transition via the `task_service` adapter, 
+    targeting both the local PM Plane authority and the Leantime mirror.
+    It enforces the Two-Plane authority model, requiring a `cognitive_plane` 
+    authorization header for writes.
+    """
+
     # Enforce cognitive plane authority for writes
     if x_source_plane != \"cognitive_plane\":
         raise HTTPException(

@@ -11,14 +11,22 @@ from pydantic import BaseModel, Field
 from .models import PMTaskStatus, WORKFLOW_SIGNIFICANT_FIELDS
 
 class MirrorReceipt(BaseModel):
-    """Result of a best-effort mirror write."""
+    """Result of a best-effort mirror write to an external system.
+    
+    A mirror write is a secondary update to a projection path (like Leantime)
+    that follows a primary canonical write.
+    """
     system: str
     success: bool
     persisted_id: Optional[str] = None
     error: Optional[str] = None
 
 class CanonicalReceipt(BaseModel):
-    """Result of a canonical PM-plane write."""
+    """Result of a canonical PM-plane write operation.
+    
+    Contains the authoritative system used, the resulting canonical ID, 
+    and any receipts from downstream mirrors updated during the operation.
+    """
     canonical_system: str
     canonical_id: str
     success: bool
@@ -27,7 +35,11 @@ class CanonicalReceipt(BaseModel):
     reconciliation_state: str = "SYNCED"
 
 class PMWriteConfig(BaseModel):
-    """Dependencies for PM-plane writes."""
+    """Dependency injection container for PM-plane write operations.
+    
+    Encapsulates the various client authorities required to perform 
+    cross-plane task synchronization.
+    """
     leantime_client: Any
     orchestrator_client: Any
     conport_client: Any
@@ -39,13 +51,23 @@ def pm_update_work_item(
     updates: Dict[str, Any],
     idempotency_key: str,
 ) -> CanonicalReceipt:
-    """
-    Update passive metadata for a work item.
+    """Update passive metadata for a work item.
     
-    Canonical Authority: Leantime (PM Entity Store)
+    Authority: Leantime (PM Entity Store) serves as the authority for 
+    non-structural metadata (title, description, etc.).
     
-    Rejects any fields in WORKFLOW_SIGNIFICANT_FIELDS. Those must be 
-    routed through pm_transition_work_item.
+    Boundary Enforcement: This function rejects any fields present in 
+    WORKFLOW_SIGNIFICANT_FIELDS. Such fields must be routed through 
+    the strict `pm_transition_work_item` pathway.
+
+    Args:
+        config: Injected dependencies.
+        task_id: The canonical ID of the task.
+        updates: Dictionary of metadata updates.
+        idempotency_key: Unique key for the operation.
+
+    Returns:
+        A CanonicalReceipt for the Leantime update.
     """
     # Enforce workflow authority boundary
     illegal_fields = set(updates.keys()) & WORKFLOW_SIGNIFICANT_FIELDS
@@ -80,11 +102,22 @@ def pm_transition_work_item(
     idempotency_key: str,
     expected_version: int,
 ) -> CanonicalReceipt:
-    """
-    Transition the workflow state of a work item.
+    """Transition the workflow state of a work item across authorities.
     
-    Canonical Authority: Task Orchestrator (Workflow Engine)
-    Mirror: Leantime (PM Entity Store)
+    This function implements the core Two-Plane transition logic:
+    1. Primary Write: Task Orchestrator (Workflow/Execution Authority).
+    2. Mirror Write: Leantime (PM Entity Store).
+
+    Args:
+        config: Injected dependencies.
+        task_id: The canonical task ID.
+        new_status: Target PMTaskStatus.
+        reason: Justification for the state change.
+        idempotency_key: Unique key to prevent duplicate transitions.
+        expected_version: Version check for optimistic concurrency.
+
+    Returns:
+        A CanonicalReceipt outlining the transition status.
     """
     # Fail closed if authority client is missing
     if config.orchestrator_client is None:
@@ -127,11 +160,20 @@ def pm_log_progress(
     idempotency_key: str,
     is_decision: bool = False,
 ) -> CanonicalReceipt:
-    """
-    Log progress or record a decision context.
+    """Log progress or record a decision context in the Knowledge Graph.
     
-    Canonical Authority: ConPort (Decision/Context Authority)
-    Mirror: dope-memory (Chronicle Work Log)
+    1. Primary Write: ConPort (Decision/Context Authority).
+    2. Mirror Write: Dope-Memory (Chronicle Ledger).
+
+    Args:
+        config: Injected dependencies.
+        task_id: Canonical task ID.
+        progress_notes: Description of the work or decision.
+        idempotency_key: Unique key for the ledger entry.
+        is_decision: Boolean flag indicating an authoritative decision.
+
+    Returns:
+        A CanonicalReceipt for the context write.
     """
     # Fail closed if authority client is missing
     if config.conport_client is None:

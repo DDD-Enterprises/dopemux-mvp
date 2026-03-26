@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-03-11'
+last_updated: '2026-03-26'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: QUICK_START.md
@@ -124,3 +124,11 @@ skills:
   pr_docgen_sync_gemini: templates/skills/pr-docgen-sync-gemini/SKILL.md
   pr_docgen_sync_copilot: templates/skills/pr-docgen-sync-copilot/SKILL.md
   pr_docgen_sync_claude: templates/skills/pr-docgen-sync-claude/SKILL.md
+  brief_drafter: templates/skills/brief-drafter/SKILL.md
+  task_breakdown: templates/skills/task-breakdown/SKILL.md
+  code_researcher: templates/skills/code-researcher/SKILL.md
+  research_reviewer: templates/skills/research-reviewer/SKILL.md
+  implementation_planner: templates/skills/implementation-planner/SKILL.md
+  plan_reviewer: templates/skills/plan-reviewer/SKILL.md
+  code_implementer: templates/skills/code-implementer/SKILL.md
+  quality_refactorer: templates/skills/quality-refactorer/SKILL.md
