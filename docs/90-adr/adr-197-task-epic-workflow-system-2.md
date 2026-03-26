@@ -57,14 +57,14 @@ Dopemux currently lacks a comprehensive workflow system for tracking ideas from 
 
 **Architecture Context**:
 - Two-Plane Architecture (PM Plane + Cognitive Plane)
-- Leantime = PM Plane entity authority
-- ConPort = Cognitive Plane knowledge graph (decision and context authority)
+- Leantime = PM Plane presentation layer (status authority)
+- ConPort = Cognitive Plane knowledge graph (knowledge authority)
 - DopeconBridge = Cross-plane coordination (PORT_BASE+16)
 
 **Critical Correction** (Decision #195):
 - Initial design incorrectly assumed Leantime deprecated
 - Leantime is ACTIVE component, required for two-plane architecture
-- Must integrate as PM entity authority, not optional one-way sync
+- Must integrate as status authority, not optional one-way sync
 
 ## Decision
 
@@ -126,8 +126,8 @@ WorkflowEpic = {
 ```
 
 **Leantime Sync**: ✅ Bidirectional (Epic ↔ Leantime Project)
-- **PM Entity Authority**: Leantime (planned→active→done)
-- **Context Authority**: ConPort (business value, acceptance criteria, relationships)
+- **Status Authority**: Leantime (planned→active→done)
+- **Knowledge Authority**: ConPort (business value, acceptance criteria, relationships)
 - **Sync Frequency**: 30 seconds (DopeconBridge webhook)
 - **Conflict Resolution**: Leantime status wins, ConPort knowledge wins
 
@@ -164,8 +164,8 @@ WorkflowTask = {
 ```
 
 **Leantime Sync**: ✅ Bidirectional (Task ↔ Leantime Task)
-- **PM Entity Authority**: Leantime (TODO→In Progress→Done)
-- **Context Authority**: ConPort (complexity, dependencies, file links)
+- **Status Authority**: Leantime (TODO→In Progress→Done)
+- **Knowledge Authority**: ConPort (complexity, dependencies, file links)
 - **Sync Frequency**: 30 seconds
 - **Dependency Visualization**: DopeconBridge provides dependency graph
 
@@ -230,8 +230,8 @@ Serena LSP Activation (start tracking files)
 - Manual retry for failed syncs
 
 **Conflict Resolution**:
-1. **Entity Conflicts**: Leantime always wins (PM entity authority)
-1. **Context Conflicts**: ConPort always wins (context authority)
+1. **Status Conflicts**: Leantime always wins (status authority)
+1. **Knowledge Conflicts**: ConPort always wins (knowledge authority)
 1. **Race Conditions**: Last-write-wins with audit trail
 1. **Sync Failures**: Queue for retry, show warning in UI
 
