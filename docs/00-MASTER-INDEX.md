@@ -3,8 +3,8 @@ id: 00-MASTER-INDEX
 title: 00 Master Index
 type: explanation
 owner: '@hu3mann'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
+last_review: '2026-03-26'
+next_review: '2026-06-26'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: 00 Master Index (explanation) for dopemux documentation and developer workflows.
@@ -55,6 +55,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Repo Truth Extractor Reference](03-reference/extraction/pipeline-reliability.md)
 - [Repo Truth Extractor Phase Map](03-reference/extraction/pipeline-phases.md)
 - [Dope-Context User Guide](02-how-to/dope-context/dope-context-user-guide.md)
+- [PR Merge Flight Dashboard](02-how-to/pr-merge-flight-dashboard.md) - Canonical operator quickstart for `dopemux pr-merge flight` and `dopemux-pr-merge flight`
 
 ---
 
@@ -90,6 +91,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Three-Layer Integration](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
 - [Multi-Instance Implementation](04-explanation/architecture/multi-instance-implementation.md)
 - [Canonical Compose Runtime](../compose.yml) - Single orchestration source for smoke + full-stack operations
+- [PR Merge Queue Orchestration](04-explanation/pr-merge-queue-orchestration.md) - Queue-state, validation, and remediation rationale for the PR merge specialist
 
 ### Architecture Decision Records (ADRs)
 **Location:** `90-adr/`
@@ -142,6 +144,8 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
+- PR Merge Specialist skill template:
+  - `templates/skills/pr-merge-specialist/`
 - Skill install/sync script: `scripts/skills/sync_repo_skills.py`
 
 ---
@@ -237,5 +241,5 @@ When adding new documentation:
 
 ---
 
-**Last Updated:** 2026-03-11
+**Last Updated:** 2026-03-26
 **Maintainer:** Documentation reorganization complete

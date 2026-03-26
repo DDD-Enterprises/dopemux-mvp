@@ -5,8 +5,8 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-11'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
+last_review: '2026-03-26'
+next_review: '2026-06-26'
 prelude: Understanding-oriented explanation index for architecture, design rationale, and system behavior.
 ---
 # Explanation Overview
@@ -18,6 +18,7 @@ Explanation docs provide architecture and design context for why the system work
 - `architecture/` for system-level design
 - `technical-deep-dives/` for subsystem internals
 - `design-decisions/` for implementation rationale
+- `pr-merge-queue-orchestration.md` for PR merge specialist queue-state and remediation rationale
 - `../90-adr/` for architecture decisions, including the PM-plane ADR index
 - `../planes/pm/` for PM-plane authority, write-adjudication, and normalized tool-surface contracts
 

@@ -43,7 +43,6 @@ class LearningEngine:
         engine_ready = report.status in ["merged", "merge_ready"]
         actual_ready = actual_status in ["merged", "closed_success"]
 
-        classification = "INSUFFICIENT_EVIDENCE"
         if engine_ready and actual_ready:
             classification = "ADVANCED_CORRECTLY"
         elif not engine_ready and not actual_ready:

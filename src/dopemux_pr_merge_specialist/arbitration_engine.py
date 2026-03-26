@@ -1,7 +1,5 @@
 import json
-import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 from .schema import ArbitrationEvidenceBundle, HunkContext, PRMergeReport
 

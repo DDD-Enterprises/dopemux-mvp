@@ -19,6 +19,14 @@ from .github_api import (
     summarize_checks,
     thread_counters,
 )
+from .conflict import (
+    conflict_files,
+    conflict_recovery_policy,
+    resolve_conflict_markers,
+    safe_conflict_surface,
+    scan_files_for_conflict_markers,
+)
+from .conflicts import ConflictAnalyzer
 from .policy import (
     PolicyError,
     load_effective_policy,
@@ -77,6 +85,8 @@ __all__ = [
     "cleanup_worktree",
     "ensure_worktree_matches_pr_head",
     "attempt_rebase",
+    "push_rebased_head",
+    "auto_recover_rebase_conflicts",
 ]
 
 
@@ -240,6 +250,12 @@ def attempt_rebase(
                 timeout_seconds=timeout_seconds,
             )
             append_command_log(commands_log, local_rebase)
+            if local_rebase.returncode == 0:
+                return (
+                    True,
+                    True,
+                    "local rebase succeeded after GitHub reported conflicts",
+                )
             detail = local_rebase.stderr.strip() or local_rebase.stdout.strip()
             return (
                 False,
@@ -269,5 +285,152 @@ def attempt_rebase(
     append_command_log(commands_log, reset)
     if reset.returncode != 0:
         return False, False, reset.stderr.strip() or "git reset to rebased head failed"
-        
+
     return True, False, "rebase updated and worktree refreshed"
+
+
+def attempt_speculative_rebase(
+    *,
+    worktree_path: Path,
+    onto_ref: str,
+    commands_log: Path,
+    execute: bool,
+    policy: Dict[str, Any],
+) -> Tuple[bool, str]:
+    """
+    Perform a local rebase of the current HEAD onto an arbitrary onto_ref.
+    Used for speculative 'Train' rebasing.
+    """
+    if not execute:
+        return True, "dry-run"
+
+    timeout_seconds = int(policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600)
+    
+    # Enable rerere
+    run_command(["git", "config", "rerere.enabled", "true"], cwd=worktree_path, timeout_seconds=timeout_seconds)
+    run_command(["git", "config", "rerere.autoupdate", "true"], cwd=worktree_path, timeout_seconds=timeout_seconds)
+
+    rebase = run_command(
+        ["git", "rebase", onto_ref],
+        cwd=worktree_path,
+        timeout_seconds=timeout_seconds,
+    )
+    append_command_log(commands_log, rebase)
+    
+    if rebase.returncode == 0:
+        return True, "speculative rebase succeeded"
+    
+    # Rebase failed (conflict). Abort.
+    run_command(["git", "rebase", "--abort"], cwd=worktree_path, timeout_seconds=timeout_seconds)
+    return False, rebase.stderr.strip() or "speculative rebase failed with conflicts"
+
+
+def push_rebased_head(
+    *,
+    worktree_path: Path,
+    head_ref: str,
+    commands_log: Path,
+    execute: bool,
+    policy: Dict[str, Any],
+) -> Tuple[bool, str]:
+    timeout_seconds = int(
+        policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+    )
+    push = execute_or_dry_run(
+        ["git", "push", "origin", f"HEAD:{head_ref}", "--force-with-lease"],
+        execute=execute,
+        cwd=worktree_path,
+        commands_log=commands_log,
+        timeout_seconds=timeout_seconds,
+    )
+    if push.returncode != 0:
+        return False, push.stderr.strip() or "git push of recovered head failed"
+    return True, "rebased head pushed to PR branch"
+
+
+def auto_recover_rebase_conflicts(
+    *,
+    pr: PullRequestState,
+    worktree_path: Path,
+    head_ref: str,
+    rebase_error: str,
+    commands_log: Path,
+    execute: bool,
+    policy: Dict[str, Any],
+) -> Tuple[bool, str, Dict[str, Any]]:
+    config = conflict_recovery_policy(policy)
+    analyzer = ConflictAnalyzer()
+    conflict_class = analyzer.classify_conflict(pr)
+    telemetry: Dict[str, Any] = {
+        "conflict_class": conflict_class.name,
+        "rebase_error": rebase_error,
+    }
+    if not analyzer.is_auto_resolvable(conflict_class):
+        return False, "semantic_conflict_blocked", telemetry
+
+    timeout_seconds = int(
+        policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+    )
+    max_iterations = max(config["max_conflict_files"], 1) + 2
+    for _ in range(max_iterations):
+        files = conflict_files(worktree_path, policy)
+        telemetry["conflict_files"] = files
+        if not files:
+            push_ok, push_message = push_rebased_head(
+                worktree_path=worktree_path,
+                head_ref=head_ref,
+                commands_log=commands_log,
+                execute=execute,
+                policy=policy,
+            )
+            telemetry["push_message"] = push_message
+            return push_ok, (
+                "dirty_auto_recovered" if push_ok else "manual_conflict_required"
+            ), telemetry
+        if len(files) > config["max_conflict_files"]:
+            telemetry["reason"] = "conflict_surface_too_large"
+            return False, "manual_conflict_required", telemetry
+        safe_surface, unsafe_files = safe_conflict_surface(files, policy)
+        if not safe_surface:
+            telemetry["unsafe_files"] = unsafe_files
+            return False, "manual_conflict_required", telemetry
+        marker_files = scan_files_for_conflict_markers(worktree_path, files)
+        if sorted(marker_files) != sorted(files):
+            telemetry["marker_files"] = marker_files
+            return False, "manual_conflict_required", telemetry
+        for rel_path in marker_files:
+            file_path = worktree_path / rel_path
+            text = file_path.read_text(encoding="utf-8")
+            changed, resolved = resolve_conflict_markers(
+                text, prefer=config["prefer_side"]
+            )
+            if not changed:
+                telemetry["reason"] = resolved
+                telemetry["failed_file"] = rel_path
+                return False, "manual_conflict_required", telemetry
+            file_path.write_text(resolved, encoding="utf-8")
+        add = run_command(
+            ["git", "add", *files],
+            cwd=worktree_path,
+            timeout_seconds=timeout_seconds,
+        )
+        append_command_log(commands_log, add)
+        if add.returncode != 0:
+            telemetry["reason"] = add.stderr.strip() or "git add failed"
+            return False, "manual_conflict_required", telemetry
+        cont = run_command(
+            ["git", "rebase", "--continue"],
+            cwd=worktree_path,
+            env={"GIT_EDITOR": "true"},
+            timeout_seconds=timeout_seconds,
+        )
+        append_command_log(commands_log, cont)
+        if cont.returncode == 0:
+            continue
+        current_files = conflict_files(worktree_path, policy)
+        if current_files:
+            continue
+        telemetry["reason"] = cont.stderr.strip() or cont.stdout.strip() or "git rebase --continue failed"
+        return False, "manual_conflict_required", telemetry
+    telemetry["reason"] = "recovery_iteration_limit_exceeded"
+    return False, "manual_conflict_required", telemetry

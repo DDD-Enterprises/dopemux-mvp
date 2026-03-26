@@ -18,15 +18,15 @@ class SuggestionImplementer:
         prompt = f"""
         Role: Senior Software Engineer
         Task: Implement a review suggestion.
-        
+
         Feedback from {item.author}:
         "{item.text}"
-        
+
         File: {item.file}
         Line: {item.line}
-        
+
         Target Files for Context: {', '.join(context_files)}
-        
+
         Requirements:
         1. Provide a minimal, surgical code change to address the feedback.
         2. Identify the exact code block to be replaced (search) and the new version (replace).
@@ -49,7 +49,7 @@ class SuggestionImplementer:
                 data["replace"] = data["patch"]
                 data["search"] = None  # Fallback to append/manual
             return data
-        except:
+        except Exception:
             return {
                 "explanation": f"Synthesized fix for feedback from {item.author}",
                 "file": item.file or "UNKNOWN",
@@ -72,12 +72,14 @@ class SuggestionImplementer:
             target_files = [item.file] if item.file else []
             patch = self.synthesize_patch(item, target_files)
             patch["source_item_id"] = item.id
+            replacement = patch.get("replace") or patch.get("patch") or ""
 
             # Present to user if the model was able to identify a file and patch
             if (
                 patch.get("file")
                 and patch["file"] != "UNKNOWN"
-                and "No patch synthesized" not in patch["patch"]
+                and isinstance(replacement, str)
+                and "No patch synthesized" not in replacement
             ):
                 patches.append(patch)
 

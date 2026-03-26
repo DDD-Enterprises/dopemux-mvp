@@ -1,76 +1,18 @@
 from __future__ import annotations
 
-import argparse
-import html
-import json
-import os
-import re
-import tempfile
-import time
-from collections import defaultdict, deque
-from dataclasses import replace
-from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Sequence
 
 from .github_api import (
-    BOT_AUTHORS,
-    GitHubClient,
     ci_status,
     summarize_checks,
-    thread_counters,
-)
-from .policy import (
-    PolicyError,
-    load_effective_policy,
-    policy_artifact_payload,
-    policy_fingerprint,
-)
-from .runtime import (
-    CommandResult,
-    append_command_log,
-    execute_or_dry_run,
-    fingerprint_payload,
-    pid_is_running,
-    run_command,
-    run_id,
-    shell_join,
-    snapshot_environment,
-    utc_now,
-    write_json,
-    write_text,
 )
 from .schema import (
-    ARTIFACT_VERSION,
-    POLICY_SCHEMA_VERSION,
-    TOOL_VERSION,
-    ArtifactMeta,
-    BlockerType,
-    FallbackReason,
     Finding,
     FindingSeverity,
-    Fingerprint,
-    MergeActionType,
-    MergeDecision,
-    OverrideRecord,
-    PhaseRecord,
-    PreflightCheck,
-    PreflightResult,
-    PRResult,
     PRState,
-    PRStateData,
     PullRequestState,
-    QueueOrderingLayer,
-    ReviewThread,
-    RunManifest,
-    ThreadComment,
-    ThreadDisposition,
-    ThreadDispositionType,
-    TruthSource,
-    ValidationReport,
     ValidationStatus,
 )
-from .strategy_library import STRATEGY_LIBRARY
-from .validation import run_validation, validation_report_md
 
 __all__ = [
     "_status_value",
@@ -117,7 +59,8 @@ VALID_TRANSITIONS: Dict[PRState, set[PRState]] = {
         PRState.ABORTED,
         PRState.ESCALATED,
     },
-    PRState.MERGE_READY: {PRState.MERGED, PRState.ABORTED},
+    PRState.MERGE_READY: {PRState.QUEUED_FOR_MERGE, PRState.MERGED, PRState.ABORTED},
+    PRState.QUEUED_FOR_MERGE: {PRState.MERGED, PRState.ABORTED},
     PRState.MERGED: set(),
     PRState.ESCALATED: {PRState.PLANNED, PRState.ABORTED},
     PRState.ABORTED: set(),
@@ -149,12 +92,20 @@ def lifecycle_for_findings(
         for item in findings
         if _severity_value(item.kind) == FindingSeverity.BLOCKER.value
     ]
-    if blockers:
+
+    # Validation not yet executed can still proceed to apply/verify, but
+    # GitHub-required checks that are pending remain true blockers.
+    non_val_blockers = [b for b in blockers if b.finding_type != "validation_not_executed"]
+
+    if non_val_blockers:
         return PRState.APPLY_BLOCKED
+
     if _status_value(validation_status) == ValidationStatus.PASSED.value:
         return PRState.MERGE_READY
-    if _status_value(validation_status) == ValidationStatus.NOT_EXECUTED.value:
+
+    if _status_value(validation_status) == ValidationStatus.NOT_EXECUTED.value or blockers:
         return PRState.APPLY_READY
+
     return PRState.MERGE_BLOCKED
 
 
@@ -249,6 +200,7 @@ def build_pr_state(
         ],
         updated_at=raw.get("updatedAt", ""),
         is_draft=bool(raw.get("isDraft", False)),
+        auto_merge_enabled=bool(raw.get("autoMergeRequest")),
         additions=int(raw.get("additions", 0) or 0),
         deletions=int(raw.get("deletions", 0) or 0),
         changed_files=int(raw.get("changedFiles", 0) or 0),
