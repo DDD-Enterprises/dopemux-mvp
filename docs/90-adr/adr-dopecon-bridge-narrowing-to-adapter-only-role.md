@@ -7,12 +7,16 @@ author: '@hu3mann'
 date: '2026-03-11'
 last_review: '2026-03-11'
 next_review: '2026-06-09'
-prelude: Narrow dopecon-bridge to adapter responsibilities and remove mixed-authority behavior.
+prelude: Narrow dopecon-bridge from mixed authority into an adapter, router, and translator over canonical PM-plane backends.
 status: proposed
 graph_metadata:
   node_type: ADR
   impact: high
-  relates_to: []
+  relates_to:
+    - adr-pm-plane-authority-boundaries
+    - adr-leantime-json-rpc-plus-plugin-integration-strategy
+    - adr-conport-as-decision-progress-and-context-authority
+    - adr-task-orchestrator-as-workflow-authority
 ---
 
 # ADR: dopecon-bridge narrowing to adapter-only role

@@ -37,7 +37,7 @@ repos:
                   fi
                   base="$(basename "$file")"
                   case "$base" in
-                    TEMPLATE_*.md)
+                    *template*|*TEMPLATE*)
                       continue
                       ;;
                     NOTES*.md|TODO*.md|TEMP*.md|*temp*.md|*scratch*.md)
@@ -228,7 +228,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgOutput\.md|^docs/05-audit-reports/root-relocated/rgoutput-2\.md|^docs/04-explanation/history/sourceFiles/|.*rgoutput.*)
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee

@@ -67,6 +67,10 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Integration Quickstart](02-how-to/mcp-service-discovery-guide.md)
 - [Comparison Matrix](05-audit-reports/service-maturity-gap-analysis.md)
 - [Full Documentation](03-reference/systems/conport/conport-kg-status.md)
+- [Callable Surface Inventory](systems/conport/callable-surface-inventory.md)
+- [Surface Equivalence and Drift](systems/conport/surface-equivalence-and-drift.md)
+- [Preferred Canonical Surface](systems/conport/preferred-canonical-surface.md)
+- [Authority Invariants and Dark Methods](systems/conport/authority-invariants-and-dark-methods.md)
 
 ### Dashboard System
 **Location:** `03-reference/systems/dashboard/`
@@ -89,6 +93,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 
 ### Architecture Decision Records (ADRs)
 **Location:** `90-adr/`
+- [ADR Index](90-adr/adr-index.md)
 - [ADR-207: Architecture 3.0](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
 - [ADR-203: Task Orchestrator](90-adr/adr-203-task-orchestrator-un-deprecation-2.md)
 - [ADR-202: Serena V2 Validation](90-adr/adr-202-serena-v2-production-validation-2.md)
@@ -100,6 +105,17 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [ADR: Leantime JSON-RPC + Plugin Integration Strategy](90-adr/adr-leantime-json-rpc-plus-plugin-integration-strategy.md)
 - [ADR: Task Orchestrator Workflow Authority](90-adr/adr-task-orchestrator-as-workflow-authority.md)
 - [ADR: Memory Trinity Authority and Interaction Model](90-adr/adr-memory-trinity-authority-and-interaction-model.md)
+- [ADR: Serena Technical Context Plane](90-adr/adr-serena-as-technical-context-plane.md)
+- [ADR: dope-context Search and Retrieval Plane](90-adr/adr-dope-context-as-search-and-retrieval-plane.md)
+
+### PM Plane Contracts
+**Location:** `planes/pm/`
+- [PM Plane Hub](planes/pm/hub-2.md)
+- [PM Plane Write Adjudication Model](planes/pm/pm-plane-write-adjudication-model.md)
+- [PM Plane Write Matrix](planes/pm/pm-plane-write-matrix.md)
+- [PM Plane Normalized Tool Surface](planes/pm/pm-plane-normalized-tool-surface.md)
+- [PM Plane Read Matrix](planes/pm/pm-plane-read-matrix.md)
+- [PM Plane Write Surface Policy](planes/pm/pm-plane-write-surface-policy.md)
 
 ---
 

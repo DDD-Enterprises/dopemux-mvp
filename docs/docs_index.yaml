@@ -15,6 +15,10 @@ systems:
     integration: docs/02-how-to/mcp-service-discovery-guide.md
     comparison: docs/05-audit-reports/service-maturity-gap-analysis.md
     readme: docs/03-reference/systems/conport/conport-kg-status.md
+    surface_inventory: docs/systems/conport/callable-surface-inventory.md
+    surface_drift: docs/systems/conport/surface-equivalence-and-drift.md
+    preferred_surface: docs/systems/conport/preferred-canonical-surface.md
+    authority_invariants: docs/systems/conport/authority-invariants-and-dark-methods.md
   dashboard:
     overview: docs/03-reference/systems/dashboard/tmux-dashboard-readme.md
     design: docs/03-reference/systems/dashboard/tmux-dashboard-design.md
@@ -50,8 +54,11 @@ architecture:
   system_bible: docs/04-explanation/architecture/system-bible.md
   multi_instance: docs/04-explanation/architecture/multi-instance-implementation.md
   pipeline_readme: services/repo-truth-extractor/README.md
-  adr_index: docs/90-adr/
+  adr_index: docs/90-adr/adr-index.md
   rfc_index: docs/91-rfc/
+  pm_plane_hub: docs/planes/pm/hub-2.md
+  pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
+  pm_plane_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
 how_to:
   directory: docs/02-how-to/
   deployment: docs/02-how-to/deployment-guide.md
@@ -67,11 +74,15 @@ how_to:
   repo_truth_extractor_cli_canonical_entrypoint: docs/02-how-to/extraction/run-v4-from-dopemux-cli.md
   repo_truth_extractor_user_guide: docs/02-how-to/extraction/repo-truth-extractor-user-guide.md
   repo_truth_extractor_batch_quickstart: docs/02-how-to/extraction/batch-quickstart.md
+  repo_truth_extractor_truth_run: docs/02-how-to/extraction/truth-run-command.md
+  doc_audit_prescan_how_to: docs/02-how-to/doc-audit-prescan.md
+  extraction_wizard_how_to: docs/02-how-to/extraction-wizard.md
 tutorials:
   directory: docs/01-tutorials/
   start_here: docs/01-tutorials/start-here-2.md
   profile_user_guide: docs/01-tutorials/profile-user-guide.md
   profile_migration_guide: docs/01-tutorials/profile-migration-guide.md
+  extraction_quickstart: docs/01-tutorials/extraction-quickstart.md
 reference:
   directory: docs/03-reference/
   profile_schema: docs/03-reference/configuration/profile-yaml-schema-2.md
@@ -79,12 +90,19 @@ reference:
   features_index: docs/03-reference/features/features-index.md
   task_orchestrator_service: docs/03-reference/services/task-orchestrator.md
   mcp_tools_overview: docs/03-reference/mcp-tools-overview.md
+  doc_audit_prescan_reference: docs/03-reference/doc-audit-prescan.md
+  extraction_wizard_reference: docs/03-reference/extraction-wizard.md
+  pm_plane_write_matrix: docs/planes/pm/pm-plane-write-matrix.md
+  pm_plane_read_matrix: docs/planes/pm/pm-plane-read-matrix.md
+  pm_plane_write_surface_policy: docs/planes/pm/pm-plane-write-surface-policy.md
   mcp_token_management_best_practices: docs/03-reference/best-practices/mcp-token-management.md
   memory_capture_cli: docs/03-reference/memory-capture-cli.md
   repo_truth_extractor_pipeline_phases: docs/03-reference/extraction/pipeline-phases.md
   repo_truth_extractor_pipeline_reliability: docs/03-reference/extraction/pipeline-reliability.md
   repo_truth_extractor_doctor_reprocess: docs/03-reference/extraction/doctor-reprocess.md
   repo_truth_extractor_prompt_contract: docs/03-reference/extraction/prompt-contract-v4.md
+  repo_truth_extractor_v5_ui_live_output: docs/03-reference/extraction/v5-ui-live-output.md
+  repo_truth_extractor_phase_interaction_design: docs/03-reference/extraction/phase-interaction-design.md
   dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md
   dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
 explanation:
@@ -94,6 +112,8 @@ explanation:
   dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md
   adhd_engine: docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md
   dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
+  pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
+  pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
 archive:
   completed_projects: docs/archive/completed-projects/
   session_notes: docs/archive/session-notes/

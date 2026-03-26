@@ -1,0 +1,12 @@
+---
+id: ADHD-DASHBOARD-SESSION-SUMMARY
+title: Adhd Dashboard Session Summary
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Adhd Dashboard Session Summary (explanation) for dopemux documentation and
+  developer workflows.
+---

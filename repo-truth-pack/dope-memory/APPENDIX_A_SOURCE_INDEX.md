@@ -12,22 +12,22 @@ Grouped listing of every file inspected during Phase 1 discovery for dope-memory
 
 | File | Purpose |
 |------|---------|
-| `docs/spec/dope-memory/v1/README.md` | Spec index: 11-document specification suite |
-| `docs/spec/dope-memory/v1/00_overview.md` | Purpose, principles, cognitive tiers |
-| `docs/spec/dope-memory/v1/01_architecture.md` | Service responsibilities and component diagram |
-| `docs/spec/dope-memory/v1/02_data_model_sqlite.md` | SQLite canonical schema |
-| `docs/spec/dope-memory/v1/02_derived_memory_pipeline.md` | Derived memory pipeline spec |
-| `docs/spec/dope-memory/v1/03_data_model_postgres.md` | Postgres mirror schema |
-| `docs/spec/dope-memory/v1/04_event_taxonomy.md` | Event types and envelope format |
-| `docs/spec/dope-memory/v1/05_promotion_redaction.md` | Redaction rules and promotion logic |
-| `docs/spec/dope-memory/v1/06_retrieval_ranking.md` | Search and deterministic ranking |
-| `docs/spec/dope-memory/v1/07_mcp_contracts.md` | MCP tool request/response schemas (inspected: first 100 lines) |
-| `docs/spec/dope-memory/v1/08_phased_roadmap.md` | Phase 0-4 delivery plan |
-| `docs/spec/dope-memory/v1/09_test_plan.md` | Test plan |
-| `docs/spec/dope-memory/v1/10_risk_register.md` | Risk register |
+| `docs/spec/dope-memory/v1/readme-2.md` | Spec index: 11-document specification suite |
+| `docs/spec/dope-memory/v1/00-overview.md` | Purpose, principles, cognitive tiers |
+| `docs/spec/dope-memory/v1/01-architecture.md` | Service responsibilities and component diagram |
+| `docs/spec/dope-memory/v1/02-data-model-sqlite.md` | SQLite canonical schema |
+| `docs/spec/dope-memory/v1/02-derived-memory-pipeline.md` | Derived memory pipeline spec |
+| `docs/spec/dope-memory/v1/03-data-model-postgres.md` | Postgres mirror schema |
+| `docs/spec/dope-memory/v1/04-event-taxonomy.md` | Event types and envelope format |
+| `docs/spec/dope-memory/v1/05-promotion-redaction.md` | Redaction rules and promotion logic |
+| `docs/spec/dope-memory/v1/06-retrieval-ranking.md` | Search and deterministic ranking |
+| `docs/spec/dope-memory/v1/07-mcp-contracts.md` | MCP tool request/response schemas (inspected: first 100 lines) |
+| `docs/spec/dope-memory/v1/08-phased-roadmap.md` | Phase 0-4 delivery plan |
+| `docs/spec/dope-memory/v1/09-test-plan.md` | Test plan |
+| `docs/spec/dope-memory/v1/10-risk-register.md` | Risk register |
 | `docs/DOPE_MEMORY_INTEGRATION.md` | Integration guide |
-| `docs/04-explanation/technical-deep-dives/DOPE-MEMORY-DEEP-DIVE.md` | Deep dive doc (listed, not inspected) |
-| `docs/90-adr/ADR-213-dual-capture-canonical-ledger.md` | ADR for canonical ledger (referenced, not inspected) |
+| `docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-3.md` | Deep dive doc (listed, not inspected) |
+| `docs/90-adr/adr-213-dual-capture-canonical-ledger-3.md` | ADR for canonical ledger (referenced, not inspected) |
 | `docs/03-reference/memory-capture-cli.md` | CLI capture reference (listed, not inspected) |
 | `docs/docs_index.yaml` | Machine-readable doc index (listed, references dope-memory) |
 

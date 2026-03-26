@@ -1195,12 +1195,12 @@
       "evidence": {
         "anchor": "L152",
         "excerpt_hash": "d815c6ab701ab85609ab1a86b2dfd3e994b0c33a1195160b0d9c42925888f1e9",
-        "excerpt_snippet": "docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md",
+        "excerpt_snippet": "docs/90-adr/adr-207-architecture-3-0-three-layer-integration-2.md",
         "path": "AGENTS.md"
       },
       "from": "AGENTS.md",
       "relation": "mentions",
-      "to": "docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md"
+      "to": "docs/90-adr/adr-207-architecture-3-0-three-layer-integration-2.md"
     },
     {
       "evidence": {
@@ -1294,23 +1294,23 @@
       "evidence": {
         "anchor": "L197",
         "excerpt_hash": "891c359440b489618269dd16a6289ae63508457bfdee095b665cc9ddfb8132b1",
-        "excerpt_snippet": "docs/planes/pm/HUB.md",
+        "excerpt_snippet": "docs/planes/pm/hub-3.md",
         "path": "AGENTS.md"
       },
       "from": "AGENTS.md",
       "relation": "mentions",
-      "to": "docs/planes/pm/HUB.md"
+      "to": "docs/planes/pm/hub-3.md"
     },
     {
       "evidence": {
         "anchor": "L197",
         "excerpt_hash": "a093f129a300fde7e0c03a690d058b0e7f9d7ee476463b2f6a872b9d7e8ffc6b",
-        "excerpt_snippet": "docs/planes/pm/SUPERVISOR.md",
+        "excerpt_snippet": "docs/planes/pm/supervisor-3.md",
         "path": "AGENTS.md"
       },
       "from": "AGENTS.md",
       "relation": "mentions",
-      "to": "docs/planes/pm/SUPERVISOR.md"
+      "to": "docs/planes/pm/supervisor-3.md"
     },
     {
       "evidence": {

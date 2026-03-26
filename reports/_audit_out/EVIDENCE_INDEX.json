@@ -212,35 +212,35 @@
   {
     "id": "E031",
     "claim_summary": "Dope-Memory spec defines non-duplication, strict redaction, deterministic outputs, and Top-3 defaults.",
-    "filepath_or_url": "docs/spec/dope-memory/v1/00_overview.md",
+    "filepath_or_url": "docs/spec/dope-memory/v1/00-overview.md",
     "line_range": "26-48",
     "classification": "VERIFIED"
   },
   {
     "id": "E032",
     "claim_summary": "Dope-Memory architecture spec defines activity.events.v1 and memory.derived.v1 and deterministic ordering.",
-    "filepath_or_url": "docs/spec/dope-memory/v1/01_architecture.md",
+    "filepath_or_url": "docs/spec/dope-memory/v1/01-architecture.md",
     "line_range": "50-107",
     "classification": "VERIFIED"
   },
   {
     "id": "E033",
     "claim_summary": "Dope-Memory Postgres mirror model defines dm_* tables and summary_tsv indexed keyword surface.",
-    "filepath_or_url": "docs/spec/dope-memory/v1/03_data_model_postgres.md",
+    "filepath_or_url": "docs/spec/dope-memory/v1/03-data-model-postgres.md",
     "line_range": "20-105",
     "classification": "VERIFIED"
   },
   {
     "id": "E034",
     "claim_summary": "Dope-Memory retrieval spec mandates deterministic ranking and scope-hashed cursor validation.",
-    "filepath_or_url": "docs/spec/dope-memory/v1/06_retrieval_ranking.md",
+    "filepath_or_url": "docs/spec/dope-memory/v1/06-retrieval-ranking.md",
     "line_range": "35-48",
     "classification": "VERIFIED"
   },
   {
     "id": "E035",
     "claim_summary": "Dope-Memory MCP contracts enforce Top-3 default and deterministic recap behavior without LLM for Phase 1 recap.",
-    "filepath_or_url": "docs/spec/dope-memory/v1/07_mcp_contracts.md",
+    "filepath_or_url": "docs/spec/dope-memory/v1/07-mcp-contracts.md",
     "line_range": "14-39",
     "classification": "VERIFIED"
   },

@@ -17,6 +17,8 @@ Use this file as the root pointer for active documentation navigation and mainte
 
 - [Master Index](00-MASTER-INDEX.md)
 - [Machine Index](docs_index.yaml)
+- [ADR Index](90-adr/adr-index.md)
+- [PM Plane Hub](planes/pm/hub-2.md)
 - [Tutorials Overview](01-tutorials/overview.md)
 - [How-To Overview](02-how-to/overview.md)
 - [Reference Overview](03-reference/overview.md)
