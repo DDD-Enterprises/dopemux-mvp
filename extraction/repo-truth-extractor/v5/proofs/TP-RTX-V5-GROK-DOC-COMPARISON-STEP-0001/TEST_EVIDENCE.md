@@ -100,6 +100,6 @@ generate_comparison_summary: <function generate_comparison_summary at 0x...>
 
 ## ⚠️ Live Run Safety Note
 
-**Default rule:** Do **not** run `run_extraction_v5.py` directly — even with `--dry-run` — from CI or general contributor environments. Per repo safety policy, routine validation is performed via tests and static analysis only.
-
-**Exception (operators only):** The direct `python ... run_extraction_v5.py` commands shown in the README/RUNBOOK are intended **only** for explicitly authorized operators, running in a controlled/isolated environment with agreed cost caps and monitoring. If you are not in that role, do not invoke the script directly.
+**Do NOT run `run_extraction_v5.py` directly** — even with `--dry-run`. Per repo safety
+policy, all validation is performed via tests and static analysis only.
+A single accidental run cost $10 in March 2026. This mandate is absolute.
