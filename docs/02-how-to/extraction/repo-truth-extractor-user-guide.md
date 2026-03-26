@@ -47,11 +47,18 @@ Required for sync execution:
 - Valid provider API keys for the providers you intend to use
 - Clean enough disk space for raw and norm outputs
 
+Required for `dopemux upgrades validate-live`:
+
+- Editable install from this checkout: `pip install -e ".[dev]"`, or run with `PYTHONPATH=src`
+- Local validation scanners available on `PATH`
+- External `gitleaks` binary available on `PATH`
+
 Optional but recommended:
 
 - `dopemux upgrades preflight --pipeline-version v5 --auth-doctor --promptset-root <PATH>`
 - `dopemux upgrades promptset audit --pipeline-version v4 --strict`
 - `dopemux upgrades validate-live --promptset-root <PATH>`
+- `python scripts/check_validation_toolchain.py`
 
 ## 3. First run (safe dry-run)
 
@@ -218,6 +225,8 @@ dopemux upgrades validate-live \
   --stage canary \
   --pricing-manifest /abs/path/to/pricing_manifest.json
 ```
+
+If `validate-live` exits immediately with an import-origin error, the command is not running from the current checkout. Reinstall with `pip install -e ".[dev]"` or rerun with `PYTHONPATH=src`.
 
 ## 8. Interpreting stdout quickly
 

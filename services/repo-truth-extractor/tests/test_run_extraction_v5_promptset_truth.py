@@ -23,7 +23,7 @@ def _load_runner_module():
 def test_v5_phase_c_and_q_promptsets_cover_required_steps_in_numeric_order() -> None:
     runner = _load_runner_module()
 
-    for phase in ("Q",):
+    for phase in ("C", "Q"):
         specs = runner.get_phase_prompts(phase)
         observed_steps = [spec.step_id for spec in specs]
         assert observed_steps == sorted(observed_steps, key=runner.step_sort_key)
@@ -32,37 +32,21 @@ def test_v5_phase_c_and_q_promptsets_cover_required_steps_in_numeric_order() -> 
         assert all(spec.output_artifacts for spec in specs)
 
 
-def test_v5_phase_c_prompt_discovery_includes_required_steps_and_known_runtime_extras() -> None:
-    runner = _load_runner_module()
-
-    specs = runner.get_phase_prompts("C")
-    observed_steps = [spec.step_id for spec in specs]
-    observed_set = set(observed_steps)
-    required_steps = set(runner.REQUIRED_PROMPT_STEP_IDS["C"])
-    extras = observed_set - required_steps
-
-    assert observed_steps == sorted(observed_steps, key=runner.step_sort_key)
-    assert required_steps <= observed_set
-    assert extras == {"C12", "C13", "C14", "C15", "C16", "C17"}
-    assert all(spec.prompt_path.exists() for spec in specs)
-    assert all(spec.output_artifacts for spec in specs)
-
-
 def test_v5_phase_s_registry_and_step_controls_match_current_contract() -> None:
     runner = _load_runner_module()
     runner.set_active_s_prompts_mode("registry")
 
     specs = runner.get_phase_prompts("S")
 
-    assert [spec.step_id for spec in specs] == [f"S{i}" for i in range(7)]
+    assert [spec.step_id for spec in specs] == [f"S{i}" for i in range(13)]
     assert all(spec.source == "registry" for spec in specs)
     assert all(spec.prompt_path.exists() for spec in specs)
     assert all(spec.tier_override in {"bulk", "extract", "synthesis", "qa"} for spec in specs)
-    assert runner._get_s_step_controls(SimpleNamespace(s_steps="S6,S0")) == ["S0", "S6"]
+    assert runner._get_s_step_controls(SimpleNamespace(s_steps="S12,S0")) == ["S0", "S12"]
 
 
 def test_v5_phase_s_rejects_non_base_steps_in_selection() -> None:
     runner = _load_runner_module()
 
-    with pytest.raises(RuntimeError, match="only allows S0-S6"):
-        runner._get_s_step_controls(SimpleNamespace(s_steps="S0,S7"))
+    with pytest.raises(RuntimeError, match="only allows S0-S12"):
+        runner._get_s_step_controls(SimpleNamespace(s_steps="S0,S13"))

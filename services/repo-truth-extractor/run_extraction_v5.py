@@ -178,7 +178,7 @@ S_PROMPTS_AUTO = "auto"
 S_PROMPTS_REGISTRY = "registry"
 S_PROMPTS_LEGACY = "legacy"
 S_PROMPTS_MODES = {S_PROMPTS_AUTO, S_PROMPTS_REGISTRY, S_PROMPTS_LEGACY}
-PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(7))
+PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(13))
 PHASE_S_BASE_STEP_SET = set(PHASE_S_BASE_STEPS)
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
@@ -750,7 +750,7 @@ def _validate_s_steps(selected: List[str]) -> None:
     unknown = [step_id for step_id in selected if step_id not in PHASE_S_BASE_STEP_SET]
     if unknown:
         raise RuntimeError(
-            "Phase S step selection only allows S0-S6. "
+            "Phase S step selection only allows S0-S12. "
             f"Unsupported steps: {', '.join(sorted(unknown, key=step_sort_key))}"
         )
 
@@ -918,17 +918,17 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A99"},
     "H": {"H0", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H9"},
     "D": {"D0", "D1", "D2", "D3", "D4", "D5"},
-    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11"},
+    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17"},
     "E": {"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E9"},
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
     "G": {"G0", "G1", "G2", "G3", "G4", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9"},
+    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9", "Q11"},
     "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10"},
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6"},
+    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12"},
     "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 
@@ -14653,7 +14653,7 @@ def main() -> None:
         "--s-steps",
         type=str,
         default=None,
-        help="Comma-separated subset of Phase S base steps (S0-S6) to execute.",
+        help="Comma-separated subset of Phase S base steps (S0-S12) to execute.",
     )
     parser.add_argument("--disable-escalation", action="store_true")
     parser.add_argument("--escalation-max-hops", type=int, default=2)

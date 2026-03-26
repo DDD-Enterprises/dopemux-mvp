@@ -143,7 +143,7 @@ S_PROMPTS_AUTO = "auto"
 S_PROMPTS_REGISTRY = "registry"
 S_PROMPTS_LEGACY = "legacy"
 S_PROMPTS_MODES = {S_PROMPTS_AUTO, S_PROMPTS_REGISTRY, S_PROMPTS_LEGACY}
-PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(7))
+PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(13))
 PHASE_S_BASE_STEP_SET = set(PHASE_S_BASE_STEPS)
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
@@ -694,7 +694,7 @@ def _validate_s_steps(selected: List[str]) -> None:
     unknown = [step_id for step_id in selected if step_id not in PHASE_S_BASE_STEP_SET]
     if unknown:
         raise RuntimeError(
-            "Phase S step selection only allows S0-S6. "
+            "Phase S step selection only allows S0-S12. "
             f"Unsupported steps: {', '.join(sorted(unknown, key=step_sort_key))}"
         )
 
@@ -839,7 +839,7 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6"},
+    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12"},
     "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 
@@ -10978,7 +10978,7 @@ def main() -> None:
         "--s-steps",
         type=str,
         default=None,
-        help="Comma-separated subset of Phase S base steps (S0-S6) to execute.",
+        help="Comma-separated subset of Phase S base steps (S0-S12) to execute.",
     )
     parser.add_argument("--disable-escalation", action="store_true")
     parser.add_argument("--escalation-max-hops", type=int, default=2)

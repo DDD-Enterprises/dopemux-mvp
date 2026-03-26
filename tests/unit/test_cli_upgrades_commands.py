@@ -294,7 +294,11 @@ def test_upgrades_validate_live_fails_when_runner_reports_blockers() -> None:
             with open(path, "w", encoding="utf-8") as handle:
                 handle.write("{}\n")
         with patch("dopemux.cli.run_live_validation") as mocked:
-            mocked.return_value = {"status": "fail", "run_id": "validation_002"}
+            mocked.return_value = {
+                "status": "fail",
+                "run_id": "validation_002",
+                "blockers": ["repo_local_cli_origin: stale install"],
+            }
             result = runner.invoke(
                 cli,
                 [
@@ -306,4 +310,4 @@ def test_upgrades_validate_live_fails_when_runner_reports_blockers() -> None:
             )
 
     assert result.exit_code != 0
-    assert "Live validation failed" in result.output
+    assert "repo_local_cli_origin: stale install" in result.output
