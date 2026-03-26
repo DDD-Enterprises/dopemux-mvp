@@ -52,12 +52,20 @@ EXPLICIT_WORKFLOW_FIELDS = frozenset(
     }
 )
 
+WORKFLOW_FIELD_SUFFIXES = ("_status", "_state", "_phase", "_stage")
+
+
+def _looks_workflow_significant_key(key_lower: str) -> bool:
+    """Fail closed for likely workflow keys without substring collisions."""
+
+    return key_lower.endswith(WORKFLOW_FIELD_SUFFIXES)
+
 
 def classify_pm_write(payload: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     """Classify payload keys into metadata and workflow-significant fields.
 
-    Unknown fields default to metadata unless they look state-bearing, in which
-    case they fail closed into the workflow bucket.
+    Unknown fields default to metadata unless they match a workflow-like key
+    pattern, in which case they fail closed into the workflow bucket.
     """
 
     metadata_fields: List[str] = []
@@ -69,7 +77,7 @@ def classify_pm_write(payload: Dict[str, Any]) -> Tuple[List[str], List[str]]:
             workflow_fields.append(key)
         elif key_lower in ALLOWED_METADATA_FIELDS:
             metadata_fields.append(key)
-        elif any(token in key_lower for token in ("status", "state", "phase")):
+        elif _looks_workflow_significant_key(key_lower):
             workflow_fields.append(key)
         else:
             metadata_fields.append(key)
@@ -120,8 +128,9 @@ def pm_update_work_item(
     
     Canonical Authority: Leantime (PM Entity Store)
     
-    Rejects any fields in WORKFLOW_SIGNIFICANT_FIELDS. Those must be 
-    routed through pm_transition_work_item.
+    Rejects any workflow-significant payload as determined by PM write
+    classification. Those changes must be routed through
+    pm_transition_work_item instead.
     """
     metadata_fields, workflow_fields = classify_pm_write(updates)
 

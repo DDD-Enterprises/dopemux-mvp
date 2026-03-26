@@ -1,5 +1,5 @@
 import pytest
-from src.dopemux.pm.writes import (
+from dopemux.pm.writes import (
     classify_pm_write,
     is_workflow_significant_payload,
     pm_update_work_item,
@@ -8,7 +8,7 @@ from src.dopemux.pm.writes import (
     PMWriteConfig,
     CanonicalReceipt
 )
-from src.dopemux.pm.models import PMTaskStatus
+from dopemux.pm.models import PMTaskStatus
 
 class MockLeantimeClient:
     def __init__(self):
@@ -52,17 +52,29 @@ def test_classify_pm_write_splits_metadata_and_workflow_fields():
 def test_classify_pm_write_fails_closed_for_unknown_state_like_fields():
     metadata_fields, workflow_fields = classify_pm_write(
         {
-            "custom_state_projection": "pending",
+            "custom_state": "pending",
             "other_field": "value",
         }
     )
 
     assert metadata_fields == ["other_field"]
-    assert workflow_fields == ["custom_state_projection"]
+    assert workflow_fields == ["custom_state"]
+
+
+def test_classify_pm_write_does_not_trip_on_substring_collisions():
+    metadata_fields, workflow_fields = classify_pm_write(
+        {
+            "statement": "status report",
+            "phase_notes": "operator notes",
+        }
+    )
+
+    assert metadata_fields == ["statement", "phase_notes"]
+    assert workflow_fields == []
 
 def test_is_workflow_significant_payload_detects_status_like_fields():
     assert is_workflow_significant_payload({"status": PMTaskStatus.DONE.value}) is True
-    assert is_workflow_significant_payload({"workflow_state_hint": "blocked"}) is True
+    assert is_workflow_significant_payload({"workflow_state": "blocked"}) is True
     assert is_workflow_significant_payload({"title": "hello"}) is False
 
 def test_pm_update_work_item_rejects_significant_fields():
@@ -84,8 +96,8 @@ def test_pm_update_work_item_rejects_unknown_state_like_fields():
         memory_client=None,
     )
     with pytest.raises(ValueError) as exc:
-        pm_update_work_item(config, "task-1", {"my_state_projection": "done"}, "key-1")
-    assert "my_state_projection" in str(exc.value)
+        pm_update_work_item(config, "task-1", {"my_state": "done"}, "key-1")
+    assert "my_state" in str(exc.value)
 
 def test_pm_update_work_item_rejects_empty_payload():
     config = PMWriteConfig(

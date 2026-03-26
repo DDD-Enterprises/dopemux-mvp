@@ -39,11 +39,12 @@ All payloads entering the normalized PM-plane write layer are classified before 
 The generic PM update path must reject any field that could change workflow legality or next-action semantics, including:
 
 - `status`, `state`, `phase`, `stage`
+- `version` (including optimistic-concurrency style workflow version fields)
 - `transition`
 - `blocked`, `blocker`, `blocked_reason`
 - `promote`, `demote`, `next_action`
 - `dependencies`
-- unknown field names that still look state-bearing, such as custom `*_status`, `*_state`, or `*_phase` keys
+- unknown field names that still match workflow-like key patterns, such as custom `*_status`, `*_state`, or `*_phase` keys
 
 Mixed payloads fail closed. The PM plane does not silently split metadata and workflow changes into separate backend calls.
 
