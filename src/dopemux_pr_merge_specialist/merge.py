@@ -100,7 +100,8 @@ def wait_for_green_checks(
     poll_seconds = int(policy.get("check_rules", {}).get("poll_seconds", 30) or 30)
     summary = payload["summary"]
     review_decision = str(payload.get("review_decision") or "")
-    if review_decision and review_decision != "APPROVED":
+    approval_required = bool(payload.get("approval_required", False))
+    if approval_required and review_decision and review_decision != "APPROVED":
         final_status = (
             "approval_missing"
             if review_decision != "CHANGES_REQUESTED"
@@ -199,9 +200,13 @@ def checks_blocker_reason(
         if check_wait_payload.get("timed_out"):
             return "Required checks are still pending after the wait window."
         return "Required checks are still pending but currently healthy."
-    if check_payload.get("review_decision") == "CHANGES_REQUESTED":
+    if bool(check_payload.get("approval_required", False)) and check_payload.get(
+        "review_decision"
+    ) == "CHANGES_REQUESTED":
         return "Changes have been requested."
-    if check_payload.get("review_decision") != "APPROVED":
+    if bool(check_payload.get("approval_required", False)) and check_payload.get(
+        "review_decision"
+    ) != "APPROVED":
         return "Required approval is still missing."
     return "Required checks are not fully green."
 
@@ -219,8 +224,16 @@ def decide_merge_action(
     ]
     
     # Check if the only blockers are pending checks
-    non_check_blockers = [b for b in blockers if b.finding_type != "required_checks_pending"]
-    pending_checks = [b for b in blockers if b.finding_type == "required_checks_pending"]
+    non_check_blockers = [
+        b
+        for b in blockers
+        if b.finding_type != BlockerType.REQUIRED_CHECK_PENDING.value
+    ]
+    pending_checks = [
+        b
+        for b in blockers
+        if b.finding_type == BlockerType.REQUIRED_CHECK_PENDING.value
+    ]
 
     if non_check_blockers:
         return MergeDecision(
@@ -294,8 +307,11 @@ def run_merge_with_fallback(
                 reason="PR was already merged; local branch cleanup failure treated as non-blocking.",
                 reason_code="already_merged_cleanup_failure",
             )
-    if "merge queue required" in stderr or (
-        "merge queue" in stderr and "required" in stderr
+    if (
+        "merge queue required" in stderr
+        or ("merge queue" in stderr and "required" in stderr)
+        or ("merge queue enabled" in stderr and "--delete-branch" in stderr)
+        or ("merge queue enabled" in stderr and "-d" in stderr)
     ):
         fallback_reason = FallbackReason.MERGE_QUEUE_REQUIRED.value
     elif "auto-merge is required" in stderr or (
@@ -328,7 +344,7 @@ def run_merge_with_fallback(
             reason=f"Fallback reason {fallback_reason} is not permitted by policy.",
             reason_code="auto_fallback_not_permitted",
         )
-    fallback_command = ["gh", "pr", "merge", str(pr_id), "--auto", "--delete-branch"]
+    fallback_command = ["gh", "pr", "merge", str(pr_id), "--auto"]
     if repo:
         fallback_command.extend(["--repo", repo])
     fallback = execute_or_dry_run(
@@ -368,8 +384,10 @@ def serialize_check_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         "optional_checks_pending": summary.optional_pending,
         "optional_checks_failed": summary.optional_failure,
         "review_decision": payload.get("review_decision", ""),
+        "approval_required": bool(payload.get("approval_required", False)),
         "mergeable": payload.get("mergeable", ""),
         "merge_state_status": payload.get("merge_state_status", ""),
+        "protection": payload.get("protection", {}),
         "blocker_types": payload.get("blocker_types", []),
         "warning_types": payload.get("warning_types", []),
     }

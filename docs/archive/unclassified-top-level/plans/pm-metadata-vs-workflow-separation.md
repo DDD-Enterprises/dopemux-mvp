@@ -1,3 +1,14 @@
+---
+id: pm-metadata-vs-workflow-separation-plan
+title: PM Metadata vs Workflow Separation Plan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-26'
+last_review: '2026-03-26'
+next_review: '2026-06-26'
+prelude: Archived implementation plan describing the separation between PM metadata writes and workflow-significant writes.
+---
 # Implementation Plan: PM Metadata vs. Workflow-Significant Writes
 
 ## 1. Objective & Scope

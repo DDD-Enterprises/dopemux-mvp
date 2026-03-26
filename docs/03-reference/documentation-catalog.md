@@ -5,8 +5,8 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-11'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
+last_review: '2026-03-26'
+next_review: '2026-06-26'
 prelude: Canonical catalog of active documentation indexes, policy files, and documentation automation entrypoints.
 ---
 # Documentation Catalog
@@ -29,6 +29,7 @@ prelude: Canonical catalog of active documentation indexes, policy files, and do
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
+- PR merge specialist skill template: `templates/skills/pr-merge-specialist/`
 - Skill sync installer: `scripts/skills/sync_repo_skills.py`
 - Legacy compatibility sync: `scripts/skills/sync_testgen_skills.py`
 
