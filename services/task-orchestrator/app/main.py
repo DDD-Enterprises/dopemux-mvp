@@ -263,7 +263,7 @@ async def health_check():
     dependencies = {}
     
     try:
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
         
         # Check Redis if available
         if hasattr(coordinator, 'redis_client') and coordinator.redis_client:
@@ -328,13 +328,41 @@ async def service_info():
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint."""
-    coordinator = app.state.coordinator
+    coordinator = getattr(app.state, "coordinator", None)
 
     # Get orchestration metrics
     orchestration_stats = getattr(coordinator, 'metrics', {})
 
     # Format as Prometheus metrics
-    metrics_output = f"""# HELP task_orchestrator_tasks_orchestrated_total Total number of tasks orchestrated
+    metrics_output = f"""# HELP pm_canonical_writes_total Total number of successful canonical writes
+# TYPE pm_canonical_writes_total counter
+pm_canonical_writes_total {orchestration_stats.get('pm_canonical_writes_total', 0)}
+
+# HELP pm_canonical_write_failures_total Total number of failed canonical writes
+# TYPE pm_canonical_write_failures_total counter
+pm_canonical_write_failures_total {orchestration_stats.get('pm_canonical_write_failures_total', 0)}
+
+# HELP pm_mirror_failures_total Total number of mirror failures
+# TYPE pm_mirror_failures_total counter
+pm_mirror_failures_total {orchestration_stats.get('pm_mirror_failures_total', 0)}
+
+# HELP pm_reconciliation_pending_total Total number of items pending reconciliation
+# TYPE pm_reconciliation_pending_total gauge
+pm_reconciliation_pending_total {orchestration_stats.get('pm_reconciliation_pending_total', 0)}
+
+# HELP pm_reconciliation_completed_total Total number of successful reconciliations
+# TYPE pm_reconciliation_completed_total counter
+pm_reconciliation_completed_total {orchestration_stats.get('pm_reconciliation_completed_total', 0)}
+
+# HELP pm_reconciliation_failed_total Total number of failed reconciliations
+# TYPE pm_reconciliation_failed_total counter
+pm_reconciliation_failed_total {orchestration_stats.get('pm_reconciliation_failed_total', 0)}
+
+# HELP pm_degraded_results_total Total number of degraded results
+# TYPE pm_degraded_results_total counter
+pm_degraded_results_total {orchestration_stats.get('pm_degraded_results_total', 0)}
+
+# HELP task_orchestrator_tasks_orchestrated_total Total number of tasks orchestrated
 # TYPE task_orchestrator_tasks_orchestrated_total counter
 task_orchestrator_tasks_orchestrated_total {orchestration_stats.get('tasks_orchestrated', 0)}
 
@@ -502,7 +530,7 @@ async def coordinate_operation(request: CoordinationOperationRequest):
     This endpoint provides the unified coordination API for cross-plane operations.
     """
     try:
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
 
         # Convert string plane to enum
         source_plane = PlaneType(request.source_plane)
@@ -531,7 +559,7 @@ async def coordinate_operation(request: CoordinationOperationRequest):
 async def get_plane_health():
     """Get health status of all planes."""
     try:
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
 
         health_responses = []
         for plane, health in coordinator.plane_health.items():
@@ -555,7 +583,7 @@ async def get_plane_health():
 async def get_coordination_metrics():
     """Get coordination performance metrics."""
     try:
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
         metrics = coordinator.get_coordination_metrics()
 
         return CoordinationMetricsResponse(**metrics)
@@ -573,7 +601,7 @@ async def emit_coordination_event(request: EmitEventRequest, background_tasks: B
     This endpoint allows external systems to trigger coordination events.
     """
     try:
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
 
         # Convert strings to enums
         event_type = CoordinationEventType(request.event_type)
@@ -615,7 +643,7 @@ async def emit_coordination_event(request: EmitEventRequest, background_tasks: B
 async def get_active_conflicts():
     """Get list of active coordination conflicts."""
     try:
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
 
         conflicts = []
         for conflict_id, conflict in coordinator.active_conflicts.items():
@@ -644,7 +672,7 @@ async def get_active_conflicts():
 async def resolve_conflict(conflict_id: str, request: ConflictResolutionRequest):
     """Resolve a specific coordination conflict."""
     try:
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
 
         if conflict_id not in coordinator.active_conflicts:
             raise HTTPException(status_code=404, detail=f"Conflict {conflict_id} not found")
@@ -693,7 +721,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
             """Handle events for this WebSocket client."""
             await handle_coordination_events(event)
 
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
         coordinator.register_event_handler(
             CoordinationEventType.TASK_CREATED,  # Register for key events
             ws_event_handler
@@ -745,7 +773,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
 async def get_coordination_status():
     """Get overall coordination system status."""
     try:
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
 
         status = {
             "coordinator_running": True,
@@ -770,7 +798,7 @@ async def get_coordination_status():
 async def test_coordination():
     """Test endpoint to verify coordination functionality."""
     try:
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
 
         # Test task creation coordination
         test_task = {
@@ -810,7 +838,7 @@ if __name__ == "__main__":
     @app.on_event("startup")
     async def setup_event_handlers():
         """Setup event handlers after application startup."""
-        coordinator = app.state.coordinator
+        coordinator = getattr(app.state, "coordinator", None)
 
         # Register handlers for all event types to enable WebSocket broadcasting
         for event_type in CoordinationEventType:

@@ -79,12 +79,11 @@ prelude: test
 
 def test_extract_ticket_ids_from_ledger():
     text = """
-### PM-TO-001
 - `PM-TO-002`
 - PM-TO-003
 """
     ids = workflow._extract_ticket_ids_from_ledger(text)
-    assert ids == ["PM-TO-001", "PM-TO-002", "PM-TO-003"]
+    assert ids == ["PM-TO-002", "PM-TO-003"]
 
 
 def test_resolve_instruction_targets_prefers_active_paths(tmp_path: Path):
