@@ -5,7 +5,7 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-12'
-last_review: '2026-03-12'
+last_review: '2026-03-26'
 next_review: '2026-06-10'
 prelude: Canonical PM-plane write model for adjudicating mutations across Leantime, Task Orchestrator, ConPort, dope-memory, and adapter layers.
 ---
@@ -113,13 +113,14 @@ Every PM-plane write should follow this sequence:
 
 ## Runtime constraint: current Task Orchestrator surface gap
 
-The active Task Orchestrator runtime does **not** currently expose project-scoped next-action, blocker, or transition endpoints.
+The active runtime now exposes project-scoped queue, blocker, and workflow-state envelopes through Task Orchestrator-backed PM-plane reads, but the project-scoped transition route is still not bound to a canonical runtime transition engine.
 
-That does not change the authority model. It changes implementation behavior:
+Current implementation behavior:
 
+- `pm_get_priority_queue`, `pm_get_blockers`, and `pm_get_workflow_state` route to Task Orchestrator and fail closed when the workflow authority is unavailable
 - workflow-significant bridge routes must fail closed instead of substituting bridge-local state
 - Leantime status mutation paths must not be treated as workflow adjudication
-- implementations may stage adapter-safe PM record updates in Leantime, but must not claim workflow success without Task Orchestrator adjudication
+- `pm_transition_work_item` may exist as a canonical helper, but any runtime path that lacks an authoritative Task Orchestrator transition binding must return an explicit unavailable result rather than claim transition success
 
 ## Boundary clarifications
 

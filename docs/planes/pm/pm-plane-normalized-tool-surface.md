@@ -5,13 +5,15 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-12'
-last_review: '2026-03-12'
+last_review: '2026-03-26'
 next_review: '2026-06-10'
 prelude: Normalized PM-plane tool contract that routes agents through canonical backends instead of subsystem-native seams.
 ---
 # PM Plane Normalized Tool Surface
 
 The PM plane exposes one normalized tool surface so agents interact with a stable contract instead of raw backend-native methods.
+
+This document describes the intended normalized contract. Current runtime deviations are called out explicitly in the reality-gap section below and must be treated as stronger than older branch-era assumptions.
 
 ## Contract rules
 
@@ -70,15 +72,20 @@ Whenever a tool pulls from more than one plane, the response must preserve:
 
 ## Backend reality gaps
 
-The current runtime has one important implementation gap:
+The current runtime now differs from the older March 22 ledger in a more specific way:
 
-- the active Task Orchestrator runtime does **not** expose project-scoped next-action, blocker, or transition endpoints yet
+- `pm_get_priority_queue`, `pm_get_blockers`, and `pm_get_workflow_state` are implemented in `src/dopemux/pm/reads.py` and route to Task Orchestrator-backed envelopes
+- `pm_update_work_item`, `pm_transition_work_item`, and `pm_log_progress` are implemented in `src/dopemux/pm/writes.py`
+- `pm_get_work_chronicle` is implemented in `src/dopemux/pm/chronicle.py`
+- `pm_get_project_context` and `pm_get_sprint_snapshot` exist only as fail-closed Leantime-backed envelopes, so they do not yet satisfy the richer target contract in the table above
+- `pm_transition_work_item` exists as a canonical helper, but the project-scoped Task Orchestrator transition route still returns an explicit unavailable result until a canonical runtime binding is added
+- `pm_search_project_knowledge` and `pm_get_technical_context` are still missing from runtime code
 
 Implications:
 
-- `pm_get_priority_queue`, `pm_get_blockers`, `pm_get_workflow_state`, and `pm_transition_work_item` are still canonically mapped to Task Orchestrator
 - bridge implementations must fail closed or return an explicit unavailable/deferred result rather than invent local workflow truth
-- no Leantime or bridge-local surface may claim to replace the missing Task Orchestrator runtime contract
+- no Leantime or bridge-local surface may claim to replace the missing Task Orchestrator transition binding
+- the implementation ledger should be used for current runtime status, while this document remains the contract target
 
 ## Never treat these as the long-term agent contract
 
