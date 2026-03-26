@@ -7,7 +7,7 @@ Workflow / Execution Control Plane.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -57,6 +57,7 @@ class PacketLease(BaseModel):
     agent_id: str = Field(..., description="Identifier of the leasing entity (e.g., 'gemini-2.5-pro')")
     leased_at_utc: datetime = Field(..., description="Timestamp of checkout")
     expires_at_utc: datetime = Field(..., description="Hard deadline for next heartbeat")
+    ttl_seconds: int = Field(..., description="Original lease duration in seconds")
     state: LeaseState = Field(default=LeaseState.ACTIVE)
 
     model_config = {"frozen": False}
