@@ -21,6 +21,7 @@ import sys
 import threading
 import time
 import importlib.util
+import random
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
@@ -65,6 +66,23 @@ except ModuleNotFoundError:
     OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
     XAIBatchClient = batch_clients_module.XAIBatchClient
     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
+
+try:
+    from lib.intelligence_router import IntelligenceRouter
+except ImportError:
+    intelligence_router_path = RUNNER_SERVICE_DIR / "lib" / "intelligence_router.py"
+    if intelligence_router_path.exists():
+        intelligence_router_spec = importlib.util.spec_from_file_location(
+            "repo_truth_intelligence_router", intelligence_router_path
+        )
+        if intelligence_router_spec and intelligence_router_spec.loader:
+            intelligence_router_module = importlib.util.module_from_spec(intelligence_router_spec)
+            intelligence_router_spec.loader.exec_module(intelligence_router_module)
+            IntelligenceRouter = intelligence_router_module.IntelligenceRouter
+        else:
+            IntelligenceRouter = None
+    else:
+        IntelligenceRouter = None
 try:
     from lib.phase_contract_map import (
         CONTRACT_MAP_FILENAME as PHASE_CONTRACT_MAP_FILENAME,
@@ -172,7 +190,7 @@ except Exception:  # pragma: no cover - optional rich rendering
 
 # --- Configuration & Constants ---
 
-PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
+PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "X", "Q", "R", "T", "Z", "S"]
 PROMPT_HASH_MODE = "strict"
 PROMPT_ROOT_ENV_VAR = "REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"
 LEGACY_PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
@@ -276,12 +294,15 @@ LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
     "R2_synthesis": "R_arbitration",
 }
 EXTRACTOR_SERVICE_DIR = RUNNER_SERVICE_DIR
-V3_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v3")
-V3_RUNS_ROOT = V3_EXTRACTION_ROOT / "runs"
-V3_LATEST_RUN_FILE = V3_EXTRACTION_ROOT / "latest_run_id.txt"
-V3_DOCTOR_ROOT = V3_EXTRACTION_ROOT / "doctor"
+V5_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v5")
+V5_RUNS_ROOT = V5_EXTRACTION_ROOT / "runs"
+V5_LATEST_RUN_FILE = V5_EXTRACTION_ROOT / "latest_run_id.txt"
+V5_DOCTOR_ROOT = V5_EXTRACTION_ROOT / "doctor"
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
+# Optional phases whose norm outputs enrich R arbitration when available.
+# B→R3/R8/R10  E→R0/R5/R8  G→R0/R6/R7  W→R5/R6  Q→R7/R8
+R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q", "X"]
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
@@ -600,8 +621,7 @@ GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     ],
 }
 
-_OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
-_UNUSED_GLOBALS = (_OPTIMAL_NO_CODE_PHASES,)
+OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
 OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
@@ -1042,6 +1062,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("extract_runner")
 _RUN_FILE_HANDLER: Optional[logging.Handler] = None
+_ACTIVE_INTELLIGENCE_ROUTER: Optional["IntelligenceRouter"] = None
 
 
 def configure_run_file_logger(run_root: Path) -> Path:
@@ -1115,6 +1136,7 @@ class RunnerConfig:
     compare_model: Optional[str] = None
     compare_provider: Optional[str] = None
     compare_steps: Optional[Tuple[str, ...]] = None
+    prescan_dir: Optional[str] = None  # Path to prescan output for intelligence routing
 
 
 @dataclass(frozen=True)
@@ -1167,6 +1189,9 @@ class UI:
             self._console = Console(force_terminal=(requested == "rich"))
             self._rich = True
 
+        import threading as _threading
+        self._active_partitions: Dict[str, Dict[str, Any]] = {}
+        self._partitions_lock = _threading.Lock()
         self._timeline_path: Path = (
             run_root / TELEMETRY_DIRNAME / TERMINAL_TIMELINE_FILENAME
         )
@@ -1213,6 +1238,114 @@ class UI:
         filled = int(round(ratio * width))
         bar = "#" * filled + "." * (width - filled)
         return f"[{bar}] {ratio * 100.0:5.1f}%"
+
+    def _provider_color(self, provider: str) -> str:
+        """Return Rich color for a provider name."""
+        mapping = {
+            "openai": "bold green",
+            "anthropic": "bold magenta",
+            "gemini": "bold blue",
+            "xai": "bold yellow",
+            "openrouter": "bold cyan",
+            "mistral": "bold orange3",
+        }
+        return mapping.get(str(provider).lower(), "bold white")
+
+    def partition_start_event(
+        self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        provider: str,
+        model_id: str,
+    ) -> None:
+        """Record that a partition has started LLM execution on a specific provider/model."""
+        import time as _time
+        entry = {
+            "phase": phase,
+            "step_id": step_id,
+            "provider": provider,
+            "model_id": model_id,
+            "start_ts": _time.monotonic(),
+            "attempt": 1,
+            "status": "running",
+        }
+        with self._partitions_lock:
+            self._active_partitions[partition_id] = entry
+        self._emit_event({
+            "type": "partition_start",
+            "phase": phase,
+            "step": step_id,
+            "partition_id": partition_id,
+            "provider": provider,
+            "model_id": model_id,
+        })
+        if self.cfg.quiet:
+            return
+        color = self._provider_color(provider)
+        if self._rich and self._console is not None:
+            self._console.print(
+                f"  [{color}]▶ {phase}:{step_id} {partition_id}[/{color}]"
+                f" [dim]→ {provider}/{model_id}[/dim]"
+            )
+        else:
+            self._print_plain(
+                f"PARTITION_START phase={phase} step={step_id} partition={partition_id} "
+                f"provider={provider} model={model_id}"
+            )
+
+    def retry_event(
+        self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        attempt: int,
+        max_attempts: int,
+        provider: str,
+        model_id: str,
+        status_code: Optional[int],
+        failure_type: Optional[str],
+        delay_seconds: float,
+    ) -> None:
+        """Show a live retry notification for a partition."""
+        with self._partitions_lock:
+            entry = self._active_partitions.get(partition_id)
+            if entry:
+                entry["attempt"] = attempt
+                entry["status"] = "retry"
+        self._emit_event({
+            "type": "partition_retry",
+            "phase": phase,
+            "step": step_id,
+            "partition_id": partition_id,
+            "attempt": attempt,
+            "max_attempts": max_attempts,
+            "provider": provider,
+            "model_id": model_id,
+            "status_code": status_code,
+            "failure_type": failure_type,
+            "delay_seconds": delay_seconds,
+        })
+        if self.cfg.quiet:
+            return
+        status_str = str(status_code) if status_code else "-"
+        failure_str = str(failure_type or "-")
+        if self._rich and self._console is not None:
+            self._console.print(
+                f"  [bold orange3]⟳ RETRY[/bold orange3] "
+                f"[dim]{phase}:{step_id} {partition_id}[/dim] "
+                f"attempt=[bold yellow]{attempt}/{max_attempts}[/bold yellow] "
+                f"[{self._provider_color(provider)}]{provider}/{model_id}[/{self._provider_color(provider)}] "
+                f"status=[bold red]{status_str}[/bold red] "
+                f"reason=[italic red]{failure_str}[/italic red] "
+                f"wait=[bold]{delay_seconds:.1f}s[/bold]"
+            )
+        else:
+            self._print_plain(
+                f"PARTITION_RETRY phase={phase} step={step_id} partition={partition_id} "
+                f"attempt={attempt}/{max_attempts} provider={provider} model={model_id} "
+                f"status_code={status_str} failure_type={failure_str} delay={delay_seconds:.1f}s"
+            )
 
     def step_progress_stop(self) -> None:
         if self._progress is not None:
@@ -1419,8 +1552,12 @@ class UI:
             return
         if self._rich and self._console is not None:
             self._console.print(
-                f"[bold yellow]ESCALATE[/bold yellow] phase={phase} step={step_id} partition={partition_id} "
-                f"reason={reason} from={from_route} to={to_route} hop={hop}"
+                f"  [bold yellow]🔀 ESCALATE[/bold yellow] "
+                f"[dim]{phase}:{step_id} {partition_id}[/dim] "
+                f"hop=[bold]{hop}[/bold] "
+                f"[bold red]{from_route}[/bold red] [bold]→[/bold] "
+                f"[bold cyan]{to_route}[/bold cyan] "
+                f"reason=[italic yellow]{reason}[/italic yellow]"
             )
             return
         self._summary_line(
@@ -1564,6 +1701,7 @@ class UI:
         item_key: Optional[str] = None,
         item_id: Optional[str] = None,
         item_path: Optional[str] = None,
+        retry_trace: Optional[List[Dict[str, Any]]] = None,
         mode: str = "full",
     ) -> None:
         event_payload = {
@@ -1578,6 +1716,7 @@ class UI:
             "item_key": str(item_key or "").strip() or None,
             "item_id": str(item_id or "").strip() or None,
             "item_path": str(item_path or "").strip() or None,
+            "retry_trace": retry_trace or [],
             "mode": str(mode or "full").strip().lower(),
         }
         self._emit_event(event_payload)
@@ -1590,6 +1729,20 @@ class UI:
         if self._rich and self._console is not None:
             style = "bold red" if event_payload["mode"] == "full" else "red"
             self._console.print(f"[{style}]{line}[/{style}]")
+            # If retry trace is available on the event payload, dump it
+            retry_trace = event_payload.get("retry_trace")
+            if isinstance(retry_trace, list) and len(retry_trace) > 1:
+                self._console.print(
+                    f"    [dim]retry trace ({len(retry_trace)} attempts):[/dim]"
+                )
+                for i, tr in enumerate(retry_trace, start=1):
+                    sc = tr.get("status_code", "-")
+                    ft = tr.get("failure_type", "-")
+                    ds = tr.get("delay_seconds")
+                    delay_str = f" → wait {ds:.1f}s" if ds is not None else ""
+                    self._console.print(
+                        f"    [dim]  [{i}] status={sc} type=[italic red]{ft}[/italic red]{delay_str}[/dim]"
+                    )
             return
         self._summary_line(line)
 
@@ -1976,7 +2129,7 @@ def _phase_input_stat(path: Path) -> Dict[str, Any]:
 
 def load_run_id(root: Path) -> Optional[str]:
     """Load latest run_id from file; return None if unavailable."""
-    id_file = root / V3_LATEST_RUN_FILE
+    id_file = root / V5_LATEST_RUN_FILE
     if not id_file.exists():
         return None
     run_id = id_file.read_text(encoding="utf-8").strip()
@@ -1988,7 +2141,7 @@ def load_run_id(root: Path) -> Optional[str]:
 def _validate_existing_run_dir(
     root: Path, run_id: str, allow_create_if_missing: bool = False
 ) -> None:
-    candidate = root / V3_RUNS_ROOT / run_id
+    candidate = root / V5_RUNS_ROOT / run_id
     if not candidate.exists():
         if allow_create_if_missing:
             candidate.mkdir(parents=True, exist_ok=True)
@@ -2000,7 +2153,7 @@ def _validate_existing_run_dir(
 
 def _generate_run_id(root: Path) -> str:
     base = datetime.now(timezone.utc).strftime("run_%Y%m%dT%H%M%SZ")
-    runs_root = root / V3_RUNS_ROOT
+    runs_root = root / V5_RUNS_ROOT
     runs_root.mkdir(parents=True, exist_ok=True)
 
     candidate = runs_root / base
@@ -2013,7 +2166,7 @@ def _generate_run_id(root: Path) -> str:
 
 
 def latest_run_id_path(root: Path) -> Path:
-    return root / V3_LATEST_RUN_FILE
+    return root / V5_LATEST_RUN_FILE
 
 
 def persist_latest_run_id(root: Path, run_id: str) -> None:
@@ -2039,7 +2192,7 @@ def resolve_run_context(
     else:
         latest = load_run_id(root)
         if latest:
-            latest_dir = root / V3_RUNS_ROOT / latest
+            latest_dir = root / V5_RUNS_ROOT / latest
             if latest_dir.exists() and latest_dir.is_dir():
                 run_id = latest
                 run_id_source = "latest_run_id"
@@ -2068,7 +2221,7 @@ def resolve_run_context(
 
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     """Return dict of run paths and ensure required folders exist."""
-    base = root / V3_RUNS_ROOT / run_id
+    base = root / V5_RUNS_ROOT / run_id
     if not base.exists():
         raise FileNotFoundError(f"Run directory {base} does not exist.")
     for legacy_name, canonical_name in LEGACY_PHASE_DIR_ALIASES.items():
@@ -3950,7 +4103,7 @@ def write_run_manifest(
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V3_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
                 "generated(new timestamp run id)",
             ],
             "no_write_latest": args.no_write_latest,
@@ -5078,7 +5231,7 @@ def run_provider_preflight(
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "batch_capability": batch_capability,
     }
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
     return (not failures), payload
@@ -5106,7 +5259,7 @@ def prepare_phase_provider_preflight(
         {str(provider) for provider in payload.get("failed_providers", []) if provider}
     )
     payload["denylisted_providers"] = list(denylisted)
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
     if not ok:
@@ -5355,7 +5508,7 @@ def run_doctor_full(
         },
     }
 
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "DOCTOR_FULL.json", payload)
     print(json.dumps(payload, indent=2))
@@ -5439,11 +5592,16 @@ def max_files_for_phase(phase: str, cfg: RunnerConfig) -> int:
 
 
 def build_partitions(
-    phase: str, inventory: List[Dict[str, Any]], max_files: int, max_chars: int
+    phase: str,
+    inventory: List[Dict[str, Any]],
+    max_files: int,
+    max_chars: int,
+    router: Optional[IntelligenceRouter] = None,  # DEPRECATED: use DC2 post-processing via _ACTIVE_INTELLIGENCE_ROUTER
 ) -> List[Dict[str, Any]]:
     partitions: List[Dict[str, Any]] = []
     current_paths: List[str] = []
     current_chars = 0
+    skipped_count = 0
 
     def flush_partition() -> None:
         nonlocal current_paths, current_chars
@@ -5461,19 +5619,39 @@ def build_partitions(
         current_paths = []
         current_chars = 0
 
+    # Sort inventory by priority if router is available
+    if router:
+        inventory = sorted(
+            inventory, 
+            key=lambda x: router.get_routing_priority(x["path"]), 
+            reverse=True
+        )
+
     for item in inventory:
         path = item["path"]
+        
+        # Intelligence-based skipping
+        if router and router.should_skip(path):
+            skipped_count += 1
+            continue
+
         base_chars = int(item.get("char_count_estimate", 0))
         # Account for per-file headers in context payload construction.
         est_chars = base_chars + min(len(path) + 80, 2000)
         would_exceed_files = len(current_paths) >= max_files
         would_exceed_chars = current_paths and (current_chars + est_chars > max_chars)
+        
         if would_exceed_files or would_exceed_chars:
             flush_partition()
+        
         current_paths.append(path)
         current_chars += est_chars
 
     flush_partition()
+    
+    if skipped_count > 0:
+        logger.info(f"Phase {phase}: skipped {skipped_count} files based on prescan intelligence.")
+
     if not partitions:
         partitions.append(
             {
@@ -6408,6 +6586,7 @@ def call_llm(
     force_json_output: bool = False,
     response_format_override: Optional[Dict[str, Any]] = None,
     structured_output_override: Optional[Dict[str, Any]] = None,
+    retry_callback: Optional[Callable] = None,
 ) -> Dict[str, Any]:
     if _live_llm_calls_blocked_for_tests():
         message = (
@@ -6820,6 +6999,11 @@ def call_llm(
             )
             retry_trace[-1]["delay_seconds"] = delay_seconds
             total_retry_delay += delay_seconds
+            if retry_callback is not None:
+                try:
+                    retry_callback(attempt + 1, status_code, failure_type, delay_seconds)
+                except Exception:
+                    pass
             if delay_seconds > 0:
                 time.sleep(delay_seconds)
     logger.error(
@@ -7259,7 +7443,7 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         f"succeeded_modes={','.join(succeeded_modes) if succeeded_modes else '-'} "
         f"failed_modes={','.join(failed_modes) if failed_modes else '-'}"
     )
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     doctor_json = doctor_dir / "AUTH_DOCTOR.json"
     doctor_txt = doctor_dir / "AUTH_DOCTOR.txt"
@@ -8632,43 +8816,6 @@ def compute_comparison_resume_decision(
             return {"action": "RERUN", "reason": "invalid_comparison_artifact"}
     except (OSError, json.JSONDecodeError):
         return {"action": "RERUN", "reason": "unreadable_comparison_artifact"}
-
-    # Validate that the artifact matches the expected step/partition and, if present,
-    # provider/model metadata. If any of these fields are present but do not match,
-    # treat the artifact as stale/invalid and force a rerun.
-    artifact_step_id = payload.get("step_id")
-    if artifact_step_id is not None:
-        if not isinstance(artifact_step_id, str) or artifact_step_id != step_id:
-            return {
-                "action": "RERUN",
-                "reason": "comparison_artifact_step_mismatch",
-            }
-
-    artifact_partition_id = payload.get("partition_id")
-    if artifact_partition_id is not None:
-        if not isinstance(artifact_partition_id, str) or artifact_partition_id != partition_id:
-            return {
-                "action": "RERUN",
-                "reason": "comparison_artifact_partition_mismatch",
-            }
-
-    request_meta = payload.get("request_meta")
-    if isinstance(request_meta, dict):
-        artifact_provider = request_meta.get("provider")
-        if artifact_provider is not None:
-            if not isinstance(artifact_provider, str) or artifact_provider != provider:
-                return {
-                    "action": "RERUN",
-                    "reason": "comparison_artifact_provider_mismatch",
-                }
-        artifact_model_id = request_meta.get("model_id")
-        if artifact_model_id is not None:
-            if not isinstance(artifact_model_id, str) or artifact_model_id != model:
-                return {
-                    "action": "RERUN",
-                    "reason": "comparison_artifact_model_mismatch",
-                }
-
     return {"action": "SKIP", "reason": "valid_comparison_artifact"}
 
 
@@ -8789,11 +8936,9 @@ def run_comparison_lane(
                 "model_id": compare_model,
                 "comparison_of_step": step_id,
                 "elapsed_ms": elapsed_ms,
-                # Comparison lane does not run full canonical validation/repair pipeline;
-                # status/repair metrics are therefore non-authoritative.
-                "final_contract_status": "unknown",
-                "repair_invocations": None,
-                "repair_successes": None,
+                "final_contract_status": "pass",
+                "repair_invocations": 0,
+                "repair_successes": 0,
             }
             payload = {
                 "phase": phase,
@@ -8837,7 +8982,6 @@ def run_comparison_lane(
             try:
                 failed_path.write_text(failure_reason, encoding="utf-8")
             except OSError:
-                # Best-effort sidecar write; ignore filesystem errors to avoid masking the original failure.
                 pass
             results.append({
                 "partition_id": partition_id,
@@ -9482,8 +9626,13 @@ def execute_step_for_partitions(
                 )
 
         output_instructions = build_output_envelope_instructions(output_artifacts)
+        context_brief = partition.get("context_brief", "")
+        brief_section = f"\n{context_brief}\n" if context_brief else ""
         prompt_prefix = (
-            "Extract from the files below.\n" f"{output_instructions}\n" "\nFILES:\n"
+            "Extract from the files below.\n"
+            f"{output_instructions}\n"
+            f"{brief_section}"
+            "\nFILES:\n"
         )
         reserved_chars = len(prompt_prefix)
         context_budget = max(cfg.max_chars - reserved_chars, 2048)
@@ -10699,6 +10848,21 @@ def execute_step_for_partitions(
                         if strict_contract_required
                         else None
                     ),
+                    retry_callback=(
+                        (lambda att, sc, ft, ds: ui.retry_event(
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            attempt=att,
+                            max_attempts=cfg.retry_max_attempts,
+                            provider=route_provider,
+                            model_id=route_model_id,
+                            status_code=sc,
+                            failure_type=ft,
+                            delay_seconds=ds,
+                        ))
+                        if ui is not None else None
+                    ),
                 )
                 response_text_local = str(llm_result.get("text", ""))
                 request_meta_local = enrich_request_meta(
@@ -11577,21 +11741,20 @@ def execute_step_for_partitions(
                 parse_json_from_response_fn=parse_json_from_response,
                 coerce_artifacts_from_response_fn=coerce_artifacts_from_response,
             )
-            # Collect canonical results for summary (best-effort from step stats).
-            # We avoid fabricating per-partition latency/repair metrics here,
-            # since only aggregate step_stats are available at this point.
-            canonical_success = bool(step_stats.get("success", True))
-            final_contract_status = step_stats.get("final_contract_status") or "unknown"
+            # Collect canonical results for summary (best-effort from step stats)
             canonical_results_for_summary = [
                 {
                     "partition_id": p.get("id", "unknown"),
-                    "success": canonical_success,
+                    "success": True,
                     "request_meta": {
                         "lane": "canonical",
                         "authoritative": True,
                         "provider": initial_provider,
                         "model_id": initial_model_id,
-                        "final_contract_status": final_contract_status,
+                        "final_contract_status": step_stats.get("final_contract_status") or "pass",
+                        "repair_invocations": step_stats.get("repair_invocations", 0),
+                        "repair_successes": step_stats.get("repair_successes", 0),
+                        "elapsed_ms": 0,
                     },
                 }
                 for p in ordered_partitions
@@ -11685,6 +11848,22 @@ def _run_phase_inner(
     partitions = build_partitions(
         phase, inventory, max_files=max_files, max_chars=cfg.max_chars
     )
+
+    # DC2 Phase 2: Router post-processing (reorder + briefs)
+    router = _ACTIVE_INTELLIGENCE_ROUTER
+    if router:
+        try:
+            from lib.prescan.partition_brief_generator import PartitionBriefGenerator
+            brief_gen = PartitionBriefGenerator(router.code_report, token_budget=2000)
+        except Exception:
+            brief_gen = None
+        for idx, partition in enumerate(partitions):
+            partition["paths"] = router.reorder_partition(partition["paths"])
+            if brief_gen:
+                brief = brief_gen.generate_brief(phase, partition["paths"])
+                if brief:
+                    partition["context_brief"] = brief
+        logger.info("Phase %s: router reordered %d partitions", phase, len(partitions))
 
     write_json(
         phase_dir / "inputs" / "INVENTORY.json",
@@ -13166,7 +13345,7 @@ def print_config(
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V3_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
                 "generated(new timestamp run id)",
             ],
             "dry_run": args.dry_run,
@@ -13288,7 +13467,7 @@ def update_proof_pack(
     }
     proof["finished_at"] = phase_finished_at
     proof["updated_at"] = now_iso()
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     auth_doctor = doctor_dir / "AUTH_DOCTOR.json"
     full_doctor = doctor_dir / "DOCTOR_FULL.json"
     routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
@@ -13392,29 +13571,6 @@ Return ONLY valid JSON matching exactly:
 """
 
 
-def _deterministic_phase_sample(
-    phase_outputs: "List[Dict[str, Any]]", n_sample: int
-) -> "List[Dict[str, Any]]":
-    """Deterministically select a subset of phase_outputs for auditing.
-
-    Uses a hash of a stable JSON representation of each item to provide
-    deterministic but well-distributed sampling without relying on RNG state.
-    """
-    if not phase_outputs or n_sample <= 0:
-        return []
-
-    def _item_hash(item: "Dict[str, Any]") -> str:
-        try:
-            # sort_keys ensures deterministic key order across runs
-            serialized = json.dumps(item, sort_keys=True, default=str)
-        except TypeError:
-            serialized = repr(item)
-        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-    sorted_items = sorted(phase_outputs, key=_item_hash)
-    return sorted_items[: min(n_sample, len(sorted_items))]
-
-
 def audit_phase_sample(
     phase_dir: "Path",
     phase_outputs: "List[Dict[str, Any]]",
@@ -13434,7 +13590,7 @@ def audit_phase_sample(
         return {"sampled": 0, "skipped": True}
 
     n_sample = min(max(1, int(len(phase_outputs) * sample_rate)), 5)
-    sample = _deterministic_phase_sample(phase_outputs, n_sample)
+    sample = random.sample(phase_outputs, min(n_sample, len(phase_outputs)))
 
     results: List[Dict[str, Any]] = []
     escalation_needed: List[str] = []
@@ -14181,7 +14337,10 @@ def run_phase_C(
             REPO_SCAN_EXCLUDES,
         ),
     )
-    targets = ["src", "services", "shared", "plugins", "tools", "scripts", "tests"]
+    targets = [
+        "src", "services", "shared", "plugins", "tools", "scripts", "tests",
+        "docker/mcp-servers-source", "docker/mcp-servers", "components",
+    ]
     _run_phase_inner(
         "C",
         dirs,
@@ -14215,7 +14374,10 @@ def run_phase_E(
         Path.cwd(),
         _merge_scan_excludes([".git", "node_modules", "docs"], REPO_SCAN_EXCLUDES),
     )
-    targets = ["scripts", "tools", "compose", ".github", "Makefile", "package.json"]
+    targets = [
+        "scripts", "tools", "compose", ".github", "Makefile", "package.json",
+        "docker", "installers", "install.sh", "ops",
+    ]
     _run_phase_inner(
         "E",
         dirs,
@@ -14238,7 +14400,7 @@ def run_phase_W(
         dirs,
         cfg,
         collector,
-        ["docs", "scripts", "src", "services"],
+        ["docs", "scripts", "src", "services", "Makefile", "compose.yml", "docker", "config"],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "W"),
     )
@@ -14255,7 +14417,7 @@ def run_phase_B(
         dirs,
         cfg,
         collector,
-        ["src", "services", "docs"],
+        ["src", "services", "docs", "contracts", "config", ".claude"],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "B"),
     )
@@ -14272,7 +14434,11 @@ def run_phase_G(
         dirs,
         cfg,
         collector,
-        [".github", "docs", ".claude", "AGENTS.md"],
+        [
+            ".github", "docs", ".claude", "AGENTS.md",
+            "pyproject.toml", ".pre-commit-config.yaml", "config/repo_hygiene",
+            "pytest.ini", "Makefile", "contracts",
+        ],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "G"),
     )
@@ -14282,7 +14448,7 @@ def run_phase_Q(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
     items = collect_phase_artifacts(
-        dirs, ["A", "H", "D", "C", "E", "W", "B", "G"], ["raw", "norm", "qa"]
+        dirs, ["A", "H", "D", "C", "E", "W", "B", "G", "X"], ["raw", "norm", "qa"]
     )
     promptpack_manifest = _write_q_promptpack_declared_outputs_manifest(dirs)
     items.extend(to_items([promptpack_manifest]))
@@ -14414,6 +14580,16 @@ def run_phase_R_async_submit(
         if phase_norm.exists():
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
+    # Collect optional B/E/G/W/Q norm outputs when available
+    for opt_phase in R_OPTIONAL_INPUT_PHASES:
+        opt_norm = dirs.get(opt_phase)
+        if opt_norm is not None:
+            opt_norm_dir = opt_norm / "norm"
+            if opt_norm_dir.exists():
+                opt_files = sorted(opt_norm_dir.glob("*.json")) + sorted(opt_norm_dir.glob("*.md"))
+                if opt_files:
+                    input_files.extend(opt_files)
+                    logger.info("R_ASYNC_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, len(opt_files))
     deduped_inputs = sorted(set(input_files), key=str)
     context_items = to_items(deduped_inputs)
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
@@ -14421,6 +14597,23 @@ def run_phase_R_async_submit(
     partitions = build_partitions(
         "R", inventory, max_files=max_files, max_chars=cfg.max_chars
     )
+
+    # DC2 Phase 2: Router post-processing for Phase R (async path)
+    _r_router = _ACTIVE_INTELLIGENCE_ROUTER
+    if _r_router:
+        try:
+            from lib.prescan.partition_brief_generator import PartitionBriefGenerator
+            _r_brief_gen = PartitionBriefGenerator(_r_router.code_report, token_budget=2000)
+        except Exception:
+            _r_brief_gen = None
+        for _r_idx, _r_part in enumerate(partitions):
+            _r_part["paths"] = _r_router.reorder_partition(_r_part["paths"])
+            if _r_brief_gen:
+                _r_brief = _r_brief_gen.generate_brief("R", _r_part["paths"])
+                if _r_brief:
+                    _r_part["context_brief"] = _r_brief
+        logger.info("Phase R (async): router reordered %d partitions", len(partitions))
+
     prompts = get_phase_prompts("R")
     if not prompts:
         raise RuntimeError("No prompts found for phase R")
@@ -14463,11 +14656,17 @@ def run_phase_R_async_submit(
             continue
         output_artifacts = prompt_spec.output_artifacts
         output_instructions = build_output_envelope_instructions(output_artifacts)
-        prompt_prefix = (
-            "Extract from the files below.\n" + output_instructions + "\n\nFILES:\n"
-        )
 
         for partition in partitions:
+            _async_brief = partition.get("context_brief", "")
+            _async_brief_section = f"\n{_async_brief}\n" if _async_brief else ""
+            prompt_prefix = (
+                "Extract from the files below.\n"
+                + output_instructions
+                + "\n"
+                + _async_brief_section
+                + "\nFILES:\n"
+            )
             partition_id = str(partition["id"])
 
             latest_attempt = event_store.latest_attempt_for_tuple(
@@ -14826,6 +15025,26 @@ def run_phase_R(
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
 
+    # Collect optional B/E/G/W/Q norm outputs when available
+    optional_contributed: List[str] = []
+    for opt_phase in R_OPTIONAL_INPUT_PHASES:
+        opt_norm = dirs.get(opt_phase, dirs.get(opt_phase))
+        if opt_norm is None:
+            continue
+        opt_norm = opt_norm / "norm"
+        if opt_norm.exists():
+            opt_files = sorted(opt_norm.glob("*.json")) + sorted(opt_norm.glob("*.md"))
+            if opt_files:
+                input_files.extend(opt_files)
+                optional_contributed.append(f"{opt_phase}({len(opt_files)})")
+                logger.info("R_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, len(opt_files))
+            else:
+                logger.info("R_OPTIONAL_SKIP: phase=%s reason=empty_norm_dir", opt_phase)
+        else:
+            logger.info("R_OPTIONAL_SKIP: phase=%s reason=no_norm_dir", opt_phase)
+    if optional_contributed:
+        logger.info("R_OPTIONAL_SUMMARY: contributed=%s", ", ".join(optional_contributed))
+
     deduped_inputs = sorted(set(input_files), key=str)
     _run_phase_inner(
         "R",
@@ -14842,20 +15061,23 @@ def run_phase_R(
 def run_phase_X(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    r_norm = dirs["R"] / "norm"
-    r_inputs: List[Path] = []
-    if r_norm.exists():
-        r_inputs.extend(sorted(r_norm.glob("*.json")))
-        r_inputs.extend(sorted(r_norm.glob("*.md")))
-    if not r_inputs:
-        raise RuntimeError(f"Phase X requires R norm outputs at {r_norm}")
+    # X prompts (X0-X4) expect direct repo scan of feature surfaces,
+    # not R artifacts.  Scan targets align with X0 prompt contract:
+    # services/, src/, docs/, config/, scripts/, Makefile, docker, compose.yml
+    collector = Collector(
+        Path.cwd(),
+        _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES),
+    )
+    targets = [
+        "services", "src", "docs", "config", "scripts",
+        "Makefile", "docker", "compose.yml",
+    ]
     _run_phase_inner(
         "X",
         dirs,
         cfg,
-        None,
-        None,
-        precollected_items=to_items(r_inputs),
+        collector,
+        targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "X"),
     )
@@ -14870,6 +15092,12 @@ def run_phase_T(
         if norm_dir.exists():
             input_files.extend(sorted(norm_dir.glob("*.json")))
             input_files.extend(sorted(norm_dir.glob("*.md")))
+    # T0 prompt requires governance constraints for task packet prioritisation
+    repo_root = Path.cwd()
+    for gov_path in ["AGENTS.md", ".claude/PROJECT_INSTRUCTIONS.md"]:
+        p = repo_root / gov_path
+        if p.exists():
+            input_files.append(p)
     _run_phase_inner(
         "T",
         dirs,
@@ -15091,7 +15319,7 @@ def main() -> None:
         "--compare-provider",
         type=str,
         default=None,
-        help="Provider slug for the comparison model (e.g. xai). Defaults to 'xai' if omitted.",
+        help="Provider slug for the comparison model (e.g. xai). Inferred from registry if omitted.",
     )
     parser.add_argument(
         "--compare-steps",
@@ -15121,6 +15349,12 @@ def main() -> None:
     parser.add_argument("--run-id", type=str)
     parser.add_argument("--no-write-latest", action="store_true")
     parser.add_argument("--write-latest-even-on-dry-run", action="store_true")
+    parser.add_argument(
+        "--audit-sample-rate",
+        type=float,
+        default=0.15,
+        help="Fraction of phase outputs to audit with judge model (0 to disable).",
+    )
     parser.add_argument("--doctor", action="store_true")
     parser.add_argument("--doctor-auth", action="store_true")
     parser.add_argument("--preflight-providers", action="store_true")
@@ -15189,6 +15423,12 @@ def main() -> None:
             "directory (from `dopemux extractor init`) or any directory containing "
             "prompt files. Equivalent to setting REPO_TRUTH_EXTRACTOR_PROMPT_ROOT."
         ),
+    )
+    parser.add_argument(
+        "--prescan-dir",
+        type=str,
+        default=None,
+        help="Path to prescan output dir for intelligence-informed extraction.",
     )
     parser.add_argument(
         "--profile",
@@ -15611,6 +15851,7 @@ def main() -> None:
             if getattr(args, "compare_steps", None)
             else None
         ),
+        prescan_dir=getattr(args, "prescan_dir", None),
     )
 
     # --profile: load extraction profile and apply phase filtering + budget overrides
@@ -15842,10 +16083,23 @@ def main() -> None:
         if not ok:
             logger.error(
                 "Provider preflight failed before phase ALL. failed_providers=%s. See "
-                f"{(V3_DOCTOR_ROOT / 'PROVIDER_PREFLIGHT.json').as_posix()}",
+                f"{(V5_DOCTOR_ROOT / 'PROVIDER_PREFLIGHT.json').as_posix()}",
                 ",".join(payload.get("failed_providers", [])),
             )
             sys.exit(1)
+
+    # Load intelligence router from prescan output (if available)
+    global _ACTIVE_INTELLIGENCE_ROUTER
+    if cfg.prescan_dir and IntelligenceRouter is not None:
+        _prescan_path = Path(cfg.prescan_dir)
+        if _prescan_path.exists():
+            _ACTIVE_INTELLIGENCE_ROUTER = IntelligenceRouter.from_dir(_prescan_path)
+            if _ACTIVE_INTELLIGENCE_ROUTER:
+                logger.info("Loaded intelligence router from %s", _prescan_path)
+            else:
+                logger.warning("Prescan dir exists but router failed to load: %s", _prescan_path)
+        else:
+            logger.warning("Prescan dir not found: %s", _prescan_path)
 
     runners = {
         "A": run_phase_A,

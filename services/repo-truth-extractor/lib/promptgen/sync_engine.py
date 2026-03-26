@@ -73,6 +73,7 @@ def run_sync(
     output_root: Optional[Path] = None,
     template_dir: Optional[Path] = None,
     feature_map_path: Optional[Path] = None,
+    prescan_dir: Optional[Path] = None,
     interactive: bool = False,
     enrich: bool = False,
     force_include: Optional[List[str]] = None,
@@ -89,6 +90,7 @@ def run_sync(
             Defaults to <extractor_root>/base_prompts/.
         feature_map_path: Path to a pre-authored FEATURE_MAP.json
             (skips interactive discovery).
+        prescan_dir: Path to prescan output directory.
         interactive: If True, run interactive feature discovery.
         enrich: If True, run optional LLM enrichment pass.
         force_include: Phases to force-include regardless of detection.
@@ -127,10 +129,27 @@ def run_sync(
 
     logger.info("Sync started: repo=%s run_id=%s output=%s", repo_root, run_id, output_root)
 
+    # --- Load Prescan Intelligence (if provided) ---
+    prescan_intelligence = {}
+    if prescan_dir:
+        prescan_dir = Path(prescan_dir)
+        intel_path = prescan_dir / "prescan_intelligence.json"
+        if intel_path.exists():
+            try:
+                with open(intel_path) as f:
+                    prescan_intelligence = json.load(f)
+                logger.info("Loaded prescan intelligence from %s", intel_path)
+            except Exception as e:
+                logger.warning("Failed to load prescan intelligence: %s", e)
+
     try:
         # --- Stage 0h: Feature detection ---
         logger.info("Stage 0h: Feature detection")
-        auto_features = detect_features(root=repo_root, run_id=run_id)
+        auto_features = detect_features(
+            root=repo_root, 
+            run_id=run_id,
+            prescan_intelligence=prescan_intelligence
+        )
         _write_artifact(output_root, "AUTO_FEATURES.json", auto_features)
         result.stages_completed.append("feature_detection")
         result.artifacts["auto_features"] = str(output_root / "AUTO_FEATURES.json")
