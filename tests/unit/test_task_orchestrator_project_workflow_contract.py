@@ -7,13 +7,16 @@ SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestr
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
-from app.api import project_workflow  # noqa: E402
-from dopemux.pm.reads import (  # noqa: E402
-    PMPriorityQueueResult,
-    PMReadProvenance,
-    PMReadSupportingSource,
-    PMWorkflowStateResult,
-)
+try:
+    from app.api import project_workflow  # noqa: E402
+    from dopemux.pm.reads import (  # noqa: E402
+        PMPriorityQueueResult,
+        PMReadProvenance,
+        PMReadSupportingSource,
+        PMWorkflowStateResult,
+    )
+except (ImportError, ModuleNotFoundError) as exc:
+    pytest.skip(f"task-orchestrator service deps not available: {exc}", allow_module_level=True)
 
 
 @pytest.mark.asyncio

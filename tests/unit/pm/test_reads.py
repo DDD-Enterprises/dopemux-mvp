@@ -22,7 +22,7 @@ async def test_pm_get_project_context():
     result = await pm_get_project_context("proj-123")
     assert isinstance(result, PMProjectContextResult)
     assert result.project_id == "proj-123"
-    assert result.canonical_backend == "leantime"
+    assert result.canonical_backend == "orchestrator"
     assert result.provenance.source == "leantime"
     assert result.provenance.query_mode == "project_context"
     assert result.supporting_sources[0].backend == "leantime"
@@ -115,7 +115,7 @@ async def test_pm_get_workflow_state_routes_to_task_orchestrator(monkeypatch):
 async def test_pm_get_sprint_snapshot():
     result = await pm_get_sprint_snapshot("proj-123")
     assert result.project_id == "proj-123"
-    assert result.canonical_backend == "leantime"
+    assert result.canonical_backend == "orchestrator"
     assert result.provenance.source == "leantime"
     assert result.snapshot_data == {}
 
