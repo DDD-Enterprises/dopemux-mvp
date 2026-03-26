@@ -498,6 +498,7 @@ class TaskCoordinator:
 
         execution_store = get_execution_store()
         lease_store = get_lease_store()
+        monitor_accepts_lease = "lease_id" in inspect.signature(self._monitor_execution).parameters
 
         for task_id in sequenced_tasks:
             # Execute task (placeholder - actual execution via agents)
@@ -507,6 +508,7 @@ class TaskCoordinator:
                 logger.warning(f"⚠️ Task {task_id} not found in coordinator cache")
                 results["failed"].append(task_id)
                 continue
+            lease = None
             try:
                 # 1. Ensure ExecutionPacket exists in the Execution Plane
                 if not execution_store.get_packet(task_id):
@@ -544,8 +546,7 @@ class TaskCoordinator:
                 results["in_progress"].append(task_id)
 
                 # Preserve compatibility with test/local monitor overrides that only accept `task`.
-                monitor_params = inspect.signature(self._monitor_execution).parameters
-                if "lease_id" in monitor_params:
+                if monitor_accepts_lease:
                     await self._monitor_execution(task, lease_id=lease.lease_id)
                 else:
                     await self._monitor_execution(task)
@@ -571,6 +572,7 @@ class TaskCoordinator:
 
                 # 3. Release Lease
                 lease_store.release(lease.lease_id, final_state=PacketState.PROOF_GENERATED)
+                lease = None
                 logger.info(f"✅ Released lease for packet {task_id}")
 
                 results["completed"].append(task_id)
@@ -591,6 +593,13 @@ class TaskCoordinator:
                     results["in_progress"].remove(task_id)
                 results["failed"].append(task_id)
                 break
+            finally:
+                if lease is not None:
+                    try:
+                        lease_store.release(lease.lease_id, final_state=PacketState.READY)
+                        logger.info(f"↩️ Released failed lease for packet {task_id}")
+                    except Exception as release_error:
+                        logger.warning(f"Failed to release lease for {task_id}: {release_error}")
 
         # Check for context switching
         await self.context_recovery.detect_context_switch()

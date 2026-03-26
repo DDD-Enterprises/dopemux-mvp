@@ -15,11 +15,13 @@ from .models import ExecutionPacket, PacketLease, PacketState, LeaseState
 
 class ExecutionError(Exception):
     """Base class for execution-related errors."""
+
     pass
 
 
 class PacketNotFoundError(ExecutionError):
     """Raised when a packet_id does not exist."""
+
     def __init__(self, packet_id: str) -> None:
         self.packet_id = packet_id
         super().__init__(f"Packet not found: {packet_id}")
@@ -27,6 +29,7 @@ class PacketNotFoundError(ExecutionError):
 
 class PacketNotReadyError(ExecutionError):
     """Raised when attempting to checkout a packet that is not in READY state."""
+
     def __init__(self, packet_id: str, state: PacketState) -> None:
         self.packet_id = packet_id
         self.state = state
@@ -35,6 +38,7 @@ class PacketNotReadyError(ExecutionError):
 
 class LeaseNotFoundError(ExecutionError):
     """Raised when a lease_id does not exist."""
+
     def __init__(self, lease_id: UUID) -> None:
         self.lease_id = lease_id
         super().__init__(f"Lease not found: {lease_id}")
@@ -42,6 +46,7 @@ class LeaseNotFoundError(ExecutionError):
 
 class LeaseExpiredError(ExecutionError):
     """Raised when an operation is attempted on an expired lease."""
+
     def __init__(self, lease_id: UUID) -> None:
         self.lease_id = lease_id
         super().__init__(f"Lease {lease_id} has expired")
@@ -53,22 +58,22 @@ class ExecutionStore(ABC):
     @abstractmethod
     def create_packet(self, packet: ExecutionPacket) -> ExecutionPacket:
         """Store a new packet. If packet_id exists, return existing."""
-        ...
+        pass
 
     @abstractmethod
     def get_packet(self, packet_id: str) -> Optional[ExecutionPacket]:
         """Retrieve packet by ID."""
-        ...
+        pass
 
     @abstractmethod
     def list_ready_packets(self) -> List[ExecutionPacket]:
         """List all packets in READY state."""
-        ...
+        pass
 
     @abstractmethod
     def update_packet_state(self, packet_id: str, state: PacketState) -> ExecutionPacket:
         """Update the state of a packet."""
-        ...
+        pass
 
 
 class LeaseStore(ABC):
@@ -83,7 +88,7 @@ class LeaseStore(ABC):
             PacketNotFoundError: packet_id does not exist.
             PacketNotReadyError: packet is not in READY state.
         """
-        ...
+        pass
 
     @abstractmethod
     def heartbeat(self, lease_id: UUID) -> PacketLease:
@@ -94,7 +99,7 @@ class LeaseStore(ABC):
             LeaseNotFoundError: lease_id does not exist.
             LeaseExpiredError: lease has already expired.
         """
-        ...
+        pass
 
     @abstractmethod
     def release(self, lease_id: UUID, final_state: PacketState) -> PacketLease:
@@ -104,7 +109,7 @@ class LeaseStore(ABC):
         Raises:
             LeaseNotFoundError: lease_id does not exist.
         """
-        ...
+        pass
 
 
 class InMemoryExecutionStore(ExecutionStore):
@@ -143,20 +148,25 @@ class InMemoryLeaseStore(LeaseStore):
         self._packet_to_lease: Dict[str, UUID] = {}
 
     def checkout(self, packet_id: str, agent_id: str, ttl_seconds: int) -> PacketLease:
+        now = datetime.now(timezone.utc)
         packet = self._execution_store.get_packet(packet_id)
         if not packet:
             raise PacketNotFoundError(packet_id)
         if packet.state != PacketState.READY:
-            # Check if there's an expired lease we can reclaim
             active_lease_id = self._packet_to_lease.get(packet_id)
-            if active_lease_id:
-                lease = self._leases[active_lease_id]
-                if lease.expires_at_utc > datetime.now(timezone.utc):
-                    raise PacketNotReadyError(packet_id, packet.state)
-                # Reclaim expired lease
-                lease.state = LeaseState.EXPIRED
+            if active_lease_id is None or packet.state not in {PacketState.LEASED, PacketState.EXECUTING}:
+                raise PacketNotReadyError(packet_id, packet.state)
 
-        now = datetime.now(timezone.utc)
+            lease = self._leases.get(active_lease_id)
+            if lease is None or lease.state != LeaseState.ACTIVE:
+                raise PacketNotReadyError(packet_id, packet.state)
+
+            if lease.expires_at_utc > now:
+                raise PacketNotReadyError(packet_id, packet.state)
+
+            lease.state = LeaseState.EXPIRED
+            del self._packet_to_lease[packet_id]
+
         expires_at = now + timedelta(seconds=ttl_seconds)
         lease = PacketLease(
             lease_id=uuid4(),
@@ -164,6 +174,7 @@ class InMemoryLeaseStore(LeaseStore):
             agent_id=agent_id,
             leased_at_utc=now,
             expires_at_utc=expires_at,
+            ttl_seconds=ttl_seconds,
             state=LeaseState.ACTIVE
         )
 
@@ -182,8 +193,7 @@ class InMemoryLeaseStore(LeaseStore):
             lease.state = LeaseState.EXPIRED
             raise LeaseExpiredError(lease_id)
 
-        # Extend lease by another 5 minutes (default heartbeat)
-        lease.expires_at_utc = now + timedelta(minutes=5)
+        lease.expires_at_utc = now + timedelta(seconds=lease.ttl_seconds)
         # Ensure packet state is EXECUTING if it was LEASED
         packet = self._execution_store.get_packet(lease.packet_id)
         if packet and packet.state == PacketState.LEASED:
