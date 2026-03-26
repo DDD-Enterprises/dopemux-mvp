@@ -12,6 +12,7 @@ from .types import (
     ADHDEvent,
     ThemeEvent,
     SessionEvent,
+    PMEvent,
 )
 __all__ = [
     "Event",
@@ -20,4 +21,5 @@ __all__ = [
     "ADHDEvent",
     "ThemeEvent",
     "SessionEvent",
+    "PMEvent",
 ]
