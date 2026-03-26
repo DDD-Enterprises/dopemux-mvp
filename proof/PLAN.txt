@@ -1,20 +1,52 @@
-Objective: Implement TP-RTE-PHASED-RELIABILITY-0033 for Phase D reliability: deterministic JSON salvage, line_range enforcement, and provider preflight fail-fast.
+Objective: Port the non-duplicated PM/execution delta onto a fresh branch from origin/main, using PR #294 for execution leasing and the stacked PM line #297-#300 for canonical PM surfaces.
 Scope:
-- services/repo-truth-extractor/run_extraction_v3.py
-- services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D*.md
-- services/repo-truth-extractor/prompts/v3/PROMPT_D*.md
-- services/repo-truth-extractor/tests/test_phase_d_json_salvage.py
-- services/repo-truth-extractor/tests/test_phase_d_line_range.py
-- services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py
+- src/dopemux/execution/__init__.py
+- src/dopemux/execution/models.py
+- src/dopemux/execution/store.py
+- src/dopemux/pm/__init__.py
+- src/dopemux/pm/reads.py
+- src/dopemux/pm/write.py
+- src/dopemux/pm/writes.py
+- services/task-orchestrator/app/services/task_coordinator.py
+- services/task-orchestrator/app/adapters/bridge_adapter.py
+- services/task-orchestrator/app/api/project_workflow.py
+- services/task-orchestrator/app/models/workflow.py
+- services/task-orchestrator/tests/test_workflow.py
+- services/dopecon-bridge/dopecon_bridge/event_bus.py
+- services/dopecon-bridge/dopecon_bridge/routes.py
+- services/dopecon-bridge/dopecon_bridge/services/task_integration.py
+- services/dopecon-bridge/tests/test_route_endpoints_authority.py
+- services/dopecon-bridge/tests/test_task_integration_unit.py
+- services/taskmaster/bridge_adapter.py
+- services/taskmaster/server.py
+- services/taskmaster/tests/test_server.py
+- src/dopemux/event_bus.py
+- src/dopemux/events/__init__.py
+- src/dopemux/events/types.py
+- tests/test_execution_store.py
+- tests/unit/test_task_coordinator_execution_leases.py
+- tests/unit/dopemux/pm/test_writes.py
+- tests/unit/pm/test_reads.py
+- tests/unit/test_event_bus.py
+- tests/unit/test_task_orchestrator_project_workflow_contract.py
+- docs/planes/pm/write-boundaries.md
+- docs/planes/pm/pm-implementation-ledger.md
+- docs/planes/pm/pm-plane-normalized-tool-surface.md
+- docs/planes/pm/pm-plane-write-adjudication-model.md
+- task-packets/STATUS.md
 - proof/PLAN.txt
 Steps:
-1) Add deterministic prose-plus-JSON salvage before parse_failure.
-2) Line-number Phase D partition context and tighten D prompt output rails around line_range.
-3) Enforce line_range shape in schema gating.
-4) Add a Phase D provider preflight guard that blocks fan-out when OpenRouter is unhealthy.
-5) Verify with focused tests and compileall.
+1) Verify overlap against open PRs and select one execution line and one PM line to avoid duplicate implementation.
+2) Port execution leasing from origin/codex/execution-plane-main-v2.
+3) Port the stacked PM boundary/event/bridge/read changes from origin/codex/pm-continue-04-truth-rebaseline.
+4) Resolve any integration conflicts on mainline files without broad refactors.
+5) Run narrow subsystem tests for execution, PM reads/writes, bridge/event taxonomy, and task orchestrator workflow surfaces.
+6) Update the scoped PM docs and task-packet status that correspond to the landed runtime behavior.
+7) Re-diff against origin/main and confirm the branch contains only the selected main-first delta.
 Verification:
-- python -m compileall -q services/repo-truth-extractor tests
-- pytest -q services/repo-truth-extractor/tests/test_phase_d_json_salvage.py
-- pytest -q services/repo-truth-extractor/tests/test_phase_d_line_range.py
-- pytest -q services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py
+- git diff --name-status origin/main...
+- python3 -m pytest tests/test_execution_store.py tests/unit/test_task_coordinator_execution_leases.py
+- python3 -m pytest tests/unit/dopemux/pm/test_writes.py tests/unit/pm/test_reads.py
+- python3 -m pytest tests/unit/test_event_bus.py tests/unit/test_task_orchestrator_project_workflow_contract.py
+- python3 -m pytest services/dopecon-bridge/tests/test_route_endpoints_authority.py services/dopecon-bridge/tests/test_task_integration_unit.py
+- python3 -m pytest services/task-orchestrator/tests/test_workflow.py services/taskmaster/tests/test_server.py
