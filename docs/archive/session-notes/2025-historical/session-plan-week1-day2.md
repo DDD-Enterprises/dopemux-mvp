@@ -428,10 +428,10 @@ dopemux --help
 ## 🔗 Quick Links
 
 **Today's Files:**
-- [Test Script](./test_installer_ubuntu.sh)
-- [Installer](./install.sh)
-- [Test Report](./INSTALLER_TESTING_REPORT.md)
-- [Quick Ref](./PRODUCTION_READINESS_QUICK_REF.md)
+- [Test Script](test_installer_ubuntu.sh)
+- [Installer](install.sh)
+- [Test Report](INSTALLER_TESTING_REPORT.md)
+- [Quick Ref](PRODUCTION_READINESS_QUICK_REF.md)
 
 **Documentation:**
 - [Homebrew Formula Cookbook](https://docs.brew.sh/Formula-Cookbook)

@@ -60,7 +60,7 @@ Invariants:
 - Rejected: includes ADHD/session fields that are not universally valid lifecycle authority.
 
 1. Use dopecon-bridge `TaskRecord` as canonical PM model.
-   - Rejected: mixes adapter telemetry fields into task schema; blurs adapter/plane boundary, and contradicts the rule that `dopecon-bridge` is explicitly an adapter/non-canonical.
+- Rejected: integration service model is useful but not currently the PM-plane-wide contract.
   Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_models.py.txt:L46-L65`.
 
 # Acceptance Tests
