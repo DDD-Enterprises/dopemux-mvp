@@ -74,23 +74,22 @@ class PMDecisionContextResult(BaseModel):
 # Leantime reads (Project Context, Priority Queue, Blockers, Workflow State, Sprint Snapshot)
 
 async def pm_get_project_context(project_id: str) -> PMProjectContextResult:
-    """Read normalized project context from Leantime authority.
+    """Read normalized project context from the Orchestrator authority.
     
     Returns fail-closed empty result if backend is down.
     """
-    provenance = PMReadProvenance(source="leantime", query_mode="project_context", project_id=project_id)
-    supporting_source = PMReadSupportingSource(kind="canonical", backend="leantime", entity_ids=[project_id])
+    provenance = PMReadProvenance(source="orchestrator", query_mode="project_context", project_id=project_id)
+    supporting_source = PMReadSupportingSource(kind="canonical", backend="orchestrator", entity_ids=[project_id])
     
     try:
-        # Placeholder for actual Leantime JSON-RPC call
-        # For now we stub the behavior and return an empty safe state when it fails, simulating fail-closed
-        context_data = {} 
+        payload = await _orchestrator.get_project_context(project_id)
+        context_data = payload.get("context_data", {})
     except Exception as e:
-        logger.warning(f"Leantime backend unavailable for pm_get_project_context: {e}")
+        logger.warning(f"Task Orchestrator backend unavailable for pm_get_project_context: {e}")
         context_data = {}
 
     return PMProjectContextResult(
-        canonical_backend="leantime",
+        canonical_backend="orchestrator",
         project_id=project_id,
         linked_ids={},
         provenance=provenance,
@@ -177,22 +176,22 @@ async def pm_get_workflow_state(project_id: str) -> PMWorkflowStateResult:
     )
 
 async def pm_get_sprint_snapshot(project_id: str) -> PMSprintSnapshotResult:
-    """Read normalized sprint snapshot from Leantime authority.
+    """Read normalized sprint snapshot from the Orchestrator authority.
     
     Returns fail-closed empty result if backend is down.
     """
-    provenance = PMReadProvenance(source="leantime", query_mode="sprint_snapshot", project_id=project_id)
-    supporting_source = PMReadSupportingSource(kind="canonical", backend="leantime", entity_ids=[project_id])
+    provenance = PMReadProvenance(source="orchestrator", query_mode="sprint_snapshot", project_id=project_id)
+    supporting_source = PMReadSupportingSource(kind="canonical", backend="orchestrator", entity_ids=[project_id])
     
     try:
-        # Placeholder for actual Leantime JSON-RPC call
-        snapshot_data = {}
+        payload = await _orchestrator.get_sprint_snapshot(project_id)
+        snapshot_data = payload.get("snapshot_data", {})
     except Exception as e:
-        logger.warning(f"Leantime backend unavailable for pm_get_sprint_snapshot: {e}")
+        logger.warning(f"Task Orchestrator backend unavailable for pm_get_sprint_snapshot: {e}")
         snapshot_data = {}
 
     return PMSprintSnapshotResult(
-        canonical_backend="leantime",
+        canonical_backend="orchestrator",
         project_id=project_id,
         linked_ids={},
         provenance=provenance,
