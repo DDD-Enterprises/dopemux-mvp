@@ -15,7 +15,6 @@ Features:
 import os
 import asyncio
 import importlib.util
-import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -88,12 +87,16 @@ async def assess_task_complexity(title: str, description: str = "") -> dict:
     return assessment.dict()
 
 # Import shared Redis pool and cache for performance optimization
+import sys
+import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'docker', 'mcp-servers', 'shared'))
 from redis_pool import get_redis_pool
 from cache import get_cache
 
 # Import shared monitoring (optional - from repo root shared/, not services/shared)
 try:
+    import sys
+    import os
     # Add repo root to path to find shared/monitoring
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     if repo_root not in sys.path:

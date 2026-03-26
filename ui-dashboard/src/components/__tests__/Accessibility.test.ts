@@ -57,6 +57,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label="Current task progress"');
   // Timer accessibility
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
+  // Total remaining time
+  expect(content).toContain('role="status"');
+  expect(content).toContain('aria-label={`Total remaining time: ${totalRemainingMinutes} minutes`}');
   expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
   expect(content).toContain('aria-label="Real-time task synchronization active"');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
@@ -89,4 +92,5 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('<Tooltip title="AI-generated recommendation based on current load" arrow>');
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toMatch(/<Tooltip title="AI-generated recommendation based on current load" arrow>[\s\S]*tabIndex=\{0\}/);
+  expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}');
 });
