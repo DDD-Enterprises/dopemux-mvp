@@ -9,8 +9,6 @@ from pathlib import Path
 
 import click
 from dopemux.ui.progress import branded_progress
-from dopemux.ui.progress import branded_progress
-from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..console import console
 from ..config import ConfigManager
@@ -85,11 +83,7 @@ def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
 
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
 
-    with branded_progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Starting auto responder...", total=None)
 
         success = autoresponder_manager.start()
@@ -143,11 +137,7 @@ def autoresponder_stop(ctx):
         console.logger.info("[warning]Auto responder is not running[/warning]")
         return
 
-    with branded_progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Stopping auto responder...", total=None)
 
         # Get stats before stopping
@@ -257,11 +247,7 @@ def autoresponder_setup(ctx):
 
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
 
-    with branded_progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Setting up ClaudeAutoResponder...", total=None)
 
         success = autoresponder_manager.setup_autoresponder()

@@ -2250,11 +2250,7 @@ def start(
             )
             console.logger.info(f"[text.dim]   Logs: {router_info.log_path}[/text.dim]")
 
-    with branded_progress(
-        SpinnerColumn(spinner_name="dots12", style="spinner"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         # Restore context
         task = progress.add_task("Restoring context...", total=None)
 
@@ -2537,11 +2533,7 @@ def save(ctx, message: Optional[str], force: bool):
         )
         sys.exit(1)
 
-    with branded_progress(
-        SpinnerColumn(spinner_name="dots12", style="spinner"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Saving context...", total=None)
 
         context_manager = ContextManager(project_path)
@@ -2608,11 +2600,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
             )
         return
 
-    with branded_progress(
-        SpinnerColumn(spinner_name="dots12", style="spinner"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Restoring context...", total=None)
 
         if session:
@@ -3558,11 +3546,7 @@ def health(
             return
 
     # Single health check
-    with branded_progress(
-        SpinnerColumn(spinner_name="dots12", style="spinner"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Running health checks...", total=None)
 
         if service:
@@ -3612,11 +3596,7 @@ def health(
     if fix:
         console.logger.info("\n[info]🔧 Attempting to fix unhealthy services...[/info]")
 
-        with branded_progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
+        with branded_progress(console=console) as progress:
             fix_task = progress.add_task("Fixing services...", total=None)
 
             restarted = health_checker.restart_unhealthy_services()
@@ -3868,11 +3848,7 @@ def save(ctx, message: Optional[str], force: bool):
         )
         sys.exit(1)
 
-    with branded_progress(
-        SpinnerColumn(spinner_name="dots12", style="spinner"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Saving context...", total=None)
 
         context_manager = ContextManager(project_path)
@@ -3939,11 +3915,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
             )
         return
 
-    with branded_progress(
-        SpinnerColumn(spinner_name="dots12", style="spinner"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Restoring context...", total=None)
 
         if session:
@@ -4230,11 +4202,7 @@ def _run_extract_chatlog(
     console.logger.info(f"[info]📤 Output: {output_path}[/info]")
     console.logger.info(f"[info]🎯 Extractors: Decision, Feature, Research[/info]")
 
-    with branded_progress(
-        SpinnerColumn(spinner_name="dots12", style="spinner"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Initializing extraction pipeline...", total=None)
 
         try:
@@ -4454,11 +4422,7 @@ def _run_extract_pro(
         f"[info]🎯 Extractors: All 7 (Decision, Feature, Research, Constraint, Stakeholder, Risk, Security)[/info]"
     )
 
-    with branded_progress(
-        SpinnerColumn(spinner_name="dots12", style="spinner"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with branded_progress(console=console) as progress:
         task = progress.add_task("Initializing Pro extraction pipeline...", total=None)
 
         try:
@@ -5244,6 +5208,54 @@ def dashboard_cmd(demo: bool):
 
 # Worktree Diagnostics Command
 # =============================================================================
+
+
+def _activate_dangerous_mode() -> None:
+    """Enable session-scoped dangerous mode environment flags."""
+    expires = time.time() + 3600
+    os.environ["DOPEMUX_DANGEROUS_MODE"] = "true"
+    os.environ["DOPEMUX_DANGEROUS_EXPIRES"] = str(expires)
+    os.environ["HOOKS_ENABLE_ADAPTIVE_SECURITY"] = "0"
+    os.environ["CLAUDE_CODE_SKIP_PERMISSIONS"] = "true"
+    os.environ["METAMCP_ROLE_ENFORCEMENT"] = "false"
+    os.environ["METAMCP_APPROVAL_REQUIRED"] = "false"
+    os.environ["METAMCP_BUDGET_ENFORCEMENT"] = "false"
+    os.environ["CLAUDE_DANGEROUS"] = "1"
+    os.environ["SKIP_PERMISSIONS"] = "1"
+
+
+def _deactivate_dangerous_mode() -> None:
+    """Clear dangerous mode environment flags when they expire."""
+    for key in [
+        "DOPEMUX_DANGEROUS_MODE",
+        "DOPEMUX_DANGEROUS_EXPIRES",
+        "HOOKS_ENABLE_ADAPTIVE_SECURITY",
+        "CLAUDE_CODE_SKIP_PERMISSIONS",
+        "METAMCP_ROLE_ENFORCEMENT",
+        "METAMCP_APPROVAL_REQUIRED",
+        "METAMCP_BUDGET_ENFORCEMENT",
+        "CLAUDE_DANGEROUS",
+        "SKIP_PERMISSIONS",
+    ]:
+        os.environ.pop(key, None)
+
+
+def _check_dangerous_mode_expiry() -> bool:
+    """Deactivate dangerous mode after its session TTL elapses."""
+    if os.getenv("DOPEMUX_DANGEROUS_MODE") != "true":
+        return False
+
+    expires_raw = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
+    try:
+        expires_at = float(expires_raw)
+    except ValueError:
+        expires_at = 0.0
+
+    if time.time() >= expires_at:
+        _deactivate_dangerous_mode()
+        return True
+
+    return False
 
 
 @cli.command("doctor")

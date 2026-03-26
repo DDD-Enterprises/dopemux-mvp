@@ -36,8 +36,7 @@ def boot_sequence():
         time.sleep(0.4)
         
         for msg, status, color in messages:
-            current_text.append("
-")
+            current_text.append("\n")
             current_text.append(f"{Glyphs.SUCCESS} {msg} ", style="text.dim")
             live.update(current_text)
             time.sleep(0.3)
