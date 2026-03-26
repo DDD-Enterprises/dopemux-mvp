@@ -14,6 +14,14 @@ Falls back to poll-based approach if watchdog is unavailable.
 
 import asyncio
 import logging
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_log
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -29,7 +37,7 @@ try:
     WATCHDOG_AVAILABLE = True
 except ImportError:
     WATCHDOG_AVAILABLE = False
-    logger.warning("watchdog not available - using poll-based file monitoring")
+    logger.warning(brand_log("watchdog not available - using poll-based file monitoring", chip=StatusChip.AFTERCARE))
 
 
 @dataclass
@@ -160,9 +168,9 @@ class WorkspaceEventEmitter:
             logger.debug(f"📁 File {action}: {rel_path}")
             
         except ImportError:
-            logger.warning("EventBus not available - file event not emitted")
+            logger.warning(brand_log("EventBus not available - file event not emitted", chip=StatusChip.AFTERCARE))
         except Exception as e:
-            logger.error(f"Failed to emit file event: {e}")
+            logger.error(brand_log(f"Failed to emit file event: {e}", chip=StatusChip.BLOCKER))
     
     async def check_unchanged_files(self):
         """Check for files unchanged for extended periods (hyperfocus indicator)."""
@@ -186,13 +194,13 @@ class WorkspaceEventEmitter:
                     )
                     
                     await self.event_bus.publish("dopemux:events", event)
-                    logger.info(f"🔥 Possible hyperfocus: {file_path} unchanged for 30+ min")
+                    logger.info(brand_log(f"🔥 Possible hyperfocus: {file_path} unchanged for 30+ min", chip=StatusChip.LIVE))
                     
                     # Remove from tracking to avoid repeated alerts
                     del self.last_modified[file_path]
                     
         except Exception as e:
-            logger.error(f"Error checking unchanged files: {e}")
+            logger.error(brand_log(f"Error checking unchanged files: {e}", chip=StatusChip.BLOCKER))
     
     def get_recent_activity(self, minutes: int = 15) -> List[FileActivity]:
         """Get file activity from the last N minutes."""
@@ -270,7 +278,7 @@ class WorkspaceWatcher:
             self._check_unchanged_loop()
         )
         
-        logger.info(f"👁️ Workspace Watcher started for {self.workspace_path}")
+        logger.info(brand_log(f"👁️ Workspace Watcher started for {self.workspace_path}", chip=StatusChip.LIVE))
     
     async def _start_watchdog(self):
         """Start watchdog-based monitoring."""
@@ -281,12 +289,12 @@ class WorkspaceWatcher:
         self._observer.schedule(handler, str(self.workspace_path), recursive=True)
         self._observer.start()
         
-        logger.info("Using watchdog for efficient file monitoring")
+        logger.info(brand_log("Using watchdog for efficient file monitoring", chip=StatusChip.LIVE))
     
     async def _start_polling(self):
         """Start poll-based monitoring (fallback)."""
         self._poll_task = asyncio.create_task(self._poll_loop())
-        logger.info("Using poll-based file monitoring (install watchdog for efficiency)")
+        logger.info(brand_log("Using poll-based file monitoring (install watchdog for efficiency)", chip=StatusChip.LIVE))
     
     async def _poll_loop(self):
         """Poll filesystem for changes (fallback when watchdog unavailable)."""
@@ -321,7 +329,7 @@ class WorkspaceWatcher:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Poll loop error: {e}")
+                logger.error(brand_log(f"Poll loop error: {e}", chip=StatusChip.BLOCKER))
                 await asyncio.sleep(poll_interval)
     
     async def _check_unchanged_loop(self):
@@ -333,7 +341,7 @@ class WorkspaceWatcher:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Unchanged check error: {e}")
+                logger.error(brand_log(f"Unchanged check error: {e}", chip=StatusChip.BLOCKER))
     
     async def stop(self):
         """Stop watching the workspace."""
@@ -360,7 +368,7 @@ class WorkspaceWatcher:
                 pass
             self._unchanged_task = None
         
-        logger.info("📭 Workspace Watcher stopped")
+        logger.info(brand_log("📭 Workspace Watcher stopped", chip=StatusChip.LIVE))
     
     def get_recent_activity(self, minutes: int = 15) -> List[FileActivity]:
         """Get recent file activity."""

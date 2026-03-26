@@ -471,22 +471,7 @@ DOPEMUX_CONTEXT_BRIDGE_ENABLED=true
             return True
 
         try:
-            # Install task-master-ai globally
-            logger.info("📦 Installing task-master-ai package...")
-
-            result = await asyncio.create_subprocess_exec(
-                "npm", "install", "-g", "task-master-ai",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-
-            stdout, stderr = await result.communicate()
-
-            if result.returncode != 0:
-                logger.error(f"❌ npm install failed: {stderr.decode()}")
-                return False
-
-            logger.info("✅ Task-Master AI installed successfully")
+            logger.info("📦 Configuring task-master-ai package (will be executed dynamically via npx)...")
 
             # Create Task-Master configuration
             await self._create_taskmaster_config()
@@ -693,7 +678,7 @@ DOPEMUX_CONTEXT_BRIDGE_ENABLED=true
             if self.install_config.taskmaster_enabled:
                 try:
                     result = await asyncio.create_subprocess_exec(
-                        "npx", "task-master-ai", "--help",
+                        "npx", "-y", "task-master-ai", "--help",
                         stdout=asyncio.subprocess.PIPE,
                         stderr=asyncio.subprocess.PIPE
                     )

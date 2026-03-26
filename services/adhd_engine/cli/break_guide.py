@@ -12,6 +12,8 @@ from rich.live import Live
 from rich.align import Align
 from rich.text import Text
 
+from services.shared.brand_voice import StatusChip, aftercare_text, brand_text, brand_title
+
 console = Console()
 
 def run_breathing_guide(duration_sec: int = 120):
@@ -19,7 +21,7 @@ def run_breathing_guide(duration_sec: int = 120):
     cycles = duration_sec // 16  # 4+4+4+4 = 16s box breathing
     
     console.clear()
-    console.print(Panel("[bold cyan]🧘 Micro-Reset: Box Breathing[/bold cyan]\nFollow the guide..."))
+    console.print(Panel(brand_text("Micro-reset: box breathing. Follow the guide.", chip=StatusChip.AFTERCARE)))
     time.sleep(1)
     
     try:
@@ -53,12 +55,12 @@ def run_breathing_guide(duration_sec: int = 120):
     except KeyboardInterrupt:
         pass
         
-    console.print("\n[bold green]Reset complete. Welcome back![/bold green]\n")
+    console.print(f"\n{aftercare_text('Reset complete. Welcome back.')}\n")
 
 def interactive_break_menu():
     """Show interactive break menu."""
     console.clear()
-    console.print(Panel("[bold magenta]☕ Break Time! What do you need right now?[/bold magenta]"))
+    console.print(Panel(brand_title("Break menu", chip=StatusChip.AFTERCARE)))
     
     console.print("1. [bold cyan]🧘 Micro-Reset[/bold cyan] (2m)  [Brain fog / Anxiety]")
     console.print("2. [bold blue]💧 Hydration[/bold blue]   (5m)  [Thirsty / Stiff]")
@@ -74,13 +76,13 @@ def interactive_break_menu():
     if choice == "1":
         run_breathing_guide(120)
     elif choice == "2":
-        console.print("\n[bold blue]💧 Hydration Break[/bold blue]\nGo get a glass of water and stretch!")
+        console.print(f"\n{brand_text('Hydration break. Go get a glass of water and stretch.', chip=StatusChip.AFTERCARE)}")
         _timer(300, "Hydration Break")
     elif choice == "3":
-        console.print("\n[bold green]🚶 Movement Break[/bold green]\nWalk around, do pushups, or dance!")
+        console.print(f"\n{brand_text('Movement break. Walk around, do pushups, or dance.', chip=StatusChip.AFTERCARE)}")
         _timer(900, "Movement Break")
     elif choice == "4":
-        console.print("\n[bold yellow]🛌 Deep Rest (NSDR)[/bold yellow]\nClose your eyes. Do nothing.")
+        console.print(f"\n{brand_text('Deep rest. Close your eyes and do nothing for a minute.', chip=StatusChip.AFTERCARE)}")
         _timer(1200, "Deep Rest")
 
 def _notify(title, message):
@@ -123,13 +125,15 @@ def _timer(seconds, title="Break"):
                 time.sleep(1)
                 seconds -= 1
         
-        console.print(f"[bold green]✨ {title} complete! Welcome back.[/bold green]")
-        _notify("Dopemux Break", f"{title} complete! Time to refocus.")
+        console.print(aftercare_text(f"{title} complete. Welcome back."))
+        _notify(
+            brand_title("Dopemux break", chip=StatusChip.AFTERCARE),
+            brand_text(f"{title} complete. Time to refocus.", chip=StatusChip.AFTERCARE),
+        )
         
         # Play sound on mac
         import subprocess
         subprocess.run(['afplay', '/System/Library/Sounds/Glass.aiff'], check=False)
         
     except KeyboardInterrupt:
-        console.print(f"\n[yellow]{title} ended early.[/yellow]")
-
+        console.print(f"\n{brand_text(f'{title} ended early.', chip=StatusChip.EDGE)}")

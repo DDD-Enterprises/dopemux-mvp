@@ -4,15 +4,17 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- Restored the PR Merge Specialist runtime, tests, docs, and skill template from branch history into the active codebase.
-- Reintroduced the top-level `dopemux pr-merge ...` operator entrypoint while retaining `dopemux-pr-merge ...` as the package entrypoint.
-- Added active how-to and explanation docs for the recovered cockpit:
-  - `docs/02-how-to/pr-merge-flight-dashboard.md`
-  - `docs/04-explanation/pr-merge-queue-orchestration.md`
+- Queue-wide CI remediation via failure fingerprinting, `global-ci-fix` PR detection, and the `ci-remediation-specialist` runbook.
+- Dashboard state distinctions for validation-pending, approval-required, and queued-for-merge PRs.
+- Targeted unit coverage for dashboard console rendering and speculative train continuation behavior.
 
 ### Changed
-- Updated canonical documentation indexes and overviews to include the recovered PR merge cockpit docs and `templates/skills/pr-merge-specialist/`.
-- Extended `scripts/skills/sync_repo_skills.py` to install the PR Merge Specialist skill family alongside the existing documentation skill families.
+- The speculative train now rebases each candidate against `origin/main` instead of chaining later PRs onto earlier speculative branches.
+- The flight dashboard passes its active `Console` into the renderer so viewport sizing reflects the live terminal instance.
+
+### Fixed
+- Validation-only PRs are no longer shown as queued-for-merge before local verification is complete.
+- A single failed speculative rebase or push no longer aborts the rest of the train pass.
 
 ## [0.1.0] - 2026-03-14
 ### Added

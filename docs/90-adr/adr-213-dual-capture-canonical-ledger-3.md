@@ -191,8 +191,8 @@ Tests landing with this ADR:
 
 ## References
 
-- **Architecture Doc**: `docs/spec/dope-memory/v1/01-architecture.md`
-- **Pipeline Doc**: `docs/spec/dope-memory/v1/02-derived-memory-pipeline.md`
+- **Architecture Doc**: `docs/spec/dope-memory/v1/01_architecture.md`
+- **Pipeline Doc**: `docs/spec/dope-memory/v1/02_derived_memory_pipeline.md`
 - **Capture Client**: `src/dopemux/memory/capture_client.py`
 - **Global Rollup**: `src/dopemux/memory/global_rollup.py`
 - **Unit Tests**: `tests/unit/test_memory_capture_client.py`

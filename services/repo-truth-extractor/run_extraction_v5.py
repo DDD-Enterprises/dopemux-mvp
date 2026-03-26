@@ -1137,6 +1137,7 @@ class RunnerConfig:
     compare_provider: Optional[str] = None
     compare_steps: Optional[Tuple[str, ...]] = None
     prescan_dir: Optional[str] = None  # Path to prescan output for intelligence routing
+    router: Optional[Any] = None  # IntelligenceRouter instance
 
 
 @dataclass(frozen=True)
@@ -7793,11 +7794,13 @@ def build_partition_context(
     home_scan_mode: str,
     max_files: int,
     max_chars: int,
+    router: Optional[IntelligenceRouter] = None,
 ) -> Tuple[str, Dict[str, int]]:
     chunks: List[str] = []
     redaction_hits = 0
     skipped_files = 0
     context_bytes = 0
+    compressed_files = 0
 
     for path_str in partition_paths:
         if len(chunks) >= max_files:
@@ -7805,14 +7808,23 @@ def build_partition_context(
             continue
 
         path = Path(path_str)
-        content = safe_read(path)
-        if phase == "H" and home_scan_mode == "safe":
-            content, hits = redact_sensitive_lines(content)
-            redaction_hits += hits
-        if phase == "D":
-            content = _format_line_numbered_content(content, file_truncate_chars)
-        elif len(content) > file_truncate_chars:
-            content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
+        
+        # Check for compression hint
+        compression_hint = router.get_compression_hint(path_str) if router else None
+        
+        if compression_hint:
+            content = f"[PRESCAN COMPRESSION] {compression_hint}"
+            compressed_files += 1
+        else:
+            content = safe_read(path)
+            if phase == "H" and home_scan_mode == "safe":
+                content, hits = redact_sensitive_lines(content)
+                redaction_hits += hits
+            if phase == "D":
+                content = _format_line_numbered_content(content, file_truncate_chars)
+            elif len(content) > file_truncate_chars:
+                content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
+        
         chunk_text = f"--- FILE: {path} ---\n{content}\n"
         chunk_bytes = len(chunk_text.encode("utf-8"))
 
@@ -7837,6 +7849,7 @@ def build_partition_context(
         "files_skipped": skipped_files,
         "context_bytes": len(context.encode("utf-8")),
         "redaction_hits": redaction_hits,
+        "compressed_files": compressed_files,
     }
     return context, stats
 
@@ -9684,6 +9697,7 @@ def execute_step_for_partitions(
                 home_scan_mode=cfg.home_scan_mode,
                 max_files=max_files,
                 max_chars=current_budget,
+                router=cfg.router,
             )
             user_prompt = f"{prompt_prefix}{context}"
             payload = build_chat_payload(
@@ -11846,7 +11860,7 @@ def _run_phase_inner(
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
     max_files = max_files_for_phase(phase, cfg)
     partitions = build_partitions(
-        phase, inventory, max_files=max_files, max_chars=cfg.max_chars
+        phase, inventory, max_files=max_files, max_chars=cfg.max_chars, router=cfg.router
     )
 
     # DC2 Phase 2: Router post-processing (reorder + briefs)
@@ -14595,7 +14609,7 @@ def run_phase_R_async_submit(
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
     max_files = max_files_for_phase("R", cfg)
     partitions = build_partitions(
-        "R", inventory, max_files=max_files, max_chars=cfg.max_chars
+        "R", inventory, max_files=max_files, max_chars=cfg.max_chars, router=cfg.router
     )
 
     # DC2 Phase 2: Router post-processing for Phase R (async path)
@@ -14705,6 +14719,7 @@ def run_phase_R_async_submit(
                 home_scan_mode=cfg.home_scan_mode,
                 max_files=max_files,
                 max_chars=context_budget,
+                router=cfg.router,
             )
             user_prompt = f"{prompt_prefix}{context}"
 
@@ -15193,6 +15208,7 @@ def main() -> None:
     except (AttributeError, ValueError):
         pass
     parser = argparse.ArgumentParser("Master Extraction Runner")
+    parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
     parser.add_argument("--sync", action="store_true", help="Synchronize prompt source scopes with modern architecture.")
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
@@ -15456,6 +15472,18 @@ def main() -> None:
     args.batch_max_requests_per_job = max(1, int(args.batch_max_requests_per_job))
     if args.batch_submit_only:
         args.batch_mode = True
+    
+    router = None
+    if args.prescan:
+        if IntelligenceRouter:
+            router = IntelligenceRouter.from_dir(Path(args.prescan))
+            if router:
+                logger.info(f"Initialized IntelligenceRouter from {args.prescan}")
+            else:
+                logger.warning(f"Failed to initialize IntelligenceRouter from {args.prescan}")
+        else:
+            logger.warning("IntelligenceRouter class not available, skipping prescan logic.")
+
     apply_model_overrides(args.gemini_model_id, args.routing_policy)
 
     # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: validate comparison step eligibility
@@ -15612,6 +15640,7 @@ def main() -> None:
             selected_execution_step=selected_execution_step,
             d0_max_files=args.d0_max_files,
             d1_max_files=args.d1_max_files,
+            router=router,
         )
 
         def _prompt_executor(step, rendered_prompt, schema, _prior_outputs):  # type: ignore[no-untyped-def]
@@ -15852,6 +15881,7 @@ def main() -> None:
             else None
         ),
         prescan_dir=getattr(args, "prescan_dir", None),
+        router=router,
     )
 
     # --profile: load extraction profile and apply phase filtering + budget overrides

@@ -19,6 +19,7 @@ from enum import Enum
 import click
 import yaml
 from rich.console import Console
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, TaskID
 
 from ..config.base import Config
@@ -198,17 +199,17 @@ class UpdateManager:
                 return await self._run_fresh_update(update_task)
 
         except KeyboardInterrupt:
-            self.console.print("\\n[yellow]Update interrupted by user[/yellow]")
+            self.console.print("\\n[warning]Update interrupted by user[/warning]")
             await self._save_checkpoint("interrupted")
             return UpdateResult.INTERRUPTED
 
         except Exception as e:
             logger.exception("Update failed with unexpected error")
-            self.console.print(f"[red]Update failed: {e}[/red]")
+            self.console.print(f"[error]Update failed: {e}[/error]")
 
             # Attempt rollback
             if not self.config.dry_run:
-                self.console.print("[yellow]Attempting automatic rollback...[/yellow]")
+                self.console.print("[warning]Attempting automatic rollback...[/warning]")
                 rollback_success = await self.rollback.auto_rollback()
                 if rollback_success:
                     return UpdateResult.ROLLED_BACK
@@ -237,7 +238,7 @@ class UpdateManager:
 
             except Exception as e:
                 logger.exception(f"Phase {phase_name} failed")
-                self.console.print(f"[red]Phase {phase_name} failed: {e}[/red]")
+                self.console.print(f"[error]Phase {phase_name} failed: {e}[/error]")
 
                 if not self.config.dry_run:
                     await self.rollback.auto_rollback()
@@ -266,7 +267,7 @@ class UpdateManager:
 
     async def _resume_update(self) -> UpdateResult:
         """Resume an interrupted update session."""
-        self.console.print("[green]Welcome back! Picking up where we left off...[/green]")
+        self.console.print("[success]Welcome back! Picking up where we left off...[/success]")
 
         # Load session state
         session_file = self.session_dir / "current_session.json"
@@ -277,7 +278,7 @@ class UpdateManager:
         interrupted_time = datetime.fromisoformat(session_data.get('timestamp', ''))
         time_elapsed = datetime.now() - interrupted_time
 
-        self.console.print(f"[dim]Last checkpoint: {last_checkpoint} ({time_elapsed} ago)[/dim]")
+        self.console.print(f"[text.dim]Last checkpoint: {last_checkpoint} ({time_elapsed} ago)[/text.dim]")
 
         # Resume from appropriate phase
         return await self._run_fresh_update(None)  # Simplified
@@ -311,7 +312,7 @@ class UpdateManager:
         version_info = self.check_for_updates()
 
         self.console.print("\\n" + "="*50)
-        self.console.print("[green]✅ Update Complete! 🎉[/green]")
+        self.console.print("[success]✅ Update Complete! 🎉[/success]")
         self.console.print("="*50)
 
         self.console.print("\\n[bold]Summary:[/bold]")
@@ -323,8 +324,8 @@ class UpdateManager:
             duration = datetime.now() - self.start_time
             self.console.print(f"  • Completed in {duration.total_seconds():.1f} seconds")
 
-        self.console.print("\\n[green]Your dopemux is now up to date![/green]")
-        self.console.print("[dim]Try the new features with: dopemux --help[/dim]")
+        self.console.print("\\n[success]Your dopemux is now up to date![/success]")
+        self.console.print("[text.dim]Try the new features with: dopemux --help[/text.dim]")
         self.console.print()
 
     async def dry_run(self) -> Dict[str, Any]:

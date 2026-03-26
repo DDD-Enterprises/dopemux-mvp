@@ -9,9 +9,6 @@ from typing import Any, AsyncGenerator, Dict, Optional, Tuple
 
 import redis.asyncio as redis
 
-from .core import cache_manager
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -69,12 +66,23 @@ class Event:
 class EventBus:
     """Redis Streams wrapper with route-friendly defaults."""
 
-    def __init__(self):
+    def __init__(self, redis_url: Optional[str] = None):
+        self.redis_url = redis_url
         self.redis_client: Optional[redis.Redis] = None
+        self._owns_client = False
 
     async def initialize(self):
         if self.redis_client:
             return
+
+        if self.redis_url:
+            self.redis_client = redis.from_url(self.redis_url, decode_responses=True)
+            self._owns_client = True
+            await self.redis_client.ping()
+            return
+
+        from .core import cache_manager
+
         await cache_manager.initialize()
         self.redis_client = await cache_manager.get_client()
 
@@ -130,3 +138,10 @@ class EventBus:
                     normalized_id = msg_id.decode("utf-8") if isinstance(msg_id, bytes) else str(msg_id)
                     yield normalized_id, event
                     await self.redis_client.xack(stream, consumer_group, msg_id)
+
+    async def close(self) -> None:
+        """Close an owned Redis client."""
+        if self.redis_client and self._owns_client:
+            await self.redis_client.close()
+        self.redis_client = None
+        self._owns_client = False

@@ -286,7 +286,7 @@
         "anchor": "L1",
         "excerpt_hash": "59d4797575653ae036843867c40ff595c7b620cd45a66a12dd83ebda2a44ed7b",
         "excerpt_snippet": "--- id: THREAD_PRIMER_TASKX title: Thread Primer Taskx",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "group_id": "GROUP_06f52756f4e0",
       "hooks": [
@@ -312,7 +312,7 @@
             "anchor": "L15",
             "excerpt_hash": "8458eb0f02296119ec7caa3af9f63a8550c594f8e8f69b09be0b6d862f7b5738",
             "excerpt_snippet": "This file allows deterministic restart of development in a fresh chat.",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_0ec57f9262a5",
           "kind": "startup",
@@ -349,7 +349,7 @@
             "anchor": "L10",
             "excerpt_hash": "f3ff11d8a5c79fae24501b36b9d1a75e3617ad8bdabacb32a3870b9ab9887b21",
             "excerpt_snippet": "prelude: Thread Primer Taskx (explanation) for dopemux documentation and developer",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_1a1e74052de1",
           "kind": "wrapper",
@@ -386,7 +386,7 @@
             "anchor": "L3",
             "excerpt_hash": "2dde1cebc48bf2fb782d3de6cc6fdd33659f429ad510b1e99ff0cd27b8b11469",
             "excerpt_snippet": "title: Thread Primer Taskx",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_21ccbb7827f3",
           "kind": "wrapper",
@@ -421,7 +421,7 @@
             "anchor": "L48",
             "excerpt_hash": "325c038d3f287f1961667ae6ca6e80d3078336418f82d83eef1b281217a2f723",
             "excerpt_snippet": "If determinism at risk -> refuse.",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_4930368d9347",
           "kind": "instruction_trigger",
@@ -456,7 +456,7 @@
             "anchor": "L47",
             "excerpt_hash": "471de4efb1d700bdc858497cf9e590569066ba377d9bd0fb70a3cfee2ea38568",
             "excerpt_snippet": "If branch isolation violated -> refuse.",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_6978ab8003f8",
           "kind": "instruction_trigger",
@@ -493,7 +493,7 @@
             "anchor": "L2",
             "excerpt_hash": "5635703865fd5874f3744a9dbf500989542968f60875a2fda2bbd4550861c602",
             "excerpt_snippet": "id: THREAD_PRIMER_TASKX",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_69dd5008e563",
           "kind": "wrapper",
@@ -530,7 +530,7 @@
             "anchor": "L30",
             "excerpt_hash": "4dc273d669249bc2c4efd99d46162d51ab4568e550662f34858a35a38e0e8ffe",
             "excerpt_snippet": "TaskX is a deterministic CLI implementing:",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_9156fd96142a",
           "kind": "wrapper",
@@ -567,7 +567,7 @@
             "anchor": "L35",
             "excerpt_hash": "7a1011cfc52668d76650a27265e1dfddb311f1088d3c8f5de22da15f778fff87",
             "excerpt_snippet": "- Assisted routing (taskx route)",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_a4058ed1dea4",
           "kind": "wrapper",
@@ -604,7 +604,7 @@
             "anchor": "L36",
             "excerpt_hash": "79694bf8eaa45889d668246a9ec512e410af6933f75f5b04900a9625e9f17b10",
             "excerpt_snippet": "- Assisted PR flow (taskx pr open)",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_ac0dde6a2bb7",
           "kind": "wrapper",
@@ -641,7 +641,7 @@
             "anchor": "L13",
             "excerpt_hash": "3eaa777a82d5e6f46e012f226af6140088951eb6760256ac4082524edcb7a810",
             "excerpt_snippet": "# TaskX Thread Primer",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_b4186648e52b",
           "kind": "wrapper",
@@ -676,7 +676,7 @@
             "anchor": "L46",
             "excerpt_hash": "304c2c94ac88830f6862b6d1e86028c4f2aa35c70f27e083841783a327ba8d42",
             "excerpt_snippet": "If scope is ambiguous -> refuse.",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_ce22dacfecfd",
           "kind": "instruction_trigger",
@@ -713,7 +713,7 @@
             "anchor": "L37",
             "excerpt_hash": "a1b541b7b16481a53833d5e3842e7cd0f6792266f680d291c6114da011fcd550",
             "excerpt_snippet": "- LLM contract autogen (taskx docs refresh-llm)",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "hook_id": "HOOK_e02488576da9",
           "kind": "wrapper",
@@ -740,7 +740,7 @@
             "anchor": "L47",
             "excerpt_hash": "471de4efb1d700bdc858497cf9e590569066ba377d9bd0fb70a3cfee2ea38568",
             "excerpt_snippet": "If branch isolation violated -> refuse.",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_095c04187fe0"
@@ -757,7 +757,7 @@
             "anchor": "L46",
             "excerpt_hash": "304c2c94ac88830f6862b6d1e86028c4f2aa35c70f27e083841783a327ba8d42",
             "excerpt_snippet": "If scope is ambiguous -> refuse.",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_95e268630ff9"
@@ -774,7 +774,7 @@
             "anchor": "L48",
             "excerpt_hash": "325c038d3f287f1961667ae6ca6e80d3078336418f82d83eef1b281217a2f723",
             "excerpt_snippet": "If determinism at risk -> refuse.",
-            "path": "docs/thread-primer-taskx.md"
+            "path": "docs/THREAD_PRIMER_TASKX.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_cd169e658170"
@@ -789,7 +789,7 @@
         "anchor": "L1",
         "excerpt_hash": "4ca3bbf919ccaaa9b000e4e6f6661f464ae50ec7fb7618ce8341098115858afe",
         "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries **Outputs:** `LLM_POLICY_GATES.json`",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "group_id": "GROUP_09de928f61b6",
       "hooks": [
@@ -820,7 +820,7 @@
             "anchor": "L24",
             "excerpt_hash": "7d4c3b13afe3d2de4cbb4c4a5c0e156b86c93a3d1d02f8d4c289546d47549cb6",
             "excerpt_snippet": "- `AUTHORITY`, `TRINITY`, `EVENTBUS`, `TASKX`, `MCP`, `HOOK`",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "hook_id": "HOOK_a05ad6dc0864",
           "kind": "wrapper",
@@ -855,7 +855,7 @@
             "anchor": "L29",
             "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
             "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "hook_id": "HOOK_a957e6af0d3a",
           "kind": "other",
@@ -882,7 +882,7 @@
             "anchor": "L29",
             "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
             "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_dd8299b36bb0"
@@ -35792,7 +35792,7 @@
         "anchor": "L1",
         "excerpt_hash": "4ca3bbf919ccaaa9b000e4e6f6661f464ae50ec7fb7618ce8341098115858afe",
         "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries **Outputs:** `LLM_POLICY_GATES.json`",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
       "group_id": "GROUP_a5ce558df27b",
       "hooks": [
@@ -35823,7 +35823,7 @@
             "anchor": "L24",
             "excerpt_hash": "7d4c3b13afe3d2de4cbb4c4a5c0e156b86c93a3d1d02f8d4c289546d47549cb6",
             "excerpt_snippet": "- `AUTHORITY`, `TRINITY`, `EVENTBUS`, `TASKX`, `MCP`, `HOOK`",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "hook_id": "HOOK_6b3370f2f01f",
           "kind": "wrapper",
@@ -35858,7 +35858,7 @@
             "anchor": "L29",
             "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
             "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "hook_id": "HOOK_bbbe58a76697",
           "kind": "other",
@@ -35885,7 +35885,7 @@
             "anchor": "L29",
             "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
             "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_69ba5b68d442"
@@ -56648,9 +56648,9 @@
       ".taskx/instructions/taskx_bundle.yaml",
       ".taskx/project.json",
       "AGENTS.md",
-      "docs/thread-primer-taskx.md",
-      "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
-      "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
+      "docs/THREAD_PRIMER_TASKX.md",
+      "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
+      "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md",
       "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md",
       "docs/planes/pm/dopemux/doc-gate-2.md",
       "scripts/doc_gate.py",

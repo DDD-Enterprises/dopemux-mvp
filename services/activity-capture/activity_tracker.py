@@ -7,6 +7,29 @@ Tracks development activity and sends to ADHD Engine for accommodation adjustmen
 import asyncio
 import json
 import logging
+import sys
+from pathlib import Path
+
+def _configure_import_paths() -> Path:
+    current = Path(__file__).resolve()
+    candidates = [current.parent, *current.parents]
+    repo_root = next(
+        (
+            candidate for candidate in candidates
+            if (candidate / "services" / "shared").exists() or (candidate / "src" / "dopemux").exists()
+        ),
+        current.parent,
+    )
+    for path in (repo_root, repo_root / "src"):
+        path_str = str(path)
+        if path.exists() and path_str not in sys.path:
+            sys.path.insert(0, path_str)
+    return repo_root
+
+
+REPO_ROOT = _configure_import_paths()
+
+from services.shared.brand_voice import StatusChip, brand_log
 import time
 from collections import defaultdict
 from typing import Dict, Any, List
@@ -43,10 +66,12 @@ class ActivityTracker:
         self.workspace_switches = 0
         self.task_updates = 0
         self.break_events = 0
+        self.activities_logged = 0
+        self.summaries_sent = 0
 
     async def handle_workspace_switch(self, event_data: dict):
         """Handle workspace switch event."""
-        logger.info(f"Workspace switch: {event_data}")
+        logger.info(brand_log(f"Workspace switch: {event_data}", chip=StatusChip.LIVE))
 
         self.workspace_switches += 1
 
@@ -58,10 +83,11 @@ class ActivityTracker:
             "to_workspace": event_data.get("to_workspace"),
             "from_app": event_data.get("from_app"),
             "to_app": event_data.get("to_app"),
-            "file_activity": event_data.get("file_activity", {})
+            "file_activity": event_data.get("file_activity", {}),
         }
 
         self.pending_activities.append(activity)
+        self.activities_logged += 1
 
         # Check if we should aggregate and send
         await self._check_and_aggregate()
@@ -82,10 +108,11 @@ class ActivityTracker:
         }
 
         self.pending_activities.append(activity)
+        self.activities_logged += 1
 
     async def handle_session_start(self, event_data: dict):
         """Handle session start event."""
-        logger.info(f"Session started: {event_data}")
+        logger.info(brand_log(f"Session started: {event_data}", chip=StatusChip.LIVE))
 
         self.current_session = event_data.get("session_id", "unknown")
         self.session_start_time = time.time()
@@ -98,7 +125,7 @@ class ActivityTracker:
 
     async def handle_break_taken(self, event_data: dict):
         """Handle break taken event."""
-        logger.info(f"Break taken: {event_data}")
+        logger.info(brand_log(f"Break taken: {event_data}", chip=StatusChip.LIVE))
 
         self.break_events += 1
 
@@ -111,13 +138,14 @@ class ActivityTracker:
         }
 
         self.pending_activities.append(activity)
+        self.activities_logged += 1
 
         # Send break data to ADHD Engine immediately
         await self.adhd_client.send_activity_data({
-            "type": "break_taken",
-            "session_id": self.current_session,
-            "break_duration": activity["duration_minutes"],
-            "timestamp": activity["timestamp"]
+            "completion_rate": None,
+            "context_switches": self.workspace_switches,
+            "break_compliance": 1.0,
+            "minutes_since_break": 0,
         })
 
     async def _check_and_aggregate(self):
@@ -140,26 +168,23 @@ class ActivityTracker:
 
         # Aggregate activity data
         activity_summary = {
-            "session_id": self.current_session,
-            "time_window_seconds": self.aggregation_window_seconds,
-            "session_duration_minutes": session_duration / 60,
-            "workspace_switches": self.workspace_switches,
-            "task_updates": self.task_updates,
-            "break_events": self.break_events,
-            "total_activities": len(self.pending_activities),
-            "timestamp": time.time()
+            "completion_rate": self._calculate_completion_rate(),
+            "context_switches": self.workspace_switches,
+            "break_compliance": self._calculate_break_compliance(),
+            "minutes_since_break": self._calculate_minutes_since_break(),
         }
 
         # Send to ADHD Engine
         try:
             await self.adhd_client.send_activity_data(activity_summary)
-            logger.info(f"Sent activity summary: {activity_summary}")
+            logger.info(brand_log(f"Sent activity summary: {activity_summary}", chip=StatusChip.LIVE))
+            self.summaries_sent += 1
 
             # Clear pending activities after successful send
             self.pending_activities = []
 
         except Exception as e:
-            logger.error(f"Failed to send activity data: {e}")
+            logger.error(brand_log(f"Failed to send activity data: {e}", chip=StatusChip.BLOCKER))
 
     async def flush_all(self):
         """Flush all pending activities (for shutdown)."""
@@ -180,5 +205,28 @@ class ActivityTracker:
             "task_updates": self.task_updates,
             "break_events": self.break_events,
             "pending_activities": len(self.pending_activities),
-            "last_aggregation_time": self.last_aggregation_time
+            "last_aggregation_time": self.last_aggregation_time,
+            "activities_logged": self.activities_logged,
+            "session_active": self.current_session is not None,
+            "summaries_sent": self.summaries_sent,
         }
+
+    def _calculate_completion_rate(self) -> float:
+        total_updates = self.task_updates + self.break_events + self.workspace_switches
+        if total_updates <= 0:
+            return 0.0
+        return min(1.0, self.task_updates / total_updates)
+
+    def _calculate_break_compliance(self) -> float:
+        if not self.current_session:
+            return 1.0
+        expected_breaks = max(1, int(((time.time() - (self.session_start_time or time.time())) / 60) // 60) + 1)
+        return min(1.0, self.break_events / expected_breaks)
+
+    def _calculate_minutes_since_break(self) -> int:
+        for activity in reversed(self.pending_activities):
+            if activity.get("type") == "break_taken":
+                return int((time.time() - activity["timestamp"]) / 60)
+        if self.session_start_time:
+            return int((time.time() - self.session_start_time) / 60)
+        return 0

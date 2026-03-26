@@ -26,95 +26,231 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Color Constants: Pastel Neon Dreams Against Rich Black
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-# ── Neon family ──
-RITUAL_CYAN = "#00FFFF"      # Pure Neon Cyan
-GREMLIN_PINK = "#FF00FF"     # Pure Neon Magenta
-MINT_BRIGHT = "#B2FFFF"      # Pastel Cyan
-SERUM_MINT = "#7FFFD4"       # Aquamarine / Pastel Green
-VIOLET_PASTEL = "#FFB2FF"    # Pastel Magenta
-ERROR_HOT_PINK = "#FF69B4"   # Hot Pink (Pastel Red)
-
-# ── Surfaces ──
-INK_BLACK = "#000000"        # Rich Black
-VOID_NAVY = "#080808"        # Deep Charcoal
-VELVET_PLUM = "#1A001A"      # Deepest Purple
-
-# ── Text hierarchy ──
-TEXT_PRIMARY = "#E5E5E5"     # Light Grey
-TEXT_SECONDARY = "#A9A9A9"   # Dark Grey
-TEXT_EMPHASIS = "#FFFFFF"    # Pure White
-TEXT_DISABLED = "#4D4D4D"    # Muted Grey
+def get_active_theme_name() -> str:
+    """Return the name of the active theme from environment, config, or default."""
+    env_theme = os.environ.get("DOPEMUX_THEME")
+    if env_theme:
+        return env_theme.lower()
+    
+    try:
+        from dopemux.config.manager import ConfigManager
+        config = ConfigManager().load_config()
+        return config.theme.lower()
+    except Exception:
+        return "pastel-neon-dreams"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Rich Theme
+# Dynamic Color Palette (Legacy / Compatibility)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-DOPEMUX_THEME = Theme(
-    {
-        # ── Mint/Cyan family (hero) ──
-        "mint": f"bold {RITUAL_CYAN}",
-        "mint.soft": SERUM_MINT,
-        "mint.bright": f"bold {MINT_BRIGHT}",
-        "mint.dim": TEXT_SECONDARY,
-        # ── Accent pops ──
-        "magenta": f"bold {GREMLIN_PINK}",
-        "violet": VIOLET_PASTEL,
-        "violet.dim": "#800080",
-        "gremlin.pink": GREMLIN_PINK,
-        # ── Text hierarchy ──
-        "text": TEXT_PRIMARY,
-        "text.dim": TEXT_SECONDARY,
-        "text.muted": TEXT_SECONDARY,
-        "text.disabled": TEXT_DISABLED,
-        "text.emphasis": f"bold {TEXT_EMPHASIS}",
-        # ── Headings ──
-        "heading": f"bold {RITUAL_CYAN}",
-        "subheading": f"bold {SERUM_MINT}",
-        "label": TEXT_SECONDARY,
-        # ── Status (semantic) ──
-        "success": SERUM_MINT,
-        "error": f"bold {ERROR_HOT_PINK}",
-        "warning": "#FFFFE0", # Light Yellow for contrast
-        "info": MINT_BRIGHT,
-        "debug": VIOLET_PASTEL,
-        "hazard": "#FFFFE0",
-        "gilt.edge": "#FFFFE0",
-        # ── Status chips ──
-        "chip.live": f"bold {RITUAL_CYAN}",
-        "chip.override": "bold #FFFFE0",
-        "chip.blocker": f"bold {ERROR_HOT_PINK}",
-        "chip.logged": SERUM_MINT,
-        "chip.aftercare": VIOLET_PASTEL,
-        "chip.edge": f"bold {MINT_BRIGHT}",
-        # ── Surfaces ──
-        "surface.black": INK_BLACK,
-        "surface.navy": VOID_NAVY,
-        "surface.plum": VELVET_PLUM,
-        # ── Tables ──
-        "table.header": f"bold {RITUAL_CYAN}",
-        "table.border": TEXT_SECONDARY,
-        "table.row.alt": f"on {VOID_NAVY}",
-        # ── Panels ──
-        "panel.border": RITUAL_CYAN,
-        "panel.title": f"bold {MINT_BRIGHT}",
-        # ── Progress ──
-        "bar.complete": RITUAL_CYAN,
-        "bar.remaining": VOID_NAVY,
-        "bar.pulse": GREMLIN_PINK,
-        "spinner": RITUAL_CYAN,
-        # ── Severity ──
-        "severity.healthy": SERUM_MINT,
-        "severity.warning": "#FFFFE0",
-        "severity.critical": f"bold {ERROR_HOT_PINK}",
-        "severity.unknown": TEXT_DISABLED,
-        # ── Rule lines ──
-        "rule.line": TEXT_SECONDARY,
+# These are maintained for modules like tmux/theme.py that import them directly.
+# They are now dynamic properties that reflect the active theme.
+
+_PALETTES = {
+    "mint-mojo": {
+        "cyan": "#7DFBF6", "mint": "#94FADB", "pink": "#FF8BD1", "violet": "#9B78FF", 
+        "gold": "#F5F26D", "black": "#020617", "navy": "#041628", "grey": "#94A3B8"
+    },
+    "pastel-neon-dreamscape": {
+        "cyan": "#00FFFF", "mint": "#66FF66", "pink": "#FF00FF", "violet": "#FF66FF",
+        "gold": "#FFFF00", "black": "#000000", "navy": "#080808", "grey": "#A9A9A9"
+    },
+    "pastel-neon-dreams": {
+        "cyan": "#00FFFF", "mint": "#7FFFD4", "pink": "#FF69B4", "violet": "#FFB2FF",
+        "gold": "#FFFFE0", "black": "#000000", "navy": "#080808", "grey": "#A9A9A9"
     }
-)
+}
+
+_active_palette = _PALETTES.get(get_active_theme_name(), _PALETTES["pastel-neon-dreams"])
+
+RITUAL_CYAN = _active_palette["cyan"]
+SERUM_MINT = _active_palette["mint"]
+MINT_BRIGHT = _active_palette["cyan"]
+MINT_DIM = _active_palette["grey"]
+GREMLIN_PINK = _active_palette["pink"]
+AFTERCARE_VIOLET = _active_palette["violet"]
+VIOLET_DIM = "#800080"
+GILT_EDGE = _active_palette["gold"]
+SAINT_GOLD = "#FFCF78"
+INK_BLACK = _active_palette["black"]
+VOID_NAVY = _active_palette["navy"]
+VELVET_PLUM = "#1A001A"
+TEXT_PRIMARY = "#E5E5E5"
+TEXT_SECONDARY = _active_palette["grey"]
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Theme Definitions & Multi-Theme Engine
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def build_theme(name: str) -> Theme:
+    """Construct a Rich Theme object for the specified palette."""
+    if name == "mint-mojo":
+        return Theme({
+            "mint": "bold #7DFBF6",
+            "mint.soft": "#94FADB",
+            "mint.bright": "bold #B4FFEE",
+            "mint.dim": "#4A9E94",
+            "magenta": "bold #FF8BD1",
+            "violet": "#9B78FF",
+            "violet.dim": "#6B4FBF",
+            "text": "#E2E8F0",
+            "text.dim": "#94A3B8",
+            "text.muted": "#64748B",
+            "text.disabled": "#475569",
+            "text.emphasis": "bold #94FADB",
+            "heading": "bold #7DFBF6",
+            "subheading": "bold #94FADB",
+            "label": "#94A3B8",
+            "success": "#94FADB",
+            "error": "bold #FF8BD1",
+            "warning": "#F5F26D",
+            "gold": "#F5F26D",
+            "amber": "#FFCF78",
+            "info": "#7DFBF6",
+            "debug": "#9B78FF",
+            "hazard": "#F5F26D",
+            "gilt.edge": "#F5F26D",
+            "chip.live": "bold #7DFBF6",
+            "chip.override": "bold #F5F26D",
+            "chip.blocker": "bold #FF8BD1",
+            "chip.logged": "#94FADB",
+            "chip.aftercare": "#9B78FF",
+            "chip.edge": "bold #7DFBF6",
+            "table.header": "bold #7DFBF6",
+            "table.border": "#4A9E94",
+            "table.row.alt": "on #041628",
+            "panel.border": "#4A9E94",
+            "panel.title": "bold #94FADB",
+            "bar.complete": "#7DFBF6",
+            "bar.remaining": "#1A0520",
+            "bar.pulse": "#FF8BD1",
+            "spinner": "#7DFBF6",
+            "severity.healthy": "#94FADB",
+            "severity.warning": "#F5F26D",
+            "severity.critical": "bold #FF8BD1",
+            "severity.unknown": "#64748B",
+            "rule.line": "#4A9E94",
+            "surface.black": "#020617",
+            "surface.navy": "#041628",
+            "surface.plum": "#1A0520",
+            "bg.black": "on #020617",
+            "bg.navy": "on #041628",
+            "row.active": "bold #94FADB on #041628",
+        })
+    elif name == "pastel-neon-dreamscape":
+        # New Theme: Pastel Neon Dreamscape on Black
+        # Colors: #00FFFF, #FF00FF, #FFFF00, #00FF00, #66FFFF, #FF66FF, #FFFF66, #66FF66, #333333, #000000
+        return Theme({
+            "mint": "bold #00FFFF",
+            "mint.soft": "#66FFFF",
+            "mint.bright": "bold #00FFFF",
+            "mint.dim": "#A9A9A9",
+            "magenta": "bold #FF00FF",
+            "violet": "#FF66FF",
+            "violet.dim": "#800080",
+            "text": "#E5E5E5",
+            "text.dim": "#A9A9A9",
+            "text.muted": "#A9A9A9",
+            "text.disabled": "#333333",
+            "text.emphasis": "bold #FFFFFF",
+            "heading": "bold #00FFFF",
+            "subheading": "bold #66FF66",
+            "label": "#A9A9A9",
+            "success": "#00FF00",
+            "success.soft": "#66FF66",
+            "error": "bold #FF00FF",
+            "warning": "#FFFF00",
+            "gold": "#FFFF00",
+            "amber": "#FFFF66",
+            "warning.soft": "#FFFF66",
+            "info": "#66FFFF",
+            "debug": "#FF66FF",
+            "hazard": "#FFFF00",
+            "gilt.edge": "#FFFF00",
+            "chip.live": "bold #00FFFF",
+            "chip.override": "bold #FFFF00",
+            "chip.blocker": "bold #FF00FF",
+            "chip.logged": "#66FF66",
+            "chip.aftercare": "#FF66FF",
+            "chip.edge": "bold #66FFFF",
+            "table.header": "bold #00FFFF",
+            "table.border": "#333333",
+            "table.row.alt": "on #080808",
+            "panel.border": "#00FFFF",
+            "panel.title": "bold #66FFFF",
+            "bar.complete": "#00FFFF",
+            "bar.remaining": "#333333",
+            "bar.pulse": "#FF00FF",
+            "spinner": "#00FFFF",
+            "severity.healthy": "#00FF00",
+            "severity.warning": "#FFFF00",
+            "severity.critical": "bold #FF00FF",
+            "severity.unknown": "#333333",
+            "rule.line": "#333333",
+            "surface.black": "#000000",
+            "surface.navy": "#080808",
+            "surface.plum": "#1A001A",
+            "bg.black": "on #000000",
+            "bg.navy": "on #080808",
+            "row.active": "bold #FFFFFF on #080808",
+        })
+    else:
+        # Default: Pastel Neon Dreams (Current product theme)
+        return Theme({
+            "mint": "bold #00FFFF",
+            "mint.soft": "#7FFFD4",
+            "mint.bright": "bold #B2FFFF",
+            "mint.dim": "#A9A9A9",
+            "magenta": "bold #FF00FF",
+            "violet": "#FFB2FF",
+            "violet.dim": "#800080",
+            "gremlin.pink": "#FF00FF",
+            "text": "#E5E5E5",
+            "text.dim": "#A9A9A9",
+            "text.muted": "#A9A9A9",
+            "text.disabled": "#4D4D4D",
+            "text.emphasis": "bold #FFFFFF",
+            "heading": "bold #00FFFF",
+            "subheading": "bold #7FFFD4",
+            "label": "#A9A9A9",
+            "success": "#7FFFD4",
+            "error": "bold #FF69B4",
+            "warning": "#FFFFE0",
+            "gold": "#FFFFE0",
+            "amber": "#FFCF78",
+            "info": "#B2FFFF",
+            "debug": "#FFB2FF",
+            "hazard": "#FFFFE0",
+            "gilt.edge": "#FFFFE0",
+            "chip.live": "bold #00FFFF",
+            "chip.override": "bold #FFFFE0",
+            "chip.blocker": "bold #FF69B4",
+            "chip.logged": "#7FFFD4",
+            "chip.aftercare": "#FFB2FF",
+            "chip.edge": "bold #B2FFFF",
+            "table.header": "bold #00FFFF",
+            "table.border": "#A9A9A9",
+            "table.row.alt": "on #080808",
+            "panel.border": "#00FFFF",
+            "panel.title": "bold #B2FFFF",
+            "bar.complete": "#00FFFF",
+            "bar.remaining": "#080808",
+            "bar.pulse": "#FF00FF",
+            "spinner": "#00FFFF",
+            "severity.healthy": "#7FFFD4",
+            "severity.warning": "#FFFFE0",
+            "severity.critical": "bold #FF69B4",
+            "severity.unknown": "#4D4D4D",
+            "rule.line": "#A9A9A9",
+            "surface.black": "#000000",
+            "surface.navy": "#080808",
+            "surface.plum": "#1A001A",
+            "bg.black": "on #000000",
+            "bg.navy": "on #080808",
+            "row.active": "bold #FFFFFF on #080808",
+        })
+
+DOPEMUX_THEME = build_theme(get_active_theme_name())
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

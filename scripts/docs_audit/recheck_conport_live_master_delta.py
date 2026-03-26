@@ -122,7 +122,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--master-doc",
-        default="docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md",
+        default="docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06-2.md",
         help="Master matrix document used for coverage checks.",
     )
     parser.add_argument(

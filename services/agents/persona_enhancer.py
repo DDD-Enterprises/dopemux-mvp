@@ -10,6 +10,15 @@ import logging
 from pathlib import Path
 from typing import Dict, List
 
+import sys
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from dopemux.voice import inject_voice_header, validate_or_fallback
+
 logger = logging.getLogger(__name__)
 
 # 16 SuperClaude Personas to Enhance
@@ -249,7 +258,28 @@ tools = await tool_orchestrator.select_tools_for_task(
 **ADHD**: Fully optimized
 """
 
-        return doc
+        return validate_or_fallback(
+            inject_voice_header(doc, surface="agent"),
+            surface="agent",
+            fallback=self._fallback_persona_doc(name, focus),
+        )
+
+    def _fallback_persona_doc(self, name: str, focus: str) -> str:
+        """Return a deterministic persona brief if voice validation fails."""
+        fallback_doc = f"""# {name.replace('-', ' ').title()} Persona (Dopemux-Enhanced)
+
+## Mission Lock
+
+FACT: This persona covers {focus}.
+INFERENCE: The full enhancement draft drifted outside the Dopemux voice gate.
+UNKNOWN: The safe long-form expansion for this persona.
+
+## NEXT
+
+- Rebuild the persona brief with the shared agent header.
+- Keep the guidance direct, evidence-backed, and ADHD-aware.
+"""
+        return inject_voice_header(fallback_doc, surface="agent")
 
     def _generate_tool_preferences(self, tools: List[str]) -> str:
         """Generate tool preference section"""
@@ -444,7 +474,7 @@ workflow = await workflow_coord.start_workflow(workflow_type, description)
 
             # Save to file
             output_file = self.output_dir / f"{name}-dopemux.md"
-            output_file.write_text(enhanced_doc)
+            output_file.write_text(enhanced_doc, encoding="utf-8")
 
             enhanced_count += 1
             logger.info(f"   ✅ Created: {output_file}")

@@ -9,6 +9,29 @@ ADHD Benefit: Know which workspace you're in based on active application.
 
 import json
 import logging
+import sys
+from pathlib import Path
+
+def _configure_import_paths() -> Path:
+    current = Path(__file__).resolve()
+    candidates = [current.parent, *current.parents]
+    repo_root = next(
+        (
+            candidate for candidate in candidates
+            if (candidate / "services" / "shared").exists() or (candidate / "src" / "dopemux").exists()
+        ),
+        current.parent,
+    )
+    for path in (repo_root, repo_root / "src"):
+        path_str = str(path)
+        if path.exists() and path_str not in sys.path:
+            sys.path.insert(0, path_str)
+    return repo_root
+
+
+REPO_ROOT = _configure_import_paths()
+
+from services.shared.brand_voice import StatusChip, brand_log
 from pathlib import Path
 from typing import Optional, Dict
 
@@ -41,7 +64,7 @@ class WorkspaceMapper:
             config_file = Path(__file__).parent / self.config_path
 
             if not config_file.exists():
-                logger.warning(f"Config file not found: {config_file}, using defaults")
+                logger.warning(brand_log(f"Config file not found: {config_file}, using defaults", chip=StatusChip.AFTERCARE))
                 self._load_defaults()
                 return
 
@@ -51,10 +74,10 @@ class WorkspaceMapper:
             self.mappings = config.get("app_mappings", {})
             self.default_workspace = config.get("default_workspace", None)
 
-            logger.info(f"Loaded {len(self.mappings)} app mappings from {config_file}")
+            logger.info(brand_log(f"Loaded {len(self.mappings)} app mappings from {config_file}", chip=StatusChip.LIVE))
 
         except Exception as e:
-            logger.error(f"Failed to load config: {e}, using defaults")
+            logger.error(brand_log(f"Failed to load config: {e}, using defaults", chip=StatusChip.BLOCKER))
             self._load_defaults()
 
     def _load_defaults(self):
@@ -124,5 +147,5 @@ class WorkspaceMapper:
 
     def reload_config(self):
         """Reload config file (useful for live updates)"""
-        logger.info("Reloading workspace mappings...")
+        logger.info(brand_log("Reloading workspace mappings...", chip=StatusChip.LIVE))
         self._load_config()

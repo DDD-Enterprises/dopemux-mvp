@@ -57,6 +57,7 @@ from ..domains.task_enablement.decomposition_coordinator import DecompositionCoo
 from ..domains.task_enablement.working_memory_support import WorkingMemorySupport
 from ..domains.task_enablement.voice_assistant import VoiceAssistant
 from ..domains.task_enablement.task_decomposition_event_listener import TaskDecompositionEventListener
+from services.shared.brand_voice import StatusChip, brand_list, brand_text, brand_title
 
 # Event Listener
 from ..event_listener import ADHDEventListener
@@ -1137,6 +1138,8 @@ Format: {{
                 cognitive_benefit="Prevents burnout and maintains sustained productivity",
                 implementation_effort="minimal"
             )
+            message = break_recommendation.message
+            break_suggestions = break_recommendation.suggested_actions
 
             # Store recommendation
             if user_id not in self.active_accommodations:
@@ -1172,8 +1175,11 @@ Format: {{
                 await self._send_mobile_notification(
                     user_id=user_id,
                     notification_type="break",
-                    title="Break Time! ⏰",
-                    message=f"Time for a {work_duration:.0f}-minute break! Try: {break_suggestions[0] if break_suggestions else 'Take a short break'}",
+                    title=brand_title("Break check", chip=StatusChip.AFTERCARE),
+                    message=brand_text(
+                        f"Time for a {work_duration:.0f}-minute break. Try {break_suggestions[0] if break_suggestions else 'a short reset'}.",
+                        chip=StatusChip.AFTERCARE,
+                    ),
                     duration=5,
                     activity=break_suggestions[0] if break_suggestions else "Take a short break"
                 )
@@ -1526,10 +1532,13 @@ Format: {{
                 await self._send_mobile_notification(
                     user_id=user_id,
                     notification_type="energy",
-                    title="Energy Alert ⚡",
-                    message=f"Your energy level is {current.value.lower()}. Suggestions: {', '.join(suggestions[:2])}",
+                    title=brand_title("Energy alert", chip=StatusChip.EDGE),
+                    message=brand_text(
+                        f"Energy is {current.value.lower()}. Next moves: {', '.join(suggestions[:2])}.",
+                        chip=StatusChip.EDGE,
+                    ),
                     energy_level=current.value.lower(),
-                    suggestions=suggestions
+                    suggestions=brand_list(suggestions, chip=StatusChip.EDGE)
                 )
                 logger.info(f"📱 Mobile energy alert sent for {user_id}: {current.value}")
             except Exception as e:
@@ -1562,8 +1571,8 @@ Format: {{
         notification = {
             "user_id": user_id,
             "type": notification_type,
-            "title": title,
-            "message": message,
+            "title": title if title.startswith("[") else brand_title(title, chip=StatusChip.LIVE),
+            "message": message if message.startswith("[") else brand_text(message, chip=StatusChip.LIVE),
             "timestamp": datetime.now(timezone.utc).isoformat(),
             **kwargs
         }
@@ -1610,12 +1619,26 @@ Format: {{
 
             base_load = (energy_load_map.get(energy_level, 0.5) + attention_load_map.get(attention_state, 0.4)) / 2.0
 
-            # Add dynamic factors if available (e.g. context switches)
             activity_data = await self._get_recent_activity(user_id)
-            context_switches = activity_data.get("context_switches", 0)
-            switch_penalty = min(context_switches * 0.05, 0.2)
+            context_switches = float(activity_data.get("context_switches", 0))
+            familiarity_score = float(activity_data.get("familiarity_score", activity_data.get("completion_rate", 0.5)))
+            recent_complexity = float(activity_data.get("complexity_avg_30min", 0.5))
+            break_compliance = float(activity_data.get("break_compliance", 0.8))
+            minutes_since_break = float(activity_data.get("minutes_since_break", 30))
 
-            return min(1.0, base_load + switch_penalty)
+            switch_penalty = min(context_switches * 0.06, 0.3)
+            complexity_pressure = min(recent_complexity * 0.2, 0.2)
+            break_penalty = max(0.0, (1.0 - break_compliance) * 0.15)
+            fatigue_penalty = 0.1 if minutes_since_break > 60 else 0.0
+            familiarity_relief = max(0.0, (familiarity_score - 0.5) * 0.25)
+
+            return min(
+                1.0,
+                max(
+                    0.0,
+                    base_load + switch_penalty + complexity_pressure + break_penalty + fatigue_penalty - familiarity_relief,
+                ),
+            )
         except Exception as e:
             logger.error(f"Error calculating cognitive load for {user_id}: {e}")
             return 0.5
@@ -1694,7 +1717,12 @@ Format: {{
                     "cognitive_load": cognitive_load,
                     "session_duration_minutes": session_duration,
                     "tasks_completed_today": tasks_completed,
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "recommendation": (
+                        self.active_accommodations[user_id][0].message
+                        if self.active_accommodations.get(user_id)
+                        else brand_text("Continue current workflow.", chip=StatusChip.LOGGED)
+                    ),
                 }
             }
             

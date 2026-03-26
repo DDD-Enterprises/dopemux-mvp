@@ -1,0 +1,129 @@
+# Leantime Truth Pack — Inspected Files
+
+## Core Framework
+- app/Core/Http/HttpKernel.php (middleware stack, routing)
+- app/Core/Events/EventDispatcher.php (event system)
+- app/Core/Controller/Frontcontroller.php (legacy routing)
+- app/Core/Controller/HtmxController.php (HTMX base)
+- app/Core/Configuration/DefaultConfig.php (default settings)
+- app/Core/Configuration/Environment.php (env loading)
+- app/Core/Configuration/AppSettings.php (version info)
+- app/Core/Configuration/laravelConfig.php (Laravel config)
+- app/Core/Plugins/Plugins.php (plugin infrastructure)
+- app/Core/Auth/AuthenticationServiceProvider.php (auth setup)
+- app/Core/Db/Repository.php (base repository)
+- app/Core/UI/Template.php (template engine)
+- app/Core/UI/Theme.php (theme system)
+
+## Domain: Api
+- app/Domain/Api/Controllers/Jsonrpc.php (JSON-RPC routing)
+- app/Domain/Api/Controllers/*.php (37 legacy REST controllers)
+- app/Domain/Api/Repositories/Api.php
+
+## Domain: Auth
+- app/Domain/Auth/Models/Roles.php (role definitions)
+- app/Domain/Auth/Models/CurrentUser.php (user model)
+- app/Domain/Auth/Services/Auth.php (auth service)
+- app/Domain/Auth/Guards/WebGuard.php
+- app/Domain/Auth/Guards/ApiGuard.php
+- app/Domain/Auth/register.php
+
+## Domain: Tickets
+- app/Domain/Tickets/Models/Tickets.php (ticket model)
+- app/Domain/Tickets/Models/TicketDesignTokens.php (design tokens)
+- app/Domain/Tickets/Repositories/Tickets.php (statuses, types, priorities)
+- app/Domain/Tickets/Services/Tickets.php (business logic)
+- app/Domain/Tickets/Htmx/HtmxTicketEvents.php (HTMX events)
+- app/Domain/Tickets/Hxcontrollers/*.php (4 controllers)
+
+## Domain: Projects
+- app/Domain/Projects/Models/Project.php
+- app/Domain/Projects/Repositories/Projects.php
+- app/Domain/Projects/Services/Projects.php
+- app/Domain/Projects/Hxcontrollers/*.php (4 controllers)
+
+## Domain: Sprints
+- app/Domain/Sprints/Models/Sprints.php
+- app/Domain/Sprints/Services/Sprints.php
+
+## Domain: Users
+- app/Domain/Users/Services/Users.php
+- app/Domain/Users/Repositories/Users.php
+
+## Domain: Canvas (base + variants)
+- app/Domain/Canvas/Services/Canvas.php
+- app/Domain/Canvas/Repositories/Canvas.php
+- app/Domain/Goalcanvas/Repositories/Goalcanvas.php
+- app/Domain/Leancanvas/Repositories/Leancanvas.php
+- app/Domain/Retroscanvas/Repositories/Retroscanvas.php
+- app/Domain/Riskscanvas/Repositories/Riskscanvas.php
+
+## Domain: Wiki
+- app/Domain/Wiki/Models/Wiki.php, Article.php, Template.php
+- app/Domain/Wiki/Services/Wiki.php
+
+## Domain: Files
+- app/Domain/Files/Services/Files.php
+- app/Domain/Files/Repositories/Files.php
+- app/Domain/Files/routes.php
+- app/Domain/Files/Events/FileUploaded.php
+
+## Domain: Timesheets
+- app/Domain/Timesheets/Services/Timesheets.php
+- app/Domain/Timesheets/Repositories/Timesheets.php
+
+## Domain: Comments
+- app/Domain/Comments/Services/Comments.php
+
+## Domain: Notifications
+- app/Domain/Notifications/Models/Notification.php
+- app/Domain/Notifications/Services/Notifications.php
+- app/Domain/Notifications/register.php
+
+## Domain: Queue
+- app/Domain/Queue/Services/Queue.php
+- app/Domain/Queue/register.php
+
+## Domain: Reports
+- app/Domain/Reports/Services/Reports.php
+- app/Domain/Reports/register.php
+
+## Domain: Plugins
+- app/Domain/Plugins/Services/Plugins.php
+- app/Domain/Plugins/Services/Registration.php
+- app/Domain/Plugins/Models/InstalledPlugin.php
+- app/Domain/Plugins/register.php
+
+## Domain: Install
+- app/Domain/Install/Services/SchemaBuilder.php (database schema)
+- app/Domain/Install/Services/Install.php
+- app/Domain/Install/register.php
+
+## Domain: Connector
+- app/Domain/Connector/Services/Connector.php
+- app/Domain/Connector/Models/*.php
+
+## Domain: Other
+- app/Domain/Ideas/Services/Ideas.php
+- app/Domain/Reactions/Models/Reactions.php
+- app/Domain/Entityrelations/Services/Entityrelations.php
+- app/Domain/Audit/ (directory survey)
+- app/Domain/Oidc/Services/Oidc.php
+- app/Domain/TwoFA/ (directory survey)
+- app/Domain/Strategy/Controllers/ShowBoards.php
+- app/Domain/Setting/Services/Setting.php
+
+## Configuration
+- config/sample.env (all LEAN_* variables)
+- composer.json (dependencies)
+- package.json (frontend deps)
+- webpack.mix.js (build system)
+- makefile (build targets)
+
+## Build/Deploy
+- .dev/docker-compose.yaml
+- .dev/docker-compose.tests.yaml
+- .dev/dockerfile
+
+## CLI Commands
+- app/Command/*.php (17 commands)

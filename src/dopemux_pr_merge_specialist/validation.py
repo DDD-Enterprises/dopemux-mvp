@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .runtime import execute_or_dry_run, fingerprint_payload, shell_join
 from .schema import (
@@ -91,10 +91,10 @@ def run_validation(
     for step in steps_cfg:
         command = [str(part) for part in step.get("command", [])]
         name = str(step.get("name", "unnamed-step"))
-
+        
         if progress_callback:
             progress_callback(f"Running step: {name}", "INFO")
-
+            
         result = execute_or_dry_run(
             command,
             execute=True,
@@ -105,14 +105,12 @@ def run_validation(
             ),
         )
         status = "passed" if result.returncode == 0 else "failed"
-
+        
         if progress_callback:
             if status == "passed":
                 progress_callback(f"Step '{name}' PASSED", "SUCCESS")
             else:
-                progress_callback(
-                    f"Step '{name}' FAILED (Exit {result.returncode})", "ERROR"
-                )
+                progress_callback(f"Step '{name}' FAILED (Exit {result.returncode})", "ERROR")
 
         step_results.append(
             ValidationStepResult(

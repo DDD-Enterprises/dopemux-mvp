@@ -31,9 +31,46 @@ async def test_hooks():
     assert manager.is_hook_enabled('save')
     print("✅ Hook toggle test passed")
 
-    # Test hook triggering (should not block)
-    await manager.trigger_hook('save', {'file': 'test.py', 'language': 'python'})
-    print("✅ Hook trigger test passed")
+    # Test hook triggering (should return status)
+    result = await manager.trigger_hook('save', {'file': 'test.py', 'language': 'python'})
+    assert result['status'] == 'scheduled'
+    assert result['task'] == 'indexing'
+    print("✅ Hook trigger save test passed")
+
+    # Test terminal-open trigger
+    result = await manager.trigger_hook('terminal-open', {'name': 'test-terminal'})
+    assert result['status'] == 'scheduled'
+    assert result['task'] == 'context_load'
+    print("✅ Hook trigger terminal-open test passed")
+
+    # Enable git-commit for testing
+    manager.enable_hook('git-commit')
+
+    # Test git-commit blocking validation
+    # 1. Success case
+    result = await manager.trigger_hook('git-commit', {
+        'message': 'feat: support ADHD-optimized hooks',
+        'blocking': True
+    })
+    assert result['status'] == 'success'
+    print("✅ Hook trigger git-commit success test passed")
+
+    # 2. Warning case (placeholder found)
+    result = await manager.trigger_hook('git-commit', {
+        'message': 'WIP: fix TODO later',
+        'blocking': True
+    })
+    assert result['status'] == 'warning'
+    assert result['reason'] == 'placeholder_found'
+    print("✅ Hook trigger git-commit warning test passed")
+
+    # 3. Failure case (empty message)
+    result = await manager.trigger_hook('git-commit', {
+        'message': '',
+        'blocking': True
+    })
+    assert result['status'] == 'failed'
+    print("✅ Hook trigger git-commit failure test passed")
 
     print("🎉 Hook system tests completed successfully!")
 

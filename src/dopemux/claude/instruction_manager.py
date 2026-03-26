@@ -38,7 +38,10 @@ class InstructionManager:
             "plan": "task-planner",
             "act": "principal-software-engineer",
             "dev": "principal-software-engineer",
-            "quickfix": "janitor"
+            "quickfix": "janitor",
+            "workflow": "workflow-manager",
+            "manager": "workflow-manager",
+            "executor": "workflow-executor",
         }
         target_name = aliases.get(persona_name.lower(), persona_name)
         

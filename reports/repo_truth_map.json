@@ -557,6 +557,37 @@
       "phase": "C",
       "prompt_declared": {
         "expected_artifacts": [
+          "MODULE_DEPENDENCY_GRAPH.json",
+          "SERVICE_DEPENDENCY_GRAPH.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "C16",
+      "step_id": "C16"
+    },
+    {
+      "phase": "C",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "COGNITIVE_FEATURES_SURFACE.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "C17",
+      "step_id": "C17"
+    },
+    {
+      "phase": "C",
+      "prompt_declared": {
+        "expected_artifacts": [
           "CODE_INVENTORY.json",
           "CODE_PARTITIONS.json"
         ],

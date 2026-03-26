@@ -148,7 +148,7 @@ def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optiona
         # Print outside lock to avoid holding lock during I/O
         if cached_path:
             if not quiet:
-                console.logger.info(f"[dim]📍 Current worktree (cached): {cached_path}[/dim]")
+                console.logger.info(f"[text.dim]📍 Current worktree (cached): {cached_path}[/text.dim]")
             return cached_path
 
     # Detect worktree using git
@@ -169,21 +169,21 @@ def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optiona
                 _WORKTREE_CACHE["timestamp"] = time.time()
 
             if not quiet:
-                console.logger.info(f"[green]📍 Current worktree: {worktree_path}[/green]")
+                console.logger.info(f"[success]📍 Current worktree: {worktree_path}[/success]")
 
             return worktree_path
         else:
             if not quiet:
-                console.logger.info("[yellow]⚠️  Not in a git repository[/yellow]")
+                console.logger.info("[warning]⚠️  Not in a git repository[/warning]")
             return None
 
     except subprocess.TimeoutExpired:
         if not quiet:
-            console.logger.info("[red]❌ Git command timed out[/red]")
+            console.logger.info("[error]❌ Git command timed out[/error]")
         return None
     except Exception as e:
         if not quiet:
-            console.logger.error(f"[red]❌ Error detecting worktree: {e}[/red]")
+            console.logger.error(f"[error]❌ Error detecting worktree: {e}[/error]")
         return None
 
 
@@ -249,7 +249,7 @@ def get_worktrees(workspace_path: Path) -> List[Tuple[str, str, str]]:
         return worktrees
 
     except Exception as e:
-        console.logger.error(f"[red]Failed to list worktrees: {e}[/red]")
+        console.logger.error(f"[error]Failed to list worktrees: {e}[/error]")
         return []
 
 

@@ -22,8 +22,15 @@ import logging
 import argparse
 import signal
 import os
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from monitor import ADHDMonitor
+from services.shared.brand_voice import StatusChip, brand_log, voice_header
 
 # Configure logging
 logging.basicConfig(
@@ -48,14 +55,12 @@ async def run_notifier(
     adhd_engine_url = os.getenv("ADHD_ENGINE_URL", "http://localhost:8095")
     user_id = os.getenv("USER_ID", "hue")
 
-    logger.info("=" * 60)
-    logger.info("ADHD Notifier Service - Starting...")
-    logger.info("=" * 60)
-    logger.info(f"ADHD Engine: {adhd_engine_url}")
-    logger.info(f"User: {user_id}")
-    logger.info(f"Check interval: {check_interval}s")
-    logger.info(f"Notifications: {'enabled' if enable_notifications else 'disabled (test mode)'}")
-    logger.info("")
+    logger.info(voice_header("ADHD Notifier Service"))
+    logger.info(brand_log("Initiating satellite notification sequence.", chip=StatusChip.LIVE))
+    logger.info(brand_log(f"ADHD Engine coordinate: {adhd_engine_url}", chip=StatusChip.LOGGED))
+    logger.info(brand_log(f"User identity: {user_id}", chip=StatusChip.LOGGED))
+    logger.info(brand_log(f"Check frequency: {check_interval}s", chip=StatusChip.LOGGED))
+    logger.info(brand_log(f"Notifications: {'enabled' if enable_notifications else 'disabled (test mode)'}", chip=StatusChip.LOGGED))
 
     # Initialize monitor
     monitor = ADHDMonitor(
@@ -69,7 +74,7 @@ async def run_notifier(
     loop = asyncio.get_event_loop()
 
     def shutdown():
-        logger.info("Received shutdown signal")
+        logger.info(brand_log("Received shutdown signal.", chip=StatusChip.AFTERCARE))
         monitor.stop()
 
     for sig in (signal.SIGTERM, signal.SIGINT):
@@ -81,16 +86,13 @@ async def run_notifier(
 
     finally:
         # Show final metrics
-        logger.info("")
-        logger.info("=" * 60)
-        logger.info("ADHD Notifier - Shutdown")
-        logger.info("=" * 60)
+        logger.info(brand_log("ADHD Notifier - Sequence Terminated.", chip=StatusChip.AFTERCARE))
 
         metrics = monitor.get_metrics()
-        logger.info(f"Checks performed: {metrics['checks_performed']}")
-        logger.info(f"Break notifications: {metrics['break_notifications_sent']}")
-        logger.info(f"Hyperfocus alerts: {metrics['hyperfocus_notifications_sent']}")
-        logger.info("Shutdown complete")
+        logger.info(brand_log(f"Total checks performed: {metrics['checks_performed']}", chip=StatusChip.LOGGED))
+        logger.info(brand_log(f"Break reminders transmitted: {metrics['break_notifications_sent']}", chip=StatusChip.LOGGED))
+        logger.info(brand_log(f"Hyperfocus alerts engaged: {metrics['hyperfocus_notifications_sent']}", chip=StatusChip.LOGGED))
+        logger.info(brand_log("Shutdown complete. Ritual preserved.", chip=StatusChip.AFTERCARE))
 
 
 if __name__ == "__main__":

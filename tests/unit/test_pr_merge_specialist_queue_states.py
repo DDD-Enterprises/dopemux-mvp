@@ -1,11 +1,11 @@
-from dopemux_pr_merge_specialist.plan_builder import build_plan_result
-from dopemux_pr_merge_specialist.schema import (
+from src.dopemux_pr_merge_specialist.plan_builder import build_plan_result
+from src.dopemux_pr_merge_specialist.schema import (
     CheckSummary,
     PullRequestState,
     ValidationReport,
     ValidationStatus,
 )
-from dopemux_pr_merge_specialist.ux_engine import (
+from src.dopemux_pr_merge_specialist.ux_engine import (
     dashboard_status_icon,
     dashboard_status_kind,
 )

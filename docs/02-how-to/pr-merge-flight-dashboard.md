@@ -11,17 +11,11 @@ prelude: PR Merge Flight Dashboard (how-to) for dopemux documentation and develo
 ---
 # PR Merge Flight Dashboard Quickstart
 
-The PR Merge Flight Dashboard (`dopemux pr-merge flight`) is a persistent TUI for managing the pull request queue in real-time. It provides a visual representation of the queue and a tactical cockpit for active PR remediation, validation, approval, and merge-queue handoff.
+The PR Merge Flight Dashboard (`dopemux-pr-merge flight`) is a persistent TUI for managing the pull request queue in real-time. It provides a visual representation of the queue and a tactical cockpit for active PR remediation, validation, approval, and merge-queue handoff.
 
 ## Launching
 
 Run the following command from the repository root:
-
-```bash
-dopemux pr-merge flight
-```
-
-The package entrypoint remains available as a direct smoke path:
 
 ```bash
 dopemux-pr-merge flight

@@ -7,6 +7,41 @@
     "rule_id": "root-keeper"
   },
   {
+    "path": "docs/01-tutorials/EXAMPLES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/01-tutorials/INSTALLATION.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/01-tutorials/MULTI_PROJECT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/01-tutorials/PROFILES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/01-tutorials/START-HERE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/01-tutorials/extraction-quickstart.md",
     "zone": "active",
     "status": "ok",
@@ -15,20 +50,6 @@
   },
   {
     "path": "docs/01-tutorials/installation-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/01-tutorials/installation-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/01-tutorials/multi-project-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -70,13 +91,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/01-tutorials/profiles-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/01-tutorials/quick-launch-commands.md",
     "zone": "active",
     "status": "ok",
@@ -91,7 +105,21 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/01-tutorials/start-here-3.md",
+    "path": "docs/02-how-to/DEVELOPING_ZEN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/02-how-to/PROFILE-USAGE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -133,21 +161,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/02-how-to/developing-zen-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/02-how-to/developing-zen.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/02-how-to/development-setup-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -364,14 +378,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/02-how-to/profile-usage-2.md",
+    "path": "docs/02-how-to/pr-merge-flight-dashboard.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/02-how-to/profile-usage-3.md",
+    "path": "docs/02-how-to/profile-usage-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -441,6 +455,27 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/F001-ENHANCED-untracked-work-system.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/F002-multi-session-support.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/G3_FRAMEWORK_MIGRATION_GUIDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/03-reference/adhd-engine-api.md",
     "zone": "active",
     "status": "ok",
@@ -483,14 +518,28 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/configuration/profile-yaml-schema-2.md",
+    "path": "docs/03-reference/brand-compliance-checklist.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/configuration/profile-yaml-schema-3.md",
+    "path": "docs/03-reference/commands/CHEAT_SHEET.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/configuration/profile-yaml-schema-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -511,7 +560,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1-2.md",
+    "path": "docs/03-reference/dope-context/DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/dope-context/DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -519,13 +575,6 @@
   },
   {
     "path": "docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -637,21 +686,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/f001-enhanced-untracked-work-system-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/03-reference/f002-multi-session-support-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/03-reference/f002-multi-session-support-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -707,13 +742,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/g3-framework-migration-guide-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/03-reference/g3-framework-migration-guide.md",
     "zone": "active",
     "status": "ok",
@@ -721,7 +749,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/governance/authority-map-2.md",
+    "path": "docs/03-reference/governance/AUTHORITY_MAP.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/governance/CONFLICT_LEDGER.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -729,13 +764,6 @@
   },
   {
     "path": "docs/03-reference/governance/authority-map.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/03-reference/governance/conflict-ledger-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -756,6 +784,97 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/instructions/AGENTS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/CLAUDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/CLAUDE_FULL_REFERENCE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/CLAUDE_OPTIMIZED.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/CLAUDE_PROPOSED.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/CODEX.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/L2_OUTLINE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/OPEN_QUESTIONS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/PROJECT_INIT_REPORT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/PROJECT_INSTRUCTIONS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/PROJECT_PATCH_REPORT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/REFERENCED_FILES_INDEX.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/instructions/SYNTHESIS_SUMMARY_v2.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/03-reference/instructions/agents-2.md",
     "zone": "active",
     "status": "ok",
@@ -770,21 +889,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/instructions/claude-2__moved-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/03-reference/instructions/codex-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/03-reference/instructions/codex-2__moved-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -924,14 +1029,28 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/services/monitoring-dashboard.md",
+    "path": "docs/03-reference/services/PERFORMANCE_BASELINE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/services/performance-baseline-2.md",
+    "path": "docs/03-reference/services/SERVER_AUDIT_2026-02-05.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/services/SERVER_REGISTRY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/services/monitoring-dashboard.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -945,21 +1064,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/services/server-audit-2026-02-05-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/03-reference/services/server-audit-2026-02-05.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/03-reference/services/server-registry-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -987,7 +1092,21 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/spec/dope-memory/v1/00_overview.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/03-reference/spec/dope-memory/v1/01-architecture.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/spec/dope-memory/v1/01_architecture.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1008,7 +1127,28 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/spec/dope-memory/v1/02_data_model_sqlite.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/spec/dope-memory/v1/02_derived_memory_pipeline.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/03-reference/spec/dope-memory/v1/03-data-model-postgres.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/spec/dope-memory/v1/03_data_model_postgres.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1022,7 +1162,21 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/spec/dope-memory/v1/04_event_taxonomy.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/03-reference/spec/dope-memory/v1/05-promotion-redaction.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/spec/dope-memory/v1/05_promotion_redaction.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1036,7 +1190,21 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/spec/dope-memory/v1/06_retrieval_ranking.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/03-reference/spec/dope-memory/v1/07-mcp-contracts.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/spec/dope-memory/v1/07_mcp_contracts.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1050,7 +1218,21 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/spec/dope-memory/v1/08_phased_roadmap.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/03-reference/spec/dope-memory/v1/09-test-plan.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/spec/dope-memory/v1/09_test_plan.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1064,6 +1246,20 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/spec/dope-memory/v1/10_risk_register.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/spec/dope-memory/v1/README.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/03-reference/spec/dope-memory/v1/readme-2.md",
     "zone": "active",
     "status": "ok",
@@ -1071,7 +1267,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/03-reference/spec/dope-memory/v1/readme-2__moved-2.md",
+    "path": "docs/03-reference/spec/uberslicer/DESIGN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/03-reference/spec/uberslicer/OMNIBUS_PROMPT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1162,6 +1365,13 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/task-packets/TP-CLOUDFLARE-WEBHOOKS-0001.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/03-reference/task-packets/tp-cloudflare-webhooks-0001-2.md",
     "zone": "active",
     "status": "ok",
@@ -1190,7 +1400,77 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/03-reference/testing/REQUIRED_TESTS_v0.1.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/CROSS-COMPONENT-ANALYSIS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/DOPEMUX-ORCHESTRATOR-FINAL-SPEC.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/DOPEMUX-UI-COMPLETE-MASTER-PLAN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/HOOKS_DEEP_DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/04-explanation/adhd-features-p2-design.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/architecture/ARCHITECTURE-CONSOLIDATION-SYNTHESIS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/architecture/COMPLETE_SYSTEM_v3.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/architecture/MASTER_DESIGN_SPEC_V2.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/architecture/ULTRA-DEEP-ARCHITECTURE-ANALYSIS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1211,21 +1491,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/architecture/architecture-3-0-complete-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/architecture/architecture-3-0-complete.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/architecture/architecture-3-0-implementation-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1239,14 +1505,21 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/architecture/architecture-consolidation-synthesis-2.md",
+    "path": "docs/04-explanation/architecture/architecture-3.0-complete.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/architecture/architecture-consolidation-synthesis-3.md",
+    "path": "docs/04-explanation/architecture/architecture-3.0-implementation.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/architecture/architecture-consolidation-synthesis-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1268,13 +1541,6 @@
   },
   {
     "path": "docs/04-explanation/architecture/dopemux-architecture-overview-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/architecture/dopemux-architecture-overview-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1337,13 +1603,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/architecture/ultra-deep-architecture-analysis-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/architecture/unified-architecture-guide.md",
     "zone": "active",
     "status": "ok",
@@ -1372,6 +1631,13 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/04-explanation/branding/BRAND_RESOURCE_PACK.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/04-explanation/branding/cli-branding.md",
     "zone": "active",
     "status": "ok",
@@ -1393,13 +1659,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/branding/dopemux-brand-system-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/branding/dopemux-brand-system.md",
     "zone": "active",
     "status": "ok",
@@ -1407,7 +1666,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/branding/implementation-plan-2.md",
+    "path": "docs/04-explanation/branding/d\u00f8pemux-brand-system.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1415,6 +1674,13 @@
   },
   {
     "path": "docs/04-explanation/branding/implementation-plan.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/branding/implementation_plan.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1449,14 +1715,35 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/cross-component-analysis-3.md",
+    "path": "docs/04-explanation/decisions-log-mobile-setup.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/decisions-log-mobile-setup.md",
+    "path": "docs/04-explanation/design-decisions/DOPEMUX-MULTI-AI-ORCHESTRATOR-DESIGN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/design-decisions/DOPEMUX-UNIFIED-DESIGN-PHILOSOPHY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1477,21 +1764,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/design-decisions/dopemux-multi-ai-orchestrator-design-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/design-decisions/dopemux-unified-design-philosophy-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/design-decisions/dopemux-unified-design-philosophy-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1519,13 +1792,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/design-decisions/profile-manager-design-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/design-decisions/tier3-advanced-features-design.md",
     "zone": "active",
     "status": "ok",
@@ -1547,21 +1813,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/dopemux-orchestrator-final-spec-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/dopemux-orchestrator-final-spec-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1576,13 +1828,6 @@
   },
   {
     "path": "docs/04-explanation/dopemux-ui-complete-master-plan-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/dopemux-ui-complete-master-plan-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1610,7 +1855,21 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/history/design-evolution-2026-2.md",
+    "path": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -1618,13 +1877,6 @@
   },
   {
     "path": "docs/04-explanation/history/design-evolution-2026.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/history/project-archaeology-report-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11214,13 +11466,6 @@
     "rule_id": "quarantine"
   },
   {
-    "path": "docs/04-explanation/history/unbuilt-features-and-roadmap-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/history/unbuilt-features-and-roadmap.md",
     "zone": "active",
     "status": "ok",
@@ -11228,7 +11473,21 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/implementation-plans/dashboard-day9-deep-research-2.md",
+    "path": "docs/04-explanation/implementation-plans/CHATX_IMPLEMENTATION.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/implementation-plans/DASHBOARD_DAY9_DEEP_RESEARCH.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/implementation-plans/DASHBOARD_DAY9_INDEX.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11236,13 +11495,6 @@
   },
   {
     "path": "docs/04-explanation/implementation-plans/dashboard-day9-deep-research.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/implementation-plans/dashboard-day9-index-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11319,42 +11571,119 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/04-explanation/root-relocated/ARCHITECTURE_MAPS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/CLAUDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/CODEX.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/COMPLETE_DELIVERABLES_SUMMARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/DOCUMENTATION_LOCATION_UPDATE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/EXTRACTION_V5_ARCHITECTURE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/EXTRACTION_V5_QUICK_REFERENCE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/FINAL_COMPREHENSIVE_SUMMARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/FINAL_ORGANIZATION_SUMMARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/FINAL_STATUS_SUMMARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/INSTRUCTION_PACK_VALIDATION.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/NEXT_STEPS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/PROJECT_INSTRUCTIONS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/READY_FOR_REVIEW_SUMMARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/USER_JOURNEY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/root-relocated/WORKSTREAM_HANDOFF_SUMMARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/04-explanation/root-relocated/ag-master-plan.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/architecture-maps.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/claude-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/codex-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/complete-deliverables-summary.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/documentation-location-update.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11368,84 +11697,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/root-relocated/extraction-v5-architecture.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/extraction-v5-quick-reference.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/final-comprehensive-summary.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/final-organization-summary.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/final-status-summary.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/instruction-pack-validation.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/next-steps.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/project-instructions.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/ready-for-review-summary.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/root-relocated/thread-primer-taskx.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/user-journey.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/root-relocated/workstream-handoff-summary.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11459,14 +11711,119 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/activity-capture-deep-dive-2.md",
+    "path": "docs/04-explanation/technical-deep-dives/ACTIVITY-CAPTURE-DEEP-DIVE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/activity-capture-deep-dive-3.md",
+    "path": "docs/04-explanation/technical-deep-dives/ADHD-DASHBOARD-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART1.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART2.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART3.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART4.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/ADHD-NOTIFIER-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/DESKTOP-COMMANDER-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/DOPE-MEMORY-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/DOPEMUX-CONTEXT-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/LEANTIME-BRIDGE-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/PLANE-COORDINATOR-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/RESEARCH_LEADERBOARD.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/VOICE-COMMANDS-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/WORKSPACE-WATCHER-DEEP-DIVE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/04-explanation/technical-deep-dives/activity-capture-deep-dive-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11480,21 +11837,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/adhd-dashboard-deep-dive-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11508,21 +11851,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part2-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part3-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part3-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11536,21 +11865,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part4-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/technical-deep-dives/adhd-notifier-deep-dive-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/technical-deep-dives/adhd-notifier-deep-dive-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11571,13 +11886,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/technical-deep-dives/dope-context-technical-deep-dive.md",
     "zone": "active",
     "status": "ok",
@@ -11592,21 +11900,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11620,13 +11914,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/leantime-bridge-deep-dive-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-2.md",
     "zone": "active",
     "status": "ok",
@@ -11634,28 +11921,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/technical-deep-dives/plane-coordinator-deep-dive-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/technical-deep-dives/plane-coordinator-deep-dive-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/technical-deep-dives/research-leaderboard-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11683,21 +11949,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/04-explanation/technical-deep-dives/voice-commands-deep-dive-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/04-explanation/technical-deep-dives/workspace-watcher-deep-dive-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/04-explanation/technical-deep-dives/workspace-watcher-deep-dive-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11733,6 +11985,13 @@
   },
   {
     "path": "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16__moved-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -11838,6 +12097,13 @@
   },
   {
     "path": "docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY__moved-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -12362,13 +12628,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/05-audit-reports/audit-summary-2025-10-16-2__moved-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/05-audit-reports/auto-detection-service-verification-2026-02-06.md",
     "zone": "active",
     "status": "ok",
@@ -12475,13 +12734,6 @@
   },
   {
     "path": "docs/05-audit-reports/deployment-ready-summary-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/05-audit-reports/deployment-ready-summary-2__moved-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13167,6 +13419,13 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/05-audit-reports/system-hooks-audit-plan.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/05-audit-reports/testing-audit-2025-10-16.md",
     "zone": "active",
     "status": "ok",
@@ -13223,7 +13482,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/06-research/act-pack-claude-mem-2.md",
+    "path": "docs/06-research/ACT pack - claude-mem.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13244,6 +13503,27 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/06-research/investigations/CLI_EXTENSIBILITY_REPORT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/INTEGRATION_SURFACES_MASTER.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/deep-research-report 1.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/06-research/investigations/deep-research-report-1.md",
     "zone": "active",
     "status": "ok",
@@ -13258,6 +13538,76 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/06-research/investigations/vault/AVM_PROTOCOL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/vault/EXECUTION_PLAN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/vault/FEATURE_ENHANCEMENT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/vault/INSTRUCTIONS_UPDATE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/vault/INTEGRATION_CHAT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/vault/MEMORY_PERSISTENCE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/vault/MEMORY_SYNC_AUTOMATION.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/vault/MEMORY_SYNC_SETUP.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/vault/SECURITY_GAME_PLAN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/06-research/investigations/vault/SECURITY_MASTER_PLAN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/06-research/multi-agent-ai-systems-research-2025-10-15.md",
     "zone": "active",
     "status": "ok",
@@ -13265,7 +13615,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/06-research/p1-port-act-packet-2.md",
+    "path": "docs/06-research/p1 port act packet.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13300,14 +13650,203 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-180-automatic-instance-resume-2.md",
+    "path": "docs/90-adr/ADR-180-automatic-instance-resume.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-180-automatic-instance-resume-3.md",
+    "path": "docs/90-adr/ADR-197-task-epic-workflow-system.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-201-conport-kg-security-hardening.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-202-serena-v2-production-validation.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-203-task-orchestrator-un-deprecation.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-204-ml-risk-assessment-extraction.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-205-systematic-audit-methodology.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-207-LEANTIME-API-RESEARCH.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-207-PHASE-1-IMPLEMENTATION-PLAN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-207-SESSION-SUMMARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-207-TASK-ORCHESTRATOR-CAPABILITIES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-213-capture-adapters-single-ledger.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-213-dual-capture-canonical-ledger.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-215-upgrades-v4-prompt-artifact-contracts.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-216-upgrades-v4-runner-layout-and-cli-entrypoint.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-217-upgrades-v4-all-services-deep-extraction.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-218-repo-truth-extractor-hard-cutover-namespace.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-PM-001-canonical-task-object.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-PM-002-pm-event-taxonomy.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADR-PM-003-storage-derived-mirrored.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/ADRS_UPDATED.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/CANDIDATE_ADRS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/TEMPLATE_ADR.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/TEMPLATE_ADR_LIGHT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/TEMPLATE_ADR_RECORD.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/90-adr/adr-180-automatic-instance-resume-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13321,21 +13860,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-197-task-epic-workflow-system-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-201-conport-kg-security-hardening-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-201-conport-kg-security-hardening-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13349,21 +13874,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-202-serena-v2-production-validation-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-203-task-orchestrator-un-deprecation-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-203-task-orchestrator-un-deprecation-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13377,13 +13888,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-204-ml-risk-assessment-extraction-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-205-systematic-audit-methodology-2.md",
     "zone": "active",
     "status": "ok",
@@ -13391,21 +13895,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-205-systematic-audit-methodology-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-206-code-audit-results-2025-10-16.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-207-architecture-3-0-three-layer-integration-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13426,21 +13916,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-207-leantime-api-research-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-207-phase-1-implementation-plan-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-207-phase-1-implementation-plan-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13454,21 +13930,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-207-session-summary-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-207-task-orchestrator-capabilities-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-207-task-orchestrator-capabilities-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13482,21 +13944,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-213-capture-adapters-single-ledger-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-213-capture-adapters-single-ledger-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13510,21 +13958,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-213-dual-capture-canonical-ledger-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13538,21 +13972,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-215-upgrades-v4-prompt-artifact-contracts-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-216-upgrades-v4-runner-layout-and-cli-entrypoint-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-216-upgrades-v4-runner-layout-and-cli-entrypoint-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13566,21 +13986,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-217-upgrades-v4-all-services-deep-extraction-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-218-repo-truth-extractor-hard-cutover-namespace-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-218-repo-truth-extractor-hard-cutover-namespace-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13650,13 +14056,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-pm-001-canonical-task-object-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-pm-002-pm-event-taxonomy-2.md",
     "zone": "active",
     "status": "ok",
@@ -13664,21 +14063,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/adr-pm-002-pm-event-taxonomy-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/90-adr/adr-pm-003-storage-derived-mirrored-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/adr-pm-003-storage-derived-mirrored-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -13734,27 +14119,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/90-adr/template-adr-light.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/template-adr-record.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/90-adr/template-adr.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/92-runbooks/workspaces.md",
     "zone": "active",
     "status": "ok",
@@ -13767,272 +14131,6 @@
     "status": "ok",
     "target_path": null,
     "rule_id": "root-keeper"
-  },
-  {
-    "path": "docs/arbitration/allowed-actions-matrix.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/autonomy-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/case-selection-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/confidence-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/consensus-decision-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/context-bounds.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/defer-reason-taxonomy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/evaluation-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/evidence-pack-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/failure-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/go-no-go-criteria.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/human-review-surface.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/live-trial-guardrails.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/live-trial-protocol.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/merge-plan-gates.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/merge-strategy-taxonomy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/operationalization-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/operations-review-cadence.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/operator-review-checklist.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/operator-review-form.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/operator-signoff-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/operator-supervision-guide.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/post-trial-governance-options.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/posture-drift-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/provider-mapping.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/role-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/role-visibility-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/rollback-and-disable-guide.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/runtime-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/scale-gate-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/schema-validation-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/shadow-trial-protocol.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/strategy-risk-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/strategy-selection-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/strategy-to-verification-map.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/supervised-ops-monitoring.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/supervised-use-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/arbitration/trigger-criteria.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
   },
   {
     "path": "docs/archive/DEPRECATED.md",
@@ -17675,6 +17773,13 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/archive/patch-notes/v0.1.2.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/archive/pipeline-v2/UPGRADE/00-universal-schema-header.md",
     "zone": "active",
     "status": "ok",
@@ -19362,14 +19467,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/archive/services/dopeconbridge/doc-index.md",
+    "path": "docs/archive/services/dopeconbridge/DOC_INDEX.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/archive/services/dopeconbridge/doc-index__moved-2.md",
+    "path": "docs/archive/services/dopeconbridge/doc-index.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -19726,6 +19831,13 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/archive/session-notes/2025-10/NEXT_SESSION_MULTI_USER_ROADMAP__moved-2.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/archive/session-notes/2025-10/QUICK_WINS_IMPLEMENTATION_SUMMARY.md",
     "zone": "active",
     "status": "ok",
@@ -19839,13 +19951,6 @@
   },
   {
     "path": "docs/archive/session-notes/2025-10/next-session-multi-user-roadmap.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/archive/session-notes/2025-10/next-session-multi-user-roadmap__moved-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21007,6 +21112,650 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/archive/unclassified-top-level/arbitration/ALLOWED_ACTIONS_MATRIX.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/AUTONOMY_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/CASE_SELECTION_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/CONFIDENCE_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/CONSENSUS_DECISION_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/CONTEXT_BOUNDS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/DEFER_REASON_TAXONOMY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/EVALUATION_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/EVIDENCE_PACK_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/FAILURE_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/GO_NO_GO_CRITERIA.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/HUMAN_REVIEW_SURFACE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/LIVE_TRIAL_GUARDRAILS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/LIVE_TRIAL_PROTOCOL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/MERGE_PLAN_GATES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/MERGE_STRATEGY_TAXONOMY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/OPERATIONALIZATION_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/OPERATIONS_REVIEW_CADENCE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/OPERATOR_REVIEW_CHECKLIST.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/OPERATOR_REVIEW_FORM.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/OPERATOR_SIGNOFF_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/OPERATOR_SUPERVISION_GUIDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/POSTURE_DRIFT_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/POST_TRIAL_GOVERNANCE_OPTIONS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/PROVIDER_MAPPING.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/ROLE_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/ROLE_VISIBILITY_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/ROLLBACK_AND_DISABLE_GUIDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/RUNTIME_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/SCALE_GATE_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/SCHEMA_VALIDATION_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/SHADOW_TRIAL_PROTOCOL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/STRATEGY_RISK_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/STRATEGY_SELECTION_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/STRATEGY_TO_VERIFICATION_MAP.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/SUPERVISED_OPS_MONITORING.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/SUPERVISED_USE_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/arbitration/TRIGGER_CRITERIA.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/ALLOWED_ACTIONS_MATRIX.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/AUTO_APPLY_GUARDRAILS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/CLOSED_LOOP_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/CODE_EDITING_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/DEFER_TRIGGER_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/EDIT_VERIFY_GATE_SIGNOFF_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/EVALUATION_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/GO_NO_GO_CRITERIA.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/IMPLICIT_ACTION_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/LOOP_FUSION_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/OPERATIONALIZATION_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/OPERATIONS_REVIEW_CADENCE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/OPERATOR_SIGNOFF_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/OPS_MONITORING_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/PATCH_APPLICATION_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/PATCH_SCOPE_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/PATCH_VERIFICATION_LINKAGE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/POSTURE_DRIFT_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/POST_TRIAL_GOVERNANCE_OPTIONS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/ROLLBACK_AND_DISABLE_GUIDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/SCALE_GATE_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/SIGNOFF_TRIGGER_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/STATE_REFRESH_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/SUPERVISED_USE_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/flight_deck/TACTIC_SELECTION_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/CHAIN_OF_CUSTODY_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/ENFORCEMENT_EDIT_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/HANDOFF_CONTRACT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/MANIFEST_AND_INDEX_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/PROOF_BUNDLE_SCHEMA.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/PROOF_CONTRACT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/PROOF_DIRECTORY_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/PROOF_PATH_NORMALIZATION_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/RETENTION_AND_REDACTION_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/governance/TP-GOV-001-PROOF-AND-HANDOFF-CONTRACT-HARDENING.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/claude/MEMORY_INTEGRATION.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/codex/DETERMINISTIC_PATTERNS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/copilot/INTEGRATION_RESEARCH.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/ADAPTER_CONTRACT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/ADAPTER_SCHEMA.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/ARCHIVE_DISCOVERY_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/CANONICAL_BUNDLE_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/COMPATIBILITY_MODE_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/INTEGRATION_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/OPERATOR_FLOW.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/POSTURE_AND_SIGNOFF_MAPPING.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/PROOF_BUNDLE_CONSUMPTION.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/integrations/dopetask/READY_VS_DEGRADED_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/learning/OPERATIONAL_LEARNING_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/learning/OUTCOME_TAXONOMY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/learning/OVERRIDE_CAPTURE_GUIDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/learning/POLICY_TUNING_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/mobile/IMPLEMENTATION.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/mobile/SETUP.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/archive/unclassified-top-level/mobile/implementation-2.md",
     "zone": "active",
     "status": "ok",
@@ -21021,385 +21770,763 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/allowed-actions-matrix.md",
+    "path": "docs/archive/unclassified-top-level/packaging/ARTIFACTS_AND_PROOF.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/auto-apply-guardrails.md",
+    "path": "docs/archive/unclassified-top-level/packaging/CONFIGURATION.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/closed-loop-model.md",
+    "path": "docs/archive/unclassified-top-level/packaging/INSTALL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/code-editing-model.md",
+    "path": "docs/archive/unclassified-top-level/policy/POLICY_CHANGE_REVIEW.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/defer-trigger-rules.md",
+    "path": "docs/archive/unclassified-top-level/policy/POLICY_SIMULATION_MODEL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/edit-verify-gate-signoff-model.md",
+    "path": "docs/archive/unclassified-top-level/policy/SHADOW_MODE_GUIDE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/evaluation-model.md",
+    "path": "docs/archive/unclassified-top-level/pr_merge/ESCALATION_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/go-no-go-criteria.md",
+    "path": "docs/archive/unclassified-top-level/pr_merge/HANDOFF_FROM_PRPS_CONTRACT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/implicit-action-policy.md",
+    "path": "docs/archive/unclassified-top-level/pr_merge/IMPLEMENTATION_SUMMARY.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/loop-fusion-policy.md",
+    "path": "docs/archive/unclassified-top-level/pr_merge/OPERATOR_CONTRACT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/operationalization-model.md",
+    "path": "docs/archive/unclassified-top-level/pr_merge/OUTPUT_CONTRACT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/operations-review-cadence.md",
+    "path": "docs/archive/unclassified-top-level/pr_merge/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/operator-signoff-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_merge/USAGE_PATTERNS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/ops-monitoring-model.md",
+    "path": "docs/archive/unclassified-top-level/pr_merge/WORKFLOW_SEQUENCE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/patch-application-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_merge/flight_deck/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/patch-scope-policy.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/ADJACENT_WORK_DISCOVERY.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/patch-verification-linkage.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/AMBIGUITY_SCORING.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/post-trial-governance-options.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/BASE_BRANCH_DETECTION_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/posture-drift-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/BRANCH_STATE_SCHEMA.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/rollback-and-disable-guide.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/CHECKLIST_EVIDENCE_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/scale-gate-policy.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/CONSENSUS_GATE_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/signoff-trigger-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/CREATION_MODE_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/state-refresh-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/DETERMINISTIC_GATE_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/supervised-use-policy.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/DOCS_AND_CHANGELOG_POLICY.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/flight_deck/tactic-selection-model.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/ESCALATION_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/chain-of-custody-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/EVALUATION_MODEL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/enforcement-edit-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/FINAL_PREP_DECISION_MODEL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/handoff-contract.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/GO_NO_GO_CRITERIA.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/manifest-and-index-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/HANDOFF_CONTRACT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/proof-bundle-schema.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/HANDOFF_TO_PRMS_CONTRACT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/proof-contract.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/HIGH_RISK_HANDOFF_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/proof-directory-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/LAYERED_VALIDATION_MODEL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/proof-path-normalization-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/LIVE_PILOT_GUARDRAILS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/retention-and-redaction-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/LIVE_PILOT_PROTOCOL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/governance/tp-gov-001-proof-and-handoff-contract-hardening-2.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/OBLIGATION_MODEL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/adapter-contract.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/OBLIGATION_SEVERITY_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/adapter-schema.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/OPERATIONAL_POSTURE_OPTIONS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/archive-discovery-policy.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/OPERATOR_CONTRACT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/canonical-bundle-policy.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/OPERATOR_REVIEW_FORM.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/compatibility-mode-policy.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/PATH_SIGNAL_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/integration-model.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/PILOT_CASE_SELECTION_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/operator-flow.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/POST_EVAL_GOVERNANCE_OPTIONS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/posture-and-signoff-mapping.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/POST_PILOT_GO_NO_GO_CRITERIA.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/proof-bundle-consumption.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/PR_CREATION_POLICY.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/integrations/dopetask/ready-vs-degraded-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/PR_DRAFTING_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/learning/operational-learning-model.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/SECTION_FILL_POLICY.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/learning/outcome-taxonomy.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/SKILL_MODEL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/learning/override-capture-guide.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/STASH_AND_BRANCH_SAFETY_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/learning/policy-tuning-rules.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/TITLE_GENERATION_RULES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/mobile/implementation-2.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/WORKFLOW_SEQUENCE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/mobile/setup-2.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/claude/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/packaging/artifacts-and-proof.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/codex/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/packaging/configuration-2.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/copilot/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/packaging/install-2.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/cursor/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/_evidence/pm-inv-01-task-schema-analysis-2.md",
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/gemini/README.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/jules/README.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/vibe/AGENT_TEMPLATE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/vibe/CHECKPOINT_SEQUENCE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/vibe/GUARDRAILS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/vibe/OPERATOR_REVIEW_FORM.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_prep/adapters/vibe/README.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_template/ALIGNMENT_SCORING.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_template/CANONICAL_PATCH_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_template/CANONICAL_PR_TEMPLATE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_template/INJECTION_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_template/NORMALIZATION_POLICY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_template/PATCH_PRESERVATION_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_template/TEMPLATE_ALIGNMENT_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/pr_template/TEMPLATE_PATH_AUTHORITY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/releases/RELEASE_NOTES_v0.1.0.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/rollout/AGENT_ENABLEMENT_GUIDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/rollout/FEATURE_FLAG_MATRIX.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/rollout/KNOWN_FAILURE_MODES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/rollout/OPERATOR_ONBOARDING.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/rollout/REPO_TARGET_MATRIX.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/rollout/ROLLBACK_PLAN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/rollout/ROLLOUT_PLAN.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/skills/pr-merge-specialist/ESCALATION_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/skills/pr-merge-specialist/OPERATOR_CONTRACT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/skills/pr-merge-specialist/OUTPUT_CONTRACT.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/skills/pr-merge-specialist/RESEARCH_BRIEF.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/skills/pr-merge-specialist/SKILL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/skills/pr-merge-specialist/USAGE_PATTERNS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/skills/pr-merge-specialist/gemini/CUSTOM_COMMANDS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/skills/pr-merge-specialist/jules/TASK_TEMPLATE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/ux/COMPONENT_LIBRARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/ux/PLAIN_TEXT_FALLBACK_RULES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/ux/SPACEAGE_VISUAL_LANGUAGE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/ux/STATUS_AND_SEVERITY_MODEL.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/ux/TERMINAL_RENDERING_GUIDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/archive/unclassified-top-level/ux/UX_STYLE_GUIDE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/HUB.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_ADHD_REQUIREMENTS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_ARCHITECTURE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_FRICTION_MAP.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_OUTPUT_BOUNDARIES.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_PHASE0_ACTION_ITEMS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_PHASE0_CLAIMS_LEDGER.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_PHASE2_CLAIMS_LEDGER.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_PLANE_GAPS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_PLANE_INVENTORY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_PLANE_PHASE0_SCOPE_LOCK_OPUS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/PM_WORKFLOWS_DERIVED.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/README.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/START_HERE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/SUPERVISOR.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/_evidence/PM-INV-01_TASK_SCHEMA_ANALYSIS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/_evidence/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21420,14 +22547,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/_evidence/readme-3.md",
+    "path": "docs/planes/pm/_handoff/PM-FRIC-01_HANDOFF.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/_handoff/pm-fric-01-handoff-2.md",
+    "path": "docs/planes/pm/_handoff/PM-FRIC-02_HANDOFF.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21441,21 +22568,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/_handoff/pm-fric-02-handoff-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/_handoff/pm-fric-02-handoff.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/dopemux/00-index-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21469,7 +22582,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/01-system-architecture-2.md",
+    "path": "docs/planes/pm/dopemux/00_INDEX.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21483,7 +22596,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/02-memory-and-state-2.md",
+    "path": "docs/planes/pm/dopemux/01_SYSTEM_ARCHITECTURE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21497,7 +22610,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
+    "path": "docs/planes/pm/dopemux/02_MEMORY_AND_STATE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21511,7 +22624,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/04-routing-policy-and-cost-2.md",
+    "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21525,7 +22638,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/05-adhd-execution-model-2.md",
+    "path": "docs/planes/pm/dopemux/04_ROUTING_POLICY_AND_COST.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21539,7 +22652,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/06-instance-and-worktree-isolation-2.md",
+    "path": "docs/planes/pm/dopemux/05_ADHD_EXECUTION_MODEL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21553,7 +22666,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/07-dopetask-integration-2.md",
+    "path": "docs/planes/pm/dopemux/06_INSTANCE_AND_WORKTREE_ISOLATION.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21567,7 +22680,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/08-supervisor-packet-format-2.md",
+    "path": "docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21581,7 +22694,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/09-usage-limits-and-resets-2.md",
+    "path": "docs/planes/pm/dopemux/08_SUPERVISOR_PACKET_FORMAT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21595,7 +22708,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/10-playbooks-2.md",
+    "path": "docs/planes/pm/dopemux/09_USAGE_LIMITS_AND_RESETS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21609,7 +22722,28 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/14-doc-roots-and-memory-corpus-map-2.md",
+    "path": "docs/planes/pm/dopemux/10_PLAYBOOKS.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/dopemux/DEEP_RESEARCH.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/dopemux/DOC_GATE.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/dopemux/OPUS-CROSS-PLANE-AUDIT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21623,7 +22757,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/15-missing-contract-relevant-docs-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/14_DOC_ROOTS_AND_MEMORY_CORPUS_MAP.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21637,7 +22771,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/00-bundle-index-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/15_MISSING_CONTRACT_RELEVANT_DOCS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21651,7 +22785,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/01-global-service-inventory-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/00_BUNDLE_INDEX.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21665,7 +22799,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/02-topology-and-stores-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/01_GLOBAL_SERVICE_INVENTORY.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21679,7 +22813,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/03-store-write-ownership-matrix-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/02_TOPOLOGY_AND_STORES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21693,7 +22827,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/03_STORE_WRITE_OWNERSHIP_MATRIX.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21707,7 +22841,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/05-conport-authority-surfaces-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21721,7 +22855,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06-dope-memory-promotion-retention-provenance-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/05_CONPORT_AUTHORITY_SURFACES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21735,7 +22869,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/07-pm-plane-bypass-and-execution-surfaces-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06_DOPE_MEMORY_PROMOTION_RETENTION_PROVENANCE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21749,7 +22883,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/08-adhd-cognitive-plane-surfaces-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/07_PM_PLANE_BYPASS_AND_EXECUTION_SURFACES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21763,7 +22897,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/09-search-plane-surfaces-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/08_ADHD_COGNITIVE_PLANE_SURFACES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21777,7 +22911,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/10-determinism-leaks-and-enforcement-points-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/09_SEARCH_PLANE_SURFACES.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21791,7 +22925,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/11-unknowns-and-required-evidence-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/10_DETERMINISM_LEAKS_AND_ENFORCEMENT_POINTS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21805,7 +22939,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/12-opus-prompts-ready-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/11_UNKNOWNs_AND_REQUIRED_EVIDENCE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21819,7 +22953,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/comprehensive-set-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/12_OPUS_PROMPTS_READY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/COMPREHENSIVE_SET.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21833,13 +22974,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/01-system-architecture-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/01-system-architecture.md",
     "zone": "active",
     "status": "ok",
@@ -21847,7 +22981,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/02-memory-and-state-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/01_SYSTEM_ARCHITECTURE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21861,7 +22995,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/04-routing-policy-and-cost-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/02_MEMORY_AND_STATE.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21875,7 +23009,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/05-adhd-execution-model-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/04_ROUTING_POLICY_AND_COST.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21889,7 +23023,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/08-supervisor-packet-format-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/05_ADHD_EXECUTION_MODEL.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21903,7 +23037,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/09-usage-limits-and-resets-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/08_SUPERVISOR_PACKET_FORMAT.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21917,7 +23051,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/dopemux/deep-research-2.md",
+    "path": "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/09_USAGE_LIMITS_AND_RESETS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21925,13 +23059,6 @@
   },
   {
     "path": "docs/planes/pm/dopemux/deep-research.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/dopemux/doc-gate-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21946,13 +23073,6 @@
   },
   {
     "path": "docs/planes/pm/dopemux/opus-cross-plane-audit-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/dopemux/opus-cross-plane-audit-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -21987,28 +23107,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/hub-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/pm-adhd-requirements-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/pm-adhd-requirements.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/pm-architecture-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -22022,21 +23121,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/pm-friction-map-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/pm-friction-map.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/pm-output-boundaries-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -22050,21 +23135,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/pm-phase0-action-items-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/pm-phase0-action-items.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/pm-phase0-claims-ledger-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -22078,13 +23149,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/pm-phase2-claims-ledger-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/pm-phase2-claims-ledger.md",
     "zone": "active",
     "status": "ok",
@@ -22092,21 +23156,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/pm-plane-gaps-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/pm-plane-gaps.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/pm-plane-inventory-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -22162,13 +23212,6 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/pm-workflows-derived-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/pm-workflows-derived.md",
     "zone": "active",
     "status": "ok",
@@ -22183,28 +23226,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/readme-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/signal-vs-noise-analysis-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/signal-vs-noise-analysis.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/planes/pm/start-here-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -22225,581 +23247,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/planes/pm/supervisor-3.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
     "path": "docs/planes/pm/task-orchestrator-leantime-followups.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/policy/policy-change-review.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/policy/policy-simulation-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/policy/shadow-mode-guide.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_merge/escalation-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_merge/flight_deck/readme-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_merge/handoff-from-prps-contract.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_merge/implementation-summary.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_merge/operator-contract.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_merge/output-contract.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_merge/readme-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_merge/usage-patterns.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_merge/workflow-sequence.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/claude/readme-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/codex/readme-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/copilot/readme-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/cursor/readme-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/gemini/readme-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/jules/readme-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/vibe/agent-template.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/vibe/checkpoint-sequence.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/vibe/guardrails-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/vibe/operator-review-form.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adapters/vibe/readme-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/adjacent-work-discovery.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/ambiguity-scoring.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/base-branch-detection-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/branch-state-schema.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/checklist-evidence-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/consensus-gate-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/creation-mode-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/deterministic-gate-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/docs-and-changelog-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/escalation-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/evaluation-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/final-prep-decision-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/go-no-go-criteria.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/handoff-contract.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/handoff-to-prms-contract.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/high-risk-handoff-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/layered-validation-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/live-pilot-guardrails.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/live-pilot-protocol.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/obligation-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/obligation-severity-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/operational-posture-options.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/operator-contract.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/operator-review-form.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/path-signal-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/pilot-case-selection-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/post-eval-governance-options.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/post-pilot-go-no-go-criteria.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/pr-creation-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/pr-drafting-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/section-fill-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/skill-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/stash-and-branch-safety-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/title-generation-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_prep/workflow-sequence.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_template/alignment-scoring.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_template/canonical-patch-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_template/canonical-pr-template.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_template/injection-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_template/normalization-policy.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_template/patch-preservation-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_template/template-alignment-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/pr_template/template-path-authority.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/releases/release-notes-v0-1-0.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/rollout/agent-enablement-guide.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/rollout/feature-flag-matrix.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/rollout/known-failure-modes.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/rollout/operator-onboarding.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/rollout/repo-target-matrix.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/rollout/rollback-plan.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/rollout/rollout-plan.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/skills/pr-merge-specialist/escalation-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/skills/pr-merge-specialist/gemini/custom-commands.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/skills/pr-merge-specialist/jules/task-template.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/skills/pr-merge-specialist/operator-contract.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/skills/pr-merge-specialist/output-contract.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/skills/pr-merge-specialist/skill-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/skills/pr-merge-specialist/usage-patterns.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -22813,6 +23261,13 @@
     "rule_id": "canonical"
   },
   {
+    "path": "docs/systems/adhd-features/README.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
     "path": "docs/systems/adhd-features/readme-2.md",
     "zone": "active",
     "status": "ok",
@@ -22820,7 +23275,7 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/systems/adhd-features/readme-3.md",
+    "path": "docs/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -22828,13 +23283,6 @@
   },
   {
     "path": "docs/systems/adhd-intelligence/adhd-engine-deep-dive-part2-2.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/systems/adhd-intelligence/adhd-engine-deep-dive-part2-3.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -22967,14 +23415,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/systems/conport/v0-2-4-update-2.md",
+    "path": "docs/systems/conport/v0-2-4-update.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/systems/conport/v0-2-4-update.md",
+    "path": "docs/systems/conport/v0.2.4-update.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -23100,14 +23548,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/systems/dopecon-bridge/readme-2.md",
+    "path": "docs/systems/dopecon-bridge/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/systems/dopecon-bridge/readme-3.md",
+    "path": "docs/systems/dopecon-bridge/readme-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -23135,14 +23583,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/systems/multi-workspace/readme-2.md",
+    "path": "docs/systems/multi-workspace/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/systems/multi-workspace/readme-3.md",
+    "path": "docs/systems/multi-workspace/readme-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -23184,14 +23632,14 @@
     "rule_id": "canonical"
   },
   {
-    "path": "docs/systems/production/readme-2.md",
+    "path": "docs/systems/production/README.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
     "rule_id": "canonical"
   },
   {
-    "path": "docs/systems/production/readme-3.md",
+    "path": "docs/systems/production/readme-2.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -23220,6 +23668,20 @@
   },
   {
     "path": "docs/systems/serena/multi-workspace-guide.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/systems/suppression-telemetry/CONPORT_SUMMARY.md",
+    "zone": "active",
+    "status": "ok",
+    "target_path": null,
+    "rule_id": "canonical"
+  },
+  {
+    "path": "docs/systems/suppression-telemetry/NEXT_STEPS.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,
@@ -23255,48 +23717,6 @@
   },
   {
     "path": "docs/systems/task-orchestrator-analysis.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/ux/component-library.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/ux/plain-text-fallback-rules.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/ux/spaceage-visual-language.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/ux/status-and-severity-model.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/ux/terminal-rendering-guide.md",
-    "zone": "active",
-    "status": "ok",
-    "target_path": null,
-    "rule_id": "canonical"
-  },
-  {
-    "path": "docs/ux/ux-style-guide.md",
     "zone": "active",
     "status": "ok",
     "target_path": null,

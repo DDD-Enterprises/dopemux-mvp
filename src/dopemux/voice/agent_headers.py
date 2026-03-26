@@ -82,7 +82,8 @@ def _normalized_validation_text(surface: str, body: str) -> str:
 def inject_voice_header(prompt: str, surface: str = "agent") -> str:
     """Prepend the configured voice header to a prompt or generated brief."""
     header = HEADERS.get(surface, HEADERS["agent"])
-    mode = select_mode(_normalize_surface(surface), prompt)
+    normalized_surface = _normalize_surface(surface)
+    mode = select_mode(normalized_surface, prompt)
     header = header.replace("{{MODE}}", mode.value)
     body = prompt.strip()
     if not body:

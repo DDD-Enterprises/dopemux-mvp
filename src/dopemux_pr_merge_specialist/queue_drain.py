@@ -103,11 +103,7 @@ def _load_pr_context(
     threads = client.fetch_review_threads(pr_id)
     unresolved_total, active_threads, outdated_threads = thread_counters(threads)
     pr = build_pr_state(payload, unresolved_total, active_threads, outdated_threads)
-    try:
-        check_payload = client.query_checks(pr.pr_id, pr_payload=payload)
-    except TypeError:
-        # Older test doubles only accept the historical positional contract.
-        check_payload = client.query_checks(pr.pr_id)
+    check_payload = client.query_checks(pr.pr_id, pr_payload=payload)
     return payload, threads, pr, check_payload
 
 
@@ -130,32 +126,6 @@ def _with_operator_state(
         else result.lifecycle_state
     )
     return replace(result, lifecycle_state=lifecycle_state, artifacts=artifacts)
-
-
-def _coerce_phase_result(phase_result: Any, *, artifact_path: Path) -> PRResult:
-    if isinstance(phase_result, PRResult):
-        return phase_result
-    if artifact_path.exists():
-        payload = json.loads(artifact_path.read_text(encoding="utf-8"))
-        pr_state_payload = payload.get("pr_state")
-        if isinstance(pr_state_payload, dict) and "number" in pr_state_payload and "pr_id" not in pr_state_payload:
-            unresolved_total = int(pr_state_payload.get("unresolved_threads", 0) or 0)
-            active_threads = int(
-                pr_state_payload.get("active_unresolved_threads", 0) or 0
-            )
-            outdated_threads = int(
-                pr_state_payload.get("outdated_unresolved_threads", 0) or 0
-            )
-            payload["pr_state"] = build_pr_state(
-                pr_state_payload,
-                unresolved_total,
-                active_threads,
-                outdated_threads,
-            ).to_dict()
-        return PRResult(**_inflate_pr_result(payload))
-    raise RuntimeError(
-        f"Phase returned {type(phase_result).__name__} without writing {artifact_path.name}"
-    )
 
 
 def _merge_prepared_result(
@@ -957,9 +927,6 @@ def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, wo
     Identifies PRs blocked by the same CI failure and manages global fix PRs.
     Modifies the 'results' list in-place.
     """
-    if not hasattr(client, "find_global_fix_prs"):
-        return
-
     # 1. Find existing global fix PRs and map them by fingerprint
     existing_fix_prs = client.find_global_fix_prs()
     fingerprint_to_pr_map: Dict[str, int] = {}
@@ -1123,7 +1090,6 @@ def queue_drain(args: argparse.Namespace) -> int:
         processed_ids = set()
         merged_ids = set()
         queued_ids = set()
-        base_rebase_updates: List[Dict[str, Any]] = []
         failed_remediation_ids = set() # Track PRs that failed an attempt in THIS pass
         
         for pass_idx in range(max_passes):
@@ -1171,15 +1137,12 @@ def queue_drain(args: argparse.Namespace) -> int:
                 closed_loop.emit_trace_artifacts(trace, pr_dir_for(pr_root, pr_id) / "traces")
                 tactic = trace.next_tactic
                 print(f"PR #{pr_id}: {result.lifecycle_state} -> Tactic: {tactic}")
-                if tactic == "MERGE":
+                if tactic == "MERGE" and execute:
                     try:
-                        merge_result = _coerce_phase_result(
-                            pr_merge(
-                                argparse.Namespace(
-                                    **{**vars(args), "id": pr_id, "_queue_lock_held": True}
-                                )
-                            ),
-                            artifact_path=pr_dir_for(pr_root, pr_id) / "MERGE.json",
+                        merge_result = pr_merge(
+                            argparse.Namespace(
+                                **{**vars(args), "id": pr_id, "_queue_lock_held": True}
+                            )
                         )
                         if merge_result.lifecycle_state == PRState.MERGED.value or (
                             merge_result.merge_decision
@@ -1193,49 +1156,31 @@ def queue_drain(args: argparse.Namespace) -> int:
                     except RuntimeError as e:
                         print(f"Merge error for PR #{pr_id}: {e}")
                         failed_remediation_ids.add(pr_id)
-                elif tactic == "APPLY_FIX":
+                elif tactic == "APPLY_FIX" and execute:
                     try:
-                        apply_result = _coerce_phase_result(
-                            pr_apply(
-                                argparse.Namespace(
-                                    **{**vars(args), "id": pr_id, "_queue_lock_held": True}
-                                )
-                            ),
-                            artifact_path=pr_dir_for(pr_root, pr_id) / "APPLY.json",
+                        apply_result = pr_apply(
+                            argparse.Namespace(
+                                **{**vars(args), "id": pr_id, "_queue_lock_held": True}
+                            )
                         )
                         # Re-derive actions to see if it's merge-ready now
                         if "MERGE" in _derive_allowed_actions(apply_result, policy):
-                            if execute:
-                                merge_result = _merge_prepared_result(
-                                    args=argparse.Namespace(
-                                        **{
-                                            **vars(args),
-                                            "id": pr_id,
-                                            "_queue_lock_held": True,
-                                            "execute": True,
-                                        }
-                                    ),
-                                    client=client,
-                                    repo_root=repo_root,
-                                    policy=policy,
-                                    pr_root=pr_root,
-                                    active_run_id=active_run_id,
-                                    prepared_result=apply_result,
-                                )
-                            else:
-                                merge_result = _coerce_phase_result(
-                                    pr_merge(
-                                        argparse.Namespace(
-                                            **{
-                                                **vars(args),
-                                                "id": pr_id,
-                                                "_queue_lock_held": True,
-                                            }
-                                        )
-                                    ),
-                                    artifact_path=pr_dir_for(pr_root, pr_id)
-                                    / "MERGE.json",
-                                )
+                            merge_result = _merge_prepared_result(
+                                args=argparse.Namespace(
+                                    **{
+                                        **vars(args),
+                                        "id": pr_id,
+                                        "_queue_lock_held": True,
+                                        "execute": True,
+                                    }
+                                ),
+                                client=client,
+                                repo_root=repo_root,
+                                policy=policy,
+                                pr_root=pr_root,
+                                active_run_id=active_run_id,
+                                prepared_result=apply_result,
+                            )
                             if merge_result.lifecycle_state == PRState.MERGED.value or (
                                 merge_result.merge_decision
                                 and _state_value(merge_result.merge_decision.action)
@@ -1255,7 +1200,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                     except RuntimeError as e:
                         print(f"Apply error for PR #{pr_id}: {e}")
                         failed_remediation_ids.add(pr_id)
-                elif tactic == "READY":
+                elif tactic == "READY" and execute:
                     try:
                         pr_ready(
                             argparse.Namespace(
@@ -1264,7 +1209,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                         )
                     except RuntimeError as e:
                         print(f"Ready error for PR #{pr_id}: {e}")
-                elif tactic == "APPROVE":
+                elif tactic == "APPROVE" and execute:
                     try:
                         pr_approve(
                             argparse.Namespace(
@@ -1273,20 +1218,6 @@ def queue_drain(args: argparse.Namespace) -> int:
                         )
                     except RuntimeError as e:
                         print(f"Approval error for PR #{pr_id}: {e}")
-        queue_report = {
-            "run_id": active_run_id,
-            "processed": len(processed_ids),
-            "processed_ids": sorted(processed_ids),
-            "merged": len(merged_ids),
-            "merged_ids": sorted(merged_ids),
-            "queued": len(queued_ids),
-            "queued_ids": sorted(queued_ids),
-            "max_passes": max_passes,
-            "execute": execute,
-        }
-        write_json(run_dir / "QUEUE_REPORT.json", queue_report)
-        write_json(run_dir / "BASE_REBASE_UPDATES.json", base_rebase_updates)
-
         print(f"\nRun ID: {active_run_id}")
         print(f"Processed PRs: {len(processed_ids)}")
         print(f"Merged: {len(merged_ids)}")

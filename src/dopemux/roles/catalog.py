@@ -18,6 +18,7 @@ from typing import Dict, Iterable, List, Optional, Set
 from rich.console import Console
 
 from ..config import ConfigManager
+from ..voice import inject_voice_header, validate_or_fallback
 
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,17 @@ class RoleSpec:
     metamcp_namespace: Optional[str] = None
     profile_name: Optional[str] = None
     notes: Optional[str] = None
+    voice_header: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        """Attach a validated Dopemux voice header to every role definition."""
+        if self.voice_header:
+            return
+        object.__setattr__(
+            self,
+            "voice_header",
+            build_role_voice_header(self.label, self.description, self.attention_state),
+        )
 
 
 @dataclass
@@ -52,6 +64,24 @@ class RoleActivationResult:
     disabled_servers: List[str]
     missing_required: List[str]
     missing_optional: List[str]
+
+
+def build_role_voice_header(label: str, description: str, attention_state: str) -> str:
+    """Create a voice-safe role header for downstream prompt injection."""
+    base_brief = (
+        f"{label} mode. Mission: {description} "
+        f"Attention profile: {attention_state}. Keep the server surface explicit."
+    )
+    fallback = (
+        "[LIVE] Role brief blocked by the Dopemux voice gate. "
+        "FACT: role metadata is available. UNKNOWN: safe role framing. "
+        "TODO: restate the mission, attention profile, and server surface."
+    )
+    return validate_or_fallback(
+        inject_voice_header(base_brief, surface="role"),
+        surface="role",
+        fallback=fallback,
+    )
 
 
 ROLE_CATALOG: Dict[str, RoleSpec] = {
@@ -169,6 +199,28 @@ ROLE_CATALOG: Dict[str, RoleSpec] = {
         metamcp_namespace="dopemux-act",
         profile_name="ops",
     ),
+    "workflow-manager": RoleSpec(
+        key="workflow-manager",
+        label="Workflow Manager",
+        description="Manager lane for phase-gated workflow orchestration and validation.",
+        attention_state="focused",
+        required_servers=["conport", "serena", "zen"],
+        optional_servers=["pal", "desktop-commander"],
+        metamcp_namespace="dopemux-workflow-manager",
+        profile_name="workflow-manager",
+        notes="Coordinates workflow state, delegates executor work, and validates checkpoints.",
+    ),
+    "workflow-executor": RoleSpec(
+        key="workflow-executor",
+        label="Workflow Executor",
+        description="Executor lane for isolated workflow implementation tasks.",
+        attention_state="focused",
+        required_servers=["conport", "serena"],
+        optional_servers=["pal", "zen", "desktop-commander"],
+        metamcp_namespace="dopemux-workflow-executor",
+        profile_name="workflow-executor",
+        notes="Executes one workflow task inside an isolated worktree or instance.",
+    ),
 }
 
 # Aliases map common terminology to canonical roles
@@ -192,6 +244,9 @@ ROLE_ALIASES: Dict[str, str] = {
     "orchestrator": "plan",
     "agent": "act",
     "secondary": "quickfix",
+    "manager": "workflow-manager",
+    "executor": "workflow-executor",
+    "workflow": "workflow-manager",
 }
 
 
@@ -300,6 +355,10 @@ def activate_role(
     os.environ["DOPEMUX_ACTIVE_ROLE"] = spec.label
     os.environ["DOPEMUX_ROLE_ATTENTION_STATE"] = spec.attention_state
     os.environ["DOPEMUX_ROLE_DESCRIPTION"] = spec.description
+    if spec.voice_header:
+        os.environ["DOPEMUX_ROLE_VOICE_HEADER"] = spec.voice_header
+    else:
+        os.environ.pop("DOPEMUX_ROLE_VOICE_HEADER", None)
 
     if spec.profile_name:
         os.environ["DOPEMUX_ACTIVE_PROFILE"] = spec.profile_name
@@ -314,13 +373,13 @@ def activate_role(
     # Provide gentle feedback if a role requires servers that are missing
     if console and activation.missing_required:
         console.print(
-            f"[yellow]⚠ Missing required MCP servers for role '{spec.label}': "
-            f"{', '.join(activation.missing_required)}[/yellow]"
+            f"[warning]⚠ Missing required MCP servers for role '{spec.label}': "
+            f"{', '.join(activation.missing_required)}[/warning]"
         )
     if console and activation.missing_optional:
         console.print(
-            f"[dim]ℹ Optional MCP servers unavailable for this role: "
-            f"{', '.join(activation.missing_optional)}[/dim]"
+            f"[text.dim]ℹ Optional MCP servers unavailable for this role: "
+            f"{', '.join(activation.missing_optional)}[/text.dim]"
         )
 
     return activation

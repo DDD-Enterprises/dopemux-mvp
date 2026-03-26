@@ -5,6 +5,8 @@ FastAPI server for voice-activated task decomposition
 """
 
 import logging
+import sys
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,12 +16,18 @@ import asyncio
 import uvicorn
 import os
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_text, brand_title
+
 from voice_task_decomposer import VoiceTaskDecomposer
 from conport_integration import VoiceConPortIntegration
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Voice Commands API", version="1.0.0")
+app = FastAPI(title=brand_title("Voice Commands API", chip=StatusChip.LIVE), version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -80,17 +88,22 @@ async def decompose_task(request: VoiceCommandRequest):
             else:
                 return VoiceCommandResponse(
                     success=False,
-                    error=result["response"]
+                    error=brand_text(result["response"], chip=StatusChip.BLOCKER)
                 )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Voice decomposition failed: {str(e)}")
-
         logger.error(f"Error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=brand_text(f"Voice decomposition failed: {str(e)}", chip=StatusChip.BLOCKER),
+        )
 @app.get("/health")
 async def health():
     """Health check endpoint"""
-    return {"status": "healthy", "service": "voice-commands"}
+    return {
+        "status": "healthy",
+        "service": brand_text("voice-commands", include_chip=False),
+    }
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "3007"))

@@ -63,7 +63,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
   expect(content).toContain('aria-label="Real-time task synchronization active"');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
-  // Total remaining duration display
+  // Total remaining duration display and completed-state accessibility
   expect(content).toContain('role="status"');
   expect(content).toContain('aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}');
   expect(content).toContain('aria-label="Ritual Complete: All tasks finished"');
@@ -84,10 +84,18 @@ test('TaskSequencer.tsx has accessible timer with pluralization', () => {
   expect(content).toContain('const getTimerAriaLabel = (seconds: number): string =>');
 });
 
+test('TaskSequencer.tsx displays total remaining duration with accessibility', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
+  expect(content).toContain('const totalRemainingMinutes = useMemo(() =>');
+  expect(content).toContain('aria-label={getDurationAriaLabel(totalRemainingMinutes)}');
+  expect(content).toContain('tabIndex={0}');
+  expect(content).toMatch(/<Tooltip[^>]*title=\{getDurationAriaLabel\(totalRemainingMinutes\)\}/);
+});
+
 test('App.tsx has accessible header chips and skip link', () => {
   const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
   expect(appContent).toContain('href="#main-dashboard"');
-  expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}');
+  expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
   expect(appContent).toContain('<Tooltip title="AI-generated recommendation based on current load" arrow>');
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);

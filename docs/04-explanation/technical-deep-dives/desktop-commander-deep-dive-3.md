@@ -68,7 +68,7 @@ The service is built as a FastAPI application (`server.py`) serving MCP tools ov
 * **[Observed] Integration Match**: Code in `adhd_engine` matches the expected integration pattern (polling port 3012).
 
 ### Cross-Validation Summary
-* **Validation Doc**: `docs/archive/mcp-servers/DESKTOP_COMMANDER_VALIDATION.md` confirms design safety regarding token usage.
+* **Validation Doc**: `docs/archive/mcp-servers/desktop-commander-validation-2.md` confirms design safety regarding token usage.
 * **Code Implementation**: `server.py` implements the file-path pattern confirmed in the validation doc.
 
 ## SECTION 3: LIVING DOCUMENTATION METADATA

@@ -282,36 +282,14 @@ def _health(args: argparse.Namespace) -> int:
 
 
 # Compatibility exports for existing callers/tests that import helpers from cli.
-def _classify_pr(*args, **kwargs):
-    return classify_pr(*args, **kwargs)
-
-
-def _risk_score(*args, **kwargs):
-    return risk_score(*args, **kwargs)
-
-
-def _sort_states(*args, **kwargs):
-    return sort_states(*args, **kwargs)
-
-
-def _decide_thread_disposition(*args, **kwargs):
-    return decide_thread_disposition(*args, **kwargs)
-
-
-def _build_conflict_analysis(*args, **kwargs):
-    return build_conflict_analysis(*args, **kwargs)
-
-
-def _run_merge_with_fallback(*args, **kwargs):
-    return run_merge_with_fallback(*args, **kwargs)
-
-
-def _queue_scan(*args, **kwargs):
-    return queue_scan(*args, **kwargs)
-
-
-def _queue_drain(*args, **kwargs):
-    return queue_drain(*args, **kwargs)
+_classify_pr = classify_pr
+_risk_score = risk_score
+_sort_states = sort_states
+_decide_thread_disposition = decide_thread_disposition
+_build_conflict_analysis = build_conflict_analysis
+_run_merge_with_fallback = run_merge_with_fallback
+_queue_scan = queue_scan
+_queue_drain = queue_drain
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -638,6 +616,9 @@ def cmd_fusion(args: argparse.Namespace) -> int:
 
 def cmd_ops(args: argparse.Namespace) -> int:
     """📊 Show Flight Deck operational metrics and health."""
+    import json
+    from pathlib import Path
+
     ops_dir = Path("proof/pr_merge/flight_deck/ops")
 
     print("📊 Flight Deck Operational Metrics")

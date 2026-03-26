@@ -59,6 +59,8 @@ def test_available_roles_includes_core_personas():
     assert "reviewer" in roles
     assert "debugger" in roles
     assert "ops" in roles
+    assert "workflow-manager" in roles
+    assert "workflow-executor" in roles
 
 
 def test_resolve_role_supports_aliases():
@@ -66,6 +68,27 @@ def test_resolve_role_supports_aliases():
     assert resolve_role("planner").key == "plan"
     assert resolve_role("researcher").key == "research"
     assert resolve_role("orchestrator").key == "plan"
+    assert resolve_role("manager").key == "workflow-manager"
+    assert resolve_role("executor").key == "workflow-executor"
+
+
+def test_activate_workflow_manager_sets_profile_env(monkeypatch):
+    cfg_manager = _build_dummy_config(
+        ["conport", "serena", "pal", "zen", "desktop-commander"]
+    )
+    console = Console(record=True)
+
+    activation = activate_role("workflow-manager", cfg_manager, console)
+
+    assert activation.resolved_key == "workflow-manager"
+    assert set(activation.enabled_servers) == {
+        "conport",
+        "desktop-commander",
+        "pal",
+        "serena",
+        "zen",
+    }
+    assert os.environ.get("DOPEMUX_ACTIVE_PROFILE") == "workflow-manager"
 
 
 def test_activate_role_quickfix_filters_servers(monkeypatch):

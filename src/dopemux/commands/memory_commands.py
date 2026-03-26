@@ -12,20 +12,35 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
+from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 @click.group()
 def memory():
-    """🧠 Memory capture and global rollup operations."""
+    """
+    🧠 Cognitive Core: Memory capture and global DAEMON rollup operations
+
+    Orchestrates the persistent memory systems of the DØPEMÜX cockpit. 
+    This system synchronizes per-project ledgers into a global rollup index, 
+    enabling cross-workspace semantic search and high-fidelity telemetry 
+    harvesting from ritual toolsets.
+    """
     pass
 
 
 @memory.group()
 def rollup():
-    """📊 Global rollup index operations."""
+    """
+    📊 Global Synthesis: Sync and query global daemon rollup index
+
+    Manages the centralized synchronization of distributed project ledgers. 
+    The rollup subsystem aggregates work-log entries and telemetry signals 
+    into a unified SQLite index for global HUD visibility.
+    """
     pass
 
 
@@ -33,15 +48,20 @@ def rollup():
 @click.option(
     "--projects-file",
     type=click.Path(exists=True, path_type=Path),
-    help="File containing list of project roots (newline or JSON)",
+    help="🔬 Manifest Coordinate: Path to the ritual projects manifest (newline-separated or JSON).",
 )
 @click.option(
     "--index-path",
     type=click.Path(path_type=Path),
-    help="Global index path (default: ~/.dopemux/global_index.sqlite)",
+    help="📜 Index Anchor: Override the default global SQLite index path (~/.dopemux/global_index.sqlite).",
 )
 def build(projects_file: Optional[Path], index_path: Optional[Path]):
-    """Build global rollup index from project ledgers (read-only)."""
+    """
+    ⚙️ Synchronize Ledgers: Build global rollup index from project state
+
+    Performs a deep-tissue synchronization ritual, aggregating individual 
+    project ledgers into the global DAEMON rollup index.
+    """
     from dopemux.memory.global_rollup import (
         GlobalRollupIndexer,
         resolve_rollup_projects,
@@ -50,17 +70,17 @@ def build(projects_file: Optional[Path], index_path: Optional[Path]):
 
     try:
         roots = resolve_rollup_projects(projects_file=projects_file)
-        console.logger.info(f"[cyan]Resolved {len(roots)} project(s)[/cyan]")
+        console.logger.info(f"[info]Resolved {len(roots)} project(s)[/info]")
 
         indexer = GlobalRollupIndexer(index_path=index_path)
         result = indexer.build(roots)
 
-        console.logger.info(f"[green]✓[/green] Projects registered: {result['projects_registered']}")
-        console.logger.info(f"[green]✓[/green] Pointers indexed: {result['pointers_upserted']}")
-        console.logger.info(f"[green]✓[/green] Index: {result['index_path']}")
+        console.logger.info(f"[success]✓[/success] Projects registered: {result['projects_registered']}")
+        console.logger.info(f"[success]✓[/success] Pointers indexed: {result['pointers_upserted']}")
+        console.logger.info(f"[success]✓[/success] Index: {result['index_path']}")
 
     except GlobalRollupError as e:
-        console.logger.error(f"[red]✗ Rollup error:[/red] {e}")
+        console.logger.error(f"[error]✗ Rollup error:[/error] {e}")
         raise click.Abort()
 
 
@@ -68,25 +88,31 @@ def build(projects_file: Optional[Path], index_path: Optional[Path]):
 @click.option(
     "--index-path",
     type=click.Path(path_type=Path),
-    help="Global index path (default: ~/.dopemux/global_index.sqlite)",
+    help="📜 Index Anchor: Override the default global SQLite index path (~/.dopemux/global_index.sqlite).",
 )
 def list(index_path: Optional[Path]):
-    """List registered projects in global rollup index."""
+    """
+    📋 Catalog Workspaces: List all active projects in the global rollup
+
+    Displays the full index of registered project ledgers, detailing 
+    their absolute repository coordinates and last-seen telemetry.
+    """
     from dopemux.memory.global_rollup import GlobalRollupIndexer
-    from rich.table import Table
 
     indexer = GlobalRollupIndexer(index_path=index_path)
 
     projects = indexer.list_projects()
 
     if not projects:
-        console.logger.info("[yellow]No projects registered in global index[/yellow]")
+        console.logger.info("[warning]No projects registered in global index[/warning]")
         return
 
-    table = Table(title="Registered Projects")
-    table.add_column("Project ID", style="cyan")
-    table.add_column("Repo Root", style="green")
-    table.add_column("Last Seen", style="yellow")
+    table = styled_table(
+        "Registered Projects",
+        ("Project ID", {"style": "info"}),
+        ("Repo Root", {"style": "success"}),
+        ("Last Seen", {"style": "warning"}),
+    )
 
     for proj in projects:
         table.add_row(
@@ -104,31 +130,37 @@ def list(index_path: Optional[Path]):
     "--limit",
     type=int,
     default=10,
-    help="Max results (default: 10, max: 100)",
+    help="📊 Telemetry Limit: Maximum ritual results to render in the HUD (default: 10).",
 )
 @click.option(
     "--index-path",
     type=click.Path(path_type=Path),
-    help="Global index path (default: ~/.dopemux/global_index.sqlite)",
+    help="📜 Index Anchor: Override the default global SQLite index path (~/.dopemux/global_index.sqlite).",
 )
 def search(query: str, limit: int, index_path: Optional[Path]):
-    """Search global rollup index for promoted work log entries."""
+    """
+    🔍 Semantic Search: Query global rollup for promoted work log entries
+
+    Performs a cross-workspace search ritual across all synchronized 
+    project ledgers to retrieve high-fidelity work-log telemetry.
+    """
     from dopemux.memory.global_rollup import GlobalRollupIndexer
-    from rich.table import Table
 
     indexer = GlobalRollupIndexer(index_path=index_path)
 
     results = indexer.search(query, limit=limit)
 
     if not results:
-        console.logger.info(f"[yellow]No results for: {query}[/yellow]")
+        console.logger.info(f"[warning]No results for: {query}[/warning]")
         return
 
-    table = Table(title=f"Search Results: {query}")
-    table.add_column("Timestamp", style="cyan")
-    table.add_column("Type", style="yellow")
-    table.add_column("Summary", style="green")
-    table.add_column("Project", style="blue", overflow="fold")
+    table = styled_table(
+        f"Search Results: {query}",
+        ("Timestamp", {"style": "info"}),
+        ("Type", {"style": "warning"}),
+        ("Summary", {"style": "success"}),
+        ("Project", {"style": "info", "overflow": "fold"}),
+    )
 
     for row in results:
         table.add_row(
@@ -139,12 +171,18 @@ def search(query: str, limit: int, index_path: Optional[Path]):
         )
 
     console.logger.info(table)
-    console.logger.info(f"\n[dim]Showing {len(results)} of up to {limit} results[/dim]")
+    console.logger.info(f"\n[text.dim]Showing {len(results)} of up to {limit} results[/text.dim]")
 
 
 @memory.group()
 def capture():
-    """📥 Capture CLI tool events (Copilot, Codex, etc.)"""
+    """
+    📥 Telemetry Ingestion: Capture ritual tool signals (Copilot, Codex, etc.)
+
+    Engages the ingestion adapters for external ritual tools. This subsystem 
+    captures raw telemetry signals and converts them into content-addressed 
+    events for storage in the per-project Chronicle ledger.
+    """
     pass
 
 
@@ -153,43 +191,37 @@ def capture():
     "--event",
     type=str,
     required=True,
-    help="Event JSON string (required)",
+    help="📊 Signal Payload: Event JSON string for ingestion.",
 )
 @click.option(
     "--mode",
     type=click.Choice(["plugin", "cli", "mcp", "auto"]),
     default="auto",
-    help="Capture mode (default: auto)",
+    help="🧪 Capture Aesthetic: Mode for signal ingestion (default: auto).",
 )
 @click.option(
     "--quiet",
     is_flag=True,
-    help="Suppress output (for hook usage)",
+    help="🔇 Silence HUD: Suppress telemetry output during the ritual.",
 )
 @click.option(
     "--repo-root",
     type=click.Path(exists=True, path_type=Path),
     default=None,
-    help="Project repository root (default: auto-detect)",
+    help="🔬 Repository Coordinate: Project root for ledger synchronization.",
 )
 @click.option(
     "--lane",
     type=str,
     default=None,
-    help="Lane identifier for policy enforcement (e.g., agent:primary)",
+    help="🛣️  Ritual Lane: Identifier for policy enforcement (e.g., agent:primary).",
 )
 def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path], lane: Optional[str]):
     """
-    Emit a capture event to Chronicle.
+    ⚡ Pulse Chronicle: Emit a capture event to the project ledger
 
-    Writes event to per-project Chronicle ledger with content-addressed
-    deduplication. Designed for hook and adapter usage.
-
-    Examples:
-
-        dopemux memory capture emit --event '{"event_type":"file.written","payload":{"path":"src/app.py"}}'
-
-        dopemux memory capture emit --mode plugin --quiet --event '{"event_type":"task.completed","payload":{"task":"T-001"}}'
+    Writes a single telemetry signal to the per-project Chronicle ledger 
+    using deterministic, content-addressed deduplication.
     """
     from dopemux.memory.capture_client import emit_capture_event, CaptureError
     import json
@@ -200,18 +232,18 @@ def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path], lane: Op
             event_data = json.loads(event)
         except json.JSONDecodeError as e:
             if not quiet:
-                console.logger.error(f"[red]✗ Invalid JSON:[/red] {e}")
+                console.logger.error(f"[error]✗ Invalid JSON:[/error] {e}")
             raise click.Abort()
 
         # Validate event structure
         if not isinstance(event_data, dict):
             if not quiet:
-                console.logger.error("[red]✗ Event must be a JSON object[/red]")
+                console.logger.error("[error]✗ Event must be a JSON object[/error]")
             raise click.Abort()
 
         if "event_type" not in event_data:
             if not quiet:
-                console.logger.error("[red]✗ Event must have 'event_type' field[/red]")
+                console.logger.error("[error]✗ Event must have 'event_type' field[/error]")
             raise click.Abort()
 
         # Emit to Chronicle
@@ -226,22 +258,22 @@ def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path], lane: Op
         # Output result
         if not quiet:
             if result.inserted:
-                console.logger.info(f"[green]✓[/green] Event captured: {result.event_id[:16]}...")
+                console.logger.info(f"[success]✓[/success] Event captured: {result.event_id[:16]}...")
                 console.logger.info(f"  Event type: {event_data.get('event_type')}")
                 console.logger.info(f"  Mode: {mode}")
             else:
-                console.logger.info(f"[yellow]✓[/yellow] Event already exists (deduplicated): {result.event_id[:16]}...")
+                console.logger.info(f"[warning]✓[/warning] Event already exists (deduplicated): {result.event_id[:16]}...")
 
         # Exit code 0 on success
         sys.exit(0)
 
     except CaptureError as e:
         if not quiet:
-            console.logger.error(f"[red]✗ Capture error:[/red] {e}")
+            console.logger.error(f"[error]✗ Capture error:[/error] {e}")
         sys.exit(1)
     except Exception as e:
         if not quiet:
-            console.logger.error(f"[red]✗ Unexpected error:[/red] {e}")
+            console.logger.error(f"[error]✗ Unexpected error:[/error] {e}")
         sys.exit(1)
 
 
@@ -251,28 +283,20 @@ def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path], lane: Op
     "--since",
     type=str,
     default=None,
-    help="Only ingest events after this ISO timestamp",
+    help="⏳ Temporal Gate: Only ingest signals after this ISO timestamp.",
 )
 @click.option(
     "--repo-root",
     type=click.Path(exists=True, path_type=Path),
     default=None,
-    help="Project repository root (default: auto-detect)",
+    help="🔬 Repository Coordinate: Project root for ledger synchronization.",
 )
 def copilot(session_id: str, since: Optional[str], repo_root: Optional[Path]):
     """
-    Ingest Copilot CLI session transcript into Chronicle.
+    🤖 Copilot Synchronization: Ingest CLI session signals into Chronicle
 
-    Parses JSONL events from ~/.copilot/session-state/{SESSION_ID}/events.jsonl
-    and emits to Chronicle via content-addressed deduplication.
-
-    Examples:
-
-        dopemux memory capture copilot 550e8400-e29b-41d4-a716-446655440000
-
-        dopemux memory capture copilot SESSION_ID --since 2025-02-12T10:30:00Z
-
-        dopemux memory capture copilot SESSION_ID --repo-root /path/to/project
+    Synchronizes the Copilot CLI session transcript into the per-project 
+    ledger via high-fidelity, content-addressed ingestion.
     """
     from dopemux.memory.adapters import CopilotCaptureAdapter
     from datetime import datetime
@@ -284,36 +308,36 @@ def copilot(session_id: str, since: Optional[str], repo_root: Optional[Path]):
             try:
                 since_dt = datetime.fromisoformat(since.rstrip("Z"))
             except ValueError as e:
-                console.logger.error(f"[red]✗ Invalid timestamp format:[/red] {e}")
-                console.logger.info("[dim]Expected ISO 8601 format: 2025-02-12T10:30:00Z[/dim]")
+                console.logger.error(f"[error]✗ Invalid timestamp format:[/error] {e}")
+                console.logger.info("[text.dim]Expected ISO 8601 format: 2025-02-12T10:30:00Z[/text.dim]")
                 raise click.Abort()
 
         # Initialize adapter
         adapter = CopilotCaptureAdapter(repo_root=repo_root)
 
         # Ingest session
-        console.logger.info(f"[cyan]📥 Ingesting Copilot session: {session_id}[/cyan]")
+        console.logger.info(f"[info]📥 Ingesting Copilot session: {session_id}[/info]")
         if since:
-            console.logger.info(f"[dim]Filtering events after: {since}[/dim]")
+            console.logger.info(f"[text.dim]Filtering events after: {since}[/text.dim]")
 
         stats = adapter.ingest_session(session_id, since=since_dt)
 
         # Display results
-        console.logger.info(f"\n[green]✓[/green] Ingestion complete:")
+        console.logger.info(f"\n[success]✓[/success] Ingestion complete:")
         console.logger.info(f"  Total events parsed: {stats['total']}")
         console.logger.info(f"  Successfully inserted: {stats['inserted']}")
         console.logger.info(f"  Deduplicated (already exist): {stats['deduplicated']}")
         console.logger.info(f"  Skipped (unmapped types): {stats['skipped']}")
 
         if stats["inserted"] == 0 and stats["total"] > 0:
-            console.logger.info("\n[yellow]💡 All events already ingested (idempotent)[/yellow]")
+            console.logger.info("\n[warning]💡 All events already ingested (idempotent)[/warning]")
 
     except FileNotFoundError as e:
-        console.logger.error(f"[red]✗ Session not found:[/red] {e}")
-        console.logger.info("[dim]Use 'dopemux memory capture copilot-list' to see available sessions[/dim]")
+        console.logger.error(f"[error]✗ Session not found:[/error] {e}")
+        console.logger.info("[text.dim]Use 'dopemux memory capture copilot-list' to see available sessions[/text.dim]")
         raise click.Abort()
     except Exception as e:
-        console.logger.error(f"[red]✗ Ingestion failed:[/red] {e}")
+        console.logger.error(f"[error]✗ Ingestion failed:[/error] {e}")
         raise click.Abort()
 
 
@@ -322,37 +346,33 @@ def copilot(session_id: str, since: Optional[str], repo_root: Optional[Path]):
     "--limit",
     type=int,
     default=20,
-    help="Max sessions to display (default: 20)",
+    help="📊 Session Limit: Maximum session identifiers to display (default: 20).",
 )
 def copilot_list(limit: int):
     """
-    List available Copilot CLI sessions.
+    📋 Catalog Sessions: List available Copilot CLI ritual sessions
 
-    Shows sessions from ~/.copilot/session-state/ with event counts and timestamps.
-
-    Examples:
-
-        dopemux memory capture copilot-list
-
-        dopemux memory capture copilot-list --limit 50
+    Displays the index of identified Copilot ritual sessions from the local 
+    file system, including signal counts and temporal coordinates.
     """
     from dopemux.memory.adapters import CopilotCaptureAdapter
-    from rich.table import Table
 
     adapter = CopilotCaptureAdapter()
     sessions = adapter.list_sessions()
 
     if not sessions:
-        console.logger.info("[yellow]No Copilot sessions found in ~/.copilot/session-state/[/yellow]")
+        console.logger.info("[warning]No Copilot sessions found in ~/.copilot/session-state/[/warning]")
         return
 
     # Limit results
     display_sessions = sessions[:limit]
 
-    table = Table(title=f"Available Copilot Sessions (showing {len(display_sessions)} of {len(sessions)})")
-    table.add_column("Session ID", style="cyan", width=36)
-    table.add_column("Events", style="green", justify="right")
-    table.add_column("Started", style="yellow")
+    table = styled_table(
+        f"Available Copilot Sessions (showing {len(display_sessions)} of {len(sessions)})",
+        ("Session ID", {"style": "info", "width": 36}),
+        ("Events", {"style": "success", "justify": "right"}),
+        ("Started", {"style": "warning"}),
+    )
 
     for session in display_sessions:
         table.add_row(
@@ -364,7 +384,7 @@ def copilot_list(limit: int):
     console.logger.info(table)
 
     if len(sessions) > limit:
-        console.logger.info(f"\n[dim]💡 Showing {limit} of {len(sessions)} sessions. Use --limit to see more.[/dim]")
+        console.logger.info(f"\n[text.dim]💡 Showing {limit} of {len(sessions)} sessions. Use --limit to see more.[/text.dim]")
 
 
 # ============================================================================

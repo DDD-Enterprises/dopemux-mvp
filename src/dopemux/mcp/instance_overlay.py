@@ -1,7 +1,9 @@
 import json
-from pathlib import Path
-from typing import Dict, Any
 import logging
+import re
+import os
+from pathlib import Path
+from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -11,12 +13,11 @@ class InstanceOverlayManager:
     Handles deterministic port allocation.
     """
     PORT_OFFSETS = {
-        "PAL": 3,
         "ConPort": 4,
         "Serena": 6,
         "Dope-Context": 10,
         "Dope-Memory": 20,
-        "LiteLLM": 1000 # 4000 relative to 3000? No, let's keep it consistent.
+        "LiteLLM": 1000 
     }
 
     def __init__(self, project_root: Path, instance_id: str):
@@ -27,34 +28,23 @@ class InstanceOverlayManager:
         self.port_map = self._generate_port_map()
 
     def _calculate_base_port(self) -> int:
-        """
-        Deterministic base port based on instance_id.
-        A -> 3000, B -> 3100, C -> 3200, etc.
-        """
-        if not self.instance_id or len(self.instance_id) == 0:
+        if not self.instance_id:
             return 3000
         
-        # Simple mapping for common letters, otherwise use hash-based offset
         first_char = self.instance_id[0].upper()
         if 'A' <= first_char <= 'Z':
             offset = ord(first_char) - ord('A')
             return 3000 + (offset * 100)
         
-        # Fallback to hash-based for non-alpha instance IDs
         import hashlib
         h = hashlib.md5(self.instance_id.encode()).hexdigest()
-        offset = int(h[:2], 16) % 30 # Up to 3000 + 30*100 = 6000
+        offset = int(h[:2], 16) % 30
         return 3000 + (offset * 100)
 
     def _generate_port_map(self) -> Dict[str, int]:
         ports = {}
         for name, offset in self.PORT_OFFSETS.items():
             ports[name] = self.base_port + offset
-        
-        # Special case for LiteLLM - default is usually 4000
-        # If base is 3000, LiteLLM is 4000.
-        # If base is 3100, LiteLLM is 4100.
-        ports["LiteLLM"] = self.base_port + 1000
         return ports
 
     def materialize(self) -> Dict[str, Any]:
@@ -78,23 +68,26 @@ class InstanceOverlayManager:
         }
 
     def get_compose_project_name(self) -> str:
-        # Use folder name as project_id
         project_id = self.project_root.name
-        return f"dopemux_{project_id}_{self.instance_id}".lower()
+        name = f"dopemux_{project_id}_{self.instance_id}".lower()
+        # Sanitize for Docker Compose
+        return re.sub(r'[^a-z0-9_-]', '_', name)
 
     def write_mcp_env(self) -> Path:
         env_path = self.instance_dir / "mcp.env"
+        
+        # Safely get ports
+        def get_p(name): return self.port_map.get(name, 0)
+
         lines = [
             f"# Generated for instance: {self.instance_id}",
             f"COMPOSE_PROJECT_NAME={self.get_compose_project_name()}",
             f"DOPEMUX_INSTANCE_ID={self.instance_id}",
-            f"DOPEMUX_WORKSPACE_ID={self.instance_id}", # Legacy compatibility
-            f"DOPEMUX_CONPORT_PORT={self.port_map['ConPort']}",
-            f"DOPEMUX_PAL_PORT={self.port_map['PAL']}",
-            f"DOPEMUX_SERENA_PORT={self.port_map['Serena']}",
-            f"DOPEMUX_CONTEXT_PORT={self.port_map['Dope-Context']}",
-            f"DOPEMUX_MEMORY_PORT={self.port_map['Dope-Memory']}",
-            f"DOPEMUX_LITELLM_PORT={self.port_map['LiteLLM']}",
+            f"DOPEMUX_CONPORT_PORT={get_p('ConPort')}",
+            f"DOPEMUX_SERENA_PORT={get_p('Serena')}",
+            f"DOPEMUX_CONTEXT_PORT={get_p('Dope-Context')}",
+            f"DOPEMUX_MEMORY_PORT={get_p('Dope-Memory')}",
+            f"DOPEMUX_LITELLM_PORT={get_p('LiteLLM')}",
         ]
         
         with open(env_path, "w") as f:
@@ -104,28 +97,21 @@ class InstanceOverlayManager:
     def write_compose_override(self) -> Path:
         compose_path = self.instance_dir / "mcp.compose.override.yml"
         
-        # We generate a simple override that maps ports based on our allocator
-        content = f"""version: '3.8'
-services:
-  conport:
-    ports:
-      - "{self.port_map['ConPort']}:3004"
-  pal:
-    ports:
-      - "{self.port_map['PAL']}:3003"
-  serena:
-    ports:
-      - "{self.port_map['Serena']}:3006"
-  dope-context:
-    ports:
-      - "{self.port_map['Dope-Context']}:3010"
-  dope-memory:
-    ports:
-      - "{self.port_map['Dope-Memory']}:3020"
-  litellm:
-    ports:
-      - "{self.port_map['LiteLLM']}:4000"
-"""
+        # Helper to generate service override only if port exists
+        services = []
+        if "ConPort" in self.port_map:
+            services.append(f"  conport:\n    ports:\n      - \"{self.port_map['ConPort']}:3004\"")
+        if "Serena" in self.port_map:
+            services.append(f"  serena:\n    ports:\n      - \"{self.port_map['Serena']}:3006\"")
+        if "Dope-Context" in self.port_map:
+            services.append(f"  dope-context:\n    ports:\n      - \"{self.port_map['Dope-Context']}:3010\"")
+        if "Dope-Memory" in self.port_map:
+            services.append(f"  dope-memory:\n    ports:\n      - \"{self.port_map['Dope-Memory']}:3020\"")
+        if "LiteLLM" in self.port_map:
+            services.append(f"  litellm:\n    ports:\n      - \"{self.port_map['LiteLLM']}:4000\"")
+
+        content = "services:\n" + "\n".join(services)
+        
         with open(compose_path, "w") as f:
             f.write(content)
         return compose_path

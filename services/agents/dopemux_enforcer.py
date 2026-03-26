@@ -14,10 +14,19 @@ Effort: 5 days (10 focus blocks)
 import asyncio
 import ast
 import logging
+import sys
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 from enum import Enum
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from dopemux.voice import inject_voice_header, validate_or_fallback
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +127,10 @@ class DopemuxEnforcer:
         self.conport_client = conport_client
         self.serena_complexity_provider = serena_complexity_provider
         self.strict_mode = strict_mode
+        self.prompt_header = inject_voice_header(
+            "Audit Dopemux architecture. Split FACT from INFERENCE. Leave UNKNOWN visible and end with NEXT.",
+            surface="agent",
+        )
 
         # Validation rules
         self.rules = self._load_validation_rules()
@@ -133,6 +146,46 @@ class DopemuxEnforcer:
         logger.info(
             f"DopemuxEnforcer initialized (workspace: {workspace_id}, "
             f"strict: {strict_mode})"
+        )
+
+    def _voice_safe(self, text: str, *, fallback: str, surface: str = "agent") -> str:
+        """Pass user-facing text through the shared Dopemux voice gate."""
+        return validate_or_fallback(text, surface=surface, fallback=fallback)
+
+    def _new_violation(
+        self,
+        *,
+        type: ViolationType,
+        severity: ViolationSeverity,
+        message: str,
+        file_path: Optional[str] = None,
+        line_number: Optional[int] = None,
+        suggestion: Optional[str] = None,
+        related_rule: Optional[str] = None,
+        workspace_path: Optional[str] = None,
+    ) -> ComplianceViolation:
+        """Build a voice-safe compliance violation."""
+        fallback_message = (
+            f"[LIVE] Compliance flag raised. FACT: {type.value} is out of bounds. "
+            f"TODO: review the rule and restate the change cleanly."
+        )
+        fallback_suggestion = (
+            "[LIVE] Suggestion blocked by the Dopemux voice gate. "
+            "TODO: tighten the change and route it through the approved path."
+        )
+        return ComplianceViolation(
+            type=type,
+            severity=severity,
+            message=self._voice_safe(message, fallback=fallback_message),
+            file_path=file_path,
+            line_number=line_number,
+            suggestion=(
+                self._voice_safe(suggestion, fallback=fallback_suggestion)
+                if suggestion
+                else None
+            ),
+            related_rule=related_rule,
+            workspace_path=workspace_path,
         )
 
     async def initialize(self):
@@ -294,7 +347,7 @@ class DopemuxEnforcer:
         source = "Serena+heuristic" if serena_complexity is not None else "heuristic"
 
         if estimated_complexity >= complexity_thresholds["critical"]:
-            violations.append(ComplianceViolation(
+            violations.append(self._new_violation(
                 type=ViolationType.COMPLEXITY_WARNING,
                 severity=ViolationSeverity.CRITICAL,
                 message=(
@@ -305,7 +358,7 @@ class DopemuxEnforcer:
                 suggestion="Break this into smaller functions or take break after 25 minutes"
             ))
         elif estimated_complexity >= complexity_thresholds["warning"]:
-            violations.append(ComplianceViolation(
+            violations.append(self._new_violation(
                 type=ViolationType.COMPLEXITY_WARNING,
                 severity=ViolationSeverity.WARNING,
                 message=(
@@ -316,7 +369,7 @@ class DopemuxEnforcer:
                 suggestion="Consider breaking into smaller functions"
             ))
         elif estimated_complexity >= complexity_thresholds["info"]:
-            violations.append(ComplianceViolation(
+            violations.append(self._new_violation(
                 type=ViolationType.COMPLEXITY_WARNING,
                 severity=ViolationSeverity.INFO,
                 message=(
@@ -459,7 +512,7 @@ class DopemuxEnforcer:
 
         for pattern, suggestion in forbidden_patterns:
             if "bash" in content.lower() and ("cat" in content or "grep" in content or "find" in content):
-                violations.append(ComplianceViolation(
+                violations.append(self._new_violation(
                     type=ViolationType.TOOL_PREFERENCE,
                     severity=ViolationSeverity.WARNING,
                     message="Using bash for code operations (prefer MCP tools)",
@@ -483,7 +536,7 @@ class DopemuxEnforcer:
 
         # Check for direct Leantime access (should use TwoPlaneOrchestrator)
         if "import leantime" in content.lower() or "from leantime" in content.lower():
-            violations.append(ComplianceViolation(
+            violations.append(self._new_violation(
                 type=ViolationType.TWO_PLANE_BOUNDARY,
                 severity=ViolationSeverity.ERROR,
                 message="Direct Leantime access detected (use TwoPlaneOrchestrator)",
@@ -520,7 +573,7 @@ class DopemuxEnforcer:
         for match in matches:
             limit = int(match)
             if limit > self.rules["adhd_constraints"]["rules"]["max_results"]:
-                violations.append(ComplianceViolation(
+                violations.append(self._new_violation(
                     type=ViolationType.ADHD_CONSTRAINT,
                     severity=ViolationSeverity.INFO,
                     message=f"Result limit {limit} exceeds ADHD-friendly max (10)",
@@ -540,7 +593,13 @@ class DopemuxEnforcer:
         """Generate human-readable compliance summary"""
 
         if not (critical or errors or warnings or info):
-            return "✅ Fully compliant with Dopemux architecture"
+            return self._voice_safe(
+                "Compliance locked. FACT: Dopemux architecture checks are clean. NEXT: proceed with the change.",
+                fallback=(
+                    "[LIVE] Compliance summary blocked by the Dopemux voice gate. "
+                    "FACT: no violations detected. TODO: proceed with care."
+                ),
+            )
 
         parts = []
 
@@ -553,7 +612,13 @@ class DopemuxEnforcer:
         if info:
             parts.append(f"💡 {len(info)} suggestion(s)")
 
-        return ", ".join(parts)
+        return self._voice_safe(
+            ", ".join(parts),
+            fallback=(
+                "[LIVE] Compliance summary blocked by the Dopemux voice gate. "
+                "FACT: one or more violations were detected. TODO: inspect the report details."
+            ),
+        )
 
     async def _log_violations_to_conport(
         self,
@@ -626,7 +691,7 @@ class DopemuxEnforcer:
                 # Write operation
                 if source_plane not in authority.lower():
                     self.metrics["violations_found"] += 1  # Track violation
-                    violations.append(ComplianceViolation(
+                    violations.append(self._new_violation(
                         type=ViolationType.AUTHORITY_MATRIX,
                         severity=ViolationSeverity.ERROR,
                         message=f"{source_plane} cannot write {data_type} (authority: {authority})",

@@ -21,6 +21,8 @@ import logging
 import pickle
 import os
 
+from services.shared.brand_voice import StatusChip, brand_text, brand_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,6 +34,9 @@ class EnergyPrediction:
     contributing_factors: List[str]  # Top factors influencing prediction
     recommendation: str  # Actionable recommendation
     timestamp: datetime = field(default_factory=datetime.now)
+
+    def __post_init__(self):
+        self.recommendation = brand_text(self.recommendation, chip=StatusChip.EDGE)
 
 
 class EnergyPatternPredictor:
@@ -84,10 +89,10 @@ class EnergyPatternPredictor:
                     data = pickle.load(f)
                     self.model = data['model']
                     self.scaler = data['scaler']
-                logger.info(f"✅ Loaded energy model for {self.user_id}")
+                logger.info(brand_log(f"✅ Loaded energy model for {self.user_id}", chip=StatusChip.LIVE))
                 return True
         except Exception as e:
-            logger.warning(f"Failed to load model: {e}")
+            logger.warning(brand_log(f"Failed to load model: {e}", chip=StatusChip.AFTERCARE))
         return False
     
     def _save_model(self) -> bool:
@@ -100,10 +105,10 @@ class EnergyPatternPredictor:
                     'user_id': self.user_id,
                     'trained_at': datetime.now().isoformat()
                 }, f)
-            logger.info(f"✅ Saved energy model for {self.user_id}")
+            logger.info(brand_log(f"✅ Saved energy model for {self.user_id}", chip=StatusChip.LIVE))
             return True
         except Exception as e:
-            logger.error(f"Failed to save model: {e}")
+            logger.error(brand_log(f"Failed to save model: {e}", chip=StatusChip.BLOCKER))
             return False
     
     def _extract_features(self, observation: Dict[str, Any]) -> np.ndarray:
@@ -148,7 +153,7 @@ class EnergyPatternPredictor:
             Training accuracy (0.0-1.0)
         """
         if len(historical_data) < 10:
-            logger.warning(f"Insufficient data for training: {len(historical_data)} samples")
+            logger.warning(brand_log(f"Insufficient data for training: {len(historical_data)} samples", chip=StatusChip.AFTERCARE))
             return 0.0
         
         try:
@@ -182,11 +187,11 @@ class EnergyPatternPredictor:
             # Save model
             self._save_model()
             
-            logger.info(f"✅ Trained energy model: {len(historical_data)} samples, {accuracy:.2%} accuracy")
+            logger.info(brand_log(f"✅ Trained energy model: {len(historical_data)} samples, {accuracy:.2%} accuracy", chip=StatusChip.LIVE))
             return accuracy
             
         except Exception as e:
-            logger.error(f"Training failed: {e}")
+            logger.error(brand_log(f"Training failed: {e}", chip=StatusChip.BLOCKER))
             return 0.0
     
     def predict(self, current_state: Dict[str, Any]) -> EnergyPrediction:
@@ -238,7 +243,7 @@ class EnergyPatternPredictor:
             )
             
         except Exception as e:
-            logger.error(f"Prediction failed: {e}")
+            logger.error(brand_log(f"Prediction failed: {e}", chip=StatusChip.BLOCKER))
             return EnergyPrediction(
                 predicted_level="medium",
                 confidence=0.1,

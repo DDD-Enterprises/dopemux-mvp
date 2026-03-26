@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Leantime JSON-RPC 2.0 Response",
+  "description": "Response shape for all Leantime JSON-RPC 2.0 API calls. Derived from app/Domain/Api/Controllers/Jsonrpc.php.",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["jsonrpc", "result", "id"],
+      "properties": {
+        "jsonrpc": { "type": "string", "const": "2.0" },
+        "result": {
+          "description": "Method return value cast to array. null if method returns void.",
+          "oneOf": [
+            { "type": "array" },
+            { "type": "object" },
+            { "type": "null" }
+          ]
+        },
+        "id": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "integer" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": ["jsonrpc", "error", "id"],
+      "properties": {
+        "jsonrpc": { "type": "string", "const": "2.0" },
+        "error": {
+          "type": "object",
+          "required": ["code", "message"],
+          "properties": {
+            "code": {
+              "type": "integer",
+              "enum": [-32700, -32600, -32601, -32602, -32000],
+              "description": "-32700=Parse error, -32600=Invalid Request, -32601=Method not found, -32602=Invalid params, -32000=Server error"
+            },
+            "message": { "type": "string" },
+            "data": { "description": "Additional error context" }
+          }
+        },
+        "id": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "integer" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

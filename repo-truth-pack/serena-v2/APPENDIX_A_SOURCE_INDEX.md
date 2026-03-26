@@ -20,21 +20,21 @@ Analyzed ref: `fe48c0a874ac25ed179b9ddb091252a6dbe9b5c2`
 | `docs/archive/sessions/serena/session-2025-10-24.md` | Session notes |
 | `docs/archive/sessions/serena/token-limit-fix.md` | Session notes: token limit fix |
 | `docs/archive/sessions/serena/session-handoff-2025-10-18.md` | Session handoff |
-| `docs/archive/sessions/serena/v2/F002_COMPLETION_SUMMARY.md` | F002 completion |
+| `docs/archive/sessions/serena/v2/f002-completion-summary-2.md` | F002 completion |
 | `docs/archive/sessions/serena/v2/ux-polish-checklist.md` | UX polish checklist |
-| `docs/archive/sessions/serena/v2/F001_ENHANCED_BUILD_SUMMARY.md` | F001 enhanced build |
+| `docs/archive/sessions/serena/v2/f001-enhanced-build-summary-2.md` | F001 enhanced build |
 | `docs/archive/sessions/serena/v2/f002-user-guide.md` | F002 user guide |
-| `docs/archive/sessions/serena/v2/F002_IMPLEMENTATION_PLAN.md` | F002 implementation plan |
-| `docs/archive/sessions/serena/v2/F001_ENHANCED_COMPLETION.md` | F001 enhanced completion |
-| `docs/archive/sessions/serena/v2/F-NEW-1_F-NEW-2_COMPLETION.md` | F-NEW-1/2 completion |
+| `docs/archive/sessions/serena/v2/f002-implementation-plan-2.md` | F002 implementation plan |
+| `docs/archive/sessions/serena/v2/f001-enhanced-completion-2.md` | F001 enhanced completion |
+| `docs/archive/sessions/serena/v2/f-new-1-f-new-2-completion-2.md` | F-NEW-1/2 completion |
 | `docs/archive/sessions/serena/v2/f001-usage-examples.md` | F001 usage examples |
-| `docs/archive/sessions/serena/v2/F5_COMPLETION_SUMMARY.md` | F5 completion |
+| `docs/archive/sessions/serena/v2/f5-completion-summary-2.md` | F5 completion |
 | `docs/archive/sessions/serena/v2/SESSION_HANDOFF_20251018.md` | Session handoff |
-| `docs/archive/sessions/serena/v2/F7_COMPLETION_SUMMARY.md` | F7 completion |
-| `docs/archive/sessions/serena/v2/F001_TEST_RESULTS.md` | F001 test results |
-| `docs/archive/sessions/serena/v2/F002_MIGRATION_SUCCESS.md` | F002 migration |
+| `docs/archive/sessions/serena/v2/f7-completion-summary-2.md` | F7 completion |
+| `docs/archive/sessions/serena/v2/f001-test-results-2.md` | F001 test results |
+| `docs/archive/sessions/serena/v2/f002-migration-success-2.md` | F002 migration |
 | `docs/archive/empty-stubs/serena-v2-deployment.md` | Empty stub |
-| `docs/archive/claude-sessions/serena_adhd_cross_system_analysis_20251023.md` | ADHD cross-system analysis |
+| `docs/archive/claude-sessions/serena-adhd-cross-system-analysis-20251023-2.md` | ADHD cross-system analysis |
 | `docs/archive/claude-sessions/serena-v2-analysis-2025-10-16.md` | v2 analysis |
 | `docker/mcp-servers-source/serena/README.md` | Docker serena README |
 

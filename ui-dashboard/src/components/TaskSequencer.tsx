@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Paper,
   Box,
@@ -12,8 +12,8 @@ import {
   Divider,
   Tooltip,
   LinearProgress,
-  alpha,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   CheckCircle,
   Circle,
@@ -21,11 +21,11 @@ import {
   Pause,
   SkipForward,
   Timer,
+  Clock,
   Flame,
   Swords,
-  Clock,
 } from 'lucide-react';
-import { brandTokens } from '../theme';
+import { brandTokens, statusStyles } from '../theme';
 
 interface Task {
   id: string;
@@ -117,14 +117,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const completeTask = (taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t));
-    const next = optimizedTasks.find(t => t.id !== taskId);
-    setCurrentTaskId(next ? next.id : null);
+    const remainingTasks = optimizedTasks.filter((task) => task.id !== taskId);
+    setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status: 'completed' } : task)));
+    setCurrentTaskId(remainingTasks.length > 0 ? remainingTasks[0].id : null);
   };
 
   const skipTask = (taskId: string) => {
     if (optimizedTasks.length <= 1) return;
-    const currentIndex = optimizedTasks.findIndex(t => t.id === taskId);
+    const currentIndex = optimizedTasks.findIndex((task) => task.id === taskId);
     const nextIndex = (currentIndex + 1) % optimizedTasks.length;
     setCurrentTaskId(optimizedTasks[nextIndex].id);
   };
@@ -147,7 +147,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return `Time elapsed: ${secLabel}`;
   };
 
+  const getDurationAriaLabel = (minutes: number): string => {
+    const label = minutes === 1 ? '1 minute' : `${minutes} minutes`;
+    return `Total remaining duration: ${label}`;
+  };
+
   const currentTask = tasks.find((task) => task.id === currentTaskId);
+  const statusTone = statusStyles[cognitiveState.status];
 
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
@@ -168,7 +174,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   }, [tasks, currentTaskId, currentTask, taskTimer]);
 
   return (
-    <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
+    <Paper
+      sx={{
+        p: 3,
+        height: '100%',
+        borderRadius: 4,
+        background: brandTokens.gradients.focusCard,
+        border: `1px solid ${statusTone.border}`,
+        boxShadow: statusTone.shadow,
+      }}
+      className="dopemux-panel"
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
         <Timer size={24} aria-hidden="true" />
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
@@ -196,8 +212,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             label="[LIVE]"
             className="dopemux-chip"
             tabIndex={0}
+            sx={{
+              ml: 'auto',
+              borderColor: brandTokens.borders.cyan,
+              color: brandTokens.colors.ritualCyan,
+              bgcolor: alpha(brandTokens.colors.ritualCyan, 0.08),
+            }}
             aria-label="Real-time task synchronization active"
-            sx={{ ml: 1, borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
           />
         </Tooltip>
       </Box>
@@ -211,8 +232,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             mb: 3,
             p: 2.5,
             borderRadius: 3,
-            border: '1px solid rgba(255, 207, 120, 0.5)',
-            background: 'rgba(255, 207, 120, 0.08)',
+            border: `1px solid ${brandTokens.borders.gold}`,
+            background: alpha(brandTokens.colors.saintGold, 0.08),
+            boxShadow: brandTokens.shadows.goldBloom,
           }}
         >
           <Typography variant="subtitle2" sx={{ mb: 0.5, letterSpacing: '0.08em' }}>
@@ -250,6 +272,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               '& .MuiLinearProgress-bar': {
                 bgcolor: brandTokens.colors.saintGold,
                 borderRadius: 3,
+                boxShadow: brandTokens.shadows.goldBloom,
               },
             }}
             aria-label="Current task progress"
@@ -297,9 +320,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           role="status"
           aria-label="Ritual Complete: All tasks finished"
           sx={{
-            mb: 3, p: 2.5, borderRadius: 3, textAlign: 'center',
-            border: `1px solid ${brandTokens.colors.serumMint}`,
-            background: 'rgba(148, 250, 219, 0.05)',
+            mb: 3,
+            p: 2.5,
+            borderRadius: 3,
+            textAlign: 'center',
+            border: `1px solid ${brandTokens.borders.mint}`,
+            background: alpha(brandTokens.colors.serumMint, 0.05),
           }}
         >
           <CheckCircle size={32} color={brandTokens.colors.serumMint} style={{ marginBottom: 8 }} />
@@ -316,6 +342,31 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
+        <Tooltip title={getDurationAriaLabel(totalRemainingMinutes)} arrow>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              ml: 'auto',
+              color: brandTokens.colors.ritualCyan,
+              cursor: 'help',
+              '&:focus': {
+                outline: 'none',
+                borderRadius: 1,
+                boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+              }
+            }}
+            tabIndex={0}
+            role="status"
+            aria-label={getDurationAriaLabel(totalRemainingMinutes)}
+          >
+            <Clock size={14} aria-hidden="true" />
+            <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+              {totalRemainingMinutes}m
+            </Typography>
+          </Box>
+        </Tooltip>
         <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
           <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
@@ -334,9 +385,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 alignItems="flex-start"
                 aria-current={isCurrent ? 'step' : undefined}
                 sx={{
-                  bgcolor: isCurrent ? 'rgba(125, 251, 246, 0.08)' : 'transparent',
+                  bgcolor: isCurrent ? alpha(brandTokens.colors.ritualCyan, 0.08) : 'transparent',
                   borderRadius: 2,
-                  border: isCurrent ? '1px solid rgba(125, 251, 246, 0.4)' : '1px solid rgba(255,255,255,0.05)',
+                  border: isCurrent
+                    ? `1px solid ${brandTokens.borders.cyan}`
+                    : `1px solid ${brandTokens.borders.subtle}`,
                   mb: 0.5,
                 }}
               >
@@ -346,7 +399,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   ) : isCurrent ? (
                     <Play color={brandTokens.colors.ritualCyan} size={20} aria-hidden="true" />
                   ) : (
-                    <Circle color="rgba(255, 255, 255, 0.3)" size={18} aria-hidden="true" />
+                    <Circle color={alpha(brandTokens.text.primary, 0.3)} size={18} aria-hidden="true" />
                   )}
                 </ListItemIcon>
                 <ListItemText
@@ -361,7 +414,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                           label={`${Math.round(task.complexity * 100)}% complex`}
                           tabIndex={0}
                           sx={{
-                            bgcolor: 'rgba(4,22,40,0.8)',
+                            bgcolor: brandTokens.surfaces.chip,
                             color: complexityColor(task.complexity),
                             border: `1px solid ${complexityColor(task.complexity)}`,
                           }}
@@ -390,7 +443,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 )}
               </ListItem>
               {index < optimizedTasks.length - 1 && (
-                <Divider sx={{ my: 0.5, borderColor: 'rgba(255,255,255,0.05)' }} />
+                <Divider sx={{ my: 0.5, borderColor: brandTokens.borders.subtle }} />
               )}
             </React.Fragment>
           );
@@ -402,8 +455,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           mt: 2,
           p: 2,
           borderRadius: 2,
-          border: '1px dashed rgba(125, 251, 246, 0.3)',
-          bgcolor: 'rgba(2,6,23,0.45)',
+          border: `1px dashed ${brandTokens.borders.cyan}`,
+          bgcolor: brandTokens.surfaces.panel,
         }}
       >
         <Typography variant="caption" sx={{ fontWeight: 'bold' }}>

@@ -25,6 +25,17 @@ from mcp.server.stdio import stdio_server
 from pydantic import BaseModel
 from pymilvus import MilvusClient
 
+# Branding & Voice
+try:
+    from services.shared.brand_voice import brand_log, StatusChip
+except ImportError:
+    # Fallback if services/shared is not in path
+    import sys
+    from pathlib import Path
+    REPO_ROOT = Path(__file__).resolve().parents[2]
+    sys.path.append(str(REPO_ROOT))
+    from services.shared.brand_voice import brand_log, StatusChip
+
 # Configure logging
 logging.basicConfig(
     level=getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper()),
@@ -93,12 +104,12 @@ class MilvusManager:
             # Test connection
             collections = self.client.list_collections()
             logger.info(
-                f"Connected to Milvus at {self.config.milvus_host}:{self.config.milvus_port}"
+                brand_log(f"Connected to Milvus at {self.config.milvus_host}:{self.config.milvus_port}", chip=StatusChip.LIVE)
             )
-            logger.info(f"Existing collections: {collections}")
+            logger.info(brand_log(f"Existing collections: {collections}", chip=StatusChip.LIVE))
             await self._ensure_collections()
         except Exception as e:
-            logger.error(f"Failed to connect to Milvus: {e}")
+            logger.error(brand_log(f"Failed to connect to Milvus: {e}", chip=StatusChip.BLOCKER))
             raise
 
     async def _ensure_collections(self):
@@ -123,9 +134,9 @@ class MilvusManager:
                         metric_type="COSINE",
                         index_type="HNSW",
                     )
-                    logger.info(f"Created Milvus collection: {collection_name}")
+                    logger.info(brand_log(f"Created Milvus collection: {collection_name}", chip=StatusChip.LIVE))
                 except Exception as e:
-                    logger.error(f"Failed to create collection {collection_name}: {e}")
+                    logger.error(brand_log(f"Failed to create collection {collection_name}: {e}", chip=StatusChip.BLOCKER))
                     # Continue with other collections instead of failing completely
 
     async def embed_text(self, text: str) -> List[float]:
@@ -138,7 +149,7 @@ class MilvusManager:
                 )
                 return result.embeddings[0]
             except Exception as e:
-                logger.error(f"Failed to generate Voyage embedding: {e}")
+                logger.error(brand_log(f"Failed to generate Voyage embedding: {e}", chip=StatusChip.BLOCKER))
 
         # Fallback to OpenAI embeddings
         openai_key = os.getenv("OPENAI_API_KEY")
@@ -160,9 +171,9 @@ class MilvusManager:
                     embedding = embedding[: self.config.embedding_dimension]
                 return embedding
             except Exception as e:
-                logger.error(f"Failed to generate OpenAI embedding: {e}")
+                logger.error(brand_log(f"Failed to generate OpenAI embedding: {e}", chip=StatusChip.BLOCKER))
 
-        logger.warning("No API keys configured for embeddings, using dummy embedding")
+        logger.warning(brand_log("No API keys configured for embeddings, using dummy embedding", chip=StatusChip.AFTERCARE))
         return [0.0] * self.config.embedding_dimension
 
     async def upsert_node(self, node: MemoryNode) -> bool:
@@ -205,7 +216,7 @@ class MilvusManager:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to upsert node to Milvus: {e}")
+            logger.error(brand_log(f"Failed to upsert node to Milvus: {e}", chip=StatusChip.BLOCKER))
             return False
 
     async def search_similar(
@@ -296,7 +307,7 @@ class MilvusManager:
             return all_results[:limit]
 
         except Exception as e:
-            logger.error(f"Failed to search Milvus: {e}")
+            logger.error(brand_log(f"Failed to search Milvus: {e}", chip=StatusChip.BLOCKER))
             return []
 
 
@@ -311,9 +322,9 @@ class PostgreSQLManager:
         """Connect to PostgreSQL."""
         try:
             self.pool = await asyncpg.create_pool(self.config.database_url)
-            logger.info("Connected to PostgreSQL")
+            logger.info(brand_log("Connected to PostgreSQL", chip=StatusChip.LIVE))
         except Exception as e:
-            logger.error(f"Failed to connect to PostgreSQL: {e}")
+            logger.error(brand_log(f"Failed to connect to PostgreSQL: {e}", chip=StatusChip.BLOCKER))
             raise
 
     async def upsert_node(self, node: MemoryNode) -> bool:
@@ -344,7 +355,7 @@ class PostgreSQLManager:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to upsert node to PostgreSQL: {e}")
+            logger.error(brand_log(f"Failed to upsert node to PostgreSQL: {e}", chip=StatusChip.BLOCKER))
             return False
 
     async def link_nodes(self, edge: MemoryEdge) -> bool:
@@ -370,7 +381,7 @@ class PostgreSQLManager:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to create edge: {e}")
+            logger.error(brand_log(f"Failed to create edge: {e}", chip=StatusChip.BLOCKER))
             return False
 
     async def get_neighbors(
@@ -432,7 +443,7 @@ class PostgreSQLManager:
                 ]
 
         except Exception as e:
-            logger.error(f"Failed to get neighbors: {e}")
+            logger.error(brand_log(f"Failed to get neighbors: {e}", chip=StatusChip.BLOCKER))
             return []
 
     async def search_nodes(
@@ -483,7 +494,7 @@ class PostgreSQLManager:
                 ]
 
         except Exception as e:
-            logger.error(f"Failed to search nodes: {e}")
+            logger.error(brand_log(f"Failed to search nodes: {e}", chip=StatusChip.BLOCKER))
             return []
 
 
@@ -634,7 +645,7 @@ class ConPortMemoryServer:
                         types.TextContent(type="text", text=f"Unknown tool: {name}")
                     ]
             except Exception as e:
-                logger.error(f"Tool call failed: {e}")
+                logger.error(brand_log(f"Tool call failed: {e}", chip=StatusChip.BLOCKER))
                 return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     async def _handle_mem_upsert(
@@ -735,13 +746,13 @@ class ConPortMemoryServer:
 
     async def start(self):
         """Start the ConPort memory server."""
-        logger.info("Starting ConPort Memory Server...")
+        logger.info(brand_log("Starting ConPort Memory Server...", chip=StatusChip.LIVE))
 
         # Connect to databases
         await self.postgres.connect()
         await self.milvus.connect()
 
-        logger.info("ConPort Memory Server ready")
+        logger.info(brand_log("ConPort Memory Server ready", chip=StatusChip.LIVE))
 
 
 async def main():
@@ -807,7 +818,7 @@ async def main():
                         {"success": False, "error": str(e)}, status=400
                     )
 
-                    logger.error(f"Error: {e}")
+                    logger.error(brand_log(f"Error: {e}", chip=StatusChip.BLOCKER))
             async def memory_upsert(request):
                 """HTTP endpoint for mem.upsert tool."""
                 try:
@@ -836,7 +847,7 @@ async def main():
                         {"success": False, "error": str(e)}, status=400
                     )
 
-                    logger.error(f"Error: {e}")
+                    logger.error(brand_log(f"Error: {e}", chip=StatusChip.BLOCKER))
             async def graph_link(request):
                 """HTTP endpoint for graph.link tool."""
                 try:
@@ -861,7 +872,7 @@ async def main():
                         {"success": False, "error": str(e)}, status=400
                     )
 
-                    logger.error(f"Error: {e}")
+                    logger.error(brand_log(f"Error: {e}", chip=StatusChip.BLOCKER))
             async def graph_neighbors(request):
                 """HTTP endpoint for graph.neighbors tool."""
                 try:
@@ -880,7 +891,7 @@ async def main():
                         {"success": False, "error": str(e)}, status=400
                     )
 
-                    logger.error(f"Error: {e}")
+                    logger.error(brand_log(f"Error: {e}", chip=StatusChip.BLOCKER))
             # Add HTTP endpoints
             search_route = app.router.add_post("/api/mem/search", memory_search)
             cors.add(search_route)
@@ -917,14 +928,14 @@ async def main():
                         await asyncio.sleep(60)
                         await response.write(b'data: {"type": "heartbeat"}\n\n')
                 except Exception as e:
-                    logger.error(f"Error: {e}")
+                    logger.error(brand_log(f"Error: {e}", chip=StatusChip.BLOCKER))
                 return response
 
             sse_route = app.router.add_get("/sse", sse_handler)
             cors.add(sse_route)
 
             port = int(os.getenv("PORT", "3004"))
-            logger.info(f"Starting HTTP server on port {port}")
+            logger.info(brand_log(f"Starting HTTP server on port {port}", chip=StatusChip.LIVE))
 
             # Create and start the server within the existing event loop
             runner = web.AppRunner(app)
@@ -932,7 +943,7 @@ async def main():
             site = web.TCPSite(runner, "0.0.0.0", port)
             await site.start()
 
-            logger.info(f"HTTP server started on http://0.0.0.0:{port}")
+            logger.info(brand_log(f"HTTP server started on http://0.0.0.0:{port}", chip=StatusChip.LIVE))
 
             # Keep the server running
             try:
@@ -950,7 +961,7 @@ async def main():
                     server_instance.server.create_initialization_options(),
                 )
     except Exception as e:
-        logger.error(f"Server failed: {e}")
+        logger.error(brand_log(f"Server failed: {e}", chip=StatusChip.BLOCKER))
         sys.exit(1)
 
 
