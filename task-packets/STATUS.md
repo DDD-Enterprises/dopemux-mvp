@@ -35,13 +35,11 @@ Promotion determinism under audit
 PM / Task Management Plane
 Status: 🟡 In Progress
 Active Packets:
-PM-CONTINUE-01 — Write Boundary Classification + Reflection Receipts
-PM-CONTINUE-02 — PM Event Taxonomy + Provenance Enforcement
-PM-CONTINUE-03 — Bridge Authority Narrowing + Canonical Reads
-PM-CONTINUE-04 — Truth Rebaseline
+None (stacked continuation PRs under review; packet artifacts not yet registered in `task-packets/INDEX.md`)
 Notes:
 Canonical PM read/write entrypoints now exist under `src/dopemux/pm/`
-Workflow reads route to Task Orchestrator; metadata writes route to Leantime
+Metadata writes route to Leantime; progress writes route to ConPort
+Workflow reads currently return fail-closed Task Orchestrator envelopes while authoritative project bindings are still incomplete
 Project-scoped workflow transition still fails closed as `unavailable`
 ────────────────────
 Workflow / Execution Control Plane

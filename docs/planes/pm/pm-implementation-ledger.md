@@ -16,16 +16,16 @@ prelude: Post-merge PM-plane implementation ledger replacing the older Phase 0 g
 **Baseline**: `origin/main` plus PM continuation packets `01` through `04`
 **Replaces**: Phase 0 Gap View (`docs/planes/pm/pm-plane-gaps.md`)
 
-This ledger records runtime truth, not target architecture prose. When the runtime diverges from the normalized PM-plane contract, the status is marked `partial` or `drifted` rather than promoted to `implemented`.
+This ledger records runtime truth, not target architecture prose. When the runtime diverges from the normalized PM-plane contract, the status is marked `partial` rather than promoted to `implemented`.
 
 ## 1. Normalized PM-plane tools
 
 | Tool | Status | Runtime evidence | Notes |
 |---|---|---|---|
 | `pm_get_project_context` | Partial | `src/dopemux/pm/reads.py` | Exists, but currently returns a fail-closed Leantime envelope with empty `context_data`; it does not yet satisfy the ConPort-enriched contract described in the normalized tool docs. |
-| `pm_get_priority_queue` | Implemented | `src/dopemux/pm/reads.py`; `services/task-orchestrator/app/api/project_workflow.py` | Normalized read exists and now routes to Task Orchestrator as the canonical workflow authority. |
-| `pm_get_blockers` | Implemented | `src/dopemux/pm/reads.py`; `services/task-orchestrator/app/api/project_workflow.py` | Normalized read exists and now routes to Task Orchestrator with fail-closed envelopes. |
-| `pm_get_workflow_state` | Implemented | `src/dopemux/pm/reads.py`; `services/task-orchestrator/app/api/project_workflow.py` | Normalized read exists and now routes to Task Orchestrator with explicit legality fields. |
+| `pm_get_priority_queue` | Partial | `src/dopemux/pm/reads.py`; `services/task-orchestrator/app/api/project_workflow.py` | Normalized read exists and routes to Task Orchestrator, but the current project-scoped route returns a fail-closed unavailable envelope with no authoritative queue items yet. |
+| `pm_get_blockers` | Partial | `src/dopemux/pm/reads.py`; `services/task-orchestrator/app/api/project_workflow.py` | Normalized read exists and routes to Task Orchestrator, but the current project-scoped route returns a fail-closed unavailable blocker envelope rather than authoritative blocker state. |
+| `pm_get_workflow_state` | Partial | `src/dopemux/pm/reads.py`; `services/task-orchestrator/app/api/project_workflow.py` | Normalized read exists and routes to Task Orchestrator, but the current project-scoped route returns a fail-closed unavailable workflow-state envelope rather than authoritative transition state. |
 | `pm_update_work_item` | Implemented | `src/dopemux/pm/writes.py` | Canonical metadata write exists and rejects workflow-significant payloads. |
 | `pm_transition_work_item` | Partial | `src/dopemux/pm/writes.py`; `services/task-orchestrator/app/api/project_workflow.py` | Canonical write helper exists, but the project-scoped Task Orchestrator transition endpoint currently returns `legality_result="unavailable"` until a canonical runtime binding is added. |
 | `pm_get_sprint_snapshot` | Partial | `src/dopemux/pm/reads.py` | Exists, but currently returns a fail-closed Leantime envelope with empty `snapshot_data`. |
@@ -46,10 +46,10 @@ The duplicate legacy entrypoints `src/dopemux/pm/read.py` and `src/dopemux/pm/wr
 
 ## 3. Runtime truths now established
 
-### Normalized workflow reads are present
+### Normalized workflow reads are present but still thin
 - `pm_get_priority_queue`, `pm_get_blockers`, and `pm_get_workflow_state` now exist in `src/dopemux/pm/reads.py`.
 - Their canonical backend is Task Orchestrator, not Leantime.
-- `services/task-orchestrator/app/api/project_workflow.py` now passes those legality/blocker envelopes through instead of hard-coding `allowed` responses.
+- `services/task-orchestrator/app/api/project_workflow.py` now serves non-recursive fail-closed envelopes instead of recursively calling back through the public PM read adapter.
 
 ### PM write boundaries are enforced
 - `src/dopemux/pm/writes.py` is the canonical mutation layer.
@@ -62,7 +62,7 @@ The duplicate legacy entrypoints `src/dopemux/pm/read.py` and `src/dopemux/pm/wr
 - Taskmaster, Task Orchestrator, and bridge event emitters were normalized onto that envelope in the continuation stack.
 
 ### Bridge authority is narrower
-- `services/dopecon-bridge/dopecon_bridge/services/task_integration.py` now reads queue state through the normalized PM read layer.
+- `services/dopecon-bridge/dopecon_bridge/services/task_integration.py` now reads queue state directly from the Task Orchestrator HTTP surface instead of importing `dopemux.pm.reads` inside the bridge container.
 - The same adapter now requires an authoritative Task Orchestrator transition result before it mirrors status to Leantime.
 - This removes the last active import of the legacy `dopemux.pm.write` module from the repo runtime.
 
@@ -70,6 +70,9 @@ The duplicate legacy entrypoints `src/dopemux/pm/read.py` and `src/dopemux/pm/wr
 
 ### Project-scoped transition binding is still missing
 The Task Orchestrator project workflow route exists, but `services/task-orchestrator/app/api/project_workflow.py` currently returns a fail-closed `legality_result="unavailable"` envelope for generic transitions. That is deliberate runtime truth, not a successful workflow transition implementation.
+
+### Workflow reads are still fail-closed
+The queue, blockers, and workflow-state read surfaces no longer recurse, but the current project-scoped Task Orchestrator route still returns explicit unavailable envelopes with empty data. That makes these normalized read tools partial, not fully implemented.
 
 ### Project context and sprint snapshot are still thin
 `pm_get_project_context` and `pm_get_sprint_snapshot` exist only as fail-closed Leantime-backed envelopes. They satisfy the naming contract, but not the full normalized data contract described in the PM-plane docs.

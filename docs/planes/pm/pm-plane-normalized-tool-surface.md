@@ -74,7 +74,7 @@ Whenever a tool pulls from more than one plane, the response must preserve:
 
 The current runtime now differs from the older March 22 ledger in a more specific way:
 
-- `pm_get_priority_queue`, `pm_get_blockers`, and `pm_get_workflow_state` are implemented in `src/dopemux/pm/reads.py` and route to Task Orchestrator-backed envelopes
+- `pm_get_priority_queue`, `pm_get_blockers`, and `pm_get_workflow_state` are implemented in `src/dopemux/pm/reads.py` and route to Task Orchestrator-backed envelopes, but those envelopes are still fail-closed and currently carry unavailable/empty workflow data
 - `pm_update_work_item`, `pm_transition_work_item`, and `pm_log_progress` are implemented in `src/dopemux/pm/writes.py`
 - `pm_get_work_chronicle` is implemented in `src/dopemux/pm/chronicle.py`
 - `pm_get_project_context` and `pm_get_sprint_snapshot` exist only as fail-closed Leantime-backed envelopes, so they do not yet satisfy the richer target contract in the table above
@@ -85,6 +85,7 @@ Implications:
 
 - bridge implementations must fail closed or return an explicit unavailable/deferred result rather than invent local workflow truth
 - no Leantime or bridge-local surface may claim to replace the missing Task Orchestrator transition binding
+- workflow queue/blocker/state reads should be treated as partial until authoritative project-scoped data is returned
 - the implementation ledger should be used for current runtime status, while this document remains the contract target
 
 ## Never treat these as the long-term agent contract
