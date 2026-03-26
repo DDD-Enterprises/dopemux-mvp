@@ -158,7 +158,7 @@ class TaskOrchestratorBridgeAdapter:
 
             from dopemux.pm.adapters.core import orchestrator_event_to_pm
             raw_event = {
-                "event_type": "task_updated",
+                "event_type": "orchestrator.task.synced",
                 "data": {
                     "task_id": task.task_id,
                     "conport_entry_id": result.get("id"),
@@ -269,7 +269,7 @@ class TaskOrchestratorBridgeAdapter:
             raw_data.setdefault("original_event_type", f"orchestrator.{event_type}")
             raw_data.setdefault("ts_utc", _utc_now_z())
             raw_event = {
-                "event_type": event_type,
+                "event_type": f"orchestrator.{event_type}",
                 "data": raw_data,
                 "source": self.requester,
             }

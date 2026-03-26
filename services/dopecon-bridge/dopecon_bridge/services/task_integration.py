@@ -4,6 +4,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from dopemux.pm.reads import pm_get_priority_queue
+
 from ..clients import mcp_client
 from ..config import settings
 from ..models import Task, TaskPriority, TaskStatus
@@ -100,8 +102,8 @@ class TaskIntegrationService:
         Route request to canonical workflow authority to get next actionable tasks.
         """
         try:
-            result = await self.get_priority_queue(project_id)
-            task_records = result.get("queue_items", [])[:limit]
+            result = await pm_get_priority_queue(project_id)
+            task_records = result.queue_items[:limit]
             actionable_tasks = [
                 Task(
                     id=str(record.get("id")),
@@ -194,17 +196,8 @@ class TaskIntegrationService:
 
     async def get_priority_queue(self, project_id: str) -> Dict[str, Any]:
         """Return the canonical project workflow queue via the PM-plane read layer."""
-        await self.mcp_manager.initialize()
-        queue_url = f"{settings.task_orchestrator_url}/api/projects/{project_id}/workflow/queue"
-
-        async with self.mcp_manager.session.get(queue_url) as response:
-            if response.status >= 400:
-                detail = await response.text()
-                raise RuntimeError(
-                    f"Task Orchestrator rejected queue request for {project_id}: "
-                    f"{response.status} {detail}"
-                )
-            return await response.json()
+        result = await pm_get_priority_queue(project_id)
+        return result.model_dump()
 
 
 task_service = TaskIntegrationService()
