@@ -416,23 +416,20 @@ class PostgreSQLManager:
                     rows = await conn.fetch(query, node_id, depth)
 
                 # Convert to dictionaries
-                neighbors = []
-                for row in rows:
-                    neighbors.append(
-                        {
-                            "id": row["id"],
-                            "type": row["type"],
-                            "text": row["text"],
-                            "metadata": (
-                                json.loads(row["metadata"]) if row["metadata"] else {}
-                            ),
-                            "repo": row["repo"],
-                            "author": row["author"],
-                            "depth": row["depth"],
-                        }
-                    )
-
-                return neighbors
+                return [
+                    {
+                        "id": row["id"],
+                        "type": row["type"],
+                        "text": row["text"],
+                        "metadata": (
+                            json.loads(row["metadata"]) if row["metadata"] else {}
+                        ),
+                        "repo": row["repo"],
+                        "author": row["author"],
+                        "depth": row["depth"],
+                    }
+                    for row in rows
+                ]
 
         except Exception as e:
             logger.error(f"Failed to get neighbors: {e}")
@@ -470,23 +467,20 @@ class PostgreSQLManager:
                 rows = await conn.fetch(query, *params)
 
                 # Convert to dictionaries
-                nodes = []
-                for row in rows:
-                    nodes.append(
-                        {
-                            "id": row["id"],
-                            "type": row["type"],
-                            "text": row["text"],
-                            "metadata": (
-                                json.loads(row["metadata"]) if row["metadata"] else {}
-                            ),
-                            "repo": row["repo"],
-                            "author": row["author"],
-                            "created_at": row["created_at"].isoformat(),
-                        }
-                    )
-
-                return nodes
+                return [
+                    {
+                        "id": row["id"],
+                        "type": row["type"],
+                        "text": row["text"],
+                        "metadata": (
+                            json.loads(row["metadata"]) if row["metadata"] else {}
+                        ),
+                        "repo": row["repo"],
+                        "author": row["author"],
+                        "created_at": row["created_at"].isoformat(),
+                    }
+                    for row in rows
+                ]
 
         except Exception as e:
             logger.error(f"Failed to search nodes: {e}")

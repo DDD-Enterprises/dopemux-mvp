@@ -5,7 +5,7 @@
 - [VERIFIED] Deterministic retrieval primitives already exist: fixed sort + cursor token + Top-K caps. (source: `services/working-memory-assistant/chronicle/store.py:297-314`, `services/working-memory-assistant/mcp/server.py:88-120`, `services/working-memory-assistant/mcp/server.py:156-157`)
 - [VERIFIED] Redaction-first persistence exists and is compatible with strict policies. (source: `services/working-memory-assistant/promotion/redactor.py:102-179`)
 - [VERIFIED] Context hydration exists today via request middleware (`X-Context-Token`) and service-local retrieval surfaces. (source: `services/dopecon-bridge/main.py:628-665`, `services/dope-context/src/mcp/server.py:1500-1533`)
-- [VERIFIED] Spec already states “no duplication”, Top-3 boundaries, deterministic behavior, and stream contracts. (source: `docs/spec/dope-memory/v1/00_overview.md:26-48`, `docs/spec/dope-memory/v1/01_architecture.md:50-117`)
+- [VERIFIED] Spec already states “no duplication”, Top-3 boundaries, deterministic behavior, and stream contracts. (source: `docs/spec/dope-memory/v1/00-overview.md:26-48`, `docs/spec/dope-memory/v1/01-architecture.md:50-117`)
 
 ## 2) Proposed Minimal Multi-Layer Memory Architecture (v1.1)
 
@@ -25,7 +25,7 @@
 
 Why this fits current repo:
 - [VERIFIED] Current schema already separates raw vs curated vs reflection/trajectory tables. (source: `services/working-memory-assistant/chronicle/schema.sql:5-146`)
-- [VERIFIED] Existing promotion model already prevents broad event duplication. (source: `services/working-memory-assistant/promotion/promotion.py:13-35`, `docs/spec/dope-memory/v1/01_architecture.md:78-86`)
+- [VERIFIED] Existing promotion model already prevents broad event duplication. (source: `services/working-memory-assistant/promotion/promotion.py:13-35`, `docs/spec/dope-memory/v1/01-architecture.md:78-86`)
 
 ## 2.2 Per-Lane Opt-In Injection Policy
 - [INFERRED] Add explicit policy file: `config/memory/lanes.yaml`.
@@ -95,7 +95,7 @@ Anchors:
   - attach lane metadata (`lane`, `workspace_id`, `instance_id`, `entry_id`) to indexed docs.
 
 Anchors:
-- [VERIFIED] Current system already treats Postgres mirror/vector indexing as non-canonical/best-effort. (source: `docs/spec/dope-memory/v1/00_overview.md:39-43`, `services/working-memory-assistant/eventbus_consumer.py:714-753`)
+- [VERIFIED] Current system already treats Postgres mirror/vector indexing as non-canonical/best-effort. (source: `docs/spec/dope-memory/v1/00-overview.md:39-43`, `services/working-memory-assistant/eventbus_consumer.py:714-753`)
 
 ## 2.5 Deterministic Injection Decision Interface
 - [INFERRED] Add explicit tool/endpoint contract:

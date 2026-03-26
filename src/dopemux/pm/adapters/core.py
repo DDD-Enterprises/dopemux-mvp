@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from .events import PMEventType, canonical_json, create_pm_event, sha256_hex
-from .models import content_hash_task_id, normalize_text as _normalize_text
+from ..events import PMEventType, canonical_json, create_pm_event, sha256_hex
+from ..models import content_hash_task_id, normalize_text as _normalize_text
 
 
 _DEFAULT_TS_UTC = "1970-01-01T00:00:00Z"

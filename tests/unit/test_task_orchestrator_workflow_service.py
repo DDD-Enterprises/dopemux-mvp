@@ -52,6 +52,21 @@ class InMemoryWorkflowStore:
         item = self.epics.get(epic_id)
         return dict(item) if item else None
 
+    async def save_audit_record(self, record):
+        return True
+
+    async def get_idea_by_idempotency_key(self, key):
+        for val in self.ideas.values():
+            if val.get("idempotency_key") == key:
+                return val
+        return None
+
+    async def get_epic_by_idempotency_key(self, key):
+        for val in self.epics.values():
+            if val.get("idempotency_key") == key:
+                return val
+        return None
+
     async def list_ideas(self, status=None, tag=None, limit=50):
         rows = list(self.ideas.values())
         if status:

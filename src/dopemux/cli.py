@@ -46,6 +46,7 @@ from .console import console
 # Load environment variables from .env file
 load_dotenv()
 check_dotenv_support()
+from .pm.writes import PMWriteConfig
 from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
 from .claude import ClaudeConfigurator, ClaudeLauncher
 from .dope_brainz_router import (
@@ -2180,8 +2181,24 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
 
         console.logger.info(table)
 
+    # Attempt to build PM-plane config for writes
+    pm_config = None
+    try:
+        from .config import ConfigManager
+        config_mgr = ConfigManager()
+        # Stub the clients as this context primarily needs offline queue capability
+        # until the full ConfigManager -> PMWriteConfig pipe is initialized
+        pm_config = PMWriteConfig(
+            leantime_client=getattr(config_mgr, "leantime_client", None),
+            orchestrator_client=getattr(config_mgr, "orchestrator_client", None),
+            conport_client=getattr(config_mgr, "conport_client", None),
+            memory_client=getattr(config_mgr, "memory_client", None),
+        )
+    except Exception as e:
+        logger.debug(f"Could not build PMWriteConfig for status command: {e}")
+
     if tasks:
-        decomposer = TaskDecomposer(project_path)
+        decomposer = TaskDecomposer(project_path, pm_config=pm_config)
         progress_info = decomposer.get_progress()
 
         if progress_info:
@@ -2336,6 +2353,8 @@ def task(
     - /dx:load - Load tasks from ConPort
     - /dx:stats - View ADHD metrics and progress
 
+    For backwards compatibility, this command remains but delegates
+    to the TaskDecomposer tracking (now synced to the canonical PM plane).
     See: docs/90-adr/ADR-XXXX-path-c-migration.md
     """
     console.logger.info("[yellow]" + "="*60 + "[/yellow]")
@@ -2359,7 +2378,25 @@ def task(
         console.logger.info("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
-    decomposer = TaskDecomposer(project_path)
+    # Build PM-plane config for writes
+    pm_config = None
+    try:
+        from .config import ConfigManager
+        config_mgr = ConfigManager()
+        # Initialize client stubs
+        pm_config = PMWriteConfig(
+            leantime_client=getattr(config_mgr, "leantime_client", None),
+            orchestrator_client=getattr(config_mgr, "orchestrator_client", None),
+            conport_client=getattr(config_mgr, "conport_client", None),
+            memory_client=getattr(config_mgr, "memory_client", None),
+        )
+    except Exception as e:
+        logger.debug(f"Could not build PMWriteConfig for task command: {e}")
+
+    decomposer = TaskDecomposer(project_path, pm_config=pm_config)
+    
+    # Try an automatic background backfill whenever interacting with CLI task logic
+    decomposer.backfill_to_pm_plane()
 
     if list_tasks:
         tasks = decomposer.list_tasks()

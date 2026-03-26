@@ -9,7 +9,7 @@
 | `dope_memory_main.py` root `GET /` listing | **7** | Lines 1072–1080 |
 | `mcp/server.py` `DopeMemoryMCPServer` methods | **7** | Lacks `memory_generate_reflection`, `memory_reflections`, `memory_trajectory` |
 | `services/dope-memory/mcp_stdio_adapter.py` | **3** | Only `memory_recap`, `memory_search`, `memory_store` |
-| `docs/spec/dope-memory/v1/07_mcp_contracts.md` | **7** | Per Phase 1 inspection |
+| `docs/spec/dope-memory/v1/07-mcp-contracts.md` | **7** | Per Phase 1 inspection |
 | Test files covering tools | ~10 | Various test files cover all 10 endpoints |
 
 ### Missing from root listing
@@ -123,5 +123,5 @@ In `compose.yml`, `DOPEMUX_SQLITE_JOURNAL_MODE=DELETE` is explicitly set, overri
 | `services/dope-memory/mcp_stdio_adapter.py` | Targets port 8096 | Update to target port 3020 |
 | `GET /` tool listing | Lists 7 tools | Add Phase 2 tools to listing |
 | `.claude.json` SSE config | Non-functional | Either implement `/mcp` SSE endpoint or add MCP proxy |
-| `docs/spec/dope-memory/v1/07_mcp_contracts.md` | 7 tools documented | Update to cover all 10 tools |
+| `docs/spec/dope-memory/v1/07-mcp-contracts.md` | 7 tools documented | Update to cover all 10 tools |
 | WMA-era modules (`wma_core.py`, `bridge_adapter.py`, etc.) | Dead code for dope-memory | Consider extracting to separate directory or removing |

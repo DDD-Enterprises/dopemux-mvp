@@ -35,6 +35,7 @@ class LiteLLMProcessInfo:
         instance_id: str,
         port: int,
         config_path: Path,
+        config_data: Dict[str, Any],
         log_path: Path,
         master_key: str,
         process: subprocess.Popen,
@@ -44,6 +45,7 @@ class LiteLLMProcessInfo:
         self.instance_id = instance_id
         self.port = port
         self.config_path = config_path
+        self.config_data = config_data
         self.log_path = log_path
         self.master_key = master_key
         self.process = process
@@ -157,7 +159,7 @@ class LiteLLMHealthMonitor:
             self.manager.start_instance(
                 process_info.instance_id,
                 process_info.port,
-                process_info.config_path,
+                process_info.config_data,
                 process_info.db_enabled,
                 process_info.db_url
             )
@@ -245,6 +247,7 @@ class LiteLLMManager:
                 instance_id=instance_id,
                 port=port,
                 config_path=config_path,
+                config_data=config_data,
                 log_path=log_path,
                 master_key=master_key,
                 process=process,
