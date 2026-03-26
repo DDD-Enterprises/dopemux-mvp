@@ -78,10 +78,10 @@ This document tracks the immediate follow-up ticket set for PM-plane execution a
 - Timestamp: `2026-03-11T19:09:17.367064+00:00`
 - Baseline: `main...HEAD`
 - Mode: `best-effort`
-- Ticket `PM-TO-001`: `ledger-fallback` reason=`task-orchestrator unavailable` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
-- Ticket `PM-TO-002`: `ledger-fallback` reason=`task-orchestrator unavailable` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
-- Ticket `PM-TO-003`: `ledger-fallback` reason=`task-orchestrator unavailable` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
-- Ticket `PM-TO-004`: `ledger-fallback` reason=`task-orchestrator unavailable` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
+- Ticket `PM-TO-001`: `superseded` reason=`implemented in PR-INT-31` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
+- Ticket `PM-TO-002`: `superseded` reason=`implemented in PR-INT-31` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
+- Ticket `PM-TO-003`: `superseded` reason=`implemented in PR-INT-31` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
+- Ticket `PM-TO-004`: `superseded` reason=`implemented in PR-INT-31` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
 - Ticket `PM-TO-005`: `ledger-fallback` reason=`task-orchestrator unavailable` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
 - Ticket `PM-TO-006`: `ledger-fallback` reason=`task-orchestrator unavailable` retry_after_utc=`2026-03-12T19:09:17.367064+00:00`
 
