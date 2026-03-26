@@ -155,19 +155,50 @@ async def publish_event(request: PublishEventRequest):
         event_bus = EventBus()
         await event_bus.initialize()
         
-        event = Event(
-            type=request.event_type,
-            data=request.data,
-            source=request.source or settings.service_name
-        )
+        source = request.source or settings.service_name
+
+        from dopemux.pm.adapters.core import taskmaster_event_to_pm, orchestrator_event_to_pm
         
+        if request.event_type.startswith("taskmaster.task."):
+            canonical_envelope = taskmaster_event_to_pm(
+                event_type=request.event_type,
+                data=request.data,
+                source=source
+            )
+            event = Event(
+                type=canonical_envelope["event_type"],
+                data=canonical_envelope,
+                source=source
+            )
+        elif request.event_type.startswith("orchestrator."):
+            raw_event = {
+                "event_type": request.event_type,
+                "data": request.data,
+                "source": source
+            }
+            canonical_envelope = orchestrator_event_to_pm(
+                raw_event,
+                source=source
+            )
+            event = Event(
+                type=canonical_envelope["event_type"],
+                data=canonical_envelope,
+                source=source
+            )
+        else:
+            event = Event(
+                type=request.event_type,
+                data=request.data,
+                source=source
+            )
+
         msg_id = await event_bus.publish(request.stream, event)
         
         return {
             \"success\": True,
             \"message_id\": msg_id,
             \"stream\": request.stream,
-            \"event_type\": request.event_type
+            "event_type": event.type
         }
     except Exception as e:
         logger.error(f\"Event publish failed: {e}\")
