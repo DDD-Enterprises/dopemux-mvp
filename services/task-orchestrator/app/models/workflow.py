@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, root_validator, validator
 
@@ -36,12 +36,40 @@ def normalize_tags(tags: Optional[List[str]]) -> List[str]:
     return result
 
 
+class LeantimeReflection(BaseModel):
+    """Provenance and reconciliation state for Leantime mirroring."""
+
+    status: Literal["pending", "success", "failed", "degraded"] = "pending"
+    warning: Optional[str] = None
+    last_synced_at: Optional[str] = None
+    leantime_project_id: Optional[int] = None
+    sync_direction: str = "local→leantime"
+    drift_detected: bool = False
+
+
 class ADHDMetadata(BaseModel):
     """ADHD-oriented metadata attached to epics."""
 
     estimated_complexity: float = Field(0.0, ge=0.0, le=1.0)
     required_energy_level: EnergyLevel = "medium"
     can_work_parallel: bool = True
+
+
+class TransitionAuditRecord(BaseModel):
+    """Immutable audit record for a workflow state transition."""
+
+    id: str
+    entity_id: str
+    transition_type: str
+    from_state: str
+    to_state: str
+    actor: str = "system"
+    timestamp: str = Field(default_factory=utc_now_iso)
+    idempotency_key: Optional[str] = None
+    version_before: int
+    version_after: int
+    linked_ids_snapshot: Dict[str, Optional[str]] = Field(default_factory=dict)
+    receipt_id: Optional[str] = None
 
 
 class WorkflowIdea(BaseModel):
@@ -57,6 +85,8 @@ class WorkflowIdea(BaseModel):
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
     promoted_to_epic_id: Optional[str] = None
+    version: int = Field(default=1)
+    idempotency_key: Optional[str] = None
 
     @validator("id")
     def validate_id(cls, value: str) -> str:
@@ -94,10 +124,13 @@ class WorkflowEpic(BaseModel):
     status: EpicStatus = "planned"
     created_from_idea_id: Optional[str] = None
     leantime_project_id: Optional[int] = None
+    leantime_reflection: Optional[LeantimeReflection] = None
     tags: List[str] = Field(default_factory=list)
     adhd_metadata: ADHDMetadata = Field(default_factory=ADHDMetadata)
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
+    version: int = Field(default=1)
+    idempotency_key: Optional[str] = None
 
     @validator("id")
     def validate_id(cls, value: str) -> str:
@@ -137,6 +170,7 @@ class CreateIdeaRequest(BaseModel):
     source: IdeaSource = "other"
     creator: str = Field("system", min_length=1)
     tags: List[str] = Field(default_factory=list)
+    idempotency_key: Optional[str] = None
 
     _normalize_tags = validator("tags", pre=True, allow_reuse=True)(normalize_tags)
 
@@ -148,6 +182,8 @@ class UpdateIdeaRequest(BaseModel):
     description: Optional[str] = None
     status: Optional[IdeaStatus] = None
     tags: Optional[List[str]] = None
+    version: Optional[int] = None
+    idempotency_key: Optional[str] = None
 
     _normalize_tags = validator("tags", pre=True, allow_reuse=True)(normalize_tags)
 
@@ -170,6 +206,7 @@ class CreateEpicRequest(BaseModel):
     created_from_idea_id: Optional[str] = None
     tags: List[str] = Field(default_factory=list)
     adhd_metadata: ADHDMetadata = Field(default_factory=ADHDMetadata)
+    idempotency_key: Optional[str] = None
 
     @validator("acceptance_criteria", pre=True, always=True)
     def normalize_criteria(cls, value: Optional[List[str]]) -> List[str]:
@@ -178,6 +215,52 @@ class CreateEpicRequest(BaseModel):
         return [item.strip() for item in value if str(item).strip()]
 
     _normalize_tags = validator("tags", pre=True, allow_reuse=True)(normalize_tags)
+
+
+class TransitionWorkflowRequest(BaseModel):
+    """API request for transitioning a workflow."""
+
+    workflow_id: str
+    transition: str
+    actor: Optional[str] = None
+    idempotency_key: Optional[str] = None
+
+
+class WorkflowEnvelopeBase(BaseModel):
+    """Base response envelope for project-scoped workflow API."""
+
+    project_id: str
+    workflow_id: Optional[str] = None
+    linked_ids: Dict[str, str] = Field(default_factory=dict)
+    legality_result: Optional[str] = None
+    blockers: List[str] = Field(default_factory=list)
+    next_action: Optional[Dict[str, Any]] = None
+
+
+class PriorityQueueResult(WorkflowEnvelopeBase):
+    """Response envelope for workflow priority queue."""
+
+    queue_items: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+class BlockersResult(WorkflowEnvelopeBase):
+    """Response envelope for workflow blockers."""
+
+    active_blockers: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+class WorkflowStateResult(WorkflowEnvelopeBase):
+    """Response envelope for workflow state snapshot."""
+
+    state: Dict[str, Any] = Field(default_factory=dict)
+    allowed_transitions: List[str] = Field(default_factory=list)
+
+
+class TransitionResult(WorkflowEnvelopeBase):
+    """Response envelope for workflow state transition."""
+
+    transition_receipt: Dict[str, Any] = Field(default_factory=dict)
+    resulting_state: Dict[str, Any] = Field(default_factory=dict)
 
 
 class UpdateEpicRequest(BaseModel):
@@ -191,7 +274,10 @@ class UpdateEpicRequest(BaseModel):
     status: Optional[EpicStatus] = None
     tags: Optional[List[str]] = None
     leantime_project_id: Optional[int] = None
+    leantime_reflection: Optional[LeantimeReflection] = None
     adhd_metadata: Optional[ADHDMetadata] = None
+    version: Optional[int] = None
+    idempotency_key: Optional[str] = None
 
     @validator("acceptance_criteria", pre=True, always=False)
     def normalize_criteria(cls, value: Optional[List[str]]) -> Optional[List[str]]:
@@ -230,6 +316,7 @@ class PromoteIdeaRequest(BaseModel):
     priority: EpicPriority = "medium"
     tags: Optional[List[str]] = None
     adhd_metadata: ADHDMetadata = Field(default_factory=ADHDMetadata)
+    idempotency_key: Optional[str] = None
 
     @validator("acceptance_criteria", pre=True, always=True)
     def normalize_criteria(cls, value: Optional[List[str]]) -> List[str]:

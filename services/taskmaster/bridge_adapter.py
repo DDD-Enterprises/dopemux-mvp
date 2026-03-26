@@ -9,9 +9,10 @@ Task management via DopeconBridge for:
 
 from typing import Dict, Any, List, Optional
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import sys
 import logging
+import httpx
 
 # Add shared modules
 SHARED_DIR = Path(__file__).parent.parent / "shared"
@@ -22,7 +23,85 @@ from dopecon_bridge_client import (
     DopeconBridgeConfig,
 )
 
+from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest, content_hash_task_id, PMLinkedIDUpdateRequest
+from dopemux.pm.store import InMemoryPMTaskStore
+from dopemux.pm.writes import PMWriteConfig, pm_update_work_item, pm_transition_work_item, pm_log_progress
+from dopemux.pm.mapping import TASKMASTER_TO_CANONICAL
+
 logger = logging.getLogger(__name__)
+
+class SyncBridgeAdapterClientStub:
+    """Uses a synchronous HTTPX client to implement proxy clients for PMWriteConfig.
+    This guarantees block execution and explicit fail-closed exceptions.
+    """
+    def __init__(self, config: DopeconBridgeConfig):
+        self.base_url = config.base_url
+        self.headers = {"Authorization": f"Bearer {config.token}", "x-source-plane": config.source_plane}
+        self.client = httpx.Client(base_url=self.base_url, headers=self.headers, timeout=config.timeout)
+
+class SyncLeantimeBridgeClient(SyncBridgeAdapterClientStub):
+    def update_task(self, task_id: str, updates: Dict[str, Any], idempotency_key: str):
+        payload = {
+            "source": "cognitive",
+            "operation": "leantime.update_task",
+            "data": {"task_id": task_id, "updates": updates, "idempotency_key": idempotency_key},
+            "requester": "taskmaster"
+        }
+        resp = self.client.post("/route/pm", json=payload)
+        resp.raise_for_status()
+            
+    def update_status(self, task_id: str, status: str, idempotency_key: str):
+        payload = {
+            "source": "cognitive",
+            "operation": "leantime.update_status",
+            "data": {"task_id": task_id, "status": status, "idempotency_key": idempotency_key},
+            "requester": "taskmaster"
+        }
+        resp = self.client.post("/route/pm", json=payload)
+        resp.raise_for_status()
+
+class SyncOrchestratorBridgeClient(SyncBridgeAdapterClientStub):
+    def transition(self, task_id: str, status: Any, reason: str, expected_version: int, idempotency_key: str):
+        payload = {
+            "source": "cognitive",
+            "operation": "orchestrator.transition",
+            "data": {
+                "task_id": task_id, 
+                "status": status.value if hasattr(status, 'value') else status, 
+                "reason": reason, 
+                "expected_version": expected_version,
+                "idempotency_key": idempotency_key
+            },
+            "requester": "taskmaster"
+        }
+        resp = self.client.post("/route/pm", json=payload)
+        resp.raise_for_status()
+
+class SyncConportBridgeClient(SyncBridgeAdapterClientStub):
+    def record_progress(self, task_id: str, progress_notes: str, is_decision: bool, idempotency_key: str):
+        payload = {
+            "description": progress_notes,
+            "status": "DONE" if is_decision else "IN_PROGRESS",
+            "metadata": {"taskmaster_task": True, "idempotency_key": idempotency_key, "task_id": task_id}
+        }
+        resp = self.client.post("/kg/progress", json=payload)
+        resp.raise_for_status()
+
+class SyncMemoryBridgeClient(SyncBridgeAdapterClientStub):
+    def append_chronicle(self, task_id: str, progress_notes: str, is_decision: bool, idempotency_key: str):
+        payload = {
+            "source": "cognitive",
+            "operation": "memory.append_chronicle",
+            "data": {
+                "task_id": task_id,
+                "progress_notes": progress_notes,
+                "is_decision": is_decision,
+                "idempotency_key": idempotency_key
+            },
+            "requester": "taskmaster"
+        }
+        resp = self.client.post("/route/pm", json=payload)
+        resp.raise_for_status()
 
 
 class TaskMasterBridgeAdapter:
@@ -46,6 +125,15 @@ class TaskMasterBridgeAdapter:
             )
         
         self.client = AsyncDopeconBridgeClient(config=config)
+        self.pm_store = InMemoryPMTaskStore()
+        
+        # Configure PM writes using the synchronous blocking clients
+        self.pm_config = PMWriteConfig(
+            leantime_client=SyncLeantimeBridgeClient(config),
+            orchestrator_client=SyncOrchestratorBridgeClient(config),
+            conport_client=SyncConportBridgeClient(config),
+            memory_client=SyncMemoryBridgeClient(config)
+        )
         logger.info(f"✅ TaskMaster DopeconBridge adapter initialized (workspace: {workspace_id})")
     
     async def __aenter__(self):
@@ -53,6 +141,11 @@ class TaskMasterBridgeAdapter:
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.client.aclose()
+        # Clean up HTTPX sync clients
+        self.pm_config.leantime_client.client.close()
+        self.pm_config.orchestrator_client.client.close()
+        self.pm_config.conport_client.client.close()
+        self.pm_config.memory_client.client.close()
     
     async def create_task(
         self,
@@ -62,35 +155,54 @@ class TaskMasterBridgeAdapter:
         tags: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Create task via DopeconBridge"""
+        """Create task via DopeconBridge and PM Task Store"""
         try:
-            result = await self.client.create_progress_entry(
-                description=f"{title}: {description}",
-                status="TODO",
-                metadata={
-                    "taskmaster_task": True,
-                    "priority": priority,
-                    "tags": tags or [],
-                    "title": title,
-                    **(metadata or {}),
-                },
-                workspace_id=self.workspace_id,
+            task_id = content_hash_task_id("taskmaster", None, title, description)
+            
+            pm_task = PMTask(
+                task_id=task_id,
+                title=title,
+                description=description,
+                status=PMTaskStatus.TODO,
+                source="taskmaster",
+                created_at_utc=datetime.now(timezone.utc),
+                updated_at_utc=datetime.now(timezone.utc),
+            )
+            pm_task = self.pm_store.create(pm_task)
+            
+            # Canonical progress logging
+            idempotency_key = f"create-{task_id}-{pm_task.version}"
+            pm_log_progress(
+                config=self.pm_config,
+                task_id=task_id,
+                progress_notes=f"Task created: {title}\nDescription: {description}",
+                idempotency_key=idempotency_key,
+                is_decision=True
             )
             
             # Publish event
             await self.client.publish_event(
                 event_type="taskmaster.task.created",
                 data={
-                    "task_id": result.get("id"),
+                    "task_id": task_id,
                     "title": title,
                     "priority": priority,
                     "workspace_id": self.workspace_id,
+                    "source": "taskmaster",
+                    "idempotency_key": idempotency_key
                 },
                 source="taskmaster",
             )
             
             logger.info(f"Created task: {title} (priority: {priority})")
-            return result
+            
+            return {
+                "canonical_id": pm_task.task_id,
+                "canonical_version": pm_task.version,
+                "title": title,
+                "priority": priority,
+                "status": "TODO"
+            }
         except Exception as e:
             logger.error(f"Failed to create task: {e}")
             return {}
@@ -124,17 +236,52 @@ class TaskMasterBridgeAdapter:
         task_id: str,
         new_status: str,
     ) -> bool:
-        """Update task status"""
+        """Update task status idempotently via Canonical Store"""
         try:
-            # Create a new progress entry with updated status
-            # (In real implementation, would update existing entry)
+            task = self.pm_store.get(task_id)
+            if not task:
+                logger.error(f"Task {task_id} not found in store")
+                return False
+
+            canonical_status = TASKMASTER_TO_CANONICAL.get(new_status, PMTaskStatus.TODO)
+            idempotency_key = f"status-{task_id}-{canonical_status.value}-{task.version}"
+            
+            try:
+                task = self.pm_store.transition(
+                    task_id=task_id,
+                    req=PMTransitionRequest(
+                        idempotency_key=idempotency_key,
+                        expected_version=task.version,
+                        new_status=canonical_status,
+                        ts_utc=datetime.now(timezone.utc),
+                        source="taskmaster",
+                    )
+                )
+            except Exception as e:
+                logger.error(f"Store transition failed: {e}")
+                return False
+                
+            # Perform canonical PM-plane write synchronously and fail closed
+            pm_transition_work_item(
+                config=self.pm_config,
+                task_id=task_id,
+                new_status=canonical_status,
+                reason=f"Status update to {new_status} via taskmaster",
+                idempotency_key=idempotency_key,
+                expected_version=task.version - 1  # Before the transition was recorded
+            )
+                
             await self.client.publish_event(
                 event_type="taskmaster.task.status_updated",
                 data={
                     "task_id": task_id,
                     "new_status": new_status,
-                    "updated_at": datetime.utcnow().isoformat(),
+                    "canonical_status": canonical_status.value,
+                    "canonical_version": task.version,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
                     "workspace_id": self.workspace_id,
+                    "source": "taskmaster",
+                    "idempotency_key": idempotency_key
                 },
                 source="taskmaster",
             )
@@ -149,45 +296,63 @@ class TaskMasterBridgeAdapter:
         self,
         task_id: str,
     ) -> bool:
-        """Sync task to PM plane (Leantime/etc)"""
+        """Sync task to PM plane using canonical writes"""
         try:
-            # Get task details
-            tasks = await self.get_tasks()
-            task = next((t for t in tasks if t.get("id") == task_id), None)
-            
-            if not task:
-                logger.error(f"Task {task_id} not found")
+            pm_task = self.pm_store.get(task_id)
+            if not pm_task:
+                logger.error(f"Task {task_id} not found in store")
                 return False
-            
-            # Route to PM plane
+                
+            # Fetch actual remote canonical ID properly via route_pm
             response = await self.client.route_pm(
                 operation="taskmaster.sync_task",
                 data={
-                    "task_id": task_id,
-                    "title": task.get("metadata", {}).get("title", "Untitled"),
-                    "description": task.get("description", ""),
-                    "priority": task.get("metadata", {}).get("priority", 3),
-                    "status": task.get("status", "TODO"),
+                    "task_id": pm_task.task_id,
+                    "title": pm_task.title,
+                    "description": pm_task.description,
+                    "priority": 3,
+                    "status": pm_task.status.value,
                 },
                 requester="taskmaster",
             )
             
             if response.success:
-                # Save sync record
-                await self.client.save_custom_data(
-                    workspace_id=self.workspace_id,
-                    category="taskmaster_pm_sync",
-                    key=task_id,
-                    value={
-                        "task_id": task_id,
-                        "pm_task_id": response.data.get("pm_task_id"),
-                        "synced_at": datetime.utcnow().isoformat(),
-                    },
-                )
+                pm_task_id = response.data.get("pm_task_id")
                 
-                logger.info(f"Synced task {task_id} to PM plane")
-            
-            return response.success
+                # Update linked IDs canonically
+                try:
+                    idempotency_key = f"sync-{task_id}-{pm_task_id}"
+                    self.pm_store.update_linked_ids(
+                        task_id=task_id,
+                        req=PMLinkedIDUpdateRequest(
+                            idempotency_key=idempotency_key,
+                            expected_version=pm_task.version,
+                            linked_ids={"leantime": pm_task_id},
+                            ts_utc=datetime.now(timezone.utc),
+                            source="taskmaster",
+                        )
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to update linked IDs: {e}")
+                    return False
+                
+                # Use pm_update_work_item to record the sync passively
+                try:
+                    pm_update_work_item(
+                        config=self.pm_config,
+                        task_id=task_id,
+                        updates={"linked_ids": {"leantime": pm_task_id}},
+                        idempotency_key=idempotency_key
+                    )
+                except Exception as e:
+                    logger.error(f"Failed canonical sync to PM plane: {e}")
+                    return False
+                
+                logger.info(f"Synced task {task_id} to PM plane (canonical_id: {pm_task_id})")
+                return True
+            else:
+                logger.error(f"Failed to route taskmaster.sync_task: {response.error}")
+                return False
         except Exception as e:
             logger.error(f"Failed to sync task to PM plane: {e}")
             return False
@@ -199,13 +364,29 @@ class TaskMasterBridgeAdapter:
     ) -> bool:
         """Assign task to a user"""
         try:
+            task = self.pm_store.get(task_id)
+            if not task:
+                logger.error(f"Task {task_id} not found in store")
+                return False
+                
+            idempotency_key = f"assign-{task_id}-{assignee}-{datetime.now(timezone.utc).timestamp()}"
+            
+            pm_update_work_item(
+                config=self.pm_config,
+                task_id=task_id,
+                updates={"assignee": assignee},
+                idempotency_key=idempotency_key
+            )
+            
             await self.client.publish_event(
                 event_type="taskmaster.task.assigned",
                 data={
                     "task_id": task_id,
                     "assignee": assignee,
-                    "assigned_at": datetime.utcnow().isoformat(),
+                    "assigned_at": datetime.now(timezone.utc).isoformat(),
                     "workspace_id": self.workspace_id,
+                    "source": "taskmaster",
+                    "idempotency_key": idempotency_key
                 },
                 source="taskmaster",
             )
@@ -224,15 +405,30 @@ class TaskMasterBridgeAdapter:
     ) -> bool:
         """Add comment to task"""
         try:
+            task = self.pm_store.get(task_id)
+            if not task:
+                logger.error(f"Task {task_id} not found in store")
+                return False
+                
+            idempotency_key = f"comment-{task_id}-{author}-{datetime.now(timezone.utc).timestamp()}"
+            
+            pm_log_progress(
+                config=self.pm_config,
+                task_id=task_id,
+                progress_notes=f"[{author}]: {comment}",
+                idempotency_key=idempotency_key,
+                is_decision=False
+            )
+            
             await self.client.save_custom_data(
                 workspace_id=self.workspace_id,
                 category="task_comments",
-                key=f"{task_id}_{datetime.utcnow().isoformat()}",
+                key=f"{task_id}_{datetime.now(timezone.utc).isoformat()}",
                 value={
                     "task_id": task_id,
                     "comment": comment,
                     "author": author,
-                    "created_at": datetime.utcnow().isoformat(),
+                    "created_at": datetime.now(timezone.utc).isoformat(),
                 },
             )
             
@@ -242,6 +438,8 @@ class TaskMasterBridgeAdapter:
                     "task_id": task_id,
                     "author": author,
                     "workspace_id": self.workspace_id,
+                    "source": "taskmaster",
+                    "idempotency_key": idempotency_key
                 },
                 source="taskmaster",
             )
@@ -251,7 +449,7 @@ class TaskMasterBridgeAdapter:
         except Exception as e:
             logger.error(f"Failed to add task comment: {e}")
             return False
-    
+            
     async def get_task_comments(
         self,
         task_id: str,
@@ -285,19 +483,19 @@ class TaskMasterBridgeAdapter:
         """Mark task as completed"""
         try:
             # Update status
-            await self.update_task_status(task_id, "DONE")
+            success = await self.update_task_status(task_id, "DONE")
+            if not success:
+                return False
             
-            # Save completion data
-            await self.client.save_custom_data(
-                workspace_id=self.workspace_id,
-                category="task_completions",
-                key=task_id,
-                value={
-                    "task_id": task_id,
-                    "completed_at": datetime.utcnow().isoformat(),
-                    "notes": completion_notes,
-                },
-            )
+            if completion_notes:
+                idempotency_key = f"complete-notes-{task_id}-{datetime.now(timezone.utc).timestamp()}"
+                pm_log_progress(
+                    config=self.pm_config,
+                    task_id=task_id,
+                    progress_notes=f"Completion notes: {completion_notes}",
+                    idempotency_key=idempotency_key,
+                    is_decision=True
+                )
             
             # Publish event
             await self.client.publish_event(
@@ -305,6 +503,7 @@ class TaskMasterBridgeAdapter:
                 data={
                     "task_id": task_id,
                     "workspace_id": self.workspace_id,
+                    "source": "taskmaster"
                 },
                 source="taskmaster",
             )

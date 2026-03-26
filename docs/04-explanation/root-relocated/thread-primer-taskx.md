@@ -17,7 +17,7 @@ This file allows deterministic restart of development in a fresh chat.
 Before proceeding in any new thread:
 
 1. Read:
-- docs/STATELESS_OPERATOR_MODE_PROMPT.md
+- docs/stateless-operator-mode-prompt.md
 - docs/EXECUTIVE_INVARIANTS_1PAGER.md
 1. Confirm:
 - Current branch

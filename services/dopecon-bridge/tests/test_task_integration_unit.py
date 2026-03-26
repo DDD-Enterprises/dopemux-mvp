@@ -52,9 +52,9 @@ async def test_sync_tasks_to_leantime_parallel_execution():
     assert tasks[1].tags == ["leantime_id:leantime_Task 1"]
     assert tasks[2].tags == ["leantime_id:leantime_Task 2"]
 
-    # Verify DB update was called
-    assert mock_session.execute.called
-    assert mock_session.commit.called
+    # DB update was removed
+    assert not mock_session.execute.called
+    assert not mock_session.commit.called
 
 @pytest.mark.asyncio
 async def test_sync_tasks_to_leantime_handles_partial_failure():
@@ -91,14 +91,8 @@ async def test_sync_tasks_to_leantime_handles_partial_failure():
     assert tasks[1].tags == []
     assert tasks[2].tags == ["leantime_id:leantime_Task 2"]
 
-    # DB update should still be called for successful ones
-    assert mock_session.execute.called
-    # Check that only 2 update params were sent
-    args, kwargs = mock_session.execute.call_args
-    update_params = args[1]
-    assert len(update_params) == 2
-    assert update_params[0]["b_id"] == "0"
-    assert update_params[1]["b_id"] == "2"
+    # DB update was removed
+    assert not mock_session.execute.called
 
 @pytest.mark.asyncio
 async def test_sync_tasks_to_leantime_empty_list():

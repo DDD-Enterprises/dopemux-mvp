@@ -17,7 +17,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
 from dopemux.mcp.parallel_executor import MCPParallelExecutor
-from dopemux.file_ops.batch_handler import BatchFileOps
+from dopemux.orchestrator.main_orchestrator import BatchFileOps
 
 
 class MockMCPClient:

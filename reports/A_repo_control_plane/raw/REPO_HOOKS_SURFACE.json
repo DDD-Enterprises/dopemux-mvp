@@ -286,7 +286,7 @@
         "anchor": "L1",
         "excerpt_hash": "59d4797575653ae036843867c40ff595c7b620cd45a66a12dd83ebda2a44ed7b",
         "excerpt_snippet": "--- id: THREAD_PRIMER_TASKX title: Thread Primer Taskx",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "group_id": "GROUP_06f52756f4e0",
       "hooks": [
@@ -312,7 +312,7 @@
             "anchor": "L15",
             "excerpt_hash": "8458eb0f02296119ec7caa3af9f63a8550c594f8e8f69b09be0b6d862f7b5738",
             "excerpt_snippet": "This file allows deterministic restart of development in a fresh chat.",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_0ec57f9262a5",
           "kind": "startup",
@@ -349,7 +349,7 @@
             "anchor": "L10",
             "excerpt_hash": "f3ff11d8a5c79fae24501b36b9d1a75e3617ad8bdabacb32a3870b9ab9887b21",
             "excerpt_snippet": "prelude: Thread Primer Taskx (explanation) for dopemux documentation and developer",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_1a1e74052de1",
           "kind": "wrapper",
@@ -386,7 +386,7 @@
             "anchor": "L3",
             "excerpt_hash": "2dde1cebc48bf2fb782d3de6cc6fdd33659f429ad510b1e99ff0cd27b8b11469",
             "excerpt_snippet": "title: Thread Primer Taskx",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_21ccbb7827f3",
           "kind": "wrapper",
@@ -421,7 +421,7 @@
             "anchor": "L48",
             "excerpt_hash": "325c038d3f287f1961667ae6ca6e80d3078336418f82d83eef1b281217a2f723",
             "excerpt_snippet": "If determinism at risk -> refuse.",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_4930368d9347",
           "kind": "instruction_trigger",
@@ -456,7 +456,7 @@
             "anchor": "L47",
             "excerpt_hash": "471de4efb1d700bdc858497cf9e590569066ba377d9bd0fb70a3cfee2ea38568",
             "excerpt_snippet": "If branch isolation violated -> refuse.",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_6978ab8003f8",
           "kind": "instruction_trigger",
@@ -493,7 +493,7 @@
             "anchor": "L2",
             "excerpt_hash": "5635703865fd5874f3744a9dbf500989542968f60875a2fda2bbd4550861c602",
             "excerpt_snippet": "id: THREAD_PRIMER_TASKX",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_69dd5008e563",
           "kind": "wrapper",
@@ -530,7 +530,7 @@
             "anchor": "L30",
             "excerpt_hash": "4dc273d669249bc2c4efd99d46162d51ab4568e550662f34858a35a38e0e8ffe",
             "excerpt_snippet": "TaskX is a deterministic CLI implementing:",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_9156fd96142a",
           "kind": "wrapper",
@@ -567,7 +567,7 @@
             "anchor": "L35",
             "excerpt_hash": "7a1011cfc52668d76650a27265e1dfddb311f1088d3c8f5de22da15f778fff87",
             "excerpt_snippet": "- Assisted routing (taskx route)",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_a4058ed1dea4",
           "kind": "wrapper",
@@ -604,7 +604,7 @@
             "anchor": "L36",
             "excerpt_hash": "79694bf8eaa45889d668246a9ec512e410af6933f75f5b04900a9625e9f17b10",
             "excerpt_snippet": "- Assisted PR flow (taskx pr open)",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_ac0dde6a2bb7",
           "kind": "wrapper",
@@ -641,7 +641,7 @@
             "anchor": "L13",
             "excerpt_hash": "3eaa777a82d5e6f46e012f226af6140088951eb6760256ac4082524edcb7a810",
             "excerpt_snippet": "# TaskX Thread Primer",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_b4186648e52b",
           "kind": "wrapper",
@@ -676,7 +676,7 @@
             "anchor": "L46",
             "excerpt_hash": "304c2c94ac88830f6862b6d1e86028c4f2aa35c70f27e083841783a327ba8d42",
             "excerpt_snippet": "If scope is ambiguous -> refuse.",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_ce22dacfecfd",
           "kind": "instruction_trigger",
@@ -713,7 +713,7 @@
             "anchor": "L37",
             "excerpt_hash": "a1b541b7b16481a53833d5e3842e7cd0f6792266f680d291c6114da011fcd550",
             "excerpt_snippet": "- LLM contract autogen (taskx docs refresh-llm)",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "hook_id": "HOOK_e02488576da9",
           "kind": "wrapper",
@@ -740,7 +740,7 @@
             "anchor": "L47",
             "excerpt_hash": "471de4efb1d700bdc858497cf9e590569066ba377d9bd0fb70a3cfee2ea38568",
             "excerpt_snippet": "If branch isolation violated -> refuse.",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_095c04187fe0"
@@ -757,7 +757,7 @@
             "anchor": "L46",
             "excerpt_hash": "304c2c94ac88830f6862b6d1e86028c4f2aa35c70f27e083841783a327ba8d42",
             "excerpt_snippet": "If scope is ambiguous -> refuse.",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_95e268630ff9"
@@ -774,7 +774,7 @@
             "anchor": "L48",
             "excerpt_hash": "325c038d3f287f1961667ae6ca6e80d3078336418f82d83eef1b281217a2f723",
             "excerpt_snippet": "If determinism at risk -> refuse.",
-            "path": "docs/THREAD_PRIMER_TASKX.md"
+            "path": "docs/thread-primer-taskx.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_cd169e658170"
@@ -54724,7 +54724,7 @@
         "anchor": "L1",
         "excerpt_hash": "de31343e7b05e7df37a618d2d1b9e93984700e143ff2c92b49cdd782bbebd0df",
         "excerpt_snippet": "--- id: DOC_GATE title: Doc Gate",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "group_id": "GROUP_f9c80a6e8a14",
       "hooks": [
@@ -54750,7 +54750,7 @@
             "anchor": "L98",
             "excerpt_hash": "7de7f3ca2c7e9128e58ed0ce4350265ac3f5ec0729023d1aceffeb3f86b47e78",
             "excerpt_snippet": "- If presence or headings fail: stop immediately.",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_22ac8bb96cbc",
           "kind": "other",
@@ -54787,7 +54787,7 @@
             "anchor": "L64",
             "excerpt_hash": "f655b0e63436e5520ebe56fd510de72a6d680611ff74356c115831bcd3780c0f",
             "excerpt_snippet": "Hard rule: TaskX must not be described as owning any of these responsibilities:",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_30d1890e9651",
           "kind": "wrapper",
@@ -54824,7 +54824,7 @@
             "anchor": "L104",
             "excerpt_hash": "009134f92e0fb941bd4a0443fb54f264fbe7662a30676084f7b2ab121db20a40",
             "excerpt_snippet": "- Gate prevents accidental responsibility creep into TaskX.",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_5f5ec0fed214",
           "kind": "wrapper",
@@ -54859,7 +54859,7 @@
             "anchor": "L100",
             "excerpt_hash": "5d57d7e5042384b5d0f6078bda3befa7af397fa6b92f00e8db6c91f9c4f3cccc",
             "excerpt_snippet": "- If link integrity fails: stop immediately.",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_677a9cb92889",
           "kind": "other",
@@ -54899,7 +54899,7 @@
             "anchor": "L26",
             "excerpt_hash": "0db58fa2a2c25ceb7a2036ce9a511fcd5fd7f20ba1f11151d5622738a1481618",
             "excerpt_snippet": "- TaskX remains deterministic and \"boring\" (no policy/memory/MCP intelligence ownership).",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_77561ca56464",
           "kind": "wrapper",
@@ -54936,7 +54936,7 @@
             "anchor": "L15",
             "excerpt_hash": "d032b7cf07b6a443d688760c5f27257fbdc23ecc84a769fc69bc8d21eb66eb13",
             "excerpt_snippet": "Define a mechanical gate that prevents doc drift, broken references, and responsibility leakage across the TaskX vs Dopemux Supervisor boundary.",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_824ec6b7088e",
           "kind": "wrapper",
@@ -54971,7 +54971,7 @@
             "anchor": "L82",
             "excerpt_hash": "f53fee3df267fe2e8dcea6af2c6924f0d4b16b408cf60fa5ba0f5efc8b09a74d",
             "excerpt_snippet": "- Encourage `path:line-range` pointers when available (warning if absent, not hard fail in v0)",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_a2af16e8ff80",
           "kind": "other",
@@ -55006,7 +55006,7 @@
             "anchor": "L99",
             "excerpt_hash": "3b4ecb647829b28dd60e4e7f21f9f21212cca8fe226cc7c55bb8de4dec068254",
             "excerpt_snippet": "- If boundary enforcement fails: stop immediately.",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_b563b5b8f461",
           "kind": "other",
@@ -55043,7 +55043,7 @@
             "anchor": "L71",
             "excerpt_hash": "42f61970cb0dabbdea6e6e53d3b059de7684f032b189cd1be2f208ca07f88b3a",
             "excerpt_snippet": "Exception: 07_TASKX_INTEGRATION.md may mention these only to explicitly deny ownership.",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_bdb87e429524",
           "kind": "ci_step",
@@ -55082,7 +55082,7 @@
             "anchor": "L70",
             "excerpt_hash": "36514dff38caffdf4aef77274ba4d630e27e56b7eca5344e393bf04199fa9c7a",
             "excerpt_snippet": "- \"owns\", \"manages\", \"decides\", \"chooses\", \"optimizes\", \"persists\", \"starts MCP\", \"tracks limits\"",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_dd88ddf01589",
           "kind": "startup",
@@ -55117,7 +55117,7 @@
             "anchor": "L86",
             "excerpt_hash": "bf19b98cb23b8df4d8c93348ee9bd56de471f4a61903bc6912a52b9b309e42b1",
             "excerpt_snippet": "- Each open question should specify a resolution action:",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_e3d4562803e1",
           "kind": "ci_step",
@@ -55154,7 +55154,7 @@
             "anchor": "L69",
             "excerpt_hash": "af169988bfc1ba7b3cfb51180453f848b5f68f1a5b99f74bebdda59b9d7cef06",
             "excerpt_snippet": "Implementation: grep/rg for \"TaskX\" in docs and fail if \"TaskX\" appears within N lines of any forbidden ownership verbs:",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "hook_id": "HOOK_f01f30042ce3",
           "kind": "ci_step",
@@ -55181,7 +55181,7 @@
             "anchor": "L99",
             "excerpt_hash": "3b4ecb647829b28dd60e4e7f21f9f21212cca8fe226cc7c55bb8de4dec068254",
             "excerpt_snippet": "- If boundary enforcement fails: stop immediately.",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_0a6a3a6903b4"
@@ -55198,7 +55198,7 @@
             "anchor": "L98",
             "excerpt_hash": "7de7f3ca2c7e9128e58ed0ce4350265ac3f5ec0729023d1aceffeb3f86b47e78",
             "excerpt_snippet": "- If presence or headings fail: stop immediately.",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_166a653d161a"
@@ -55215,7 +55215,7 @@
             "anchor": "L64",
             "excerpt_hash": "f655b0e63436e5520ebe56fd510de72a6d680611ff74356c115831bcd3780c0f",
             "excerpt_snippet": "Hard rule: TaskX must not be described as owning any of these responsibilities:",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_2c4a7d0a656c"
@@ -55232,7 +55232,7 @@
             "anchor": "L100",
             "excerpt_hash": "5d57d7e5042384b5d0f6078bda3befa7af397fa6b92f00e8db6c91f9c4f3cccc",
             "excerpt_snippet": "- If link integrity fails: stop immediately.",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_66c1ff64fe0f"
@@ -55249,7 +55249,7 @@
             "anchor": "L82",
             "excerpt_hash": "f53fee3df267fe2e8dcea6af2c6924f0d4b16b408cf60fa5ba0f5efc8b09a74d",
             "excerpt_snippet": "- Encourage `path:line-range` pointers when available (warning if absent, not hard fail in v0)",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_e7551bcb30c0"
@@ -55266,7 +55266,7 @@
             "anchor": "L69",
             "excerpt_hash": "af169988bfc1ba7b3cfb51180453f848b5f68f1a5b99f74bebdda59b9d7cef06",
             "excerpt_snippet": "Implementation: grep/rg for \"TaskX\" in docs and fail if \"TaskX\" appears within N lines of any forbidden ownership verbs:",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "pattern": "other",
           "trigger_id": "TRIG_e7d18a1b58d3"
@@ -56648,11 +56648,11 @@
       ".taskx/instructions/taskx_bundle.yaml",
       ".taskx/project.json",
       "AGENTS.md",
-      "docs/THREAD_PRIMER_TASKX.md",
+      "docs/thread-primer-taskx.md",
       "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
       "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
       "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md",
-      "docs/planes/pm/dopemux/DOC_GATE.md",
+      "docs/planes/pm/dopemux/doc-gate-2.md",
       "scripts/doc_gate.py",
       "scripts/repo_control_plane_extract.py"
     ],

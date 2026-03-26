@@ -379,7 +379,7 @@ claude_config["mcpServers"]["zen"]["cwd"] = str(zen_path)
 
 **C. Contribution Docs**:
 ```markdown
-# docs/CONTRIBUTING_ZEN.md
+# docs/contributing-zen.md
 
 ## Developing Zen MCP
 
@@ -657,7 +657,7 @@ else:
 - Commit conventions
 
 ### **For Zen Contributors**:
-- `docs/CONTRIBUTING_ZEN.md` - Zen MCP development
+- `docs/contributing-zen.md` - Zen MCP development
 - How to fork and clone
 - thinkdeep/planner/consensus architecture
 - Testing Zen changes

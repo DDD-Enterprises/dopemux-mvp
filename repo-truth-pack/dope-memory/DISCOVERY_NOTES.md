@@ -343,7 +343,7 @@ Every `work_log_entry` has mandatory provenance fields:
 - Supersession chains for corrections (linear, max depth 10)
 - Reflection cards generated at session boundaries
 - Trajectory tracking for recency-boost in search ranking
-- Per docs/spec/dope-memory/v1/07_mcp_contracts.md: 7 core tools defined
+- Per docs/spec/dope-memory/v1/07-mcp-contracts.md: 7 core tools defined
 
 ### Code Does
 - Implements 10 HTTP tool endpoints (7 core + 3 Phase 2: reflection, reflections, trajectory)

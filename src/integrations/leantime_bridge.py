@@ -5,7 +5,6 @@ This module provides a bridge between Dopemux and Leantime through JSON-RPC 2.0 
 Handles project management, task tracking, and ADHD-optimized workflows.
 """
 
-import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime

@@ -96,8 +96,8 @@ services/working-memory-assistant/tests/unit/test_time_semantics.py
 src/dopemux/memory/capture_client.py
 
 ## Specification Docs
-docs/spec/dope-memory/v1/README.md
-docs/spec/dope-memory/v1/07_mcp_contracts.md
+docs/spec/dope-memory/v1/readme-2.md
+docs/spec/dope-memory/v1/07-mcp-contracts.md
 
 ## Service-Local Docs
 services/working-memory-assistant/docs/api_contracts.md

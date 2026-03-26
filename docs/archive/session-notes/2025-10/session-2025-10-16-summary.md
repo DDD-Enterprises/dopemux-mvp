@@ -431,7 +431,7 @@ dopemux health --watch --interval 30
 
 - **Process Cleanup**: `docs/PROCESS_CLEANUP_GUIDE.md`
 - **Performance**: `docs/PERFORMANCE_OPTIMIZATIONS.md`
-- **Worktree Guide**: `docs/WORKTREE_SWITCHING_GUIDE.md` (if exists)
+- **Worktree Guide**: `docs/worktree-switching-guide.md` (if exists)
 - **Project README**: Root README.md
 
 ## 🎖️ Success Metrics

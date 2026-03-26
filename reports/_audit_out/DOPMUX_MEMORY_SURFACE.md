@@ -29,9 +29,9 @@
 - [VERIFIED] Hybrid search uses BM25 + dense vectors with RRF fusion and deterministic weighted ranking flow. (source: `services/dope-context/src/search/hybrid_search.py:55-84`, `services/dope-context/src/search/hybrid_search.py:183-194`, `services/dope-context/src/search/hybrid_search.py:214-329`)
 
 ### 1.5 Architecture specs (Dope-Memory v1)
-- [VERIFIED] Spec positions Dope-Memory as temporal/working memory, with no duplication of DopeQuery/DopeContext, strict redaction, Top-3 ADHD boundaries, and deterministic output requirements. (source: `docs/spec/dope-memory/v1/00_overview.md:26-48`, `docs/spec/dope-memory/v1/00_overview.md:49-90`)
-- [VERIFIED] Spec defines event stream contracts (`activity.events.v1`, `memory.derived.v1`) and deterministic ranking/pagination semantics. (source: `docs/spec/dope-memory/v1/01_architecture.md:50-107`)
-- [VERIFIED] Spec defines Postgres mirror (`dm_*`) and FTS/GIN surfaces. (source: `docs/spec/dope-memory/v1/03_data_model_postgres.md:20-105`)
+- [VERIFIED] Spec positions Dope-Memory as temporal/working memory, with no duplication of DopeQuery/DopeContext, strict redaction, Top-3 ADHD boundaries, and deterministic output requirements. (source: `docs/spec/dope-memory/v1/00-overview.md:26-48`, `docs/spec/dope-memory/v1/00-overview.md:49-90`)
+- [VERIFIED] Spec defines event stream contracts (`activity.events.v1`, `memory.derived.v1`) and deterministic ranking/pagination semantics. (source: `docs/spec/dope-memory/v1/01-architecture.md:50-107`)
+- [VERIFIED] Spec defines Postgres mirror (`dm_*`) and FTS/GIN surfaces. (source: `docs/spec/dope-memory/v1/03-data-model-postgres.md:20-105`)
 
 ## 2) Context Injection Today (Current State)
 - [VERIFIED] Injection is currently decentralized, not a single global lane injector:
@@ -61,9 +61,9 @@
 - [VERIFIED] Dopecon-bridge startup initializes DB/cache/MCP/ConPort/EventBus and launches background DDG ingestion from `dopemux:events`. (source: `services/dopecon-bridge/main.py:1713-1733`, `services/dopecon-bridge/main.py:334-431`)
 
 ## 5) Storage + Search Surfaces
-- [VERIFIED] Redis is used for event streaming/caching; qdrant is registered as vector DB; Postgres is used by bridge and spec’d as mirror for Dope-Memory. (source: `services/registry.yaml:44-76`, `services/registry.yaml:66-87`, `services/dopecon-bridge/main.py:116-119`, `docs/spec/dope-memory/v1/03_data_model_postgres.md:15-17`)
+- [VERIFIED] Redis is used for event streaming/caching; qdrant is registered as vector DB; Postgres is used by bridge and spec’d as mirror for Dope-Memory. (source: `services/registry.yaml:44-76`, `services/registry.yaml:66-87`, `services/dopecon-bridge/main.py:116-119`, `docs/spec/dope-memory/v1/03-data-model-postgres.md:15-17`)
 - [VERIFIED] Dope-Memory canonical persists in SQLite (`chronicle.db`) with WAL mode and schema initialization. (source: `services/working-memory-assistant/chronicle/store.py:34-57`)
-- [VERIFIED] Deterministic retrieval contract and Top-3 boundary are specified and implemented in both spec and server code. (source: `docs/spec/dope-memory/v1/06_retrieval_ranking.md:35-48`, `docs/spec/dope-memory/v1/07_mcp_contracts.md:14-39`, `services/working-memory-assistant/mcp/server.py:156-157`)
+- [VERIFIED] Deterministic retrieval contract and Top-3 boundary are specified and implemented in both spec and server code. (source: `docs/spec/dope-memory/v1/06-retrieval-ranking.md:35-48`, `docs/spec/dope-memory/v1/07-mcp-contracts.md:14-39`, `services/working-memory-assistant/mcp/server.py:156-157`)
 
 ## 6) Registry Reconciliation: Memory-Related Services Missed by Registry
 - [VERIFIED] Service directories include additional memory/context-adjacent modules not currently listed in `services/registry.yaml` entries shown above, including `dope-context`, `working-memory-assistant`, `claude_brain`, `intelligence`, `session-intelligence`, and `conport`. (source: `services/registry.yaml:20-293`, `_audit_out/_sources/services_dir_listing.txt:9-37`)

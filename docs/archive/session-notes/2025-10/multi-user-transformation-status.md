@@ -71,7 +71,7 @@ prelude: Explanation of Multi_User_Transformation_Status.
 - [ ] Add as git submodule to `external/zen-mcp-server/`
 - [ ] Auto-detect `~/code/zen-mcp-server` for dev mode
 - [ ] Update Dockerfile to use submodule or dev path
-- [ ] Create `docs/CONTRIBUTING_ZEN.md`
+- [ ] Create `docs/contributing-zen.md`
 
 ### **Phase F: Documentation** (~2 hours)
 **Not Started** - User-facing guides
@@ -80,7 +80,7 @@ prelude: Explanation of Multi_User_Transformation_Status.
 - [ ] `docs/INSTALLATION.md` - Complete setup guide
 - [ ] `docs/MULTI_PROJECT.md` - Multi-project usage
 - [ ] `docs/PROFILES.md` - Profile system reference
-- [ ] `docs/CONTRIBUTING_ZEN.md` - Zen MCP contribution workflow
+- [ ] `docs/contributing-zen.md` - Zen MCP contribution workflow
 - [ ] Update README.md with new installation instructions
 
 ---

@@ -12,9 +12,9 @@ exclude_path = [
   "docs/01-tutorials/",
   "docs/02-how-to/",
   "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
-  "docs/90-adr/ADR-207-LEANTIME-API-RESEARCH.md",
-  "docs/WORKTREE_SWITCHING_GUIDE.md",
-  "docs/CONTRIBUTING_ZEN.md",
+  "docs/90-adr/adr-207-leantime-api-research-3.md",
+  "docs/worktree-switching-guide.md",
+  "docs/contributing-zen.md",
   "README.md"
 ]
 

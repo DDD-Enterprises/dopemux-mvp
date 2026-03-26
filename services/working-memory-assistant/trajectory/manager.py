@@ -1,7 +1,7 @@
 """
 TrajectoryManager - Trajectory state management and boost factor calculation.
 
-Per docs/spec/dope-memory/v1/08_phased_roadmap.md Phase 2:
+Per docs/spec/dope-memory/v1/08-phased-roadmap.md Phase 2:
 - Maintain trajectory_state per workspace+instance
 - Track current_stream, current_goal, last_steps
 - Deterministic boost factor (0.0-0.5 range)
