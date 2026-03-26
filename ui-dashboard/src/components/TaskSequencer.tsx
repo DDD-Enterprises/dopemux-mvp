@@ -149,23 +149,23 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
 
-  const totalRemainingMinutes = useMemo(() => {
-    const otherTasksTotal = tasks
-      .filter((t) => t.status === 'pending' && t.id !== currentTaskId)
-      .reduce((acc, t) => acc + t.estimatedMinutes, 0);
-
-    const currentTaskRemaining = currentTask
-      ? Math.max(0, currentTask.estimatedMinutes - taskTimer / 60)
-      : 0;
-
-    return Math.ceil(otherTasksTotal + currentTaskRemaining);
-  }, [tasks, currentTaskId, taskTimer, currentTask]);
-
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
     if (complexity > 0.5) return brandTokens.colors.giltEdge;
     return brandTokens.colors.serumMint;
   };
+
+  const totalRemainingMinutes = useMemo(() => {
+    const incompleteTasks = tasks.filter(t => t.status !== 'completed');
+    const otherTasksTotal = incompleteTasks
+      .filter(t => t.id !== currentTaskId)
+      .reduce((acc, t) => acc + t.estimatedMinutes, 0);
+
+    const currentTaskEstimate = currentTask?.estimatedMinutes || 0;
+    const elapsedMinutes = taskTimer / 60;
+
+    return Math.ceil(otherTasksTotal + Math.max(0, currentTaskEstimate - elapsedMinutes));
+  }, [tasks, currentTaskId, currentTask, taskTimer]);
 
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
@@ -174,39 +174,30 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
-        {totalRemainingMinutes > 0 && (
-          <Tooltip title="Total remaining time for all tasks" arrow>
-            <Box
-              role="status"
-              aria-label={`Total remaining time: ${totalRemainingMinutes} minutes`}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                ml: 1,
-                px: 1,
-                py: 0.25,
-                borderRadius: 1,
-                bgcolor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}
-              tabIndex={0}
-            >
-              <Clock size={14} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
-              <Typography variant="caption" sx={{ fontWeight: 'bold', color: brandTokens.colors.ritualCyan }}>
-                {totalRemainingMinutes}m
-              </Typography>
-            </Box>
-          </Tooltip>
-        )}
+        <Box
+          role="status"
+          aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
+          sx={{
+            ml: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            color: brandTokens.colors.saintGold,
+          }}
+        >
+          <Clock size={16} aria-hidden="true" />
+          <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+            {totalRemainingMinutes}m
+          </Typography>
+        </Box>
         <Tooltip title="Real-time task synchronization active" arrow>
           <Chip
             size="small"
             label="[LIVE]"
-            aria-label="System is actively monitoring ritual state: LIVE DØPEMÜX Ritual Daemon"
             className="dopemux-chip"
             tabIndex={0}
-            sx={{ ml: 'auto', borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
+            aria-label="Real-time task synchronization active"
+            sx={{ ml: 1, borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
           />
         </Tooltip>
       </Box>
@@ -304,6 +295,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       ) : (
         <Box
           role="status"
+          aria-label="Ritual Complete: All tasks finished"
           sx={{
             mb: 3, p: 2.5, borderRadius: 3, textAlign: 'center',
             border: `1px solid ${brandTokens.colors.serumMint}`,

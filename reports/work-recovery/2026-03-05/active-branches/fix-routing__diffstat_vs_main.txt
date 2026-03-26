@@ -524,8 +524,8 @@
  .../extraction/run-v4-from-dopemux-cli.md          |    22 -
  .../DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md |   165 -
  .../DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md   |    55 -
- docs/03-reference/governance/AUTHORITY_MAP.md      |    32 +-
- docs/03-reference/governance/CONFLICT_LEDGER.md    |    52 +-
+ docs/03-reference/governance/authority-map-2.md      |    32 +-
+ docs/03-reference/governance/conflict-ledger-2.md    |    52 +-
  .../history/sourceFiles/.QUARANTINED.md            |    14 -
  ...DED__commit_347e523__DEVELOPMENT_SESSION (1).md |   232 -
  ...XPANDED__commit_347e523__DEVELOPMENT_SESSION.md |   232 -
@@ -1916,24 +1916,24 @@
  docs/05-audit-reports/VERIFICATION_SUMMARY.md      |   175 -
  docs/AUDIT_INITIAL_FINDINGS.md                     |    76 -
  docs/COVERAGE_POLICY.md                            |    46 -
- docs/DOPETASK_KERNEL_INTEGRATION.md                |    62 +-
+ docs/dopetask-kernel-integration.md                |    62 +-
  docs/DOPE_MEMORY_INTEGRATION.md                    |   283 -
  docs/GEMINI.md                                     |    66 -
- docs/MIGRATION_TASKX_TO_DOPETASK.md                |    47 +-
+ docs/migration-taskx-to-dopetask.md                |    47 +-
  docs/PHASE0_DETERMINISM_REPORT.md                  |    30 -
  docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md      |    30 -
  docs/PHASE0_SERIALIZATION_REPORT.md                |    24 -
  docs/PROCESSPOOL_STABILITY_REPORT.md               |   178 -
  docs/docs_index.yaml                               |     3 -
- docs/instructions/AGENTS.md                        |    11 -
- docs/instructions/CLAUDE.md                        |    11 -
- docs/instructions/CODEX.md                         |    40 -
- docs/instructions/PROJECT_INIT_REPORT.md           |    12 -
- docs/instructions/PROJECT_INSTRUCTIONS.md          |    12 -
- docs/instructions/PROJECT_PATCH_REPORT.md          |    12 -
- docs/mobile/IMPLEMENTATION.md                      |    69 -
- docs/mobile/SETUP.md                               |    76 -
- docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md  |     2 +-
+ docs/instructions/agents-2.md                        |    11 -
+ docs/instructions/claude-2.md                        |    11 -
+ docs/instructions/codex-2.md                         |    40 -
+ docs/instructions/project-init-report.md           |    12 -
+ docs/instructions/project-instructions.md          |    12 -
+ docs/instructions/project-patch-report.md          |    12 -
+ docs/mobile/implementation-2.md                      |    69 -
+ docs/mobile/setup-2.md                               |    76 -
+ docs/planes/pm/dopemux/07-dopetask-integration-2.md  |     2 +-
  docs/templates/pal-pr-layout.md                    |    96 -
  examples/github_specialist/ci_bundle.json          |    13 -
  examples/github_specialist/pr_bundle.json          |    14 -

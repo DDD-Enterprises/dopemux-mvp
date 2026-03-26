@@ -321,7 +321,7 @@ def _files_identical(src: Path, dst: Path) -> bool:
 
 
 def _collision_target(path: Path, index: int) -> Path:
-    return path.with_name(f"{path.stem}__moved-{index}{path.suffix}")
+    return path.with_name(f"{path.stem}-moved-{index}{path.suffix}")
 
 
 def _git_mv(repo_root: Path, src: Path, dst: Path) -> bool:

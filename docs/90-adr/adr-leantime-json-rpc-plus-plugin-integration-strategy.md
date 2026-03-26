@@ -7,12 +7,17 @@ author: '@hu3mann'
 date: '2026-03-11'
 last_review: '2026-03-11'
 next_review: '2026-06-09'
-prelude: Use Leantime JSON-RPC as the primary seam with plugin augmentation as needed.
+prelude: Use Leantime JSON-RPC as the primary PM-plane operations seam, with plugins reserved for bounded augmentation.
 status: proposed
 graph_metadata:
   node_type: ADR
   impact: high
-  relates_to: []
+  relates_to:
+    - adr-pm-plane-authority-boundaries
+    - adr-dopecon-bridge-narrowing-to-adapter-only-role
+    - adr-task-orchestrator-as-workflow-authority
+    - adr-conport-as-decision-progress-and-context-authority
+    - adr-dope-memory-as-chronicle-memory-authority
 ---
 
 # ADR: Leantime JSON-RPC plus plugin integration strategy
@@ -43,10 +48,10 @@ The most important findings are:
 1. **JSON-RPC is the practical stable integration seam**
 2. **Leantime should remain canonical for PM entities**
 3. **Leantime should not be treated as workflow authority**
-4. **Leantime's MCP infrastructure is not mature enough to be the primary integration contract**
+4. **Leantime’s MCP infrastructure is not mature enough to be the primary integration contract**
 5. **HTML-rich content and loosely structured fields require normalization before promotion into memory/context systems**
 
-The PM plane therefore needs an integration strategy that preserves Leantime's strengths without overcommitting to immature or drifting surfaces.
+The PM plane therefore needs an integration strategy that preserves Leantime’s strengths without overcommitting to immature or drifting surfaces.
 
 ## Decision
 
@@ -68,7 +73,7 @@ A **Leantime plugin** may be used selectively for:
 
 ### Explicit non-decision
 
-Leantime's built-in MCP path will **not** be treated as the primary contract surface at this time.
+Leantime’s built-in MCP path will **not** be treated as the primary contract surface at this time.
 
 ## Why JSON-RPC is primary
 
@@ -139,11 +144,11 @@ The adapter must not:
 - silently shadow Leantime entities without explicit non-canonical labeling
 - let raw HTML-rich Leantime content flow directly into durable memory
 - expose raw Leantime internals directly to agents as the long-term PM interface
-- promote Leantime's weak workflow semantics into PM-plane workflow authority
+- promote Leantime’s weak workflow semantics into PM-plane workflow authority
 
 ## MCP decision
 
-Leantime's own MCP path is currently treated as:
+Leantime’s own MCP path is currently treated as:
 
 - infrastructural
 - incomplete
@@ -210,7 +215,7 @@ This means:
 - Task Orchestrator governs workflow rules, blockers, next-action, and progression semantics
 - Leantime integration must not be designed in a way that gives Leantime de facto workflow authority
 
-If a Leantime plugin adds convenience actions, those actions must still defer to the PM plane's workflow policy where applicable.
+If a Leantime plugin adds convenience actions, those actions must still defer to the PM plane’s workflow policy where applicable.
 
 ## Relationship to ConPort
 

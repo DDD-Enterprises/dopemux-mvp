@@ -1,4 +1,4 @@
-docs/spec/dope-memory/v1/07_mcp_contracts.md:232:  "idempotency_key": "string|null"
+docs/spec/dope-memory/v1/07-mcp-contracts.md:232:  "idempotency_key": "string|null"
 services/working-memory-assistant/mcp/server.py:296:        source_event_id = f"manual-{uuid.uuid4()}"
 services/working-memory-assistant/mcp/server.py:304:            source_event_id=source_event_id,
 services/working-memory-assistant/mcp/server.py:305:            source_event_type="manual.memory_store",

@@ -112,6 +112,8 @@ Evidence basis for current multi-surface lifecycle operations: `docs/planes/pm/_
 
 ## Storage, Derived, Mirrored
 
+For a detailed breakdown of how task fields are classified and how bidirectional sync loops are prevented using the reflection pattern, see [PM Metadata vs Workflow Authority](pm-metadata-vs-workflow.md).
+
 | Classification | Owner | Content | Write Contract |
 |---|---|---|---|
 | Stored (Canonical PM) | PM plane | Canonical task object fields and lifecycle version | Single canonical write per accepted transition; idempotent by key. |

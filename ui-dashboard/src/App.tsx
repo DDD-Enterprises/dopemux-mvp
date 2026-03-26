@@ -292,6 +292,7 @@ function App() {
                   <Tooltip title={metric.tooltip} arrow>
                     <Box
                       tabIndex={0}
+                      aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%`}
                       sx={{
                         display: 'flex',
                         alignItems: 'center',

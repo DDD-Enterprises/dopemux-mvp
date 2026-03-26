@@ -61,6 +61,7 @@ class SyncOperation:
     processed_at: Optional[datetime] = None
     attempts: int = 0
     max_attempts: int = 3
+    leantime_reflection_status: Optional[str] = None # Added for Leantime sync reflection
 
     # Conflict handling
     conflict_detected: bool = False
@@ -391,6 +392,7 @@ class MultiDirectionalSyncEngine:
                     # await leantime_client.add_task_comment(**comment_data)
 
                 logger.debug(f"📝 Synced ConPort decision to {len(affected_tasks)} Leantime tasks")
+                operation.leantime_reflection_status = "success"
                 return True
 
             elif entity_type == "progress":
@@ -411,12 +413,15 @@ class MultiDirectionalSyncEngine:
                     # This would make Leantime API call
                     # await leantime_client.update_task(**update_data)
                     logger.debug(f"📈 Synced ConPort progress to Leantime task: {linked_task}")
+                    operation.leantime_reflection_status = "success"
                     return True
 
+            operation.leantime_reflection_status = "ignored"
             return False
 
         except Exception as e:
             logger.error(f"ConPort→Leantime sync failed: {e}")
+            operation.leantime_reflection_status = "failed"
             return False
 
     async def _sync_local_to_leantime(self, operation: SyncOperation) -> bool:
@@ -446,6 +451,7 @@ class MultiDirectionalSyncEngine:
                     # This would make Leantime API call
                     # await leantime_client.update_task_progress(**update_data)
                     logger.debug(f"📊 Synced local ADHD progress to Leantime: {leantime_id}")
+                    operation.leantime_reflection_status = "success"
                     return True
 
             elif entity_type == "break_session":
@@ -465,12 +471,15 @@ class MultiDirectionalSyncEngine:
                     # This would make Leantime API call
                     # await leantime_client.log_time_entry(**time_entry)
                     logger.debug(f"☕ Synced break session to Leantime: {task_id}")
+                    operation.leantime_reflection_status = "success"
                     return True
 
+            operation.leantime_reflection_status = "ignored"
             return False
 
         except Exception as e:
             logger.error(f"Local→Leantime sync failed: {e}")
+            operation.leantime_reflection_status = "failed"
             return False
 
     async def _sync_agent_to_all(self, operation: SyncOperation) -> bool:

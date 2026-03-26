@@ -48,6 +48,14 @@ Purpose: evidence-first audit, redesign constraints, and deterministic rails for
 - Rails notes: `docs/planes/pm/_evidence/PM-RAILS-01.outputs/`
 - Handoffs: `docs/planes/pm/_handoff/`
 
+## Current authority and contract set
+- `docs/90-adr/adr-index.md`
+- `docs/planes/pm/pm-plane-write-adjudication-model.md`
+- `docs/planes/pm/pm-plane-write-matrix.md`
+- `docs/planes/pm/pm-plane-normalized-tool-surface.md`
+- `docs/planes/pm/pm-plane-read-matrix.md`
+- `docs/planes/pm/pm-plane-write-surface-policy.md`
+
 ## Verification Commands
 - Phase 0 verifier:
 ```bash

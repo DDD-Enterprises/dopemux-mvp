@@ -16,7 +16,7 @@ import logging
 from datetime import datetime
 
 # Add DopeconBridge path
-dopecon_bridge_path = os.path.join(os.path.dirname(__file__), '..', 'mcp-dopecon-bridge')
+dopecon_bridge_path = os.path.join(os.path.dirname(__file__), '..', 'dopecon-bridge')
 sys.path.insert(0, dopecon_bridge_path)
 
 from event_bus import EventBus, Event, EventType

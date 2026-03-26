@@ -44,6 +44,10 @@ from intelligence.cognitive_load_balancer import CognitiveLoadBalancer
 from intelligence.context_switch_recovery import ContextSwitchRecovery
 from pal_client import TaskOrchestratorPALClient
 
+from dopemux.pm.store import InMemoryPMTaskStore
+from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest, content_hash_task_id
+from dopemux.pm.mapping import ORCHESTRATOR_TO_CANONICAL, CANONICAL_TO_ORCHESTRATOR
+
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -96,6 +100,8 @@ class TaskCoordinator:
         self.break_duration = 300  # 5 minute breaks
         self.max_context_switches = 2
         
+        # Canonical PM Task Store
+        self.pm_store = InMemoryPMTaskStore()
         # Task storage (in-memory for now, will sync to ConPort)
         self.tasks: Dict[str, OrchestrationTask] = {}
 
@@ -273,7 +279,7 @@ class TaskCoordinator:
     
     async def store_task(self, task: OrchestrationTask) -> bool:
         """
-        Store task in memory and optionally sync to ConPort.
+        Store task canonically and in memory, then optionally sync to ConPort.
         
         Args:
             task: OrchestrationTask to store
@@ -282,11 +288,24 @@ class TaskCoordinator:
             True if stored successfully
         """
         try:
+            # Enforce canonical store invariant for task creation
+            canonical_status = ORCHESTRATOR_TO_CANONICAL.get(task.status.value, PMTaskStatus.TODO)
+            pm_task = PMTask(
+                task_id=task.id,
+                title=task.title,
+                description=task.description or "",
+                status=canonical_status,
+                source="orchestrator",
+                created_at_utc=datetime.now(timezone.utc),
+                updated_at_utc=datetime.now(timezone.utc),
+            )
+            self.pm_store.create(pm_task)
+            
+            # Update local memory representation with canonical metadata if needed
             self.tasks[task.id] = task
-            logger.debug(f"Stored task {task.id} in memory cache")
+            logger.debug(f"Stored task {task.id} in memory cache & canonical PM store")
             
             # Optionally sync to ConPort in background
-            # (Don't await to avoid blocking)
             asyncio.create_task(self._sync_task_to_conport(task))
             
             return True
@@ -481,16 +500,50 @@ class TaskCoordinator:
                 results["failed"].append(task_id)
                 continue
             try:
-                # Update status
-                task.status = TaskStatus.IN_PROGRESS
+                # Sync status transition idempotently via Canonical Store
+                try:
+                    pm_task = self.pm_store.get(task_id)
+                    expected_version = pm_task.version if pm_task else 1
+                    pm_task = self.pm_store.transition(
+                        task_id,
+                        PMTransitionRequest(
+                            idempotency_key=f"start-{task_id}",
+                            expected_version=expected_version,
+                            new_status=PMTaskStatus.IN_PROGRESS,
+                            ts_utc=datetime.now(timezone.utc),
+                            source="orchestrator"
+                        )
+                    )
+                    task.status = TaskStatus(CANONICAL_TO_ORCHESTRATOR[pm_task.status])
+                except Exception as e:
+                    logger.warning(f"Failed canonical transition to IN_PROGRESS for {task_id}: {e}")
+                    task.status = TaskStatus.IN_PROGRESS
+                
                 results["in_progress"].append(task_id)
 
                 # Simulate execution with monitoring
                 # We await this to maintain sequential execution order
                 await self._monitor_execution(task)
 
-                # Mark task as completed after successful monitoring
-                task.status = TaskStatus.COMPLETED
+                # Mark task as completed after successful monitoring idempotently
+                try:
+                    pm_task = self.pm_store.get(task_id)
+                    expected_version = pm_task.version if pm_task else 1
+                    pm_task = self.pm_store.transition(
+                        task_id,
+                        PMTransitionRequest(
+                            idempotency_key=f"complete-{task_id}",
+                            expected_version=expected_version,
+                            new_status=PMTaskStatus.DONE,
+                            ts_utc=datetime.now(timezone.utc),
+                            source="orchestrator"
+                        )
+                    )
+                    task.status = TaskStatus(CANONICAL_TO_ORCHESTRATOR[pm_task.status])
+                except Exception as e:
+                    logger.warning(f"Failed canonical transition to COMPLETED for {task_id}: {e}")
+                    task.status = TaskStatus.COMPLETED
+
                 results["completed"].append(task_id)
                 results["in_progress"].remove(task_id)
 
