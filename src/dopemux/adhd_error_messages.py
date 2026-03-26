@@ -8,7 +8,7 @@ Design Principles:
 - Lead with the problem (what went wrong)
 - Explain why it matters (impact)
 - Provide step-by-step fix (actionable)
-- Use visual hierarchy (emojis, colors, formatting)
+- Use visual hierarchy (glyphs, theme colors, formatting)
 - Avoid technical jargon where possible
 
 Target: < 3 seconds to understand the issue and know what to do
@@ -25,6 +25,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 from .console import console
+from .ui.theme import Glyphs, styled_panel
 
 
 class ADHDErrorMessage:
@@ -32,10 +33,10 @@ class ADHDErrorMessage:
     ADHD-optimized error message builder.
 
     **Structure**:
-    1. 🚨 Problem (clear, concise)
-    2. ❓ Why it matters (impact)
-    3. ✅ How to fix (step-by-step)
-    4. 💡 Optional: Additional context
+    1. Problem (clear, concise)
+    2. Why it matters (impact)
+    3. How to fix (step-by-step)
+    4. Optional: Additional context
     """
 
     def __init__(
@@ -64,30 +65,29 @@ class ADHDErrorMessage:
         # Build message
         text = Text()
 
-        # Problem (red, bold)
-        text.append("🚨 PROBLEM\n", style="bold red")
-        text.append(f"{self.problem}\n\n", style="red")
+        # Problem (error style)
+        text.append(f"{Glyphs.ERROR} PROBLEM\n", style="error")
+        text.append(f"{self.problem}\n\n", style="error")
 
-        # Why it matters (yellow)
-        text.append("❓ WHY IT MATTERS\n", style="bold yellow")
-        text.append(f"{self.why}\n\n", style="yellow")
+        # Why it matters (warning style)
+        text.append(f"{Glyphs.WARNING} WHY IT MATTERS\n", style="warning")
+        text.append(f"{self.why}\n\n", style="warning")
 
-        # How to fix (green)
-        text.append("✅ HOW TO FIX\n", style="bold green")
+        # How to fix (success/mint style)
+        text.append(f"{Glyphs.SUCCESS} HOW TO FIX\n", style="success")
         for i, step in enumerate(self.fix, 1):
-            text.append(f"{i}. {step}\n", style="green")
+            text.append(f"{i}. {step}\n", style="mint.soft")
 
         # Optional context (dim)
         if self.context:
-            text.append("\n💡 ADDITIONAL INFO\n", style="bold dim")
-            text.append(f"{self.context}", style="dim")
+            text.append(f"\n{Glyphs.INFO} ADDITIONAL INFO\n", style="text.dim")
+            text.append(f"{self.context}", style="text.dim")
 
-        # Display in panel
-        panel = Panel(
+        # Display in themed error panel
+        panel = styled_panel(
             text,
-            title="[bold red]Error[/bold red]",
-            border_style="red",
-            padding=(1, 2)
+            title=f"{Glyphs.ERROR} Error",
+            border_style="error",
         )
 
         console.print(panel)
@@ -105,7 +105,7 @@ WORKTREE_ERRORS: Dict[str, ADHDErrorMessage] = {
             "If not in a git repo, navigate to your project directory",
             "If you ARE in a git repo, this might be a bug - run 'dopemux doctor --worktree -v'"
         ],
-        context="Workspace detection tries (in order): env var → git command → project markers → current directory"
+        context="Workspace detection tries (in order): env var -> git command -> project markers -> current directory"
     ),
 
     "mcp_config_missing": ADHDErrorMessage(
@@ -208,7 +208,7 @@ def show_error(error_key: str, **kwargs):
         **kwargs: Additional context to interpolate into message
     """
     if error_key not in WORKTREE_ERRORS:
-        console.print(f"[red]Unknown error: {error_key}[/red]")
+        console.print(f"[error]Unknown error: {error_key}[/error]")
         return
 
     error = WORKTREE_ERRORS[error_key]

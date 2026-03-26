@@ -26,7 +26,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 
-from rich.prompt import Confirm
+from dopemux.ui.prompts import dopemux_confirm
 
 from .console import console
 
@@ -121,21 +121,21 @@ class ShellIntegrationInstaller:
 
         # Prompt for confirmation
         if not auto_confirm:
-            console.logger.info("\n[bold cyan]🐚 Shell Integration Setup[/bold cyan]\n")
+            console.logger.info("\n[mint]🐚 Shell Integration Setup[/mint]\n")
             console.logger.info(f"Shell: [bold]{self.shell_name}[/bold]")
             console.logger.info(f"Config: [bold]{self.shell_config}[/bold]\n")
 
-            console.logger.info("[yellow]This will add the following commands to your shell:[/yellow]")
+            console.logger.info("[warning]This will add the following commands to your shell:[/warning]")
             console.logger.info("  • [bold]dwt[/bold] <branch>  - Switch to worktree with fuzzy matching")
             console.logger.info("  • [bold]dwtls[/bold]         - List all worktrees")
             console.logger.info("  • [bold]dwtcur[/bold]        - Show current worktree\n")
 
-            if not Confirm.ask("Install shell integration?", default=True):
+            if not dopemux_confirm("Install shell integration?", default=True):
                 return False, "Installation cancelled by user"
 
         # Create backup
         backup_path = self._create_backup()
-        console.logger.info(f"[dim]📋 Backup created: {backup_path}[/dim]")
+        console.logger.info(f"[text.dim]📋 Backup created: {backup_path}[/text.dim]")
 
         # Read integration script
         try:
@@ -152,8 +152,8 @@ class ShellIntegrationInstaller:
                 f.write(integration_code)
                 f.write("\n")
 
-            console.logger.info(f"[green]✅ Shell integration installed to {self.shell_config}[/green]")
-            console.logger.info(f"[yellow]⚠️  Run this to activate: source {self.shell_config}[/yellow]")
+            console.logger.info(f"[success]✅ Shell integration installed to {self.shell_config}[/success]")
+            console.logger.info(f"[warning]⚠️  Run this to activate: source {self.shell_config}[/warning]")
 
             return True, "Installation successful"
 
@@ -177,16 +177,16 @@ class ShellIntegrationInstaller:
             return True
 
         if not self.is_supported():
-            console.logger.info(f"[yellow]⚠️  Shell integration not supported for {self.shell_name or 'your shell'}[/yellow]")
+            console.logger.info(f"[warning]⚠️  Shell integration not supported for {self.shell_name or 'your shell'}[/warning]")
             return False
 
         success, message = self.install(auto_confirm=False)
 
         if success:
-            console.logger.info(f"\n[bold green]🎉 {message}[/bold green]")
+            console.logger.info(f"\n[success]🎉 {message}[/success]")
             return True
         else:
-            console.logger.info(f"\n[bold red]❌ {message}[/bold red]")
+            console.logger.info(f"\n[error]❌ {message}[/error]")
             return False
 
 

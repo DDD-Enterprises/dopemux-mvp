@@ -33,125 +33,167 @@ from ..adhd.context_manager import ContextManager
 # Environment safe commands
 @click.group(name="env")
 def env_group():
-    """Safe environment variable inspection."""
+    """
+    🔒 Environment Guard: Safe environment variable inspection
+
+    Orchestrates the secure inspection and validation of environment 
+    variables. Ensures that sensitive ritual credentials and configuration 
+    signals are correctly synchronized within the cockpit.
+    """
     pass
 
 
 @env_group.command("list")
-@click.option("--status", is_flag=True, help="Show set/empty status")
+@click.option("--status", is_flag=True, help="📊 Reveal State: Show whether each variable is currently set or empty.")
 def env_list(status: bool):
-    """List environment variable keys safely."""
+    """
+    📋 Catalog Environment: List environment variable keys safely
+
+    Displays the index of registered environment variables without 
+    exposing sensitive values. Essential for auditing cockpit connectivity.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         variables = integration.env_list(status)
         if status:
-            console.log("[cyan]Environment Variables:[/cyan]")
+            console.log("[info]Environment Variables:[/info]")
             for key, info in variables.items():
                 status_str = info.get('status', 'UNKNOWN')
                 console.log(f"  {key}: {status_str}")
         else:
-            console.log("[cyan]Environment Variable Keys:[/cyan]")
+            console.log("[info]Environment Variable Keys:[/info]")
             for key in variables.keys():
                 console.log(f"  {key}")
     except Exception as e:
-        console.log(f"[red]Failed to list environment variables: {e}[/red]")
+        console.log(f"[error]Failed to list environment variables: {e}[/error]")
 
 
 @env_group.command("check")
 @click.argument("key")
 def env_check(key: str):
-    """Check if environment variable exists."""
+    """
+    🔍 Verify Signal: Check if a specific environment variable exists
+
+    Audits the existence of a specific environment coordinate within 
+    the active ritual environment.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         exists = integration.env_check(key)
         if exists:
-            console.log(f"[green]Variable '{key}' exists[/green]")
+            console.log(f"[success]Variable '{key}' exists[/success]")
         else:
-            console.log(f"[yellow]Variable '{key}' not found[/yellow]")
+            console.log(f"[warning]Variable '{key}' not found[/warning]")
     except Exception as e:
-        console.log(f"[red]Failed to check variable: {e}[/red]")
+        console.log(f"[error]Failed to check variable: {e}[/error]")
 
 
 @env_group.command("count")
 def env_count():
-    """Count environment variables."""
+    """
+    📊 Signal Summary: Count total environment variables
+
+    Retrieves high-fidelity metrics on the density of environment signals, 
+    detailing the total count of set and empty variables.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         counts = integration.env_count()
-        console.log(f"[cyan]Environment Variables Summary:[/cyan]")
+        console.log(f"[info]Environment Variables Summary:[/info]")
         console.log(f"  Total: {counts['total']}")
         console.log(f"  Set: {counts['set']}")
         console.log(f"  Empty: {counts['empty']}")
     except Exception as e:
-        console.log(f"[red]Failed to count variables: {e}[/red]")
+        console.log(f"[error]Failed to count variables: {e}[/error]")
 
 
 @env_group.command("validate")
 def env_validate():
-    """Validate .env file syntax."""
+    """
+    ✅ Verify Integrity: Validate .env file syntax and alignment
+
+    Performs a structural audit of the ritual's environment files to 
+    ensure schema compliance and system stability.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         result = integration.env_validate()
         if result['valid']:
-            console.log("[green].env file is valid[/green]")
+            console.log("[success].env file is valid[/success]")
         else:
-            console.log("[red].env file validation failed:[/red]")
+            console.log("[error].env file validation failed:[/error]")
             for error in result['errors']:
-                console.log(f"  [red]Error:[/red] {error}")
+                console.log(f"  [error]Error:[/error] {error}")
             for warning in result['warnings']:
-                console.log(f"  [yellow]Warning:[/yellow] {warning}")
+                console.log(f"  [warning]Warning:[/warning] {warning}")
     except Exception as e:
-        console.log(f"[red]Failed to validate .env file: {e}[/red]")
+        console.log(f"[error]Failed to validate .env file: {e}[/error]")
 
 
 # Session management commands
 @click.group(name="session")
 def session_group():
-    """Session search and management."""
+    """
+    ⏳ Temporal Registry: Session search and management
+
+    Orchestrates the discovery and restoration of historical cockpit 
+    sessions. Synchronizes across temporal coordinates to enable 
+    seamless ritual continuity.
+    """
     pass
 
 
 @session_group.command("find")
 @click.argument("keywords", required=False)
-@click.option("--agent", "-a", help="Filter by agent type")
-@click.option("--limit", "-n", type=int, default=20, help="Limit results")
+@click.option("--agent", "-a", help="🤖 Agent Filter: Filter sessions by specialized agent archetype.")
+@click.option("--limit", "-n", type=int, default=20, help="📊 Telemetry Limit: Maximum sessions to display in the HUD.")
 def session_find(keywords: Optional[str], agent: Optional[str], limit: int):
-    """Search for sessions."""
+    """
+    🔍 Search Archives: Locate past cockpit sessions
+
+    Engages the temporal search engine to find historical ritual sessions 
+    matching the specified keywords or archetypes.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         sessions = integration.session_find(keywords, agent, limit)
         integration.session_display(sessions)
     except Exception as e:
-        console.log(f"[red]Failed to search sessions: {e}[/red]")
+        console.log(f"[error]Failed to search sessions: {e}[/error]")
 
 
 @session_group.command("resume")
 @click.argument("session_id")
 def session_resume(session_id: str):
-    """Resume a session by ID."""
+    """
+    ▶️ Re-Engage Ritual: Resume a past session by its unique ID
+
+    Synchronizes the active cockpit with a specific temporal coordinate, 
+    reconstructing the cognitive state of the selected session.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
@@ -160,35 +202,45 @@ def session_resume(session_id: str):
         session = next((s for s in sessions if str(s['id']) == session_id), None)
 
         if not session:
-            console.log(f"[red]Session '{session_id}' not found[/red]")
+            console.log(f"[error]Session '{session_id}' not found[/error]")
             return
 
         success = integration.session_resume(session)
         if success:
-            console.log(f"[green]✓ Resumed session '{session_id}'[/green]")
+            console.log(f"[success]✓ Resumed session '{session_id}'[/success]")
         else:
-            console.log(f"[red]✗ Failed to resume session '{session_id}'[/red]")
+            console.log(f"[error]✗ Failed to resume session '{session_id}'[/error]")
 
     except Exception as e:
-        console.log(f"[red]Failed to resume session: {e}[/red]")
+        console.log(f"[error]Failed to resume session: {e}[/error]")
 
 
 # Safety management commands
 @click.group(name="safe")
 def safe_group():
-    """Safety hook management."""
+    """
+    🛡️ Safety Interlocks: Ritual safety hook management
+
+    Orchestrates the cockpit's defensive systems. Synchronizes safety 
+    hooks to prevent accidental artifact mutation or destructive commands.
+    """
     pass
 
 
 @safe_group.command("status")
 def safe_status():
-    """Show safety hook status."""
+    """
+    📊 Interlock HUD: Show safety hook operational status
+
+    Displays the current calibration and engagement levels of the cockpit's 
+    safety interlocks and focal protection rituals.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
-    console.log("[cyan]Safety Hooks Status:[/cyan]")
+    console.log("[info]Safety Hooks Status:[/info]")
     console.log("  Command interception: Active")
     console.log("  File deletion protection: Active")
     console.log("  Git operation safeguards: Active")
@@ -199,125 +251,167 @@ def safe_status():
 
 @safe_group.command("check")
 @click.argument("command")
-@click.option("--confirmed", is_flag=True, help="Mark as confirmed")
+@click.option("--confirmed", is_flag=True, help="⚡ Force Extraction: Mark the command as manually validated.")
 def safe_check(command: str, confirmed: bool):
-    """Check command safety."""
+    """
+    ⚖️ Safety Audit: Check command safety against active interlocks
+
+    Performs a high-fidelity diagnostic audit of a shell ritual before 
+    execution, identifying potential hazards or destructive patterns.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     context = {'confirmed': confirmed} if confirmed else {}
     result = integration.intercept_command(command, context)
 
     if result['allowed']:
-        console.log(f"[green]✓ Command allowed: {result['message']}[/green]")
+        console.log(f"[success]✓ Command allowed: {result['message']}[/success]")
     else:
-        console.log(f"[red]✗ Command blocked: {result['message']}[/red]")
+        console.log(f"[error]✗ Command blocked: {result['message']}[/error]")
         if result.get('safe_command'):
-            console.log(f"[yellow]Suggested safe command: {result['safe_command']}[/yellow]")
+            console.log(f"[warning]Suggested safe command: {result['safe_command']}[/warning]")
 
 # Vault commands
 @click.group(name="vault")
 def vault_group():
-    """Encrypted environment vault management."""
+    """
+    🔐 Encrypted Sanctuary: Environment vault management
+
+    Orchestrates the secure archival of sensitive environment signals. 
+    Synchronizes encrypted vaults to ensure that high-fidelity ritual 
+    credentials remain protected within the cockpit.
+    """
     pass
 
 
 @vault_group.command("encrypt")
 @click.argument("env_file", default=".env")
 def vault_encrypt(env_file: str):
-    """Encrypt .env file to vault."""
+    """
+    🔒 Seal Signal: Encrypt .env file into the vault sanctuary
+
+    Engages the cryptographic engine to ARCHIVE sensitive environment 
+    signals into a high-fidelity encrypted vault.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         success = integration.vault.encrypt_env(env_file)
         if success:
-            console.log(f"[green]✓ Encrypted {env_file} to vault[/green]")
+            console.log(f"[success]✓ Encrypted {env_file} to vault[/success]")
         else:
-            console.log(f"[red]✗ Failed to encrypt {env_file}[/red]")
+            console.log(f"[error]✗ Failed to encrypt {env_file}[/error]")
     except Exception as e:
-        console.log(f"[red]Encryption failed: {e}[/red]")
+        console.log(f"[error]Encryption failed: {e}[/error]")
 
 
 @vault_group.command("decrypt")
 @click.argument("vault_file", default=None)
 def vault_decrypt(vault_file: Optional[str]):
-    """Decrypt vault file to .env."""
+    """
+    🔓 Materialize Signal: Decrypt vault file into active .env
+
+    Reconstructs raw environment signals from an encrypted sanctuary, 
+    materializing them into the active ritual environment.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         content = integration.vault.decrypt_env(vault_file)
         if content:
-            console.log(f"[green]✓ Decrypted vault to .env[/green]")
+            console.log(f"[success]✓ Decrypted vault to .env[/success]")
         else:
-            console.log(f"[red]✗ Failed to decrypt vault[/red]")
+            console.log(f"[error]✗ Failed to decrypt vault[/error]")
     except Exception as e:
-        console.log(f"[red]Decryption failed: {e}[/red]")
+        console.log(f"[error]Decryption failed: {e}[/error]")
 
 
 @vault_group.command("sync")
 @click.argument("env_file", default=".env")
 def vault_sync(env_file: str):
-    """Sync environment file to vault."""
+    """
+    🔄 Vault Synchronization: Sync environment file with its vault anchor
+
+    Performs a bidirectional synchronization ritual between the active 
+    environment signals and the encrypted sanctuary.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         success = integration.vault.sync_env(env_file)
         if success:
-            console.log(f"[green]✓ Synced {env_file} to vault[/green]")
+            console.log(f"[success]✓ Synced {env_file} to vault[/success]")
         else:
-            console.log(f"[red]✗ Failed to sync {env_file}[/red]")
+            console.log(f"[error]✗ Failed to sync {env_file}[/error]")
     except Exception as e:
-        console.log(f"[red]Sync failed: {e}[/red]")
+        console.log(f"[error]Sync failed: {e}[/error]")
 
 
 @vault_group.command("list")
 def vault_list():
-    """List all vault files."""
+    """
+    📋 Catalog Sanctuary: List all available encrypted vaults
+
+    Displays the index of registered vault archives within the 
+    cockpit's secure storage coordinate.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         vaults = integration.vault.list_vaults()
         if vaults:
-            console.log("[cyan]Vault Files:[/cyan]")
+            console.log("[info]Vault Files:[/info]")
             for vault in vaults:
                 console.log(f"  {vault}")
         else:
-            console.log("[yellow]No vault files found[/yellow]")
+            console.log("[warning]No vault files found[/warning]")
     except Exception as e:
-        console.log(f"[red]Failed to list vaults: {e}[/red]")
+        console.log(f"[error]Failed to list vaults: {e}[/error]")
 
 
 # Agent Communication commands
 @click.group(name="agent")
 def agent_group():
-    """Agent-to-agent communication."""
+    """
+    🧠 Cognitive Uplink: Agent-to-agent communication
+
+    Orchestrates the high-fidelity signal exchange between specialized 
+    agents. Synchronizes cognitive focal points to enable collaborative 
+    ritual execution.
+    """
     pass
 
 
 @agent_group.command("send")
 @click.argument("pane_id")
 @click.argument("message")
-@click.option("--type", "message_type", default="request", help="Message type")
-@click.option("--sync/--async", default=True, help="Synchronous response")
+@click.option("--type", "message_type", default="request", help="📊 Signal Type: Identifier for the communication archetype (e.g. request).")
+@click.option("--sync/--async", default=True, help="⏱️ Ritual Sync: Control whether the uplink wait for a response.")
 def agent_send(pane_id: str, message: str, message_type: str, sync: bool):
-    """Send message to agent in pane."""
+    """
+    📤 Transmit Pulse: Send cognitive signal to an agent focal point
+
+    Initiates a high-fidelity uplink to a specialized agent, transmitting 
+    mission objectives or pattern requests.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
@@ -332,91 +426,112 @@ def agent_send(pane_id: str, message: str, message_type: str, sync: bool):
         response = integration.send_agent_message(pane_id, agent_msg, mode=mode)
 
         if response:
-            console.log(f"[green]Response: {response.content}[/green]")
+            console.log(f"[success]Response: {response.content}[/success]")
         else:
-            console.log(f"[green]Message sent to {pane_id}[/green]")
+            console.log(f"[success]Message sent to {pane_id}[/success]")
 
     except Exception as e:
-        console.log(f"[red]Failed to send message: {e}[/red]")
+        console.log(f"[error]Failed to send message: {e}[/error]")
 
 
 @agent_group.command("receive")
 @click.argument("pane_id")
-@click.option("--timeout", type=float, default=5.0, help="Timeout in seconds")
+@click.option("--timeout", type=float, default=5.0, help="⏳ Temporal Limit: Maximum wait time for the incoming signal.")
 def agent_receive(pane_id: str, timeout: float):
-    """Receive message from agent in pane."""
+    """
+    📥 Ingest Pulse: Receive cognitive signal from an agent focal point
+
+    Synchronizes with an incoming agent signal, materializing the 
+    transmitted patterns or ritual responses in the HUD.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         message = integration.receive_agent_message(pane_id, timeout=timeout)
 
         if message:
-            console.log(f"[cyan]Message from {message.sender}:[/cyan]")
+            console.log(f"[info]Message from {message.sender}:[/info]")
             console.log(f"  Type: {message.message_type}")
             console.log(f"  Content: {message.content}")
         else:
-            console.log(f"[yellow]No message received from {pane_id} within {timeout}s[/yellow]")
+            console.log(f"[warning]No message received from {pane_id} within {timeout}s[/warning]")
 
     except Exception as e:
-        console.log(f"[red]Failed to receive message: {e}[/red]")
+        console.log(f"[error]Failed to receive message: {e}[/error]")
 
 
 @agent_group.command("collaborate")
 @click.argument("primary_pane")
 @click.argument("secondary_pane")
 @click.argument("task_description")
-@click.option("--timeout", type=float, default=300.0, help="Collaboration timeout")
+@click.option("--timeout", type=float, default=300.0, help="⏳ Ritual Timeout: Maximum duration for the collaborative mission.")
 def agent_collaborate(primary_pane: str, secondary_pane: str, task_description: str, timeout: float):
-    """Enable agent collaboration on task."""
+    """
+    🤝 Engage Multi-Agent Ritual: Synchronize agents on a shared mission
+
+    Orchestrates a collaborative sequence between two specialized agents, 
+    pooling their cognitive archetypes to MATERIALISE a complex task.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         result = integration.collaborate_on_task(primary_pane, secondary_pane, task_description, timeout=timeout)
 
         if result['success']:
-            console.log("[green]✓ Collaboration completed successfully[/green]")
+            console.log("[success]✓ Collaboration completed successfully[/success]")
             console.log(f"Duration: {result.get('collaboration_time', 0):.1f}s")
         else:
-            console.log(f"[red]✗ Collaboration failed: {result.get('error', 'Unknown error')}[/red]")
+            console.log(f"[error]✗ Collaboration failed: {result.get('error', 'Unknown error')}[/error]")
 
     except Exception as e:
-        console.log(f"[red]Collaboration error: {e}[/red]")
+        console.log(f"[error]Collaboration error: {e}[/error]")
 
 
 # Debugging commands
 @click.group(name="debug")
 def debug_group():
-    """Interactive debugging support."""
+    """
+    🩺 Ritual Apothecary: Interactive debugging support
+
+    Orchestrates high-fidelity diagnostic rituals. Synchronizes with 
+    external debuggers to audit ritual execution and identify focal 
+    disconnects.
+    """
     pass
 
 
 @debug_group.command("start")
 @click.argument("command")
-@click.option("--debugger", type=click.Choice(['pdb', 'gdb', 'lldb']), default='pdb', help="Debugger type")
-@click.option("--pane", help="Specific pane name")
+@click.option("--debugger", type=click.Choice(['pdb', 'gdb', 'lldb']), default='pdb', help="🔬 Debugger Archetype: Select the diagnostic tool for the ritual.")
+@click.option("--pane", help="📍 Signal Anchor: Target a specific cockpit pane for the debug session.")
 def debug_start(command: str, debugger: str, pane: Optional[str]):
-    """Start debugging session."""
+    """
+    🚀 Ignite Diagnostic: Start high-fidelity debugging session
+
+    Materializes a diagnostic focal point, engaging the specified 
+    debugger to audit command execution signals.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         debugger_type = DebuggerType[debugger.upper()]
         session = integration.start_debug_session(command, debugger_type, pane_name=pane)
 
-        console.logger.debug(f"[green]✓ Debug session started: {session.session_id}[/green]")
+        console.logger.debug(f"[success]✓ Debug session started: {session.session_id}[/success]")
         console.log(f"  Pane: {session.pane_id}")
         console.logger.debug(f"  Debugger: {session.debugger_type.value}")
 
     except Exception as e:
-        console.log(f"[red]Failed to start debug session: {e}[/red]")
+        console.log(f"[error]Failed to start debug session: {e}[/error]")
 
 
 @debug_group.command("breakpoint")
@@ -424,186 +539,226 @@ def debug_start(command: str, debugger: str, pane: Optional[str]):
 @click.argument("file_path")
 @click.argument("line", type=int)
 def debug_breakpoint(session_id: str, file_path: str, line: int):
-    """Set breakpoint in debug session."""
+    """
+    📍 Set Signal Anchor: Insert a breakpoint into the debug session
+
+    Writes a stable diagnostic anchor at specific file coordinates to 
+    halt the ritual for deep-tissue inspection.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.log(f"[red]Session not found: {session_id}[/red]")
+            console.log(f"[error]Session not found: {session_id}[/error]")
             return
 
         success = integration.set_debug_breakpoint(session, file_path, line)
 
         if success:
-            console.log(f"[green]✓ Breakpoint set at {file_path}:{line}[/green]")
+            console.log(f"[success]✓ Breakpoint set at {file_path}:{line}[/success]")
         else:
-            console.log(f"[red]✗ Failed to set breakpoint[/red]")
+            console.log(f"[error]✗ Failed to set breakpoint[/error]")
 
     except Exception as e:
-        console.log(f"[red]Breakpoint error: {e}[/red]")
+        console.log(f"[error]Breakpoint error: {e}[/error]")
 
 
 @debug_group.command("continue")
 @click.argument("session_id")
 def debug_continue(session_id: str):
-    """Continue execution in debug session."""
+    """
+    ▶️ Re-Engage Ritual: Continue execution in the debug session
+
+    Resumes the diagnostic sequence, allowing the ritual to proceed to 
+    the next anchor or termination signal.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.log(f"[red]Session not found: {session_id}[/red]")
+            console.log(f"[error]Session not found: {session_id}[/error]")
             return
 
         new_state = integration.continue_debugging(session)
-        console.log(f"[green]Execution continued, state: {new_state.name}[/green]")
+        console.log(f"[success]Execution continued, state: {new_state.name}[/success]")
 
     except Exception as e:
-        console.log(f"[red]Continue error: {e}[/red]")
+        console.log(f"[error]Continue error: {e}[/error]")
 
 
 @debug_group.command("step")
 @click.argument("session_id")
-@click.option("--type", type=click.Choice(['step', 'next']), default='step', help="Step type")
+@click.option("--type", type=click.Choice(['step', 'next']), default='step', help="🔬 Step Aesthetic: Choose between 'step' (into) or 'next' (over).")
 def debug_step(session_id: str, step_type: str):
-    """Step through debug session."""
+    """
+    🦶 Granular Inspection: Step through the diagnostic ritual
+
+    Executes a single ritual step, enabling high-fidelity observation 
+    of signal transitions and cognitive state changes.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.log(f"[red]Session not found: {session_id}[/red]")
+            console.log(f"[error]Session not found: {session_id}[/error]")
             return
 
         new_state = integration.step_debugging(session, step_type)
-        console.log(f"[green]Stepped ({step_type}), state: {new_state.name}[/green]")
+        console.log(f"[success]Stepped ({step_type}), state: {new_state.name}[/success]")
 
     except Exception as e:
-        console.log(f"[red]Step error: {e}[/red]")
+        console.log(f"[error]Step error: {e}[/error]")
 
 
 @debug_group.command("inspect")
 @click.argument("session_id")
 @click.argument("variable")
 def debug_inspect(session_id: str, variable: str):
-    """Inspect variable in debug session."""
+    """
+    🔬 Deep Telemetry: Inspect variable state in the debug session
+
+    Retrieves the raw data coordinates for a specific ritual variable, 
+    revealing its current state within the diagnostic HUD.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.log(f"[red]Session not found: {session_id}[/red]")
+            console.log(f"[error]Session not found: {session_id}[/error]")
             return
 
         value = integration.inspect_debug_variable(session, variable)
-        console.log(f"[cyan]{variable} = {value}[/cyan]")
+        console.log(f"[info]{variable} = {value}[/info]")
 
     except Exception as e:
-        console.log(f"[red]Inspection error: {e}[/red]")
+        console.log(f"[error]Inspection error: {e}[/error]")
 
 
 @debug_group.command("stack")
 @click.argument("session_id")
 def debug_stack(session_id: str):
-    """Get stack trace from debug session."""
+    """
+    📋 Trace Ritual: Get the current stack trace
+
+    Displays the full sequence of nested rituals leading to the active 
+    diagnostic coordinate.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.log(f"[red]Session not found: {session_id}[/red]")
+            console.log(f"[error]Session not found: {session_id}[/error]")
             return
 
         stack = integration.get_debug_stack_trace(session)
-        console.logger.debug("[cyan]Stack Trace:[/cyan]")
+        console.logger.debug("[info]Stack Trace:[/info]")
         for i, frame in enumerate(stack, 1):
             console.log(f"  {i}. {frame}")
 
     except Exception as e:
-        console.log(f"[red]Stack trace error: {e}[/red]")
+        console.log(f"[error]Stack trace error: {e}[/error]")
 
 
 @debug_group.command("locals")
 @click.argument("session_id")
 def debug_locals(session_id: str):
-    """Get local variables from debug session."""
+    """
+    📦 Local Registry: Show local variables in the active frame
+
+    Displays the current index of local ritual signals and their 
+    assigned coordinates.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.log(f"[red]Session not found: {session_id}[/red]")
+            console.log(f"[error]Session not found: {session_id}[/error]")
             return
 
         locals_vars = integration.get_debug_locals(session)
-        console.log("[cyan]Local Variables:[/cyan]")
+        console.log("[info]Local Variables:[/info]")
         for var_name, var_value in locals_vars.items():
             console.log(f"  {var_name} = {var_value}")
 
     except Exception as e:
-        console.log(f"[red]Locals error: {e}[/red]")
+        console.log(f"[error]Locals error: {e}[/error]")
 
 
 @debug_group.command("quit")
 @click.argument("session_id")
 def debug_quit(session_id: str):
-    """Quit debug session."""
+    """
+    ⏹️ Halt Diagnostic: Terminate the debug session
+
+    Deactivates the diagnostic focal point and releases its associated 
+    ritual sensors.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.log(f"[red]Session not found: {session_id}[/red]")
+            console.log(f"[error]Session not found: {session_id}[/error]")
             return
 
         integration.quit_debugging(session)
-        console.logger.debug(f"[green]✓ Debug session {session_id} terminated[/green]")
+        console.logger.debug(f"[success]✓ Debug session {session_id} terminated[/success]")
 
     except Exception as e:
-        console.log(f"[red]Quit error: {e}[/red]")
+        console.log(f"[error]Quit error: {e}[/error]")
 
 
 @debug_group.command("analyze-error")
 @click.argument("error_text")
 def debug_analyze_error(error_text: str):
-    """Analyze error output for debugging insights."""
+    """
+    🔬 Pattern Synthesis: Analyze error telemetry for insights
+
+    Engages the diagnostic intelligence engine to synthesize causes 
+    and remediation rituals for reported error signals.
+    """
     integration = get_global_integration()
     if not integration:
-        console.log("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.log("[error]Claude-Code-Tools integration not initialized[/error]")
         return
 
     try:
         analysis = integration.analyze_error(error_text)
-        console.log(f"[cyan]Error Analysis: {analysis['error_type']}[/cyan]")
+        console.log(f"[info]Error Analysis: {analysis['error_type']}[/info]")
         console.log(f"Likely Cause: {analysis['likely_cause']}")
         console.log("Suggested Fixes:")
         for fix in analysis['suggested_fixes']:
             console.log(f"  • {fix}")
 
     except Exception as e:
-        console.log(f"[red]Analysis error: {e}[/red]")
+        console.log(f"[error]Analysis error: {e}[/error]")
 
 
 # Register command groups

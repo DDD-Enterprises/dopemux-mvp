@@ -12,8 +12,9 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
 
@@ -21,35 +22,29 @@ from ..console import console
 @click.pass_context
 def code(ctx):
     """
-    🧠 AI Code Repair - Vanilla Agent
+    🧠 Cognitive Repair: Vanilla Agent Code Repair
 
-    Quick and reliable code fixes using traditional LLM-based iterative repair.
-    Best for straightforward bugs and rapid development cycles.
-
-    Examples:
-        dopemux code repair "undefined variable error" --file script.py
-        dopemux code analyze "null pointer issue" --file app.py
-        dopemux code status
+    Orchestrates traditional LLM-based iterative code fixes. Best for 
+    straightforward bugs and rapid development cycles, synchronizing 
+    automated repair rituals across the project workspace.
     """
     pass
 
 
 @code.command()
 @click.argument('bug_description')
-@click.option('--file', '-f', 'file_path', help='Path to file containing the bug')
-@click.option('--line', '-l', type=int, help='Line number where bug occurs')
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
-@click.option('--dry-run', is_flag=True, help='Show what would be done without making changes')
+@click.option('--file', '-f', 'file_path', help='🔬 Artifact Coordinate: Path to the file containing the reported bug.')
+@click.option('--line', '-l', type=int, help='📍 Signal Anchor: Specific line number where the bug manifests.')
+@click.option('--verbose', '-v', is_flag=True, help='📊 Deep Telemetry: Enable verbose output for high-fidelity diagnostics.')
+@click.option('--dry-run', is_flag=True, help='🔬 Ritual Preview: Simulate repair operations without mutating artifacts.')
 @click.pass_context
 def repair(ctx, bug_description, file_path, line, verbose, dry_run):
     """
-    Repair code using the vanilla agent.
+    💊 Execute Remediation: Run the vanilla agent code repair ritual
 
-    BUG_DESCRIPTION: Description of the bug to fix
-
-    Examples:
-        dopemux code repair "variable not defined" --file script.py --line 42
-        dopemux code repair "null pointer exception" --file app.py --verbose
+    Initiates an iterative repair sequence to resolve the specified bug. 
+    Synchronizes across file coordinates and reported signals to MATERIALISE 
+    a high-fidelity fix.
     """
     # Import here to avoid circular dependencies
     try:
@@ -73,7 +68,7 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
             }
 
             if dry_run:
-                console.logger.info("[yellow]🔍 Dry run mode - analyzing bug without repair[/yellow]")
+                console.logger.info("[warning]🔍 Dry run mode - analyzing bug without repair[/warning]")
                 analysis = await agent._analyze_bug(bug_description, file_path or "", line or 0)
                 console.logger.info("Analysis Results:")
                 console.logger.info(f"  Description: {analysis.get('description', 'N/A')}")
@@ -84,16 +79,16 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
             result = await agent.process_task(task)
 
             if result.get('success'):
-                console.logger.info("[green]✅ Repair successful![/green]")
+                console.logger.info("[success]✅ Repair successful![/success]")
                 console.logger.info(f"Confidence: {result.get('confidence', 0):.2f}")
                 console.logger.info(f"Iterations: {result.get('iterations', 0)}")
                 if result.get('repair'):
-                    console.logger.info("\n[blue]Generated Repair:[/blue]")
+                    console.logger.info("\n[info]Generated Repair:[/info]")
                     console.logger.info(result['repair'])
                 if result.get('explanation'):
-                    console.logger.info(f"\n[yellow]Explanation:[/yellow] {result['explanation']}")
+                    console.logger.info(f"\n[warning]Explanation:[/warning] {result['explanation']}")
             else:
-                console.logger.error("[red]❌ Repair failed[/red]")
+                console.logger.error("[error]❌ Repair failed[/error]")
                 console.logger.error(f"Reason: {result.get('explanation', 'Unknown error')}")
                 if verbose:
                     console.logger.debug(f"Debug: Iterations attempted: {result.get('iterations', 0)}")
@@ -101,7 +96,7 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
         asyncio.run(run_repair())
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Code repair failed: {e}[/red]")
+        console.logger.error(f"[error]❌ Code repair failed: {e}[/error]")
         if verbose:
             import traceback
             traceback.print_exc()
@@ -109,15 +104,16 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
 
 @code.command()
 @click.argument('bug_description')
-@click.option('--file', '-f', 'file_path', help='Path to file to analyze')
-@click.option('--line', '-l', type=int, help='Line number to analyze')
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.option('--file', '-f', 'file_path', help='🔬 Artifact Coordinate: Target file path for diagnostic analysis.')
+@click.option('--line', '-l', type=int, help='📍 Signal Anchor: Target line number for isolated analysis.')
+@click.option('--verbose', '-v', is_flag=True, help='📊 Deep Telemetry: Enable detailed analytic readout.')
 @click.pass_context
 def analyze(ctx, bug_description, file_path, line, verbose):
     """
-    Analyze a bug without attempting repair.
+    🔬 Pattern Synthesis: Analyze bug surface area without executing repairs
 
-    Provides insights, complexity assessment, and repair strategy recommendations.
+    Generates cognitive insights, ritual complexity assessments, and 
+    recommended repair strategies for manual remediation.
     """
     try:
         services_path = Path(__file__).resolve().parent.parent / 'services'
@@ -134,7 +130,7 @@ def analyze(ctx, bug_description, file_path, line, verbose):
 
             analysis = await agent._analyze_bug(bug_description, file_path or "", line or 0)
 
-            console.logger.info("[blue]🔍 Bug Analysis Complete[/blue]")
+            console.logger.info("[info]🔍 Bug Analysis Complete[/info]")
             console.logger.info(f"Description: {analysis.get('description', 'N/A')}")
             console.logger.info(f"Complexity Score: {analysis.get('complexity', {}).get('score', 'N/A')}")
             console.logger.info(f"Similar Patterns Found: {len(analysis.get('similar_patterns', {}).get('results', []))}")
@@ -148,18 +144,21 @@ def analyze(ctx, bug_description, file_path, line, verbose):
         asyncio.run(run_analysis())
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Analysis failed: {e}[/red]")
+        console.logger.error(f"[error]❌ Analysis failed: {e}[/error]")
         if verbose:
             import traceback
             traceback.print_exc()
 
 
 @code.command()
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.option('--verbose', '-v', is_flag=True, help='📊 Deep Telemetry: Enable verbose diagnostic output.')
 @click.pass_context
 def code_agent_status_cmd(ctx, verbose):
     """
-    Show code agent status and configuration.
+    📊 Monitoring HUD: Show code agent status and configuration
+
+    Displays the current operational state, cognitive parameters, and 
+    service connectivity for the vanilla code agent daemon.
     """
     try:
         services_path = Path(__file__).resolve().parent.parent / 'services'
@@ -173,7 +172,7 @@ def code_agent_status_cmd(ctx, verbose):
         async def show_status():
             config = AgentConfig()
 
-            console.logger.info("[blue]🧠 Vanilla Code Agent Status[/blue]")
+            console.logger.info("[info]🧠 Vanilla Code Agent Status[/info]")
             console.logger.info(f"Container Zen URL: {config.zen_url}")
             console.logger.info(f"Container ConPort URL: {config.conport_url}")
             console.logger.info(f"Container Serena URL: {config.serena_url}")
@@ -183,7 +182,7 @@ def code_agent_status_cmd(ctx, verbose):
             console.logger.info(f"Workspace: {config.workspace_id}")
 
             # Test MCP connectivity from host (localhost URLs)
-            console.logger.info("\n[yellow]Host MCP Service Status (localhost):[/yellow]")
+            console.logger.info("\n[warning]Host MCP Service Status (localhost):[/warning]")
             host_urls = {
                 "Zen": "http://localhost:3003",
                 "ConPort": "http://localhost:3004",
@@ -212,12 +211,12 @@ def code_agent_status_cmd(ctx, verbose):
                     if not reachable:
                         console.logger.error(f"    Error: {error_msg}")
 
-            console.logger.info("\n[dim]Note: Container uses Docker network names, host uses localhost[/dim]")
+            console.logger.info("\n[text.dim]Note: Container uses Docker network names, host uses localhost[/text.dim]")
 
         asyncio.run(show_status())
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Status check failed: {e}[/red]")
+        console.logger.error(f"[error]❌ Status check failed: {e}[/error]")
         if verbose:
             import traceback
             traceback.print_exc()

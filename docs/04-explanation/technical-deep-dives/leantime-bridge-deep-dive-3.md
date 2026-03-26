@@ -64,7 +64,7 @@ The service is a Python-based MCP server using `Starlette` and `Uvicorn`, implem
 * **Readiness**: The `LEANTIME_BRIDGE_READINESS` audit confirms the service is "CLOSED" (operational) in fully configured environments, though it requires manual setup steps to reach that state.
 
 ### Cross-Validation Summary
-* **Audit Report**: `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` provides definitive proof of readiness logic and recent hardening (e.g., explicit setup hints).
+* **Audit Report**: `docs/05-audit-reports/leantime-bridge-readiness-2026-02-06-2.md` provides definitive proof of readiness logic and recent hardening (e.g., explicit setup hints).
 * **Code Analysis**: `http_server.py` confirms the implementation of all features described in the audit report.
 
 ## SECTION 3: LIVING DOCUMENTATION METADATA

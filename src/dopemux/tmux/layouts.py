@@ -2,9 +2,12 @@
 ADHD-optimized energy layouts for Tmux.
 Ported from services/orchestrator/src/tmux_manager.py.
 """
+
 import logging
 from typing import Literal, Optional, Dict, List
+
 from .controller import TmuxController, PaneInfo
+from .theme import TMUX_ACCENT, TMUX_BACKGROUND, TMUX_BORDER
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +58,20 @@ class EnergyLayoutManager:
             self._create_medium_energy_layout(main_pane)
         elif energy_level == "high":
             self._create_high_energy_layout(main_pane)
+
+        try:
+            self.controller.backend.set_session_option(
+                session_name,
+                "pane-border-style",
+                f"fg={TMUX_BORDER},bg={TMUX_BACKGROUND}",
+            )
+            self.controller.backend.set_session_option(
+                session_name,
+                "pane-active-border-style",
+                f"fg={TMUX_ACCENT},bg={TMUX_BACKGROUND}",
+            )
+        except Exception:
+            logger.debug("Unable to apply Dopemux tmux border palette", exc_info=True)
             
         logger.info(f"🎨 Applied {energy_level} energy layout to {session_name}:{window_name}")
 

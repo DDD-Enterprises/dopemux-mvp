@@ -94,4 +94,4 @@ def test_resolve_instruction_targets_prefers_active_paths(tmp_path: Path):
 
     targets = workflow._resolve_instruction_targets(tmp_path)
 
-    assert "docs/03-reference/instructions/CODEX.md" in targets
+    assert "docs/03-reference/instructions/codex-3.md" in targets

@@ -1,0 +1,52 @@
+{
+    "_meta": {
+        "tool": "query_templates",
+        "source": "code",
+        "source_file": "clockwork/src/main/kotlin/io/github/jpicklyk/mcptask/application/tools/QueryTemplatesTool.kt",
+        "lines": "75-127",
+        "analyzed_ref": "99023a9 HEAD-at-time-of-analysis"
+    },
+    "type": "object",
+    "required": [
+        "operation"
+    ],
+    "properties": {
+        "operation": {
+            "type": "string",
+            "enum": [
+                "get",
+                "list"
+            ]
+        },
+        "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Template ID (required for get operation)"
+        },
+        "includeSections": {
+            "type": "boolean",
+            "description": "Include template sections (get only)",
+            "default": false
+        },
+        "targetEntityType": {
+            "type": "string",
+            "description": "Filter by entity type (list only)",
+            "enum": [
+                "TASK",
+                "FEATURE"
+            ]
+        },
+        "isBuiltIn": {
+            "type": "boolean",
+            "description": "Filter for built-in templates (list only)"
+        },
+        "isEnabled": {
+            "type": "boolean",
+            "description": "Filter for enabled templates (list only)"
+        },
+        "tags": {
+            "type": "string",
+            "description": "Filter by comma-separated tags (list only)"
+        }
+    }
+}

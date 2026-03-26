@@ -7,9 +7,33 @@ Subscribes to Redis Streams and routes events to activity tracker.
 import asyncio
 import json
 import logging
+import sys
+from pathlib import Path
+
+def _configure_import_paths() -> Path:
+    current = Path(__file__).resolve()
+    candidates = [current.parent, *current.parents]
+    repo_root = next(
+        (
+            candidate for candidate in candidates
+            if (candidate / "services" / "shared").exists() or (candidate / "src" / "dopemux").exists()
+        ),
+        current.parent,
+    )
+    for path in (repo_root, repo_root / "src"):
+        path_str = str(path)
+        if path.exists() and path_str not in sys.path:
+            sys.path.insert(0, path_str)
+    return repo_root
+
+
+REPO_ROOT = _configure_import_paths()
+
+from services.shared.brand_voice import StatusChip, brand_log
 from typing import Optional
 
 import redis.asyncio as redis
+from event_normalization import normalize_event
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +79,7 @@ class EventSubscriber:
 
     async def initialize(self):
         """Initialize Redis connection."""
-        self.redis_client = redis.from_url(self.redis_url)
+        self.redis_client = redis.from_url(self.redis_url, decode_responses=True)
 
         # Create consumer group if it doesn't exist
         try:
@@ -65,7 +89,7 @@ class EventSubscriber:
                 "$",
                 mkstream=True
             )
-            logger.info(f"Created consumer group: {self.consumer_group}")
+            logger.info(brand_log(f"Created consumer group: {self.consumer_group}", chip=StatusChip.LIVE))
         except redis.ResponseError as e:
             if "BUSYGROUP" not in str(e):
                 raise
@@ -76,7 +100,7 @@ class EventSubscriber:
             await self.initialize()
 
         self.running = True
-        logger.info(f"Starting event subscription to {self.stream_name}")
+        logger.info(brand_log(f"Starting event subscription to {self.stream_name}", chip=StatusChip.LIVE))
 
         while self.running:
             try:
@@ -103,11 +127,11 @@ class EventSubscriber:
                             )
 
                         except Exception as e:
-                            logger.error(f"Error processing message {message_id}: {e}")
+                            logger.error(brand_log(f"Error processing message {message_id}: {e}", chip=StatusChip.BLOCKER))
                             self.errors += 1
 
             except Exception as e:
-                logger.error(f"Error in event subscription loop: {e}")
+                logger.error(brand_log(f"Error in event subscription loop: {e}", chip=StatusChip.BLOCKER))
                 self.errors += 1
                 await asyncio.sleep(5)  # Back off on errors
 
@@ -119,6 +143,14 @@ class EventSubscriber:
         """
         event_type = message_data.get("type", "")
         event_data = message_data.get("data", {})
+
+        if isinstance(event_data, str):
+            try:
+                event_data = json.loads(event_data)
+            except json.JSONDecodeError:
+                event_data = {}
+
+        event_type, event_data = normalize_event(event_type, event_data)
 
         logger.debug(f"Processing event: {event_type}")
 
@@ -140,4 +172,4 @@ class EventSubscriber:
         if self.redis_client:
             await self.redis_client.close()
 
-        logger.info("Event subscriber stopped")
+        logger.info(brand_log("Event subscriber stopped", chip=StatusChip.LIVE))

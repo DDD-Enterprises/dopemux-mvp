@@ -10,6 +10,30 @@ ADHD Benefit: Automatic workspace switch detection without manual tracking.
 import subprocess
 import platform
 import logging
+import sys
+from pathlib import Path
+
+def _configure_import_paths() -> Path:
+    current = Path(__file__).resolve()
+    candidates = [current.parent, *current.parents]
+    repo_root = next(
+        (
+            candidate for candidate in candidates
+            if (candidate / "services" / "shared").exists() or (candidate / "src" / "dopemux").exists()
+        ),
+        current.parent,
+    )
+    for path in (repo_root, repo_root / "src"):
+        path_str = str(path)
+        if path.exists() and path_str not in sys.path:
+            sys.path.insert(0, path_str)
+    return repo_root
+
+
+REPO_ROOT = _configure_import_paths()
+
+from services.shared.brand_voice import StatusChip, brand_log
+import os
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -26,7 +50,7 @@ class AppDetector:
     def __init__(self):
         """Initialize app detector with OS-specific implementation"""
         self.os_type = platform.system()
-        logger.info(f"App detector initialized for {self.os_type}")
+        logger.info(brand_log(f"App detector initialized for {self.os_type}", chip=StatusChip.LIVE))
 
     def get_active_app(self) -> Optional[str]:
         """
@@ -36,12 +60,16 @@ class AppDetector:
             Application name (e.g., "Claude Code", "Visual Studio Code")
             or None if detection fails
         """
+        override = os.getenv("WORKSPACE_WATCHER_ACTIVE_APP")
+        if override:
+            return override
+
         if IS_MACOS:
             return self._get_active_app_macos()
         elif IS_LINUX:
             return self._get_active_app_linux()
         else:
-            logger.warning(f"Unsupported OS: {self.os_type}")
+            logger.warning(brand_log(f"Unsupported OS: {self.os_type}", chip=StatusChip.AFTERCARE))
             return None
 
     async def get_active_app_async(self) -> Optional[str]:
@@ -51,13 +79,17 @@ class AppDetector:
         Uses thread pool execution to avoid blocking async event loops.
         Preferred in async contexts.
         """
+        override = os.getenv("WORKSPACE_WATCHER_ACTIVE_APP")
+        if override:
+            return override
+
         if IS_MACOS:
             return await self._get_active_app_macos_async()
         elif IS_LINUX:
             # Linux version is already async-compatible, but keep consistent interface
             return self._get_active_app_linux()
         else:
-            logger.warning(f"Unsupported OS: {self.os_type}")
+            logger.warning(brand_log(f"Unsupported OS: {self.os_type}", chip=StatusChip.AFTERCARE))
             return None
 
     async def _get_active_app_macos_async(self) -> Optional[str]:
@@ -93,10 +125,10 @@ class AppDetector:
                 return None
 
         except subprocess.TimeoutExpired:
-            logger.warning("osascript timeout")
+            logger.warning(brand_log("osascript timeout", chip=StatusChip.AFTERCARE))
             return None
         except Exception as e:
-            logger.error(f"macOS app detection error: {e}")
+            logger.error(brand_log(f"macOS app detection error: {e}", chip=StatusChip.BLOCKER))
             return None
 
     def _get_active_app_macos(self) -> Optional[str]:
@@ -125,10 +157,10 @@ class AppDetector:
                 return None
 
         except subprocess.TimeoutExpired:
-            logger.warning("osascript timeout")
+            logger.warning(brand_log("osascript timeout", chip=StatusChip.AFTERCARE))
             return None
         except Exception as e:
-            logger.error(f"macOS app detection error: {e}")
+            logger.error(brand_log(f"macOS app detection error: {e}", chip=StatusChip.BLOCKER))
             return None
 
     def _get_active_app_linux(self) -> Optional[str]:
@@ -181,11 +213,11 @@ class AppDetector:
             return None
 
         except subprocess.TimeoutExpired:
-            logger.warning("Linux app detection timeout")
+            logger.warning(brand_log("Linux app detection timeout", chip=StatusChip.AFTERCARE))
             return None
         except FileNotFoundError:
-            logger.error("xdotool/wmctrl not installed")
+            logger.error(brand_log("xdotool/wmctrl not installed", chip=StatusChip.BLOCKER))
             return None
         except Exception as e:
-            logger.error(f"Linux app detection error: {e}")
+            logger.error(brand_log(f"Linux app detection error: {e}", chip=StatusChip.BLOCKER))
             return None

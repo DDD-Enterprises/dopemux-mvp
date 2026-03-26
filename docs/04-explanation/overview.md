@@ -4,9 +4,9 @@ title: Explanation Overview
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-11'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
+date: '2026-03-19'
+last_review: '2026-03-19'
+next_review: '2026-06-19'
 prelude: Understanding-oriented explanation index for architecture, design rationale, and system behavior.
 ---
 # Explanation Overview
@@ -20,6 +20,12 @@ Explanation docs provide architecture and design context for why the system work
 - `design-decisions/` for implementation rationale
 - `../90-adr/` for architecture decisions, including the PM-plane ADR index
 - `../planes/pm/` for PM-plane authority, write-adjudication, and normalized tool-surface contracts
+
+## Highlighted Active Topics
+
+- [Workflow Kit Architecture](workflow-kit-architecture.md)
+- [PR Merge Queue Orchestration](pr-merge-queue-orchestration.md)
+- [Workflow Kit Transfer RFC](../91-rfc/workflow-kit-pickle-mechanics-transfer.md)
 
 ## Update Policy
 

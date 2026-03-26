@@ -607,6 +607,7 @@ def detect_features(
     repo_fingerprint: Optional[Dict[str, Any]] = None,
     archetypes_payload: Optional[Dict[str, Any]] = None,
     extra_rules: Optional[List[FeatureRule]] = None,
+    prescan_intelligence: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Detect features in the repository.
 
@@ -619,6 +620,10 @@ def detect_features(
 
     detected: List[Dict[str, Any]] = []
     feature_index: Dict[str, Dict[str, Any]] = {}
+    
+    # Extract code intelligence if available
+    code_intel = (prescan_intelligence or {}).get("code_intelligence", {})
+    api_surfaces = code_intel.get("api_surfaces", [])
 
     for rule in rules:
         # Gather glob evidence
@@ -653,12 +658,25 @@ def detect_features(
             )
 
         # Determine confidence
+        confidence = "low"
         if content_evidence and len(all_evidence) >= rule.high_confidence_threshold:
             confidence = "high"
         elif content_evidence or len(all_evidence) >= rule.high_confidence_threshold:
             confidence = "medium"
-        else:
-            confidence = "low"
+            
+        # Boost confidence with prescan intelligence
+        if prescan_intelligence:
+            # Match HTTP APIs
+            if rule.feature_id.startswith("http_api"):
+                if any("route" in s.lower() or "api" in s.lower() for s in api_surfaces):
+                    confidence = "high"
+                    content_evidence.append(f"prescan:api_surface_detected")
+            
+            # Match MCP
+            if rule.feature_id == "mcp_tools":
+                if any("mcp" in s.lower() for s in api_surfaces):
+                    confidence = "high"
+                    content_evidence.append(f"prescan:mcp_surface_detected")
 
         entry = {
             "feature_id": rule.feature_id,

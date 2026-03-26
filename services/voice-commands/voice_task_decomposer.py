@@ -9,10 +9,19 @@ import json
 import logging
 import os
 import re
+import sys
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 import httpx
+
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import StatusChip, brand_text, brand_title
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -48,7 +57,10 @@ class VoiceTaskDecomposer:
             if not task_description:
                 return {
                     "success": False,
-                    "response": "I couldn't understand the task you want to decompose. Please say something like 'decompose the authentication task' or 'break down this feature'."
+                    "response": brand_text(
+                        "Task target unclear. Say something like 'decompose the authentication task' or 'break down this feature'.",
+                        chip=StatusChip.BLOCKER,
+                    )
                 }
 
             # Get ADHD context for personalized decomposition
@@ -72,7 +84,10 @@ class VoiceTaskDecomposer:
             logger.error(f"Voice command processing failed: {e}")
             return {
                 "success": False,
-                "response": f"Sorry, I encountered an error processing your voice command: {str(e)}"
+                "response": brand_text(
+                    f"Voice command processing failed: {str(e)}",
+                    chip=StatusChip.BLOCKER,
+                )
             }
 
     def _extract_task_description(self, voice_input: str) -> Optional[str]:
@@ -215,20 +230,31 @@ class VoiceTaskDecomposer:
         response_parts = []
 
         # Introduction
-        response_parts.append(f"I've decomposed '{original_task}' into {len(sub_tasks)} manageable tasks.")
+        response_parts.append(
+            brand_text(
+                f"Task split locked for '{original_task}'. I found {len(sub_tasks)} manageable tasks.",
+                chip=StatusChip.LIVE,
+                include_chip=False,
+            )
+        )
 
         # Overall assessment
         if complexity < 0.3:
-            response_parts.append("This appears to be a straightforward task.")
+            response_parts.append(brand_text("This looks like a straightforward task.", include_chip=False))
         elif complexity < 0.7:
-            response_parts.append("This is a moderately complex task.")
+            response_parts.append(brand_text("This is a medium-complexity task.", include_chip=False))
         else:
-            response_parts.append("This is quite complex - we'll break it into smaller, focused sessions.")
+            response_parts.append(
+                brand_text(
+                    "This runs complex, so we should split it into smaller focused sessions.",
+                    include_chip=False,
+                )
+            )
 
-        response_parts.append(f"Total estimated time: {total_time} minutes.")
+        response_parts.append(brand_text(f"Total estimated time: {total_time} minutes.", include_chip=False))
 
         # Sub-tasks
-        response_parts.append("Here are the sub-tasks:")
+        response_parts.append(brand_text("Here are the sub-tasks.", include_chip=False))
         for i, task in enumerate(sub_tasks, 1):
             time_str = f"{task['estimated_time']} minutes"
             response_parts.append(f"{i}. {task['description']} - about {time_str}")
@@ -241,12 +267,22 @@ class VoiceTaskDecomposer:
 
         if accommodations:
             unique_accommodations = list(set(accommodations[:3]))  # Limit to 3
-            response_parts.append(f"ADHD accommodations: {', '.join(unique_accommodations)}")
+            response_parts.append(
+                brand_text(
+                    f"ADHD accommodations: {', '.join(unique_accommodations)}",
+                    include_chip=False,
+                )
+            )
 
         # Break recommendations
         breaks = decomposition.get("break_recommendations", [])
         if breaks:
-            response_parts.append(f"Break recommendations: {', '.join(breaks[:2])}")
+            response_parts.append(
+                brand_text(
+                    f"Break recommendations: {', '.join(breaks[:2])}",
+                    include_chip=False,
+                )
+            )
 
         return " ".join(response_parts)
 

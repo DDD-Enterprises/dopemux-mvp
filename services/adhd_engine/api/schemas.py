@@ -5,8 +5,11 @@ Request/response models for all 7 REST endpoints.
 """
 
 from pydantic import BaseModel, Field
+from pydantic import field_validator
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+
+from services.shared.brand_voice import StatusChip, brand_list, brand_text
 
 
 # Task Assessment
@@ -36,6 +39,16 @@ class AccommodationRecommendationSchema(BaseModel):
     cognitive_benefit: str
     implementation_effort: str  # minimal, low, moderate, high
 
+    @field_validator("message", mode="before")
+    @classmethod
+    def _brand_message(cls, value: str) -> str:
+        return brand_text(value, chip=StatusChip.EDGE)
+
+    @field_validator("suggested_actions", mode="before")
+    @classmethod
+    def _brand_actions(cls, value: List[str]) -> List[str]:
+        return brand_list(value or [], chip=StatusChip.EDGE)
+
 
 class ADHDInsights(BaseModel):
     """ADHD-specific insights about task."""
@@ -52,6 +65,11 @@ class MLPrediction(BaseModel):
     ml_used: bool = Field(default=True, description="True if ML used, False if rule-based fallback")
     override_available: bool = Field(default=True, description="Whether user can override this prediction")
     override_reason: Optional[str] = Field(default=None, description="Why override is recommended/not available")
+
+    @field_validator("explanation", mode="before")
+    @classmethod
+    def _brand_explanation(cls, value: str) -> str:
+        return brand_text(value, chip=StatusChip.LOGGED)
 
 
 class PredictionOverrideRequest(BaseModel):
@@ -81,6 +99,11 @@ class OverrideResponse(BaseModel):
     feedback_recorded: bool
     message: str
 
+    @field_validator("message", mode="before")
+    @classmethod
+    def _brand_override_message(cls, value: str) -> str:
+        return brand_text(value, chip=StatusChip.LOGGED)
+
 
 class CustomizationSettings(BaseModel):
     """User customization settings for ADHD Engine."""
@@ -105,6 +128,11 @@ class TrustMetricsResponse(BaseModel):
     feedback_summary: Dict[str, Any]
     automation_levels: Dict[str, str]
     recommendations: List[str]
+
+    @field_validator("recommendations", mode="before")
+    @classmethod
+    def _brand_recommendations(cls, value: List[str]) -> List[str]:
+        return brand_list(value or [], chip=StatusChip.EDGE)
 
 
 class TrustVisualizationResponse(BaseModel):
@@ -167,6 +195,16 @@ class BreakRecommendationResponse(BaseModel):
     message: str
     ml_prediction: Optional[MLPrediction] = None
 
+    @field_validator("message", mode="before")
+    @classmethod
+    def _brand_break_message(cls, value: str) -> str:
+        return brand_text(value, chip=StatusChip.AFTERCARE)
+
+    @field_validator("suggestions", mode="before")
+    @classmethod
+    def _brand_break_suggestions(cls, value: List[str]) -> List[str]:
+        return brand_list(value or [], chip=StatusChip.AFTERCARE)
+
 
 # User Profile
 
@@ -188,6 +226,11 @@ class UserProfileResponse(BaseModel):
     profile_created: bool
     message: str
 
+    @field_validator("message", mode="before")
+    @classmethod
+    def _brand_profile_message(cls, value: str) -> str:
+        return brand_text(value, chip=StatusChip.LOGGED)
+
 
 # Activity Update
 
@@ -207,6 +250,11 @@ class ActivityUpdateResponse(BaseModel):
     attention_updated: bool
     message: str
     ml_prediction: Optional[MLPrediction] = None
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def _brand_activity_message(cls, value: str) -> str:
+        return brand_text(value, chip=StatusChip.LOGGED)
 
 
 # ML Pattern & Prediction Endpoints (IP-005 Days 11-12)

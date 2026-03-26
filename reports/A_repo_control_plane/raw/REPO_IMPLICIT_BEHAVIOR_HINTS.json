@@ -4383,7 +4383,7 @@
         "anchor": "L29",
         "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
         "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_69ba5b68d442"
@@ -9313,7 +9313,7 @@
         "anchor": "L29",
         "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
         "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "pattern": "other",
       "trigger_id": "TRIG_dd8299b36bb0"

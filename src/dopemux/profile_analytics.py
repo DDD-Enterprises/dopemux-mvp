@@ -20,6 +20,8 @@ import asyncio
 from rich.table import Table
 from rich.panel import Panel
 
+from dopemux.ui.theme import styled_table
+
 from .console import console
 
 
@@ -310,28 +312,28 @@ def display_stats(stats: ProfileStats, days_back: int = 30) -> None:
         days_back: Time period analyzed
     """
     if stats.total_switches == 0:
-        console.print("[yellow]📊 No usage data yet[/yellow]")
-        console.print("\n[dim]Start using profiles to see analytics![/dim]")
+        console.print("[warning]📊 No usage data yet[/warning]")
+        console.print("\n[text.dim]Start using profiles to see analytics![/text.dim]")
         return
 
     console.print(Panel(
-        f"[bold cyan]Profile Usage Analytics[/bold cyan]\n"
+        f"[mint]Profile Usage Analytics[/mint]\n"
         f"Last {days_back} days",
-        border_style="cyan"
+        border_style="info"
     ))
 
     # Summary stats
     console.print(f"\n[bold]📈 Summary:[/bold]")
-    console.print(f"   Total switches: [cyan]{stats.total_switches}[/cyan]")
-    console.print(f"   Per day (avg): [cyan]{stats.avg_switches_per_day:.1f}[/cyan]")
-    console.print(f"   Most used: [cyan]{stats.most_used_profile}[/cyan]")
-    console.print(f"   Accuracy: [cyan]{stats.switch_accuracy:.0f}%[/cyan] (switches lasting >30 min)")
-    console.print(f"   Avg switch time: [cyan]{stats.avg_switch_duration_seconds:.2f}s[/cyan]")
-    console.print(f"   Avg MCPs per switch: [cyan]{stats.avg_mcp_count:.2f}[/cyan]")
+    console.print(f"   Total switches: [info]{stats.total_switches}[/info]")
+    console.print(f"   Per day (avg): [info]{stats.avg_switches_per_day:.1f}[/info]")
+    console.print(f"   Most used: [info]{stats.most_used_profile}[/info]")
+    console.print(f"   Accuracy: [info]{stats.switch_accuracy:.0f}%[/info] (switches lasting >30 min)")
+    console.print(f"   Avg switch time: [info]{stats.avg_switch_duration_seconds:.2f}s[/info]")
+    console.print(f"   Avg MCPs per switch: [info]{stats.avg_mcp_count:.2f}[/info]")
 
     # Switch breakdown
     console.print(f"\n[bold]🎯 Switch Types:[/bold]")
-    table = Table(show_header=False, box=None, padding=(0, 2))
+    table = styled_table("Switch Types", show_header=False)
     table.add_row("Manual", f"{stats.manual_switches}", f"({stats.manual_switches / stats.total_switches * 100:.0f}%)")
     table.add_row("Auto", f"{stats.auto_switches}", f"({stats.auto_switches / stats.total_switches * 100:.0f}%)")
     table.add_row("Accepted", f"{stats.suggestion_accepted}", f"({stats.suggestion_accepted / stats.total_switches * 100:.0f}%)")
@@ -341,10 +343,12 @@ def display_stats(stats: ProfileStats, days_back: int = 30) -> None:
     # Profile usage
     if stats.usage_by_profile:
         console.print(f"\n[bold]📊 Profile Usage:[/bold]")
-        profile_table = Table(show_header=True, box=None)
-        profile_table.add_column("Profile", style="cyan")
-        profile_table.add_column("Uses", justify="right")
-        profile_table.add_column("Usage", justify="right")
+        profile_table = styled_table(
+            "Profile Usage",
+            ("Profile", {"style": "info"}),
+            ("Uses", {"justify": "right"}),
+            ("Usage", {"justify": "right"}),
+        )
 
         for profile, count in sorted(stats.usage_by_profile.items(), key=lambda x: x[1], reverse=True):
             pct = (count / stats.total_switches) * 100

@@ -15,6 +15,8 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List, Callable, Awaitable
 from dataclasses import dataclass, field
 
+from services.shared.brand_voice import StatusChip, brand_list, brand_text
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,6 +34,9 @@ class ADHDFinding:
     def __post_init__(self):
         if not self.timestamp:
             self.timestamp = datetime.utcnow().isoformat()
+        chip = StatusChip.BLOCKER if self.severity in {"high", "critical"} else StatusChip.LIVE
+        self.message = brand_text(self.message, chip=chip)
+        self.recommended_actions = brand_list(self.recommended_actions, chip=StatusChip.EDGE)
 
 
 class ADHDEventListener:
@@ -476,7 +481,7 @@ class ADHDEventListener:
         logger.info(f"📢 ADHD Finding: [{finding.severity}] {finding.finding_type}: {finding.message}")
         
         # Publish to EventBus for downstream consumers
-        from event_bus import Event
+        from .event_emitter import Event
         await self.event_bus.publish(
             "dopemux:adhd-findings",
             Event(
@@ -502,7 +507,8 @@ class ADHDEventListener:
 # Factory function for easy setup
 def create_adhd_event_listener(
     event_bus,
-    engine
+    engine,
+    output_channels: Optional[List] = None,
 ) -> ADHDEventListener:
     """
     Create ADHDEventListener with detectors from engine.
@@ -521,5 +527,6 @@ def create_adhd_event_listener(
         procrastination_detector=getattr(engine, 'procrastination_detector', None),
         working_memory_support=getattr(engine, 'working_memory_support', None),
         context_preserver=getattr(engine, 'context_preserver', None),
-        activity_tracker=getattr(engine, 'activity_tracker', None)
+        activity_tracker=getattr(engine, 'activity_tracker', None),
+        output_channels=output_channels or [],
     )

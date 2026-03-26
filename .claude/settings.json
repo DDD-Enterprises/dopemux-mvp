@@ -4,7 +4,27 @@
     "command": ".claude/statusline.sh"
   },
   "hooks": {
-    "UserPromptSubmit": [],
+    "Start": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/session_lifecycle.py\" start"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/prompt_analyzer.py\"",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "thinkdeep|morph|batch_edit|refactor|deep_research",
@@ -12,6 +32,15 @@
           {
             "type": "command",
             "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/check_energy.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/track_file_edit.sh\""
           }
         ]
       }
@@ -33,6 +62,10 @@
           {
             "type": "command",
             "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/save_context.sh\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/session_lifecycle.py\" stop"
           }
         ]
       }

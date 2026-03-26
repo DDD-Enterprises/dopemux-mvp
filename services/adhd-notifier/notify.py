@@ -15,6 +15,14 @@ import subprocess
 import platform
 import logging
 from typing import Optional
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from services.shared.brand_voice import break_copy, brand_text, brand_title, hyperfocus_copy
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +54,10 @@ class Notifier:
             True if notification sent successfully
         """
         if urgency == "urgent":
-            title = "Break Needed NOW"
-            message = f"You've been coding for {duration_minutes} minutes. Take a 10-minute break!"
+            title, message, _ = break_copy(duration_minutes, urgent=True)
             sound = "Basso"  # Alert sound
         else:
-            title = "Time for a Break"
-            message = f"You've been focused for {duration_minutes} minutes. Take a 5-minute break."
+            title, message, _ = break_copy(duration_minutes, urgent=False)
             sound = "default"
 
         return self._send_notification(title, message, sound)
@@ -66,11 +72,7 @@ class Notifier:
         Returns:
             True if notification sent successfully
         """
-        title = "HYPERFOCUS ALERT"
-        message = (
-            f"You've been coding for {duration_minutes} minutes without a break!\n\n"
-            f"This can lead to burnout. Take a 15-minute break NOW."
-        )
+        title, message, _ = hyperfocus_copy(duration_minutes)
         sound = "Sosumi"  # Urgent alert sound
 
         return self._send_notification(title, message, sound)
@@ -78,8 +80,8 @@ class Notifier:
     def send_test_notification(self) -> bool:
         """Send test notification to verify system works"""
         return self._send_notification(
-            "ADHD Notifier",
-            "Desktop notifications are working!",
+            brand_title("Notifier check-in"),
+            brand_text("Desktop notifications are live and ready."),
             "default"
         )
 
@@ -98,10 +100,7 @@ class Notifier:
             logger.debug("Voice notifications only supported on macOS")
             return False
 
-        if urgency == "urgent":
-            message = f"Break needed now. You have been coding for {duration_minutes} minutes. Please take a ten minute break."
-        else:
-            message = f"Time for a break. You have been focused for {duration_minutes} minutes. Take a five minute break."
+        _, _, message = break_copy(duration_minutes, urgent=urgency == "urgent")
 
         return self._speak_macos(message)
 
@@ -118,10 +117,7 @@ class Notifier:
         if not IS_MACOS:
             return False
 
-        message = (
-            f"Hyperfocus alert! You have been coding for {duration_minutes} minutes without a break. "
-            f"This can lead to burnout. Take a fifteen minute break immediately."
-        )
+        _, _, message = hyperfocus_copy(duration_minutes)
 
         return self._speak_macos(message, rate=180)  # Slightly faster for urgency
 

@@ -3,12 +3,16 @@ id: 00-MASTER-INDEX
 title: 00 Master Index
 type: explanation
 owner: '@hu3mann'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
+last_review: '2026-03-19'
+next_review: '2026-06-19'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: 00 Master Index (explanation) for dopemux documentation and developer workflows.
 ---
+# ━━━◆ Ø ◆━━━
+
+Status: [LOGGED] Topology Complete
+
 # Dopemux Documentation - Master Index
 
 **Quick Navigation:** [Getting Started](#getting-started) | [How-To Guides](#how-to) | [Systems](#systems) | [Architecture](#architecture) | [Research Progress](04-explanation/technical-deep-dives/research-leaderboard.md) | [Archive](#archive)
@@ -47,6 +51,9 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Multi-Instance Workflow](02-how-to/multi-instance-workflow.md)
 - [Instance State Persistence](02-how-to/instance-state-persistence.md)
 - [Orchestrator Dashboard Quickstart](02-how-to/orchestrator-dashboard.md)
+- [PR Merge Flight Dashboard Quickstart](02-how-to/pr-merge-flight-dashboard.md)
+- [CI Remediation Specialist Reference](03-reference/ci-remediation-specialist.md)
+- [Internal Workflow Kit](02-how-to/internal-workflow-kit.md)
 - [Workflow Idea to Epic Lifecycle](02-how-to/operations/workflow-idea-epic-lifecycle.md)
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
 - [Repo Truth Extractor CLI Runbook](02-how-to/extraction/run-v4-from-dopemux-cli.md) - canonical command namespace: `dopemux upgrades ...` (`extractor` is legacy alias)
@@ -154,6 +161,8 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Task Orchestrator Service Reference](03-reference/services/task-orchestrator.md)
 - [Dope-Context Docs Contextual Embedding Contract](03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md)
 - [Dope-Context Architecture and Trinity Boundaries](03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md)
+- [Internal Workflow Kit Reference](03-reference/internal-workflow-kit.md)
+- [CI Remediation Specialist Reference](03-reference/ci-remediation-specialist.md)
 
 ### Features
 - [Features Index](03-reference/features/features-index.md)
@@ -171,6 +180,11 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md)
 - [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md)
 - [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md)
+- [Workflow Kit Architecture](04-explanation/workflow-kit-architecture.md)
+- [PR Merge Queue Orchestration](04-explanation/pr-merge-queue-orchestration.md)
+
+### RFCs
+- [Workflow Kit Pickle Mechanics Transfer](91-rfc/workflow-kit-pickle-mechanics-transfer.md)
 
 ---
 

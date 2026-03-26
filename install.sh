@@ -21,6 +21,24 @@ set -e  # Exit on error
 set -u  # Exit on undefined variable
 set -o pipefail  # Exit on pipe failure
 
+# --- Fail-Safe Rollback Trap ---
+on_error() {
+    local exit_code=$?
+    if [ $exit_code -ne 0 ] && [ "$INSTALL_MODE" != "uninstall" ]; then
+        echo
+        error "Installation failed at step: $BASH_COMMAND"
+        warning "Would you like to cleanup partially installed files in $DOPEMUX_HOME?"
+        if ask_yes_no "Cleanup & Exit?" "n"; then
+            rm -rf "$DOPEMUX_HOME"
+            success "Cleanup complete. You can try again later."
+        else
+            log "Leaving files for debugging. Check $DOPEMUX_HOME for logs."
+        fi
+    fi
+    exit $exit_code
+}
+trap on_error ERR
+
 # ============================================================================
 # Configuration & Constants
 # ============================================================================
@@ -29,18 +47,25 @@ VERSION="1.0.0"
 DOPEMUX_HOME="${DOPEMUX_HOME:-$HOME/.dopemux}"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 BACKUP_DIR="$HOME/.dopemux.backup.$(date +%Y%m%d_%H%M%S)"
-DOCKER_COMPOSE_CORE="compose.yml"
-DOCKER_COMPOSE_FULL="compose.yml"
-SELECTED_STACK="core"  # core | full
+DOCKER_COMPOSE_CORE="-f docker/compose.core.yml"
+DOCKER_COMPOSE_RESEARCH="-f docker/compose.core.yml -f docker/compose.research.yml"
+DOCKER_COMPOSE_FULL="-f docker/compose.core.yml -f docker/compose.pm.yml -f docker/compose.routing.yml -f docker/compose.research.yml -f docker/compose.agents.yml"
+SELECTED_STACK="core"  # core | research | full
 SELECTED_COMPOSE_FILE="$DOCKER_COMPOSE_CORE"
 ENV_FILE="${ENV_FILE:-.env}"
 STACK_SELECTED_FROM_FLAG=false
 INSTALLER_TEST_MODE="${INSTALLER_TEST_MODE:-0}"
 
 CORE_STACK_PORTS=(5432 6379 6333 6334 3004 8000 8095)
-FULL_STACK_EXTRA_PORTS=(3003 3011 3016 4000 8081 8090)
+RESEARCH_STACK_EXTRA_PORTS=(3009 3011)
+FULL_STACK_EXTRA_PORTS=(3003 3009 3011 3012 3015 3016 4000 8081 8090 8790)
 
 CORE_STACK_ENV_VARS=()
+RESEARCH_STACK_ENV_VARS=(
+    OPENAI_API_KEY
+    TAVILY_API_KEY
+    EXA_API_KEY
+)
 FULL_STACK_ENV_VARS=(
     AGE_PASSWORD
     ANTHROPIC_API_KEY
@@ -53,6 +78,9 @@ FULL_STACK_ENV_VARS=(
     TASK_ORCHESTRATOR_API_KEY
     ADHD_ENGINE_API_KEY
     LITELLM_DATABASE_URL
+    TAVILY_API_KEY
+    EXA_API_KEY
+    OPENAI_WEBHOOK_SECRET
 )
 
 CORE_STACK_SUMMARY=(
@@ -63,22 +91,26 @@ CORE_STACK_SUMMARY=(
     "ADHD Engine API"
     "Task Orchestrator"
 )
+RESEARCH_STACK_SUMMARY=(
+    "Everything from core stack"
+    "GPT-Researcher (Deep academic research)"
+    "Exa (Neural search engine)"
+)
 FULL_STACK_SUMMARY=(
     "Everything from core stack"
-    "Zen MCP (multi-model reasoning)"
-    "PAL apilookup documentation MCP"
-    "LiteLLM router (Anthropic/OpenAI/OpenRouter/Gemini)"
-    "DopeconBridge + coordination plane"
-    "Genetic Agent + monitoring"
-    "Redis Insight dashboard"
+    "Project Management (Leantime + MySQL)"
+    "Model Routing (LiteLLM + PAL)"
+    "Research Tools (GPT-Researcher + Exa)"
+    "Agents & Automation (Desktop Commander + Webhooks)"
 )
 
-CORE_STACK_ESTIMATE="~3-5 minutes (initial pull may add time)"
-FULL_STACK_ESTIMATE="~10-15 minutes (initial pull heavier due to MCP images)"
+CORE_STACK_ESTIMATE="~3-5 minutes"
+RESEARCH_STACK_ESTIMATE="~5-8 minutes"
+FULL_STACK_ESTIMATE="~10-15 minutes"
 
 
 # Required versions
-REQUIRED_PYTHON_VERSION="3.10"
+REQUIRED_PYTHON_VERSION="3.11"
 REQUIRED_DOCKER_VERSION="20.10"
 REQUIRED_GIT_VERSION="2.30"
 
@@ -137,16 +169,17 @@ debug() {
 
 compose_file_for_stack() {
     local stack="${1:-core}"
-    if [ "$stack" = "full" ]; then
-        echo "$DOCKER_COMPOSE_FULL"
-    else
-        echo "$DOCKER_COMPOSE_CORE"
-    fi
+    case "$stack" in
+        full) echo "$DOCKER_COMPOSE_FULL" ;;
+        research) echo "$DOCKER_COMPOSE_RESEARCH" ;;
+        *) echo "$DOCKER_COMPOSE_CORE" ;;
+    esac
 }
 
 stack_estimate() {
     case "$1" in
         full) echo "$FULL_STACK_ESTIMATE" ;;
+        research) echo "$RESEARCH_STACK_ESTIMATE" ;;
         *) echo "$CORE_STACK_ESTIMATE" ;;
     esac
 }
@@ -155,6 +188,9 @@ stack_summary_items() {
     case "$1" in
         full)
             printf "%s\n" "${FULL_STACK_SUMMARY[@]}"
+            ;;
+        research)
+            printf "%s\n" "${RESEARCH_STACK_SUMMARY[@]}"
             ;;
         *)
             printf "%s\n" "${CORE_STACK_SUMMARY[@]}"
@@ -265,10 +301,12 @@ choose_install_stack() {
     while true; do
         echo "Select installation scope:"
         echo "  1) Core services (Postgres, Redis, Qdrant, ConPort, ADHD Engine, Task Orchestrator)"
-        echo "  2) Full stack (adds Zen, PAL apilookup, LiteLLM, DopeconBridge, Genetic Agent, monitoring)"
-        read -p "$(echo -e "${CYAN}?${NC} Choose [1/2]: ")" stack_choice
+        echo "  2) Research stack (adds GPT-Researcher, Exa)"
+        echo "  3) Full stack (adds everything including PM, LiteLLM, Agents)"
+        read -p "$(echo -e "${CYAN}?${NC} Choose [1/2/3]: ")" stack_choice
         case "${stack_choice:-1}" in
-            2) SELECTED_STACK="full" ;;
+            3) SELECTED_STACK="full" ;;
+            2) SELECTED_STACK="research" ;;
             1|*) SELECTED_STACK="core" ;;
         esac
         show_stack_summary "$SELECTED_STACK"
@@ -393,11 +431,19 @@ ensure_env_file() {
     local -a required_vars=()
     if [ "$stack" = "full" ]; then
         required_vars=("${FULL_STACK_ENV_VARS[@]}")
+    elif [ "$stack" = "research" ]; then
+        required_vars=("${RESEARCH_STACK_ENV_VARS[@]}")
     fi
 
     if [ ${#required_vars[@]} -eq 0 ]; then
         return 0
     fi
+
+    echo
+    warning "SECURITY NOTICE: The ${stack} stack requires API keys."
+    warning "These keys will be stored in plain-text in '$env_file'."
+    warning "Ensure this file is ignored by git and stored securely."
+    echo
 
     log "Checking environment variables for ${stack} stack..."
 
@@ -444,8 +490,90 @@ ensure_env_file() {
         fi
     } > "$tmp_file"
     mv "$tmp_file" "$env_file"
+    chmod 600 "$env_file"
 
     success "Environment variables saved to $env_file"
+}
+
+# --- Pre-flight Hardware Validation ---
+check_system_resources() {
+    local stack="${1:-$SELECTED_STACK}"
+    log "Validating system resources..."
+    
+    if [ "$INSTALLER_TEST_MODE" = "1" ]; then
+        return 0
+    fi
+
+    local ram_gb=0
+    local cpu_cores=0
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        ram_gb=$(($(sysctl -n hw.memsize) / 1024 / 1024 / 1024))
+        cpu_cores=$(sysctl -n hw.ncpu)
+    else
+        ram_gb=$(free -g | awk '/^Mem:/{print $2}')
+        cpu_cores=$(nproc)
+    fi
+
+    local min_ram=8
+    [ "$stack" = "full" ] && min_ram=16
+
+    log "Detected: $ram_gb GB RAM, $cpu_cores CPU cores"
+
+    if [ "$ram_gb" -lt "$min_ram" ]; then
+        warning "Low memory detected: ${ram_gb}GB (Recommended: ${min_ram}GB for ${stack} stack)"
+        if ! ask_yes_no "Continue anyway? (May lead to system instability)" "n"; then
+            fatal "Installation aborted due to low memory"
+        fi
+    fi
+
+    if [ "$cpu_cores" -lt 4 ]; then
+        warning "Low CPU core count: ${cpu_cores} (Recommended: 4+)"
+    fi
+    
+    success "Resource validation complete"
+}
+
+# --- Deterministic Service Readiness ---
+wait_for_containers() {
+    local stack="${1:-$SELECTED_STACK}"
+    local compose_file
+    compose_file=$(compose_file_for_stack "$stack")
+    
+    log "Waiting for services to be healthy..."
+    
+    local timeout=120
+    local start_time=$(date +%s)
+    local ready=false
+
+    while [ $(($(date +%s) - start_time)) -lt $timeout ]; do
+        local total_containers=$(docker compose $compose_file ps -q | wc -l)
+        local healthy_containers=$(docker compose $compose_file ps | grep -c "healthy")
+        local running_containers=$(docker compose $compose_file ps | grep -c "Up")
+
+        if [ "$healthy_containers" -eq "$total_containers" ] && [ "$total_containers" -gt 0 ]; then
+            ready=true
+            break
+        fi
+        
+        # Fallback for services without healthchecks
+        if [ "$running_containers" -eq "$total_containers" ] && [ "$total_containers" -gt 0 ] && [ "$healthy_containers" -eq 0 ]; then
+             # Give them a bit more time if no healthchecks are defined
+             sleep 10
+             ready=true
+             break
+        fi
+
+        printf "."
+        sleep 5
+    done
+    
+    echo
+    if [ "$ready" = true ]; then
+        success "All services are ready!"
+    else
+        warning "Some services are still starting up. Check 'docker compose ps' for status."
+    fi
 }
 
 spinner() {
@@ -695,7 +823,7 @@ install_dependencies() {
             ;;
         *)
             warning "Unknown package manager. Please install dependencies manually:"
-            echo "  - Python 3.10+"
+            echo "  - Python 3.11+"
             echo "  - Git 2.30+"
             echo "  - Docker 20.10+"
             echo "  - tmux, jq, curl, sqlite3 (optional)"
@@ -850,23 +978,26 @@ preflight_checks() {
     
     # Check disk space (need at least 10GB free)
     local available_space
-    available_space=$(df -h "$HOME" | awk 'NR==2 {print $4}' | sed 's/G//')
+    available_space=$(df -k "$HOME" | awk 'NR==2 {print $4}') # Get KB
+    local available_gb=$((available_space / 1024 / 1024))
     
-    if [ "${available_space%.*}" -lt 10 ]; then
-        warning "Low disk space: ${available_space}GB available"
+    if [ "$available_gb" -lt 10 ]; then
+        warning "Low disk space: ${available_gb}GB available"
         warning "Dopemux requires at least 10GB free space"
         
         if ! ask_yes_no "Continue anyway?" "n"; then
             fatal "Insufficient disk space"
         fi
     else
-        success "Disk space: ${available_space}GB available"
+        success "Disk space: ${available_gb}GB available"
     fi
     
     # Check port availability
     local -a ports=("${CORE_STACK_PORTS[@]}")
     if [ "$stack" = "full" ]; then
         ports+=("${FULL_STACK_EXTRA_PORTS[@]}")
+    elif [ "$stack" = "research" ]; then
+        ports+=("${RESEARCH_STACK_EXTRA_PORTS[@]}")
     fi
     local busy_ports=()
     
@@ -915,7 +1046,11 @@ install_dopemux_core() {
     else
         # Install Python package
         if [ -f "pyproject.toml" ]; then
-            python3 -m pip install --user -e . || fatal "Failed to install Python package"
+            log "Creating virtual environment at $DOPEMUX_HOME/venv..."
+            python3 -m venv "$DOPEMUX_HOME/venv" || fatal "Failed to create virtual environment"
+            
+            log "Installing package into virtual environment..."
+            "$DOPEMUX_HOME/venv/bin/pip" install -e . || fatal "Failed to install Python package"
             success "Python package installed"
         else
             warning "pyproject.toml not found, skipping Python package install"
@@ -934,10 +1069,13 @@ install_docker_services() {
     local compose_file
     compose_file=$(compose_file_for_stack "$stack")
 
+    # Validate resources before starting containers
+    check_system_resources "$stack"
+
     log "Setting up Docker services for ${stack} stack..."
     
-    if [ ! -f "$compose_file" ]; then
-        fatal "Compose file not found: $compose_file"
+    if [ ! -f "docker/compose.core.yml" ]; then
+        fatal "Core compose file not found"
     fi
 
     ensure_env_file "$stack"
@@ -955,15 +1093,20 @@ install_docker_services() {
     fi
     
     log "Pulling Docker images from $compose_file (this may take a few minutes)..."
-    docker compose $profile_arg -f "$compose_file" pull &
+    docker compose $profile_arg $compose_file pull &
     spinner $!
     success "Docker images pulled"
     
     log "Starting Docker services..."
-    docker compose $profile_arg -f "$compose_file" up -d || fatal "Failed to start Docker services"
+    docker compose $profile_arg $compose_file up -d || fatal "Failed to start Docker services"
     
-    log "Waiting for services to be ready..."
-    sleep 10
+    # Wait for services to be ready
+    wait_for_containers "$stack"
+
+    if [ "$stack" = "full" ]; then
+        log "Running project management setup (Leantime)..."
+        "$DOPEMUX_HOME/venv/bin/python" installers/leantime/install.py -u || warning "PM setup script encountered an issue"
+    fi
 
     SELECTED_COMPOSE_FILE="$compose_file"
     success "Docker services started (${stack} stack)"
@@ -991,15 +1134,8 @@ configure_shell_integration() {
             ;;
     esac
     
-    # Detect Python user bin directory
-    local py_version
-    py_version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo "")
-    local python_user_bin="$HOME/Library/Python/${py_version}/bin"
-    
-    # Fallback to common paths if version detection fails
-    if [ ! -d "$python_user_bin" ]; then
-        python_user_bin="$HOME/.local/bin"
-    fi
+    # Use the virtual environment bin directory
+    local python_user_bin="$DOPEMUX_HOME/venv/bin"
     
     # Add dopemux to PATH if not already there
     if ! grep -q "dopemux" "$shell_rc" 2>/dev/null; then
@@ -1008,7 +1144,7 @@ configure_shell_integration() {
 # Dopemux
 export PATH="$python_user_bin:\$HOME/.local/bin:\$PATH"
 export DOPEMUX_HOME="\$HOME/.dopemux"
-alias dopemux="python3 -m dopemux.cli"
+alias dopemux="\"\$DOPEMUX_HOME/venv/bin/python\" -m dopemux.cli"
 
 # Multi-Workspace Support
 export DEFAULT_WORKSPACE_PATH="\$PWD"  # Set to your main project
@@ -1072,29 +1208,19 @@ verify_installation() {
     
     # Check 3: Docker services
     local docker_ok=false
-    local -a compose_candidates=()
-    if [ -f "$SELECTED_COMPOSE_FILE" ]; then
-        compose_candidates+=("$SELECTED_COMPOSE_FILE")
-    fi
-    if [ "$SELECTED_COMPOSE_FILE" != "$DOCKER_COMPOSE_FULL" ] && [ -f "$DOCKER_COMPOSE_FULL" ]; then
-        compose_candidates+=("$DOCKER_COMPOSE_FULL")
-    fi
-    if [ "$SELECTED_COMPOSE_FILE" != "$DOCKER_COMPOSE_CORE" ] && [ -f "$DOCKER_COMPOSE_CORE" ]; then
-        compose_candidates+=("$DOCKER_COMPOSE_CORE")
-    fi
+    local compose_args
+    compose_args=$(compose_file_for_stack "$stack")
+    
+    local profile_arg=""
+    [ "$stack" = "full" ] && profile_arg="--profile full"
 
-    for compose_file in "${compose_candidates[@]}"; do
-        local profile_arg=""
-        if [ "$stack" = "full" ]; then
-            profile_arg="--profile full"
-        fi
-        if docker compose $profile_arg -f "$compose_file" ps >/dev/null 2>&1 && docker compose $profile_arg -f "$compose_file" ps | grep -q "Up"; then
-            success "Docker services OK ($compose_file)"
-            docker_ok=true
-            ((checks_passed++))
-            break
-        fi
-    done
+    if docker compose $profile_arg $compose_args ps >/dev/null 2>&1 && docker compose $profile_arg $compose_args ps | grep -q "Up"; then
+        success "Docker services OK"
+        docker_ok=true
+        ((checks_passed++))
+    else
+        warning "Docker services not running or unhealthy"
+    fi
 
     if [ "$docker_ok" = false ]; then
         warning "Docker services not running"
@@ -1204,26 +1330,21 @@ EOF
     verify_installation
     echo
     
-    # Success message
-    echo -e "${BOLD}${GREEN}"
-    cat << 'EOF'
-╔═══════════════════════════════════════════════════════════════════╗
-║                                                                   ║
-║   ✅ Dopemux Installed Successfully!                              ║
-║                                                                   ║
-╚═══════════════════════════════════════════════════════════════════╝
-EOF
-    echo -e "${NC}"
-    
-    echo "🎉 Next steps:"
+    # Soft Landing UX
     echo
-    echo "  1. Restart your terminal (or run: source ~/.zshrc)"
-    echo "  2. Run: dopemux init"
-    echo "  3. Start coding with ADHD superpowers! 🧠⚡"
+    echo -e "${BOLD}${CYAN}┌───────────────────────────────────────────────────────────────────┐${NC}"
+    echo -e "${BOLD}${CYAN}│                                                                   │${NC}"
+    echo -e "${BOLD}${CYAN}│   ${GREEN}✅ Dopemux Setup Complete!${CYAN}                                      │${NC}"
+    echo -e "${BOLD}${CYAN}│                                                                   │${NC}"
+    echo -e "${BOLD}${CYAN}└───────────────────────────────────────────────────────────────────┘${NC}"
     echo
-    echo "📚 Documentation: https://docs.dopemux.dev"
-    echo "💬 Community: https://discord.gg/dopemux"
-    echo "🐛 Issues: https://github.com/dopemux/dopemux-mvp/issues"
+    echo -e "${BOLD}NEXT STEP:${NC}"
+    echo -e "${MAGENTA}  source ~/.zshrc && dopemux dashboard${NC}"
+    echo
+    echo -e "${CYAN}Where to go from here:${NC}"
+    echo "  • Run 'dopemux --help' to see all commands"
+    echo "  • Visit https://docs.dopemux.dev for guides"
+    echo "  • Stay focused. You've got this. 🧠⚡"
     echo
 }
 
@@ -1233,7 +1354,7 @@ quick_install() {
     SELECTED_STACK="core"
 
     detect_platform
-    check_python || fatal "Python 3.10+ required"
+    check_python || fatal "Python 3.11+ required"
     check_git || fatal "Git required"
     check_docker || fatal "Docker required"
     check_optional_tools
@@ -1245,8 +1366,17 @@ quick_install() {
     configure_shell_integration
     verify_installation
     
-    success "Quick installation complete (core stack)!"
-    log "Run 'dopemux start' anytime to restart services."
+    # Soft Landing UX
+    echo
+    echo -e "${BOLD}${CYAN}┌───────────────────────────────────────────────────────────────────┐${NC}"
+    echo -e "${BOLD}${CYAN}│                                                                   │${NC}"
+    echo -e "${BOLD}${CYAN}│   ${GREEN}✅ Dopemux (Core) Setup Complete!${CYAN}                               │${NC}"
+    echo -e "${BOLD}${CYAN}│                                                                   │${NC}"
+    echo -e "${BOLD}${CYAN}└───────────────────────────────────────────────────────────────────┘${NC}"
+    echo
+    echo -e "${BOLD}NEXT STEP:${NC}"
+    echo -e "${MAGENTA}  source ~/.zshrc && dopemux start${NC}"
+    echo
 }
 
 full_install() {
@@ -1261,22 +1391,6 @@ full_install() {
 # Terminal Environment Setup
 # ============================================================================
 
-setup_terminal_environment() {
-    log "Setting up ADHD-optimized terminal environment..."
-    
-    # Check if terminal setup script exists
-    local script_path="${SCRIPT_DIR}/scripts/setup-terminal-env.sh"
-    
-    if [[ ! -f "$script_path" ]]; then
-        error "Terminal setup script not found: $script_path"
-        log "Please run this from the dopemux-mvp directory"
-        exit 1
-    fi
-    
-    # Run the terminal setup script
-    chmod +x "$script_path"
-    exec "$script_path"
-}
 
 # ============================================================================
 # Uninstall
@@ -1346,21 +1460,17 @@ parse_args() {
                 INSTALL_MODE="uninstall"
                 shift
                 ;;
-            --terminal)
-                INSTALL_MODE="terminal"
-                shift
-                ;;
             --stack)
                 if [ $# -lt 2 ]; then
-                    fatal "--stack requires an argument (core|full)"
+                    fatal "--stack requires an argument (core|research|full)"
                 fi
                 case "$2" in
-                    core|full)
+                    core|research|full)
                         SELECTED_STACK="$2"
                         STACK_SELECTED_FROM_FLAG=true
                         ;;
                     *)
-                        fatal "Invalid stack '$2'. Expected 'core' or 'full'"
+                        fatal "Invalid stack '$2'. Expected 'core', 'research', or 'full'"
                         ;;
                 esac
                 shift 2
@@ -1389,8 +1499,7 @@ Usage: $0 [OPTIONS]
 OPTIONS:
     --quick         Quick installation (core services only)
     --full          Full installation (all features, no prompts)
-    --stack <mode>  Force stack selection (core|full) in interactive mode
-    --terminal      Setup ADHD-optimized terminal environment
+    --stack <mode>  Force stack selection (core|research|full)
     --verify        Verify existing installation
     --uninstall     Remove Dopemux from system
     --env-file PATH Write/read env vars from PATH instead of .env
@@ -1402,7 +1511,6 @@ EXAMPLES:
     $0                      # Interactive installation
     $0 --quick              # Quick install
     $0 --full --yes         # Full install, no prompts
-    $0 --terminal           # Setup terminal (zsh, kitty, starship)
     $0 --verify             # Check installation health
     $0 --uninstall          # Remove Dopemux
 
@@ -1434,9 +1542,6 @@ main() {
         verify)
             detect_platform
             verify_installation
-            ;;
-        terminal)
-            setup_terminal_environment
             ;;
         uninstall)
             uninstall_dopemux

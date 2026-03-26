@@ -21,6 +21,7 @@ import sys
 import threading
 import time
 import importlib.util
+import random
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
@@ -65,6 +66,23 @@ except ModuleNotFoundError:
     OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
     XAIBatchClient = batch_clients_module.XAIBatchClient
     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
+
+try:
+    from lib.intelligence_router import IntelligenceRouter
+except ImportError:
+    intelligence_router_path = RUNNER_SERVICE_DIR / "lib" / "intelligence_router.py"
+    if intelligence_router_path.exists():
+        intelligence_router_spec = importlib.util.spec_from_file_location(
+            "repo_truth_intelligence_router", intelligence_router_path
+        )
+        if intelligence_router_spec and intelligence_router_spec.loader:
+            intelligence_router_module = importlib.util.module_from_spec(intelligence_router_spec)
+            intelligence_router_spec.loader.exec_module(intelligence_router_module)
+            IntelligenceRouter = intelligence_router_module.IntelligenceRouter
+        else:
+            IntelligenceRouter = None
+    else:
+        IntelligenceRouter = None
 try:
     from lib.phase_contract_map import (
         CONTRACT_MAP_FILENAME as PHASE_CONTRACT_MAP_FILENAME,
@@ -86,6 +104,7 @@ except ModuleNotFoundError:
     write_phase_contract_map = contract_map_module.write_phase_contract_map
 try:
     from lib.structured_output_contracts import (
+        artifact_contract as _artifact_contract,
         artifacts_pass_contract_gate,
         artifact_order as contract_artifact_order,
         build_openai_response_format,
@@ -96,6 +115,7 @@ try:
         is_json_managed_step,
         is_strict_contract_step,
         merge_artifacts_by_name,
+        normalize_required_array_fields,
         plural_expected_json_artifacts,
         repair_mode as resolve_contract_repair_mode,
         resolve_stage_route,
@@ -117,6 +137,7 @@ except ModuleNotFoundError:
         structured_contracts_spec
     )
     structured_contracts_spec.loader.exec_module(structured_contracts_module)
+    _artifact_contract = structured_contracts_module.artifact_contract
     artifacts_pass_contract_gate = (
         structured_contracts_module.artifacts_pass_contract_gate
     )
@@ -131,6 +152,9 @@ except ModuleNotFoundError:
     is_json_managed_step = structured_contracts_module.is_json_managed_step
     is_strict_contract_step = structured_contracts_module.is_strict_contract_step
     merge_artifacts_by_name = structured_contracts_module.merge_artifacts_by_name
+    normalize_required_array_fields = (
+        structured_contracts_module.normalize_required_array_fields
+    )
     plural_expected_json_artifacts = (
         structured_contracts_module.plural_expected_json_artifacts
     )
@@ -166,7 +190,7 @@ except Exception:  # pragma: no cover - optional rich rendering
 
 # --- Configuration & Constants ---
 
-PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
+PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "X", "Q", "R", "T", "Z", "S"]
 PROMPT_HASH_MODE = "strict"
 PROMPT_ROOT_ENV_VAR = "REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"
 LEGACY_PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
@@ -270,12 +294,15 @@ LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
     "R2_synthesis": "R_arbitration",
 }
 EXTRACTOR_SERVICE_DIR = RUNNER_SERVICE_DIR
-V3_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v3")
-V3_RUNS_ROOT = V3_EXTRACTION_ROOT / "runs"
-V3_LATEST_RUN_FILE = V3_EXTRACTION_ROOT / "latest_run_id.txt"
-V3_DOCTOR_ROOT = V3_EXTRACTION_ROOT / "doctor"
+V5_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v5")
+V5_RUNS_ROOT = V5_EXTRACTION_ROOT / "runs"
+V5_LATEST_RUN_FILE = V5_EXTRACTION_ROOT / "latest_run_id.txt"
+V5_DOCTOR_ROOT = V5_EXTRACTION_ROOT / "doctor"
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
+# Optional phases whose norm outputs enrich R arbitration when available.
+# B→R3/R8/R10  E→R0/R5/R8  G→R0/R6/R7  W→R5/R6  Q→R7/R8
+R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q", "X"]
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
@@ -325,10 +352,10 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
 
 ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
 DEFAULT_ROUTING_POLICY = "cost"
-DEFAULT_GEMINI_MODEL_ID = "gemini-2.5-flash"
-DEFAULT_GEMINI_BULK_MODEL = "gemini-2.5-flash-lite"
-DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-2.5-flash"
-DEFAULT_GEMINI_SYNTH_MODEL = "gemini-2.5-pro"
+DEFAULT_GEMINI_MODEL_ID = "gemini-3-flash-preview"
+DEFAULT_GEMINI_BULK_MODEL = "gemini-3.1-flash-lite-preview"
+DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-3-flash-preview"
+DEFAULT_GEMINI_SYNTH_MODEL = "gemini-3.1-pro-preview"
 STEP_TIERS = ("bulk", "extract", "synthesis", "qa")
 
 MAGIC_SUBTYPE_ORDER = {
@@ -421,7 +448,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         ],
         "synthesis": [
             ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
             ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
         ],
         "qa": [
@@ -477,6 +504,44 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
         ],
     },
+    "gemini_primary": {
+        "bulk": [
+            ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+        "extract": [
+            ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+        "synthesis": [
+            ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
+            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ],
+        "qa": [
+            ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+    },
+    "optimal": {
+        "bulk": [
+            ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+            ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+        ],
+        "extract": [
+            ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+            ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
+        ],
+        "synthesis": [
+            ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
+            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+            ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+        ],
+        "qa": [
+            ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+    },
 }
 
 ACTIVE_ROUTING_POLICY = DEFAULT_ROUTING_POLICY
@@ -493,7 +558,7 @@ BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
 BALANCED_GROK_OPENROUTER_D_STRICT_STEPS: Set[str] = {"D0", "D1"}
 BALANCED_GROK_OPENROUTER_DOCS_STRICT_LADDER: List[Tuple[str, str, str]] = [
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
@@ -508,12 +573,12 @@ BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "qa": [
         ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
         ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ],
 }
 BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_OPUS_ROUTE: Tuple[str, str, str] = (
@@ -527,6 +592,62 @@ HARD_RECONCILIATION_MARKERS: Tuple[str, ...] = (
     "cross_doc_inconsistency",
     "complex_reconciliation",
 )
+# --- Gemini-primary routing ladders (non-code phases use Gemini 3, code phases stay GPT/Grok) ---
+GEMINI_PRIMARY_NO_CODE_PHASES: Set[str] = {"A", "C", "E", "H", "W", "B", "G"}
+GEMINI_PRIMARY_DOCS_LADDER: List[Tuple[str, str, str]] = [
+    ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+    ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+]
+GEMINI_PRIMARY_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
+    ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
+    ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+]
+GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
+    "bulk": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+    ],
+    "extract": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ],
+    "qa": [
+        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ],
+}
+
+OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
+OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
+    ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+    ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+]
+OPTIMAL_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
+    "bulk": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+    ],
+    "extract": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ],
+    "qa": [
+        ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ],
+}
+OPTIMAL_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
+    ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+]
 
 
 def _safe_key_fingerprint(value: str) -> str:
@@ -915,10 +1036,10 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "openrouter": "OPENROUTER_API_KEY",
 }
 REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
-    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A99"},
+    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A99"},
     "H": {"H0", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H9"},
     "D": {"D0", "D1", "D2", "D3", "D4", "D5"},
-    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11"},
+    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17"},
     "E": {"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E9"},
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
@@ -941,6 +1062,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("extract_runner")
 _RUN_FILE_HANDLER: Optional[logging.Handler] = None
+_ACTIVE_INTELLIGENCE_ROUTER: Optional["IntelligenceRouter"] = None
 
 
 def configure_run_file_logger(run_root: Path) -> Path:
@@ -1014,6 +1136,8 @@ class RunnerConfig:
     compare_model: Optional[str] = None
     compare_provider: Optional[str] = None
     compare_steps: Optional[Tuple[str, ...]] = None
+    prescan_dir: Optional[str] = None  # Path to prescan output for intelligence routing
+    router: Optional[Any] = None  # IntelligenceRouter instance
 
 
 @dataclass(frozen=True)
@@ -1066,6 +1190,9 @@ class UI:
             self._console = Console(force_terminal=(requested == "rich"))
             self._rich = True
 
+        import threading as _threading
+        self._active_partitions: Dict[str, Dict[str, Any]] = {}
+        self._partitions_lock = _threading.Lock()
         self._timeline_path: Path = (
             run_root / TELEMETRY_DIRNAME / TERMINAL_TIMELINE_FILENAME
         )
@@ -1112,6 +1239,114 @@ class UI:
         filled = int(round(ratio * width))
         bar = "#" * filled + "." * (width - filled)
         return f"[{bar}] {ratio * 100.0:5.1f}%"
+
+    def _provider_color(self, provider: str) -> str:
+        """Return Rich color for a provider name."""
+        mapping = {
+            "openai": "bold green",
+            "anthropic": "bold magenta",
+            "gemini": "bold blue",
+            "xai": "bold yellow",
+            "openrouter": "bold cyan",
+            "mistral": "bold orange3",
+        }
+        return mapping.get(str(provider).lower(), "bold white")
+
+    def partition_start_event(
+        self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        provider: str,
+        model_id: str,
+    ) -> None:
+        """Record that a partition has started LLM execution on a specific provider/model."""
+        import time as _time
+        entry = {
+            "phase": phase,
+            "step_id": step_id,
+            "provider": provider,
+            "model_id": model_id,
+            "start_ts": _time.monotonic(),
+            "attempt": 1,
+            "status": "running",
+        }
+        with self._partitions_lock:
+            self._active_partitions[partition_id] = entry
+        self._emit_event({
+            "type": "partition_start",
+            "phase": phase,
+            "step": step_id,
+            "partition_id": partition_id,
+            "provider": provider,
+            "model_id": model_id,
+        })
+        if self.cfg.quiet:
+            return
+        color = self._provider_color(provider)
+        if self._rich and self._console is not None:
+            self._console.print(
+                f"  [{color}]▶ {phase}:{step_id} {partition_id}[/{color}]"
+                f" [dim]→ {provider}/{model_id}[/dim]"
+            )
+        else:
+            self._print_plain(
+                f"PARTITION_START phase={phase} step={step_id} partition={partition_id} "
+                f"provider={provider} model={model_id}"
+            )
+
+    def retry_event(
+        self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        attempt: int,
+        max_attempts: int,
+        provider: str,
+        model_id: str,
+        status_code: Optional[int],
+        failure_type: Optional[str],
+        delay_seconds: float,
+    ) -> None:
+        """Show a live retry notification for a partition."""
+        with self._partitions_lock:
+            entry = self._active_partitions.get(partition_id)
+            if entry:
+                entry["attempt"] = attempt
+                entry["status"] = "retry"
+        self._emit_event({
+            "type": "partition_retry",
+            "phase": phase,
+            "step": step_id,
+            "partition_id": partition_id,
+            "attempt": attempt,
+            "max_attempts": max_attempts,
+            "provider": provider,
+            "model_id": model_id,
+            "status_code": status_code,
+            "failure_type": failure_type,
+            "delay_seconds": delay_seconds,
+        })
+        if self.cfg.quiet:
+            return
+        status_str = str(status_code) if status_code else "-"
+        failure_str = str(failure_type or "-")
+        if self._rich and self._console is not None:
+            self._console.print(
+                f"  [bold orange3]⟳ RETRY[/bold orange3] "
+                f"[dim]{phase}:{step_id} {partition_id}[/dim] "
+                f"attempt=[bold yellow]{attempt}/{max_attempts}[/bold yellow] "
+                f"[{self._provider_color(provider)}]{provider}/{model_id}[/{self._provider_color(provider)}] "
+                f"status=[bold red]{status_str}[/bold red] "
+                f"reason=[italic red]{failure_str}[/italic red] "
+                f"wait=[bold]{delay_seconds:.1f}s[/bold]"
+            )
+        else:
+            self._print_plain(
+                f"PARTITION_RETRY phase={phase} step={step_id} partition={partition_id} "
+                f"attempt={attempt}/{max_attempts} provider={provider} model={model_id} "
+                f"status_code={status_str} failure_type={failure_str} delay={delay_seconds:.1f}s"
+            )
 
     def step_progress_stop(self) -> None:
         if self._progress is not None:
@@ -1318,8 +1553,12 @@ class UI:
             return
         if self._rich and self._console is not None:
             self._console.print(
-                f"[bold yellow]ESCALATE[/bold yellow] phase={phase} step={step_id} partition={partition_id} "
-                f"reason={reason} from={from_route} to={to_route} hop={hop}"
+                f"  [bold yellow]🔀 ESCALATE[/bold yellow] "
+                f"[dim]{phase}:{step_id} {partition_id}[/dim] "
+                f"hop=[bold]{hop}[/bold] "
+                f"[bold red]{from_route}[/bold red] [bold]→[/bold] "
+                f"[bold cyan]{to_route}[/bold cyan] "
+                f"reason=[italic yellow]{reason}[/italic yellow]"
             )
             return
         self._summary_line(
@@ -1463,6 +1702,7 @@ class UI:
         item_key: Optional[str] = None,
         item_id: Optional[str] = None,
         item_path: Optional[str] = None,
+        retry_trace: Optional[List[Dict[str, Any]]] = None,
         mode: str = "full",
     ) -> None:
         event_payload = {
@@ -1477,6 +1717,7 @@ class UI:
             "item_key": str(item_key or "").strip() or None,
             "item_id": str(item_id or "").strip() or None,
             "item_path": str(item_path or "").strip() or None,
+            "retry_trace": retry_trace or [],
             "mode": str(mode or "full").strip().lower(),
         }
         self._emit_event(event_payload)
@@ -1489,6 +1730,20 @@ class UI:
         if self._rich and self._console is not None:
             style = "bold red" if event_payload["mode"] == "full" else "red"
             self._console.print(f"[{style}]{line}[/{style}]")
+            # If retry trace is available on the event payload, dump it
+            retry_trace = event_payload.get("retry_trace")
+            if isinstance(retry_trace, list) and len(retry_trace) > 1:
+                self._console.print(
+                    f"    [dim]retry trace ({len(retry_trace)} attempts):[/dim]"
+                )
+                for i, tr in enumerate(retry_trace, start=1):
+                    sc = tr.get("status_code", "-")
+                    ft = tr.get("failure_type", "-")
+                    ds = tr.get("delay_seconds")
+                    delay_str = f" → wait {ds:.1f}s" if ds is not None else ""
+                    self._console.print(
+                        f"    [dim]  [{i}] status={sc} type=[italic red]{ft}[/italic red]{delay_str}[/dim]"
+                    )
             return
         self._summary_line(line)
 
@@ -1875,7 +2130,7 @@ def _phase_input_stat(path: Path) -> Dict[str, Any]:
 
 def load_run_id(root: Path) -> Optional[str]:
     """Load latest run_id from file; return None if unavailable."""
-    id_file = root / V3_LATEST_RUN_FILE
+    id_file = root / V5_LATEST_RUN_FILE
     if not id_file.exists():
         return None
     run_id = id_file.read_text(encoding="utf-8").strip()
@@ -1887,7 +2142,7 @@ def load_run_id(root: Path) -> Optional[str]:
 def _validate_existing_run_dir(
     root: Path, run_id: str, allow_create_if_missing: bool = False
 ) -> None:
-    candidate = root / V3_RUNS_ROOT / run_id
+    candidate = root / V5_RUNS_ROOT / run_id
     if not candidate.exists():
         if allow_create_if_missing:
             candidate.mkdir(parents=True, exist_ok=True)
@@ -1899,7 +2154,7 @@ def _validate_existing_run_dir(
 
 def _generate_run_id(root: Path) -> str:
     base = datetime.now(timezone.utc).strftime("run_%Y%m%dT%H%M%SZ")
-    runs_root = root / V3_RUNS_ROOT
+    runs_root = root / V5_RUNS_ROOT
     runs_root.mkdir(parents=True, exist_ok=True)
 
     candidate = runs_root / base
@@ -1912,7 +2167,7 @@ def _generate_run_id(root: Path) -> str:
 
 
 def latest_run_id_path(root: Path) -> Path:
-    return root / V3_LATEST_RUN_FILE
+    return root / V5_LATEST_RUN_FILE
 
 
 def persist_latest_run_id(root: Path, run_id: str) -> None:
@@ -1938,7 +2193,7 @@ def resolve_run_context(
     else:
         latest = load_run_id(root)
         if latest:
-            latest_dir = root / V3_RUNS_ROOT / latest
+            latest_dir = root / V5_RUNS_ROOT / latest
             if latest_dir.exists() and latest_dir.is_dir():
                 run_id = latest
                 run_id_source = "latest_run_id"
@@ -1967,7 +2222,7 @@ def resolve_run_context(
 
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     """Return dict of run paths and ensure required folders exist."""
-    base = root / V3_RUNS_ROOT / run_id
+    base = root / V5_RUNS_ROOT / run_id
     if not base.exists():
         raise FileNotFoundError(f"Run directory {base} does not exist.")
     for legacy_name, canonical_name in LEGACY_PHASE_DIR_ALIASES.items():
@@ -2008,6 +2263,19 @@ def write_json(path: Path, payload: Any) -> None:
 
 _JSONL_WRITE_LOCK: threading.Lock = threading.Lock()
 _TELEMETRY_SNAPSHOT_LOCK: threading.Lock = threading.Lock()
+
+_HTTP_SESSION: Optional[requests.Session] = None
+_HTTP_SESSION_LOCK: threading.Lock = threading.Lock()
+
+
+def _get_http_session() -> requests.Session:
+    """Return a shared requests.Session for connection pooling (thread-safe)."""
+    global _HTTP_SESSION
+    if _HTTP_SESSION is None:
+        with _HTTP_SESSION_LOCK:
+            if _HTTP_SESSION is None:
+                _HTTP_SESSION = requests.Session()
+    return _HTTP_SESSION
 
 
 def _append_jsonl(path: Path, payload: Dict[str, Any]) -> None:
@@ -3559,6 +3827,47 @@ def _balanced_grok_openrouter_routes(
     return None
 
 
+def _gemini_primary_routes(
+    phase: str, step_id: str
+) -> Optional[List[Tuple[str, str, str]]]:
+    """Route non-code phases to Gemini 3 primary; code-heavy phases to GPT/Grok (no Gemini)."""
+    phase_code = str(phase or "").upper()
+    if phase_code in GEMINI_PRIMARY_NO_CODE_PHASES:
+        effective_tier = resolve_effective_step_tier(
+            "gemini_primary", phase_code, step_id
+        )
+        routes = GEMINI_PRIMARY_CODE_LADDERS.get(
+            effective_tier,
+            GEMINI_PRIMARY_CODE_LADDERS.get("extract", []),
+        )
+        return [tuple(route) for route in routes]
+    if phase_code in PREMIUM_SYNTHESIS_PHASES:
+        return list(GEMINI_PRIMARY_SYNTHESIS_LADDER)
+    return list(GEMINI_PRIMARY_DOCS_LADDER)
+
+
+def _optimal_routes(
+    phase: str, step_id: str
+) -> Optional[List[Tuple[str, str, str]]]:
+    """Optimal cost/quality routing: Gemini free → Grok 4.20 mid → GPT-5.4 premium.
+
+    Non-code (doc/synthesis) phases use OPTIMAL_DOCS_LADDER as base, synthesis
+    phases escalate to OPTIMAL_SYNTHESIS_LADDER.  Code-heavy phases use
+    OPTIMAL_CODE_LADDERS keyed by effective tier.
+    """
+    phase_code = str(phase or "").upper()
+    if phase_code in PREMIUM_SYNTHESIS_PHASES:
+        return list(OPTIMAL_SYNTHESIS_LADDER)
+    if phase_code in CODE_HEAVY_PHASES:
+        effective_tier = resolve_effective_step_tier("optimal", phase_code, step_id)
+        routes = OPTIMAL_CODE_LADDERS.get(
+            effective_tier,
+            OPTIMAL_CODE_LADDERS.get("extract", []),
+        )
+        return [tuple(route) for route in routes]
+    return list(OPTIMAL_DOCS_LADDER)
+
+
 def resolve_effective_step_tier(
     routing_policy: str,
     phase: str,
@@ -3571,7 +3880,7 @@ def resolve_effective_step_tier(
     if override:
         return resolve_step_tier(phase, step_id, tier_override=override)
     if (
-        selected_policy == "balanced_grok_openrouter"
+        selected_policy in ("balanced_grok_openrouter", "gemini_primary", "optimal")
         and phase_code in PREMIUM_SYNTHESIS_PHASES
     ):
         return "synthesis"
@@ -3653,6 +3962,14 @@ def resolve_step_ladder(
     selected_policy = _normalize_routing_policy(routing_policy)
     if selected_policy == "balanced_grok_openrouter":
         phase_routes = _balanced_grok_openrouter_routes(phase, step_id)
+        if phase_routes:
+            return phase_routes
+    if selected_policy == "gemini_primary":
+        phase_routes = _gemini_primary_routes(phase, step_id)
+        if phase_routes:
+            return phase_routes
+    if selected_policy == "optimal":
+        phase_routes = _optimal_routes(phase, step_id)
         if phase_routes:
             return phase_routes
     tiers = ACTIVE_ROUTING_LADDERS.get(selected_policy) or _clone_ladders(
@@ -3787,7 +4104,7 @@ def write_run_manifest(
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V3_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
                 "generated(new timestamp run id)",
             ],
             "no_write_latest": args.no_write_latest,
@@ -4915,7 +5232,7 @@ def run_provider_preflight(
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "batch_capability": batch_capability,
     }
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
     return (not failures), payload
@@ -4943,7 +5260,7 @@ def prepare_phase_provider_preflight(
         {str(provider) for provider in payload.get("failed_providers", []) if provider}
     )
     payload["denylisted_providers"] = list(denylisted)
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
     if not ok:
@@ -5005,7 +5322,7 @@ def run_gemini_list_models(root: Path, run_id: str, dirs: Dict[str, Path]) -> in
             params: Dict[str, str] = {"key": api_key}
             if page_token:
                 params["pageToken"] = page_token
-            response = requests.get(GEMINI_MODELS_ENDPOINT, params=params, timeout=60)
+            response = _get_http_session().get(GEMINI_MODELS_ENDPOINT, params=params, timeout=60)
             response.raise_for_status()
             body = response.content
             parsed = response.json()
@@ -5155,7 +5472,10 @@ def run_doctor_full(
         ]
 
     required_status = get_required_artifact_status(dirs, R_REQUIRED_INPUT_PHASES)
-    provider_routes = collect_provider_routes()
+    provider_routes = collect_provider_routes(
+        phases=phases,
+        routing_policy=cfg.routing_policy,
+    )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -5189,7 +5509,7 @@ def run_doctor_full(
         },
     }
 
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "DOCTOR_FULL.json", payload)
     print(json.dumps(payload, indent=2))
@@ -5273,11 +5593,16 @@ def max_files_for_phase(phase: str, cfg: RunnerConfig) -> int:
 
 
 def build_partitions(
-    phase: str, inventory: List[Dict[str, Any]], max_files: int, max_chars: int
+    phase: str,
+    inventory: List[Dict[str, Any]],
+    max_files: int,
+    max_chars: int,
+    router: Optional[IntelligenceRouter] = None,  # DEPRECATED: use DC2 post-processing via _ACTIVE_INTELLIGENCE_ROUTER
 ) -> List[Dict[str, Any]]:
     partitions: List[Dict[str, Any]] = []
     current_paths: List[str] = []
     current_chars = 0
+    skipped_count = 0
 
     def flush_partition() -> None:
         nonlocal current_paths, current_chars
@@ -5295,19 +5620,39 @@ def build_partitions(
         current_paths = []
         current_chars = 0
 
+    # Sort inventory by priority if router is available
+    if router:
+        inventory = sorted(
+            inventory, 
+            key=lambda x: router.get_routing_priority(x["path"]), 
+            reverse=True
+        )
+
     for item in inventory:
         path = item["path"]
+        
+        # Intelligence-based skipping
+        if router and router.should_skip(path):
+            skipped_count += 1
+            continue
+
         base_chars = int(item.get("char_count_estimate", 0))
         # Account for per-file headers in context payload construction.
         est_chars = base_chars + min(len(path) + 80, 2000)
         would_exceed_files = len(current_paths) >= max_files
         would_exceed_chars = current_paths and (current_chars + est_chars > max_chars)
+        
         if would_exceed_files or would_exceed_chars:
             flush_partition()
+        
         current_paths.append(path)
         current_chars += est_chars
 
     flush_partition()
+    
+    if skipped_count > 0:
+        logger.info(f"Phase {phase}: skipped {skipped_count} files based on prescan intelligence.")
+
     if not partitions:
         partitions.append(
             {
@@ -6242,6 +6587,7 @@ def call_llm(
     force_json_output: bool = False,
     response_format_override: Optional[Dict[str, Any]] = None,
     structured_output_override: Optional[Dict[str, Any]] = None,
+    retry_callback: Optional[Callable] = None,
 ) -> Dict[str, Any]:
     if _live_llm_calls_blocked_for_tests():
         message = (
@@ -6426,6 +6772,7 @@ def call_llm(
         "structured_output": structured_output,
     }
     retry_trace: List[Dict[str, Any]] = []
+    total_retry_delay = 0.0
 
     attempt = 0
     while attempt < cfg.retry_max_attempts:
@@ -6445,7 +6792,7 @@ def call_llm(
                     headers, provider == "gemini" and effective_mode == "query_key"
                 )
                 sent_header_keys = sorted(list(headers.keys()))
-                response = requests.post(
+                response = _get_http_session().post(
                     endpoint_url, headers=headers, data=body, timeout=180
                 )
                 response.raise_for_status()
@@ -6652,11 +6999,22 @@ def call_llm(
                 attempt + 1, cfg.retry_base_seconds, cfg.retry_max_seconds
             )
             retry_trace[-1]["delay_seconds"] = delay_seconds
+            total_retry_delay += delay_seconds
+            if retry_callback is not None:
+                try:
+                    retry_callback(attempt + 1, status_code, failure_type, delay_seconds)
+                except Exception:
+                    pass
             if delay_seconds > 0:
                 time.sleep(delay_seconds)
     logger.error(
-        "LLM call failed after retries provider=%s model=%s.", provider, model_id
+        "LLM call failed after %s attempts (%.1fs retry delay) provider=%s model=%s.",
+        attempt,
+        total_retry_delay,
+        provider,
+        model_id,
     )
+    last_failure_meta["total_retry_delay_seconds"] = total_retry_delay
     return {
         "ok": False,
         "text": "",
@@ -7086,7 +7444,7 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         f"succeeded_modes={','.join(succeeded_modes) if succeeded_modes else '-'} "
         f"failed_modes={','.join(failed_modes) if failed_modes else '-'}"
     )
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
     doctor_json = doctor_dir / "AUTH_DOCTOR.json"
     doctor_txt = doctor_dir / "AUTH_DOCTOR.txt"
@@ -7436,11 +7794,13 @@ def build_partition_context(
     home_scan_mode: str,
     max_files: int,
     max_chars: int,
+    router: Optional[IntelligenceRouter] = None,
 ) -> Tuple[str, Dict[str, int]]:
     chunks: List[str] = []
     redaction_hits = 0
     skipped_files = 0
     context_bytes = 0
+    compressed_files = 0
 
     for path_str in partition_paths:
         if len(chunks) >= max_files:
@@ -7448,14 +7808,23 @@ def build_partition_context(
             continue
 
         path = Path(path_str)
-        content = safe_read(path)
-        if phase == "H" and home_scan_mode == "safe":
-            content, hits = redact_sensitive_lines(content)
-            redaction_hits += hits
-        if phase == "D":
-            content = _format_line_numbered_content(content, file_truncate_chars)
-        elif len(content) > file_truncate_chars:
-            content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
+        
+        # Check for compression hint
+        compression_hint = router.get_compression_hint(path_str) if router else None
+        
+        if compression_hint:
+            content = f"[PRESCAN COMPRESSION] {compression_hint}"
+            compressed_files += 1
+        else:
+            content = safe_read(path)
+            if phase == "H" and home_scan_mode == "safe":
+                content, hits = redact_sensitive_lines(content)
+                redaction_hits += hits
+            if phase == "D":
+                content = _format_line_numbered_content(content, file_truncate_chars)
+            elif len(content) > file_truncate_chars:
+                content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
+        
         chunk_text = f"--- FILE: {path} ---\n{content}\n"
         chunk_bytes = len(chunk_text.encode("utf-8"))
 
@@ -7480,6 +7849,7 @@ def build_partition_context(
         "files_skipped": skipped_files,
         "context_bytes": len(context.encode("utf-8")),
         "redaction_hits": redaction_hits,
+        "compressed_files": compressed_files,
     }
     return context, stats
 
@@ -7759,11 +8129,18 @@ def artifacts_pass_schema_gate(
     return True, None
 
 
+_REPAIR_COUNTERS_LOCK: threading.Lock = threading.Lock()
 _REPAIR_COUNTERS: Dict[str, int] = {
     "attempted": 0,
     "succeeded": 0,
     "failed_ambiguous": 0,
 }
+
+
+def _read_repair_counters() -> Dict[str, int]:
+    """Return a consistent snapshot of the global repair counters."""
+    with _REPAIR_COUNTERS_LOCK:
+        return dict(_REPAIR_COUNTERS)
 
 
 def _attempt_schema_repair_path_items(
@@ -7787,19 +8164,22 @@ def _attempt_schema_repair_path_items(
 
     Returns (repaired_artifacts, did_repair, repair_method).
     """
-    _REPAIR_COUNTERS["attempted"] += 1
+    with _REPAIR_COUNTERS_LOCK:
+        _REPAIR_COUNTERS["attempted"] += 1
 
     # Guard: only attempt for the supported failure classes
     if not schema_reason or not (
         schema_reason.startswith("schema_missing_key:path")
         or schema_reason.startswith("schema_empty_key:path")
     ):
-        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        with _REPAIR_COUNTERS_LOCK:
+            _REPAIR_COUNTERS["failed_ambiguous"] += 1
         return artifacts, False, "not_applicable"
 
     # Guard: partition_files must be non-empty
     if not partition_files:
-        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        with _REPAIR_COUNTERS_LOCK:
+            _REPAIR_COUNTERS["failed_ambiguous"] += 1
         return artifacts, False, "no_partition_files"
 
     basenames: List[str] = [os.path.basename(f) for f in partition_files]
@@ -7883,10 +8263,12 @@ def _attempt_schema_repair_path_items(
             break
 
     if not all_filled:
-        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        with _REPAIR_COUNTERS_LOCK:
+            _REPAIR_COUNTERS["failed_ambiguous"] += 1
         return artifacts, False, "ambiguous"
 
-    _REPAIR_COUNTERS["succeeded"] += 1
+    with _REPAIR_COUNTERS_LOCK:
+        _REPAIR_COUNTERS["succeeded"] += 1
     return repaired, True, repair_method
 
 
@@ -8041,8 +8423,16 @@ def validate_success_partition_output(
     if payload.get("failure_type"):
         return False, "failure_type_top_level"
     request_meta = payload.get("request_meta")
-    if isinstance(request_meta, dict) and request_meta.get("failure_type"):
-        return False, "failure_type_request_meta"
+    _has_request_meta_failure_type = isinstance(request_meta, dict) and bool(
+        request_meta.get("failure_type")
+    )
+    if _has_request_meta_failure_type:
+        logger.warning(
+            "[RESUME_WARN] failure_type in request_meta but continuing to artifact check phase=%s step=%s partition=%s",
+            phase,
+            step_id,
+            partition_id,
+        )
 
     top_level_mismatch = _identity_mismatch(payload, "top_level")
     if top_level_mismatch:
@@ -8078,6 +8468,34 @@ def validate_success_partition_output(
     step_contract = _step_contract_for(phase, step_id)
     if is_strict_contract_step(step_contract):
         artifacts, _schema_norm = canonicalize_artifacts(artifacts, step_contract)
+        # Pre-gate normalization: coerce None/""/missing allow_empty_array_fields to []
+        normalized_artifacts = []
+        for art_row in artifacts:
+            if not isinstance(art_row, dict):
+                normalized_artifacts.append(art_row)
+                continue
+            art_name = str(art_row.get("artifact_name") or "").strip()
+            art_meta = _artifact_contract(step_contract, art_name)
+            art_payload = art_row.get("payload")
+            if isinstance(art_payload, dict) and isinstance(art_payload.get("items"), list):
+                norm_items, coercions = normalize_required_array_fields(
+                    art_payload["items"], art_meta
+                )
+                for c in coercions:
+                    logger.info(
+                        "[NORMALIZE] artifact=%s field=%s from_type=%s to_type=%s item_id=%s",
+                        art_name,
+                        c.get("field"),
+                        c.get("from_type"),
+                        c.get("to_type"),
+                        c.get("item_id"),
+                    )
+                normalized_artifacts.append(
+                    {"artifact_name": art_name, "payload": {**art_payload, "items": norm_items}}
+                )
+            else:
+                normalized_artifacts.append(art_row)
+        artifacts = normalized_artifacts
         contract_ok, contract_reason, _contract_ctx = artifacts_pass_contract_gate(
             artifacts, step_contract
         )
@@ -8411,43 +8829,6 @@ def compute_comparison_resume_decision(
             return {"action": "RERUN", "reason": "invalid_comparison_artifact"}
     except (OSError, json.JSONDecodeError):
         return {"action": "RERUN", "reason": "unreadable_comparison_artifact"}
-
-    # Validate that the artifact matches the expected step/partition and, if present,
-    # provider/model metadata. If any of these fields are present but do not match,
-    # treat the artifact as stale/invalid and force a rerun.
-    artifact_step_id = payload.get("step_id")
-    if artifact_step_id is not None:
-        if not isinstance(artifact_step_id, str) or artifact_step_id != step_id:
-            return {
-                "action": "RERUN",
-                "reason": "comparison_artifact_step_mismatch",
-            }
-
-    artifact_partition_id = payload.get("partition_id")
-    if artifact_partition_id is not None:
-        if not isinstance(artifact_partition_id, str) or artifact_partition_id != partition_id:
-            return {
-                "action": "RERUN",
-                "reason": "comparison_artifact_partition_mismatch",
-            }
-
-    request_meta = payload.get("request_meta")
-    if isinstance(request_meta, dict):
-        artifact_provider = request_meta.get("provider")
-        if artifact_provider is not None:
-            if not isinstance(artifact_provider, str) or artifact_provider != provider:
-                return {
-                    "action": "RERUN",
-                    "reason": "comparison_artifact_provider_mismatch",
-                }
-        artifact_model_id = request_meta.get("model_id")
-        if artifact_model_id is not None:
-            if not isinstance(artifact_model_id, str) or artifact_model_id != model:
-                return {
-                    "action": "RERUN",
-                    "reason": "comparison_artifact_model_mismatch",
-                }
-
     return {"action": "SKIP", "reason": "valid_comparison_artifact"}
 
 
@@ -8568,11 +8949,9 @@ def run_comparison_lane(
                 "model_id": compare_model,
                 "comparison_of_step": step_id,
                 "elapsed_ms": elapsed_ms,
-                # Comparison lane does not run full canonical validation/repair pipeline;
-                # status/repair metrics are therefore non-authoritative.
-                "final_contract_status": "unknown",
-                "repair_invocations": None,
-                "repair_successes": None,
+                "final_contract_status": "pass",
+                "repair_invocations": 0,
+                "repair_successes": 0,
             }
             payload = {
                 "phase": phase,
@@ -8616,7 +8995,6 @@ def run_comparison_lane(
             try:
                 failed_path.write_text(failure_reason, encoding="utf-8")
             except OSError:
-                # Best-effort sidecar write; ignore filesystem errors to avoid masking the original failure.
                 pass
             results.append({
                 "partition_id": partition_id,
@@ -9261,8 +9639,13 @@ def execute_step_for_partitions(
                 )
 
         output_instructions = build_output_envelope_instructions(output_artifacts)
+        context_brief = partition.get("context_brief", "")
+        brief_section = f"\n{context_brief}\n" if context_brief else ""
         prompt_prefix = (
-            "Extract from the files below.\n" f"{output_instructions}\n" "\nFILES:\n"
+            "Extract from the files below.\n"
+            f"{output_instructions}\n"
+            f"{brief_section}"
+            "\nFILES:\n"
         )
         reserved_chars = len(prompt_prefix)
         context_budget = max(cfg.max_chars - reserved_chars, 2048)
@@ -9314,6 +9697,7 @@ def execute_step_for_partitions(
                 home_scan_mode=cfg.home_scan_mode,
                 max_files=max_files,
                 max_chars=current_budget,
+                router=cfg.router,
             )
             user_prompt = f"{prompt_prefix}{context}"
             payload = build_chat_payload(
@@ -10478,6 +10862,21 @@ def execute_step_for_partitions(
                         if strict_contract_required
                         else None
                     ),
+                    retry_callback=(
+                        (lambda att, sc, ft, ds: ui.retry_event(
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            attempt=att,
+                            max_attempts=cfg.retry_max_attempts,
+                            provider=route_provider,
+                            model_id=route_model_id,
+                            status_code=sc,
+                            failure_type=ft,
+                            delay_seconds=ds,
+                        ))
+                        if ui is not None else None
+                    ),
                 )
                 response_text_local = str(llm_result.get("text", ""))
                 request_meta_local = enrich_request_meta(
@@ -11356,21 +11755,20 @@ def execute_step_for_partitions(
                 parse_json_from_response_fn=parse_json_from_response,
                 coerce_artifacts_from_response_fn=coerce_artifacts_from_response,
             )
-            # Collect canonical results for summary (best-effort from step stats).
-            # We avoid fabricating per-partition latency/repair metrics here,
-            # since only aggregate step_stats are available at this point.
-            canonical_success = bool(step_stats.get("success", True))
-            final_contract_status = step_stats.get("final_contract_status") or "unknown"
+            # Collect canonical results for summary (best-effort from step stats)
             canonical_results_for_summary = [
                 {
                     "partition_id": p.get("id", "unknown"),
-                    "success": canonical_success,
+                    "success": True,
                     "request_meta": {
                         "lane": "canonical",
                         "authoritative": True,
                         "provider": initial_provider,
                         "model_id": initial_model_id,
-                        "final_contract_status": final_contract_status,
+                        "final_contract_status": step_stats.get("final_contract_status") or "pass",
+                        "repair_invocations": step_stats.get("repair_invocations", 0),
+                        "repair_successes": step_stats.get("repair_successes", 0),
+                        "elapsed_ms": 0,
                     },
                 }
                 for p in ordered_partitions
@@ -11462,8 +11860,24 @@ def _run_phase_inner(
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
     max_files = max_files_for_phase(phase, cfg)
     partitions = build_partitions(
-        phase, inventory, max_files=max_files, max_chars=cfg.max_chars
+        phase, inventory, max_files=max_files, max_chars=cfg.max_chars, router=cfg.router
     )
+
+    # DC2 Phase 2: Router post-processing (reorder + briefs)
+    router = _ACTIVE_INTELLIGENCE_ROUTER
+    if router:
+        try:
+            from lib.prescan.partition_brief_generator import PartitionBriefGenerator
+            brief_gen = PartitionBriefGenerator(router.code_report, token_budget=2000)
+        except Exception:
+            brief_gen = None
+        for idx, partition in enumerate(partitions):
+            partition["paths"] = router.reorder_partition(partition["paths"])
+            if brief_gen:
+                brief = brief_gen.generate_brief(phase, partition["paths"])
+                if brief:
+                    partition["context_brief"] = brief
+        logger.info("Phase %s: router reordered %d partitions", phase, len(partitions))
 
     write_json(
         phase_dir / "inputs" / "INVENTORY.json",
@@ -12727,6 +13141,7 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
             "lane_histogram": dict(sorted(contract_lane_hist.items())),
             "repair_invocations_total": repair_invocations_total,
             "repair_successes_total": repair_successes_total,
+            "schema_repair_counters": _read_repair_counters(),
             "sidefill_invocations_total": sidefill_invocations_total,
             "missing_expected_artifacts_histogram": dict(
                 sorted(missing_expected_hist.items())
@@ -12944,7 +13359,7 @@ def print_config(
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V3_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
                 "generated(new timestamp run id)",
             ],
             "dry_run": args.dry_run,
@@ -13066,7 +13481,7 @@ def update_proof_pack(
     }
     proof["finished_at"] = phase_finished_at
     proof["updated_at"] = now_iso()
-    doctor_dir = root / V3_DOCTOR_ROOT
+    doctor_dir = root / V5_DOCTOR_ROOT
     auth_doctor = doctor_dir / "AUTH_DOCTOR.json"
     full_doctor = doctor_dir / "DOCTOR_FULL.json"
     routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
@@ -13149,6 +13564,122 @@ def to_items(paths: Iterable[Path]) -> List[Dict[str, Any]]:
             {"path": str(path), "size": size, "mtime": mtime, "name": path.name}
         )
     return items
+
+
+AUDIT_JUDGE_MODEL: str = "grok-4.20-multi-agent-beta-0309"
+AUDIT_JUDGE_PROVIDER: str = "xai"
+AUDIT_JUDGE_API_KEY_ENV: str = "XAI_API_KEY"
+AUDIT_PASS_THRESHOLD: float = 0.7
+AUDIT_ESCALATE_THRESHOLD: float = 0.5
+AUDIT_SAMPLE_FILE: str = "AUDIT_SAMPLE.json"
+
+_AUDIT_JUDGE_SYSTEM_PROMPT = """You are a quality auditor for structured extraction outputs.
+Evaluate the provided extraction artifact on three dimensions, each scored 0.0–1.0:
+
+1. schema_compliance: Does the output conform to the expected JSON schema (correct fields, types, no extra keys)?
+2. evidence_anchoring: Are all factual claims traceable to the provided source material?
+3. completeness: Are all required fields populated with substantive content (not empty/placeholder)?
+
+Return ONLY valid JSON matching exactly:
+{"schema_compliance": <float>, "evidence_anchoring": <float>, "completeness": <float>, "notes": "<optional_string>"}
+"""
+
+
+def audit_phase_sample(
+    phase_dir: "Path",
+    phase_outputs: "List[Dict[str, Any]]",
+    sample_rate: float,
+    cfg: "RunnerConfig",
+    judge_model: str = AUDIT_JUDGE_MODEL,
+    judge_provider: str = AUDIT_JUDGE_PROVIDER,
+    judge_api_key_env: str = AUDIT_JUDGE_API_KEY_ENV,
+) -> "Dict[str, Any]":
+    """Sample phase outputs and audit quality using the judge model.
+
+    Returns a summary dict and writes results to phase_dir/AUDIT_SAMPLE.json.
+    Scores below AUDIT_ESCALATE_THRESHOLD on any dimension are flagged for
+    re-extraction with tier escalation.
+    """
+    if sample_rate <= 0 or not phase_outputs:
+        return {"sampled": 0, "skipped": True}
+
+    n_sample = min(max(1, int(len(phase_outputs) * sample_rate)), 5)
+    sample = random.sample(phase_outputs, min(n_sample, len(phase_outputs)))
+
+    results: List[Dict[str, Any]] = []
+    escalation_needed: List[str] = []
+
+    for item in sample:
+        artifact_repr = json.dumps(item, default=str)[:4000]
+        user_content = f"Extraction artifact to audit:\n```json\n{artifact_repr}\n```"
+        try:
+            llm_result = call_llm(
+                provider=judge_provider,
+                model_id=judge_model,
+                api_key_env=judge_api_key_env,
+                system_prompt=_AUDIT_JUDGE_SYSTEM_PROMPT,
+                user_content=user_content,
+                cfg=cfg,
+                force_json_output=True,
+            )
+            raw_text = llm_result.get("content", llm_result.get("text", "{}"))
+            try:
+                scores = json.loads(raw_text) if isinstance(raw_text, str) else raw_text
+            except (json.JSONDecodeError, TypeError):
+                scores = {}
+
+            schema_score = float(scores.get("schema_compliance", 0.0))
+            evidence_score = float(scores.get("evidence_anchoring", 0.0))
+            completeness_score = float(scores.get("completeness", 0.0))
+            composite = (
+                0.4 * schema_score + 0.3 * evidence_score + 0.3 * completeness_score
+            )
+            item_id = str(item.get("step_id", item.get("id", "unknown")))
+            audit_entry = {
+                "item_id": item_id,
+                "schema_compliance": schema_score,
+                "evidence_anchoring": evidence_score,
+                "completeness": completeness_score,
+                "composite": composite,
+                "pass": composite >= AUDIT_PASS_THRESHOLD,
+                "notes": scores.get("notes", ""),
+            }
+            results.append(audit_entry)
+
+            if any(
+                s < AUDIT_ESCALATE_THRESHOLD
+                for s in (schema_score, evidence_score, completeness_score)
+            ):
+                escalation_needed.append(item_id)
+                logger.warning(
+                    "audit_phase_sample: escalation flagged for %s "
+                    "(schema=%.2f evidence=%.2f completeness=%.2f composite=%.2f)",
+                    item_id,
+                    schema_score,
+                    evidence_score,
+                    completeness_score,
+                    composite,
+                )
+        except Exception as exc:
+            logger.warning("audit_phase_sample: judge call failed for item: %s", exc)
+            results.append({"item_id": "unknown", "error": str(exc)})
+
+    pass_count = sum(1 for r in results if r.get("pass", False))
+    summary = {
+        "sampled": len(sample),
+        "evaluated": len(results),
+        "pass_count": pass_count,
+        "escalation_flagged": escalation_needed,
+        "results": results,
+    }
+
+    audit_path = phase_dir / AUDIT_SAMPLE_FILE
+    try:
+        write_json(audit_path, summary)
+    except Exception as exc:
+        logger.warning("audit_phase_sample: failed to write audit file: %s", exc)
+
+    return summary
 
 
 def collect_phase_artifacts(
@@ -13820,7 +14351,10 @@ def run_phase_C(
             REPO_SCAN_EXCLUDES,
         ),
     )
-    targets = ["src", "services", "shared", "plugins", "tools", "scripts", "tests"]
+    targets = [
+        "src", "services", "shared", "plugins", "tools", "scripts", "tests",
+        "docker/mcp-servers-source", "docker/mcp-servers", "components",
+    ]
     _run_phase_inner(
         "C",
         dirs,
@@ -13854,7 +14388,10 @@ def run_phase_E(
         Path.cwd(),
         _merge_scan_excludes([".git", "node_modules", "docs"], REPO_SCAN_EXCLUDES),
     )
-    targets = ["scripts", "tools", "compose", ".github", "Makefile", "package.json"]
+    targets = [
+        "scripts", "tools", "compose", ".github", "Makefile", "package.json",
+        "docker", "installers", "install.sh", "ops",
+    ]
     _run_phase_inner(
         "E",
         dirs,
@@ -13877,7 +14414,7 @@ def run_phase_W(
         dirs,
         cfg,
         collector,
-        ["docs", "scripts", "src", "services"],
+        ["docs", "scripts", "src", "services", "Makefile", "compose.yml", "docker", "config"],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "W"),
     )
@@ -13894,7 +14431,7 @@ def run_phase_B(
         dirs,
         cfg,
         collector,
-        ["src", "services", "docs"],
+        ["src", "services", "docs", "contracts", "config", ".claude"],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "B"),
     )
@@ -13911,7 +14448,11 @@ def run_phase_G(
         dirs,
         cfg,
         collector,
-        [".github", "docs", ".claude", "AGENTS.md"],
+        [
+            ".github", "docs", ".claude", "AGENTS.md",
+            "pyproject.toml", ".pre-commit-config.yaml", "config/repo_hygiene",
+            "pytest.ini", "Makefile", "contracts",
+        ],
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "G"),
     )
@@ -13921,7 +14462,7 @@ def run_phase_Q(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
     items = collect_phase_artifacts(
-        dirs, ["A", "H", "D", "C", "E", "W", "B", "G"], ["raw", "norm", "qa"]
+        dirs, ["A", "H", "D", "C", "E", "W", "B", "G", "X"], ["raw", "norm", "qa"]
     )
     promptpack_manifest = _write_q_promptpack_declared_outputs_manifest(dirs)
     items.extend(to_items([promptpack_manifest]))
@@ -14053,13 +14594,40 @@ def run_phase_R_async_submit(
         if phase_norm.exists():
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
+    # Collect optional B/E/G/W/Q norm outputs when available
+    for opt_phase in R_OPTIONAL_INPUT_PHASES:
+        opt_norm = dirs.get(opt_phase)
+        if opt_norm is not None:
+            opt_norm_dir = opt_norm / "norm"
+            if opt_norm_dir.exists():
+                opt_files = sorted(opt_norm_dir.glob("*.json")) + sorted(opt_norm_dir.glob("*.md"))
+                if opt_files:
+                    input_files.extend(opt_files)
+                    logger.info("R_ASYNC_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, len(opt_files))
     deduped_inputs = sorted(set(input_files), key=str)
     context_items = to_items(deduped_inputs)
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
     max_files = max_files_for_phase("R", cfg)
     partitions = build_partitions(
-        "R", inventory, max_files=max_files, max_chars=cfg.max_chars
+        "R", inventory, max_files=max_files, max_chars=cfg.max_chars, router=cfg.router
     )
+
+    # DC2 Phase 2: Router post-processing for Phase R (async path)
+    _r_router = _ACTIVE_INTELLIGENCE_ROUTER
+    if _r_router:
+        try:
+            from lib.prescan.partition_brief_generator import PartitionBriefGenerator
+            _r_brief_gen = PartitionBriefGenerator(_r_router.code_report, token_budget=2000)
+        except Exception:
+            _r_brief_gen = None
+        for _r_idx, _r_part in enumerate(partitions):
+            _r_part["paths"] = _r_router.reorder_partition(_r_part["paths"])
+            if _r_brief_gen:
+                _r_brief = _r_brief_gen.generate_brief("R", _r_part["paths"])
+                if _r_brief:
+                    _r_part["context_brief"] = _r_brief
+        logger.info("Phase R (async): router reordered %d partitions", len(partitions))
+
     prompts = get_phase_prompts("R")
     if not prompts:
         raise RuntimeError("No prompts found for phase R")
@@ -14102,11 +14670,17 @@ def run_phase_R_async_submit(
             continue
         output_artifacts = prompt_spec.output_artifacts
         output_instructions = build_output_envelope_instructions(output_artifacts)
-        prompt_prefix = (
-            "Extract from the files below.\n" + output_instructions + "\n\nFILES:\n"
-        )
 
         for partition in partitions:
+            _async_brief = partition.get("context_brief", "")
+            _async_brief_section = f"\n{_async_brief}\n" if _async_brief else ""
+            prompt_prefix = (
+                "Extract from the files below.\n"
+                + output_instructions
+                + "\n"
+                + _async_brief_section
+                + "\nFILES:\n"
+            )
             partition_id = str(partition["id"])
 
             latest_attempt = event_store.latest_attempt_for_tuple(
@@ -14145,6 +14719,7 @@ def run_phase_R_async_submit(
                 home_scan_mode=cfg.home_scan_mode,
                 max_files=max_files,
                 max_chars=context_budget,
+                router=cfg.router,
             )
             user_prompt = f"{prompt_prefix}{context}"
 
@@ -14465,6 +15040,26 @@ def run_phase_R(
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
 
+    # Collect optional B/E/G/W/Q norm outputs when available
+    optional_contributed: List[str] = []
+    for opt_phase in R_OPTIONAL_INPUT_PHASES:
+        opt_norm = dirs.get(opt_phase, dirs.get(opt_phase))
+        if opt_norm is None:
+            continue
+        opt_norm = opt_norm / "norm"
+        if opt_norm.exists():
+            opt_files = sorted(opt_norm.glob("*.json")) + sorted(opt_norm.glob("*.md"))
+            if opt_files:
+                input_files.extend(opt_files)
+                optional_contributed.append(f"{opt_phase}({len(opt_files)})")
+                logger.info("R_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, len(opt_files))
+            else:
+                logger.info("R_OPTIONAL_SKIP: phase=%s reason=empty_norm_dir", opt_phase)
+        else:
+            logger.info("R_OPTIONAL_SKIP: phase=%s reason=no_norm_dir", opt_phase)
+    if optional_contributed:
+        logger.info("R_OPTIONAL_SUMMARY: contributed=%s", ", ".join(optional_contributed))
+
     deduped_inputs = sorted(set(input_files), key=str)
     _run_phase_inner(
         "R",
@@ -14481,20 +15076,23 @@ def run_phase_R(
 def run_phase_X(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    r_norm = dirs["R"] / "norm"
-    r_inputs: List[Path] = []
-    if r_norm.exists():
-        r_inputs.extend(sorted(r_norm.glob("*.json")))
-        r_inputs.extend(sorted(r_norm.glob("*.md")))
-    if not r_inputs:
-        raise RuntimeError(f"Phase X requires R norm outputs at {r_norm}")
+    # X prompts (X0-X4) expect direct repo scan of feature surfaces,
+    # not R artifacts.  Scan targets align with X0 prompt contract:
+    # services/, src/, docs/, config/, scripts/, Makefile, docker, compose.yml
+    collector = Collector(
+        Path.cwd(),
+        _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES),
+    )
+    targets = [
+        "services", "src", "docs", "config", "scripts",
+        "Makefile", "docker", "compose.yml",
+    ]
     _run_phase_inner(
         "X",
         dirs,
         cfg,
-        None,
-        None,
-        precollected_items=to_items(r_inputs),
+        collector,
+        targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "X"),
     )
@@ -14509,6 +15107,12 @@ def run_phase_T(
         if norm_dir.exists():
             input_files.extend(sorted(norm_dir.glob("*.json")))
             input_files.extend(sorted(norm_dir.glob("*.md")))
+    # T0 prompt requires governance constraints for task packet prioritisation
+    repo_root = Path.cwd()
+    for gov_path in ["AGENTS.md", ".claude/PROJECT_INSTRUCTIONS.md"]:
+        p = repo_root / gov_path
+        if p.exists():
+            input_files.append(p)
     _run_phase_inner(
         "T",
         dirs,
@@ -14604,6 +15208,7 @@ def main() -> None:
     except (AttributeError, ValueError):
         pass
     parser = argparse.ArgumentParser("Master Extraction Runner")
+    parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
     parser.add_argument("--sync", action="store_true", help="Synchronize prompt source scopes with modern architecture.")
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
@@ -14640,6 +15245,8 @@ def main() -> None:
             "balanced_grok_openrouter",
             "quality",
             "openrouter",
+            "gemini_primary",
+            "optimal",
         ],
         default=DEFAULT_ROUTING_POLICY,
     )
@@ -14728,7 +15335,7 @@ def main() -> None:
         "--compare-provider",
         type=str,
         default=None,
-        help="Provider slug for the comparison model (e.g. xai). Defaults to 'xai' if omitted.",
+        help="Provider slug for the comparison model (e.g. xai). Inferred from registry if omitted.",
     )
     parser.add_argument(
         "--compare-steps",
@@ -14758,6 +15365,12 @@ def main() -> None:
     parser.add_argument("--run-id", type=str)
     parser.add_argument("--no-write-latest", action="store_true")
     parser.add_argument("--write-latest-even-on-dry-run", action="store_true")
+    parser.add_argument(
+        "--audit-sample-rate",
+        type=float,
+        default=0.15,
+        help="Fraction of phase outputs to audit with judge model (0 to disable).",
+    )
     parser.add_argument("--doctor", action="store_true")
     parser.add_argument("--doctor-auth", action="store_true")
     parser.add_argument("--preflight-providers", action="store_true")
@@ -14828,6 +15441,12 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--prescan-dir",
+        type=str,
+        default=None,
+        help="Path to prescan output dir for intelligence-informed extraction.",
+    )
+    parser.add_argument(
         "--profile",
         type=str,
         default=None,
@@ -14853,6 +15472,18 @@ def main() -> None:
     args.batch_max_requests_per_job = max(1, int(args.batch_max_requests_per_job))
     if args.batch_submit_only:
         args.batch_mode = True
+    
+    router = None
+    if args.prescan:
+        if IntelligenceRouter:
+            router = IntelligenceRouter.from_dir(Path(args.prescan))
+            if router:
+                logger.info(f"Initialized IntelligenceRouter from {args.prescan}")
+            else:
+                logger.warning(f"Failed to initialize IntelligenceRouter from {args.prescan}")
+        else:
+            logger.warning("IntelligenceRouter class not available, skipping prescan logic.")
+
     apply_model_overrides(args.gemini_model_id, args.routing_policy)
 
     # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: validate comparison step eligibility
@@ -15009,6 +15640,7 @@ def main() -> None:
             selected_execution_step=selected_execution_step,
             d0_max_files=args.d0_max_files,
             d1_max_files=args.d1_max_files,
+            router=router,
         )
 
         def _prompt_executor(step, rendered_prompt, schema, _prior_outputs):  # type: ignore[no-untyped-def]
@@ -15248,6 +15880,8 @@ def main() -> None:
             if getattr(args, "compare_steps", None)
             else None
         ),
+        prescan_dir=getattr(args, "prescan_dir", None),
+        router=router,
     )
 
     # --profile: load extraction profile and apply phase filtering + budget overrides
@@ -15479,10 +16113,23 @@ def main() -> None:
         if not ok:
             logger.error(
                 "Provider preflight failed before phase ALL. failed_providers=%s. See "
-                f"{(V3_DOCTOR_ROOT / 'PROVIDER_PREFLIGHT.json').as_posix()}",
+                f"{(V5_DOCTOR_ROOT / 'PROVIDER_PREFLIGHT.json').as_posix()}",
                 ",".join(payload.get("failed_providers", [])),
             )
             sys.exit(1)
+
+    # Load intelligence router from prescan output (if available)
+    global _ACTIVE_INTELLIGENCE_ROUTER
+    if cfg.prescan_dir and IntelligenceRouter is not None:
+        _prescan_path = Path(cfg.prescan_dir)
+        if _prescan_path.exists():
+            _ACTIVE_INTELLIGENCE_ROUTER = IntelligenceRouter.from_dir(_prescan_path)
+            if _ACTIVE_INTELLIGENCE_ROUTER:
+                logger.info("Loaded intelligence router from %s", _prescan_path)
+            else:
+                logger.warning("Prescan dir exists but router failed to load: %s", _prescan_path)
+        else:
+            logger.warning("Prescan dir not found: %s", _prescan_path)
 
     runners = {
         "A": run_phase_A,

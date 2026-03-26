@@ -28,8 +28,30 @@ import logging
 import argparse
 import signal
 import sys
+import os
+from pathlib import Path
 from typing import Optional
 
+def _configure_import_paths() -> Path:
+    current = Path(__file__).resolve()
+    candidates = [current.parent, *current.parents]
+    repo_root = next(
+        (
+            candidate for candidate in candidates
+            if (candidate / "services" / "shared").exists() or (candidate / "src" / "dopemux").exists()
+        ),
+        current.parent,
+    )
+    for path in (repo_root, repo_root / "src"):
+        path_str = str(path)
+        if path.exists() and path_str not in sys.path:
+            sys.path.insert(0, path_str)
+    return repo_root
+
+
+REPO_ROOT = _configure_import_paths()
+
+from services.shared.brand_voice import StatusChip, brand_log, voice_header
 from app_detector import AppDetector
 from workspace_mapper import WorkspaceMapper
 from event_emitter import WorkspaceSwitchEmitter
@@ -88,33 +110,33 @@ class WorkspaceWatcher:
 
     async def initialize(self):
         """Initialize event emitter connection"""
-        logger.info("=" * 60)
-        logger.info("Workspace Watcher - Initializing...")
-        logger.info("=" * 60)
+        logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
+        logger.info(brand_log("Workspace Watcher - Initializing...", chip=StatusChip.LIVE))
+        logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
 
         await self.event_emitter.initialize()
 
-        logger.info(f"Poll interval: {self.poll_interval}s")
-        logger.info(f"OS: {self.app_detector.os_type}")
-        logger.info(f"Workspace mappings: {len(self.workspace_mapper.mappings)}")
-        logger.info("")
+        logger.info(brand_log(f"Poll interval: {self.poll_interval}s", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"OS: {self.app_detector.os_type}", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"Workspace mappings: {len(self.workspace_mapper.mappings)}", chip=StatusChip.LIVE))
+        logger.info(brand_log("", chip=StatusChip.LIVE))
 
     async def start(self):
         """Start monitoring active application"""
         self.running = True
-        logger.info("Workspace watcher started")
-        logger.info("Monitoring active application for workspace switches...")
-        logger.info("")
+        logger.info(brand_log("Workspace watcher started", chip=StatusChip.LIVE))
+        logger.info(brand_log("Monitoring active application for workspace switches...", chip=StatusChip.LIVE))
+        logger.info(brand_log("", chip=StatusChip.LIVE))
 
         # Get initial state (use sync version for startup)
         self.current_app = self.app_detector.get_active_app()
         if self.current_app:
             self.current_workspace = self.workspace_mapper.get_workspace(self.current_app)
-            logger.info(f"Initial state: {self.current_app} → {self.current_workspace or 'N/A'}")
+            logger.info(brand_log(f"Initial state: {self.current_app} → {self.current_workspace or 'N/A'}", chip=StatusChip.LIVE))
         else:
-            logger.warning("Could not detect initial app")
+            logger.warning(brand_log("Could not detect initial app", chip=StatusChip.AFTERCARE))
 
-        logger.info("")
+        logger.info(brand_log("", chip=StatusChip.LIVE))
 
         # Main polling loop
         while self.running:
@@ -123,10 +145,10 @@ class WorkspaceWatcher:
                 await asyncio.sleep(self.poll_interval)
 
             except asyncio.CancelledError:
-                logger.info("Watcher loop cancelled")
+                logger.info(brand_log("Watcher loop cancelled", chip=StatusChip.LIVE))
                 break
             except Exception as e:
-                logger.error(f"Polling error: {e}")
+                logger.error(brand_log(f"Polling error: {e}", chip=StatusChip.BLOCKER))
                 await asyncio.sleep(self.poll_interval)
 
     async def _poll_and_check(self):
@@ -142,7 +164,7 @@ class WorkspaceWatcher:
 
         # Check if app changed
         if active_app != self.current_app:
-            logger.info(f"App change detected: {self.current_app or '?'} → {active_app}")
+            logger.info(brand_log(f"App change detected: {self.current_app or '?'} → {active_app}", chip=StatusChip.LIVE))
 
             # Map to workspaces
             from_workspace = self.current_workspace
@@ -154,8 +176,11 @@ class WorkspaceWatcher:
                 file_activity = self.file_checker.check_recent_activity(to_workspace)
                 if file_activity["has_recent_activity"]:
                     logger.info(
-                        f"  File activity: {file_activity['files_modified']} files modified "
-                        f"({file_activity['seconds_since_last_save']}s ago)"
+                        brand_log(
+                            f"  File activity: {file_activity['files_modified']} files modified "
+                            f"({file_activity['seconds_since_last_save']}s ago)",
+                            chip=StatusChip.LOGGED
+                        )
                     )
 
             # Emit event
@@ -179,21 +204,21 @@ class WorkspaceWatcher:
 
     async def stop(self):
         """Stop monitoring"""
-        logger.info("")
-        logger.info("=" * 60)
-        logger.info("Workspace Watcher - Shutting down...")
-        logger.info("=" * 60)
+        logger.info(brand_log("", chip=StatusChip.LIVE))
+        logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
+        logger.info(brand_log("Workspace Watcher - Shutting down...", chip=StatusChip.LIVE))
+        logger.info(brand_log("=" * 60, chip=StatusChip.LIVE))
 
         self.running = False
 
         # Show final metrics
         metrics = self.get_metrics()
-        logger.info(f"Total polls: {metrics['polls']}")
-        logger.info(f"Switches detected: {metrics['switches_detected']}")
-        logger.info(f"Events emitted: {metrics['events_emitted']}")
+        logger.info(brand_log(f"Total polls: {metrics['polls']}", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"Switches detected: {metrics['switches_detected']}", chip=StatusChip.LIVE))
+        logger.info(brand_log(f"Events emitted: {metrics['events_emitted']}", chip=StatusChip.LIVE))
 
         await self.event_emitter.close()
-        logger.info("Shutdown complete")
+        logger.info(brand_log("Shutdown complete", chip=StatusChip.LIVE))
 
     def get_metrics(self) -> dict:
         """Get watcher metrics"""
@@ -209,15 +234,15 @@ class WorkspaceWatcher:
         }
 
 
-async def run_watcher(poll_interval: int = 5):
+async def run_watcher(poll_interval: int = 5, redis_url: str = "redis://localhost:6379"):
     """Run workspace watcher"""
-    watcher = WorkspaceWatcher(poll_interval=poll_interval)
+    watcher = WorkspaceWatcher(poll_interval=poll_interval, redis_url=redis_url)
 
     # Setup signal handlers for graceful shutdown
     loop = asyncio.get_event_loop()
 
     def shutdown():
-        logger.info("Received shutdown signal")
+        logger.info(brand_log("Received shutdown signal", chip=StatusChip.LIVE))
         asyncio.create_task(watcher.stop())
 
     for sig in (signal.SIGTERM, signal.SIGINT):
@@ -228,13 +253,55 @@ async def run_watcher(poll_interval: int = 5):
     await watcher.start()
 
 
+async def emit_manual_workspace_switch(
+    redis_url: str,
+    from_app: str,
+    to_app: str,
+    from_workspace: Optional[str],
+    to_workspace: Optional[str],
+):
+    """Emit a single workspace switch for smoke tests and compose validation."""
+    emitter = WorkspaceSwitchEmitter(redis_url=redis_url)
+    checker = FileActivityChecker(recency_threshold=30)
+
+    await emitter.initialize()
+    try:
+        file_activity = checker.check_recent_activity(to_workspace) if to_workspace else None
+        await emitter.emit_workspace_switch(
+            from_workspace=from_workspace,
+            to_workspace=to_workspace,
+            from_app=from_app,
+            to_app=to_app,
+            file_activity=file_activity,
+        )
+    finally:
+        await emitter.close()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Workspace Watcher - Automatic workspace switch detection")
     parser.add_argument("--interval", type=int, default=5, help="Poll interval in seconds (default: 5)")
+    parser.add_argument("--redis-url", default=os.getenv("REDIS_URL", "redis://localhost:6379"), help="Redis connection URL")
     parser.add_argument("--daemon", action="store_true", help="Run in background (no-op, always runs until Ctrl+C)")
+    parser.add_argument("--emit-switch", action="store_true", help="Emit a single workspace.switched event and exit")
+    parser.add_argument("--from-app", default="Terminal", help="Source application for manual emission")
+    parser.add_argument("--to-app", default="Claude Code", help="Destination application for manual emission")
+    parser.add_argument("--from-workspace", default=None, help="Source workspace path for manual emission")
+    parser.add_argument("--to-workspace", default="/Users/hue/code/dopemux-mvp", help="Destination workspace path for manual emission")
     args = parser.parse_args()
 
     try:
-        asyncio.run(run_watcher(poll_interval=args.interval))
+        if args.emit_switch:
+            asyncio.run(
+                emit_manual_workspace_switch(
+                    redis_url=args.redis_url,
+                    from_app=args.from_app,
+                    to_app=args.to_app,
+                    from_workspace=args.from_workspace,
+                    to_workspace=args.to_workspace,
+                )
+            )
+        else:
+            asyncio.run(run_watcher(poll_interval=args.interval, redis_url=args.redis_url))
     except KeyboardInterrupt:
-        logger.info("Stopped by user")
+        logger.info(brand_log("Stopped by user", chip=StatusChip.LIVE))

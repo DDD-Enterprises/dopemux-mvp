@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-03-11'
+last_updated: '2026-03-19'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: QUICK_START.md
@@ -68,6 +68,8 @@ how_to:
   profile_usage: docs/02-how-to/profile-usage-2.md
   multi_instance: docs/02-how-to/multi-instance-workflow.md
   orchestrator_dashboard: docs/02-how-to/orchestrator-dashboard.md
+  internal_workflow_kit: docs/02-how-to/internal-workflow-kit.md
+  pr_merge_flight_dashboard: docs/02-how-to/pr-merge-flight-dashboard.md
   workflow_idea_epic_lifecycle: docs/02-how-to/operations/workflow-idea-epic-lifecycle.md
   dope_context_user_guide: docs/02-how-to/dope-context/dope-context-user-guide.md
   repo_truth_extractor_cli: docs/02-how-to/extraction/run-v4-from-dopemux-cli.md
@@ -90,6 +92,8 @@ reference:
   features_index: docs/03-reference/features/features-index.md
   task_orchestrator_service: docs/03-reference/services/task-orchestrator.md
   mcp_tools_overview: docs/03-reference/mcp-tools-overview.md
+  internal_workflow_kit: docs/03-reference/internal-workflow-kit.md
+  ci_remediation_specialist: docs/03-reference/ci-remediation-specialist.md
   doc_audit_prescan_reference: docs/03-reference/doc-audit-prescan.md
   extraction_wizard_reference: docs/03-reference/extraction-wizard.md
   pm_plane_write_matrix: docs/planes/pm/pm-plane-write-matrix.md
@@ -102,7 +106,6 @@ reference:
   repo_truth_extractor_doctor_reprocess: docs/03-reference/extraction/doctor-reprocess.md
   repo_truth_extractor_prompt_contract: docs/03-reference/extraction/prompt-contract-v4.md
   repo_truth_extractor_v5_ui_live_output: docs/03-reference/extraction/v5-ui-live-output.md
-  repo_truth_extractor_phase_interaction_design: docs/03-reference/extraction/phase-interaction-design.md
   dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md
   dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
 explanation:
@@ -112,6 +115,8 @@ explanation:
   dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md
   adhd_engine: docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md
   dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
+  workflow_kit_architecture: docs/04-explanation/workflow-kit-architecture.md
+  pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
 archive:
@@ -144,3 +149,11 @@ skills:
   pr_docgen_sync_gemini: templates/skills/pr-docgen-sync-gemini/SKILL.md
   pr_docgen_sync_copilot: templates/skills/pr-docgen-sync-copilot/SKILL.md
   pr_docgen_sync_claude: templates/skills/pr-docgen-sync-claude/SKILL.md
+  workflow_brief_drafter: templates/skills/brief-drafter/SKILL.md
+  workflow_task_breakdown: templates/skills/task-breakdown/SKILL.md
+  workflow_code_researcher: templates/skills/code-researcher/SKILL.md
+  workflow_research_reviewer: templates/skills/research-reviewer/SKILL.md
+  workflow_implementation_planner: templates/skills/implementation-planner/SKILL.md
+  workflow_plan_reviewer: templates/skills/plan-reviewer/SKILL.md
+  workflow_code_implementer: templates/skills/code-implementer/SKILL.md
+  workflow_quality_refactorer: templates/skills/quality-refactorer/SKILL.md

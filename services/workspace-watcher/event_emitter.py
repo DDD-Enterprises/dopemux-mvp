@@ -18,11 +18,24 @@ from pathlib import Path
 from typing import Optional
 
 # Add DopeconBridge to path for EventBus
-bridge_path = Path(__file__).parent.parent.parent / "services" / "mcp-dopecon-bridge"
+bridge_path = Path(__file__).parent.parent / "dopecon-bridge"
 if str(bridge_path) not in sys.path:
     sys.path.insert(0, str(bridge_path))
 
-from event_bus import Event, EventBus
+repo_root = next(
+    (
+        candidate for candidate in [Path(__file__).resolve().parent, *Path(__file__).resolve().parents]
+        if (candidate / "services" / "shared").exists() or (candidate / "src" / "dopemux").exists()
+    ),
+    Path(__file__).resolve().parent,
+)
+for path in (repo_root, repo_root / "src"):
+    path_str = str(path)
+    if path.exists() and path_str not in sys.path:
+        sys.path.insert(0, path_str)
+
+from dopecon_bridge.event_bus import Event, EventBus
+from services.shared.brand_voice import StatusChip, brand_log
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +64,9 @@ class WorkspaceSwitchEmitter:
         try:
             self.event_bus = EventBus(redis_url=self.redis_url)
             await self.event_bus.initialize()
-            logger.info(f"Event emitter initialized (Redis: {self.redis_url})")
+            logger.info(brand_log(f"Event emitter initialized (Redis: {self.redis_url})", chip=StatusChip.LIVE))
         except Exception as e:
-            logger.error(f"Failed to initialize event bus: {e}")
+            logger.error(brand_log(f"Failed to initialize event bus: {e}", chip=StatusChip.BLOCKER))
             raise
 
     async def emit_workspace_switch(
@@ -77,7 +90,7 @@ class WorkspaceSwitchEmitter:
             True if event emitted successfully
         """
         if not self.event_bus:
-            logger.warning("Event bus not initialized")
+            logger.warning(brand_log("Event bus not initialized", chip=StatusChip.AFTERCARE))
             return False
 
         # Don't emit if both workspaces are None (both non-dev apps)
@@ -101,13 +114,18 @@ class WorkspaceSwitchEmitter:
                     "from_app": from_app,
                     "to_app": to_app,
                     "switch_type": "automatic",  # Detected by watcher
+                    "switch_summary": f"Ritual shift: {from_app} → {to_app}",
+                    "status_chip": "LIVE",
+                    "tone": "live",
+                    "voice_header": "━━━◆ Ø ◆━━━  Workspace Watcher",
                     "context_data": {},
                     "workspace_id": to_workspace or "unknown",
+                    "file_activity": file_activity or {},
                     "adhd_context_capture": {
                         "timestamp": f"{time.time()}",
                         "recovery_priority": "high" if from_workspace and to_workspace else "low",
                         "detection_method": "workspace_watcher",
-                        "file_activity": file_activity  # Include file modification data
+                        "file_activity": file_activity or {},
                     }
                 },
                 source="workspace-watcher"
@@ -118,25 +136,28 @@ class WorkspaceSwitchEmitter:
             if msg_id:
                 self.events_emitted += 1
                 logger.info(
-                    f"Emitted workspace.switched: "
-                    f"{from_app} ({from_workspace or 'N/A'}) → "
-                    f"{to_app} ({to_workspace or 'N/A'})"
+                    brand_log(
+                        f"Emitted workspace.switched: "
+                        f"{from_app} ({from_workspace or 'N/A'}) → "
+                        f"{to_app} ({to_workspace or 'N/A'})",
+                        chip=StatusChip.LIVE
+                    )
                 )
                 return True
             else:
-                logger.warning("Event publish returned None (deduplicated or rate-limited)")
+                logger.warning(brand_log("Event publish returned None (deduplicated or rate-limited)", chip=StatusChip.AFTERCARE))
                 return False
 
         except Exception as e:
             self.errors += 1
-            logger.error(f"Failed to emit event: {e}")
+            logger.error(brand_log(f"Failed to emit event: {e}", chip=StatusChip.BLOCKER))
             return False
 
     async def close(self):
         """Close event bus connection"""
         if self.event_bus:
             await self.event_bus.close()
-            logger.info("Event emitter closed")
+            logger.info(brand_log("Event emitter closed", chip=StatusChip.LIVE))
 
     def get_metrics(self) -> dict:
         """Get emission metrics"""

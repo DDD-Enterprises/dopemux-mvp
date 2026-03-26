@@ -33,12 +33,12 @@ DEFAULT_LAYOUT_REPORT_PATH = "reports/docs-hygiene/pr-docgen-sync-layout-finding
 
 INSTRUCTION_PATH_CANDIDATES: Dict[str, Tuple[str, ...]] = {
     "codex": (
-        "docs/03-reference/instructions/CODEX.md",
-        "docs/instructions/codex-2.md",
+        "docs/03-reference/instructions/codex-3.md",
+        "docs/instructions/CODEX.md",
     ),
     "claude": (
-        "docs/03-reference/instructions/CLAUDE.md",
-        "docs/instructions/claude-2.md",
+        "docs/03-reference/instructions/claude-3.md",
+        "docs/instructions/CLAUDE.md",
     ),
     "gemini": (
         "docs/03-reference/instructions/GEMINI.md",
@@ -257,14 +257,7 @@ def _is_active_doc(path: str) -> bool:
 def _parse_frontmatter_type(file_path: Path) -> str | None:
     if not file_path.exists() or file_path.suffix.lower() != ".md":
         return None
-    # Frontmatter is expected to be at the beginning and typically small.
-    # Reading only the first 16KB avoids loading massive files into memory.
-    try:
-        with file_path.open("r", encoding="utf-8", errors="replace") as f:
-            text = f.read(16384)
-    except Exception:
-        return None
-
+    text = file_path.read_text(encoding="utf-8", errors="replace")
     if not text.startswith("---\n"):
         return None
     end = text.find("\n---\n", 4)

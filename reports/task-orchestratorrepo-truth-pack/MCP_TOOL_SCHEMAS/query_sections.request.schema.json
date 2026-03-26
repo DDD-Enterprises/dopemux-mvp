@@ -1,0 +1,47 @@
+{
+    "_meta": {
+        "tool": "query_sections",
+        "source": "code",
+        "source_file": "clockwork/src/main/kotlin/io/github/jpicklyk/mcptask/application/tools/section/QuerySectionsTool.kt",
+        "lines": "79-124",
+        "analyzed_ref": "99023a9 HEAD-at-time-of-analysis"
+    },
+    "type": "object",
+    "required": [
+        "entityType",
+        "entityId"
+    ],
+    "properties": {
+        "entityType": {
+            "type": "string",
+            "description": "Type of entity",
+            "enum": [
+                "PROJECT",
+                "FEATURE",
+                "TASK"
+            ]
+        },
+        "entityId": {
+            "type": "string",
+            "description": "Entity identifier (UUID)",
+            "format": "uuid"
+        },
+        "includeContent": {
+            "type": "boolean",
+            "description": "Include section content (false for metadata only, saves 85-99% tokens)",
+            "default": true
+        },
+        "sectionIds": {
+            "type": "array",
+            "description": "Optional specific section IDs to retrieve",
+            "items": {
+                "type": "string",
+                "format": "uuid"
+            }
+        },
+        "tags": {
+            "type": "string",
+            "description": "Comma-separated tags filter (returns sections with ANY matching tag)"
+        }
+    }
+}

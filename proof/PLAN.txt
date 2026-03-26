@@ -1,20 +1,17 @@
-Objective: Implement TP-RTE-PHASED-RELIABILITY-0033 for Phase D reliability: deterministic JSON salvage, line_range enforcement, and provider preflight fail-fast.
-Scope:
-- services/repo-truth-extractor/run_extraction_v3.py
-- services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D*.md
-- services/repo-truth-extractor/prompts/v3/PROMPT_D*.md
-- services/repo-truth-extractor/tests/test_phase_d_json_salvage.py
-- services/repo-truth-extractor/tests/test_phase_d_line_range.py
-- services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py
+Objective: Phase 8 (Verification) — confirm Phases 2–7 routines are green and document the status.
+
+Scope: allowed files (exact paths)
 - proof/PLAN.txt
+
 Steps:
-1) Add deterministic prose-plus-JSON salvage before parse_failure.
-2) Line-number Phase D partition context and tighten D prompt output rails around line_range.
-3) Enforce line_range shape in schema gating.
-4) Add a Phase D provider preflight guard that blocks fan-out when OpenRouter is unhealthy.
-5) Verify with focused tests and compileall.
+1. Record the Phase 8 verification objective, scope, and checklist inside `proof/PLAN.txt`.
+2. Run `python -m py_compile` against the Textual dashboard, tmux, agent, notification, and ADHD-engine modules that represent the branded surfaces.
+3. In `ui-dashboard`, execute `npm run test -- --run` followed by `npm run build` so the React dashboard stays aligned to the expanded tokens.
+4. Run `python scripts/brand_lint.py` so the CLI/TUI brand lint stays at 0 errors/warnings after every phase.
+5. Capture the results of these verification commands for the final handoff summary.
+
 Verification:
-- python -m compileall -q services/repo-truth-extractor tests
-- pytest -q services/repo-truth-extractor/tests/test_phase_d_json_salvage.py
-- pytest -q services/repo-truth-extractor/tests/test_phase_d_line_range.py
-- pytest -q services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py
+- python -m py_compile src/dopemux/ui/dashboard.py src/dopemux/ui/dashboard_detail.py scripts/dopemux_dashboard.py scripts/brand_lint.py services/agents/persona_enhancer.py services/agents/dopemux_enforcer.py services/agents/cognitive_guardian_kg.py src/dopemux/roles/catalog.py services/adhd-notifier/notify.py services/adhd-notifier/mobile_push.py services/adhd-notifier/daily_reporter.py services/voice-commands/voice_api.py services/voice-commands/voice_task_decomposer.py services/adhd_engine/cli/break_guide.py services/adhd_engine/correlation_engine.py services/adhd_engine/event_listener.py services/adhd_engine/hello_flow_implementation.py services/adhd_engine/api/schemas.py services/adhd_engine/api/routes.py services/adhd_engine/core/models.py services/adhd_engine/core/output_dispatcher.py services/adhd_engine/core/error_handling.py services/adhd_engine/core/engine.py services/adhd_engine/engine.py services/adhd_engine/domains/break-suggester/engine.py services/adhd_engine/domains/attention/intent_pattern_analyzer.py services/adhd_engine/domains/attention/overwhelm_detector.py services/adhd_engine/domains/task_enablement/decomposition_coordinator.py services/adhd_engine/ml/energy_predictor.py
+- (cd ui-dashboard && npm run test -- --run)
+- (cd ui-dashboard && npm run build)
+- python scripts/brand_lint.py

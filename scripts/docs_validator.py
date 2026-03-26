@@ -60,11 +60,12 @@ RECOMMENDED_FIELDS = {
 
 # Prohibited file patterns
 PROHIBITED_PATTERNS = [
-    r'NOTES.*\.md$',
-    r'TODO.*\.md$',
-    r'TEMP.*\.md$',
-    r'DRAFT.*\.md$',
-    r'.*[Tt]emp.*\.md$'
+    r'\bNOTES\b.*\.md$',
+    r'\bTODO\b.*\.md$',
+    r'\bTEMP\b.*\.md$',
+    r'\bDRAFT\b.*\.md$',
+    r'\btemp\b.*\.md$',
+    r'\bTemp\b.*\.md$'
 ]
 
 # Allowed paths for documentation

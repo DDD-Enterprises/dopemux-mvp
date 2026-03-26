@@ -12,24 +12,25 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
 
 @click.group()
 def dev():
     """
-    🔧 Development mode (for contributors)
+    🔧 Contributor Flight-Deck: Development & hot reload
 
-    Auto-detects local checkouts of MCP servers (Zen, ConPort, etc.)
-    and uses them instead of production versions. Enables hot reload
-    and test database isolation.
+    Engages development mode for daemon contributors. This mode auto-detects 
+    local checkouts of ritual daemons (Zen, ConPort, Serena) and directs the 
+    cockpit to use these local artifacts instead of production versions.
 
-    Components checked:
-    - ~/code/zen-mcp-server (Zen MCP development)
-    - ~/code/conport-mcp (ConPort development)
-    - ~/code/serena-lsp (Serena development)
+    Ritual Capabilities:
+    - Hot Reload: Direct synchronization between local source and active cockpit.
+    - Isolated Persistence: Directs telemetry to the development database (isolated).
+    - Local Checkouts: Auto-maps ~/code/zen-mcp-server, ~/code/conport-mcp, etc.
     """
     pass
 

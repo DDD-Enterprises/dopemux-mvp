@@ -15,7 +15,7 @@ from dataclasses import dataclass
 
 import click
 from rich.table import Table
-from rich.prompt import Confirm
+from dopemux.ui.prompts import dopemux_confirm
 from click.shell_completion import CompletionItem
 
 from ..config import ConfigManager
@@ -23,6 +23,13 @@ from ..console import console
 from .controller import TmuxController, PaneInfo
 from ..mobile import tmux_utils
 from ..roles.catalog import available_roles, resolve_role, RoleNotFoundError
+from .theme import (
+    TMUX_ACCENT,
+    THEME_PRESETS,
+    TMUX_BACKGROUND,
+    TMUX_FOREGROUND,
+    TMUX_SURFACE,
+)
 from ..litellm_proxy import (
     DEFAULT_LITELLM_CONFIG,
     ensure_master_key,
@@ -41,132 +48,10 @@ class OrchestratorLayout:
     metrics_bar: Optional[str] = None
 
 
-HOUSE_THEME = {
-    "pane_styles": {
-        "monitor:worktree": "fg=#a6e3a1,bg=#1e1e2e",
-        "monitor:logs": "fg=#89dceb,bg=#1e1e2e",
-        "monitor:metrics": "fg=#f9e2af,bg=#1e1e2e",
-        "monitor:attention": "fg=#f9e2af,bg=#1e1e2e",
-        "monitor:adhd": "fg=#a6e3a1,bg=#1e1e2e",
-        "monitor:system": "fg=#89dceb,bg=#1e1e2e",
-        "monitor:pm-hierarchy": "fg=#f9e2af,bg=#1e1e2e",
-        "monitor:task-detail": "fg=#f5c2e7,bg=#1e1e2e",
-        "monitor": "fg=#cdd6f4,bg=#1e1e2e",
-        "metrics:bar": "fg=#89b4fa,bg=#11111b",
-        "orchestrator:control": "fg=#cdd6f4,bg=#181825",
-        "sandbox:shell": "fg=#f5c2e7,bg=#302d41",
-        "agent:primary": "fg=#a6e3a1,bg=#1f1d2e",
-        "agent:secondary": "fg=#b4befe,bg=#262335",
-    },
-    "pane_border_styles": {
-        "monitor:worktree": "fg=#a6e3a1,bg=#181825",
-        "monitor:logs": "fg=#89dceb,bg=#181825",
-        "monitor:metrics": "fg=#f9e2af,bg=#181825",
-        "monitor:attention": "fg=#f9e2af,bg=#181825",
-        "monitor:adhd": "fg=#a6e3a1,bg=#181825",
-        "monitor:system": "fg=#89dceb,bg=#181825",
-        "monitor:pm-hierarchy": "fg=#f9e2af,bg=#181825",
-        "monitor:task-detail": "fg=#f5c2e7,bg=#181825",
-        "monitor": "fg=#cdd6f4,bg=#181825",
-        "metrics:bar": "fg=#89b4fa,bg=#181825",
-        "orchestrator:control": "fg=#cdd6f4,bg=#11111b",
-        "sandbox:shell": "fg=#f5c2e7,bg=#11111b",
-        "agent:primary": "fg=#a6e3a1,bg=#11111b",
-        "agent:secondary": "fg=#b4befe,bg=#11111b",
-    },
-    "status_style": "bg=#1e1e2e,fg=#cdd6f4",
-    "status_left": (
-        "#[fg=#1e1e2e,bg=#89b4fa]"
-        "#[fg=#11111b,bg=#89b4fa,bold] DOPMUX "
-        "#[fg=#89b4fa,bg=#1e1e2e] "
-        "#[fg=#a6e3a1]#H #[default]"
-    ),
-    "status_right": (
-        "#[fg=#a6e3a1]#{@dopemux_mobile_indicator:-📱 idle} #[default]"
-        "#[fg=#b4befe]#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo '🤖') #[default]"
-        "#[fg=#f5c2e7]  %R #[fg=#89dceb]%a %b %d "
-        "#[fg=#cdd6f4]#{window_index}:#{window_name} "
-        "#[fg=#f9e2af]#{pane_index}:#{pane_title}"
-    ),
-    "status_palette": {
-        "accent": "#89b4fa",
-        "background": "#1e1e2e",
-        "foreground": "#cdd6f4",
-        "warning": "#f9e2af",
-        "success": "#a6e3a1",
-        "info": "#89dceb",
-        "alert": "#f5c2e7",
-    },
-}
-
-NEON_THEME = {
-    "pane_styles": {
-        "monitor:worktree": "fg=#0f172a,bg=#94fadb",
-        "monitor:logs": "fg=#020617,bg=#f5f26d",
-        "monitor:metrics": "fg=#020617,bg=#ff8bd1",
-        "monitor:attention": "fg=#020617,bg=#ff8bd1",
-        "monitor:adhd": "fg=#020617,bg=#94fadb",
-        "monitor:system": "fg=#020617,bg=#f5f26d",
-        "monitor:pm-hierarchy": "fg=#020617,bg=#ff8bd1",
-        "monitor:task-detail": "fg=#020617,bg=#ff66a3",
-        "monitor": "fg=#020617,bg=#7dfbf6",
-        "metrics:bar": "fg=#7dfbf6,bg=#020617",
-        "orchestrator:control": "fg=#7dfbf6,bg=#0a1628",
-        "sandbox:shell": "fg=#ff8bd1,bg=#1a0520",
-        "agent:primary": "fg=#94fadb,bg=#041628",
-        "agent:secondary": "fg=#020617,bg=#ffcf78",
-    },
-    "pane_border_styles": {
-        "monitor:worktree": "fg=#94fadb,bg=#0f172a",
-        "monitor:logs": "fg=#f5f26d,bg=#0f172a",
-        "monitor:metrics": "fg=#ff8bd1,bg=#0f172a",
-        "monitor:attention": "fg=#ff8bd1,bg=#0f172a",
-        "monitor:adhd": "fg=#94fadb,bg=#0f172a",
-        "monitor:system": "fg=#f5f26d,bg=#0f172a",
-        "monitor:pm-hierarchy": "fg=#ff8bd1,bg=#0f172a",
-        "monitor:task-detail": "fg=#ff66a3,bg=#0f172a",
-        "monitor": "fg=#7dfbf6,bg=#020617",
-        "metrics:bar": "fg=#7dfbf6,bg=#020617",
-        "orchestrator:control": "fg=#7dfbf6,bg=#020617",
-        "sandbox:shell": "fg=#ff8bd1,bg=#020617",
-        "agent:primary": "fg=#94fadb,bg=#020617",
-        "agent:secondary": "fg=#ffcf78,bg=#020617",
-    },
-    "status_style": "bg=#020617,fg=#e0f2fe",
-    "status_left": (
-        "#[fg=#020617,bg=#7dfbf6]"
-        "#[fg=#041024,bg=#7dfbf6,bold] DOPMUX "
-        "#[fg=#7dfbf6,bg=#020617] "
-        "#[fg=#94fadb]#H #[default]"
-    ),
-    "status_right": (
-        "#[fg=#94fadb]#{@dopemux_mobile_indicator:-📱 idle} #[default]"
-        "#[fg=#ffcf78]#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo '🤖') #[default]"
-        "#[fg=#ff8bd1]  %R #[fg=#7dfbf6]%a %b %d "
-        "#[fg=#9b78ff]#{window_index}:#{window_name} "
-        "#[fg=#f5f26d]#{pane_index}:#{pane_title}"
-    ),
-    "status_palette": {
-        "accent": "#7dfbf6",
-        "background": "#020617",
-        "foreground": "#e0f2fe",
-        "warning": "#ffcf78",
-        "success": "#94fadb",
-        "info": "#7dfbf6",
-        "alert": "#ff8bd1",
-    },
-}
-
-THEME_PRESETS: Dict[str, Dict[str, Dict[str, str]]] = {
-    "muted": HOUSE_THEME,
-    "neon": NEON_THEME,
-}
-
-
 def _resolve_theme(config) -> Dict[str, Dict[str, str]]:
     """Merge theme preset with user overrides from configuration."""
     theme_key = (getattr(config, "theme", None) or "muted").lower()
-    base = THEME_PRESETS.get(theme_key, HOUSE_THEME)
+    base = THEME_PRESETS.get(theme_key, THEME_PRESETS["muted"])
 
     merged = {
         "pane_styles": dict(base.get("pane_styles", {})),
@@ -224,32 +109,32 @@ def _apply_theme_to_session(
         tmux_utils.set_session_option(
             session,
             "pane-border-style",
-            f"fg={status_palette.get('foreground', '#cdd6f4')},bg={status_palette.get('background', '#11111b')}",
+            f"fg={status_palette.get('foreground', TMUX_FOREGROUND)},bg={status_palette.get('background', TMUX_BACKGROUND)}",
         )
         tmux_utils.set_session_option(
             session,
             "pane-active-border-style",
-            f"fg={status_palette.get('warning', '#ffcf78')},bg={status_palette.get('background', '#11111b')}",
+            f"fg={status_palette.get('warning', status_palette.get('accent', TMUX_ACCENT))},bg={status_palette.get('background', TMUX_BACKGROUND)}",
         )
         tmux_utils.set_session_option(
             session,
             "window-style",
-            f"bg={status_palette.get('background', '#11111b')}",
+            f"bg={status_palette.get('background', TMUX_BACKGROUND)}",
         )
         tmux_utils.set_session_option(
             session,
             "window-active-style",
-            f"bg={status_palette.get('background', '#11111b')}",
+            f"bg={status_palette.get('background', TMUX_BACKGROUND)}",
         )
         tmux_utils.set_session_option(
             session,
             "@dopemux_title_fg",
-            status_palette.get("foreground", "#cdd6f4"),
+            status_palette.get("foreground", TMUX_FOREGROUND),
         )
         tmux_utils.set_session_option(
             session,
             "@dopemux_title_bg",
-            status_palette.get("background", "#1e1e2e"),
+            status_palette.get("background", TMUX_SURFACE),
         )
         tmux_utils.set_session_option(session, "aggressive-resize", "on")
     except Exception:
@@ -367,7 +252,7 @@ def _launch_happy_for_targets(
 
     popup_mode = popup_override if popup_override is not None else bool(getattr(mobile_cfg, "popup_mode", False))
     if popup_mode and not os.environ.get("TMUX"):
-        click.echo("[yellow]⚠️  No active tmux client detected; launching Happy in a pane instead of popup.[/yellow]")
+        click.echo("[warning]⚠️  No active tmux client detected; launching Happy in a pane instead of popup.[/warning]")
         popup_mode = False
     command = tmux_utils.build_env_command("happy", env)
 
@@ -402,14 +287,25 @@ def _launch_happy_for_targets(
 @click.group()
 @click.pass_context
 def tmux(ctx: click.Context) -> None:
-    """🧭 Dopemux tmux controller utilities."""
+    """
+    🧭 Cockpit Navigation: Orchestrate tmux sessions and panes
+
+    Manages the high-fidelity structural layout of the DØPEMÜX cockpit. 
+    Synchronizes across sessions, windows, and panes to provide a 
+    consistent, multi-agent focal environment for ritual execution.
+    """
 
 
 @tmux.command("list")
-@click.option("--session", help="Filter panes by tmux session name")
+@click.option("--session", help="🔬 Signal Filter: Filter panes by specific tmux session identifier.")
 @click.pass_context
 def list_panes(ctx: click.Context, session: Optional[str]) -> None:
-    """List tmux panes visible to Dopemux."""
+    """
+    📊 Diagnostic HUD: Scan and catalog all visible tmux panes
+
+    Retrieves high-fidelity telemetry for every active tmux pane, detailing 
+    session coordinates, window alignment, and absolute file system paths.
+    """
 
     controller = _get_controller(ctx)
     panes = controller.list_panes(session=session)
@@ -418,13 +314,13 @@ def list_panes(ctx: click.Context, session: Optional[str]) -> None:
         return
 
     table = Table(title="Active tmux panes", show_lines=False, expand=False)
-    table.add_column("Pane ID", style="cyan")
+    table.add_column("Pane ID", style="info")
     table.add_column("Session", style="magenta")
-    table.add_column("Window", style="green")
-    table.add_column("Title", style="yellow")
-    table.add_column("Command", style="white")
-    table.add_column("Path", style="dim")
-    table.add_column("Active", style="blue")
+    table.add_column("Window", style="success")
+    table.add_column("Title", style="warning")
+    table.add_column("Command", style="text")
+    table.add_column("Path", style="text.dim")
+    table.add_column("Active", style="info")
 
     for pane in panes:
         table.add_row(
@@ -444,30 +340,30 @@ def list_panes(ctx: click.Context, session: Optional[str]) -> None:
 @click.argument("spec")
 @click.option(
     "--target",
-    help="Pane id/title/window to split (defaults to active pane)",
+    help="📍 Signal Anchor: Pane ID, title, or window coordinate to split (defaults to active).",
     shell_complete=_pane_shell_complete,
 )
 @click.option(
     "--vertical/--horizontal",
     default=False,
-    help="Split vertically (side-by-side) or horizontally (stacked).",
+    help="📐 Spatial Alignment: Split vertically (side-by-side) or horizontally (stacked).",
 )
-@click.option("--name", help="Optional pane title to apply after launch")
+@click.option("--name", help="🏷️  Ritual Label: Optional pane title to apply after materialization.")
 @click.option(
     "--cwd",
     type=click.Path(file_okay=False, dir_okay=True, path_type=Path),
-    help="Working directory for the new pane",
+    help="🔬 Ritual Coordinate: Working directory for the new pane.",
 )
 @click.option(
     "--command",
     "command_override",
-    help="Override command when using a preset (:alias)",
+    help="⚡ Override Ritual: Custom command to execute when using a preset (:alias).",
 )
 @click.option(
     "--focus/--no-focus",
     "focus_flag",
     default=None,
-    help="Control whether the new pane becomes active.",
+    help="👁️  Focus Lock: Control whether the new pane becomes the active focal point.",
 )
 @click.pass_context
 def open_pane(
@@ -480,7 +376,13 @@ def open_pane(
     command_override: Optional[str],
     focus_flag: Optional[bool],
 ) -> None:
-    """Open a new pane using presets (:claude) or raw commands."""
+    """
+    🪟 Materialize Pane: Open a new cockpit pane using presets or commands
+
+    Engages the layout engine to split the active window and materialise 
+    a new ritual pane. Supports high-fidelity presets (:claude) and raw 
+    shell rituals.
+    """
 
     controller = _get_controller(ctx)
     pane = controller.open(
@@ -500,9 +402,9 @@ def open_pane(
 
 @tmux.command("capture")
 @click.argument("target", shell_complete=_pane_shell_complete)
-@click.option("--lines", "-n", default=100, help="Number of lines to capture")
-@click.option("--start", type=int, help="Start line (for range capture)")
-@click.option("--end", type=int, help="End line (for range capture)")
+@click.option("--lines", "-n", default=100, help="📊 Signal Depth: Number of most-recent lines to harvest.")
+@click.option("--start", type=int, help="⏳ Temporal Start: Beginning line coordinate for range capture.")
+@click.option("--end", type=int, help="⏳ Temporal End: Final line coordinate for range capture.")
 @click.pass_context
 def capture_pane_output(
     ctx: click.Context,
@@ -511,7 +413,12 @@ def capture_pane_output(
     start: Optional[int],
     end: Optional[int],
 ) -> None:
-    """Capture output from a tmux pane (useful for orchestrator to inspect agents)."""
+    """
+    📥 Harvest Telemetry: Capture recent output from a ritual pane
+
+    Retrieves high-fidelity telemetry from a specific tmux pane. Essential 
+    for the orchestrator to inspect agent focal state and ritual progress.
+    """
     
     controller = _get_controller(ctx)
     pane = controller.resolve_pane(target)
@@ -531,12 +438,12 @@ def capture_pane_output(
 @tmux.command("send")
 @click.argument("target", shell_complete=_pane_shell_complete)
 @click.argument("text", nargs=-1, required=True)
-@click.option("--enter/--no-enter", default=True, help="Append Enter after sending")
-@click.option("--raw", is_flag=True, help="Send text verbatim (no <KEY> parsing)")
+@click.option("--enter/--no-enter", default=True, help="⚡ Commit Ritual: Append an Enter signal after sending text.")
+@click.option("--raw", is_flag=True, help="🧪 Raw Pulse: Send text verbatim without <KEY> sequence parsing.")
 @click.option(
     "--no-rate-limit",
     is_flag=True,
-    help="Bypass controller rate limiting for this send operation",
+    help="🚀 Unrestricted Velocity: Bypass cockpit rate limiting for this pulse.",
 )
 @click.pass_context
 def send_keys(
@@ -547,7 +454,12 @@ def send_keys(
     raw: bool,
     no_rate_limit: bool,
 ) -> None:
-    """Send keystrokes or literal text to a pane."""
+    """
+    ⚡ Pulse Signal: Send keystrokes or literal text to a ritual pane
+
+    Transmits cognitive signals directly to a specific pane. Supports 
+    high-fidelity keystroke sequences and raw text ingestion.
+    """
 
     controller = _get_controller(ctx)
     payload = " ".join(text)
@@ -561,11 +473,16 @@ def send_keys(
 
 
 @tmux.command("sessions")
-@click.option("--attach/--no-attach", default=True, help="Attach after listing")
-@click.option("--session", "session_name", help="Session to attach (defaults to dopemux or first)")
+@click.option("--attach/--no-attach", default=True, help="🔗 Auto-Uplink: Immediately engage the session after cataloging.")
+@click.option("--session", "session_name", help="🆔 Ritual Session: Specific session identifier to target.")
 @click.pass_context
 def list_sessions(ctx: click.Context, attach: bool, session_name: Optional[str]) -> None:
-    """List tmux sessions and optionally attach/switch."""
+    """
+    📋 Catalog Sessions: List and engage available cockpit sessions
+
+    Displays the index of active tmux sessions and facilitates high-fidelity 
+    uplink or switching between ritual environments.
+    """
 
     cfg_manager = _resolve_config_manager(ctx)
     tmux_cfg = cfg_manager.get_tmux_config()
@@ -581,8 +498,8 @@ def list_sessions(ctx: click.Context, attach: bool, session_name: Optional[str])
         return
 
     table = Table(title="tmux Sessions", show_lines=False, expand=False)
-    table.add_column("Session", style="cyan")
-    table.add_column("Default", style="yellow")
+    table.add_column("Session", style="info")
+    table.add_column("Default", style="warning")
 
     default_session = tmux_cfg.default_session or "dopemux"
     for name in sessions:
@@ -608,10 +525,15 @@ def list_sessions(ctx: click.Context, attach: bool, session_name: Optional[str])
 
 @tmux.command("theme")
 @click.argument("preset", required=False, type=click.Choice(sorted(THEME_PRESETS.keys())))
-@click.option("--apply", is_flag=True, help="Apply the theme to the active tmux session")
+@click.option("--apply", is_flag=True, help="✨ Commit Aesthetic: Apply the selected theme to the active session.")
 @click.pass_context
 def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> None:
-    """Preview available tmux themes and optionally apply them."""
+    """
+    🎨 Ritual Aesthetic: Preview and apply cockpit visual themes
+
+    Adjusts the HUD's visual calibration. Displays available theme presets 
+    and synchronizes the cockpit's color palette with your chosen aesthetic.
+    """
 
     controller = _get_controller(ctx)
     cfg_manager = _resolve_config_manager(ctx)
@@ -619,8 +541,8 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
 
     if not preset:
         current = (tmux_cfg.theme or "muted").lower()
-        console.print("\n[bold cyan]🎨 Dopemux tmux theme presets[/bold cyan]")
-        table = Table(show_header=True, header_style="bold magenta")
+        console.print("\n[mint]🎨 Dopemux tmux theme presets[/mint]")
+        table = Table(show_header=True, header_style="magenta")
         table.add_column("Preset")
         table.add_column("Status")
         table.add_column("Palette Highlights")
@@ -644,11 +566,11 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
         return
 
     theme = THEME_PRESETS[preset]
-    console.print(f"[cyan]Previewing theme:[/cyan] [bold]{preset}[/bold]")
+    console.print(f"[info]Previewing theme:[/info] [bold]{preset}[/bold]")
     console.print(f"Status palette: {theme['status_palette']}")
 
     if not apply:
-        console.print("\n[yellow]Tip:[/yellow] Run again with --apply from inside tmux to apply live.")
+        console.print("\n[warning]Tip:[/warning] Run again with --apply from inside tmux to apply live.")
         return
 
     session_env = os.environ.get("DOPEMUX_TMUX_SESSION")
@@ -665,14 +587,14 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
             session_name = None
 
     if not session_name:
-        console.print("[red]❌ No active tmux session detected. Use --apply from inside tmux.[/red]")
+        console.print("[error]❌ No active tmux session detected. Use --apply from inside tmux.[/error]")
         return
 
     try:
         _apply_theme_to_session(controller, session_name, theme)
-        console.print(f"[green]✅ Applied '{preset}' theme to session {session_name}.[/green]")
+        console.print(f"[success]✅ Applied '{preset}' theme to session {session_name}.[/success]")
     except Exception as exc:  # pragma: no cover - tmux errors are environment-specific
-        console.print(f"[red]❌ Unable to apply theme: {exc}[/red]")
+        console.print(f"[error]❌ Unable to apply theme: {exc}[/error]")
     target = session_name or (default_session if default_session in sessions else sessions[0])
     if target not in sessions:
         click.echo(f"❌ Session '{target}' not found; skipping attach.")
@@ -811,8 +733,8 @@ def _setup_orchestrator_layout(
         tmux_utils.set_session_option(session, "status-left-length", "80")
         tmux_utils.set_session_option(session, "status-right-length", "140")
         _apply_status_theme(session, theme)
-        default_border_fg = status_palette.get("foreground", "#cdd6f4")
-        default_border_bg = status_palette.get("background", "#11111b")
+        default_border_fg = status_palette.get("foreground", TMUX_FOREGROUND)
+        default_border_bg = status_palette.get("background", TMUX_BACKGROUND)
         tmux_utils.set_session_option(
             session,
             "pane-border-style",
@@ -821,22 +743,22 @@ def _setup_orchestrator_layout(
         tmux_utils.set_session_option(
             session,
             "window-style",
-            f"bg={status_palette.get('background', '#11111b')}",
+            f"bg={status_palette.get('background', TMUX_BACKGROUND)}",
         )
         tmux_utils.set_session_option(
             session,
             "window-active-style",
-            f"bg={status_palette.get('background', '#11111b')}",
+            f"bg={status_palette.get('background', TMUX_BACKGROUND)}",
         )
         tmux_utils.set_session_option(
             session,
             "@dopemux_title_fg",
-            status_palette.get("foreground", "#cdd6f4"),
+            status_palette.get("foreground", TMUX_FOREGROUND),
         )
         tmux_utils.set_session_option(
             session,
             "@dopemux_title_bg",
-            status_palette.get("background", "#1e1e2e"),
+            status_palette.get("background", TMUX_SURFACE),
         )
     except Exception:
         pass
@@ -909,11 +831,11 @@ def _setup_orchestrator_layout(
 
     # Always target window index 0 to avoid pane-id confusion
     window_name = "0"
-    click.echo(f"[dim]Debug: base_pane.window={base_pane.window}, pane_id={base_pane.pane_id}[/dim]")
+    click.echo(f"[text.dim]Debug: base_pane.window={base_pane.window}, pane_id={base_pane.pane_id}[/text.dim]")
     try:
         tmux_utils.rename_window(session, window_name, "dopemux")
     except Exception as e:
-        click.echo(f"[dim]Note: Could not rename window: {e}[/dim]")
+        click.echo(f"[text.dim]Note: Could not rename window: {e}[/text.dim]")
 
     # Build bottom row: agent:primary | agent:secondary (if enabled)
     secondary_agent_id: Optional[str] = None
@@ -1165,8 +1087,8 @@ def _setup_dope_layout(
         tmux_utils.set_session_option(session, "status-left-length", "80")
         tmux_utils.set_session_option(session, "status-right-length", "160")
         _apply_status_theme(session, theme)
-        default_border_fg = status_palette.get("foreground", "#cdd6f4")
-        default_border_bg = status_palette.get("background", "#11111b")
+        default_border_fg = status_palette.get("foreground", TMUX_FOREGROUND)
+        default_border_bg = status_palette.get("background", TMUX_BACKGROUND)
         tmux_utils.set_session_option(
             session,
             "pane-border-style",
@@ -1175,22 +1097,22 @@ def _setup_dope_layout(
         tmux_utils.set_session_option(
             session,
             "window-style",
-            f"bg={status_palette.get('background', '#11111b')}",
+            f"bg={status_palette.get('background', TMUX_BACKGROUND)}",
         )
         tmux_utils.set_session_option(
             session,
             "window-active-style",
-            f"bg={status_palette.get('background', '#11111b')}",
+            f"bg={status_palette.get('background', TMUX_BACKGROUND)}",
         )
         tmux_utils.set_session_option(
             session,
             "@dopemux_title_fg",
-            status_palette.get("foreground", "#cdd6f4"),
+            status_palette.get("foreground", TMUX_FOREGROUND),
         )
         tmux_utils.set_session_option(
             session,
             "@dopemux_title_bg",
-            status_palette.get("background", "#1e1e2e"),
+            status_palette.get("background", TMUX_SURFACE),
         )
     except Exception:
         pass
@@ -1317,11 +1239,11 @@ def _setup_dope_layout(
         pass
 
     window_name = "0"
-    click.echo(f"[dim]Debug: base_pane.window={base_pane.window}, pane_id={base_pane.pane_id}[/dim]")
+    click.echo(f"[text.dim]Debug: base_pane.window={base_pane.window}, pane_id={base_pane.pane_id}[/text.dim]")
     try:
         tmux_utils.rename_window(session, window_name, "dopemux")
     except Exception as exc:
-        click.echo(f"[dim]Note: Could not rename window: {exc}[/dim]")
+        click.echo(f"[text.dim]Note: Could not rename window: {exc}[/text.dim]")
 
     secondary_agent_id: Optional[str] = None
     if dual_agent:
@@ -1665,7 +1587,7 @@ def close_pane(ctx: click.Context, pane_target: Optional[str], force: bool) -> N
         return
 
     if not force:
-        confirm = Confirm.ask(
+        confirm = dopemux_confirm(
             f"Close pane {pane.pane_id} ({pane.session}:{pane.window})?",
             default=False,
         )
@@ -1690,7 +1612,7 @@ def stop_session(ctx: click.Context, session_name: Optional[str], force: bool) -
     target_session = session_name or tmux_cfg.default_session or "dopemux"
 
     if not force:
-        confirm = Confirm.ask(
+        confirm = dopemux_confirm(
             f"Kill tmux session '{target_session}'?",
             default=False,
         )
@@ -1707,24 +1629,26 @@ def stop_session(ctx: click.Context, session_name: Optional[str], force: bool) -
 
 @tmux.group("agent")
 def agent_group() -> None:
-    """Agent pane utilities."""
+    """
+    🤖 Agent Rituals: Manage high-fidelity agent focal points
+    """
 
 
 @agent_group.command("switch-role")
 @click.argument("role")
-@click.option("--session", help="tmux session name (default: dopemux)")
-@click.option("--pane", help="Explicit pane id (e.g. %27)")
+@click.option("--session", help="🆔 Ritual Session: Tmux session identifier (default: dopemux).")
+@click.option("--pane", help="📍 Signal Anchor: Explicit pane coordinate (e.g. %27).")
 @click.option(
     "--target",
     type=click.Choice(["primary", "secondary"]),
     default="primary",
-    help="Choose which agent pane to retarget (ignored if --pane is provided)",
+    help="🎯 Focal Target: Select the agent focal point to retarget.",
 )
-@click.option("--extra", help="Additional arguments to append to dopemux start", default="")
+@click.option("--extra", help="➕ Ritual Augmentation: Additional arguments for the 'dopemux start' command.", default="")
 @click.option(
     "--recovery/--no-recovery",
     default=False,
-    help="Include worktree recovery menu when relaunching (default: --no-recovery)",
+    help="⏯️  Resume Sequence: Include the worktree recovery ritual during relaunch.",
 )
 @click.pass_context
 def agent_switch_role(
@@ -1736,7 +1660,12 @@ def agent_switch_role(
     extra: str,
     recovery: bool,
 ) -> None:
-    """Switch an agent pane to a different role."""
+    """
+    🎭 Cognitive Re-Alignment: Switch an agent focal point to a new role
+
+    Interrupts the active agent ritual and re-aligns its cognitive 
+    parameters to a different specialized role archetype.
+    """
 
     try:
         spec = resolve_role(role)
@@ -1823,42 +1752,42 @@ def agent_switch_role(
         f"😀 Requested role switch in pane {target_pane}: {spec.label} ({spec.key})"
     )
 @tmux.command("start")
-@click.option("--session", "session_name", help="Name of tmux session", default=None)
+@click.option("--session", "session_name", help="🆔 Ritual Session: Unique identifier for the cockpit session.", default=None)
 @click.option(
     "--layout",
     type=click.Choice(["low", "medium", "high", "orchestrator", "dope"]),
-    help="Pane layout preset",
+    help="📐 Cockpit Architecture: Select a prescribed pane layout preset.",
     default=None,
 )
 @click.option(
     "--dual-agent/--single-agent",
     "dual_agent_flag",
     default=None,
-    help="Enable a secondary agent pane in the bottom row",
+    help="🤖 Dual Agents: Engage a secondary agent focal point in the HUD.",
 )
 @click.option(
     "--secondary-agent-command",
-    help="Command to run in the secondary agent pane (defaults to primary agent command)",
+    help="⚡ Secondary Ritual: Custom command for the secondary agent focal point.",
 )
-@click.option("--happy/--no-happy", "happy", default=True, help="Launch Happy mirror")
-@click.option("--attach/--no-attach", "attach", default=True, help="Attach to session when ready")
-@click.option("--provider", help="Pass through provider to dopemux start")
+@click.option("--happy/--no-happy", "happy", default=True, help="📱 Satellite HUD: Launch the high-fidelity Happy mobile mirror.")
+@click.option("--attach/--no-attach", "attach", default=True, help="🔗 Auto-Uplink: Immediately engage the cockpit after ignition.")
+@click.option("--provider", help="🧠 Cognitive Alchemist: Pass-through LLM provider for the 'start' sequence.")
 @click.option(
     "--alt-routing",
     is_flag=True,
-    help="🚀 Automatic alternative provider routing (OpenRouter, XAI, Minimax) - starts LiteLLM automatically",
+    help="🚀 Adaptive Routing: Engage automatic alternative provider routing (LiteLLM).",
 )
 @click.option(
     "--cwd",
     type=click.Path(file_okay=False, dir_okay=True, path_type=Path),
-    help="Working directory for Claude session",
+    help="🔬 Ritual Coordinate: Absolute root path for the cockpit session.",
 )
 @click.option(
     "--bootstrap/--no-bootstrap",
     default=True,
-    help="Automatically launch orchestrator, agents, and dashboards inside the layout",
+    help="🪄 Auto-Ignition: Automatically launch orchestrators, agents, and dashboards.",
 )
-@click.option("--debug-log", type=click.Path(file_okay=True, dir_okay=False, path_type=Path), help="Write debug logs to file")
+@click.option("--debug-log", type=click.Path(file_okay=True, dir_okay=False, path_type=Path), help="📜 Signal Log: Write deep telemetry to a specified log file.")
 @click.pass_context
 def start_tmux(
     ctx: click.Context,
@@ -1874,7 +1803,12 @@ def start_tmux(
     bootstrap: bool,
     debug_log: Optional[Path],
 ) -> None:
-    """Create a Dopemux-focused tmux session and launch Claude Code."""
+    """
+    🚀 Ignite Cockpit: Create a high-fidelity tmux session and launch DØPEMÜX
+
+    Materializes the unified ritual environment. Synchronizes layouts, 
+    agent focal points, and satellite HUDs into a stable focal chamber.
+    """
 
     cfg_manager = _resolve_config_manager(ctx)
     # Force CLI backend for new session creation from outside tmux
@@ -1916,7 +1850,7 @@ def start_tmux(
     
     # Handle --alt-routing flag (start LiteLLM automatically)
     if alt_routing:
-        console.print("[cyan]🚀 Alternative routing enabled - starting LiteLLM automatically...[/cyan]")
+        console.print("[info]🚀 Alternative routing enabled - starting LiteLLM automatically...[/info]")
 
         from pathlib import Path as EnvPath
         from ..utils.dotenv_loader import load_dotenv
@@ -1926,9 +1860,9 @@ def start_tmux(
         routing_env = EnvPath(start_dir) / ".env.routing"
         if routing_env.exists():
             load_dotenv(routing_env)
-            console.print("[dim]✓ Loaded .env.routing[/dim]")
+            console.print("[text.dim]✓ Loaded .env.routing[/text.dim]")
         else:
-            console.print("[yellow]⚠️  .env.routing not found - using defaults[/yellow]")
+            console.print("[warning]⚠️  .env.routing not found - using defaults[/warning]")
 
         instance_dir = EnvPath(start_dir) / ".dopemux" / "litellm" / "A"
         instance_dir.mkdir(parents=True, exist_ok=True)
@@ -1952,9 +1886,9 @@ def start_tmux(
                 pass
 
         if not db_url:
-            console.print("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
-            console.print("[yellow]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/yellow]")
-            console.print("\n[cyan]Example:[/cyan]")
+            console.print("[error]❌ LiteLLM metrics database is required for alternative routing.[/error]")
+            console.print("[warning]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/warning]")
+            console.print("\n[info]Example:[/info]")
             console.print("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")
             raise click.ClickException("LiteLLM metrics database not configured.")
 
@@ -1990,10 +1924,10 @@ def start_tmux(
                 # Port 4001 is also taken, try 4002
                 litellm_port = 4002
                 if not is_port_available(litellm_port):
-                    console.print("[red]❌ Ports 4000-4002 are all in use.[/red]")
-                    console.print("[yellow]   Free up a port or stop an existing LiteLLM instance.[/yellow]")
+                    console.print("[error]❌ Ports 4000-4002 are all in use.[/error]")
+                    console.print("[warning]   Free up a port or stop an existing LiteLLM instance.[/warning]")
                     raise click.ClickException("No available ports for LiteLLM proxy.")
-            console.print(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
+            console.print(f"[warning]⚠️  Port 4000 is in use, using port {litellm_port} instead[/warning]")
 
         litellm_master_key = ""
         regenerated_master_key = False
@@ -2013,7 +1947,7 @@ def start_tmux(
                 cause = getattr(exc, "__cause__", None)
                 if isinstance(cause, OSError) and getattr(cause, "errno", None) == 1:
                     console.print(
-                        "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.[/yellow]"
+                        "[warning]⚠️ LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.[/warning]"
                     )
                     break
 
@@ -2021,7 +1955,7 @@ def start_tmux(
             base_candidate = env_master_key_raw or stored_master_key
             litellm_master_key, regenerated_master_key = ensure_master_key(base_candidate)
             if regenerated_master_key:
-                console.print("[yellow]⚠️  Generated LiteLLM master key with sk- prefix for proxy auth[/yellow]")
+                console.print("[warning]⚠️  Generated LiteLLM master key with sk- prefix for proxy auth[/warning]")
         else:
             regenerated_master_key = False
 
@@ -2054,9 +1988,9 @@ def start_tmux(
         try:
             db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
         except LiteLLMProxyError as exc:
-            console.print(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
-            console.print("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
-            console.print("\n[cyan]Troubleshooting:[/cyan]")
+            console.print(f"[error]❌ LiteLLM database setup failed: {exc}[/error]")
+            console.print("[warning]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/warning]")
+            console.print("\n[info]Troubleshooting:[/info]")
             console.print("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
             console.print("  2. Verify database credentials in .env.routing")
             console.print("  3. Ensure the 'litellm' database exists")
@@ -2064,11 +1998,11 @@ def start_tmux(
             raise click.ClickException(str(exc))
 
         if not db_enabled:
-            console.print(f"[red]❌ {db_status_msg}[/red]")
-            console.print("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
+            console.print(f"[error]❌ {db_status_msg}[/error]")
+            console.print("[warning]   LiteLLM metrics must be available. Resolve the database issue and retry.")
             raise click.ClickException("LiteLLM metrics database not ready.")
 
-        console.print(f"[dim]{db_status_msg}[/dim]")
+        console.print(f"[text.dim]{db_status_msg}[/text.dim]")
         general_settings["database_url"] = db_url
 
         config_path = instance_dir / "litellm.config.yaml"
@@ -2081,17 +2015,17 @@ def start_tmux(
             pass
 
         if litellm_running:
-            console.print("[green]✓ LiteLLM already running[/green]")
+            console.print("[success]✓ LiteLLM already running[/success]")
         else:
-            console.print("[blue]🔄 Starting LiteLLM proxy...[/blue]")
+            console.print("[info]🔄 Starting LiteLLM proxy...[/info]")
             kill_result = subprocess.run(
                 ["pkill", "-f", "litellm"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
             if kill_result.returncode not in (0, 1):
-                console.print("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
-                console.print(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
+                console.print("[error]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
+                console.print(f"[warning]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
                 raise click.ClickException("LiteLLM proxy still running.")
 
             time.sleep(1)
@@ -2104,7 +2038,7 @@ def start_tmux(
                     start_new_session=True,
                 )
 
-            console.print("[dim]⏳ Waiting for LiteLLM...[/dim]")
+            console.print("[text.dim]⏳ Waiting for LiteLLM...[/text.dim]")
             ready = False
             for _ in range(15):
                 try:
@@ -2119,22 +2053,22 @@ def start_tmux(
                     cause = getattr(exc, "__cause__", None)
                     if isinstance(cause, OSError) and getattr(cause, "errno", None) == 1:
                         console.print(
-                            "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); assuming proxy is running.[/yellow]"
+                            "[warning]⚠️ LiteLLM health probe blocked by OS (operation not permitted); assuming proxy is running.[/warning]"
                         )
                         ready = True
                         break
                 time.sleep(1)
 
             if not ready:
-                console.print("[red]❌ LiteLLM proxy did not become healthy.[/red]")
-                console.print(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
-                console.print("\n[cyan]Common issues:[/cyan]")
+                console.print("[error]❌ LiteLLM proxy did not become healthy.[/error]")
+                console.print(f"[warning]   Check logs: tail -f {litellm_log}[/warning]")
+                console.print("\n[info]Common issues:[/info]")
                 console.print("  • Database connection failed (check PostgreSQL is running)")
                 console.print(f"  • Port {litellm_port} became busy during startup")
                 console.print("  • Configuration error in litellm.config.yaml")
                 raise click.ClickException("LiteLLM proxy failed to start.")
 
-            console.print(f"[green]✅ LiteLLM ready on port {litellm_port}[/green]")
+            console.print(f"[success]✅ LiteLLM ready on port {litellm_port}[/success]")
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
@@ -2166,8 +2100,8 @@ def start_tmux(
                 db_url_path.write_text(db_url, encoding="utf-8")
             except Exception:
                 pass
-        console.print("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
-        console.print("[dim]✓ Environment configured for LiteLLM routing[/dim]")
+        console.print("[text.dim]ℹ️ LiteLLM metrics database synchronised[/text.dim]")
+        console.print("[text.dim]✓ Environment configured for LiteLLM routing[/text.dim]")
         console.print("")
 
     # Determine layout and window name before creating session
@@ -2196,16 +2130,16 @@ def start_tmux(
     # Enable pane title display
     try:
         tmux_utils.enable_pane_titles(session)
-        click.echo("[dim]✓ Pane titles enabled[/dim]")
+        click.echo("[text.dim]✓ Pane titles enabled[/text.dim]")
     except tmux_utils.TmuxError as e:
-        click.echo(f"[yellow]⚠ Could not enable pane titles: {e}[/yellow]")
+        click.echo(f"[warning]⚠ Could not enable pane titles: {e}[/warning]")
 
     # Enforce alternate-provider routing via LiteLLM/OpenRouter for all panes
     try:
         tmux_utils.set_environment(session, "DOPEMUX_DEFAULT_LITELLM", "1")
-        click.echo("[dim]✓ Environment configured[/dim]")
+        click.echo("[text.dim]✓ Environment configured[/text.dim]")
     except tmux_utils.TmuxError as e:
-        click.echo(f"[yellow]⚠ Could not set environment: {e}[/yellow]")
+        click.echo(f"[warning]⚠ Could not set environment: {e}[/warning]")
 
     split_vertical = layout_choice != "low"
 
@@ -2220,7 +2154,7 @@ def start_tmux(
                 created_new_session=not session_already_exists,
             )
         except Exception as e:
-            click.echo(f"[red]❌ Error preparing orchestrator base: {e}[/red]")
+            click.echo(f"[error]❌ Error preparing orchestrator base: {e}[/error]")
             raise
         
         try:
@@ -2233,7 +2167,7 @@ def start_tmux(
                 dual_agent,
             )
         except Exception as e:
-            click.echo(f"[red]❌ Error setting up orchestrator layout: {e}[/red]")
+            click.echo(f"[error]❌ Error setting up orchestrator layout: {e}[/error]")
             raise
     elif layout_choice == "dope":
         try:
@@ -2245,7 +2179,7 @@ def start_tmux(
                 created_new_session=not session_already_exists,
             )
         except Exception as e:
-            click.echo(f"[red]❌ Error preparing orchestrator base: {e}[/red]")
+            click.echo(f"[error]❌ Error preparing orchestrator base: {e}[/error]")
             raise
 
         try:
@@ -2259,7 +2193,7 @@ def start_tmux(
                 bootstrap,
             )
         except Exception as e:
-            click.echo(f"[red]❌ Error setting up Dope layout: {e}[/red]")
+            click.echo(f"[error]❌ Error setting up Dope layout: {e}[/error]")
             raise
     else:
         all_panes = [pane for pane in controller.backend.list_panes() if pane.session == session]

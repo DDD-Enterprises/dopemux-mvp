@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for Next.js frontend
 # Stage 1: Dependencies
-FROM node:18-alpine as deps
+FROM dhi.io/node:18-alpine as deps
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN npm ci --only=production && \
     npm install
 
 # Stage 2: Builder
-FROM node:18-alpine as builder
+FROM dhi.io/node:18-alpine as builder
 
 WORKDIR /app
 
@@ -28,7 +28,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Stage 3: Runtime
-FROM node:18-alpine as runtime
+FROM dhi.io/node:18-alpine as runtime
 
 WORKDIR /app
 

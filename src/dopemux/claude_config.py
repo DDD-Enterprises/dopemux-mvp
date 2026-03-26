@@ -41,6 +41,8 @@ MCP_NAME_MAPPING = {
     "gpt-researcher-legacy": "gpt-researcher",  # Old name fallback
     "claude-context": "dopemux-claude-context",
     "desktop-commander": "dopemux-desktop-commander",
+    "morphllm-fast-apply": "dopemux-morphllm-fast-apply",
+    "morph-llm": "dopemux-morphllm-fast-apply",
     "magic-mcp": "magic-mcp",
     "playwright": "playwright",
     "sequential_thinking": "dopemux-mas-sequential-thinking",
@@ -72,7 +74,7 @@ class ClaudeConfig:
 
         self.config_path = Path(config_path)
         self.backup_dir = self.config_path.parent / "backups"
-        self.backup_dir.mkdir(parents=True, exist_ok=True)
+        self.backup_dir.mkdir(exist_ok=True)
 
     def read_config(self) -> Dict[str, Any]:
         """Read the current Claude configuration.

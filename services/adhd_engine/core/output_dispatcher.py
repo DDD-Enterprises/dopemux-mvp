@@ -15,12 +15,21 @@ Channels:
 import asyncio
 import subprocess
 import logging
+import shlex
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional, Protocol
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from services.shared.brand_voice import StatusChip, brand_list, brand_text, brand_log
+
 logger = logging.getLogger(__name__)
+
+
+def _sanitize_text(value: str, max_length: int = 160) -> str:
+    """Strip control characters and bound user-visible shell input."""
+    sanitized = "".join(ch for ch in str(value) if ch.isprintable() and ch not in {"\n", "\r", "\t"})
+    return sanitized[:max_length]
 
 
 @dataclass
@@ -37,6 +46,9 @@ class ADHDFinding:
     def __post_init__(self):
         if not self.timestamp:
             self.timestamp = datetime.utcnow().isoformat()
+        chip = StatusChip.BLOCKER if self.severity in {"high", "critical"} else StatusChip.LIVE
+        self.message = brand_text(self.message, chip=chip)
+        self.recommended_actions = brand_list(self.recommended_actions, chip=StatusChip.EDGE)
 
 
 class OutputChannel(ABC):
@@ -83,7 +95,7 @@ class ConsoleChannel(OutputChannel):
             print(f"{color}[ADHD {icon}] {finding.message}{self.RESET}")
             return True
         except Exception as e:
-            logger.warning(f"Console channel error: {e}")
+            logger.warning(brand_log(f"Console channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -115,7 +127,9 @@ class TmuxStatusChannel(OutputChannel):
         try:
             icon = self.ICONS.get(finding.finding_type, "📢")
             # Truncate message for status bar
-            short_msg = finding.message[:30] + "..." if len(finding.message) > 30 else finding.message
+            short_msg = _sanitize_text(finding.message, max_length=30)
+            if len(finding.message) > 30:
+                short_msg += "..."
             status_text = f"#{icon} {short_msg}"
             
             result = subprocess.run(
@@ -130,7 +144,7 @@ class TmuxStatusChannel(OutputChannel):
         except subprocess.TimeoutExpired:
             return False
         except Exception as e:
-            logger.warning(f"Tmux status channel error: {e}")
+            logger.warning(brand_log(f"Tmux status channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -150,9 +164,12 @@ class TmuxPopupChannel(OutputChannel):
             # Build popup content
             actions_text = ""
             if finding.recommended_actions:
-                actions_text = f"\n\nRecommended:\n• " + "\n• ".join(finding.recommended_actions[:3])
+                actions_text = f"\n\nRecommended:\n• " + "\n• ".join(
+                    _sanitize_text(action, max_length=80) for action in finding.recommended_actions[:3]
+                )
             
-            popup_content = f"{finding.message}{actions_text}"
+            popup_content = _sanitize_text(f"{finding.message}{actions_text}", max_length=400)
+            popup_shell_arg = shlex.quote(popup_content)
             
             # Use tmux display-popup
             result = subprocess.run(
@@ -162,7 +179,7 @@ class TmuxPopupChannel(OutputChannel):
                     "-h", "12",  # Height
                     "-T", f"⚠️ ADHD Alert: {finding.finding_type}",
                     "-E",  # Close on any key
-                    f"echo '{popup_content}'; read -n 1 -s"
+                    f"printf %s {popup_shell_arg}; read -n 1 -s"
                 ],
                 capture_output=True,
                 timeout=30
@@ -174,7 +191,7 @@ class TmuxPopupChannel(OutputChannel):
         except subprocess.TimeoutExpired:
             return True  # Popup is intentionally blocking
         except Exception as e:
-            logger.warning(f"Tmux popup channel error: {e}")
+            logger.warning(brand_log(f"Tmux popup channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -221,7 +238,7 @@ class VoiceChannel(OutputChannel):
         
         try:
             # Clean message for speech (remove emojis)
-            message = finding.message
+            message = _sanitize_text(finding.message)
             for emoji in ["⚠️", "🎉", "🔥", "😰", "🆘", "✅", "📍", "⚡", "🐇", "🔋"]:
                 message = message.replace(emoji, "")
             message = message.strip()
@@ -240,7 +257,7 @@ class VoiceChannel(OutputChannel):
             asyncio.create_task(self._wait_for_speech(proc))
             return True
         except Exception as e:
-            logger.warning(f"Voice channel error: {e}")
+            logger.warning(brand_log(f"Voice channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
     
     async def _wait_for_speech(self, proc):
@@ -285,7 +302,7 @@ class DashboardWebSocketChannel(OutputChannel):
             })
             return True
         except Exception as e:
-            logger.warning(f"Dashboard channel error: {e}")
+            logger.warning(brand_log(f"Dashboard channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -335,7 +352,7 @@ class NtfyPushChannel(OutputChannel):
             logger.debug("httpx not available for push notifications")
             return False
         except Exception as e:
-            logger.warning(f"Ntfy push channel error: {e}")
+            logger.warning(brand_log(f"Ntfy push channel error: {e}", chip=StatusChip.AFTERCARE))
             return False
 
 
@@ -426,7 +443,7 @@ class ADHDOutputDispatcher:
                         self.stats["by_channel"][channel_name] = \
                             self.stats["by_channel"].get(channel_name, 0) + 1
                 except Exception as e:
-                    logger.warning(f"Channel {channel_name} failed: {e}")
+                    logger.warning(brand_log(f"Channel {channel_name} failed: {e}", chip=StatusChip.AFTERCARE))
                     self.stats["failures"] += 1
         
         # Update global stats
@@ -442,7 +459,7 @@ class ADHDOutputDispatcher:
         channel = self.channels.get(channel_name)
         if hasattr(channel, 'enabled'):
             channel.enabled = enabled
-            logger.info(f"Channel {channel_name} {'enabled' if enabled else 'disabled'}")
+            logger.info(brand_log(f"Channel {channel_name} {'enabled' if enabled else 'disabled'}", chip=StatusChip.LIVE))
     
     def add_routing(self, finding_type: str, channels: List[str]):
         """Add or update routing for a finding type."""
@@ -474,6 +491,8 @@ def create_output_dispatcher(
         enable_push=enable_push,
         ws_manager=ws_manager
     )
-    logger.info("✅ ADHD Output Dispatcher initialized with channels: " + 
-                ", ".join(dispatcher.channels.keys()))
+    logger.info(
+        brand_log("✅ ADHD Output Dispatcher initialized with channels: " + 
+                  ", ".join(dispatcher.channels.keys()), chip=StatusChip.LIVE)
+    )
     return dispatcher

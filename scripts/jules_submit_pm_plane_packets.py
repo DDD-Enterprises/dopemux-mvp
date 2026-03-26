@@ -25,8 +25,10 @@ from typing import Iterable
 
 
 DEFAULT_REPO = "DDD-Enterprises/dopemux-mvp"
+DEFAULT_JULES_BIN = "/opt/homebrew/bin/jules"
 DEFAULT_JULES_BIN = "jules"
-SESSION_LIMIT = 5
+
+
 COMMON_INVARIANTS = (
     "Do not redesign the PM-plane authority model. Implement the documented target only.",
     "Touch only owned paths and directly adjacent tests/docs for those paths. If additional subsystem files are required, stop and report.",
@@ -830,8 +832,7 @@ def fetch_open_pr_count(repo: str, token: str | None) -> int | None:
             return len(__import__("json").load(response))
     except (urllib.error.URLError, TimeoutError):
         return None
-DEFAULT_JULES_BIN = "jules"
-SESSION_LIMIT = 5
+
 
 def list_remote_sessions(jules_bin: str) -> str:
     result = subprocess.run(
@@ -840,7 +841,8 @@ def list_remote_sessions(jules_bin: str) -> str:
         text=True,
         check=False,
     )
-    output = (result.stdout or "") + (result.stderr or "")
+    return (result.stdout or "") + (result.stderr or "")
+output = (result.stdout or "") + (result.stderr or "")
     if result.returncode != 0:
         raise SystemExit(
             "Failed to list remote Jules sessions "
@@ -849,7 +851,6 @@ def list_remote_sessions(jules_bin: str) -> str:
             f"Output:\n{output.strip()}"
         )
     return output
-
 
 def packet_ids_in_remote_sessions(jules_bin: str) -> set[str]:
     output = list_remote_sessions(jules_bin)
@@ -987,10 +988,6 @@ def main(argv: list[str]) -> int:
             and open_pr_count > args.require_open_pr_count_at_most
         ):
             print(
-                f"Refusing to submit: too many open PRs ({open_pr_count} > {args.require_open_pr_count_at_most}).",
-                file=sys.stderr,
-            )
-            return 2
 # Track packets that are known to exist remotely or have been submitted
         submitted_ids: set[str] = set()
         for packet in packets:
@@ -1027,10 +1024,14 @@ def main(argv: list[str]) -> int:
                 submitted_ids.add(packet.id)
             else:
                 continue
-# Preserve any previous non-zero exit code if present; otherwise use the
-                # jules submission return code.
-                if exit_code == 0:
-                    exit_code = result.returncode
+            print(f"Submitting {packet.id} to Jules...")
+            result = submit_packet(args.jules_bin, args.repo, packet)
+            combined = ((result.stdout or "") + (result.stderr or "")).strip()
+            print(f"Submission result for {packet.id}:")
+            print(combined or "<no output>")
+            if result.returncode != 0:
+                exit_code = result.returncode
+        return exit_code
 
     return 0
 

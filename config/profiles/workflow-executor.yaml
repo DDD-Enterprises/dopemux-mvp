@@ -1,0 +1,28 @@
+# Dopemux Workflow Executor Profile
+# Isolated execution lane for one workflow task at a time
+
+name: workflow-executor
+description: Executor lane for isolated workflow task delivery, artifact creation, and verification.
+
+mcp_servers:
+  required:
+    - conport
+    - serena
+
+  enabled:
+    - pal
+    - zen
+    - desktop-commander
+
+  disabled: []
+
+adhd_config:
+  session_duration_minutes: 40
+  energy_preference: medium
+  attention_mode: focused
+  energy_tracking_enabled: true
+  break_reminders_enabled: true
+
+markers:
+  required_files: []
+  optional_files: []

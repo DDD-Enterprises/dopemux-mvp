@@ -13,6 +13,8 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
+from services.shared.brand_voice import StatusChip, brand_text, brand_title
+
 # MCP Client imports (simplified for implementation)
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -91,7 +93,7 @@ class DopemuxHelloFlow:
 
         if not upcoming_tasks:
             logger.info("No upcoming work found")
-            return {"status": "no_work", "message": "No upcoming tasks available"}
+            return {"status": "no_work", "message": brand_text("No upcoming tasks available.", chip=StatusChip.EDGE, include_chip=False)}
 
         # Select first task (ADHD: choose one clear task)
         selected_task = upcoming_tasks[0]
@@ -99,7 +101,7 @@ class DopemuxHelloFlow:
 
         # Log decision about task selection
         await self._log_decision(
-            title=f"Selected task: {selected_task['title']}",
+            title=brand_title(f"Selected task: {selected_task['title']}", chip=StatusChip.LOGGED),
             rationale=f"Top priority task from upcoming queue (priority: {selected_task.get('priority', 'medium')})",
             tags=["task-selection", "workflow-start"],
             links=[{"type": "work_item", "id": self.current_task_id}]
@@ -158,7 +160,7 @@ class DopemuxHelloFlow:
 
         # Log completion decision
         await self._log_decision(
-            title=f"Completed task planning and execution: {task['title']}",
+            title=brand_title(f"Completed task planning and execution: {task['title']}", chip=StatusChip.LOGGED),
             rationale=f"Successfully executed {len(completed_subtasks)} subtasks using Task Orchestrator",
             implementation_details=f"Subtasks: {', '.join([s['title'] for s in completed_subtasks])}",
             tags=["task-execution", "implementation"],
@@ -196,7 +198,7 @@ class DopemuxHelloFlow:
         else:
 
             # Generic validation
-            validation_results = [{"status": "passed", "type": "generic", "message": "Basic validation completed"}]
+            validation_results = [{"status": "passed", "type": "generic", "message": brand_text("Basic validation completed.", chip=StatusChip.LOGGED, include_chip=False)}]
 
         # Attach validation artifacts
         for result in validation_results:
@@ -205,7 +207,7 @@ class DopemuxHelloFlow:
                     "conport_artifacts_attach",
                     workspace_id=self.workspace_id,
                     kind="screenshot",
-                    title=f"Validation: {task['title']}",
+                    title=brand_title(f"Validation: {task['title']}", chip=StatusChip.LOGGED),
                     path=result["screenshot_path"],
                     description=result.get("message", ""),
                     work_item_id=self.current_task_id
@@ -217,7 +219,7 @@ class DopemuxHelloFlow:
 
         # Log validation decision
         await self._log_decision(
-            title=f"Validation {'passed' if all_passed else 'failed'}: {task['title']}",
+            title=brand_title(f"Validation {'passed' if all_passed else 'failed'}: {task['title']}", chip=StatusChip.LOGGED),
             rationale=f"Validation completed with status: {validation_status}. Results: {len(validation_results)} checks performed.",
             implementation_details=f"Validation types: {', '.join(set(r.get('type', 'unknown') for r in validation_results))}",
             tags=["validation", "playwright", validation_status],
@@ -284,10 +286,10 @@ class DopemuxHelloFlow:
         # Determine final task status
         if validation_result["status"] == "passed":
             final_status = "done"
-            outcome_message = "Task completed successfully with validation"
+            outcome_message = brand_text("Task completed successfully with validation.", chip=StatusChip.LOGGED, include_chip=False)
         else:
             final_status = "blocked"
-            outcome_message = "Task blocked due to validation failures"
+            outcome_message = brand_text("Task blocked due to validation failures.", chip=StatusChip.BLOCKER, include_chip=False)
 
         # Update task status in ConPort
         await self.conport_session.call_tool(
@@ -299,7 +301,7 @@ class DopemuxHelloFlow:
 
         # Log final completion decision
         await self._log_decision(
-            title=f"Workflow closed: {task['title']} - {final_status.upper()}",
+            title=brand_title(f"Workflow closed: {task['title']} - {final_status.upper()}", chip=StatusChip.LOGGED),
             rationale=f"Task workflow completed. Validation: {validation_result['status']}. {outcome_message}",
             implementation_details=f"Completed {validation_result.get('checks_performed', 0)} validation checks. Final status: {final_status}",
             tags=["workflow-complete", "task-closed", final_status],

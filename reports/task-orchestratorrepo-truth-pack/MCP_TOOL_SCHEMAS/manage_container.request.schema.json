@@ -1,0 +1,148 @@
+{
+    "_meta": {
+        "tool": "manage_container",
+        "source": "code",
+        "source_file": "clockwork/src/main/kotlin/io/github/jpicklyk/mcptask/application/tools/ManageContainerTool.kt",
+        "lines": "111-207",
+        "extraction_method": "direct read of parameterSchema ToolSchema definition and validateParams()",
+        "analyzed_ref": "99023a9 HEAD-at-time-of-analysis"
+    },
+    "type": "object",
+    "required": [
+        "operation",
+        "containerType"
+    ],
+    "properties": {
+        "operation": {
+            "type": "string",
+            "description": "Operation to perform",
+            "enum": [
+                "create",
+                "update",
+                "delete"
+            ]
+        },
+        "containerType": {
+            "type": "string",
+            "description": "Type of container",
+            "enum": [
+                "project",
+                "feature",
+                "task"
+            ]
+        },
+        "containers": {
+            "type": "array",
+            "description": "Array of container objects for create/update (max 100). Required for create and update.",
+            "maxItems": 100,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Required for update"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Required for create (project/feature); alias for title"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Required for create (task); alias for name"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "summary": {
+                        "type": "string",
+                        "description": "Max 500 chars"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "See status enums in DATA_MODEL.md"
+                    },
+                    "priority": {
+                        "type": "string",
+                        "enum": [
+                            "high",
+                            "medium",
+                            "low"
+                        ],
+                        "description": "Feature/task only"
+                    },
+                    "complexity": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10,
+                        "description": "Task only"
+                    },
+                    "projectId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "featureId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Task only"
+                    },
+                    "templateIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "requiresVerification": {
+                        "type": "boolean"
+                    },
+                    "tags": {
+                        "type": "string",
+                        "description": "Comma-separated tags"
+                    }
+                }
+            }
+        },
+        "ids": {
+            "type": "array",
+            "description": "Array of container UUIDs for delete (max 100). Required for delete.",
+            "maxItems": 100,
+            "items": {
+                "type": "string",
+                "format": "uuid"
+            }
+        },
+        "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Shared default project ID for all items (create only)"
+        },
+        "featureId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Shared default feature ID for all items (create only, task containers)"
+        },
+        "templateIds": {
+            "type": "array",
+            "description": "Shared default template IDs for all items (create only)",
+            "items": {
+                "type": "string",
+                "format": "uuid"
+            }
+        },
+        "tags": {
+            "type": "string",
+            "description": "Shared default comma-separated tags for all items (create only)"
+        },
+        "deleteSections": {
+            "type": "boolean",
+            "description": "Delete associated sections when deleting (delete only)",
+            "default": true
+        },
+        "force": {
+            "type": "boolean",
+            "description": "Force delete bypassing dependency checks (delete only)",
+            "default": false
+        }
+    }
+}
