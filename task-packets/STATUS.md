@@ -5,7 +5,7 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-02-12'
-last_review: '2026-03-22'
+last_review: '2026-03-26'
 next_review: '2026-06-20'
 prelude: Status (explanation) for dopemux documentation and developer workflows.
 ---
@@ -33,12 +33,14 @@ Capture surface divergence under evaluation
 Promotion determinism under audit
 ────────────────────
 PM / Task Management Plane
-Status: 🟢 Stable
+Status: 🟡 In Progress
 Active Packets:
-None
+None (stacked continuation PRs under review; packet artifacts not yet registered in `task-packets/INDEX.md`)
 Notes:
-Candidate for next PRIMER-driven investigation
-No known determinism leaks
+Canonical PM read/write entrypoints now exist under `src/dopemux/pm/`
+Metadata writes route to Leantime; progress writes route to ConPort
+Workflow reads currently return fail-closed Task Orchestrator envelopes while authoritative project bindings are still incomplete
+Project-scoped workflow transition still fails closed as `unavailable`
 ────────────────────
 Workflow / Execution Control Plane
 Status: 🟡 In Progress

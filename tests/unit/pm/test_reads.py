@@ -7,6 +7,8 @@ from dopemux.pm.reads import (
     PMDecisionContextResult,
     PMPriorityQueueResult,
     PMProjectContextResult,
+    PMReadProvenance,
+    PMReadSupportingSource,
     PMWorkflowStateResult,
     pm_get_blockers,
     pm_get_decision_context,
