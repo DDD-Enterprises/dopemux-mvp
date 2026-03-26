@@ -76,6 +76,10 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Implementation Tracker](03-reference/systems/dashboard/dashboard-implementation-tracker.md)
 - [Enhancement Plans](03-reference/systems/dashboard/dashboard-enhancements.md)
 
+### Execution Plane System
+**Location:** `docs/planes/execution/`
+- **[Agent Leasing Contract](planes/execution/agent-leasing-contract.md)** - Authoritative "Rules of Engagement" for AI agent execution, heartbeats, and handoffs.
+
 ---
 
 ## Architecture & Design

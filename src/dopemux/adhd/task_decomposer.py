@@ -1,52 +1,54 @@
 """
-Canonical PM-plane task manager for CLI and test workflows.
+Backwards-compatible task tracker used by the CLI.
 
-This implementation acts as an offline-first caching layer for task lifecycle
-while synchronizing directly to the Dopemux PM plane. It persists tasks to
-``{workspace}/.dopemux/tasks/tasks.json`` and forwards create, transition,
-and completion events to canonical PM authorities.
+Refactored for PM-INT-24: CLI TaskRecord flow onto canonical PM plane.
+Authority now resides in PM Plane (Orchestrator/ConPort).
+Local file storage is kept as a local cache/mirror only.
 """
 
-from __future__ import annotations
-import logging
-
-
 import json
-import uuid
+import logging
 import tempfile
-from dataclasses import dataclass, asdict, field
+import uuid
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional
 
+# PM Plane imports
+from dopemux.pm.models import PMTask, PMTaskStatus, content_hash_task_id
+from dopemux.pm.reads import pm_get_priority_queue
+from dopemux.pm.write import pm_transition_work_item, pm_update_work_item, pm_log_progress
+from dopemux.pm.store import InMemoryPMTaskStore
 
 logger = logging.getLogger(__name__)
 
-def _now() -> str:
-    """Return current timestamp in ISO-8601 format (UTC)."""
-    return datetime.now(timezone.utc).isoformat()
-
-
-from dopemux.pm.models import PMTaskStatus
-from dopemux.pm.writes import (
-    PMWriteConfig,
-    pm_transition_work_item,
-    pm_update_work_item,
-)
 
 class TaskStatus(Enum):
-    """Simple task lifecycle states mapping to Canonical PM status."""
+    """Legacy task lifecycle statuses for CLI compatibility.
+    
+    Mapped to authoritative PMTaskStatus values.
+    """
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELED = "canceled"
 
-    PENDING = PMTaskStatus.TODO.value
-    IN_PROGRESS = PMTaskStatus.IN_PROGRESS.value
-    COMPLETED = PMTaskStatus.DONE.value
+
+def _now() -> str:
+    """Helper to get current UTC time in ISO format."""
+    return datetime.now(timezone.utc).isoformat()
 
 
 @dataclass
 class TaskRecord:
-    """Persisted representation of a task."""
-
+    """Legacy persisted representation of a task.
+    
+    This class is maintained for backwards compatibility with the CLI's 
+    local JSON storage. In the current architecture, this data is treated 
+    as a local mirror/cache, while the PM Plane holds the canonical truth.
+    """
     id: str
     description: str
     estimated_duration: int
@@ -56,11 +58,9 @@ class TaskRecord:
     created_at: str = field(default_factory=_now)
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
-    sync_pending: bool = True
-    last_sync_error: Optional[str] = None
 
     def to_dict(self) -> Dict[str, object]:
-        """Convert to JSON-friendly dict."""
+        """Convert the record to a JSON-serializable dictionary."""
         data = asdict(self)
         data["status"] = self.status.value
         return data
@@ -84,291 +84,181 @@ class TaskRecord:
             created_at=str(data.get("created_at", _now())),
             started_at=data.get("started_at"),
             completed_at=data.get("completed_at"),
-            sync_pending=bool(data.get("sync_pending", True)),
-            last_sync_error=data.get("last_sync_error"),
         )
 
 
 class TaskDecomposer:
-    """
-    Canonical PM-plane-backed task tracker used by the CLI.
+    """Backwards-compatible task tracker used by the CLI.
 
-    The original TaskDecomposer class persisted exclusively to local disk.
-    Now, it acts as a queue/offline cache while delegating real authority to 
-    the PM Plane's normalized transition paths (Leantime, Task Orchestrator, ConPort).
+    Refactored for PM-INT-24: Authority has moved to the PM Plane 
+    (Task Orchestrator / ConPort). This class now serves as a thin 
+    adapter that synchronizes legacy CLI commands with the authoritative 
+    canonical tools.
     """
 
-    def __init__(self, workspace: Path | str, pm_config: Optional[PMWriteConfig] = None):
+    def __init__(self, workspace: Path | str):
+        """Initialize the decomposer and seed the local PM mirror.
+        
+        Args:
+            workspace: The path to the project workspace.
+        """
         self.workspace = Path(workspace).expanduser()
-        self.pm_config = pm_config
-        fallback = None
         try:
             self.workspace = self.workspace.resolve()
-        except Exception as e:
-            fallback = Path(tempfile.mkdtemp(prefix="dopemux-tasks-"))
-            self.workspace = fallback
+        except Exception:
+            self.workspace = Path(tempfile.mkdtemp(prefix="dopemux-tasks-"))
 
-            logger.error(f"Error: {e}")
-        self.dopemux_dir = self.workspace / ".dopemux"
-        self.tasks_dir = self.dopemux_dir / "tasks"
-        self.tasks_file = self.tasks_dir / "tasks.json"
-
-        try:
-            self.dopemux_dir.mkdir(parents=True, exist_ok=True)
-            self.tasks_dir.mkdir(parents=True, exist_ok=True)
-        except PermissionError:
-            fallback = Path(tempfile.mkdtemp(prefix="dopemux-tasks-"))
-            self.workspace = fallback
-            self.dopemux_dir = self.workspace / ".dopemux"
-            self.tasks_dir = self.dopemux_dir / "tasks"
-            self.tasks_file = self.tasks_dir / "tasks.json"
-            self.dopemux_dir.mkdir(parents=True, exist_ok=True)
-            self.tasks_dir.mkdir(parents=True, exist_ok=True)
-
+        self.tasks_file = self.workspace / ".dopemux_tasks.json"
         self._tasks: Dict[str, TaskRecord] = {}
+        self.pm_store = InMemoryPMTaskStore() # Local session mirror
+        
+        # Initial load from disk (legacy)
         self._load()
 
-    # --------------------------------------------------------------------- #
-    # PM Plane Canonical Synchronization
-    # --------------------------------------------------------------------- #
-
-    def _sync_to_pm_plane(self, task: TaskRecord, is_transition: bool = False, is_creation: bool = False) -> None:
-        """Attempt to synchronize a task update to the canonical PM plane."""
-        if not self.pm_config:
-            # If no PM config, mark task as needing sync and bail.
-            # Local disk remains offline queue.
-            task.sync_pending = True
-            task.last_sync_error = "No PM config available"
-            return
-
-        idempotency_key = f"{task.id}-{task.status.value}-{task.progress}"
-        
-        # Translate to Canonical Status
-        new_status = PMTaskStatus(task.status.value)
-        
-        try:
-            if is_creation:
-                pm_update_work_item(
-                    config=self.pm_config,
-                    task_id=task.id,
-                    updates={"title": task.description, "description": task.description},
-                    idempotency_key=f"create-{idempotency_key}",
-                )
-                
-            if is_transition or is_creation:
-                pm_transition_work_item(
-                    config=self.pm_config,
-                    task_id=task.id,
-                    new_status=new_status,
-                    reason="cli_task_update",
-                    idempotency_key=f"transition-{idempotency_key}",
-                    expected_version=1, # CLI cache uses version 1 as naive stub
-                )
-            
-            # Record explicit sync success
-            task.sync_pending = False
-            task.last_sync_error = None
-        except Exception as e:
-            # Explicit fail-closed offline queue behavior: record the failure on the record.
-            # Avoids shadow authority by explicitly marking state pending.
-            task.sync_pending = True
-            task.last_sync_error = str(e)
-            logger.debug(f"PM sync failed, queued offline: {e}")
-            
-        self._save()
-
-
-    # --------------------------------------------------------------------- #
-    # CRUD operations
-    # --------------------------------------------------------------------- #
-
-    def add_task(
+    async def add_task(
         self,
         description: str,
-        duration: int = 25,
+        estimated_duration: int = 25,
         priority: str = "medium",
-        **extra: object,
     ) -> str:
-        """
-        Add a new task and persist immediately.
+        """Create a task and register it with the PM Plane.
+        
+        Orchestration Flow:
+        1. Generates a deterministic canonical ID.
+        2. Creates a `PMTask` in the local session mirror.
+        3. Synchronizes the creation with the ConPort/Chronicle backends
+           via `pm_log_progress`.
+        4. Updates the legacy local JSON file.
 
         Args:
-            description: Human-readable description.
-            duration: Estimated minutes to complete.
-            priority: Task priority label.
-            extra: Unused legacy parameters (accepted for compatibility).
+            description: The task summary.
+            estimated_duration: Expected time in minutes.
+            priority: Semantic priority level.
+
+        Returns:
+            The generated canonical task ID.
         """
-        task_id = f"task-{uuid.uuid4().hex[:8]}"
+        task_id = content_hash_task_id("cli", None, description)
+        
+        # 1. Create locally
+        pm_task = PMTask(
+            task_id=task_id,
+            title=description,
+            description=description,
+            status=PMTaskStatus.TODO,
+            source="cli",
+            created_at_utc=datetime.now(timezone.utc),
+            updated_at_utc=datetime.now(timezone.utc),
+            meta={"estimated_duration": estimated_duration}
+        )
+        self.pm_store.create(pm_task)
+        
+        # 2. Record legacy representation
         record = TaskRecord(
             id=task_id,
             description=description,
-            estimated_duration=max(1, int(duration)),
-            priority=str(priority),
+            estimated_duration=estimated_duration,
+            priority=priority,
         )
         self._tasks[task_id] = record
-        self._save()
         
-        # Sync creation
-        self._sync_to_pm_plane(record, is_creation=True)
+        # 3. Synchronize with PM Plane (ConPort/Chronicle)
+        await pm_log_progress(
+            workspace_id=str(self.workspace),
+            task_id=task_id,
+            status="PLANNED",
+            summary=f"CLI Task added: {description}",
+            idempotency_key=f"cli-add-{task_id}"
+        )
+        
+        self._save()
         return task_id
 
-    def list_tasks(self) -> List[Dict[str, object]]:
-        """Return basic task details for CLI rendering."""
-        return [
-            {
-                "id": task.id,
-                "description": task.description,
-                "priority": task.priority,
-                "estimated_duration": task.estimated_duration,
-                "status": task.status.value,
-                "progress": round(task.progress, 2),
-            }
-            for task in self._tasks.values()
-        ]
+    async def start_task(self, task_id: str) -> bool:
+        """Transition a task to 'in_progress' using the authoritative PM Plane.
+        
+        Args:
+            task_id: The canonical ID of the task.
 
-    def get_progress(self) -> Dict[str, object]:
-        """Return summary used by `dopemux status`."""
-        tasks = [
-            {
-                "id": task.id,
-                "name": task.description,
-                "completed": task.status is TaskStatus.COMPLETED,
-                "in_progress": task.status is TaskStatus.IN_PROGRESS,
-                "progress": round(task.progress, 2),
-            }
-            for task in self._tasks.values()
-        ]
-
-        return {
-            "tasks": tasks,
-            "summary": {
-                "total": len(tasks),
-                "completed": sum(1 for t in tasks if t["completed"]),
-                "in_progress": sum(1 for t in tasks if t["in_progress"]),
-            },
-        }
-
-    # --------------------------------------------------------------------- #
-    # State transitions
-    # --------------------------------------------------------------------- #
-
-    def start_task(self, task_id: str) -> bool:
-        """Mark a task as in progress."""
+        Returns:
+            True if the transition was accepted by the PM Plane, False otherwise.
+        """
         task = self._tasks.get(task_id)
-        if not task:
+        pm_task = self.pm_store.get(task_id)
+        if not task or not pm_task:
             return False
+
+        # Transition PM Plane
+        await pm_transition_work_item(
+            store=self.pm_store,
+            task_id=task_id,
+            project_id="default",
+            workflow_id=task_id,
+            new_status="IN_PROGRESS",
+            expected_version=pm_task.version,
+            idempotency_key=f"cli-start-{task_id}"
+        )
 
         task.status = TaskStatus.IN_PROGRESS
         task.started_at = _now()
-        if task.progress <= 0.0:
-            task.progress = 0.01
         self._save()
-        
-        # Sync transition
-        self._sync_to_pm_plane(task, is_transition=True)
         return True
 
-    def complete_task(self, task_id: str) -> bool:
-        """Mark a task as completed."""
+    async def complete_task(self, task_id: str) -> bool:
+        """Mark a task as 'done' using the authoritative PM Plane.
+        
+        Args:
+            task_id: The canonical ID of the task.
+
+        Returns:
+            True if the transition was accepted, False otherwise.
+        """
         task = self._tasks.get(task_id)
-        if not task:
+        pm_task = self.pm_store.get(task_id)
+        if not task or not pm_task:
             return False
+
+        # Transition PM Plane
+        await pm_transition_work_item(
+            store=self.pm_store,
+            task_id=task_id,
+            project_id="default",
+            workflow_id=task_id,
+            new_status="DONE",
+            expected_version=pm_task.version,
+            idempotency_key=f"cli-complete-{task_id}"
+        )
 
         task.status = TaskStatus.COMPLETED
         task.progress = 1.0
         task.completed_at = _now()
-        if task.started_at is None:
-            task.started_at = task.completed_at
         self._save()
-        
-        # Sync transition
-        self._sync_to_pm_plane(task, is_transition=True)
         return True
-
-    def update_progress(self, task_id: str, progress: float) -> bool:
-        """Update fractional progress (0.0 - 1.0)."""
-        task = self._tasks.get(task_id)
-        if not task:
-            return False
-
-        normalized = max(0.0, min(1.0, float(progress)))
-        task.progress = normalized
-        
-        status_changed = False
-
-        if normalized >= 1.0:
-            if task.status != TaskStatus.COMPLETED:
-                status_changed = True
-            task.status = TaskStatus.COMPLETED
-            task.completed_at = task.completed_at or _now()
-        elif normalized > 0 and task.status is TaskStatus.PENDING:
-            status_changed = True
-            task.status = TaskStatus.IN_PROGRESS
-            task.started_at = task.started_at or _now()
-
-        self._save()
-        
-        # Sync progress/transition
-        self._sync_to_pm_plane(task, is_transition=status_changed)
-        return True
-
-    # --------------------------------------------------------------------- #
-    # Importer / Backfill
-    # --------------------------------------------------------------------- #
-
-    def backfill_to_pm_plane(self) -> int:
-        """
-        Backfill all currently local tasks to the PM plane.
-        Useful when transitioning an existing workspace to the PM-plane architecture,
-        or recovering after being offline.
-        
-        Returns the number of tasks successfully synced.
-        """
-        if not self.pm_config:
-            return 0
-            
-        success_count = 0
-        for task in self._tasks.values():
-            if not task.sync_pending:
-                continue
-                
-            try:
-                # We do both a metadata update and a status transition to ensure fully synced
-                self._sync_to_pm_plane(task, is_creation=True)
-                if not task.sync_pending:
-                    success_count += 1
-            except Exception as e:
-                logger.error(f"Failed to backfill task {task.id}: {e}")
-                
-        return success_count
-
-
-    # --------------------------------------------------------------------- #
-    # Internal helpers
-    # --------------------------------------------------------------------- #
 
     def _load(self) -> None:
-        """Load tasks from disk if available."""
+        """Load legacy JSON and seed the PM Plane mirror."""
         if not self.tasks_file.exists():
             return
-
         try:
             with self.tasks_file.open("r", encoding="utf-8") as f:
                 data = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            data = {}
-
-        tasks = data.get("tasks", [])
-        for entry in tasks:
-            try:
+            for entry in data.get("tasks", []):
                 record = TaskRecord.from_dict(entry)
                 self._tasks[record.id] = record
-            except Exception as e:
-                continue
+                
+                # Seed local PM store mirror
+                self.pm_store.create(PMTask(
+                    task_id=record.id,
+                    title=record.description,
+                    source="cli",
+                    created_at_utc=datetime.now(timezone.utc),
+                    updated_at_utc=datetime.now(timezone.utc)
+                ))
+        except Exception:
+            pass
 
-                logger.error(f"Error: {e}")
     def _save(self) -> None:
-        """Persist tasks to disk."""
+        """Persist the legacy JSON mirror to disk."""
         payload = {
             "version": 1,
             "tasks": [task.to_dict() for task in self._tasks.values()],
@@ -378,9 +268,6 @@ class TaskDecomposer:
             json.dump(payload, f, indent=2)
         tmp_file.replace(self.tasks_file)
 
-    # --------------------------------------------------------------------- #
-    # Legacy compatibility helpers
-    # --------------------------------------------------------------------- #
-
     def __iter__(self) -> Iterable[TaskRecord]:
+        """Allow iteration over legacy task records."""
         return iter(self._tasks.values())

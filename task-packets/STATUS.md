@@ -37,13 +37,13 @@ Status: 🟢 Stable
 Active Packets:
 None
 Notes:
-Candidate for next PRIMER-driven investigation
-No known determinism leaks
+Wave 1-3 complete: Canonical authority unified, consumers migrated, E2E integration verified.
+The PM Plane is now the canonical authority for task lifecycle state.
+No known determinism leaks.
 ────────────────────
 Workflow / Execution Control Plane
 Status: 🟡 In Progress
 Active Packets:
-TP-SIA-EXEC-0001 — Packet Execution Domain Models + Lease Store
 TP-SIA-EXEC-0002 — Packet Manifest V2 + Sidecar Contract
 TP-SIA-EXEC-0003 — Explicit Routing Slots + Cost Policy
 TP-SIA-EXEC-0004 — Supervisor Service + Canonical Commit Flow
@@ -52,8 +52,8 @@ TP-SIA-EXEC-0006 — Auditor Runner + Proof Bundle Manifest
 TP-SIA-EXEC-0007 — Manual Handoff + Operator Resume Semantics
 TP-SIA-EXEC-0008 — Replay Repro Suite + Projection Hardening
 Notes:
-Execution architecture frozen in ADR; implementation sequence staged and ready
-Critical risk remains queue-loss versus canonical truth until the series is executed
+Wave 1 complete: TP-SIA-EXEC-0001 executed. Domain models established, in-memory LeaseStore implemented, and Task Orchestrator integration verified.
+Execution architecture frozen in ADR; implementation sequence staged and ready.
 ────────────────────
 ADHD Support Plane
 Status: 🟢 Stable

@@ -22,6 +22,13 @@ prelude: Readme (reference) for dopemux documentation and developer workflows.
 
 ---
 
+## Execution Plane
+
+### Execution Logic & Safety
+- **[Agent Leasing Contract](../planes/execution/agent-leasing-contract.md)** - Mandatory Rules of Engagement for all AI agents.
+
+---
+
 ## API Documentation
 
 Technical specifications for Dopemux APIs.

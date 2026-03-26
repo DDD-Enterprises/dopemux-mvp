@@ -24,19 +24,20 @@ This guide is the operator-facing manual for Repo Truth Extractor in Dopemux.
 Canonical CLI entrypoint:
 
 ```bash
-dopemux extractor ...
+dopemux upgrades ...
 ```
 
 ## 1. Core concepts
 
 - Service identity: `Repo Truth Extractor`
 - Engines:
-  - `v4`: default, strict contracts and deterministic promotion
+  - `v5`: active runner for live validation and execution
+  - `v4`: prompt contract backstop and migration-era workflow
   - `v3`: compatibility fallback
 - Runtime root:
   - `extraction/repo-truth-extractor/`
 - Phase runs:
-  - `extraction/repo-truth-extractor/<engine>/runs/<RUN_ID>/`
+  - `extraction/repo-truth-extractor/v3/runs/<RUN_ID>/` for current v5 operations
 
 ## 2. Before you run
 
@@ -48,32 +49,44 @@ Required for sync execution:
 
 Optional but recommended:
 
-- `dopemux extractor preflight --engine-version v4 --auth-doctor`
-- `dopemux extractor promptset audit --engine-version v4`
+- `dopemux upgrades preflight --pipeline-version v5 --auth-doctor --promptset-root <PATH>`
+- `dopemux upgrades promptset audit --pipeline-version v4 --strict`
+- `dopemux upgrades validate-live --promptset-root <PATH>`
 
 ## 3. First run (safe dry-run)
 
 Phase-only dry-run:
 
 ```bash
-dopemux extractor run --engine-version v4 --phase A --dry-run --run-id rte_user_a_001
+dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase A \
+  --dry-run \
+  --run-id rte_user_a_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 Full dry-run:
 
 ```bash
-dopemux extractor run --engine-version v4 --phase ALL --dry-run --run-id rte_user_all_001
+dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase ALL \
+  --dry-run \
+  --run-id rte_user_all_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 ## 4. Execute run (provider calls enabled)
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --phase ALL \
   --execute \
   --resume \
-  --run-id rte_exec_all_001
+  --run-id rte_exec_all_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 Expected behavior:
@@ -85,6 +98,7 @@ Expected behavior:
 ## 5. Routing policy and model ladder
 
 Default policy is `cost` and uses cheap-first ladder semantics.
+For v5 the default live policy is `balanced_openrouter`.
 
 Primary controls:
 
@@ -99,23 +113,25 @@ Practical examples:
 Cost-first with escalation:
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --phase C \
   --execute \
-  --routing-policy cost \
-  --escalation-max-hops 2
+  --routing-policy balanced_openrouter \
+  --escalation-max-hops 2 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 Single-rung behavior only:
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --phase C \
   --execute \
-  --routing-policy cost \
-  --disable-escalation
+  --routing-policy balanced_openrouter \
+  --disable-escalation \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 ## 6. Batch mode (opt-in)
@@ -159,29 +175,48 @@ Batch artifacts per phase/step:
 Status:
 
 ```bash
-dopemux extractor status --engine-version v4 --run-id rte_exec_all_001
+dopemux upgrades status --pipeline-version v5 --run-id rte_exec_all_001
 ```
 
 JSON status:
 
 ```bash
-dopemux extractor status --engine-version v4 --run-id rte_exec_all_001 --json
+dopemux upgrades status --pipeline-version v5 --run-id rte_exec_all_001 --json
 ```
 
 Doctor:
 
 ```bash
-dopemux extractor doctor --engine-version v4 --run-id rte_exec_all_001
+dopemux upgrades doctor --pipeline-version v5 --run-id rte_exec_all_001
 ```
 
 Doctor with reprocess planning:
 
 ```bash
-dopemux extractor doctor \
-  --engine-version v4 \
+dopemux upgrades doctor \
+  --pipeline-version v5 \
   --run-id rte_exec_all_001 \
   --auto-reprocess \
   --reprocess-dry-run
+```
+
+## 7a. Final validation workflow
+
+Use the v5 validation command before any paid live run:
+
+```bash
+dopemux upgrades validate-live \
+  --promptset-root /abs/path/to/generated/promptset \
+  --stage preflight
+```
+
+For paid stages, provide a pricing manifest so spend caps can be enforced:
+
+```bash
+dopemux upgrades validate-live \
+  --promptset-root /abs/path/to/generated/promptset \
+  --stage canary \
+  --pricing-manifest /abs/path/to/pricing_manifest.json
 ```
 
 ## 8. Interpreting stdout quickly

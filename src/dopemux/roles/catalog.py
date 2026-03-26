@@ -169,6 +169,28 @@ ROLE_CATALOG: Dict[str, RoleSpec] = {
         metamcp_namespace="dopemux-act",
         profile_name="ops",
     ),
+    "workflow-manager": RoleSpec(
+        key="workflow-manager",
+        label="Workflow Manager",
+        description="Coordinates workflow phases, review gates, and executor validation.",
+        attention_state="focused",
+        required_servers=["conport", "zen", "pal"],
+        optional_servers=["serena", "desktop-commander"],
+        metamcp_namespace="dopemux-plan",
+        profile_name="workflow-manager",
+        notes="Internal workflow orchestration role.",
+    ),
+    "workflow-executor": RoleSpec(
+        key="workflow-executor",
+        label="Workflow Executor",
+        description="Executes one workflow task in an isolated worktree or instance.",
+        attention_state="focused",
+        required_servers=["conport", "serena", "zen"],
+        optional_servers=["pal", "desktop-commander"],
+        metamcp_namespace="dopemux-act",
+        profile_name="workflow-executor",
+        notes="Internal per-task execution role.",
+    ),
 }
 
 # Aliases map common terminology to canonical roles
@@ -192,6 +214,9 @@ ROLE_ALIASES: Dict[str, str] = {
     "orchestrator": "plan",
     "agent": "act",
     "secondary": "quickfix",
+    "workflow_manager": "workflow-manager",
+    "workflow_orchestrator": "workflow-manager",
+    "workflow_executor": "workflow-executor",
 }
 
 

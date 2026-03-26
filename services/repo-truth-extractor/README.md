@@ -11,11 +11,10 @@ Repo Truth Extractor is the canonical extraction service for dopemux.
 ## Canonical CLI
 
 ```bash
-dopemux extractor list --engine-version v4
-dopemux extractor run --engine-version v4 --phase ALL --dry-run
-dopemux extractor status --engine-version v4 --run-id <RUN_ID>
-dopemux extractor doctor --engine-version v4 --run-id <RUN_ID>
-dopemux extractor promptset audit --engine-version v4
+dopemux upgrades run --pipeline-version v5 --phase ALL --dry-run
+dopemux upgrades preflight --pipeline-version v5 --auth-doctor
+dopemux upgrades validate-live --promptset-root /abs/path/to/generated/promptset
+dopemux extractor validate --output-dir /abs/path/to/generated/promptset
 ```
 
 ## Runner Entrypoints
@@ -51,21 +50,29 @@ Webhook notify mode for `--batch-watch` is controlled by:
 
 Entrypoint: `services/repo-truth-extractor/run_extraction_v5.py`
 
-Output root: `extraction/repo-truth-extractor/v5/runs/`
+Operational output root: `extraction/repo-truth-extractor/v3/runs/`
+
+The v5 runner is the active execution engine, but it still writes run artifacts,
+doctor outputs, and telemetry under the `v3` extraction tree. Validation and
+monitoring should therefore inspect `extraction/repo-truth-extractor/v3/`.
 
 ### Basic usage
 
 ```bash
 # Full run — all phases, canonical behavior
-python services/repo-truth-extractor/run_extraction_v5.py \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --run-id FULL_RUN \
-  --phase ALL
+  --phase ALL \
+  --promptset-root /abs/path/to/generated/promptset
 
 # Single phase dry-run (inspect without executing)
-python services/repo-truth-extractor/run_extraction_v5.py \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --run-id INSPECT \
   --phase H \
-  --dry-run
+  --dry-run \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 > ⚠️ **Cost warning**: Each run invokes provider APIs and may incur significant charges.
@@ -160,7 +167,7 @@ artifact does not skip the comparison, and vice versa.
 
 - v3 prompts: `services/repo-truth-extractor/prompts/v3/`
 - v4 promptset: `services/repo-truth-extractor/promptsets/v4/`
-- v5 promptsets: `services/repo-truth-extractor/promptsets/v5/`
+- external generated promptsets: pass via `--promptset-root`
 - legacy prompt archive: `services/repo-truth-extractor/archive/legacy_prompts/`
 
 ## Output Roots
@@ -169,7 +176,7 @@ artifact does not skip the comparison, and vice versa.
 - v3 doctor: `extraction/repo-truth-extractor/v3/doctor/`
 - v4 runs: `extraction/repo-truth-extractor/v4/runs/`
 - v4 doctor: `extraction/repo-truth-extractor/v4/doctor/`
-- v5 runs: `extraction/repo-truth-extractor/v5/runs/`
+- v5 runtime artifacts: `extraction/repo-truth-extractor/v3/runs/`
 - v5 proofs: `extraction/repo-truth-extractor/v5/proofs/`
 
 Historical extraction outputs under old roots are preserved and read-only.

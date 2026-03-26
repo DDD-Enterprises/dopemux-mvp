@@ -1,226 +1,217 @@
-"""Normalized PM-plane read tools."""
+"""PM Plane read tools — canonical access to Orchestrator and ConPort."""
 
-from typing import Any, Dict, List, Optional
 import logging
+from typing import Any, Dict, List, Optional
+from dopemux.pm.adapters.orchestrator import TaskOrchestratorAdapter
+from dopemux.pm.adapters.conport import ConPortAdapter
+from dopemux.pm.adapters.dope_memory import DopeMemoryAdapter
 import httpx
-from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
-# --- Models ---
+# Single instances of the adapters to use
+_orchestrator = TaskOrchestratorAdapter()
+_conport = ConPortAdapter()
+_memory = DopeMemoryAdapter()
 
-class PMReadProvenance(BaseModel):
-    source: str
-    query_mode: str
-    project_id: str
-
-class PMReadSupportingSource(BaseModel):
-    kind: str  # e.g., "mirrored", "indexed", "derived", "canonical"
-    backend: str
-    entity_ids: List[str] = Field(default_factory=list)
-
-class PMProjectContextResult(BaseModel):
-    canonical_backend: str = "leantime"
-    project_id: str
-    linked_ids: Dict[str, str] = Field(default_factory=dict)
-    provenance: PMReadProvenance
-    supporting_sources: List[PMReadSupportingSource] = Field(default_factory=list)
-    context_data: Dict[str, Any] = Field(default_factory=dict)
-
-class PMPriorityQueueResult(BaseModel):
-    canonical_backend: str = "leantime"
-    project_id: str
-    linked_ids: Dict[str, str] = Field(default_factory=dict)
-    provenance: PMReadProvenance
-    supporting_sources: List[PMReadSupportingSource] = Field(default_factory=list)
-    queue_items: List[Dict[str, Any]] = Field(default_factory=list)
-    next_action: Optional[Dict[str, Any]] = None
-
-class PMBlockersResult(BaseModel):
-    canonical_backend: str = "leantime"
-    project_id: str
-    linked_ids: Dict[str, str] = Field(default_factory=dict)
-    provenance: PMReadProvenance
-    supporting_sources: List[PMReadSupportingSource] = Field(default_factory=list)
-    active_blockers: List[Dict[str, Any]] = Field(default_factory=list)
-
-class PMWorkflowStateResult(BaseModel):
-    canonical_backend: str = "leantime"
-    project_id: str
-    linked_ids: Dict[str, str] = Field(default_factory=dict)
-    provenance: PMReadProvenance
-    supporting_sources: List[PMReadSupportingSource] = Field(default_factory=list)
-    state: Dict[str, Any] = Field(default_factory=dict)
-    allowed_transitions: List[str] = Field(default_factory=list)
-
-class PMSprintSnapshotResult(BaseModel):
-    canonical_backend: str = "leantime"
-    project_id: str
-    linked_ids: Dict[str, str] = Field(default_factory=dict)
-    provenance: PMReadProvenance
-    supporting_sources: List[PMReadSupportingSource] = Field(default_factory=list)
-    snapshot_data: Dict[str, Any] = Field(default_factory=dict)
-
-class PMDecisionContextResult(BaseModel):
-    canonical_backend: str = "conport"
-    project_id: str
-    linked_ids: Dict[str, str] = Field(default_factory=dict)
-    provenance: PMReadProvenance
-    supporting_sources: List[PMReadSupportingSource] = Field(default_factory=list)
-    decisions: List[Dict[str, Any]] = Field(default_factory=list)
-
-# --- Implementations ---
-
-# Leantime reads (Project Context, Priority Queue, Blockers, Workflow State, Sprint Snapshot)
-
-async def pm_get_project_context(project_id: str) -> PMProjectContextResult:
-    """Read normalized project context from Leantime authority.
+async def pm_get_priority_queue(
+    *,
+    project_id: str,
+) -> Dict[str, Any]:
+    """Read prioritized next actions from the Task Orchestrator canonical authority.
     
+    This function abstracts the REST call to the Task Orchestrator backend,
+    serving as the sole normalized entry point for retrieving the project queue
+    in the PM Plane.
+
     Returns fail-closed empty result if backend is down.
+
+    Args:
+        project_id: The identifier of the project to retrieve the queue for.
+
+    Returns:
+        A dictionary containing the `queue_items` and `blockers`. If the backend
+        is unavailable or an error occurs, it returns an empty `queue_items` list
+        and logs the failure.
     """
-    provenance = PMReadProvenance(source="leantime", query_mode="project_context", project_id=project_id)
-    supporting_source = PMReadSupportingSource(kind="canonical", backend="leantime", entity_ids=[project_id])
-    
     try:
-        # Placeholder for actual Leantime JSON-RPC call
-        # For now we stub the behavior and return an empty safe state when it fails, simulating fail-closed
-        context_data = {} 
+        return await _orchestrator.get_queue(project_id)
+    except httpx.HTTPError:
+        logger.warning("task-orchestrator backend unavailable. Returning fail-closed empty result.")
+        return {
+            "project_id": project_id,
+            "queue_items": [],
+            "blockers": [],
+            "legality_result": "unavailable"
+        }
     except Exception as e:
-        logger.warning(f"Leantime backend unavailable for pm_get_project_context: {e}")
-        context_data = {}
+        logger.error(f"Unexpected error calling task-orchestrator: {e}")
+        return {
+            "project_id": project_id,
+            "queue_items": [],
+            "error": str(e)
+        }
 
-    return PMProjectContextResult(
-        canonical_backend="leantime",
-        project_id=project_id,
-        linked_ids={},
-        provenance=provenance,
-        supporting_sources=[supporting_source],
-        context_data=context_data,
-    )
+async def pm_get_blockers(
+    *,
+    project_id: str,
+) -> Dict[str, Any]:
+    """Read active workflow blockers from the Task Orchestrator canonical authority.
 
-async def pm_get_priority_queue(project_id: str) -> PMPriorityQueueResult:
-    """Read normalized priority queue from Leantime authority.
-    
-    Returns fail-closed empty result if backend is down.
+    This ensures consumers retrieve real-time blocking constraints evaluated
+    by the execution plane.
+
+    Args:
+        project_id: The identifier of the project to retrieve blockers for.
+
+    Returns:
+        A dictionary containing `active_blockers`. If the backend is unavailable,
+        returns an empty list.
     """
-    provenance = PMReadProvenance(source="leantime", query_mode="priority_queue", project_id=project_id)
-    supporting_source = PMReadSupportingSource(kind="canonical", backend="leantime", entity_ids=[project_id])
-    
     try:
-        # Placeholder for actual Leantime JSON-RPC call
-        queue_items = []
-        next_action = None
+        return await _orchestrator.get_blockers(project_id)
+    except httpx.HTTPError:
+        logger.warning("task-orchestrator backend unavailable. Returning fail-closed empty result.")
+        return {
+            "project_id": project_id,
+            "active_blockers": [],
+            "legality_result": "unavailable"
+        }
     except Exception as e:
-        logger.warning(f"Leantime backend unavailable for pm_get_priority_queue: {e}")
-        queue_items = []
-        next_action = None
+        logger.error(f"Unexpected error calling task-orchestrator: {e}")
+        return {
+            "project_id": project_id,
+            "active_blockers": [],
+            "error": str(e)
+        }
 
-    return PMPriorityQueueResult(
-        canonical_backend="leantime",
-        project_id=project_id,
-        linked_ids={},
-        provenance=provenance,
-        supporting_sources=[supporting_source],
-        queue_items=queue_items,
-        next_action=next_action,
-    )
+async def pm_get_workflow_state(
+    *,
+    project_id: str,
+) -> Dict[str, Any]:
+    """Read the full workflow state snapshot from the Task Orchestrator canonical authority.
 
-async def pm_get_blockers(project_id: str) -> PMBlockersResult:
-    """Read normalized blockers from Leantime authority.
-    
-    Returns fail-closed empty result if backend is down.
+    Retrieves the complete state machine data for the specified project, including
+    transition history and current nodal states.
+
+    Args:
+        project_id: The identifier of the project.
+
+    Returns:
+        A dictionary containing the `state` object.
     """
-    provenance = PMReadProvenance(source="leantime", query_mode="blockers", project_id=project_id)
-    supporting_source = PMReadSupportingSource(kind="canonical", backend="leantime", entity_ids=[project_id])
-    
     try:
-        # Placeholder for actual Leantime JSON-RPC call
-        active_blockers = []
+        return await _orchestrator.get_state(project_id)
+    except httpx.HTTPError:
+        logger.warning("task-orchestrator backend unavailable. Returning fail-closed empty result.")
+        return {
+            "project_id": project_id,
+            "state": {},
+            "legality_result": "unavailable"
+        }
     except Exception as e:
-        logger.warning(f"Leantime backend unavailable for pm_get_blockers: {e}")
-        active_blockers = []
+        logger.error(f"Unexpected error calling task-orchestrator: {e}")
+        return {
+            "project_id": project_id,
+            "state": {},
+            "error": str(e)
+        }
 
-    return PMBlockersResult(
-        canonical_backend="leantime",
-        project_id=project_id,
-        linked_ids={},
-        provenance=provenance,
-        supporting_sources=[supporting_source],
-        active_blockers=active_blockers,
-    )
-
-async def pm_get_workflow_state(project_id: str) -> PMWorkflowStateResult:
-    """Read normalized workflow state from Leantime authority.
+async def pm_get_decision_context(
+    *,
+    tag: Optional[str] = None,
+    text: Optional[str] = None,
+    limit: int = 3,
+) -> Dict[str, Any]:
+    """Read historical decision context from the ConPort knowledge graph.
     
-    Returns fail-closed empty result if backend is down.
+    Provides context resolution by fetching previously recorded Architectural
+    Decision Records (ADRs) or progress logs. Supports filtering by semantic
+    tags or free-text search.
+
+    Args:
+        tag: Optional semantic tag to filter decisions.
+        text: Optional string to perform a full-text search against summaries.
+        limit: Maximum number of decisions to return (default 3).
+
+    Returns:
+        A dictionary containing the `decisions` list and total `count`.
     """
-    provenance = PMReadProvenance(source="leantime", query_mode="workflow_state", project_id=project_id)
-    supporting_source = PMReadSupportingSource(kind="canonical", backend="leantime", entity_ids=[project_id])
-    
     try:
-        # Placeholder for actual Leantime JSON-RPC call
-        state = {}
-        allowed_transitions = []
+        return await _conport.search_decisions(tag=tag, text=text, limit=limit)
+    except httpx.HTTPError:
+        logger.warning("conport backend unavailable. Returning fail-closed empty result.")
+        return {
+            "decisions": [],
+            "count": 0,
+            "legality_result": "unavailable"
+        }
     except Exception as e:
-        logger.warning(f"Leantime backend unavailable for pm_get_workflow_state: {e}")
-        state = {}
-        allowed_transitions = []
+        logger.error(f"Unexpected error calling conport: {e}")
+        return {
+            "decisions": [],
+            "error": str(e)
+        }
 
-    return PMWorkflowStateResult(
-        canonical_backend="leantime",
-        project_id=project_id,
-        linked_ids={},
-        provenance=provenance,
-        supporting_sources=[supporting_source],
-        state=state,
-        allowed_transitions=allowed_transitions,
-    )
+async def pm_get_project_context(
+    project_id: str,
+) -> Dict[str, Any]:
+    """Read project context from the canonical authority.
 
-async def pm_get_sprint_snapshot(project_id: str) -> PMSprintSnapshotResult:
-    """Read normalized sprint snapshot from Leantime authority.
-    
-    Returns fail-closed empty result if backend is down.
+    Args:
+        project_id: The identifier of the project.
+
+    Returns:
+        A dictionary containing the project context.
     """
-    provenance = PMReadProvenance(source="leantime", query_mode="sprint_snapshot", project_id=project_id)
-    supporting_source = PMReadSupportingSource(kind="canonical", backend="leantime", entity_ids=[project_id])
-    
     try:
-        # Placeholder for actual Leantime JSON-RPC call
-        snapshot_data = {}
+        return await _orchestrator.get_project_context(project_id)
     except Exception as e:
-        logger.warning(f"Leantime backend unavailable for pm_get_sprint_snapshot: {e}")
-        snapshot_data = {}
+        logger.error(f"Error calling pm_get_project_context: {e}")
+        return {"project_id": project_id, "error": str(e)}
 
-    return PMSprintSnapshotResult(
-        canonical_backend="leantime",
-        project_id=project_id,
-        linked_ids={},
-        provenance=provenance,
-        supporting_sources=[supporting_source],
-        snapshot_data=snapshot_data,
-    )
+async def pm_get_sprint_snapshot(
+    project_id: str,
+) -> Dict[str, Any]:
+    """Read sprint snapshot from the canonical authority.
 
-async def pm_get_decision_context(project_id: str) -> PMDecisionContextResult:
-    """Read normalized decision context from ConPort (Knowledge Graph) authority.
-    
-    Returns fail-closed empty result if backend is down.
+    Args:
+        project_id: The identifier of the project.
+
+    Returns:
+        A dictionary containing the sprint snapshot.
     """
-    provenance = PMReadProvenance(source="conport", query_mode="decision_context", project_id=project_id)
-    supporting_source = PMReadSupportingSource(kind="canonical", backend="conport", entity_ids=[project_id])
-    
     try:
-        # Placeholder for ConPort retrieval
-        decisions = []
+        return await _orchestrator.get_sprint_snapshot(project_id)
     except Exception as e:
-        logger.warning(f"ConPort backend unavailable for pm_get_decision_context: {e}")
-        decisions = []
+        logger.error(f"Error calling pm_get_sprint_snapshot: {e}")
+        return {"project_id": project_id, "error": str(e)}
 
-    return PMDecisionContextResult(
-        canonical_backend="conport",
-        project_id=project_id,
-        linked_ids={},
-        provenance=provenance,
-        supporting_sources=[supporting_source],
-        decisions=decisions,
-    )
+async def pm_check_readiness() -> Dict[str, Any]:
+    """Check readiness of all PM Plane authoritative backends.
 
+    Evaluates the operational status of the three pillars of the PM plane:
+    1. Task Orchestrator (Workflow/Queue authority)
+    2. ConPort-KG (Knowledge Graph / Decision authority)
+    3. Dope-Memory (Chronicle / Ledger authority)
+
+    Returns:
+        A diagnostic dictionary outlining the global `status` ("healthy", 
+        "degraded", or "unavailable") and individual backend states.
+    """
+    orchestrator_ok = await _orchestrator.health()
+    conport_ok = await _conport.health()
+    memory_ok = await _memory.health()
+    
+    status = "healthy" if all([orchestrator_ok, conport_ok, memory_ok]) else "degraded"
+    if not any([orchestrator_ok, conport_ok, memory_ok]):
+        status = "unavailable"
+        
+    return {
+        "status": status,
+        "backends": {
+            "task-orchestrator": "online" if orchestrator_ok else "offline",
+            "conport-kg": "online" if conport_ok else "offline",
+            "dope-memory": "online" if memory_ok else "offline"
+        }
+    }
