@@ -1,7 +1,5 @@
 """Project-scoped workflow endpoints for the Task Orchestrator PM-plane contract."""
 
-from typing import Any, Dict
-
 from fastapi import APIRouter, HTTPException
 
 from app.models.workflow import (
@@ -21,6 +19,57 @@ from dopemux.pm.reads import (
 router = APIRouter(prefix="/api/projects/{project_id}/workflow", tags=["project-workflow"])
 
 
+def _priority_queue_response(result) -> PriorityQueueResult:
+    return PriorityQueueResult(
+        project_id=result.project_id,
+        linked_ids=result.linked_ids,
+        legality_result=result.legality_result,
+        blockers=result.blockers,
+        next_action=result.next_action,
+        queue_items=result.queue_items,
+    )
+
+
+def _blockers_response(result) -> BlockersResult:
+    return BlockersResult(
+        project_id=result.project_id,
+        linked_ids=result.linked_ids,
+        legality_result=result.legality_result,
+        blockers=result.blockers,
+        next_action=result.next_action,
+        active_blockers=result.active_blockers,
+    )
+
+
+def _workflow_state_response(result) -> WorkflowStateResult:
+    return WorkflowStateResult(
+        project_id=result.project_id,
+        linked_ids=result.linked_ids,
+        legality_result=result.legality_result,
+        blockers=result.blockers,
+        next_action=result.next_action,
+        state=result.state,
+        allowed_transitions=result.allowed_transitions,
+    )
+
+
+def _unavailable_transition_result(project_id: str, request: TransitionWorkflowRequest) -> TransitionResult:
+    return TransitionResult(
+        project_id=project_id,
+        workflow_id=request.workflow_id,
+        linked_ids={},
+        legality_result="unavailable",
+        blockers=[],
+        next_action=None,
+        transition_receipt={
+            "transition": request.transition,
+            "status": "unavailable",
+            "reason": "project-scoped workflow transition is not yet backed by a canonical runtime binding",
+        },
+        resulting_state={},
+    )
+
+
 @router.get("/queue", response_model=PriorityQueueResult)
 async def get_project_workflow_queue(project_id: str):
     """
@@ -37,14 +86,7 @@ async def get_project_workflow_queue(project_id: str):
         
     result = await pm_get_priority_queue(project_id)
 
-    return PriorityQueueResult(
-        project_id=result.project_id,
-        linked_ids=result.linked_ids,
-        legality_result="allowed",
-        blockers=[],
-        next_action=result.next_action,
-        queue_items=result.queue_items
-    )
+    return _priority_queue_response(result)
 
 
 @router.get("/blockers", response_model=BlockersResult)
@@ -62,14 +104,7 @@ async def get_project_workflow_blockers(project_id: str):
         
     result = await pm_get_blockers(project_id)
 
-    return BlockersResult(
-        project_id=result.project_id,
-        linked_ids=result.linked_ids,
-        legality_result="allowed",
-        blockers=[],
-        next_action=None,
-        active_blockers=result.active_blockers
-    )
+    return _blockers_response(result)
 
 
 @router.get("/state", response_model=WorkflowStateResult)
@@ -88,15 +123,7 @@ async def get_project_workflow_state(project_id: str):
         
     result = await pm_get_workflow_state(project_id)
 
-    return WorkflowStateResult(
-        project_id=result.project_id,
-        linked_ids=result.linked_ids,
-        legality_result="allowed",
-        blockers=[],
-        next_action=None,
-        state=result.state,
-        allowed_transitions=result.allowed_transitions
-    )
+    return _workflow_state_response(result)
 
 
 @router.post("/transition", response_model=TransitionResult)
@@ -120,14 +147,4 @@ async def transition_project_workflow(project_id: str, request: TransitionWorkfl
     if request.transition == "illegal_target":
         raise HTTPException(status_code=400, detail="transition request references illegal or unresolved target")
 
-    # Stub response
-    return TransitionResult(
-        project_id=project_id,
-        workflow_id=request.workflow_id,
-        linked_ids={},
-        legality_result="allowed",
-        blockers=[],
-        next_action=None,
-        transition_receipt={"transition": request.transition, "status": "success"},
-        resulting_state={"status": request.transition}
-    )
+    return _unavailable_transition_result(project_id, request)

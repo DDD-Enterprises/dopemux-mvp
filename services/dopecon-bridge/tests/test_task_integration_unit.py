@@ -5,6 +5,25 @@ from datetime import datetime
 from dopecon_bridge.services.task_integration import TaskIntegrationService
 from dopecon_bridge.models import Task, TaskStatus, TaskPriority
 
+
+class DummyResponse:
+    def __init__(self, status=200, payload=None, text=""):
+        self.status = status
+        self._payload = payload or {}
+        self._text = text
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return None
+
+    async def json(self):
+        return self._payload
+
+    async def text(self):
+        return self._text
+
 @pytest.mark.asyncio
 async def test_sync_tasks_to_leantime_parallel_execution():
     service = TaskIntegrationService()
@@ -100,5 +119,49 @@ async def test_sync_tasks_to_leantime_empty_list():
     service.mcp_manager = AsyncMock()
 
     await service._sync_tasks_to_leantime([])
+
+    assert not service.mcp_manager.call_tool.called
+
+
+@pytest.mark.asyncio
+async def test_get_priority_queue_uses_pm_read_layer(monkeypatch):
+    service = TaskIntegrationService()
+
+    async def fake_priority_queue(project_id: str):
+        class Result:
+            def model_dump(self):
+                return {
+                    "canonical_backend": "task-orchestrator",
+                    "project_id": project_id,
+                    "legality_result": "allowed",
+                    "queue_items": [{"id": "wf-1", "title": "Canonical task"}],
+                }
+
+        return Result()
+
+    monkeypatch.setattr(
+        "dopecon_bridge.services.task_integration.pm_get_priority_queue",
+        fake_priority_queue,
+    )
+
+    result = await service.get_priority_queue("proj-123")
+
+    assert result["canonical_backend"] == "task-orchestrator"
+    assert result["queue_items"][0]["id"] == "wf-1"
+
+
+@pytest.mark.asyncio
+async def test_update_task_status_requires_allowed_transition_result():
+    service = TaskIntegrationService()
+    service.mcp_manager = AsyncMock()
+    service.mcp_manager.initialize = AsyncMock()
+    service.mcp_manager.session = MagicMock()
+    service.mcp_manager.session.post.return_value = DummyResponse(
+        status=200,
+        payload={"legality_result": "unavailable"},
+    )
+
+    with pytest.raises(RuntimeError, match="non-authoritative transition result"):
+        await service.update_task_status("task-123", TaskStatus.IN_PROGRESS)
 
     assert not service.mcp_manager.call_tool.called
