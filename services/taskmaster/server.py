@@ -18,7 +18,7 @@ import subprocess
 import logging
 from pathlib import Path
 from typing import Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add dopemux to path for event bus integration
 project_root = Path(__file__).parent.parent.parent
@@ -39,6 +39,14 @@ logging.basicConfig(
     stream=sys.stderr
 )
 logger = logging.getLogger("task-master-wrapper")
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _utc_now_z() -> str:
+    return _utc_now().isoformat().replace("+00:00", "Z")
 
 
 class TaskMasterWrapper:
@@ -136,20 +144,44 @@ class TaskMasterWrapper:
             return
 
         try:
-            event = DopemuxEvent(
-                event_type=f"task.{event_type}",
-                source=f"task-master-{self.instance_id}",
-                instance_id=self.instance_id,
-                data=data,
-                priority=Priority.MEDIUM,
-                cognitive_load=CognitiveLoad.MEDIUM,
-                adhd_metadata=ADHDMetadata(
-                    interruption_allowed=event_type != "in_progress",
-                    focus_required=event_type == "in_progress",
-                    time_sensitive=False,
-                    can_batch=True
-                )
+            from dopemux.pm.adapters.core import taskmaster_event_to_pm
+            from dopemux.pm_publish import pm_envelope_to_dopemux_event
+
+            payload = dict(data)
+            tool_name = str(payload.get("tool") or "taskmaster")
+            source_task_id = str(
+                payload.get("source_task_id")
+                or payload.get("task_id")
+                or payload.get("request_id")
+                or payload.get("id")
+                or tool_name
             )
+            payload.setdefault("source_task_id", source_task_id)
+            payload.setdefault("task_id", source_task_id)
+            payload.setdefault("title", tool_name.replace("_", " "))
+            if "description" not in payload:
+                params = payload.get("params")
+                payload["description"] = (
+                    json.dumps(params, sort_keys=True, default=str)
+                    if params is not None
+                    else tool_name
+                )
+            payload.setdefault("ts_utc", _utc_now_z())
+
+            raw_event_type = f"taskmaster.task.{event_type}"
+            canonical_envelope = taskmaster_event_to_pm(
+                event_type=raw_event_type,
+                data=payload,
+                source=f"task-master-{self.instance_id}",
+            )
+            event = pm_envelope_to_dopemux_event(canonical_envelope)
+            event.adhd_metadata = ADHDMetadata(
+                interruption_allowed=event_type != "in_progress",
+                focus_required=event_type == "in_progress",
+                time_sensitive=False,
+                can_batch=True
+            )
+            event.instance_id = self.instance_id
 
             await self.event_bus.publish(event)
             logger.debug(f"Emitted {event_type} event for task")
@@ -179,7 +211,8 @@ class TaskMasterWrapper:
                         self.pending_calls[msg_id] = {
                             "tool": tool_name,
                             "params": params,
-                            "start_time": datetime.now()
+                            "request_id": str(msg_id),
+                            "start_time": _utc_now(),
                         }
 
                     # Emit event for task creation
@@ -187,7 +220,8 @@ class TaskMasterWrapper:
                         await self.emit_task_event("created", {
                             "tool": tool_name,
                             "params": params,
-                            "timestamp": datetime.now().isoformat()
+                            "source_task_id": str(msg_id) if msg_id is not None else tool_name,
+                            "ts_utc": _utc_now_z(),
                         })
 
                         # Show ADHD-friendly progress if enabled
@@ -224,14 +258,16 @@ class TaskMasterWrapper:
                 msg_id = resp_json.get("id")
                 if msg_id and msg_id in self.pending_calls:
                     call_info = self.pending_calls.pop(msg_id)
-                    duration = (datetime.now() - call_info["start_time"]).total_seconds()
+                    duration = (_utc_now() - call_info["start_time"]).total_seconds()
 
                     # Emit completion event
                     await self.emit_task_event("completed", {
                         "tool": call_info["tool"],
+                        "params": call_info["params"],
+                        "source_task_id": call_info.get("request_id") or str(msg_id),
                         "duration": duration,
                         "success": "error" not in resp_json,
-                        "timestamp": datetime.now().isoformat()
+                        "ts_utc": _utc_now_z(),
                     })
 
                     # Celebrate completion if enabled
