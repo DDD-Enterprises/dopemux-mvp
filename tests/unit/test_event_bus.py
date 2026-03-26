@@ -213,3 +213,11 @@ class TestRedisStreamsAdapter:
 
         with pytest.raises(ValueError, match="idempotency_key"):
             await adapter.publish(event)
+
+    @pytest.mark.asyncio
+    async def test_publish_rejects_pm_event_without_source(self):
+        adapter = RedisStreamsAdapter(redis_url="redis://localhost")
+        event = DopemuxEvent.create("pm", "pm.task.created", {"envelope": {"idempotency_key": "idem-1"}})
+
+        with pytest.raises(ValueError, match="source"):
+            await adapter.publish(event)

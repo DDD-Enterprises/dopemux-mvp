@@ -115,11 +115,10 @@ class SessionEvent(Event):
     session_name: Optional[str] = Field(default=None)
 
 
-class PMEvent(Event):
+class PMEvent(BaseModel):
     """Canonical PM-plane envelope event."""
 
-    type: str = "pm"
-
+    type: str = Field(default="pm", description="Canonical PM event model kind")
     event_id: str = Field(..., description="Deterministic event ID computed from envelope core")
     event_type: str = Field(..., description="Canonical PM event type such as pm.task.created")
     ts_utc: str = Field(..., description="Normalized UTC ISO8601 timestamp")
@@ -127,3 +126,6 @@ class PMEvent(Event):
     source: str = Field(..., description="Component that emitted the PM event")
     task_id: str = Field(..., description="Canonical task identifier")
     payload: Dict[str, Any] = Field(default_factory=dict, description="Event payload data")
+
+    class Config:
+        frozen = True

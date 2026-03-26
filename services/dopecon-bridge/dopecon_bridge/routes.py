@@ -6,7 +6,7 @@ Extracted and organized from main.py ~1700-2915.
 
 import json
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
@@ -27,6 +27,10 @@ from .models import TaskPriority, TaskStatus
 
 
 logger = logging.getLogger(__name__)
+
+
+def _utc_now_z() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 # ============================================================================
@@ -170,9 +174,13 @@ async def publish_event(request: PublishEventRequest):
                 source=source,
             )
         elif request.event_type.startswith("orchestrator."):
+            dialect_event_type = request.event_type.removeprefix("orchestrator.").replace(".", "_")
+            raw_data = dict(request.data)
+            raw_data.setdefault("original_event_type", request.event_type)
+            raw_data.setdefault("ts_utc", _utc_now_z())
             raw_event = {
-                "event_type": request.event_type,
-                "data": request.data,
+                "event_type": dialect_event_type,
+                "data": raw_data,
                 "source": source,
             }
             canonical_envelope = orchestrator_event_to_pm(
@@ -199,6 +207,9 @@ async def publish_event(request: PublishEventRequest):
             "stream": request.stream,
             "event_type": event.type
         }
+    except ValueError as e:
+        logger.warning(f"Event publish rejected: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Event publish failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

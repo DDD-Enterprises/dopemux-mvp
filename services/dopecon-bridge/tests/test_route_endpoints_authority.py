@@ -61,3 +61,27 @@ def test_publish_event_canonicalizes_taskmaster_events(monkeypatch):
     assert captured["event"].type == "pm.task.created"
     assert captured["event"].data["event_type"] == "pm.task.created"
     assert captured["event"].data["idempotency_key"]
+
+
+def test_publish_event_returns_400_for_invalid_pm_event(monkeypatch):
+    class DummyBus:
+        async def initialize(self):
+            return None
+
+        async def publish(self, stream, event):
+            raise ValueError("PM events must include a source")
+
+    monkeypatch.setattr("dopecon_bridge.event_bus.EventBus", DummyBus)
+
+    response = client.post(
+        "/events",
+        json={
+            "stream": "dopemux:events",
+            "event_type": "pm.task.created",
+            "data": {"idempotency_key": "idem-1"},
+            "source": None,
+        },
+    )
+
+    assert response.status_code == 400
+    assert "source" in response.json()["detail"]

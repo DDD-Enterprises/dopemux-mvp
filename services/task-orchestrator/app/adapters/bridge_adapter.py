@@ -38,6 +38,10 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+def _utc_now_z() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
 class TaskOrchestratorBridgeAdapter:
     """
     DopeconBridge adapter for Task Orchestrator.
@@ -154,11 +158,13 @@ class TaskOrchestratorBridgeAdapter:
 
             from dopemux.pm.adapters.core import orchestrator_event_to_pm
             raw_event = {
-                "event_type": "orchestrator.task.synced",
+                "event_type": "task_updated",
                 "data": {
                     "task_id": task.task_id,
                     "conport_entry_id": result.get("id"),
                     "status": str(task.status),
+                    "original_event_type": "orchestrator.task.synced",
+                    "ts_utc": _utc_now_z(),
                 },
                 "source": self.requester,
             }
@@ -259,9 +265,12 @@ class TaskOrchestratorBridgeAdapter:
         try:
             from dopemux.pm.adapters.core import orchestrator_event_to_pm
 
+            raw_data = dict(data)
+            raw_data.setdefault("original_event_type", f"orchestrator.{event_type}")
+            raw_data.setdefault("ts_utc", _utc_now_z())
             raw_event = {
-                "event_type": f"orchestrator.{event_type}",
-                "data": data,
+                "event_type": event_type,
+                "data": raw_data,
                 "source": self.requester,
             }
             canonical_envelope = orchestrator_event_to_pm(

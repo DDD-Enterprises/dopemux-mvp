@@ -40,6 +40,29 @@ async def test_emit_task_event_publishes_canonical_pm_envelope(wrapper):
     assert published_event.envelope.namespace == "pm.task.created"
     assert published_event.payload["envelope"]["idempotency_key"]
     assert published_event.payload["envelope"]["source"].startswith("task-master-")
+    assert published_event.payload["envelope"]["task_id"]
+
+
+@pytest.mark.asyncio
+async def test_emit_task_event_uses_request_identity_when_payload_is_wrapper_like(wrapper):
+    wrapper.mcp_producer = MagicMock()
+    wrapper.event_bus = AsyncMock()
+
+    await wrapper.emit_task_event(
+        "created",
+        {
+            "tool": "create_task",
+            "params": {"title": "Task A"},
+            "source_task_id": "rpc-42",
+        },
+    )
+
+    published_event = wrapper.event_bus.publish.await_args.args[0]
+    envelope = published_event.payload["envelope"]
+    assert envelope["payload"]["source_task_id"] == "rpc-42"
+    assert envelope["task_id"]
+    assert envelope["payload"]["title"] == "create task"
+    assert envelope["ts_utc"].endswith("Z")
 
 @pytest.mark.asyncio
 async def test_handle_message_json_pass_through(wrapper):
