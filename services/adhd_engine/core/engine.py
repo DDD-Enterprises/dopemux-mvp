@@ -19,7 +19,6 @@ import asyncio
 import json
 import logging
 import os
-import sys
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -185,7 +184,9 @@ class ADHDAccommodationEngine:
         logger.info("🧠 Initializing ADHD Accommodation Engine...")
 
         # Initialize shared Redis connection pool (performance optimization)
-        # sys.path already configured at boot if needed
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
         from redis_pool import get_redis_pool
 
         self.redis_pool = await get_redis_pool()
