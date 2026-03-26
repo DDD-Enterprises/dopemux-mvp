@@ -475,16 +475,6 @@ app = FastAPI(
 # Mount FastMCP HTTP app
 app.mount("/mcp", mcp.http_app)
 
-# CORS middleware for browser access
-# Security: Use environment-based origin whitelist with secure defaults and validation
-from .config import ALLOWED_ORIGINS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],  # Restrict to safe HTTP methods only
-    allow_headers=["Content-Type", "Authorization", "X-API-Key"],  # Restrict to necessary headers
-)
 if RequestIDMiddleware is not None:
     app.add_middleware(RequestIDMiddleware)
 
@@ -521,6 +511,18 @@ class MonitoringMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
 app.add_middleware(MonitoringMiddleware)
+
+# CORS middleware must be outermost (added last) so it handles preflight OPTIONS
+# before other middleware can short-circuit the request.
+# Security: Use environment-based origin whitelist with secure defaults and validation
+from .config import ALLOWED_ORIGINS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],  # Restrict to safe HTTP methods only
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],  # Restrict to necessary headers
+)
 
 # Include API routes
 app.include_router(routes.router, prefix="/api/v1", tags=["adhd"])

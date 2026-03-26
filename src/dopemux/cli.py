@@ -5512,6 +5512,27 @@ def _register_routing_commands():
 _register_routing_commands()
 
 
+@click.command(
+    name="pr-merge",
+    context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
+    add_help_option=False,
+)
+@click.pass_context
+def pr_merge_group(ctx):
+    """Delegate PR merge specialist commands to the argparse-based specialist CLI."""
+    from dopemux_pr_merge_specialist.cli import build_parser
+
+    parser = build_parser()
+    argv = list(ctx.args)
+    if not argv:
+        argv = ["--help"]
+    parsed = parser.parse_args(argv)
+    raise SystemExit(parsed.func(parsed))
+
+
+cli.add_command(pr_merge_group, "pr-merge")
+
+
 def main():
     """Main entry point."""
     try:

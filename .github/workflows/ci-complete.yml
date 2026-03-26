@@ -162,6 +162,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .[dev]
+          # Install service-level deps needed by unit tests that import service modules
+          for svc_req in services/*/requirements.txt; do
+            pip install -r "$svc_req" 2>/dev/null || true
+          done
 
       - name: 📦 Setup dopeTask venv from pip
         run: |

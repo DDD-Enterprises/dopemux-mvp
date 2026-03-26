@@ -121,6 +121,22 @@ class TestInMemoryAdapter:
 
         callback.assert_not_called()
 
+    @pytest.mark.asyncio
+    async def test_publish_rejects_pm_event_without_idempotency_key(self):
+        adapter = InMemoryAdapter()
+        event = DopemuxEvent.create("pm", "pm.task.created", {"envelope": {"source": "taskmaster"}})
+
+        with pytest.raises(ValueError, match="idempotency_key"):
+            await adapter.publish(event)
+
+    @pytest.mark.asyncio
+    async def test_publish_rejects_pm_event_without_source(self):
+        adapter = InMemoryAdapter()
+        event = DopemuxEvent.create("pm", "pm.task.created", {"envelope": {"idempotency_key": "idem-1"}})
+
+        with pytest.raises(ValueError, match="source"):
+            await adapter.publish(event)
+
 class TestRedisStreamsAdapter:
     @pytest.mark.asyncio
     async def test_publish_local_dispatch_when_disconnected(self):
@@ -189,3 +205,19 @@ class TestRedisStreamsAdapter:
         await adapter.publish(event)
 
         callback.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_publish_rejects_pm_event_without_idempotency_key(self):
+        adapter = RedisStreamsAdapter(redis_url="redis://localhost")
+        event = DopemuxEvent.create("pm", "pm.task.created", {"envelope": {"source": "taskmaster"}})
+
+        with pytest.raises(ValueError, match="idempotency_key"):
+            await adapter.publish(event)
+
+    @pytest.mark.asyncio
+    async def test_publish_rejects_pm_event_without_source(self):
+        adapter = RedisStreamsAdapter(redis_url="redis://localhost")
+        event = DopemuxEvent.create("pm", "pm.task.created", {"envelope": {"idempotency_key": "idem-1"}})
+
+        with pytest.raises(ValueError, match="source"):
+            await adapter.publish(event)
