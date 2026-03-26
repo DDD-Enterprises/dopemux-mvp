@@ -7,7 +7,13 @@
     "S3": {"prompt_path": "PROMPT_S3_ARCH_PROOF_HOOKS.md", "tier": "synthesis"},
     "S4": {"prompt_path": "PROMPT_S4_TRUTH_PACK_INDEX.md", "tier": "synthesis"},
     "S5": {"prompt_path": "PROMPT_S5_DECISION_GRAPH.md", "tier": "synthesis"},
-    "S6": {"prompt_path": "PROMPT_S6_LEANTIME_ANALYSIS.md", "tier": "synthesis"}
+    "S6": {"prompt_path": "PROMPT_S6_LEANTIME_ANALYSIS.md", "tier": "synthesis"},
+    "S7": {"prompt_path": "PROMPT_S7_DEDUPE_SORT.md", "tier": "synthesis"},
+    "S8": {"prompt_path": "PROMPT_S8_DRIFT_CHECK.md", "tier": "synthesis"},
+    "S9": {"prompt_path": "PROMPT_S9_PROMOTION_READINESS.md", "tier": "synthesis"},
+    "S10": {"prompt_path": "PROMPT_S10_REDACTION_PASS.md", "tier": "synthesis"},
+    "S11": {"prompt_path": "PROMPT_S11_CONTRACT_LINTER.md", "tier": "synthesis"},
+    "S12": {"prompt_path": "PROMPT_S12_STABILITY_SIGNATURE.md", "tier": "synthesis"}
   },
   "version": 1
 }

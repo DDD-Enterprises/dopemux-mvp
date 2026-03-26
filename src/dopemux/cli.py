@@ -4060,7 +4060,8 @@ def extractor_validate_live(
     report_path = Path(report_root) / payload["run_id"] / "VALIDATION_REPORT.json"
     console.logger.info(f"validation_report={report_path}")
     if payload.get("status") != "pass":
-        raise click.ClickException("Live validation failed. See the validation report for blockers.")
+        blockers = payload.get("blockers") or ["Live validation failed."]
+        raise click.ClickException(f"{blockers[0]} See {report_path}.")
 
 
 @upgrades.group("promptset")

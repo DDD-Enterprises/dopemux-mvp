@@ -11,11 +11,36 @@ Repo Truth Extractor is the canonical extraction service for dopemux.
 ## Canonical CLI
 
 ```bash
+pip install -e ".[dev]"
 dopemux upgrades run --pipeline-version v5 --phase ALL --dry-run
 dopemux upgrades preflight --pipeline-version v5 --auth-doctor
 dopemux upgrades validate-live --promptset-root /abs/path/to/generated/promptset
 dopemux extractor validate --output-dir /abs/path/to/generated/promptset
 ```
+
+## Validation Prerequisites
+
+`dopemux upgrades validate-live` now fails closed if the active `dopemux` import does not come from this checkout.
+
+Use one of:
+
+```bash
+pip install -e ".[dev]"
+PYTHONPATH=src python -m dopemux.cli upgrades validate-live --promptset-root /abs/path/to/generated/promptset
+```
+
+Local scanner/toolchain check:
+
+```bash
+python scripts/check_validation_toolchain.py
+```
+
+Expected local tools:
+
+- Python scanners from the repo `dev` extra: `pip-audit`, `bandit`, `semgrep`
+- External binary on `PATH`: `gitleaks`
+
+If `gitleaks` is missing, install it separately before running live validation.
 
 ## Runner Entrypoints
 

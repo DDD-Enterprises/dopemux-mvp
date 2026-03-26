@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import importlib.util
 import json
@@ -12,9 +13,13 @@ import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from types import SimpleNamespace
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
+
+import yaml
 
 from .extractor_commands import _extractor_runner_path, _resolve_extractor_root
+from services.shared.mcp.pal_client import PALClient
 
 
 DEFAULT_REPORT_ROOT = Path("reports/repo-truth-extractor/validation")
@@ -27,6 +32,12 @@ DEFAULT_PROVIDER_ENV_VARS = (
     "GEMINI_API_KEY",
     "XAI_API_KEY",
     "OPENROUTER_API_KEY",
+)
+DEFAULT_PAL_BASE_URL = "http://localhost:3003"
+DEFAULT_PAL_CONSENSUS_MODELS = (
+    {"model": "sonnet", "stance": "neutral"},
+    {"model": "gemini", "stance": "for"},
+    {"model": "grok4-fast", "stance": "against"},
 )
 DEFAULT_SECURITY_COMMANDS: Dict[str, Sequence[str]] = {
     "pip_audit": ("pip-audit",),
@@ -114,6 +125,16 @@ def _load_json(path: Path) -> Dict[str, Any]:
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _load_yaml(path: Path) -> Dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
     except Exception:
         return {}
     return payload if isinstance(payload, dict) else {}
@@ -259,16 +280,20 @@ class LiveValidationRunner:
         self.blockers: List[str] = []
         self.started_at = time.monotonic()
         self.pricing_manifest = _load_pricing_manifest(config.pricing_manifest)
+        self.pal_base_url = os.getenv("PAL_URL", os.getenv("ZEN_URL", DEFAULT_PAL_BASE_URL))
 
     def run(self) -> Dict[str, Any]:
         self._record_baseline()
         try:
+            self._ensure_repo_local_cli_origin()
             self._run_preflight_stages()
             if self.config.stage in {"canary", "full"}:
                 self._ensure_pricing_manifest_for_paid_stage()
                 self._run_paid_canary()
+                self._record_pal_consensus(stage_label="canary")
             if self.config.stage == "full":
                 self._run_paid_full()
+                self._record_pal_consensus(stage_label="full")
         except ValidationFailure as exc:
             self.blockers.append(str(exc))
 
@@ -283,6 +308,12 @@ class LiveValidationRunner:
             self.blockers.append(f"{record.name}: {record.detail}")
 
     def _record_baseline(self) -> None:
+        try:
+            import dopemux  # type: ignore
+
+            dopemux_module_path = str(Path(dopemux.__file__).resolve())
+        except Exception:
+            dopemux_module_path = "UNKNOWN"
         provider_env = {
             key: {"present": bool(os.environ.get(key)), "source": "env"}
             for key in DEFAULT_PROVIDER_ENV_VARS
@@ -294,10 +325,13 @@ class LiveValidationRunner:
             "git_sha": self._git_sha(),
             "python_version": platform.python_version(),
             "python_executable": sys.executable,
+            "pythonpath": os.environ.get("PYTHONPATH", ""),
             "platform": platform.platform(),
+            "dopemux_module_path": dopemux_module_path,
             "promptset_root": str(self.config.promptset_root.resolve()),
             "routing_policy": self.config.routing_policy,
             "stage": self.config.stage,
+            "pal_base_url": self.pal_base_url,
             "caps": {
                 "canary_max_usd": self.config.canary_max_usd,
                 "canary_max_minutes": self.config.canary_max_minutes,
@@ -349,6 +383,33 @@ class LiveValidationRunner:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
+
+    def _ensure_repo_local_cli_origin(self) -> None:
+        import dopemux  # type: ignore
+
+        module_path = Path(dopemux.__file__).resolve()
+        expected_root = (self.repo_root / "src").resolve()
+        try:
+            module_path.relative_to(expected_root)
+            status = "pass"
+            detail = f"repo-local dopemux import confirmed: {module_path}"
+        except ValueError:
+            status = "fail"
+            detail = (
+                "validate-live must run from the current checkout, but dopemux resolved to "
+                f"{module_path}. Reinstall with `pip install -e \".[dev]\"` or run with `PYTHONPATH=src`."
+            )
+        self._record_step(
+            StepRecord(
+                name="repo_local_cli_origin",
+                kind="preflight",
+                status=status,
+                detail=detail,
+                artifacts={"dopemux_module_path": str(module_path)},
+            )
+        )
+        if status != "pass":
+            raise ValidationFailure(detail)
 
     def _run_command(
         self,
@@ -410,6 +471,7 @@ class LiveValidationRunner:
         self._run_reliability_tests()
         self._run_security_gates()
         self._run_non_paid_execution_gates()
+        self._record_pal_challenge()
 
     def _validate_prompt_sources(self) -> None:
         promptset_root = self.config.promptset_root.resolve()
@@ -471,9 +533,21 @@ class LiveValidationRunner:
 
     def _record_prompt_discovery_contract(self) -> None:
         runner = self._load_v5_runner_module()
+        runner.set_active_s_prompts_mode("registry")
+        promptset_contract = self._load_repo_default_promptset_contract()
+        registry_contract = self._load_phase_s_registry_contract()
+        canonical_contract = {
+            phase: set(steps)
+            for phase, steps in runner.REQUIRED_PROMPT_STEP_IDS.items()
+        }
+        canonical_contract["C"] = set(promptset_contract.get("C", set()))
+        canonical_contract["Q"] = set(promptset_contract.get("Q", set()))
+        canonical_contract["S"] = set(registry_contract)
         phase_results: Dict[str, Any] = {}
         drift: Dict[str, Any] = {}
-        for phase, required_steps in sorted(runner.REQUIRED_PROMPT_STEP_IDS.items()):
+        promptset_s_steps = set(promptset_contract.get("S", set()))
+        registry_promptset_match = registry_contract == promptset_s_steps
+        for phase, required_steps in sorted(canonical_contract.items()):
             try:
                 specs = runner.get_phase_prompts(phase)
                 observed_steps = [spec.step_id for spec in specs]
@@ -492,10 +566,15 @@ class LiveValidationRunner:
                     "prompt_paths_exist": False,
                     "error": f"{type(exc).__name__}: {exc}",
                 }
+            if phase == "S":
+                phase_result["registry_steps"] = sorted(registry_contract)
+                phase_result["promptset_steps"] = sorted(promptset_s_steps)
+                phase_result["registry_promptset_match"] = registry_promptset_match
             phase_results[phase] = phase_result
             if (
                 not phase_result.get("matches")
                 or not bool(phase_result.get("prompt_paths_exist"))
+                or (phase == "S" and not registry_promptset_match)
             ):
                 drift[phase] = phase_result
 
@@ -504,6 +583,9 @@ class LiveValidationRunner:
             artifact_path,
             {
                 "generated_at": now_iso(),
+                "canonical_contract": {
+                    phase: sorted(steps) for phase, steps in sorted(canonical_contract.items())
+                },
                 "phase_results": phase_results,
                 "drift": drift,
             },
@@ -517,6 +599,39 @@ class LiveValidationRunner:
                 artifacts={"result_path": str(artifact_path.resolve())},
             )
         )
+
+    def _load_repo_default_promptset_contract(self) -> Dict[str, Set[str]]:
+        promptset_path = self.service_root / "promptsets" / "v4" / "promptset.yaml"
+        payload = _load_yaml(promptset_path)
+        phases = payload.get("phases")
+        if not isinstance(phases, dict):
+            raise ValidationFailure(
+                f"Repo-default promptset contract is malformed: {promptset_path}"
+            )
+        contract: Dict[str, Set[str]] = {}
+        for phase in ("C", "Q", "S"):
+            phase_payload = phases.get(phase)
+            if not isinstance(phase_payload, dict):
+                raise ValidationFailure(
+                    f"Repo-default promptset contract is missing phase {phase}: {promptset_path}"
+                )
+            required = phase_payload.get("required_steps")
+            if not isinstance(required, list) or not required:
+                raise ValidationFailure(
+                    f"Repo-default promptset contract is missing required_steps for {phase}: {promptset_path}"
+                )
+            contract[phase] = {
+                str(step).strip().upper() for step in required if str(step).strip()
+            }
+        return contract
+
+    def _load_phase_s_registry_contract(self) -> Set[str]:
+        registry_path = self.service_root / "prompts" / "phase_s" / "registry.json"
+        payload = _load_json(registry_path)
+        steps = payload.get("steps")
+        if not isinstance(steps, dict) or not steps:
+            raise ValidationFailure(f"Phase S registry is malformed: {registry_path}")
+        return {str(step).strip().upper() for step in steps if str(step).strip()}
 
     def _run_reliability_tests(self) -> None:
         self._record_step(
@@ -565,9 +680,24 @@ class LiveValidationRunner:
     def _run_security_gates(self) -> None:
         pal_health = self._run_command(
             "pal_health",
-            [sys.executable, "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3003/health', timeout=5).read()"],
+            [
+                sys.executable,
+                "-c",
+                (
+                    "import urllib.request; "
+                    f"urllib.request.urlopen('{self.pal_base_url}/health', timeout=5).read()"
+                ),
+            ],
         )
         self._record_step(pal_health)
+        self._record_step(
+            self._run_command(
+                "validation_toolchain_check",
+                [sys.executable, "scripts/check_validation_toolchain.py", "--json"],
+                kind="security",
+            )
+        )
+        self._record_pal_apilookup()
 
         for name, command in DEFAULT_SECURITY_COMMANDS.items():
             binary = command[0]
@@ -586,6 +716,194 @@ class LiveValidationRunner:
 
         if self.blockers:
             raise ValidationFailure("Security or supply-chain gates failed.")
+
+    def _provider_model_inventory(self) -> Dict[str, List[str]]:
+        model_map = _load_yaml(self.config.promptset_root / "model_map.yaml")
+        steps = model_map.get("steps")
+        providers = ("openai", "gemini", "xai", "openrouter")
+        inventory: Dict[str, Set[str]] = {provider: set() for provider in providers}
+        if isinstance(steps, list):
+            for row in steps:
+                if not isinstance(row, dict):
+                    continue
+                for route_key in ("primary_routes", "repair_routes", "sidefill_routes"):
+                    routes = row.get(route_key)
+                    if not isinstance(routes, list):
+                        continue
+                    for route in routes:
+                        if not isinstance(route, dict):
+                            continue
+                        provider = str(route.get("provider", "")).strip().lower()
+                        model_id = str(route.get("model_id", "")).strip()
+                        if provider in inventory and model_id:
+                            inventory[provider].add(model_id)
+        return {provider: sorted(models) for provider, models in inventory.items()}
+
+    async def _call_pal_tool(self, tool_name: str, prompt: str) -> Dict[str, Any]:
+        async with PALClient(
+            self.pal_base_url,
+            SimpleNamespace(api_key=os.getenv("PAL_API_KEY", "")),
+        ) as client:
+            if tool_name == "apilookup":
+                result = await client.apilookup(prompt)
+            elif tool_name == "challenge":
+                result = await client.challenge(prompt)
+            else:
+                raise ValueError(f"Unsupported PAL tool: {tool_name}")
+        if not isinstance(result, dict):
+            raise ValidationFailure(
+                f"PAL {tool_name} returned malformed payload: {type(result).__name__}"
+            )
+        return result
+
+    async def _call_pal_consensus(self, prompt: str) -> Dict[str, Any]:
+        async with PALClient(
+            self.pal_base_url,
+            SimpleNamespace(api_key=os.getenv("PAL_API_KEY", "")),
+        ) as client:
+            result = await client.consensus(
+                step=prompt,
+                step_number=1,
+                total_steps=len(DEFAULT_PAL_CONSENSUS_MODELS),
+                next_step_required=False,
+                findings="Repo Truth Extractor live validation adjudication",
+                models=[dict(model) for model in DEFAULT_PAL_CONSENSUS_MODELS],
+            )
+        if not isinstance(result, dict):
+            raise ValidationFailure(
+                f"PAL consensus returned malformed payload: {type(result).__name__}"
+            )
+        return result
+
+    def _write_pal_artifact(self, filename: str, payload: Dict[str, Any]) -> Path:
+        artifact_path = self.report_dir / filename
+        _write_json(artifact_path, payload)
+        if not artifact_path.exists():
+            raise ValidationFailure(f"Missing required PAL evidence artifact: {artifact_path}")
+        return artifact_path
+
+    def _record_pal_apilookup(self) -> None:
+        inventory = self._provider_model_inventory()
+        prompt = (
+            "Validate current API/model assumptions for the repo-truth-extractor v5 live validation path.\n"
+            f"Promptset root: {self.config.promptset_root.resolve()}\n"
+            "Confirm the latest auth and model-availability assumptions for these providers and route families:\n"
+            f"- OpenAI: {inventory.get('openai', [])}\n"
+            f"- Gemini: {inventory.get('gemini', [])}\n"
+            f"- xAI: {inventory.get('xai', [])}\n"
+            f"- OpenRouter: {inventory.get('openrouter', [])}\n"
+            "Call out any model IDs or auth assumptions that appear stale or risky."
+        )
+        try:
+            result = asyncio.run(self._call_pal_tool("apilookup", prompt))
+            artifact_path = self._write_pal_artifact(
+                "PAL_API_LOOKUP.json",
+                {
+                    "generated_at": now_iso(),
+                    "pal_base_url": self.pal_base_url,
+                    "prompt": prompt,
+                    "provider_inventory": inventory,
+                    "result": result,
+                },
+            )
+            status = "pass"
+            detail = "PAL apilookup evidence recorded"
+            artifacts = {"result_path": str(artifact_path.resolve())}
+        except Exception as exc:
+            status = "fail"
+            detail = f"PAL apilookup failed: {type(exc).__name__}: {exc}"
+            artifacts = {}
+        self._record_step(
+            StepRecord(
+                name="pal_apilookup",
+                kind="pal",
+                status=status,
+                detail=detail,
+                artifacts=artifacts,
+            )
+        )
+
+    def _record_pal_challenge(self) -> None:
+        summary_lines = [
+            f"{step.name}: {step.status} ({step.detail})"
+            for step in self.steps
+            if step.name not in {"pal_challenge", "pal_consensus"}
+        ]
+        prompt = (
+            "Challenge this repo-truth-extractor v5 live validation preflight evidence set.\n"
+            "Identify weak assumptions, hidden blockers, or missing validations before paid execution.\n"
+            + "\n".join(summary_lines)
+        )
+        try:
+            result = asyncio.run(self._call_pal_tool("challenge", prompt))
+            artifact_path = self._write_pal_artifact(
+                "PAL_CHALLENGE.json",
+                {
+                    "generated_at": now_iso(),
+                    "pal_base_url": self.pal_base_url,
+                    "prompt": prompt,
+                    "result": result,
+                },
+            )
+            status = "pass"
+            detail = "PAL challenge evidence recorded"
+            artifacts = {"result_path": str(artifact_path.resolve())}
+        except Exception as exc:
+            status = "fail"
+            detail = f"PAL challenge failed: {type(exc).__name__}: {exc}"
+            artifacts = {}
+        self._record_step(
+            StepRecord(
+                name="pal_challenge",
+                kind="pal",
+                status=status,
+                detail=detail,
+                artifacts=artifacts,
+            )
+        )
+        if status != "pass":
+            raise ValidationFailure(detail)
+
+    def _record_pal_consensus(self, *, stage_label: str) -> None:
+        summary_lines = [
+            f"{step.name}: {step.status} ({step.detail})"
+            for step in self.steps
+            if step.name != "pal_consensus"
+        ]
+        prompt = (
+            f"Provide a go/no-go adjudication for repo-truth-extractor v5 live validation after {stage_label} evidence.\n"
+            "Use the evidence summary below and state whether the run should proceed.\n"
+            + "\n".join(summary_lines)
+        )
+        try:
+            result = asyncio.run(self._call_pal_consensus(prompt))
+            artifact_path = self._write_pal_artifact(
+                f"PAL_CONSENSUS_{stage_label.upper()}.json",
+                {
+                    "generated_at": now_iso(),
+                    "pal_base_url": self.pal_base_url,
+                    "prompt": prompt,
+                    "result": result,
+                },
+            )
+            status = "pass"
+            detail = f"PAL consensus evidence recorded for {stage_label}"
+            artifacts = {"result_path": str(artifact_path.resolve())}
+        except Exception as exc:
+            status = "fail"
+            detail = f"PAL consensus failed: {type(exc).__name__}: {exc}"
+            artifacts = {}
+        self._record_step(
+            StepRecord(
+                name="pal_consensus",
+                kind="pal",
+                status=status,
+                detail=detail,
+                artifacts=artifacts,
+            )
+        )
+        if status != "pass":
+            raise ValidationFailure(detail)
 
     def _run_non_paid_execution_gates(self) -> None:
         promptset_root = str(self.config.promptset_root.resolve())
