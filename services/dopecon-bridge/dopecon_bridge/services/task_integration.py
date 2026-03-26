@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import uuid
-from dataclasses import asdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -14,15 +13,32 @@ logger = logging.getLogger(__name__)
 
 
 class TaskIntegrationService:
-    """Core task integration adapter to canonical backends."""
+    """Core task integration adapter to canonical backends.
+    
+    This service serves as a bridge between the frontend/API and the 
+    authoritative PM Plane. It has been refactored to remove local 
+    state (shadow authority) and instead delegate all operations to 
+    the PM Plane pillars (Task Orchestrator, ConPort, and Leantime).
+    """
 
     def __init__(self):
+        """Initialize the adapter with an MCP client manager."""
         self.mcp_manager = mcp_client
 
     async def parse_prd_to_tasks(self, prd_content: str, project_id: str) -> List[Task]:
         """
-        Parse PRD using Task-Master-AI and route directly to canonical PM backend.
-        No local DB storage.
+        Parse a PRD document into structured tasks using Task-Master-AI.
+        
+        This method utilizes the `task-master-ai` MCP tool to perform semantic 
+        decomposition of requirement text into structured task objects, 
+        associating them with the specified project.
+
+        Args:
+            prd_content: The raw text of the PRD.
+            project_id: The project identifier.
+
+        Returns:
+            A list of initialized Task objects.
         """
         logger.info(f"🔍 Parsing PRD for project {project_id} via adapter (instance: {settings.instance_name})")
 
@@ -59,7 +75,11 @@ class TaskIntegrationService:
             raise
 
     async def _sync_tasks_to_leantime(self, tasks: List[Task]):
-        """Sync tasks to Leantime for project management tracking."""
+        """Sync tasks to Leantime for project management tracking.
+        
+        Args:
+            tasks: List of Task objects to synchronize.
+        """
         if not tasks:
             return
 
@@ -94,7 +114,14 @@ class TaskIntegrationService:
 
     async def get_next_actionable_tasks(self, project_id: str, limit: int = 5) -> List[Task]:
         """
-        Route request to canonical PM backend to get next actionable tasks.
+        Retrieve next actionable tasks by delegating to the leantime-bridge authority.
+        
+        Args:
+            project_id: The project identifier.
+            limit: Maximum number of tasks to return.
+
+        Returns:
+            A list of Task objects from the mirror authority.
         """
         try:
             # Query canonical backend for actionable tasks
@@ -124,6 +151,42 @@ class TaskIntegrationService:
             logger.error(f"❌ Failed to get actionable tasks: {e}")
             return []
 
+    async def get_priority_queue(self, project_id: str) -> Dict[str, Any]:
+        """Retrieve the canonical workflow queue from task-orchestrator via HTTP."""
+        fail_closed = {
+            "project_id": project_id,
+            "linked_ids": {},
+            "legality_result": "unavailable",
+            "blockers": [],
+            "next_action": None,
+            "queue_items": [],
+        }
+
+        try:
+            await self.mcp_manager.initialize()
+            url = f"{settings.task_orchestrator_url}/api/projects/{project_id}/workflow/queue"
+            async with self.mcp_manager.session.get(url) as response:
+                if response.status != 200:
+                    logger.warning(
+                        "⚠️ Task Orchestrator queue read returned %s for %s",
+                        response.status,
+                        project_id,
+                    )
+                    return fail_closed
+
+                payload = await response.json()
+                payload.setdefault("project_id", project_id)
+                payload.setdefault("linked_ids", {})
+                payload.setdefault("legality_result", "unavailable")
+                payload.setdefault("blockers", [])
+                payload.setdefault("next_action", None)
+                payload.setdefault("queue_items", [])
+                return payload
+
+        except Exception as e:
+            logger.error(f"❌ Failed to get priority queue: {e}")
+            return fail_closed
+
     async def update_task_status(
         self,
         task_id: str,
@@ -131,7 +194,21 @@ class TaskIntegrationService:
         assigned_to: str = None
     ) -> Dict[str, Any]:
         """
-        Route task status update to canonical backend.
+        Update a task's status across all authorities.
+        
+        This method performs a dual-update:
+        1. Executes a workflow transition via the PM Plane's 
+           authoritative `pm_transition_work_item` tool.
+        2. Updates the task in Leantime (the mirror authority) via 
+           the `leantime-bridge`.
+
+        Args:
+            task_id: The ID of the task to update.
+            new_status: The target status.
+            assigned_to: Optional assignee update.
+
+        Returns:
+            A dictionary containing the success status and updated task data.
         """
         logger.info(f"🔄 Routing task {task_id} status update to {new_status.value} via adapter")
 
