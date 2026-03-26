@@ -115,7 +115,7 @@ class SessionEvent(Event):
     session_name: Optional[str] = Field(default=None)
 
 
-class PMEvent(BaseModel):
+class PMEvent(Event):
     """Canonical PM-plane envelope event."""
 
     type: str = Field(default="pm", description="Canonical PM event model kind")
