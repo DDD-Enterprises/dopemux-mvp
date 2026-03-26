@@ -118,8 +118,8 @@ head -80 src/dopemux/memory/capture_client.py
 Purpose: Inspect the core library capture client.
 
 ```
-head -100 docs/spec/dope-memory/v1/07_mcp_contracts.md
-head -40 docs/spec/dope-memory/v1/README.md
+head -100 docs/spec/dope-memory/v1/07-mcp-contracts.md
+head -40 docs/spec/dope-memory/v1/readme-2.md
 ls docs/spec/dope-memory/v1/
 ```
 Purpose: Inspect specification documents for MCP tool contracts.

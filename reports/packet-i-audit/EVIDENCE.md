@@ -366,7 +366,7 @@ Format: `path:Ln-Lm` plus short snippet.
 - Snippet: Every return dict includes `"success": True` or `"success": False`
 - Proof: Enumerated all return paths across all 7 tools.
 
-- File: docs/spec/dope-memory/v1/07_mcp_contracts.md
+- File: docs/spec/dope-memory/v1/07-mcp-contracts.md
 - Lines: 3
 - Snippet: `All responses include a success: boolean field (True for success, False for error).`
 - Proof: Contract matches implementation.

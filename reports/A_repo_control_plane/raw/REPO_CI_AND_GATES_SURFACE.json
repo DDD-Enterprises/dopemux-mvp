@@ -9649,16 +9649,16 @@
         "anchor": "root",
         "excerpt_hash": "391989297a5401cb36c8aad843b741d3e8b00304fc2108b6ba23c6d7cd32f7f1",
         "excerpt_snippet": "--- id: DOC_GATE title: Doc Gate type: explanation owner: '@hu3mann' author: '@hu3mann' date: '2026-02-13' last_review: '2026-02-13' next_review: '2026-05-14' p",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
-      "policy_path": "docs/planes/pm/dopemux/DOC_GATE.md",
+      "policy_path": "docs/planes/pm/dopemux/doc-gate-2.md",
       "rules": [
         {
           "evidence": {
             "anchor": "L26",
             "excerpt_hash": "0db58fa2a2c25ceb7a2036ce9a511fcd5fd7f20ba1f11151d5622738a1481618",
             "excerpt_snippet": "- TaskX remains deterministic and \"boring\" (no policy/memory/MCP intelligence ownership).",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "rule": "- TaskX remains deterministic and \"boring\" (no policy/memory/MCP intelligence ownership).",
           "scope": null
@@ -9668,7 +9668,7 @@
             "anchor": "L53",
             "excerpt_hash": "7c28771d9f1243e3ea22130387d67ae566b45136265e56b69e1d1385d04d1236",
             "excerpt_snippet": "- No link points outside docs/planes/pm/dopemux/ unless explicitly allowed in allowlist",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "rule": "- No link points outside docs/planes/pm/dopemux/ unless explicitly allowed in allowlist",
           "scope": null
@@ -9678,7 +9678,7 @@
             "anchor": "L66",
             "excerpt_hash": "87ac00d7f3d8bd3c04ed239d7558cdee7ae7e7ffae2b9dc4d7cdbd0aff6fb94f",
             "excerpt_snippet": "- routing intelligence, cost optimization, limit tracking policy",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "rule": "- routing intelligence, cost optimization, limit tracking policy",
           "scope": null
@@ -9688,7 +9688,7 @@
             "anchor": "L73",
             "excerpt_hash": "6caec1325a90a495cb41663a04d8b2a7590c07de8d9b25679a1e0118daf238a0",
             "excerpt_snippet": "### 7) FACT ANCHORS hygiene (v0)",
-            "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+            "path": "docs/planes/pm/dopemux/doc-gate-2.md"
           },
           "rule": "### 7) FACT ANCHORS hygiene (v0)",
           "scope": null
