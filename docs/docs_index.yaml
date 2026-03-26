@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-03-11'
+last_updated: '2026-03-26'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: QUICK_START.md
@@ -77,6 +77,7 @@ how_to:
   repo_truth_extractor_truth_run: docs/02-how-to/extraction/truth-run-command.md
   doc_audit_prescan_how_to: docs/02-how-to/doc-audit-prescan.md
   extraction_wizard_how_to: docs/02-how-to/extraction-wizard.md
+  pr_merge_flight_dashboard: docs/02-how-to/pr-merge-flight-dashboard.md
 tutorials:
   directory: docs/01-tutorials/
   start_here: docs/01-tutorials/start-here-2.md
@@ -114,6 +115,7 @@ explanation:
   dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
+  pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
 archive:
   completed_projects: docs/archive/completed-projects/
   session_notes: docs/archive/session-notes/
@@ -144,3 +146,4 @@ skills:
   pr_docgen_sync_gemini: templates/skills/pr-docgen-sync-gemini/SKILL.md
   pr_docgen_sync_copilot: templates/skills/pr-docgen-sync-copilot/SKILL.md
   pr_docgen_sync_claude: templates/skills/pr-docgen-sync-claude/SKILL.md
+  pr_merge_specialist: templates/skills/pr-merge-specialist/SKILL.md

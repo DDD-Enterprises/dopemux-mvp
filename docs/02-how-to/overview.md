@@ -3,8 +3,8 @@ id: README
 title: Readme
 type: how-to
 owner: '@hu3mann'
-last_review: '2025-11-10'
-next_review: '2026-02-08'
+last_review: '2026-03-26'
+next_review: '2026-06-26'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: Readme (how-to) for dopemux documentation and developer workflows.
@@ -58,6 +58,7 @@ Day-to-day operational tasks and workflows.
 ### Workflow Management
 - **[Role Switching Quickstart](role-switching-quickstart.md)** - Switch between development roles
 - **[Instance Slash Commands](instance-slash-commands.md)** - Command reference
+- **[PR Merge Flight Dashboard](pr-merge-flight-dashboard.md)** - Queue operations for `dopemux pr-merge flight` and `dopemux-pr-merge flight`
 
 ### ADHD Engine
 - **[Serena V2 Deployment](serena-v2-production-deployment.md#-quick-start---production-deployment)** - Deploy ADHD intelligence
@@ -67,6 +68,7 @@ Day-to-day operational tasks and workflows.
 - **[Master Index](../00-MASTER-INDEX.md)** - Canonical active docs navigation
 - **[Documentation Catalog](../03-reference/documentation-catalog.md)** - Index/list and policy references
 - **PR Docgen Sync Skill (Template)** - `templates/skills/pr-docgen-sync/`
+- **PR Merge Specialist Skill (Template)** - `templates/skills/pr-merge-specialist/`
 - **Skill Installer** - `scripts/skills/sync_repo_skills.py`
 
 ---

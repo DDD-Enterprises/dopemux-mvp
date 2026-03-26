@@ -3,8 +3,8 @@ id: README
 title: Readme
 type: reference
 owner: '@hu3mann'
-last_review: '2025-11-10'
-next_review: '2026-02-08'
+last_review: '2026-03-26'
+next_review: '2026-06-26'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: Readme (reference) for dopemux documentation and developer workflows.
@@ -60,6 +60,7 @@ Configuration schemas and references.
 - **[Documentation Catalog](documentation-catalog.md)** - Canonical index/list surfaces and rules
 - **PR Docgen Sync Skill (Core Template)** - `templates/skills/pr-docgen-sync/`
 - **Gemini/Copilot/Claude Wrappers** - `templates/skills/pr-docgen-sync-*/`
+- **PR Merge Specialist Skill (Template)** - `templates/skills/pr-merge-specialist/`
 - **Skill Sync Script** - `scripts/skills/sync_repo_skills.py`
 
 ### PM Plane Contracts

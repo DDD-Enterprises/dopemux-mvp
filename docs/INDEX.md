@@ -5,8 +5,8 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-11'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
+last_review: '2026-03-26'
+next_review: '2026-06-26'
 prelude: Canonical entrypoint for active Dopemux documentation indexes, section overviews, and automation workflows.
 ---
 # Documentation Index
@@ -24,6 +24,8 @@ Use this file as the root pointer for active documentation navigation and mainte
 - [Reference Overview](03-reference/overview.md)
 - [Explanation Overview](04-explanation/overview.md)
 - [Documentation Catalog](03-reference/documentation-catalog.md)
+- [PR Merge Flight Dashboard](02-how-to/pr-merge-flight-dashboard.md)
+- [PR Merge Queue Orchestration](04-explanation/pr-merge-queue-orchestration.md)
 
 ## Skill Templates for Documentation Sync
 
@@ -32,6 +34,7 @@ Use this file as the root pointer for active documentation navigation and mainte
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
+- PR Merge Specialist skill: `templates/skills/pr-merge-specialist/`
 - Skill installer script: `scripts/skills/sync_repo_skills.py`
 
 ## Validation Gates

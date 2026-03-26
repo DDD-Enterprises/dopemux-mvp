@@ -323,20 +323,13 @@ def apply_thread_dispositions(
                     _execute_thread_graphql(
                         graph_reply_to_thread,
                         disposition.thread_id,
-                        "Automated queue-drain applied a minimal fix and will run verification before merge.",
+                        "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
                         repo_root=repo_root,
                         timeout_seconds=timeout_seconds,
                     ),
                 )
-                append_command_log(
-                    commands_log,
-                    _execute_thread_graphql(
-                        graph_resolve_thread,
-                        disposition.thread_id,
-                        repo_root=repo_root,
-                        timeout_seconds=timeout_seconds,
-                    ),
-                )
+                # DEFERRED: graph_resolve_thread is no longer called here.
+                # It must be called after verification passes.
             applied.append(
                 ThreadDisposition(
                     thread_id=disposition.thread_id,
@@ -359,15 +352,7 @@ def apply_thread_dispositions(
                         timeout_seconds=timeout_seconds,
                     ),
                 )
-                append_command_log(
-                    commands_log,
-                    _execute_thread_graphql(
-                        graph_resolve_thread,
-                        disposition.thread_id,
-                        repo_root=repo_root,
-                        timeout_seconds=timeout_seconds,
-                    ),
-                )
+                # DEFERRED: Resolution moved to resolve_verified_threads
             applied.append(
                 ThreadDisposition(
                     thread_id=disposition.thread_id,
@@ -385,20 +370,12 @@ def apply_thread_dispositions(
                     _execute_thread_graphql(
                         graph_reply_to_thread,
                         disposition.thread_id,
-                        "Outdated thread auto-resolved after re-validation with no newer objections.",
+                        "Outdated thread candidate for auto-resolution; pending verification.",
                         repo_root=repo_root,
                         timeout_seconds=timeout_seconds,
                     ),
                 )
-                append_command_log(
-                    commands_log,
-                    _execute_thread_graphql(
-                        graph_resolve_thread,
-                        disposition.thread_id,
-                        repo_root=repo_root,
-                        timeout_seconds=timeout_seconds,
-                    ),
-                )
+                # DEFERRED: Resolution moved to resolve_verified_threads
             applied.append(
                 ThreadDisposition(
                     thread_id=disposition.thread_id,
@@ -411,3 +388,36 @@ def apply_thread_dispositions(
             continue
         applied.append(disposition)
     return applied
+
+
+def resolve_verified_threads(
+    *,
+    dispositions: List[ThreadDisposition],
+    execute: bool,
+    commands_log: Path,
+    repo_root: Path,
+    policy: Dict[str, Any],
+) -> None:
+    """Resolve threads that were previously applied or marked for resolution, now that verification has passed."""
+    if not execute:
+        return
+
+    timeout_seconds = int(policy.get("timeouts", {}).get("gh_seconds", 120) or 120)
+    for disposition in dispositions:
+        if not disposition.applied:
+            continue
+
+        if disposition.disposition in {
+            "implement",
+            "decline_with_rationale",
+            "auto_resolve_outdated",
+        }:
+            append_command_log(
+                commands_log,
+                _execute_thread_graphql(
+                    graph_resolve_thread,
+                    disposition.thread_id,
+                    repo_root=repo_root,
+                    timeout_seconds=timeout_seconds,
+                ),
+            )

@@ -11,6 +11,7 @@ from typing import Dict, Iterable, List
 
 FAMILIES: Dict[str, List[str]] = {
     "testgen": ["testgen", "testgen-gemini", "testgen-copilot", "testgen-claude"],
+    "pr-merge-specialist": ["pr-merge-specialist"],
     "pr-docgen-sync": [
         "pr-docgen-sync",
         "pr-docgen-sync-gemini",
@@ -79,7 +80,7 @@ def main() -> int:
         "--family",
         action="append",
         default=[],
-        help="Skill family to sync (repeatable): testgen, pr-docgen-sync, all",
+        help="Skill family to sync (repeatable): testgen, pr-docgen-sync, pr-merge-specialist, all",
     )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()

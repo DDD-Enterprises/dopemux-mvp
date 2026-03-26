@@ -14,8 +14,18 @@ from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
 
+from .action_model import dashboard_tactic_for_snapshot, result_to_dashboard_entry
+from .preflight import preflight
 from .ux_engine import RenderMode, RichTerminalRenderer
-from .queue_drain import pr_apply, pr_merge, pr_approve, pr_ready
+from .queue_drain import (
+    pr_apply, 
+    pr_merge, 
+    pr_approve, 
+    pr_ready, 
+    _inflate_pr_result, 
+    _ignite_speculative_train,
+    build_run_paths
+)
 
 
 @dataclass
@@ -58,7 +68,7 @@ class DopemuxDashboard:
     def render(self) -> Any:
         """Assemble the entire Grand Dashboard layout."""
         if hasattr(self.ux, "render_dashboard_layout"):
-            return self.ux.render_dashboard_layout(self.state)
+            return self.ux.render_dashboard_layout(self.state, console=self.console)
         return Layout()
 
     def log_step(self, message: str, step_type: str = "INFO"):
@@ -78,15 +88,20 @@ class DopemuxDashboard:
             return None
             
         self.state.execution_log = []
-        cmd_args = argparse.Namespace(**{**vars(self.args), "id": pr_id, "execute": True})
+        cmd_args = argparse.Namespace(**{**vars(self.args), "id": pr_id, "execute": True, "allow_dirty": True})
+        if preflight(cmd_args) != 0:
+            self.log_step("EXECUTION BLOCKED BY PREFLIGHT", "ERROR")
+            self.state.status_message = f"Preflight failed for PR #{pr_id}."
+            self.state.last_action_result = "ERROR"
+            return None
         
         try:
             result = None
-            if tactic == "P":
-                self.log_step(f"ENGAGING PATCH ENGINE: PR #{pr_id}", "START")
+            if tactic == "P" or tactic == "T":
+                self.log_step(f"ENGAGING REMEDIATION ENGINE: PR #{pr_id}", "START")
                 result = pr_apply(cmd_args, progress_callback=self.log_step)
                 self.log_step("Patch Engine finished.", "SUCCESS")
-                self.state.status_message = f"Patch complete for PR #{pr_id}."
+                self.state.status_message = f"Remediation complete for PR #{pr_id}."
                     
             elif tactic == "I":
                 self.log_step(f"ENGAGING MERGE ENGINE: PR #{pr_id}", "START")
@@ -118,22 +133,10 @@ class DopemuxDashboard:
             if result:
                 self.state.last_action_result = result.lifecycle_state
                 # Preserve history if it exists
-                history = self.state.prs[self.state.active_index].get("history", [])
-                
-                return {
-                    "pr_id": result.pr_state.pr_id,
-                    "title": result.pr_state.title,
-                    "lifecycle_state": result.lifecycle_state,
-                    "ci_status": getattr(result.pr_state, "ci_status", "UNKNOWN"),
-                    "unresolved_threads": getattr(result.pr_state, "unresolved_threads", 0),
-                    "risk_score": getattr(result.pr_state, "risk_score", 0.0),
-                    "is_draft": getattr(result.pr_state, "is_draft", False),
-                    "history": history,
-                    "merge_strategy": result.merge_decision.action if result.merge_decision else "UNKNOWN",
-                    "rationale": result.merge_decision.reason if result.merge_decision else "",
-                    "blockers": [b.to_dict() for b in result.findings if str(b.kind) == "blocker"],
-                    "warnings": [b.to_dict() for b in result.findings if str(b.kind) == "warning"],
-                }
+                history = self.state.active_pr.get("history", [])
+                entry = result_to_dashboard_entry(result)
+                entry["history"] = history
+                return entry
         except Exception as e:
             self.log_step(f"CRITICAL EXECUTION ERROR", "ERROR")
             self.log_step(f"REASON: {str(e)[:150]}", "ERROR")
@@ -175,22 +178,32 @@ class DopemuxDashboard:
                         else:
                             choice = char.upper()
                     elif self.state.auto_pilot:
+                        # 1. Periodically check for 'Train' opportunities in Bulk
+                        ready_count = sum(1 for pr in self.state.prs if dashboard_tactic_for_snapshot(pr) in ("I", "R"))
+                        if ready_count >= 2:
+                            self.state.status_message = f"🚂 Autopilot: Train opportunity detected ({ready_count} PRs)..."
+                            live.update(self.render())
+                            
+                            # Reconstruct PRResult objects from snapshots
+                            results_to_train = [_inflate_pr_result(pr) for pr in self.state.prs]
+                            repo_root = Path.cwd()
+                            _, _, pr_root = build_run_paths(self.args.out_dir, self.state.run_id)
+                            commands_log = pr_root / "AUTOPILOT_TRAIN_COMMANDS.txt"
+                            
+                            train_merged, train_queued = _ignite_speculative_train(
+                                results_to_train, self.manager, repo_root, self.state.run_id, commands_log, self.policy, True
+                            )
+                            
+                            if train_merged or train_queued:
+                                self.state.status_message = f"🚂 Train integration successful. {len(train_merged)+len(train_queued)} PRs moving."
+                                # We'll let the next individual cycle refresh the PR states from GitHub
+                                time.sleep(2)
+                                continue
+
+                        # 2. Otherwise, fall back to individual tactic selection
                         active = self.state.active_pr
                         if active:
-                            lc_state = str(active.get("lifecycle_state", "discovered")).upper()
-                            unresolved = int(active.get("unresolved_threads", 0))
-                            is_draft = bool(active.get("is_draft", False))
-                            
-                            if is_draft:
-                                choice = "R"
-                            elif "READY" in lc_state or active.get("merge_strategy") == "auto_merge_fallback":
-                                choice = "I"
-                            elif unresolved > 0:
-                                choice = "P"
-                            elif "CONFLICT" in lc_state:
-                                choice = "S"
-                            else:
-                                choice = "V"
+                            choice = dashboard_tactic_for_snapshot(active)
 
                     if choice == "Q":
                         self.state.status_message = "Mission aborted by operator."
@@ -198,7 +211,7 @@ class DopemuxDashboard:
                     elif choice == "X":
                         self.state.auto_pilot = not self.state.auto_pilot
                         self.state.status_message = f"AUTO-PILOT: {'ENGAGED' if self.state.auto_pilot else 'DISENGAGED'}"
-                    elif choice == "B": # BULK APPROVE
+                    elif choice == "B":
                         self.state.status_message = "ENGAGING BULK APPROVAL..."
                         live.update(self.render())
                         for i, pr in enumerate(self.state.prs):

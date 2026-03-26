@@ -1,9 +1,8 @@
-import json
 import re
 import subprocess
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from .schema import (
     FeedbackItem,
@@ -48,7 +47,7 @@ class CommandMapper:
         # Default policy for dopemux-mvp
         self.policy_map = policy_map or {
             "pytest": "pytest",
-            "lint": "ruff check .",
+            "lint": "flake8 src/ tests/",
             "typecheck": "mypy .",
             "verify_migration": "ls src/dopemux_pr_merge_specialist/",  # Placeholder
             "build": "python3 -m build",
@@ -98,11 +97,12 @@ class VerificationExecutor:
             print(f"  ⚡ Executing: {req.mapped_command}")
             start_time = time.time()
 
-            # Execute with timeout
+            # Execute with timeout (use shlex to avoid shell injection)
             try:
+                import shlex
+
                 res = subprocess.run(
-                    req.mapped_command,
-                    shell=True,
+                    shlex.split(req.mapped_command),
                     capture_output=True,
                     text=True,
                     timeout=300,  # 5 min limit
