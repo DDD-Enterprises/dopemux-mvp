@@ -136,20 +136,23 @@ class TaskMasterWrapper:
             return
 
         try:
-            event = DopemuxEvent(
-                event_type=f"task.{event_type}",
-                source=f"task-master-{self.instance_id}",
-                instance_id=self.instance_id,
+            from dopemux.pm.adapters.core import taskmaster_event_to_pm
+            from dopemux.pm_publish import pm_envelope_to_dopemux_event
+
+            raw_event_type = f"taskmaster.task.{event_type}"
+            canonical_envelope = taskmaster_event_to_pm(
+                event_type=raw_event_type,
                 data=data,
-                priority=Priority.MEDIUM,
-                cognitive_load=CognitiveLoad.MEDIUM,
-                adhd_metadata=ADHDMetadata(
-                    interruption_allowed=event_type != "in_progress",
-                    focus_required=event_type == "in_progress",
-                    time_sensitive=False,
-                    can_batch=True
-                )
+                source=f"task-master-{self.instance_id}",
             )
+            event = pm_envelope_to_dopemux_event(canonical_envelope)
+            event.adhd_metadata = ADHDMetadata(
+                interruption_allowed=event_type != "in_progress",
+                focus_required=event_type == "in_progress",
+                time_sensitive=False,
+                can_batch=True
+            )
+            event.instance_id = self.instance_id
 
             await self.event_bus.publish(event)
             logger.debug(f"Emitted {event_type} event for task")

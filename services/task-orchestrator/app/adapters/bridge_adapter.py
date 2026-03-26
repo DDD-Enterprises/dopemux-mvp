@@ -152,14 +152,25 @@ class TaskOrchestratorBridgeAdapter:
                 workspace_id=self.workspace_id,
             )
 
-            # Publish event
-            await self.client.publish_event(
-                event_type="orchestrator.task.synced",
-                data={
+            from dopemux.pm.adapters.core import orchestrator_event_to_pm
+            raw_event = {
+                "event_type": "orchestrator.task.synced",
+                "data": {
                     "task_id": task.task_id,
                     "conport_entry_id": result.get("id"),
                     "status": str(task.status),
                 },
+                "source": self.requester,
+            }
+            canonical_envelope = orchestrator_event_to_pm(
+                raw_event,
+                source=self.requester,
+            )
+
+            # Publish event
+            await self.client.publish_event(
+                event_type=canonical_envelope["event_type"],
+                data=canonical_envelope,
                 source=self.requester,
             )
 
@@ -246,9 +257,21 @@ class TaskOrchestratorBridgeAdapter:
             True if successful
         """
         try:
+            from dopemux.pm.adapters.core import orchestrator_event_to_pm
+
+            raw_event = {
+                "event_type": f"orchestrator.{event_type}",
+                "data": data,
+                "source": self.requester,
+            }
+            canonical_envelope = orchestrator_event_to_pm(
+                raw_event,
+                source=self.requester,
+            )
+
             await self.client.publish_event(
-                event_type=f"orchestrator.{event_type}",
-                data=data,
+                event_type=canonical_envelope["event_type"],
+                data=canonical_envelope,
                 source=self.requester,
             )
             return True

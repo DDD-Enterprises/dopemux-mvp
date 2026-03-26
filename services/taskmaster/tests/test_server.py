@@ -21,6 +21,27 @@ async def test_emit_task_event_no_producer(wrapper):
     await wrapper.emit_task_event("test_event", {"data": "test"})
 
 @pytest.mark.asyncio
+async def test_emit_task_event_publishes_canonical_pm_envelope(wrapper):
+    wrapper.mcp_producer = MagicMock()
+    wrapper.event_bus = AsyncMock()
+
+    await wrapper.emit_task_event(
+        "created",
+        {
+            "source_task_id": "tm-1",
+            "title": "Canonical event",
+            "description": "Emit via PM envelope",
+            "ts_utc": "2026-03-26T12:00:00Z",
+        },
+    )
+
+    wrapper.event_bus.publish.assert_awaited_once()
+    published_event = wrapper.event_bus.publish.await_args.args[0]
+    assert published_event.envelope.namespace == "pm.task.created"
+    assert published_event.payload["envelope"]["idempotency_key"]
+    assert published_event.payload["envelope"]["source"].startswith("task-master-")
+
+@pytest.mark.asyncio
 async def test_handle_message_json_pass_through(wrapper):
     msg = b'{"jsonrpc": "2.0", "method": "test"}'
     with patch("services.taskmaster.server.sys") as mock_sys:

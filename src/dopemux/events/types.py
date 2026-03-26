@@ -113,3 +113,17 @@ class SessionEvent(Event):
     action: Action = Field(..., description="Session action")
     session_id: str = Field(..., description="Tmux session ID")
     session_name: Optional[str] = Field(default=None)
+
+
+class PMEvent(Event):
+    """Canonical PM-plane envelope event."""
+
+    type: str = "pm"
+
+    event_id: str = Field(..., description="Deterministic event ID computed from envelope core")
+    event_type: str = Field(..., description="Canonical PM event type such as pm.task.created")
+    ts_utc: str = Field(..., description="Normalized UTC ISO8601 timestamp")
+    idempotency_key: str = Field(..., description="Idempotency key required for PM event processing")
+    source: str = Field(..., description="Component that emitted the PM event")
+    task_id: str = Field(..., description="Canonical task identifier")
+    payload: Dict[str, Any] = Field(default_factory=dict, description="Event payload data")
