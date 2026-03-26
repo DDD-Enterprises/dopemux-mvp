@@ -10,10 +10,13 @@ SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestr
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
-from app.services.task_coordinator import TaskCoordinator
-from dopemux.execution.models import PacketState
-from dopemux.execution.store import InMemoryExecutionStore, InMemoryLeaseStore
-from task_orchestrator.models import AgentType, OrchestrationTask, TaskStatus
+try:
+    from app.services.task_coordinator import TaskCoordinator
+    from dopemux.execution.models import PacketState
+    from dopemux.execution.store import InMemoryExecutionStore, InMemoryLeaseStore
+    from task_orchestrator.models import AgentType, OrchestrationTask, TaskStatus
+except (ImportError, ModuleNotFoundError) as exc:
+    pytest.skip(f"task-orchestrator service deps not available: {exc}", allow_module_level=True)
 
 
 @pytest.mark.asyncio
