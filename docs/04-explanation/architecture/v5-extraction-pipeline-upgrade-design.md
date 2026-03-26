@@ -12,8 +12,8 @@ prelude: V5 Extraction Pipeline Upgrade Design (explanation) for dopemux documen
 ---
 # V5 Extraction Pipeline Upgrade -- Architecture & Design Document
 
-**Status**: DRAFT
-**Date**: 2026-03-16
+**Status**: COMPLETED
+**Date**: 2026-03-18
 **Scope**: Prescan CLI integration, code-focused prescan, AST-enhanced intelligence, intelligent input bundling, pipeline integration points
 
 ---

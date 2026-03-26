@@ -1,0 +1,3054 @@
+{
+  "manifest_version": "1.0.0",
+  "generated_for": "leantime/leantime",
+  "codebase_version": "3.6.2",
+  "json_rpc_services": [
+    {
+      "name": "leantime.rpc.api.api",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Api/Services/Api.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "API key management and health check. Methods: getAPIKeyUser, setApiUserSession, createAPIKey, getAPIKeys, randomStr, jsonResponse, getCaseCorrectPathFromManifest, healthCheck."
+    },
+    {
+      "name": "leantime.rpc.auth.accesstoken",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Auth/Services/AccessToken.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Sanctum personal access tokens. Methods: can, cant, createToken, findToken, getUserTokens, getTokenById, deleteToken, getConnection, forceFill, save."
+    },
+    {
+      "name": "leantime.rpc.auth.auth",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Auth/Services/Auth.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [
+        {
+          "name": "login",
+          "parameters": "string $username, string $password",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "logout",
+          "parameters": "",
+          "return_type": "void",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "createToken",
+          "parameters": "string $name, array $abilities",
+          "return_type": "array",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "validateToken",
+          "parameters": "string $token",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "setPassword",
+          "parameters": "string $password, string $resetLink",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "generatePasswordResetLink",
+          "parameters": "string $username",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "changePWByResetLink",
+          "parameters": "string $link, string $password",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getUserByInviteLink",
+          "parameters": "string $link",
+          "return_type": "array|false",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "verify2FA",
+          "parameters": "string $code",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "verify2FAKey",
+          "parameters": "string $secret, string $code",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "get2FAVerified",
+          "parameters": "",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "set2FAVerified",
+          "parameters": "",
+          "return_type": "void",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "generate2FASecret",
+          "parameters": "",
+          "return_type": "string",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "get2FAQRCode",
+          "parameters": "string $secret",
+          "return_type": "string",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "verify2FASetup",
+          "parameters": "string $secret, string $code",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "save2FASecret",
+          "parameters": "string $secret",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "reset2FA",
+          "parameters": "int $userId",
+          "return_type": "bool",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "Authentication service. Static helpers: isLoggedIn(), userIsAtLeast(), authOrRedirect(), userHasRole(), getUserId(), getUserClientId(). Most methods are session-sensitive."
+    },
+    {
+      "name": "leantime.rpc.auth.authuser",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Auth/Services/AuthUser.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Laravel UserProvider implementation. Methods: retrieveById, retrieveByCredentials, validateCredentials, getOrCreateUser, setUser, retrieveByToken, updateRememberToken, rehashPasswordIfRequired."
+    },
+    {
+      "name": "leantime.rpc.calendar.calendar",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Calendar/Services/Calendar.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "addEvent",
+          "parameters": "array $values",
+          "return_type": "int|false",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "editEvent",
+          "parameters": "array $values",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "delEvent",
+          "parameters": "int $id",
+          "return_type": "int|false",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "deleteGCal",
+          "parameters": "int $id",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "editExternalCalendar",
+          "parameters": "array $values, int $id",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getEvent",
+          "parameters": "int $eventId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getExternalCalendar",
+          "parameters": "int $id, int $userId",
+          "return_type": "bool|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getIcalByHash",
+          "parameters": "string $userHash, string $calHash",
+          "return_type": "IcalCalendar",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "patch",
+          "parameters": "$id, $params",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "Calendar events and external calendar integrations. Also has getCalendarByUser methods."
+    },
+    {
+      "name": "leantime.rpc.canvas.canvas",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Canvas/Services/Canvas.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "medium",
+      "methods": [
+        {
+          "name": "import",
+          "parameters": "string $filename, string $canvasName, int $projectId, int $authorId",
+          "return_type": "bool|int",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getBoardProgress",
+          "parameters": "string $projectId, array $boards",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getLastUpdatedCanvas",
+          "parameters": "?int $projectId, array $boards",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Base canvas service. 14 canvas variants (lean, swot, dbm, etc.) inherit this."
+    },
+    {
+      "name": "leantime.rpc.clients.clients",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Clients/Services/Clients.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getAll",
+          "parameters": "?array $searchparams",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "get",
+          "parameters": "int $id",
+          "return_type": "object|array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getUserClients",
+          "parameters": "int $userId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "create",
+          "parameters": "array $values",
+          "return_type": "int|false",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "editClient",
+          "parameters": "array $values",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "patch",
+          "parameters": "int $id, array $params",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "delete",
+          "parameters": "int $id",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "Client/organization management. Clients group users and filter project access."
+    },
+    {
+      "name": "leantime.rpc.comments.comments",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Comments/Services/Comments.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getComments",
+          "parameters": "$module, $entityId, int $commentOrder, int $parent",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "addComment",
+          "parameters": "$values, $module, $entityId, $entity",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "editComment",
+          "parameters": "$values, $id",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "deleteComment",
+          "parameters": "$commentId",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "pollComments",
+          "parameters": "?int $projectId, ?int $moduleId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Comments on any entity (tickets, wiki, canvas items). Module param identifies entity type."
+    },
+    {
+      "name": "leantime.rpc.connector.connector",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Connector/Services/Connector.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "methods": [
+        {
+          "name": "getEntityFlags",
+          "parameters": "$entity",
+          "return_type": "array",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getFieldMappings",
+          "parameters": "$postParams",
+          "return_type": "array",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "parseValues",
+          "parameters": "$fields, $values, $entity",
+          "return_type": "array|bool",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "importValues",
+          "parameters": "$fields, $values, $entity",
+          "return_type": "bool|array",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "External data connector/import framework. Also has Providers and Integrations sub-services."
+    },
+    {
+      "name": "leantime.rpc.connector.integrations",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Connector/Services/Integrations.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "External integration CRUD. Methods: get, create, updateTicket, delete, getAll, patch."
+    },
+    {
+      "name": "leantime.rpc.connector.providers",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Connector/Services/Providers.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Connector provider registry. Methods: loadProviders, getProviders, getProvider."
+    },
+    {
+      "name": "leantime.rpc.cron.cron",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Cron/Services/Cron.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Cron service. No public methods beyond constructor."
+    },
+    {
+      "name": "leantime.rpc.csvimport.csvimport",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/CsvImport/Services/CsvImport.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "CSV import via connector framework. Methods: connect, sync, getFields, setFields, getEntities, getValues, geValues."
+    },
+    {
+      "name": "leantime.rpc.entityrelations.entityrelations",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Entityrelations/Services/Entityrelations.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "medium",
+      "methods": [
+        {
+          "name": "saveRelationship",
+          "parameters": "$entityA, $entityAType, $relationship, $entityB, $entityBType, string $meta",
+          "return_type": "mixed",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getRelationshipByEntity",
+          "parameters": "string $entitySide, int $entity, string $entityType, string $relationship",
+          "return_type": "mixed",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Generic entity-to-entity relationship storage. Backend-only domain, no UI."
+    },
+    {
+      "name": "leantime.rpc.files.files",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Files/Services/Files.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "medium",
+      "methods": [
+        {
+          "name": "getFilesByModule",
+          "parameters": "string $module, $entityId, $userId",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "upload",
+          "parameters": "$file, $module, $moduleId, $entity, $disk",
+          "return_type": "array|string",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "deleteFile",
+          "parameters": "$fileId",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getModules",
+          "parameters": "$id",
+          "return_type": "array",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getFilePathById",
+          "parameters": "$fileId",
+          "return_type": "false|string",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getFileById",
+          "parameters": "$fileId",
+          "return_type": "false|Response",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "File management for attachments. Supports local disk and S3 storage."
+    },
+    {
+      "name": "leantime.rpc.goalcanvas.goalcanvas",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Goalcanvas/Services/Goalcanvas.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getCanvasItemsById",
+          "parameters": "int $id",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getChildGoalsForReporting",
+          "parameters": "$parentId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getChildrenbyKPI",
+          "parameters": "$parentId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getParentKPIs",
+          "parameters": "$projectId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getGoalsByMilestone",
+          "parameters": "$milestoneId",
+          "return_type": "array",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "updateGoalboard",
+          "parameters": "$values",
+          "return_type": "mixed",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "createGoalboard",
+          "parameters": "$values",
+          "return_type": "mixed",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getSingleCanvas",
+          "parameters": "$id",
+          "return_type": "mixed",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "createGoal",
+          "parameters": "$values",
+          "return_type": "int",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "pollGoals",
+          "parameters": "?int $projectId, ?int $board",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "pollForUpdatedGoals",
+          "parameters": "?int $projectId, ?int $board",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Goal/OKR management. Fully modernized to Blade. Links goals to milestones and KPIs."
+    },
+    {
+      "name": "leantime.rpc.help.helper",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Help/Services/Helper.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Onboarding system. Methods: getAllHelperModals, getHelperModalByRoute, getFirstLoginSteps, isFirstLogin, ensureDefaultProject, markFirstLoginComplete, getOnboardingChecklist, createDefaultProject."
+    },
+    {
+      "name": "leantime.rpc.ideas.ideas",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Ideas/Services/Ideas.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "medium",
+      "methods": [
+        {
+          "name": "pollForNewIdeas",
+          "parameters": "?int $projectId, ?int $board",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "pollForUpdatedIdeas",
+          "parameters": "?int $projectId, ?int $board",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Ideas/ideation polling. Canvas-based domain; CRUD inherited from Canvas base."
+    },
+    {
+      "name": "leantime.rpc.install.install",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Install/Services/Install.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Installation service. Methods: currentVersion."
+    },
+    {
+      "name": "leantime.rpc.ldap.ldap",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Ldap/Services/Ldap.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "LDAP authentication bridge. Methods: connect, bind, getEmail, getSingleUser, extractLdapFromUsername, getAllMembers, upsertUsers."
+    },
+    {
+      "name": "leantime.rpc.menu.menu",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Menu/Services/Menu.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "methods": [
+        {
+          "name": "getUserProjectList",
+          "parameters": "int $userId, null|int|string $client",
+          "return_type": "array",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectTypeAvatars",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectSelectorGroupingOptions",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Menu/navigation service. Used for UI rendering. Plugins inject via Registration::addMenuItem()."
+    },
+    {
+      "name": "leantime.rpc.modulemanager.modulemanager",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Modulemanager/Services/Modulemanager.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Module availability checker. Methods: isModuleAvailable."
+    },
+    {
+      "name": "leantime.rpc.notifications.messengers",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Notifications/Services/Messengers.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Messenger/channel configuration for notifications."
+    },
+    {
+      "name": "leantime.rpc.notifications.news",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Notifications/Services/News.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "News/announcement service for notifications."
+    },
+    {
+      "name": "leantime.rpc.notifications.notifications",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Notifications/Services/Notifications.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getAllNotifications",
+          "parameters": "$userId, int $showNewOnly, int $limitStart, int $limitEnd, array $filterOptions",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "addNotifications",
+          "parameters": "array $notifications",
+          "return_type": "?bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "markNotificationRead",
+          "parameters": "$id, $userId",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "processMentions",
+          "parameters": "string $content, string $module, int $moduleId, int $authorId, string $url",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "In-app notifications with filtering, polling, and @mention processing."
+    },
+    {
+      "name": "leantime.rpc.oidc.oidc",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Oidc/Services/Oidc.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "OpenID Connect SSO. Methods: buildLoginUrl, callback."
+    },
+    {
+      "name": "leantime.rpc.plugins.plugins",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Plugins/Services/Plugins.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [
+        {
+          "name": "getAllPlugins",
+          "parameters": "bool $enabledOnly",
+          "return_type": "false|array",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getEnabledPlugins",
+          "parameters": "",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "discoverNewPlugins",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "installPlugin",
+          "parameters": "$pluginFolder",
+          "return_type": "false|string",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "enablePlugin",
+          "parameters": "int $id",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "disablePlugin",
+          "parameters": "int $id",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "removePlugin",
+          "parameters": "int $id",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "Plugin lifecycle management. Admin-only. Additional: isPluginEnabled, createPluginFromComposer, validLicense, getMarketplacePlugins."
+    },
+    {
+      "name": "leantime.rpc.plugins.premium",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Plugins/Services/Premium.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Premium plugin features and license management."
+    },
+    {
+      "name": "leantime.rpc.plugins.registration",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Plugins/Services/Registration.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Plugin registration fluent API. Methods: registerMiddleware, registerLanguageFiles, addMenuItem, addHeaderJs, addFooterJs, addCss."
+    },
+    {
+      "name": "leantime.rpc.projects.projects",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Projects/Services/Projects.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getProject",
+          "parameters": "int $id",
+          "return_type": "bool|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAll",
+          "parameters": "bool $showClosedProjects",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllProjects",
+          "parameters": "",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllStrategies",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllPrograms",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectProgress",
+          "parameters": "$projectId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectName",
+          "parameters": "$projectId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectTypes",
+          "parameters": "",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectIdAssignedToUser",
+          "parameters": "$userId",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectsAssignedToUser",
+          "parameters": "$userId, string $projectStatus, $clientId, string $projectTypes",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectHierarchyAssignedToUser",
+          "parameters": "$userId, string $projectStatus, $clientId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectHierarchyAvailableToUser",
+          "parameters": "$userId, string $projectStatus, $clientId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllClientsAvailableToUser",
+          "parameters": "$userId, string $projectStatus",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectRole",
+          "parameters": "$userId, $projectId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectsUserHasAccessTo",
+          "parameters": "$userId",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getUsersAssignedToProject",
+          "parameters": "$projectId, $teamOnly",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "isUserAssignedToProject",
+          "parameters": "int $userId, int $projectId",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "isUserMemberOfProject",
+          "parameters": "int $userId, int $projectId",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getUsersToNotify",
+          "parameters": "$projectId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllUserInfoToNotify",
+          "parameters": "$projectId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getMuteCountForProject",
+          "parameters": "int $projectId",
+          "return_type": "int",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectAvatar",
+          "parameters": "$id",
+          "return_type": "SVG|Response|string",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getClientManagerProjects",
+          "parameters": "int $userId, int $clientId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "findProject",
+          "parameters": "string $term",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "findMyChildren",
+          "parameters": "$currentParentId, array $projects",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "cleanParentRelationship",
+          "parameters": "array $projects",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectIdbyName",
+          "parameters": "?array $allProjects, string $projectName",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "addProject",
+          "parameters": "array $values",
+          "return_type": "int|false",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "duplicateProject",
+          "parameters": "int $projectId, int $clientId, string $projectName, string $userStartDate, bool $assignSameUsers",
+          "return_type": "bool|int",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "editProject",
+          "parameters": "$values, $id",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "patch",
+          "parameters": "$id, $params",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "setProjectAvatar",
+          "parameters": "$file, $projectId",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "editUserProjectRelations",
+          "parameters": "$id, $projects",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "changeCurrentSessionProject",
+          "parameters": "$projectId",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "notifyProjectUsers",
+          "parameters": "Notification $notification",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "pollForNewProjects",
+          "parameters": "",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "pollForUpdatedProjects",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Central project management. 51 public methods. Handles CRUD, access control, hierarchy, avatars, duplication, polling."
+    },
+    {
+      "name": "leantime.rpc.queue.queue",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Queue/Services/Queue.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "low",
+      "methods": [
+        {
+          "name": "processQueue",
+          "parameters": "Workers $worker",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "addToQueue",
+          "parameters": "Workers $channel, string $subject, string $message, $projectId",
+          "return_type": "array",
+          "has_api_annotation": false,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "Queue processing for email, HTTP requests, and default workers."
+    },
+    {
+      "name": "leantime.rpc.reactions.reactions",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Reactions/Services/Reactions.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "medium",
+      "methods": [
+        {
+          "name": "addReaction",
+          "parameters": "int $userId, string $module, int $moduleId, string $reaction",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "removeReaction",
+          "parameters": "int $userId, string $module, int $moduleId, string $reaction",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getReactionType",
+          "parameters": "string $reaction",
+          "return_type": "string|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getGroupedEntityReactions",
+          "parameters": "string $module, int $moduleId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getUserReactions",
+          "parameters": "int $userId, string $module, ?int $moduleId, string $reaction",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getEntityReactionsWithUsers",
+          "parameters": "string $module, int $moduleId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Emoji reactions on any entity. Backend-only domain."
+    },
+    {
+      "name": "leantime.rpc.reports.reports",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Reports/Services/Reports.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getFullReport",
+          "parameters": "$projectId",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getRealtimeReport",
+          "parameters": "$projectId, $sprintId",
+          "return_type": "array|bool",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProjectStatusReport",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "dailyIngestion",
+          "parameters": "",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "sendAnonymousTelemetry",
+          "parameters": "",
+          "return_type": "bool|PromiseInterface",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "optOutTelemetry",
+          "parameters": "",
+          "return_type": "false|void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "Project reports, burndown data, telemetry. getFullReport and getRealtimeReport are primary read endpoints."
+    },
+    {
+      "name": "leantime.rpc.setting.setting",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Setting/Services/Setting.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "medium",
+      "methods": [
+        {
+          "name": "saveSetting",
+          "parameters": "$key, $value",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getSetting",
+          "parameters": "$key, $default",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "deleteSetting",
+          "parameters": "$key",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "setLogo",
+          "parameters": "$file",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "resetLogo",
+          "parameters": "",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getSettingsRepo",
+          "parameters": "",
+          "return_type": "SettingRepository",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "setSettingsRepo",
+          "parameters": "SettingRepository $settingsRepo",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getCompanyId",
+          "parameters": "",
+          "return_type": "string",
+          "has_api_annotation": false,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Key-value settings store. Used extensively by plugins and core for configuration."
+    },
+    {
+      "name": "leantime.rpc.setting.settingcache",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Setting/Services/SettingCache.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Setting cache layer."
+    },
+    {
+      "name": "leantime.rpc.sprints.sprints",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Sprints/Services/Sprints.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getSprint",
+          "parameters": "int $id",
+          "return_type": "false|Sprints",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getCurrentSprintId",
+          "parameters": "int $projectId",
+          "return_type": "bool|int",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getUpcomingSprint",
+          "parameters": "int $projectId",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllSprints",
+          "parameters": "$projectId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllFutureSprints",
+          "parameters": "int $projectId",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "addSprint",
+          "parameters": "$params",
+          "return_type": "int|false",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "editSprint",
+          "parameters": "$params",
+          "return_type": "Sprints|false",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "getSprintBurndown",
+          "parameters": "Sprints $sprint",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getCummulativeReport",
+          "parameters": "$project",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Sprint/iteration management. All 9 methods have @api annotation."
+    },
+    {
+      "name": "leantime.rpc.tags.tags",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Tags/Services/Tags.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "low",
+      "mcp_suitability": "medium",
+      "methods": [
+        {
+          "name": "getTags",
+          "parameters": "int $projectId, string $term",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Tag autocomplete/search. Single public method."
+    },
+    {
+      "name": "leantime.rpc.tickets.tickets",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Tickets/Services/Tickets.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getAll",
+          "parameters": "?array $searchCriteria, ?int $limit",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getTicket",
+          "parameters": "$id",
+          "return_type": "TicketModel|bool",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllGrouped",
+          "parameters": "$searchCriteria",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllOpenUserTickets",
+          "parameters": "?int $userId, ?int $project",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getScheduledTasks",
+          "parameters": "CarbonImmutable|string $dateFrom, CarbonImmutable|string $dateTo, ?int $userId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getLastTickets",
+          "parameters": "$projectId, int $limit",
+          "return_type": "bool|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getOpenUserTicketsThisWeekAndLater",
+          "parameters": "$userId, $projectId, bool $includeDoneTickets, bool $includeMilestones, ?int $limit, ?int $offset, ?string $group",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getOpenUserTicketsByProject",
+          "parameters": "$userId, $projectId, bool $includeMilestones, ?int $limit, ?int $offset, ?string $group",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getOpenUserTicketsByPriority",
+          "parameters": "$userId, $projectId, bool $includeMilestones, ?int $limit, ?int $offset, ?string $group",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getOpenUserTicketsBySprint",
+          "parameters": "$userId, $projectId, bool $includeMilestones, ?int $limit, ?int $offset, ?string $group",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllMilestones",
+          "parameters": "$searchCriteria, string $sortBy",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllMilestonesOverview",
+          "parameters": "bool $includeArchived, string $sortBy, bool $includeTasks, int $clientId, array $searchCriteria",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllMilestonesByUserProjects",
+          "parameters": "$userId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getMilestoneProgress",
+          "parameters": "int|string $milestoneId",
+          "return_type": "float",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllSubtasks",
+          "parameters": "int $ticketId",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getStatusLabels",
+          "parameters": "$projectId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllStatusLabelsByUserId",
+          "parameters": "$userId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getKanbanColumns",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getTypeIcons",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getEffortLabels",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getTicketTypes",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getPriorityLabels",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getStatusBreakdownBySwimlane",
+          "parameters": "array $groupedTickets, array $statusColumns",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllPossibleParents",
+          "parameters": "TicketModel $ticket, string $projectId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getLastTicketViewUrl",
+          "parameters": "",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getGroupByFieldOptions",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getSortByFieldOptions",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getNewFieldOptions",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "countSetFilters",
+          "parameters": "array $searchCriteria",
+          "return_type": "int",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getSetFilters",
+          "parameters": "array $searchCriteria, bool $includeGroup",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "findMilestone",
+          "parameters": "string $term, int $projectId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "findTicket",
+          "parameters": "string $term, int $projectId, ?int $userId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "pollForNewAccountMilestones",
+          "parameters": "?int $projectId, ?int $userId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "pollForUpdatedAccountMilestones",
+          "parameters": "?int $projectId, ?int $userId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "pollForNewAccountTodos",
+          "parameters": "?int $projectId, ?int $userId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "pollForUpdatedAccountTodos",
+          "parameters": "?int $projectId, ?int $userId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "addTicket",
+          "parameters": "$values",
+          "return_type": "array|int|bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "quickAddTicket",
+          "parameters": "$params",
+          "return_type": "array|bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "quickAddMilestone",
+          "parameters": "array $params",
+          "return_type": "array|bool|int",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "updateTicket",
+          "parameters": "$values",
+          "return_type": "array|bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "patch",
+          "parameters": "$id, $params",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "quickUpdateMilestone",
+          "parameters": "$params",
+          "return_type": "array|bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "upsertSubtask",
+          "parameters": "$values, $parentTicket",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "updateTicketSorting",
+          "parameters": "$params",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "updateTicketStatusAndSorting",
+          "parameters": "$params, $handler",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "delete",
+          "parameters": "$id",
+          "return_type": "array|bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "deleteMilestone",
+          "parameters": "$id",
+          "return_type": "array|bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "saveStatusLabels",
+          "parameters": "$params",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "prepareTicketDates",
+          "parameters": "&$values",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "Primary ticket/task management. 60 public methods. Handles tickets, milestones, subtasks, status labels, kanban, search, sorting, polling."
+    },
+    {
+      "name": "leantime.rpc.timesheets.timesheets",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Timesheets/Services/Timesheets.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "isClocked",
+          "parameters": "int $sessionId",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAll",
+          "parameters": "CarbonInterface $dateFrom, CarbonInterface $dateTo, int $projectId, string $kind, ?int $userId, string $invEmpl, string $invComp, string $ticketFilter, string $paid, string $clientId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getWeeklyTimesheets",
+          "parameters": "int $projectId, CarbonInterface $fromDate, int $userId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getLoggedHoursForTicketByDate",
+          "parameters": "int $ticketId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getSumLoggedHoursForTicket",
+          "parameters": "int $ticketId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getRemainingHours",
+          "parameters": "int|Tickets $ticketOrId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getUsersTicketHours",
+          "parameters": "int $ticketId, int $userId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getLoggableHourTypes",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getBookedHourTypes",
+          "parameters": "",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "punchIn",
+          "parameters": "int $ticketId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "punchOut",
+          "parameters": "int $ticketId",
+          "return_type": "float|false|int",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "stopActiveTimer",
+          "parameters": "",
+          "return_type": "float|false|int",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "logTime",
+          "parameters": "int $ticketId, array $params",
+          "return_type": "array|bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "upsertTime",
+          "parameters": "int $ticketId, array $params",
+          "return_type": "array|bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "deleteTime",
+          "parameters": "int $id",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "updateInvoices",
+          "parameters": "array $invEmpl, array $invComp, array $paid",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "pollForNewTimesheets",
+          "parameters": "?int $projectId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "pollForUpdatedTimesheets",
+          "parameters": "?int $projectId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        }
+      ],
+      "notes": "Time tracking with punch-in/out timer and manual logging. All 19 methods have @api."
+    },
+    {
+      "name": "leantime.rpc.users.users",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Users/Services/Users.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getAll",
+          "parameters": "bool $activeOnly",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getUser",
+          "parameters": "$id",
+          "return_type": "array|bool",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getUserByEmail",
+          "parameters": "$email, $status",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllBySource",
+          "parameters": "$source",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getProfilePicture",
+          "parameters": "$id",
+          "return_type": "SVG|Response|string",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getNumberOfUsers",
+          "parameters": "bool $activeOnly, bool $includeApi",
+          "return_type": "int",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "usernameExist",
+          "parameters": "string $username, int|string $notUserId",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getUsersWithProjectAccess",
+          "parameters": "int $currentUser, int $projectId",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "checkPasswordStrength",
+          "parameters": "string $password",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "addUser",
+          "parameters": "array $values",
+          "return_type": "bool|int",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "createUserInvite",
+          "parameters": "array $values",
+          "return_type": "bool|int",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "editUser",
+          "parameters": "$values, $id",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "editOwn",
+          "parameters": "$values, $id",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "setProfilePicture",
+          "parameters": "$photo, $id",
+          "return_type": "void",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "updateUserSettings",
+          "parameters": "$category, $setting, $value",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "deleteUser",
+          "parameters": "int $id",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "User management. 17 public methods, all with @api."
+    },
+    {
+      "name": "leantime.rpc.widgets.widgets",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Widgets/Services/Widgets.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "methods": [],
+      "notes": "Dashboard widgets. Methods: registerWidget, getAll, getActiveWidgets, resetDashboard, getNewWidgets, markWidgetAsSeen, saveGrid."
+    },
+    {
+      "name": "leantime.rpc.wiki.wiki",
+      "type": "json-rpc",
+      "source_of_truth": "app/Domain/Wiki/Services/Wiki.php",
+      "auth_scope": "api-key",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "medium",
+      "mcp_suitability": "high",
+      "methods": [
+        {
+          "name": "getArticle",
+          "parameters": "?int $id, ?int $projectId",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllProjectWikis",
+          "parameters": "$projectId",
+          "return_type": "array|false",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getAllWikiHeadlines",
+          "parameters": "$wikiId, $userId",
+          "return_type": "false|array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getWiki",
+          "parameters": "$id",
+          "return_type": "mixed",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "getArticleActivity",
+          "parameters": "int $articleId, int $limit",
+          "return_type": "array",
+          "has_api_annotation": true,
+          "write_safety": "safe-read"
+        },
+        {
+          "name": "createWiki",
+          "parameters": "Wiki $wiki",
+          "return_type": "false|string",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "updateWiki",
+          "parameters": "Wiki $wiki, $wikiId",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "createArticle",
+          "parameters": "Article $article",
+          "return_type": "false|string",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        },
+        {
+          "name": "updateArticle",
+          "parameters": "Article $article, ?Article $existingArticle",
+          "return_type": "bool",
+          "has_api_annotation": true,
+          "write_safety": "unsafe-write"
+        }
+      ],
+      "notes": "Wiki/knowledge base. 13 total public methods (4 non-API: setCurrentWiki, setCurrentArticle, getDefaultArticleForWiki, clearWikiCache)."
+    }
+  ],
+  "mcp_surfaces": [
+    {
+      "name": "php-mcp/laravel",
+      "type": "mcp",
+      "source_of_truth": "composer.json",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "high",
+      "mcp_suitability": "high",
+      "notes": "php-mcp/laravel 3.0.0 and php-mcp/server dev-main installed. Laravel auto-discovery disabled (dont-discover). No McpTool or McpResource definitions found in app/ code. Infrastructure present but no tools/resources registered. Uses forked repo at github.com/leantime/php-mcp-server.git."
+    }
+  ],
+  "legacy_rest_controllers": [
+    {
+      "name": "ApiKey",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/ApiKey.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. API key management UI"
+    },
+    {
+      "name": "Calendar",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Calendar.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Calendar JSON endpoints"
+    },
+    {
+      "name": "Canvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Canvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Canvas CRUD JSON endpoints"
+    },
+    {
+      "name": "Cpcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Cpcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. CP canvas variant"
+    },
+    {
+      "name": "Dbmcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Dbmcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. DBM canvas variant"
+    },
+    {
+      "name": "DelAPIKey",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/DelAPIKey.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Delete API key action"
+    },
+    {
+      "name": "Eacanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Eacanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. EA canvas variant"
+    },
+    {
+      "name": "Emcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Emcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. EM canvas variant"
+    },
+    {
+      "name": "Files",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Files.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. File upload/download JSON endpoints"
+    },
+    {
+      "name": "Goalcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Goalcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Goal canvas JSON endpoints"
+    },
+    {
+      "name": "I18n",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/I18n.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Internationalization strings"
+    },
+    {
+      "name": "Ideas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Ideas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Ideas JSON endpoints"
+    },
+    {
+      "name": "Ideation",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Ideation.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Ideation JSON endpoints"
+    },
+    {
+      "name": "Insightscanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Insightscanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Insights canvas variant"
+    },
+    {
+      "name": "Jsonrpc",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Jsonrpc.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "JSON-RPC 2.0 router (NOT deprecated)"
+    },
+    {
+      "name": "Lbmcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Lbmcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. LBM canvas variant"
+    },
+    {
+      "name": "Leancanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Leancanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Lean canvas variant"
+    },
+    {
+      "name": "NEWcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/NEWcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. New canvas template"
+    },
+    {
+      "name": "NewApiKey",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/NewApiKey.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Create new API key"
+    },
+    {
+      "name": "Notifications",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Notifications.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Notifications JSON endpoints"
+    },
+    {
+      "name": "Obmcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Obmcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. OBM canvas variant"
+    },
+    {
+      "name": "Projects",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Projects.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Projects JSON endpoints"
+    },
+    {
+      "name": "Reactions",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Reactions.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Reactions JSON endpoints"
+    },
+    {
+      "name": "Retroscanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Retroscanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Retros canvas variant"
+    },
+    {
+      "name": "Riskscanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Riskscanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Risks canvas variant"
+    },
+    {
+      "name": "Sbcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Sbcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. SB canvas variant"
+    },
+    {
+      "name": "Sessions",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Sessions.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Session management"
+    },
+    {
+      "name": "Setting",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Setting.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Settings JSON endpoints"
+    },
+    {
+      "name": "Smcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Smcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. SM canvas variant"
+    },
+    {
+      "name": "Sqcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Sqcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. SQ canvas variant"
+    },
+    {
+      "name": "StaticAsset",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/StaticAsset.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Static asset serving"
+    },
+    {
+      "name": "Submenu",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Submenu.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Submenu data endpoint"
+    },
+    {
+      "name": "Swotcanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Swotcanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. SWOT canvas variant"
+    },
+    {
+      "name": "Tags",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Tags.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Tags JSON endpoints"
+    },
+    {
+      "name": "Tickets",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Tickets.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Tickets JSON endpoints"
+    },
+    {
+      "name": "Timer",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Timer.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Timer/timesheet JSON endpoints"
+    },
+    {
+      "name": "Users",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Users.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Users JSON endpoints"
+    },
+    {
+      "name": "Valuecanvas",
+      "type": "legacy-rest",
+      "source_of_truth": "app/Domain/Api/Controllers/Valuecanvas.php",
+      "auth_scope": "session",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unknown",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "DEPRECATED. Value canvas variant"
+    }
+  ],
+  "cli_commands": [
+    {
+      "name": "cache:clearAll",
+      "type": "cli",
+      "source_of_truth": "app/Command/ClearAll.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Clear all caches (app, config, route, view)"
+    },
+    {
+      "name": "db:backup",
+      "type": "cli",
+      "source_of_truth": "app/Command/BackupDbCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Backup MySQL database to file"
+    },
+    {
+      "name": "db:migrate",
+      "type": "cli",
+      "source_of_truth": "app/Command/MigrateCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Run database migrations (aliases: db:install, db:update)"
+    },
+    {
+      "name": "email:testemail",
+      "type": "cli",
+      "source_of_truth": "app/Command/TestEmailCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Send test email to verify SMTP config"
+    },
+    {
+      "name": "event:check-listeners",
+      "type": "cli",
+      "source_of_truth": "app/Command/CheckEventListeners.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "List registered event listeners"
+    },
+    {
+      "name": "files:cleanup",
+      "type": "cli",
+      "source_of_truth": "app/Command/CleanupOrphanedFilesCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Remove orphaned files not in database"
+    },
+    {
+      "name": "language:clear",
+      "type": "cli",
+      "source_of_truth": "app/Command/ClearLanguage.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Clear language cache"
+    },
+    {
+      "name": "plugin:disable",
+      "type": "cli",
+      "source_of_truth": "app/Command/DisablePluginCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Disable a plugin by name"
+    },
+    {
+      "name": "plugin:enable",
+      "type": "cli",
+      "source_of_truth": "app/Command/EnablePluginCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Enable a plugin by name"
+    },
+    {
+      "name": "plugin:install",
+      "type": "cli",
+      "source_of_truth": "app/Command/InstallPluginCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Install plugin from marketplace"
+    },
+    {
+      "name": "plugin:list",
+      "type": "cli",
+      "source_of_truth": "app/Command/ListPluginCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "List installed plugins with status"
+    },
+    {
+      "name": "plugin:remove",
+      "type": "cli",
+      "source_of_truth": "app/Command/RemovePluginCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Remove/uninstall a plugin"
+    },
+    {
+      "name": "setting:save",
+      "type": "cli",
+      "source_of_truth": "app/Command/SaveSettingCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Save a system setting key-value pair"
+    },
+    {
+      "name": "system:update",
+      "type": "cli",
+      "source_of_truth": "app/Command/UpdateLeantime.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Update Leantime installation"
+    },
+    {
+      "name": "translations:check-unused",
+      "type": "cli",
+      "source_of_truth": "app/Command/CheckTranslations.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Check for unused translation keys"
+    },
+    {
+      "name": "user:add",
+      "type": "cli",
+      "source_of_truth": "app/Command/AddUserCommand.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "low",
+      "mcp_suitability": "low",
+      "notes": "Add a new user interactively"
+    }
+  ],
+  "event_hooks": [
+    {
+      "name": "leantime.core.console.consolekernel.schedule.cron",
+      "type": "event",
+      "source_of_truth": "app/Domain/Plugins/register.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Cron scheduler hook. Plugins register daily license check."
+    },
+    {
+      "name": "leantime.core.console.consolekernel.schedule.cron",
+      "type": "event",
+      "source_of_truth": "app/Domain/Queue/register.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Queue processing: emails every 1min, HTTP requests every 5min, default every 5min."
+    },
+    {
+      "name": "leantime.core.console.consolekernel.schedule.cron",
+      "type": "event",
+      "source_of_truth": "app/Domain/Reports/register.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Daily telemetry and report ingestion."
+    },
+    {
+      "name": "leantime.domain.auth.*.userSignUpSuccess",
+      "type": "event",
+      "source_of_truth": "app/Domain/Help/register.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Fired on user sign-up. Creates default help project."
+    },
+    {
+      "name": "leantime.domain.projects.services.projects.notifyProjectUsers.notifyProjectUsers",
+      "type": "event",
+      "source_of_truth": "app/Domain/Notifications/register.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "unsafe-write",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Project user notification dispatch via NotifyProjectUsers listener."
+    }
+  ],
+  "filter_hooks": [
+    {
+      "name": "leantime.*.welcomeText",
+      "type": "filter",
+      "source_of_truth": "app/Domain/Install/register.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Customizes welcome text for install and update routes."
+    },
+    {
+      "name": "leantime.domain.auth.*.belowWelcomeText",
+      "type": "filter",
+      "source_of_truth": "app/Domain/Auth/register.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Adds social proof quotes below auth welcome text."
+    },
+    {
+      "name": "leantime.domain.auth.template.userInvite*.welcomeText",
+      "type": "filter",
+      "source_of_truth": "app/Domain/Auth/register.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Sets welcome text for user invitation pages (5 variants)."
+    },
+    {
+      "name": "leantime.domain.connector.services.providers.loadProviders.providerList",
+      "type": "filter",
+      "source_of_truth": "app/Domain/CsvImport/register.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Registers CSV import as a connector provider."
+    },
+    {
+      "name": "leantime.domain.menu.repositories.menu.getMenuStructure.menuStructures.*",
+      "type": "filter",
+      "source_of_truth": "app/Domain/Plugins/Services/Registration.php",
+      "auth_scope": "none",
+      "request_schema_pointer": null,
+      "response_schema_pointer": null,
+      "write_safety": "safe-read",
+      "plugin_suitability": "high",
+      "mcp_suitability": "low",
+      "notes": "Menu structure modification point. Plugins inject items via Registration::addMenuItem()."
+    }
+  ]
+}

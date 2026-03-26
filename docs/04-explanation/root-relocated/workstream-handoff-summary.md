@@ -152,7 +152,7 @@ prelude: Workstream Handoff Summary (explanation) for dopemux documentation and 
 - Governance preparation
 
 ### Skill Model
-**File**: `docs/pr_prep/skill-model.md`
+**File**: `docs/pr_prep/SKILL_MODEL.md`
 - Core philosophy and mission
 - Lifecycle and components
 - Risk classification
@@ -681,7 +681,7 @@ proof/pr_prep/
 ### 📋 Proof and Handoff Contract Hardening
 
 **Status**: SPECIFIED ✅
-**Location**: `docs/governance/tp-gov-001-proof-and-handoff-contract-hardening-2.md`
+**Location**: `docs/governance/TP-GOV-001-PROOF-AND-HANDOFF-CONTRACT-HARDENING.md`
 
 ### Purpose
 

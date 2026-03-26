@@ -183,22 +183,22 @@ class SparklineGenerator:
         
         if recent_avg > older_avg * 1.1:
             # Upward trend - green
-            return f"[green]{sparkline}[/green]"
+            return f"[success]{sparkline}[/success]"
         elif recent_avg < older_avg * 0.9:
             # Downward trend - red
-            return f"[red]{sparkline}[/red]"
+            return f"[error]{sparkline}[/error]"
         else:
             # Stable - yellow
-            return f"[yellow]{sparkline}[/yellow]"
+            return f"[warning]{sparkline}[/warning]"
     
     def _color_cognitive_load(self, sparkline: str, values: List[float]) -> str:
         """Color cognitive load based on current level"""
         current = values[-1] if values else 50
         
         if current < 50:
-            return f"[green]{sparkline}[/green]"  # Optimal
+            return f"[success]{sparkline}[/success]"  # Optimal
         elif current < 70:
-            return f"[yellow]{sparkline}[/yellow]"  # Moderate
+            return f"[warning]{sparkline}[/warning]"  # Moderate
         elif current < 85:
             return f"[orange]{sparkline}[/orange]"  # High
         else:
@@ -215,11 +215,11 @@ class SparklineGenerator:
         if current > avg * 1.2:
             return f"[green bold]{sparkline}[/green bold]"  # Excellent
         elif current > avg:
-            return f"[green]{sparkline}[/green]"  # Good
+            return f"[success]{sparkline}[/success]"  # Good
         elif current > avg * 0.8:
-            return f"[yellow]{sparkline}[/yellow]"  # Average
+            return f"[warning]{sparkline}[/warning]"  # Average
         else:
-            return f"[red]{sparkline}[/red]"  # Below average
+            return f"[error]{sparkline}[/error]"  # Below average
     
     def _color_switches(self, sparkline: str, values: List[float]) -> str:
         """Color context switches - lower is better"""
@@ -230,13 +230,13 @@ class SparklineGenerator:
         avg = sum(values) / len(values)
         
         if current < avg * 0.8:
-            return f"[green]{sparkline}[/green]"  # Few switches - good!
+            return f"[success]{sparkline}[/success]"  # Few switches - good!
         elif current < avg:
-            return f"[yellow]{sparkline}[/yellow]"  # Normal
+            return f"[warning]{sparkline}[/warning]"  # Normal
         elif current < avg * 1.2:
             return f"[orange]{sparkline}[/orange]"  # High
         else:
-            return f"[red]{sparkline}[/red]"  # Very high - bad!
+            return f"[error]{sparkline}[/error]"  # Very high - bad!
     
     def generate_with_stats(
         self,

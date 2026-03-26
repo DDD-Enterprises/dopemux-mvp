@@ -334,36 +334,13 @@ async def lifespan(app: FastAPI):
             engine = _FallbackADHDEngine(str(startup_error))
 
         # Initialize ADHD Event Listener for implicit triggers (Phase 6)
-        try:
-            from event_listener import create_adhd_event_listener
-            
-            # Get EventBus from engine if available, or create connection
-            event_bus = getattr(engine, 'event_bus', None)
-            
-            if event_bus:
-                event_listener = create_adhd_event_listener(event_bus, engine)
-                
-                # Start event listener as background task
-                event_listener_task = asyncio.create_task(
-                    event_listener.start(user_id="default"),
-                    name="adhd_event_listener"
-                )
-                
-                logger.info("✅ ADHD Event Listener started (implicit triggers enabled)")
-            else:
-                logger.warning("⚠️ EventBus not available - ADHD Event Listener not started")
-                
-        except ImportError as e:
-            logger.warning(f"⚠️ ADHD Event Listener not available: {e}")
-        except Exception as e:
-            logger.error(f"❌ Failed to start ADHD Event Listener: {e}")
-
         # Initialize Output Dispatcher (Phase 7)
         try:
-            from output_dispatcher import create_output_dispatcher
+            from .core.output_dispatcher import create_output_dispatcher
+
             output_dispatcher = create_output_dispatcher(
                 enable_voice=True,
-                enable_push=False
+                enable_push=False,
             )
             engine.output_dispatcher = output_dispatcher
             logger.info("✅ Output Dispatcher initialized (Console, Tmux, Voice channels)")
@@ -372,11 +349,43 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.warning(f"⚠️ Failed to initialize Output Dispatcher: {e}")
 
+        try:
+            from .event_listener import create_adhd_event_listener
+
+            # Get EventBus from engine if available, or create connection
+            event_bus = getattr(engine, 'event_bus', None)
+
+            if event_bus:
+                output_channels = []
+                if output_dispatcher is not None:
+                    output_channels = list(output_dispatcher.channels.values())
+
+                event_listener = create_adhd_event_listener(
+                    event_bus,
+                    engine,
+                    output_channels=output_channels,
+                )
+
+                # Start event listener as background task
+                event_listener_task = asyncio.create_task(
+                    event_listener.start(user_id="default"),
+                    name="adhd_event_listener"
+                )
+
+                logger.info("✅ ADHD Event Listener started (implicit triggers enabled)")
+            else:
+                logger.warning("⚠️ EventBus not available - ADHD Event Listener not started")
+
+        except ImportError as e:
+            logger.warning(f"⚠️ ADHD Event Listener not available: {e}")
+        except Exception as e:
+            logger.error(f"❌ Failed to start ADHD Event Listener: {e}")
+
         # Initialize Workspace Watcher (Phase 7)
         workspace_path = os.getenv("WORKSPACE_PATH", os.getcwd())
         if event_bus:
             try:
-                from workspace_watcher import create_workspace_watcher
+                from .workspace_watcher import create_workspace_watcher
                 workspace_watcher = create_workspace_watcher(event_bus, workspace_path)
                 await workspace_watcher.start()
                 logger.info(f"✅ Workspace Watcher started for {workspace_path}")
@@ -388,7 +397,7 @@ async def lifespan(app: FastAPI):
         # Initialize External Activity Manager (Desktop Commander + Calendar)
         external_activity_manager = None
         try:
-            from external_activity import create_external_activity_manager
+            from .external_activity import create_external_activity_manager
             
             event_bus = getattr(engine, 'event_bus', None)
             

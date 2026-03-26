@@ -4,9 +4,9 @@ title: Documentation Catalog
 type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-11'
-last_review: '2026-03-26'
-next_review: '2026-06-26'
+date: '2026-03-19'
+last_review: '2026-03-19'
+next_review: '2026-06-19'
 prelude: Canonical catalog of active documentation indexes, policy files, and documentation automation entrypoints.
 ---
 # Documentation Catalog
@@ -29,9 +29,23 @@ prelude: Canonical catalog of active documentation indexes, policy files, and do
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
-- PR merge specialist skill template: `templates/skills/pr-merge-specialist/`
 - Skill sync installer: `scripts/skills/sync_repo_skills.py`
 - Legacy compatibility sync: `scripts/skills/sync_testgen_skills.py`
+
+## Workflow Kit Active Surfaces
+
+- `docs/02-how-to/internal-workflow-kit.md`
+- `docs/03-reference/internal-workflow-kit.md`
+- `docs/04-explanation/workflow-kit-architecture.md`
+- `docs/91-rfc/workflow-kit-pickle-mechanics-transfer.md`
+- `templates/skills/brief-drafter/`
+- `templates/skills/task-breakdown/`
+- `templates/skills/code-researcher/`
+- `templates/skills/research-reviewer/`
+- `templates/skills/implementation-planner/`
+- `templates/skills/plan-reviewer/`
+- `templates/skills/code-implementer/`
+- `templates/skills/quality-refactorer/`
 
 ## Required Validation Commands
 

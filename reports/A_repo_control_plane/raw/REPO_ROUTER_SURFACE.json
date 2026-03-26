@@ -16947,7 +16947,7 @@
         "anchor": "L32",
         "excerpt_hash": "bb5c6831d8fe5cdf84c9295549dd050a96ba07939712014f7bdad0f383f36305",
         "excerpt_snippet": "- **\ud83d\udcda** (Book) - PAL apilookup (Documentation) - Port 3003 - **\ud83e\udde0** (Brain) - Zen (Multi-model reasoning) - Port 3003 - **\ud83d\udd2c** (Microscope) - Serena (Code intelli",
-        "path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md"
+        "path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md"
       },
       "entrypoints": {
         "cli_flags": [
@@ -16999,7 +16999,7 @@
             "anchor": "L167",
             "excerpt_hash": "99ec7e400a45b178118ee642ebd41c021603fb810b8dd82fec3b1cf9084ed8dc",
             "excerpt_snippet": "**Fallback**: Statusline will show \u26a0\ufe0f for all servers (safe failure)",
-            "path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md"
+            "path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md"
           },
           "match": {
             "command": null,
@@ -17028,7 +17028,7 @@
             "anchor": "L32",
             "excerpt_hash": "caf4959b53c0264f2a9671ac2dbd97f8c16949692135517aa9741a6ae37e75a2",
             "excerpt_snippet": "- **\ud83e\udde0** (Brain) - Zen (Multi-model reasoning) - Port 3003",
-            "path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md"
+            "path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md"
           },
           "match": {
             "command": null,
@@ -17057,7 +17057,7 @@
             "anchor": "L64",
             "excerpt_hash": "2099c287eba7efb28ac2e82459b43de74d11a0d8b08052d75450ba2c3d452e65",
             "excerpt_snippet": "2. **Zen \ud83e\udde0** - Multi-model reasoning (thinkdeep, consensus, debug, planner)",
-            "path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md"
+            "path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md"
           },
           "match": {
             "command": null,

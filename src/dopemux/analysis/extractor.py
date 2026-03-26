@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
 
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..console import console
@@ -158,7 +159,7 @@ class MultiAngleExtractor:
         Returns:
             Dictionary containing all extracted registries
         """
-        console.print("[bold blue]🔍 Starting multi-angle extraction...[/bold blue]")
+        console.print("[info]🔍 Starting multi-angle extraction...[/info]")
 
         # Convert to AtomicUnit objects
         units = [
@@ -166,7 +167,7 @@ class MultiAngleExtractor:
             for unit in atomic_units
         ]
 
-        with Progress(
+        with branded_progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
@@ -418,7 +419,7 @@ class MultiAngleExtractor:
                     writer.writerows(entities)
 
             console.print(
-                f"[green]📁 Saved {len(entities)} {registry_name} to {filename}[/green]"
+                f"[success]📁 Saved {len(entities)} {registry_name} to {filename}[/success]"
             )
 
     def _display_extraction_summary(self):
@@ -426,9 +427,9 @@ class MultiAngleExtractor:
         from rich.table import Table
 
         table = Table(title="🔍 Entity Extraction Summary")
-        table.add_column("Registry", style="cyan")
-        table.add_column("Count", style="green", justify="right")
-        table.add_column("Status", style="yellow")
+        table.add_column("Registry", style="info")
+        table.add_column("Count", style="success", justify="right")
+        table.add_column("Status", style="warning")
 
         for registry_name, entities in self.registries.items():
             count = len(entities)
@@ -441,5 +442,5 @@ class MultiAngleExtractor:
         # Encouraging feedback
         total_entities = sum(len(entities) for entities in self.registries.values())
         console.print(
-            f"[bold green]🎉 Extracted {total_entities} total entities with full traceability![/bold green]"
+            f"[success]🎉 Extracted {total_entities} total entities with full traceability![/success]"
         )

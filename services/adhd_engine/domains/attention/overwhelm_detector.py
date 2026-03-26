@@ -25,6 +25,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 import logging
 
+from services.shared.brand_voice import StatusChip, brand_list, brand_text, brand_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,6 +56,12 @@ class CircuitBreakerAction:
     message: str
     steps: List[str]
     benefit: str
+
+    def __post_init__(self):
+        chip = StatusChip.BLOCKER if self.urgency == "immediate" else StatusChip.EDGE
+        self.message = brand_text(self.message, chip=chip)
+        self.steps = brand_list(self.steps, chip=StatusChip.EDGE)
+        self.benefit = brand_text(self.benefit, chip=StatusChip.LOGGED, include_chip=False)
 
 
 class OverwhelmDetector:
@@ -149,7 +157,7 @@ class OverwhelmDetector:
             # Keep last 100 signals
             self.overwhelm_history = self.overwhelm_history[-100:]
         
-        logger.info(f"Overwhelm check: {level.value}, {len(signals)} signals")
+        logger.info(brand_log(f"Overwhelm check: {level.value}, {len(signals)} signals", chip=StatusChip.LIVE))
         return level, signals
     
     def _check_rapid_switching(self, state: Dict[str, Any]) -> Optional[OverwhelmSignal]:
@@ -374,7 +382,7 @@ class OverwhelmDetector:
         """Reset detector state (e.g., after break or session end)."""
         self.recent_switches = []
         self.break_refusals = 0
-        logger.info("Overwhelm detector state reset")
+        logger.info(brand_log("Overwhelm detector state reset", chip=StatusChip.LIVE))
 
 
 # Convenience function

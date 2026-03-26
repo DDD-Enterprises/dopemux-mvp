@@ -221,6 +221,42 @@ if nc -z -w 1 localhost 8096 2>/dev/null; then MCP_ACTIVITY="🎯"; fi
 
 # ADHD Engine status is now handled by pm-status.sh integration above
 
+# ━━━ Task Orchestrator Status ━━━
+ORCH_STATUS=""
+if nc -z -w 1 localhost 3009 2>/dev/null; then
+    # Get ADHD state from orchestrator
+    ORCH_DATA=$(curl -s --connect-timeout 1 --max-time 1 \
+        -X POST "http://localhost:3009/api/tools/get_adhd_state" \
+        -H "Content-Type: application/json" -d '{}' 2>/dev/null)
+
+    if [ -n "$ORCH_DATA" ] && echo "$ORCH_DATA" | jq -e . >/dev/null 2>&1; then
+        SESSION_MIN=$(echo "$ORCH_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(int(d.get('session_duration_minutes',0)))" 2>/dev/null || echo "0")
+        BREAK_NEEDED=$(echo "$ORCH_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('break_needed',False))" 2>/dev/null || echo "False")
+        ENERGY=$(echo "$ORCH_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('energy_level','?'))" 2>/dev/null || echo "?")
+
+        # Energy indicator
+        case "$ENERGY" in
+            high)   ENERGY_ICON="⚡" ;;
+            medium) ENERGY_ICON="🔋" ;;
+            low)    ENERGY_ICON="🪫" ;;
+            *)      ENERGY_ICON="🎯" ;;
+        esac
+
+        # Session timer with color coding
+        if [ "$BREAK_NEEDED" = "True" ]; then
+            ORCH_STATUS=" \033[31m${ENERGY_ICON} ${SESSION_MIN}m ☕\033[0m"
+        elif [ "$SESSION_MIN" -gt 20 ]; then
+            ORCH_STATUS=" \033[33m${ENERGY_ICON} ${SESSION_MIN}m\033[0m"
+        else
+            ORCH_STATUS=" \033[32m${ENERGY_ICON} ${SESSION_MIN}m\033[0m"
+        fi
+    else
+        ORCH_STATUS=" \033[32m🎯\033[0m"
+    fi
+else
+    ORCH_STATUS=" \033[90m🎯off\033[0m"
+fi
+
 # Build enhanced statusline with integrated PM metrics
 if [ -n "$WORKSPACE_NAME" ]; then
     printf "\033[1;35m%s\033[0m " "$WORKSPACE_NAME"
@@ -241,6 +277,9 @@ printf " \033[2m|\033[0m"
 
 # Integrated PM/MCP/ADHD metrics from pm-status.sh (context-aware)
 printf "%s" "$PM_STATUS_METRICS"
+
+# Task Orchestrator status (energy + session timer)
+printf "%b" "$ORCH_STATUS"
 
 # Context usage (show tokens + percentage, color coded)
 # Convert to K format for readability (e.g., 86K/200K)

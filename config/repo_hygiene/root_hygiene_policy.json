@@ -47,9 +47,14 @@
     "config",
     "dashboard",
     "repo-truth-pack",
-    "dopemux_voice_branding_bundle"
+    "llm-plans",
+    "dopemux_voice_branding_bundle",
+    "proof_bundle",
+    "llm-docs"
   ],
   "allowed_root_files": [
+    "SPECIMEN_LEDGER_REGEN_BIG.csv",
+    ".implementer_state.json",
     "CLAUDE_AUTOMATION_INSTRUCTIONS.md",
     "LICENSE",
     "API_SURFACE.json",
@@ -100,6 +105,7 @@
     "DAO_SURFACE.json",
     "CONCURRENCY_RISK_LOCATIONS.json",
     "compose.yml",
+    "compose.adhd-stack.yml",
     "AG-master_plan.md",
     "install.sh",
     "CHANGELOG.md",
@@ -153,7 +159,7 @@
     "audit_prompts.py",
     "mcp-proxy-config*.yaml",
     "CHECKLIST.md",
-    ".dockerignore",
+".dockerignore",
     ".python-version"
   ],
   "legacy_root_files": [],

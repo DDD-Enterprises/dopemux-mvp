@@ -1,7 +1,6 @@
 """
-Dopemux Brand System voice compatibility layer.
-
-Provides legacy UI/CLI helpers while delegating validation to dopemux.voice.core.
+Dopemux Brand System — Voice and Tone Engine.
+Phase 1: Thematic Persona Engine (Merged Opus + Specialist).
 """
 
 from __future__ import annotations
@@ -11,7 +10,7 @@ import hashlib
 from pathlib import Path
 from typing import List, Set
 
-from .theme import Glyphs, StatusChip
+from .theme import StatusChip, Glyphs
 from ..voice.core import (
     Surface,
     VoiceMode,
@@ -22,41 +21,47 @@ from ..voice.core import (
 
 
 class Specimen:
-    """Single brand specimen loaded from the ledger."""
+    """A single brand specimen from the ledger."""
 
-    def __init__(self, specimen_id: str, excerpt: str, tags: Set[str], affinity: float):
-        self.id = specimen_id
+    def __init__(self, id: str, excerpt: str, tags: Set[str], affinity: float):
+        self.id = id
         self.excerpt = excerpt
         self.tags = tags
         self.affinity = affinity
 
 
 class VoiceEngine:
-    """Stateful helper that renders deterministic brand-aligned copy."""
+    """
+    Stateful engine that produces brand-aligned copy and visuals.
+    Adjusts output based on user's cognitive load (ADHD state).
+    """
 
-    def __init__(self, mode: VoiceMode = VoiceMode.CLINICAL_FORENSICS, is_scattered: bool = False):
+    def __init__(
+        self, 
+        mode: VoiceMode = VoiceMode.CLINICAL_FORENSICS,
+        is_scattered: bool = False
+    ):
         self.mode = mode
         self.is_scattered = is_scattered
         self.specimens: List[Specimen] = []
         self._load_ledger()
 
-    def _load_ledger(self) -> None:
+    def _load_ledger(self):
+        """Load the 184-specimen enriched ledger."""
         ledger_path = Path("dopemux_voice_branding_bundle/SPECIMEN_LEDGER_ENRICHED.csv")
         if not ledger_path.exists():
             return
 
         try:
-            with ledger_path.open(mode="r", encoding="utf-8") as handle:
-                reader = csv.DictReader(handle)
+            with open(ledger_path, mode='r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
                 for row in reader:
-                    self.specimens.append(
-                        Specimen(
-                            specimen_id=row["specimen_id"],
-                            excerpt=row["excerpt"],
-                            tags=set(row["context_tags"].split("|") if row["context_tags"] else []),
-                            affinity=float(row.get("brand_affinity", 0.5)),
-                        )
-                    )
+                    self.specimens.append(Specimen(
+                        id=row['specimen_id'],
+                        excerpt=row['excerpt'],
+                        tags=set(row['context_tags'].split('|') if row['context_tags'] else []),
+                        affinity=float(row.get('brand_affinity', 0.5))
+                    ))
         except Exception:
             pass
 
@@ -69,8 +74,8 @@ class VoiceEngine:
         return ordered[index].excerpt
 
     def get_roast(self) -> str:
-        """Return a deterministic roast for existing callers."""
-        roasts = [specimen for specimen in self.specimens if "roast" in specimen.tags or "UXScold" in specimen.tags]
+        """Get a deterministic self-aware or user-facing roast."""
+        roasts = [s for s in self.specimens if 'roast' in s.tags or 'UXScold' in s.tags]
         return self._deterministic_excerpt(
             roasts,
             seed=f"roast:{self.mode.value}:{int(self.is_scattered)}",
@@ -78,27 +83,28 @@ class VoiceEngine:
         )
 
     def get_aftercare(self) -> str:
-        """Return deterministic aftercare copy."""
+        """Mode-aware aftercare message."""
         if self.is_scattered:
             return "Logged. Hydrate. That's enough for now."
         return f"Task complete. Ritual preserved. {Glyphs.SUCCESS}"
 
     def banner(self, title: str = "") -> str:
-        """Return a deterministic brand banner."""
+        """Generate a brand-mark banner with optional one-liner."""
         mark = Glyphs.BRAND_MARK
-        one_liners = [specimen for specimen in self.specimens if "banner" in specimen.tags or "tagline" in specimen.tags]
+        one_liners = [s.excerpt for s in self.specimens if 'banner' in s.tags or 'tagline' in s.tags]
         punch = self._deterministic_excerpt(
-            one_liners,
+            [Specimen(str(index), excerpt, set(), 1.0) for index, excerpt in enumerate(one_liners)],
             seed=f"banner:{self.mode.value}:{title}",
             fallback="All memory. No mercy.",
         )
+        
         banner = f"{mark}  {punch}"
         if title:
             banner += f"\n[mint]{title.upper()}[/mint]"
         return banner
 
     def chip(self, chip_type: str, message: str = "") -> str:
-        """Render a status chip with a plain text fallback."""
+        """Render a StatusChip from theme.py."""
         try:
             chip = StatusChip[chip_type.upper()]
             return chip.render(message)
@@ -115,24 +121,28 @@ def validate_output(text: str) -> List[str]:
 
 
 class VoiceEnforcer:
-    """Small text cleaner for legacy UI/CLI output surfaces."""
-
+    """Middleware for sanitizing LLM responses into brand voice."""
+    
     @staticmethod
     def clean(text: str) -> str:
+        """Strips apologetic AI jargon from responses."""
         import re
-
         patterns = [
             r"(?i)^(as an ai[, ]*|i am an ai[, ]*|i am a language model[, ]*)",
             r"(?i)^(i'm sorry[, ]*|my apologies[, ]*|i apologize[, ]*)",
             r"(?i)^(here is the.*you requested:?\n*)",
             r"(?i)^(certainly!|sure thing!|of course!)\n*",
         ]
+        
         cleaned = text
         for pattern in patterns:
             cleaned = re.sub(pattern, "", cleaned).lstrip()
-
+            
+        # Ensure it starts with a status chip if it looks like a completion
         if "complete" in cleaned.lower() and not cleaned.startswith("["):
+            from .theme import StatusChip
             cleaned = f"{StatusChip.LOGGED.render(cleaned)}"
+            
         return cleaned
 
 

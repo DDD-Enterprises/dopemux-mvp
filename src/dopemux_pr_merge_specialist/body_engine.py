@@ -1,9 +1,11 @@
+import json
 import re
-from typing import List
+from typing import Any, Dict, List, Optional
 
 from .schema import (
     ChecklistItem,
     PRMetadataUpdate,
+    VerificationRequest,
     VerificationResult,
 )
 

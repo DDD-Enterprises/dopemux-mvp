@@ -53,5 +53,5 @@ prelude: Practical token budgeting and response-shaping standards for Dopemux MC
 ## Implementation References
 
 1. `services/shared/mcp_response_budget.py`
-1. `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
-1. `docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md`
+1. `docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md`
+1. `docs/05-audit-reports/mcp-budget-monitoring-verification-2026-02-06-2.md`

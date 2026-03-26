@@ -2,15 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Set
 
-from .schema import (
-    BlockerType,
-    Finding,
-    FindingSeverity,
-    MergeActionType,
-    PRResult,
-    PRState,
-    ValidationStatus,
-)
+from .schema import BlockerType, Finding, FindingSeverity, MergeActionType, PRResult, PRState
 
 
 VALIDATION_BLOCKERS = {
@@ -80,9 +72,6 @@ def allowed_actions_for_snapshot(snapshot: Mapping[str, Any]) -> List[str]:
     is_draft = bool(snapshot.get("is_draft", False))
     auto_merge_enabled = bool(snapshot.get("auto_merge_enabled", False))
     blockers = blocker_types_from_snapshot(snapshot)
-    validation_status = enum_value(
-        (snapshot.get("validation_report") or {}).get("status", "")
-    )
 
     if pr_state == "MERGED" or lifecycle_state == PRState.MERGED.value:
         return []
@@ -109,12 +98,6 @@ def allowed_actions_for_snapshot(snapshot: Mapping[str, Any]) -> List[str]:
     if is_draft:
         return ["READY"]
     if lifecycle_state == PRState.MERGE_READY.value:
-        return ["MERGE"]
-    if (
-        not blockers
-        and validation_status == ValidationStatus.PASSED.value
-        and lifecycle_state in {PRState.APPLIED.value, PRState.APPLY_READY.value}
-    ):
         return ["MERGE"]
     if (
         merge_strategy == MergeActionType.AUTO_MERGE_FALLBACK.value

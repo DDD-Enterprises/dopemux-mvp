@@ -81,15 +81,15 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(prog="dopemux-github")
+    p = argparse.ArgumentParser(prog="dopemux-github", description="🤖 Repo Chore Automation: GitHub Specialist")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    s = sub.add_parser("run", help="Run GitHub Specialist")
-    s.add_argument("--scope", choices=["pr", "issue", "repo", "ci"], help="Scope of the run")
-    s.add_argument("--target", help="Target identifier (e.g. PR#123)")
-    s.add_argument("--input", help="Path to input JSON bundle")
-    s.add_argument("--out-dir", default="proof", help="Output directory for proof artifacts")
-    s.add_argument("--gemini-command", help="Optional override for Gemini CLI command")
+    s = sub.add_parser("run", help="🚀 Execute Specialist: Run GitHub chore automation and hygiene rituals.")
+    s.add_argument("--scope", choices=["pr", "issue", "repo", "ci"], help="🔬 Signal Scope: Ritual boundary for the run (pr, issue, repo, or ci).")
+    s.add_argument("--target", help="🎯 Focal Target: Identifier for the specific artifact to audit (e.g. PR#123).")
+    s.add_argument("--input", help="📜 Input Coordinate: Path to the JSON signal bundle for processing.")
+    s.add_argument("--out-dir", default="proof", help="📂 Archive Coordinate: Destination directory for ritual proof artifacts.")
+    s.add_argument("--gemini-command", help="🧠 Cognitive Override: Optional command override for the underlying Gemini CLI.")
     s.set_defaults(func=cmd_run)
 
     args = p.parse_args()

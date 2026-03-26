@@ -12,28 +12,41 @@ from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
+from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from ..console import console
 from ..memory.capture_client import CaptureError, emit_capture_event
 
 @click.group("capture")
 def capture_group():
-    """Capture events into Chronicle."""
+    """
+    📥 Telemetry Ingestion: Capture ritual tool signals (Copilot, Codex, etc.)
+
+    Engages the ingestion adapters for external ritual tools. This subsystem 
+    captures raw telemetry signals and converts them into content-addressed 
+    events for storage in the per-project Chronicle ledger.
+    """
     pass
 
 
 @capture_group.command("emit")
-@click.option("--event", type=str, required=True, help="Event JSON object")
+@click.option("--event", type=str, required=True, help="📊 Signal Payload: Event JSON string for ingestion.")
 @click.option(
     "--mode",
     type=click.Choice(["plugin", "cli", "mcp", "auto"]),
     default="auto",
-    help="Capture mode",
+    help="🧪 Capture Aesthetic: Mode for signal ingestion (default: auto).",
 )
-@click.option("--repo-root", type=click.Path(exists=True, path_type=Path), default=None)
+@click.option("--repo-root", type=click.Path(exists=True, path_type=Path), default=None, help="🔬 Repository Coordinate: Project root for ledger synchronization.")
 def capture_emit(event: str, mode: str, repo_root: Optional[Path]):
+    """
+    ⚡ Pulse Chronicle: Emit a capture event to the project ledger
+
+    Writes a single telemetry signal to the per-project Chronicle ledger 
+    using deterministic, content-addressed deduplication.
+    """
     import json
 
     try:
@@ -55,6 +68,12 @@ def capture_emit(event: str, mode: str, repo_root: Optional[Path]):
 @capture_group.command("note", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
 @click.argument("tokens", nargs=-1, type=click.UNPROCESSED)
 def capture_note(tokens: Sequence[str]):
+    """
+    📝 Manual Ritual: Emit a manual note signal to Chronicle
+
+    Captures a manual observation or conclusion and writes it to the 
+    ritual ledger as a tagged event.
+    """
     if not tokens:
         raise click.ClickException("summary is required")
 

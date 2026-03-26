@@ -165,6 +165,24 @@ class TestTaskAssessment:
         assert response.status_code == 422  # Validation error
 
 
+class TestApiKeyAuth:
+    """Verify API-key protected routes respect configured auth."""
+
+    def test_missing_api_key_rejected_when_configured(self, client, mock_initialized_engine):
+        with patch('adhd_engine.main.engine', mock_initialized_engine), patch('adhd_engine.auth.EXPECTED_API_KEY', 'test-key'):
+            response = client.get("/api/v1/energy-level/test_user")
+
+            assert response.status_code == 401
+            assert response.json()["detail"] == "Missing API key"
+
+    def test_valid_api_key_allows_request(self, client, mock_initialized_engine):
+        with patch('adhd_engine.main.engine', mock_initialized_engine), patch('adhd_engine.auth.EXPECTED_API_KEY', 'test-key'):
+            response = client.get("/api/v1/energy-level/test_user", headers={"X-API-Key": "test-key"})
+
+            assert response.status_code == 200
+            assert response.json()["energy_level"] == "medium"
+
+
 class TestEnergyAndAttention:
     """Test energy level and attention state endpoints."""
 
@@ -245,8 +263,8 @@ class TestTasksEndpoints:
             "total": 10
         })
         mock_initialized_engine.activity_tracker = mock_activity_tracker
-        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=5)
-        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=10)
+        mock_initialized_engine.get_tasks_completed = AsyncMock(return_value=5)
+        mock_initialized_engine.get_total_tasks = AsyncMock(return_value=10)
 
         with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.get("/api/v1/tasks/test_user")
@@ -269,8 +287,8 @@ class TestTasksEndpoints:
             "total": 7
         })
         mock_initialized_engine.activity_tracker = mock_activity_tracker
-        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=3)
-        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=7)
+        mock_initialized_engine.get_tasks_completed = AsyncMock(return_value=3)
+        mock_initialized_engine.get_total_tasks = AsyncMock(return_value=7)
 
         with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.get("/api/v1/tasks")
@@ -293,8 +311,8 @@ class TestTasksEndpoints:
             "total": 0
         })
         mock_initialized_engine.activity_tracker = mock_activity_tracker
-        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=0)
-        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=0)
+        mock_initialized_engine.get_tasks_completed = AsyncMock(return_value=0)
+        mock_initialized_engine.get_total_tasks = AsyncMock(return_value=0)
 
         with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.get("/api/v1/tasks/test_user")
@@ -316,8 +334,8 @@ class TestTasksEndpoints:
             "total": 8
         })
         mock_initialized_engine.activity_tracker = mock_activity_tracker
-        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=8)
-        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=8)
+        mock_initialized_engine.get_tasks_completed = AsyncMock(return_value=8)
+        mock_initialized_engine.get_total_tasks = AsyncMock(return_value=8)
 
         with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.get("/api/v1/tasks/test_user")
@@ -333,7 +351,7 @@ class TestTasksEndpoints:
     def test_get_tasks_engine_error(self, client, mock_initialized_engine):
         """Should handle engine errors gracefully."""
         # Mock the activity tracker to raise an exception
-        mock_initialized_engine._get_tasks_completed = AsyncMock(
+        mock_initialized_engine.get_tasks_completed = AsyncMock(
             side_effect=Exception("Activity tracker unavailable")
         )
 
@@ -353,8 +371,8 @@ class TestTasksEndpoints:
             "total": 3
         })
         mock_initialized_engine.activity_tracker = mock_activity_tracker
-        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=2)
-        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=3)
+        mock_initialized_engine.get_tasks_completed = AsyncMock(return_value=2)
+        mock_initialized_engine.get_total_tasks = AsyncMock(return_value=3)
 
         with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.get("/api/v1/tasks/test_user")

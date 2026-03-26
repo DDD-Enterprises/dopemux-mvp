@@ -120,7 +120,9 @@ class ActivityTracker:
             "completion_rate": completion_rate,
             "context_switches": context_switches,
             "break_compliance": break_compliance,
-            "minutes_since_break": minutes_since_break
+            "minutes_since_break": minutes_since_break,
+            "familiarity_score": round(min(1.0, (completion_rate * 0.7) + 0.3), 2),
+            "complexity_avg_30min": self._calculate_average_complexity(progress_entries),
         }
 
         # Cache result
@@ -217,6 +219,30 @@ class ActivityTracker:
                 "average_focus_duration": 22,
                 "distraction_events": 3
             }
+
+    def _calculate_average_complexity(self, progress_entries) -> float:
+        """Best-effort complexity average from recent ConPort progress metadata."""
+        if not progress_entries:
+            return 0.5
+
+        scores = []
+        for entry in progress_entries:
+            metadata = entry.get("metadata", {}) if isinstance(entry, dict) else {}
+            if isinstance(metadata, str):
+                metadata = {}
+
+            for key in ("complexity_score", "complexity", "task_complexity"):
+                value = entry.get(key) if isinstance(entry, dict) else None
+                if value is None:
+                    value = metadata.get(key)
+                if isinstance(value, (int, float)):
+                    scores.append(float(value))
+                    break
+
+        if not scores:
+            return 0.5
+
+        return round(sum(scores) / len(scores), 2)
 
     def _calculate_minutes_since(self, timestamp_str: Optional[str]) -> int:
         """Calculate minutes since timestamp."""

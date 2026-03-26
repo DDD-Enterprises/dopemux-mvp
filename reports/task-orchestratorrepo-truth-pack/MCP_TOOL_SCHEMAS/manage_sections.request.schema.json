@@ -1,0 +1,108 @@
+{
+    "_meta": {
+        "tool": "manage_sections",
+        "source": "code",
+        "source_file": "clockwork/src/main/kotlin/io/github/jpicklyk/mcptask/application/tools/section/ManageSectionsTool.kt",
+        "lines": "80-200",
+        "analyzed_ref": "99023a9 HEAD-at-time-of-analysis"
+    },
+    "type": "object",
+    "required": [
+        "operation"
+    ],
+    "properties": {
+        "operation": {
+            "type": "string",
+            "description": "Operation to perform",
+            "enum": [
+                "add",
+                "update",
+                "updateText",
+                "updateMetadata",
+                "delete",
+                "reorder",
+                "bulkCreate",
+                "bulkUpdate",
+                "bulkDelete"
+            ]
+        },
+        "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Section ID (required for: update, updateText, updateMetadata, delete)"
+        },
+        "ids": {
+            "type": "array",
+            "description": "Section IDs (required for: bulkDelete)",
+            "items": {
+                "type": "string",
+                "format": "uuid"
+            }
+        },
+        "entityType": {
+            "type": "string",
+            "description": "Type of entity (required for: add, reorder, bulkCreate items)",
+            "enum": [
+                "PROJECT",
+                "FEATURE",
+                "TASK"
+            ]
+        },
+        "entityId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Parent entity ID (required for: add, reorder)"
+        },
+        "title": {
+            "type": "string",
+            "description": "Section title (required for: add)"
+        },
+        "usageDescription": {
+            "type": "string",
+            "description": "Usage description (required for: add)"
+        },
+        "content": {
+            "type": "string",
+            "description": "Section content (required for: add)"
+        },
+        "contentFormat": {
+            "type": "string",
+            "description": "Content format (optional)",
+            "enum": [
+                "PLAIN_TEXT",
+                "MARKDOWN",
+                "JSON",
+                "CODE"
+            ]
+        },
+        "ordinal": {
+            "type": "integer",
+            "description": "Display order 0-based (required for: add)",
+            "minimum": 0
+        },
+        "tags": {
+            "type": "string",
+            "description": "Comma-separated tags"
+        },
+        "oldText": {
+            "type": "string",
+            "description": "Text to replace (required for: updateText)"
+        },
+        "newText": {
+            "type": "string",
+            "description": "Replacement text (required for: updateText)"
+        },
+        "sectionOrder": {
+            "type": "string",
+            "description": "Comma-separated section IDs defining new order (required for: reorder)"
+        },
+        "sections": {
+            "type": "array",
+            "description": "Section objects (required for: bulkCreate, bulkUpdate)",
+            "items": {
+                "type": "object",
+                "description": "bulkCreate items need: entityType, entityId, title, usageDescription, content, ordinal. bulkUpdate items need: id plus at least one field to update."
+            }
+        }
+    }
+}

@@ -2576,23 +2576,23 @@
       "evidence": {
         "anchor": "L382",
         "excerpt_hash": "8bb93886aef40f642209713f23c9fbdcf631db50609a1feb9aa0bd09caa704a1",
-        "excerpt_snippet": "docs/contributing-zen.md",
+        "excerpt_snippet": "docs/CONTRIBUTING_ZEN.md",
         "path": "docs/04-explanation/design-decisions/dev-mode-design.md"
       },
       "from_path": "docs/04-explanation/design-decisions/dev-mode-design.md",
       "relation": "mentions",
-      "to_path": "docs/contributing-zen.md"
+      "to_path": "docs/CONTRIBUTING_ZEN.md"
     },
     {
       "evidence": {
         "anchor": "L660",
         "excerpt_hash": "8bb93886aef40f642209713f23c9fbdcf631db50609a1feb9aa0bd09caa704a1",
-        "excerpt_snippet": "docs/contributing-zen.md",
+        "excerpt_snippet": "docs/CONTRIBUTING_ZEN.md",
         "path": "docs/04-explanation/design-decisions/dev-mode-design.md"
       },
       "from_path": "docs/04-explanation/design-decisions/dev-mode-design.md",
       "relation": "mentions",
-      "to_path": "docs/contributing-zen.md"
+      "to_path": "docs/CONTRIBUTING_ZEN.md"
     },
     {
       "evidence": {
@@ -2665,9 +2665,9 @@
         "anchor": "L34",
         "excerpt_hash": "da774ee72591ebcb40ddb7323afeb12e92f1696e61405a2bb7519b4f1c29a369",
         "excerpt_snippet": "services/dope-context",
-        "path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md"
+        "path": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md"
       },
-      "from_path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md",
+      "from_path": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md",
       "relation": "mentions",
       "to_path": "services/dope-context"
     },
@@ -2676,9 +2676,9 @@
         "anchor": "L29",
         "excerpt_hash": "0eae6384e4989719922d962429771e0ad6cf4f56496aa12c53c4c9734be9e8ad",
         "excerpt_snippet": "services/dope-context/README.md",
-        "path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md"
+        "path": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md"
       },
-      "from_path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md",
+      "from_path": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md",
       "relation": "mentions",
       "to_path": "services/dope-context/README.md"
     },
@@ -2687,9 +2687,9 @@
         "anchor": "L22",
         "excerpt_hash": "656c8316bc8a4613b8badc9596eea440630e266782de55e855153f79bfe77909",
         "excerpt_snippet": "services/dope-context/src/mcp/server.py",
-        "path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md"
+        "path": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md"
       },
-      "from_path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md",
+      "from_path": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md",
       "relation": "mentions",
       "to_path": "services/dope-context/src/mcp/server.py"
     },
@@ -2698,9 +2698,9 @@
         "anchor": "L34",
         "excerpt_hash": "f43165cca322d3663e40a8a444239e3ce4294ce4e763b8bd71597632d5b6b01e",
         "excerpt_snippet": "services/dope-context/tests/test_mcp_server.py",
-        "path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md"
+        "path": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md"
       },
-      "from_path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md",
+      "from_path": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md",
       "relation": "mentions",
       "to_path": "services/dope-context/tests/test_mcp_server.py"
     },
@@ -2709,9 +2709,9 @@
         "anchor": "L24",
         "excerpt_hash": "200d88cb2e5ca9cc36da059d8b262cfb1919c4c613447556312b8991fe8dc1c9",
         "excerpt_snippet": "services/shared/mcp/response_budget.py",
-        "path": "docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md"
+        "path": "docs/05-audit-reports/mcp-budget-monitoring-verification-2026-02-06-2.md"
       },
-      "from_path": "docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md",
+      "from_path": "docs/05-audit-reports/mcp-budget-monitoring-verification-2026-02-06-2.md",
       "relation": "mentions",
       "to_path": "services/shared/mcp/response_budget.py"
     },
@@ -2720,9 +2720,9 @@
         "anchor": "L28",
         "excerpt_hash": "11e042ef61228564ae3704da764565c9377864dfa96f319a992f9e3af8e8a3ea",
         "excerpt_snippet": "services/dopemux-gpt-researcher/mcp-server/server.py",
-        "path": "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md"
+        "path": "docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md"
       },
-      "from_path": "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md",
+      "from_path": "docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md",
       "relation": "mentions",
       "to_path": "services/dopemux-gpt-researcher/mcp-server/server.py"
     },
@@ -2731,9 +2731,9 @@
         "anchor": "L26",
         "excerpt_hash": "a9dc7453156e733a911378ecd15890ec22287c4a829797cac7af58b341ce4df3",
         "excerpt_snippet": "services/serena/mcp_server.py",
-        "path": "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md"
+        "path": "docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md"
       },
-      "from_path": "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md",
+      "from_path": "docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md",
       "relation": "mentions",
       "to_path": "services/serena/mcp_server.py"
     },
@@ -2742,9 +2742,9 @@
         "anchor": "L24",
         "excerpt_hash": "200d88cb2e5ca9cc36da059d8b262cfb1919c4c613447556312b8991fe8dc1c9",
         "excerpt_snippet": "services/shared/mcp/response_budget.py",
-        "path": "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md"
+        "path": "docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md"
       },
-      "from_path": "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md",
+      "from_path": "docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md",
       "relation": "mentions",
       "to_path": "services/shared/mcp/response_budget.py"
     },
@@ -2852,9 +2852,9 @@
         "anchor": "L21",
         "excerpt_hash": "f0fc3aec5f703e32c2d570078058a49b168067dd71fe1cd39a84393adeff5029",
         "excerpt_snippet": "docs/EXECUTIVE_INVARIANTS_1PAGER.md",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
-      "from_path": "docs/thread-primer-taskx.md",
+      "from_path": "docs/THREAD_PRIMER_TASKX.md",
       "relation": "mentions",
       "to_path": "docs/EXECUTIVE_INVARIANTS_1PAGER.md"
     },
@@ -2862,21 +2862,21 @@
       "evidence": {
         "anchor": "L20",
         "excerpt_hash": "9196169f4b9a70a00f4800b8e9462c8852f7dc2b13e12eb92eabe17e0bbfa118",
-        "excerpt_snippet": "docs/stateless-operator-mode-prompt.md",
-        "path": "docs/thread-primer-taskx.md"
+        "excerpt_snippet": "docs/STATELESS_OPERATOR_MODE_PROMPT.md",
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
-      "from_path": "docs/thread-primer-taskx.md",
+      "from_path": "docs/THREAD_PRIMER_TASKX.md",
       "relation": "mentions",
-      "to_path": "docs/stateless-operator-mode-prompt.md"
+      "to_path": "docs/STATELESS_OPERATOR_MODE_PROMPT.md"
     },
     {
       "evidence": {
         "anchor": "L171",
         "excerpt_hash": "66a3ada1bd0ba6b8dbbcb6f9e4023a7ae07580373d97c1c700b9d59df9ac6995",
         "excerpt_snippet": ".claude/statusline.sh",
-        "path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md"
+        "path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md"
       },
-      "from_path": "docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md",
+      "from_path": "docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md",
       "relation": "mentions",
       "to_path": ".claude/statusline.sh"
     },
@@ -2907,9 +2907,9 @@
         "anchor": "L212",
         "excerpt_hash": "2c4167b65c0762fa13ea52bcee853f3a4cff0c55f0484efd8c57867bc74455a0",
         "excerpt_snippet": "services/dopemux-gpt-researcher",
-        "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md"
+        "path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md"
       },
-      "from_path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md",
+      "from_path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md",
       "relation": "mentions",
       "to_path": "services/dopemux-gpt-researcher"
     },
@@ -2918,9 +2918,9 @@
         "anchor": "L93",
         "excerpt_hash": "2007e1a3a4fd21a04ede4b79555cbef4127f4175e215f68ee8a4dacf89836c27",
         "excerpt_snippet": "services/dopemux-gpt-researcher/GPT_RESEARCHER_TOKEN_LIMIT_FIX.md",
-        "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md"
+        "path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md"
       },
-      "from_path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md",
+      "from_path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md",
       "relation": "mentions",
       "to_path": "services/dopemux-gpt-researcher/GPT_RESEARCHER_TOKEN_LIMIT_FIX.md"
     },
@@ -2929,9 +2929,9 @@
         "anchor": "L243",
         "excerpt_hash": "2007e1a3a4fd21a04ede4b79555cbef4127f4175e215f68ee8a4dacf89836c27",
         "excerpt_snippet": "services/dopemux-gpt-researcher/GPT_RESEARCHER_TOKEN_LIMIT_FIX.md",
-        "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md"
+        "path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md"
       },
-      "from_path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md",
+      "from_path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md",
       "relation": "mentions",
       "to_path": "services/dopemux-gpt-researcher/GPT_RESEARCHER_TOKEN_LIMIT_FIX.md"
     },
@@ -2940,9 +2940,9 @@
         "anchor": "L78",
         "excerpt_hash": "11e042ef61228564ae3704da764565c9377864dfa96f319a992f9e3af8e8a3ea",
         "excerpt_snippet": "services/dopemux-gpt-researcher/mcp-server/server.py",
-        "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md"
+        "path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md"
       },
-      "from_path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md",
+      "from_path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md",
       "relation": "mentions",
       "to_path": "services/dopemux-gpt-researcher/mcp-server/server.py"
     },
@@ -2951,9 +2951,9 @@
         "anchor": "L255",
         "excerpt_hash": "acf87efbe9fdcfbb7a7343dc3a5592c2620922efebdf6cc74f6f63cc1e86bec8",
         "excerpt_snippet": "services/shared/mcp_response_budget.py",
-        "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md"
+        "path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md"
       },
-      "from_path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md",
+      "from_path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md",
       "relation": "mentions",
       "to_path": "services/shared/mcp_response_budget.py"
     },
@@ -2962,9 +2962,9 @@
         "anchor": "L289",
         "excerpt_hash": "48d2912982922b8102ba435157bbdfba6d3e6a6a4ce46a53e94d0ed60c5ac039",
         "excerpt_snippet": ".claude/config/mcp_servers_act.json",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/config/mcp_servers_act.json"
     },
@@ -2973,9 +2973,9 @@
         "anchor": "L292",
         "excerpt_hash": "54f58531fbcf759349d9f0d2c86d3080e2c475e591c86b0c6c9e2e1342c14a41",
         "excerpt_snippet": ".claude/config/mcp_servers_all.json",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/config/mcp_servers_all.json"
     },
@@ -2984,9 +2984,9 @@
         "anchor": "L290",
         "excerpt_hash": "54e1db354604d4a89b7c481ad43e4b29b9f5a9b0e0cdf0a2d4dd2626a6e8ddba",
         "excerpt_snippet": ".claude/config/mcp_servers_plan.json",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/config/mcp_servers_plan.json"
     },
@@ -2995,9 +2995,9 @@
         "anchor": "L288",
         "excerpt_hash": "85340b74633e9007c5d74e7dda925cd9c6960c28db482326c884d502dbb0b5b5",
         "excerpt_snippet": ".claude/config/mcp_servers_quickfix.json",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/config/mcp_servers_quickfix.json"
     },
@@ -3006,9 +3006,9 @@
         "anchor": "L291",
         "excerpt_hash": "7fed279f72699ef88c12987b53babb8c81449c5d66da75c356c07412c8bb8854",
         "excerpt_snippet": ".claude/config/mcp_servers_research.json",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/config/mcp_servers_research.json"
     },
@@ -3017,9 +3017,9 @@
         "anchor": "L337",
         "excerpt_hash": "c614a3b7b739a4157fdda007028ca7600e0d58a429426ecb0700c91cac69b0d4",
         "excerpt_snippet": ".claude/switch-role.sh",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/switch-role.sh"
     },
@@ -3028,9 +3028,9 @@
         "anchor": "L338",
         "excerpt_hash": "c614a3b7b739a4157fdda007028ca7600e0d58a429426ecb0700c91cac69b0d4",
         "excerpt_snippet": ".claude/switch-role.sh",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/switch-role.sh"
     },
@@ -3039,9 +3039,9 @@
         "anchor": "L339",
         "excerpt_hash": "c614a3b7b739a4157fdda007028ca7600e0d58a429426ecb0700c91cac69b0d4",
         "excerpt_snippet": ".claude/switch-role.sh",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/switch-role.sh"
     },
@@ -3050,9 +3050,9 @@
         "anchor": "L340",
         "excerpt_hash": "c614a3b7b739a4157fdda007028ca7600e0d58a429426ecb0700c91cac69b0d4",
         "excerpt_snippet": ".claude/switch-role.sh",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/switch-role.sh"
     },
@@ -3061,9 +3061,9 @@
         "anchor": "L341",
         "excerpt_hash": "c614a3b7b739a4157fdda007028ca7600e0d58a429426ecb0700c91cac69b0d4",
         "excerpt_snippet": ".claude/switch-role.sh",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
-      "from_path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
+      "from_path": "docs/archive/completed-projects/metamcp-complete-setup-2.md",
       "relation": "mentions",
       "to_path": ".claude/switch-role.sh"
     },
@@ -3072,9 +3072,9 @@
         "anchor": "L89",
         "excerpt_hash": "39a7385335d83e44c5ba7464cea0fffe8806aec47cac19520c7fc70ebbb0807d",
         "excerpt_snippet": "services/task-orchestrator/intelligence/cognitive_load_balancer.py",
-        "path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md"
+        "path": "docs/archive/component-implementations/component-6-phase2-specification-2.md"
       },
-      "from_path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md",
+      "from_path": "docs/archive/component-implementations/component-6-phase2-specification-2.md",
       "relation": "mentions",
       "to_path": "services/task-orchestrator/intelligence/cognitive_load_balancer.py"
     },
@@ -3083,9 +3083,9 @@
         "anchor": "L95",
         "excerpt_hash": "b6fac7c9e8a1240fd15dae4ace5670c25f39237b91e76907027a61b115858cc1",
         "excerpt_snippet": "services/task-orchestrator/intelligence/load_alert_manager.py",
-        "path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md"
+        "path": "docs/archive/component-implementations/component-6-phase2-specification-2.md"
       },
-      "from_path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md",
+      "from_path": "docs/archive/component-implementations/component-6-phase2-specification-2.md",
       "relation": "mentions",
       "to_path": "services/task-orchestrator/intelligence/load_alert_manager.py"
     },
@@ -3094,9 +3094,9 @@
         "anchor": "L52",
         "excerpt_hash": "dd7c68dd86260c9df5b83469a968b202807872b1d517d24be72c1f582b6ce64b",
         "excerpt_snippet": "services/task-orchestrator/intelligence/predictive_orchestrator.py",
-        "path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md"
+        "path": "docs/archive/component-implementations/component-6-phase2-specification-2.md"
       },
-      "from_path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md",
+      "from_path": "docs/archive/component-implementations/component-6-phase2-specification-2.md",
       "relation": "mentions",
       "to_path": "services/task-orchestrator/intelligence/predictive_orchestrator.py"
     },
@@ -3105,9 +3105,9 @@
         "anchor": "L62",
         "excerpt_hash": "92136c498299fe763c2746d3e9d17709df7a9b5e5b60f6730a696bd8f527eab5",
         "excerpt_snippet": "services/task-orchestrator/ml/completion_predictor.py",
-        "path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md"
+        "path": "docs/archive/component-implementations/component-6-phase2-specification-2.md"
       },
-      "from_path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md",
+      "from_path": "docs/archive/component-implementations/component-6-phase2-specification-2.md",
       "relation": "mentions",
       "to_path": "services/task-orchestrator/ml/completion_predictor.py"
     },
@@ -3116,9 +3116,9 @@
         "anchor": "L57",
         "excerpt_hash": "39e328e94155498d14054b7a78b0acb12b3bf2fcefbd20f8ab93530470c9d42a",
         "excerpt_snippet": "services/task-orchestrator/ml/feature_engineering.py",
-        "path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md"
+        "path": "docs/archive/component-implementations/component-6-phase2-specification-2.md"
       },
-      "from_path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md",
+      "from_path": "docs/archive/component-implementations/component-6-phase2-specification-2.md",
       "relation": "mentions",
       "to_path": "services/task-orchestrator/ml/feature_engineering.py"
     },
@@ -3127,9 +3127,9 @@
         "anchor": "L817",
         "excerpt_hash": "ac4472ca5c4b9fc50f1a66e80b4a0ea58dcbfaf1b047d85e041daa9b3b206d3e",
         "excerpt_snippet": "config/mcp/broker-minimal.yaml",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "config/mcp/broker-minimal.yaml"
     },
@@ -3138,9 +3138,9 @@
         "anchor": "L835",
         "excerpt_hash": "ac4472ca5c4b9fc50f1a66e80b4a0ea58dcbfaf1b047d85e041daa9b3b206d3e",
         "excerpt_snippet": "config/mcp/broker-minimal.yaml",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "config/mcp/broker-minimal.yaml"
     },
@@ -3149,9 +3149,9 @@
         "anchor": "L944",
         "excerpt_hash": "ac4472ca5c4b9fc50f1a66e80b4a0ea58dcbfaf1b047d85e041daa9b3b206d3e",
         "excerpt_snippet": "config/mcp/broker-minimal.yaml",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "config/mcp/broker-minimal.yaml"
     },
@@ -3160,9 +3160,9 @@
         "anchor": "L1128",
         "excerpt_hash": "ac4472ca5c4b9fc50f1a66e80b4a0ea58dcbfaf1b047d85e041daa9b3b206d3e",
         "excerpt_snippet": "config/mcp/broker-minimal.yaml",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "config/mcp/broker-minimal.yaml"
     },
@@ -3171,9 +3171,9 @@
         "anchor": "L1208",
         "excerpt_hash": "ac4472ca5c4b9fc50f1a66e80b4a0ea58dcbfaf1b047d85e041daa9b3b206d3e",
         "excerpt_snippet": "config/mcp/broker-minimal.yaml",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "config/mcp/broker-minimal.yaml"
     },
@@ -3182,9 +3182,9 @@
         "anchor": "L2070",
         "excerpt_hash": "ac4472ca5c4b9fc50f1a66e80b4a0ea58dcbfaf1b047d85e041daa9b3b206d3e",
         "excerpt_snippet": "config/mcp/broker-minimal.yaml",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "config/mcp/broker-minimal.yaml"
     },
@@ -3193,9 +3193,9 @@
         "anchor": "L1633",
         "excerpt_hash": "cc82696bb75aaa2a123a6ebff00fff2bfed17cdcb644c75cde0204cfde7fcfc6",
         "excerpt_snippet": "docs/01-decisions/ADR-013-rag-search-architecture.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/01-decisions/ADR-013-rag-search-architecture.md"
     },
@@ -3204,9 +3204,9 @@
         "anchor": "L1217",
         "excerpt_hash": "3d5894d9d7b204b9efbb2e4de9d21ba7393e4c05ac0a3aa73208e44421f89e84",
         "excerpt_snippet": "docs/02-how-to/how-to-use-mcp-system.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/02-how-to/how-to-use-mcp-system.md"
     },
@@ -3215,9 +3215,9 @@
         "anchor": "L1216",
         "excerpt_hash": "1b7683fbb0d6aabf249be5554aff45fa8cbfa31c11ee1582f81b7f320dd7e64d",
         "excerpt_snippet": "docs/03-reference/MCP_SYSTEM_INTEGRATION_STATUS.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/03-reference/MCP_SYSTEM_INTEGRATION_STATUS.md"
     },
@@ -3226,9 +3226,9 @@
         "anchor": "L1581",
         "excerpt_hash": "a118247bb93ece7cafbcaaa4fa46296f76fc0aaaff6ec0ce7f0bb11aecad1b60",
         "excerpt_snippet": "docs/04-explanation/architecture/rag-search-architecture.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/04-explanation/architecture/rag-search-architecture.md"
     },
@@ -3237,9 +3237,9 @@
         "anchor": "L1632",
         "excerpt_hash": "a118247bb93ece7cafbcaaa4fa46296f76fc0aaaff6ec0ce7f0bb11aecad1b60",
         "excerpt_snippet": "docs/04-explanation/architecture/rag-search-architecture.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/04-explanation/architecture/rag-search-architecture.md"
     },
@@ -3248,9 +3248,9 @@
         "anchor": "L1218",
         "excerpt_hash": "60fc4fae5cf30114d984dd9b0c8eb428d221bcabf7273f87521d350b72ad1603",
         "excerpt_snippet": "docs/90-adr/035-mcp-system-integration-success.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/90-adr/035-mcp-system-integration-success.md"
     },
@@ -3259,9 +3259,9 @@
         "anchor": "L1856",
         "excerpt_hash": "055db2c15f48eda985530953453628e16e1b671b1dde9bc10a300d0b085a0d67",
         "excerpt_snippet": "docs/90-adr/036-adhd-simple-accommodations.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/90-adr/036-adhd-simple-accommodations.md"
     },
@@ -3270,9 +3270,9 @@
         "anchor": "L2066",
         "excerpt_hash": "055db2c15f48eda985530953453628e16e1b671b1dde9bc10a300d0b085a0d67",
         "excerpt_snippet": "docs/90-adr/036-adhd-simple-accommodations.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/90-adr/036-adhd-simple-accommodations.md"
     },
@@ -3281,9 +3281,9 @@
         "anchor": "L1215",
         "excerpt_hash": "0689b678d2265f6f0e15e99f1ee5ce14f51917dade4f8fbd1497db422ef3faf2",
         "excerpt_snippet": "docs/92-runbooks/runbook-mcp-system-integration.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/92-runbooks/runbook-mcp-system-integration.md"
     },
@@ -3292,9 +3292,9 @@
         "anchor": "L37",
         "excerpt_hash": "93cb88cb3ffdbe3d70899454918f6bc1cb16789a6a959617b9147f6547cb49ac",
         "excerpt_snippet": "docs/analysis/",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/analysis/"
     },
@@ -3303,9 +3303,9 @@
         "anchor": "L132",
         "excerpt_hash": "1ca6b2f7ebca2d21aa4c479ba1c576396b9c0af283cf3ee13d03471e761dfcee",
         "excerpt_snippet": "docs/analysis/01-architecture-overview.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/analysis/01-architecture-overview.md"
     },
@@ -3314,9 +3314,9 @@
         "anchor": "L133",
         "excerpt_hash": "1dbd51bbc9ae9dfdacc52c4861333d714ce0479bd27c13f7336562d606365451",
         "excerpt_snippet": "docs/analysis/02-datastore-orchestration-raci.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/analysis/02-datastore-orchestration-raci.md"
     },
@@ -3325,9 +3325,9 @@
         "anchor": "L134",
         "excerpt_hash": "87a433bb079adcd87a597907dfe2d0b642d37fe926bba9b17f93d03e7cb82f56",
         "excerpt_snippet": "docs/analysis/03-tool-inventory-complete.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/analysis/03-tool-inventory-complete.md"
     },
@@ -3336,9 +3336,9 @@
         "anchor": "L135",
         "excerpt_hash": "127ca68661c66b4b4411472d93e20451c68f19e1f84669b3379a0397de6e1b43",
         "excerpt_snippet": "docs/analysis/04-integration-requirements.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/analysis/04-integration-requirements.md"
     },
@@ -3347,9 +3347,9 @@
         "anchor": "L136",
         "excerpt_hash": "957867ee7c16454d116961be85d4cc8714f4a95386fa422ba2c4c975e7a283ba",
         "excerpt_snippet": "docs/analysis/05-synthesis-decisions.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/analysis/05-synthesis-decisions.md"
     },
@@ -3358,9 +3358,9 @@
         "anchor": "L39",
         "excerpt_hash": "716b72be8c93c441e5014d496dfcb098a145191544bc50f5feed52637e6f0ab8",
         "excerpt_snippet": "docs/implementation/",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/implementation/"
     },
@@ -3369,9 +3369,9 @@
         "anchor": "L145",
         "excerpt_hash": "a869e556f7d583e3d78445431cef98a6b8936d88dc0b4ef104fc4fdb6c57cf89",
         "excerpt_snippet": "docs/implementation/phase1-foundation.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/implementation/phase1-foundation.md"
     },
@@ -3380,9 +3380,9 @@
         "anchor": "L309",
         "excerpt_hash": "a869e556f7d583e3d78445431cef98a6b8936d88dc0b4ef104fc4fdb6c57cf89",
         "excerpt_snippet": "docs/implementation/phase1-foundation.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/implementation/phase1-foundation.md"
     },
@@ -3391,9 +3391,9 @@
         "anchor": "L146",
         "excerpt_hash": "faf5e2a80cada72099c2d701d30bc672e7fc0e9c46d67aef8f863c6f1f6f26fd",
         "excerpt_snippet": "docs/implementation/phase2-integration.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/implementation/phase2-integration.md"
     },
@@ -3402,9 +3402,9 @@
         "anchor": "L310",
         "excerpt_hash": "faf5e2a80cada72099c2d701d30bc672e7fc0e9c46d67aef8f863c6f1f6f26fd",
         "excerpt_snippet": "docs/implementation/phase2-integration.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/implementation/phase2-integration.md"
     },
@@ -3413,9 +3413,9 @@
         "anchor": "L147",
         "excerpt_hash": "222a24afc14cdaff6bd7757933003397d1c1ec120e6bd92a13d968a6397a2079",
         "excerpt_snippet": "docs/implementation/phase3-optimization.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/implementation/phase3-optimization.md"
     },
@@ -3424,9 +3424,9 @@
         "anchor": "L311",
         "excerpt_hash": "222a24afc14cdaff6bd7757933003397d1c1ec120e6bd92a13d968a6397a2079",
         "excerpt_snippet": "docs/implementation/phase3-optimization.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/implementation/phase3-optimization.md"
     },
@@ -3435,9 +3435,9 @@
         "anchor": "L38",
         "excerpt_hash": "ca5c81a6dcc7454255510bd406e86c5c5f2262ad3cbedd85ba8a4820041b4c10",
         "excerpt_snippet": "docs/research/",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/"
     },
@@ -3446,9 +3446,9 @@
         "anchor": "L139",
         "excerpt_hash": "1029f65326a109a7dbf37439519978dba8e79e0ab7e49337bb5a6448b9931287",
         "excerpt_snippet": "docs/research/chatgpt-deep-research-queries.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/chatgpt-deep-research-queries.md"
     },
@@ -3457,9 +3457,9 @@
         "anchor": "L304",
         "excerpt_hash": "1029f65326a109a7dbf37439519978dba8e79e0ab7e49337bb5a6448b9931287",
         "excerpt_snippet": "docs/research/chatgpt-deep-research-queries.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/chatgpt-deep-research-queries.md"
     },
@@ -3468,9 +3468,9 @@
         "anchor": "L141",
         "excerpt_hash": "25c54e6aa1aa42d2bc38325c35018dff5ef693df99b076e260a832ee1e81c914",
         "excerpt_snippet": "docs/research/exa-research-queries.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/exa-research-queries.md"
     },
@@ -3479,9 +3479,9 @@
         "anchor": "L305",
         "excerpt_hash": "25c54e6aa1aa42d2bc38325c35018dff5ef693df99b076e260a832ee1e81c914",
         "excerpt_snippet": "docs/research/exa-research-queries.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/exa-research-queries.md"
     },
@@ -3490,9 +3490,9 @@
         "anchor": "L142",
         "excerpt_hash": "953b5d55414928a5f5c936ebcea00b25c3ed40c9187d002ee653e7493f8f38b8",
         "excerpt_snippet": "docs/research/research-backlog-complete.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/research-backlog-complete.md"
     },
@@ -3501,9 +3501,9 @@
         "anchor": "L54",
         "excerpt_hash": "3e701123cdad8d708dfb17f1558dd36cdf302badb61682b69c250b52316db7df",
         "excerpt_snippet": "docs/research/research-findings-01-milvus-hybrid.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/research-findings-01-milvus-hybrid.md"
     },
@@ -3512,9 +3512,9 @@
         "anchor": "L150",
         "excerpt_hash": "3e701123cdad8d708dfb17f1558dd36cdf302badb61682b69c250b52316db7df",
         "excerpt_snippet": "docs/research/research-findings-01-milvus-hybrid.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/research-findings-01-milvus-hybrid.md"
     },
@@ -3523,9 +3523,9 @@
         "anchor": "L301",
         "excerpt_hash": "3e701123cdad8d708dfb17f1558dd36cdf302badb61682b69c250b52316db7df",
         "excerpt_snippet": "docs/research/research-findings-01-milvus-hybrid.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/research-findings-01-milvus-hybrid.md"
     },
@@ -3534,9 +3534,9 @@
         "anchor": "L140",
         "excerpt_hash": "3fa3350e99993cf32701561dda63deed90af1117eb684b8651a99b8d8872e4d8",
         "excerpt_snippet": "docs/research/sequential-thinking-input.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/sequential-thinking-input.md"
     },
@@ -3545,9 +3545,9 @@
         "anchor": "L306",
         "excerpt_hash": "3fa3350e99993cf32701561dda63deed90af1117eb684b8651a99b8d8872e4d8",
         "excerpt_snippet": "docs/research/sequential-thinking-input.md",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
-      "from_path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "from_path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "relation": "mentions",
       "to_path": "docs/research/sequential-thinking-input.md"
     },
@@ -3556,9 +3556,9 @@
         "anchor": "L87",
         "excerpt_hash": "d08a01e8bff8d3d80995123f8df5e704c0e97967093b5d4e0319e8a004d24fe7",
         "excerpt_snippet": "scripts/gpt-researcher/mcp_server.py",
-        "path": "docs/archive/deprecated/mcp-servers/GPT_RESEARCHER_LANGCHAIN_FIX.md"
+        "path": "docs/archive/deprecated/mcp-servers/gpt-researcher-langchain-fix-2.md"
       },
-      "from_path": "docs/archive/deprecated/mcp-servers/GPT_RESEARCHER_LANGCHAIN_FIX.md",
+      "from_path": "docs/archive/deprecated/mcp-servers/gpt-researcher-langchain-fix-2.md",
       "relation": "mentions",
       "to_path": "scripts/gpt-researcher/mcp_server.py"
     },
@@ -3589,9 +3589,9 @@
         "anchor": "L350",
         "excerpt_hash": "82718e62fd80de3eb5d8cad7fcb1a2b83b604f3e601d682cbc5859b1b52bb317",
         "excerpt_snippet": "docs/Web/API/Server-sent_events",
-        "path": "docs/archive/mcp-servers/HTTP_SERVER_README.md"
+        "path": "docs/archive/mcp-servers/http-server-readme-2.md"
       },
-      "from_path": "docs/archive/mcp-servers/HTTP_SERVER_README.md",
+      "from_path": "docs/archive/mcp-servers/http-server-readme-2.md",
       "relation": "mentions",
       "to_path": "docs/Web/API/Server-sent_events"
     },
@@ -3600,9 +3600,9 @@
         "anchor": "L39",
         "excerpt_hash": "ea6fb589a3c57e5fbb56c112f056098892587fe69960988e76c6bf05d6291363",
         "excerpt_snippet": "docs/architecture/MEMORY.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_D3_CITATION_GRAPH.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-d3-citation-graph-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_D3_CITATION_GRAPH.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE/prompt-d3-citation-graph-2.md",
       "relation": "mentions",
       "to_path": "docs/architecture/MEMORY.md"
     },
@@ -3611,9 +3611,9 @@
         "anchor": "L40",
         "excerpt_hash": "ea6fb589a3c57e5fbb56c112f056098892587fe69960988e76c6bf05d6291363",
         "excerpt_snippet": "docs/architecture/MEMORY.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_D3_CITATION_GRAPH.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-d3-citation-graph-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_D3_CITATION_GRAPH.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE/prompt-d3-citation-graph-2.md",
       "relation": "mentions",
       "to_path": "docs/architecture/MEMORY.md"
     },
@@ -3622,9 +3622,9 @@
         "anchor": "L37",
         "excerpt_hash": "1e35754a5df880fa3b5f4dd849b330addac62c5848dea0b8e2172655b3028ade",
         "excerpt_snippet": ".claude/PRIMER.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
       "relation": "mentions",
       "to_path": ".claude/PRIMER.md"
     },
@@ -3633,9 +3633,9 @@
         "anchor": "L38",
         "excerpt_hash": "1e35754a5df880fa3b5f4dd849b330addac62c5848dea0b8e2172655b3028ade",
         "excerpt_snippet": ".claude/PRIMER.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
       "relation": "mentions",
       "to_path": ".claude/PRIMER.md"
     },
@@ -3644,9 +3644,9 @@
         "anchor": "L39",
         "excerpt_hash": "1e35754a5df880fa3b5f4dd849b330addac62c5848dea0b8e2172655b3028ade",
         "excerpt_snippet": ".claude/PRIMER.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
       "relation": "mentions",
       "to_path": ".claude/PRIMER.md"
     },
@@ -3655,9 +3655,9 @@
         "anchor": "L39",
         "excerpt_hash": "ea6fb589a3c57e5fbb56c112f056098892587fe69960988e76c6bf05d6291363",
         "excerpt_snippet": "docs/architecture/MEMORY.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_D3_CITATION_GRAPH.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-d3-citation-graph-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_D3_CITATION_GRAPH.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-d3-citation-graph-2.md",
       "relation": "mentions",
       "to_path": "docs/architecture/MEMORY.md"
     },
@@ -3666,9 +3666,9 @@
         "anchor": "L40",
         "excerpt_hash": "ea6fb589a3c57e5fbb56c112f056098892587fe69960988e76c6bf05d6291363",
         "excerpt_snippet": "docs/architecture/MEMORY.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_D3_CITATION_GRAPH.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-d3-citation-graph-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_D3_CITATION_GRAPH.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-d3-citation-graph-2.md",
       "relation": "mentions",
       "to_path": "docs/architecture/MEMORY.md"
     },
@@ -3677,9 +3677,9 @@
         "anchor": "L37",
         "excerpt_hash": "1e35754a5df880fa3b5f4dd849b330addac62c5848dea0b8e2172655b3028ade",
         "excerpt_snippet": ".claude/PRIMER.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md",
       "relation": "mentions",
       "to_path": ".claude/PRIMER.md"
     },
@@ -3688,9 +3688,9 @@
         "anchor": "L38",
         "excerpt_hash": "1e35754a5df880fa3b5f4dd849b330addac62c5848dea0b8e2172655b3028ade",
         "excerpt_snippet": ".claude/PRIMER.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md",
       "relation": "mentions",
       "to_path": ".claude/PRIMER.md"
     },
@@ -3699,9 +3699,9 @@
         "anchor": "L39",
         "excerpt_hash": "1e35754a5df880fa3b5f4dd849b330addac62c5848dea0b8e2172655b3028ade",
         "excerpt_snippet": ".claude/PRIMER.md",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
-      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
+      "from_path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md",
       "relation": "mentions",
       "to_path": ".claude/PRIMER.md"
     },
@@ -3709,23 +3709,23 @@
       "evidence": {
         "anchor": "L57",
         "excerpt_hash": "2524c3cb0d732aa87e4261a8c1e0691586c019c1d8e065dcf0f4bda28b0bce66",
-        "excerpt_snippet": "docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/mcp-budget-monitoring-verification-2026-02-06-2.md",
         "path": "docs/best-practices/mcp-token-management.md"
       },
       "from_path": "docs/best-practices/mcp-token-management.md",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/mcp-budget-monitoring-verification-2026-02-06-2.md"
     },
     {
       "evidence": {
         "anchor": "L56",
         "excerpt_hash": "4470fd81e6aaf623c8dc810780537147f181fb1a0305f4afa786a71f3309867f",
-        "excerpt_snippet": "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md",
         "path": "docs/best-practices/mcp-token-management.md"
       },
       "from_path": "docs/best-practices/mcp-token-management.md",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md"
     },
     {
       "evidence": {
@@ -4787,45 +4787,45 @@
       "evidence": {
         "anchor": "L192",
         "excerpt_hash": "d66c2417550fbe994c06fd37ecfc8926de2c5f9959ee206e4066dd1cdcc1bdba",
-        "excerpt_snippet": "docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06-2.md",
         "path": "scripts/docs_audit/extract_conport_deep_status_tasks.py"
       },
       "from_path": "scripts/docs_audit/extract_conport_deep_status_tasks.py",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06-2.md"
     },
     {
       "evidence": {
         "anchor": "L193",
         "excerpt_hash": "467f2828d68c1185f554727fde6c83aa61738b5562220265e8dd91fed997ad93",
-        "excerpt_snippet": "docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06-2.md",
         "path": "scripts/docs_audit/extract_conport_deep_status_tasks.py"
       },
       "from_path": "scripts/docs_audit/extract_conport_deep_status_tasks.py",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06-2.md"
     },
     {
       "evidence": {
         "anchor": "L194",
         "excerpt_hash": "d49c668f96670b951f1525ea9adea5d912304dd19a0510ee6ec00dba07d7b162",
-        "excerpt_snippet": "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/final-state-feature-baseline-and-execution-plan-2026-02-06-2.md",
         "path": "scripts/docs_audit/extract_conport_deep_status_tasks.py"
       },
       "from_path": "scripts/docs_audit/extract_conport_deep_status_tasks.py",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/final-state-feature-baseline-and-execution-plan-2026-02-06-2.md"
     },
     {
       "evidence": {
         "anchor": "L195",
         "excerpt_hash": "94361d09d355d47c6f45543e9c6864078dd86fcbf12824443db1788ebe5b9d84",
-        "excerpt_snippet": "docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/leantime-bridge-readiness-2026-02-06-2.md",
         "path": "scripts/docs_audit/extract_conport_deep_status_tasks.py"
       },
       "from_path": "scripts/docs_audit/extract_conport_deep_status_tasks.py",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/leantime-bridge-readiness-2026-02-06-2.md"
     },
     {
       "evidence": {
@@ -4908,12 +4908,12 @@
       "evidence": {
         "anchor": "L125",
         "excerpt_hash": "d66c2417550fbe994c06fd37ecfc8926de2c5f9959ee206e4066dd1cdcc1bdba",
-        "excerpt_snippet": "docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06-2.md",
         "path": "scripts/docs_audit/recheck_conport_live_master_delta.py"
       },
       "from_path": "scripts/docs_audit/recheck_conport_live_master_delta.py",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06-2.md"
     },
     {
       "evidence": {
@@ -6657,67 +6657,67 @@
       "evidence": {
         "anchor": "L29",
         "excerpt_hash": "467f2828d68c1185f554727fde6c83aa61738b5562220265e8dd91fed997ad93",
-        "excerpt_snippet": "docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06-2.md",
         "path": "scripts/verify_profile_week2_integration.sh"
       },
       "from_path": "scripts/verify_profile_week2_integration.sh",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06-2.md"
     },
     {
       "evidence": {
         "anchor": "L25",
         "excerpt_hash": "77ea3075598094dc0c254e1d050db7707e201b43eee7c4592005924d49deba61",
-        "excerpt_snippet": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md",
         "path": "scripts/verify_profile_week2_integration.sh"
       },
       "from_path": "scripts/verify_profile_week2_integration.sh",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md"
     },
     {
       "evidence": {
         "anchor": "L30",
         "excerpt_hash": "d49c668f96670b951f1525ea9adea5d912304dd19a0510ee6ec00dba07d7b162",
-        "excerpt_snippet": "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/final-state-feature-baseline-and-execution-plan-2026-02-06-2.md",
         "path": "scripts/verify_profile_week2_integration.sh"
       },
       "from_path": "scripts/verify_profile_week2_integration.sh",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/final-state-feature-baseline-and-execution-plan-2026-02-06-2.md"
     },
     {
       "evidence": {
         "anchor": "L28",
         "excerpt_hash": "679b897adc57016c9a0494be52cb0fad5ee1984539f4071db245f3274cbebaef",
-        "excerpt_snippet": "docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/profile-documentation-completion-verification-2026-02-06-2.md",
         "path": "scripts/verify_profile_week2_integration.sh"
       },
       "from_path": "scripts/verify_profile_week2_integration.sh",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/profile-documentation-completion-verification-2026-02-06-2.md"
     },
     {
       "evidence": {
         "anchor": "L26",
         "excerpt_hash": "70bf773d131d3420627c92671293de8fe7e1e7259cb6acaea430075d97d9a4f3",
-        "excerpt_snippet": "docs/05-audit-reports/PROFILE_OPTIMIZATION_SUGGESTIONS_VERIFICATION_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/profile-optimization-suggestions-verification-2026-02-06-2.md",
         "path": "scripts/verify_profile_week2_integration.sh"
       },
       "from_path": "scripts/verify_profile_week2_integration.sh",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/PROFILE_OPTIMIZATION_SUGGESTIONS_VERIFICATION_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/profile-optimization-suggestions-verification-2026-02-06-2.md"
     },
     {
       "evidence": {
         "anchor": "L27",
         "excerpt_hash": "abf0426f8b1727b39bf15482a4ce7cbced97cde72c09905c4d609ddde870389b",
-        "excerpt_snippet": "docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md",
+        "excerpt_snippet": "docs/05-audit-reports/profile-usage-analysis-and-init-wizard-verification-2026-02-06-2.md",
         "path": "scripts/verify_profile_week2_integration.sh"
       },
       "from_path": "scripts/verify_profile_week2_integration.sh",
       "relation": "mentions",
-      "to_path": "docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md"
+      "to_path": "docs/05-audit-reports/profile-usage-analysis-and-init-wizard-verification-2026-02-06-2.md"
     },
     {
       "evidence": {
@@ -6913,12 +6913,12 @@
         "anchor": "L24",
         "excerpt_hash": "7d4c3b13afe3d2de4cbb4c4a5c0e156b86c93a3d1d02f8d4c289546d47549cb6",
         "excerpt_snippet": "- `AUTHORITY`, `TRINITY`, `EVENTBUS`, `TASKX`, `MCP`, `HOOK`",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "name": "AUTHORITY",
       "referenced_in": [
-        "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
-        "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
+        "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       ],
       "used_for": "unknown"
     },
@@ -6957,11 +6957,11 @@
         "anchor": "L30",
         "excerpt_hash": "4dc273d669249bc2c4efd99d46162d51ab4568e550662f34858a35a38e0e8ffe",
         "excerpt_snippet": "TaskX is a deterministic CLI implementing:",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "name": "CLI",
       "referenced_in": [
-        "docs/thread-primer-taskx.md",
+        "docs/THREAD_PRIMER_TASKX.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -7014,12 +7014,12 @@
         "anchor": "L24",
         "excerpt_hash": "7d4c3b13afe3d2de4cbb4c4a5c0e156b86c93a3d1d02f8d4c289546d47549cb6",
         "excerpt_snippet": "- `AUTHORITY`, `TRINITY`, `EVENTBUS`, `TASKX`, `MCP`, `HOOK`",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "name": "EVENTBUS",
       "referenced_in": [
-        "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
-        "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
+        "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       ],
       "used_for": "unknown"
     },
@@ -7054,12 +7054,12 @@
         "anchor": "L24",
         "excerpt_hash": "7d4c3b13afe3d2de4cbb4c4a5c0e156b86c93a3d1d02f8d4c289546d47549cb6",
         "excerpt_snippet": "- `AUTHORITY`, `TRINITY`, `EVENTBUS`, `TASKX`, `MCP`, `HOOK`",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "name": "HOOK",
       "referenced_in": [
-        "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
-        "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
+        "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       ],
       "used_for": "unknown"
     },
@@ -7120,11 +7120,11 @@
         "anchor": "L37",
         "excerpt_hash": "a1b541b7b16481a53833d5e3842e7cd0f6792266f680d291c6114da011fcd550",
         "excerpt_snippet": "- LLM contract autogen (taskx docs refresh-llm)",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "name": "LLM",
       "referenced_in": [
-        "docs/thread-primer-taskx.md",
+        "docs/THREAD_PRIMER_TASKX.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -7134,12 +7134,12 @@
         "anchor": "L24",
         "excerpt_hash": "7d4c3b13afe3d2de4cbb4c4a5c0e156b86c93a3d1d02f8d4c289546d47549cb6",
         "excerpt_snippet": "- `AUTHORITY`, `TRINITY`, `EVENTBUS`, `TASKX`, `MCP`, `HOOK`",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "name": "MCP",
       "referenced_in": [
-        "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
-        "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
+        "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
+        "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md",
         "docs/planes/pm/dopemux/doc-gate-2.md"
       ],
       "used_for": "unknown"
@@ -7381,8 +7381,8 @@
         ".taskx/instructions/CODEX.md",
         ".taskx/instructions/PROJECT_INSTRUCTIONS.md",
         ".taskx/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt",
-        "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
-        "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
+        "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       ],
       "used_for": "taskx_config"
     },
@@ -7404,11 +7404,11 @@
         "anchor": "L2",
         "excerpt_hash": "5635703865fd5874f3744a9dbf500989542968f60875a2fda2bbd4550861c602",
         "excerpt_snippet": "id: THREAD_PRIMER_TASKX",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "name": "THREAD_PRIMER_TASKX",
       "referenced_in": [
-        "docs/thread-primer-taskx.md"
+        "docs/THREAD_PRIMER_TASKX.md"
       ],
       "used_for": "taskx_config"
     },
@@ -7430,12 +7430,12 @@
         "anchor": "L24",
         "excerpt_hash": "7d4c3b13afe3d2de4cbb4c4a5c0e156b86c93a3d1d02f8d4c289546d47549cb6",
         "excerpt_snippet": "- `AUTHORITY`, `TRINITY`, `EVENTBUS`, `TASKX`, `MCP`, `HOOK`",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "name": "TRINITY",
       "referenced_in": [
-        "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
-        "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
+        "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       ],
       "used_for": "unknown"
     },
@@ -7796,7 +7796,7 @@
         "anchor": "L13",
         "excerpt_hash": "3eaa777a82d5e6f46e012f226af6140088951eb6760256ac4082524edcb7a810",
         "excerpt_snippet": "# TaskX Thread Primer",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "inputs": [],
       "outputs": [],
@@ -8504,7 +8504,7 @@
         "anchor": "L36",
         "excerpt_hash": "79694bf8eaa45889d668246a9ec512e410af6933f75f5b04900a9625e9f17b10",
         "excerpt_snippet": "- Assisted PR flow (taskx pr open)",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "inputs": [],
       "outputs": [],
@@ -8517,7 +8517,7 @@
         "anchor": "L35",
         "excerpt_hash": "7a1011cfc52668d76650a27265e1dfddb311f1088d3c8f5de22da15f778fff87",
         "excerpt_snippet": "- Assisted routing (taskx route)",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "inputs": [],
       "outputs": [],
@@ -8734,7 +8734,7 @@
         "anchor": "L37",
         "excerpt_hash": "a1b541b7b16481a53833d5e3842e7cd0f6792266f680d291c6114da011fcd550",
         "excerpt_snippet": "- LLM contract autogen (taskx docs refresh-llm)",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "inputs": [
         "LLM"
@@ -9066,7 +9066,7 @@
         "anchor": "L24",
         "excerpt_hash": "7d4c3b13afe3d2de4cbb4c4a5c0e156b86c93a3d1d02f8d4c289546d47549cb6",
         "excerpt_snippet": "- `AUTHORITY`, `TRINITY`, `EVENTBUS`, `TASKX`, `MCP`, `HOOK`",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "inputs": [
         "AUTHORITY",
@@ -9086,7 +9086,7 @@
         "anchor": "L24",
         "excerpt_hash": "7d4c3b13afe3d2de4cbb4c4a5c0e156b86c93a3d1d02f8d4c289546d47549cb6",
         "excerpt_snippet": "- `AUTHORITY`, `TRINITY`, `EVENTBUS`, `TASKX`, `MCP`, `HOOK`",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
       "inputs": [
         "AUTHORITY",
@@ -9719,7 +9719,7 @@
         "anchor": "L30",
         "excerpt_hash": "4dc273d669249bc2c4efd99d46162d51ab4568e550662f34858a35a38e0e8ffe",
         "excerpt_snippet": "TaskX is a deterministic CLI implementing:",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "inputs": [
         "CLI"
@@ -9866,7 +9866,7 @@
         "anchor": "L2",
         "excerpt_hash": "5635703865fd5874f3744a9dbf500989542968f60875a2fda2bbd4550861c602",
         "excerpt_snippet": "id: THREAD_PRIMER_TASKX",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "inputs": [
         "THREAD_PRIMER_TASKX"
@@ -9894,7 +9894,7 @@
         "anchor": "L10",
         "excerpt_hash": "f3ff11d8a5c79fae24501b36b9d1a75e3617ad8bdabacb32a3870b9ab9887b21",
         "excerpt_snippet": "prelude: Thread Primer Taskx (explanation) for dopemux documentation and developer",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "inputs": [],
       "outputs": [],
@@ -9946,7 +9946,7 @@
         "anchor": "L3",
         "excerpt_hash": "2dde1cebc48bf2fb782d3de6cc6fdd33659f429ad510b1e99ff0cd27b8b11469",
         "excerpt_snippet": "title: Thread Primer Taskx",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "inputs": [],
       "outputs": [],
@@ -11203,12 +11203,12 @@
         "anchor": "root",
         "excerpt_hash": "c1d58565d7b0eb47c8350dfc1b922b9798220ab3811bc03506ddd89fc7c9a01e",
         "excerpt_snippet": "--- id: MCP_BUDGET_MONITORING_VERIFICATION_2026_02_06 title: MCP Budget Monitoring Verification 2026 02 06 type: explanation owner: '@hu3mann' author: Codex dat",
-        "path": "docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md"
+        "path": "docs/05-audit-reports/mcp-budget-monitoring-verification-2026-02-06-2.md"
       },
       "kind": "unknown",
       "markers": [],
       "operation": "compile",
-      "path": "docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md",
+      "path": "docs/05-audit-reports/mcp-budget-monitoring-verification-2026-02-06-2.md",
       "targets": []
     },
     {
@@ -11231,15 +11231,15 @@
         "anchor": "root",
         "excerpt_hash": "1347d57dfb87de94440b5aa76983dc48f000a4d5eda391caa4c9f87bd105a31c",
         "excerpt_snippet": "--- id: THREAD_PRIMER_TASKX title: Thread Primer Taskx type: explanation owner: '@hu3mann' author: '@hu3mann' date: '2026-02-12' last_review: '2026-02-12' next_",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
       "kind": "unknown",
       "markers": [],
       "operation": "compile",
-      "path": "docs/thread-primer-taskx.md",
+      "path": "docs/THREAD_PRIMER_TASKX.md",
       "targets": [
         "docs/EXECUTIVE_INVARIANTS_1PAGER.md",
-        "docs/stateless-operator-mode-prompt.md"
+        "docs/STATELESS_OPERATOR_MODE_PROMPT.md"
       ]
     },
     {
@@ -11273,7 +11273,7 @@
         "anchor": "root",
         "excerpt_hash": "1ba34061bd53bfd35bf7d1f618f0e131efedfd12bd92f2fe2135fc4a9989529d",
         "excerpt_snippet": "--- id: LEANTIME_MCP_INTEGRATION_COMPLETE title: Leantime_Mcp_Integration_Complete type: explanation owner: '@hu3mann' last_review: '2025-11-10' next_review: '2",
-        "path": "docs/archive/completed-projects/LEANTIME_MCP_INTEGRATION_COMPLETE.md"
+        "path": "docs/archive/completed-projects/leantime-mcp-integration-complete-2.md"
       },
       "kind": "source_instructions",
       "markers": [
@@ -11282,7 +11282,7 @@
         "<user>"
       ],
       "operation": "unknown",
-      "path": "docs/archive/completed-projects/LEANTIME_MCP_INTEGRATION_COMPLETE.md",
+      "path": "docs/archive/completed-projects/leantime-mcp-integration-complete-2.md",
       "targets": [
         "LEANTIME_API_SETUP_GUIDE.md",
         "LEANTIME_MCP_INTEGRATION_COMPLETE.md",
@@ -11296,12 +11296,12 @@
         "anchor": "root",
         "excerpt_hash": "502135f9ad2bc0100d56ecb961b2d55168241e206e5ef97ef5975548dbc4711e",
         "excerpt_snippet": "--- id: MCP_TOKEN_LIMIT_FIX_SUMMARY title: Mcp_Token_Limit_Fix_Summary type: explanation owner: '@hu3mann' last_review: '2025-11-10' next_review: '2026-02-08' a",
-        "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md"
+        "path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md"
       },
       "kind": "unknown",
       "markers": [],
       "operation": "apply",
-      "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md",
+      "path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md",
       "targets": [
         "MCP_TOKEN_LIMIT_AUDIT.md",
         "docker/mcp-servers/desktop-commander/DESKTOP_COMMANDER_VALIDATION.md",
@@ -11314,14 +11314,14 @@
         "anchor": "root",
         "excerpt_hash": "803afbcdf043fabd4db016eba507172c2b4ee9cdb582504369abfebbf396f8ca",
         "excerpt_snippet": "--- id: mcp_system_development title: Mcp_System_Development type: explanation owner: '@hu3mann' last_review: '2026-02-02' next_review: '2026-05-03' author: '@h",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
       "kind": "source_instructions",
       "markers": [
         "<-- BLOCKS HERE\n```\n\n**Issue**: Synchronous readline() on subprocess stdout causes indefinite blocking\n\n## \ud83d\ude80 IMMEDIATE NEXT ACTIONS\n\n### Priority 1: Fix ConPort (IN PROGRESS)\n- **Status**: Diagnosis complete, fix needed\n- **Solution**: Async subprocess handling or timeout mechanism\n- **Impact**: Will unlock MetaMCP's ConPort integration\n\n### Priority 2: Connect 4 Healthy Servers to MetaMCP\n- **Servers Ready**: zen, exa, serena, morphllm\n- **File to Update**: config/mcp/broker-minimal.yaml\n- **Expected Result**: 7/7 available servers connected (100% utilization)\n\n### Priority 3: Deploy Missing Critical Servers\n- **High Priority**: PAL apilookup (documentation lookup)\n- **Medium Priority**: Claude Context (semantic search)\n- **Research Needed**: Evaluate necessity of others\n\n## \ud83d\udcc1 FILES CREATED/UPDATED\n1. \u2705 `/Users/hue/code/dopemux-mvp/MCP_SYSTEM_AUDIT_LOG.md` - Comprehensive findings\n2. \u2705 `/Users/hue/code/dopemux-mvp/SESSION_CHECKPOINT_MCP_AUDIT_2025-09-24.md` - This checkpoint\n\n## \ud83d\udd27 KEY TECHNICAL INSIGHTS\n\n### MetaMCP Broker Architecture\n- **Current**: Only 3 servers configured in broker-minimal.yaml\n- **Available**: 6 healthy servers ready for integration\n- **Gap**: 4 healthy servers not connected (zen, exa, serena, morphllm)\n- **Config Location**: config/mcp/broker-minimal.yaml\n\n### MCP Transport Patterns Verified\n- **stdio**: \u2705 Working (sequential-thinking via Docker exec)\n- **HTTP**: \u2705 Working (task-master-ai direct connection)\n- **HTTP with subprocess**: \u274c Hanging (conport wrapper issue)\n\n### Missing Infrastructure\n- **PAL apilookup**: High-value documentation server, not deployed\n- **Claude Context**: Semantic search with Milvus, not deployed\n- **6 Additional**: Various specialized servers not deployed\n\n## \ud83d\udcca SUCCESS METRICS\n\n### Audit Completed \u2705\n- **Documentation Accuracy**: Verified 50%+ inaccuracy in deployment claims\n- **Server Discovery**: Found 7/13 servers actually exist and run\n- **Health Status**: 6/7 healthy, 1/7 with MCP protocol issues\n\n### Integration Status\n- **Current MetaMCP**: 3/7 servers connected (43% utilization)\n- **Potential MetaMCP**: 7/7 servers connectable (100% utilization after fixes)\n- **Missing Deployment**: 6/13 servers need deployment evaluation\n\n## \ud83c\udfaf CONTINUATION PLAN\n\n### Immediate Session (Next)\n1. **Fix ConPort subprocess blocking** - Async or timeout approach\n2. **Add 4 healthy servers to MetaMCP config** - Update broker-minimal.yaml\n3. **Test full MetaMCP integration** - Verify all 7 servers work\n\n### Follow-up Sessions\n1. **Deploy PAL apilookup server** - High value documentation lookup\n2. **Update all inaccurate documentation** - Align with actual state\n3. **Evaluate and deploy remaining missing servers** - Based on value analysis\n\n## \ud83d\udd04 CONTEXT PRESERVATION\n\n### Current Working Directory\n- **Location**: /Users/hue/code/dopemux-mvp\n- **MetaMCP Broker**: Running on localhost:8090 via start_metamcp_minimal.py\n- **Docker Status**: 7 MCP containers running, 6 healthy\n\n### Key Commands for Resume\n```bash\n# Check MetaMCP status\npython3 metamcp_simple_query.py get_status\n\n# Check server health\ndocker ps | grep mcp\n\n# View comprehensive findings\ncat MCP_SYSTEM_AUDIT_LOG.md\n```\n\n### Environment State\n- **Todos**: 5 items tracked, 2 completed, 1 in progress\n- **PAL apilookup**: Successfully used for MCP research\n- **Zen Tools**: Available but discovered planner/thinkdeep/consensus not used yet\n\n---\n\n**SESSION CHECKPOINT COMPLETE** \u2705\n**Ready for Continuation**: ConPort fix \u2192 MetaMCP expansion \u2192 Documentation updates\n\n---\n\n## SESSION_CHECKPOINT_MCP_DEPLOYMENT_SUCCESS_2025-09-24.md\nDate: 2025-09-24\nTopics: mcp, adhd, rag, architecture, implementation, planning, documentation\nSize: 1,003 words\n\n### Content\n\n# MCP System Deployment Success - Session Checkpoint\n**Date**: 2025-09-24 16:55:00\n**Session Type**: MCP Infrastructure Deployment & Configuration\n**Status**: \u2705 COMPLETE - All Objectives Achieved\n\n## \ud83c\udfaf Mission Accomplished\n\n**Primary Objective**: Fix and deploy comprehensive MCP server infrastructure\n**Result**: **100% SUCCESS** - All 7 servers operational with evidence-based configuration\n\n## \ud83d\udcca Deployment Summary\n\n### **Before Deployment**\n- **Server Status**: 3/7 connected (43% utilization)\n- **Tool Availability**: ~10 tools\n- **Major Issues**: ConPort hanging, 4 healthy servers not connected, PAL apilookup missing\n- **Documentation Gap**: Reality vs. claims mismatch\n\n### **After Deployment**\n- **Server Status**: 7/7 connected (100% utilization) \u2705\n- **Tool Availability**: 30+ tools across all domains \u2705\n- **Critical Infrastructure**: PAL apilookup operational with 1750+ React snippets \u2705\n- **Documentation**: Evidence-based configuration using comprehensive tool audit \u2705\n\n## \ud83d\udd27 Technical Achievements\n\n### **1. ConPort Async Fix** \u2705\n**Problem**: Subprocess.run() blocking causing container hangs\n**Solution**: Implemented async subprocess management with proper cleanup\n**File Modified**: `docker/mcp-servers/conport/server.py`\n**Result**: Server starts properly and waits for connections without hanging\n\n### **2. Evidence-Based Broker Configuration** \u2705\n**Problem**: Role mappings were assumptions vs. actual server capabilities\n**Solution**: Used MCP_TOOL_AUDIT_COMPLETE.md and MCP_ROUTING_MATRIX.md for configuration\n**File Modified**: `config/mcp/broker-minimal.yaml`\n**Key Changes**:\n- Added 4 healthy servers (zen-mcp, serena, exa, morphllm-fast-apply)\n- Evidence-based role mappings with ADHD optimizations\n- Token budgets per role (8k-25k based on complexity)\n- Max tool limits (3-5 per role) to prevent cognitive overload\n\n### **3. PAL apilookup Deployment** \u2705\n**Problem**: \u2b50\u2b50\u2b50\u2b50\u2b50 priority server missing (ADR-012 compliance)\n**Solution**: Fixed docker-compose configuration and deployed successfully\n**Files Modified**:\n- `docker/mcp-servers/docker-compose.yml` (port mapping fix)\n- Built and started PAL apilookup container\n**Result**: Official documentation access with trust scoring system\n\n### **4. Complete Server Verification** \u2705\n**All 7 servers verified healthy**:\n- mcp-pal: \u2705 Healthy (Documentation & API references)\n- mcp-zen: \u2705 Healthy (Multi-model orchestration, 16 tools)\n- mcp-serena: \u2705 Healthy (Code navigation & refactoring)\n- mcp-exa: \u2705 Healthy (Web research, EXA API configured)\n- mcp-morphllm-fast-apply: \u2705 Healthy (Pattern-based transformations)\n- mcp-task-master-ai: \u2705 Healthy (Task management)\n- mcp-mas-sequential-thinking: \u2705 Healthy (Multi-agent reasoning)\n\n## \ud83d\udccb Evidence-Based Role Mappings Implemented\n\nBased on comprehensive tool audit documentation:\n\n### **Developer Role** (15k token budget, max 5 tools)\n- **Primary**: serena, morphllm-fast-apply, conport\n- **Focus**: Fast iteration, flow state maintenance\n- **ADHD Optimization**: Quick tools prevent context switching\n\n### **Researcher Role** (10k token budget, max 4 tools)\n- **Primary**: exa, conport\n- **Focus**: Controlled information gathering\n- **ADHD Optimization**: Limited tool set prevents research rabbit holes\n\n### **Architect Role** (25k token budget, max 4 tools)\n- **Primary**: sequential-thinking, zen-mcp\n- **Focus**: Deep analysis and complex reasoning\n- **ADHD Optimization**: High-value tools for structured deep work\n\n### **Planner Role** (10k token budget, max 3 tools)\n- **Primary**: task-master-ai, zen-mcp, conport\n- **Focus**: Structured breakdown and organization\n- **ADHD Optimization**: Clear task hierarchies\n\n### **Reviewer Role** (15k token budget, max 5 tools)\n- **Primary**: zen-mcp, serena, conport\n- **Focus**: Systematic quality validation\n- **ADHD Optimization**: Structured review process\n\n### **Debugger Role** (15k token budget, max 4 tools)\n- **Primary**: zen-mcp, serena, conport\n- **Focus**: Problem solving and investigation\n- **ADHD Optimization**: Multiple investigation approaches\n\n### **Transformer Role** (8k token budget, max 3 tools)\n- **Primary**: morphllm-fast-apply, zen-mcp\n- **Focus**: Code transformations and bulk operations\n- **ADHD Optimization**: Fast execution maintains flow state\n\n## \ud83c\udfaf Key Success Metrics Achieved\n\n### **Quantitative Results**\n- \u2705 **Server Utilization**: 43% \u2192 100% (3/7 \u2192 7/7)\n- \u2705 **Tool Availability**: ~10 \u2192 30+ tools\n- \u2705 **Documentation Access**: 1750+ React code snippets via PAL apilookup\n- \u2705 **Response Performance**: All health checks <200ms\n\n### **Qualitative Improvements**\n- \u2705 **Reduced Decision Paralysis**: Clear role-based tool selection\n- \u2705 **ADHD Accommodations**: 3-5 tool limits per role\n- \u2705 **Token Efficiency**: Budget controls prevent runaway costs\n- \u2705 **Evidence-Based Design**: Configuration based on actual server capabilities\n\n## \ud83d\udcd6 Documentation Sources Used\n\n### **Primary References**\n1. **MCP_TOOL_AUDIT_COMPLETE.md**: Server priorities and ADHD optimizations\n2. **MCP_ROUTING_MATRIX.md**: Evidence-based routing and role mappings\n3. **tools-inventory.md**: Actual tool capabilities and token costs\n4. **MCP_SYSTEM_AUDIT_LOG.md**: Initial audit findings and server status\n\n### **Key Insights Applied**\n- PAL apilookup \"Always First\" principle (ADR-012 compliance)\n- Server priority ratings (\u2b50\u2b50\u2b50\u2b50\u2b50 system)\n- ADHD-optimized tool limits and token budgets\n- Role-to-server mapping based on actual capabilities\n\n## \ud83d\udd04 ADHD Accommodations Successfully Implemented\n\n### **Cognitive Load Management**\n- \u2705 Maximum 3-5 tools per role (prevents overwhelm)\n- \u2705 Token budgets prevent runaway costs\n- \u2705 Evidence-based mappings reduce decision fatigue\n- \u2705 Context preservation via ConPort integration\n\n### **Flow State Protection**\n- \u2705 Developer role prioritizes fast tools (serena, morphllm)\n- \u2705 Quick health checks maintain responsiveness\n- \u2705 Systematic role switching reduces context loss\n\n### **Executive Function Support**\n- \u2705 Clear role definitions with specific tool sets\n- \u2705 Structured validation processes (reviewer role)\n- \u2705 Task breakdown support (planner role)\n- \u2705 Decision tracking (ConPort integration)\n\n## \ud83d\ude80 Next Session Recommendations\n\n### **Immediate Actions**\n1. **Test Role Switching**: Validate broker role mappings work correctly\n2. **Token Monitoring**: Implement budget tracking and alerts\n3. **Integration Testing**: Test tool interactions across roles\n\n### **Future Enhancements**\n1. **MetaMCP Integration**: Consider official MetaMCP for advanced orchestration\n2. **Additional Tools**: ConPort for context preservation, Desktop Commander for automation\n3. **Monitoring**: Add metrics collection for optimization\n\n## \ud83d\udcdd Session Learning & Insights\n\n### **Key Realizations**\n1. **Documentation First**: Always consult existing comprehensive documentation before implementing\n2. **Evidence-Based Approach**: Server capabilities from audit documents beat assumptions\n3. **ADHD-First Design**: Cognitive load considerations must drive architecture decisions\n4. **Systematic Deployment**: Fix root causes (async handling) before expanding scope\n\n### **Technical Patterns Identified**\n1. **Async Subprocess Pattern**: Replace blocking calls in MCP servers\n2. **Health Check Standardization**: Consistent /health endpoints across servers\n3. **Docker Network Configuration**: Proper MCP network setup and volume management\n4. **Role-Based Tool Filtering**: Evidence-based server assignment by development role\n\n## \ud83c\udf89 Deployment Celebration\n\n**Mission Status**: \u2705 COMPLETE\n**Impact**: Transformed 43% utilization \u2192 100% operational MCP infrastructure\n**Quality**: Evidence-based configuration using comprehensive documentation\n**ADHD Support**: Cognitive load optimizations successfully implemented\n\n**Ready for**: Full-scale development workflows with comprehensive MCP tool support!\n\n---\n\n**Session Lead**: Claude (Opus 4.1)\n**Methodology**: Evidence-based deployment using comprehensive tool audit\n**Outcome**: Complete MCP infrastructure deployment success\n\n---\n\n## SESSION_CHECKPOINT_MCP_ENHANCEMENTS_2025-09-24.md\nDate: 2025-09-24\nTopics: mcp, adhd, rag, architecture, implementation, planning, documentation\nSize: 1,111 words\n\n### Content\n\n# Session Checkpoint - MCP System Enhancements\n**Date**: 2025-09-24\n**Time**: 17:45 PDT\n**Session Type**: Systematic MCP Enhancement Implementation\n**Status**: IN PROGRESS - Step 3 of 6 Complete\n\n---\n\n## \ud83c\udfaf Session Overview\n\n**Objective**: Systematically work through MCP system enhancements following successful 85% integration\n**Approach**: Step-by-step completion of immediate quick wins, then strategic enhancements\n**ADHD Optimization**: 25-minute focused segments with clear completion milestones\n\n---\n\n## \u2705 Steps Completed\n\n### **Step 1: Fix HTTP Health Endpoints** \u2705\n**Duration**: 15 minutes\n**Approach**: Modified MetaMCP broker configuration instead of complex HTTP endpoint additions\n**Solution**: Changed health check method from \"health\" to \"ping\" for conport, serena, morphllm\n**Files Modified**:\n- `config/mcp/broker-minimal.yaml` - Updated health check configurations\n**Result**: Health check timeouts resolved, more reliable than HTTP endpoint dependency\n\n### **Step 2: Test MetaMCP Simple Server** \u2705\n**Duration**: 10 minutes\n**Status**: Server functional, Claude connection issue documented\n**Testing**: Manual JSON-RPC calls successful, tools list working perfectly\n**Issue**: Claude Code shows connection as failed despite functional server\n**Conclusion**: Core functionality validated, connection issue is Claude Code limitation\n\n### **Step 3: Research ARM64 Vector DB Replacement** \u2705\n**Duration**: 20 minutes\n**Research Completed**: Comprehensive analysis of Milvus alternatives\n**Recommendation**: **Qdrant** as primary replacement\n**Key Findings**:\n- Native ARM64 support with dedicated Docker images\n- ~20% performance trade-off acceptable for cost-effectiveness\n- Production-ready with strong filtering and hybrid search\n- Rust-based for memory safety and performance\n**Documentation Created**: `ARM64_VECTOR_DB_RESEARCH.md` with complete migration plan\n\n---\n\n## \ud83d\udccb Current Todo List Status\n\n```\n[\u2705] Fix HTTP health endpoints for remaining MCP servers\n[\u2705] Test MetaMCP simple server after Claude Code restart\n[\u2705] Research ARM64 vector DB replacement for Milvus\n[\u23f3] Implement advanced ADHD features for attention-aware tool selection\n[\u23f3] Create performance dashboard for real-time MCP monitoring\n[\u23f3] Build documentation hub for MCP ecosystem guide\n```\n\n---\n\n## \ud83d\ude80 Next Steps Ready for Implementation\n\n### **Step 4: Implement Advanced ADHD Features** (NEXT)\n**Estimated Time**: 45 minutes\n**Scope**: Attention-aware tool selection and cognitive load management\n**Key Components**:\n- Role-based tool limiting based on current attention state\n- Progressive disclosure patterns in MCP responses\n- Context preservation across attention switches\n- Break reminders and session management\n\n**Specific Tasks Identified**:\n1. Create attention state detection system\n2. Implement dynamic tool filtering based on cognitive load\n3. Add visual indicators for tool complexity\n4. Build session state preservation mechanism\n\n### **Step 5: Create Performance Dashboard**\n**Estimated Time**: 30 minutes\n**Scope**: Real-time MCP system monitoring\n**Components**:\n- MCP server health status display\n- Response time metrics\n- Token usage tracking\n- Error rate monitoring\n\n### **Step 6: Build Documentation Hub**\n**Estimated Time**: 25 minutes\n**Scope**: Central MCP ecosystem guide\n**Structure**: Following project's Di\u00e1taxis framework\n**Content**: User workflows, troubleshooting, best practices\n\n---\n\n## \ud83d\udd27 Technical Context Preserved\n\n### **Current MCP System Status**\n- **Core Servers**: 3/3 operational (pal, zen-mcp, exa) \u2705\n- **Overall Integration**: 85% operational status \u2705\n- **Health Endpoints**: Fixed via ping method instead of HTTP \u2705\n- **MetaMCP Simple**: Functional but Claude connection shows failed \u26a0\ufe0f\n- **Vector Database**: Qdrant researched as Milvus replacement \u2705\n\n### **Key Files Modified This Session**\n1. `config/mcp/broker-minimal.yaml` - Health check method updates\n2. `docker/mcp-servers/health-check-server.py` - Created (unused)\n3. `ARM64_VECTOR_DB_RESEARCH.md` - Complete research documentation\n4. Claude MCP configuration - Removed/re-added metamcp-simple server\n\n### **Documentation Created Following Project Standards**\nAll documentation follows established Di\u00e1taxis framework:\n- **Runbook**: `docs/92-runbooks/runbook-mcp-system-integration.md`\n- **Technical Reference**: `docs/03-reference/MCP_SYSTEM_INTEGRATION_STATUS.md`\n- **How-To Guide**: `docs/02-how-to/how-to-use-mcp-system.md`\n- **ADR**: `docs/90-adr/035-mcp-system-integration-success.md`\n\n---\n\n## \ud83d\udca1 Key Insights Discovered\n\n### **Technical Insights**\n1. **Health Check Strategy**: Process-based (ping) more reliable than HTTP endpoints for containerized MCP servers\n2. **Claude Connection Issues**: Manual server testing validates functionality even when Claude shows connection failed\n3. **ARM64 Vector Database**: Qdrant provides excellent ARM64 compatibility with minimal performance trade-offs\n4. **Configuration Persistence**: Claude MCP configuration changes may require restart to take effect\n\n### **ADHD Workflow Insights**\n1. **Step-by-step approach**: Breaking complex enhancements into discrete 15-25 minute tasks works well\n2. **Documentation standards**: Following established project patterns reduces cognitive load\n3. **Quick wins first**: Completing simpler tasks builds momentum for complex work\n4. **Research depth**: Comprehensive research prevents future rework and decision paralysis\n\n### **Architecture Insights**\n1. **Hybrid integration approach**: Direct connections + HTTP services + broker aggregation provides flexibility\n2. **Health monitoring**: Multiple health check strategies needed for different server types\n3. **ARM64 compatibility**: Modern Rust-based tools (Qdrant) have better ARM64 support than older C++ tools (Milvus)\n\n---\n\n## \ud83c\udfaf Session Momentum & Flow State\n\n### **Current Energy Level**: High \u26a1\n- Successfully completed 3 concrete steps with clear outcomes\n- Good balance of research and implementation\n- Documentation created following established patterns\n- Ready to tackle more complex implementation tasks\n\n### **Attention State**: Focused \ud83c\udfaf\n- 25-minute segments working well for task completion\n- Clear next steps identified and scoped appropriately\n- Technical context well-preserved for continuation\n\n### **Executive Function Status**: Strong \ud83d\udcaa\n- Todo list maintained and updated throughout session\n- Progress tracked with visual indicators\n- Decision points documented with rationale\n- Next actions clearly defined\n\n---\n\n## \ud83d\udd04 Resumption Strategy\n\n### **When Resuming This Session**:\n\n1. **Quick Orientation** (2 minutes):\n   - Review current todo list status\n   - Confirm MCP core servers still operational: `claude mcp list`\n   - Check any background processes still running\n\n2. **Context Restoration** (3 minutes):\n   - Read Step 4 scope (Advanced ADHD features)\n   - Review identified tasks for attention-aware tool selection\n   - Confirm development environment ready\n\n3. **Immediate Next Action** (start within 5 minutes):\n   - Begin Step 4: Create attention state detection system\n   - Time-box to 25 minutes for first component\n   - Update todo list as each component completes\n\n### **If Attention/Energy Different**:\n- **High focus**: Continue with Step 4 advanced features implementation\n- **Medium focus**: Jump to Step 5 performance dashboard (more straightforward)\n- **Low focus**: Work on Step 6 documentation hub (familiar patterns)\n- **Scattered attention**: Review documentation created, make minor improvements\n\n---\n\n## \ud83d\udcca Session Metrics\n\n**Time Invested**: 45 minutes active development\n**Tasks Completed**: 3/6 major steps\n**Documentation Created**: 4 comprehensive documents\n**Code Modified**: 2 configuration files\n**Research Completed**: 1 comprehensive analysis\n**Success Rate**: 100% (all attempted tasks completed successfully)\n**Momentum**: High - ready for complex implementation work\n\n---\n\n## \ud83c\udfaa Final Context\n\n**Overall Project Status**: MCP integration successful at 85% operational, enhancement phase proceeding systematically\n**Session Success**: Strong - concrete progress with clear next steps\n**ADHD Accommodation**: Working well - time-boxed segments, visual progress indicators, clear action items\n**Technical Debt**: Minimal - health endpoints fixed, documentation comprehensive\n**Risk Level**: Low - core functionality stable, enhancements are additive\n\n**Ready to Resume**: \u2705 All context preserved, next steps clearly defined, development momentum strong\n\n---\n\n**Generated**: 2025-09-24 17:45 PDT\n**Session ID**: mcp-enhancements-systematic-2025-09-24\n**Continuation Point**: Step 4 - Advanced ADHD Features Implementation\n**Estimated Time to Complete Remaining**: 100 minutes (3 steps \u00d7 25-45 min each)\n\n---\n\n## SESSION_CHECKPOINT_MCP_ADHD_FEATURES_2025-09-24.md\nDate: 2025-09-24\nTopics: mcp, adhd, architecture, implementation, planning, documentation\nSize: 1,125 words\n\n### Content\n\n# Session Checkpoint - MCP ADHD Features Implementation\n**Date**: 2025-09-24\n**Time**: 18:00 PDT\n**Session Type**: Advanced ADHD Features Implementation - Step 4\n**Status**: IN PROGRESS - Core Attention Manager Complete\n\n---\n\n## \ud83c\udfaf Current Focus\n\n**Active Task**: Step 4 - Implement advanced ADHD features for attention-aware tool selection\n**Phase**: Component 1 of 4 - Attention State Detection System\n**Progress**: Core AttentionManager class implemented \u2705\n**Next**: Component 2 - Enhanced MetaMCP Integration\n\n---\n\n## \u2705 What Was Just Completed\n\n### **Core Attention Manager System** \u2705\n**File Created**: `src/dopemux/adhd/attention_manager.py` (300+ lines)\n**Features Implemented**:\n\n#### 1. **Attention State Detection**\n- 6 attention states: Hyperfocus, Focused, Scattered, Distracted, Overloaded, Transitioning\n- Real-time assessment based on activity patterns\n- Session duration tracking and break detection\n\n#### 2. **Cognitive Load Assessment**\n- 5 complexity levels: Minimal \u2192 Maximum\n- Tool complexity analysis based on keywords and patterns\n- Dynamic cognitive load matching to attention state\n\n#### 3. **Intelligent Tool Filtering**\n- Attention-aware tool selection (1-8 tools based on state)\n- Complexity-based filtering to prevent overwhelm\n- Priority scoring for optimal tool ordering\n\n#### 4. **ADHD-Optimized Features**\n- Pomodoro-style break recommendations (25-minute cycles)\n- Hyperfocus break warnings (90+ minutes)\n- Decision paralysis detection via query pattern analysis\n- Context switch tracking for scattered attention detection\n\n#### 5. **Session Health Monitoring**\n- Comprehensive status summaries\n- Error rate and response time tracking\n- Executive function support indicators\n\n---\n\n## \ud83e\udde0 Technical Architecture Implemented\n\n### **Key Classes & Enums**\n```python\nclass AttentionState(Enum):\n    HYPERFOCUS, FOCUSED, SCATTERED, DISTRACTED, OVERLOADED, TRANSITIONING\n\nclass CognitiveLoad(Enum):\n    MINIMAL, LOW, MEDIUM, HIGH, MAXIMUM\n\n@dataclass AttentionMetrics:\n    # Comprehensive attention tracking metrics\n\nclass AttentionManager:\n    # Core ADHD accommodation engine\n```\n\n### **Core Algorithm Logic**\n1. **Activity Tracking**: Records all MCP tool usage with timestamps\n2. **Pattern Analysis**: Detects context switches, error rates, decision paralysis\n3. **State Assessment**: Maps patterns to attention states using ADHD-specific thresholds\n4. **Tool Filtering**: Returns appropriate tools based on current cognitive capacity\n5. **Break Management**: Provides timely break recommendations\n\n### **ADHD-Specific Accommodations**\n- **Choice Reduction**: Max 1-8 tools (vs unlimited) based on attention state\n- **Complexity Matching**: Tools filtered by cognitive load capacity\n- **Break Integration**: Built-in Pomodoro and hyperfocus break systems\n- **Decision Support**: Priority scoring reduces choice paralysis\n- **Visual Indicators**: Cognitive load labels on each tool\n\n---\n\n## \ud83d\ude80 Next Implementation Steps\n\n### **Component 2: Enhanced MetaMCP Integration** (NEXT)\n**Estimated Time**: 15 minutes\n**Tasks**:\n1. Integrate AttentionManager with metamcp_simple_server.py\n2. Add attention-aware tool list endpoint\n3. Include cognitive load indicators in tool responses\n4. Add break recommendations to status calls\n\n### **Component 3: Visual Attention Indicators**\n**Estimated Time**: 15 minutes\n**Tasks**:\n1. Add attention state emoji indicators\n2. Create cognitive load visual system (\ud83d\udfe2\ud83d\udfe1\ud83d\udd34)\n3. Format break recommendations with clear actions\n4. Progressive disclosure for tool descriptions\n\n### **Component 4: Session State Persistence**\n**Estimated Time**: 15 minutes\n**Tasks**:\n1. Save attention metrics to session database\n2. Restore attention state across Claude Code restarts\n3. Cross-session learning for better state detection\n4. Export attention analytics for review\n\n**Total Remaining for Step 4**: ~45 minutes\n\n---\n\n## \ud83c\udfaf Attention & Flow State\n\n### **Current Mental Model**\n- **System Architecture**: Clear separation of attention detection vs tool filtering\n- **ADHD Accommodations**: Evidence-based approach using Pomodoro, hyperfocus patterns\n- **Integration Strategy**: Enhance existing MetaMCP simple server rather than rebuild\n- **User Experience Focus**: Reduce cognitive load through intelligent automation\n\n### **Technical Context**\n- **File Structure**: Following project patterns in `src/dopemux/adhd/`\n- **Integration Points**: MetaMCP simple server, Claude MCP tool responses\n- **Dependencies**: Standard library only (datetime, enum, dataclasses)\n- **Configuration**: ADHD thresholds configurable per user needs\n\n### **Design Decisions Made**\n1. **Enum-based states**: Clear, type-safe attention state representation\n2. **Dataclass metrics**: Structured attention tracking with timestamps\n3. **Keyword-based complexity**: Simple, fast tool complexity assessment\n4. **Rolling activity window**: 100 activities max for performance\n5. **Global instance pattern**: Single attention_manager for consistency\n\n---\n\n## \ud83d\udcca Progress Through Step 4\n\n```\nStep 4: Advanced ADHD Features (45 minutes estimated)\n\u251c\u2500\u2500 \u2705 Component 1: Attention State Detection (15 min)\n\u251c\u2500\u2500 \u23f3 Component 2: MetaMCP Integration (15 min) - NEXT\n\u251c\u2500\u2500 \u23f3 Component 3: Visual Indicators (15 min)\n\u2514\u2500\u2500 \u23f3 Component 4: State Persistence (15 min)\n\nOverall Progress: 1/4 components complete (25%)\n```\n\n---\n\n## \ud83d\udd04 Resumption Strategy\n\n### **Immediate Next Action** (within 2 minutes of resuming):\n1. Open `metamcp_simple_server.py` for editing\n2. Import AttentionManager: `from src.dopemux.adhd.attention_manager import attention_manager`\n3. Modify `get_role_tools()` method to use `attention_manager.get_appropriate_tools()`\n\n### **Quick Test Plan** (5 minutes):\n1. Test attention state transitions manually\n2. Verify tool filtering works for different states\n3. Confirm break recommendations trigger correctly\n4. Validate cognitive load indicators display\n\n### **Integration Points to Modify**:\n- `metamcp_simple_server.py` - Line ~235 (get_role_tools method)\n- Tool response formatting for cognitive load indicators\n- Status endpoint enhancement with attention metrics\n- Break recommendation integration in tool responses\n\n---\n\n## \ud83d\udca1 Key Insights Discovered\n\n### **ADHD Accommodation Patterns**\n1. **Choice Architecture**: Reducing options (1-8 tools) more effective than just organizing them\n2. **Cognitive Load Matching**: Tool complexity must align with current attention capacity\n3. **State Transitions**: ADHD attention states change rapidly, need real-time assessment\n4. **Break Timing**: Proactive break recommendations prevent cognitive overload better than reactive\n\n### **Technical Implementation Insights**\n1. **Keyword Classification**: Simple keyword-based tool complexity assessment sufficient for v1\n2. **Activity Window**: 100 recent activities provide good pattern detection without memory bloat\n3. **State Persistence**: Attention state should survive Claude Code restarts for continuity\n4. **Global Instance**: Single AttentionManager instance ensures consistent state across tool calls\n\n### **User Experience Principles**\n1. **Invisible Intelligence**: Attention management should be automatic, not require user configuration\n2. **Progressive Disclosure**: Show complexity indicators only when helpful for decision-making\n3. **Gentle Guidance**: Break recommendations should be supportive, not disruptive\n4. **Context Preservation**: Attention state should inform all MCP tool interactions\n\n---\n\n## \ud83c\udfaa Session Momentum\n\n**Energy Level**: High \u26a1 (good progress, clear next steps)\n**Focus State**: Hyperfocus (deep technical implementation)\n**Executive Function**: Strong (systematic approach working)\n**Technical Debt**: None (clean implementation, following patterns)\n\n**Optimal Resumption**: Continue with Component 2 integration immediately - momentum is strong and technical context is fresh in working memory.\n\n---\n\n## \ud83d\udcc1 Files Modified/Created This Session\n\n### **New Files Created**:\n1. `src/dopemux/adhd/attention_manager.py` - Complete attention management system (300+ lines)\n\n### **Files to Modify Next**:\n1. `metamcp_simple_server.py` - Integration with attention-aware tool selection\n2. Directory creation: `src/dopemux/adhd/__init__.py` (if doesn't exist)\n\n### **Documentation Created**:\n1. This comprehensive session checkpoint\n2. Complete technical architecture in AttentionManager docstrings\n3. ADHD accommodation rationale in code comments\n\n---\n\n**Ready for Immediate Resumption**: \u2705\n**Context Fully Preserved**: Technical, cognitive, and implementation state\n**Next Action Clear**: Component 2 MetaMCP integration (15 minutes estimated)\n**Session Health**: Excellent - strong momentum, clear progress, systematic approach working\n\n---\n\n**Generated**: 2025-09-24 18:00 PDT\n**Session ID**: mcp-adhd-features-step4-2025-09-24\n**Continuation Point**: Component 2 - Enhanced MetaMCP Integration\n**Estimated Time to Complete Step 4**: 30-35 minutes remaining\n\n---\n\n## SESSION_CHECKPOINT_RAG_DOCS_2025-09-24.md\nDate: 2025-09-24\nTopics: mcp, adhd, rag, architecture, implementation, planning, documentation\nSize: 464 words\n\n### Content\n\n# Session Checkpoint: RAG Documentation & Architecture\n\n**Date**: 2025-09-24\n**Session Type**: Documentation & Architecture Planning\n**Status**: Complete - Ready for Implementation\n\n## \ud83d\udccb Session Summary\n\n### Completed Work\n1. **Comprehensive RAG Architecture Documentation**\n   - Created `/docs/04-explanation/architecture/rag-search-architecture.md`\n   - Full production configurations for VoyageAI embeddings\n   - Migration strategy with 3-phase implementation plan\n   - Performance metrics and evaluation framework\n\n2. **Architecture Decision Record**\n   - Created `ADR-013-rag-search-architecture.md`\n   - Documents decision to use VoyageAI specialized embeddings\n   - Hybrid retrieval (dense + BM25) with RRF fusion\n   - Clear implementation timeline and rollback strategies\n\n### Key Technical Decisions Documented\n\n#### Embedding Strategy\n- **Code Search**: VoyageAI `voyage-code-3` (13.8% better than OpenAI)\n- **Doc Search**: VoyageAI `voyage-context-3` (14.2% better than OpenAI)\n- **Fallback**: OpenAI embeddings for reliability\n\n#### Retrieval Architecture\n- **Hybrid Approach**: Dense vectors + BM25 sparse search\n- **Fusion Method**: RRF with k=60, weights (dense=0.6, sparse=0.4)\n- **Reranking**: Voyage rerank-2.5 (top-50 \u2192 top-10)\n\n#### Performance Targets\n- **Code Search**: p95 <200ms\n- **Doc Search**: p95 <1200ms (with rerank)\n- **Caching**: Semantic cache (cosine \u22650.82, 24h TTL)\n\n### Implementation Phases\n1. **Phase 1 (Now)**: Switch Claude-Context to VoyageAI embeddings\n2. **Phase 2 (1-2mo)**: Deploy DocRAG MCP with hybrid search\n3. **Phase 3 (3-6mo)**: Unified search interface, ConPort scaling\n\n## \ud83c\udfaf Next Steps for Implementation\n\n### Immediate Actions\n1. Update Claude-Context environment variables:\n   ```yaml\n   EMBEDDING_PROVIDER: \"VoyageAI\"\n   EMBEDDING_MODEL: \"voyage-code-3\"\n   ```\n\n2. Verify VoyageAI API key configuration\n3. Test embedding model switch with sample queries\n\n### Validation Required\n- [ ] Claude-Context supports embedder swapping via env vars\n- [ ] ConPort SQLite persistence patterns and scaling needs\n- [ ] Milvus sparse search capabilities vs OpenSearch sidecar\n\n### Files Created This Session\n- `/docs/04-explanation/architecture/rag-search-architecture.md`\n- `/docs/01-decisions/ADR-013-rag-search-architecture.md`\n- This checkpoint file\n\n## \ud83d\udd27 Previous Session Context (MCP Infrastructure)\n\n### MCP Servers Status (from previous work)\n- \u2705 **pal**: Working - Documentation and API references\n- \u2705 **zen**: Working - Multi-model reasoning (thinkdeep, debug, consensus)\n- \u2705 **exa**: Working - Testing and examples\n- \ud83d\udd27 **claude-context**: ARM64 issues resolved, connection issues remain\n- \u2705 **serena/conport**: Health check issues fixed\n\n### Technical Achievements Preserved\n- Docker platform emulation for ARM64 compatibility\n- Environment variable inheritance fixes\n- Zilliz Cloud configuration\n- Health check optimizations\n\n## \ud83d\udcbe Session State\n\n**Context Window**: Near capacity after documentation work\n**Mental Model**: RAG architecture fully documented and ready for implementation\n**Decision State**: All key architectural decisions captured in ADR\n**Next Focus**: Implementation of Phase 1 VoyageAI embedding switch\n\n## \ud83c\udfaf Continuation Instructions\n\nWhen resuming:\n1. Use `dopemux restore` to reload full session context\n2. Begin with Phase 1 implementation (VoyageAI embedder switch)\n3. Reference ADR-013 for decision rationale and technical details\n4. Use RAG architecture doc for detailed configuration specs\n\n---\n\n**Session preserved**: All documentation and decisions captured\n**Implementation ready**: Technical specifications complete\n**ADHD-optimized**: Clear phases, success metrics, rollback plans documented\n\n---\n\n## SESSION_CHECKPOINT_ADHD_PROPER_PLANNING_2025-09-25.md\nDate: 2025-09-25\nTopics: mcp, adhd, rag, architecture, implementation, planning, documentation\nSize: 995 words\n\n### Content\n\n# Session Checkpoint - ADHD Proper Planning & Course Correction\n**Date**: 2025-09-25\n**Time**: Evening PDT\n**Session Type**: Critical Course Correction - From Half-Baked to Proper Planning\n**Status**: IN PROGRESS - Deep Analysis Phase\n\n---\n\n## \ud83c\udfaf Critical Realization\n\n**User Feedback**: \"I don't want half-baked solutions, let's make a plan for how we can properly develop these features\"\n\n**Course Correction Required**: I was implementing ADHD finishing helpers without proper planning, leading to rushed, incomplete solutions that don't address the real problems systematically.\n\n---\n\n## \u2705 What Was Accomplished This Session\n\n### **ADHD Features Pivot - Mixed Results**\n**Started With**: Complex AttentionManager (342 lines, over-engineered)\n**Deep Analysis Revealed**: Actually harmful to ADHD developers\n**User Corrected Me On**:\n- \u2705 AttentionManager was harmful (agreed)\n- \u274c Visual indicators are noise (user LIKES emojis/colors)\n- \u274c Progressive disclosure is bad (user thinks it's GOOD)\n- \u274c Focused on activation energy (user: \"finishing is hard, not starting\")\n\n### **Real ADHD Problems Identified by User**\n1. **\"There is NOW and NEVER\"** - Time blindness reality\n2. **Finishing is harder than starting** - Not activation energy problem\n3. **\"Out of sight = out of mind\"** - Visual field reminders critical\n4. **Need help getting across finish line** - Completion support\n5. **Remind us of ongoing unfinished work that's almost done**\n6. **Do things for us so we don't get distracted**\n7. **Minimize shiny things**\n8. **Put deadlines/reminders in visual field**\n\n### **What I Hastily Implemented (Half-Baked)**\n- Restored visual indicators (\ud83d\udfe2\ud83d\udfe1\ud83d\udfe0\ud83d\udd34\ud83c\udfaf)\n- Added basic finishing helper tools:\n  - `track_almost_done`\n  - `finish_line_check`\n  - `mark_completed`\n- Visual progress bars and urgency indicators\n- Status integration for \"out of sight = out of mind\"\n\n### **User's \"1234\" Request Completed**\n1. \u2705 Restore emoji/color visual system (keep user control)\n2. \u2705 Build ADHD finishing helpers\n3. \u2705 Focus on \"out of sight = out of mind\" problem\n4. \u2705 Add \"almost done\" project tracking\n\n---\n\n## \ud83d\udea8 Current Problem: Half-Baked Implementation\n\n**What's Wrong With Current Implementation:**\n- No proper data persistence (survives only in memory)\n- No integration with real project workflows (git, files, etc.)\n- No systematic UX design\n- No consideration of different completion types\n- No testing or validation approach\n- Built as MCP demo tools, not real system\n\n**User Response**: \"No I don't want half-baked solutions, let's make a plan\"\n\n---\n\n## \ud83e\udde0 Deep Analysis Started\n\n### **Full Scope Requirements**\n- **Psychology Layer**: Address ADHD completion barriers\n- **Data Layer**: Persistent tracking across sessions/restarts\n- **Integration Layer**: Work with Dopemux core, git, real workflows\n- **UX Layer**: Visual system without cognitive overload\n- **Workflow Layer**: Support different completion patterns\n- **Validation Layer**: Measure actual effectiveness\n\n### **Architectural Approaches Considered**\n**A. MCP-Centric** (current approach)\n- Pros: Quick demo, works with MetaMCP\n- Cons: No persistence, limited integration, ephemeral\n\n**B. Dopemux Core Integration**\n- Pros: Persistent, git-aware, real project tracking\n- Cons: Complex, requires core changes\n\n**C. External Dashboard/Service**\n- Pros: Independent, multi-source integration\n- Cons: Another system, \"out of sight\" problem\n\n### **Success Criteria Identified**\n- **Behavioral**: ADHD users finish more projects\n- **Emotional**: Positive completion reinforcement\n- **Practical**: Almost-done work stays visible\n- **Measurable**: Completion rates, time-to-finish\n\n---\n\n## \ud83d\udd04 Where We Are Now\n\n**Planning Phase**: Deep analysis of requirements and approaches\n**Question Pending**: Core Dopemux integration vs enhanced MCP tooling?\n**Next Required**: Systematic planning with proper architecture decisions\n\n---\n\n## \ud83d\udccb Updated Project Status\n\n### **MCP System Integration**\n- \u2705 Steps 1-3 Complete (health endpoints, testing, ARM64 research)\n- \u2705 ADHD features pivoted from harmful to helpful approach\n- \u23f3 **ADHD features now need proper planning phase**\n\n### **Todo List Status**\n- **Completed**: All MCP integration basics\n- **In Progress**: Comprehensive ADHD finishing helpers plan\n- **Pending**: Performance dashboard, documentation hub\n\n---\n\n## \ud83d\udca1 Key Learnings This Session\n\n### **Critical User Feedback Patterns**\n1. **Stop and ask before major changes** - I made assumptions about preferences\n2. **ADHD accommodation \u2260 removal of visual cues** - Emojis/colors are helpful\n3. **Focus on finishing, not starting** - Activation energy wasn't the real problem\n4. **Half-baked is worse than nothing** - Need systematic approach\n\n### **ADHD Development Insights**\n- Visual indicators are navigation aids, not noise\n- \"There is NOW and NEVER\" is fundamental design constraint\n- Progressive disclosure can be helpful when done right\n- Celebration and positive reinforcement are critical\n- Out of sight = out of mind must be core design principle\n\n### **Planning Process Insights**\n- Technical analysis without user validation leads to wrong solutions\n- Need to separate ADHD psychology from technical implementation\n- Proper planning prevents wasteful rework\n- User feedback is more valuable than technical assumptions\n\n---\n\n## \ud83c\udfaf Immediate Next Steps\n\n**When Resuming**:\n1. **Complete systematic planning** - Finish the planner workflow\n2. **Get user input on architecture approach** - Core integration vs MCP enhancement\n3. **Define proper development phases** - MVP, validation, full implementation\n4. **Create testing strategy** - How to validate ADHD effectiveness\n\n**Architecture Decision Needed**:\n- Should ADHD finishing helpers be core Dopemux features?\n- Or enhanced MCP tooling with proper persistence?\n- What's the right balance of functionality vs complexity?\n\n---\n\n## \ud83c\udf1f Session Health\n\n**Energy**: High - good problem-solving momentum\n**Focus**: Excellent - clear problem identification\n**User Alignment**: Restored after course correction\n**Technical Debt**: Some (hasty implementation needs planning)\n**Momentum**: Strong - ready for proper systematic development\n\n**Key Success**: User corrected my assumptions before I went too far down wrong path\n\n---\n\n## \ud83d\udcc1 Files Modified This Session\n\n### **Enhanced Files**\n- `metamcp_simple_server.py` - Added finishing helpers (needs proper planning)\n- `docs/90-adr/036-adhd-simple-accommodations.md` - Documented pivot\n\n### **Preserved Files**\n- `src/dopemux/adhd/archived/attention_manager.py.archived` - For reference\n\n### **Next Files to Plan**\n- Proper ADHD finishing helper architecture\n- Data persistence strategy\n- Integration approach documentation\n\n---\n\n**Ready for Systematic Planning**: \u2705\n**User Alignment**: Restored \u2705\n**Technical Foundation**: Solid \u2705\n**Next Phase**: Comprehensive development planning for ADHD finishing helpers\n\n---\n\n**Generated**: 2025-09-25 Evening PDT\n**Session ID**: adhd-proper-planning-course-correction-2025-09-25\n**Continuation Point**: Complete systematic planning with user input on architecture\n**Critical Need**: Proper development plan, not half-baked implementations\n\n---\n\n## SESSION_STARTER_ADHD_FINISHING_HELPERS_2025-09-25.md\nDate: 2025-09-25\nTopics: mcp, adhd, rag, architecture, implementation, planning, documentation\nSize: 1,112 words\n\n### Content\n\n# Session Starter - ADHD Finishing Helpers Development\n**Date**: 2025-09-25\n**Purpose**: Continue systematic planning for ADHD finishing helper features\n**Status**: READY FOR DEEP ANALYSIS - Architecture Decision Required\n**Context**: Course-corrected from half-baked implementation to proper planning\n\n---\n\n## \ud83c\udfaf **Current Mission**\n\nDevelop comprehensive ADHD finishing helper system that addresses real ADHD completion challenges through systematic planning and proper architecture decisions.\n\n**NOT**: Quick MCP tool hacks\n**YES**: Thoughtful system that genuinely helps ADHD developers finish projects\n\n---\n\n## \ud83d\udccb **Planning Status**\n\n### **Planner Workflow Status**\n- \u2705 **Step 1/5**: Problem identification and scope analysis\n- \u23f3 **Step 2/5**: Architecture approach comparison (NEXT STEP)\n- \u23f3 **Step 3/5**: User experience design\n- \u23f3 **Step 4/5**: Implementation phases and validation\n- \u23f3 **Step 5/5**: Final plan synthesis\n\n**Continuation ID**: `2b3ab782-152b-4551-8e73-5838d9b93395`\n\n---\n\n## \ud83e\udde0 **Core ADHD Problems to Solve**\n\n### **User-Validated Real Problems**\n1. **\"There is NOW and NEVER\"** - Time blindness, urgency distortion\n2. **Finishing is harder than starting** - Completion energy >"
       ],
       "operation": "apply",
-      "path": "docs/archive/conport-sessions/mcp_system_development.md",
+      "path": "docs/archive/conport-sessions/mcp-system-development-2.md",
       "targets": [
         "/Users/hue/code/dopemux-mvp/MCP_SYSTEM_AUDIT_LOG.md",
         "/Users/hue/code/dopemux-mvp/SESSION_CHECKPOINT_MCP_AUDIT_2025-09-24.md",
@@ -11370,12 +11370,12 @@
         "anchor": "root",
         "excerpt_hash": "45c5a853cfba85c58ea8d2e3b21a7280ec5cfd7d0359db1e8a926f9546371c12",
         "excerpt_snippet": "--- id: GPT_RESEARCHER_LANGCHAIN_FIX title: Gpt_Researcher_Langchain_Fix type: explanation owner: '@hu3mann' last_review: '2025-11-10' next_review: '2026-02-08'",
-        "path": "docs/archive/deprecated/mcp-servers/GPT_RESEARCHER_LANGCHAIN_FIX.md"
+        "path": "docs/archive/deprecated/mcp-servers/gpt-researcher-langchain-fix-2.md"
       },
       "kind": "source_instructions",
       "markers": [],
       "operation": "unknown",
-      "path": "docs/archive/deprecated/mcp-servers/GPT_RESEARCHER_LANGCHAIN_FIX.md",
+      "path": "docs/archive/deprecated/mcp-servers/gpt-researcher-langchain-fix-2.md",
       "targets": []
     },
     {
@@ -11399,12 +11399,12 @@
         "anchor": "root",
         "excerpt_hash": "50b54ad8aeebed508537afa67e3f3220d5299cd8bb42a3ef1178d0081a1df2a7",
         "excerpt_snippet": "--- id: LEANTIME_TOKEN_LIMIT_FIX title: Leantime_Token_Limit_Fix type: explanation owner: '@hu3mann' last_review: '2026-02-02' next_review: '2026-05-03' author:",
-        "path": "docs/archive/mcp-servers/LEANTIME_TOKEN_LIMIT_FIX.md"
+        "path": "docs/archive/mcp-servers/leantime-token-limit-fix-2.md"
       },
       "kind": "unknown",
       "markers": [],
       "operation": "apply",
-      "path": "docs/archive/mcp-servers/LEANTIME_TOKEN_LIMIT_FIX.md",
+      "path": "docs/archive/mcp-servers/leantime-token-limit-fix-2.md",
       "targets": [
         "MCP_TOKEN_LIMIT_AUDIT.md"
       ]
@@ -11414,12 +11414,12 @@
         "anchor": "root",
         "excerpt_hash": "0e462ad6810d42ccb4025f665cc1454c2c3e33f4364dc383df621ac5e92d23ad",
         "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries **Outputs:** `LLM_POLICY_GATES.json` --- ## TASK Produce ONE JSON file: `LLM_POLICY_GATES.json`. ## INPUT",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
       "kind": "source_instructions",
       "markers": [],
       "operation": "unknown",
-      "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
+      "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
       "targets": [
         ".claude/PRIMER.md"
       ]
@@ -11429,12 +11429,12 @@
         "anchor": "root",
         "excerpt_hash": "0e462ad6810d42ccb4025f665cc1454c2c3e33f4364dc383df621ac5e92d23ad",
         "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries **Outputs:** `LLM_POLICY_GATES.json` --- ## TASK Produce ONE JSON file: `LLM_POLICY_GATES.json`. ## INPUT",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
       "kind": "source_instructions",
       "markers": [],
       "operation": "unknown",
-      "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
+      "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md",
       "targets": [
         ".claude/PRIMER.md"
       ]
@@ -11451,8 +11451,8 @@
       "operation": "apply",
       "path": "docs/best-practices/mcp-token-management.md",
       "targets": [
-        "docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md",
-        "docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md"
+        "docs/05-audit-reports/mcp-budget-monitoring-verification-2026-02-06-2.md",
+        "docs/05-audit-reports/mcp-response-budget-verification-2026-02-06-2.md"
       ]
     },
     {
@@ -12241,11 +12241,11 @@
         "anchor": "root",
         "excerpt_hash": "ec663153a50f9bf2c490036f40f77a72dc633f0a39addff49fb8e8dbd96ad20a",
         "excerpt_snippet": "--- id: COMPONENT_6_PHASE2_SPECIFICATION title: Component_6_Phase2_Specification type: explanation owner: '@hu3mann' last_review: '2025-11-10' next_review: '202",
-        "path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md"
+        "path": "docs/archive/component-implementations/component-6-phase2-specification-2.md"
       },
       "kind": "unknown",
       "mentions": [],
-      "path": "docs/archive/component-implementations/COMPONENT_6_PHASE2_SPECIFICATION.md"
+      "path": "docs/archive/component-implementations/component-6-phase2-specification-2.md"
     },
     {
       "declared_outputs": [],
@@ -12253,11 +12253,11 @@
         "anchor": "root",
         "excerpt_hash": "1d0e87a2f0cc23bf443ff605e6892acf45bd8e8e34c36f9118298d54faa54357",
         "excerpt_snippet": "--- id: COMPONENT_6_PHASE3_SPECIFICATION title: Component_6_Phase3_Specification type: explanation owner: '@hu3mann' last_review: '2025-11-10' next_review: '202",
-        "path": "docs/archive/component-implementations/COMPONENT_6_PHASE3_SPECIFICATION.md"
+        "path": "docs/archive/component-implementations/component-6-phase3-specification-2.md"
       },
       "kind": "unknown",
       "mentions": [],
-      "path": "docs/archive/component-implementations/COMPONENT_6_PHASE3_SPECIFICATION.md"
+      "path": "docs/archive/component-implementations/component-6-phase3-specification-2.md"
     },
     {
       "declared_outputs": [],
@@ -12265,14 +12265,14 @@
         "anchor": "root",
         "excerpt_hash": "421f27b38802fa33ed77058ac6d380b13e19d2c2389bd06a2860d60107f7acde",
         "excerpt_snippet": "--- id: 07_mcp_contracts title: 07_Mcp_Contracts type: explanation owner: '@hu3mann' last_review: '2026-02-02' next_review: '2026-05-03' author: '@hu3mann' date",
-        "path": "docs/spec/dope-memory/v1/07-mcp-contracts.md"
+        "path": "docs/spec/dope-memory/v1/07_mcp_contracts.md"
       },
       "kind": "unknown",
       "mentions": [
         "deterministic",
         "packet"
       ],
-      "path": "docs/spec/dope-memory/v1/07-mcp-contracts.md"
+      "path": "docs/spec/dope-memory/v1/07_mcp_contracts.md"
     },
     {
       "declared_outputs": [
@@ -12649,9 +12649,9 @@
         "anchor": "root",
         "excerpt_hash": "1347d57dfb87de94440b5aa76983dc48f000a4d5eda391caa4c9f87bd105a31c",
         "excerpt_snippet": "--- id: THREAD_PRIMER_TASKX title: Thread Primer Taskx type: explanation owner: '@hu3mann' author: '@hu3mann' date: '2026-02-12' last_review: '2026-02-12' next_",
-        "path": "docs/thread-primer-taskx.md"
+        "path": "docs/THREAD_PRIMER_TASKX.md"
       },
-      "path": "docs/thread-primer-taskx.md",
+      "path": "docs/THREAD_PRIMER_TASKX.md",
       "signals": [
         "deterministic",
         "refusal"
@@ -12674,9 +12674,9 @@
         "anchor": "root",
         "excerpt_hash": "f3eb9bede13ddf27106eab4ea19bd7d933dcd63bcdde2394fb91f39381774670",
         "excerpt_snippet": "# Prompt D3 (v2): Citation Graph Extraction **Outputs:** `DOC_CITATION_GRAPH.json` --- ## TASK Produce ONE JSON file: `DOC_CITATION_GRAPH.json`. ## TARGET",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_D3_CITATION_GRAPH.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-d3-citation-graph-2.md"
       },
-      "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_D3_CITATION_GRAPH.md",
+      "path": "docs/archive/pipeline-v2/UPGRADE/prompt-d3-citation-graph-2.md",
       "signals": [
         "deterministic"
       ]
@@ -12686,9 +12686,9 @@
         "anchor": "root",
         "excerpt_hash": "0e462ad6810d42ccb4025f665cc1454c2c3e33f4364dc383df621ac5e92d23ad",
         "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries **Outputs:** `LLM_POLICY_GATES.json` --- ## TASK Produce ONE JSON file: `LLM_POLICY_GATES.json`. ## INPUT",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
-      "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
+      "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
       "signals": [
         "deterministic"
       ]
@@ -12698,9 +12698,9 @@
         "anchor": "root",
         "excerpt_hash": "f3eb9bede13ddf27106eab4ea19bd7d933dcd63bcdde2394fb91f39381774670",
         "excerpt_snippet": "# Prompt D3 (v2): Citation Graph Extraction **Outputs:** `DOC_CITATION_GRAPH.json` --- ## TASK Produce ONE JSON file: `DOC_CITATION_GRAPH.json`. ## TARGET",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_D3_CITATION_GRAPH.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-d3-citation-graph-2.md"
       },
-      "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_D3_CITATION_GRAPH.md",
+      "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-d3-citation-graph-2.md",
       "signals": [
         "deterministic"
       ]
@@ -12710,9 +12710,9 @@
         "anchor": "root",
         "excerpt_hash": "0e462ad6810d42ccb4025f665cc1454c2c3e33f4364dc383df621ac5e92d23ad",
         "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries **Outputs:** `LLM_POLICY_GATES.json` --- ## TASK Produce ONE JSON file: `LLM_POLICY_GATES.json`. ## INPUT",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
-      "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
+      "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md",
       "signals": [
         "deterministic"
       ]
@@ -12774,9 +12774,9 @@
         "anchor": "root",
         "excerpt_hash": "421f27b38802fa33ed77058ac6d380b13e19d2c2389bd06a2860d60107f7acde",
         "excerpt_snippet": "--- id: 07_mcp_contracts title: 07_Mcp_Contracts type: explanation owner: '@hu3mann' last_review: '2026-02-02' next_review: '2026-05-03' author: '@hu3mann' date",
-        "path": "docs/spec/dope-memory/v1/07-mcp-contracts.md"
+        "path": "docs/spec/dope-memory/v1/07_mcp_contracts.md"
       },
-      "path": "docs/spec/dope-memory/v1/07-mcp-contracts.md",
+      "path": "docs/spec/dope-memory/v1/07_mcp_contracts.md",
       "signals": [
         "deterministic"
       ]

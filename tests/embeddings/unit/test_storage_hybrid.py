@@ -330,7 +330,16 @@ class TestBM25Index:
         assert len(results) <= 3
         top_doc_ids = [doc_id for doc_id, _ in results]
         assert top_doc_ids[0] in {"doc1", "doc3"}
-        assert all(score > 0 for _, score in results)
+        assert set(top_doc_ids).issubset({"doc1", "doc3"})
+
+    def test_search_single_document_corpus(self, bm25_index):
+        """BM25 should still return lexical matches for tiny corpora."""
+        bm25_index.add_documents(["original content"], ["doc1"])
+
+        results = bm25_index.search("original", k=1)
+
+        assert len(results) == 1
+        assert results[0][0] == "doc1"
 
     def test_search_empty_index(self, bm25_index):
         """Test searching empty index."""

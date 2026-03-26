@@ -16,6 +16,8 @@ from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
 from collections import defaultdict
 
+from services.shared.brand_voice import StatusChip, brand_text
+
 logger = logging.getLogger(__name__)
 
 
@@ -35,6 +37,10 @@ class PatternMatch:
     evidence: List[str]
     recommendation: str
     severity: str = "medium"  # low, medium, high
+
+    def __post_init__(self):
+        chip = StatusChip.BLOCKER if self.severity == "high" else StatusChip.EDGE
+        self.recommendation = brand_text(self.recommendation, chip=chip)
 
 
 class IntentPatternAnalyzer:

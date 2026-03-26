@@ -73,7 +73,6 @@ dopemux extract truth-run --force
 | `--skip-hygiene` | off | Skip Phase 1 hygiene scan entirely |
 | `--apply-cleanup` | off | Apply quarantine cleanup if scan finds hazards |
 | `--force` | off | Run extraction even if hygiene scan has errors |
-| `--check-phases` | off | Show phase readiness table and exit (no extraction) |
 
 ## Phase 0: Migrate a v3 run into v5 (--import-v3)
 
@@ -198,27 +197,6 @@ extraction/repo-truth-extractor/v5/
 > **Note**: v3 run directories under `extraction/repo-truth-extractor/v3/`
 > are legacy. Use `--import-v3` to migrate them into v5; they will not be
 > modified or overwritten by v5 runs.
-
-## Phase dependencies and readiness
-
-Before running R (arbitration) or S (synthesis), check that required inputs
-are available:
-
-```bash
-# Show phase readiness table for current run
-dopemux extract truth-run --check-phases
-
-# Check a specific run
-dopemux extract truth-run --run-id FULL_RUN --check-phases
-```
-
-**R phase**: Requires norm outputs from A, H, D, C (mandatory). Optionally
-enriched by B, E, G, W, Q when their norm outputs exist.
-
-**S phase**: Requires R norm outputs (mandatory). Optionally includes X, T, Z.
-
-See [Phase Interaction Design](../../03-reference/extraction/phase-interaction-design.md)
-for the full dependency map and model assignments.
 
 ## Troubleshooting
 

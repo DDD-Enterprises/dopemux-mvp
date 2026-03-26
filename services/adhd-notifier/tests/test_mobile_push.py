@@ -37,8 +37,10 @@ class TestMobilePushNotifier:
         args, kwargs = mock_session.post.call_args
         assert "ntfy.sh/test_topic" in args[0]
         assert kwargs['headers']['Priority'] == 'high'
-        assert kwargs['headers']['Title'] == 'Break Time'
-        assert kwargs['data'] == "Take a break"
+        assert kwargs['headers']['Title'].startswith('[AFTERCARE]')
+        assert 'Break Time' in kwargs['headers']['Title']
+        assert kwargs['data'].startswith('[AFTERCARE]')
+        assert 'Take a break' in kwargs['data']
 
     @pytest.mark.asyncio
     async def test_send_pushover(self, mock_session):
@@ -61,6 +63,7 @@ class TestMobilePushNotifier:
         args, kwargs = mock_session.post.call_args
         assert kwargs['data']['priority'] == 2
         assert kwargs['data']['token'] == "api"
+        assert kwargs['data']['title'].startswith('[AFTERCARE]')
 
     @pytest.mark.asyncio
     async def test_send_happy(self, mock_session):
@@ -81,6 +84,7 @@ class TestMobilePushNotifier:
         args, kwargs = mock_session.post.call_args
         assert args[0] == "http://happy.local/webhook"
         assert kwargs['json']['priority'] == "normal"
+        assert kwargs['json']['title'].startswith('[AFTERCARE]')
 
     @pytest.mark.asyncio
     async def test_disabled_config(self, mock_session):
@@ -121,3 +125,4 @@ class TestMobilePushNotifier:
         mock_session.post.assert_called()
         args, kwargs = mock_session.post.call_args
         assert "ntfy.sh/my_topic" in args[0]
+        assert kwargs['headers']['Title'].startswith('[AFTERCARE]')

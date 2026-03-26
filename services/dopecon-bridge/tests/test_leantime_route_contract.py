@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import pytest
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
+from unittest.mock import AsyncMock
 
+import main as bridge_main
+import dopecon_bridge.routes as bridge_routes
 from dopecon_bridge.clients import MCPClientManager
 from dopecon_bridge.leantime_contract import (
     build_leantime_tool_request,
@@ -48,6 +52,20 @@ class _FakeSession:
     def post(self, url: str, json: dict):
         self.calls.append((url, json))
         return _FakeResponse(self.payload, status=self.status, text_body=self.text_body)
+
+
+@pytest.fixture
+def runtime_client(monkeypatch):
+    monkeypatch.setattr(bridge_main, "init_default_users", lambda: None)
+    monkeypatch.setattr(bridge_main.db_manager, "initialize", AsyncMock())
+    monkeypatch.setattr(bridge_main.cache_manager, "initialize", AsyncMock())
+    monkeypatch.setattr(bridge_main.db_manager, "close", AsyncMock())
+    monkeypatch.setattr(bridge_main.cache_manager, "close", AsyncMock())
+    monkeypatch.setattr(bridge_routes.mcp_client, "health_check_all", AsyncMock(return_value={}))
+    monkeypatch.setattr(bridge_routes.conport_client, "health_check", AsyncMock(return_value=True))
+
+    with TestClient(bridge_main.app) as client:
+        yield client
 
 
 @pytest.mark.asyncio
@@ -156,3 +174,95 @@ async def test_mcp_client_preserves_non_leantime_status_context(monkeypatch):
     assert exc.value.status_code == 502
     assert "task-orchestrator.analyze_dependencies" in exc.value.detail
     assert "upstream status 500" in exc.value.detail
+
+
+def test_event_publish_requires_auth(runtime_client):
+    response = runtime_client.post(
+        "/events",
+        json={"event_type": "bridge.test", "data": {"count": 1}},
+    )
+
+    assert response.status_code in {401, 403}
+
+
+def test_legacy_task_routes_fail_closed(runtime_client):
+    next_response = runtime_client.get("/tasks/next/project-1")
+    parse_response = runtime_client.post(
+        "/tasks/parse-prd",
+        json={"content": "PRD", "project_id": "project-1"},
+    )
+
+    bridge_main.app.dependency_overrides[bridge_routes.get_current_user] = lambda: {"username": "admin"}
+    status_response = runtime_client.patch(
+        "/tasks/task-1/status",
+        json={"status": "completed"},
+    )
+    bridge_main.app.dependency_overrides.clear()
+
+    assert next_response.status_code == 409
+    assert parse_response.status_code == 409
+    assert status_response.status_code == 409
+
+
+def test_route_pm_blocks_workflow_significant_mutations(runtime_client):
+    bridge_main.app.dependency_overrides[bridge_routes.get_current_user] = lambda: {"username": "admin"}
+    response = runtime_client.post(
+        "/route/pm",
+        json={
+            "operation": "update_task_status",
+            "data": {"task_id": "123", "status": "DONE"},
+            "requester": "pytest",
+        },
+    )
+    bridge_main.app.dependency_overrides.clear()
+
+    assert response.status_code == 409
+    assert "Task Orchestrator adjudication" in response.text
+
+
+def test_route_pm_proxies_safe_leantime_operation(runtime_client, monkeypatch):
+    mock_call = AsyncMock(return_value=[{"id": 1, "headline": "Ship docs"}])
+    monkeypatch.setattr(bridge_routes.mcp_client, "call_tool", mock_call)
+
+    bridge_main.app.dependency_overrides[bridge_routes.get_current_user] = lambda: {"username": "admin"}
+    response = runtime_client.post(
+        "/route/pm",
+        json={
+            "operation": "get_tasks",
+            "data": {"project_id": "7"},
+            "requester": "pytest",
+        },
+    )
+    bridge_main.app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["success"] is True
+    assert body["data"]["tasks"][0]["id"] == 1
+    mock_call.assert_awaited_once_with("leantime-bridge", "list_tickets", {"projectId": 7})
+
+
+def test_ddg_and_custom_data_routes_proxy_to_conport(runtime_client, monkeypatch):
+    monkeypatch.setattr(
+        bridge_routes.conport_client,
+        "list_decisions",
+        AsyncMock(return_value={"count": 1, "decisions": [{"id": "dec_1"}]}),
+    )
+    monkeypatch.setattr(
+        bridge_routes.conport_client,
+        "get_custom_data",
+        AsyncMock(return_value={"count": 1, "items": [{"key": "foo", "value": {"bar": 1}}]}),
+    )
+
+    bridge_main.app.dependency_overrides[bridge_routes.get_current_user] = lambda: {"username": "admin"}
+    ddg_response = runtime_client.get("/ddg/decisions", params={"workspace_id": "/workspace", "limit": 5})
+    custom_response = runtime_client.get(
+        "/kg/custom_data",
+        params={"workspace_id": "/workspace", "category": "test", "limit": 5},
+    )
+    bridge_main.app.dependency_overrides.clear()
+
+    assert ddg_response.status_code == 200
+    assert ddg_response.json()["items"] == [{"id": "dec_1"}]
+    assert custom_response.status_code == 200
+    assert custom_response.json()["data"] == [{"key": "foo", "value": {"bar": 1}}]

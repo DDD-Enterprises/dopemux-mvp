@@ -1,29 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  Alert,
   Box,
-  Container,
-  Grid,
-  Paper,
-  Typography,
-  ThemeProvider,
-  CssBaseline,
   Chip,
+  CircularProgress,
+  Collapse,
+  Container,
+  CssBaseline,
   Divider,
-  useMediaQuery,
-  useTheme,
+  Grid,
   Link,
-  Tooltip
+  Paper,
+  ThemeProvider,
+  Tooltip,
+  Typography,
+  useMediaQuery,
 } from '@mui/material';
-import { Brain, Zap, Eye, TrendingUp, Droplet } from 'lucide-react';
-import theme, { brandTokens, statusStyles } from './theme';
+import { alpha } from '@mui/material/styles';
+import { Bell, Brain, Droplet, Eye, TrendingUp, Zap } from 'lucide-react';
 
-// Import components
+import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
+import PredictionPanel from './components/PredictionPanel';
 import TaskSequencer from './components/TaskSequencer';
 import TeamDashboard from './components/TeamDashboard';
-import PredictionPanel from './components/PredictionPanel';
+import theme, { brandTokens, statusStyles } from './theme';
 
-// Types
 interface CognitiveState {
   energy: number;
   attention: number;
@@ -33,97 +35,193 @@ interface CognitiveState {
   recommendation: string;
 }
 
-function App() {
-  const muiTheme = useTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+interface Notification {
+  message: string;
+  notificationType: string;
+  timestamp: string;
+}
 
+interface AggregateDashboardState {
+  energy?: {
+    energy_level?: string;
+  };
+  attention?: {
+    attention_state?: string;
+  };
+  cognitive_load?: {
+    cognitive_load?: number;
+    predicted_load_15min?: number;
+  };
+  recommendation?: string;
+}
+
+const energyMap: Record<string, number> = {
+  very_low: 0.2,
+  low: 0.4,
+  medium: 0.7,
+  high: 0.9,
+  hyperfocus: 1.0,
+};
+
+const attentionMap: Record<string, number> = {
+  scattered: 0.3,
+  transitioning: 0.5,
+  focused: 0.8,
+  hyperfocused: 1.0,
+  overwhelmed: 0.2,
+};
+
+function deriveStatus(load: number): CognitiveState['status'] {
+  if (load > 0.8) {
+    return 'critical';
+  }
+  if (load > 0.6) {
+    return 'high';
+  }
+  if (load < 0.3) {
+    return 'low';
+  }
+  return 'optimal';
+}
+
+function mapAggregateState(payload: AggregateDashboardState): CognitiveState {
+  const load = payload.cognitive_load?.cognitive_load ?? 0.5;
+  return {
+    energy: energyMap[payload.energy?.energy_level || 'medium'] || 0.5,
+    attention: attentionMap[payload.attention?.attention_state || 'focused'] || 0.5,
+    load,
+    prediction: payload.cognitive_load?.predicted_load_15min,
+    status: deriveStatus(load),
+    recommendation: payload.recommendation || 'No active recommendation',
+  };
+}
+
+function mapRealtimeState(message: Record<string, unknown>): CognitiveState | null {
+  if (message.type !== 'state_update') {
+    return null;
+  }
+
+  const data = (message.data || {}) as Record<string, unknown>;
+  const load = typeof data.cognitive_load === 'number' ? data.cognitive_load : 0.5;
+
+  return {
+    energy: energyMap[String(data.energy_level || 'medium')] || 0.5,
+    attention: attentionMap[String(data.attention_state || 'focused')] || 0.5,
+    load,
+    prediction: typeof data.predicted_load_15min === 'number' ? data.predicted_load_15min : undefined,
+    status: deriveStatus(load),
+    recommendation: String(data.recommendation || 'No active recommendation'),
+  };
+}
+
+function App() {
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [cognitiveState, setCognitiveState] = useState<CognitiveState>({
     energy: 0.7,
     attention: 0.6,
     load: 0.5,
     status: 'optimal',
-    recommendation: 'Continue current work patterns'
+    recommendation: 'Continue current work patterns',
   });
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'live' | 'degraded'>('connecting');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Connect to real-time data
   useEffect(() => {
-    console.log("🔌 Connecting to ADHD Engine WebSocket...");
-    const ws = new WebSocket('ws://localhost:8095/api/v1/ws/stream');
+    let isMounted = true;
 
-    ws.onopen = () => {
-      console.log("✅ WebSocket Connected");
-    };
-
-    ws.onmessage = (event) => {
+    async function loadInitialState() {
       try {
-        const message = JSON.parse(event.data);
-
-        if (message.type === 'state_update') {
-          const data = message.data;
-
-          // Map backend string enums to numerical values for UI
-          const energyMap: Record<string, number> = {
-            'very_low': 0.2, 'low': 0.4, 'medium': 0.7, 'high': 0.9, 'hyperfocus': 1.0
-          };
-
-          const attentionMap: Record<string, number> = {
-            'scattered': 0.3, 'transitioning': 0.5, 'focused': 0.8,
-            'hyperfocused': 1.0, 'overwhelmed': 0.2
-          };
-
-          // Determine status based on cognitive load
-          let status: CognitiveState['status'] = 'optimal';
-          if (data.cognitive_load > 0.8) status = 'critical';
-          else if (data.cognitive_load > 0.6) status = 'high';
-          else if (data.cognitive_load < 0.3) status = 'low';
-
-          setCognitiveState({
-            energy: energyMap[data.energy_level] || 0.5,
-            attention: attentionMap[data.attention_state] || 0.5,
-            load: data.cognitive_load || 0.5,
-            status: status,
-            recommendation: data.recommendation || 'No active recommendation'
-          });
+        const response = await fetch(`${dashboardApiUrl}/api/adhd-state`, {
+          headers: dashboardApiHeaders,
+        });
+        if (!response.ok) {
+          throw new Error(`Dashboard state request failed with ${response.status}`);
         }
-      } catch (err) {
-        console.error("❌ Error parsing WebSocket message:", err);
-      }
-    };
 
-    ws.onerror = (error) => {
-      console.error("❌ WebSocket Error:", error);
-    };
+        const payload = (await response.json()) as AggregateDashboardState;
+        if (!isMounted) {
+          return;
+        }
+        setCognitiveState(mapAggregateState(payload));
+        setConnectionStatus('live');
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+        setConnectionStatus('degraded');
+        setErrorMessage(error instanceof Error ? error.message : 'Unable to load dashboard state');
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadInitialState();
 
     return () => {
-      ws.close();
+      isMounted = false;
     };
   }, []);
 
-  // Adaptive layout based on cognitive load
-  const getLayoutConfig = () => {
-    if (cognitiveState.status === 'critical') {
-      return {
-        showTeamDashboard: false,
-        showPredictions: false,
-        compactMode: true
-      };
-    } else if (cognitiveState.status === 'high') {
-      return {
-        showTeamDashboard: false,
-        showPredictions: true,
-        compactMode: false
-      };
-    } else {
-      return {
-        showTeamDashboard: true,
-        showPredictions: true,
-        compactMode: false
-      };
-    }
-  };
+  useEffect(() => {
+    const socket = new WebSocket(`${dashboardWsUrl}/ws/state`);
 
-  const layout = getLayoutConfig();
+    socket.onopen = () => {
+      setConnectionStatus('live');
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data) as Record<string, unknown>;
+        const nextState = mapRealtimeState(message);
+
+        if (nextState) {
+          setCognitiveState((current) => ({ ...current, ...nextState }));
+          return;
+        }
+
+        if (message.type === 'dashboard_notification') {
+          setNotifications((current) => [
+            {
+              message: String(message.message || 'Notification received'),
+              notificationType: String(message.notification_type || 'info'),
+              timestamp: String(message.timestamp || new Date().toISOString()),
+            },
+            ...current,
+          ].slice(0, 5));
+        }
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'WebSocket parse failure');
+      }
+    };
+
+    socket.onerror = () => {
+      setConnectionStatus('degraded');
+    };
+
+    socket.onclose = () => {
+      setConnectionStatus((current) => (current === 'live' ? 'degraded' : current));
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
+
+  const layout =
+    cognitiveState.status === 'critical'
+      ? { showTeamDashboard: false, showPredictions: false, compactMode: true }
+      : cognitiveState.status === 'high'
+        ? { showTeamDashboard: false, showPredictions: true, compactMode: false }
+        : { showTeamDashboard: true, showPredictions: true, compactMode: false };
+
   const statusMeta = statusStyles[cognitiveState.status];
+  const connectionLabel = connectionStatus === 'live' ? brandTokens.chips.live : '[DEGRADED]';
+  const connectionColor =
+    connectionStatus === 'live' ? brandTokens.colors.ritualCyan : brandTokens.colors.gremlinPink;
 
   const metricCards = [
     {
@@ -131,28 +229,28 @@ function App() {
       value: cognitiveState.energy,
       icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
       roast: "You're sipping ambition like it's lukewarm coffee.",
-      tooltip: "Your current biometric energy reserve based on activity and sleep data",
+      tooltip: 'Your current biometric energy reserve based on activity and sleep data',
     },
     {
       label: 'Attention Focus',
       value: cognitiveState.attention,
       icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
-      roast: "Focus is flirting with you; stop ghosting it.",
-      tooltip: "Real-time attention state: scattered, focused, or hyperfocused",
+      roast: 'Focus is flirting with you; stop ghosting it.',
+      tooltip: 'Real-time attention state: scattered, focused, or hyperfocused',
     },
     {
       label: 'Cognitive Load',
       value: cognitiveState.load,
       icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
-      roast: "Load creeping up like a brat testing limits.",
-      tooltip: "Total mental effort being exerted on current tasks",
+      roast: 'Load creeping up like a brat testing limits.',
+      tooltip: 'Total mental effort being exerted on current tasks',
     },
     {
       label: '15-min Prediction',
       value: cognitiveState.prediction ?? null,
       icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
-      roast: "Future you is pacing. Hydrate before they mutiny.",
-      tooltip: "AI-driven forecast of your cognitive state for the next 15 minutes",
+      roast: 'Future you is pacing. Hydrate before they mutiny.',
+      tooltip: 'AI-driven forecast of your cognitive state for the next 15 minutes',
     },
   ];
 
@@ -165,8 +263,8 @@ function App() {
           position: 'absolute',
           top: -100,
           left: 0,
-          backgroundColor: 'var(--serum-mint, #94fadb)',
-          color: 'black',
+          backgroundColor: brandTokens.colors.serumMint,
+          color: brandTokens.colors.inkBlack,
           padding: '8px 16px',
           zIndex: 9999,
           borderRadius: '0 0 4px 0',
@@ -175,7 +273,7 @@ function App() {
           transition: 'top 0.2s',
           '&:focus': {
             top: 0,
-            outline: '2px solid white',
+            outline: `2px solid ${brandTokens.text.primary}`,
           },
         }}
       >
@@ -189,12 +287,12 @@ function App() {
             p: 3,
             borderRadius: 4,
             background: brandTokens.gradients.velvet,
-            border: `1px solid rgba(148, 250, 219, 0.35)`,
-            boxShadow: '0 30px 80px rgba(2, 6, 23, 0.6)',
+            border: `1px solid ${brandTokens.borders.mint}`,
+            boxShadow: brandTokens.shadows.panel,
           }}
         >
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Tooltip title="Real-time connection to ADHD Engine active" arrow>
+            <Tooltip title="Real-time connection to the ADHD dashboard surface" arrow>
               <Chip
                 icon={
                   <Box
@@ -202,19 +300,19 @@ function App() {
                       width: 8,
                       height: 8,
                       borderRadius: '50%',
-                      bgcolor: brandTokens.colors.ritualCyan,
+                      bgcolor: connectionColor,
                       ml: 1,
                       animation: 'pulse 2s infinite',
                       '@keyframes pulse': {
-                        '0%': { boxShadow: `0 0 0 0px rgba(125, 251, 246, 0.7)` },
-                        '70%': { boxShadow: `0 0 0 8px rgba(125, 251, 246, 0)` },
-                        '100%': { boxShadow: `0 0 0 0px rgba(125, 251, 246, 0)` },
+                        '0%': { boxShadow: `0 0 0 0px ${alpha(connectionColor, 0.7)}` },
+                        '70%': { boxShadow: `0 0 0 8px ${alpha(connectionColor, 0)}` },
+                        '100%': { boxShadow: `0 0 0 0px ${alpha(connectionColor, 0)}` },
                       },
                     }}
                   />
                 }
-                label={`${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
-                aria-label={`System is actively monitoring ritual state: ${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
+                label={`${connectionLabel} DØPEMÜX Ritual Daemon`}
+                aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}
                 className="dopemux-chip"
                 color="primary"
                 tabIndex={0}
@@ -225,7 +323,7 @@ function App() {
                 label={`${brandTokens.chips.consent}`}
                 className="dopemux-chip"
                 variant="outlined"
-                sx={{ borderColor: 'rgba(255, 207, 120, 0.9)', color: brandTokens.colors.saintGold }}
+                sx={{ borderColor: alpha(brandTokens.colors.saintGold, 0.9), color: brandTokens.colors.saintGold }}
                 tabIndex={0}
               />
             </Tooltip>
@@ -234,7 +332,7 @@ function App() {
                 icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} />}
                 label="[AFTERCARE] Logged. Hydrate."
                 className="dopemux-chip"
-                sx={{ borderColor: 'rgba(155, 120, 255, 0.8)', color: brandTokens.colors.aftercareViolet }}
+                sx={{ borderColor: alpha(brandTokens.colors.aftercareViolet, 0.8), color: brandTokens.colors.aftercareViolet }}
                 tabIndex={0}
               />
             </Tooltip>
@@ -244,16 +342,16 @@ function App() {
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 720 }}>
             Luxury filth meets lab precision. I track your cognitive drips, roast your sprint sins,
-            and still remind you to hydrate. Status: <strong>{brandTokens.chips.live}</strong> {statusMeta.label}.
+            and still remind you to hydrate. Status: <strong>{connectionLabel}</strong> {statusMeta.label}.
           </Typography>
-          <Divider sx={{ my: 2, borderColor: 'rgba(125, 251, 246, 0.3)' }} />
+          <Divider sx={{ my: 2, borderColor: brandTokens.borders.cyan }} />
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Tooltip title="Current cognitive status and load percentage" arrow>
               <Chip
                 label={`${statusMeta.label} • ${(cognitiveState.load * 100).toFixed(0)}% load`}
                 tabIndex={0}
                 sx={{
-                  backgroundColor: `${statusMeta.color}1A`,
+                  backgroundColor: alpha(statusMeta.color, 0.1),
                   color: statusMeta.color,
                   border: `1px solid ${statusMeta.color}`,
                 }}
@@ -264,14 +362,28 @@ function App() {
                 label={`Recommendation: ${cognitiveState.recommendation}`}
                 tabIndex={0}
                 sx={{
-                  backgroundColor: 'rgba(32, 50, 72, 0.65)',
+                  backgroundColor: alpha(brandTokens.colors.voidNavy, 0.65),
                   color: brandTokens.colors.serumMint,
-                  border: '1px solid rgba(148, 250, 219, 0.35)',
+                  border: `1px solid ${brandTokens.borders.mint}`,
                 }}
               />
             </Tooltip>
           </Box>
         </Box>
+
+        <Collapse in={Boolean(errorMessage)}>
+          <Alert
+            severity="warning"
+            sx={{
+              mb: 3,
+              borderRadius: 3,
+              backgroundColor: alpha(brandTokens.colors.gremlinPink, 0.08),
+              border: `1px solid ${brandTokens.colors.gremlinPink}`,
+            }}
+          >
+            {errorMessage}
+          </Alert>
+        </Collapse>
 
         <Grid container spacing={3} sx={{ mb: 3 }}>
           {metricCards.map((metric) => (
@@ -284,8 +396,8 @@ function App() {
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 1.2,
-                  border: `1px solid rgba(255,255,255,0.08)`,
-                  background: 'linear-gradient(135deg, rgba(4,22,40,0.9), rgba(10,10,26,0.9))',
+                  border: `1px solid ${brandTokens.borders.subtle}`,
+                  background: brandTokens.gradients.focusCard,
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -311,7 +423,9 @@ function App() {
                     </Box>
                   </Tooltip>
                   <Box>
-                    <Typography variant="h6">{metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}</Typography>
+                    <Typography variant="h6">
+                      {metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">{metric.label}</Typography>
                   </Box>
                 </Box>
@@ -322,7 +436,42 @@ function App() {
           ))}
         </Grid>
 
-        {/* Main Dashboard */}
+        <Paper
+          sx={{
+            mb: 3,
+            p: 2.5,
+            borderRadius: 3,
+            border: `1px solid ${brandTokens.borders.subtle}`,
+            background: brandTokens.gradients.focusCard,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+            <Bell size={18} aria-hidden="true" />
+            <Typography variant="h6">Live Signal Feed</Typography>
+            {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
+          </Box>
+          {notifications.length > 0 ? (
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {notifications.map((notification) => (
+                <Chip
+                  key={`${notification.timestamp}-${notification.message}`}
+                  label={`${notification.notificationType}: ${notification.message}`}
+                  sx={{
+                    maxWidth: '100%',
+                    borderColor: brandTokens.borders.cyan,
+                    color: brandTokens.colors.ritualCyan,
+                    backgroundColor: alpha(brandTokens.colors.ritualCyan, 0.08),
+                  }}
+                />
+              ))}
+            </Box>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              Waiting for ConPort and ADHD event traffic...
+            </Typography>
+          )}
+        </Paper>
+
         <Grid
           container
           spacing={3}
@@ -331,7 +480,6 @@ function App() {
           tabIndex={-1}
           sx={{ outline: 'none' }}
         >
-          {/* Cognitive Load Gauge - Always visible */}
           <Grid item xs={12} lg={layout.compactMode ? 12 : 4}>
             <CognitiveLoadGauge
               load={cognitiveState.load}
@@ -339,20 +487,14 @@ function App() {
               recommendation={cognitiveState.recommendation}
             />
           </Grid>
-
-          {/* Task Sequencer */}
           <Grid item xs={12} lg={layout.compactMode ? 12 : 4}>
             <TaskSequencer cognitiveState={cognitiveState} />
           </Grid>
-
-          {/* Prediction Panel */}
           {layout.showPredictions && (
             <Grid item xs={12} lg={4}>
               <PredictionPanel prediction={cognitiveState.prediction} />
             </Grid>
           )}
-
-          {/* Team Dashboard */}
           {layout.showTeamDashboard && !isMobile && (
             <Grid item xs={12}>
               <TeamDashboard />
@@ -360,7 +502,6 @@ function App() {
           )}
         </Grid>
 
-        {/* Footer */}
         <Box sx={{ mt: 4, pt: 2, borderTop: 1, borderColor: 'divider' }}>
           <Typography variant="body2" color="text.secondary" align="center">
             Ultra UI Dashboard - Adaptive Interface for Cognitive Optimization

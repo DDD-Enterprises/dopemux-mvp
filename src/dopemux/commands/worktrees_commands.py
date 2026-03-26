@@ -15,23 +15,40 @@ logger = logging.getLogger(__name__)
 
 @click.group()
 def worktrees():
-    """Manage git worktrees for parallel development."""
+    """
+    💊 Ritualize parallel flight-decks.
+
+    Manages Git worktrees for isolated ADHD-optimized focus sessions. Each worktree
+    represents a distinct branch context, allowing for instantaneous cockpit jumps
+    without polluting the main working directory.
+    """
     pass
 
 
 @worktrees.command("list")
 @click.pass_context
 def worktrees_list_cmd(ctx):
-    """List all git worktrees with status."""
+    """
+    📊 Inventory all active flight-decks.
+
+    Displays every Git worktree registered in the current repository. Includes
+    the absolute path, associated branch trajectory, and current lock status.
+    """
     from ..worktree_commands import list_worktrees
     list_worktrees()
 
 
 @worktrees.command("current")
-@click.option("--no-cache", is_flag=True, help="Skip cache and detect fresh")
+@click.option("--no-cache", is_flag=True, help="Bypass the neural cache. Forces fresh detection from the Git filesystem layer to ensure absolute accuracy.")
 @click.pass_context
 def worktrees_current_cmd(ctx, no_cache: bool):
-    """Get current worktree path (cached for MCP efficiency)."""
+    """
+    ⚡ Ping current cockpit coordinates.
+
+    Retrieves the absolute path of the active worktree. This utilizes the MCP cache
+    for ultra-low latency neural retrieval, ensuring the Ritual-Daemon always knows
+    where your focus is stationed.
+    """
     from ..worktree_commands import get_current_worktree
     path = get_current_worktree(use_cache=not no_cache, quiet=False)
     if path:
@@ -44,7 +61,13 @@ def worktrees_current_cmd(ctx, no_cache: bool):
 @click.argument("branch")
 @click.pass_context
 def worktrees_switch_path_cmd(ctx, branch: str):
-    """Output worktree path for shell integration (use with shell function)."""
+    """
+    💧 Extract worktree trajectory.
+
+    Returns the absolute path of a target branch's worktree. Specifically designed
+    for shell-level integration, allowing the parent shell to execute directory
+    jumps based on the Daemon's output.
+    """
     from ..worktree_commands import get_worktree_path, list_worktrees
 
     path = get_worktree_path(branch)
@@ -71,10 +94,16 @@ def worktrees_switch_path_cmd(ctx, branch: str):
 
 @worktrees.command("switch")
 @click.argument("branch")
-@click.option("--no-fuzzy", is_flag=True, help="Disable fuzzy matching")
+@click.option("--no-fuzzy", is_flag=True, help="Enforce exact naming. Disables the fuzzy-matching heuristic for branch identification to prevent accidental jumps.")
 @click.pass_context
 def worktrees_switch_cmd(ctx, branch: str, no_fuzzy: bool):
-    """[DEPRECATED] Use shell integration instead - see 'dopemux shell-setup'."""
+    """
+    🧠 Attempt cockpit jump (Deprecated).
+
+    Attempts to switch the current session to a different worktree. Note: Direct
+    directory switching is restricted by POSIX subprocess boundaries. Use the
+    'dwt' shell function for seamless flight-deck transitions.
+    """
     click.secho("\nWARNING: This command cannot change your shell's directory", fg="yellow", bold=True)
     click.secho("This is a fundamental POSIX limitation, not a bug.\n", fg="yellow")
 
@@ -120,11 +149,17 @@ def worktrees_switch_cmd(ctx, branch: str, no_fuzzy: bool):
 
 
 @worktrees.command("cleanup")
-@click.option("--force", "-f", is_flag=True, help="Remove dirty worktrees")
-@click.option("--dry-run", "-n", is_flag=True, help="Preview without removing")
+@click.option("--force", "-f", is_flag=True, help="Override safety interlocks. Forcefully remove worktrees even if they contain uncommitted changes or are marked as locked.")
+@click.option("--dry-run", "-n", is_flag=True, help="Simulate the purge. Lists the worktrees targeted for decommission without executing the destructive ritual.")
 @click.pass_context
 def worktrees_cleanup_cmd(ctx, force: bool, dry_run: bool):
-    """Clean up unused worktrees."""
+    """
+    🧙 Purge stale work-spheres.
+
+    Removes orphaned or inactive Git worktrees. This ritual reclaims disk space
+    and prevents cognitive clutter by ensuring only relevant flight-decks
+    remain registered in the repository ledger.
+    """
     from ..worktree_commands import cleanup_worktrees
     workspace = Path.cwd()
     cleanup_worktrees(workspace, force=force, dry_run=dry_run)

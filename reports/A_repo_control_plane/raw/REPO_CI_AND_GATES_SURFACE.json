@@ -9401,16 +9401,16 @@
         "anchor": "root",
         "excerpt_hash": "0e462ad6810d42ccb4025f665cc1454c2c3e33f4364dc383df621ac5e92d23ad",
         "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries **Outputs:** `LLM_POLICY_GATES.json` --- ## TASK Produce ONE JSON file: `LLM_POLICY_GATES.json`. ## INPUT",
-        "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
       },
-      "policy_path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
+      "policy_path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md",
       "rules": [
         {
           "evidence": {
             "anchor": "L1",
             "excerpt_hash": "610fa33f46c432f13cbd5dbee02f1ee95c86b1bdaf7c04c9f79a529cda53c313",
             "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "# Prompt I3 (v2): LLM Policy Gates & Boundaries",
           "scope": null
@@ -9420,7 +9420,7 @@
             "anchor": "L3",
             "excerpt_hash": "0588031a11e28adaf212e5ec4209c0411996f0a679c9b6cf55bff8375f28f2e9",
             "excerpt_snippet": "**Outputs:** `LLM_POLICY_GATES.json`",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "**Outputs:** `LLM_POLICY_GATES.json`",
           "scope": null
@@ -9430,7 +9430,7 @@
             "anchor": "L9",
             "excerpt_hash": "56493974cbf77749dbfc7c4f359865df0c462679567754f4ceb0ddcd37c636ec",
             "excerpt_snippet": "Produce ONE JSON file: `LLM_POLICY_GATES.json`.",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "Produce ONE JSON file: `LLM_POLICY_GATES.json`.",
           "scope": null
@@ -9440,7 +9440,7 @@
             "anchor": "L19",
             "excerpt_hash": "a80cfb52e0862e46a49017a83caeaee5f21f45bcddbdbbc9e3809bc16d2d8881",
             "excerpt_snippet": "## LLM_POLICY_GATES.json",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "## LLM_POLICY_GATES.json",
           "scope": null
@@ -9450,7 +9450,7 @@
             "anchor": "L26",
             "excerpt_hash": "ecc35a9087bc273b549df51d491ad8f818963464398daeed3d243df62124d01f",
             "excerpt_snippet": "For each policy statement:",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "For each policy statement:",
           "scope": null
@@ -9460,7 +9460,7 @@
             "anchor": "L27",
             "excerpt_hash": "08080527d51ca609a9e070ed64955f6e6bc69e555ed5be4c3fc8c8e6e2e795d3",
             "excerpt_snippet": "- `policy_id`: `\"policy:\" + doc_id + \":\" + line_range[0]`",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "- `policy_id`: `\"policy:\" + doc_id + \":\" + line_range[0]`",
           "scope": null
@@ -9470,7 +9470,7 @@
             "anchor": "L29",
             "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
             "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
           "scope": null
@@ -9480,7 +9480,7 @@
             "anchor": "L37",
             "excerpt_hash": "fb4377ec3928eba46f75af81317bacd7211aa98482a87ad81d86bb23b4c8c914",
             "excerpt_snippet": "\"policy_id\": \"policy:doc:.claude/PRIMER.md:78\",",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "\"policy_id\": \"policy:doc:.claude/PRIMER.md:78\",",
           "scope": null
@@ -9490,7 +9490,7 @@
             "anchor": "L42",
             "excerpt_hash": "a3518f476dd08b4419523cdf289725292d9d23a137dfc3a571a44f7f6c07c3e4",
             "excerpt_snippet": "\"policy_type\": \"boundary\",",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "\"policy_type\": \"boundary\",",
           "scope": null
@@ -9500,7 +9500,7 @@
             "anchor": "L51",
             "excerpt_hash": "5ace5434bc491095e7c6f6a98ebb26ffa3c983c20a8a71cd757c7f8a4d95905a",
             "excerpt_snippet": "- **No deciding which policy wins**",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "- **No deciding which policy wins**",
           "scope": null
@@ -9510,7 +9510,7 @@
             "anchor": "L60",
             "excerpt_hash": "ac8939325b227bde77c5dbd633fa714b3d980d4736b8c17ec52842e64901fccd",
             "excerpt_snippet": "\"artifact_type\": \"LLM_POLICY_GATES\",",
-            "path": "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE/prompt-i3-policy-gates-2.md"
           },
           "rule": "\"artifact_type\": \"LLM_POLICY_GATES\",",
           "scope": null
@@ -9525,16 +9525,16 @@
         "anchor": "root",
         "excerpt_hash": "0e462ad6810d42ccb4025f665cc1454c2c3e33f4364dc383df621ac5e92d23ad",
         "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries **Outputs:** `LLM_POLICY_GATES.json` --- ## TASK Produce ONE JSON file: `LLM_POLICY_GATES.json`. ## INPUT",
-        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+        "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
       },
-      "policy_path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
+      "policy_path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md",
       "rules": [
         {
           "evidence": {
             "anchor": "L1",
             "excerpt_hash": "610fa33f46c432f13cbd5dbee02f1ee95c86b1bdaf7c04c9f79a529cda53c313",
             "excerpt_snippet": "# Prompt I3 (v2): LLM Policy Gates & Boundaries",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "# Prompt I3 (v2): LLM Policy Gates & Boundaries",
           "scope": null
@@ -9544,7 +9544,7 @@
             "anchor": "L3",
             "excerpt_hash": "0588031a11e28adaf212e5ec4209c0411996f0a679c9b6cf55bff8375f28f2e9",
             "excerpt_snippet": "**Outputs:** `LLM_POLICY_GATES.json`",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "**Outputs:** `LLM_POLICY_GATES.json`",
           "scope": null
@@ -9554,7 +9554,7 @@
             "anchor": "L9",
             "excerpt_hash": "56493974cbf77749dbfc7c4f359865df0c462679567754f4ceb0ddcd37c636ec",
             "excerpt_snippet": "Produce ONE JSON file: `LLM_POLICY_GATES.json`.",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "Produce ONE JSON file: `LLM_POLICY_GATES.json`.",
           "scope": null
@@ -9564,7 +9564,7 @@
             "anchor": "L19",
             "excerpt_hash": "a80cfb52e0862e46a49017a83caeaee5f21f45bcddbdbbc9e3809bc16d2d8881",
             "excerpt_snippet": "## LLM_POLICY_GATES.json",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "## LLM_POLICY_GATES.json",
           "scope": null
@@ -9574,7 +9574,7 @@
             "anchor": "L26",
             "excerpt_hash": "ecc35a9087bc273b549df51d491ad8f818963464398daeed3d243df62124d01f",
             "excerpt_snippet": "For each policy statement:",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "For each policy statement:",
           "scope": null
@@ -9584,7 +9584,7 @@
             "anchor": "L27",
             "excerpt_hash": "08080527d51ca609a9e070ed64955f6e6bc69e555ed5be4c3fc8c8e6e2e795d3",
             "excerpt_snippet": "- `policy_id`: `\"policy:\" + doc_id + \":\" + line_range[0]`",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "- `policy_id`: `\"policy:\" + doc_id + \":\" + line_range[0]`",
           "scope": null
@@ -9594,7 +9594,7 @@
             "anchor": "L29",
             "excerpt_hash": "8d9e89a70183fd1eb4f547fda51c3a904a94a2db806bb21b117c7c28247a3c12",
             "excerpt_snippet": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "- `policy_type`: `claim|boundary` (use `boundary` if mentions authority/ownership/responsibility)",
           "scope": null
@@ -9604,7 +9604,7 @@
             "anchor": "L37",
             "excerpt_hash": "fb4377ec3928eba46f75af81317bacd7211aa98482a87ad81d86bb23b4c8c914",
             "excerpt_snippet": "\"policy_id\": \"policy:doc:.claude/PRIMER.md:78\",",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "\"policy_id\": \"policy:doc:.claude/PRIMER.md:78\",",
           "scope": null
@@ -9614,7 +9614,7 @@
             "anchor": "L42",
             "excerpt_hash": "a3518f476dd08b4419523cdf289725292d9d23a137dfc3a571a44f7f6c07c3e4",
             "excerpt_snippet": "\"policy_type\": \"boundary\",",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "\"policy_type\": \"boundary\",",
           "scope": null
@@ -9624,7 +9624,7 @@
             "anchor": "L51",
             "excerpt_hash": "5ace5434bc491095e7c6f6a98ebb26ffa3c983c20a8a71cd757c7f8a4d95905a",
             "excerpt_snippet": "- **No deciding which policy wins**",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "- **No deciding which policy wins**",
           "scope": null
@@ -9634,7 +9634,7 @@
             "anchor": "L60",
             "excerpt_hash": "ac8939325b227bde77c5dbd633fa714b3d980d4736b8c17ec52842e64901fccd",
             "excerpt_snippet": "\"artifact_type\": \"LLM_POLICY_GATES\",",
-            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md"
+            "path": "docs/archive/pipeline-v2/UPGRADE_legacy/prompt-i3-policy-gates-2.md"
           },
           "rule": "\"artifact_type\": \"LLM_POLICY_GATES\",",
           "scope": null
@@ -10302,7 +10302,7 @@
         "anchor": "L305",
         "excerpt_hash": "22f8cdfb27a404dece832febb3f3a7cd6052777dd3dfbd5f7eb0760236681b49",
         "excerpt_snippet": "\"API_ACCESS_TOKEN\": \"sk_mt_P3cvUc02eTQTEbELrirCQ9jjEqzbTYqyWdjdbJm3sBW5RCxOOPeMgA1sylNF4gNY\"",
-        "path": "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md"
+        "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
       "name": "API_ACCESS_TOKEN",
       "purpose": "unknown",
@@ -10329,7 +10329,7 @@
         "anchor": "L1147",
         "excerpt_hash": "76b8d5109409b7834e642f57cb77d11c12f52dba320d6c3a4caf18044f80e006",
         "excerpt_snippet": "**Documentation Created**: `ARM64_VECTOR_DB_RESEARCH.md` with complete migration plan",
-        "path": "docs/archive/conport-sessions/mcp_system_development.md"
+        "path": "docs/archive/conport-sessions/mcp-system-development-2.md"
       },
       "name": "ARM64_VECTOR_DB_RESEARCH",
       "purpose": "db",
@@ -10407,7 +10407,7 @@
         "anchor": "L2",
         "excerpt_hash": "8e97f13293d4c84ac30d343fb781ad1db524b1784093ecf93dbd557aca86dc0d",
         "excerpt_snippet": "id: CONPORT_TOKEN_LIMIT_FIX",
-        "path": "docs/archive/mcp-servers/CONPORT_TOKEN_LIMIT_FIX.md"
+        "path": "docs/archive/mcp-servers/conport-token-limit-fix-2.md"
       },
       "name": "CONPORT_TOKEN_LIMIT_FIX",
       "purpose": "unknown",
@@ -10804,7 +10804,7 @@
         "anchor": "L93",
         "excerpt_hash": "1d5c24cf19c7b2d7aa4c6a1a20f4e96aee90f1411f11047cefcf9a7f3d97a29a",
         "excerpt_snippet": "**Documentation**: `services/dopemux-gpt-researcher/GPT_RESEARCHER_TOKEN_LIMIT_FIX.md`",
-        "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md"
+        "path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md"
       },
       "name": "GPT_RESEARCHER_TOKEN_LIMIT_FIX",
       "purpose": "unknown",
@@ -10950,7 +10950,7 @@
         "anchor": "L236",
         "excerpt_hash": "0be580273d72ac68c02e06e22c5563cb48482e501f98e0b5d592e46edcfec07e",
         "excerpt_snippet": "- `LEANTIME_HEALTH_URL` (default: http://localhost:8080/index.php)",
-        "path": "docs/archive/session-notes/MCP_STARTUP_FIXES.md"
+        "path": "docs/archive/session-notes/mcp-startup-fixes-2.md"
       },
       "name": "LEANTIME_HEALTH_URL",
       "purpose": "service_url",
@@ -10976,7 +10976,7 @@
         "anchor": "L300",
         "excerpt_hash": "1c49fc1adfd45def3f1ca3b7b42656fa056534a53005b908307dc288c381a6c4",
         "excerpt_snippet": "- **Token Limit Fix**: `docker/mcp-servers/leantime-bridge/LEANTIME_TOKEN_LIMIT_FIX.md`",
-        "path": "docs/archive/completed-projects/LEANTIME_MCP_INTEGRATION_COMPLETE.md"
+        "path": "docs/archive/completed-projects/leantime-mcp-integration-complete-2.md"
       },
       "name": "LEANTIME_TOKEN_LIMIT_FIX",
       "purpose": "unknown",
@@ -11172,7 +11172,7 @@
         "anchor": "L49",
         "excerpt_hash": "f693222aaf07e34b53bdc723132a970bdd6e3ec873e4379ee2ca136907428276",
         "excerpt_snippet": "MCP_MAX_TOKENS = 10000",
-        "path": "docs/archive/mcp-servers/LEANTIME_TOKEN_LIMIT_FIX.md"
+        "path": "docs/archive/mcp-servers/leantime-token-limit-fix-2.md"
       },
       "name": "MCP_MAX_TOKENS",
       "purpose": "unknown",
@@ -11198,7 +11198,7 @@
         "anchor": "L2",
         "excerpt_hash": "d8a79ba3756c1139b0990d83be7218af79f9eb4318533e3176e1fdac05fc4ad0",
         "excerpt_snippet": "id: MCP_TOKEN_LIMIT_AUDIT",
-        "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_AUDIT.md"
+        "path": "docs/archive/completed-projects/mcp-token-limit-audit-2.md"
       },
       "name": "MCP_TOKEN_LIMIT_AUDIT",
       "purpose": "unknown",
@@ -11211,7 +11211,7 @@
         "anchor": "L2",
         "excerpt_hash": "6aef647c279d519029ce4afcf9e3767af1b46922a73805f43ef5f6116fc438ce",
         "excerpt_snippet": "id: MCP_TOKEN_LIMIT_FIX_SUMMARY",
-        "path": "docs/archive/completed-projects/MCP_TOKEN_LIMIT_FIX_SUMMARY.md"
+        "path": "docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md"
       },
       "name": "MCP_TOKEN_LIMIT_FIX_SUMMARY",
       "purpose": "unknown",
@@ -11477,7 +11477,7 @@
         "anchor": "L50",
         "excerpt_hash": "d289eec44f23a2c3a602ba958522bbf4a50e0870919b0d16325a5c84c5ab0d77",
         "excerpt_snippet": "SAFE_TOKEN_BUDGET = 9000 # 10% headroom",
-        "path": "docs/archive/mcp-servers/LEANTIME_TOKEN_LIMIT_FIX.md"
+        "path": "docs/archive/mcp-servers/leantime-token-limit-fix-2.md"
       },
       "name": "SAFE_TOKEN_BUDGET",
       "purpose": "unknown",

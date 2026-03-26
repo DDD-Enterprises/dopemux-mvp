@@ -41,6 +41,8 @@ MCP_NAME_MAPPING = {
     "gpt-researcher-legacy": "gpt-researcher",  # Old name fallback
     "claude-context": "dopemux-claude-context",
     "desktop-commander": "dopemux-desktop-commander",
+    "morphllm-fast-apply": "dopemux-morphllm-fast-apply",
+    "morph-llm": "dopemux-morphllm-fast-apply",
     "magic-mcp": "magic-mcp",
     "playwright": "playwright",
     "sequential_thinking": "dopemux-mas-sequential-thinking",

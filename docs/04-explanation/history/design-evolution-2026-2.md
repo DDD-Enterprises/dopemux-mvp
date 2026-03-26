@@ -44,22 +44,22 @@ Clickable index of deep-dive history for every service component.
 
 | Service Group | Components | Description |
 |:--------------|:-----------|:------------|
-| [1. ConPort](../../archive/services/history/CONPORT_MASTER_HISTORY.md) | `conport`, `postgresql` | Context Portal & Knowledge Graph. |
-| [2. ADHD Engine](../../archive/services/history/ADHD_ENGINE_MASTER_HISTORY.md) | `adhd_engine` | Proactive state tracking & risk assessment. |
-| [3. Task Orchestrator](../../archive/services/history/TASK_ORCHESTRATOR_MASTER_HISTORY.md) | `task-orchestrator` | PM Plane connector (Leantime <-> AI). |
-| [4. Serena](../../archive/services/history/SERENA_MASTER_HISTORY.md) | `serena` | Cognitive Assistant & LSP Server. |
-| [5. DopeconBridge](../../archive/services/history/DOPECON_BRIDGE_MASTER_HISTORY.md) | `dopecon-bridge` | Central Event Bus (Redis Streams). |
-| [6. Working Memory](../../archive/services/history/WORKING_MEMORY_ASSISTANT_MASTER_HISTORY.md) | `wma` | Snapshotting & Context Recovery. |
+| [1. ConPort](../../archive/services/history/conport-master-history-2.md) | `conport`, `postgresql` | Context Portal & Knowledge Graph. |
+| [2. ADHD Engine](../../archive/services/history/adhd-engine-master-history-2.md) | `adhd_engine` | Proactive state tracking & risk assessment. |
+| [3. Task Orchestrator](../../archive/services/history/task-orchestrator-master-history-2.md) | `task-orchestrator` | PM Plane connector (Leantime <-> AI). |
+| [4. Serena](../../archive/services/history/serena-master-history-2.md) | `serena` | Cognitive Assistant & LSP Server. |
+| [5. DopeconBridge](../../archive/services/history/dopecon-bridge-master-history-2.md) | `dopecon-bridge` | Central Event Bus (Redis Streams). |
+| [6. Working Memory](../../archive/services/history/working-memory-assistant-master-history-2.md) | `wma` | Snapshotting & Context Recovery. |
 | [7. Session Manager](../../archive/services/history/SESSION_DASHBOARD_MASTER_HISTORY.md) | `session-manager` | Multi-AI Layout & TUI. |
-| [8. Dope Context](../../archive/services/history/DOPE_CONTEXT_MASTER_HISTORY.md) | `dope-context` | Semantic search & indexing. |
-| [9. Genetic Agent](../../archive/services/history/GENETIC_ML_SERVICES_MASTER_HISTORY.md) | `genetic`, `ml-risk` | Code repair eugenics & risk modeling. |
-| [10. Monitoring](../../archive/services/history/MONITORING_MASTER_HISTORY.md) | `monitoring`, `grafana` | Prometheus/Grafana stack. |
-| [11. Intelligence](../../archive/services/history/INTELLIGENCE_SUPPORT_MASTER_HISTORY.md) | `brain`, `prediction` | Meta-prompting & load prediction. |
-| [12. Task Execution](../../archive/services/history/TASK_EXECUTION_MASTER_HISTORY.md) | `agents`, `router` | Infrastructure agents & routing. |
-| [13. Environment](../../archive/services/history/ENVIRONMENT_SERVICES_MASTER_HISTORY.md) | `watcher`, `desktop` | Workspace sensory layer. |
-| [14. Integrations](../../archive/services/history/INTEGRATION_SERVICES_MASTER_HISTORY.md) | `slack`, `litellm` | External world connectors. |
-| [15. Data & Query](../../archive/services/history/DATA_QUERY_SERVICES_MASTER_HISTORY.md) | `dddpg`, `kg-ui` | Multi-workspace recall & TUI. |
-| [16. Notifications](../../archive/services/history/NOTIFICATIONS_UI_MASTER_HISTORY.md) | `notifier`, `dashboard` | User Interface & interruptions. |
+| [8. Dope Context](../../archive/services/history/dope-context-master-history-2.md) | `dope-context` | Semantic search & indexing. |
+| [9. Genetic Agent](../../archive/services/history/genetic-ml-services-master-history-2.md) | `genetic`, `ml-risk` | Code repair eugenics & risk modeling. |
+| [10. Monitoring](../../archive/services/history/monitoring-master-history-2.md) | `monitoring`, `grafana` | Prometheus/Grafana stack. |
+| [11. Intelligence](../../archive/services/history/intelligence-support-master-history-2.md) | `brain`, `prediction` | Meta-prompting & load prediction. |
+| [12. Task Execution](../../archive/services/history/task-execution-master-history-2.md) | `agents`, `router` | Infrastructure agents & routing. |
+| [13. Environment](../../archive/services/history/environment-services-master-history-2.md) | `watcher`, `desktop` | Workspace sensory layer. |
+| [14. Integrations](../../archive/services/history/integration-services-master-history-2.md) | `slack`, `litellm` | External world connectors. |
+| [15. Data & Query](../../archive/services/history/data-query-services-master-history-2.md) | `dddpg`, `kg-ui` | Multi-workspace recall & TUI. |
+| [16. Notifications](../../archive/services/history/notifications-ui-master-history-2.md) | `notifier`, `dashboard` | User Interface & interruptions. |
 
 ### 🕵️‍♀️ Archaeology & Vaporware
 

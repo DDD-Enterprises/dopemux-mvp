@@ -1,18 +1,89 @@
-from rich.text import Text
+"""Dopemux TUI Dashboard — ADHD-optimized monitoring.
 
-# src/dopemux/ui/dashboard.py
-from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Header, Footer, Static, DataTable, Sparkline
-from textual.reactive import reactive
-from rich.table import Table
-from rich.panel import Panel
-from rich.progress import Progress, BarColumn, TextColumn
-import httpx
+Launch via ``dopemux dashboard`` or ``dopemux dashboard --demo``.
+"""
+
+from __future__ import annotations
+
 import asyncio
+import subprocess
+import sys
+from pathlib import Path
+
+import httpx
+from textual.app import App, ComposeResult
+from textual.reactive import reactive
+from textual.widgets import DataTable, Footer, Header, Static
+
+from .theme import Glyphs, StatusChip, styled_panel, styled_table
+from .voice import VoiceEngine, VoiceMode
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Demo data (used when --demo is active)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEMO_ADHD_STATE = {
+    "energy_level": "high",
+    "attention_state": "focused",
+    "cognitive_load": 0.42,
+    "flow_state": {"active": True},
+    "break_warning": {"minutes_until": 8},
+}
+
+DEMO_SERVICES = [
+    ("ConPort", "✓", "3ms", "v2.1"),
+    ("ADHD Engine", "✓", "12ms", "v1.4"),
+    ("Serena", "✓", "5ms", "v2.0"),
+    ("MCP Bridge", "✗", "timeout", "—"),
+]
+
+DEMO_COGNITIVE_HISTORY = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.6, 0.5, 0.42, 0.38, 0.35, 0.40]
+DEMO_VELOCITY_HISTORY = [3, 4, 5, 5, 6, 7, 6, 5, 4, 6, 7, 8]
+DEMO_SWITCHES_HISTORY = [2, 1, 2, 3, 5, 3, 2, 1, 2, 1, 1, 0]
+
+VOICE = VoiceEngine(mode=VoiceMode.UX_SCOLD, is_scattered=True)
+
+
+def _grid_table() -> object:
+    """Return a borderless themed table for compact dashboard facts."""
+    return styled_table("", "Signal", "State", show_header=False, box=None, expand=True)
+
+
+def _energy_state(energy: str, cognitive_load: float) -> tuple[str, str, str]:
+    """Map dashboard energy/load state to branded glyphs and styles."""
+    if cognitive_load >= 0.85:
+        return "error", "error", "🚨"
+    mapping = {
+        "low": ("mint.soft", "panel.border", "💧"),
+        "medium": ("info", "info", "⚡"),
+        "high": ("warning", "warning", "🔥"),
+    }
+    return mapping.get(energy, ("text.dim", "panel.border", "⚡"))
+
+
+def _attention_state(attention: str) -> tuple[str, str]:
+    mapping = {
+        "focused": ("info", "Focused"),
+        "scattered": ("magenta", "Scattered"),
+    }
+    return mapping.get(attention, ("text.dim", attention.title()))
+
+
+def _load_state(value: float) -> tuple[str, str]:
+    if value >= 0.85:
+        return "error", "Critical"
+    if value >= 0.65:
+        return "warning", "Elevated"
+    return "mint.soft", "Stable"
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Panels
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 
 class ADHDStatePanel(Static):
-    """Top panel - critical state (Tier 1)"""
+    """Top panel — critical ADHD state (Tier 1)."""
 
     energy = reactive("medium")
     attention = reactive("focused")
@@ -21,127 +92,157 @@ class ADHDStatePanel(Static):
     break_in = reactive(15)
     is_connected = reactive(True)
 
-    def compose(self) -> ComposeResult:
-        yield Static(id="adhd-state")
-
     async def on_mount(self) -> None:
         self.set_interval(1.0, self.update_state)
 
     async def update_state(self) -> None:
+        app: DopemuxDashboard = self.app  # type: ignore[assignment]
+        if app.demo:
+            self._apply(DEMO_ADHD_STATE)
+            return
         async with httpx.AsyncClient() as client:
             try:
-                # ADHD Engine at 8001
-                resp = await client.get("http://localhost:8001/api/v1/state?user_id=default", timeout=0.5)
+                resp = await client.get(
+                    "http://localhost:8001/api/v1/state?user_id=default",
+                    timeout=0.5,
+                )
                 if resp.status_code == 200:
-                    data = resp.json()
-                    self.energy = data.get("energy_level", "medium")
-                    self.attention = data.get("attention_state", "focused")
-                    self.cognitive_load = data.get("cognitive_load", 0.5)
-                    self.in_flow = data.get("flow_state", {}).get("active", False)
-                    # Use a default if break warning structure is missing
-                    self.break_in = data.get("break_warning", {}).get("minutes_until", 99)
-                    self.is_connected = True
+                    self._apply(resp.json())
                 else:
                     self.is_connected = False
             except Exception:
                 self.is_connected = False
 
+    def _apply(self, data: dict) -> None:
+        self.energy = data.get("energy_level", "medium")
+        self.attention = data.get("attention_state", "focused")
+        self.cognitive_load = data.get("cognitive_load", 0.5)
+        self.in_flow = data.get("flow_state", {}).get("active", False)
+        self.break_in = data.get("break_warning", {}).get("minutes_until", 99)
+        self.is_connected = True
 
-    def render(self) -> Panel:
+    def render(self) -> object:
         if not self.is_connected:
-            return Panel(
-                Text("⚠️  ADHD Engine Disconnected", style="bold red", justify="center"),
+            return styled_panel(
+                (
+                    f"{StatusChip.BLOCKER.render('ADHD Engine disconnected.')}\n\n"
+                    f"[magenta]{VOICE.get_roast()}[/]\n"
+                    f"[text.dim]NEXT:[/] Bring the telemetry service back online."
+                ),
                 title="ADHD STATE",
-                border_style="$red"
+                border_style="error",
             )
 
-        # Create rich panel with current state
-        energy_icon = {"high": "⚡↑", "medium": "⚡=", "low": "⚡↓"}.get(self.energy, "⚡")
-        attention_icon = {"focused": "👁️●", "scattered": "👁️🌀"}.get(self.attention, "👁️")
+        energy_style, border_style, energy_icon = _energy_state(self.energy, self.cognitive_load)
+        attention_style, attention_label = _attention_state(self.attention)
+        load_style, load_label = _load_state(self.cognitive_load)
         load_bar = self._make_gauge(self.cognitive_load)
-        flow_status = "🌊 Active" if self.in_flow else ""
-        break_warning = f"☕ in {self.break_in}m" if self.break_in < 20 else ""
-
-        table = Table.grid(padding=1)
-        table.add_column(style="bold $green")
-        table.add_column(style="bold $mauve")
-        table.add_column(style="bold $yellow")
-
-        table.add_row(
-            f"{energy_icon} {self.energy.title()}",
-            f"{attention_icon} {self.attention.title()}",
-            f"🧠 {load_bar} {int(self.cognitive_load * 100)}%"
+        flow_status = (
+            f"[info]{Glyphs.RUNNING} Flow ritual active[/]"
+            if self.in_flow
+            else "[text.dim]No active flow lock[/]"
         )
-        table.add_row(flow_status, break_warning, "")
+        break_warning = (
+            f"[violet]{StatusChip.AFTERCARE.render(f'Break in {self.break_in}m.')}[/]\n"
+            f"[violet]{VOICE.get_aftercare()}[/]"
+            if self.break_in < 20
+            else "[text.dim]No break pressure yet[/]"
+        )
 
-        return Panel(table, title="ADHD STATE", border_style="$green")
+        table = _grid_table()
+        table.add_row(
+            f"[label]{energy_icon} Energy[/]",
+            f"[{energy_style}]{self.energy.title()}[/]",
+        )
+        table.add_row(
+            "[label]🧠 Cognitive load[/]",
+            f"[{load_style}]{load_label}[/] [text.dim]{load_bar} {int(self.cognitive_load * 100)}%[/]",
+        )
+        table.add_row(
+            "[label]👁 Attention[/]",
+            f"[{attention_style}]{attention_label}[/]",
+        )
+        table.add_row("[label]Flow[/]", flow_status)
+        table.add_row("[label]Aftercare[/]", break_warning)
 
-    def _make_gauge(self, value: float) -> str:
-        """Create ASCII gauge"""
+        return styled_panel(table, title="[blink]🧠 ADHD STATE[/blink]", border_style=border_style)
+
+    @staticmethod
+    def _make_gauge(value: float) -> str:
         filled = int(value * 10)
         return f"[{'|' * filled}{'·' * (10 - filled)}]"
 
-class ProductivityPanel(Static):
-    """Tasks and velocity metrics (Tier 2)"""
 
-    tasks_completed = reactive(8)
-    tasks_total = reactive(10)
-    decisions_today = reactive(23)
-    velocity = reactive([3, 4, 5, 5, 6, 7, 6, 5, 4])  # sparkline data
+class ProductivityPanel(Static):
+    """Tasks and velocity metrics (Tier 2)."""
+
+    tasks_completed = reactive(0)
+    tasks_total = reactive(0)
+    decisions_today = reactive(0)
+    velocity = reactive([0, 0, 0, 0, 0, 0, 0, 0, 0])
 
     async def on_mount(self) -> None:
         self.set_interval(30.0, self.update_metrics)
+        await self.update_metrics()
 
     async def update_metrics(self) -> None:
+        app: DopemuxDashboard = self.app  # type: ignore[assignment]
+        if app.demo:
+            self.tasks_completed = 8
+            self.tasks_total = 10
+            self.decisions_today = 23
+            self.velocity = DEMO_VELOCITY_HISTORY
+            return
         async with httpx.AsyncClient() as client:
             try:
-                # ADHD Engine tasks API at 8001
-                tasks_resp = await client.get("http://localhost:8001/api/v1/tasks")
-                if tasks_resp.status_code == 200:
-                    tasks_data = tasks_resp.json()
-                    self.tasks_completed = tasks_data.get("completed", 0)
-                    self.tasks_total = tasks_data.get("total", 0)
-                
-                # ConPort decisions API at 8005
-                decisions_resp = await client.get("http://localhost:8005/api/adhd/decisions/recent")
-                if decisions_resp.status_code == 200:
-                    decisions_data = decisions_resp.json()
-                    self.decisions_today = len(decisions_data.get("today", []))
+                resp = await client.get("http://localhost:8001/api/v1/tasks", timeout=1.0)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    self.tasks_completed = data.get("completed", 0)
+                    self.tasks_total = data.get("total", 0)
+            except Exception:
+                pass
+            try:
+                resp = await client.get(
+                    "http://localhost:8005/api/adhd/decisions/recent", timeout=1.0
+                )
+                if resp.status_code == 200:
+                    self.decisions_today = len(resp.json().get("today", []))
             except Exception:
                 pass
 
+    def render(self) -> object:
+        rate = self.tasks_completed / self.tasks_total if self.tasks_total > 0 else 0
+        bar = "█" * int(rate * 10) + "░" * (10 - int(rate * 10))
+        sparkline = "".join("▁▂▃▄▅▆▇█"[min(v, 7)] for v in self.velocity)
 
-    def render(self) -> Panel:
-        completion_rate = self.tasks_completed / self.tasks_total if self.tasks_total > 0 else 0
-        bar = "█" * int(completion_rate * 10) + "░" * (10 - int(completion_rate * 10))
-
-        sparkline = "".join(["▁▂▃▄▅▆▇█"[min(v, 7)] for v in self.velocity])
-
-        table = Table.grid(padding=1)
-        table.add_column()
-        table.add_column()
-
+        table = _grid_table()
         table.add_row(
-            f"Tasks: {self.tasks_completed}/{self.tasks_total} ({int(completion_rate * 100)}%) {bar}",
-            f"Decisions: {self.decisions_today} (↑5 today)"
+            f"[label]{Glyphs.CODE} Tasks[/]",
+            f"[mint.soft]{self.tasks_completed}/{self.tasks_total}[/] [text.dim]({int(rate * 100)}%) {bar}[/]",
         )
         table.add_row(
-            f"Velocity: {sparkline} 7.2/day",
-            f"Completion Rate: {int(completion_rate * 100)}% (target: 85%)"
+            f"[label]{Glyphs.INFO} Decisions[/]",
+            f"[info]{self.decisions_today}[/] [text.dim]logged today[/]",
+        )
+        table.add_row("[label]Velocity[/]", f"[info]{sparkline}[/]")
+        table.add_row(
+            "[label]Completion[/]",
+            f"{StatusChip.LOGGED.render(f'{int(rate * 100)}% locked')} [text.dim](target: 85%)[/]",
         )
 
-        return Panel(table, title="PRODUCTIVITY", border_style="blue")
+        return styled_panel(table, title="🚀 MISSION VELOCITY", border_style="info")
+
 
 class ServicesGrid(Static):
-    """Service health matrix (Tier 2)"""
+    """Service health matrix (Tier 2)."""
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="services")
+        yield DataTable(id="services-table")
 
     async def on_mount(self) -> None:
         table = self.query_one(DataTable)
-        table.add_columns("Service", "Status", "Latency", "Metrics")
-
+        table.add_columns("Service", "Status", "Latency", "Version")
         self.set_interval(30.0, self.update_services)
         await self.update_services()
 
@@ -149,7 +250,12 @@ class ServicesGrid(Static):
         table = self.query_one(DataTable)
         table.clear()
 
-        # Fetch all service health
+        app: DopemuxDashboard = self.app  # type: ignore[assignment]
+        if app.demo:
+            for row in DEMO_SERVICES:
+                table.add_row(*row)
+            return
+
         services = [
             ("ConPort", "http://localhost:8005/health"),
             ("ADHD Engine", "http://localhost:8001/health"),
@@ -163,98 +269,52 @@ class ServicesGrid(Static):
                     resp = await client.get(url, timeout=2.0)
                     if resp.status_code == 200:
                         data = resp.json()
-                        status = "✓" if data.get("status") == "healthy" else "✗"
+                        status = (
+                            f"{Glyphs.SUCCESS} LIVE"
+                            if data.get("status") == "healthy"
+                            else f"{Glyphs.ERROR} BLOCKER"
+                        )
                         latency = f"{data.get('latency_ms', 0)}ms"
-                        metrics = str(data.get("metrics", ""))
-                        table.add_row(name, status, latency, metrics)
+                        version = data.get("version", "—")
+                        table.add_row(name, status, latency, version)
                     else:
-                        table.add_row(name, "✗", "error", str(resp.status_code))
-                except Exception as e:
-                    table.add_row(name, "✗", "timeout", str(e)[:20])
+                        table.add_row(name, f"{Glyphs.ERROR} BLOCKER", "error", str(resp.status_code))
+                except Exception as exc:
+                    table.add_row(name, f"{Glyphs.ERROR} BLOCKER", "timeout", str(exc)[:20])
+
 
 class TrendsPanel(Static):
-    """Sparkline trends (Tier 3)"""
+    """Sparkline trends (Tier 3)."""
 
-    cognitive_history = reactive([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3])
-    velocity_history = reactive([3, 4, 5, 5, 6, 7, 6, 5, 4, 3, 2, 1])
-    switches_history = reactive([2, 1, 2, 3, 5, 3, 2, 1, 2, 1, 1, 1])
+    cognitive_history = reactive(DEMO_COGNITIVE_HISTORY)
+    velocity_history = reactive(DEMO_VELOCITY_HISTORY)
+    switches_history = reactive(DEMO_SWITCHES_HISTORY)
 
-    def render(self) -> Panel:
-        def sparkline(data):
+    def render(self) -> object:
+        def sparkline(data: list[float | int]) -> str:
             chars = "▁▂▃▄▅▆▇█"
-            normalized = [int((v / (max(data) or 1)) * 7) for v in data]
-            return "".join([chars[min(i, 7)] for i in normalized])
+            mx = max(data) or 1
+            return "".join(chars[min(int((v / mx) * 7), 7)] for v in data)
 
-        table = Table.grid(padding=1)
-        table.add_column(style="dim")
-        table.add_column()
-        table.add_column(style="dim")
+        table = _grid_table()
+        table.add_row("[label]Cognitive load[/]", f"[mint.soft]{sparkline(self.cognitive_history)}[/] [text.dim](last 2h)[/]")
+        table.add_row("[label]Task velocity[/]", f"[info]{sparkline(self.velocity_history)}[/] [text.dim](last 7d)[/]")
+        table.add_row("[label]Context switches[/]", f"[warning]{sparkline(self.switches_history)}[/] [text.dim](last 24h)[/]")
 
-        table.add_row("Cognitive Load:", sparkline(self.cognitive_history), "(last 2h)")
-        table.add_row("Task Velocity:", sparkline(self.velocity_history), "(last 7d)")
-        table.add_row("Context Switches:", sparkline(self.switches_history), "(last 24h)")
+        return styled_panel(table, title="📈 COGNITIVE TRENDS", border_style="warning")
 
-        return Panel(table, title="TRENDS", border_style="yellow")
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# App
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 
 class DopemuxDashboard(App):
-    """Main Textual dashboard app"""
+    """Main Textual dashboard app."""
 
-    CSS = """
-    /* Catppuccin Mocha Palette */
-    $base: #1e1e2e;
-    $mantle: #181825;
-    $crust: #11111b;
-    $text: #cdd6f4;
-    $green: #a6e3a1;
-    $blue: #89b4fa;
-    $mauve: #cba6f7;
-    $red: #f38ba8;
-    $peach: #fab387;
-    $yellow: #f9e2af;
-    $lavender: #b4befe;
-    $overlay0: #6c7086;
-
-    Screen {
-        background: $base;
-        color: $text;
-    }
-
-    #adhd-state {
-        height: 6;
-        border: solid $green;
-        background: $mantle;
-    }
-
-    #productivity {
-        height: 6;
-        border: solid $blue;
-        background: $mantle;
-    }
-
-    #services {
-        height: 8;
-        border: solid $mauve;
-        background: $mantle;
-    }
-
-    #trends {
-        height: 6;
-        border: solid $peach;
-        background: $mantle;
-    }
-    
-    DataTable {
-        background: $mantle;
-        color: $text;
-        border: none;
-    }
-    
-    DataTable > .datatable--header {
-        background: $crust;
-        color: $lavender;
-        text-style: bold;
-    }
-    """
+    CSS_PATH = "dopemux.tcss"
+    TITLE = f"{Glyphs.BRAND_MARK} Dopemux Dashboard"
+    SUB_TITLE = "ADHD-HUD telemetry"
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -262,41 +322,48 @@ class DopemuxDashboard(App):
         ("s", "toggle_services", "Services"),
         ("p", "toggle_patterns", "Patterns"),
         ("d", "show_detail", "Detail"),
+        ("r", "refresh_all", "Refresh"),
     ]
+
+    demo: bool = False
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
+        if self.demo:
+            yield Static("DEMO MODE — using mock data", id="demo-banner")
         yield ADHDStatePanel(id="adhd-state")
         yield ProductivityPanel(id="productivity")
         yield ServicesGrid(id="services")
         yield TrendsPanel(id="trends")
         yield Footer()
 
+    # ── Actions ──
+
     def action_show_detail(self) -> None:
-        """Open tmux popup with detailed view"""
-        import subprocess
-        import sys
-        from pathlib import Path
-        
-        # Locate the detail script relative to this file
-        current_dir = Path(__file__).parent.resolve()
-        detail_script = current_dir / "dashboard_detail.py"
-        
+        """Open tmux popup with detailed view."""
+        detail_script = Path(__file__).parent.resolve() / "dashboard_detail.py"
         if not detail_script.exists():
+            self.notify("[BLOCKER] Detail popup script missing.", severity="error")
             return
 
-        # Use tmux display-popup to show the detail view
-        cmd = [
-            "tmux", "display-popup",
-            "-E",          # Close popup on exit
-            "-w", "95%",   # Width
-            "-h", "90%",   # Height
-            "-T", "Dopemux Details", # Title
-            f"{sys.executable} {detail_script}"
-        ]
-        
         try:
-            subprocess.run(cmd, check=False)
+            subprocess.run(
+                [
+                    "tmux",
+                    "display-popup",
+                    "-E",
+                    "-w",
+                    "95%",
+                    "-h",
+                    "90%",
+                    "-T",
+                    "Dopemux Details",
+                    f"{sys.executable} {detail_script}",
+                ],
+                check=False,
+            )
+        except FileNotFoundError:
+            self.notify("[OVERRIDE] tmux required for detail popup.", severity="warning")
         except Exception:
             pass
 
@@ -315,6 +382,23 @@ class DopemuxDashboard(App):
         widget = self.query_one("#trends")
         widget.display = not widget.display
 
-if __name__ == "__main__":
+    def action_refresh_all(self) -> None:
+        """Force-refresh all panels."""
+        for panel in self.query(ADHDStatePanel):
+            panel.call_later(panel.update_state)
+        for panel in self.query(ProductivityPanel):
+            panel.call_later(panel.update_metrics)
+        for panel in self.query(ServicesGrid):
+            panel.call_later(panel.update_services)
+        self.notify("[LIVE] Refreshing cockpit telemetry.", severity="information")
+
+
+def run_dashboard(*, demo: bool = False) -> None:
+    """Entry point called by ``dopemux dashboard``."""
     app = DopemuxDashboard()
+    app.demo = demo
     app.run()
+
+
+if __name__ == "__main__":
+    run_dashboard(demo="--demo" in sys.argv)
