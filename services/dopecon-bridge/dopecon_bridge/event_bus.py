@@ -79,6 +79,13 @@ class EventBus:
         self.redis_client = await cache_manager.get_client()
 
     async def publish(self, stream: str, event: Event) -> str:
+        # Enforce provenance and idempotency rules for PM plane events
+        if event.type.startswith("pm."):
+            if "idempotency_key" not in event.data:
+                raise ValueError("PM events must include an idempotency_key")
+            if "source" not in event.data and not event.source:
+                raise ValueError("PM events must include a source")
+
         if not self.redis_client:
             await self.initialize()
         msg_id = await self.redis_client.xadd(stream, event.to_redis_fields())

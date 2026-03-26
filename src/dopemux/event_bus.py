@@ -85,6 +85,14 @@ class InMemoryAdapter(EventBus):
         self._patterns: Dict[str, str] = {} # sub_id -> pattern
 
     async def publish(self, event: DopemuxEvent) -> bool:
+        # Enforce provenance and idempotency for PM events
+        if event.envelope.namespace.startswith("pm."):
+            payload = event.payload.get("envelope", event.payload)
+            if "idempotency_key" not in payload:
+                raise ValueError("PM events must include an idempotency_key")
+            if "source" not in payload:
+                raise ValueError("PM events must include a source")
+
         # Dispatch to all subscribers
         # Use list() to allow subscribers to unsubscribe during iteration
         for sub_id, pattern in list(self._patterns.items()):
@@ -145,6 +153,14 @@ class RedisStreamsAdapter(EventBus):
         self.connected = False
 
     async def publish(self, event: DopemuxEvent) -> bool:
+        # Enforce provenance and idempotency for PM events
+        if event.envelope.namespace.startswith("pm."):
+            payload = event.payload.get("envelope", event.payload)
+            if "idempotency_key" not in payload:
+                raise ValueError("PM events must include an idempotency_key")
+            if "source" not in payload:
+                raise ValueError("PM events must include a source")
+
         if not self.connected:
             logger.warning("RedisStreamsAdapter.publish called while disconnected; using local fan-out fallback")
 
