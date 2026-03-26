@@ -7,8 +7,8 @@ SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestr
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
-from app.api import project_workflow
-from dopemux.pm.reads import (
+from app.api import project_workflow  # noqa: E402
+from dopemux.pm.reads import (  # noqa: E402
     PMPriorityQueueResult,
     PMReadProvenance,
     PMReadSupportingSource,
@@ -18,7 +18,7 @@ from dopemux.pm.reads import (
 
 @pytest.mark.asyncio
 async def test_get_project_workflow_queue_passes_through_legality_result(monkeypatch):
-    async def fake_priority_queue(project_id: str):
+    def fake_priority_queue(project_id: str):
         return PMPriorityQueueResult(
             canonical_backend="task-orchestrator",
             project_id=project_id,
@@ -37,7 +37,7 @@ async def test_get_project_workflow_queue_passes_through_legality_result(monkeyp
             queue_items=[{"id": "wf-1", "title": "Review authority"}],
         )
 
-    monkeypatch.setattr(project_workflow, "pm_get_priority_queue", fake_priority_queue)
+    monkeypatch.setattr(project_workflow, "_build_priority_queue_result", lambda project_id: fake_priority_queue(project_id))
 
     result = await project_workflow.get_project_workflow_queue("proj-123")
 
@@ -49,7 +49,7 @@ async def test_get_project_workflow_queue_passes_through_legality_result(monkeyp
 
 @pytest.mark.asyncio
 async def test_get_project_workflow_state_passes_through_allowed_transitions(monkeypatch):
-    async def fake_workflow_state(project_id: str):
+    def fake_workflow_state(project_id: str):
         return PMWorkflowStateResult(
             canonical_backend="task-orchestrator",
             project_id=project_id,
@@ -69,7 +69,7 @@ async def test_get_project_workflow_state_passes_through_allowed_transitions(mon
             allowed_transitions=["start", "block"],
         )
 
-    monkeypatch.setattr(project_workflow, "pm_get_workflow_state", fake_workflow_state)
+    monkeypatch.setattr(project_workflow, "_build_workflow_state_result", lambda project_id: fake_workflow_state(project_id))
 
     result = await project_workflow.get_project_workflow_state("proj-123")
 

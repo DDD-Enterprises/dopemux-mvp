@@ -1,10 +1,8 @@
 import asyncio
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-
-from dopemux.pm.reads import pm_get_priority_queue
 
 from ..clients import mcp_client
 from ..config import settings
@@ -12,6 +10,10 @@ from ..models import Task, TaskPriority, TaskStatus
 
 
 logger = logging.getLogger(__name__)
+
+
+def _utc_now_z() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 class TaskIntegrationService:
@@ -98,8 +100,8 @@ class TaskIntegrationService:
         Route request to canonical workflow authority to get next actionable tasks.
         """
         try:
-            result = await pm_get_priority_queue(project_id)
-            task_records = result.queue_items[:limit]
+            result = await self.get_priority_queue(project_id)
+            task_records = result.get("queue_items", [])[:limit]
             actionable_tasks = [
                 Task(
                     id=str(record.get("id")),
@@ -123,7 +125,8 @@ class TaskIntegrationService:
         self,
         task_id: str,
         new_status: TaskStatus,
-        assigned_to: str = None
+        assigned_to: str = None,
+        project_id: str = "default",
     ) -> Dict[str, Any]:
         """
         Route task status update to canonical backend.
@@ -132,8 +135,9 @@ class TaskIntegrationService:
 
         try:
             await self.mcp_manager.initialize()
-            idempotency_key = f"bridge-trans-{task_id}-{new_status.value}-{datetime.utcnow().timestamp()}"
-            transition_url = f"{settings.task_orchestrator_url}/api/projects/default/workflow/transition"
+            assigned_part = assigned_to or "unassigned"
+            idempotency_key = f"bridge-trans-{project_id}-{task_id}-{new_status.value}-{assigned_part}"
+            transition_url = f"{settings.task_orchestrator_url}/api/projects/{project_id}/workflow/transition"
             transition_payload = {
                 "workflow_id": task_id,
                 "transition": new_status.value,
@@ -175,7 +179,8 @@ class TaskIntegrationService:
                 "new_status": new_status.value,
                 "legality_result": "allowed",
                 "instance": settings.instance_name,
-                "timestamp": datetime.utcnow().isoformat(),
+                "project_id": project_id,
+                "timestamp": _utc_now_z(),
             }
 
             if new_status == TaskStatus.COMPLETED:
@@ -189,8 +194,17 @@ class TaskIntegrationService:
 
     async def get_priority_queue(self, project_id: str) -> Dict[str, Any]:
         """Return the canonical project workflow queue via the PM-plane read layer."""
-        result = await pm_get_priority_queue(project_id)
-        return result.model_dump()
+        await self.mcp_manager.initialize()
+        queue_url = f"{settings.task_orchestrator_url}/api/projects/{project_id}/workflow/queue"
+
+        async with self.mcp_manager.session.get(queue_url) as response:
+            if response.status >= 400:
+                detail = await response.text()
+                raise RuntimeError(
+                    f"Task Orchestrator rejected queue request for {project_id}: "
+                    f"{response.status} {detail}"
+                )
+            return await response.json()
 
 
 task_service = TaskIntegrationService()
