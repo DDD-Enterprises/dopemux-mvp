@@ -38,6 +38,7 @@ markdown>=3.4.0
 
 # Data handling
 pandas>=2.0.0
+sqlalchemy[asyncio]>=2.0.0  # Required by dopecon-bridge models (used in unit tests)
 
 # Development
 pytest>=7.0.0
