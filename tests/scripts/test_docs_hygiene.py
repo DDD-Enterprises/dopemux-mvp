@@ -48,7 +48,7 @@ def test_quarantine_path_is_quarantine_zone():
 
 def test_noncanonical_spec_path_maps_to_reference_spec():
     record = MODULE.classify_path(
-        rel_path="docs/spec/dope-memory/v1/00_overview.md",
+        rel_path="docs/spec/dope-memory/v1/00-overview.md",
         frontmatter_type=None,
         policy=_policy(),
     )
@@ -85,7 +85,7 @@ def test_root_allowlist_keeps_master_index_and_relocates_other_root_docs():
         policy=policy,
     )
     moved = MODULE.classify_path(
-        rel_path="docs/CHECKLIST.md",
+        rel_path="docs/checklist-2.md",
         frontmatter_type="explanation",
         policy=policy,
     )

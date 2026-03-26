@@ -15,7 +15,7 @@ write() {
   echo "WROTE: $path"
 }
 
-write "docs/planes/pm/README.md" <<'EOF'
+write "docs/planes/pm/readme-3.md" <<'EOF'
 # PM Plane
 
 Purpose: Evidence-first audit, minimal redesign, and task-packet implementation of the Dopemux PM / Task-Management plane.
@@ -38,8 +38,8 @@ This plane is governed by strict phases. Do not skip phases.
    - See: docs/planes/pm/_evidence/PM-INV-00.commands.txt
    - Paste outputs into: docs/planes/pm/_evidence/PM-INV-00.outputs/
 2) Write Phase 0 deliverables:
-   - docs/planes/pm/PM_PLANE_INVENTORY.md
-   - docs/planes/pm/PM_PLANE_GAPS.md
+   - docs/planes/pm/pm-plane-inventory-2.md
+   - docs/planes/pm/pm-plane-gaps-2.md
 3) Only after Phase 0 stop conditions clear:
    - Phase 1: PM_FRICTION_MAP.md
    - Phase 2: PM_ADHD_REQUIREMENTS.md + PM_OUTPUT_BOUNDARIES.md
@@ -71,7 +71,7 @@ Do not proceed to Phase 1.
   - PM_PRESETS.md (optional)
 EOF
 
-write "docs/planes/pm/PM_PLANE_INVENTORY.md" <<'EOF'
+write "docs/planes/pm/pm-plane-inventory-2.md" <<'EOF'
 # PM Plane Inventory (Phase 0)
 
 Status: DRAFT (evidence-first)
@@ -129,7 +129,7 @@ Everything here must include what evidence is missing and how to get it.
 | Does event bus persist PM events? | determinism | inspect event bus adapter implementation |
 EOF
 
-write "docs/planes/pm/PM_PLANE_GAPS.md" <<'EOF'
+write "docs/planes/pm/pm-plane-gaps-2.md" <<'EOF'
 # PM Plane Gaps (Phase 0)
 
 Status: DRAFT (evidence-first)
@@ -158,7 +158,7 @@ Use this section to record searches that returned 0 hits.
 | PM CLI commands exist | rg/grep query | 0 hits | discoverability gap |
 EOF
 
-write "docs/planes/pm/PM_FRICTION_MAP.md" <<'EOF'
+write "docs/planes/pm/pm-friction-map-2.md" <<'EOF'
 # PM Friction Map (Phase 1)
 
 Status: PLACEHOLDER
@@ -174,7 +174,7 @@ Required sections:
 - Signal vs noise classification (ADHD-first)
 EOF
 
-write "docs/planes/pm/PM_ADHD_REQUIREMENTS.md" <<'EOF'
+write "docs/planes/pm/pm-adhd-requirements-2.md" <<'EOF'
 # PM ADHD Requirements (Phase 2)
 
 Status: PLACEHOLDER
@@ -190,7 +190,7 @@ Required sections:
 - Proactive surfacing rules (gated by focus state)
 EOF
 
-write "docs/planes/pm/PM_OUTPUT_BOUNDARIES.md" <<'EOF'
+write "docs/planes/pm/pm-output-boundaries-2.md" <<'EOF'
 # PM Output Boundaries (Phase 2)
 
 Status: PLACEHOLDER
@@ -205,7 +205,7 @@ Define output rules:
 - "Never by default" list (noise, duplicates, or trust risks)
 EOF
 
-write "docs/planes/pm/PM_ARCHITECTURE.md" <<'EOF'
+write "docs/planes/pm/pm-architecture-2.md" <<'EOF'
 # PM Architecture (Phase 3)
 
 Status: PLACEHOLDER
@@ -227,7 +227,7 @@ Required sections:
 - Acceptance tests (must be runnable locally and in CI)
 EOF
 
-write "docs/planes/pm/PM_WORKFLOWS_DERIVED.md" <<'EOF'
+write "docs/planes/pm/pm-workflows-derived-2.md" <<'EOF'
 # PM Workflows (Derived, Phase 5)
 
 Status: PLACEHOLDER
@@ -240,7 +240,7 @@ Rules:
 - Recovery patterns are mandatory to document.
 EOF
 
-write "docs/planes/pm/_evidence/README.md" <<'EOF'
+write "docs/planes/pm/_evidence/readme-3.md" <<'EOF'
 # PM Plane Evidence Bundles
 
 This folder stores raw, verbatim evidence captured during PM Plane phases.

@@ -62,7 +62,7 @@ scripts/dopetask launch
 - `docs/instructions/`: TaskX/dopetask instructions
 
 ### Migration Documentation
-- `docs/MIGRATION_TASKX_TO_DOPETASK.md`: Complete migration guide
+- `docs/migration-taskx-to-dopetask.md`: Complete migration guide
 - `docs/DOPETASK_INTEGRATION.md`: Integration contract
 - `docs/07_DOPETASK_INTEGRATION.md`: PM plane documentation
 
@@ -98,8 +98,8 @@ pytest tests/arch/test_dopetask_submodule_contract.py tests/unit/test_dopetask_w
 ```bash
 # Documentation
 TASKX_INTEGRATION_ANALYSIS.md → DOPETASK_INTEGRATION_ANALYSIS.md
-docs/TASKX_KERNEL_INTEGRATION.md → docs/DOPETASK_KERNEL_INTEGRATION.md
-docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md → docs/planes/pm/dopemux/07_DOPETASK_INTEGRATION.md
+docs/TASKX_KERNEL_INTEGRATION.md → docs/dopetask-kernel-integration.md
+docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md → docs/planes/pm/dopemux/07-dopetask-integration-2.md
 
 # Configuration
 .taskx-pin → .dopetask-pin
@@ -193,7 +193,7 @@ gh pr checks <PR_NUMBER>
 1. **Start Here**: `docs/QUICK_START.md`
 2. **Architecture**: `docs/04-explanation/architecture/`
 3. **Development**: `docs/02-how-to/development/`
-4. **Migration Guide**: `docs/MIGRATION_TASKX_TO_DOPETASK.md`
+4. **Migration Guide**: `docs/migration-taskx-to-dopetask.md`
 5. **API Reference**: `docs/03-reference/api/`
 
 ---

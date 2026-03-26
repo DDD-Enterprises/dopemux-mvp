@@ -189,6 +189,6 @@ ENABLE_LEANTIME=1 dopemux mcp start-all
 
 ## Related Documentation
 
-- [ADR-214: MCP Leantime Decoupling](../../docs/90-adr/ADR-214-mcp-leantime-decoupling.md)
+- [ADR-214: MCP Leantime Decoupling](../../docs/90-adr/adr-214-mcp-leantime-decoupling-3.md)
 - [ADR-012: MCP Integration](../../docs/90-adr/DOPEMUX-ADR-012-mcp-integration.md)
 - [Deployment Guide](../../docs/02-how-to/deployment-guide.md)
