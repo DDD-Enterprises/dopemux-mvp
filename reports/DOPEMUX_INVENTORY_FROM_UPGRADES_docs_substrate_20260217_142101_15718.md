@@ -709,7 +709,7 @@
 | adhd_context_preservation | ADHD Context Preservation (ConPort) |  |
 | adhd_engine_lifecycle | ADHD Engine Feature Development |  |
 | adhd_feature_engagement | ADHD Feature Engagement | 02-how-to/adhd-features-user-guide.md |
-| adhd_focus_window_management | Focus Window Management | docs/planes/pm/dopemux/05_ADHD_EXECUTION_MODEL.md |
+| adhd_focus_window_management | Focus Window Management | docs/planes/pm/dopemux/05-adhd-execution-model-2.md |
 | adhd_intelligence_stack | ADHD Intelligence Stack Deployment |  |
 | adhd_optimized_query_execution | ADHD-Optimized Query Execution |  |
 | adhd_performance_alerting | ADHD-Critical Metrics Pipeline |  |
@@ -751,7 +751,7 @@
 | command_safety_interception | Command Safety Interception |  |
 | commit_tracking | Git Commit Event Emission |  |
 | compact_dashboard_setup | Compact ADHD Dashboard Setup | COMPACT-DASHBOARD-COMPLETE.md |
-| complexity_gating | Complexity Gating | docs/planes/pm/dopemux/05_ADHD_EXECUTION_MODEL.md |
+| complexity_gating | Complexity Gating | docs/planes/pm/dopemux/05-adhd-execution-model-2.md |
 | complexity_scoring | Unified Complexity Scoring |  |
 | conport_data_contract_adapters | Component 2: Data Contract Adapters |  |
 | conport_data_persistence | ConPort Data Persistence |  |
@@ -807,7 +807,7 @@
 | external_activity_monitoring | External Activity Monitoring |  |
 | external_integrations |  |  |
 | external_system_sync |  |  |
-| fatigue_mode_protection | Fatigue Mode Protection | docs/planes/pm/dopemux/05_ADHD_EXECUTION_MODEL.md |
+| fatigue_mode_protection | Fatigue Mode Protection | docs/planes/pm/dopemux/05-adhd-execution-model-2.md |
 | feature_implementation |  |  |
 | federated_personalization | Privacy-Preserving Federated Personalization |  |
 | file_activity_monitoring | File Activity Monitoring |  |
@@ -878,20 +878,20 @@
 | parallel_ai_orchestration | Parallel Multi-AI Orchestration |  |
 | parallel_mcp_execution |  |  |
 | partition_reprocessing | Deterministic Partition Reprocessing |  |
-| pattern_a_session_envelope | Session Envelope Capture | docs/investigations/deep-research-report 1.md |
-| pattern_b_tool_audit | Tool-Call Audit Trail | docs/investigations/deep-research-report 1.md |
-| pattern_c_opt_in_injection | Opt-in Injection | docs/investigations/deep-research-report 1.md |
-| pattern_d_dual_adapter | Dual Adapter Mode | docs/investigations/deep-research-report 1.md |
-| pattern_e_transcript_harvesting | Transcript Harvesting | docs/investigations/deep-research-report 1.md |
+| pattern_a_session_envelope | Session Envelope Capture | docs/investigations/deep-research-report-1.md |
+| pattern_b_tool_audit | Tool-Call Audit Trail | docs/investigations/deep-research-report-1.md |
+| pattern_c_opt_in_injection | Opt-in Injection | docs/investigations/deep-research-report-1.md |
+| pattern_d_dual_adapter | Dual Adapter Mode | docs/investigations/deep-research-report-1.md |
+| pattern_e_transcript_harvesting | Transcript Harvesting | docs/investigations/deep-research-report-1.md |
 | persona_standard_workflow |  |  |
 | pipeline_lifecycle_ops | Pipeline Lifecycle Operations |  |
 | pm-task-lifecycle | Canonical PM Task Lifecycle |  |
-| pm_phase_0_inventory | PM Phase 0: Inventory | docs/planes/pm/HUB.md |
-| pm_phase_1_friction | PM Phase 1: Friction Analysis | docs/planes/pm/HUB.md |
-| pm_phase_2_adhd_requirements | PM Phase 2: ADHD Requirements | docs/planes/pm/HUB.md |
-| pm_phase_3_architecture | PM Phase 3: Architecture | docs/planes/pm/HUB.md |
-| pm_phase_4_implementation | PM Phase 4: Implementation | docs/planes/pm/HUB.md |
-| pm_phase_5_derived_workflows | PM Phase 5: Derived Workflows | docs/planes/pm/HUB.md |
+| pm_phase_0_inventory | PM Phase 0: Inventory | docs/planes/pm/hub-3.md |
+| pm_phase_1_friction | PM Phase 1: Friction Analysis | docs/planes/pm/hub-3.md |
+| pm_phase_2_adhd_requirements | PM Phase 2: ADHD Requirements | docs/planes/pm/hub-3.md |
+| pm_phase_3_architecture | PM Phase 3: Architecture | docs/planes/pm/hub-3.md |
+| pm_phase_4_implementation | PM Phase 4: Implementation | docs/planes/pm/hub-3.md |
+| pm_phase_5_derived_workflows | PM Phase 5: Derived Workflows | docs/planes/pm/hub-3.md |
 | pm_plane_initialization | PM Plane Evidence-First Initialization |  |
 | postgres_mirror_sync | Postgres Mirror Synchronization |  |
 | prd_decomposition |  |  |

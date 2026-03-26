@@ -94,7 +94,7 @@ dopemux kernel doctor --timestamp-mode deterministic
 - `.dopetask-pin` is used for runtime/CI behavior.
 - Use `dopemux kernel <lifecycle-command>` for kernel lifecycle operations.
 
-See [docs/DOPETASK_KERNEL_INTEGRATION.md](docs/04-explanation/integrations/DOPETASK_KERNEL_INTEGRATION.md) for the full contract and update/rollback process.
+See [docs/dopetask-kernel-integration.md](docs/04-explanation/integrations/DOPETASK_KERNEL_INTEGRATION.md) for the full contract and update/rollback process.
 
 ---
 
@@ -126,9 +126,9 @@ Dopemux uses a two-plane architecture:
 All cross-service communication is event-driven (Redis PubSub), and shared schemas are reused from [services/shared/src/dopemux_services_shared](services/shared/src/dopemux_services_shared). Service registry and entrypoints are defined in [services/registry.yaml](services/registry.yaml).
 
 > **Diagram:**
-> ![Architecture Diagram Placeholder](docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
+> ![Architecture Diagram Placeholder](docs/04-explanation/architecture/dopemux-architecture-overview-3.md)
 
-See [Architecture Overview](docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md) and [System Bible](docs/94-architecture/system-bible.md) for diagrams and details.
+See [Architecture Overview](docs/04-explanation/architecture/dopemux-architecture-overview-3.md) and [System Bible](docs/94-architecture/system-bible.md) for diagrams and details.
 
 ---
 
@@ -314,7 +314,7 @@ For more, see [Troubleshooting Guide](docs/92-runbooks/workspaces.md).
 ## Further Reading
 
 - [Documentation Index](docs/INDEX.md)
-- [Architecture Overview](docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
+- [Architecture Overview](docs/04-explanation/architecture/dopemux-architecture-overview-3.md)
 - [ConPort Technical Deep Dive](docs/04-explanation/conport-technical-deep-dive.md)
 - [Serena LSP Deep Dive](docs/04-explanation/serena-v2-technical-deep-dive.md)
 - [ADHD Engine](docs/ADHD-ENGINE-DEEP-DIVE-PART1.md)

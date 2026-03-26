@@ -1388,12 +1388,12 @@
       "evidence": {
         "anchor": "L152",
         "excerpt_hash": "d815c6ab701ab85609ab1a86b2dfd3e994b0c33a1195160b0d9c42925888f1e9",
-        "excerpt_snippet": "docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md",
+        "excerpt_snippet": "docs/90-adr/adr-207-architecture-3-0-three-layer-integration-2.md",
         "path": "AGENTS.md"
       },
       "from_path": "AGENTS.md",
       "relation": "mentions",
-      "to_path": "docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md"
+      "to_path": "docs/90-adr/adr-207-architecture-3-0-three-layer-integration-2.md"
     },
     {
       "evidence": {
@@ -1487,23 +1487,23 @@
       "evidence": {
         "anchor": "L197",
         "excerpt_hash": "891c359440b489618269dd16a6289ae63508457bfdee095b665cc9ddfb8132b1",
-        "excerpt_snippet": "docs/planes/pm/HUB.md",
+        "excerpt_snippet": "docs/planes/pm/hub-3.md",
         "path": "AGENTS.md"
       },
       "from_path": "AGENTS.md",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/HUB.md"
+      "to_path": "docs/planes/pm/hub-3.md"
     },
     {
       "evidence": {
         "anchor": "L197",
         "excerpt_hash": "a093f129a300fde7e0c03a690d058b0e7f9d7ee476463b2f6a872b9d7e8ffc6b",
-        "excerpt_snippet": "docs/planes/pm/SUPERVISOR.md",
+        "excerpt_snippet": "docs/planes/pm/supervisor-3.md",
         "path": "AGENTS.md"
       },
       "from_path": "AGENTS.md",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/SUPERVISOR.md"
+      "to_path": "docs/planes/pm/supervisor-3.md"
     },
     {
       "evidence": {
@@ -2456,9 +2456,9 @@
         "anchor": "L243",
         "excerpt_hash": "eba5748082518e3a366d3542ff057479e9a637b0632b2609ee4ec23d9ea7213a",
         "excerpt_snippet": ".claude/config.json",
-        "path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md"
+        "path": "docs/04-explanation/design-decisions/profile-manager-design-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md",
+      "from_path": "docs/04-explanation/design-decisions/profile-manager-design-3.md",
       "relation": "mentions",
       "to_path": ".claude/config.json"
     },
@@ -2467,9 +2467,9 @@
         "anchor": "L481",
         "excerpt_hash": "17edc8cdffc9c6576a543a1b131aaca6d5eb4415d9e9c5d46cc0d789119ffda7",
         "excerpt_snippet": ".claude/modules/cognitive-plane/conport-memory.md",
-        "path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md"
+        "path": "docs/04-explanation/design-decisions/profile-manager-design-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md",
+      "from_path": "docs/04-explanation/design-decisions/profile-manager-design-3.md",
       "relation": "mentions",
       "to_path": ".claude/modules/cognitive-plane/conport-memory.md"
     },
@@ -2478,9 +2478,9 @@
         "anchor": "L480",
         "excerpt_hash": "69f1919194778ba0b831d5b94f7362a430f87a40e526ecd4ec375339c3539707",
         "excerpt_snippet": "docs/ARCHITECTURE-CONSOLIDATION-SYNTHESIS.md",
-        "path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md"
+        "path": "docs/04-explanation/design-decisions/profile-manager-design-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md",
+      "from_path": "docs/04-explanation/design-decisions/profile-manager-design-3.md",
       "relation": "mentions",
       "to_path": "docs/ARCHITECTURE-CONSOLIDATION-SYNTHESIS.md"
     },
@@ -2489,9 +2489,9 @@
         "anchor": "L482",
         "excerpt_hash": "4a7e5cd32b04421856bcb44b9c6853828de971c930b065a7397dacc7234c1b09",
         "excerpt_snippet": "docs/DOPEMUX-CONTEXT-DEEP-DIVE.md",
-        "path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md"
+        "path": "docs/04-explanation/design-decisions/profile-manager-design-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md",
+      "from_path": "docs/04-explanation/design-decisions/profile-manager-design-3.md",
       "relation": "mentions",
       "to_path": "docs/DOPEMUX-CONTEXT-DEEP-DIVE.md"
     },
@@ -2500,9 +2500,9 @@
         "anchor": "L483",
         "excerpt_hash": "2f23f3d866c8a6c436205c8f3bc52bab2298b1494325f76ab491d8ac708e2376",
         "excerpt_snippet": "services/task-orchestrator/adhd_engine.py",
-        "path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md"
+        "path": "docs/04-explanation/design-decisions/profile-manager-design-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/PROFILE-MANAGER-DESIGN.md",
+      "from_path": "docs/04-explanation/design-decisions/profile-manager-design-3.md",
       "relation": "mentions",
       "to_path": "services/task-orchestrator/adhd_engine.py"
     },
@@ -2511,9 +2511,9 @@
         "anchor": "L73",
         "excerpt_hash": "01b60d44c19ed141bc8b4ad2fa31ace28a866a3bcb27253f8c14563f408312a7",
         "excerpt_snippet": "config/dopemux",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+      "from_path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
       "relation": "mentions",
       "to_path": "config/dopemux"
     },
@@ -2522,9 +2522,9 @@
         "anchor": "L523",
         "excerpt_hash": "76d4ba56f4416d278b0af236168581dffa3a914c25241b063c083efe5d85082f",
         "excerpt_snippet": "config/dopemux/templates/code-mode.yaml",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+      "from_path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
       "relation": "mentions",
       "to_path": "config/dopemux/templates/code-mode.yaml"
     },
@@ -2533,9 +2533,9 @@
         "anchor": "L478",
         "excerpt_hash": "d77e95f4c9b3e0230c73bc1f9491dd9560213640d364575b4cc918c471845fea",
         "excerpt_snippet": "config/dopemux/templates/plan-mode.yaml",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+      "from_path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
       "relation": "mentions",
       "to_path": "config/dopemux/templates/plan-mode.yaml"
     },
@@ -2544,9 +2544,9 @@
         "anchor": "L16",
         "excerpt_hash": "d7529f272b93fcc5345ad9123062be99a9a3a61a80cfbbe264323305a11d52c8",
         "excerpt_snippet": "scripts/ui/metamcp_status.py",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+      "from_path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
       "relation": "mentions",
       "to_path": "scripts/ui/metamcp_status.py"
     },
@@ -2555,9 +2555,9 @@
         "anchor": "L168",
         "excerpt_hash": "d7529f272b93fcc5345ad9123062be99a9a3a61a80cfbbe264323305a11d52c8",
         "excerpt_snippet": "scripts/ui/metamcp_status.py",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
-      "from_path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+      "from_path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
       "relation": "mentions",
       "to_path": "scripts/ui/metamcp_status.py"
     },
@@ -2576,23 +2576,23 @@
       "evidence": {
         "anchor": "L382",
         "excerpt_hash": "8bb93886aef40f642209713f23c9fbdcf631db50609a1feb9aa0bd09caa704a1",
-        "excerpt_snippet": "docs/CONTRIBUTING_ZEN.md",
+        "excerpt_snippet": "docs/contributing-zen.md",
         "path": "docs/04-explanation/design-decisions/dev-mode-design.md"
       },
       "from_path": "docs/04-explanation/design-decisions/dev-mode-design.md",
       "relation": "mentions",
-      "to_path": "docs/CONTRIBUTING_ZEN.md"
+      "to_path": "docs/contributing-zen.md"
     },
     {
       "evidence": {
         "anchor": "L660",
         "excerpt_hash": "8bb93886aef40f642209713f23c9fbdcf631db50609a1feb9aa0bd09caa704a1",
-        "excerpt_snippet": "docs/CONTRIBUTING_ZEN.md",
+        "excerpt_snippet": "docs/contributing-zen.md",
         "path": "docs/04-explanation/design-decisions/dev-mode-design.md"
       },
       "from_path": "docs/04-explanation/design-decisions/dev-mode-design.md",
       "relation": "mentions",
-      "to_path": "docs/CONTRIBUTING_ZEN.md"
+      "to_path": "docs/contributing-zen.md"
     },
     {
       "evidence": {
@@ -2753,9 +2753,9 @@
         "anchor": "L91",
         "excerpt_hash": "31e49cd557d1d22fac638d19f0742845bafa72a84750efa23c05697e7dd7f8dc",
         "excerpt_snippet": "scripts/generate-claude-config.py",
-        "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md"
+        "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md"
       },
-      "from_path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md",
+      "from_path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
       "relation": "mentions",
       "to_path": "scripts/generate-claude-config.py"
     },
@@ -2764,9 +2764,9 @@
         "anchor": "L129",
         "excerpt_hash": "31e49cd557d1d22fac638d19f0742845bafa72a84750efa23c05697e7dd7f8dc",
         "excerpt_snippet": "scripts/generate-claude-config.py",
-        "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md"
+        "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md"
       },
-      "from_path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md",
+      "from_path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
       "relation": "mentions",
       "to_path": "scripts/generate-claude-config.py"
     },
@@ -2775,9 +2775,9 @@
         "anchor": "L136",
         "excerpt_hash": "31e49cd557d1d22fac638d19f0742845bafa72a84750efa23c05697e7dd7f8dc",
         "excerpt_snippet": "scripts/generate-claude-config.py",
-        "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md"
+        "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md"
       },
-      "from_path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md",
+      "from_path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
       "relation": "mentions",
       "to_path": "scripts/generate-claude-config.py"
     },
@@ -2786,9 +2786,9 @@
         "anchor": "L137",
         "excerpt_hash": "31e49cd557d1d22fac638d19f0742845bafa72a84750efa23c05697e7dd7f8dc",
         "excerpt_snippet": "scripts/generate-claude-config.py",
-        "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md"
+        "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md"
       },
-      "from_path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md",
+      "from_path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
       "relation": "mentions",
       "to_path": "scripts/generate-claude-config.py"
     },
@@ -2797,9 +2797,9 @@
         "anchor": "L189",
         "excerpt_hash": "31e49cd557d1d22fac638d19f0742845bafa72a84750efa23c05697e7dd7f8dc",
         "excerpt_snippet": "scripts/generate-claude-config.py",
-        "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md"
+        "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md"
       },
-      "from_path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md",
+      "from_path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
       "relation": "mentions",
       "to_path": "scripts/generate-claude-config.py"
     },
@@ -2808,9 +2808,9 @@
         "anchor": "L240",
         "excerpt_hash": "31e49cd557d1d22fac638d19f0742845bafa72a84750efa23c05697e7dd7f8dc",
         "excerpt_snippet": "scripts/generate-claude-config.py",
-        "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md"
+        "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md"
       },
-      "from_path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md",
+      "from_path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
       "relation": "mentions",
       "to_path": "scripts/generate-claude-config.py"
     },
@@ -2819,9 +2819,9 @@
         "anchor": "L295",
         "excerpt_hash": "31e49cd557d1d22fac638d19f0742845bafa72a84750efa23c05697e7dd7f8dc",
         "excerpt_snippet": "scripts/generate-claude-config.py",
-        "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md"
+        "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md"
       },
-      "from_path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md",
+      "from_path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
       "relation": "mentions",
       "to_path": "scripts/generate-claude-config.py"
     },
@@ -2852,9 +2852,9 @@
         "anchor": "L21",
         "excerpt_hash": "f0fc3aec5f703e32c2d570078058a49b168067dd71fe1cd39a84393adeff5029",
         "excerpt_snippet": "docs/EXECUTIVE_INVARIANTS_1PAGER.md",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
-      "from_path": "docs/THREAD_PRIMER_TASKX.md",
+      "from_path": "docs/thread-primer-taskx.md",
       "relation": "mentions",
       "to_path": "docs/EXECUTIVE_INVARIANTS_1PAGER.md"
     },
@@ -2862,12 +2862,12 @@
       "evidence": {
         "anchor": "L20",
         "excerpt_hash": "9196169f4b9a70a00f4800b8e9462c8852f7dc2b13e12eb92eabe17e0bbfa118",
-        "excerpt_snippet": "docs/STATELESS_OPERATOR_MODE_PROMPT.md",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "excerpt_snippet": "docs/stateless-operator-mode-prompt.md",
+        "path": "docs/thread-primer-taskx.md"
       },
-      "from_path": "docs/THREAD_PRIMER_TASKX.md",
+      "from_path": "docs/thread-primer-taskx.md",
       "relation": "mentions",
-      "to_path": "docs/STATELESS_OPERATOR_MODE_PROMPT.md"
+      "to_path": "docs/stateless-operator-mode-prompt.md"
     },
     {
       "evidence": {
@@ -3743,9 +3743,9 @@
         "anchor": "L293",
         "excerpt_hash": "899ec20badd172dc3113b41c9d0383954bbb682df9758092e8003e2e051c67cf",
         "excerpt_snippet": "config/mcp_servers.yaml",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
-      "from_path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+      "from_path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
       "relation": "mentions",
       "to_path": "config/mcp_servers.yaml"
     },
@@ -3754,9 +3754,9 @@
         "anchor": "L363",
         "excerpt_hash": "899ec20badd172dc3113b41c9d0383954bbb682df9758092e8003e2e051c67cf",
         "excerpt_snippet": "config/mcp_servers.yaml",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
-      "from_path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+      "from_path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
       "relation": "mentions",
       "to_path": "config/mcp_servers.yaml"
     },
@@ -3919,9 +3919,9 @@
         "anchor": "L18",
         "excerpt_hash": "bd074547b5e2a817be7a3dc1757fb10a9faa18c050655c7ca5934befaf3358d3",
         "excerpt_snippet": "docs/planes/pm/dopemux/",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
-      "from_path": "docs/planes/pm/dopemux/DOC_GATE.md",
+      "from_path": "docs/planes/pm/dopemux/doc-gate-2.md",
       "relation": "mentions",
       "to_path": "docs/planes/pm/dopemux/"
     },
@@ -3930,9 +3930,9 @@
         "anchor": "L29",
         "excerpt_hash": "bd074547b5e2a817be7a3dc1757fb10a9faa18c050655c7ca5934befaf3358d3",
         "excerpt_snippet": "docs/planes/pm/dopemux/",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
-      "from_path": "docs/planes/pm/dopemux/DOC_GATE.md",
+      "from_path": "docs/planes/pm/dopemux/doc-gate-2.md",
       "relation": "mentions",
       "to_path": "docs/planes/pm/dopemux/"
     },
@@ -3941,9 +3941,9 @@
         "anchor": "L53",
         "excerpt_hash": "bd074547b5e2a817be7a3dc1757fb10a9faa18c050655c7ca5934befaf3358d3",
         "excerpt_snippet": "docs/planes/pm/dopemux/",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
-      "from_path": "docs/planes/pm/dopemux/DOC_GATE.md",
+      "from_path": "docs/planes/pm/dopemux/doc-gate-2.md",
       "relation": "mentions",
       "to_path": "docs/planes/pm/dopemux/"
     },
@@ -3952,9 +3952,9 @@
         "anchor": "L95",
         "excerpt_hash": "6411b6297b66a1146d68f6f0dde2887a927268a358272fb71c5adacd783964bc",
         "excerpt_snippet": "docs/planes/pm/dopemux/DOC_GATE_REPORT.json",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
-      "from_path": "docs/planes/pm/dopemux/DOC_GATE.md",
+      "from_path": "docs/planes/pm/dopemux/doc-gate-2.md",
       "relation": "mentions",
       "to_path": "docs/planes/pm/dopemux/DOC_GATE_REPORT.json"
     },
@@ -3963,9 +3963,9 @@
         "anchor": "L30",
         "excerpt_hash": "1fe40290d487fd5fa187560922c80653b2a180e2cf54cf91581a4447309526d6",
         "excerpt_snippet": "docs/planes/pm/dopemux/doc_gate_rules.json",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
-      "from_path": "docs/planes/pm/dopemux/DOC_GATE.md",
+      "from_path": "docs/planes/pm/dopemux/doc-gate-2.md",
       "relation": "mentions",
       "to_path": "docs/planes/pm/dopemux/doc_gate_rules.json"
     },
@@ -3974,9 +3974,9 @@
         "anchor": "L19",
         "excerpt_hash": "80e2e97ab191020fbff0d67a802e116b01863504deeb4022e26cd9956465b8f5",
         "excerpt_snippet": "docs/planes/pm/dopemux/research/",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
-      "from_path": "docs/planes/pm/dopemux/DOC_GATE.md",
+      "from_path": "docs/planes/pm/dopemux/doc-gate-2.md",
       "relation": "mentions",
       "to_path": "docs/planes/pm/dopemux/research/"
     },
@@ -4732,12 +4732,12 @@
       "evidence": {
         "anchor": "L7",
         "excerpt_hash": "27f325497f3796965bf67c49b8a67856a25b5b3b58ac8e50000701ad88d07252",
-        "excerpt_snippet": "docs/90-adr/ADR-203-task-orchestrator-un-deprecation.md",
+        "excerpt_snippet": "docs/90-adr/adr-203-task-orchestrator-un-deprecation-3.md",
         "path": "scripts/doc_mine.py"
       },
       "from_path": "scripts/doc_mine.py",
       "relation": "mentions",
-      "to_path": "docs/90-adr/ADR-203-task-orchestrator-un-deprecation.md"
+      "to_path": "docs/90-adr/adr-203-task-orchestrator-un-deprecation-3.md"
     },
     {
       "evidence": {
@@ -5689,34 +5689,34 @@
       "evidence": {
         "anchor": "L7",
         "excerpt_hash": "0332d2ef75bb1803b3b4f2415648cdb0a257b316f1302b4b2ee7ee7d99eef7b5",
-        "excerpt_snippet": "docs/planes/pm/PM_PHASE0_CLAIMS_LEDGER.md",
+        "excerpt_snippet": "docs/planes/pm/pm-phase0-claims-ledger-2.md",
         "path": "scripts/pm_phase0_verify.sh"
       },
       "from_path": "scripts/pm_phase0_verify.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_PHASE0_CLAIMS_LEDGER.md"
+      "to_path": "docs/planes/pm/pm-phase0-claims-ledger-2.md"
     },
     {
       "evidence": {
         "anchor": "L6",
         "excerpt_hash": "676d9c15581627748b1f3fc5b50f55ca6b7f954c8c80de147c79edac00c3c1da",
-        "excerpt_snippet": "docs/planes/pm/PM_PLANE_GAPS.md",
+        "excerpt_snippet": "docs/planes/pm/pm-plane-gaps-2.md",
         "path": "scripts/pm_phase0_verify.sh"
       },
       "from_path": "scripts/pm_phase0_verify.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_PLANE_GAPS.md"
+      "to_path": "docs/planes/pm/pm-plane-gaps-2.md"
     },
     {
       "evidence": {
         "anchor": "L5",
         "excerpt_hash": "aee03cd664b4a68c4a6281c90488cdcbeb7740270a1e171dfbf58d5db60f9f0d",
-        "excerpt_snippet": "docs/planes/pm/PM_PLANE_INVENTORY.md",
+        "excerpt_snippet": "docs/planes/pm/pm-plane-inventory-2.md",
         "path": "scripts/pm_phase0_verify.sh"
       },
       "from_path": "scripts/pm_phase0_verify.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_PLANE_INVENTORY.md"
+      "to_path": "docs/planes/pm/pm-plane-inventory-2.md"
     },
     {
       "evidence": {
@@ -5733,23 +5733,23 @@
       "evidence": {
         "anchor": "L6",
         "excerpt_hash": "783237b98e9fc897df6028bd8b6f54764cc3923153d2b427c00c39b2e494f2a5",
-        "excerpt_snippet": "docs/planes/pm/PM_FRICTION_MAP.md",
+        "excerpt_snippet": "docs/planes/pm/pm-friction-map-2.md",
         "path": "scripts/pm_phase1_verify.sh"
       },
       "from_path": "scripts/pm_phase1_verify.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_FRICTION_MAP.md"
+      "to_path": "docs/planes/pm/pm-friction-map-2.md"
     },
     {
       "evidence": {
         "anchor": "L7",
         "excerpt_hash": "daf8199d78fd482fc89e9f0f356b2fcf1b32e0a61ffad963ff003335cbfd5535",
-        "excerpt_snippet": "docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md",
+        "excerpt_snippet": "docs/planes/pm/signal-vs-noise-analysis-2.md",
         "path": "scripts/pm_phase1_verify.sh"
       },
       "from_path": "scripts/pm_phase1_verify.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md"
+      "to_path": "docs/planes/pm/signal-vs-noise-analysis-2.md"
     },
     {
       "evidence": {
@@ -5810,111 +5810,111 @@
       "evidence": {
         "anchor": "L177",
         "excerpt_hash": "7ae8e601dfdbbba09a562e81fe7fc7af2cac580f7f7d4312be892c9c842a4502",
-        "excerpt_snippet": "docs/planes/pm/PM_ADHD_REQUIREMENTS.md",
+        "excerpt_snippet": "docs/planes/pm/pm-adhd-requirements-2.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_ADHD_REQUIREMENTS.md"
+      "to_path": "docs/planes/pm/pm-adhd-requirements-2.md"
     },
     {
       "evidence": {
         "anchor": "L208",
         "excerpt_hash": "0ad82c2d2358f58af73c48df095872296fff1b21ea2129957bbc132869e8c281",
-        "excerpt_snippet": "docs/planes/pm/PM_ARCHITECTURE.md",
+        "excerpt_snippet": "docs/planes/pm/pm-architecture-2.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_ARCHITECTURE.md"
+      "to_path": "docs/planes/pm/pm-architecture-2.md"
     },
     {
       "evidence": {
         "anchor": "L161",
         "excerpt_hash": "783237b98e9fc897df6028bd8b6f54764cc3923153d2b427c00c39b2e494f2a5",
-        "excerpt_snippet": "docs/planes/pm/PM_FRICTION_MAP.md",
+        "excerpt_snippet": "docs/planes/pm/pm-friction-map-2.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_FRICTION_MAP.md"
+      "to_path": "docs/planes/pm/pm-friction-map-2.md"
     },
     {
       "evidence": {
         "anchor": "L193",
         "excerpt_hash": "41afbe8c3771e08afe78a6cd9627f42d648bfe9c98d6c42dc5cb45247dacbb79",
-        "excerpt_snippet": "docs/planes/pm/PM_OUTPUT_BOUNDARIES.md",
+        "excerpt_snippet": "docs/planes/pm/pm-output-boundaries-2.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_OUTPUT_BOUNDARIES.md"
+      "to_path": "docs/planes/pm/pm-output-boundaries-2.md"
     },
     {
       "evidence": {
         "anchor": "L42",
         "excerpt_hash": "676d9c15581627748b1f3fc5b50f55ca6b7f954c8c80de147c79edac00c3c1da",
-        "excerpt_snippet": "docs/planes/pm/PM_PLANE_GAPS.md",
+        "excerpt_snippet": "docs/planes/pm/pm-plane-gaps-2.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_PLANE_GAPS.md"
+      "to_path": "docs/planes/pm/pm-plane-gaps-2.md"
     },
     {
       "evidence": {
         "anchor": "L132",
         "excerpt_hash": "676d9c15581627748b1f3fc5b50f55ca6b7f954c8c80de147c79edac00c3c1da",
-        "excerpt_snippet": "docs/planes/pm/PM_PLANE_GAPS.md",
+        "excerpt_snippet": "docs/planes/pm/pm-plane-gaps-2.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_PLANE_GAPS.md"
+      "to_path": "docs/planes/pm/pm-plane-gaps-2.md"
     },
     {
       "evidence": {
         "anchor": "L41",
         "excerpt_hash": "aee03cd664b4a68c4a6281c90488cdcbeb7740270a1e171dfbf58d5db60f9f0d",
-        "excerpt_snippet": "docs/planes/pm/PM_PLANE_INVENTORY.md",
+        "excerpt_snippet": "docs/planes/pm/pm-plane-inventory-2.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_PLANE_INVENTORY.md"
+      "to_path": "docs/planes/pm/pm-plane-inventory-2.md"
     },
     {
       "evidence": {
         "anchor": "L74",
         "excerpt_hash": "aee03cd664b4a68c4a6281c90488cdcbeb7740270a1e171dfbf58d5db60f9f0d",
-        "excerpt_snippet": "docs/planes/pm/PM_PLANE_INVENTORY.md",
+        "excerpt_snippet": "docs/planes/pm/pm-plane-inventory-2.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_PLANE_INVENTORY.md"
+      "to_path": "docs/planes/pm/pm-plane-inventory-2.md"
     },
     {
       "evidence": {
         "anchor": "L230",
         "excerpt_hash": "eabc5034dea30447444dc1fe49f22f10e809817d27f7e5a3e7616aa95bc2f3bc",
-        "excerpt_snippet": "docs/planes/pm/PM_WORKFLOWS_DERIVED.md",
+        "excerpt_snippet": "docs/planes/pm/pm-workflows-derived-2.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/PM_WORKFLOWS_DERIVED.md"
+      "to_path": "docs/planes/pm/pm-workflows-derived-2.md"
     },
     {
       "evidence": {
         "anchor": "L18",
         "excerpt_hash": "898f0a44cc06e3d6f5cdf9bda45e7682d17ce58576da53a3d8d756c7e2e4318d",
-        "excerpt_snippet": "docs/planes/pm/README.md",
+        "excerpt_snippet": "docs/planes/pm/readme-3.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/README.md"
+      "to_path": "docs/planes/pm/readme-3.md"
     },
     {
       "evidence": {
@@ -5986,12 +5986,12 @@
       "evidence": {
         "anchor": "L243",
         "excerpt_hash": "9647f8b10156027ced9c9a6bba995cd69811a3b0147429ddec8c1578bef13e7d",
-        "excerpt_snippet": "docs/planes/pm/_evidence/README.md",
+        "excerpt_snippet": "docs/planes/pm/_evidence/readme-3.md",
         "path": "scripts/pm_plane_init_populate.sh"
       },
       "from_path": "scripts/pm_plane_init_populate.sh",
       "relation": "mentions",
-      "to_path": "docs/planes/pm/_evidence/README.md"
+      "to_path": "docs/planes/pm/_evidence/readme-3.md"
     },
     {
       "evidence": {
@@ -6635,12 +6635,12 @@
       "evidence": {
         "anchor": "L23",
         "excerpt_hash": "0cc5e0584ffd65a69f8d93c6452f1687d2727df81e8efe7c7ef1611bbb48d4c0",
-        "excerpt_snippet": "docs/02-how-to/PROFILE-USAGE.md",
+        "excerpt_snippet": "docs/02-how-to/profile-usage-3.md",
         "path": "scripts/verify_profile_week2_integration.sh"
       },
       "from_path": "scripts/verify_profile_week2_integration.sh",
       "relation": "mentions",
-      "to_path": "docs/02-how-to/PROFILE-USAGE.md"
+      "to_path": "docs/02-how-to/profile-usage-3.md"
     },
     {
       "evidence": {
@@ -6957,11 +6957,11 @@
         "anchor": "L30",
         "excerpt_hash": "4dc273d669249bc2c4efd99d46162d51ab4568e550662f34858a35a38e0e8ffe",
         "excerpt_snippet": "TaskX is a deterministic CLI implementing:",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "name": "CLI",
       "referenced_in": [
-        "docs/THREAD_PRIMER_TASKX.md",
+        "docs/thread-primer-taskx.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -7120,11 +7120,11 @@
         "anchor": "L37",
         "excerpt_hash": "a1b541b7b16481a53833d5e3842e7cd0f6792266f680d291c6114da011fcd550",
         "excerpt_snippet": "- LLM contract autogen (taskx docs refresh-llm)",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "name": "LLM",
       "referenced_in": [
-        "docs/THREAD_PRIMER_TASKX.md",
+        "docs/thread-primer-taskx.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -7140,7 +7140,7 @@
       "referenced_in": [
         "docs/archive/pipeline-v2/UPGRADE/PROMPT_I3_POLICY_GATES.md",
         "docs/archive/pipeline-v2/UPGRADE_legacy/PROMPT_I3_POLICY_GATES.md",
-        "docs/planes/pm/dopemux/DOC_GATE.md"
+        "docs/planes/pm/dopemux/doc-gate-2.md"
       ],
       "used_for": "unknown"
     },
@@ -7404,11 +7404,11 @@
         "anchor": "L2",
         "excerpt_hash": "5635703865fd5874f3744a9dbf500989542968f60875a2fda2bbd4550861c602",
         "excerpt_snippet": "id: THREAD_PRIMER_TASKX",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "name": "THREAD_PRIMER_TASKX",
       "referenced_in": [
-        "docs/THREAD_PRIMER_TASKX.md"
+        "docs/thread-primer-taskx.md"
       ],
       "used_for": "taskx_config"
     },
@@ -7796,7 +7796,7 @@
         "anchor": "L13",
         "excerpt_hash": "3eaa777a82d5e6f46e012f226af6140088951eb6760256ac4082524edcb7a810",
         "excerpt_snippet": "# TaskX Thread Primer",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "inputs": [],
       "outputs": [],
@@ -8504,7 +8504,7 @@
         "anchor": "L36",
         "excerpt_hash": "79694bf8eaa45889d668246a9ec512e410af6933f75f5b04900a9625e9f17b10",
         "excerpt_snippet": "- Assisted PR flow (taskx pr open)",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "inputs": [],
       "outputs": [],
@@ -8517,7 +8517,7 @@
         "anchor": "L35",
         "excerpt_hash": "7a1011cfc52668d76650a27265e1dfddb311f1088d3c8f5de22da15f778fff87",
         "excerpt_snippet": "- Assisted routing (taskx route)",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "inputs": [],
       "outputs": [],
@@ -8721,7 +8721,7 @@
         "anchor": "L104",
         "excerpt_hash": "009134f92e0fb941bd4a0443fb54f264fbe7662a30676084f7b2ab121db20a40",
         "excerpt_snippet": "- Gate prevents accidental responsibility creep into TaskX.",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "inputs": [],
       "outputs": [],
@@ -8734,7 +8734,7 @@
         "anchor": "L37",
         "excerpt_hash": "a1b541b7b16481a53833d5e3842e7cd0f6792266f680d291c6114da011fcd550",
         "excerpt_snippet": "- LLM contract autogen (taskx docs refresh-llm)",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "inputs": [
         "LLM"
@@ -8915,7 +8915,7 @@
         "anchor": "L26",
         "excerpt_hash": "0db58fa2a2c25ceb7a2036ce9a511fcd5fd7f20ba1f11151d5622738a1481618",
         "excerpt_snippet": "- TaskX remains deterministic and \"boring\" (no policy/memory/MCP intelligence ownership).",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "inputs": [
         "MCP"
@@ -9652,7 +9652,7 @@
         "anchor": "L15",
         "excerpt_hash": "d032b7cf07b6a443d688760c5f27257fbdc23ecc84a769fc69bc8d21eb66eb13",
         "excerpt_snippet": "Define a mechanical gate that prevents doc drift, broken references, and responsibility leakage across the TaskX vs Dopemux Supervisor boundary.",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "inputs": [],
       "outputs": [],
@@ -9665,7 +9665,7 @@
         "anchor": "L71",
         "excerpt_hash": "42f61970cb0dabbdea6e6e53d3b059de7684f032b189cd1be2f208ca07f88b3a",
         "excerpt_snippet": "Exception: 07_TASKX_INTEGRATION.md may mention these only to explicitly deny ownership.",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "inputs": [],
       "outputs": [
@@ -9693,7 +9693,7 @@
         "anchor": "L64",
         "excerpt_hash": "f655b0e63436e5520ebe56fd510de72a6d680611ff74356c115831bcd3780c0f",
         "excerpt_snippet": "Hard rule: TaskX must not be described as owning any of these responsibilities:",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "inputs": [],
       "outputs": [],
@@ -9706,7 +9706,7 @@
         "anchor": "L69",
         "excerpt_hash": "af169988bfc1ba7b3cfb51180453f848b5f68f1a5b99f74bebdda59b9d7cef06",
         "excerpt_snippet": "Implementation: grep/rg for \"TaskX\" in docs and fail if \"TaskX\" appears within N lines of any forbidden ownership verbs:",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
       "inputs": [],
       "outputs": [],
@@ -9719,7 +9719,7 @@
         "anchor": "L30",
         "excerpt_hash": "4dc273d669249bc2c4efd99d46162d51ab4568e550662f34858a35a38e0e8ffe",
         "excerpt_snippet": "TaskX is a deterministic CLI implementing:",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "inputs": [
         "CLI"
@@ -9866,7 +9866,7 @@
         "anchor": "L2",
         "excerpt_hash": "5635703865fd5874f3744a9dbf500989542968f60875a2fda2bbd4550861c602",
         "excerpt_snippet": "id: THREAD_PRIMER_TASKX",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "inputs": [
         "THREAD_PRIMER_TASKX"
@@ -9894,7 +9894,7 @@
         "anchor": "L10",
         "excerpt_hash": "f3ff11d8a5c79fae24501b36b9d1a75e3617ad8bdabacb32a3870b9ab9887b21",
         "excerpt_snippet": "prelude: Thread Primer Taskx (explanation) for dopemux documentation and developer",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "inputs": [],
       "outputs": [],
@@ -9946,7 +9946,7 @@
         "anchor": "L3",
         "excerpt_hash": "2dde1cebc48bf2fb782d3de6cc6fdd33659f429ad510b1e99ff0cd27b8b11469",
         "excerpt_snippet": "title: Thread Primer Taskx",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "inputs": [],
       "outputs": [],
@@ -11094,15 +11094,15 @@
         "///Users/hue/code/dopemux-mvp/QUICK_START.md",
         "///Users/hue/code/dopemux-mvp/README.md",
         "///Users/hue/code/dopemux-mvp/docs/00-MASTER-INDEX.md",
-        "///Users/hue/code/dopemux-mvp/docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md",
+        "///Users/hue/code/dopemux-mvp/docs/90-adr/adr-207-architecture-3-0-three-layer-integration-2.md",
         "00-MASTER-INDEX.md",
         "CHANGELOG.md",
         "INSTALL.md",
         "QUICK_START.md",
         "README.md",
         "docs/00-MASTER-INDEX.md",
-        "docs/planes/pm/HUB.md",
-        "docs/planes/pm/SUPERVISOR.md"
+        "docs/planes/pm/hub-3.md",
+        "docs/planes/pm/supervisor-3.md"
       ]
     },
     {
@@ -11190,12 +11190,12 @@
         "anchor": "root",
         "excerpt_hash": "77c6891512d01894fa754ce4af1d4b17912ecd1fd0f247da9c21f756330508d0",
         "excerpt_snippet": "--- id: UI-IMPLEMENTATION-ROADMAP title: Ui Implementation Roadmap type: explanation owner: '@hu3mann' last_review: '2025-10-17' next_review: '2026-01-15' autho",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "kind": "unknown",
       "markers": [],
       "operation": "apply",
-      "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+      "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
       "targets": []
     },
     {
@@ -11216,12 +11216,12 @@
         "anchor": "root",
         "excerpt_hash": "6aa06188cce4fe54e5c74dc7d50649ec955bca9ec1a85c387b208ddf50394a30",
         "excerpt_snippet": "--- title: 'ADR-208: MCP Configuration Drift Prevention via Service Discovery' status: accepted date: 2026-02-03 author: Dopemux Architecture Team tags: - mcp -",
-        "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md"
+        "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md"
       },
       "kind": "unknown",
       "markers": [],
       "operation": "apply",
-      "path": "docs/90-adr/ADR-208-mcp-config-drift-prevention.md",
+      "path": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
       "targets": [
         "/mcp-drift-audit.md"
       ]
@@ -11231,15 +11231,15 @@
         "anchor": "root",
         "excerpt_hash": "1347d57dfb87de94440b5aa76983dc48f000a4d5eda391caa4c9f87bd105a31c",
         "excerpt_snippet": "--- id: THREAD_PRIMER_TASKX title: Thread Primer Taskx type: explanation owner: '@hu3mann' author: '@hu3mann' date: '2026-02-12' last_review: '2026-02-12' next_",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
       "kind": "unknown",
       "markers": [],
       "operation": "compile",
-      "path": "docs/THREAD_PRIMER_TASKX.md",
+      "path": "docs/thread-primer-taskx.md",
       "targets": [
         "docs/EXECUTIVE_INVARIANTS_1PAGER.md",
-        "docs/STATELESS_OPERATOR_MODE_PROMPT.md"
+        "docs/stateless-operator-mode-prompt.md"
       ]
     },
     {
@@ -12265,14 +12265,14 @@
         "anchor": "root",
         "excerpt_hash": "421f27b38802fa33ed77058ac6d380b13e19d2c2389bd06a2860d60107f7acde",
         "excerpt_snippet": "--- id: 07_mcp_contracts title: 07_Mcp_Contracts type: explanation owner: '@hu3mann' last_review: '2026-02-02' next_review: '2026-05-03' author: '@hu3mann' date",
-        "path": "docs/spec/dope-memory/v1/07_mcp_contracts.md"
+        "path": "docs/spec/dope-memory/v1/07-mcp-contracts.md"
       },
       "kind": "unknown",
       "mentions": [
         "deterministic",
         "packet"
       ],
-      "path": "docs/spec/dope-memory/v1/07_mcp_contracts.md"
+      "path": "docs/spec/dope-memory/v1/07-mcp-contracts.md"
     },
     {
       "declared_outputs": [
@@ -12637,9 +12637,9 @@
         "anchor": "root",
         "excerpt_hash": "5d19b053fad959e91c7e21fa1347cb204c89418901578bf9fc3392c5b1a71c0f",
         "excerpt_snippet": "--- id: adr-214 title: MCP Stack Leantime Decoupling via Compose Overlay type: adr owner: system created: 2026-02-12 status: accepted tags: - mcp - docker - lea",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
-      "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+      "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
       "signals": [
         "deterministic"
       ]
@@ -12649,9 +12649,9 @@
         "anchor": "root",
         "excerpt_hash": "1347d57dfb87de94440b5aa76983dc48f000a4d5eda391caa4c9f87bd105a31c",
         "excerpt_snippet": "--- id: THREAD_PRIMER_TASKX title: Thread Primer Taskx type: explanation owner: '@hu3mann' author: '@hu3mann' date: '2026-02-12' last_review: '2026-02-12' next_",
-        "path": "docs/THREAD_PRIMER_TASKX.md"
+        "path": "docs/thread-primer-taskx.md"
       },
-      "path": "docs/THREAD_PRIMER_TASKX.md",
+      "path": "docs/thread-primer-taskx.md",
       "signals": [
         "deterministic",
         "refusal"
@@ -12734,9 +12734,9 @@
         "anchor": "root",
         "excerpt_hash": "01070590f5f9d9c876057600090adccbe347025dee2260684b918ac428c1fb52",
         "excerpt_snippet": "--- id: 03_MCP_LIFECYCLE_AND_RELIABILITY title: MCP Lifecycle and Reliability type: explanation owner: '@hu3mann' author: '@hu3mann' date: '2026-02-15' last_rev",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
-      "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+      "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
       "signals": [
         "deterministic",
         "refusal"
@@ -12761,9 +12761,9 @@
         "anchor": "root",
         "excerpt_hash": "391989297a5401cb36c8aad843b741d3e8b00304fc2108b6ba23c6d7cd32f7f1",
         "excerpt_snippet": "--- id: DOC_GATE title: Doc Gate type: explanation owner: '@hu3mann' author: '@hu3mann' date: '2026-02-13' last_review: '2026-02-13' next_review: '2026-05-14' p",
-        "path": "docs/planes/pm/dopemux/DOC_GATE.md"
+        "path": "docs/planes/pm/dopemux/doc-gate-2.md"
       },
-      "path": "docs/planes/pm/dopemux/DOC_GATE.md",
+      "path": "docs/planes/pm/dopemux/doc-gate-2.md",
       "signals": [
         "canonical json",
         "deterministic"
@@ -12774,9 +12774,9 @@
         "anchor": "root",
         "excerpt_hash": "421f27b38802fa33ed77058ac6d380b13e19d2c2389bd06a2860d60107f7acde",
         "excerpt_snippet": "--- id: 07_mcp_contracts title: 07_Mcp_Contracts type: explanation owner: '@hu3mann' last_review: '2026-02-02' next_review: '2026-05-03' author: '@hu3mann' date",
-        "path": "docs/spec/dope-memory/v1/07_mcp_contracts.md"
+        "path": "docs/spec/dope-memory/v1/07-mcp-contracts.md"
       },
-      "path": "docs/spec/dope-memory/v1/07_mcp_contracts.md",
+      "path": "docs/spec/dope-memory/v1/07-mcp-contracts.md",
       "signals": [
         "deterministic"
       ]

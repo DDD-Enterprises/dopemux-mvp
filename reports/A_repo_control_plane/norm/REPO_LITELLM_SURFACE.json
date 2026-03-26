@@ -84,11 +84,11 @@
         "anchor": "L122",
         "excerpt_hash": "4bf8693e212ff649146f2f4bec40eb9bb094eaa098724b2efeccb0e970fa64d7",
         "excerpt_snippet": "self.mode = \"ACT\" # PLAN or ACT",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "ACT",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
         "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
         "docs/archive/component-implementations/COMPONENT_4_CONPORT_MCP_WIRING.md"
       ],
@@ -146,12 +146,12 @@
         "compose.yml",
         "docker/mcp-servers/docker-compose.yml",
         "docs/03-reference/serena-v2-mcp-tools.md",
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
         "docs/archive/completed-projects/LEANTIME_MCP_INTEGRATION_COMPLETE.md",
         "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
         "docs/archive/component-implementations/COMPONENT_4_CONPORT_MCP_WIRING.md",
         "docs/archive/conport-sessions/mcp_system_development.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/systems/conport-kg-ui/architecture-decision.md",
         "scripts/ai_startup.sh",
         "scripts/create_llm_archive.sh",
@@ -223,7 +223,7 @@
       "referenced_in": [
         "docker/mcp-servers/docker-compose.yml",
         "docs/02-how-to/mcp-service-discovery-guide.md",
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
         "docs/archive/conport-sessions/mcp_system_development.md"
       ],
       "used_for": "unknown"
@@ -246,11 +246,11 @@
         "anchor": "L177",
         "excerpt_hash": "c90c0a71bd689c24f851ca68893f7a1f7bf9b55d826ca466db9f4146e50cbf25",
         "excerpt_snippet": "# AFTER: libtmux ORM",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "AFTER",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
         "docs/archive/claude-sessions/litellm-fix-summary.md"
       ],
       "used_for": "unknown"
@@ -268,7 +268,7 @@
         "compose.yml",
         "docker/mcp-servers/docker-compose.yml",
         "docs/archive/component-implementations/COMPONENT_4_CONPORT_MCP_WIRING.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "scripts/deploy/deployment/stack_up_all.sh"
       ],
       "used_for": "db_url"
@@ -343,13 +343,13 @@
         "anchor": "L31",
         "excerpt_hash": "293262d9aabef724d9c8c8452d9ef326add2e63786f9a1e4feb420f63a4e7a34",
         "excerpt_snippet": "The MCP Docker stack (`docker/mcp-servers/docker-compose.yml`) was blocked from starting due to a missing external network dependency. The compose file declared",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "name": "ALL",
       "referenced_in": [
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
         "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -411,11 +411,11 @@
         "anchor": "L198",
         "excerpt_hash": "a8376e735aefa90979a984252424f5b5d172923defe49017cb4111739e52ba6a",
         "excerpt_snippet": "## FACT ANCHORS (Repo-derived)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "ANCHORS",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -469,11 +469,11 @@
         "anchor": "L31",
         "excerpt_hash": "293262d9aabef724d9c8c8452d9ef326add2e63786f9a1e4feb420f63a4e7a34",
         "excerpt_snippet": "The MCP Docker stack (`docker/mcp-servers/docker-compose.yml`) was blocked from starting due to a missing external network dependency. The compose file declared",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "name": "ANY",
       "referenced_in": [
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       ],
       "used_for": "unknown"
     },
@@ -497,7 +497,7 @@
         "docs/archive/component-implementations/COMPONENT_4_CONPORT_MCP_WIRING.md",
         "docs/archive/conport-sessions/mcp_system_development.md",
         "docs/archive/mcp-servers/HTTP_SERVER_README.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md",
         "docs/systems/conport-kg-ui/architecture-decision.md",
         "scripts/routing/start_here_routing.sh"
@@ -773,11 +773,11 @@
         "anchor": "L171",
         "excerpt_hash": "6c35e6a6a5b56ffc1e44b63a18860eccd1d0cb55e5692be58908a7f7968751b5",
         "excerpt_snippet": "# BEFORE: subprocess calls",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "BEFORE",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
         "docs/archive/claude-sessions/litellm-fix-summary.md"
       ],
       "used_for": "unknown"
@@ -787,11 +787,11 @@
         "anchor": "L713",
         "excerpt_hash": "e78f540e0f4e53bf18f8fe59694707673d4a98a19b4a3f1b189b5584f580eb32",
         "excerpt_snippet": "BINDINGS = [",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "BINDINGS",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       ],
       "used_for": "unknown"
     },
@@ -866,11 +866,11 @@
         "anchor": "L222",
         "excerpt_hash": "750c016bb0092c2e006ef69e7fe27d823c9be40a084fb036594347068853524b",
         "excerpt_snippet": "BUILTIN_THEMES = {",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "BUILTIN_THEMES",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       ],
       "used_for": "unknown"
     },
@@ -905,12 +905,12 @@
         "anchor": "L27",
         "excerpt_hash": "22f607cdce1a7364d3155af9d6d2b9ea5976789410d64f3f67c4ba9ee692fa9a",
         "excerpt_snippet": "\u2502 \u251c\u2500 Rich CLI Output (primary interface) \u2502",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "CLI",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
         "docs/archive/completed-projects/LEANTIME_MCP_INTEGRATION_COMPLETE.md",
         "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
         "docs/archive/mcp-servers/HTTP_SERVER_README.md",
@@ -937,11 +937,11 @@
         "anchor": "L79",
         "excerpt_hash": "0580335f09a44586bcf0d2a19f30e2af8d656b9162751f8842c5eaba1743daf7",
         "excerpt_snippet": "**Statement**: A failing MCP server MUST be isolated after repeated failures to prevent system-wide latency degradation. The circuit breaker transitions: CLOSED",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "CLOSED",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -1058,11 +1058,11 @@
         "anchor": "L288",
         "excerpt_hash": "aa4cff30ec32b5a43015d1655e9a5caed6a30f29e5205df3b9a3a6aa654c06a6",
         "excerpt_snippet": "| ConPort uses `\\|\\| exit 0` healthcheck | compose.yml line 254 | CONFIRMED \u2014 masks failures |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "CONFIRMED",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md",
         "scripts/repo_control_plane_extract.py"
       ],
@@ -1354,11 +1354,11 @@
         "anchor": "L689",
         "excerpt_hash": "52f76ca2c85256da72e964bf4bb9ea36a710ee7498acf1161160414b4ab15830",
         "excerpt_snippet": "CSS = \"\"\"",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "CSS",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
         "docs/systems/conport-kg-ui/architecture-decision.md"
       ],
       "used_for": "unknown"
@@ -1415,7 +1415,7 @@
       "name": "DEBUG",
       "referenced_in": [
         ".claude/claude_config.json",
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
         "mcp-proxy-config.copilot.yaml",
         "mcp-proxy-config.json"
       ],
@@ -1444,7 +1444,7 @@
       "name": "DEEP",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md",
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md",
         "docs/archive/conport-sessions/mcp_system_development.md"
       ],
       "used_for": "unknown"
@@ -1634,7 +1634,7 @@
       "name": "DIVE",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       ],
       "used_for": "unknown"
     },
@@ -1657,11 +1657,11 @@
         "anchor": "L211",
         "excerpt_hash": "ac8063c75207f0bc8d6a5f1206fa489ac194a549c33be8ba492c380cffd1652a",
         "excerpt_snippet": "- Task Packet: DOCKER-FIX-LEANTIME-01 (2026-02-12)",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "name": "DOCKER",
       "referenced_in": [
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       ],
       "used_for": "unknown"
     },
@@ -1688,7 +1688,7 @@
       "name": "DOCUMENTATION",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       ],
       "used_for": "unknown"
     },
@@ -1953,11 +1953,11 @@
         "anchor": "L94",
         "excerpt_hash": "5ccfc74f182ee394d0290f801ff2db8888fc201ec15e5d0501b863be5e509d2a",
         "excerpt_snippet": "- Leantime integration via `ENABLE_LEANTIME=1` environment variable",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "name": "ENABLE_LEANTIME",
       "referenced_in": [
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
         "docs/archive/session-notes/MCP_STARTUP_FIXES.md"
       ],
       "used_for": "unknown"
@@ -2077,7 +2077,7 @@
       "name": "EVIDENCE",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       ],
       "used_for": "unknown"
     },
@@ -2155,11 +2155,11 @@
         "anchor": "L670",
         "excerpt_hash": "79b93891e3408abf40a89ba32248365599a3707142cad9b3ecce92b4134389cd",
         "excerpt_snippet": "**Goal**: Optional TUI for real-time session monitoring and F002 multi-session display",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "F002",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       ],
       "used_for": "unknown"
     },
@@ -2168,11 +2168,11 @@
         "anchor": "L198",
         "excerpt_hash": "a8376e735aefa90979a984252424f5b5d172923defe49017cb4111739e52ba6a",
         "excerpt_snippet": "## FACT ANCHORS (Repo-derived)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "FACT",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -2248,11 +2248,11 @@
         "anchor": "L211",
         "excerpt_hash": "ac8063c75207f0bc8d6a5f1206fa489ac194a549c33be8ba492c380cffd1652a",
         "excerpt_snippet": "- Task Packet: DOCKER-FIX-LEANTIME-01 (2026-02-12)",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "name": "FIX",
       "referenced_in": [
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       ],
       "used_for": "unknown"
     },
@@ -2301,11 +2301,11 @@
         "anchor": "L293",
         "excerpt_hash": "208bf6587fb2c3384f6662ea623957460c94f63f1d9ae8365abc38497e041aa5",
         "excerpt_snippet": "| `config/mcp_servers.yaml` exists | Earlier doc version | NOT FOUND \u2014 file does not exist in repo |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "FOUND",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -2368,11 +2368,11 @@
         "anchor": "L97",
         "excerpt_hash": "25306619119970b6f72e8cc689d5a2b76c0ace76b93f001c39fd8d9197321e8c",
         "excerpt_snippet": "* FUTURE: Circuit breaker implementation. Current system relies on Docker Compose `restart: unless-stopped` for basic recovery.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "FUTURE",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -2381,11 +2381,11 @@
         "anchor": "L187",
         "excerpt_hash": "359a456585a01daef1871b3c8544859a7876aedb6afb601f35e9ff70c5247fa3",
         "excerpt_snippet": "* `pal`: `exit 0` (always healthy \u2014 no real check). **GAP**: should have real health endpoint.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "GAP",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -2394,11 +2394,11 @@
         "anchor": "L191",
         "excerpt_hash": "acc3b87d65528d104d3566bf3838a16bffaea27c0bbf31470155cdbbd1562e85",
         "excerpt_snippet": "**GAPS IDENTIFIED**:",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "GAPS",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -2572,7 +2572,7 @@
       "name": "GPTR",
       "referenced_in": [
         "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -2660,11 +2660,11 @@
         "anchor": "L79",
         "excerpt_hash": "0580335f09a44586bcf0d2a19f30e2af8d656b9162751f8842c5eaba1743daf7",
         "excerpt_snippet": "**Statement**: A failing MCP server MUST be isolated after repeated failures to prevent system-wide latency degradation. The circuit breaker transitions: CLOSED",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "HALF",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -2855,11 +2855,11 @@
         "anchor": "L191",
         "excerpt_hash": "acc3b87d65528d104d3566bf3838a16bffaea27c0bbf31470155cdbbd1562e85",
         "excerpt_snippet": "**GAPS IDENTIFIED**:",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "IDENTIFIED",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -2881,11 +2881,11 @@
         "anchor": "L2",
         "excerpt_hash": "eb1d2637c5649b88a27b5b293cd6da712c3974dd2b8f50c7ed85b4a1c1729d7e",
         "excerpt_snippet": "id: UI-IMPLEMENTATION-ROADMAP",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "IMPLEMENTATION",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       ],
       "used_for": "unknown"
     },
@@ -3039,11 +3039,11 @@
         "anchor": "L33",
         "excerpt_hash": "f99797a2314040bdc14a30d48b26593c8eba7cb0d95d8605adc3b2ff079911e1",
         "excerpt_snippet": "### INV-MCP-001: No Zombie Processes",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "INV",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "logging"
@@ -3139,7 +3139,7 @@
         "docs/archive/completed-projects/LEANTIME_MCP_INTEGRATION_COMPLETE.md",
         "docs/archive/conport-sessions/mcp_system_development.md",
         "docs/archive/mcp-servers/HTTP_SERVER_README.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md",
         "scripts/mcp/mcp_event_wrapper.py",
         "scripts/ui/neon_dashboard/core/state.py"
@@ -3242,11 +3242,11 @@
         "anchor": "L211",
         "excerpt_hash": "ac8063c75207f0bc8d6a5f1206fa489ac194a549c33be8ba492c380cffd1652a",
         "excerpt_snippet": "- Task Packet: DOCKER-FIX-LEANTIME-01 (2026-02-12)",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "name": "LEANTIME",
       "referenced_in": [
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
         "docs/archive/mcp-servers/HTTP_SERVER_README.md"
       ],
       "used_for": "unknown"
@@ -3627,11 +3627,11 @@
         "anchor": "L2",
         "excerpt_hash": "99dcbd6dcb612683fecccd09a6fd15b320ab20f3eb2bb0fc352b6dce8d47c185",
         "excerpt_snippet": "id: LITELLM-DEEP-DIVE",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "name": "LITELLM",
       "referenced_in": [
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       ],
       "used_for": "unknown"
     },
@@ -3724,7 +3724,7 @@
       "name": "LIVING",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       ],
       "used_for": "unknown"
     },
@@ -3740,7 +3740,7 @@
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
         "compose.yml",
         "docker/mcp-servers/docker-compose.yml",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md",
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md",
         "docs/archive/claude-sessions/litellm-fix-summary.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md",
         "scripts/create_llm_archive.sh"
@@ -3922,16 +3922,16 @@
         "docker/mcp-servers/docker-compose.yml",
         "docs/02-how-to/mcp-service-discovery-guide.md",
         "docs/03-reference/serena-v2-mcp-tools.md",
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md",
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md",
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
         "docs/archive/completed-projects/LEANTIME_MCP_INTEGRATION_COMPLETE.md",
         "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
         "docs/archive/component-implementations/COMPONENT_4_CONPORT_MCP_WIRING.md",
         "docs/archive/conport-sessions/mcp_system_development.md",
         "docs/archive/mcp-servers/HTTP_SERVER_README.md",
         "docs/archive/session-notes/MCP_STARTUP_FIXES.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "mcp-proxy-config.yaml",
         "scripts/ai_startup.sh",
         "scripts/create_llm_archive.sh",
@@ -4112,11 +4112,11 @@
         "anchor": "L142",
         "excerpt_hash": "cfb4063c0f933cc4173d0ce61c09b6f80dd8666d2709ded0831b9d92b8a83fbc",
         "excerpt_snippet": "| conport | 3004 | REQUIRED | Knowledge graph authority (INV-MEM-002). Multiple services depend on it. |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "MEM",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "proxy_auth"
@@ -4131,7 +4131,7 @@
       "name": "METADATA",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       ],
       "used_for": "unknown"
     },
@@ -4244,11 +4244,11 @@
         "anchor": "L36",
         "excerpt_hash": "be8298f10e41d605f8de86d4206afec81aa9ce2a59cd4084c68a3b127e381354",
         "excerpt_snippet": "**Statement**: When Dopemux exits (cleanly or via signal), ALL child MCP server processes MUST be terminated. No orphaned server processes may persist.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "MUST",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md",
         "docs/systems/conport-kg-ui/architecture-decision.md"
       ],
@@ -4392,11 +4392,11 @@
         "anchor": "L129",
         "excerpt_hash": "b77e3c2c3d23866eed8261cf2f259ee7ed4b854eb3ca2e5879810475ffa92481",
         "excerpt_snippet": "2. **`docker/mcp-servers/docker-compose.leantime.yml`** (NEW - overlay)",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "name": "NEW",
       "referenced_in": [
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
         "docs/archive/component-implementations/COMPONENT_4_CONPORT_MCP_WIRING.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
@@ -4438,7 +4438,7 @@
       "name": "NOT",
       "referenced_in": [
         "docs/archive/conport-sessions/mcp_system_development.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -4488,11 +4488,11 @@
         "anchor": "L200",
         "excerpt_hash": "461ae417d3a06d69b709585de780fbf5850afef081f0388283a90cb2bf9b0311",
         "excerpt_snippet": "* **OBSERVED: Canonical Compose**: `compose.yml` at repo root (628 lines). Defines all services.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "OBSERVED",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -4542,11 +4542,11 @@
         "anchor": "L79",
         "excerpt_hash": "0580335f09a44586bcf0d2a19f30e2af8d656b9162751f8842c5eaba1743daf7",
         "excerpt_snippet": "**Statement**: A failing MCP server MUST be isolated after repeated failures to prevent system-wide latency degradation. The circuit breaker transitions: CLOSED",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "OPEN",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -4642,11 +4642,11 @@
         "anchor": "L131",
         "excerpt_hash": "b8a3eab020d83b7c768db945c463fa471bd3eea34cca88cb9f9c747a80b8054b",
         "excerpt_snippet": "**Statement**: Every MCP server MUST be classified as REQUIRED or OPTIONAL. Operations MUST refuse if a REQUIRED server is unavailable. Operations SHOULD degrad",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "OPTIONAL",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/systems/conport-kg-ui/architecture-decision.md"
       ],
       "used_for": "unknown"
@@ -4656,11 +4656,11 @@
         "anchor": "L47",
         "excerpt_hash": "b210b71c9132a0d237596655e87808a7ad45a7dec21409399a83cd6807a6eb93",
         "excerpt_snippet": "\u2502 \u2514\u2500 libtmux ORM (Server\u2192Session\u2192Window\u2192Pane) \u2502",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "ORM",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       ],
       "used_for": "unknown"
     },
@@ -4695,11 +4695,11 @@
         "anchor": "L89",
         "excerpt_hash": "72a9cb20ba6bc1408084c6adb07b6e7a334e714e552c8ed1ca61bf59ce37b5fe",
         "excerpt_snippet": "* P95 latency exceeds threshold (configurable per-server).",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "P95",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -4717,7 +4717,7 @@
         "docker/mcp-servers/docker-compose.yml",
         "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
         "docs/archive/conport-sessions/mcp_system_development.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "scripts/deploy/deployment/stack_status.sh",
         "scripts/deploy/deployment/stack_up_all.sh",
         "scripts/utilities/claude_code_event_integration.py"
@@ -4757,11 +4757,11 @@
         "anchor": "L295",
         "excerpt_hash": "3130a330d3ce96910e8d59032d39ade2b25ea650d52d816d7a843e31f8d9bb24",
         "excerpt_snippet": "| All servers expose `/health` | Design requirement | PARTIALLY \u2014 pal has no real health endpoint |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "PARTIALLY",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -4893,11 +4893,11 @@
         "anchor": "L122",
         "excerpt_hash": "4bf8693e212ff649146f2f4bec40eb9bb094eaa098724b2efeccb0e970fa64d7",
         "excerpt_snippet": "self.mode = \"ACT\" # PLAN or ACT",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "PLAN",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
         "docs/archive/completed-projects/METAMCP_COMPLETE_SETUP.md",
         "docs/archive/conport-sessions/mcp_system_development.md"
       ],
@@ -5372,7 +5372,7 @@
       "name": "README",
       "referenced_in": [
         "docs/02-how-to/mcp-service-discovery-guide.md",
-        "docs/90-adr/ADR-214-mcp-leantime-decoupling.md",
+        "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
         "docs/archive/claude-sessions/litellm-fix-summary.md",
         "scripts/create_llm_archive.sh"
       ],
@@ -5577,7 +5577,7 @@
       "name": "REPORT",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       ],
       "used_for": "unknown"
     },
@@ -5747,7 +5747,7 @@
       "name": "REQUIRED",
       "referenced_in": [
         "docs/archive/conport-sessions/mcp_system_development.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "proxy_auth"
     },
@@ -5798,11 +5798,11 @@
         "anchor": "L2",
         "excerpt_hash": "eb1d2637c5649b88a27b5b293cd6da712c3974dd2b8f50c7ed85b4a1c1729d7e",
         "excerpt_snippet": "id: UI-IMPLEMENTATION-ROADMAP",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "ROADMAP",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       ],
       "used_for": "unknown"
     },
@@ -5871,7 +5871,7 @@
         "docs/archive/completed-projects/LEANTIME_MCP_INTEGRATION_COMPLETE.md",
         "docs/archive/conport-sessions/mcp_system_development.md",
         "docs/archive/mcp-servers/HTTP_SERVER_README.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "scripts/mcp/mcp_event_wrapper.py"
       ],
       "used_for": "unknown"
@@ -5992,7 +5992,7 @@
       "name": "SECTION",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       ],
       "used_for": "unknown"
     },
@@ -6225,11 +6225,11 @@
         "anchor": "L131",
         "excerpt_hash": "b8a3eab020d83b7c768db945c463fa471bd3eea34cca88cb9f9c747a80b8054b",
         "excerpt_snippet": "**Statement**: Every MCP server MUST be classified as REQUIRED or OPTIONAL. Operations MUST refuse if a REQUIRED server is unavailable. Operations SHOULD degrad",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "SHOULD",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/systems/conport-kg-ui/architecture-decision.md"
       ],
       "used_for": "unknown"
@@ -6252,11 +6252,11 @@
         "anchor": "L41",
         "excerpt_hash": "dddb8a7ca3f590826880dcaefb3ab9728ac137e4d692bd67abcf925950f21ff7",
         "excerpt_snippet": "* `docker compose down` sends SIGTERM to all services, then SIGKILL after timeout.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "SIGKILL",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -6265,11 +6265,11 @@
         "anchor": "L41",
         "excerpt_hash": "dddb8a7ca3f590826880dcaefb3ab9728ac137e4d692bd67abcf925950f21ff7",
         "excerpt_snippet": "* `docker compose down` sends SIGTERM to all services, then SIGKILL after timeout.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "SIGTERM",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "scripts/ui/neon_dashboard/components/metrics_bar.py"
       ],
       "used_for": "unknown"
@@ -6416,11 +6416,11 @@
         "anchor": "L356",
         "excerpt_hash": "9b0f11856d0739cedd561e0039f215d96d30438e03a333cac2dc58ce4e52f508",
         "excerpt_snippet": "* If ConPort is required for an operation and is down: **STOP** and Refuse.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "STOP",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -6429,11 +6429,11 @@
         "anchor": "L347",
         "excerpt_hash": "ccbc8f25940a067f475431e2bf50dee3a785f8488158dd6e7e5ea8b3914374a0",
         "excerpt_snippet": "If a server is UNHEALTHY or STOPPED:",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "STOPPED",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -6650,7 +6650,7 @@
       "name": "TECHNICAL",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md",
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md",
         "docs/archive/conport-sessions/mcp_system_development.md"
       ],
       "used_for": "unknown"
@@ -6777,11 +6777,11 @@
         "anchor": "L187",
         "excerpt_hash": "e352783a1d2ebe04871d606bad16b83cf48e0e082cdba81c6b04ed2c592f715f",
         "excerpt_snippet": "tmux_var = os.getenv(\"TMUX\")",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "TMUX",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       ],
       "used_for": "unknown"
     },
@@ -6836,7 +6836,7 @@
       "name": "TRAIL",
       "referenced_in": [
         ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
-        "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       ],
       "used_for": "unknown"
     },
@@ -6910,11 +6910,11 @@
         "anchor": "L670",
         "excerpt_hash": "79b93891e3408abf40a89ba32248365599a3707142cad9b3ecce92b4134389cd",
         "excerpt_snippet": "**Goal**: Optional TUI for real-time session monitoring and F002 multi-session display",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "TUI",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
         "docs/systems/conport-kg-ui/architecture-decision.md",
         "scripts/ai_startup.sh"
       ],
@@ -6925,11 +6925,11 @@
         "anchor": "L351",
         "excerpt_hash": "4690531a502bc34754af7ac40cc624cbd3b9b5caefb7c38dd88e3956d733f4ca",
         "excerpt_snippet": "from typing import TYPE_CHECKING",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "TYPE_CHECKING",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       ],
       "used_for": "unknown"
     },
@@ -6938,11 +6938,11 @@
         "anchor": "L90",
         "excerpt_hash": "b445a64f2181afbc2dead245251185797d60ba792384ba454f0e46a2ea63eae9",
         "excerpt_snippet": "* Server marked UNHEALTHY in routing table.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "UNHEALTHY",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -7047,11 +7047,11 @@
         "anchor": "L294",
         "excerpt_hash": "8db6e715687bf1bfd99e4f4589871697a263915346566ac7e81e279bb777a060",
         "excerpt_snippet": "| `src/dopemux/mcp/manager.py` exists | Earlier doc version | NOT VERIFIED \u2014 needs confirmation |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "name": "VERIFIED",
       "referenced_in": [
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md",
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
         "docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md"
       ],
       "used_for": "unknown"
@@ -7286,13 +7286,13 @@
         "anchor": "L474",
         "excerpt_hash": "4e42dc4bb02c53c2a53cc5d325e43628bba3c595319dfdfe952053fa70df0110",
         "excerpt_snippet": "**Goal**: YAML-based session templates for reproducible two-plane workflows",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "name": "YAML",
       "referenced_in": [
-        "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md",
+        "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
         "docs/archive/claude-sessions/litellm-fix-summary.md",
-        "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       ],
       "used_for": "unknown"
     },
@@ -7512,20 +7512,20 @@
         "anchor": "L1",
         "excerpt_hash": "8ab34dd966545318bffad0306581b80b2899ec1f12fff9854695504c7f7d1ef2",
         "excerpt_snippet": "--- id: UI-IMPLEMENTATION-ROADMAP title: Ui Implementation Roadmap",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "kind": "unknown",
       "mentions": [
         "fallback"
       ],
-      "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+      "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
     },
     {
       "evidence": {
         "anchor": "L26",
         "excerpt_hash": "4122f464409b563b720bd73890259e5dd8712cbfdd2a397c8474bb42aee6aaab",
         "excerpt_snippet": "* **Port**: 4000 * **Location**: `docker/mcp-servers/litellm` * **Orchestration**: Defined in `docker-compose.master.yml`.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "kind": "unknown",
       "mentions": [
@@ -7536,7 +7536,7 @@
         "proxy",
         "router"
       ],
-      "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+      "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
     },
     {
       "evidence": {
@@ -7556,13 +7556,13 @@
         "anchor": "L1",
         "excerpt_hash": "c64d523b785aeac1ec2476391e76f15299a35aef4438921e06dc4ede922ad56b",
         "excerpt_snippet": "--- id: adr-214 title: MCP Stack Leantime Decoupling via Compose Overlay type: adr",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "kind": "unknown",
       "mentions": [
         "litellm"
       ],
-      "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+      "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
     },
     {
       "evidence": {
@@ -7671,7 +7671,7 @@
         "anchor": "L145",
         "excerpt_hash": "48cfab66a8724e5f6cb5575d97f1744231f7051526d2933b51fc650da31eefbb",
         "excerpt_snippet": "| qdrant | 6333 | REQUIRED | Vector DB for semantic search. ConPort and dope-context depend on it. | | litellm | 4000 | OPTIONAL | Model router. Services can fa",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "kind": "unknown",
       "mentions": [
@@ -7680,7 +7680,7 @@
         "model",
         "router"
       ],
-      "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+      "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
     },
     {
       "evidence": {
@@ -8066,7 +8066,7 @@
         "anchor": "L54",
         "excerpt_hash": "a1c89b515ffa1c4bb09be677d8452eb772150ab5073c4a523ddebe55537f049f",
         "excerpt_snippet": "* **Testing**: Verification is primarily via the `/health` endpoint and runtime logs.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fields_mentioned": [],
       "sink": "file",
@@ -8103,7 +8103,7 @@
         "anchor": "L557",
         "excerpt_hash": "64e3af945c454ae831985177af931b3e271ee8901dd87056362a8c37f3746cf1",
         "excerpt_snippet": "- \"tail -f logs/dopemux.log | grep -v DEBUG\"",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "file",
@@ -8531,7 +8531,7 @@
         "anchor": "L161",
         "excerpt_hash": "df865022fda3274327a76a415c19df77adfbffca7570f799d1e1d3231af83fef",
         "excerpt_snippet": "log_pane.send_keys(\"tail -f logs/dopemux.log\", enter=True)",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "file",
@@ -8800,7 +8800,7 @@
         "anchor": "L217",
         "excerpt_hash": "4255185ca6561928eea6d10e31227e8009c128788757dfde03a1b6d703e601c4",
         "excerpt_snippet": "* **Containment**: PostgreSQL has `restart: unless-stopped` and healthcheck with 10 retries. Dependent services wait for healthy condition.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8821,7 +8821,7 @@
         "anchor": "L204",
         "excerpt_hash": "38d273bf1c9ace9a48d92d6d4295ad5908fb3f03333b47aeeaa69b144eeebba4",
         "excerpt_snippet": "* **OBSERVED: Dependency Chain**: postgres \u2192 conport \u2192 task-orchestrator; redis-events \u2192 dopecon-bridge \u2192 conport.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8843,7 +8843,7 @@
         "anchor": "L201",
         "excerpt_hash": "a9395bcbcc47def871b2233bad38e81579354c1c799416dbddb78dc90f1241b8",
         "excerpt_snippet": "* **OBSERVED: Infrastructure**: PostgreSQL AGE (`apache/age:release_PG16_1.6.0`), Redis 7-alpine (2 instances: events + primary), Qdrant latest.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8862,7 +8862,7 @@
         "anchor": "L214",
         "excerpt_hash": "a557549ee5d28ab5a4403a583a21414d88dbe33e486a5189fe406740c93fb9f0",
         "excerpt_snippet": "* **Trigger**: PostgreSQL crashes.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8882,7 +8882,7 @@
         "anchor": "L357",
         "excerpt_hash": "ac0bfe005a4f9085994ca206850285143f3044e0739c3c7191a5e2ab1a14976a",
         "excerpt_snippet": "* If PostgreSQL is down: **STOP** \u2014 no REQUIRED service can function.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8901,7 +8901,7 @@
         "anchor": "L161",
         "excerpt_hash": "ee5ba98c4d48c63ec2864db94e4beae180d52ff081139007c2d3f2f9e7b72081",
         "excerpt_snippet": "* `compose.yml` dependency analysis (lines 248-404): healthy conditions used for postgres, redis-events, redis-primary. Started conditions for qdrant.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8920,7 +8920,7 @@
         "anchor": "L71",
         "excerpt_hash": "3e7708093b04485a9d5e2f287129ba2e028935ae5baf8047d66e251e3fe5686d",
         "excerpt_snippet": "* `compose.yml`: `task-orchestrator` depends on `redis-primary` (healthy) and `conport`. `conport` depends on `postgres` (healthy) and `redis-primary` (healthy)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8939,7 +8939,7 @@
         "anchor": "L121",
         "excerpt_hash": "5ce3f829bb40def48edc81fbb8bcf4b48211e80779d618c7148f60b78d9a4320",
         "excerpt_snippet": "* `conport` \u2192 depends on `postgres`, `redis-primary`, `mcp-qdrant`, `dopecon-bridge`",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8958,7 +8958,7 @@
         "anchor": "L124",
         "excerpt_hash": "60ec35953421b34f4af99a6c84dd2b50ba2671d056f59081a3b4e7ed1483bf68",
         "excerpt_snippet": "* `dopecon-bridge` \u2192 depends on `postgres` (healthy), `redis-events` (healthy), `mcp-qdrant` (started)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8977,7 +8977,7 @@
         "anchor": "L118",
         "excerpt_hash": "f869f7586956d31dbe41631751ff6e68a1fc72520960fcc5d04a625310c5b54e",
         "excerpt_snippet": "* `postgres` \u2192 healthcheck `pg_isready`, `start_period: 20s`",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -8996,7 +8996,7 @@
         "anchor": "L181",
         "excerpt_hash": "220b4dbf2574f059c28faea719d06bb4026464fc9fbe4f8990b4de7acf8fc42f",
         "excerpt_snippet": "* `postgres`: `pg_isready`, interval 10s, retries 10, start_period 20s.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -9092,7 +9092,7 @@
         "anchor": "L105",
         "excerpt_hash": "6ae649d0a5315d18cec7145d23341573be1dbd5bd932fe5e60866184bd5c4827",
         "excerpt_snippet": "**Statement**: MCP servers MUST start in dependency order. Infrastructure (PostgreSQL, Redis, Qdrant) MUST be healthy before application services (ConPort, task",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -9565,7 +9565,7 @@
         "anchor": "L368",
         "excerpt_hash": "df282415c95a93e36de16c7ccd356efcac895b3d130c37f535c0494d9b29cbf3",
         "excerpt_snippet": "1. **Dependency Test**: Stop PostgreSQL. Ensure ConPort fails its healthcheck. Ensure task-orchestrator does not start (or restarts and fails to connect).",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -9603,7 +9603,7 @@
         "anchor": "L49",
         "excerpt_hash": "1c9e0469c837a37e720d37372dbda1253f76861bc760aeb48191668f68db6fe5",
         "excerpt_snippet": "3. **Analytics**: Request metadata is logged to the PostgreSQL database.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -9622,7 +9622,7 @@
         "anchor": "L33",
         "excerpt_hash": "f6729e1dc02ff8f50f23d7e95bc9c7a25a176df1ce199d9920c072c247e3c182",
         "excerpt_snippet": "3. **Database**: Integrates with `dopemux-postgres-age` for request logging and caching.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -9827,7 +9827,7 @@
         "anchor": "L319",
         "excerpt_hash": "766be54ca19ba57e54406291ab08ef2a6e5fba41cbe388f953cda941ca6f085a",
         "excerpt_snippet": "conport \u2014 depends: postgres, redis-primary, mcp-qdrant, dopecon-bridge",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -9862,7 +9862,7 @@
         "anchor": "L326",
         "excerpt_hash": "903bbe73356e288e8e4ce2a7ecae10b140ac408e77a106b878c8bb2d0febf8ca",
         "excerpt_snippet": "dope-memory \u2014 depends: postgres(healthy), redis-events(healthy)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -9881,7 +9881,7 @@
         "anchor": "L316",
         "excerpt_hash": "0aff008b7d8426a176cb92d19b41735e6bf8b13d33f964bca92e79ad4f87960c",
         "excerpt_snippet": "dopecon-bridge \u2014 depends: postgres(healthy), redis-events(healthy), mcp-qdrant(started)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -9937,7 +9937,7 @@
         "anchor": "L330",
         "excerpt_hash": "7673bbda63923ff4a6419957574fe59e823308dd4a749b56a13a56ae7c0a2a09",
         "excerpt_snippet": "litellm \u2014 depends: postgres",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -9973,7 +9973,7 @@
         "anchor": "L310",
         "excerpt_hash": "f8f279c613f4751807743dbef945c4c3860c62d621b1f71af03fbdf239eec93e",
         "excerpt_snippet": "postgres \u2014 healthcheck: pg_isready, start_period: 20s",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -10074,7 +10074,7 @@
         "anchor": "L271",
         "excerpt_hash": "36db5beffbfbb1e1d327817dd853a1f0bd29e08f91231cf5453aac2a51f1de6d",
         "excerpt_snippet": "| L6: Infrastructure Down | PostgreSQL down | All REQUIRED services fail | Full stop |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -10096,7 +10096,7 @@
         "anchor": "L139",
         "excerpt_hash": "c922e67acf84ebd4b1dff718ea1efe4097ddca70812464f2f032905cafa7c175",
         "excerpt_snippet": "| postgres (AGE) | 5432 | REQUIRED | Backing store for ConPort, LiteLLM. Everything depends on it. |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "postgres",
@@ -10377,7 +10377,7 @@
         "anchor": "L150",
         "excerpt_hash": "5a7f8da8d5e33fe6f730ccb5505d8a6cd76ef56daecda8698a69175ab9d637af",
         "excerpt_snippet": "\"\"\"Cognitive Plane layout: Editor + Tests + Serena + Logs.\"\"\"",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -10620,7 +10620,7 @@
         "anchor": "L159",
         "excerpt_hash": "5690c323de5090ac290990520ce36af666148821674a8c443c9203d990ccbf7f",
         "excerpt_snippet": "# Logs pane (bottom of tests)",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -10745,7 +10745,7 @@
         "anchor": "L70",
         "excerpt_hash": "c0faca4c5e49cd2726a33e3dc600cbc072850d7a832177d7beba739b5d06b26f",
         "excerpt_snippet": "* **Log Confirmation**: Service logs show successful hits, confirming the service is actually alive but slow.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -10764,7 +10764,7 @@
         "anchor": "L77",
         "excerpt_hash": "f98545d66c683c1ddc14ea0ff2fcd1d2be05379a6209d8d3fa41e32481155f7c",
         "excerpt_snippet": "* Evolution Log:",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -10780,7 +10780,7 @@
         "anchor": "L114",
         "excerpt_hash": "32353fb98f806134e615e1a683e95f98c29cb38fcb7e06320a81151519132616",
         "excerpt_snippet": "* Logs show connection refused or database not ready errors.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -10799,7 +10799,7 @@
         "anchor": "L68",
         "excerpt_hash": "4c16229f7969d7009b6316fd790d9924c56c5100f173ecbf605a43d3ec0a1e16",
         "excerpt_snippet": "* Supervisor logs: `\"Cannot execute: [server] is unavailable and required for this task.\"`.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -11013,7 +11013,7 @@
         "anchor": "L159",
         "excerpt_hash": "109c10335f78da861d7518e1e82188bbb6aec5560c304b462891bd81b922b17f",
         "excerpt_snippet": "**Recovery Strategy**: REQUIRED server down \u2192 halt dependent operations. OPTIONAL server down \u2192 log warning, use fallback.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -11107,7 +11107,7 @@
         "anchor": "L556",
         "excerpt_hash": "8791b893c7784a98111b21303c5e0f7e4288c499245bbe76cdf458a9e0fe1e76",
         "excerpt_snippet": "- \"# Application Logs\"",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -11602,7 +11602,7 @@
         "anchor": "L127",
         "excerpt_hash": "f7a87b8b4955e9a0e1affe4d3d794cdb41ea40ec86b767216eca39f87253f8ca",
         "excerpt_snippet": "- Removed: `mcp_leantime_bridge_data` and `mcp_leantime_bridge_logs` volumes",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -11718,7 +11718,7 @@
         "anchor": "L563",
         "excerpt_hash": "08354e3d5756463228c97c02796917fb18b53feb7181ad282c6d7fd6fb3c950a",
         "excerpt_snippet": "- commands: [\"docker-compose logs -f\"]",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -11737,7 +11737,7 @@
         "anchor": "L41",
         "excerpt_hash": "8153c0f9f2088a2c0fbdd4ea80a5afa373d358e564381482f0adbc5f0d7aeadd",
         "excerpt_snippet": "1. **Health Check Latency**: The container is marked as unhealthy because the healthcheck `curl` command times out (10s). Logs indicate the service *is* respond",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -11756,7 +11756,7 @@
         "anchor": "L31",
         "excerpt_hash": "96649ceb90f763373fe9120bc33591e73a92e00a98d8ea815fd7c6ce56e03a09",
         "excerpt_snippet": "1. **`litellm.config.yaml`**: defines the model list and router settings. it includes extensive fallback logic and alias mapping (e.g., `fast` -> `grok-4-fast`)",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fields_mentioned": [
         "model"
@@ -12102,7 +12102,7 @@
         "anchor": "L88",
         "excerpt_hash": "1e673669985e91fbf3faf54e2bc7527c4912953eb9486fb2707927e6f7ae51ad",
         "excerpt_snippet": "callback(*args, **kwargs)",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -12207,7 +12207,7 @@
         "anchor": "L92",
         "excerpt_hash": "62774fb3376f8c69a3b53dbd68077b678d6dbee864f6b5da315c9848b4f7106f",
         "excerpt_snippet": "def on(self, event: str, callback: Callable):",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -12351,7 +12351,7 @@
         "anchor": "L86",
         "excerpt_hash": "44a679ea4db640cc5b52cf92dddf204187657285025fe96b9a16ed2091b0a038",
         "excerpt_snippet": "for callback in self.hooks[event]:",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -12370,7 +12370,7 @@
         "anchor": "L680",
         "excerpt_hash": "11fcafdea0c6d1e56329c81645087add4d659a3af9318a3fb86ec751a2044a93",
         "excerpt_snippet": "from textual.widgets import Header, Footer, Tree, Static, Log",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -12526,7 +12526,7 @@
         "anchor": "L160",
         "excerpt_hash": "ebbf8a09a6a689cda904a80514058d71a457536d4fa48e2d3054e65fdb7880b8",
         "excerpt_snippet": "log_pane = test_pane.split_window(vertical=False, percentage=50)",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -14006,7 +14006,7 @@
         "anchor": "L94",
         "excerpt_hash": "fe48bdb1012cfd9a5c0b4ed4ab10855ce7f4e304986e8a0d1348373051be5499",
         "excerpt_snippet": "self.hooks[event].append(callback)",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -14069,7 +14069,7 @@
         "anchor": "L730",
         "excerpt_hash": "984edfa911819039f22fe9aed2204abda2e2663206e452e81b15e69518f60e03",
         "excerpt_snippet": "yield Log(id=\"pane-viewer\", highlight=True, markup=True)",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -14147,7 +14147,7 @@
         "anchor": "L35",
         "excerpt_hash": "dcb019cdaddb81ed71910c2401251e752b1f33aaae11ea995f9aebd4dbf110ae",
         "excerpt_snippet": "\u2502 Layer 3: Application Logic \u2502",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -14165,7 +14165,7 @@
         "anchor": "L32",
         "excerpt_hash": "9cc429e7e3ab9ccffaf3c7b1368e02ce210821da29dcee426ad3924b42262aea",
         "excerpt_snippet": "\u2502 \u251c\u2500 Hook Registry (event callbacks) \u2502",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fields_mentioned": [],
       "sink": "unknown",
@@ -15669,7 +15669,7 @@
         "anchor": "L351",
         "excerpt_hash": "d6b0ba83c1be7fea95627126e52f7df2bb8ada7bd72c5bfba9eec01c643a965b",
         "excerpt_snippet": "* IF `pal` (Zen reasoning) is down: Use native Claude reasoning (no multi-model validation).",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "logical_model": null,
       "provider": "unknown",
@@ -16565,7 +16565,7 @@
         "anchor": "L202",
         "excerpt_hash": "448f2a148d211b98780e90384d34686a8296ee9c88ee6b7875fea5d05ff85e36",
         "excerpt_snippet": "* **OBSERVED: MCP Servers**: ConPort (3004), PAL/Zen (3003), LiteLLM (4000), Dope-Context (3010), Serena (3006), GPTR (3009), Desktop Commander (3012), Leantime",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "logical_model": null,
       "provider": "unknown",
@@ -19631,7 +19631,7 @@
         "anchor": "L149",
         "excerpt_hash": "1a0e8d68c3c6e06aeaf325771c93ae800f85fd765e5ebce8552cd182f0ed047a",
         "excerpt_snippet": "| gptr-mcp | 3009 | OPTIONAL | Deep research. Not required for core task execution. |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "logical_model": null,
       "provider": "unknown",
@@ -19645,7 +19645,7 @@
         "anchor": "L332",
         "excerpt_hash": "2ec5ff12ef84bab8a5a0a22fcc6974465a77cafd3bcd52b8b3cb02b197e8fb62",
         "excerpt_snippet": "gptr-mcp \u2014 no dependencies",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "logical_model": null,
       "provider": "unknown",
@@ -19897,7 +19897,7 @@
         "anchor": "L31",
         "excerpt_hash": "96649ceb90f763373fe9120bc33591e73a92e00a98d8ea815fd7c6ce56e03a09",
         "excerpt_snippet": "1. **`litellm.config.yaml`**: defines the model list and router settings. it includes extensive fallback logic and alias mapping (e.g., `fast` -> `grok-4-fast`)",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "logical_model": null,
       "provider": "unknown",
@@ -22031,7 +22031,7 @@
         "anchor": "L47",
         "excerpt_hash": "2e278cd0881d75f3b4d808d0b9a16b97417ef407f2b15effab00e34f73fce792",
         "excerpt_snippet": "http://litellm:4000`.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "headers_behavior": [],
       "listen": "http://litellm:4000`.",
@@ -22297,7 +22297,7 @@
         "anchor": "L189",
         "excerpt_hash": "7130928c6977f825192699d4b96a3b9511f3f0b2b43db781a007e34666871d3c",
         "excerpt_snippet": "http://localhost:3004/health",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "headers_behavior": [],
       "listen": "http://localhost:3004/health",
@@ -22311,7 +22311,7 @@
         "anchor": "L183",
         "excerpt_hash": "9746a823dc373fbb78df7010dd029de4b7069795d9396324ae3f824027fc1422",
         "excerpt_snippet": "http://localhost:3004/health`,",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "headers_behavior": [],
       "listen": "http://localhost:3004/health`,",
@@ -22731,7 +22731,7 @@
         "anchor": "L188",
         "excerpt_hash": "00039576a51ce5b82ca443d8df06a1218435590c30b92a24985bb792edcd81d2",
         "excerpt_snippet": "http://localhost:3010/health",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "headers_behavior": [],
       "listen": "http://localhost:3010/health",
@@ -23109,7 +23109,7 @@
         "anchor": "L184",
         "excerpt_hash": "39823b83299d4de73f1d1514a6c276d6d4ae7a63f4ce62b0023a36d946014d14",
         "excerpt_snippet": "http://localhost:3016/health`,",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "headers_behavior": [],
       "listen": "http://localhost:3016/health`,",
@@ -23445,7 +23445,7 @@
         "anchor": "L185",
         "excerpt_hash": "572856c13f9e1810a73b4d90ab3b333a379db97fb2863375b1d98b62821a2a57",
         "excerpt_snippet": "http://localhost:8000/health`,",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "headers_behavior": [],
       "listen": "http://localhost:8000/health`,",
@@ -23459,7 +23459,7 @@
         "anchor": "L498",
         "excerpt_hash": "a76d8c3e94eba61fc46b5cc05fc51e5f6df1d0f46d901d32e9c27bb251f155ae",
         "excerpt_snippet": "http://localhost:8080",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "headers_behavior": [],
       "listen": "http://localhost:8080",
@@ -23473,7 +23473,7 @@
         "anchor": "L499",
         "excerpt_hash": "a76d8c3e94eba61fc46b5cc05fc51e5f6df1d0f46d901d32e9c27bb251f155ae",
         "excerpt_snippet": "http://localhost:8080",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "headers_behavior": [],
       "listen": "http://localhost:8080",
@@ -23487,7 +23487,7 @@
         "anchor": "L499",
         "excerpt_hash": "a76d8c3e94eba61fc46b5cc05fc51e5f6df1d0f46d901d32e9c27bb251f155ae",
         "excerpt_snippet": "http://localhost:8080",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "headers_behavior": [],
       "listen": "http://localhost:8080",
@@ -23613,7 +23613,7 @@
         "anchor": "L186",
         "excerpt_hash": "692a27bd4f9512eceb6c44864d44f4a51ba8b0d47a0b7787654ca45eceac9c0a",
         "excerpt_snippet": "http://localhost:8095/health`,",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "headers_behavior": [],
       "listen": "http://localhost:8095/health`,",
@@ -23865,7 +23865,7 @@
         "anchor": "L210",
         "excerpt_hash": "ea77befa29a2a2f6bbb2744698b233d57182966c472a4c4041902d44d2bf34fd",
         "excerpt_snippet": "https://docs.docker.com/compose/extends/)",
-        "path": "docs/90-adr/ADR-214-mcp-leantime-decoupling.md"
+        "path": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md"
       },
       "headers_behavior": [],
       "listen": "https://docs.docker.com/compose/extends/)",
@@ -25027,7 +25027,7 @@
         "anchor": "L243",
         "excerpt_hash": "0220e8c6db13370a84f4e1e6b97932d916130a7ad8abebb9edc39dbeaf791fcb",
         "excerpt_snippet": "* **Containment**: Qdrant typically starts fast. Application-level retry handles transient connection failure.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -25065,7 +25065,7 @@
         "anchor": "L69",
         "excerpt_hash": "0793b4b72d5a02b9b915053f57b82373ca63153b8c4572501735e8e31d97ee13",
         "excerpt_snippet": "**Recovery Strategy**: Surface clear error to operator. Do not retry indefinitely \u2014 fail after configured retry count.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -25122,7 +25122,7 @@
         "anchor": "L159",
         "excerpt_hash": "109c10335f78da861d7518e1e82188bbb6aec5560c304b462891bd81b922b17f",
         "excerpt_snippet": "**Recovery Strategy**: REQUIRED server down \u2192 halt dependent operations. OPTIONAL server down \u2192 log warning, use fallback.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -25844,7 +25844,7 @@
         "anchor": "L205",
         "excerpt_hash": "2b2fbc715b4880762c47fd8f09d7c032f7d79c435d97e6101f48b830c87d4eea",
         "excerpt_snippet": "* **OBSERVED: Health Endpoints**: All services have healthcheck blocks in compose.yml, but quality varies (some use `exit 0` fallback).",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -25863,7 +25863,7 @@
         "anchor": "L188",
         "excerpt_hash": "333f323453d7775889972c3567d153071627075939e5b8639f3a01f94fc29f73",
         "excerpt_snippet": "* `dope-context`: `curl -f http://localhost:3010/health exit 0`. **GAP**: `exit 0` fallback means unhealthy is never reported.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -25920,7 +25920,7 @@
         "anchor": "L291",
         "excerpt_hash": "34d678191f5747ccbb394c7f12b9d161eb1760a7ed83b37a8e1f34afecfdf788",
         "excerpt_snippet": "| Task-orchestrator has real health | compose.yml line 406 | CONFIRMED \u2014 `curl -f` without fallback |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -25958,7 +25958,7 @@
         "anchor": "L55",
         "excerpt_hash": "3b0a84e6f593a8f36a248cdc9fa03dc7f8c6a673ee1f15926a0dafc4a49330dd",
         "excerpt_snippet": "* **Performance**: The healthcheck timeout suggests potential latency in either the Python proxy or the DB connectivity verification.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -25977,7 +25977,7 @@
         "anchor": "L175",
         "excerpt_hash": "4095c9ad1f03e89314cafce6ebf3039d8440b826df274483657dd6345eba6cf5",
         "excerpt_snippet": "], capture_output=True, text=True, timeout=3)",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -26452,7 +26452,7 @@
         "anchor": "L292",
         "excerpt_hash": "5942259b4a79db5423c8869399230df91c4871721b42a109a7fca959dd8425d3",
         "excerpt_snippet": "| DopeconBridge has real health | compose.yml line 372 | CONFIRMED \u2014 `curl -f` without fallback |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -26566,7 +26566,7 @@
         "anchor": "L26",
         "excerpt_hash": "6fa6b0a617c8e7cf2b625f2bde19fb06c7d018cf64685ee49451ed34e9cd592d",
         "excerpt_snippet": "* Fallback routing when tools fail.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -26585,7 +26585,7 @@
         "anchor": "L346",
         "excerpt_hash": "724ebae3af6d20b880d8a74b6571be1ecd455b362189b720727a5c8cfadb12c9",
         "excerpt_snippet": "## Degradation and fallback behavior",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -26661,7 +26661,7 @@
         "anchor": "L41",
         "excerpt_hash": "8153c0f9f2088a2c0fbdd4ea80a5afa373d358e564381482f0adbc5f0d7aeadd",
         "excerpt_snippet": "1. **Health Check Latency**: The container is marked as unhealthy because the healthcheck `curl` command times out (10s). Logs indicate the service *is* respond",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -26718,7 +26718,7 @@
         "anchor": "L197",
         "excerpt_hash": "84c68e9b0928045d53468342a3b0aeffe89b50d1836b44c530b65a3ce2ce21ee",
         "excerpt_snippet": "return self._get_fallback_status()",
-        "path": "docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md"
+        "path": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -26756,7 +26756,7 @@
         "anchor": "L42",
         "excerpt_hash": "8772e51ca9ba2a40c5c6a6e916a31d5e90a539c1724bc01bb981f4ceae9b006d",
         "excerpt_snippet": "2. **Configuration Robustness**: The router settings include sophisticated retry policies and fallback chains, indicating a highly mature integration.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -26851,7 +26851,7 @@
         "anchor": "L369",
         "excerpt_hash": "915accdfede145fbad63089ccd82b5258e4cf39adc4e3e561b155aa5b3831f91",
         "excerpt_snippet": "1. **Fallback Test**: Stop `dope-context`. Execute a search operation. Ensure it falls back to keyword search or refuses with clear message.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -26908,7 +26908,7 @@
         "anchor": "L31",
         "excerpt_hash": "96649ceb90f763373fe9120bc33591e73a92e00a98d8ea815fd7c6ce56e03a09",
         "excerpt_snippet": "1. **`litellm.config.yaml`**: defines the model list and router settings. it includes extensive fallback logic and alias mapping (e.g., `fast` -> `grok-4-fast`)",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -27003,7 +27003,7 @@
         "anchor": "L78",
         "excerpt_hash": "97c7a2615e279d29d17ced6f59625218f5efce84bcdeebb1e241fe74b10d72a0",
         "excerpt_snippet": "* 2026-02-09: Initial Deep Dive. Found mature but \"unhealthy\" integration due to healthcheck timeouts.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -27079,7 +27079,7 @@
         "anchor": "L253",
         "excerpt_hash": "9ed69cc2a4d12f08a7745359a948964e42b7a955c5b14658d3955a610961eb95",
         "excerpt_snippet": "| INV-MCP-002 | Runtime | Timeout + explicit error | FUTURE |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -27098,7 +27098,7 @@
         "anchor": "L278",
         "excerpt_hash": "9f13d50abc44d972dcb8dc38880b953933fcad7a0ea50d3d634cbab03fbc449b",
         "excerpt_snippet": "* **Health Check Timing**: Determined by `interval`, `timeout`, `retries`, `start_period` in compose.yml.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -27459,7 +27459,7 @@
         "anchor": "L57",
         "excerpt_hash": "b2f9f4fcfe5cfd0f8e316173cd6b4782ecf047388f69e76eb45def8f842a4f88",
         "excerpt_snippet": "* **Optimize Health Check**: Increase the timeout or investigate the root cause of the 10s+ latency in the internal health check.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -27516,7 +27516,7 @@
         "anchor": "L69",
         "excerpt_hash": "b5e210f2168492d8979861f9abf49a290157d4fa97df8ca4775b0c4ad61e9dbf",
         "excerpt_snippet": "* **Health Issue**: `docker inspect` confirmed healthcheck timeouts.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -27649,7 +27649,7 @@
         "anchor": "L147",
         "excerpt_hash": "c1eefb5eaf659adef3df8af6eab5ca2d050e94361a278b7573a8362d2e74857a",
         "excerpt_snippet": "| dope-context | 3010 | OPTIONAL | Semantic search. Fallback: grep/ripgrep keyword search. |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -27687,7 +27687,7 @@
         "anchor": "L63",
         "excerpt_hash": "c64e6c7fae02d41dcfb87b8cc0f15c19e1aafe8f51d4a587c7ae483530853611",
         "excerpt_snippet": "* Timeout enforcement on all MCP calls (no infinite waits).",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -27782,7 +27782,7 @@
         "anchor": "L50",
         "excerpt_hash": "ce653a0f9cf2f6de2aa60f59da9da376afc4a51cc1a889c5ae111ce3648ac699",
         "excerpt_snippet": "4. **Resilience**: If a provider fails, LiteLLM automatically tries the defined fallbacks.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -27915,7 +27915,7 @@
         "anchor": "L41",
         "excerpt_hash": "dddb8a7ca3f590826880dcaefb3ab9728ac137e4d692bd67abcf925950f21ff7",
         "excerpt_snippet": "* `docker compose down` sends SIGTERM to all services, then SIGKILL after timeout.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -28010,7 +28010,7 @@
         "anchor": "L237",
         "excerpt_hash": "eaf384f24c5860fd2c75017796656261833f5f04daeb9708378573271a36c40d",
         "excerpt_snippet": "* **Containment**: Fix healthchecks to remove `exit 0` fallback. Replace `exit 0` in pal with actual health probe.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -28124,7 +28124,7 @@
         "anchor": "L189",
         "excerpt_hash": "f2bf177e0f8ff6d9304d5d060fc5a34d5e36ba1c275080f247a465506ce527d7",
         "excerpt_snippet": "* `conport`: `curl -f http://localhost:3004/health exit 0`. **GAP**: same `exit 0` fallback issue.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -28181,7 +28181,7 @@
         "anchor": "L266",
         "excerpt_hash": "ff6eec9a5688c1886b7c4b04cf0889f1ae0a08fef96b4314b9cfd564bb2f8707",
         "excerpt_snippet": "| L1: Optional Degraded | One or more OPTIONAL servers down | Reduced capability with fallbacks | Slower search, no desktop automation, etc. |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "fallbacks": [],
       "policy": "unknown",
@@ -28243,7 +28243,7 @@
         "anchor": "L217",
         "excerpt_hash": "4255185ca6561928eea6d10e31227e8009c128788757dfde03a1b6d703e601c4",
         "excerpt_snippet": "* **Containment**: PostgreSQL has `restart: unless-stopped` and healthcheck with 10 retries. Dependent services wait for healthy condition.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28256,7 +28256,7 @@
         "anchor": "L204",
         "excerpt_hash": "38d273bf1c9ace9a48d92d6d4295ad5908fb3f03333b47aeeaa69b144eeebba4",
         "excerpt_snippet": "* **OBSERVED: Dependency Chain**: postgres \u2192 conport \u2192 task-orchestrator; redis-events \u2192 dopecon-bridge \u2192 conport.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28269,7 +28269,7 @@
         "anchor": "L201",
         "excerpt_hash": "a9395bcbcc47def871b2233bad38e81579354c1c799416dbddb78dc90f1241b8",
         "excerpt_snippet": "* **OBSERVED: Infrastructure**: PostgreSQL AGE (`apache/age:release_PG16_1.6.0`), Redis 7-alpine (2 instances: events + primary), Qdrant latest.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28282,7 +28282,7 @@
         "anchor": "L214",
         "excerpt_hash": "a557549ee5d28ab5a4403a583a21414d88dbe33e486a5189fe406740c93fb9f0",
         "excerpt_snippet": "* **Trigger**: PostgreSQL crashes.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28295,7 +28295,7 @@
         "anchor": "L357",
         "excerpt_hash": "ac0bfe005a4f9085994ca206850285143f3044e0739c3c7191a5e2ab1a14976a",
         "excerpt_snippet": "* If PostgreSQL is down: **STOP** \u2014 no REQUIRED service can function.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28308,7 +28308,7 @@
         "anchor": "L161",
         "excerpt_hash": "ee5ba98c4d48c63ec2864db94e4beae180d52ff081139007c2d3f2f9e7b72081",
         "excerpt_snippet": "* `compose.yml` dependency analysis (lines 248-404): healthy conditions used for postgres, redis-events, redis-primary. Started conditions for qdrant.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28321,7 +28321,7 @@
         "anchor": "L71",
         "excerpt_hash": "3e7708093b04485a9d5e2f287129ba2e028935ae5baf8047d66e251e3fe5686d",
         "excerpt_snippet": "* `compose.yml`: `task-orchestrator` depends on `redis-primary` (healthy) and `conport`. `conport` depends on `postgres` (healthy) and `redis-primary` (healthy)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28334,7 +28334,7 @@
         "anchor": "L121",
         "excerpt_hash": "5ce3f829bb40def48edc81fbb8bcf4b48211e80779d618c7148f60b78d9a4320",
         "excerpt_snippet": "* `conport` \u2192 depends on `postgres`, `redis-primary`, `mcp-qdrant`, `dopecon-bridge`",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28347,7 +28347,7 @@
         "anchor": "L124",
         "excerpt_hash": "60ec35953421b34f4af99a6c84dd2b50ba2671d056f59081a3b4e7ed1483bf68",
         "excerpt_snippet": "* `dopecon-bridge` \u2192 depends on `postgres` (healthy), `redis-events` (healthy), `mcp-qdrant` (started)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28360,7 +28360,7 @@
         "anchor": "L118",
         "excerpt_hash": "f869f7586956d31dbe41631751ff6e68a1fc72520960fcc5d04a625310c5b54e",
         "excerpt_snippet": "* `postgres` \u2192 healthcheck `pg_isready`, `start_period: 20s`",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28373,7 +28373,7 @@
         "anchor": "L181",
         "excerpt_hash": "220b4dbf2574f059c28faea719d06bb4026464fc9fbe4f8990b4de7acf8fc42f",
         "excerpt_snippet": "* `postgres`: `pg_isready`, interval 10s, retries 10, start_period 20s.",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28399,7 +28399,7 @@
         "anchor": "L105",
         "excerpt_hash": "6ae649d0a5315d18cec7145d23341573be1dbd5bd932fe5e60866184bd5c4827",
         "excerpt_snippet": "**Statement**: MCP servers MUST start in dependency order. Infrastructure (PostgreSQL, Redis, Qdrant) MUST be healthy before application services (ConPort, task",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28698,7 +28698,7 @@
         "anchor": "L368",
         "excerpt_hash": "df282415c95a93e36de16c7ccd356efcac895b3d130c37f535c0494d9b29cbf3",
         "excerpt_snippet": "1. **Dependency Test**: Stop PostgreSQL. Ensure ConPort fails its healthcheck. Ensure task-orchestrator does not start (or restarts and fails to connect).",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28724,7 +28724,7 @@
         "anchor": "L49",
         "excerpt_hash": "1c9e0469c837a37e720d37372dbda1253f76861bc760aeb48191668f68db6fe5",
         "excerpt_snippet": "3. **Analytics**: Request metadata is logged to the PostgreSQL database.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28737,7 +28737,7 @@
         "anchor": "L33",
         "excerpt_hash": "f6729e1dc02ff8f50f23d7e95bc9c7a25a176df1ce199d9920c072c247e3c182",
         "excerpt_snippet": "3. **Database**: Integrates with `dopemux-postgres-age` for request logging and caching.",
-        "path": "docs/04-explanation/technical-deep-dives/LITELLM-DEEP-DIVE.md"
+        "path": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28854,7 +28854,7 @@
         "anchor": "L319",
         "excerpt_hash": "766be54ca19ba57e54406291ab08ef2a6e5fba41cbe388f953cda941ca6f085a",
         "excerpt_snippet": "conport \u2014 depends: postgres, redis-primary, mcp-qdrant, dopecon-bridge",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28880,7 +28880,7 @@
         "anchor": "L326",
         "excerpt_hash": "903bbe73356e288e8e4ce2a7ecae10b140ac408e77a106b878c8bb2d0febf8ca",
         "excerpt_snippet": "dope-memory \u2014 depends: postgres(healthy), redis-events(healthy)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28893,7 +28893,7 @@
         "anchor": "L316",
         "excerpt_hash": "0aff008b7d8426a176cb92d19b41735e6bf8b13d33f964bca92e79ad4f87960c",
         "excerpt_snippet": "dopecon-bridge \u2014 depends: postgres(healthy), redis-events(healthy), mcp-qdrant(started)",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28932,7 +28932,7 @@
         "anchor": "L330",
         "excerpt_hash": "7673bbda63923ff4a6419957574fe59e823308dd4a749b56a13a56ae7c0a2a09",
         "excerpt_snippet": "litellm \u2014 depends: postgres",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -28958,7 +28958,7 @@
         "anchor": "L310",
         "excerpt_hash": "f8f279c613f4751807743dbef945c4c3860c62d621b1f71af03fbdf239eec93e",
         "excerpt_snippet": "postgres \u2014 healthcheck: pg_isready, start_period: 20s",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -29023,7 +29023,7 @@
         "anchor": "L271",
         "excerpt_hash": "36db5beffbfbb1e1d327817dd853a1f0bd29e08f91231cf5453aac2a51f1de6d",
         "excerpt_snippet": "| L6: Infrastructure Down | PostgreSQL down | All REQUIRED services fail | Full stop |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],
@@ -29036,7 +29036,7 @@
         "anchor": "L139",
         "excerpt_hash": "c922e67acf84ebd4b1dff718ea1efe4097ddca70812464f2f032905cafa7c175",
         "excerpt_snippet": "| postgres (AGE) | 5432 | REQUIRED | Backing store for ConPort, LiteLLM. Everything depends on it. |",
-        "path": "docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md"
+        "path": "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md"
       },
       "mechanism": "litellm_spend_db",
       "schema_refs": [],

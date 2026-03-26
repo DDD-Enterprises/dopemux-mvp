@@ -1,7 +1,7 @@
 """
 ReflectionGenerator - Deterministic reflection card generation.
 
-Per docs/spec/dope-memory/v1/08_phased_roadmap.md Phase 2:
+Per docs/spec/dope-memory/v1/08-phased-roadmap.md Phase 2:
 - Generate reflection cards at session end / idle trigger
 - Top-3 decisions/blockers (deterministic sorting)
 - Progress summary by entry_type + outcomes

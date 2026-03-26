@@ -18,6 +18,8 @@ Explanation docs provide architecture and design context for why the system work
 - `architecture/` for system-level design
 - `technical-deep-dives/` for subsystem internals
 - `design-decisions/` for implementation rationale
+- `../90-adr/` for architecture decisions, including the PM-plane ADR index
+- `../planes/pm/` for PM-plane authority, write-adjudication, and normalized tool-surface contracts
 
 ## Update Policy
 
