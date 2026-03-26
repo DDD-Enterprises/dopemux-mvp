@@ -1,0 +1,655 @@
+# Dopemux Canonical Docker Compose
+#
+# CANONICAL DEVELOPMENT ENTRYPOINT
+# This is the single source of truth for running Dopemux services.
+#
+# Services Included:
+# - Infrastructure: PostgreSQL (AGE), Redis (2x), Qdrant
+# - MCP Servers: ConPort, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge
+# - Application Services: DopeconBridge, Task Orchestrator, ADHD Engine, Genetic Agent
+#
+# Usage:
+#   docker compose up -d                    # Start all services
+#   docker compose ps                       # View running services
+#   docker compose down                     # Stop all services
+#   docker compose logs -f <service>        # View logs
+#
+# Guidelines:
+# - Do not create *-2 service definitions for scaling
+# - Use `docker compose up --scale service=N` for replicas
+# - This file replaces compose.master.yml, compose.staging.yml, etc.
+
+name: dopemux
+
+networks:
+  dopemux-network:
+    external: true
+    name: dopemux-network
+
+volumes:
+  pg_age_data:
+  mcp_litellm_data:
+  mcp_logs:
+  mcp_cache:
+  dope-decision-graph-qdrant-data:
+  leantime_mysql_data:
+  leantime_redis_data:
+  leantime_public_userfiles:
+  leantime_userfiles:
+  leantime_logs:
+  leantime_config:
+  mcp_client_data:
+  mcp_client_logs:
+  mcp_plane_coordinator_data:
+  mcp_plane_coordinator_logs:
+
+
+services:
+  # ========================================
+  # INFRASTRUCTURE SERVICES
+  # ========================================
+
+  # PostgreSQL with AGE (primary database)
+  postgres:
+    image: apache/age:release_PG16_1.6.0
+    container_name: dopemux-postgres-age
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    environment:
+      - POSTGRES_USER=dopemux_age
+      - POSTGRES_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - POSTGRES_DB=dopemux_knowledge_graph
+    volumes:
+      - pg_age_data:/var/lib/postgresql/data
+      - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1" ]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+      start_period: 20s
+
+  # Redis Events (for EventBus streaming)
+  redis-events:
+    image: redis:7-alpine
+    container_name: redis-events
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Redis Primary (for caching)
+  redis-primary:
+    image: redis:7-alpine
+    container_name: redis-primary
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # MySQL (Leantime)
+  mysql_leantime:
+    image: mysql:8.0
+    container_name: mysql_leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-leantime_root_dev}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-leantime}
+      - MYSQL_USER=${MYSQL_USER:-leantime}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
+    command: >
+      --character-set-server=UTF8MB4
+      --collation-server=UTF8MB4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+    volumes:
+      - leantime_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD:-leantime_root_dev} || exit 1"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+
+  # Redis (Leantime cache/session support)
+  redis_leantime:
+    image: redis:7-alpine
+    container_name: redis_leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    command: >
+      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then
+      exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+      else
+      exec redis-server --appendonly yes;
+      fi'
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    volumes:
+      - leantime_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 5
+      interval: 10s
+
+  # Leantime PM container (canonical stack member)
+  leantime:
+    build:
+      context: ./docker/leantime
+      dockerfile: Dockerfile
+    container_name: leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "8080:80"
+    depends_on:
+      mysql_leantime:
+        condition: service_healthy
+      redis_leantime:
+        condition: service_started
+    environment:
+      - LEAN_DB_HOST=mysql_leantime
+      - LEAN_DB_USER=${MYSQL_USER:-leantime}
+      - LEAN_DB_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
+      - LEAN_DB_DATABASE=${MYSQL_DATABASE:-leantime}
+      - LEAN_DB_PORT=3306
+      - LEAN_SITENAME=${LEAN_SITENAME:-Dopemux Leantime}
+      - LEAN_SESSION_PASSWORD=${LEAN_SESSION_PASSWORD:-dopemux_session_password_minimum_32_chars}
+      - LEAN_APP_URL=${LEAN_APP_URL:-http://localhost:8080}
+      - LEAN_SESSION_EXPIRATION=${LEAN_SESSION_EXPIRATION:-28800}
+      - LEAN_DEBUG=${LEAN_DEBUG:-0}
+      - LEAN_API_ENABLED=${LEAN_API_ENABLED:-true}
+      - LEAN_MCP_ENABLED=${LEAN_MCP_ENABLED:-true}
+      - LEAN_MCP_TOKEN=${LEAN_MCP_TOKEN:-}
+      - LEAN_ADHD_MODE=${LEAN_ADHD_MODE:-true}
+      - LEAN_NOTIFICATION_BATCH=${LEAN_NOTIFICATION_BATCH:-true}
+      - LEAN_CONTEXT_PRESERVATION=${LEAN_CONTEXT_PRESERVATION:-true}
+      - REDIS_HOST=redis_leantime
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    volumes:
+      - leantime_public_userfiles:/var/www/html/public/userfiles
+      - leantime_userfiles:/var/www/html/userfiles
+      - ./docker/leantime/plugins:/var/www/html/app/Plugins
+      - leantime_logs:/var/www/html/storage/logs
+      - leantime_config:/var/www/html/config
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/ >/dev/null || exit 1"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 60s
+
+  # Redis UI (optional web interface)
+  redis-ui:
+    image: redislabs/redisinsight:latest
+    container_name: dopemux-redis-ui
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "8081:5540"
+    # Note: RedisInsight healthcheck disabled - app takes time to start and doesn't respond reliably to health checks
+
+  # Qdrant (vector database for embeddings)
+  mcp-qdrant:
+    image: qdrant/qdrant:latest
+    container_name: mcp-qdrant
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - dope-decision-graph-qdrant-data:/qdrant/storage
+
+  # ========================================
+  # MCP SERVERS (Core Intelligence)
+  # ========================================
+
+  # ConPort - Knowledge Graph & Context Management
+  conport:
+    build:
+      context: ./docker/mcp-servers/conport
+      dockerfile: Dockerfile
+    container_name: mcp-conport
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    environment:
+      - MCP_SERVER_PORT=3005
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - AGE_HOST=dopemux-postgres-age
+      - AGE_PORT=5432
+      - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - REDIS_URL=redis://redis-primary:6379
+      - QDRANT_URL=http://mcp-qdrant:6333
+    ports:
+      - "${CONPORT_HTTP_PORT:-3004}:3004"
+      - "${CONPORT_MCP_PORT:-3005}:3005"
+      - "${CONPORT_INFO_PORT:-4004}:4004"
+    depends_on:
+      - postgres
+      - redis-primary
+      - mcp-qdrant
+      - dopecon-bridge
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 0" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+
+  # Zen - Multi-Model Reasoning
+  pal:
+    build:
+      context: ./docker/mcp-servers/pal
+      dockerfile: Dockerfile
+    container_name: mcp-pal
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - MCP_SERVER_PORT=3003
+    ports:
+      - "3003:3003"
+    healthcheck:
+      test: [ "CMD-SHELL", "exit 0" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+
+  # LiteLLM - Model Router
+  litellm:
+    build:
+      context: ./docker/mcp-servers/litellm
+      dockerfile: Dockerfile
+    container_name: mcp-litellm
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm}
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f -H 'Authorization: Bearer <REDACTED_LITELLM_MASTER_KEY>' http://localhost:4000/health || exit 1" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+
+  # Dope-Context - Semantic Code & Docs Search
+  dope-context:
+    build:
+      context: ./services/dope-context
+      dockerfile: Dockerfile
+    container_name: mcp-dope-context
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    environment:
+      - MCP_SERVER_PORT=3010
+      - VOYAGE_API_KEY=${VOYAGE_API_KEY}
+      - VOYAGEAI_API_KEY=${VOYAGE_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - QDRANT_URL=http://mcp-qdrant:6333
+      - HOST_CODE_PARENT_DIR=${HOST_CODE_PARENT_DIR}
+      - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
+      - DOPEMUX_WORKSPACE_ROOT=/workspaces/${HOST_PROJECT_RELATIVE_PATH}
+    ports:
+      - "3010:3010"
+    volumes:
+      - ./services/dope-context/data:/app/data
+      - ./services/dope-context/logs:/app/logs
+      - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
+    depends_on:
+      - mcp-qdrant
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3010/health || exit 0" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+
+  # ========================================
+  # APPLICATION SERVICES (Event System)
+  # ========================================
+
+  # DopeconBridge - Event Processing & Pattern Detection
+  dopecon-bridge:
+    build:
+      context: ./services/dopecon-bridge
+      dockerfile: Dockerfile
+    container_name: dope-decision-graph-bridge
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    ports:
+      - "${DOPECON_BRIDGE_PORT:-3016}:3016"
+    environment:
+      - PORT_BASE=${DOPEMUX_PORT_BASE:-3000}
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - AGE_HOST=dopemux-postgres-age
+      - AGE_PORT=5432
+      - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - QDRANT_URL=http://mcp-qdrant:6333
+      - REDIS_URL=redis://redis-events:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-events:
+        condition: service_healthy
+      mcp-qdrant:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3016/health || exit 1" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+
+  # Task Orchestrator - ADHD Task Coordination
+  task-orchestrator:
+    build:
+      context: .
+      dockerfile: services/task-orchestrator/Dockerfile
+    container_name: task-orchestrator
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    environment:
+      - LEANTIME_URL=${LEANTIME_URL:-http://leantime:80}
+      - LEANTIME_TOKEN=${LEANTIME_TOKEN}
+      - REDIS_URL=redis://redis-primary:6379
+      - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID:-/app}
+      - CONPORT_URL=http://conport:3005
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+      - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY:-dev-key-456}
+      - DOPECON_BRIDGE_REDIS_URL=redis://redis-primary:6379
+      - PORT=8000
+    ports:
+      - "${TASK_ORCHESTRATOR_PORT:-8000}:8000"
+    depends_on:
+      - redis-primary
+      - conport
+      - leantime
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 40s
+
+  # ADHD Engine - Real-time ADHD Accommodation Service
+  adhd-engine:
+    build:
+      context: .
+      dockerfile: services/adhd_engine/Dockerfile
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    environment:
+      - API_PORT=8095
+      - HOST=0.0.0.0
+      - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
+      - REDIS_URL=redis://redis-primary:6379
+      - CONPORT_URL=http://conport:3005
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097
+    ports:
+      - "${ADHD_ENGINE_PORT:-3025}:8095"
+    depends_on:
+      - redis-primary
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8095/health || exit 1" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+
+  # Dope-Memory - Temporal Chronicle and Working Context
+  dope-memory:
+    build:
+      context: ./services/working-memory-assistant
+      dockerfile: Dockerfile.dope-memory
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "${DOPE_MEMORY_PORT:-3020}:3020"
+    environment:
+      - WMA_SECRET_KEY=${WMA_SECRET_KEY:-dev-only-change-me}
+      - WMA_ENCRYPTION_KEY=${WMA_ENCRYPTION_KEY:-dev-only-change-me}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=dopemux_knowledge_graph
+      - POSTGRES_USER=dopemux_age
+      - POSTGRES_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - REDIS_URL=redis://redis-events:6379
+      - ENABLE_EVENTBUS=true
+      - ENABLE_MIRROR_SYNC=${ENABLE_MIRROR_SYNC:-false}
+      - MIRROR_SCHEMA_RESET=${MIRROR_SCHEMA_RESET:-false}
+      - DOPE_MEMORY_WORKSPACE_ID=${DOPE_MEMORY_WORKSPACE_ID:-default}
+      - POSTGRES_URL=postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@postgres:5432/dopemux_knowledge_graph
+      - DOPEMUX_CAPTURE_LEDGER_PATH=/data/chronicle.sqlite
+      - DOPEMUX_SQLITE_JOURNAL_MODE=DELETE
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097}
+    volumes:
+      - ./.dopemux:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-events:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3020/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Serena v2 - ADHD Engine MCP
+  serena:
+    build:
+      context: ./docker/mcp-servers/serena
+      dockerfile: Dockerfile
+    container_name: dopemux-mcp-serena
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "${SERENA_PORT:-3006}:3006"
+      - "${SERENA_HTTP_PORT:-4006}:4006"
+    environment:
+      - MCP_SERVER_PORT=3006
+      - HTTP_PORT=4006
+      - WORKSPACE_ID=${WORKSPACE_ID:-/workspace}
+      - HOST_CODE_PARENT_DIR=${HOST_CODE_PARENT_DIR}
+      - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
+    volumes:
+      - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
+      - ${HOME:?HOME is required}/.serena:/root/.serena:rw
+      - ${HOME:?HOME is required}/code:${HOME:?HOME is required}/code:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4006/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+
+  # GPT Researcher - Deep research MCP
+  gptr-mcp:
+    build:
+      context: ./docker/mcp-servers/gptr-mcp
+      dockerfile: Dockerfile
+    container_name: dopemux-mcp-gptr-mcp
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "3009:3009"
+    environment:
+      - MCP_SERVER_PORT=3009
+      - LLM_BACKEND=openai
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3009/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+  # Desktop Commander - Desktop automation
+  desktop-commander:
+    build:
+      context: ./docker/mcp-servers/desktop-commander
+      dockerfile: Dockerfile
+    container_name: dopemux-mcp-desktop-commander
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "3012:3012"
+    environment:
+      - MCP_SERVER_PORT=3012
+      - DISPLAY=${DISPLAY:-:0}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3012/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+
+  # Leantime Bridge - Project management integration
+  exa:
+    build:
+      context: ./docker/mcp-servers/exa
+      dockerfile: Dockerfile
+    container_name: mcp-exa
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "3011:3011"
+    environment:
+      - EXA_API_KEY=${EXA_API_KEY:-}
+      - MCP_SERVER_PORT=3011
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
+      timeout: 5s
+      retries: 3
+      interval: 30s
+
+  leantime-bridge:
+    build:
+      context: ./docker/mcp-servers/leantime-bridge
+      dockerfile: Dockerfile
+    container_name: dopemux-mcp-leantime-bridge
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "3015:3015"
+    env_file:
+      - ./docker/mcp-servers/leantime-bridge/.env
+    environment:
+      - MCP_SERVER_HOST=0.0.0.0
+      - MCP_SERVER_PORT=3015
+      - LEANTIME_API_URL=${LEANTIME_API_URL:-${LEANTIME_URL:-http://leantime:80}}
+      - LEANTIME_API_TOKEN=${LEANTIME_API_TOKEN:-${LEANTIME_TOKEN:-}}
+      - REDIS_URL=redis://redis-primary:6379
+    depends_on:
+      - mcp-qdrant
+      - leantime
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3015/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+
+  # OpenAI Webhook Receiver Sidecar
+  webhook-receiver:
+    build:
+      context: .
+      dockerfile: services/webhook_receiver/Dockerfile
+    container_name: dopemux-webhook-receiver
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "8790:8790"
+    environment:
+      - WEBHOOK_RECEIVER_HOST=0.0.0.0
+      - WEBHOOK_RECEIVER_PORT=8790
+      # Default to SQLite at WEBHOOK_DB_PATH; set WEBHOOK_DB_URL to use PostgreSQL instead.
+      - WEBHOOK_DB_PATH=/data/webhook_receiver.db
+      - WEBHOOK_DB_URL=${WEBHOOK_DB_URL:-}
+      - DPMX_ENV=${DPMX_ENV:-development}
+      - OPENAI_WEBHOOK_SECRET=${OPENAI_WEBHOOK_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./.dopemux/webhook_receiver:/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8790/healthz', timeout=2)
+      timeout: 5s
+      retries: 3
+      interval: 30s
+
+  webhook-poller:
+    build:
+      context: .
+      dockerfile: services/webhook_receiver/Dockerfile
+    container_name: dopemux-webhook-poller
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - WEBHOOK_DB_PATH=/data/webhook_receiver.db
+      - WEBHOOK_DB_URL=${WEBHOOK_DB_URL:-}
+    volumes:
+      - ./.dopemux/webhook_receiver:/data
+    command: ["python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10"]

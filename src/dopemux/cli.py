@@ -2461,6 +2461,61 @@ def start(
             attention_monitor.stop_monitoring()
 
 
+def _trigger_dope_context_autoindex_startup(
+    workspace_path: Path,
+    *,
+    force: bool = False,
+) -> Optional[dict]:
+    """
+    Trigger dope-context startup autoindex bootstrap for the current workspace.
+    """
+    enabled = os.getenv("DOPEMUX_AUTO_INDEX_ON_STARTUP", "1").lower() not in {
+        "0",
+        "false",
+        "no",
+    }
+    if not enabled:
+        return None
+
+    base_url = os.getenv("DOPE_CONTEXT_URL", "http://localhost:3010").rstrip("/")
+    endpoint = f"{base_url}/autoindex/bootstrap"
+    payload = {
+        "workspace_path": str(workspace_path.resolve()),
+        "force": force,
+        "wait_for_completion": False,
+        "debounce_seconds": float(
+            os.getenv("DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS", "5.0")
+        ),
+        "periodic_interval": int(
+            os.getenv("DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS", "600")
+        ),
+        "trigger": "dopemux_cli_startup",
+    }
+
+    try:
+        import requests
+
+        response = requests.post(endpoint, json=payload, timeout=5)
+        if response.status_code >= 400:
+            console.logger.info(
+                f"[warning]⚠️  Autoindex bootstrap request failed ({response.status_code})[/warning]"
+            )
+            return {
+                "status": "http_error",
+                "status_code": response.status_code,
+                "endpoint": endpoint,
+            }
+        result = response.json()
+        return result if isinstance(result, dict) else {"status": "unknown_response"}
+    except Exception as exc:
+        logger.warning("Failed to trigger dope-context autoindex bootstrap: %s", exc)
+        return {
+            "status": "request_failed",
+            "error": str(exc),
+            "endpoint": endpoint,
+        }
+
+
 @cli.command()
 @click.option("--message", "-m", help="📜 Signal Note: Attach a descriptive message to the saved temporal coordinate.")
 @click.option("--force", "-f", is_flag=True, help="⚡ Force Extraction: Overwrite safety interlocks and capture state even if no changes are detected.")
@@ -3745,147 +3800,10 @@ def _start_mcp_servers_with_progress(
     if not asyncio.run(gate.run()):
         if wizard: wizard.update_boot_step("Booting MCP Services", "FAILURE")
         raise RuntimeError("MCP Discovery Gate failed.")
-    
+
     if wizard:
         wizard.update_boot_step("Booting MCP Services", "SUCCESS")
         wizard.add_log("✅ MCP Servers Online")
-
-        startup_workspace = (worktree_path or project_path).resolve()
-        autoindex_result = _trigger_dope_context_autoindex_startup(
-            startup_workspace
-        )
-        if autoindex_result:
-            status = autoindex_result.get("status", "unknown")
-            if status in {"started", "already_running"}:
-                progress.update(
-                    task,
-                    description=(
-                        f"Autoindex startup {status} for {startup_workspace.name}"
-                    ),
-                )
-            elif status in {"request_failed", "http_error"}:
-                console.logger.info(
-                    "[warning]⚠️  Autoindex startup trigger failed; continuing without blocking.[/warning]"
-                )
-        else:
-            console.logger.info(
-                "[warning]⚠️  Skipping MCP servers (reduced ADHD experience)[/warning]"
-            )
-
-        # Configure role-based instructions
-        if role:
-            progress.update(task, description=f"Activating {role} persona...")
-            configurator = ClaudeConfigurator(config_manager)
-            # project_path is the base directory for .claude/
-            configurator.setup_project_config(project_path, role=role)
-
-        # Launch Claude Code
-        progress.update(task, description="Launching Claude Code...")
-        launcher = ClaudeLauncher(config_manager)
-        claude_process = launcher.launch(
-            project_path=project_path,
-            background=background,
-            debug=debug,
-            context=context,
-        )
-
-        # Start attention monitoring
-        progress.update(task, description="Starting activity monitoring...")
-        if wizard_instance:
-            wizard_instance.update_boot_step("Starting Activity Monitor", "LOADING")
-        
-        from .hooks.claude_code_hooks import claude_hooks
-        claude_hooks.start_monitoring(str(project_path))
-        
-        attention_monitor = AttentionMonitor(project_path)
-        attention_monitor.start_monitoring()
-
-        if wizard_instance:
-            wizard_instance.update_boot_step("Starting Activity Monitor", "SUCCESS")
-            wizard_instance.finish(success=True, final_message="Dopemux Cockpit: All systems nominal. Launching Claude Code...")
-
-        progress.update(task, description="Ready! 🎯", completed=True)
-
-    # Save instance state to ConPort for crash recovery
-    if instance_id and port_base:
-        from datetime import datetime, timezone
-
-        from .instance_state import InstanceState, save_instance_state_sync
-
-        # Get current git branch
-        try:
-            git_branch = subprocess.run(
-                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                cwd=str(worktree_path or project_path),
-                capture_output=True,
-                text=True,
-                check=True,
-            ).stdout.strip()
-        except (subprocess.SubprocessError, OSError) as e:
-            git_branch = "unknown"
-            logger.debug(f"Git branch detection failed (expected in non-git dirs): {e}")
-        except Exception:
-            git_branch = "unknown"
-            logger.debug("Unexpected git branch detection error")
-        state = InstanceState(
-            instance_id=instance_id,
-            port_base=port_base,
-            worktree_path=str(worktree_path or project_path),
-            git_branch=git_branch,
-            created_at=datetime.now(timezone.utc),
-            last_active=datetime.now(timezone.utc),
-            status="active",
-            last_working_directory=str(worktree_path or project_path),
-            last_focus_context=(
-                context.get("current_goal", "New session") if context else "New session"
-            ),
-        )
-
-        save_instance_state_sync(
-            state,
-            workspace_id=str(project_path.resolve()),
-            conport_port=3004,  # Always save via instance A's ConPort
-        )
-        console.logger.info(
-            "[text.dim]✅ Instance state saved for crash recovery[/text.dim]"
-        )
-
-    if not background:
-        console.print(
-            "[success]✨ Claude Code is running with ADHD optimizations[/success]"
-        )
-        console.logger.info("Press Ctrl+C to stop monitoring and save context")
-
-        try:
-            claude_process.wait()
-        except KeyboardInterrupt:
-            console.logger.info(
-                "\n[warning]⏸️ Saving context and stopping...[/warning]"
-            )
-
-            # Mark instance as stopped in ConPort
-            if instance_id:
-                from datetime import datetime, timezone
-
-                from .instance_state import (
-                    load_instance_state_sync,
-                    save_instance_state_sync,
-                )
-
-                workspace_id = str(project_path.resolve())
-                state = load_instance_state_sync(
-                    instance_id, workspace_id, conport_port=3004
-                )
-                if state:
-                    state.status = "stopped"
-                    state.last_active = datetime.now(timezone.utc)
-                    save_instance_state_sync(state, workspace_id, conport_port=3004)
-                    console.logger.info(
-                        "[text.dim]✅ Instance marked as stopped[/text.dim]"
-                    )
-
-            ctx.invoke(save)
-            attention_monitor.stop_monitoring()
 
 
 @cli.command()
