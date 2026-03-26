@@ -248,6 +248,7 @@ class DopemuxConfig(BaseModel):
     """Main Dopemux configuration."""
 
     version: str = "1.0"
+    theme: str = "pastel-neon-dreams"
     mcp_mode: Literal["auto", "docker", "local"] = "auto"
     adhd_profile: ADHDProfile = Field(default_factory=ADHDProfile)
     mcp_servers: Dict[str, MCPServerConfig] = Field(default_factory=dict)
@@ -455,6 +456,12 @@ class ConfigManager:
             return True
         return False
 
+    def set_theme(self, theme_name: str) -> None:
+        """Update the active theme in the user configuration."""
+        config = self.load_config()
+        config.theme = theme_name
+        self.save_user_config(config)
+
     def update_adhd_profile(self, **kwargs) -> None:
         """Update ADHD profile settings."""
         config = self.load_config()
@@ -481,9 +488,9 @@ class ConfigManager:
     def update_claude_autoresponder(self, **kwargs) -> None:
         """Update Claude Auto Responder settings."""
         config = self.load_config()
-        current = config.claude_autoresponder.model_dump()
-        updates = {key: value for key, value in kwargs.items() if key in current}
-        config.claude_autoresponder = ClaudeAutoResponderConfig(**(current | updates))
+        for key, value in kwargs.items():
+            if hasattr(config.claude_autoresponder, key):
+                setattr(config.claude_autoresponder, key, value)
         self.save_user_config(config)
 
     def get_claude_settings(self) -> Dict[str, Any]:
@@ -508,6 +515,8 @@ class ConfigManager:
 
     def _get_default_config(self) -> Dict[str, Any]:
         """Get default configuration."""
+        from ..tmux.theme import build_tmux_theme
+        tmux_theme = build_tmux_theme("muted")
         return {
             "version": "1.0",
             "mcp_mode": "auto",
@@ -568,45 +577,12 @@ class ConfigManager:
                 "sandbox_command": None,
                 "dual_agent_default": False,
                 "secondary_agent_command": None,
-                "pane_styles": {
-                    "monitor:worktree": "fg=#a6e3a1,bg=#1e1e2e",
-                    "monitor:logs": "fg=#89dceb,bg=#1e1e2e",
-                    "monitor:metrics": "fg=#f9e2af,bg=#1e1e2e",
-                    "orchestrator:control": "fg=#f5f5f7,bg=#181825",
-                    "sandbox:shell": "fg=#f5c2e7,bg=#302d41",
-                    "agent:primary": "fg=#cdd6f4,bg=#1f1d2e",
-                    "agent:secondary": "fg=#b4befe,bg=#262335",
-                },
-                "pane_border_styles": {
-                    "monitor:worktree": "fg=#a6e3a1,bg=#181825",
-                    "monitor:logs": "fg=#89dceb,bg=#181825",
-                    "monitor:metrics": "fg=#f9e2af,bg=#181825",
-                    "orchestrator:control": "fg=#f5f5f7,bg=#11111b",
-                    "sandbox:shell": "fg=#f5c2e7,bg=#11111b",
-                    "agent:primary": "fg=#cdd6f4,bg=#11111b",
-                    "agent:secondary": "fg=#b4befe,bg=#11111b",
-                },
-                "status_style": "bg=#1e1e2e,fg=#cdd6f4",
-                "status_left": (
-                    "#[fg=#1e1e2e,bg=#89b4fa]"
-                    "#[fg=#11111b,bg=#89b4fa,bold] DOPMUX "
-                    "#[fg=#89b4fa,bg=#1e1e2e] "
-                    "#[fg=#a6e3a1]#H #[default]"
-                ),
-                "status_right": (
-                    "#[fg=#f5c2e7]  %R #[fg=#89dceb]%a %b %d "
-                    "#[fg=#cdd6f4]#{window_index}:#{window_name} "
-                    "#[fg=#f9e2af]#{pane_index}:#{pane_title}"
-                ),
-                "status_palette": {
-                    "accent": "#89b4fa",
-                    "background": "#1e1e2e",
-                    "foreground": "#cdd6f4",
-                    "warning": "#f9e2af",
-                    "success": "#a6e3a1",
-                    "info": "#89dceb",
-                    "alert": "#f5c2e7",
-                },
+                "pane_styles": dict(tmux_theme["pane_styles"]),
+                "pane_border_styles": dict(tmux_theme["pane_border_styles"]),
+                "status_style": tmux_theme["status_style"],
+                "status_left": tmux_theme["status_left"],
+                "status_right": tmux_theme["status_right"],
+                "status_palette": dict(tmux_theme["status_palette"]),
                 "theme": "muted",
                 "presets": {
                     "bash": {
