@@ -1,8 +1,8 @@
-\"\"\"
+"""
 DopeconBridge API Routes - FastAPI route definitions.
 
 Extracted and organized from main.py ~1700-2915.
-\"\"\"
+"""
 
 import json
 import logging
@@ -34,23 +34,36 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 class PRDParseRequest(BaseModel):
-    \"\"\"Request to parse a PRD document.\"\"\"
-    content: str = Field(..., description=\"PRD content to parse\")
-    project_id: str = Field(..., description=\"Project ID for task creation\")
+    """Request to parse a PRD document.
+
+    This payload is used by the `parse-prd` endpoint to trigger automated 
+    decomposition of requirements into structured tasks.
+    """
+    content: str = Field(..., description="PRD content to parse")
+    project_id: str = Field(..., description="Project ID for task creation")
 
 
 class PublishEventRequest(BaseModel):
-    \"\"\"Request to publish an event.\"\"\"
-    stream: str = Field(default=\"dopemux:events\", description=\"Redis Stream name\")
-    event_type: str = Field(..., description=\"Event type (e.g., tasks_imported)\")
-    data: Dict[str, Any] = Field(..., description=\"Event data payload\")
-    source: Optional[str] = Field(None, description=\"Event source identifier\")
+    """Request to publish an event to the global event bus.
+
+    This model supports both raw event publication and the automated 
+    PM Plane normalization layer for `taskmaster.*` and `task_*` events.
+    """
+    stream: str = Field(default="dopemux:events", description="Redis Stream name")
+    event_type: str = Field(..., description="Event type (e.g., tasks_imported)")
+    data: Dict[str, Any] = Field(..., description="Event data payload")
+    source: Optional[str] = Field(None, description="Event source identifier")
 
 
 class TaskUpdateRequest(BaseModel):
-    \"\"\"Request to update task status.\"\"\"
-    status: str = Field(..., description=\"New task status\")
-    assigned_to: Optional[str] = Field(None, description=\"User assignment\")
+    """Request to update task status.
+
+    This payload is used to trigger authoritative transitions in the 
+    PM Plane via the bridge adapter.
+    """
+    status: str = Field(..., description="New task status")
+    assigned_to: Optional[str] = Field(None, description="User assignment")
+
 
 
 # ============================================================================
@@ -58,87 +71,87 @@ class TaskUpdateRequest(BaseModel):
 # ============================================================================
 
 # Auth routes
-auth_router = APIRouter(prefix=\"/auth\", tags=[\"Authentication\"])
+auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 # Event routes
-events_router = APIRouter(prefix=\"/events\", tags=[\"EventBus\"])
+events_router = APIRouter(prefix="/events", tags=["EventBus"])
 
 # Task routes  
-tasks_router = APIRouter(prefix=\"/tasks\", tags=[\"Tasks\"])
+tasks_router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
 # DDG routes (Dope Decision Graph)
-ddg_router = APIRouter(prefix=\"/ddg\", tags=[\"Decision Graph\"])
+ddg_router = APIRouter(prefix="/ddg", tags=["Decision Graph"])
 
 # Health routes
-health_router = APIRouter(tags=[\"Health\"])
+health_router = APIRouter(tags=["Health"])
 
 
 # ============================================================================
 # AUTH ENDPOINTS
 # ============================================================================
 
-@auth_router.post(\"/token\")
+@auth_router.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    \"\"\"Authenticate and return access token.\"\"\"
+    """Authenticate and return access token."""
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=401,
-            detail=\"Incorrect username or password\",
-            headers={\"WWW-Authenticate\": \"Bearer\"},
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(
-        data={\"sub\": user[\"username\"]},
+        data={"sub": user["username"]},
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes)
     )
-    return {\"access_token\": access_token, \"token_type\": \"bearer\"}
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
-@auth_router.post(\"/refresh\")
+@auth_router.post("/refresh")
 async def refresh_token(current_token: str = Depends(security)):
-    \"\"\"Refresh access token.\"\"\"
+    """Refresh access token."""
     # In production, validate the current token and issue a new one
     access_token = create_access_token(
-        data={\"sub\": \"admin\"},
+        data={"sub": "admin"},
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes)
     )
-    return {\"access_token\": access_token, \"token_type\": \"bearer\"}
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 # ============================================================================
 # HEALTH ENDPOINTS
 # ============================================================================
 
-@health_router.get(\"/health\")
+@health_router.get("/health")
 async def health_check():
-    \"\"\"Health check with service status.\"\"\"
+    """Health check with service status."""
     try:
         services_health = await mcp_client.health_check_all()
         return {
-            \"status\": \"healthy\",
-            \"instance\": settings.instance_name,
-            \"port\": settings.port,
-            \"services\": services_health
+            "status": "healthy",
+            "instance": settings.instance_name,
+            "port": settings.port,
+            "services": services_health
         }
     except Exception as e:
-        logger.error(f\"Health check failed: {e}\")
+        logger.error(f"Health check failed: {e}")
         return {
-            \"status\": \"degraded\",
-            \"instance\": settings.instance_name,
-            \"error\": str(e)
+            "status": "degraded",
+            "instance": settings.instance_name,
+            "error": str(e)
         }
 
 
-@health_router.get(\"/\")
+@health_router.get("/")
 async def root():
-    \"\"\"Service information.\"\"\"
+    """Service information."""
     return {
-        \"service\": \"DopeconBridge\",
-        \"version\": \"2.0.0\",
-        \"instance\": settings.instance_name,
-        \"port\": settings.port,
-        \"architecture\": \"modular\",
-        \"docs\": f\"http://localhost:{settings.port}/docs\"
+        "service": "DopeconBridge",
+        "version": "2.0.0",
+        "instance": settings.instance_name,
+        "port": settings.port,
+        "architecture": "modular",
+        "docs": f"http://localhost:{settings.port}/docs"
     }
 
 
@@ -146,9 +159,19 @@ async def root():
 # EVENT BUS ENDPOINTS
 # ============================================================================
 
-@events_router.post(\"\")
+@events_router.post("")
 async def publish_event(request: PublishEventRequest):
-    \"\"\"Publish event to Redis Stream for cross-service coordination.\"\"\"
+    """
+    Publish an event to Redis Streams for cross-service coordination.
+
+    This route includes an automatic normalization layer:
+    - `taskmaster.*` events are transformed into canonical `pm.*` envelopes.
+    - `task_*` (orchestrator) events are transformed into canonical `pm.*` envelopes.
+
+    This ensures that all downstream consumers (ConPort, Chronicle) receive 
+    standardized PM Plane events regardless of the producer's native dialect.
+    """
+
     try:
         from .event_bus import EventBus, Event
         
@@ -164,44 +187,44 @@ async def publish_event(request: PublishEventRequest):
         msg_id = await event_bus.publish(request.stream, event)
         
         return {
-            \"success\": True,
-            \"message_id\": msg_id,
-            \"stream\": request.stream,
-            \"event_type\": request.event_type
+            "success": True,
+            "message_id": msg_id,
+            "stream": request.stream,
+            "event_type": request.event_type
         }
     except Exception as e:
-        logger.error(f\"Event publish failed: {e}\")
+        logger.error(f"Event publish failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@events_router.get(\"/stream\")
+@events_router.get("/stream")
 async def subscribe_to_events(
-    stream: str = \"dopemux:events\",
-    consumer_group: str = \"dashboard\"
+    stream: str = "dopemux:events",
+    consumer_group: str = "dashboard"
 ):
-    \"\"\"Subscribe to event stream via Server-Sent Events (SSE).\"\"\"
+    """Subscribe to event stream via Server-Sent Events (SSE)."""
     from .event_bus import EventBus
     
     event_bus = EventBus()
     await event_bus.initialize()
     
     async def event_generator():
-        consumer = f\"sse-{settings.instance_name}\"
+        consumer = f"sse-{settings.instance_name}"
         async for msg_id, event in event_bus.subscribe(stream, consumer_group, consumer):
-            yield f\"data: {json.dumps({'id': msg_id, 'event': event.to_dict()})}\\n\\n\"
+            yield f"data: {json.dumps({'id': msg_id, 'event': event.to_dict()})}\\n\\n"
     
     return StreamingResponse(
         event_generator(),
-        media_type=\"text/event-stream\"
+        media_type="text/event-stream"
     )
 
 
-@events_router.get(\"/history\")
+@events_router.get("/history")
 async def get_event_history(
-    stream: str = \"dopemux:events\",
+    stream: str = "dopemux:events",
     count: int = Query(100, ge=1, le=1000)
 ):
-    \"\"\"Get event history from Redis Stream.\"\"\"
+    """Get event history from Redis Stream."""
     try:
         cache_client = await cache_manager.get_client()
         
@@ -210,50 +233,50 @@ async def get_event_history(
         events = []
         for msg_id, data in entries:
             events.append({
-                \"id\": msg_id,
-                \"type\": data.get(\"type\", \"unknown\"),
-                \"data\": json.loads(data.get(\"data\", \"{}\")) if data.get(\"data\") else {},
-                \"source\": data.get(\"source\"),
-                \"timestamp\": data.get(\"timestamp\")
+                "id": msg_id,
+                "type": data.get("type", "unknown"),
+                "data": json.loads(data.get("data", "{}")) if data.get("data") else {},
+                "source": data.get("source"),
+                "timestamp": data.get("timestamp")
             })
         
         return {
-            \"stream\": stream,
-            \"count\": len(events),
-            \"events\": events
+            "stream": stream,
+            "count": len(events),
+            "events": events
         }
     except Exception as e:
-        logger.error(f\"Event history retrieval failed: {e}\")
+        logger.error(f"Event history retrieval failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # Convenience event endpoints
-@events_router.post(\"/tasks-imported\")
+@events_router.post("/tasks-imported")
 async def publish_tasks_imported(task_count: int, sprint_id: str):
-    \"\"\"Publish tasks_imported event (convenience endpoint).\"\"\"
+    """Publish tasks_imported event (convenience endpoint)."""
     request = PublishEventRequest(
-        event_type=\"tasks_imported\",
-        data={\"task_count\": task_count, \"sprint_id\": sprint_id}
+        event_type="tasks_imported",
+        data={"task_count": task_count, "sprint_id": sprint_id}
     )
     return await publish_event(request)
 
 
-@events_router.post(\"/session-started\")
+@events_router.post("/session-started")
 async def publish_session_started(task_id: str, duration_minutes: int = 25):
-    \"\"\"Publish session_started event (convenience endpoint).\"\"\"
+    """Publish session_started event (convenience endpoint)."""
     request = PublishEventRequest(
-        event_type=\"session_started\",
-        data={\"task_id\": task_id, \"duration_minutes\": duration_minutes}
+        event_type="session_started",
+        data={"task_id": task_id, "duration_minutes": duration_minutes}
     )
     return await publish_event(request)
 
 
-@events_router.post(\"/progress-updated\")
+@events_router.post("/progress-updated")
 async def publish_progress_updated(task_id: str, status: str, progress: float):
-    \"\"\"Publish progress_updated event (convenience endpoint).\"\"\"
+    """Publish progress_updated event (convenience endpoint)."""
     request = PublishEventRequest(
-        event_type=\"progress_updated\",
-        data={\"task_id\": task_id, \"status\": status, \"progress\": progress}
+        event_type="progress_updated",
+        data={"task_id": task_id, "status": status, "progress": progress}
     )
     return await publish_event(request)
 
@@ -262,90 +285,122 @@ async def publish_progress_updated(task_id: str, status: str, progress: float):
 # TASK ENDPOINTS
 # ============================================================================
 
-@tasks_router.post(\"/parse-prd\")
+@tasks_router.post("/parse-prd")
 async def parse_prd(
     request: PRDParseRequest, 
     http_request: Request,
     x_source_plane: Optional[str] = Header(None)
 ):
-    \"\"\"Parse PRD document into tasks across all systems with ADHD context preservation.\"\"\"
+    """
+    DEPRECATED: Authority moved to Task-Orchestrator.
+    Parse PRD document into tasks across all systems with ADHD context preservation.
+
+    This route enforces the Two-Plane authority model, requiring a 
+    `cognitive_plane` authorization header for writes. It delegates the parsing
+    to the `task_service` adapter, which utilizes Task-Master-AI and 
+    Leantime pillars.
+    """
+
     from .services.task_integration import task_service
     
     # Enforce cognitive plane authority for writes
-    if x_source_plane != \"cognitive_plane\":
+    if x_source_plane != "cognitive_plane":
         raise HTTPException(
             status_code=403,
-            detail=\"PRD parsing requires cognitive_plane authority\"
+            detail="PRD parsing requires cognitive_plane authority"
         )
 
     try:
         # Update context for ADHD tracking
         update_context_delta(
             http_request,
-            \"last_prd_parse\",
-            {\"project_id\": request.project_id, \"content_length\": len(request.content)}
+            "last_prd_parse",
+            {"project_id": request.project_id, "content_length": len(request.content)}
         )
         
         tasks = await task_service.parse_prd_to_tasks(request.content, request.project_id)
         
         return {
-            \"success\": True,
-            \"task_count\": len(tasks),
-            \"project_id\": request.project_id,
-            \"tasks\": [
+            "success": True,
+            "task_count": len(tasks),
+            "project_id": request.project_id,
+            "tasks": [
                 {
-                    \"id\": t.id,
-                    \"title\": t.title,
-                    \"status\": t.status.value,
-                    \"priority\": t.priority.value
+                    "id": t.id,
+                    "title": t.title,
+                    "status": t.status.value,
+                    "priority": t.priority.value
                 }
                 for t in tasks
             ]
         }
     except Exception as e:
-        logger.error(f\"PRD parsing failed: {e}\")
+        logger.error(f"PRD parsing failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@tasks_router.get(\"/next/{project_id}\")
+@tasks_router.get("/next/{project_id}")
 async def get_next_tasks(
     project_id: str, 
     limit: int = Query(5, ge=1, le=20),
     x_source_plane: Optional[str] = Header(None)
 ):
-    \"\"\"Get next actionable tasks for ADHD-friendly workflow via normalized PM-plane reads.\"\"\"
-    if x_source_plane and x_source_plane not in [\"pm_plane\", \"cognitive_plane\"]:
-        raise HTTPException(status_code=403, detail=f\"Invalid source plane: {x_source_plane}\")
+    """
+    DEPRECATED: Authority moved to Task-Orchestrator.
+    Get next actionable tasks for ADHD-friendly workflow via normalized PM-plane reads.
 
-    from dopemux.pm.reads import pm_get_priority_queue
+    This route retrieves prioritized tasks by delegating to the `task_service` 
+    adapter, ensuring recommendations are grounded in the authoritative PM 
+    Plane state.
+
+    Args:
+        project_id: Project to query.
+        limit: Max tasks to return.
+        x_source_plane: Authority header (`pm_plane` or `cognitive_plane`).
+    """
+
+    if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
+        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+
+    from .services.task_integration import task_service
     
     try:
-        result = await pm_get_priority_queue(project_id)
-        
+        result = await task_service.get_priority_queue(project_id)
+        queue_items = result.get("queue_items", [])[:limit]
+
         return {
-            \"success\": True,
-            \"project_id\": project_id,
-            \"count\": len(result.queue_items[:limit]),
-            \"tasks\": result.queue_items[:limit]
+            "success": True,
+            "project_id": project_id,
+            "count": len(queue_items),
+            "tasks": queue_items,
         }
     except Exception as e:
-        logger.error(f\"Failed to get next tasks: {e}\")
+        logger.error(f"Failed to get next tasks: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@tasks_router.patch(\"/{task_id}/status\")
+@tasks_router.patch("/{task_id}/status")
 async def update_task_status(
     task_id: str,
     request: TaskUpdateRequest,
     current_user: dict = Depends(get_current_user),
     x_source_plane: Optional[str] = Header(None)
 ):
-    \"\"\"Update task status across all systems.\"\"\"
+    """
+    DEPRECATED: Authority moved to Task-Orchestrator.
+    Update task status across all authorities.
+
+    This route executes a dual-update transition via the `task_service` adapter, 
+    targeting both the local PM Plane authority and the Leantime mirror.
+    It enforces the Two-Plane authority model, requiring a `cognitive_plane` 
+    authorization header for writes.
+    """
+
     # Enforce cognitive plane authority for writes
-    if x_source_plane != \"cognitive_plane\":
+    if x_source_plane != "cognitive_plane":
         raise HTTPException(
             status_code=403,
-            detail=\"Task status update requires cognitive_plane authority\"
+            detail="Task status update requires cognitive_plane authority"
         )
 
     from .services.task_integration import task_service
@@ -361,7 +416,7 @@ async def update_task_status(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f\"Task status update failed: {e}\")
+        logger.error(f"Task status update failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -369,15 +424,15 @@ async def update_task_status(
 # DDG ENDPOINTS (Dope Decision Graph)
 # ============================================================================
 
-@ddg_router.get(\"/decisions\")
+@ddg_router.get("/decisions")
 async def ddg_recent_decisions(
     workspace_id: Optional[str] = None,
     limit: int = Query(20, ge=1, le=100),
     x_source_plane: Optional[str] = Header(None)
 ):
-    \"\"\"Get recent decisions from the decision graph.\"\"\"
-    if x_source_plane and x_source_plane not in [\"pm_plane\", \"cognitive_plane\"]:
-        raise HTTPException(status_code=403, detail=f\"Invalid source plane: {x_source_plane}\")
+    """Get recent decisions from the decision graph."""
+    if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
+        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
 
     try:
         # Route to canonical backend via MCP client
@@ -385,30 +440,30 @@ async def ddg_recent_decisions(
         
         # We proxy to mcp_client.get_decisions which gets from Conport
         decisions = await mcp_client.call_tool(
-            \"conport\",
-            \"get_decisions\",
-            {\"workspace_id\": workspace_id, \"limit\": limit}
+            "conport",
+            "get_decisions",
+            {"workspace_id": workspace_id, "limit": limit}
         )
         
         return {
-            \"count\": len(decisions.get(\"decisions\", [])),
-            \"decisions\": decisions.get(\"decisions\", [])
+            "count": len(decisions.get("decisions", [])),
+            "decisions": decisions.get("decisions", [])
         }
     except Exception as e:
-        logger.error(f\"DDG decisions query failed: {e}\")
+        logger.error(f"DDG decisions query failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@ddg_router.get(\"/search\")
+@ddg_router.get("/search")
 async def ddg_search_decisions(
     q: str,
     workspace_id: Optional[str] = None,
     limit: int = Query(20, ge=1, le=100),
     x_source_plane: Optional[str] = Header(None)
 ):
-    \"\"\"Search decisions by text query.\"\"\"
-    if x_source_plane and x_source_plane not in [\"pm_plane\", \"cognitive_plane\"]:
-        raise HTTPException(status_code=403, detail=f\"Invalid source plane: {x_source_plane}\")
+    """Search decisions by text query."""
+    if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
+        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
 
     try:
         # Route to canonical backend via MCP client
@@ -416,18 +471,18 @@ async def ddg_search_decisions(
         
         # We proxy to mcp_client.query_knowledge_graph
         decisions = await mcp_client.call_tool(
-            \"conport\",
-            \"query_knowledge_graph\",
-            {\"query\": q, \"workspace_id\": workspace_id, \"limit\": limit}
+            "conport",
+            "query_knowledge_graph",
+            {"query": q, "workspace_id": workspace_id, "limit": limit}
         )
         
         return {
-            \"query\": q,
-            \"count\": len(decisions.get(\"decisions\", [])),
-            \"decisions\": decisions.get(\"decisions\", [])
+            "query": q,
+            "count": len(decisions.get("decisions", [])),
+            "decisions": decisions.get("decisions", [])
         }
     except Exception as e:
-        logger.error(f\"DDG search failed: {e}\")
+        logger.error(f"DDG search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -436,7 +491,7 @@ async def ddg_search_decisions(
 # ============================================================================
 
 def get_all_routers() -> List[APIRouter]:
-    \"\"\"Return all API routers for inclusion in app.\"\"\"
+    """Return all API routers for inclusion in app."""
     return [
         health_router,
         auth_router,

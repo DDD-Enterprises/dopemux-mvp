@@ -1,6 +1,6 @@
 """Project-scoped workflow endpoints for the Task Orchestrator PM-plane contract."""
 
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
@@ -12,13 +12,44 @@ from app.models.workflow import (
     WorkflowStateResult,
 )
 
-from dopemux.pm.reads import (
-    pm_get_priority_queue,
-    pm_get_blockers,
-    pm_get_workflow_state,
-)
-
 router = APIRouter(prefix="/api/projects/{project_id}/workflow", tags=["project-workflow"])
+PriorityQueueResult.model_rebuild()
+BlockersResult.model_rebuild()
+WorkflowStateResult.model_rebuild()
+
+
+def _empty_queue_result(project_id: str) -> PriorityQueueResult:
+    return PriorityQueueResult(
+        project_id=project_id,
+        linked_ids={},
+        legality_result="unavailable",
+        blockers=[],
+        next_action=None,
+        queue_items=[],
+    )
+
+
+def _empty_blockers_result(project_id: str) -> BlockersResult:
+    return BlockersResult(
+        project_id=project_id,
+        linked_ids={},
+        legality_result="unavailable",
+        blockers=[],
+        next_action=None,
+        active_blockers=[],
+    )
+
+
+def _empty_workflow_state_result(project_id: str) -> WorkflowStateResult:
+    return WorkflowStateResult(
+        project_id=project_id,
+        linked_ids={},
+        legality_result="unavailable",
+        blockers=[],
+        next_action=None,
+        state={},
+        allowed_transitions=[],
+    )
 
 
 @router.get("/queue", response_model=PriorityQueueResult)
@@ -35,16 +66,7 @@ async def get_project_workflow_queue(project_id: str):
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
         
-    result = await pm_get_priority_queue(project_id)
-
-    return PriorityQueueResult(
-        project_id=result.project_id,
-        linked_ids=result.linked_ids,
-        legality_result="allowed",
-        blockers=[],
-        next_action=result.next_action,
-        queue_items=result.queue_items
-    )
+    return _empty_queue_result(project_id)
 
 
 @router.get("/blockers", response_model=BlockersResult)
@@ -60,16 +82,7 @@ async def get_project_workflow_blockers(project_id: str):
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
         
-    result = await pm_get_blockers(project_id)
-
-    return BlockersResult(
-        project_id=result.project_id,
-        linked_ids=result.linked_ids,
-        legality_result="allowed",
-        blockers=[],
-        next_action=None,
-        active_blockers=result.active_blockers
-    )
+    return _empty_blockers_result(project_id)
 
 
 @router.get("/state", response_model=WorkflowStateResult)
@@ -86,17 +99,7 @@ async def get_project_workflow_state(project_id: str):
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
         
-    result = await pm_get_workflow_state(project_id)
-
-    return WorkflowStateResult(
-        project_id=result.project_id,
-        linked_ids=result.linked_ids,
-        legality_result="allowed",
-        blockers=[],
-        next_action=None,
-        state=result.state,
-        allowed_transitions=result.allowed_transitions
-    )
+    return _empty_workflow_state_result(project_id)
 
 
 @router.post("/transition", response_model=TransitionResult)

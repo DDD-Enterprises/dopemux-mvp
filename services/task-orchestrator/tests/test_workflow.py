@@ -1,4 +1,14 @@
 import pytest
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from app.api.project_workflow import (
+    get_project_workflow_blockers,
+    get_project_workflow_queue,
+    get_project_workflow_state,
+)
 from app.models.workflow import CreateIdeaRequest, UpdateIdeaRequest, PromoteIdeaRequest, CreateEpicRequest, UpdateEpicRequest, WorkflowIdea
 from app.services.workflow_service import WorkflowService, WorkflowConflictError, WorkflowUnavailableError
 
@@ -123,3 +133,31 @@ async def test_promote_idea_audit_failure(service, mock_store):
     # Check that idea was not promoted
     stored_idea = await service.get_idea(idea.id)
     assert stored_idea.status == "new"
+
+
+@pytest.mark.asyncio
+async def test_project_workflow_queue_fail_closed_without_recursion():
+    result = await get_project_workflow_queue("proj-123")
+
+    assert result.project_id == "proj-123"
+    assert result.queue_items == []
+    assert result.legality_result == "unavailable"
+
+
+@pytest.mark.asyncio
+async def test_project_workflow_blockers_fail_closed_without_recursion():
+    result = await get_project_workflow_blockers("proj-123")
+
+    assert result.project_id == "proj-123"
+    assert result.active_blockers == []
+    assert result.legality_result == "unavailable"
+
+
+@pytest.mark.asyncio
+async def test_project_workflow_state_fail_closed_without_recursion():
+    result = await get_project_workflow_state("proj-123")
+
+    assert result.project_id == "proj-123"
+    assert result.state == {}
+    assert result.allowed_transitions == []
+    assert result.legality_result == "unavailable"

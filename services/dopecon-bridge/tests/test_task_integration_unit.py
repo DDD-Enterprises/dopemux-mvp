@@ -102,3 +102,59 @@ async def test_sync_tasks_to_leantime_empty_list():
     await service._sync_tasks_to_leantime([])
 
     assert not service.mcp_manager.call_tool.called
+
+
+class _MockResponse:
+    def __init__(self, status, payload):
+        self.status = status
+        self._payload = payload
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def json(self):
+        return self._payload
+
+
+@pytest.mark.asyncio
+async def test_get_priority_queue_uses_task_orchestrator_queue_endpoint():
+    service = TaskIntegrationService()
+    mock_session = MagicMock()
+    mock_session.get.return_value = _MockResponse(
+        200,
+        {
+            "project_id": "project-123",
+            "queue_items": [{"id": "task-1", "priority": "high"}],
+            "linked_ids": {"workflow_id": "wf-1"},
+            "legality_result": "allowed",
+            "blockers": [],
+            "next_action": {"id": "task-1"},
+        },
+    )
+    service.mcp_manager = MagicMock(session=mock_session)
+    service.mcp_manager.initialize = AsyncMock()
+
+    result = await service.get_priority_queue("project-123")
+
+    service.mcp_manager.initialize.assert_awaited_once()
+    mock_session.get.assert_called_once()
+    assert result["queue_items"] == [{"id": "task-1", "priority": "high"}]
+    assert result["next_action"] == {"id": "task-1"}
+
+
+@pytest.mark.asyncio
+async def test_get_priority_queue_fail_closed_on_upstream_error():
+    service = TaskIntegrationService()
+    mock_session = MagicMock()
+    mock_session.get.return_value = _MockResponse(503, {"detail": "unavailable"})
+    service.mcp_manager = MagicMock(session=mock_session)
+    service.mcp_manager.initialize = AsyncMock()
+
+    result = await service.get_priority_queue("project-123")
+
+    assert result["project_id"] == "project-123"
+    assert result["queue_items"] == []
+    assert result["legality_result"] == "unavailable"

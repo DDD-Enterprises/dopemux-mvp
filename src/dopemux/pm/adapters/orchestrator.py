@@ -64,6 +64,32 @@ class TaskOrchestratorAdapter:
             logger.error(f"Failed to execute transition on task-orchestrator: {e}")
             raise
 
+    async def get_project_context(self, project_id: str) -> Dict[str, Any]:
+        """Get project context from the orchestrator.
+
+        The current in-repo Task Orchestrator API exposes workflow endpoints but
+        does not expose a dedicated project-context read surface yet. Keep this
+        fail-closed until that endpoint exists.
+        """
+        logger.warning(
+            "Task Orchestrator project-context endpoint is not available; returning fail-closed empty context for %s",
+            project_id,
+        )
+        return {}
+
+    async def get_sprint_snapshot(self, project_id: str) -> Dict[str, Any]:
+        """Get sprint snapshot from the orchestrator.
+
+        The current in-repo Task Orchestrator API does not expose a dedicated
+        sprint snapshot endpoint yet. Keep this fail-closed until that surface
+        exists.
+        """
+        logger.warning(
+            "Task Orchestrator sprint snapshot endpoint is not available; returning fail-closed empty snapshot for %s",
+            project_id,
+        )
+        return {}
+
     async def health(self) -> bool:
         """Check health of task-orchestrator."""
         try:
