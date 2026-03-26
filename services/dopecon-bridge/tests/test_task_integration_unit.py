@@ -123,19 +123,24 @@ async def test_sync_tasks_to_leantime_empty_list():
 
 
 @pytest.mark.asyncio
-async def test_get_priority_queue_routes_through_task_orchestrator_http():
+async def test_get_priority_queue_uses_pm_read_layer(monkeypatch):
     service = TaskIntegrationService()
-    service.mcp_manager = AsyncMock()
-    service.mcp_manager.initialize = AsyncMock()
-    service.mcp_manager.session = MagicMock()
-    service.mcp_manager.session.get.return_value = DummyResponse(
-        status=200,
-        payload={
-            "canonical_backend": "task-orchestrator",
-            "project_id": "proj-123",
-            "legality_result": "allowed",
-            "queue_items": [{"id": "wf-1", "title": "Canonical task"}],
-        },
+
+    async def fake_priority_queue(project_id: str):
+        class Result:
+            def model_dump(self):
+                return {
+                    "canonical_backend": "task-orchestrator",
+                    "project_id": project_id,
+                    "legality_result": "allowed",
+                    "queue_items": [{"id": "wf-1", "title": "Canonical task"}],
+                }
+
+        return Result()
+
+    monkeypatch.setattr(
+        "dopecon_bridge.services.task_integration.pm_get_priority_queue",
+        fake_priority_queue,
     )
 
     result = await service.get_priority_queue("proj-123")

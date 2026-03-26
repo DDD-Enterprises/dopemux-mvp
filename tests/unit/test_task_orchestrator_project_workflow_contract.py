@@ -21,7 +21,7 @@ except (ImportError, ModuleNotFoundError) as exc:
 
 @pytest.mark.asyncio
 async def test_get_project_workflow_queue_passes_through_legality_result(monkeypatch):
-    def fake_priority_queue(project_id: str):
+    async def fake_priority_queue(project_id: str):
         return PMPriorityQueueResult(
             canonical_backend="task-orchestrator",
             project_id=project_id,
@@ -40,7 +40,10 @@ async def test_get_project_workflow_queue_passes_through_legality_result(monkeyp
             queue_items=[{"id": "wf-1", "title": "Review authority"}],
         )
 
-    monkeypatch.setattr(project_workflow, "_build_priority_queue_result", lambda project_id: fake_priority_queue(project_id))
+    async def fake_get_reads():
+        return fake_priority_queue, None, None
+
+    monkeypatch.setattr(project_workflow, "_get_reads", fake_get_reads)
 
     result = await project_workflow.get_project_workflow_queue("proj-123")
 
@@ -52,7 +55,7 @@ async def test_get_project_workflow_queue_passes_through_legality_result(monkeyp
 
 @pytest.mark.asyncio
 async def test_get_project_workflow_state_passes_through_allowed_transitions(monkeypatch):
-    def fake_workflow_state(project_id: str):
+    async def fake_workflow_state(project_id: str):
         return PMWorkflowStateResult(
             canonical_backend="task-orchestrator",
             project_id=project_id,
@@ -72,7 +75,10 @@ async def test_get_project_workflow_state_passes_through_allowed_transitions(mon
             allowed_transitions=["start", "block"],
         )
 
-    monkeypatch.setattr(project_workflow, "_build_workflow_state_result", lambda project_id: fake_workflow_state(project_id))
+    async def fake_get_reads():
+        return None, None, fake_workflow_state
+
+    monkeypatch.setattr(project_workflow, "_get_reads", fake_get_reads)
 
     result = await project_workflow.get_project_workflow_state("proj-123")
 

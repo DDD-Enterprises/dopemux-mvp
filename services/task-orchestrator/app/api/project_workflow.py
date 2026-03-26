@@ -10,6 +10,14 @@ from app.models.workflow import (
     WorkflowStateResult,
 )
 
+# Use dynamic import to avoid circular dependencies or absolute path issues in service context
+async def _get_reads():
+    try:
+        from dopemux.pm.reads import pm_get_priority_queue, pm_get_blockers, pm_get_workflow_state
+        return pm_get_priority_queue, pm_get_blockers, pm_get_workflow_state
+    except ImportError:
+        return None, None, None
+
 router = APIRouter(prefix="/api/projects/{project_id}/workflow", tags=["project-workflow"])
 
 
@@ -116,6 +124,11 @@ async def get_project_workflow_queue(project_id: str):
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
         
+    pm_get_priority_queue, _, _ = await _get_reads()
+    if pm_get_priority_queue:
+        result = await pm_get_priority_queue(project_id)
+        return _priority_queue_response(result)
+        
     return _build_priority_queue_result(project_id)
 
 
@@ -131,6 +144,11 @@ async def get_project_workflow_blockers(project_id: str):
         
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
+        
+    _, pm_get_blockers, _ = await _get_reads()
+    if pm_get_blockers:
+        result = await pm_get_blockers(project_id)
+        return _blockers_response(result)
         
     return _build_blockers_result(project_id)
 
@@ -148,6 +166,11 @@ async def get_project_workflow_state(project_id: str):
         
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
+        
+    _, _, pm_get_workflow_state = await _get_reads()
+    if pm_get_workflow_state:
+        result = await pm_get_workflow_state(project_id)
+        return _workflow_state_response(result)
         
     return _build_workflow_state_result(project_id)
 
