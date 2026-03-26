@@ -2,14 +2,24 @@ import pytest
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+import app.api.project_workflow as project_workflow_api
 from app.api.project_workflow import (
     get_project_workflow_blockers,
     get_project_workflow_queue,
     get_project_workflow_state,
 )
-from app.models.workflow import CreateIdeaRequest, UpdateIdeaRequest, PromoteIdeaRequest, CreateEpicRequest, UpdateEpicRequest, WorkflowIdea
+from app.models.workflow import (
+    CreateEpicRequest,
+    CreateIdeaRequest,
+    PromoteIdeaRequest,
+    UpdateEpicRequest,
+    UpdateIdeaRequest,
+    WorkflowEpic,
+    WorkflowIdea,
+)
 from app.services.workflow_service import WorkflowService, WorkflowConflictError, WorkflowUnavailableError
 
 class MockStore:
@@ -136,28 +146,145 @@ async def test_promote_idea_audit_failure(service, mock_store):
 
 
 @pytest.mark.asyncio
-async def test_project_workflow_queue_fail_closed_without_recursion():
+async def test_project_workflow_queue_uses_local_epic_ordering(monkeypatch):
+    class WorkflowReadService:
+        async def list_ideas(self, limit=1000):
+            return []
+
+        async def list_epics(self, limit=1000):
+            return [
+                WorkflowEpic(
+                    id="epic_planned",
+                    title="Planned Epic",
+                    description="lowest rank",
+                    business_value="value",
+                    priority="critical",
+                    status="planned",
+                    updated_at="2026-03-01T00:00:00+00:00",
+                ),
+                WorkflowEpic(
+                    id="epic_ready_high",
+                    title="Ready Epic",
+                    description="top rank",
+                    business_value="value",
+                    priority="high",
+                    status="ready",
+                    updated_at="2026-03-02T00:00:00+00:00",
+                ),
+                WorkflowEpic(
+                    id="epic_ready_medium",
+                    title="Second Ready Epic",
+                    description="after high priority",
+                    business_value="value",
+                    priority="medium",
+                    status="ready",
+                    updated_at="2026-03-03T00:00:00+00:00",
+                ),
+            ]
+
+    monkeypatch.setattr(project_workflow_api, "_workflow_service", lambda: WorkflowReadService())
     result = await get_project_workflow_queue("proj-123")
 
     assert result.project_id == "proj-123"
-    assert result.queue_items == []
-    assert result.legality_result == "unavailable"
+    assert result.legality_result == "available"
+    assert [item["workflow_id"] for item in result.queue_items] == [
+        "epic_ready_high",
+        "epic_ready_medium",
+        "epic_planned",
+    ]
+    assert result.next_action["workflow_id"] == "epic_ready_high"
 
 
 @pytest.mark.asyncio
-async def test_project_workflow_blockers_fail_closed_without_recursion():
+async def test_project_workflow_blockers_reflect_local_degraded_epics(monkeypatch):
+    class WorkflowReadService:
+        async def list_ideas(self, limit=1000):
+            return []
+
+        async def list_epics(self, limit=1000):
+            return [
+                WorkflowEpic(
+                    id="epic_blocked",
+                    title="Blocked Epic",
+                    description="blocked",
+                    business_value="value",
+                    priority="high",
+                    status="ready",
+                    leantime_project_id=42,
+                    leantime_reflection={"status": "degraded", "warning": "sync lag"},
+                ),
+                WorkflowEpic(
+                    id="epic_clear",
+                    title="Clear Epic",
+                    description="clear",
+                    business_value="value",
+                    priority="medium",
+                    status="in-progress",
+                ),
+            ]
+
+    monkeypatch.setattr(project_workflow_api, "_workflow_service", lambda: WorkflowReadService())
     result = await get_project_workflow_blockers("proj-123")
 
     assert result.project_id == "proj-123"
-    assert result.active_blockers == []
-    assert result.legality_result == "unavailable"
+    assert result.legality_result == "available"
+    assert len(result.active_blockers) == 1
+    assert result.active_blockers[0]["workflow_id"] == "epic_blocked"
+    assert result.active_blockers[0]["reflection_status"] == "degraded"
+    assert result.blockers == ["epic_blocked"]
 
 
 @pytest.mark.asyncio
-async def test_project_workflow_state_fail_closed_without_recursion():
+async def test_project_workflow_state_summarizes_local_records(monkeypatch):
+    class WorkflowReadService:
+        async def list_ideas(self, limit=1000):
+            return [
+                WorkflowIdea(
+                    id="idea_ready",
+                    title="Idea Ready",
+                    description="idea",
+                    status="approved",
+                ),
+                WorkflowIdea(
+                    id="idea_promoted",
+                    title="Idea Promoted",
+                    description="idea",
+                    status="promoted",
+                    promoted_to_epic_id="epic_ready",
+                ),
+            ]
+
+        async def list_epics(self, limit=1000):
+            return [
+                WorkflowEpic(
+                    id="epic_ready",
+                    title="Ready Epic",
+                    description="epic",
+                    business_value="value",
+                    priority="high",
+                    status="ready",
+                    created_from_idea_id="idea_promoted",
+                    leantime_project_id=17,
+                ),
+                WorkflowEpic(
+                    id="epic_done",
+                    title="Done Epic",
+                    description="epic",
+                    business_value="value",
+                    priority="low",
+                    status="done",
+                ),
+            ]
+
+    monkeypatch.setattr(project_workflow_api, "_workflow_service", lambda: WorkflowReadService())
     result = await get_project_workflow_state("proj-123")
 
     assert result.project_id == "proj-123"
-    assert result.state == {}
+    assert result.legality_result == "available"
+    assert result.state["ideas"]["approved"]["ids"] == ["idea_ready"]
+    assert result.state["ideas"]["promoted"]["ids"] == ["idea_promoted"]
+    assert result.state["epics"]["ready"]["ids"] == ["epic_ready"]
+    assert result.state["epics"]["done"]["ids"] == ["epic_done"]
+    assert result.linked_ids["epic_ready:created_from_idea_id"] == "idea_promoted"
+    assert result.linked_ids["epic_ready:leantime_project_id"] == "17"
     assert result.allowed_transitions == []
-    assert result.legality_result == "unavailable"
