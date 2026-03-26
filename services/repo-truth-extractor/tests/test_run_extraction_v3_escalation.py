@@ -199,7 +199,7 @@ def test_disable_escalation_forces_single_hop(monkeypatch: pytest.MonkeyPatch, t
 def _premium_synthesis_ladder():
     return [
         ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
         ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
     ]
 
@@ -236,7 +236,7 @@ def test_synthesis_schema_failure_blocks_opus() -> None:
     meta = payload["request_meta"]
     assert meta["route_hop_total"] == 2
     assert meta["provider"] == "openrouter"
-    assert meta["model_id"] == "openai/gpt-5.2"
+    assert meta["model_id"] == "openai/gpt-5.4"
     assert meta["escalation_class"] == "schema_repair"
     assert meta["opus_eligible"] is False
     assert meta["opus_block_reason"] == "blocked_for_escalation_class:schema_repair"
@@ -273,7 +273,7 @@ def test_synthesis_invalid_json_blocks_opus() -> None:
 
     meta = payload["request_meta"]
     assert meta["route_hop_total"] == 2
-    assert meta["model_id"] == "openai/gpt-5.2"
+    assert meta["model_id"] == "openai/gpt-5.4"
     assert meta["escalation_class"] == "schema_repair"
     assert meta["opus_eligible"] is False
 
@@ -308,7 +308,7 @@ def test_synthesis_provider_transport_failure_blocks_opus() -> None:
 
     meta = payload["request_meta"]
     assert meta["route_hop_total"] == 2
-    assert meta["model_id"] == "openai/gpt-5.2"
+    assert meta["model_id"] == "openai/gpt-5.4"
     assert meta["escalation_class"] == "provider_transport"
     assert meta["opus_eligible"] is False
 

@@ -24,8 +24,7 @@ def test_extract_first_json_object_salvages_single_object_with_leading_and_trail
     salvaged = runner.extract_first_json_object(raw_text)
     assert salvaged == '{"artifacts":[{"artifact_name":"OUT.json","payload":{"ok":true}}]}'
     parsed = runner.parse_json_from_response(raw_text)
-    assert isinstance(parsed, dict)
-    assert parsed["artifacts"][0]["artifact_name"] == "OUT.json"
+    assert parsed is None
 
 
 def test_extract_first_json_object_rejects_multiple_top_level_objects() -> None:

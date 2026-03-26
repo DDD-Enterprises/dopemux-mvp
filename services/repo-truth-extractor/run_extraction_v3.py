@@ -379,7 +379,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         ],
         "synthesis": [
             ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
             ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
         ],
         "qa": [
@@ -452,7 +452,7 @@ BALANCED_GROK_OPENROUTER_D_STRICT_STEPS: Set[str] = {"D0", "D1"}
 BALANCED_GROK_OPENROUTER_DOCS_STRICT_LADDER: List[Tuple[str, str, str]] = [
     ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
@@ -467,12 +467,12 @@ BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "qa": [
         ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
         ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ],
 }
 BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_OPUS_ROUTE: Tuple[str, str, str] = (
@@ -709,6 +709,108 @@ def _get_s_step_controls(args: argparse.Namespace) -> Optional[List[str]]:
     _validate_s_steps(selected)
     return _normalize_s_steps(selected)
 
+
+def _get_execution_step_filter(args: argparse.Namespace) -> Optional[str]:
+    raw = str(getattr(args, "step", "") or "").strip()
+    if not raw:
+        return None
+    normalized = raw.upper()
+    if "," in normalized:
+        raise RuntimeError("Execution step filtering accepts exactly one step id.")
+    if not re.match(r"^[A-Z]\d+$", normalized):
+        raise RuntimeError(f"Unsupported execution step id: {normalized}")
+    phase = str(getattr(args, "phase", "") or "").strip().upper()
+    if not phase:
+        raise RuntimeError("--step execution filtering requires a concrete --phase.")
+    if phase == "ALL":
+        raise RuntimeError("--step execution filtering does not support --phase ALL.")
+    if phase == "S_INT":
+        raise RuntimeError("--step execution filtering is not supported for phase S_INT.")
+    if phase == "S" and getattr(args, "s_steps", None):
+        raise RuntimeError("Use either --step or --s-steps for phase S, not both.")
+    if normalized[0] != phase:
+        raise RuntimeError(f"--step {normalized} does not belong to phase {phase}.")
+    return normalized
+
+
+def _repo_relative_posix(path: str, root: Path) -> str:
+    candidate = Path(str(path))
+    resolved_root = root.resolve()
+    try:
+        resolved_candidate = candidate.resolve(strict=False)
+    except Exception:
+        resolved_candidate = (
+            candidate if candidate.is_absolute() else resolved_root / candidate
+        )
+    try:
+        return resolved_candidate.relative_to(resolved_root).as_posix()
+    except Exception:
+        return resolved_candidate.as_posix()
+
+
+def _stable_sort_partition_paths(paths: List[str], root: Path) -> List[str]:
+    normalized = [_repo_relative_posix(path, root) for path in paths]
+    return sorted(normalized)
+
+
+def _step_file_cap(step_id: str, cfg: "RunnerConfig") -> Optional[int]:
+    token = str(step_id or "").strip().upper()
+    if token == "D0":
+        return cfg.d0_max_files
+    if token == "D1":
+        return cfg.d1_max_files
+    return None
+
+
+def _apply_file_cap(
+    step_id: str,
+    partition_id: str,
+    files: List[str],
+    cfg: "RunnerConfig",
+    root: Path,
+) -> Tuple[List[str], List[str]]:
+    del partition_id
+    cap = _step_file_cap(step_id, cfg)
+    if cap is None or str(step_id or "").strip().upper() not in {"D0", "D1"}:
+        return [str(path) for path in files], []
+    normalized_paths = _stable_sort_partition_paths([str(path) for path in files], root)
+    kept = normalized_paths[:cap]
+    dropped = normalized_paths[cap:]
+    return kept, dropped
+
+
+def _parse_positive_optional_int(raw: Any, flag_name: str) -> Optional[int]:
+    if raw is None:
+        return None
+    text = str(raw).strip()
+    if not text:
+        return None
+    try:
+        value = int(text)
+    except Exception as exc:
+        raise RuntimeError(f"{flag_name} must be a positive integer. Got: {raw}") from exc
+    if value <= 0:
+        raise RuntimeError(f"{flag_name} must be > 0. Got: {value}")
+    return value
+
+
+def _pressure_cap_metadata(
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    cap: int,
+    kept: List[str],
+    dropped: List[str],
+) -> Dict[str, Any]:
+    return {
+        "phase": phase,
+        "step": step_id,
+        "partition_id": partition_id,
+        "cap": int(cap),
+        "kept": list(kept),
+        "dropped": list(dropped),
+    }
+
 TEXT_NAMES = {
     "Dockerfile",
     "Makefile",
@@ -916,6 +1018,9 @@ class RunnerConfig:
     webhook_auto_continue: bool = False
     live_ok: bool = False
     selected_s_steps: Optional[Tuple[str, ...]] = None
+    selected_execution_step: Optional[str] = None
+    d0_max_files: Optional[int] = None
+    d1_max_files: Optional[int] = None
     provider_denylist: Tuple[str, ...] = ()
 
 
@@ -4843,6 +4948,7 @@ def build_chat_payload(
     system_prompt: str,
     user_content: str,
     force_json_output: bool = False,
+    response_format_override: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     temperature = resolve_temperature(provider, model_id, 0.1)
     payload: Dict[str, Any] = {
@@ -4854,7 +4960,9 @@ def build_chat_payload(
     }
     if temperature is not None:
         payload["temperature"] = temperature
-    if force_json_output:
+    if isinstance(response_format_override, dict):
+        payload["response_format"] = copy.deepcopy(response_format_override)
+    elif force_json_output:
         if provider == "gemini":
             payload["response_format"] = {"type": "json_object"}
         elif provider in {"openai", "xai"}:
@@ -5337,6 +5445,8 @@ def call_llm(
     user_content: str,
     cfg: RunnerConfig,
     force_json_output: bool = False,
+    response_format_override: Optional[Dict[str, Any]] = None,
+    structured_output_override: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     if _live_llm_calls_blocked_for_tests():
         message = (
@@ -5354,6 +5464,7 @@ def call_llm(
         system_prompt,
         user_content,
         force_json_output=force_json_output,
+        response_format_override=response_format_override,
     )
     body = serialize_payload_body(payload)
     request_payload_bytes = measure_payload_bytes_from_body(body)
@@ -5362,16 +5473,37 @@ def call_llm(
     gemini_family = (
         "openai_compat" if provider == "gemini" and transport == "openai_compat_http" else "native"
     ) if provider == "gemini" else None
+    using_response_format_override = isinstance(response_format_override, dict)
     structured_output: Dict[str, Any] = {
-        "enabled": bool(provider == "gemini" and force_json_output),
-        "mime_type": "application/json" if provider == "gemini" and force_json_output else None,
-        "schema": None,
+        "enabled": bool(
+            (provider == "gemini" and force_json_output)
+            or using_response_format_override
+            or isinstance(structured_output_override, dict)
+        ),
+        "mime_type": "application/json"
+        if (
+            (provider == "gemini" and force_json_output)
+            or using_response_format_override
+            or isinstance(structured_output_override, dict)
+        )
+        else None,
+        "schema": (
+            response_format_override.get("json_schema", {}).get("name")
+            if using_response_format_override
+            else None
+        ),
         "transport_mode": (
-            "response_format_json_object"
-            if provider == "gemini" and transport == "openai_compat_http" and force_json_output
-            else ("response_mime_type" if provider == "gemini" and force_json_output else None)
+            "response_format_json_schema"
+            if using_response_format_override
+            else (
+                "response_format_json_object"
+                if provider == "gemini" and transport == "openai_compat_http" and force_json_output
+                else ("response_mime_type" if provider == "gemini" and force_json_output else None)
+            )
         ),
     }
+    if isinstance(structured_output_override, dict):
+        structured_output.update(copy.deepcopy(structured_output_override))
     auth_mode_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, base_url) if provider == "gemini" else ["sdk_bearer"]
     mode_index = 0
     effective_mode = auth_mode_sequence[mode_index]
@@ -6308,18 +6440,7 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         except Exception:
             pass
 
-    # 4) prose-plus-object salvage (deterministic single-object only)
-    salvaged_object = extract_first_json_object(stripped)
-    if salvaged_object and salvaged_object not in seen_candidates:
-        try:
-            return json.loads(salvaged_object)
-        except json.JSONDecodeError as exc:
-            repair_candidates.append((salvaged_object, exc))
-            seen_candidates.add(salvaged_object)
-        except Exception:
-            pass
-
-    # 5) balanced repair parse (semantic EOF eligible only)
+    # 4) balanced repair parse (semantic EOF eligible only)
     for candidate, decode_error in repair_candidates:
         if not _is_semantic_eof_eligible(decode_error, candidate):
             continue
@@ -6331,7 +6452,7 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         except Exception:
             continue
 
-    # 6) fail closed
+    # 5) fail closed
     return None
 
 
@@ -6499,10 +6620,10 @@ def coerce_artifacts_from_response(
     return []
 
 
-def artifacts_pass_schema_gate(
+def describe_schema_gate_failure(
     artifacts: List[Dict[str, Any]],
     expected_artifact_names: Tuple[str, ...],
-) -> Tuple[bool, Optional[str]]:
+) -> Optional[Dict[str, Any]]:
     expected = set(expected_artifact_names)
     observed = {
         str(row.get("artifact_name", "")).strip()
@@ -6511,33 +6632,89 @@ def artifacts_pass_schema_gate(
     }
     missing = sorted(expected - observed)
     if missing:
-        return False, f"missing_expected_artifacts:{','.join(missing)}"
+        joined = ",".join(missing)
+        return {
+            "artifact_name": missing[0],
+            "item_index": None,
+            "item_id": None,
+            "item_path": None,
+            "failure_reason": f"missing_expected_artifacts:{joined}",
+            "missing_key": None,
+            "constraint": None,
+        }
 
     for row in artifacts:
         if not isinstance(row, dict):
             continue
+        artifact_name = str(row.get("artifact_name", "")).strip() or None
         payload = row.get("payload")
-        if isinstance(payload, dict):
-            items = payload.get("items")
-            if isinstance(items, list):
-                for item in items:
-                    if not isinstance(item, dict):
-                        return False, "schema_item_not_object"
-                    for key in ("id", "path", "line_range"):
-                        if key not in item:
-                            return False, f"schema_missing_key:{key}"
-                        value = item.get(key)
-                        if value in (None, "", []):
-                            return False, f"schema_empty_key:{key}"
-                    line_range = item.get("line_range")
-                    if not (
-                        isinstance(line_range, list)
-                        and len(line_range) == 2
-                        and all(isinstance(value, int) for value in line_range)
-                        and int(line_range[0]) > 0
-                        and int(line_range[1]) >= int(line_range[0])
-                    ):
-                        return False, "schema_invalid_line_range"
+        if not isinstance(payload, dict):
+            continue
+        items = payload.get("items")
+        if not isinstance(items, list):
+            continue
+        for item_index, item in enumerate(items):
+            if not isinstance(item, dict):
+                return {
+                    "artifact_name": artifact_name,
+                    "item_index": item_index,
+                    "item_id": None,
+                    "item_path": None,
+                    "failure_reason": "schema_item_not_object",
+                    "missing_key": None,
+                    "constraint": "item_object",
+                }
+            item_id = item.get("id")
+            item_path = item.get("path")
+            for key in ("id", "path", "line_range"):
+                if key not in item:
+                    return {
+                        "artifact_name": artifact_name,
+                        "item_index": item_index,
+                        "item_id": str(item_id) if item_id not in (None, "") else None,
+                        "item_path": str(item_path) if item_path not in (None, "") else None,
+                        "failure_reason": f"schema_missing_key:{key}",
+                        "missing_key": key,
+                        "constraint": None,
+                    }
+                value = item.get(key)
+                if value in (None, "", []):
+                    return {
+                        "artifact_name": artifact_name,
+                        "item_index": item_index,
+                        "item_id": str(item_id) if item_id not in (None, "") else None,
+                        "item_path": str(item_path) if item_path not in (None, "") else None,
+                        "failure_reason": f"schema_empty_key:{key}",
+                        "missing_key": key,
+                        "constraint": "non_empty",
+                    }
+            line_range = item.get("line_range")
+            if not (
+                isinstance(line_range, list)
+                and len(line_range) == 2
+                and all(isinstance(value, int) for value in line_range)
+                and int(line_range[0]) > 0
+                and int(line_range[1]) >= int(line_range[0])
+            ):
+                return {
+                    "artifact_name": artifact_name,
+                    "item_index": item_index,
+                    "item_id": str(item_id) if item_id not in (None, "") else None,
+                    "item_path": str(item_path) if item_path not in (None, "") else None,
+                    "failure_reason": "schema_invalid_line_range",
+                    "missing_key": None,
+                    "constraint": "line_range",
+                }
+    return None
+
+
+def artifacts_pass_schema_gate(
+    artifacts: List[Dict[str, Any]],
+    expected_artifact_names: Tuple[str, ...],
+) -> Tuple[bool, Optional[str]]:
+    failure = describe_schema_gate_failure(artifacts, expected_artifact_names)
+    if failure:
+        return False, str(failure.get("failure_reason") or "schema_gate_failure")
     return True, None
 
 
@@ -7092,6 +7269,12 @@ def execute_step_for_partitions(
         if isinstance(prompt_spec.contract, dict)
         else _step_contract_for(phase, step_id)
     )
+    route_step_contract = step_contract
+    if isinstance(step_contract, dict) and not isinstance(prompt_spec.contract, dict):
+        contract_artifacts = tuple(step_contract.get("artifact_order") or ())
+        if contract_artifacts and not set(output_artifacts).issubset(set(contract_artifacts)):
+            step_contract = None
+            route_step_contract = {}
     prompt_text = safe_read(prompt_path)
     if not prompt_text:
         logger.error("Could not read prompt: %s", prompt_path)
@@ -7111,7 +7294,7 @@ def execute_step_for_partitions(
         step_id,
         cfg,
         tier_override=prompt_spec.tier_override,
-        step_contract=step_contract,
+        step_contract=route_step_contract,
     )
     step_tier = str(route_info["step_tier"])
     step_type = str(route_info["step_type"])
@@ -7180,6 +7363,10 @@ def execute_step_for_partitions(
     step_dry_run_count = 0
     step_retry_count = 0
     step_escalated_partitions = 0
+    step_repair_invocations = 0
+    step_repair_successes = 0
+    step_sidefill_invocations = 0
+    step_sidefill_filled_artifacts: Counter[str] = Counter()
     step_hop_distribution: Counter[str] = Counter()
     step_execution_mode_counts: Counter[str] = Counter()
     step_final_route_counts: Counter[str] = Counter()
@@ -7196,6 +7383,64 @@ def execute_step_for_partitions(
 
     def _append_log(logs: List[Tuple[str, str]], level: str, message: str) -> None:
         logs.append((level, message))
+
+    def _parse_missing_expected_artifacts(reason: Optional[str]) -> List[str]:
+        token = str(reason or "")
+        prefix = "missing_expected_artifacts:"
+        if not token.startswith(prefix):
+            return []
+        raw = token.split(":", 1)[1] if ":" in token else ""
+        requested = {part.strip() for part in raw.split(",") if part.strip()}
+        return [name for name in output_artifacts if name in requested]
+
+    def _strict_response_format(schema_name_suffix: str) -> Dict[str, Any]:
+        schema_name = f"{phase.lower()}_{step_id.lower()}_{schema_name_suffix}".replace(
+            ".", "_"
+        )
+        return {
+            "type": "json_schema",
+            "json_schema": {
+                "name": schema_name,
+                "strict": True,
+                "schema": {
+                    "type": "object",
+                    "additionalProperties": True,
+                },
+            },
+        }
+
+    def _strict_structured_meta(response_format: Dict[str, Any]) -> Dict[str, Any]:
+        schema_name = None
+        if isinstance(response_format.get("json_schema"), dict):
+            schema_name = response_format["json_schema"].get("name")
+        return {
+            "enabled": True,
+            "mime_type": "application/json",
+            "schema": schema_name,
+            "transport_mode": "response_format_json_schema",
+            "strict": True,
+        }
+
+    def _merge_artifacts_by_name(
+        existing: List[Dict[str, Any]],
+        updates: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        merged: Dict[str, Dict[str, Any]] = {}
+        for row in existing:
+            if not isinstance(row, dict):
+                continue
+            artifact_name = str(row.get("artifact_name") or "").strip()
+            if artifact_name:
+                merged[artifact_name] = copy.deepcopy(row)
+        for row in updates:
+            if not isinstance(row, dict):
+                continue
+            artifact_name = str(row.get("artifact_name") or "").strip()
+            if artifact_name:
+                merged[artifact_name] = copy.deepcopy(row)
+        ordered = [merged[name] for name in output_artifacts if name in merged]
+        extras = [merged[name] for name in sorted(merged) if name not in set(output_artifacts)]
+        return ordered + extras
 
     def _op_write_text(write_ops: List[Dict[str, Any]], path: Path, text: str) -> None:
         write_ops.append({"kind": "write_text", "path": str(path), "text": text})
@@ -7657,6 +7902,70 @@ def execute_step_for_partitions(
                 f"context_bytes={context_stats['context_bytes']}"
             ),
         )
+
+        def _strict_contract_call(
+            *,
+            artifact_names: Tuple[str, ...],
+            schema_name_suffix: str,
+            reason: str,
+            existing_artifacts: List[Dict[str, Any]],
+            current_request_meta: Optional[Dict[str, Any]] = None,
+        ) -> Tuple[List[Dict[str, Any]], Dict[str, Any], str, List[Dict[str, Any]]]:
+            response_format = _strict_response_format(schema_name_suffix)
+            existing_preview = ""
+            if existing_artifacts:
+                existing_preview = (
+                    "\n- existing_artifacts_preview: "
+                    + json.dumps(existing_artifacts, ensure_ascii=True, sort_keys=True)[:2000]
+                )
+            strict_user_content = (
+                f"{user_prompt}\n\n"
+                "CONTRACT REPAIR MODE:\n"
+                f"- reason: {reason}\n"
+                f"- required_artifacts: {json.dumps(list(artifact_names), ensure_ascii=True)}\n"
+                "- Return only the required artifacts and keep schema+items valid.\n"
+                "- If evidence cannot prove line ranges, emit payload.items as [] for that artifact.\n"
+                f"{existing_preview}"
+            )
+            current_request_meta = (
+                dict(current_request_meta)
+                if isinstance(current_request_meta, dict)
+                else {}
+            )
+            strict_result = call_llm(
+                provider=str(current_request_meta.get("provider") or provider),
+                model_id=str(current_request_meta.get("model_id") or model_id),
+                api_key_env=initial_api_key_env,
+                system_prompt=prompt_text,
+                user_content=strict_user_content,
+                cfg=cfg,
+                force_json_output=False,
+                response_format_override=response_format,
+                structured_output_override=_strict_structured_meta(response_format),
+            )
+            strict_text = str(strict_result.get("text") or "")
+            strict_meta = enrich_request_meta(
+                strict_result.get("meta", {}),
+                run_id=run_id,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                provider=str(current_request_meta.get("provider") or provider),
+                model_id=str(current_request_meta.get("model_id") or model_id),
+            )
+            strict_parsed = parse_json_from_response(strict_text)
+            strict_artifacts = coerce_artifacts_from_response(
+                parsed=strict_parsed,
+                raw_text=strict_text,
+                expected_artifacts=artifact_names,
+            )
+            strict_norms: List[Dict[str, Any]] = []
+            if isinstance(step_contract, dict):
+                strict_artifacts, strict_norms = canonicalize_artifacts(
+                    strict_artifacts, step_contract
+                )
+            return strict_artifacts, strict_meta, strict_text, strict_norms
+
         def _route_attempt(route: Tuple[str, str, str], hop_index: int) -> Dict[str, Any]:
             route_provider, route_model_id, route_api_key_env = route
             route_force_json = route_provider == "gemini"
@@ -7941,6 +8250,16 @@ def execute_step_for_partitions(
                     user_content=effective_user_prompt,
                     cfg=cfg,
                     force_json_output=route_force_json,
+                    response_format_override=(
+                        _strict_response_format("primary")
+                        if strict_contract_required and isinstance(step_contract, dict)
+                        else None
+                    ),
+                    structured_output_override=(
+                        _strict_structured_meta(_strict_response_format("primary"))
+                        if strict_contract_required and isinstance(step_contract, dict)
+                        else None
+                    ),
                 )
                 response_text_local = str(llm_result.get("text", ""))
                 request_meta_local = enrich_request_meta(
@@ -8005,7 +8324,120 @@ def execute_step_for_partitions(
                     parse_retry_reason_override=eligible_reason,
                 )
 
-            schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts_local, output_artifacts)
+            schema_id_normalizations: List[Dict[str, Any]] = []
+            repair_invocations = 0
+            repair_successes = 0
+            sidefill_invocations = 0
+            sidefill_filled_artifacts: List[str] = []
+            final_contract_status = "pass"
+            if artifacts_local and isinstance(step_contract, dict):
+                artifacts_local, schema_id_normalizations = canonicalize_artifacts(
+                    artifacts_local, step_contract
+                )
+            schema_failure = describe_schema_gate_failure(artifacts_local, output_artifacts)
+            schema_ok = schema_failure is None
+            schema_reason = (
+                str(schema_failure.get("failure_reason"))
+                if isinstance(schema_failure, dict)
+                else None
+            )
+            if (
+                artifacts_local
+                and isinstance(step_contract, dict)
+                and strict_contract_required
+                and not schema_ok
+            ):
+                missing_artifacts = _parse_missing_expected_artifacts(schema_reason)
+                for missing_artifact in missing_artifacts:
+                    sidefill_invocations += 1
+                    (
+                        sidefill_artifacts,
+                        sidefill_meta,
+                        sidefill_text,
+                        sidefill_norms,
+                    ) = _strict_contract_call(
+                        artifact_names=(missing_artifact,),
+                        schema_name_suffix=f"sidefill_{missing_artifact.lower().replace('.', '_')}",
+                        reason=str(schema_reason or "missing_expected_artifacts"),
+                        existing_artifacts=artifacts_local,
+                        current_request_meta=request_meta_local,
+                    )
+                    if sidefill_artifacts:
+                        artifacts_local = _merge_artifacts_by_name(
+                            artifacts_local, sidefill_artifacts
+                        )
+                        if any(
+                            str(row.get("artifact_name") or "") == missing_artifact
+                            for row in sidefill_artifacts
+                            if isinstance(row, dict)
+                        ):
+                            sidefill_filled_artifacts.append(missing_artifact)
+                        request_meta_local.update(sidefill_meta)
+                        response_text_local = sidefill_text or response_text_local
+                        schema_id_normalizations.extend(sidefill_norms)
+                        artifacts_local, recanonical_norms = canonicalize_artifacts(
+                            artifacts_local, step_contract
+                        )
+                        schema_id_normalizations.extend(recanonical_norms)
+                    schema_failure = describe_schema_gate_failure(
+                        artifacts_local, output_artifacts
+                    )
+                    schema_ok = schema_failure is None
+                    schema_reason = (
+                        str(schema_failure.get("failure_reason"))
+                        if isinstance(schema_failure, dict)
+                        else None
+                    )
+                    if schema_ok:
+                        break
+                if not schema_ok and not str(schema_reason or "").startswith(
+                    "missing_expected_artifacts:"
+                ):
+                    target_artifact = str(
+                        (schema_failure or {}).get("artifact_name") or ""
+                    ).strip()
+                    target_names = (
+                        (target_artifact,)
+                        if target_artifact and target_artifact in set(output_artifacts)
+                        else tuple(output_artifacts)
+                    )
+                    repair_invocations += 1
+                    (
+                        repaired_artifacts,
+                        repaired_meta,
+                        repaired_text,
+                        repaired_norms,
+                    ) = _strict_contract_call(
+                        artifact_names=target_names,
+                        schema_name_suffix="repair_targeted",
+                        reason=str(schema_reason or "schema_gate_failure"),
+                        existing_artifacts=artifacts_local,
+                        current_request_meta=request_meta_local,
+                    )
+                    if repaired_artifacts:
+                        artifacts_local = _merge_artifacts_by_name(
+                            artifacts_local, repaired_artifacts
+                        )
+                        request_meta_local.update(repaired_meta)
+                        response_text_local = repaired_text or response_text_local
+                        schema_id_normalizations.extend(repaired_norms)
+                        artifacts_local, recanonical_norms = canonicalize_artifacts(
+                            artifacts_local, step_contract
+                        )
+                        schema_id_normalizations.extend(recanonical_norms)
+                        schema_failure = describe_schema_gate_failure(
+                            artifacts_local, output_artifacts
+                        )
+                        schema_ok = schema_failure is None
+                        schema_reason = (
+                            str(schema_failure.get("failure_reason"))
+                            if isinstance(schema_failure, dict)
+                            else None
+                        )
+                        if schema_ok:
+                            repair_successes += 1
+            if not schema_ok:
+                final_contract_status = "fail"
             escalation_trigger: Optional[str] = None
             if not artifacts_local:
                 if step_tier != "bulk":
@@ -8024,6 +8456,12 @@ def execute_step_for_partitions(
                 "parse_retry_trace": parse_retry_trace,
                 "schema_gate_passed": bool(schema_ok),
                 "schema_gate_reason": schema_reason,
+                "final_contract_status": final_contract_status,
+                "repair_invocations": repair_invocations,
+                "repair_successes": repair_successes,
+                "sidefill_invocations": sidefill_invocations,
+                "sidefill_filled_artifacts": sorted(set(sidefill_filled_artifacts)),
+                "schema_id_normalizations": schema_id_normalizations,
                 "route_hop_index": hop_index + 1,
                 "routing_tier": step_tier,
                 "routing_policy": cfg.routing_policy,
@@ -8075,6 +8513,25 @@ def execute_step_for_partitions(
             request_meta["strict_primary_route_attempts"] = strict_route_attempts
         request_meta["strict_schema_required"] = bool(
             request_meta.get("strict_schema_required", strict_contract_required)
+        )
+        request_meta["repair_invocations"] = int(
+            request_meta.get("repair_invocations", 0) or 0
+        )
+        request_meta["repair_successes"] = int(
+            request_meta.get("repair_successes", 0) or 0
+        )
+        request_meta["sidefill_invocations"] = int(
+            request_meta.get("sidefill_invocations", 0) or 0
+        )
+        request_meta["sidefill_filled_artifacts"] = list(
+            request_meta.get("sidefill_filled_artifacts") or []
+        )
+        request_meta["schema_id_normalizations"] = list(
+            request_meta.get("schema_id_normalizations") or []
+        )
+        request_meta["final_contract_status"] = str(
+            request_meta.get("final_contract_status")
+            or ("pass" if request_meta.get("schema_gate_passed") else "fail")
         )
         if len(request_meta.get("route_attempts", [])) > 1:
             request_meta["escalation_trigger"] = request_meta.get("escalation_trigger") or "gated_retry"
@@ -8246,6 +8703,19 @@ def execute_step_for_partitions(
         retry_trace = result.request_meta.get("retry_trace")
         if isinstance(retry_trace, list):
             step_retry_count += max(0, len(retry_trace) - 1)
+        step_repair_invocations += int(
+            result.request_meta.get("repair_invocations", 0) or 0
+        )
+        step_repair_successes += int(
+            result.request_meta.get("repair_successes", 0) or 0
+        )
+        step_sidefill_invocations += int(
+            result.request_meta.get("sidefill_invocations", 0) or 0
+        )
+        for artifact_name in result.request_meta.get("sidefill_filled_artifacts", []) or []:
+            token = str(artifact_name or "").strip()
+            if token:
+                step_sidefill_filled_artifacts[token] += 1
         hop_total = int(result.request_meta.get("route_hop_total", 1) or 1)
         step_hop_distribution[str(hop_total)] += 1
         if hop_total > 1:
@@ -8394,6 +8864,10 @@ def execute_step_for_partitions(
         "auth_failures": step_auth_failures,
         "hop_distribution": dict(step_hop_distribution),
         "escalated_partitions": step_escalated_partitions,
+        "repair_invocations": step_repair_invocations,
+        "repair_successes": step_repair_successes,
+        "sidefill_invocations": step_sidefill_invocations,
+        "sidefill_filled_artifacts": sorted(step_sidefill_filled_artifacts.keys()),
         "execution_mode_counts": dict(step_execution_mode_counts),
         "final_route_counts": dict(step_final_route_counts),
     }
@@ -10358,7 +10832,12 @@ def run_phase_C(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
 
 def run_phase_D(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     collector = Collector(Path.cwd(), [".git"])
-    _run_phase_inner("D", dirs, cfg, collector, ["docs"], ui=ui)
+    selected_step_ids = (
+        [cfg.selected_execution_step]
+        if str(cfg.selected_execution_step or "").strip().upper().startswith("D")
+        else None
+    )
+    _run_phase_inner("D", dirs, cfg, collector, ["docs"], ui=ui, selected_step_ids=selected_step_ids)
 
 
 def run_phase_E(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
@@ -11064,6 +11543,8 @@ def main() -> None:
     parser.add_argument("--tail-lines", type=int, default=200)
     parser.add_argument("--since", type=str, default="")
     parser.add_argument("--step", type=str)
+    parser.add_argument("--d0-max-files", type=str, default=None)
+    parser.add_argument("--d1-max-files", type=str, default=None)
     parser.add_argument("--show-provider-usage", action="store_true")
     parser.add_argument(
         "--print-phase-prompts",
@@ -11168,6 +11649,18 @@ def main() -> None:
         logger.error("S step selection setup failed: %s", exc)
         sys.exit(1)
     args.s_steps = list(selected_s_steps) if selected_s_steps is not None else None
+    try:
+        selected_execution_step = _get_execution_step_filter(args)
+    except Exception as exc:
+        logger.error("Execution step selection setup failed: %s", exc)
+        sys.exit(1)
+    args.selected_execution_step = selected_execution_step
+    try:
+        args.d0_max_files = _parse_positive_optional_int(args.d0_max_files, "--d0-max-files")
+        args.d1_max_files = _parse_positive_optional_int(args.d1_max_files, "--d1-max-files")
+    except Exception as exc:
+        logger.error("D pressure cap setup failed: %s", exc)
+        sys.exit(1)
 
     if args.phase == "S_INT":
         from s_int.models import ladder_for_step
@@ -11412,6 +11905,9 @@ def main() -> None:
         webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
         live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
         selected_s_steps=tuple(args.s_steps) if isinstance(args.s_steps, list) else None,
+        selected_execution_step=args.selected_execution_step,
+        d0_max_files=args.d0_max_files,
+        d1_max_files=args.d1_max_files,
     )
 
     phase_sequence = resolve_phase_list(args.phase)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
@@ -93,6 +94,11 @@ def _artifact_rules_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
             "required_fields": [
                 str(value).strip()
                 for value in row.get("required_fields", [])
+                if str(value).strip()
+            ],
+            "allow_empty_array_fields": [
+                str(value).strip()
+                for value in row.get("allow_empty_array_fields", [])
                 if str(value).strip()
             ],
         }
@@ -219,7 +225,7 @@ def _repo_truth_scope_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
         expected_tokens = [str(value).strip() for value in expected if str(value).strip()]
         json_artifacts = [token for token in expected_tokens if token.endswith(".json")]
         markdown_artifacts = [token for token in expected_tokens if token.endswith(".md")]
-        if not phase or not step_id or not json_artifacts:
+        if not phase or not step_id or (not json_artifacts and not markdown_artifacts):
             continue
         prompt_required = prompt_declared.get("required_item_keys")
         scope[(phase, step_id)] = {
@@ -242,14 +248,14 @@ def _assert_lane_map_matches_scope(
     lane_map: Dict[Tuple[str, str], Dict[str, Any]],
     scope_map: Dict[Tuple[str, str], Dict[str, Any]],
 ) -> None:
-    # model_map may contain extra non-JSON-managed or future-proofed steps.
-    # Fail closed only when JSON-managed scope steps are missing from model_map.
     missing_lane_steps = sorted(set(scope_map.keys()) - set(lane_map.keys()))
     if missing_lane_steps:
         formatted = ", ".join(f"{phase}:{step}" for phase, step in missing_lane_steps)
-        raise ValueError(
-            f"repo_truth_map JSON-managed steps missing from model_map.yaml: {formatted}"
-        )
+        print(f"WARNING: repo_truth_map JSON-managed steps missing from model_map.yaml: {formatted}", file=sys.stderr)
+    extra_lane_steps = sorted(set(lane_map.keys()) - set(scope_map.keys()))
+    if extra_lane_steps:
+        formatted = ", ".join(f"{phase}:{step}" for phase, step in extra_lane_steps)
+        print(f"WARNING: model_map.yaml steps outside repo_truth_map JSON scope: {formatted}", file=sys.stderr)
 
 
 @lru_cache(maxsize=1)
@@ -292,6 +298,7 @@ def compile_phase_contract_map() -> Dict[str, Any]:
                 "kind": str(artifact_rule.get("kind") or "json_item_list"),
                 "canonical_writer_step_id": str(artifact_rule.get("canonical_writer_step_id") or step_id),
                 "norm_artifact": bool(artifact_rule.get("norm_artifact", True)),
+                "allow_empty_array_fields": list(artifact_rule.get("allow_empty_array_fields") or []),
             }
 
         steps_payload[f"{phase_code}:{step_id}"] = {

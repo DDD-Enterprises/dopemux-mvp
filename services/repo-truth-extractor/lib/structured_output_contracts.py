@@ -231,9 +231,11 @@ def _generic_item_schema(artifact_meta: Dict[str, Any]) -> Dict[str, Any]:
     }
     for key in required_keys:
         properties.setdefault(key, GENERIC_ITEM_VALUE_SCHEMA)
+    # OpenAI strict mode requires every property in 'required'
+    all_required = sorted(properties.keys())
     return {
         "type": "object",
-        "required": required_keys,
+        "required": all_required,
         "properties": properties,
         "additionalProperties": False,
     }
@@ -432,6 +434,7 @@ def describe_contract_failure(
         required_keys = sorted(
             set(artifact_meta.get("required_fields") or []) | set(artifact_meta.get("prompt_required_item_fields") or [])
         )
+        allow_empty_arrays = set(artifact_meta.get("allow_empty_array_fields") or [])
         for item_index, item in enumerate(items):
             if not isinstance(item, dict):
                 return {
@@ -457,7 +460,9 @@ def describe_contract_failure(
                         "missing_key": key,
                         "constraint": None,
                     }
-                if item.get(key) in (None, "", []):
+                val = item.get(key)
+                empty_vals: tuple = (None, "") if key in allow_empty_arrays else (None, "", [])
+                if val in empty_vals:
                     reason = f"schema_empty_key:{key}" if key in {"id", "path", "line_range"} else f"contract_empty_key:{key}"
                     return {
                         "artifact_name": artifact_name,
@@ -496,6 +501,38 @@ def artifacts_pass_contract_gate(
     if failure:
         return False, str(failure.get("failure_reason") or "contract_gate_failure"), failure
     return True, None, None
+
+
+def normalize_required_array_fields(
+    items: List[Dict[str, Any]],
+    artifact_meta: Dict[str, Any],
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Normalize None/""/missing required array fields to [] for fields in allow_empty_array_fields.
+
+    Returns (normalized_items, coercions_applied). Each coercion entry has keys:
+    item_id, field, from_type, to_type.
+    """
+    allow_empty = set(artifact_meta.get("allow_empty_array_fields") or [])
+    if not allow_empty:
+        return items, []
+    normalized: List[Dict[str, Any]] = []
+    coercions: List[Dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            normalized.append(item)
+            continue
+        item_copy = dict(item)
+        for field in sorted(allow_empty):
+            if field not in item_copy:
+                from_type = "missing"
+                item_copy[field] = []
+                coercions.append({"item_id": str(item.get("id") or ""), "field": field, "from_type": from_type, "to_type": "list"})
+            elif item_copy[field] is None or item_copy[field] == "":
+                from_type = type(item_copy[field]).__name__
+                item_copy[field] = []
+                coercions.append({"item_id": str(item.get("id") or ""), "field": field, "from_type": from_type, "to_type": "list"})
+        normalized.append(item_copy)
+    return normalized, coercions
 
 
 def merge_artifacts_by_name(

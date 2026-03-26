@@ -86,6 +86,7 @@ except ModuleNotFoundError:
     write_phase_contract_map = contract_map_module.write_phase_contract_map
 try:
     from lib.structured_output_contracts import (
+        artifact_contract as _artifact_contract,
         artifacts_pass_contract_gate,
         artifact_order as contract_artifact_order,
         build_openai_response_format,
@@ -96,6 +97,7 @@ try:
         is_json_managed_step,
         is_strict_contract_step,
         merge_artifacts_by_name,
+        normalize_required_array_fields,
         plural_expected_json_artifacts,
         repair_mode as resolve_contract_repair_mode,
         resolve_stage_route,
@@ -117,6 +119,7 @@ except ModuleNotFoundError:
         structured_contracts_spec
     )
     structured_contracts_spec.loader.exec_module(structured_contracts_module)
+    _artifact_contract = structured_contracts_module.artifact_contract
     artifacts_pass_contract_gate = (
         structured_contracts_module.artifacts_pass_contract_gate
     )
@@ -131,6 +134,9 @@ except ModuleNotFoundError:
     is_json_managed_step = structured_contracts_module.is_json_managed_step
     is_strict_contract_step = structured_contracts_module.is_strict_contract_step
     merge_artifacts_by_name = structured_contracts_module.merge_artifacts_by_name
+    normalize_required_array_fields = (
+        structured_contracts_module.normalize_required_array_fields
+    )
     plural_expected_json_artifacts = (
         structured_contracts_module.plural_expected_json_artifacts
     )
@@ -325,10 +331,10 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
 
 ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
 DEFAULT_ROUTING_POLICY = "cost"
-DEFAULT_GEMINI_MODEL_ID = "gemini-2.5-flash"
-DEFAULT_GEMINI_BULK_MODEL = "gemini-2.5-flash-lite"
-DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-2.5-flash"
-DEFAULT_GEMINI_SYNTH_MODEL = "gemini-2.5-pro"
+DEFAULT_GEMINI_MODEL_ID = "gemini-3-flash-preview"
+DEFAULT_GEMINI_BULK_MODEL = "gemini-3.1-flash-lite-preview"
+DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-3-flash-preview"
+DEFAULT_GEMINI_SYNTH_MODEL = "gemini-3.1-pro-preview"
 STEP_TIERS = ("bulk", "extract", "synthesis", "qa")
 
 MAGIC_SUBTYPE_ORDER = {
@@ -421,7 +427,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         ],
         "synthesis": [
             ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
             ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
         ],
         "qa": [
@@ -477,6 +483,44 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
         ],
     },
+    "gemini_primary": {
+        "bulk": [
+            ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+        "extract": [
+            ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+        "synthesis": [
+            ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
+            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ],
+        "qa": [
+            ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+    },
+    "optimal": {
+        "bulk": [
+            ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+            ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+        ],
+        "extract": [
+            ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+            ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
+        ],
+        "synthesis": [
+            ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
+            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+            ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+        ],
+        "qa": [
+            ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ],
+    },
 }
 
 ACTIVE_ROUTING_POLICY = DEFAULT_ROUTING_POLICY
@@ -493,7 +537,7 @@ BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
 BALANCED_GROK_OPENROUTER_D_STRICT_STEPS: Set[str] = {"D0", "D1"}
 BALANCED_GROK_OPENROUTER_DOCS_STRICT_LADDER: List[Tuple[str, str, str]] = [
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
@@ -508,12 +552,12 @@ BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "qa": [
         ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
         ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ],
 }
 BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_OPUS_ROUTE: Tuple[str, str, str] = (
@@ -527,6 +571,63 @@ HARD_RECONCILIATION_MARKERS: Tuple[str, ...] = (
     "cross_doc_inconsistency",
     "complex_reconciliation",
 )
+# --- Gemini-primary routing ladders (non-code phases use Gemini 3, code phases stay GPT/Grok) ---
+GEMINI_PRIMARY_NO_CODE_PHASES: Set[str] = {"A", "C", "E", "H", "W", "B", "G"}
+GEMINI_PRIMARY_DOCS_LADDER: List[Tuple[str, str, str]] = [
+    ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+    ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+]
+GEMINI_PRIMARY_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
+    ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
+    ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+]
+GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
+    "bulk": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+    ],
+    "extract": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ],
+    "qa": [
+        ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ],
+}
+
+_OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
+_UNUSED_GLOBALS = (_OPTIMAL_NO_CODE_PHASES,)
+OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
+    ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+    ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+]
+OPTIMAL_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
+    "bulk": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+    ],
+    "extract": [
+        ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
+        ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ],
+    "qa": [
+        ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ],
+}
+OPTIMAL_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
+    ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
+    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
+]
 
 
 def _safe_key_fingerprint(value: str) -> str:
@@ -915,10 +1016,10 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "openrouter": "OPENROUTER_API_KEY",
 }
 REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
-    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A99"},
+    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A99"},
     "H": {"H0", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H9"},
     "D": {"D0", "D1", "D2", "D3", "D4", "D5"},
-    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11"},
+    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17"},
     "E": {"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E9"},
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
@@ -2008,6 +2109,19 @@ def write_json(path: Path, payload: Any) -> None:
 
 _JSONL_WRITE_LOCK: threading.Lock = threading.Lock()
 _TELEMETRY_SNAPSHOT_LOCK: threading.Lock = threading.Lock()
+
+_HTTP_SESSION: Optional[requests.Session] = None
+_HTTP_SESSION_LOCK: threading.Lock = threading.Lock()
+
+
+def _get_http_session() -> requests.Session:
+    """Return a shared requests.Session for connection pooling (thread-safe)."""
+    global _HTTP_SESSION
+    if _HTTP_SESSION is None:
+        with _HTTP_SESSION_LOCK:
+            if _HTTP_SESSION is None:
+                _HTTP_SESSION = requests.Session()
+    return _HTTP_SESSION
 
 
 def _append_jsonl(path: Path, payload: Dict[str, Any]) -> None:
@@ -3559,6 +3673,47 @@ def _balanced_grok_openrouter_routes(
     return None
 
 
+def _gemini_primary_routes(
+    phase: str, step_id: str
+) -> Optional[List[Tuple[str, str, str]]]:
+    """Route non-code phases to Gemini 3 primary; code-heavy phases to GPT/Grok (no Gemini)."""
+    phase_code = str(phase or "").upper()
+    if phase_code in GEMINI_PRIMARY_NO_CODE_PHASES:
+        effective_tier = resolve_effective_step_tier(
+            "gemini_primary", phase_code, step_id
+        )
+        routes = GEMINI_PRIMARY_CODE_LADDERS.get(
+            effective_tier,
+            GEMINI_PRIMARY_CODE_LADDERS.get("extract", []),
+        )
+        return [tuple(route) for route in routes]
+    if phase_code in PREMIUM_SYNTHESIS_PHASES:
+        return list(GEMINI_PRIMARY_SYNTHESIS_LADDER)
+    return list(GEMINI_PRIMARY_DOCS_LADDER)
+
+
+def _optimal_routes(
+    phase: str, step_id: str
+) -> Optional[List[Tuple[str, str, str]]]:
+    """Optimal cost/quality routing: Gemini free → Grok 4.20 mid → GPT-5.4 premium.
+
+    Non-code (doc/synthesis) phases use OPTIMAL_DOCS_LADDER as base, synthesis
+    phases escalate to OPTIMAL_SYNTHESIS_LADDER.  Code-heavy phases use
+    OPTIMAL_CODE_LADDERS keyed by effective tier.
+    """
+    phase_code = str(phase or "").upper()
+    if phase_code in PREMIUM_SYNTHESIS_PHASES:
+        return list(OPTIMAL_SYNTHESIS_LADDER)
+    if phase_code in CODE_HEAVY_PHASES:
+        effective_tier = resolve_effective_step_tier("optimal", phase_code, step_id)
+        routes = OPTIMAL_CODE_LADDERS.get(
+            effective_tier,
+            OPTIMAL_CODE_LADDERS.get("extract", []),
+        )
+        return [tuple(route) for route in routes]
+    return list(OPTIMAL_DOCS_LADDER)
+
+
 def resolve_effective_step_tier(
     routing_policy: str,
     phase: str,
@@ -3571,7 +3726,7 @@ def resolve_effective_step_tier(
     if override:
         return resolve_step_tier(phase, step_id, tier_override=override)
     if (
-        selected_policy == "balanced_grok_openrouter"
+        selected_policy in ("balanced_grok_openrouter", "gemini_primary", "optimal")
         and phase_code in PREMIUM_SYNTHESIS_PHASES
     ):
         return "synthesis"
@@ -3653,6 +3808,14 @@ def resolve_step_ladder(
     selected_policy = _normalize_routing_policy(routing_policy)
     if selected_policy == "balanced_grok_openrouter":
         phase_routes = _balanced_grok_openrouter_routes(phase, step_id)
+        if phase_routes:
+            return phase_routes
+    if selected_policy == "gemini_primary":
+        phase_routes = _gemini_primary_routes(phase, step_id)
+        if phase_routes:
+            return phase_routes
+    if selected_policy == "optimal":
+        phase_routes = _optimal_routes(phase, step_id)
         if phase_routes:
             return phase_routes
     tiers = ACTIVE_ROUTING_LADDERS.get(selected_policy) or _clone_ladders(
@@ -5005,7 +5168,7 @@ def run_gemini_list_models(root: Path, run_id: str, dirs: Dict[str, Path]) -> in
             params: Dict[str, str] = {"key": api_key}
             if page_token:
                 params["pageToken"] = page_token
-            response = requests.get(GEMINI_MODELS_ENDPOINT, params=params, timeout=60)
+            response = _get_http_session().get(GEMINI_MODELS_ENDPOINT, params=params, timeout=60)
             response.raise_for_status()
             body = response.content
             parsed = response.json()
@@ -5155,7 +5318,10 @@ def run_doctor_full(
         ]
 
     required_status = get_required_artifact_status(dirs, R_REQUIRED_INPUT_PHASES)
-    provider_routes = collect_provider_routes()
+    provider_routes = collect_provider_routes(
+        phases=phases,
+        routing_policy=cfg.routing_policy,
+    )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -6426,6 +6592,7 @@ def call_llm(
         "structured_output": structured_output,
     }
     retry_trace: List[Dict[str, Any]] = []
+    total_retry_delay = 0.0
 
     attempt = 0
     while attempt < cfg.retry_max_attempts:
@@ -6445,7 +6612,7 @@ def call_llm(
                     headers, provider == "gemini" and effective_mode == "query_key"
                 )
                 sent_header_keys = sorted(list(headers.keys()))
-                response = requests.post(
+                response = _get_http_session().post(
                     endpoint_url, headers=headers, data=body, timeout=180
                 )
                 response.raise_for_status()
@@ -6652,11 +6819,17 @@ def call_llm(
                 attempt + 1, cfg.retry_base_seconds, cfg.retry_max_seconds
             )
             retry_trace[-1]["delay_seconds"] = delay_seconds
+            total_retry_delay += delay_seconds
             if delay_seconds > 0:
                 time.sleep(delay_seconds)
     logger.error(
-        "LLM call failed after retries provider=%s model=%s.", provider, model_id
+        "LLM call failed after %s attempts (%.1fs retry delay) provider=%s model=%s.",
+        attempt,
+        total_retry_delay,
+        provider,
+        model_id,
     )
+    last_failure_meta["total_retry_delay_seconds"] = total_retry_delay
     return {
         "ok": False,
         "text": "",
@@ -7759,11 +7932,18 @@ def artifacts_pass_schema_gate(
     return True, None
 
 
+_REPAIR_COUNTERS_LOCK: threading.Lock = threading.Lock()
 _REPAIR_COUNTERS: Dict[str, int] = {
     "attempted": 0,
     "succeeded": 0,
     "failed_ambiguous": 0,
 }
+
+
+def _read_repair_counters() -> Dict[str, int]:
+    """Return a consistent snapshot of the global repair counters."""
+    with _REPAIR_COUNTERS_LOCK:
+        return dict(_REPAIR_COUNTERS)
 
 
 def _attempt_schema_repair_path_items(
@@ -7787,19 +7967,22 @@ def _attempt_schema_repair_path_items(
 
     Returns (repaired_artifacts, did_repair, repair_method).
     """
-    _REPAIR_COUNTERS["attempted"] += 1
+    with _REPAIR_COUNTERS_LOCK:
+        _REPAIR_COUNTERS["attempted"] += 1
 
     # Guard: only attempt for the supported failure classes
     if not schema_reason or not (
         schema_reason.startswith("schema_missing_key:path")
         or schema_reason.startswith("schema_empty_key:path")
     ):
-        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        with _REPAIR_COUNTERS_LOCK:
+            _REPAIR_COUNTERS["failed_ambiguous"] += 1
         return artifacts, False, "not_applicable"
 
     # Guard: partition_files must be non-empty
     if not partition_files:
-        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        with _REPAIR_COUNTERS_LOCK:
+            _REPAIR_COUNTERS["failed_ambiguous"] += 1
         return artifacts, False, "no_partition_files"
 
     basenames: List[str] = [os.path.basename(f) for f in partition_files]
@@ -7883,10 +8066,12 @@ def _attempt_schema_repair_path_items(
             break
 
     if not all_filled:
-        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        with _REPAIR_COUNTERS_LOCK:
+            _REPAIR_COUNTERS["failed_ambiguous"] += 1
         return artifacts, False, "ambiguous"
 
-    _REPAIR_COUNTERS["succeeded"] += 1
+    with _REPAIR_COUNTERS_LOCK:
+        _REPAIR_COUNTERS["succeeded"] += 1
     return repaired, True, repair_method
 
 
@@ -8041,8 +8226,16 @@ def validate_success_partition_output(
     if payload.get("failure_type"):
         return False, "failure_type_top_level"
     request_meta = payload.get("request_meta")
-    if isinstance(request_meta, dict) and request_meta.get("failure_type"):
-        return False, "failure_type_request_meta"
+    _has_request_meta_failure_type = isinstance(request_meta, dict) and bool(
+        request_meta.get("failure_type")
+    )
+    if _has_request_meta_failure_type:
+        logger.warning(
+            "[RESUME_WARN] failure_type in request_meta but continuing to artifact check phase=%s step=%s partition=%s",
+            phase,
+            step_id,
+            partition_id,
+        )
 
     top_level_mismatch = _identity_mismatch(payload, "top_level")
     if top_level_mismatch:
@@ -8078,6 +8271,34 @@ def validate_success_partition_output(
     step_contract = _step_contract_for(phase, step_id)
     if is_strict_contract_step(step_contract):
         artifacts, _schema_norm = canonicalize_artifacts(artifacts, step_contract)
+        # Pre-gate normalization: coerce None/""/missing allow_empty_array_fields to []
+        normalized_artifacts = []
+        for art_row in artifacts:
+            if not isinstance(art_row, dict):
+                normalized_artifacts.append(art_row)
+                continue
+            art_name = str(art_row.get("artifact_name") or "").strip()
+            art_meta = _artifact_contract(step_contract, art_name)
+            art_payload = art_row.get("payload")
+            if isinstance(art_payload, dict) and isinstance(art_payload.get("items"), list):
+                norm_items, coercions = normalize_required_array_fields(
+                    art_payload["items"], art_meta
+                )
+                for c in coercions:
+                    logger.info(
+                        "[NORMALIZE] artifact=%s field=%s from_type=%s to_type=%s item_id=%s",
+                        art_name,
+                        c.get("field"),
+                        c.get("from_type"),
+                        c.get("to_type"),
+                        c.get("item_id"),
+                    )
+                normalized_artifacts.append(
+                    {"artifact_name": art_name, "payload": {**art_payload, "items": norm_items}}
+                )
+            else:
+                normalized_artifacts.append(art_row)
+        artifacts = normalized_artifacts
         contract_ok, contract_reason, _contract_ctx = artifacts_pass_contract_gate(
             artifacts, step_contract
         )
@@ -12727,6 +12948,7 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
             "lane_histogram": dict(sorted(contract_lane_hist.items())),
             "repair_invocations_total": repair_invocations_total,
             "repair_successes_total": repair_successes_total,
+            "schema_repair_counters": _read_repair_counters(),
             "sidefill_invocations_total": sidefill_invocations_total,
             "missing_expected_artifacts_histogram": dict(
                 sorted(missing_expected_hist.items())
@@ -13149,6 +13371,145 @@ def to_items(paths: Iterable[Path]) -> List[Dict[str, Any]]:
             {"path": str(path), "size": size, "mtime": mtime, "name": path.name}
         )
     return items
+
+
+AUDIT_JUDGE_MODEL: str = "grok-4.20-multi-agent-beta-0309"
+AUDIT_JUDGE_PROVIDER: str = "xai"
+AUDIT_JUDGE_API_KEY_ENV: str = "XAI_API_KEY"
+AUDIT_PASS_THRESHOLD: float = 0.7
+AUDIT_ESCALATE_THRESHOLD: float = 0.5
+AUDIT_SAMPLE_FILE: str = "AUDIT_SAMPLE.json"
+
+_AUDIT_JUDGE_SYSTEM_PROMPT = """You are a quality auditor for structured extraction outputs.
+Evaluate the provided extraction artifact on three dimensions, each scored 0.0–1.0:
+
+1. schema_compliance: Does the output conform to the expected JSON schema (correct fields, types, no extra keys)?
+2. evidence_anchoring: Are all factual claims traceable to the provided source material?
+3. completeness: Are all required fields populated with substantive content (not empty/placeholder)?
+
+Return ONLY valid JSON matching exactly:
+{"schema_compliance": <float>, "evidence_anchoring": <float>, "completeness": <float>, "notes": "<optional_string>"}
+"""
+
+
+def _deterministic_phase_sample(
+    phase_outputs: "List[Dict[str, Any]]", n_sample: int
+) -> "List[Dict[str, Any]]":
+    """Deterministically select a subset of phase_outputs for auditing.
+
+    Uses a hash of a stable JSON representation of each item to provide
+    deterministic but well-distributed sampling without relying on RNG state.
+    """
+    if not phase_outputs or n_sample <= 0:
+        return []
+
+    def _item_hash(item: "Dict[str, Any]") -> str:
+        try:
+            # sort_keys ensures deterministic key order across runs
+            serialized = json.dumps(item, sort_keys=True, default=str)
+        except TypeError:
+            serialized = repr(item)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    sorted_items = sorted(phase_outputs, key=_item_hash)
+    return sorted_items[: min(n_sample, len(sorted_items))]
+
+
+def audit_phase_sample(
+    phase_dir: "Path",
+    phase_outputs: "List[Dict[str, Any]]",
+    sample_rate: float,
+    cfg: "RunnerConfig",
+    judge_model: str = AUDIT_JUDGE_MODEL,
+    judge_provider: str = AUDIT_JUDGE_PROVIDER,
+    judge_api_key_env: str = AUDIT_JUDGE_API_KEY_ENV,
+) -> "Dict[str, Any]":
+    """Sample phase outputs and audit quality using the judge model.
+
+    Returns a summary dict and writes results to phase_dir/AUDIT_SAMPLE.json.
+    Scores below AUDIT_ESCALATE_THRESHOLD on any dimension are flagged for
+    re-extraction with tier escalation.
+    """
+    if sample_rate <= 0 or not phase_outputs:
+        return {"sampled": 0, "skipped": True}
+
+    n_sample = min(max(1, int(len(phase_outputs) * sample_rate)), 5)
+    sample = _deterministic_phase_sample(phase_outputs, n_sample)
+
+    results: List[Dict[str, Any]] = []
+    escalation_needed: List[str] = []
+
+    for item in sample:
+        artifact_repr = json.dumps(item, default=str)[:4000]
+        user_content = f"Extraction artifact to audit:\n```json\n{artifact_repr}\n```"
+        try:
+            llm_result = call_llm(
+                provider=judge_provider,
+                model_id=judge_model,
+                api_key_env=judge_api_key_env,
+                system_prompt=_AUDIT_JUDGE_SYSTEM_PROMPT,
+                user_content=user_content,
+                cfg=cfg,
+                force_json_output=True,
+            )
+            raw_text = llm_result.get("content", llm_result.get("text", "{}"))
+            try:
+                scores = json.loads(raw_text) if isinstance(raw_text, str) else raw_text
+            except (json.JSONDecodeError, TypeError):
+                scores = {}
+
+            schema_score = float(scores.get("schema_compliance", 0.0))
+            evidence_score = float(scores.get("evidence_anchoring", 0.0))
+            completeness_score = float(scores.get("completeness", 0.0))
+            composite = (
+                0.4 * schema_score + 0.3 * evidence_score + 0.3 * completeness_score
+            )
+            item_id = str(item.get("step_id", item.get("id", "unknown")))
+            audit_entry = {
+                "item_id": item_id,
+                "schema_compliance": schema_score,
+                "evidence_anchoring": evidence_score,
+                "completeness": completeness_score,
+                "composite": composite,
+                "pass": composite >= AUDIT_PASS_THRESHOLD,
+                "notes": scores.get("notes", ""),
+            }
+            results.append(audit_entry)
+
+            if any(
+                s < AUDIT_ESCALATE_THRESHOLD
+                for s in (schema_score, evidence_score, completeness_score)
+            ):
+                escalation_needed.append(item_id)
+                logger.warning(
+                    "audit_phase_sample: escalation flagged for %s "
+                    "(schema=%.2f evidence=%.2f completeness=%.2f composite=%.2f)",
+                    item_id,
+                    schema_score,
+                    evidence_score,
+                    completeness_score,
+                    composite,
+                )
+        except Exception as exc:
+            logger.warning("audit_phase_sample: judge call failed for item: %s", exc)
+            results.append({"item_id": "unknown", "error": str(exc)})
+
+    pass_count = sum(1 for r in results if r.get("pass", False))
+    summary = {
+        "sampled": len(sample),
+        "evaluated": len(results),
+        "pass_count": pass_count,
+        "escalation_flagged": escalation_needed,
+        "results": results,
+    }
+
+    audit_path = phase_dir / AUDIT_SAMPLE_FILE
+    try:
+        write_json(audit_path, summary)
+    except Exception as exc:
+        logger.warning("audit_phase_sample: failed to write audit file: %s", exc)
+
+    return summary
 
 
 def collect_phase_artifacts(
@@ -14640,6 +15001,8 @@ def main() -> None:
             "balanced_grok_openrouter",
             "quality",
             "openrouter",
+            "gemini_primary",
+            "optimal",
         ],
         default=DEFAULT_ROUTING_POLICY,
     )
