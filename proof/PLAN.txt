@@ -1,52 +1,50 @@
-Objective: Port the non-duplicated PM/execution delta onto a fresh branch from origin/main, using PR #294 for execution leasing and the stacked PM line #297-#300 for canonical PM surfaces.
+Objective: Salvage the Python 3.11 contract and deterministic voice surfaces onto a fresh branch from origin/main without carrying the broad historical runtime backlog.
 Scope:
-- src/dopemux/execution/__init__.py
-- src/dopemux/execution/models.py
-- src/dopemux/execution/store.py
-- src/dopemux/pm/__init__.py
-- src/dopemux/pm/reads.py
-- src/dopemux/pm/write.py
-- src/dopemux/pm/writes.py
-- services/task-orchestrator/app/services/task_coordinator.py
-- services/task-orchestrator/app/adapters/bridge_adapter.py
-- services/task-orchestrator/app/api/project_workflow.py
-- services/task-orchestrator/app/models/workflow.py
-- services/task-orchestrator/tests/test_workflow.py
-- services/dopecon-bridge/dopecon_bridge/event_bus.py
-- services/dopecon-bridge/dopecon_bridge/routes.py
-- services/dopecon-bridge/dopecon_bridge/services/task_integration.py
-- services/dopecon-bridge/tests/test_route_endpoints_authority.py
-- services/dopecon-bridge/tests/test_task_integration_unit.py
-- services/taskmaster/bridge_adapter.py
-- services/taskmaster/server.py
-- services/taskmaster/tests/test_server.py
-- src/dopemux/event_bus.py
-- src/dopemux/events/__init__.py
-- src/dopemux/events/types.py
-- tests/test_execution_store.py
-- tests/unit/test_task_coordinator_execution_leases.py
-- tests/unit/dopemux/pm/test_writes.py
-- tests/unit/pm/test_reads.py
-- tests/unit/test_event_bus.py
-- tests/unit/test_task_orchestrator_project_workflow_contract.py
-- docs/planes/pm/write-boundaries.md
-- docs/planes/pm/pm-implementation-ledger.md
-- docs/planes/pm/pm-plane-normalized-tool-surface.md
-- docs/planes/pm/pm-plane-write-adjudication-model.md
-- task-packets/STATUS.md
+- .gitignore
+- .python-version
+- pyproject.toml
+- requirements.txt
+- install.sh
+- test_installer_basic.sh
+- dopemux.rb
+- uv.lock
+- dopemux_voice_branding_bundle/VOICE_GATES.yaml
+- dopemux_voice_branding_bundle/headers/header_agent.md
+- dopemux_voice_branding_bundle/headers/header_cli.md
+- dopemux_voice_branding_bundle/headers/header_ui.md
+- dopemux_voice_branding_bundle/SPECIMEN_LEDGER_ENRICHED.csv
+- src/dopemux/ui/theme.py
+- src/dopemux/voice/core.py
+- src/dopemux/voice/__init__.py
+- src/dopemux/voice/agent_headers.py
+- src/dopemux/ui/voice.py
+- services/shared/brand_voice.py
+- docs/03-reference/brand-compliance-checklist.md
+- docs/03-reference/brand-opportunities.md
+- tests/test_voice_core.py
+- tests/test_brand_voice.py
 - proof/PLAN.txt
 Steps:
-1) Verify overlap against open PRs and select one execution line and one PM line to avoid duplicate implementation.
-2) Port execution leasing from origin/codex/execution-plane-main-v2.
-3) Port the stacked PM boundary/event/bridge/read changes from origin/codex/pm-continue-04-truth-rebaseline.
-4) Resolve any integration conflicts on mainline files without broad refactors.
-5) Run narrow subsystem tests for execution, PM reads/writes, bridge/event taxonomy, and task orchestrator workflow surfaces.
-6) Update the scoped PM docs and task-packet status that correspond to the landed runtime behavior.
-7) Re-diff against origin/main and confirm the branch contains only the selected main-first delta.
+1) Port the Python 3.11 packaging and installer contract from the historical runtime branch, including the tracked .python-version pin.
+2) Port the voice bundle artifacts and deterministic voice core files from the branding/runtime source commits.
+3) Rebuild the public voice package exports, agent header helpers, and UI compatibility layer so they use one canonical deterministic core.
+4) Add the backend brand helper and reference docs only in forms that align with the deterministic voice-core contract.
+5) Run narrow Python, pytest, and import smoke checks for the salvaged surfaces.
+6) Re-diff against origin/main to confirm the branch contains only the intended runtime/voice/python delta.
 Verification:
 - git diff --name-status origin/main...
-- python3 -m pytest tests/test_execution_store.py tests/unit/test_task_coordinator_execution_leases.py
-- python3 -m pytest tests/unit/dopemux/pm/test_writes.py tests/unit/pm/test_reads.py
-- python3 -m pytest tests/unit/test_event_bus.py tests/unit/test_task_orchestrator_project_workflow_contract.py
-- python3 -m pytest services/dopecon-bridge/tests/test_route_endpoints_authority.py services/dopecon-bridge/tests/test_task_integration_unit.py
-- python3 -m pytest services/task-orchestrator/tests/test_workflow.py services/taskmaster/tests/test_server.py
+- python3 --version
+- bash -n install.sh test_installer_basic.sh
+- python3 -m py_compile src/dopemux/voice/core.py src/dopemux/voice/__init__.py src/dopemux/voice/agent_headers.py src/dopemux/ui/voice.py services/shared/brand_voice.py
+- python3 -m pytest tests/test_voice_core.py tests/test_brand_voice.py
+- PYTHONPATH=src python3 - <<'PY'
+import importlib
+for name in [
+    "dopemux.voice",
+    "dopemux.voice.core",
+    "dopemux.voice.agent_headers",
+    "dopemux.ui.voice",
+]:
+    importlib.import_module(name)
+print("voice imports ok")
+PY

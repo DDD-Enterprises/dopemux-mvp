@@ -46,7 +46,8 @@
     "ui-dashboard",
     "config",
     "dashboard",
-    "repo-truth-pack"
+    "repo-truth-pack",
+    "dopemux_voice_branding_bundle"
   ],
   "allowed_root_files": [
     "CLAUDE_AUTOMATION_INSTRUCTIONS.md",
@@ -152,7 +153,8 @@
     "audit_prompts.py",
     "mcp-proxy-config*.yaml",
     "CHECKLIST.md",
-    ".dockerignore"
+    ".dockerignore",
+    ".python-version"
   ],
   "legacy_root_files": [],
   "blocked_root_file_patterns": [

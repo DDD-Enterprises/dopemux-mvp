@@ -95,11 +95,11 @@ if python3 --version; then
     PY_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
     echo "✅ Python found: $PY_VERSION"
     
-    MIN_VERSION="3.10"
-    if python3 -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)"; then
+    MIN_VERSION="3.11"
+    if python3 -c "import sys; exit(0 if sys.version_info >= (3, 11) else 1)"; then
         echo "✅ Python version >= $MIN_VERSION"
     else
-        echo "⚠️  Python < $MIN_VERSION (installer requires 3.10+)"
+        echo "⚠️  Python < $MIN_VERSION (installer requires 3.11+)"
     fi
 else
     echo "❌ Python not found"
