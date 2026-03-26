@@ -32,15 +32,25 @@ logger = logging.getLogger(__name__)
 
 class SyncBridgeAdapterClientStub:
     """Uses a synchronous HTTPX client to implement proxy clients for PMWriteConfig.
-    This guarantees block execution and explicit fail-closed exceptions.
+    
+    This client stub guarantees blocking execution and explicit fail-closed 
+    exceptions, ensuring that PM Plane writes are fully confirmed before 
+    proceeding with downstream service logic.
     """
     def __init__(self, config: DopeconBridgeConfig):
+        """Initialize the stub with DopeconBridge configuration.
+        
+        Args:
+            config: Configuration containing base URL, token, and source plane.
+        """
         self.base_url = config.base_url
         self.headers = {"Authorization": f"Bearer {config.token}", "x-source-plane": config.source_plane}
         self.client = httpx.Client(base_url=self.base_url, headers=self.headers, timeout=config.timeout)
 
 class SyncLeantimeBridgeClient(SyncBridgeAdapterClientStub):
+    """Synchronous proxy client for Leantime task operations."""
     def update_task(self, task_id: str, updates: Dict[str, Any], idempotency_key: str):
+        """Update task metadata in Leantime via the bridge."""
         payload = {
             "source": "cognitive",
             "operation": "leantime.update_task",
@@ -51,6 +61,7 @@ class SyncLeantimeBridgeClient(SyncBridgeAdapterClientStub):
         resp.raise_for_status()
             
     def update_status(self, task_id: str, status: str, idempotency_key: str):
+        """Update task status in Leantime via the bridge."""
         payload = {
             "source": "cognitive",
             "operation": "leantime.update_status",
@@ -61,7 +72,9 @@ class SyncLeantimeBridgeClient(SyncBridgeAdapterClientStub):
         resp.raise_for_status()
 
 class SyncOrchestratorBridgeClient(SyncBridgeAdapterClientStub):
+    """Synchronous proxy client for Task Orchestrator workflow operations."""
     def transition(self, task_id: str, status: Any, reason: str, expected_version: int, idempotency_key: str):
+        """Execute a workflow transition in the Task Orchestrator via the bridge."""
         payload = {
             "source": "cognitive",
             "operation": "orchestrator.transition",
@@ -78,7 +91,9 @@ class SyncOrchestratorBridgeClient(SyncBridgeAdapterClientStub):
         resp.raise_for_status()
 
 class SyncConportBridgeClient(SyncBridgeAdapterClientStub):
+    """Synchronous proxy client for ConPort progress operations."""
     def record_progress(self, task_id: str, progress_notes: str, is_decision: bool, idempotency_key: str):
+        """Record task progress in the ConPort knowledge graph via the bridge."""
         payload = {
             "description": progress_notes,
             "status": "DONE" if is_decision else "IN_PROGRESS",
@@ -88,7 +103,9 @@ class SyncConportBridgeClient(SyncBridgeAdapterClientStub):
         resp.raise_for_status()
 
 class SyncMemoryBridgeClient(SyncBridgeAdapterClientStub):
+    """Synchronous proxy client for Dope-Memory chronicle operations."""
     def append_chronicle(self, task_id: str, progress_notes: str, is_decision: bool, idempotency_key: str):
+        """Append a chronicle entry to Dope-Memory via the bridge."""
         payload = {
             "source": "cognitive",
             "operation": "memory.append_chronicle",
@@ -105,7 +122,13 @@ class SyncMemoryBridgeClient(SyncBridgeAdapterClientStub):
 
 
 class TaskMasterBridgeAdapter:
-    """DopeconBridge adapter for TaskMaster service"""
+    """DopeconBridge adapter for the TaskMaster service.
+    
+    This class manages the integration between TaskMaster's internal task
+    representation and the authoritative PM Plane components. It utilizes 
+    a `PMWriteConfig` populated with synchronous proxy clients to ensure 
+    fail-closed synchronization.
+    """
     
     def __init__(
         self,

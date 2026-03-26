@@ -64,6 +64,26 @@ class TaskOrchestratorAdapter:
             logger.error(f"Failed to execute transition on task-orchestrator: {e}")
             raise
 
+    async def get_project_context(self, project_id: str) -> Dict[str, Any]:
+        """Get project context from the orchestrator."""
+        try:
+            response = await self._request("GET", f"/api/projects/{project_id}/context")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to get project context from task-orchestrator: {e}")
+            raise
+
+    async def get_sprint_snapshot(self, project_id: str) -> Dict[str, Any]:
+        """Get sprint snapshot from the orchestrator."""
+        try:
+            response = await self._request("GET", f"/api/projects/{project_id}/sprint/snapshot")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to get sprint snapshot from task-orchestrator: {e}")
+            raise
+
     async def health(self) -> bool:
         """Check health of task-orchestrator."""
         try:
