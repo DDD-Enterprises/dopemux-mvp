@@ -55,6 +55,7 @@ class TaskUpdateRequest(BaseModel):
     """Request to update task status."""
     status: str = Field(..., description="New task status")
     assigned_to: Optional[str] = Field(None, description="User assignment")
+    project_id: Optional[str] = Field(None, description="Canonical project workflow ID")
 
 
 # ============================================================================
@@ -358,16 +359,16 @@ async def get_next_tasks(
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
         raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
 
-    from dopemux.pm.reads import pm_get_priority_queue
+    from .services.task_integration import task_service
     
     try:
-        result = await pm_get_priority_queue(project_id)
+        result = await task_service.get_priority_queue(project_id)
         
         return {
             "success": True,
             "project_id": project_id,
-            "count": len(result.queue_items[:limit]),
-            "tasks": result.queue_items[:limit]
+            "count": len(result.get("queue_items", [])[:limit]),
+            "tasks": result.get("queue_items", [])[:limit]
         }
     except Exception as e:
         logger.error(f"Failed to get next tasks: {e}")
@@ -396,7 +397,8 @@ async def update_task_status(
         result = await task_service.update_task_status(
             task_id,
             status,
-            request.assigned_to
+            request.assigned_to,
+            project_id=request.project_id or "default",
         )
         return result
     except ValueError as e:
