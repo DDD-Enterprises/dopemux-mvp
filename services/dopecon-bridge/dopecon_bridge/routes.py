@@ -362,16 +362,25 @@ async def get_next_tasks(
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
         raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
 
-    from dopemux.pm.reads import pm_get_priority_queue
+    from .services.task_integration import task_service
     
     try:
-        result = await pm_get_priority_queue(project_id)
+        tasks = await task_service.get_next_actionable_tasks(project_id, limit=limit)
         
         return {
             "success": True,
             "project_id": project_id,
-            "count": len(result.queue_items[:limit]),
-            "tasks": result.queue_items[:limit]
+            "count": len(tasks),
+            "tasks": [
+                {
+                    "id": task.id,
+                    "title": task.title,
+                    "description": task.description,
+                    "status": task.status.value,
+                    "priority": task.priority.value,
+                }
+                for task in tasks
+            ],
         }
     except Exception as e:
         logger.error(f"Failed to get next tasks: {e}")

@@ -65,24 +65,30 @@ class TaskOrchestratorAdapter:
             raise
 
     async def get_project_context(self, project_id: str) -> Dict[str, Any]:
-        """Get project context from the orchestrator."""
-        try:
-            response = await self._request("GET", f"/api/projects/{project_id}/context")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Failed to get project context from task-orchestrator: {e}")
-            raise
+        """Get project context from the orchestrator.
+
+        The current in-repo Task Orchestrator API exposes workflow endpoints but
+        does not expose a dedicated project-context read surface yet. Keep this
+        fail-closed until that endpoint exists.
+        """
+        logger.warning(
+            "Task Orchestrator project-context endpoint is not available; returning fail-closed empty context for %s",
+            project_id,
+        )
+        return {}
 
     async def get_sprint_snapshot(self, project_id: str) -> Dict[str, Any]:
-        """Get sprint snapshot from the orchestrator."""
-        try:
-            response = await self._request("GET", f"/api/projects/{project_id}/sprint/snapshot")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Failed to get sprint snapshot from task-orchestrator: {e}")
-            raise
+        """Get sprint snapshot from the orchestrator.
+
+        The current in-repo Task Orchestrator API does not expose a dedicated
+        sprint snapshot endpoint yet. Keep this fail-closed until that surface
+        exists.
+        """
+        logger.warning(
+            "Task Orchestrator sprint snapshot endpoint is not available; returning fail-closed empty snapshot for %s",
+            project_id,
+        )
+        return {}
 
     async def health(self) -> bool:
         """Check health of task-orchestrator."""
