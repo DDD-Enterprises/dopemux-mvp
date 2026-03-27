@@ -20,20 +20,20 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-
-logger = logging.getLogger(__name__)
-
-def _now() -> str:
-    """Return current timestamp in ISO-8601 format (UTC)."""
-    return datetime.now(timezone.utc).isoformat()
-
-
 from dopemux.pm.models import PMTaskStatus
 from dopemux.pm.writes import (
     PMWriteConfig,
     pm_transition_work_item,
     pm_update_work_item,
 )
+from dopemux.execution.models import ExecutionPacket, PacketState
+
+
+logger = logging.getLogger(__name__)
+
+def _now() -> str:
+    """Return current timestamp in ISO-8601 format (UTC)."""
+    return datetime.now(timezone.utc).isoformat()
 
 class TaskStatus(Enum):
     """Simple task lifecycle states mapping to Canonical PM status."""
@@ -64,6 +64,24 @@ class TaskRecord:
         data = asdict(self)
         data["status"] = self.status.value
         return data
+
+    def to_execution_packet(self, owner_id: str) -> ExecutionPacket:
+        """Wrap the task record into an ExecutionPacket."""
+        state_map = {
+            TaskStatus.PENDING: PacketState.READY,
+            TaskStatus.IN_PROGRESS: PacketState.EXECUTING,
+            TaskStatus.COMPLETED: PacketState.PROOF_GENERATED,
+        }
+        return ExecutionPacket(
+            packet_id=self.id,
+            owner_id=owner_id,
+            state=state_map.get(self.status, PacketState.READY),
+            metadata={
+                "description": self.description,
+                "priority": self.priority,
+                "estimated_duration": self.estimated_duration,
+            }
+        )
 
     @classmethod
     def from_dict(cls, data: Dict[str, object]) -> "TaskRecord":
