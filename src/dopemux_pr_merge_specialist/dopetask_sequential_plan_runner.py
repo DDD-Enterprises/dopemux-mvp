@@ -99,6 +99,9 @@ class DopetaskSequentialPlanRunner:
         """Ensure all dependencies exist and are ordered before the packet."""
         known_ids = set()
         for p in plan.packets:
+            if p.tp_id in known_ids:
+                raise PlanValidationError(f"Duplicate packet ID in plan: '{p.tp_id}'")
+            
             for dep_id in p.depends_on:
                 if dep_id not in known_ids:
                     raise PlanValidationError(

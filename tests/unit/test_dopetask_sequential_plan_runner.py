@@ -101,3 +101,27 @@ def test_rejects_missing_dependency(runner: DopetaskSequentialPlanRunner) -> Non
     )
     with pytest.raises(PlanValidationError, match="depends on 'GHOST' which is not defined before it"):
         runner.run(plan, {})
+
+
+def test_rejects_duplicate_ids(runner: DopetaskSequentialPlanRunner) -> None:
+    plan = SequentialPlan(
+        plan_id="PLAN-DUP",
+        packets=[
+            PlanPacket(tp_id="TP-1"),
+            PlanPacket(tp_id="TP-1"),
+        ],
+    )
+    with pytest.raises(PlanValidationError, match="Duplicate packet ID in plan: 'TP-1'"):
+        runner.run(plan, {})
+
+
+def test_rejects_circular_dependency_immediate(runner: DopetaskSequentialPlanRunner) -> None:
+    # TP-1 depends on itself
+    plan = SequentialPlan(
+        plan_id="PLAN-CYCLE",
+        packets=[
+            PlanPacket(tp_id="TP-1", depends_on=["TP-1"]),
+        ],
+    )
+    with pytest.raises(PlanValidationError, match="depends on 'TP-1' which is not defined before it"):
+        runner.run(plan, {})
