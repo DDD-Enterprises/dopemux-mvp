@@ -3253,6 +3253,8 @@ from .commands.extractor_commands import (
     extractor,
 )
 
+from .commands.extractor_validation import ValidationConfig, run_live_validation
+
 cli.add_command(extractor)
 
 from .commands.audit_commands import audit
@@ -4695,6 +4697,12 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     show_default=True,
     help="🔄 State Sync: Sync local artifacts before ignition (v4 only).",
 )
+@click.option(
+    "--promptset-root",
+    type=click.Path(exists=True, file_okay=False),
+    default=None,
+    help="External generated promptset directory for v5 prompt resolution.",
+)
 @click.pass_context
 def extractor_run(
     ctx,
@@ -4702,6 +4710,7 @@ def extractor_run(
     engine_version_legacy: Optional[str],
     phase: str,
     run_id: Optional[str],
+    promptset_root: Optional[str],
     dry_run: bool,
     resume: bool,
     partition_workers: int,
@@ -4766,6 +4775,8 @@ def extractor_run(
         args.append("--jsonl-events")
     if effective_version == "v4":
         args.extend(["--sync" if sync else "--no-sync"])
+    if promptset_root:
+        args.extend(["--promptset-root", promptset_root])
     _run_extractor_runner(pipeline_version=effective_version, args=args)
 
 
@@ -4839,6 +4850,12 @@ def extractor_status(
 @upgrades.command("preflight")
 @_pipeline_version_options
 @click.option("--run-id", default=None, help="🆔 Ritual Session: Unique identifier for the preflight session.")
+@click.option(
+    "--promptset-root",
+    type=click.Path(exists=True, file_okay=False),
+    default=None,
+    help="External generated promptset directory for v5 prompt resolution.",
+)
 @click.option("--auth-doctor", is_flag=True, help="🩺 Auth Apothecary: Also execute high-fidelity provider authentication diagnostics.")
 @click.pass_context
 def extractor_preflight(
@@ -4846,6 +4863,7 @@ def extractor_preflight(
     pipeline_version: str,
     engine_version_legacy: Optional[str],
     run_id: Optional[str],
+    promptset_root: Optional[str],
     auth_doctor: bool,
 ):
     """
@@ -4860,12 +4878,109 @@ def extractor_preflight(
     args: List[str] = ["--preflight-providers"]
     if run_id:
         args.extend(["--run-id", run_id])
+    if promptset_root:
+        args.extend(["--promptset-root", promptset_root])
     _run_extractor_runner(pipeline_version=effective_version, args=args)
     if auth_doctor:
         auth_args = ["--doctor-auth"]
         if run_id:
             auth_args.extend(["--run-id", run_id])
+        if promptset_root:
+            auth_args.extend(["--promptset-root", promptset_root])
         _run_extractor_runner(pipeline_version=effective_version, args=auth_args)
+
+
+@upgrades.command("validate-live")
+@click.option(
+    "--promptset-root",
+    type=click.Path(exists=True, file_okay=False),
+    required=True,
+    help="External generated promptset directory to validate and use for paid stages.",
+)
+@click.option(
+    "--stage",
+    type=click.Choice(["preflight", "canary", "full"]),
+    default="preflight",
+    show_default=True,
+    help="Validation stage to run. Paid stages include all earlier gates automatically.",
+)
+@click.option("--run-id", default=None, help="Validation run ID.")
+@click.option(
+    "--report-root",
+    type=click.Path(file_okay=False),
+    default="reports/repo-truth-extractor/validation",
+    show_default=True,
+    help="Directory where validation ledgers, logs, and reports are written.",
+)
+@click.option(
+    "--routing-policy",
+    type=click.Choice(_ROUTING_POLICY_CHOICES),
+    default=_V5_DEFAULT_ROUTING_POLICY,
+    show_default=True,
+    help="Routing policy used for v5 dry-runs, canary, and full execution.",
+)
+@click.option("--tp008-map", type=click.Path(exists=True, dir_okay=False), default=None, help="Optional canonical TP-008 mapping file.")
+@click.option(
+    "--pricing-manifest",
+    type=click.Path(exists=True, dir_okay=False),
+    default=None,
+    help="Required for canary/full stages. JSON file with route_call_upper_bounds for spend caps.",
+)
+@click.option("--canary-docs-phase", type=click.Choice(["D"]), default="D", show_default=True)
+@click.option("--canary-code-phase", type=click.Choice(["C", "Q"]), default="C", show_default=True)
+@click.option("--canary-synth-phase", type=click.Choice(["R", "S"]), default="R", show_default=True)
+@click.option("--canary-max-usd", type=float, default=15.0, show_default=True)
+@click.option("--canary-max-minutes", type=float, default=45.0, show_default=True)
+@click.option("--full-max-usd", type=float, default=75.0, show_default=True)
+@click.option("--full-max-minutes", type=float, default=240.0, show_default=True)
+@click.pass_context
+def extractor_validate_live(
+    ctx,
+    promptset_root: str,
+    stage: str,
+    run_id: Optional[str],
+    report_root: str,
+    routing_policy: str,
+    tp008_map: Optional[str],
+    pricing_manifest: Optional[str],
+    canary_docs_phase: str,
+    canary_code_phase: str,
+    canary_synth_phase: str,
+    canary_max_usd: float,
+    canary_max_minutes: float,
+    full_max_usd: float,
+    full_max_minutes: float,
+):
+    """
+    Run the fail-closed v5 live validation workflow.
+
+    \b
+    Examples:
+      dopemux upgrades validate-live --promptset-root /tmp/promptset
+      dopemux upgrades validate-live --stage canary --promptset-root /tmp/promptset --pricing-manifest pricing.json
+      dopemux upgrades validate-live --stage full --promptset-root /tmp/promptset --pricing-manifest pricing.json
+    """
+    payload = run_live_validation(
+        ValidationConfig(
+            promptset_root=Path(promptset_root),
+            stage=stage,
+            run_id=run_id,
+            report_root=Path(report_root),
+            routing_policy=routing_policy,
+            canary_phases=(canary_docs_phase, canary_code_phase, canary_synth_phase),
+            canary_max_usd=canary_max_usd,
+            canary_max_minutes=canary_max_minutes,
+            full_max_usd=full_max_usd,
+            full_max_minutes=full_max_minutes,
+            tp008_map=Path(tp008_map) if tp008_map else None,
+            pricing_manifest=Path(pricing_manifest) if pricing_manifest else None,
+        )
+    )
+    report_path = Path(report_root) / payload["run_id"] / "VALIDATION_REPORT.json"
+    console.logger.info(f"validation_report={report_path}")
+    if payload.get("status") != "pass":
+        blockers = payload.get("blockers") or ["Live validation failed."]
+        raise click.ClickException(f"{blockers[0]} See {report_path}.")
 
 
 @upgrades.group("promptset")
