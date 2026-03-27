@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .dopetask_series_models import PacketStatus, SeriesStatus, DopetaskSeriesResult
+
 # ---------------------------------------------------------------------------
 # Canonical value sets
 # ---------------------------------------------------------------------------
@@ -300,3 +302,29 @@ class DopetaskStatusMapper:
             "UNKNOWN": "detail",
         }
         return panel_map.get(p, "detail")
+
+    def map_series_status(self, status: str) -> SeriesStatus:
+        """Map raw string to SeriesStatus enum."""
+        try:
+            return SeriesStatus(status)
+        except ValueError:
+            return SeriesStatus.UNKNOWN
+
+    def map_packet_status(self, status: str) -> PacketStatus:
+        """Map raw string to PacketStatus enum."""
+        try:
+            return PacketStatus(status)
+        except ValueError:
+            return PacketStatus.UNKNOWN
+
+    def aggregate_series_governance(
+        self, series_result: DopetaskSeriesResult, posture: str
+    ) -> list[str]:
+        """Aggregate allowed actions across a series.
+        
+        Strategy: Intersection. An action is only allowed for the series if it 
+        is allowed by the global posture. 
+        (More complex logic could check individual packet governance if available).
+        """
+        pm = self.map_posture(posture)
+        return list(POSTURE_ALLOWED_ACTIONS.get(pm, []))
