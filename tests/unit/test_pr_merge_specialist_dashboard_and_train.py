@@ -223,3 +223,115 @@ def test_dashboard_decode_input_choice_maps_exit_keys_to_quit(monkeypatch) -> No
         lambda *_args, **_kwargs: ([], [], []),
     )
     assert dashboard._decode_input_choice("\x1b") == "Q"
+
+
+def test_choose_autopilot_strategy_prefers_simple_for_small_independent_queue() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    strategy, reason = dashboard._choose_autopilot_strategy(
+        [
+            {"pr_id": 1, "head_ref": "feature-1", "base_ref": "main"},
+            {"pr_id": 2, "head_ref": "feature-2", "base_ref": "main"},
+        ]
+    )
+
+    assert strategy == "simple"
+    assert "small independent queue" in reason
+
+
+def test_choose_autopilot_strategy_prefers_hybrid_for_stack() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    strategy, reason = dashboard._choose_autopilot_strategy(
+        [
+            {"pr_id": 1, "head_ref": "feature-1", "base_ref": "main"},
+            {"pr_id": 2, "head_ref": "feature-2", "base_ref": "feature-1"},
+        ]
+    )
+
+    assert strategy == "hybrid"
+    assert "stacked or larger queue" in reason
+
+
+def test_autopilot_reassess_advances_after_stalled_pr(monkeypatch) -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    dashboard.state = QueueState(
+        run_id="run",
+        prs=[
+            {"pr_id": 101, "lifecycle_state": "apply_ready", "allowed_actions": ["APPLY_FIX"], "validation_report": {"status": "not_executed"}, "ci_status": "SUCCESS", "unresolved_threads": 0, "blockers": []},
+            {"pr_id": 102, "lifecycle_state": "merge_ready", "allowed_actions": ["MERGE"], "validation_report": {"status": "passed"}, "ci_status": "SUCCESS", "unresolved_threads": 0, "blockers": []},
+        ],
+        autopilot_strategy="hybrid",
+    )
+
+    def fake_refresh_queue_state(*, strategy_override=None, prefer_top=False):
+        assert strategy_override == "hybrid"
+        assert prefer_top is True
+        return True
+
+    monkeypatch.setattr(dashboard, "_refresh_queue_state", fake_refresh_queue_state)
+    dashboard.state.last_action_result = "apply_ready"
+
+    dashboard._reassess_autopilot_after_action(
+        target_pr_id="101",
+        initial_state="apply_ready",
+        initial_tactic="P",
+    )
+
+    assert dashboard.state.active_index == 1
+    assert "stalled" in dashboard.state.status_message
+
+
+def test_select_advanced_strategy_prefers_patch_isolation_for_failed_ci() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    strategy_id, rationale, steps = dashboard._select_advanced_strategy(
+        {
+            "pr_id": 201,
+            "ci_status": "FAILURE",
+            "validation_report": {"status": "passed"},
+            "blockers": [{"type": "required_check_failed"}],
+            "mergeable": "MERGEABLE",
+            "merge_state_status": "CLEAN",
+            "unresolved_threads": 0,
+        }
+    )
+
+    assert strategy_id == "PATCH_ISOLATION_PLAN"
+    assert "Broken validation or CI" in rationale
+    assert steps[0] in {"F", "C"}
+
+
+def test_select_advanced_strategy_prefers_ours_then_port_for_threads() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    strategy_id, rationale, steps = dashboard._select_advanced_strategy(
+        {
+            "pr_id": 202,
+            "ci_status": "SUCCESS",
+            "validation_report": {"status": "not_executed"},
+            "blockers": [{"type": "active_thread"}],
+            "mergeable": "MERGEABLE",
+            "merge_state_status": "CLEAN",
+            "unresolved_threads": 2,
+        }
+    )
+
+    assert strategy_id == "OURS_THEN_PORT_SELECTIVE"
+    assert "Reviewer deltas" in rationale
+    assert steps[0] == "T"
+
+
+def test_autopilot_tactic_prefers_strategy_order_over_generic_choice() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    snapshot = {
+        "allowed_actions": ["APPLY_FIX"],
+        "ci_status": "FAILURE",
+        "validation_report": {"status": "failed"},
+        "unresolved_threads": 2,
+        "blockers": [
+            {"type": "validation_failed"},
+            {"type": "required_check_failed"},
+            {"type": "active_thread"},
+        ],
+        "advanced_strategy_id": "PATCH_ISOLATION_PLAN",
+        "advanced_strategy_steps": ["F", "C", "T", "V", "I"],
+    }
+
+    assert dashboard._autopilot_tactic_for_snapshot(snapshot) == "F"

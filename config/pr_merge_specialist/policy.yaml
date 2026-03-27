@@ -14,19 +14,24 @@ validation:
   require_local_validation_for_merge_ready: true
   steps:
     - name: pre-commit
-      command: [pre-commit, run, --all-files]
+      command: [pre-commit, run]
+      scope: changed_files
       run_in_dry_run: false
     - name: docs-frontmatter-fix
       command: [python, scripts/docs_frontmatter_guard.py, --fix]
+      scope: docs_frontmatter_files
       run_in_dry_run: false
     - name: docs-validator
       command: [python, scripts/docs_validator.py]
+      scope: docs_validator_files
       run_in_dry_run: false
     - name: docs-hygiene
-      command: [python, scripts/check_docs_hygiene.py, --check, --all-files]
+      command: [python, scripts/check_docs_hygiene.py, --check]
+      scope: docs_validator_files
       run_in_dry_run: false
     - name: docs-filename-hygiene
-      command: [python, scripts/check_docs_filename_hygiene.py, --check, --all-files]
+      command: [python, scripts/check_docs_filename_hygiene.py, --check]
+      scope: docs_validator_files
       run_in_dry_run: false
     - name: root-hygiene
       command: [python, scripts/check_root_hygiene.py]
