@@ -8,6 +8,8 @@ from pathlib import Path
 
 from .dopetask_archive_resolver import DopetaskArchiveResolver
 from .dopetask_bundle_loader import BundleSchemaError, DopetaskBundleLoader
+from .dopetask_series_loader import DopetaskSeriesLoader, SeriesSchemaError
+from .dopetask_series_models import DopetaskSeriesResult
 from .dopetask_compatibility_mode import DopetaskCompatibilityMode
 from .dopetask_status_mapper import (
     DopetaskAdapterResult,
@@ -45,6 +47,7 @@ class DopetaskAdapter:
         worktree: str = "",
         archive_resolver: DopetaskArchiveResolver | None = None,
         compat_mode: DopetaskCompatibilityMode | None = None,
+        series_loader: DopetaskSeriesLoader | None = None,
     ) -> None:
         self.loader = loader
         self.mapper = mapper
@@ -53,10 +56,37 @@ class DopetaskAdapter:
         self.worktree = worktree or str(Path.cwd())
         self._archive_resolver = archive_resolver or DopetaskArchiveResolver()
         self._compat_mode = compat_mode or DopetaskCompatibilityMode()
+        self.series_loader = series_loader or DopetaskSeriesLoader()
 
     # ------------------------------------------------------------------
     # Public entry points
     # ------------------------------------------------------------------
+
+    def from_series_id(
+        self, series_id: str, repo_path: Path, posture: str = "ADVISORY_ONLY"
+    ) -> DopetaskSeriesResult:
+        """Build a normalized series result by ID.
+        
+        This is a READ-ONLY operation. No execution is triggered.
+        """
+        # Upstream convention for series state: .dopetask/series/<ID>/state.json
+        # (Based on TP-DSER-001 probe observations)
+        state_path = repo_path / ".dopetask" / "series" / series_id / "state.json"
+        return self.from_series_state_path(state_path, posture=posture)
+
+    def from_series_state_path(
+        self, path: Path, posture: str = "ADVISORY_ONLY"
+    ) -> DopetaskSeriesResult:
+        """Load and normalize a series result from a state file path.
+        
+        This is a READ-ONLY operation. No execution is triggered.
+        """
+        series_result = self.series_loader.load_file(path)
+        series_result.allowed_actions = self.mapper.aggregate_series_governance(
+            series_result, posture
+        )
+        series_result.computed_at = utc_now()
+        return series_result
 
     def from_bundle_path(self, bundle_path: Path) -> DopetaskAdapterResult:
         """Build a normalized result from an existing bundle file."""
