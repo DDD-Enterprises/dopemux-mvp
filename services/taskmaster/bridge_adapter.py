@@ -27,21 +27,30 @@ from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest, content
 from dopemux.pm.store import InMemoryPMTaskStore
 from dopemux.pm.writes import PMWriteConfig, pm_update_work_item, pm_transition_work_item, pm_log_progress
 from dopemux.pm.mapping import TASKMASTER_TO_CANONICAL
-from dopemux.pm.adapters.orchestrator import SyncTaskOrchestratorAdapter
 
 logger = logging.getLogger(__name__)
 
 class SyncBridgeAdapterClientStub:
     """Uses a synchronous HTTPX client to implement proxy clients for PMWriteConfig.
-    This guarantees block execution and explicit fail-closed exceptions.
+    
+    This client stub guarantees blocking execution and explicit fail-closed 
+    exceptions, ensuring that PM Plane writes are fully confirmed before 
+    proceeding with downstream service logic.
     """
     def __init__(self, config: DopeconBridgeConfig):
+        """Initialize the stub with DopeconBridge configuration.
+        
+        Args:
+            config: Configuration containing base URL, token, and source plane.
+        """
         self.base_url = config.base_url
         self.headers = {"Authorization": f"Bearer {config.token}", "x-source-plane": config.source_plane}
         self.client = httpx.Client(base_url=self.base_url, headers=self.headers, timeout=config.timeout)
 
 class SyncLeantimeBridgeClient(SyncBridgeAdapterClientStub):
+    """Synchronous proxy client for Leantime task operations."""
     def update_task(self, task_id: str, updates: Dict[str, Any], idempotency_key: str):
+        """Update task metadata in Leantime via the bridge."""
         payload = {
             "source": "cognitive",
             "operation": "leantime.update_task",
@@ -52,6 +61,7 @@ class SyncLeantimeBridgeClient(SyncBridgeAdapterClientStub):
         resp.raise_for_status()
             
     def update_status(self, task_id: str, status: str, idempotency_key: str):
+        """Update task status in Leantime via the bridge."""
         payload = {
             "source": "cognitive",
             "operation": "leantime.update_status",
@@ -62,25 +72,28 @@ class SyncLeantimeBridgeClient(SyncBridgeAdapterClientStub):
         resp.raise_for_status()
 
 class SyncOrchestratorBridgeClient(SyncBridgeAdapterClientStub):
-    def __init__(self, config: DopeconBridgeConfig, project_id: str = "default"):
-        super().__init__(config)
-        self.project_id = project_id
-        self.task_orchestrator = SyncTaskOrchestratorAdapter(default_project_id=project_id)
-
+    """Synchronous proxy client for Task Orchestrator workflow operations."""
     def transition(self, task_id: str, status: Any, reason: str, expected_version: int, idempotency_key: str):
-        transition_name = status.value.lower() if hasattr(status, "value") else str(status).lower()
-        return self.task_orchestrator.transition(
-            project_id=self.project_id,
-            workflow_id=task_id,
-            transition_name=transition_name,
-            actor="taskmaster",
-            idempotency_key=idempotency_key,
-            expected_version=expected_version,
-            reason=reason,
-        )
+        """Execute a workflow transition in the Task Orchestrator via the bridge."""
+        payload = {
+            "source": "cognitive",
+            "operation": "orchestrator.transition",
+            "data": {
+                "task_id": task_id, 
+                "status": status.value if hasattr(status, 'value') else status, 
+                "reason": reason, 
+                "expected_version": expected_version,
+                "idempotency_key": idempotency_key
+            },
+            "requester": "taskmaster"
+        }
+        resp = self.client.post("/route/pm", json=payload)
+        resp.raise_for_status()
 
 class SyncConportBridgeClient(SyncBridgeAdapterClientStub):
+    """Synchronous proxy client for ConPort progress operations."""
     def record_progress(self, task_id: str, progress_notes: str, is_decision: bool, idempotency_key: str):
+        """Record task progress in the ConPort knowledge graph via the bridge."""
         payload = {
             "description": progress_notes,
             "status": "DONE" if is_decision else "IN_PROGRESS",
@@ -90,7 +103,9 @@ class SyncConportBridgeClient(SyncBridgeAdapterClientStub):
         resp.raise_for_status()
 
 class SyncMemoryBridgeClient(SyncBridgeAdapterClientStub):
+    """Synchronous proxy client for Dope-Memory chronicle operations."""
     def append_chronicle(self, task_id: str, progress_notes: str, is_decision: bool, idempotency_key: str):
+        """Append a chronicle entry to Dope-Memory via the bridge."""
         payload = {
             "source": "cognitive",
             "operation": "memory.append_chronicle",
@@ -107,7 +122,13 @@ class SyncMemoryBridgeClient(SyncBridgeAdapterClientStub):
 
 
 class TaskMasterBridgeAdapter:
-    """DopeconBridge adapter for TaskMaster service"""
+    """DopeconBridge adapter for the TaskMaster service.
+    
+    This class manages the integration between TaskMaster's internal task
+    representation and the authoritative PM Plane components. It utilizes 
+    a `PMWriteConfig` populated with synchronous proxy clients to ensure 
+    fail-closed synchronization.
+    """
     
     def __init__(
         self,
@@ -132,7 +153,7 @@ class TaskMasterBridgeAdapter:
         # Configure PM writes using the synchronous blocking clients
         self.pm_config = PMWriteConfig(
             leantime_client=SyncLeantimeBridgeClient(config),
-            orchestrator_client=SyncOrchestratorBridgeClient(config, project_id=workspace_id),
+            orchestrator_client=SyncOrchestratorBridgeClient(config),
             conport_client=SyncConportBridgeClient(config),
             memory_client=SyncMemoryBridgeClient(config)
         )
@@ -146,7 +167,6 @@ class TaskMasterBridgeAdapter:
         # Clean up HTTPX sync clients
         self.pm_config.leantime_client.client.close()
         self.pm_config.orchestrator_client.client.close()
-        self.pm_config.orchestrator_client.task_orchestrator.close()
         self.pm_config.conport_client.client.close()
         self.pm_config.memory_client.client.close()
     

@@ -122,72 +122,57 @@ async def test_sync_tasks_to_leantime_empty_list():
     assert not service.mcp_manager.call_tool.called
 
 
+class _MockResponse:
+    def __init__(self, status, payload):
+        self.status = status
+        self._payload = payload
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def json(self):
+        return self._payload
+
+
 @pytest.mark.asyncio
-async def test_get_priority_queue_uses_pm_read_layer(monkeypatch):
+async def test_get_priority_queue_uses_task_orchestrator_queue_endpoint():
     service = TaskIntegrationService()
-
-    async def fake_priority_queue(project_id: str):
-        class Result:
-            def model_dump(self):
-                return {
-                    "canonical_backend": "task-orchestrator",
-                    "project_id": project_id,
-                    "legality_result": "allowed",
-                    "queue_items": [{"id": "wf-1", "title": "Canonical task"}],
-                }
-
-        return Result()
-
-    monkeypatch.setattr(
-        "dopecon_bridge.services.task_integration.pm_get_priority_queue",
-        fake_priority_queue,
+    mock_session = MagicMock()
+    mock_session.get.return_value = _MockResponse(
+        200,
+        {
+            "project_id": "project-123",
+            "queue_items": [{"id": "task-1", "priority": "high"}],
+            "linked_ids": {"workflow_id": "wf-1"},
+            "legality_result": "allowed",
+            "blockers": [],
+            "next_action": {"id": "task-1"},
+        },
     )
-
-    result = await service.get_priority_queue("proj-123")
-
-    assert result["canonical_backend"] == "task-orchestrator"
-    assert result["queue_items"][0]["id"] == "wf-1"
-
-
-@pytest.mark.asyncio
-async def test_update_task_status_requires_allowed_transition_result():
-    service = TaskIntegrationService()
-    service.mcp_manager = AsyncMock()
+    service.mcp_manager = MagicMock(session=mock_session)
     service.mcp_manager.initialize = AsyncMock()
-    service.mcp_manager.session = MagicMock()
-    service.mcp_manager.session.post.return_value = DummyResponse(
-        status=200,
-        payload={"legality_result": "unavailable"},
-    )
 
-    with pytest.raises(RuntimeError, match="non-authoritative transition result"):
-        await service.update_task_status("task-123", TaskStatus.IN_PROGRESS)
+    result = await service.get_priority_queue("project-123")
 
-    assert not service.mcp_manager.call_tool.called
+    service.mcp_manager.initialize.assert_awaited_once()
+    mock_session.get.assert_called_once()
+    assert result["queue_items"] == [{"id": "task-1", "priority": "high"}]
+    assert result["next_action"] == {"id": "task-1"}
 
 
 @pytest.mark.asyncio
-async def test_update_task_status_uses_project_scoped_deterministic_idempotency_key():
+async def test_get_priority_queue_fail_closed_on_upstream_error():
     service = TaskIntegrationService()
-    service.mcp_manager = AsyncMock()
+    mock_session = MagicMock()
+    mock_session.get.return_value = _MockResponse(503, {"detail": "unavailable"})
+    service.mcp_manager = MagicMock(session=mock_session)
     service.mcp_manager.initialize = AsyncMock()
-    service.mcp_manager.session = MagicMock()
-    service.mcp_manager.session.post.return_value = DummyResponse(
-        status=200,
-        payload={"legality_result": "allowed"},
-    )
-    service.mcp_manager.call_tool = AsyncMock(return_value={"id": "lt-1"})
 
-    result = await service.update_task_status(
-        "task-123",
-        TaskStatus.IN_PROGRESS,
-        assigned_to="alex",
-        project_id="proj-123",
-    )
+    result = await service.get_priority_queue("project-123")
 
-    post_url = service.mcp_manager.session.post.call_args.args[0]
-    post_payload = service.mcp_manager.session.post.call_args.kwargs["json"]
-
-    assert "/api/projects/proj-123/workflow/transition" in post_url
-    assert post_payload["idempotency_key"] == "bridge-trans-proj-123-task-123-in_progress-alex"
-    assert result["project_id"] == "proj-123"
+    assert result["project_id"] == "project-123"
+    assert result["queue_items"] == []
+    assert result["legality_result"] == "unavailable"

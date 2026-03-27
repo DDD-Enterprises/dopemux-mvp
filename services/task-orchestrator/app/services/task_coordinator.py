@@ -50,9 +50,6 @@ from dopemux.pm.store import InMemoryPMTaskStore
 from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest, content_hash_task_id
 from dopemux.pm.mapping import ORCHESTRATOR_TO_CANONICAL, CANONICAL_TO_ORCHESTRATOR
 
-from dopemux.execution.store import get_execution_store, get_lease_store, PacketNotFoundError, PacketNotReadyError
-from dopemux.execution.models import ExecutionPacket, PacketState
-
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -498,7 +495,6 @@ class TaskCoordinator:
 
         execution_store = get_execution_store()
         lease_store = get_lease_store()
-        monitor_accepts_lease = "lease_id" in inspect.signature(self._monitor_execution).parameters
 
         for task_id in sequenced_tasks:
             # Execute task (placeholder - actual execution via agents)
@@ -510,20 +506,6 @@ class TaskCoordinator:
                 continue
             lease = None
             try:
-                # 1. Ensure ExecutionPacket exists in the Execution Plane
-                if not execution_store.get_packet(task_id):
-                    execution_store.create_packet(ExecutionPacket(
-                        packet_id=task_id,
-                        owner_id="orchestrator",
-                        state=PacketState.READY,
-                        metadata={"title": task.title}
-                    ))
-                
-                # 2. Acquire Lease
-                agent_id = task.assigned_agent.value if task.assigned_agent else "unassigned-agent"
-                lease = lease_store.checkout(task_id, agent_id, ttl_seconds=300)
-                logger.info(f"🔑 Leased packet {task_id} to {agent_id} (Lease ID: {lease.lease_id})")
-
                 # Sync status transition idempotently via Canonical Store
                 try:
                     pm_task = self.pm_store.get(task_id)
@@ -545,11 +527,8 @@ class TaskCoordinator:
                 
                 results["in_progress"].append(task_id)
 
-                # Preserve compatibility with test/local monitor overrides that only accept `task`.
-                if monitor_accepts_lease:
-                    await self._monitor_execution(task, lease_id=lease.lease_id)
-                else:
-                    await self._monitor_execution(task)
+                # Simulate execution with monitoring and heartbeats
+                await self._monitor_execution(task, lease_id=lease.lease_id)
 
                 # Mark task as completed after successful monitoring idempotently
                 try:
@@ -572,8 +551,26 @@ class TaskCoordinator:
 
                 # 3. Release Lease
                 lease_store.release(lease.lease_id, final_state=PacketState.PROOF_GENERATED)
-                lease = None
                 logger.info(f"✅ Released lease for packet {task_id}")
+
+                # Mark task as completed after successful monitoring idempotently
+                try:
+                    pm_task = self.pm_store.get(task_id)
+                    expected_version = pm_task.version if pm_task else 1
+                    pm_task = self.pm_store.transition(
+                        task_id,
+                        PMTransitionRequest(
+                            idempotency_key=f"complete-{task_id}",
+                            expected_version=expected_version,
+                            new_status=PMTaskStatus.DONE,
+                            ts_utc=datetime.now(timezone.utc),
+                            source="orchestrator"
+                        )
+                    )
+                    task.status = TaskStatus(CANONICAL_TO_ORCHESTRATOR[pm_task.status])
+                except Exception as e:
+                    logger.warning(f"Failed canonical transition to COMPLETED for {task_id}: {e}")
+                    task.status = TaskStatus.COMPLETED
 
                 results["completed"].append(task_id)
                 results["in_progress"].remove(task_id)

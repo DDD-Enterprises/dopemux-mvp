@@ -155,7 +155,6 @@ class WorkflowService:
     async def update_idea(self, idea_id: str, request: UpdateIdeaRequest) -> WorkflowIdea:
         self._require_enabled()
         idea = await self.get_idea(idea_id)
-        
         idemp_key = getattr(request, "idempotency_key", None)
         if idemp_key and idea.idempotency_key == idemp_key:
             return idea
@@ -237,7 +236,6 @@ class WorkflowService:
     async def update_epic(self, epic_id: str, request: UpdateEpicRequest) -> WorkflowEpic:
         self._require_enabled()
         epic = await self.get_epic(epic_id)
-        
         idemp_key = getattr(request, "idempotency_key", None)
         if idemp_key and epic.idempotency_key == idemp_key:
             return epic
@@ -385,11 +383,27 @@ class WorkflowService:
             linked_ids_snapshot={"promoted_to_epic_id": epic.id},
         )
         
-        saved_audit = await self._call_store(self.store.save_audit_record(audit_record.dict()))
-        if not saved_audit:
-            raise WorkflowUnavailableError("failed to persist workflow transition audit")
+audit_persisted = True
+        try:
+            saved_audit = await self._call_store(
+                self.store.save_audit_record(audit_record.dict())
+            )
+            if not saved_audit:
+                audit_persisted = False
+        except WorkflowUnavailableError:
+            audit_persisted = False
 
-        idea.status = "promoted"
+        if not audit_persisted:
+            logger.warning(
+                "Workflow promotion audit persistence degraded for idea %s -> epic %s",
+                idea.id,
+                epic.id,
+            )
+            self.metrics["workflow_promotion_failures_total"] += 1
+            if warning:
+                warning = f"{warning}; audit persistence degraded"
+            else:
+                warning = "audit persistence degraded"
         idea.promoted_to_epic_id = epic.id
         idea.updated_at = utc_now_iso()
         idea.version += 1
