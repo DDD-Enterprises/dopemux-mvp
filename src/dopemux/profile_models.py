@@ -313,13 +313,13 @@ class ProfileCollection(BaseModel):
                             "name": "developer",
                             "display_name": "Developer",
                             "description": "Code implementation",
-                            "mcps": ["conport", "serena-v2"]
+                            "mcps": ["dopemux-conport", "dopemux-serena"]
                         },
                         {
                             "name": "researcher",
                             "display_name": "Researcher",
                             "description": "Deep research",
-                            "mcps": ["conport", "zen", "gpt-researcher"]
+                            "mcps": ["dopemux-conport", "dopemux-zen", "dopemux-gpt-researcher"]
                         }
                     ]
                 }
@@ -329,16 +329,12 @@ class ProfileCollection(BaseModel):
 
 # Valid MCP server names (reference for validation)
 VALID_MCP_SERVERS = [
-    "conport",          # Memory authority (REQUIRED)
-    "serena-v2",        # Code navigation and LSP
-    "zen",              # Multi-model reasoning
-    "pal",              # Code generation + API/SDK documentation (apilookup)
-    "gpt-researcher",   # Deep web research
-    "dope-context",     # Hybrid code search
-    "desktop-commander", # Desktop automation and control
-    "magic-mcp",        # UI component generation
-    "playwright",       # Browser automation and testing
-    "tavily",           # Web search API
-    "mas-sequential-thinking",  # Multi-agent sequential thinking
-    "sequential_thinking",  # Deprecated, use zen
+    "dopemux-conport",          # Memory authority (REQUIRED)
+    "dopemux-serena",           # Code navigation and LSP
+    "dopemux-zen",              # Multi-model reasoning
+    "dopemux-pal",              # Code generation + API/SDK documentation (apilookup)
+    "dopemux-gpt-researcher",   # Deep web research
+    "dopemux-claude-context",   # Hybrid code search
+    "dopemux-desktop-commander", # Desktop automation and control
+    "dopemux-leantime-bridge",   # Leantime integration
 ]

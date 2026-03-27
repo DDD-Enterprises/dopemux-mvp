@@ -131,16 +131,14 @@ if "-litellm" in sys.argv:
 
 
 ROLE_SERVER_SERVICE_MAP = {
-    "conport": "conport",
-    "serena": "serena",
-    "serena-lsp": "serena",
-    "zen": "zen",
-    "exa": "exa",
-    "gptr-mcp": "gptr-mcp",
+    "dopemux-conport": "dopemux-conport",
+    "dopemux-serena": "dopemux-serena",
+    "dopemux-zen": "dopemux-zen",
+    "dopemux-pal": "dopemux-pal",
     "dopemux-gpt-researcher": "dopemux-gpt-researcher",
-    "desktop-commander": "desktop-commander",
-    "leantime": "leantime-bridge",
-    "leantime-bridge": "leantime-bridge",
+    "dopemux-desktop-commander": "dopemux-desktop-commander",
+    "dopemux-leantime-bridge": "dopemux-leantime-bridge",
+    "dopemux-claude-context": "dopemux-claude-context",
 }
 
 ATTENTION_PROFILE_DEFAULTS = {
@@ -1683,20 +1681,21 @@ def start(
 
     try:
         dopemux_exists = Path.exists(project_path / ".dopemux")
-    except TypeError:
+    except (TypeError, AttributeError):
         dopemux_exists = False
 
     if not dopemux_exists:
         project_path_candidate = get_workspace_root()
-        if hasattr(project_path_candidate, "__truediv__"):
-            project_path = project_path_candidate
-        else:
-            project_path = Path(project_path_candidate)
+        if project_path_candidate:
+            if hasattr(project_path_candidate, "__truediv__"):
+                project_path = project_path_candidate
+            else:
+                project_path = Path(project_path_candidate)
 
-        try:
-            dopemux_exists = Path.exists(project_path / ".dopemux")
-        except TypeError:
-            dopemux_exists = False
+            try:
+                dopemux_exists = Path.exists(project_path / ".dopemux")
+            except (TypeError, AttributeError):
+                dopemux_exists = False
 
     if dry_run:
         console.logger.info(
@@ -1787,7 +1786,6 @@ def start(
         pass
 
         logger.error(f"Error: {e}")
-
     # Check if project is initialized
     if not dopemux_exists:
         console.print(

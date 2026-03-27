@@ -463,15 +463,16 @@ def styled_table(
         compact = True
     box_style = SIMPLE if compact else ROUNDED
     show_title = title if mode != RenderMode.COMPACT else None
-    table = Table(
-        title=show_title,
-        box=box_style,
-        title_style="table.header",
-        border_style="table.border",
-        header_style="table.header",
-        padding=(0, 1) if not compact else (0, 0),
-        **table_kwargs,
-    )
+    
+    # Set defaults in table_kwargs if not provided
+    table_kwargs.setdefault("title", show_title)
+    table_kwargs.setdefault("box", box_style)
+    table_kwargs.setdefault("title_style", "table.header")
+    table_kwargs.setdefault("border_style", "table.border")
+    table_kwargs.setdefault("header_style", "table.header")
+    table_kwargs.setdefault("padding", (0, 1) if not compact else (0, 0))
+    
+    table = Table(**table_kwargs)
     if mode == RenderMode.AUDIT:
         table.add_column("Timestamp", style="text.dim", no_wrap=True)
     for col in columns:
@@ -530,14 +531,12 @@ def styled_panel(
         # Strip Rich markup for audit log line
         header = f"[{ts}] {plain_title}: "
         return Text.from_markup(f"{header}{content}" if isinstance(content, str) else header)
-    return Panel(
-        content,
-        title=f"[panel.title]{title}[/panel.title]" if title else None,
-        border_style=border_style,
-        box=ROUNDED,
-        padding=(1, 2),
-        **kwargs,
-    )
+    kwargs.setdefault("title", f"[panel.title]{title}[/panel.title]" if title else None)
+    kwargs.setdefault("border_style", border_style)
+    kwargs.setdefault("box", ROUNDED)
+    kwargs.setdefault("padding", (1, 2))
+    
+    return Panel(content, **kwargs)
 
 
 def error_panel(problem: str, why: str, fix: str, title: str = "Error") -> Panel:

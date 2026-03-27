@@ -787,26 +787,18 @@ class ConfigManager:
                 defaults[server.name] = generated
 
         env_overrides: Dict[str, Dict[str, str]] = {
-            "claude-context": {
+            "dopemux-claude-context": {
                 "VOYAGE_API_KEY": "${VOYAGE_API_KEY}",
                 "OPENAI_API_KEY": "${OPENAI_API_KEY}",
                 "QDRANT_URL": "localhost",
                 "QDRANT_PORT": "6333",
             },
-            "pal": {
+            "dopemux-pal": {
                 "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
                 "DEFAULT_MODEL": "auto",
                 "PAL_DEFAULT_PROVIDER": "openrouter",
             },
-            "mas-sequential-thinking": {
-                "LLM_PROVIDER": "openai",
-                "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-                "EXA_API_KEY": "${EXA_API_KEY}",
-            },
-            "exa": {
-                "EXA_API_KEY": "${EXA_API_KEY}",
-            },
-            "zen": {
+            "dopemux-zen": {
                 "OPENAI_API_KEY": "${OPENAI_API_KEY}",
                 "XAI_API_KEY": "${XAI_API_KEY}",
                 "GEMINI_API_KEY": "${GEMINI_API_KEY}",
@@ -842,10 +834,10 @@ class ConfigManager:
                     ".claude/llms.md",
                 ],
                 "mcp_servers": [
-                    "conport",
-                    "serena",
-                    "claude-context",
-                    "pal",
+                    "dopemux-conport",
+                    "dopemux-serena",
+                    "dopemux-claude-context",
+                    "dopemux-pal",
                 ],
                 "adhd_adaptations": {
                     "focus_duration_avg": 30,
@@ -859,7 +851,7 @@ class ConfigManager:
                     ".claude/context.md",
                     ".claude/llms.md",
                 ],
-                "mcp_servers": ["conport", "claude-context", "pal"],
+                "mcp_servers": ["dopemux-conport", "dopemux-claude-context", "dopemux-pal"],
                 "adhd_adaptations": {
                     "focus_duration_avg": 25,
                     "visual_complexity": "minimal",
@@ -873,10 +865,10 @@ class ConfigManager:
                     ".claude/llms.md",
                 ],
                 "mcp_servers": [
-                    "conport",
-                    "serena",
-                    "claude-context",
-                    "pal",
+                    "dopemux-conport",
+                    "dopemux-serena",
+                    "dopemux-claude-context",
+                    "dopemux-pal",
                 ],
                 "adhd_adaptations": {
                     "focus_duration_avg": 35,
