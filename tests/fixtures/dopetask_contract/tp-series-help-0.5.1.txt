@@ -1,0 +1,14 @@
+                                                                                                                                
+ Usage: dopetask tp series [OPTIONS] COMMAND [ARGS]...                                                                          
+                                                                                                                                
+ JSON Task Packet series commands                                                                                               
+                                                                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ exec      Execute a JSON Task Packet inside a DAG-aware series workflow.                                                     │
+│ status    Show the authoritative series state.                                                                               │
+│ finalize  Open the single PR for a completed TP series.                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
