@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import json
+import os
 import select
 import sys
 import termios
@@ -511,15 +512,22 @@ class DopemuxDashboard:
         if char in {"\x03", "\x04"}:
             return "Q"
         if char == "\x1b":
-            if not self._input_fd:
+            if self._input_fd is None:
                 return "Q"
-            rlist, _, _ = select.select([sys.stdin], [], [], 0.05)
+            rlist, _, _ = select.select([self._input_fd], [], [], 0.15)
             if not rlist:
                 return "Q"
-            next_char = sys.stdin.read(2)
-            if next_char == "[A":
+            suffix = ""
+            for _ in range(2):
+                rlist, _, _ = select.select([self._input_fd], [], [], 0.05)
+                if not rlist:
+                    break
+                suffix += os.read(self._input_fd, 1).decode("utf-8", errors="ignore")
+                if len(suffix) >= 2:
+                    break
+            if suffix == "[A":
                 return "UP"
-            if next_char == "[B":
+            if suffix == "[B":
                 return "DOWN"
             return "Q"
         return char.upper()
