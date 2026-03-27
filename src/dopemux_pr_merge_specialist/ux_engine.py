@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, auto
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 from rich.console import Console
 from dopemux.ui.theme import DOPEMUX_THEME
@@ -16,6 +16,14 @@ class RenderMode(Enum):
 def detect_render_mode() -> RenderMode:
     """Determine the best rendering mode based on terminal capabilities."""
     if not sys.stdout.isatty():
+        return RenderMode.PLAIN
+    # Check for Rich support
+    try:
+        console = Console()
+        if console.width < 80:
+            return RenderMode.COMPACT
+        return RenderMode.RICH
+    except ImportError:
         return RenderMode.PLAIN
 
 
@@ -66,16 +74,6 @@ def dashboard_status_icon(snapshot: Mapping[str, Any]) -> str:
         "pending": "⏳",
     }.get(status, "⏳")
 
-    # Check for Rich support
-    try:
-
-        console = Console()
-        if console.width < 80:
-            return RenderMode.COMPACT
-        return RenderMode.RICH
-    except ImportError:
-        return RenderMode.PLAIN
-
 
 class TerminalRenderer:
     """Base class for all terminal output."""
@@ -104,12 +102,10 @@ class RichTerminalRenderer(TerminalRenderer):
 
     def __init__(self, mode: Optional[RenderMode] = None):
         super().__init__(mode)
-
         self.console = Console(theme=DOPEMUX_THEME)
 
     def print_header(self, text: str):
         from rich.panel import Panel
-
         self.console.print(Panel(text, style="bold cyan", border_style="cyan"))
 
     def print_success(self, text: str):
@@ -123,24 +119,6 @@ class RichTerminalRenderer(TerminalRenderer):
 
     def print_info(self, text: str):
         self.console.print(f"[blue]ℹ️ {text}[/blue]")
-
-    def next_action_card(self, command: str, reason: str, severity: str):
-        """Render the next recommended action."""
-        from rich.panel import Panel
-        from rich.text import Text
-
-        color = (
-            "red"
-            if severity == "HIGH"
-            else "yellow" if severity == "MEDIUM" else "green"
-        )
-        content = Text.assemble(
-            ("COMMAND : ", "bold cyan"),
-            f"{command}\n",
-            ("REASON  : ", "bold cyan"),
-            reason,
-        )
-        print(Panel(content, title="NEXT ACTION", border_style=color))
 
     def render_dashboard_layout(self, state: Any, console: Optional[Console] = None) -> Any:
         """Assemble the entire Grand Dashboard layout using rich.layout.Layout."""
@@ -190,9 +168,7 @@ class RichTerminalRenderer(TerminalRenderer):
         table.add_column("Title", ratio=1, no_wrap=True, overflow="ellipsis")
         table.add_column("Status", justify="center")
 
-        # Deduct space for header (3), footer (3), panel borders (2), and some padding
         max_visible = max(5, term_height - 12)
-
         total_prs = len(state.prs)
         
         start_idx = 0
@@ -207,7 +183,6 @@ class RichTerminalRenderer(TerminalRenderer):
             pr = state.prs[i]
             is_active = i == state.active_index
             row_style = "row.active" if is_active else "text.dim"
-            
             status_icon = dashboard_status_icon(pr)
             
             table.add_row(
@@ -239,16 +214,80 @@ class RichTerminalRenderer(TerminalRenderer):
             
             # Intel
             intel_text = Text()
+            queue_plan = getattr(state, "queue_plan", {}) or {}
+            ordered_ids = [
+                int(pr_id)
+                for pr_id in queue_plan.get("ordered_pr_ids", [])
+                if str(pr_id).isdigit()
+            ]
+            active_id = int(active.get("pr_id", 0) or 0)
+            if not ordered_ids:
+                ordered_ids = [
+                    int(pr.get("pr_id", 0) or 0)
+                    for pr in state.prs
+                    if pr.get("pr_id") is not None
+                ]
+            queue_position = (
+                ordered_ids.index(active_id) + 1
+                if active_id in ordered_ids
+                else state.active_index + 1
+            )
+            active_layer = None
+            for layer in queue_plan.get("layers", []):
+                pr_ids = {
+                    int(pr_id) for pr_id in layer.get("pr_ids", []) if str(pr_id).isdigit()
+                }
+                if active_id in pr_ids:
+                    active_layer = layer.get("layer")
+                    break
+            next_ids = ordered_ids[queue_position:queue_position + 3]
+            active_phase = getattr(state, "active_phase", "Monitor")
+            train_progress = getattr(state, "train_progress", {}) or {}
             intel_text.append(f"#{active.get('pr_id')} | ", style="mint")
             intel_text.append(f"{active.get('title', 'Unknown')[:60]}...\n", style="text")
+            intel_text.append(f"PHASE    : {active_phase}\n", style="info")
+            intel_text.append(
+                f"QUEUE    : {queue_position}/{max(len(ordered_ids), len(state.prs))}",
+                style="text",
+            )
+            if active_layer is not None:
+                intel_text.append(f" | LAYER {active_layer}", style="mint")
+            if queue_plan.get("cycle_detected"):
+                intel_text.append(" | CYCLE DETECTED", style="warning")
+            intel_text.append("\n")
+            if next_ids:
+                intel_text.append(
+                    f"NEXT     : {' -> '.join(f'#{pr_id}' for pr_id in next_ids)}\n",
+                    style="text.dim",
+                )
             intel_text.append(f"STRATEGY : {active.get('merge_strategy', 'MECHANICAL')}\n", style="magenta")
             intel_text.append(f"RATIONALE: {active.get('rationale', 'Standard rebase.')[:150]}...", style="text.dim")
+            if train_progress:
+                train_status = str(train_progress.get("status", "active")).upper()
+                intel_text.append(f"\nTRAIN    : {train_status}\n", style="warning")
+                candidate_ids = train_progress.get("candidate_pr_ids", [])[:5]
+                if candidate_ids:
+                    intel_text.append(
+                        f"CANDIDATES: {' '.join(f'#{pr_id}' for pr_id in candidate_ids)}\n",
+                        style="text.dim",
+                    )
+                merged_ids = train_progress.get("merged_pr_ids", [])
+                if merged_ids:
+                    intel_text.append(
+                        f"MERGED   : {' '.join(f'#{pr_id}' for pr_id in merged_ids)}\n",
+                        style="success",
+                    )
+                queued_ids = train_progress.get("queued_pr_ids", [])
+                if queued_ids:
+                    intel_text.append(
+                        f"QUEUED   : {' '.join(f'#{pr_id}' for pr_id in queued_ids)}\n",
+                        style="info",
+                    )
             cockpit["top"]["intel"].update(Panel(intel_text, title="MISSION INTEL", border_style="magenta"))
             
             # Blockers & Warnings -> Tactical Checklist
             blocker_text = Text()
             blockers = active.get("blockers", [])
-            warnings = active.get("warnings", [])
             history = active.get("history", [])
             blocker_types = {
                 str(item.get("type") or item.get("finding_type") or "")
@@ -262,7 +301,6 @@ class RichTerminalRenderer(TerminalRenderer):
                 or str(active.get("lifecycle_state", "")).upper() == "QUEUED_FOR_MERGE"
             )
             
-            # 1. CI Status
             ci = active.get("ci_status", "UNKNOWN")
             if ci == "SUCCESS":
                 blocker_text.append("✅ CI Checks Passed\n", style="success")
@@ -271,7 +309,6 @@ class RichTerminalRenderer(TerminalRenderer):
             else:
                 blocker_text.append("❌ CI Checks Failed\n", style="error")
 
-            # 1.5 Approval status
             review_decision = str(active.get("review_decision", "") or "")
             if approval_blocked:
                 blocker_text.append("🟣 Approval Required\n", style="magenta")
@@ -280,7 +317,6 @@ class RichTerminalRenderer(TerminalRenderer):
             elif review_decision == "CHANGES_REQUESTED":
                 blocker_text.append("❌ Changes Requested\n", style="error")
                 
-            # 2. Local Validation
             v_report = active.get("validation_report", {})
             v_status = v_report.get("status", "NOT_EXECUTED").upper() if isinstance(v_report, dict) else "NOT_EXECUTED"
             if "PASSED" in v_status:
@@ -293,7 +329,6 @@ class RichTerminalRenderer(TerminalRenderer):
             if queued_for_merge:
                 blocker_text.append("🔵 Auto-merge Queued\n", style="info")
                 
-            # 3. Conflicts
             mergeable = str(active.get("mergeable", "")).upper()
             state_status = str(active.get("merge_state_status", "")).upper()
             if mergeable == "CONFLICTING" or state_status in ("DIRTY", "HAS_HOOKS"):
@@ -301,18 +336,15 @@ class RichTerminalRenderer(TerminalRenderer):
             else:
                 blocker_text.append("✅ No Merge Conflicts\n", style="success")
                 
-            # 4. Threads
-            threads = active.get("unresolved_threads", 0)
-            if threads == 0:
+            threads_count = active.get("unresolved_threads", 0)
+            if threads_count == 0:
                 blocker_text.append("✅ All Threads Resolved\n", style="success")
             else:
-                blocker_text.append(f"❌ {threads} Unresolved Threads\n", style="error")
+                blocker_text.append(f"❌ {threads_count} Unresolved Threads\n", style="error")
                 
-            # 5. Draft Status
             if active.get("is_draft"):
                 blocker_text.append("❌ PR is Draft\n", style="warning")
                 
-            # Other blockers
             other_blockers = [b for b in blockers if b.get("type") not in ("validation_not_executed", "required_check_pending", "required_check_failed", "active_thread", "conflict_detected", "draft_pr")]
             if other_blockers:
                 blocker_text.append("\n⚠️ Other Blockers:\n", style="warning")
@@ -343,6 +375,9 @@ class RichTerminalRenderer(TerminalRenderer):
             v_text = Text.assemble(("VERIFY: ", "bold"), (v_status, "success" if "PASSED" in v_status else "error" if "FAILED" in v_status else "text.dim"))
             
             threads_text = Text.assemble(("THREADS: ", "bold"), (f"{active.get('unresolved_threads', 0)}", "info"))
+            resolved_session = state.resolved_threads_in_session if hasattr(state, "resolved_threads_in_session") else 0
+            if resolved_session > 0:
+                threads_text.append(f" (+{resolved_session})", style="success")
             
             is_draft = bool(active.get("is_draft", False))
             draft_text = Text.assemble(("DRAFT: ", "bold"), ("YES" if is_draft else "NO", "warning" if is_draft else "text.dim"))
@@ -366,8 +401,15 @@ class RichTerminalRenderer(TerminalRenderer):
                     obj_text.append("🎯 OBJECTIVE: Satisfy the missing approval gate.\n", style="bold magenta")
                     obj_text.append("NEXT STEP: Press [A] to approve. Auto-merge should proceed after approval if all other gates stay green.", style="text")
                 elif validation_only_blocked:
-                    obj_text.append("🎯 OBJECTIVE: Run local verification before merge readiness.\n", style="bold warning")
-                    obj_text.append("NEXT STEP: Press [V] to execute validation. Merge follows only after validation passes.", style="text")
+                    if v_status == "FAILED":
+                        obj_text.append("🎯 OBJECTIVE: Resolve local validation failures.\n", style="bold error")
+                        obj_text.append("NEXT STEP: Press [F] to attempt auto-fix for validation failures.", style="text")
+                    else:
+                        obj_text.append("🎯 OBJECTIVE: Run local verification before merge readiness.\n", style="bold warning")
+                        obj_text.append("NEXT STEP: Press [V] to execute validation. Merge follows only after validation passes.", style="text")
+                elif ci == "FAILURE":
+                    obj_text.append("🎯 OBJECTIVE: Remediate broken CI checks.\n", style="bold error")
+                    obj_text.append("NEXT STEP: Press [C] to invoke CI Remediation via specialist agent.", style="text")
                 elif "READY" in lc_state:
                     obj_text.append("🎯 OBJECTIVE: Final sign-off and integration.\n", style="bold success")
                     obj_text.append("NEXT STEP: Press [A] to Approve or [I] to Implement Merge.", style="text")
@@ -386,6 +428,10 @@ class RichTerminalRenderer(TerminalRenderer):
                 
                 cockpit["bottom"].update(Panel(obj_text, title="MISSION OBJECTIVE", border_style="info"))
             else:
+                log_text.append(
+                    f"[{getattr(state, 'active_phase', 'Monitor')}] current phase\n",
+                    style="bold info",
+                )
                 for step in execution_log[-5:]:
                     s_type = step.get("type", "INFO")
                     s_msg = step.get("message", "")
@@ -405,6 +451,8 @@ class RichTerminalRenderer(TerminalRenderer):
         controls = Text.assemble(
             ("[A] ", "bold info"), "Approve  ",
             ("[B] ", "bold info"), "Bulk Approve  ",
+            ("[C] ", "bold warning"), "Remediate  ",
+            ("[F] ", "bold error"), "Fix  ",
             ("[R] ", "bold success"), "Ready  ",
             ("[P] ", "bold magenta"), "Patch  ",
             ("[I] ", "bold warning"), "Implement  ",

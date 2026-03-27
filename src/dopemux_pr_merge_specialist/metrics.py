@@ -1,7 +1,7 @@
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from .schema import PRMergeReport
 
@@ -35,6 +35,7 @@ class MetricsEngine:
                 "ci_rerun_count": "int",
                 "incident": "bool",
                 "rollback_event": "bool",
+                "resolved_threads_in_session": "int",
             }
         }
         (self.metrics_path / "METRICS_SCHEMA.json").write_text(
@@ -42,7 +43,11 @@ class MetricsEngine:
         )
 
     def log_event(
-        self, report: PRMergeReport, duration_ms: float = 0.0, rollout_tier: str = "0"
+        self,
+        report: PRMergeReport,
+        duration_ms: float = 0.0,
+        rollout_tier: str = "0",
+        resolved_threads: int = 0,
     ):
         """Log a merge event with expanded adoption and incident metadata."""
         event = {
@@ -64,6 +69,7 @@ class MetricsEngine:
             "ci_rerun_count": report.telemetry.get("ci_rerun_count", 0),
             "incident": report.telemetry.get("incident", False),
             "rollback_event": report.telemetry.get("rollback_event", False),
+            "resolved_threads_in_session": resolved_threads,
         }
 
         date_str = time.strftime("%Y-%m-%d")
@@ -105,6 +111,9 @@ class MetricsEngine:
         total_retries = sum(e.get("retry_count", 0) for e in events)
         total_ci_reruns = sum(e.get("ci_rerun_count", 0) for e in events)
         total_incidents = len([e for e in events if e.get("incident")])
+        total_resolved_threads = sum(
+            e.get("resolved_threads_in_session", 0) for e in events
+        )
 
         blocker_dist = {}
         conflict_dist = {}
@@ -123,6 +132,7 @@ class MetricsEngine:
             "total_retries": total_retries,
             "total_ci_reruns": total_ci_reruns,
             "total_incidents": total_incidents,
+            "total_resolved_threads": total_resolved_threads,
             "blocker_distribution": blocker_dist,
             "conflict_class_frequency": conflict_dist,
             "queue_admission_rate": round(

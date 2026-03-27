@@ -1,76 +1,21 @@
 from __future__ import annotations
 
-import argparse
 import html
-import json
-import os
 import re
-import tempfile
-import time
-from collections import defaultdict, deque
-from dataclasses import replace
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from .github_api import (
-    BOT_AUTHORS,
-    GitHubClient,
-    ci_status,
-    summarize_checks,
-    thread_counters,
-)
-from .policy import (
-    PolicyError,
-    load_effective_policy,
-    policy_artifact_payload,
-    policy_fingerprint,
-)
 from .runtime import (
-    CommandResult,
     append_command_log,
-    execute_or_dry_run,
-    fingerprint_payload,
-    pid_is_running,
     run_command,
-    run_id,
-    shell_join,
-    snapshot_environment,
-    utc_now,
-    write_json,
-    write_text,
+    contains_marker,
 )
 from .schema import (
-    ARTIFACT_VERSION,
-    POLICY_SCHEMA_VERSION,
-    TOOL_VERSION,
-    ArtifactMeta,
-    BlockerType,
-    FallbackReason,
-    Finding,
-    FindingSeverity,
-    Fingerprint,
-    MergeActionType,
-    MergeDecision,
-    OverrideRecord,
-    PhaseRecord,
-    PreflightCheck,
-    PreflightResult,
-    PRResult,
-    PRState,
-    PRStateData,
     PullRequestState,
-    QueueOrderingLayer,
     ReviewThread,
-    RunManifest,
     ThreadComment,
-    ThreadDisposition,
-    ThreadDispositionType,
-    TruthSource,
-    ValidationReport,
-    ValidationStatus,
 )
 from .strategy_library import STRATEGY_LIBRARY
-from .validation import run_validation, validation_report_md
 
 __all__ = [
     "read_file_at_ref",
@@ -271,13 +216,14 @@ def apply_suggestion_to_file(
     comment: ThreadComment,
     base_ref: str,
     policy: Dict[str, Any],
-) -> Tuple[bool, str]:
+    dry_run: bool = False,
+) -> Tuple[bool, str, Optional[str]]:
     target = comment.path or thread.path
     if not target:
-        return False, "No path on thread/comment."
+        return False, "No path on thread/comment.", None
     file_path = worktree_path / target
     if not file_path.exists() or not file_path.is_file():
-        return False, f"Target file missing: {target}"
+        return False, f"Target file missing: {target}", None
     original = file_path.read_text(encoding="utf-8")
     text = original
     preferred_conflict_side = comment_prefers_conflict_side(comment.body)
@@ -286,7 +232,7 @@ def apply_suggestion_to_file(
             text, prefer=preferred_conflict_side
         )
         if not changed:
-            return False, resolved
+            return False, resolved, None
         resolved, canonical_note = maybe_sync_canonical_file(
             worktree_path=worktree_path,
             base_ref=base_ref,
@@ -298,18 +244,20 @@ def apply_suggestion_to_file(
             policy=policy,
         )
         if resolved == original:
-            return False, "Conflict-marker resolution produced no file changes."
-        file_path.write_text(resolved, encoding="utf-8")
+            return False, "Conflict-marker resolution produced no file changes.", None
+        if not dry_run:
+            file_path.write_text(resolved, encoding="utf-8")
         return (
             True,
             f"Resolved conflict markers in {target} using {preferred_conflict_side} side{canonical_note}.",
+            resolved,
         )
     suggestion = extract_suggestion_block(comment.body)
     if suggestion is not None:
         start = thread.original_start_line or thread.original_line or thread.line
         end = thread.original_line or thread.line or start
         if start is None or end is None:
-            return False, "Suggestion block missing line anchors."
+            return False, "Suggestion block missing line anchors.", None
         lines = text.splitlines()
         start_idx = max(start - 1, 0)
         end_idx = max(end, start_idx + 1)
@@ -327,7 +275,11 @@ def apply_suggestion_to_file(
             old = html.unescape(replace_match.group(1)).strip()
             new = html.unescape(replace_match.group(2)).strip()
             if old not in text:
-                return False, "Could not locate replacement source fragment in file."
+                return (
+                    False,
+                    "Could not locate replacement source fragment in file.",
+                    None,
+                )
             text = text.replace(old, new, 1)
         else:
             delete_match = re.search(
@@ -336,7 +288,7 @@ def apply_suggestion_to_file(
                 re.IGNORECASE | re.DOTALL,
             )
             if not delete_match:
-                return False, "No known machine-applicable suggestion pattern."
+                return False, "No known machine-applicable suggestion pattern.", None
             snippet = html.unescape(delete_match.group(1)).strip()
             removed = False
             new_lines: List[str] = []
@@ -346,12 +298,13 @@ def apply_suggestion_to_file(
                     continue
                 new_lines.append(line)
             if not removed:
-                return False, "Could not find deletion snippet in file."
+                return False, "Could not find deletion snippet in file.", None
             text = "\n".join(new_lines) + ("\n" if original.endswith("\n") else "")
     if text == original:
-        return False, "No file changes produced."
-    file_path.write_text(text, encoding="utf-8")
-    return True, f"Applied suggestion to {target}."
+        return False, "No file changes produced.", None
+    if not dry_run:
+        file_path.write_text(text, encoding="utf-8")
+    return True, f"Applied suggestion to {target}.", text
 
 
 def conflict_files(worktree_path: Path, policy: Dict[str, Any]) -> List[str]:
