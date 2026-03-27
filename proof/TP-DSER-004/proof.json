@@ -1,0 +1,17 @@
+{
+  "tp_id": "TP-DSER-004",
+  "branch": "tp-dser-001-dopetask-probe",
+  "sequencer_mode": "ACTIVE",
+  "fail_stop_semantics": "VERIFIED",
+  "dependency_ordering": "STRICT",
+  "is_full_orchestrator": false,
+  "tests": {
+    "test_dopetask_sequential_plan_runner.py": "PASS"
+  },
+  "touched_files": [
+    "src/dopemux_pr_merge_specialist/dopetask_packet_launcher.py",
+    "src/dopemux_pr_merge_specialist/dopetask_sequential_plan_runner.py",
+    "tests/unit/test_dopetask_sequential_plan_runner.py",
+    "docs/integrations/dopetask/sequential-multi-packet-execution.md"
+  ]
+}
