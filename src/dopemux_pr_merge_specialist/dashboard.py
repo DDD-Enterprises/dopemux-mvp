@@ -73,6 +73,8 @@ class QueueState:
     train_progress: Dict[str, Any] = field(default_factory=dict)
     autopilot_strategy: str = ""
     autopilot_stall_counts: Dict[str, int] = field(default_factory=dict)
+    exit_outcome: str = "running"
+    exit_reason: str = ""
 
     @property
     def active_pr(self) -> Optional[Dict[str, Any]]:
@@ -117,6 +119,39 @@ class DopemuxDashboard:
         })
         if self._live:
             self._live.update(self.render())
+
+    def _set_exit_state(self, outcome: str, reason: str) -> None:
+        if not self.state:
+            return
+        self.state.exit_outcome = outcome
+        self.state.exit_reason = reason
+        self.state.status_message = reason
+
+    def _mission_banner(self) -> tuple[str, str]:
+        if not self.state:
+            return ("MISSION ENDED. NO DASHBOARD STATE AVAILABLE.", "yellow")
+
+        outcome = str(self.state.exit_outcome or "running")
+        reason = str(self.state.exit_reason or self.state.status_message or "").strip()
+        if outcome == "complete":
+            return (
+                "MISSION COMPLETE. FLIGHT DATA SAVED TO PROOF BUNDLE.",
+                "green",
+            )
+        if outcome == "aborted":
+            return (
+                f"MISSION ABORTED. {reason or 'Operator ended the session.'} FLIGHT DATA SAVED TO PROOF BUNDLE.",
+                "yellow",
+            )
+        if outcome == "detached":
+            return (
+                f"MISSION ENDED EARLY. {reason or 'Interactive input was unavailable.'} FLIGHT DATA SAVED TO PROOF BUNDLE.",
+                "yellow",
+            )
+        return (
+            f"MISSION ENDED WITHOUT COMPLETION. {reason or 'Queue processing stopped before merge completion.'} FLIGHT DATA SAVED TO PROOF BUNDLE.",
+            "yellow",
+        )
 
     def _default_queue_plan(self, pr_queue: List[Dict[str, Any]]) -> Dict[str, Any]:
         ordered_ids = [int(pr.get("pr_id")) for pr in pr_queue if pr.get("pr_id") is not None]
@@ -825,6 +860,10 @@ class DopemuxDashboard:
                 while True:
                     live.update(self.render())
                     if self._terminal_settings is None:
+                        self._set_exit_state(
+                            "detached",
+                            "Interactive input is unavailable; dashboard exited before queue completion.",
+                        )
                         break
 
                     timeout = 0.5 if not self.state.auto_pilot else 2.5
@@ -887,7 +926,7 @@ class DopemuxDashboard:
                             choice = self._autopilot_tactic_for_snapshot(active)
 
                     if choice == "Q":
-                        self.state.status_message = "Mission aborted by operator."
+                        self._set_exit_state("aborted", "Mission aborted by operator.")
                         break
                     elif choice == "X":
                         if self.state.auto_pilot:
@@ -937,4 +976,5 @@ class DopemuxDashboard:
         finally:
             self._restore_terminal_mode()
 
-        self.console.print("\n[bold green]MISSION COMPLETE. FLIGHT DATA SAVED TO PROOF BUNDLE. 🛰️[/bold green]")
+        banner, color = self._mission_banner()
+        self.console.print(f"\n[bold {color}]{banner}[/bold {color}]")
