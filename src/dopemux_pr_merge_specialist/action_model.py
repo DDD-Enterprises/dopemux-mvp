@@ -2,7 +2,15 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Set
 
-from .schema import BlockerType, Finding, FindingSeverity, MergeActionType, PRResult, PRState
+from .schema import (
+    BlockerType,
+    Finding,
+    FindingSeverity,
+    MergeActionType,
+    PRResult,
+    PRState,
+    ValidationStatus,
+)
 
 
 VALIDATION_BLOCKERS = {
@@ -26,6 +34,12 @@ AUTO_MERGE_PASSIVE_BLOCKERS = {
 NON_AUTOMATABLE_BLOCKERS = {
     "manual_conflict_required",
     "semantic_conflict_blocked",
+}
+CI_FAILURE_BLOCKERS = {
+    BlockerType.REQUIRED_CHECK_FAILED.value,
+}
+THREAD_BLOCKERS = {
+    BlockerType.ACTIVE_THREAD.value,
 }
 QUEUED_OPERATOR_STATES = {
     "queued_for_merge",
@@ -63,6 +77,15 @@ def blocker_types_from_snapshot(snapshot: Mapping[str, Any]) -> Set[str]:
         for item in blockers
         if isinstance(item, Mapping)
     }
+
+
+def validation_status_from_snapshot(snapshot: Mapping[str, Any]) -> str:
+    report = snapshot.get("validation_report") or {}
+    if isinstance(report, Mapping):
+        return str(
+            report.get("status", ValidationStatus.NOT_EXECUTED.value)
+        ).lower()
+    return ValidationStatus.NOT_EXECUTED.value
 
 
 def allowed_actions_for_snapshot(snapshot: Mapping[str, Any]) -> List[str]:
@@ -120,6 +143,9 @@ def allowed_actions_for_result(result: PRResult) -> List[str]:
 def dashboard_tactic_for_snapshot(snapshot: Mapping[str, Any]) -> str:
     allowed = list(snapshot.get("allowed_actions") or allowed_actions_for_snapshot(snapshot))
     blockers = blocker_types_from_snapshot(snapshot)
+    ci_status = str(snapshot.get("ci_status", "") or "").upper()
+    validation_status = validation_status_from_snapshot(snapshot)
+    unresolved_threads = int(snapshot.get("unresolved_threads", 0) or 0)
 
     if "READY" in allowed:
         return "R"
@@ -128,10 +154,33 @@ def dashboard_tactic_for_snapshot(snapshot: Mapping[str, Any]) -> str:
     if "APPROVE" in allowed:
         return "A"
     if "APPLY_FIX" in allowed:
+        if validation_status == ValidationStatus.FAILED.value:
+            return "F"
+        if ci_status == "FAILURE" or bool(blockers & CI_FAILURE_BLOCKERS):
+            return "C"
+        if unresolved_threads > 0 or bool(blockers & THREAD_BLOCKERS):
+            return "T"
         if blockers and blockers <= {*VALIDATION_BLOCKERS, BlockerType.REQUIRED_CHECK_PENDING.value}:
             return "V"
         return "P"
+    if unresolved_threads > 0:
+        return "T"
     return "S"
+
+
+def dashboard_phase_for_snapshot(snapshot: Mapping[str, Any]) -> str:
+    tactic = dashboard_tactic_for_snapshot(snapshot)
+    return {
+        "R": "Ready For Review",
+        "A": "Approval",
+        "C": "CI Remediation",
+        "F": "Validation Remediation",
+        "I": "Merge",
+        "P": "Patch",
+        "S": "Monitor",
+        "T": "Thread Review",
+        "V": "Verification",
+    }.get(tactic, "Monitor")
 
 
 def result_to_dashboard_entry(result: PRResult) -> Dict[str, Any]:

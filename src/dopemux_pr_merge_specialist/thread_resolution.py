@@ -1,89 +1,28 @@
 from __future__ import annotations
 
-import argparse
-import html
 import json
-import os
 import re
-import tempfile
 import time
-from collections import defaultdict, deque
-from dataclasses import replace
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional
 from .conflict import (
     apply_suggestion_to_file,
-    build_conflict_analysis,
     comment_prefers_conflict_side,
-    conflict_excerpt,
-    conflict_files,
-    maybe_sync_canonical_file,
-    pr_changed_files,
-    read_file_at_ref,
-    recent_file_history,
-    recommend_conflict_strategy,
-    resolve_conflict_markers,
-    scan_files_for_conflict_markers,
 )
 from .github_api import (
     BOT_AUTHORS,
-    GitHubClient,
-    ci_status,
-    summarize_checks,
-    thread_counters,
-)
-from .policy import (
-    PolicyError,
-    load_effective_policy,
-    policy_artifact_payload,
-    policy_fingerprint,
 )
 from .runtime import (
     CommandResult,
     append_command_log,
-    execute_or_dry_run,
-    fingerprint_payload,
-    pid_is_running,
     run_command,
-    run_id,
-    shell_join,
-    snapshot_environment,
-    utc_now,
-    write_json,
-    write_text,
+    contains_marker,
 )
 from .schema import (
-    ARTIFACT_VERSION,
-    POLICY_SCHEMA_VERSION,
-    TOOL_VERSION,
-    ArtifactMeta,
-    BlockerType,
-    FallbackReason,
-    Finding,
-    FindingSeverity,
-    Fingerprint,
-    MergeActionType,
-    MergeDecision,
-    OverrideRecord,
-    PhaseRecord,
-    PreflightCheck,
-    PreflightResult,
-    PRResult,
-    PRState,
-    PRStateData,
-    PullRequestState,
-    QueueOrderingLayer,
     ReviewThread,
-    RunManifest,
     ThreadComment,
     ThreadDisposition,
-    ThreadDispositionType,
-    TruthSource,
-    ValidationReport,
-    ValidationStatus,
 )
-from .strategy_library import STRATEGY_LIBRARY
-from .validation import run_validation, validation_report_md
 
 __all__ = [
     "latest_comment",
@@ -106,11 +45,6 @@ def latest_comment(thread: ReviewThread) -> Optional[ThreadComment]:
     if not thread.comments:
         return None
     return sorted(thread.comments, key=lambda comment: comment.created_at or "")[-1]
-
-
-def contains_marker(text: str, markers: Sequence[str]) -> bool:
-    lowered = text.lower()
-    return any(marker.lower() in lowered for marker in markers)
 
 
 def has_newer_objection(thread: ReviewThread, policy: Dict[str, Any]) -> bool:
@@ -303,7 +237,7 @@ def apply_thread_dispositions(
                 comment=comment,
                 base_ref=base_ref,
                 policy=policy,
-            )
+            )[:2]
             if not ok:
                 applied.append(
                     ThreadDisposition(

@@ -2,9 +2,19 @@ from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
 
+from src.dopemux_pr_merge_specialist.action_model import (
+    dashboard_phase_for_snapshot,
+    dashboard_tactic_for_snapshot,
+)
+from src.dopemux_pr_merge_specialist.conflict import apply_suggestion_to_file
 from src.dopemux_pr_merge_specialist.dashboard import DopemuxDashboard, QueueState
 from src.dopemux_pr_merge_specialist.queue_drain import _ignite_speculative_train
-from src.dopemux_pr_merge_specialist.schema import PullRequestState, PRResult
+from src.dopemux_pr_merge_specialist.schema import (
+    PRResult,
+    PullRequestState,
+    ReviewThread,
+    ThreadComment,
+)
 
 
 def _pr_result(pr_id: int, *, lifecycle_state: str = "merge_ready") -> PRResult:
@@ -90,3 +100,74 @@ def test_speculative_train_rebases_against_origin_main_and_continues(monkeypatch
         ("wt-101", "branch-101"),
         ("wt-102", "branch-102"),
     ]
+
+
+def test_apply_suggestion_to_file_dry_run_returns_preview(tmp_path: Path) -> None:
+    target = tmp_path / "demo.py"
+    target.write_text("alpha\nbeta\n", encoding="utf-8")
+    thread = ReviewThread(
+        id="thread-1",
+        is_resolved=False,
+        is_outdated=False,
+        viewer_can_resolve=True,
+        path="demo.py",
+        line=2,
+        original_line=2,
+        comments=[],
+    )
+    comment = ThreadComment(
+        id="comment-1",
+        author="reviewer",
+        body="```suggestion\nbeta_updated\n```",
+        created_at="2024-01-01T00:00:00Z",
+        path="demo.py",
+        line=2,
+        original_line=2,
+    )
+
+    ok, reason, proposed_text = apply_suggestion_to_file(
+        worktree_path=tmp_path,
+        thread=thread,
+        comment=comment,
+        base_ref="main",
+        policy={},
+        dry_run=True,
+    )
+
+    assert ok is True
+    assert "Applied suggestion" in reason
+    assert proposed_text == "alpha\nbeta_updated\n"
+    assert target.read_text(encoding="utf-8") == "alpha\nbeta\n"
+
+
+def test_dashboard_tactic_distinguishes_validation_ci_and_threads() -> None:
+    base_snapshot = {
+        "allowed_actions": ["APPLY_FIX"],
+        "ci_status": "SUCCESS",
+        "unresolved_threads": 0,
+        "validation_report": {"status": "not_executed"},
+        "blockers": [],
+    }
+
+    validation_failed = dict(
+        base_snapshot,
+        validation_report={"status": "failed"},
+        blockers=[{"type": "validation_failed"}],
+    )
+    ci_failed = dict(
+        base_snapshot,
+        ci_status="FAILURE",
+        blockers=[{"type": "required_check_failed"}],
+    )
+    thread_blocked = dict(
+        base_snapshot,
+        unresolved_threads=2,
+        blockers=[{"type": "active_thread"}],
+    )
+
+    assert dashboard_tactic_for_snapshot(validation_failed) == "F"
+    assert dashboard_phase_for_snapshot(validation_failed) == "Validation Remediation"
+    assert dashboard_tactic_for_snapshot(ci_failed) == "C"
+    assert dashboard_phase_for_snapshot(ci_failed) == "CI Remediation"
+    assert dashboard_tactic_for_snapshot(thread_blocked) == "T"
+    assert dashboard_phase_for_snapshot(thread_blocked) == "Thread Review"
