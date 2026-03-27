@@ -387,3 +387,42 @@ def test_mission_banner_reports_detached_exit_truthfully() -> None:
     assert "MISSION ENDED EARLY" in banner
     assert "Interactive input is unavailable" in banner
     assert color == "yellow"
+
+
+def test_select_advanced_strategy_blocks_manual_conflict_recovery_without_opt_in() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    strategy_id, rationale, steps = dashboard._select_advanced_strategy(
+        {
+            "pr_id": 203,
+            "ci_status": "SUCCESS",
+            "validation_report": {"status": "passed"},
+            "blockers": [{"type": "manual_conflict_required"}],
+            "mergeable": "CONFLICTING",
+            "merge_state_status": "DIRTY",
+            "operator_state": "manual_conflict_required",
+            "unresolved_threads": 0,
+        }
+    )
+
+    assert strategy_id == "SPLIT_DECISION_REQUIRED"
+    assert "opt-in" in rationale
+    assert steps == ["S"]
+
+
+def test_autopilot_tactic_skips_patch_for_manual_conflict_blocker() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    snapshot = {
+        "allowed_actions": [],
+        "ci_status": "SUCCESS",
+        "validation_report": {"status": "passed"},
+        "unresolved_threads": 0,
+        "blockers": [{"type": "manual_conflict_required"}],
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "operator_state": "manual_conflict_required",
+        "advanced_strategy_id": "SPLIT_DECISION_REQUIRED",
+        "advanced_strategy_steps": ["S"],
+    }
+
+    assert dashboard._candidate_tactics_for_snapshot(snapshot) == []
+    assert dashboard._autopilot_tactic_for_snapshot(snapshot) == "S"

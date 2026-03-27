@@ -25,6 +25,7 @@ from .classification import (
     lifecycle_for_findings,
     risk_score,
 )
+from .conflict import conflict_recovery_state
 from .github_api import (
     BOT_AUTHORS,
     GitHubClient,
@@ -156,13 +157,28 @@ def release_queue_lock(lock_path: Optional[Path]) -> None:
         lock_path.unlink()
 
 
-def priority_key(pr: PullRequestState, policy: Optional[Dict[str, Any]] = None) -> Tuple[int, float, int, str, int]:
+def priority_key(
+    pr: PullRequestState, policy: Optional[Dict[str, Any]] = None
+) -> Tuple[int, int, float, int, str, int]:
     from .scoring import AdvancedQueueScorer
     scorer = AdvancedQueueScorer(policy=policy)
-    
+
     wsemt_score = scorer.calculate_wsemt_score(pr)
-    
+    automation_tier = 1
+    if has_conflicts(pr.mergeable, pr.merge_state_status):
+        recovery_state = conflict_recovery_state(pr, policy or {})
+        if recovery_state == "eligible":
+            automation_tier = 0
+            wsemt_score += 25.0
+        elif recovery_state in {
+            "manual_conflict_required",
+            "semantic_conflict_blocked",
+        }:
+            automation_tier = 2
+            wsemt_score -= 250.0
+
     return (
+        automation_tier,
         CLASS_PRIORITY.get(pr.pr_class, 99),
         -wsemt_score, # Higher score = better priority
         pr.diff_size,
