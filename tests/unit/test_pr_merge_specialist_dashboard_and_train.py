@@ -335,3 +335,30 @@ def test_autopilot_tactic_prefers_strategy_order_over_generic_choice() -> None:
     }
 
     assert dashboard._autopilot_tactic_for_snapshot(snapshot) == "F"
+
+
+def test_mission_banner_reports_abort_truthfully() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    dashboard.state = QueueState(run_id="run", prs=[])
+    dashboard._set_exit_state("aborted", "Mission aborted by operator.")
+
+    banner, color = dashboard._mission_banner()
+
+    assert "MISSION ABORTED" in banner
+    assert "Mission aborted by operator." in banner
+    assert color == "yellow"
+
+
+def test_mission_banner_reports_detached_exit_truthfully() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    dashboard.state = QueueState(run_id="run", prs=[])
+    dashboard._set_exit_state(
+        "detached",
+        "Interactive input is unavailable; dashboard exited before queue completion.",
+    )
+
+    banner, color = dashboard._mission_banner()
+
+    assert "MISSION ENDED EARLY" in banner
+    assert "Interactive input is unavailable" in banner
+    assert color == "yellow"
