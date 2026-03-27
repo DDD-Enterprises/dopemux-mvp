@@ -243,9 +243,26 @@ class RichTerminalRenderer(TerminalRenderer):
             next_ids = ordered_ids[queue_position:queue_position + 3]
             active_phase = getattr(state, "active_phase", "Monitor")
             train_progress = getattr(state, "train_progress", {}) or {}
+            ordering_strategy = (
+                queue_plan.get("autopilot_strategy")
+                or queue_plan.get("strategy")
+                or "hybrid"
+            )
+            advanced_strategy = str(
+                active.get("advanced_strategy_name")
+                or active.get("advanced_strategy_id")
+                or "UNSPECIFIED"
+            )
+            advanced_reason = str(active.get("advanced_strategy_reason") or "")
+            advanced_steps = list(active.get("advanced_strategy_steps") or [])
             intel_text.append(f"#{active.get('pr_id')} | ", style="mint")
             intel_text.append(f"{active.get('title', 'Unknown')[:60]}...\n", style="text")
             intel_text.append(f"PHASE    : {active_phase}\n", style="info")
+            intel_text.append(
+                f"ORDERING : {str(ordering_strategy).upper()}\n",
+                style="magenta",
+            )
+            intel_text.append(f"ADVANCED : {advanced_strategy}\n", style="magenta")
             intel_text.append(
                 f"QUEUE    : {queue_position}/{max(len(ordered_ids), len(state.prs))}",
                 style="text",
@@ -259,6 +276,16 @@ class RichTerminalRenderer(TerminalRenderer):
                 intel_text.append(
                     f"NEXT     : {' -> '.join(f'#{pr_id}' for pr_id in next_ids)}\n",
                     style="text.dim",
+                )
+            if advanced_reason:
+                intel_text.append(
+                    f"WHY      : {advanced_reason[:150]}\n",
+                    style="text.dim",
+                )
+            if advanced_steps:
+                intel_text.append(
+                    f"STEPS    : {' -> '.join(advanced_steps)}\n",
+                    style="info",
                 )
             intel_text.append(f"STRATEGY : {active.get('merge_strategy', 'MECHANICAL')}\n", style="magenta")
             intel_text.append(f"RATIONALE: {active.get('rationale', 'Standard rebase.')[:150]}...", style="text.dim")

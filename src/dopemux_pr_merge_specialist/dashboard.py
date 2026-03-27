@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import json
 import select
 import sys
 import termios
@@ -31,6 +32,7 @@ from .metrics import MetricsEngine
 from .plan_builder import build_plan_result
 from .preflight import preflight
 from .schema import PRMergeReport, PRResult, ValidationReport, ValidationStatus
+from .strategy_library import STRATEGY_LIBRARY
 from .thread_resolution import latest_comment
 from .ux_engine import RenderMode, RichTerminalRenderer
 from .conflict import apply_suggestion_to_file
@@ -48,6 +50,7 @@ from .queue_drain import (
     pr_merge,
     pr_ready,
     prepare_worktree,
+    queue_scan_internal,
     stage_and_push_if_needed,
 )
 
@@ -68,6 +71,8 @@ class QueueState:
     queue_plan: Dict[str, Any] = field(default_factory=dict)
     active_phase: str = "Monitor"
     train_progress: Dict[str, Any] = field(default_factory=dict)
+    autopilot_strategy: str = ""
+    autopilot_stall_counts: Dict[str, int] = field(default_factory=dict)
 
     @property
     def active_pr(self) -> Optional[Dict[str, Any]]:
@@ -120,6 +125,7 @@ class DopemuxDashboard:
             "layers": [{"layer": 0, "pr_ids": ordered_ids}],
             "edges": {},
             "cycle_detected": False,
+            "strategy": getattr(self.args, "strategy", "hybrid"),
         }
 
     def _restore_terminal_mode(self) -> None:
@@ -183,6 +189,288 @@ class DopemuxDashboard:
         if self.state is None or self.state.active_pr is None:
             return
         self.state.active_phase = dashboard_phase_for_snapshot(self.state.active_pr)
+
+    def _load_ordering_plan(self) -> Dict[str, Any]:
+        _, queue_dir, _ = build_run_paths(self.args.out_dir, self.state.run_id)
+        ordering_plan_path = queue_dir / "ORDERING_PLAN.json"
+        if ordering_plan_path.exists():
+            return json.loads(ordering_plan_path.read_text(encoding="utf-8"))
+        return self._default_queue_plan(self.state.prs)
+
+    def _candidate_tactics_for_snapshot(self, snapshot: Dict[str, Any]) -> List[str]:
+        blockers = {
+            str(item.get("type") or item.get("finding_type") or "")
+            for item in snapshot.get("blockers", [])
+            if isinstance(item, dict)
+        }
+        tactics: List[str] = []
+        if bool(snapshot.get("is_draft")):
+            tactics.append("R")
+        if "approval_missing" in blockers:
+            tactics.append("A")
+        if "validation_failed" in blockers:
+            tactics.append("F")
+        if "required_check_failed" in blockers or str(
+            snapshot.get("ci_status", "")
+        ).upper() == "FAILURE":
+            tactics.append("C")
+        if (
+            int(snapshot.get("unresolved_threads", 0) or 0) > 0
+            or "active_thread" in blockers
+        ):
+            tactics.append("T")
+        if (
+            "conflict_detected" in blockers
+            or str(snapshot.get("mergeable", "")).upper() == "CONFLICTING"
+            or str(snapshot.get("merge_state_status", "")).upper() in {"DIRTY", "HAS_HOOKS"}
+        ):
+            tactics.append("P")
+        if blockers & {"validation_not_executed", "required_check_pending"}:
+            tactics.append("V")
+        allowed = set(snapshot.get("allowed_actions", []) or [])
+        if "APPLY_FIX" in allowed:
+            tactics.append("P")
+        if "MERGE" in allowed:
+            tactics.append("I")
+        if "READY" in allowed:
+            tactics.append("R")
+        if "APPROVE" in allowed:
+            tactics.append("A")
+        seen = set()
+        ordered = []
+        for tactic in tactics:
+            if tactic not in seen:
+                ordered.append(tactic)
+                seen.add(tactic)
+        return ordered
+
+    def _select_advanced_strategy(
+        self, snapshot: Dict[str, Any], *, queue_plan: Optional[Dict[str, Any]] = None
+    ) -> tuple[str, str, List[str]]:
+        blockers = {
+            str(item.get("type") or item.get("finding_type") or "")
+            for item in snapshot.get("blockers", [])
+            if isinstance(item, dict)
+        }
+        unresolved_threads = int(snapshot.get("unresolved_threads", 0) or 0)
+        ci_status = str(snapshot.get("ci_status", "")).upper()
+        validation_status = str(
+            (snapshot.get("validation_report") or {}).get("status", "")
+        ).lower()
+        mergeable = str(snapshot.get("mergeable", "")).upper()
+        merge_state_status = str(snapshot.get("merge_state_status", "")).upper()
+        layer = None
+        pr_id = int(snapshot.get("pr_id", 0) or 0)
+        plan = queue_plan or {}
+        for item in plan.get("layers", []):
+            pr_ids = {int(pid) for pid in item.get("pr_ids", []) if str(pid).isdigit()}
+            if pr_id in pr_ids:
+                layer = int(item.get("layer", 0) or 0)
+                break
+
+        if mergeable == "CONFLICTING" or merge_state_status in {"DIRTY", "HAS_HOOKS"}:
+            return (
+                "STAGED_SEQUENCE_MERGE",
+                "Conflict or branch divergence detected; use staged remediation before merge.",
+                ["P", "T", "V", "A", "I"],
+            )
+        if ci_status == "FAILURE" or "required_check_failed" in blockers or validation_status == "failed":
+            return (
+                "PATCH_ISOLATION_PLAN",
+                "Broken validation or CI should be isolated and repaired before broader actions.",
+                ["F", "C", "P", "V", "A", "I"],
+            )
+        if unresolved_threads > 0 or "active_thread" in blockers:
+            return (
+                "OURS_THEN_PORT_SELECTIVE",
+                "Reviewer deltas can be ported onto the current branch before verification.",
+                ["T", "P", "V", "A", "I"],
+            )
+        if layer is not None and layer > 0:
+            return (
+                "STAGED_SEQUENCE_MERGE",
+                "Stacked PR position requires ordered integration through queue layers.",
+                ["V", "A", "I"],
+            )
+        return (
+            "PATCH_ISOLATION_PLAN",
+            "Default to the smallest safe change set and verify before merge.",
+            ["V", "A", "I"],
+        )
+
+    def _decorate_snapshots_with_strategy(
+        self, pr_queue: List[Dict[str, Any]], queue_plan: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        decorated = []
+        for snapshot in pr_queue:
+            strategy_id, rationale, steps = self._select_advanced_strategy(
+                snapshot, queue_plan=queue_plan
+            )
+            strategy = STRATEGY_LIBRARY.get(strategy_id)
+            enriched = dict(snapshot)
+            enriched["advanced_strategy_id"] = strategy_id
+            enriched["advanced_strategy_name"] = (
+                strategy.name if strategy is not None else strategy_id
+            )
+            enriched["advanced_strategy_reason"] = rationale
+            enriched["advanced_strategy_steps"] = steps
+            decorated.append(enriched)
+        return decorated
+
+    def _autopilot_tactic_for_snapshot(self, snapshot: Dict[str, Any]) -> str:
+        steps = snapshot.get("advanced_strategy_steps") or []
+        candidates = set(self._candidate_tactics_for_snapshot(snapshot))
+        for tactic in steps:
+            if tactic in candidates:
+                return tactic
+        return dashboard_tactic_for_snapshot(snapshot)
+
+    def _set_queue_state(
+        self,
+        pr_queue: List[Dict[str, Any]],
+        ordering_plan: Dict[str, Any],
+        *,
+        preserve_pr_id: Optional[int] = None,
+        prefer_top: bool = False,
+    ) -> None:
+        queue_plan = dict(ordering_plan or self._default_queue_plan(pr_queue))
+        if self.state.autopilot_strategy:
+            queue_plan["autopilot_strategy"] = self.state.autopilot_strategy
+        self.state.queue_plan = queue_plan
+        self.state.prs = self._decorate_snapshots_with_strategy(pr_queue, queue_plan)
+        if not pr_queue:
+            self.state.active_index = 0
+        elif prefer_top:
+            self.state.active_index = 0
+        elif preserve_pr_id is not None:
+            for index, snapshot in enumerate(pr_queue):
+                if int(snapshot.get("pr_id", 0) or 0) == preserve_pr_id:
+                    self.state.active_index = index
+                    break
+            else:
+                self.state.active_index = 0
+        else:
+            self.state.active_index = 0
+        self._sync_active_phase()
+
+    def _choose_autopilot_strategy(self, pr_queue: List[Dict[str, Any]]) -> tuple[str, str]:
+        head_refs = {
+            str(pr.get("head_ref") or "")
+            for pr in pr_queue
+            if pr.get("head_ref")
+        }
+        has_stack = any(
+            str(pr.get("base_ref") or "") in head_refs
+            for pr in pr_queue
+            if pr.get("base_ref")
+        )
+        if len(pr_queue) <= 3 and not has_stack:
+            return (
+                "simple",
+                "small independent queue detected; prioritize direct sequencing.",
+            )
+        return (
+            "hybrid",
+            "stacked or larger queue detected; use DAG/WSEMT prioritization.",
+        )
+
+    def _refresh_queue_state(
+        self, *, strategy_override: Optional[str] = None, prefer_top: bool = False
+    ) -> bool:
+        repo_root = Path.cwd()
+        policy = self.policy or load_effective_policy(
+            repo_root, explicit_path=getattr(self.args, "policy", None)
+        )
+        client = self.manager
+        if not isinstance(client, GitHubClient):
+            client = GitHubClient(
+                repo=getattr(self.args, "repo", None),
+                repo_root=repo_root,
+                policy=policy,
+            )
+        scan_args = argparse.Namespace(**vars(self.args))
+        if strategy_override:
+            scan_args.strategy = strategy_override
+        preserve_pr_id = (
+            None if prefer_top or self.state.active_pr is None else int(self.state.active_pr.get("pr_id", 0) or 0)
+        )
+        results = queue_scan_internal(scan_args, client, policy, self.state.run_id)
+        pr_queue = [result_to_dashboard_entry(result) for result in results]
+        ordering_plan = self._load_ordering_plan()
+        ordering_plan["strategy"] = getattr(scan_args, "strategy", getattr(self.args, "strategy", "hybrid"))
+        self._set_queue_state(
+            pr_queue,
+            ordering_plan,
+            preserve_pr_id=preserve_pr_id,
+            prefer_top=prefer_top,
+        )
+        return bool(pr_queue)
+
+    def _engage_autopilot(self) -> None:
+        strategy, reason = self._choose_autopilot_strategy(self.state.prs)
+        self.state.autopilot_strategy = strategy
+        self.state.auto_pilot = True
+        self.state.active_phase = "Assessment"
+        self.log_step(
+            f"AUTOPILOT ASSESSMENT: selecting {strategy.upper()} queue strategy; {reason}",
+            "START",
+        )
+        has_queue = self._refresh_queue_state(strategy_override=strategy, prefer_top=True)
+        ordered_ids = self.state.queue_plan.get("ordered_pr_ids", [])
+        if has_queue and ordered_ids:
+            sequence = " -> ".join(f"#{pr_id}" for pr_id in ordered_ids[:5])
+            self.log_step(f"Autopilot sequence: {sequence}", "INFO")
+            if self.state.active_pr:
+                self.log_step(
+                    f"Autopilot strategy for PR #{self.state.active_pr.get('pr_id')}: {self.state.active_pr.get('advanced_strategy_name')}."
+                    f" {self.state.active_pr.get('advanced_strategy_reason')}",
+                    "INFO",
+                )
+        self.state.status_message = f"AUTO-PILOT: ENGAGED ({strategy.upper()})"
+
+    def _reassess_autopilot_after_action(
+        self, *, target_pr_id: str, initial_state: Any, initial_tactic: str
+    ) -> None:
+        strategy = self.state.autopilot_strategy or getattr(
+            self.args, "strategy", "hybrid"
+        )
+        self._refresh_queue_state(strategy_override=strategy, prefer_top=True)
+        active = self.state.active_pr
+        if not active:
+            self.state.status_message = "Autopilot: queue exhausted after reassessment."
+            return
+        active_pr_id = str(active.get("pr_id"))
+        new_state = active.get("lifecycle_state")
+        new_tactic = dashboard_tactic_for_snapshot(active)
+        if (
+            active_pr_id == str(target_pr_id)
+            and self.state.last_action_result == "ERROR"
+        ) or (
+            active_pr_id == str(target_pr_id)
+            and new_state == initial_state
+            and new_tactic == initial_tactic
+        ):
+            self.state.autopilot_stall_counts[active_pr_id] = (
+                self.state.autopilot_stall_counts.get(active_pr_id, 0) + 1
+            )
+            if len(self.state.prs) > 1:
+                self.state.active_index = (self.state.active_index + 1) % len(
+                    self.state.prs
+                )
+                self._sync_active_phase()
+                next_pr_id = self.state.active_pr.get("pr_id")
+                self.state.status_message = (
+                    f"Autopilot: PR #{target_pr_id} stalled under {initial_tactic}; advancing to PR #{next_pr_id}."
+                )
+            else:
+                self.state.status_message = (
+                    f"Autopilot: PR #{target_pr_id} remains blocked under {initial_tactic}."
+                )
+            return
+        self.state.autopilot_stall_counts.pop(str(target_pr_id), None)
+        self.state.status_message = (
+            f"Autopilot: reassessed queue using {strategy.upper()} strategy."
+        )
 
     def _decode_input_choice(self, char: str) -> Optional[str]:
         if char in {"\x03", "\x04"}:
@@ -585,20 +873,30 @@ class DopemuxDashboard:
                                 self.state.status_message = (
                                     f"🚂 Train integration successful. {len(train_merged)+len(train_queued)} PRs moving."
                                 )
+                                self._refresh_queue_state(
+                                    strategy_override=self.state.autopilot_strategy
+                                    or getattr(self.args, "strategy", "hybrid"),
+                                    prefer_top=True,
+                                )
                                 time.sleep(2)
                                 continue
 
                         active = self.state.active_pr
                         if active:
                             self.state.active_phase = dashboard_phase_for_snapshot(active)
-                            choice = dashboard_tactic_for_snapshot(active)
+                            choice = self._autopilot_tactic_for_snapshot(active)
 
                     if choice == "Q":
                         self.state.status_message = "Mission aborted by operator."
                         break
                     elif choice == "X":
-                        self.state.auto_pilot = not self.state.auto_pilot
-                        self.state.status_message = f"AUTO-PILOT: {'ENGAGED' if self.state.auto_pilot else 'DISENGAGED'}"
+                        if self.state.auto_pilot:
+                            self.state.auto_pilot = False
+                            self.state.autopilot_strategy = ""
+                            self.state.train_progress = {}
+                            self.state.status_message = "AUTO-PILOT: DISENGAGED"
+                        else:
+                            self._engage_autopilot()
                     elif choice == "B":
                         self.state.status_message = "ENGAGING BULK APPROVAL..."
                         live.update(self.render())
@@ -621,6 +919,7 @@ class DopemuxDashboard:
                     elif choice in ("A", "P", "I", "T", "V", "R", "C", "F"):
                         active_pr_id = str(self.state.active_pr.get('pr_id'))
                         initial_state = self.state.active_pr.get("lifecycle_state")
+                        initial_tactic = choice
                         
                         updated_pr = self._execute_tactic(choice, active_pr_id)
                         
@@ -630,14 +929,11 @@ class DopemuxDashboard:
                         
                         if self.state.auto_pilot:
                             time.sleep(3.0)
-                            
-                            new_state = updated_pr.get("lifecycle_state") if updated_pr else None
-                            if new_state and "MERGED" in str(new_state).upper():
-                                self.state.active_index = (self.state.active_index + 1) % len(self.state.prs)
-                                self.state.status_message = f"Integrated PR #{active_pr_id}. Advancing."
-                            elif self.state.last_action_result == "ERROR" or new_state == initial_state:
-                                self.state.active_index = (self.state.active_index + 1) % len(self.state.prs)
-                                self.state.status_message = f"PR #{active_pr_id} stalled. Advancing."
+                            self._reassess_autopilot_after_action(
+                                target_pr_id=active_pr_id,
+                                initial_state=initial_state,
+                                initial_tactic=initial_tactic,
+                            )
         finally:
             self._restore_terminal_mode()
 
