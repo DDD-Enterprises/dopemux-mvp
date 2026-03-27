@@ -1,0 +1,16 @@
+services/dopemux-gpt-researcher/Dockerfile
+services/adhd-dashboard/Dockerfile
+services/monitoring-dashboard/Dockerfile
+services/genetic_agent/Dockerfile
+services/genetic_agent/pyproject.toml
+services/activity-capture/Dockerfile
+services/adhd_engine/Dockerfile
+services/session-manager/pyproject.toml
+services/working-memory-assistant/Dockerfile
+services/dope-context/Dockerfile
+services/voice-commands/Dockerfile
+services/adhd-notifier/Dockerfile
+services/task-orchestrator/Dockerfile
+services/mcp-client/Dockerfile
+services/dopecon-bridge/Dockerfile
+services/claude_brain/Dockerfile

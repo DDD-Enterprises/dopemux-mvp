@@ -1,0 +1,934 @@
+src/dopemux/events/types.py:60:        DECISION_LOGGED = "decision_logged"
+services/taskmaster/bridge_adapter.py:69:                status="TODO",
+services/taskmaster/bridge_adapter.py:100:        status: Optional[str] = None,
+services/taskmaster/bridge_adapter.py:108:                status=status,
+services/taskmaster/bridge_adapter.py:122:    async def update_task_status(
+services/taskmaster/bridge_adapter.py:125:        new_status: str,
+services/taskmaster/bridge_adapter.py:127:        """Update task status"""
+services/taskmaster/bridge_adapter.py:129:            # Create a new progress entry with updated status
+services/taskmaster/bridge_adapter.py:132:                event_type="taskmaster.task.status_updated",
+services/taskmaster/bridge_adapter.py:135:                    "new_status": new_status,
+services/taskmaster/bridge_adapter.py:142:            logger.info(f"Updated task {task_id} status: {new_status}")
+services/taskmaster/bridge_adapter.py:145:            logger.error(f"Failed to update task status: {e}")
+services/taskmaster/bridge_adapter.py:170:                    "status": task.get("status", "TODO"),
+services/taskmaster/bridge_adapter.py:287:            # Update status
+services/taskmaster/bridge_adapter.py:288:            await self.update_task_status(task_id, "DONE")
+installers/leantime/install.py:266:            self.preflight_results["docker"] = {"status": "ok", "version": self.docker_client.version()}
+installers/leantime/install.py:269:            self.preflight_results["docker"] = {"status": "error", "error": str(e)}
+installers/leantime/install.py:279:            self.preflight_results["docker_compose"] = {"status": "ok", "version": result.stdout.strip()}
+installers/leantime/install.py:282:            self.preflight_results["docker_compose"] = {"status": "error", "error": "Not found"}
+installers/leantime/install.py:297:                "status": "ok",
+installers/leantime/install.py:303:            self.preflight_results["nodejs"] = {"status": "error", "error": "Node.js or npm not found"}
+installers/leantime/install.py:332:            self.preflight_results["disk_space"] = {"free_gb": free_gb, "status": "ok" if free_gb >= 2 else "warning"}
+installers/leantime/install.py:339:            self.preflight_results["disk_space"] = {"status": "error", "error": str(e)}
+installers/leantime/install.py:344:            self.preflight_results["python_deps"] = {"status": "ok"}
+installers/leantime/install.py:347:            self.preflight_results["python_deps"] = {"status": "error", "error": str(e)}
+installers/leantime/install.py:647:                        if response.status in [200, 302]:  # 302 for redirect to installation
+installers/leantime/install.py:667:            running_containers = [c.name for c in containers if c.status == "running"]
+installers/leantime/install.py:684:                        if response.status in [200, 302]:
+installers/leantime/install.py:687:                            logger.warning(f"⚠️ Leantime returned status {response.status}")
+services/task-orchestrator/integration_bridge_connector.py:55:async def emit_task_status_change(
+services/task-orchestrator/integration_bridge_connector.py:58:    old_status: str,
+services/task-orchestrator/integration_bridge_connector.py:59:    new_status: str,
+services/task-orchestrator/integration_bridge_connector.py:64:    Emit task status change event.
+services/task-orchestrator/integration_bridge_connector.py:69:        old_status: Previous status
+services/task-orchestrator/integration_bridge_connector.py:70:        new_status: New status (TODO/IN_PROGRESS/DONE/BLOCKED)
+services/task-orchestrator/integration_bridge_connector.py:78:        await _integration_manager.handle_task_status_change(
+services/task-orchestrator/integration_bridge_connector.py:81:            old_status=old_status,
+services/task-orchestrator/integration_bridge_connector.py:82:            new_status=new_status,
+services/task-orchestrator/query_server.py:84:        "status": "healthy",
+services/task-orchestrator/query_server.py:92:    status: Optional[str] = QueryParam(None),
+services/task-orchestrator/query_server.py:98:        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+services/task-orchestrator/query_server.py:101:        status_filter=status,
+services/task-orchestrator/query_server.py:113:        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+services/task-orchestrator/query_server.py:118:        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+services/task-orchestrator/query_server.py:127:        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+services/task-orchestrator/query_server.py:138:        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+services/task-orchestrator/query_server.py:145:    """Get current session status."""
+services/task-orchestrator/query_server.py:147:        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+services/task-orchestrator/query_server.py:149:    return await orchestrator.get_session_status()
+services/task-orchestrator/query_server.py:156:        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+services/taskmaster/server.py:52:    - ConPort integration for decision tracking
+services/task-orchestrator/orchestrator_integration_test.py:84:        # Test coordination status
+services/task-orchestrator/orchestrator_integration_test.py:85:        status = await coordinator.get_team_coordination_status()
+services/task-orchestrator/orchestrator_integration_test.py:86:        logger.info(f"✅ Coordination status: {json.dumps(status, indent=2)}")
+services/task-orchestrator/orchestrator_integration_test.py:116:    """Test integration with ConPort for decision logging."""
+services/task-orchestrator/orchestrator_integration_test.py:119:    # Simulate ConPort decision logging
+services/task-orchestrator/orchestrator_integration_test.py:120:    test_decisions = [
+services/task-orchestrator/orchestrator_integration_test.py:123:            "rationale": "Enables ADHD-optimized cross-team workflow orchestration",
+services/task-orchestrator/orchestrator_integration_test.py:129:    for decision in test_decisions:
+services/task-orchestrator/orchestrator_integration_test.py:130:        logger.info(f"✅ Would log to ConPort: {decision['summary']}")
+services/task-orchestrator/orchestrator_integration_test.py:168:            status = "✅ PASSED" if result else "❌ FAILED"
+services/task-orchestrator/orchestrator_integration_test.py:169:            logger.info(f"{status}: {test_name}")
+services/task-orchestrator/orchestrator_integration_test.py:183:        status = "✅ PASSED" if result else "❌ FAILED"
+services/task-orchestrator/orchestrator_integration_test.py:184:        logger.info(f"{status}: {test_name}")
+services/task-orchestrator/test_eventbus_subscription.py:124:        data={"task_id": "test-task-001", "status": "in_progress", "progress": 0.5},
+services/task-orchestrator/test_integration_bridge_events.py:41:            if response.status == 200:
+services/task-orchestrator/test_integration_bridge_events.py:45:                logger.error(f"❌ Failed to publish TASKS_IMPORTED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:65:            if response.status == 200:
+services/task-orchestrator/test_integration_bridge_events.py:69:                logger.error(f"❌ Failed to publish SESSION_STARTED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:80:                "status": "in_progress",
+services/task-orchestrator/test_integration_bridge_events.py:90:            if response.status == 200:
+services/task-orchestrator/test_integration_bridge_events.py:94:                logger.error(f"❌ Failed to publish PROGRESS_UPDATED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:100:        decision_logged_event = {
+services/task-orchestrator/test_integration_bridge_events.py:102:            "event_type": "decision_logged",
+services/task-orchestrator/test_integration_bridge_events.py:105:                "decision_id": "test-decision-001"
+services/task-orchestrator/test_integration_bridge_events.py:112:            json=decision_logged_event
+services/task-orchestrator/test_integration_bridge_events.py:114:            if response.status == 200:
+services/task-orchestrator/test_integration_bridge_events.py:118:                logger.error(f"❌ Failed to publish DECISION_LOGGED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:139:            if response.status == 200:
+services/task-orchestrator/test_integration_bridge_events.py:143:                logger.error(f"❌ Failed to publish ADHD_STATE_CHANGED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:163:            if response.status == 200:
+services/task-orchestrator/test_integration_bridge_events.py:167:                logger.error(f"❌ Failed to publish BREAK_REMINDER: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:178:            if response.status == 200:
+services/task-orchestrator/test_integration_bridge_events.py:182:                logger.error(f"Failed to get stream info: {response.status}")
+services/task-orchestrator/test_conport_sync.py:39:        status=TaskStatus.IN_PROGRESS,
+services/task-orchestrator/test_conport_sync.py:54:        logger.info(f"   Status: {progress_data['status']}")
+services/task-orchestrator/test_conport_sync.py:93:        status=TaskStatus.PENDING,
+services/task-orchestrator/test_conport_sync.py:133:                status=TaskStatus.PENDING
+services/task-orchestrator/test_conport_sync.py:140:                status=TaskStatus.PENDING
+services/task-orchestrator/task_decomposition_endpoint.py:178:            status=TaskStatus.PENDING,
+services/task-orchestrator/task_decomposition_endpoint.py:194:        # Update parent task status to BLOCKED
+services/task-orchestrator/task_decomposition_endpoint.py:197:            status="BLOCKED",
+services/task-orchestrator/task_decomposition_endpoint.py:212:                status="TODO",
+services/task-orchestrator/task_decomposition_endpoint.py:325:        "status": subtask.status.value if hasattr(subtask.status, 'value') else str(subtask.status),
+services/task-orchestrator/test_coordination_integration.py:154:            status=TaskStatus.PENDING,
+services/task-orchestrator/test_coordination_integration.py:173:                    if response.status == 200:
+services/task-orchestrator/test_coordination_integration.py:271:        status = "✅ PASS" if result else "❌ FAIL"
+services/task-orchestrator/test_coordination_integration.py:272:        logger.info(f"  {test_name}: {status}")
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:24:- Cross-plane queries for decision enrichment
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:77:     + 0.2 × (decision_count ÷ 10)
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:116:- ✅ Task 315: Validate task status synchronization
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:126:- Task status synchronization working
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:146:- **Relationship Mapping**: Dependencies, decisions, and task connections
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:196:✅ Health Check: {"status": "healthy", "monitors": {...}}
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:240:- **ConPort**: Operational with 143 decisions logged
+services/task-orchestrator/test_conport_http_integration.py:43:            status=TaskStatus.PENDING,
+services/task-orchestrator/test_conport_http_integration.py:56:                logger.info("🔄 Testing update_task_status...")
+services/task-orchestrator/test_conport_http_integration.py:57:                success = await adapter.update_task_status("test_task_http_integration", TaskStatus.IN_PROGRESS)
+services/task-orchestrator/test_conport_http_integration.py:59:                    logger.info("✅ Successfully updated task status")
+services/task-orchestrator/test_conport_http_integration.py:61:                    logger.warning("⚠️ Failed to update task status")
+services/task-orchestrator/docs/tools-documentation.md:10:4. **Decision Management (6 tools)** - Architecture and technical decision tracking
+services/task-orchestrator/docs/tools-documentation.md:60:**Input**: Current task list with status
+services/task-orchestrator/docs/tools-documentation.md:137:**Output**: Sync status and conflict resolution
+services/task-orchestrator/docs/tools-documentation.md:138:**Use Case**: Keep all services in sync when status changes
+services/task-orchestrator/docs/tools-documentation.md:149:**Output**: Health status and remediation suggestions
+services/task-orchestrator/docs/tools-documentation.md:178:### 27. log_architecture_decision
+services/task-orchestrator/docs/tools-documentation.md:179:**Description**: Log architecture decisions with rationale
+services/task-orchestrator/docs/tools-documentation.md:180:**Input**: Decision details, rationale, confidence
+services/task-orchestrator/docs/tools-documentation.md:182:**Use Case**: Track architectural decisions for future reference
+services/task-orchestrator/docs/tools-documentation.md:184:### 28. track_decision_impact
+services/task-orchestrator/docs/tools-documentation.md:185:**Description**: Track impact of decisions on project outcomes
+services/task-orchestrator/docs/tools-documentation.md:188:**Use Case**: Learn from decision outcomes to improve future decisions
+services/task-orchestrator/docs/tools-documentation.md:190:### 29. review_decision_history
+services/task-orchestrator/docs/tools-documentation.md:191:**Description**: Review historical decisions for patterns
+services/task-orchestrator/docs/tools-documentation.md:192:**Input**: Time range, decision type
+services/task-orchestrator/docs/tools-documentation.md:194:**Use Case**: Identify recurring decision patterns
+services/task-orchestrator/docs/tools-documentation.md:196:### 30. validate_decision_consistency
+services/task-orchestrator/docs/tools-documentation.md:197:**Description**: Validate new decisions against existing architecture
+services/task-orchestrator/docs/tools-documentation.md:198:**Input**: New decision, existing decisions
+services/task-orchestrator/docs/tools-documentation.md:202:### 31. generate_decision_template
+services/task-orchestrator/docs/tools-documentation.md:203:**Description**: Generate standardized decision templates
+services/task-orchestrator/docs/tools-documentation.md:205:**Output**: Pre-formatted decision template
+services/task-orchestrator/docs/tools-documentation.md:206:**Use Case**: Standardize decision documentation
+services/task-orchestrator/docs/tools-documentation.md:208:### 32. assess_decision_risk
+services/task-orchestrator/docs/tools-documentation.md:209:**Description**: Assess risk of proposed decisions
+services/task-orchestrator/docs/tools-documentation.md:212:**Use Case**: Evaluate decision safety before implementation
+services/task-orchestrator/docs/tools-documentation.md:231:**Output**: Real-time risk status and alerts
+services/task-orchestrator/docs/tools-documentation.md:237:**Output**: Risk tolerance threshold and current status
+services/task-orchestrator/docs/tools-documentation.md:238:**Use Case**: Guide decision-making based on risk tolerance
+services/task-orchestrator/docs/tools-documentation.md:281:3. **Service Coordination**: Use service coordination tools with decision management for enterprise deployments
+services/task-orchestrator/docs/pm-plane-architecture.md:37:- **API**: MCP protocol with progress logging and decision tracking
+services/task-orchestrator/docs/pm-plane-architecture.md:38:- **Data Model**: Progress entries, decisions, patterns, relationships
+services/task-orchestrator/docs/pm-plane-architecture.md:70:- **Event Types**: task_updated, decision_logged, progress_changed
+services/task-orchestrator/docs/pm-plane-architecture.md:75:- **Human Override**: Critical decisions flagged for manual review
+services/task-orchestrator/docs/pm-plane-architecture.md:114:- **ConPort**: `log_progress`, `update_progress`, `semantic_search`, `get_decisions`
+services/task-orchestrator/docs/pm-plane-architecture.md:130:5. Default → ConPort (decision logging)
+services/task-orchestrator/docs/pm-plane-architecture.md:155:await conport_client.log_progress(
+services/task-orchestrator/docs/pm-plane-architecture.md:157:    status="IN_PROGRESS",
+services/task-orchestrator/docs/pm-plane-architecture.md:173:  "status": "in_progress",
+services/task-orchestrator/app/services/task_coordinator.py:118:        self.coordination_state.active_tasks = [t.id for t in tasks if t.status == TaskStatus.IN_PROGRESS]
+services/task-orchestrator/app/services/task_coordinator.py:179:                    "rationale": zen_prioritization.get('rationale', 'Zen-optimized sequencing')
+services/task-orchestrator/app/services/task_coordinator.py:210:                    status=TaskStatus.PENDING
+services/task-orchestrator/app/services/task_coordinator.py:406:                    if dep_task and dep_task.status != TaskStatus.COMPLETED:
+services/task-orchestrator/app/services/task_coordinator.py:471:                    # Update status
+services/task-orchestrator/app/services/task_coordinator.py:472:                    task.status = TaskStatus.IN_PROGRESS
+services/task-orchestrator/app/services/task_coordinator.py:539:        await self.conport_adapter.log_progress(
+services/task-orchestrator/app/services/task_coordinator.py:540:            status="PAUSED",
+services/task-orchestrator/app/services/task_coordinator.py:560:                status=TaskStatus.IN_PROGRESS,
+services/task-orchestrator/app/services/task_coordinator.py:604:            status=TaskStatus.PENDING
+services/task-orchestrator/app/services/task_coordinator.py:613:            status=TaskStatus.PENDING
+services/task-orchestrator/claude_context_manager.py:63:    recent_decisions: List[Dict[str, Any]] = None
+services/task-orchestrator/claude_context_manager.py:77:        if self.recent_decisions is None:
+services/task-orchestrator/claude_context_manager.py:78:            self.recent_decisions = []
+services/task-orchestrator/claude_context_manager.py:183:- **Cognitive Load**: {{cognitive_load_status}}
+services/task-orchestrator/claude_context_manager.py:201:- ✅ **Decision Linking**: Code changes linked to architectural decisions in ConPort
+services/task-orchestrator/claude_context_manager.py:206:- **Focus Mode**: {{focus_mode_status}}
+services/task-orchestrator/claude_context_manager.py:230:- **Progress Indicators**: Clear completion status throughout review
+services/task-orchestrator/claude_context_manager.py:350:                    if task.get("priority", 5) <= 3 and task.get("status") != "blocked"
+services/task-orchestrator/claude_context_manager.py:412:    async def update_automation_status(
+services/task-orchestrator/claude_context_manager.py:418:        """Update automation and system status."""
+services/task-orchestrator/claude_context_manager.py:424:            self.pending_updates.add("automation_status")
+services/task-orchestrator/claude_context_manager.py:427:            logger.error(f"Automation status update failed: {e}")
+services/task-orchestrator/claude_context_manager.py:523:                "cognitive_load_status": self._get_cognitive_load_status(),
+services/task-orchestrator/claude_context_manager.py:524:                "focus_mode_status": self._get_focus_mode_status(),
+services/task-orchestrator/claude_context_manager.py:529:                "system_status": self._format_system_status(context.system_health)
+services/task-orchestrator/claude_context_manager.py:738:    def _get_cognitive_load_status(self) -> str:
+services/task-orchestrator/claude_context_manager.py:741:    def _get_focus_mode_status(self) -> str:
+services/task-orchestrator/claude_context_manager.py:753:    def _format_system_status(self, health: Dict[str, Any]) -> str:
+services/task-orchestrator/claude_context_manager.py:754:        return health.get("overall_status", "Unknown")
+services/task-orchestrator/deployment_orchestration.py:69:    status: DeploymentStatus
+services/task-orchestrator/deployment_orchestration.py:115:    - Smart rollback decision making
+services/task-orchestrator/deployment_orchestration.py:249:            health_status = {
+services/task-orchestrator/deployment_orchestration.py:256:                "adhd_status": {
+services/task-orchestrator/deployment_orchestration.py:263:            return health_status
+services/task-orchestrator/deployment_orchestration.py:293:                    "Implement gentle notification patterns for status updates"
+services/task-orchestrator/deployment_orchestration.py:424:            task.status = DeploymentStatus.RUNNING
+services/task-orchestrator/deployment_orchestration.py:443:                    task.status = DeploymentStatus.SUCCESS
+services/task-orchestrator/deployment_orchestration.py:447:                    task.status = DeploymentStatus.FAILED
+services/task-orchestrator/deployment_orchestration.py:453:                task.status = DeploymentStatus.FAILED
+services/task-orchestrator/deployment_orchestration.py:458:            task.status = DeploymentStatus.FAILED
+services/task-orchestrator/deployment_orchestration.py:519:            result["visual_status"] = "✅ PASSED"
+services/task-orchestrator/deployment_orchestration.py:522:            result["visual_status"] = "❌ FAILED"
+services/task-orchestrator/deployment_orchestration.py:556:            if task.status in [DeploymentStatus.PENDING, DeploymentStatus.RUNNING]:
+services/task-orchestrator/deployment_orchestration.py:567:                            if task.status == DeploymentStatus.SUCCESS)
+services/task-orchestrator/deployment_orchestration.py:573:                         if task.status not in [DeploymentStatus.SUCCESS, DeploymentStatus.FAILED]]
+services/task-orchestrator/deployment_orchestration.py:586:        completed_tasks = [t for t in deployment.tasks if t.status != DeploymentStatus.PENDING]
+services/task-orchestrator/deployment_orchestration.py:588:            success_rate = sum(1 for t in completed_tasks if t.status == DeploymentStatus.SUCCESS) / len(completed_tasks)
+services/task-orchestrator/deployment_orchestration.py:608:        running_tasks = [t for t in deployment.tasks if t.status == DeploymentStatus.RUNNING]
+services/task-orchestrator/deployment_orchestration.py:615:        running_tasks = [t for t in deployment.tasks if t.status == DeploymentStatus.RUNNING]
+services/task-orchestrator/deployment_orchestration.py:648:                if health.get("adhd_status", {}).get("attention_required"):
+services/task-orchestrator/event_coordinator.py:400:            # Check for status changes requiring action
+services/task-orchestrator/event_coordinator.py:401:            new_status = task_data.get("status")
+services/task-orchestrator/event_coordinator.py:402:            if new_status == "in_progress":
+services/task-orchestrator/event_coordinator.py:404:            elif new_status == "completed":
+services/task-orchestrator/event_coordinator.py:406:            elif new_status == "blocked":
+services/task-orchestrator/event_coordinator.py:801:            # Overall status assessment
+services/task-orchestrator/event_coordinator.py:804:                    status = "🚀 Excellent"
+services/task-orchestrator/event_coordinator.py:806:                    status = "⚠️ Busy"
+services/task-orchestrator/event_coordinator.py:808:                status = "🔴 Degraded"
+services/task-orchestrator/event_coordinator.py:811:                "overall_status": status,
+services/task-orchestrator/event_coordinator.py:829:            return {"overall_status": "🔴 Error", "error": str(e)}
+services/task-orchestrator/demo_component6_e2e.py:167:    logger.info(f"   Status: {load.status.value.upper()}")
+services/task-orchestrator/demo_component6_e2e.py:224:        logger.info(f"      Rationale: {rec.rationale}")
+services/task-orchestrator/demo_component6_e2e.py:264:    logger.info(f"   Rationale: {'High capacity - show more options' if adaptive_count >= 3 else 'Overwhelmed - limit choices to reduce decision fatigue'}")
+services/task-orchestrator/demo_component6_e2e.py:411:    logger.info("   → Prevents decision paralysis\n")
+services/task-orchestrator/performance_optimizer.py:77:    rationale: str
+services/task-orchestrator/performance_optimizer.py:487:                rationale="Match high-energy tasks to peak hours for better focus",
+services/task-orchestrator/conport_mcp_client.py:7:Component 4: Write operations (log_progress, update_progress, link_items, etc.)
+services/task-orchestrator/conport_mcp_client.py:8:Component 5: Read operations (get_decisions, get_patterns, semantic_search, etc.)
+services/task-orchestrator/conport_mcp_client.py:36:        result = await client.log_progress(workspace_id, status, description, tags)
+services/task-orchestrator/conport_mcp_client.py:70:    async def log_progress(
+services/task-orchestrator/conport_mcp_client.py:73:        status: str,
+services/task-orchestrator/conport_mcp_client.py:76:        linked_item_type: Optional[str] = None,
+services/task-orchestrator/conport_mcp_client.py:77:        linked_item_id: Optional[str] = None,
+services/task-orchestrator/conport_mcp_client.py:85:            status: TODO, IN_PROGRESS, DONE, BLOCKED
+services/task-orchestrator/conport_mcp_client.py:88:            linked_item_type: Optional type of linked item
+services/task-orchestrator/conport_mcp_client.py:89:            linked_item_id: Optional ID of linked item
+services/task-orchestrator/conport_mcp_client.py:101:                "status": status,
+services/task-orchestrator/conport_mcp_client.py:108:            if linked_item_type and linked_item_id:
+services/task-orchestrator/conport_mcp_client.py:109:                params["linked_item_type"] = linked_item_type
+services/task-orchestrator/conport_mcp_client.py:110:                params["linked_item_id"] = linked_item_id
+services/task-orchestrator/conport_mcp_client.py:116:            result = await self.mcp_tools.mcp__conport__log_progress(**params)
+services/task-orchestrator/conport_mcp_client.py:118:            logger.debug(f"ConPort log_progress: {result}")
+services/task-orchestrator/conport_mcp_client.py:122:            logger.error(f"ConPort log_progress failed: {e}")
+services/task-orchestrator/conport_mcp_client.py:129:        status: Optional[str] = None,
+services/task-orchestrator/conport_mcp_client.py:138:            status: Optional new status
+services/task-orchestrator/conport_mcp_client.py:153:            if status:
+services/task-orchestrator/conport_mcp_client.py:154:                params["status"] = status
+services/task-orchestrator/conport_mcp_client.py:172:        status_filter: Optional[str] = None,
+services/task-orchestrator/conport_mcp_client.py:181:            status_filter: Optional status filter (TODO, IN_PROGRESS, etc.)
+services/task-orchestrator/conport_mcp_client.py:194:            if status_filter:
+services/task-orchestrator/conport_mcp_client.py:195:                params["status_filter"] = status_filter
+services/task-orchestrator/conport_mcp_client.py:213:    async def link_conport_items(
+services/task-orchestrator/conport_mcp_client.py:228:            source_item_type: Type of source item (progress_entry, decision, etc.)
+services/task-orchestrator/conport_mcp_client.py:255:            result = await self.mcp_tools.mcp__conport__link_conport_items(**params)
+services/task-orchestrator/conport_mcp_client.py:298:    async def log_decision(
+services/task-orchestrator/conport_mcp_client.py:302:        rationale: Optional[str] = None,
+services/task-orchestrator/conport_mcp_client.py:307:        Log decision to ConPort.
+services/task-orchestrator/conport_mcp_client.py:312:            rationale: Optional decision rationale
+services/task-orchestrator/conport_mcp_client.py:328:            if rationale:
+services/task-orchestrator/conport_mcp_client.py:329:                params["rationale"] = rationale
+services/task-orchestrator/conport_mcp_client.py:338:            result = await self.mcp_tools.mcp__conport__log_decision(**params)
+services/task-orchestrator/conport_mcp_client.py:340:            logger.debug(f"ConPort log_decision: {summary}")
+services/task-orchestrator/conport_mcp_client.py:344:            logger.error(f"ConPort log_decision failed: {e}")
+services/task-orchestrator/conport_mcp_client.py:351:    async def get_decisions(
+services/task-orchestrator/conport_mcp_client.py:359:        Get decisions from ConPort.
+services/task-orchestrator/conport_mcp_client.py:363:            limit: Optional limit on number of decisions
+services/task-orchestrator/conport_mcp_client.py:364:            tags_filter_include_any: Filter decisions that include ANY of these tags
+services/task-orchestrator/conport_mcp_client.py:365:            tags_filter_include_all: Filter decisions that include ALL of these tags
+services/task-orchestrator/conport_mcp_client.py:368:            Dict with {"result": [decisions]}
+services/task-orchestrator/conport_mcp_client.py:386:            result = await self.mcp_tools.mcp__conport__get_decisions(**params)
+services/task-orchestrator/conport_mcp_client.py:388:            logger.debug(f"ConPort get_decisions: {len(result.get('result', []))} decisions")
+services/task-orchestrator/conport_mcp_client.py:392:            logger.error(f"ConPort get_decisions failed: {e}")
+services/task-orchestrator/conport_mcp_client.py:439:    async def get_linked_items(
+services/task-orchestrator/conport_mcp_client.py:445:        linked_item_type_filter: Optional[str] = None,
+services/task-orchestrator/conport_mcp_client.py:453:            item_type: Type of item (decision, progress_entry, system_pattern)
+services/task-orchestrator/conport_mcp_client.py:456:            linked_item_type_filter: Optional filter by linked item type
+services/task-orchestrator/conport_mcp_client.py:475:            if linked_item_type_filter:
+services/task-orchestrator/conport_mcp_client.py:476:                params["linked_item_type_filter"] = linked_item_type_filter
+services/task-orchestrator/conport_mcp_client.py:482:            result = await self.mcp_tools.mcp__conport__get_linked_items(**params)
+services/task-orchestrator/conport_mcp_client.py:484:            logger.debug(f"ConPort get_linked_items: {item_type}/{item_id}")
+services/task-orchestrator/conport_mcp_client.py:488:            logger.error(f"ConPort get_linked_items failed: {e}")
+services/task-orchestrator/conport_mcp_client.py:607:    async def search_decisions_fts(
+services/task-orchestrator/conport_mcp_client.py:614:        Full-text search across decisions.
+services/task-orchestrator/conport_mcp_client.py:622:            Dict with matching decisions
+services/task-orchestrator/conport_mcp_client.py:635:            result = await self.mcp_tools.mcp__conport__search_decisions_fts(**params)
+services/task-orchestrator/conport_mcp_client.py:637:            logger.debug(f"ConPort search_decisions_fts: '{query_term}' -> {len(result.get('results', []))} results")
+services/task-orchestrator/conport_mcp_client.py:641:            logger.error(f"ConPort search_decisions_fts failed: {e}")
+services/task-orchestrator/conport_mcp_client.py:748:    async def batch_log_progress(
+services/task-orchestrator/conport_mcp_client.py:759:            progress_entries: List of progress entry dicts (each with status, description, etc.)
+services/task-orchestrator/conport_mcp_client.py:767:                {"status": "DONE", "description": "Task 1 complete"},
+services/task-orchestrator/conport_mcp_client.py:768:                {"status": "IN_PROGRESS", "description": "Task 2 in progress"}
+services/task-orchestrator/conport_mcp_client.py:770:            results = await client.batch_log_progress(workspace_id, entries)
+services/task-orchestrator/conport_mcp_client.py:779:                "method": "log_progress",
+services/task-orchestrator/conport_mcp_client.py:805:                {"progress_id": 123, "status": "DONE"},
+services/task-orchestrator/conport_mcp_client.py:824:    async def batch_log_decisions(
+services/task-orchestrator/conport_mcp_client.py:827:        decisions: List[Dict[str, Any]],
+services/task-orchestrator/conport_mcp_client.py:831:        Log multiple decisions in parallel.
+services/task-orchestrator/conport_mcp_client.py:835:            decisions: List of decision dicts (each with summary, rationale, etc.)
+services/task-orchestrator/conport_mcp_client.py:839:            List of results, one per decision
+services/task-orchestrator/conport_mcp_client.py:844:        for decision in decisions:
+services/task-orchestrator/conport_mcp_client.py:845:            decision_with_workspace = {**decision, "workspace_id": workspace_id}
+services/task-orchestrator/conport_mcp_client.py:847:                "method": "log_decision",
+services/task-orchestrator/conport_mcp_client.py:848:                "kwargs": decision_with_workspace
+services/task-orchestrator/conport_mcp_client.py:851:        logger.info(f"Batch logging {len(decisions)} decisions in parallel")
+services/task-orchestrator/app/services/workflow_service.py:123:            status="new",
+services/task-orchestrator/app/services/workflow_service.py:134:        status: Optional[str] = None,
+services/task-orchestrator/app/services/workflow_service.py:141:            self.store.list_ideas(status=status, tag=tag, limit=resolved_limit)
+services/task-orchestrator/app/services/workflow_service.py:149:        if idea.status == "promoted" and request.status and request.status != "promoted":
+services/task-orchestrator/app/services/workflow_service.py:156:        if request.status is not None:
+services/task-orchestrator/app/services/workflow_service.py:157:            idea.status = request.status
+services/task-orchestrator/app/services/workflow_service.py:161:        if idea.status == "promoted" and not idea.promoted_to_epic_id:
+services/task-orchestrator/app/services/workflow_service.py:178:            status=request.status,
+services/task-orchestrator/app/services/workflow_service.py:192:        status: Optional[str] = None,
+services/task-orchestrator/app/services/workflow_service.py:201:                status=status,
+services/task-orchestrator/app/services/workflow_service.py:223:        if request.status is not None:
+services/task-orchestrator/app/services/workflow_service.py:224:            epic.status = request.status
+services/task-orchestrator/app/services/workflow_service.py:262:            status="planned",
+services/task-orchestrator/app/services/workflow_service.py:281:        idea.status = "promoted"
+services/task-orchestrator/pal_client.py:158:  "rationale": "detailed reasoning for prioritization"
+services/task-orchestrator/pal_client.py:183:                        'rationale': 'Fallback to original order'
+services/task-orchestrator/pal_client.py:194:                'rationale': 'Zen prioritization unavailable'
+services/task-orchestrator/automation_workflows.py:613:                conport_status = "IN_PROGRESS" if completion_percentage < 100 else "DONE"
+services/task-orchestrator/automation_workflows.py:615:                    "status": conport_status,
+services/task-orchestrator/automation_workflows.py:617:                    "linked_item_type": "leantime_task",
+services/task-orchestrator/automation_workflows.py:618:                    "linked_item_id": task_id
+services/task-orchestrator/automation_workflows.py:872:                        result = method(status="IN_PROGRESS")
+services/task-orchestrator/automation_workflows.py:884:            status = str(task.get("status", "IN_PROGRESS")).upper()
+services/task-orchestrator/automation_workflows.py:885:            if status in {"TODO", "IN_PROGRESS", "BLOCKED"}:
+services/task-orchestrator/automation_workflows.py:964:            state["status"] = "DONE" if float(update.get("completion_percentage", 0.0)) >= 100.0 else "IN_PROGRESS"
+services/task-orchestrator/automation_workflows.py:1024:                elif hasattr(self.conport_client, "link_conport_items"):
+services/task-orchestrator/automation_workflows.py:1025:                    result = self.conport_client.link_conport_items([update])
+services/task-orchestrator/automation_workflows.py:1032:                logger.debug("ConPort update failed for task %s: %s", update.get("linked_item_id"), exc)
+services/task-orchestrator/automation_workflows.py:1045:            task_state["status"] = "DONE" if progress >= 1.0 else "IN_PROGRESS"
+services/task-orchestrator/automation_workflows.py:1051:        """Get automation engine health status."""
+services/task-orchestrator/automation_workflows.py:1063:            # Overall status
+services/task-orchestrator/automation_workflows.py:1065:                status = "🤖 Fully Automated"
+services/task-orchestrator/automation_workflows.py:1067:                status = "✅ Operating"
+services/task-orchestrator/automation_workflows.py:1069:                status = "⚠️ Degraded"
+services/task-orchestrator/automation_workflows.py:1072:                "overall_status": status,
+services/task-orchestrator/automation_workflows.py:1093:            return {"overall_status": "🔴 Error", "error": str(e)}
+services/task-orchestrator/task_orchestrator/app.py:101:        "status": "healthy",
+services/task-orchestrator/task_orchestrator/app.py:134:        raise HTTPException(status_code=500, detail=str(e))
+services/task-orchestrator/task_orchestrator/app.py:185:        raise HTTPException(status_code=404, detail=str(e))
+services/task-orchestrator/task_orchestrator/app.py:188:        raise HTTPException(status_code=500, detail=str(e))
+services/task-orchestrator/task_orchestrator/agents/__init__.py:35:                capabilities=["decision_logging", "progress_tracking", "context_management"],
+services/task-orchestrator/task_orchestrator/agents/__init__.py:102:                   for keyword in ["decision", "architecture", "pattern", "strategy"]):
+services/task-orchestrator/task_orchestrator/agents/__init__.py:156:    def get_agent_status(self) -> Dict[str, Any]:
+services/task-orchestrator/task_orchestrator/agents/__init__.py:157:        """Get status of all agents."""
+services/task-orchestrator/task_orchestrator/models.py:14:    """Enhanced task status with ADHD considerations."""
+services/task-orchestrator/task_orchestrator/models.py:41:    status: TaskStatus = TaskStatus.PENDING
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:99:        "name": "get_agent_status",
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:100:        "description": "Get status of all AI agents in the coordination pool",
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:134:        elif tool_name == "get_agent_status":
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:135:            return agent_coordinator.get_agent_status()
+services/task-orchestrator/app/services/external_dependency_integration.py:54:    current_status: DependencyStatus
+services/task-orchestrator/app/services/external_dependency_integration.py:76:    status: DependencyStatus
+services/task-orchestrator/app/services/external_dependency_integration.py:104:        self.dependency_status: Dict[str, DependencyMonitoringResult] = {}
+services/task-orchestrator/app/services/external_dependency_integration.py:182:                        if response.status == 200:
+services/task-orchestrator/app/services/external_dependency_integration.py:183:                            status = DependencyStatus.HEALTHY
+services/task-orchestrator/app/services/external_dependency_integration.py:185:                        elif 200 <= response.status < 300:
+services/task-orchestrator/app/services/external_dependency_integration.py:186:                            status = DependencyStatus.HEALTHY
+services/task-orchestrator/app/services/external_dependency_integration.py:188:                        elif response.status >= 500:
+services/task-orchestrator/app/services/external_dependency_integration.py:189:                            status = DependencyStatus.DOWN
+services/task-orchestrator/app/services/external_dependency_integration.py:190:                            error_message = f"Server error: {response.status}"
+services/task-orchestrator/app/services/external_dependency_integration.py:192:                            status = DependencyStatus.DEGRADED
+services/task-orchestrator/app/services/external_dependency_integration.py:193:                            error_message = f"HTTP {response.status}"
+services/task-orchestrator/app/services/external_dependency_integration.py:196:                    status = DependencyStatus.DOWN
+services/task-orchestrator/app/services/external_dependency_integration.py:200:                    status = DependencyStatus.DOWN
+services/task-orchestrator/app/services/external_dependency_integration.py:205:            suggestions = await self._generate_resolution_suggestions(dependency, status, error_message)
+services/task-orchestrator/app/services/external_dependency_integration.py:208:            adhd_alternatives = await self._generate_adhd_alternatives(dependency, status)
+services/task-orchestrator/app/services/external_dependency_integration.py:213:                status=status,
+services/task-orchestrator/app/services/external_dependency_integration.py:220:            # Update status tracking
+services/task-orchestrator/app/services/external_dependency_integration.py:221:            self.dependency_status[dependency_id] = result
+services/task-orchestrator/app/services/external_dependency_integration.py:222:            dependency.current_status = status
+services/task-orchestrator/app/services/external_dependency_integration.py:225:            if status == DependencyStatus.HEALTHY:
+services/task-orchestrator/app/services/external_dependency_integration.py:236:    async def get_critical_dependencies_status(self) -> Dict[str, Any]:
+services/task-orchestrator/app/services/external_dependency_integration.py:237:        """Get status of all critical dependencies affecting current tasks."""
+services/task-orchestrator/app/services/external_dependency_integration.py:243:                    status_result = self.dependency_status.get(dep_id)
+services/task-orchestrator/app/services/external_dependency_integration.py:249:                        "status": dependency.current_status.value,
+services/task-orchestrator/app/services/external_dependency_integration.py:254:                        "response_time": status_result.response_time if status_result else None
+services/task-orchestrator/app/services/external_dependency_integration.py:265:            logger.error(f"Failed to get critical dependencies status: {e}")
+services/task-orchestrator/app/services/external_dependency_integration.py:305:                    "Create visual status dashboard for dependency tracking",
+services/task-orchestrator/app/services/external_dependency_integration.py:331:                current_status=DependencyStatus.UNKNOWN,
+services/task-orchestrator/app/services/external_dependency_integration.py:335:                critical_for_tasks=["pm_sync", "task_status_updates"],
+services/task-orchestrator/app/services/external_dependency_integration.py:352:                current_status=DependencyStatus.UNKNOWN,
+services/task-orchestrator/app/services/external_dependency_integration.py:390:                if result and result.status != DependencyStatus.HEALTHY:
+services/task-orchestrator/app/services/external_dependency_integration.py:418:            "status": result.status.value,
+services/task-orchestrator/app/services/external_dependency_integration.py:431:        self, dependency: ExternalDependency, status: DependencyStatus, error: Optional[str]
+services/task-orchestrator/app/services/external_dependency_integration.py:436:        if status == DependencyStatus.DOWN:
+services/task-orchestrator/app/services/external_dependency_integration.py:444:        elif status == DependencyStatus.DEGRADED:
+services/task-orchestrator/app/services/external_dependency_integration.py:455:        self, dependency: ExternalDependency, status: DependencyStatus
+services/task-orchestrator/app/services/external_dependency_integration.py:463:                "Use visual status indicators instead of constant checking",
+services/task-orchestrator/app/services/external_dependency_integration.py:481:            return {"health_score": 1.0, "status": "no_dependencies"}
+services/task-orchestrator/app/services/external_dependency_integration.py:484:                          if dep.current_status == DependencyStatus.HEALTHY)
+services/task-orchestrator/app/services/external_dependency_integration.py:490:            overall_status = "excellent"
+services/task-orchestrator/app/services/external_dependency_integration.py:492:            overall_status = "good"
+services/task-orchestrator/app/services/external_dependency_integration.py:494:            overall_status = "degraded"
+services/task-orchestrator/app/services/external_dependency_integration.py:496:            overall_status = "poor"
+services/task-orchestrator/app/services/external_dependency_integration.py:500:            "overall_status": overall_status,
+services/task-orchestrator/app/services/external_dependency_integration.py:504:                                    if dep.current_status == DependencyStatus.DOWN
+services/task-orchestrator/app/services/external_dependency_integration.py:548:            logger.warning(f"🚨 URGENT: {alert['name']} is {alert['status']}")
+services/task-orchestrator/app/services/external_dependency_integration.py:557:            logger.info(f"⚠️ Dependency Update: {alert['name']} is {alert['status']}")
+services/task-orchestrator/app/services/external_dependency_integration.py:561:                logger.info(f"  • {alert['name']}: {alert['status']}")
+services/task-orchestrator/task_orchestrator/__init__.py:11:- models.py: Task status, agent types, and dataclasses
+services/task-orchestrator/task_orchestrator/core.py:71:                if response.status == 200:
+services/task-orchestrator/task_orchestrator/core.py:100:                if response.status == 200:
+services/task-orchestrator/task_orchestrator/core.py:109:    async def update_ticket_status(self, ticket_id: int, status: str) -> bool:
+services/task-orchestrator/task_orchestrator/core.py:110:        """Update ticket status in Leantime."""
+services/task-orchestrator/task_orchestrator/core.py:122:                        "status": status
+services/task-orchestrator/task_orchestrator/core.py:127:                return response.status == 200
+services/task-orchestrator/app/models/coordination.py:15:    DECISION_MADE = "decision_made"
+services/task-orchestrator/app/models/coordination.py:45:    status: str
+services/task-orchestrator/app/models/coordination.py:74:    status: str
+services/task-orchestrator/app/services/multi_team_coordination.py:70:    status: str = "pending"            # pending, in_progress, completed, blocked
+services/task-orchestrator/app/services/multi_team_coordination.py:226:    async def get_team_coordination_status(self) -> Dict[str, Any]:
+services/task-orchestrator/app/services/multi_team_coordination.py:227:        """Get overall coordination status across all teams."""
+services/task-orchestrator/app/services/multi_team_coordination.py:229:            status = {
+services/task-orchestrator/app/services/multi_team_coordination.py:231:                "active_dependencies": len([d for d in self.dependencies.values() if d.status != "completed"]),
+services/task-orchestrator/app/services/multi_team_coordination.py:235:                "team_status": {}
+services/task-orchestrator/app/services/multi_team_coordination.py:239:                status["team_status"][team_id] = {
+services/task-orchestrator/app/services/multi_team_coordination.py:244:                                               if d.target_team == team_id and d.status == "pending"])
+services/task-orchestrator/app/services/multi_team_coordination.py:247:            return status
+services/task-orchestrator/app/services/multi_team_coordination.py:250:            logger.error(f"Failed to get coordination status: {e}")
+services/task-orchestrator/app/services/multi_team_coordination.py:377:                status=str(item.get("status", "pending")),
+services/task-orchestrator/observability/metrics_collector.py:457:                "status": "disabled",
+services/task-orchestrator/observability/metrics_collector.py:466:            "status": "enabled",
+services/task-orchestrator/app/services/workflow_store.py:155:        status: Optional[str] = None,
+services/task-orchestrator/app/services/workflow_store.py:168:        if status:
+services/task-orchestrator/app/services/workflow_store.py:169:            filtered = [item for item in filtered if item.get("status") == status]
+services/task-orchestrator/app/services/workflow_store.py:178:        status: Optional[str] = None,
+services/task-orchestrator/app/services/workflow_store.py:189:        if status:
+services/task-orchestrator/app/services/workflow_store.py:190:            filtered = [item for item in filtered if item.get("status") == status]
+services/task-orchestrator/app/core/health_utils.py:11:    status: str
+services/task-orchestrator/app/core/health_utils.py:26:            status="ok" if result else "fail",
+services/task-orchestrator/app/core/health_utils.py:32:            status="fail",
+services/task-orchestrator/app/core/health_utils.py:39:            status="fail",
+services/task-orchestrator/app/core/health_utils.py:54:def determine_overall_status(dependencies: Dict[str, DependencyStatus], critical_deps: set = None) -> str:
+services/task-orchestrator/app/core/health_utils.py:55:    """Determine overall service status based on dependencies."""
+services/task-orchestrator/app/core/health_utils.py:59:    for name, status in dependencies.items():
+services/task-orchestrator/app/core/health_utils.py:60:        if name in critical_deps and status.status != "ok":
+services/task-orchestrator/app/core/health_utils.py:63:    # If any non-critical dependency is down, status is "degraded" (or just "ok" for simplicity here)
+services/task-orchestrator/app/core/health_utils.py:64:    if any(s.status != "ok" for s in dependencies.values()):
+services/task-orchestrator/app/models/workflow.py:56:    status: IdeaStatus = "new"
+services/task-orchestrator/app/models/workflow.py:94:    status: EpicStatus = "planned"
+services/task-orchestrator/app/models/workflow.py:149:    status: Optional[IdeaStatus] = None
+services/task-orchestrator/app/models/workflow.py:156:        if all(values.get(field) is None for field in ("title", "description", "status", "tags")):
+services/task-orchestrator/app/models/workflow.py:169:    status: EpicStatus = "planned"
+services/task-orchestrator/app/models/workflow.py:191:    status: Optional[EpicStatus] = None
+services/task-orchestrator/app/models/workflow.py:212:            "status",
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:4:Publishes AI agent decisions and insights to ConPort knowledge graph.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:5:Enables automatic linking between decisions and related tasks.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:33:    Event representing an AI agent decision to be logged in ConPort.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:35:    Based on Task 2.1 specification for AI decision capture pattern.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:38:    summary: str                           # Concise decision statement
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:39:    rationale: str                         # Why this decision was made
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:40:    implementation_details: str            # How to implement this decision
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:43:    agent_type: AgentType                  # Which AI agent made the decision
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:55:    decision_id: Optional[int] = None      # ConPort decision ID (set after creation)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:71:    def to_conport_decision(self) -> Dict[str, Any]:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:73:        Convert to ConPort decision format.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:75:        Returns dict ready for mcp__conport__log_decision() call.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:79:            "rationale": self.rationale,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:91:    Publisher for AI agent insights and decisions to ConPort knowledge graph.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:94:    - Log AI decisions to ConPort
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:96:    - Batch decision logging
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:101:        decision_id = await publisher.log_ai_decision(ai_decision_event)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:102:        await publisher.link_decision_to_task(decision_id, task_conport_id)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:115:        self.decision_cache: Dict[str, AIDecisionEvent] = {}  # Local cache
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:121:    async def log_ai_decision(self, event: AIDecisionEvent) -> Optional[int]:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:123:        Log AI agent decision to ConPort.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:129:            ConPort decision ID if successful, None otherwise
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:133:            decision_data = event.to_conport_decision()
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:134:            decision_data["workspace_id"] = self.workspace_id
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:137:            decision_id = await self._resilient_log_decision(decision_data)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:139:            if decision_id:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:140:                # Store decision ID in event
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:141:                event.decision_id = decision_id
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:145:                    await self.link_decision_to_task(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:146:                        decision_id,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:150:                logger.info(f"✅ Logged AI decision to ConPort: {event.summary[:50]}... (ID: {decision_id})")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:151:                return decision_id
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:154:                self.decision_cache[event.summary] = event
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:155:                logger.warning(f"⚠️ ConPort unavailable, cached decision locally")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:159:            logger.error(f"Failed to log AI decision: {e}")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:162:    async def link_decision_to_task(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:164:        decision_id: int,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:169:        Link AI decision to related task in ConPort knowledge graph.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:172:            decision_id: ConPort decision ID
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:184:            # Call ConPort link_conport_items
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:185:            await self.conport_client.link_conport_items(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:187:                source_item_type="decision",
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:188:                source_item_id=str(decision_id),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:192:                description=f"AI decision {decision_id} {relationship_type} task {task_conport_id}"
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:195:            logger.info(f"📎 Linked decision {decision_id} to task {task_conport_id} ({relationship_type})")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:199:            logger.error(f"Failed to link decision to task: {e}")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:202:    async def batch_log_decisions(self, events: List[AIDecisionEvent]) -> List[Optional[int]]:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:204:        Log multiple AI decisions to ConPort.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:210:            List of ConPort decision IDs (None for failures)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:212:        decision_ids = []
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:215:            decision_id = await self.log_ai_decision(event)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:216:            decision_ids.append(decision_id)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:218:        successful = sum(1 for id in decision_ids if id is not None)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:219:        logger.info(f"✅ Batch logged {successful}/{len(events)} AI decisions to ConPort")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:221:        return decision_ids
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:240:            rationale=zen_result.get("rationale", zen_result.get("findings", "")),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:262:            rationale=serena_result.get("analysis", ""),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:284:            rationale=taskmaster_result.get("complexity_analysis", ""),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:297:    async def _resilient_log_decision(self, decision_data: Dict) -> Optional[int]:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:299:        Log decision to ConPort with retry logic.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:301:        Returns ConPort decision ID if successful, None otherwise.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:309:                    result = await self.conport_client.log_decision(**decision_data)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:313:                    logger.warning("ConPort client not configured for decision logging")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:338:            "cached_decisions": len(self.decision_cache),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:339:            "cache_size_bytes": sum(len(str(v)) for v in self.decision_cache.values())
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:344:        Flush locally cached decisions to ConPort.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:346:        Returns number of decisions successfully flushed.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:348:        if not self.decision_cache:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:354:        for summary, event in self.decision_cache.items():
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:355:            decision_id = await self.log_ai_decision(event)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:356:            if decision_id:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:362:        self.decision_cache = failed_events
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:364:        logger.info(f"✅ Flushed {flushed} cached decisions to ConPort, {len(failed_events)} remain")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:372:def create_architecture_decision(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:374:    rationale: str,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:381:    Convenience function to create architecture decision event.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:385:        rationale: Why this decision
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:387:        agent_type: Which agent made decision (default: Zen)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:396:        rationale=rationale,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:406:def create_code_review_decision(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:415:    Convenience function to create code review decision event.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:430:        rationale=findings,
+services/task-orchestrator/app/adapters/schema_mapping.py:325:def map_task_status_to_conport(status: TaskStatus) -> str:
+services/task-orchestrator/app/adapters/schema_mapping.py:326:    """Map TaskStatus enum to ConPort status string."""
+services/task-orchestrator/app/adapters/schema_mapping.py:327:    return TASK_STATUS_TO_CONPORT_STATUS.get(status, "TODO")
+services/task-orchestrator/app/adapters/schema_mapping.py:330:def map_conport_status_to_task(status: str) -> TaskStatus:
+services/task-orchestrator/app/adapters/schema_mapping.py:331:    """Map ConPort status string to TaskStatus enum."""
+services/task-orchestrator/app/adapters/schema_mapping.py:332:    return CONPORT_STATUS_TO_TASK_STATUS.get(status, TaskStatus.PENDING)
+services/task-orchestrator/app/adapters/schema_mapping.py:365:    Build ConPort link_conport_items calls for task dependencies.
+services/task-orchestrator/app/adapters/schema_mapping.py:372:        List of link specs ready for ConPort link_conport_items() calls
+services/task-orchestrator/app/adapters/schema_mapping.py:527:        progress_data: Dict ready for mcp__conport__log_progress()
+services/task-orchestrator/app/adapters/schema_mapping.py:535:    required_fields = ["workspace_id", "status", "description", "tags"]
+services/task-orchestrator/app/adapters/schema_mapping.py:545:    # Validate status
+services/task-orchestrator/app/adapters/schema_mapping.py:546:    if "status" in progress_data:
+services/task-orchestrator/app/adapters/schema_mapping.py:547:        valid_statuses = ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"]
+services/task-orchestrator/app/adapters/schema_mapping.py:548:        if progress_data["status"] not in valid_statuses:
+services/task-orchestrator/app/adapters/schema_mapping.py:549:            errors.append(f"Invalid status: {progress_data['status']} (must be one of {valid_statuses})")
+services/task-orchestrator/app/adapters/schema_mapping.py:637:    Ready tasks: status=TODO, no dependencies (or all dependencies DONE)
+services/task-orchestrator/app/adapters/schema_mapping.py:643:        "status_filter": "TODO",
+services/task-orchestrator/app/adapters/schema_mapping.py:656:        "status_filter": "TODO",
+services/task-orchestrator/app/adapters/schema_mapping.py:676:        "status_filter": "TODO",
+services/task-orchestrator/intelligence/context_switch_recovery.py:18:2. Automatic context capture (screenshots, files, cursor, decisions)
+services/task-orchestrator/intelligence/context_switch_recovery.py:28:- ConPort: Recent decisions, in-progress tasks
+services/task-orchestrator/intelligence/context_switch_recovery.py:95:    recent_decisions: List[Dict[str, Any]] = field(default_factory=list)
+services/task-orchestrator/intelligence/context_switch_recovery.py:119:    - Captures current context (screenshot, files, decisions)
+services/task-orchestrator/intelligence/context_switch_recovery.py:156:            conport_client: ConPort MCP client for decisions/tasks
+services/task-orchestrator/intelligence/context_switch_recovery.py:368:        - Last 3 decisions made (from ConPort)
+services/task-orchestrator/intelligence/context_switch_recovery.py:398:                status_filter="IN_PROGRESS"
+services/task-orchestrator/intelligence/context_switch_recovery.py:404:        # 4. Recent decisions
+services/task-orchestrator/intelligence/context_switch_recovery.py:406:            decisions = await self.conport.get_decisions(
+services/task-orchestrator/intelligence/context_switch_recovery.py:410:            recovery.recent_decisions = decisions.get("result", [])
+services/task-orchestrator/intelligence/context_switch_recovery.py:412:            logger.info(f"⚠️  Could not retrieve decisions: {e}")
+services/task-orchestrator/intelligence/context_switch_recovery.py:461:         Last decision: Use SHA-256 for code challenge."
+services/task-orchestrator/intelligence/context_switch_recovery.py:480:        if recovery.recent_decisions:
+services/task-orchestrator/intelligence/context_switch_recovery.py:481:            last_decision = recovery.recent_decisions[0]
+services/task-orchestrator/intelligence/context_switch_recovery.py:482:            decision_summary = last_decision.get("summary", "")
+services/task-orchestrator/intelligence/context_switch_recovery.py:483:            if decision_summary:
+services/task-orchestrator/intelligence/context_switch_recovery.py:484:                summary_parts.append(f"\n\n💡 Last decision: {decision_summary}")
+services/task-orchestrator/intelligence/context_switch_recovery.py:500:        - Recent decisions
+services/task-orchestrator/app/core/sync.py:38:    CONPORT_WINS = "conport_wins"          # ConPort decisions win
+services/task-orchestrator/app/core/sync.py:52:    entity_type: str  # task, decision, progress, context
+services/task-orchestrator/app/core/sync.py:334:                    "status": self._map_status_to_conport(source_data.get("status", "pending")),
+services/task-orchestrator/app/core/sync.py:336:                    "linked_item_type": "leantime_task",
+services/task-orchestrator/app/core/sync.py:337:                    "linked_item_id": str(source_data.get("id", "")),
+services/task-orchestrator/app/core/sync.py:342:                await conport_client.log_progress(**progress_data)
+services/task-orchestrator/app/core/sync.py:373:            if entity_type == "decision":
+services/task-orchestrator/app/core/sync.py:374:                # ConPort decision → Leantime task/comment
+services/task-orchestrator/app/core/sync.py:375:                decision_data = source_data
+services/task-orchestrator/app/core/sync.py:377:                # Check if decision affects existing Leantime tasks
+services/task-orchestrator/app/core/sync.py:378:                affected_tasks = await self._find_affected_leantime_tasks(decision_data)
+services/task-orchestrator/app/core/sync.py:381:                    # Add decision context as task comment
+services/task-orchestrator/app/core/sync.py:384:                        "comment": f"📋 Related Decision: {decision_data.get('summary', '')}\n"
+services/task-orchestrator/app/core/sync.py:385:                                 f"Rationale: {decision_data.get('rationale', 'Not specified')}",
+services/task-orchestrator/app/core/sync.py:392:                logger.debug(f"📝 Synced ConPort decision to {len(affected_tasks)} Leantime tasks")
+services/task-orchestrator/app/core/sync.py:398:                linked_task = progress_data.get("linked_item_id")
+services/task-orchestrator/app/core/sync.py:400:                if linked_task and progress_data.get("linked_item_type") == "leantime_task":
+services/task-orchestrator/app/core/sync.py:401:                    # Update Leantime task status
+services/task-orchestrator/app/core/sync.py:402:                    leantime_status = self._map_status_to_leantime(progress_data.get("status", "TODO"))
+services/task-orchestrator/app/core/sync.py:406:                        "status": leantime_status,
+services/task-orchestrator/app/core/sync.py:549:                # Log agent work as ConPort decision/progress
+services/task-orchestrator/app/core/sync.py:550:                if agent_result.get("type") == "decision":
+services/task-orchestrator/app/core/sync.py:551:                    decision_data = {
+services/task-orchestrator/app/core/sync.py:553:                        "rationale": agent_result.get("rationale", "AI-generated decision"),
+services/task-orchestrator/app/core/sync.py:559:                    await conport_client.log_decision(**decision_data)
+services/task-orchestrator/app/core/sync.py:586:            conflict_fields = ["status", "priority", "description", "assigned_to", "progress"]
+services/task-orchestrator/app/core/sync.py:613:                    "status": 1,      # Most important
+services/task-orchestrator/app/core/sync.py:646:        if field == "status":
+services/task-orchestrator/app/core/sync.py:688:                conflict.resolution_reason = "ConPort decision/pattern is authoritative"
+services/task-orchestrator/app/core/sync.py:833:    def _map_status_to_conport(self, leantime_status: str) -> str:
+services/task-orchestrator/app/core/sync.py:834:        """Map Leantime status to ConPort status."""
+services/task-orchestrator/app/core/sync.py:835:        status_map = {
+services/task-orchestrator/app/core/sync.py:843:        return status_map.get(leantime_status, "TODO")
+services/task-orchestrator/app/core/sync.py:845:    def _map_status_to_leantime(self, conport_status: str) -> str:
+services/task-orchestrator/app/core/sync.py:846:        """Map ConPort status to Leantime status."""
+services/task-orchestrator/app/core/sync.py:847:        status_map = {
+services/task-orchestrator/app/core/sync.py:855:        return status_map.get(conport_status, "0")
+services/task-orchestrator/app/core/sync.py:857:    async def _find_affected_leantime_tasks(self, decision_data: Dict[str, Any]) -> List[str]:
+services/task-orchestrator/app/core/sync.py:858:        """Find Leantime tasks affected by ConPort decision."""
+services/task-orchestrator/app/core/sync.py:859:        # Placeholder - would analyze decision content and find related tasks
+services/task-orchestrator/app/core/sync.py:1046:            # Overall status
+services/task-orchestrator/app/core/sync.py:1048:                status = "🚀 Excellent"
+services/task-orchestrator/app/core/sync.py:1050:                status = "✅ Good"
+services/task-orchestrator/app/core/sync.py:1052:                status = "⚠️ Busy"
+services/task-orchestrator/app/core/sync.py:1054:                status = "🔴 Overloaded"
+services/task-orchestrator/app/core/sync.py:1057:                "overall_status": status,
+services/task-orchestrator/app/core/sync.py:1078:            return {"overall_status": "🔴 Error", "error": str(e)}
+services/task-orchestrator/app/core/coordinator.py:56:    DECISION_MADE = "decision_made"
+services/task-orchestrator/app/core/coordinator.py:89:    """Health status of a plane."""
+services/task-orchestrator/app/core/coordinator.py:91:    status: str  # "healthy", "degraded", "unhealthy"
+services/task-orchestrator/app/core/coordinator.py:93:    services: Dict[str, str]  # service_name -> status
+services/task-orchestrator/app/core/coordinator.py:98:        return self.status == "healthy"
+services/task-orchestrator/app/core/coordinator.py:101:        return self.status == "unhealthy" or any("critical" in issue.lower() for issue in self.issues)
+services/task-orchestrator/app/core/coordinator.py:232:            Coordination result with success status and data
+services/task-orchestrator/app/core/coordinator.py:242:            elif operation == "log_decision":
+services/task-orchestrator/app/core/coordinator.py:243:                result = await self._coordinate_decision_logging(source_plane, data, **kwargs)
+services/task-orchestrator/app/core/coordinator.py:368:                await self._handle_decision_made_event(event)
+services/task-orchestrator/app/core/coordinator.py:428:            status="healthy",
+services/task-orchestrator/app/core/coordinator.py:452:            # Determine overall status
+services/task-orchestrator/app/core/coordinator.py:453:            unhealthy_services = [s for s, status in health.services.items() if status != "healthy"]
+services/task-orchestrator/app/core/coordinator.py:455:                health.status = "unhealthy" if len(unhealthy_services) > len(health.services) // 2 else "degraded"
+services/task-orchestrator/app/core/coordinator.py:459:            health.status = "unhealthy"
+services/task-orchestrator/app/core/coordinator.py:498:                    return "healthy" if response.status == 200 else "unhealthy"
+services/task-orchestrator/app/core/coordinator.py:587:                "status": health.status,
+services/task-orchestrator/app/core/coordinator.py:669:    async def _coordinate_decision_logging(
+services/task-orchestrator/app/core/coordinator.py:675:        """Coordinate decision logging across planes."""
+services/task-orchestrator/app/core/coordinator.py:676:        decision_data = data["decision"]
+services/task-orchestrator/app/core/coordinator.py:680:            id=f"sync_decision_{decision_data.get('id', 'unknown')}_{int(datetime.now().timestamp())}",
+services/task-orchestrator/app/core/coordinator.py:684:            entity_type="decision",
+services/task-orchestrator/app/core/coordinator.py:685:            entity_id=decision_data.get("id", "unknown"),
+services/task-orchestrator/app/core/coordinator.py:686:            source_data=decision_data,
+services/task-orchestrator/app/core/coordinator.py:733:            status=data.get("status"),
+services/task-orchestrator/app/core/coordinator.py:790:            status=data.get("status"),
+services/task-orchestrator/app/core/coordinator.py:845:    async def _handle_decision_made_event(self, event: CoordinationEvent) -> None:
+services/task-orchestrator/app/core/coordinator.py:846:        """Handle decision logging events."""
+services/task-orchestrator/app/core/coordinator.py:854:            {"action": "log_decision", "data": event.data},
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:13:     + 0.2 * (decision_count / 10)   # Working memory load
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:80:            "decision_count": 0.2,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:94:        status: Classification (LOW/OPTIMAL/HIGH/CRITICAL)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:98:        decision_count_load: Load from active decisions
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:106:    status: LoadStatus
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:112:    decision_count_load: float = 0.0
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:126:            "decision_count_load": self.decision_count_load,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:149:        logger.info(f"Cognitive Load: {load.score:.0%} ({load.status.value})")
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:159:        "decision_count": 0.2,       # Working memory load
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:218:        decision_count: int = 0,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:234:            decision_count: Active decisions
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:275:        status = self._classify_load(total_load)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:280:            status=status,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:290:            decision_count_load=0.2 * min(decision_count / 10.0, 1.0),
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:305:             + 0.2 * (decision_count / 10)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:318:        task_complexity, decision_count, switch_count, interruptions = await asyncio.gather(
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:320:            self._get_cached_decision_count(),
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:330:        decision_load = self.weights["decision_count"] * min(decision_count / 10.0, 1.0)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:335:        total_load = task_load + decision_load + switch_load + break_load + interrupt_load
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:338:        status = self._classify_load(total_load)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:343:            status=status,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:346:                "decision_count": decision_count,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:353:            decision_count_load=decision_load,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:394:    async def _get_cached_decision_count(self) -> int:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:395:        """Get in-progress decision count (cached 30 seconds)."""
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:396:        cache_key = "decision_count"
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:410:                status_filter="IN_PROGRESS"
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:415:            logger.debug("Failed to fetch decision count: %s", e)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:562:                if load.status == LoadStatus.CRITICAL:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:567:                if load.status == LoadStatus.OPTIMAL and self.metrics:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:610:        logger.info(f"Status: {load.status.value}")
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:662:        # Adjust complexity based on load status
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:663:        if current_load.status == LoadStatus.CRITICAL:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:669:        elif current_load.status == LoadStatus.HIGH:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:675:        elif current_load.status == LoadStatus.OPTIMAL:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:679:        elif current_load.status == LoadStatus.LOW:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:756:        if current_load.status in [LoadStatus.LOW, LoadStatus.OPTIMAL]:
+services/task-orchestrator/adhd_engine.py:879:        """Get ADHD accommodation engine health status."""
+services/task-orchestrator/adhd_engine.py:892:            # Overall status
+services/task-orchestrator/adhd_engine.py:895:                    status = "🧠 Highly Active"
+services/task-orchestrator/adhd_engine.py:897:                    status = "✅ Ready"
+services/task-orchestrator/adhd_engine.py:899:                status = "⚠️ Degraded"
+services/task-orchestrator/adhd_engine.py:902:                "overall_status": status,
+services/task-orchestrator/adhd_engine.py:923:            return {"overall_status": "🔴 Error", "error": str(e)}
+services/task-orchestrator/intelligence/dynamic_batcher.py:38:    confidence: float  # 0.0-1.0 confidence in decision
+services/task-orchestrator/intelligence/dynamic_batcher.py:57:    Performance: < 50ms per re-batch decision
+services/task-orchestrator/intelligence/dynamic_batcher.py:352:        decision = check_rebatch(batch, completed_task, current_state, previous_state)
+services/task-orchestrator/intelligence/dynamic_batcher.py:353:        if decision.should_rebatch:
+services/task-orchestrator/intelligence/dynamic_batcher.py:354:            logger.info(f"Re-batching recommended: {decision.reason}")
+services/task-orchestrator/intelligence/dynamic_batcher.py:355:            # Re-batch with decision.recommended_strategy
+services/task-orchestrator/app/adapters/conport_adapter.py:100:        Dict ready for mcp__conport__log_progress() call
+services/task-orchestrator/app/adapters/conport_adapter.py:109:    # Step 1: Map status enum
+services/task-orchestrator/app/adapters/conport_adapter.py:110:    status_mapping = {
+services/task-orchestrator/app/adapters/conport_adapter.py:152:        "status": status_mapping.get(task.status, "TODO"),
+services/task-orchestrator/app/adapters/conport_adapter.py:160:            "linked_item_type": "leantime_task",
+services/task-orchestrator/app/adapters/conport_adapter.py:161:            "linked_item_id": str(task.leantime_id),
+services/task-orchestrator/app/adapters/conport_adapter.py:184:    required_fields = ["id", "status", "description", "timestamp"]
+services/task-orchestrator/app/adapters/conport_adapter.py:189:    # Step 1: Reverse status mapping
+services/task-orchestrator/app/adapters/conport_adapter.py:190:    status_mapping = {
+services/task-orchestrator/app/adapters/conport_adapter.py:249:    if progress.get("linked_item_type") == "leantime_task":
+services/task-orchestrator/app/adapters/conport_adapter.py:251:            leantime_id = int(progress["linked_item_id"])
+services/task-orchestrator/app/adapters/conport_adapter.py:253:            logger.warning(f"Invalid leantime_id: {progress.get('linked_item_id')}")
+services/task-orchestrator/app/adapters/conport_adapter.py:262:        status=status_mapping.get(progress["status"], TaskStatus.PENDING),
+services/task-orchestrator/app/adapters/conport_adapter.py:271:        dependencies=[],  # Populated separately from linked_items query
+services/task-orchestrator/app/adapters/conport_adapter.py:313:        required_keys = ["workspace_id", "status", "description", "tags"]
+services/task-orchestrator/app/adapters/conport_adapter.py:412:            conport_id = await self._resilient_log_progress(progress_data)
+services/task-orchestrator/app/adapters/conport_adapter.py:439:                "status": event.data.get("status", "pending").upper(),
+services/task-orchestrator/app/adapters/conport_adapter.py:441:                "linked_item_type": "orchestration_task",
+services/task-orchestrator/app/adapters/conport_adapter.py:442:                "linked_item_id": event.task_id
+services/task-orchestrator/app/adapters/conport_adapter.py:446:            conport_id = await self._resilient_log_progress(progress_data)
+services/task-orchestrator/app/adapters/conport_adapter.py:462:        status: Optional[str] = None,
+services/task-orchestrator/app/adapters/conport_adapter.py:478:                status=status,
+services/task-orchestrator/app/adapters/conport_adapter.py:496:        status_filter: Optional[str] = None,
+services/task-orchestrator/app/adapters/conport_adapter.py:503:            status_filter: Filter by status ("TODO", "IN_PROGRESS", "DONE", "BLOCKED")
+services/task-orchestrator/app/adapters/conport_adapter.py:512:                status_filter=status_filter,
+services/task-orchestrator/app/adapters/conport_adapter.py:534:        Sync task dependencies to ConPort using link_conport_items.
+services/task-orchestrator/app/adapters/conport_adapter.py:557:                await self._link_conport_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:575:    async def _resilient_log_progress(self, progress_data: Dict) -> Optional[int]:
+services/task-orchestrator/app/adapters/conport_adapter.py:592:                    if response.status == 200:
+services/task-orchestrator/app/adapters/conport_adapter.py:601:                        logger.error(f"ConPort HTTP error {response.status}: {error_text}")
+services/task-orchestrator/app/adapters/conport_adapter.py:622:        status: Optional[str] = None,
+services/task-orchestrator/app/adapters/conport_adapter.py:641:                if status is not None:
+services/task-orchestrator/app/adapters/conport_adapter.py:642:                    update_data["status"] = status
+services/task-orchestrator/app/adapters/conport_adapter.py:647:                    if response.status == 200:
+services/task-orchestrator/app/adapters/conport_adapter.py:652:                        logger.error(f"ConPort HTTP error {response.status}: {error_text}")
+services/task-orchestrator/app/adapters/conport_adapter.py:672:        status_filter: Optional[str] = None,
+services/task-orchestrator/app/adapters/conport_adapter.py:685:            if status_filter:
+services/task-orchestrator/app/adapters/conport_adapter.py:686:                params["status_filter"] = status_filter
+services/task-orchestrator/app/adapters/conport_adapter.py:689:                if response.status == 200:
+services/task-orchestrator/app/adapters/conport_adapter.py:707:                    logger.error(f"ConPort HTTP error {response.status}: {error_text}")
+services/task-orchestrator/app/adapters/conport_adapter.py:714:    async def _link_conport_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:740:                if response.status == 200:
+services/task-orchestrator/app/adapters/conport_adapter.py:750:                    logger.error(f"ConPort HTTP error {response.status}: {error_text}")
+services/task-orchestrator/app/adapters/conport_adapter.py:785:            updates: List of {"conport_id": int, "status": str, "description": str}
+services/task-orchestrator/app/adapters/conport_adapter.py:795:                status=update.get("status"),
+services/task-orchestrator/app/adapters/conport_adapter.py:847:    async def update_task_status(self, task_id: str, status: str) -> bool:
+services/task-orchestrator/app/adapters/conport_adapter.py:849:        Update task status in ConPort (for event handlers).
+services/task-orchestrator/app/adapters/conport_adapter.py:853:            status: New status (TODO, IN_PROGRESS, DONE, BLOCKED)
+services/task-orchestrator/app/adapters/conport_adapter.py:877:            # Update status in ConPort
+services/task-orchestrator/app/adapters/conport_adapter.py:880:                status=status
+services/task-orchestrator/app/adapters/conport_adapter.py:884:                logger.info(f"✅ Updated task {task_id} status to {status} in ConPort")
+services/task-orchestrator/app/adapters/conport_adapter.py:886:                logger.warning(f"⚠️ Failed to update task {task_id} status in ConPort")
+services/task-orchestrator/app/adapters/conport_adapter.py:891:            logger.error(f"Failed to update task status for {task_id}: {e}")
+services/task-orchestrator/app/adapters/conport_adapter.py:894:    async def update_task_progress(self, task_id: str, status: str, progress: float) -> bool:
+services/task-orchestrator/app/adapters/conport_adapter.py:900:            status: Current status
+services/task-orchestrator/app/adapters/conport_adapter.py:907:            # Update status (progress is embedded in description metadata)
+services/task-orchestrator/app/adapters/conport_adapter.py:909:            return await self.update_task_status(task_id, status)
+services/task-orchestrator/app/adapters/conport_adapter.py:945:    async def link_decision_to_tasks(self, decision_id: str) -> bool:
+services/task-orchestrator/app/adapters/conport_adapter.py:947:        Link decision to related tasks in ConPort (for decision_logged event).
+services/task-orchestrator/app/adapters/conport_adapter.py:950:            decision_id: ConPort decision ID
+services/task-orchestrator/app/adapters/conport_adapter.py:957:            active_tasks = await self.get_all_tasks_from_conport(status_filter="IN_PROGRESS")
+services/task-orchestrator/app/adapters/conport_adapter.py:959:            # Link decision to all active tasks (they likely contributed to the decision)
+services/task-orchestrator/app/adapters/conport_adapter.py:963:                    await self._link_conport_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:964:                        source_id=int(decision_id) if decision_id.isdigit() else 0,
+services/task-orchestrator/app/adapters/conport_adapter.py:971:            logger.info(f"✅ Linked decision {decision_id} to {linked_count} tasks")
+services/task-orchestrator/app/adapters/conport_adapter.py:975:            logger.error(f"Failed to link decision to tasks: {e}")
+services/task-orchestrator/app/adapters/conport_adapter.py:1014:    async def enrich_task_with_decisions(
+services/task-orchestrator/app/adapters/conport_adapter.py:1020:        Query ConPort for decisions relevant to a task.
+services/task-orchestrator/app/adapters/conport_adapter.py:1022:        Use before task execution to provide decision context and guidance.
+services/task-orchestrator/app/adapters/conport_adapter.py:1026:            tags: Tags to filter decisions (e.g., ["oauth", "authentication"])
+services/task-orchestrator/app/adapters/conport_adapter.py:1029:            List of relevant decision dicts with summary, rationale, tags
+services/task-orchestrator/app/adapters/conport_adapter.py:1037:            logger.warning("⚠️ ConPort client not configured, cannot query decisions")
+services/task-orchestrator/app/adapters/conport_adapter.py:1041:            logger.info(f"🔍 Querying ConPort decisions for task '{task.title}' with tags: {tags}")
+services/task-orchestrator/app/adapters/conport_adapter.py:1043:            # Query ConPort for decisions matching any of the tags
+services/task-orchestrator/app/adapters/conport_adapter.py:1044:            result = await self.conport_client.get_decisions(
+services/task-orchestrator/app/adapters/conport_adapter.py:1050:            decisions = result.get("result", [])
+services/task-orchestrator/app/adapters/conport_adapter.py:1051:            logger.info(f"📚 Found {len(decisions)} relevant decisions")
+services/task-orchestrator/app/adapters/conport_adapter.py:1053:            # Optionally link decisions to task in ConPort
+services/task-orchestrator/app/adapters/conport_adapter.py:1054:            if decisions and hasattr(task, 'conport_id') and task.conport_id:
+services/task-orchestrator/app/adapters/conport_adapter.py:1055:                for decision in decisions[:3]:  # Link top 3 most relevant
+services/task-orchestrator/app/adapters/conport_adapter.py:1057:                        await self._link_conport_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:1058:                            source_item_type="decision",
+services/task-orchestrator/app/adapters/conport_adapter.py:1059:                            source_item_id=str(decision['id']),
+services/task-orchestrator/app/adapters/conport_adapter.py:1066:                        logger.debug(f"Could not link decision {decision['id']} to task: {e}")
+services/task-orchestrator/app/adapters/conport_adapter.py:1068:            return decisions
+services/task-orchestrator/app/adapters/conport_adapter.py:1071:            logger.error(f"❌ Failed to query decisions: {e}")
+services/task-orchestrator/app/adapters/conport_adapter.py:1175:        Use to discover implicit dependencies through decision/pattern links.
+services/task-orchestrator/app/adapters/conport_adapter.py:1186:                {"type": "decision", "id": 161, "relationship": "depends_on"},
+services/task-orchestrator/app/adapters/conport_adapter.py:1198:            result = await self.conport_client.get_linked_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:1207:                linked_items = result.get("links", result.get("result", []))
+services/task-orchestrator/app/adapters/conport_adapter.py:1209:                linked_items = []
+services/task-orchestrator/app/adapters/conport_adapter.py:1211:            logger.info(f"🕸️ Found {len(linked_items)} linked items")
+services/task-orchestrator/app/adapters/conport_adapter.py:1212:            return linked_items
+services/task-orchestrator/app/adapters/conport_adapter.py:1233:            List of similar task dicts with description, status, outcome
+services/task-orchestrator/app/adapters/conport_adapter.py:1240:                "status": "DONE",
+services/task-orchestrator/app/adapters/conport_adapter.py:1268:                if task.get("status") == "DONE"
+services/task-orchestrator/intelligence/predictive_orchestrator.py:65:        rationale: Human-readable explanation
+services/task-orchestrator/intelligence/predictive_orchestrator.py:77:    rationale: str
+services/task-orchestrator/intelligence/predictive_orchestrator.py:144:            logger.info(f"  Rationale: {rec.rationale}")
+services/task-orchestrator/intelligence/predictive_orchestrator.py:222:                rationale=self._generate_rationale(task, context, score),
+services/task-orchestrator/intelligence/predictive_orchestrator.py:338:    def _generate_rationale(
+services/task-orchestrator/intelligence/predictive_orchestrator.py:565:            # Generate rationale from features
+services/task-orchestrator/intelligence/predictive_orchestrator.py:567:            rationale = self._generate_ml_rationale(
+services/task-orchestrator/intelligence/predictive_orchestrator.py:579:                rationale=rationale,
+services/task-orchestrator/intelligence/predictive_orchestrator.py:646:    def _generate_ml_rationale(
+services/task-orchestrator/intelligence/predictive_orchestrator.py:652:        """Generate human-readable rationale from ML prediction."""
+services/task-orchestrator/intelligence/predictive_orchestrator.py:805:                rec.rationale += " (rule-based - ML training)"
+services/task-orchestrator/intelligence/predictive_orchestrator.py:830:                rec.rationale += " (rule-based fallback)"
+services/task-orchestrator/intelligence/predictive_orchestrator.py:945:                rec.rationale = f"ML + Rules: {ml_rec.rationale}"
+services/task-orchestrator/intelligence/predictive_orchestrator.py:996:            logger.info(f"  {rec.rationale}")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:58:        emit_task_status_change,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:104:    from integration_bridge_connector import emit_task_status_change
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:305:        # 6. Apply self-consistency for critical decisions
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:430:        - Chain-of-thought reasoning for complex decisions
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:459:                1. Task Type Classification: Determine if this is planning/decision-making, implementation/coding, analysis/research, or validation/review
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:465:                - Complex architecture decisions → ZEN (multi-perspective validation)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:499:                Example 1 - Good Fit: "Database schema design" → CONPORT (architectural decision logging)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:645:            # ConPort integration (historical decisions)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:648:                    recent_decisions = await self.brain.orchestrator.conport_adapter.get_recent_decisions(limit=3)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:649:                    enhancements["recent_patterns"] = [d.get("summary", "") for d in recent_decisions]
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:657:                    # Test MCP connection with a simple status check
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:658:                    status = await mcp__dope-context__get_index_status()
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:659:                    if not status or status.get("status") != "active":
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:663:                    enhancements["dope_context_status"] = "unavailable"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:710:                enhancements["dope_context_status"] = "active"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:715:                enhancements["dope_context_status"] = "error"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:723:            # Check Dope-Context status first
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:724:            status = enhancements.get("dope_context_status", "unknown")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:725:            if status == "unavailable":
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:727:            elif status == "error":
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:753:            # Add status information
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:758:                status_parts = []
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:760:                    status_parts.append("code patterns retrieved")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:762:                    status_parts.append("documentation found")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:763:                info_parts.append(f"Status: Successfully retrieved {', '.join(status_parts)} from Dopemux knowledge base.")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:984:                    "Strategic roadmap creation → CONPORT (decision tracking)",
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1199:            return {"status": "no_failures"}
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1276:            return {"status": "cache_disabled"}
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1286:                "status": "active",
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1296:            return {"status": "error", "error": str(e)}
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1301:            return {"status": "brain_unavailable"}
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1683:    """Enhanced task status with ADHD considerations."""
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1715:    status: TaskStatus = TaskStatus.PENDING
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1888:                if response.status == 200:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1947:                    "decision_logging",
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2066:                if response.status == 200:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2095:                status=self._map_leantime_status(leantime_task.get("status", "0")),
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2181:        """Sync event to ConPort for decision/progress tracking."""
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2187:                    "status": event.data.get("status", "pending").upper(),
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2189:                    "linked_item_type": "orchestration_task",
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2190:                    "linked_item_id": event.task_id,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2352:                        claude_decision = agent_map.get(recommendation)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2353:                        if claude_decision:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2354:                            logger.info(f"🧠 Claude recommended agent: {claude_decision.value}")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2356:                            return claude_decision
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2384:                for keyword in ["decision", "architecture", "pattern", "strategy"]
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2445:            1. Task type (decision-making, coding, analysis, planning)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2488:            Success status
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2553:        Dispatch task to ConPort for decision/progress tracking.
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2568:                    status=task.status.value.upper(),
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2578:                result = await mcp__conport__log_progress(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2580:                    status=task.status.value.upper(),
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2588:            # If this is a decision/architecture task, also log to decisions
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2589:            if "decision" in task.title.lower() or "architecture" in task.title.lower():
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2590:                logger.info(f"💡 Logging architecture decision: {task.title}")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2592:                # Would call: await mcp__conport__log_decision(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2595:                #     rationale=task.description,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2820:                    status_filter="IN_PROGRESS"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2829:                if task.status == TaskStatus.IN_PROGRESS:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2846:            # Update task status
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2847:            task.status = TaskStatus.NEEDS_BREAK
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2926:    def _map_leantime_status(self, leantime_status: str) -> TaskStatus:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2927:        """Map Leantime status to orchestration status."""
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2928:        status_map = {
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2936:        return status_map.get(leantime_status, TaskStatus.PENDING)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3033:            elif event_type == "task.decision_logged":
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3034:                await self._handle_decision_logged(event_data)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3075:            # Update task status in ConPort
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3078:                    f"📊 Updating task {task_id} status to IN_PROGRESS in ConPort"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3080:                await self.conport_adapter.update_task_status(task_id, "IN_PROGRESS")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3093:            # Update task status in ConPort
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3095:                logger.debug(f"📊 Updating task {task_id} status to BLOCKED in ConPort")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3096:                await self.conport_adapter.update_task_status(task_id, "BLOCKED")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3108:            # Update task status in ConPort
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3110:                logger.debug(f"📊 Updating task {task_id} status to DONE in ConPort")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3111:                await self.conport_adapter.update_task_status(task_id, "DONE")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3120:            status = event.data.get("status", "")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3124:                f"📥 Progress updated: Task {task_id} -> {status} ({progress * 100:.0f}%)"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3131:                    task_id, status.upper(), progress
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3137:    async def _handle_decision_logged(self, event: Dict[str, Any]) -> None:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3138:        """Handle decision_logged event from Integration Bridge."""
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3140:            decision_summary = event.data.get("summary", "")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3141:            decision_id = event.data.get("decision_id", "")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3143:            logger.info(f"📥 Decision logged: {decision_summary} (ID: {decision_id})")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3145:            # Link decision to relevant tasks in ConPort
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3148:                    f"📊 Linking decision {decision_id} to related tasks in ConPort"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3150:                await self.conport_adapter.link_decision_to_tasks(decision_id)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3153:            logger.error(f"Failed to handle decision_logged: {e}")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3188:            # Update task status to IN_PROGRESS (ConPort doesn't have NEEDS_BREAK, keep as in_progress)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3191:                await self.conport_adapter.update_task_status(task_id, "IN_PROGRESS")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3219:        """Get comprehensive health status."""
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3230:            # Overall status
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3236:                status = "🚀 Excellent"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3238:                status = "✅ Good"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3240:                status = "⚠️ Degraded"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3242:                status = "🔴 Critical"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3245:                "overall_status": status,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3266:            return {"overall_status": "🔴 Error", "error": str(e)}
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3338:        status_filter: Optional[str] = None,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3349:                status_filter=status_filter,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3361:                        "status": entry.get("status", "TODO"),
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3364:                            if entry.get("status") == "IN_PROGRESS"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3365:                            else (1.0 if entry.get("status") == "DONE" else 0.0)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3417:        tasks = await self.get_tasks(status_filter="TODO")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3433:    async def get_session_status(self) -> Dict[str, Any]:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3434:        """Get current session status (Component 5)."""
+services/task-orchestrator/app/adapters/bridge_adapter.py:150:                status=task.status.value if hasattr(task.status, 'value') else str(task.status),
+services/task-orchestrator/app/adapters/bridge_adapter.py:161:                    "status": str(task.status),
+services/task-orchestrator/app/adapters/bridge_adapter.py:179:        status: Optional[str] = None,
+services/task-orchestrator/app/adapters/bridge_adapter.py:186:            status: Optional status filter
+services/task-orchestrator/app/adapters/bridge_adapter.py:195:                status=status,
+services/task-orchestrator/app/main.py:201:    from .core.health_utils import check_dependency, check_redis, determine_overall_status
+services/task-orchestrator/app/main.py:210:            redis_status = await check_dependency(
+services/task-orchestrator/app/main.py:216:            dependencies["redis"] = redis_status
+services/task-orchestrator/app/main.py:218:        # Determine overall status (no critical deps)
+services/task-orchestrator/app/main.py:219:        overall_status = determine_overall_status(dependencies, critical_deps=set())
+services/task-orchestrator/app/main.py:223:            status=overall_status,
+services/task-orchestrator/app/main.py:225:            dependencies={k: v.status for k, v in dependencies.items()}
+services/task-orchestrator/app/main.py:232:            status="fail",
+services/task-orchestrator/app/main.py:263:# HELP task_orchestrator_health_status Service health status (1=healthy, 0=unhealthy)
+services/task-orchestrator/app/main.py:264:# TYPE task_orchestrator_health_status gauge
+services/task-orchestrator/app/main.py:265:task_orchestrator_health_status 1
+services/task-orchestrator/app/main.py:301:        raise HTTPException(status_code=500, detail=str(e))
+services/task-orchestrator/app/main.py:306:    """Get health status of all planes."""
+services/task-orchestrator/app/main.py:314:                status=health.status,
+services/task-orchestrator/app/main.py:325:        raise HTTPException(status_code=500, detail=str(e))
+services/task-orchestrator/app/main.py:339:        raise HTTPException(status_code=500, detail=str(e))
+services/task-orchestrator/app/main.py:385:        raise HTTPException(status_code=500, detail=str(e))
+services/task-orchestrator/app/main.py:414:        raise HTTPException(status_code=500, detail=str(e))
+services/task-orchestrator/app/main.py:424:            raise HTTPException(status_code=404, detail=f"Conflict {conflict_id} not found")
+services/task-orchestrator/app/main.py:444:            raise HTTPException(status_code=400, detail="Conflict resolution failed")
+services/task-orchestrator/app/main.py:450:        raise HTTPException(status_code=500, detail=str(e))
+services/task-orchestrator/app/main.py:518:@app.get("/api/coordination/status")
+services/task-orchestrator/app/main.py:519:async def get_coordination_status():
+services/task-orchestrator/app/main.py:520:    """Get overall coordination system status."""
+services/task-orchestrator/app/main.py:524:        status = {
+services/task-orchestrator/app/main.py:532:        return status
+services/task-orchestrator/dopemux-vscode/src/extension.ts:35:            const status = hooksEnabled ? 'enabled' : 'disabled';
+services/task-orchestrator/dopemux-vscode/src/extension.ts:36:            vscode.window.showInformationMessage(`Dopemux hooks are ${status}`);

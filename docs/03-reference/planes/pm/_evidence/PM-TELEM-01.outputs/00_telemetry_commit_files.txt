@@ -1,0 +1,8 @@
+4a81e830b feat(event-coordinator): add suppression telemetry for signal/noise measurement
+services/task-orchestrator/SUPPRESSION_TELEMETRY.md
+services/task-orchestrator/event_coordinator.py
+services/task-orchestrator/examples/telemetry_demo.py
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py
+services/task-orchestrator/services/task-orchestrator/simple_prompt_optimizer_test.py
+services/task-orchestrator/tests/__init__.py
+services/task-orchestrator/tests/test_suppression_telemetry.py

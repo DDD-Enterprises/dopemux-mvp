@@ -22,11 +22,11 @@ prelude: Verification for ConPort packet rows 35 through 37 covering user, migra
 
 Updated active docs:
 
-1. `docs/01-tutorials/profile-user-guide.md`
-1. `docs/01-tutorials/profile-migration-guide.md`
-1. `docs/03-reference/profile-developer-guide.md`
-1. `docs/02-how-to/profile-usage-2.md`
-1. `docs/docs_index.yaml`
+1. `/Users/hue/code/dopemux-mvp/docs/01-tutorials/profile-user-guide.md`
+1. `/Users/hue/code/dopemux-mvp/docs/01-tutorials/profile-migration-guide.md`
+1. `/Users/hue/code/dopemux-mvp/docs/03-reference/profile-developer-guide.md`
+1. `/Users/hue/code/dopemux-mvp/docs/02-how-to/profile-usage-3.md`
+1. `/Users/hue/code/dopemux-mvp/docs/docs_index.yaml`
 
 ## Verification Commands
 

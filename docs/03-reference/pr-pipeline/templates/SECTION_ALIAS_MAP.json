@@ -1,0 +1,264 @@
+{
+  "version": "1.0",
+  "canonical_sections": {
+    "Summary": {
+      "required": true,
+      "conditional": false,
+      "severity_if_missing": "MEDIUM",
+      "accepted_aliases": [
+        "Summary",
+        "Mission Summary",
+        "What changed",
+        "Change Summary"
+      ],
+      "accepted_patterns": [
+        "^summary$",
+        "^mission summary$",
+        "^what changed$",
+        "^change summary$"
+      ]
+    },
+    "Context": {
+      "required": true,
+      "conditional": false,
+      "severity_if_missing": "MEDIUM",
+      "accepted_aliases": [
+        "Context",
+        "Context / Why",
+        "Why",
+        "Problem / motivation",
+        "Context Linkage",
+        "Background"
+      ],
+      "accepted_patterns": [
+        "^context$",
+        "^context\\s*/\\s*why$",
+        "^why$",
+        "^problem\\s*/\\s*motivation$",
+        "^context linkage$",
+        "^background$"
+      ]
+    },
+    "Verification": {
+      "required": true,
+      "conditional": false,
+      "severity_if_missing": "HIGH",
+      "accepted_aliases": [
+        "Verification",
+        "Verification Matrix",
+        "Testing",
+        "Validation",
+        "Checks performed"
+      ],
+      "accepted_patterns": [
+        "^verification$",
+        "^verification matrix$",
+        "^testing$",
+        "^validation$",
+        "^checks performed$"
+      ]
+    },
+    "Risks": {
+      "required": true,
+      "conditional": false,
+      "severity_if_missing": "HIGH",
+      "accepted_aliases": [
+        "Risks",
+        "Risk",
+        "Risk Surface",
+        "Impact / Risks"
+      ],
+      "accepted_patterns": [
+        "^risks$",
+        "^risk$",
+        "^risk surface$",
+        "^impact\\s*/\\s*risks$"
+      ]
+    },
+    "Rollback": {
+      "required": true,
+      "conditional": false,
+      "severity_if_missing": "HIGH",
+      "accepted_aliases": [
+        "Rollback",
+        "Rollback Protocol",
+        "Backout",
+        "Revert Plan"
+      ],
+      "accepted_patterns": [
+        "^rollback$",
+        "^rollback protocol$",
+        "^backout$",
+        "^revert plan$"
+      ]
+    },
+    "Reviewer Notes": {
+      "required": true,
+      "conditional": false,
+      "severity_if_missing": "MEDIUM",
+      "accepted_aliases": [
+        "Reviewer Notes",
+        "Review Notes",
+        "Reviewer Flight Deck",
+        "Notes for Reviewers",
+        "Focus areas"
+      ],
+      "accepted_patterns": [
+        "^reviewer notes$",
+        "^review notes$",
+        "^reviewer flight deck$",
+        "^notes for reviewers$",
+        "^focus areas$"
+      ]
+    },
+    "Checklist": {
+      "required": true,
+      "conditional": false,
+      "severity_if_missing": "HIGH",
+      "accepted_aliases": [
+        "Checklist",
+        "Launch Checklist",
+        "PR Checklist"
+      ],
+      "accepted_patterns": [
+        "^checklist$",
+        "^launch checklist$",
+        "^pr checklist$"
+      ]
+    },
+    "High-Risk Integration Notes": {
+      "required": false,
+      "conditional": true,
+      "required_when": "high_risk_integration",
+      "severity_if_missing": "MEDIUM",
+      "accepted_aliases": [
+        "High-Risk Integration Notes",
+        "Integration Notes",
+        "High Risk Notes",
+        "Arbitration Notes"
+      ],
+      "accepted_patterns": [
+        "^high[-\\s]*risk integration notes$",
+        "^integration notes$",
+        "^high risk notes$",
+        "^arbitration notes$"
+      ]
+    }
+  },
+  "insufficiency_markers": [
+    "n/a",
+    "na",
+    "none",
+    "done",
+    "tested",
+    "same as above",
+    "todo",
+    "tbd",
+    "-",
+    "."
+  ],
+  "empty_code_fence_patterns": [
+    "^```[a-zA-Z0-9_+-]*\\s*```$",
+    "^```\\s*```$"
+  ],
+  "heading_normalization": {
+    "trim_whitespace": true,
+    "collapse_internal_whitespace": true,
+    "strip_leading_trailing_punctuation": true,
+    "strip_markdown_emphasis": true,
+    "strip_leading_emoji": true,
+    "case_insensitive": true
+  },
+  "checklist_intents": {
+    "summary_accurate": [
+      "summary is accurate",
+      "described the change clearly",
+      "summary is clear",
+      "change is summarized"
+    ],
+    "context_linked": [
+      "linked relevant context",
+      "linked issues",
+      "linked docs",
+      "linked adr",
+      "context is included"
+    ],
+    "verification_documented": [
+      "verification is documented",
+      "documented what was verified",
+      "listed verification",
+      "testing documented"
+    ],
+    "verification_gaps_documented": [
+      "verification gaps documented",
+      "not performed documented",
+      "gaps documented"
+    ],
+    "risks_documented": [
+      "risks are documented",
+      "known risks documented",
+      "impact documented"
+    ],
+    "rollback_documented": [
+      "rollback is documented",
+      "rollback steps documented",
+      "backout documented"
+    ],
+    "reviewer_guidance_included": [
+      "reviewer notes included",
+      "review guidance included",
+      "focus areas included"
+    ],
+    "high_risk_notes_completed": [
+      "high-risk integration notes completed",
+      "high risk notes completed",
+      "arbitration notes completed"
+    ]
+  },
+  "checklist_thresholds": {
+    "aligned": 6,
+    "partial": 4,
+    "weak": 1,
+    "missing": 0
+  },
+  "discovery_paths": [
+    ".github/pull_request_template.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    "docs/PULL_REQUEST_TEMPLATE.md",
+    ".github/PULL_REQUEST_TEMPLATE/default.md",
+    ".github/PULL_REQUEST_TEMPLATE/*.md"
+  ],
+  "hard_blockers": [
+    "missing_verification",
+    "missing_risks",
+    "missing_rollback",
+    "missing_checklist",
+    "multiple_template_ambiguity",
+    "template_mostly_placeholders"
+  ],
+  "alignment_score_weights": {
+    "Summary": 15,
+    "Context": 10,
+    "Verification": 20,
+    "Risks": 15,
+    "Rollback": 15,
+    "Reviewer Notes": 10,
+    "Checklist": 10,
+    "High-Risk Integration Notes": 5
+  },
+  "alignment_score_bands": {
+    "ALIGNED": [90, 100],
+    "PARTIALLY_ALIGNED": [70, 89],
+    "PRESENT_BUT_WEAK": [50, 69],
+    "DRIFTED": [1, 49],
+    "MISSING": [0, 0]
+  },
+  "recommended_modes": {
+    "ALIGNED": "AUDIT_ONLY",
+    "PARTIALLY_ALIGNED": "PLAN_ONLY",
+    "PRESENT_BUT_WEAK": "PLAN_ONLY",
+    "DRIFTED": "ESCALATE",
+    "AMBIGUOUS": "ESCALATE",
+    "MISSING": "INJECT_SAFE"
+  }
+}

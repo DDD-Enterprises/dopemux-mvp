@@ -70,7 +70,7 @@ Completed in this wave with evidence:
 Evidence:
 
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
-- `docs/05-audit-reports/age-pg-compat-stress-2026-02-06.md`
+- `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 
 ## Leantime P1 Blocker Closure (Evidenced)
 
@@ -91,7 +91,7 @@ Evidence:
 - `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
 - `reports/strict_closure/leantime_api_key_automation_verification_2026-02-08.json`
 - `scripts/docs_audit/probe_leantime_bridge_readiness.py`
-- `docs/05-audit-reports/leantime-bridge-readiness-2026-02-06.md`
+- `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
 ## Leantime Close Criteria
 
@@ -167,7 +167,7 @@ Owner bucket recommendation:
 Evidence:
 
 - `reports/strict_closure/conport_deep_status_task_extract_2026-02-06.json`
-- `docs/05-audit-reports/conport-deep-status-task-extract-2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_DEEP_STATUS_TASK_EXTRACT_2026-02-06.md`
 
 Recheck after promoting these 4 items into this matrix:
 
@@ -240,11 +240,11 @@ The targeted miss extraction is now explicitly represented, but a full-bundle sw
 Evidence:
 
 - `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
-- `docs/05-audit-reports/conport-full-todo-coverage-matrix-2026-02-06.md`
-- `docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06.md`
-- `docs/05-audit-reports/litellm-blocker-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-workstream-verification-2026-02-06.md`
-- `docs/05-audit-reports/mcp-response-budget-verification-2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`
+- `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
 
 ## Live Runtime Backlog Coverage Diff (Progress Entries)
 
@@ -268,10 +268,10 @@ Clustered underrepresented work now includes:
 
 Runtime recheck has already reclassified one persistence item and one MCP-token documentation item as resolved:
 
-- `docs/05-audit-reports/conport-persistence-verification-2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_PERSISTENCE_VERIFICATION_2026-02-06.md`
 - `docs/best-practices/mcp-token-management.md`
 - `reports/strict_closure/mcp_token_management_doc_verification_2026-02-06.json`
-- `docs/05-audit-reports/bridge-orchestrator-integration-verification-2026-02-06.md`
+- `docs/05-audit-reports/BRIDGE_ORCHESTRATOR_INTEGRATION_VERIFICATION_2026-02-06.md`
 - `reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json`
 
 Artifacts:
@@ -279,9 +279,9 @@ Artifacts:
 - `reports/strict_closure/conport_live_progress_backlog_2026-02-06.csv`
 - `reports/strict_closure/conport_live_backlog_doc_coverage_2026-02-06.json`
 - `reports/strict_closure/conport_live_backlog_underrepresented_matrix_2026-02-06.json`
-- `docs/05-audit-reports/conport-live-backlog-underrepresented-matrix-2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`
 - `reports/strict_closure/conport_live_backlog_true_open_candidates_2026-02-06.json`
-- `docs/05-audit-reports/conport-live-backlog-execution-packet-2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`
 
 ## Live True-Open Explicit Promotion (Master Doc Closure)
 
@@ -395,10 +395,10 @@ Promoted explicit tasks:
 Evidence:
 
 1. `reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json`
-1. `docs/05-audit-reports/semantic-search-reference-inventory-2026-02-07.md`
+1. `docs/05-audit-reports/SEMANTIC_SEARCH_REFERENCE_INVENTORY_2026-02-07.md`
 1. `scripts/docs_audit/extract_semantic_search_reference_inventory.py`
 
 Cluster deep-dive verification:
 
-- `docs/05-audit-reports/kg-dependency-unification-verification-2026-02-06.md`
+- `docs/05-audit-reports/KG_DEPENDENCY_UNIFICATION_VERIFICATION_2026-02-06.md`
 - `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`

@@ -1,0 +1,6 @@
+total 80
+drwxr-xr-x@ 5 hue  staff    160 Feb  8 13:23 .
+drwxr-xr-x@ 4 hue  staff    128 Feb  5 19:19 ..
+-rw-r--r--@ 1 hue  staff   6148 Feb 11 13:50 .DS_Store
+drwxr-xr-x@ 3 hue  staff     96 Feb  8 13:23 __pycache__
+-rw-r--r--@ 1 hue  staff  31993 Feb  1 02:12 install.py

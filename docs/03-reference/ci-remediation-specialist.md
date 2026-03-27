@@ -68,4 +68,3 @@ The prompt is expected to include:
 
 - Canonical writer of the skill instructions: `templates/skills/ci-remediation-specialist/SKILL.md`
 - Canonical reader in orchestration: `src/dopemux_pr_merge_specialist/queue_drain.py`
-- Advisory design plan: `llm-plans/GLOBAL_CI_REMEDIATION.md`
