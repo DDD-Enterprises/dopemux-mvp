@@ -184,6 +184,23 @@ class DopemuxDashboard:
             return
         self.state.active_phase = dashboard_phase_for_snapshot(self.state.active_pr)
 
+    def _decode_input_choice(self, char: str) -> Optional[str]:
+        if char in {"\x03", "\x04"}:
+            return "Q"
+        if char == "\x1b":
+            if not self._input_fd:
+                return "Q"
+            rlist, _, _ = select.select([sys.stdin], [], [], 0.05)
+            if not rlist:
+                return "Q"
+            next_char = sys.stdin.read(2)
+            if next_char == "[A":
+                return "UP"
+            if next_char == "[B":
+                return "DOWN"
+            return "Q"
+        return char.upper()
+
     def _refresh_dashboard_result(self, pr_id: str) -> PRResult:
         repo_root = Path.cwd()
         policy = self.policy or load_effective_policy(
@@ -528,14 +545,7 @@ class DopemuxDashboard:
                     choice = None
                     if rlist:
                         char = sys.stdin.read(1)
-                        if char == "\x1b":
-                            next_char = sys.stdin.read(2)
-                            if next_char == "[A":
-                                choice = "UP"
-                            elif next_char == "[B":
-                                choice = "DOWN"
-                        else:
-                            choice = char.upper()
+                        choice = self._decode_input_choice(char)
                     elif self.state.auto_pilot:
                         ready_pr_ids = [
                             int(pr["pr_id"])

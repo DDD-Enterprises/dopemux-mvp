@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
+from .action_model import enum_value
 from .schema import PRMergeReport
 
 
@@ -50,18 +51,26 @@ class MetricsEngine:
         resolved_threads: int = 0,
     ):
         """Log a merge event with expanded adoption and incident metadata."""
+        initial_state = report.initial_state
+        lifecycle_state = (
+            enum_value(getattr(initial_state, "lifecycle_state", ""))
+            if initial_state is not None
+            else ""
+        )
         event = {
             "timestamp": time.time(),
-            "run_id": report.run_id,
+            "run_id": str(report.telemetry.get("run_id", "")),
             "pr_id": report.pr_id,
             "status": report.status,
             "rollout_tier": rollout_tier,
             "mode": report.telemetry.get("mode", "advisory"),
             "duration_ms": duration_ms,
             "score": report.telemetry.get("score", 0.0),
-            "is_in_queue": report.initial_state.is_in_merge_queue,
-            "unresolved_threads": report.initial_state.unresolved_thread_count,
-            "ci_status": report.initial_state.ci_status,
+            "is_in_queue": lifecycle_state == "queued_for_merge",
+            "unresolved_threads": int(
+                getattr(initial_state, "unresolved_threads", 0) or 0
+            ),
+            "ci_status": getattr(initial_state, "ci_status", "UNKNOWN"),
             "conflict_class": report.telemetry.get("conflict_class", "UNKNOWN"),
             "blocker_count": len(report.blockers),
             "blocker_types": [b.type for b in report.blockers],

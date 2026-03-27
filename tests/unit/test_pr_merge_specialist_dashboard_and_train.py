@@ -1,4 +1,5 @@
 from argparse import Namespace
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -8,8 +9,11 @@ from src.dopemux_pr_merge_specialist.action_model import (
 )
 from src.dopemux_pr_merge_specialist.conflict import apply_suggestion_to_file
 from src.dopemux_pr_merge_specialist.dashboard import DopemuxDashboard, QueueState
+from src.dopemux_pr_merge_specialist.metrics import MetricsEngine
 from src.dopemux_pr_merge_specialist.queue_drain import _ignite_speculative_train
 from src.dopemux_pr_merge_specialist.schema import (
+    PRMergeReport,
+    PRState,
     PRResult,
     PullRequestState,
     ReviewThread,
@@ -171,3 +175,51 @@ def test_dashboard_tactic_distinguishes_validation_ci_and_threads() -> None:
     assert dashboard_phase_for_snapshot(ci_failed) == "CI Remediation"
     assert dashboard_tactic_for_snapshot(thread_blocked) == "T"
     assert dashboard_phase_for_snapshot(thread_blocked) == "Thread Review"
+
+
+def test_metrics_log_event_accepts_dashboard_report_shape(tmp_path: Path) -> None:
+    engine = MetricsEngine(tmp_path)
+    pr = PullRequestState(
+        pr_id=7,
+        title="PR 7",
+        author="tester",
+        state="OPEN",
+        base_ref="main",
+        head_ref="feature-7",
+        ci_status="SUCCESS",
+        mergeable="MERGEABLE",
+        merge_state_status="CLEAN",
+        review_decision="APPROVED",
+        unresolved_threads=2,
+        lifecycle_state=PRState.QUEUED_FOR_MERGE,
+    )
+    report = PRMergeReport(
+        pr_id="7",
+        status="queued_for_merge",
+        initial_state=pr,
+        telemetry={"run_id": "run-7"},
+    )
+
+    engine.log_event(report=report, resolved_threads=3)
+
+    ledger = next(tmp_path.glob("events-*.jsonl"))
+    event = json.loads(ledger.read_text(encoding="utf-8").splitlines()[0])
+    assert event["run_id"] == "run-7"
+    assert event["is_in_queue"] is True
+    assert event["unresolved_threads"] == 2
+    assert event["resolved_threads_in_session"] == 3
+
+
+def test_dashboard_decode_input_choice_maps_exit_keys_to_quit(monkeypatch) -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+
+    assert dashboard._decode_input_choice("\x03") == "Q"
+    assert dashboard._decode_input_choice("\x04") == "Q"
+    assert dashboard._decode_input_choice("q") == "Q"
+
+    dashboard._input_fd = 1
+    monkeypatch.setattr(
+        "src.dopemux_pr_merge_specialist.dashboard.select.select",
+        lambda *_args, **_kwargs: ([], [], []),
+    )
+    assert dashboard._decode_input_choice("\x1b") == "Q"
