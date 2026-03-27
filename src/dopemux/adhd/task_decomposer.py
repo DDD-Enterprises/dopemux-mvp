@@ -10,7 +10,6 @@ and completion events to canonical PM authorities.
 import json
 import logging
 import tempfile
-import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
