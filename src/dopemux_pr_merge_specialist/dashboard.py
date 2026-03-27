@@ -239,6 +239,11 @@ class DopemuxDashboard:
             for item in snapshot.get("blockers", [])
             if isinstance(item, dict)
         }
+        operator_state = str(snapshot.get("operator_state", "") or "")
+        conflict_blocked = (
+            bool(blockers & {"manual_conflict_required", "semantic_conflict_blocked"})
+            or operator_state in {"manual_conflict_required", "semantic_conflict_blocked"}
+        )
         tactics: List[str] = []
         if bool(snapshot.get("is_draft")):
             tactics.append("R")
@@ -259,7 +264,7 @@ class DopemuxDashboard:
             "conflict_detected" in blockers
             or str(snapshot.get("mergeable", "")).upper() == "CONFLICTING"
             or str(snapshot.get("merge_state_status", "")).upper() in {"DIRTY", "HAS_HOOKS"}
-        ):
+        ) and not conflict_blocked:
             tactics.append("P")
         if blockers & {"validation_not_executed", "required_check_pending"}:
             tactics.append("V")
@@ -295,6 +300,7 @@ class DopemuxDashboard:
         ).lower()
         mergeable = str(snapshot.get("mergeable", "")).upper()
         merge_state_status = str(snapshot.get("merge_state_status", "")).upper()
+        operator_state = str(snapshot.get("operator_state", "") or "")
         layer = None
         pr_id = int(snapshot.get("pr_id", 0) or 0)
         plan = queue_plan or {}
@@ -304,6 +310,24 @@ class DopemuxDashboard:
                 layer = int(item.get("layer", 0) or 0)
                 break
 
+        if (
+            "semantic_conflict_blocked" in blockers
+            or operator_state == "semantic_conflict_blocked"
+        ):
+            return (
+                "SPLIT_DECISION_REQUIRED",
+                "Conflict surface is explicitly marked semantic; skip autopilot patching and require human resolution.",
+                ["S"],
+            )
+        if (
+            "manual_conflict_required" in blockers
+            or operator_state == "manual_conflict_required"
+        ):
+            return (
+                "SPLIT_DECISION_REQUIRED",
+                "Conflict auto-recovery requires explicit opt-in before patching can run safely.",
+                ["S"],
+            )
         if mergeable == "CONFLICTING" or merge_state_status in {"DIRTY", "HAS_HOOKS"}:
             return (
                 "STAGED_SEQUENCE_MERGE",
@@ -477,7 +501,7 @@ class DopemuxDashboard:
             return
         active_pr_id = str(active.get("pr_id"))
         new_state = active.get("lifecycle_state")
-        new_tactic = dashboard_tactic_for_snapshot(active)
+        new_tactic = self._autopilot_tactic_for_snapshot(active)
         if (
             active_pr_id == str(target_pr_id)
             and self.state.last_action_result == "ERROR"

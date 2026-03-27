@@ -321,10 +321,11 @@ class RichTerminalRenderer(TerminalRenderer):
                 for item in blockers
                 if isinstance(item, dict)
             }
+            operator_state = str(active.get("operator_state", "") or "")
             approval_blocked = blocker_types == {"approval_missing"}
             validation_only_blocked = bool(blocker_types) and blocker_types <= VALIDATION_BLOCKER_TYPES
             queued_for_merge = (
-                str(active.get("operator_state", "")) == "queued_for_merge"
+                operator_state == "queued_for_merge"
                 or str(active.get("lifecycle_state", "")).upper() == "QUEUED_FOR_MERGE"
             )
             
@@ -376,8 +377,12 @@ class RichTerminalRenderer(TerminalRenderer):
             if other_blockers:
                 blocker_text.append("\n⚠️ Other Blockers:\n", style="warning")
                 for b in other_blockers[:2]:
-                    b_name = b.get('name', b.get('type', 'Blocker'))
-                    blocker_text.append(f"  • {b_name[:40]}\n", style="error")
+                    label = (
+                        str(b.get("message") or "")
+                        or str(b.get("name") or "")
+                        or str(b.get("type") or "Blocker")
+                    )
+                    blocker_text.append(f"  • {label}\n", style="error")
 
             if history:
                 blocker_text.append("\n📜 MISSION HISTORY:\n", style="bold info")
@@ -418,12 +423,35 @@ class RichTerminalRenderer(TerminalRenderer):
             if not execution_log:
                 lc_state = str(active.get("lifecycle_state", "discovered")).upper()
                 obj_text = Text()
+                conflict_blocked = (
+                    operator_state == "manual_conflict_required"
+                    or "manual_conflict_required" in blocker_types
+                )
+                semantic_conflict = (
+                    operator_state == "semantic_conflict_blocked"
+                    or "semantic_conflict_blocked" in blocker_types
+                )
+                conflict_eligible = (
+                    not conflict_blocked
+                    and not semantic_conflict
+                    and (
+                        "conflict_detected" in blocker_types
+                        or mergeable == "CONFLICTING"
+                        or state_status in ("DIRTY", "HAS_HOOKS")
+                    )
+                )
                 if is_draft:
                     obj_text.append("🎯 OBJECTIVE: Transition PR out of DRAFT mode.\n", style="bold warning")
                     obj_text.append("NEXT STEP: Press [R] to mark as READY FOR REVIEW.", style="text")
                 elif queued_for_merge:
                     obj_text.append("🎯 OBJECTIVE: Wait for GitHub to complete queued auto-merge.\n", style="bold info")
                     obj_text.append("NEXT STEP: No local verification needed here; monitor checks/queue state.", style="text")
+                elif semantic_conflict:
+                    obj_text.append("🎯 OBJECTIVE: Defer semantic conflict to human review.\n", style="bold error")
+                    obj_text.append("NEXT STEP: Resolve manually or remove the `conflict:semantic` label only after confirming the conflict is mechanically safe.", style="text")
+                elif conflict_blocked:
+                    obj_text.append("🎯 OBJECTIVE: Decide whether conflict recovery is safe.\n", style="bold error")
+                    obj_text.append("NEXT STEP: Add `conflict:mechanical` only for safe docs/tests/lockfile conflicts, otherwise resolve manually.", style="text")
                 elif approval_blocked:
                     obj_text.append("🎯 OBJECTIVE: Satisfy the missing approval gate.\n", style="bold magenta")
                     obj_text.append("NEXT STEP: Press [A] to approve. Auto-merge should proceed after approval if all other gates stay green.", style="text")
@@ -437,6 +465,9 @@ class RichTerminalRenderer(TerminalRenderer):
                 elif ci == "FAILURE":
                     obj_text.append("🎯 OBJECTIVE: Remediate broken CI checks.\n", style="bold error")
                     obj_text.append("NEXT STEP: Press [C] to invoke CI Remediation via specialist agent.", style="text")
+                elif conflict_eligible:
+                    obj_text.append("🎯 OBJECTIVE: Attempt mechanical conflict recovery.\n", style="bold error")
+                    obj_text.append("NEXT STEP: Press [P] to try the safe conflict-recovery path, then re-verify queue state.", style="text")
                 elif "READY" in lc_state:
                     obj_text.append("🎯 OBJECTIVE: Final sign-off and integration.\n", style="bold success")
                     obj_text.append("NEXT STEP: Press [A] to Approve or [I] to Implement Merge.", style="text")
