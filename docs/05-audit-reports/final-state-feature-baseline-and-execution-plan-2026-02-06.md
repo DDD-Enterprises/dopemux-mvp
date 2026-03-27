@@ -16,9 +16,9 @@ prelude: Repository-wide verified baseline of components, features, integrations
 
 This report reconciles:
 
-1. `docs/04-explanation/history/design-evolution-2026.md`
-1. `docs/04-explanation/history/project-archaeology-report.md`
-1. `docs/04-explanation/history/unbuilt-features-and-roadmap.md`
+1. `docs/04-explanation/history/design-evolution-2026-2.md`
+1. `docs/04-explanation/history/project-archaeology-report-2.md`
+1. `docs/04-explanation/history/unbuilt-features-and-roadmap-2.md`
 1. Current code state in `services/`, `src/dopemux/`, `docker/mcp-servers/`, and UI directories
 1. Current architecture contracts in `services/registry.yaml`, `compose.yml`, and `docker-compose.smoke.yml`
 1. Historical service master histories in `docs/archive/services/history/`
@@ -83,34 +83,34 @@ Generated during this pass:
 - `reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json`
 - `reports/strict_closure/runtime_stability_hotfixes_2026-02-08.json`
 - `reports/strict_closure/history_docs_link_integrity_2026-02-08.json`
-- `docs/05-audit-reports/semantic-search-reference-inventory-2026-02-07.md`
-- `docs/05-audit-reports/runtime-stability-hotfixes-2026-02-08.md`
-- `docs/05-audit-reports/conport-real-import-integrity-2026-02-06.md`
-- `docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06.md`
-- `docs/05-audit-reports/conport-full-todo-coverage-matrix-2026-02-06.md`
-- `docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06.md`
-- `docs/05-audit-reports/kg-dependency-unification-verification-2026-02-06.md`
-- `docs/05-audit-reports/litellm-blocker-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-workstream-verification-2026-02-06.md`
-- `docs/05-audit-reports/mcp-response-budget-verification-2026-02-06.md`
-- `docs/05-audit-reports/file-pattern-analyzer-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-detector-threshold-tests-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-config-swap-restart-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-error-recovery-rollback-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-switch-command-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-switch-time-optimization-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-switch-integration-tests-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-current-detection-verification-2026-02-06.md`
-- `docs/05-audit-reports/auto-detection-service-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-management-commands-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-analytics-verification-2026-02-06.md`
-- `docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-optimization-suggestions-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-usage-analysis-and-init-wizard-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-documentation-completion-verification-2026-02-06.md`
-- `docs/05-audit-reports/profile-week2-integration-testing-verification-2026-02-06.md`
-- `docs/05-audit-reports/age-pg-compat-stress-2026-02-06.md`
-- `docs/05-audit-reports/leantime-bridge-readiness-2026-02-06.md`
+- `docs/05-audit-reports/SEMANTIC_SEARCH_REFERENCE_INVENTORY_2026-02-07.md`
+- `docs/05-audit-reports/RUNTIME_STABILITY_HOTFIXES_2026-02-08.md`
+- `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`
+- `docs/05-audit-reports/KG_DEPENDENCY_UNIFICATION_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/FILE_PATTERN_ANALYZER_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_DETECTOR_THRESHOLD_TESTS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_CONFIG_SWAP_RESTART_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_ERROR_RECOVERY_ROLLBACK_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_SWITCH_COMMAND_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_SWITCH_TIME_OPTIMIZATION_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_SWITCH_INTEGRATION_TESTS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_CURRENT_DETECTION_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_OPTIMIZATION_SUGGESTIONS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_WEEK2_INTEGRATION_TESTING_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
+- `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
 Executed verification checks (latest pass on 2026-02-06):
 
@@ -312,7 +312,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 1. Missed clusters now explicitly in scope:
    AGE/PG stress + compatibility validation tasks, Slack client/status/triage workflow tasks, macOS focus/window-management integration tasks, beta-prep/recruitment/deployment tasks, and Leantime readiness automation/regression coverage tasks.
 1. Normalized priority matrix for the 24 underrepresented items:
-   `docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06.md`.
+   `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`.
 1. Secondary explicit-task-line extraction against current master docs surfaced `19` additional underrepresented implementation tasks from historical TODO samples (core package extraction, semantic/embedding deprecation path, ADHDConfigService rollouts, KG link/tool/test/perf/documentation tasks):
    `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
 1. Coverage recheck confirms the original `24` miss-extract items are now explicitly represented in master docs (`24/24` closure):
@@ -320,7 +320,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 1. Full-bundle ConPort TODO/BLOCKED coverage extraction across all available import bundles shows `231` unique pending items with `167` still underrepresented in current master docs:
    `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`.
 1. First execution packet for the underrepresented set is now materialized with owner buckets and verification anchors for the top `40` items:
-   `docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06.md`.
+   `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
 1. Profile/auto-detection workstream verification shows `12` extracted tasks already implemented and `3` partial, reducing true open scope in that cluster:
    `reports/strict_closure/profile_workstream_verification_2026-02-06.json`.
 1. Shared MCP response-budget work item from the underrepresented packet is now implemented and verified:
@@ -386,11 +386,11 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 1. Live ConPort backlog extraction from runtime `progress_entries` now shows `134` unique active backlog items with `66` still underrepresented in active master docs, and has been promoted into an owner-routed matrix:
    `reports/strict_closure/conport_live_backlog_doc_coverage_2026-02-06.json`.
 1. Live underrepresented backlog clusters are now explicitly enumerated for closure (`profile_alias_or_residual=33`, `shield_slack_beta=11`, `kg_dependency_unification=7`, `bridge_orchestrator=6`, `mcp_token_ops=4`, `conport_persistence=1`, `other=4`):
-   `docs/05-audit-reports/conport-live-backlog-underrepresented-matrix-2026-02-06.md`.
+   `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`.
 1. Live underrepresented backlog has now been triaged into `25` likely true-open candidates, `33` likely alias/already-implemented phrasing mismatches, and `8` resolved-in-current-wave items:
    `reports/strict_closure/conport_live_backlog_true_open_candidates_2026-02-06.json`.
 1. A dedicated live backlog execution packet is now materialized for the true-open set with owner and verification anchors, and now includes runtime/documentation reclassification for persistence, MCP token-doc parity, and bridge-orchestrator integration tasks:
-   `docs/05-audit-reports/conport-live-backlog-execution-packet-2026-02-06.md`.
+   `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`.
 1. Live true-open packet rows have now been explicitly promoted into the master miss matrix to close literal line-coverage drift (`25/25` exact-line additions; canonical residual pre-promotion `14`):
    `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`.
 1. Post-promotion recheck confirms exact-line closure for the full live true-open packet (`0` exact misses of `25`), with remaining canonical drift now limited to wording-level variants (`8`):
@@ -400,7 +400,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 1. Serena KG-related regression harnesses were unblocked by fixing annotation-time import failures and async test execution defaults; targeted suites now run green (`13` passed):
    `services/serena/intelligence/database.py`, `services/serena/tree_sitter_analyzer.py`, `pytest.ini`.
 1. ConPort semantic-search compatibility paths are now explicitly hard-deprecated in runtime responses/logging and active architecture docs, reducing ambiguity while preserving backward compatibility:
-   `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py`, `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3-0-implementation.md`.
+   `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py`, `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3-0-implementation-2.md`.
 1. A caller inventory for deprecated ConPort semantic-search paths is now captured to guide safe shim removal sequencing:
    `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`.
 1. Live ConPort backlog delta recheck (`2026-02-08` vs `2026-02-07`) confirms no
@@ -433,11 +433,11 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 1. Preserve Leantime readiness closure with regression checks (deep-health/project-list probes and token/env compatibility coverage) so PM-plane integration remains operational.
 1. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
 1. Close the remaining full-bundle underrepresented ConPort backlog set (`167`) in phased owner-assigned packets.
-1. Execute packet #1 (`top 40`) from `docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06.md`.
+1. Execute packet #1 (`top 40`) from `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
 1. Close the live ConPort underrepresented set (`66`) from runtime backlog coverage diff and merge results into the master execution packet:
-    `docs/05-audit-reports/conport-live-backlog-underrepresented-matrix-2026-02-06.md`.
+    `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`.
 1. Execute the live true-open packet (`25`) and fold closure evidence back into the master fix stream:
-    `docs/05-audit-reports/conport-live-backlog-execution-packet-2026-02-06.md`.
+    `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`.
 1. Add Serena HTTP API endpoint tests that verify workspace resolution behavior with and without `SERENA_WORKSPACE_PATH` / `WORKSPACE_PATH`.
 1. Promote `src/dopemux/memory/capture_client.py` from isolated module to explicit runtime contract (owner, ingress points, compatibility surface) and wire it into active capture paths.
 1. Publish capture-client contract guarantees (mode precedence, idempotency, and dependency-failure behavior) in active docs and pair with latency evidence from runtime benchmarks.
@@ -596,7 +596,7 @@ Exit criteria:
 1. Expand integration/doc verification and operational hardening for implemented ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
 1. Define and execute replay strategy for the remaining historical ConPort bundles with dedupe guardrails.
 1. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
-1. Maintain Leantime readiness closure by re-running `docs/05-audit-reports/leantime-bridge-readiness-2026-02-06.md` criteria and refreshing strict-closure evidence on each wave.
+1. Maintain Leantime readiness closure by re-running `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refreshing strict-closure evidence on each wave.
 1. Resolve the secondary explicit-task miss set from `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
 1. Execute and close the full-bundle underrepresented set from `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json` and refresh coverage counts.
 1. Execute and close packet #1 and regenerate packet #2 from remaining uncovered items.

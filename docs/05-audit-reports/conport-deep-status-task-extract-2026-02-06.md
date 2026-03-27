@@ -21,10 +21,10 @@ This pass extends earlier TODO/BLOCKED extraction by parsing:
 
 Coverage was checked against:
 
-1. `docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06.md`
-1. `docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06.md`
-1. `docs/05-audit-reports/final-state-feature-baseline-and-execution-plan-2026-02-06.md`
-1. `docs/05-audit-reports/leantime-bridge-readiness-2026-02-06.md`
+1. `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
+1. `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`
+1. `docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md`
+1. `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
 ## Summary
 

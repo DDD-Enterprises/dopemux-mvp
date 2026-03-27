@@ -22,6 +22,13 @@ prelude: Readme (reference) for dopemux documentation and developer workflows.
 
 ---
 
+## Execution Plane
+
+### Execution Logic & Safety
+- **[Agent Leasing Contract](../planes/execution/agent-leasing-contract.md)** - Mandatory Rules of Engagement for all AI agents.
+
+---
+
 ## API Documentation
 
 Technical specifications for Dopemux APIs.
@@ -55,7 +62,7 @@ Detailed reference for Dopemux components.
 Configuration schemas and references.
 
 ### Configuration Files
-- **[Profile YAML Schema](configuration/profile-yaml-schema-2.md)** - Complete profile configuration reference
+- **[Profile YAML Schema](configuration/profile-yaml-schema.md)** - Complete profile configuration reference
 
 ### MCP Configuration
 - **[MCP Tools Overview](mcp-tools-overview.md)** - MCP tool configuration and usage
@@ -64,6 +71,7 @@ Configuration schemas and references.
 - **[Documentation Catalog](documentation-catalog.md)** - Canonical index/list surfaces and rules
 - **PR Docgen Sync Skill (Core Template)** - `templates/skills/pr-docgen-sync/`
 - **Gemini/Copilot/Claude Wrappers** - `templates/skills/pr-docgen-sync-*/`
+- **PR Merge Specialist Skill (Template)** - `templates/skills/pr-merge-specialist/`
 - **Skill Sync Script** - `scripts/skills/sync_repo_skills.py`
 - **Workflow Skill Pack** - `templates/skills/{brief-drafter,task-breakdown,code-researcher,research-reviewer,implementation-planner,plan-reviewer,code-implementer,quality-refactorer}/`
 
@@ -82,7 +90,7 @@ Feature specifications and capabilities.
 - **[Features Index](features/features-index.md)** - Complete feature catalog
 
 ### Feature Specifications
-- **[F001: Untracked Work Detection](f001-enhanced-untracked-work-system-2.md)** - Enhanced work tracking
+- **[F001: Untracked Work Detection](f001-enhanced-untracked-work-system.md)** - Enhanced work tracking
 - **[F001: Basic Untracked Work (Historical)](../archive/sessions/serena/v2/f001-usage-examples.md)** - Early implementation notes
 - **[F002: Multi-Session Support](f002-multi-session-support-2.md)** - Multiple session handling
 - **[PR Merge Flight Dashboard Reference](../systems/dashboard/overview.md)** - Technical architecture for the PR merge TUI

@@ -20,16 +20,16 @@ Closure verification for execution-packet backlog item:
 
 ## Documentation Updates
 
-1. Added `docs/02-how-to/profile-usage-2.md`.
+1. Added `docs/02-how-to/profile-usage-3.md`.
 1. Updated `README.md` role/profile launch section with explicit `--profile` examples.
 1. Updated `docs/docs_index.yaml` with `how_to.profile_usage`.
 1. Linked profile usage guidance to schema reference:
-- `docs/03-reference/configuration/profile-yaml-schema-2.md`
+- `docs/03-reference/configuration/profile-yaml-schema-3.md`
 
 ## Verification
 
-1. `python scripts/docs_validator.py docs/02-how-to/profile-usage-2.md` passed.
-1. `rg -n "start --profile|PROFILE-USAGE" README.md docs/02-how-to/profile-usage-2.md docs/docs_index.yaml` confirmed references.
+1. `python scripts/docs_validator.py docs/02-how-to/profile-usage-3.md` passed.
+1. `rg -n "start --profile|PROFILE-USAGE" README.md docs/02-how-to/profile-usage-3.md docs/docs_index.yaml` confirmed references.
 
 ## Status
 
