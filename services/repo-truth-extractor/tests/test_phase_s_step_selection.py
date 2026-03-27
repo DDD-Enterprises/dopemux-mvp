@@ -70,8 +70,8 @@ def test_no_flags_or_env_returns_none(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_s_steps_are_normalized_to_canonical_order() -> None:
     runner = _load_v3()
-    args = SimpleNamespace(s_steps="S2,S0")
-    assert runner._get_s_step_controls(args) == ["S0", "S2"]
+    args = SimpleNamespace(s_steps="S12,S0")
+    assert runner._get_s_step_controls(args) == ["S0", "S12"]
 
 
 def test_duplicates_fail_closed() -> None:
@@ -88,13 +88,13 @@ def test_invalid_step_fails_closed() -> None:
 
 def test_env_only_selection_works(monkeypatch: pytest.MonkeyPatch) -> None:
     runner = _load_v3()
-    monkeypatch.setenv(runner.S_STEPS_ENV_VAR, "S4,S1")
-    assert runner._get_s_step_controls(SimpleNamespace(s_steps=None)) == ["S1", "S4"]
+    monkeypatch.setenv(runner.S_STEPS_ENV_VAR, "S12,S1")
+    assert runner._get_s_step_controls(SimpleNamespace(s_steps=None)) == ["S1", "S12"]
 
 
 def test_cli_overrides_env(monkeypatch: pytest.MonkeyPatch) -> None:
     runner = _load_v3()
-    monkeypatch.setenv(runner.S_STEPS_ENV_VAR, "S4,S1")
+    monkeypatch.setenv(runner.S_STEPS_ENV_VAR, "S12,S1")
     assert runner._get_s_step_controls(SimpleNamespace(s_steps="S2,S0")) == ["S0", "S2"]
 
 

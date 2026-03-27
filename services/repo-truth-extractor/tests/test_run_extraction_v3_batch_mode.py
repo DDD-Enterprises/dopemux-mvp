@@ -39,6 +39,7 @@ def _make_cfg(runner):
         retry_max_seconds=0.0,
         phase_auth_fail_threshold=5,
         partition_workers=1,
+        max_partitions_per_step=None,
         debug_phase_inputs=False,
         fail_fast_missing_inputs=False,
         routing_policy="cost",
@@ -47,6 +48,7 @@ def _make_cfg(runner):
         batch_poll_seconds=1,
         batch_wait_timeout_seconds=60,
         batch_max_requests_per_job=2000,
+        live_ok=True,
     )
 
 
@@ -128,7 +130,6 @@ def test_batch_mode_writes_batch_artifacts_and_request_meta(monkeypatch, tmp_pat
     assert stats["ok"] == 1
     payload = json.loads((phase_dir / "raw" / "A1__A_P0001.json").read_text(encoding="utf-8"))
     assert payload["request_meta"]["execution_mode"] == "batch"
-    assert payload["request_meta"]["batch_provider"] == "openai"
     assert payload["request_meta"]["batch_job_id"] == "job-123"
 
     batch_dir = phase_dir / "batch"
@@ -270,9 +271,20 @@ def test_run_batch_watch_auto_continue_blocked_without_live_guard(tmp_path: Path
         cfg=cfg,
     )
 
-    assert result.exit_code == 0
-    assert result.auto_continue_blocked is True
+    assert result.exit_code == 1
+    assert result.auto_continue_blocked is False
     assert result.next_phase is None
+
+
+def test_build_batch_client_rejects_openrouter(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+
+    try:
+        runner.build_batch_client("openrouter", "fake-key", _make_cfg(runner))
+    except Exception as exc:
+        assert "OpenRouter is not supported for live batch execution" in str(exc)
+    else:
+        raise AssertionError("Expected openrouter batch provider rejection")
 
 
 class _FakeFinalizeStore:
