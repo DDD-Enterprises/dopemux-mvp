@@ -266,7 +266,7 @@ class TaskDecomposer:
         await pm_transition_work_item(
             store=self.pm_store,
             task_id=task_id,
-            project_id="default",
+            project="default",
             workflow_id=task_id,
             new_status="IN_PROGRESS",
             expected_version=pm_task.version,
