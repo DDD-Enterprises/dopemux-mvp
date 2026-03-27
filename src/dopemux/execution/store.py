@@ -5,7 +5,6 @@ Implements TP-SIA-EXEC-0001: core data models and locking primitives for the
 Workflow / Execution Control Plane.
 """
 
-import logging
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
 from threading import Lock

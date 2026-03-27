@@ -1,6 +1,3 @@
-import threading
-import time
-from uuid import UUID
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
@@ -8,7 +5,6 @@ from dopemux.execution.models import ExecutionPacket, PacketState, LeaseState
 from dopemux.execution.store import (
     InMemoryExecutionStore,
     InMemoryLeaseStore,
-    LeaseExpiredError,
     StaleLeaseError,
 )
 
