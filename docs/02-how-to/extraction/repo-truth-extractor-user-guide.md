@@ -24,19 +24,20 @@ This guide is the operator-facing manual for Repo Truth Extractor in Dopemux.
 Canonical CLI entrypoint:
 
 ```bash
-dopemux extractor ...
+dopemux upgrades ...
 ```
 
 ## 1. Core concepts
 
 - Service identity: `Repo Truth Extractor`
 - Engines:
-  - `v4`: default, strict contracts and deterministic promotion
+  - `v5`: active runner for live validation and execution
+  - `v4`: prompt contract backstop and migration-era workflow
   - `v3`: compatibility fallback
 - Runtime root:
   - `extraction/repo-truth-extractor/`
 - Phase runs:
-  - `extraction/repo-truth-extractor/<engine>/runs/<RUN_ID>/`
+  - `extraction/repo-truth-extractor/v3/runs/<RUN_ID>/` for current v5 operations
 
 ## 2. Before you run
 
@@ -46,34 +47,53 @@ Required for sync execution:
 - Valid provider API keys for the providers you intend to use
 - Clean enough disk space for raw and norm outputs
 
+Required for `dopemux upgrades validate-live`:
+
+- Editable install from this checkout: `pip install -e ".[dev]"`, or run with `PYTHONPATH=src`
+- Local validation scanners available on `PATH`
+- External `gitleaks` binary available on `PATH`
+
 Optional but recommended:
 
-- `dopemux extractor preflight --engine-version v4 --auth-doctor`
-- `dopemux extractor promptset audit --engine-version v4`
+- `dopemux upgrades preflight --pipeline-version v5 --auth-doctor --promptset-root <PATH>`
+- `dopemux upgrades promptset audit --pipeline-version v4 --strict`
+- `dopemux upgrades validate-live --promptset-root <PATH>`
+- `python scripts/check_validation_toolchain.py`
 
 ## 3. First run (safe dry-run)
 
 Phase-only dry-run:
 
 ```bash
-dopemux extractor run --engine-version v4 --phase A --dry-run --run-id rte_user_a_001
+dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase A \
+  --dry-run \
+  --run-id rte_user_a_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 Full dry-run:
 
 ```bash
-dopemux extractor run --engine-version v4 --phase ALL --dry-run --run-id rte_user_all_001
+dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase ALL \
+  --dry-run \
+  --run-id rte_user_all_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 ## 4. Execute run (provider calls enabled)
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --phase ALL \
   --execute \
   --resume \
-  --run-id rte_exec_all_001
+  --run-id rte_exec_all_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 Expected behavior:
@@ -85,6 +105,7 @@ Expected behavior:
 ## 5. Routing policy and model ladder
 
 Default policy is `cost` and uses cheap-first ladder semantics.
+For v5 the default live policy is `balanced_openrouter`.
 
 Primary controls:
 
@@ -99,52 +120,99 @@ Practical examples:
 Cost-first with escalation:
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --phase C \
   --execute \
-  --routing-policy cost \
-  --escalation-max-hops 2
+  --routing-policy balanced_openrouter \
+  --escalation-max-hops 2 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 Single-rung behavior only:
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --phase C \
   --execute \
-  --routing-policy cost \
-  --disable-escalation
+  --routing-policy balanced_openrouter \
+  --disable-escalation \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 ## 6. Batch mode (opt-in)
 
-Batch mode is asynchronous submit-and-wait. Use when phase latency is not interactive.
+Batch mode is asynchronous submit, watch, and retrieve.
+
+Public live-batch provider policy:
+
+- supported: `openai`, `gemini`, `xai`
+- not supported for live batch: `openrouter`
+
+Live batch is fail-closed:
+
+- requires `--execute`
+- requires `DPMX_LIVE_OK=1`
+- rejects `--phase ALL --batch-mode --execute` unless `--allow-multi-phase-live-batch` is also present
 
 Controls:
 
 ```bash
 --batch-mode
 --batch-provider {auto|openai|gemini|xai}
+--batch-submit-only
+--batch-watch
+--batch-retrieve
+--batch-ids <JOB_ID,...>
+--retrieve-provider {openai|gemini|xai}
+--max-partitions-per-step <N>
+--allow-multi-phase-live-batch
 --batch-poll-seconds 30
 --batch-wait-timeout-seconds 86400
 --batch-max-requests-per-job 2000
 ```
 
-Example:
+Submit a small phase-scoped batch:
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
-  --phase A \
+DPMX_LIVE_OK=1 dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase D \
   --execute \
-  --routing-policy cost \
+  --routing-policy balanced_openrouter \
   --batch-mode \
   --batch-provider openai \
-  --batch-poll-seconds 30 \
-  --batch-wait-timeout-seconds 86400 \
-  --batch-max-requests-per-job 2000
+  --batch-submit-only \
+  --max-partitions-per-step 3 \
+  --run-id rte_batch_d_001 \
+  --promptset-root /abs/path/to/generated/promptset
+```
+
+Watch an existing batch:
+
+```bash
+DPMX_LIVE_OK=1 dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase D \
+  --execute \
+  --batch-watch \
+  --run-id rte_batch_d_001 \
+  --promptset-root /abs/path/to/generated/promptset
+```
+
+Retrieve known job ids explicitly:
+
+```bash
+DPMX_LIVE_OK=1 dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase D \
+  --execute \
+  --batch-retrieve \
+  --retrieve-provider openai \
+  --batch-ids job_123,job_456 \
+  --run-id rte_batch_d_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 Batch artifacts per phase/step:
@@ -159,30 +227,73 @@ Batch artifacts per phase/step:
 Status:
 
 ```bash
-dopemux extractor status --engine-version v4 --run-id rte_exec_all_001
+dopemux upgrades status --pipeline-version v5 --run-id rte_exec_all_001
 ```
 
 JSON status:
 
 ```bash
-dopemux extractor status --engine-version v4 --run-id rte_exec_all_001 --json
+dopemux upgrades status --pipeline-version v5 --run-id rte_exec_all_001 --json
 ```
 
 Doctor:
 
 ```bash
-dopemux extractor doctor --engine-version v4 --run-id rte_exec_all_001
+dopemux upgrades doctor --pipeline-version v5 --run-id rte_exec_all_001
 ```
 
 Doctor with reprocess planning:
 
 ```bash
-dopemux extractor doctor \
-  --engine-version v4 \
+dopemux upgrades doctor \
+  --pipeline-version v5 \
   --run-id rte_exec_all_001 \
   --auto-reprocess \
   --reprocess-dry-run
 ```
+
+## 7a. Final validation workflow
+
+Use the v5 validation command before any paid live run:
+
+```bash
+dopemux upgrades validate-live \
+  --promptset-root /abs/path/to/generated/promptset \
+  --stage preflight
+```
+
+Validation stages:
+
+- `preflight`
+- `provider_probe`
+- `batch_pilot`
+- `phase_slice`
+- `full_phased`
+
+For paid slice and full stages, provide a pricing manifest so spend caps can be enforced:
+
+```bash
+dopemux upgrades validate-live \
+  --promptset-root /abs/path/to/generated/promptset \
+  --stage phase_slice \
+  --provider openai \
+  --pricing-manifest /abs/path/to/pricing_manifest.json
+```
+
+Live validation stages that would spend money still require explicit consent:
+
+- `--execute` on the underlying runner path
+- `DPMX_LIVE_OK=1`
+
+Use the phase-scoped confidence ramp:
+
+1. `preflight`
+2. `provider_probe`
+3. `batch_pilot`
+4. `phase_slice`
+5. `full_phased`
+
+If `validate-live` exits immediately with an import-origin error, the command is not running from the current checkout. Reinstall with `pip install -e ".[dev]"` or rerun with `PYTHONPATH=src`.
 
 ## 8. Interpreting stdout quickly
 
@@ -250,7 +361,7 @@ Unexpected run size growth:
 Use v3 only when needed:
 
 ```bash
-dopemux extractor run --engine-version v3 --phase ALL --execute --run-id rte_v3_fallback_001
+dopemux upgrades run --pipeline-version v3 --phase ALL --execute --run-id rte_v3_fallback_001
 ```
 
 ## 12. Recommended operator workflow

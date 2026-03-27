@@ -5,8 +5,8 @@ type: how-to
 owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
-prelude: Quick operational guide for running Repo Truth Extractor in batch mode with
-  OpenAI, Gemini, or xAI providers.
+prelude: Quick operational guide for running Repo Truth Extractor in batch mode
+  with OpenAI, Gemini, or xAI providers through the authoritative v5 CLI.
 graph_metadata:
   node_type: DocPage
   impact: high
@@ -20,7 +20,7 @@ next_review: '2026-05-22'
 
 Use this when you want lower-cost async execution for high-volume extraction steps.
 
-Batch is opt-in and submit+wait.
+Batch is opt-in and live by default only when explicit consent is present.
 
 ## 1. When to use batch mode
 
@@ -40,7 +40,22 @@ Do not use batch mode for:
 ```bash
 --batch-mode
 --batch-provider {auto|openai|gemini|xai}
+--batch-submit-only
+--batch-watch
+--batch-retrieve
+--retrieve-provider {openai|gemini|xai}
+--batch-ids <JOB_ID,...>
+--max-partitions-per-step <N>
 ```
+
+Consent gate for any live batch network call:
+
+```bash
+--execute
+DPMX_LIVE_OK=1
+```
+
+OpenRouter is not supported for live batch in this workflow.
 
 Tuning flags:
 
@@ -53,14 +68,17 @@ Tuning flags:
 ## 3. Minimal end-to-end command
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
-  --phase A \
+DPMX_LIVE_OK=1 dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase D \
   --execute \
-  --routing-policy cost \
+  --routing-policy balanced_openrouter \
   --batch-mode \
   --batch-provider openai \
-  --run-id rte_batch_a_001
+  --batch-submit-only \
+  --max-partitions-per-step 3 \
+  --run-id rte_batch_d_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 ## 4. Provider-specific command examples
@@ -68,53 +86,43 @@ dopemux extractor run \
 OpenAI:
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
-  --phase A \
+DPMX_LIVE_OK=1 dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase D \
   --execute \
   --batch-mode \
   --batch-provider openai \
-  --routing-policy cost \
-  --run-id rte_batch_openai_001
+  --batch-submit-only \
+  --run-id rte_batch_openai_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 Gemini:
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
-  --phase A \
+DPMX_LIVE_OK=1 dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase D \
   --execute \
   --batch-mode \
   --batch-provider gemini \
-  --routing-policy cost \
-  --run-id rte_batch_gemini_001
+  --batch-submit-only \
+  --run-id rte_batch_gemini_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 xAI:
 
 ```bash
-dopemux extractor run \
-  --engine-version v4 \
-  --phase A \
+DPMX_LIVE_OK=1 dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase D \
   --execute \
   --batch-mode \
   --batch-provider xai \
-  --routing-policy cost \
-  --run-id rte_batch_xai_001
-```
-
-Auto provider selection:
-
-```bash
-dopemux extractor run \
-  --engine-version v4 \
-  --phase A \
-  --execute \
-  --batch-mode \
-  --batch-provider auto \
-  --routing-policy cost \
-  --run-id rte_batch_auto_001
+  --batch-submit-only \
+  --run-id rte_batch_xai_001 \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 ## 5. What gets written
@@ -141,13 +149,13 @@ After run:
 1. Check status:
 
 ```bash
-dopemux extractor status --engine-version v4 --run-id rte_batch_a_001
+dopemux upgrades status --pipeline-version v5 --run-id rte_batch_d_001
 ```
 
 2. Confirm batch artifacts exist:
 
 ```bash
-find extraction/repo-truth-extractor/v4/runs/rte_batch_a_001 -path \"*/batch/*\" -type f
+find extraction/repo-truth-extractor/v3/runs/rte_batch_d_001 -path \"*/batch/*\" -type f
 ```
 
 3. Confirm step summaries show execution mode split:
@@ -164,7 +172,7 @@ Timeout waiting for batch completion:
 Provider mismatch or auth failures:
 
 - Run:
-  - `dopemux extractor preflight --engine-version v4 --auth-doctor`
+  - `dopemux upgrades preflight --pipeline-version v5 --auth-doctor`
 - Verify corresponding key env vars:
   - OpenAI: `OPENAI_API_KEY`
   - Gemini: `GEMINI_API_KEY`
@@ -181,9 +189,11 @@ Too-large job payloads:
 For first production batch run:
 
 ```bash
---routing-policy cost
+--routing-policy balanced_openrouter
 --batch-mode
---batch-provider auto
+--batch-provider openai
+--batch-submit-only
+--max-partitions-per-step 3
 --batch-poll-seconds 30
 --batch-wait-timeout-seconds 86400
 --batch-max-requests-per-job 2000

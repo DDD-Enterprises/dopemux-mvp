@@ -1,13 +1,21 @@
 ---
-id: README
-title: Readme
-type: explanation
+id: SERVICE-REPO-TRUTH-EXTRACTOR-README
+title: Repo Truth Extractor README
+type: reference
 owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-03-13'
-last_review: '2026-03-13'
-next_review: '2026-06-11'
-prelude: Readme (explanation) for dopemux documentation and developer workflows.
+date: '2026-03-26'
+author: '@codex'
+prelude: Service reference and operator entrypoint summary for Repo Truth
+  Extractor.
+graph_metadata:
+  node_type: DocPage
+  impact: high
+  relates_to:
+  - services/repo-truth-extractor/run_extraction_v5.py
+  - services/repo-truth-extractor/run_extraction_v3.py
+  - src/dopemux/cli.py
+last_review: '2026-03-26'
+next_review: '2026-06-26'
 ---
 # Repo Truth Extractor
 
@@ -22,15 +30,40 @@ Repo Truth Extractor is the canonical extraction service for dopemux.
 ## Canonical CLI
 
 ```bash
-dopemux extractor list --engine-version v4
-dopemux extractor run --engine-version v4 --phase ALL --dry-run
-dopemux extractor status --engine-version v4 --run-id <RUN_ID>
-dopemux extractor doctor --engine-version v4 --run-id <RUN_ID>
-dopemux extractor promptset audit --engine-version v4
+pip install -e ".[dev]"
+dopemux upgrades run --pipeline-version v5 --phase ALL --dry-run
+dopemux upgrades preflight --pipeline-version v5 --auth-doctor
+dopemux upgrades validate-live --promptset-root /abs/path/to/generated/promptset
+dopemux extractor validate --output-dir /abs/path/to/generated/promptset
 ```
+
+## Validation Prerequisites
+
+`dopemux upgrades validate-live` now fails closed if the active `dopemux` import does not come from this checkout.
+
+Use one of:
+
+```bash
+pip install -e ".[dev]"
+PYTHONPATH=src python -m dopemux.cli upgrades validate-live --promptset-root /abs/path/to/generated/promptset
+```
+
+Local scanner/toolchain check:
+
+```bash
+python scripts/check_validation_toolchain.py
+```
+
+Expected local tools:
+
+- Python scanners from the repo `dev` extra: `pip-audit`, `bandit`, `semgrep`
+- External binary on `PATH`: `gitleaks`
+
+If `gitleaks` is missing, install it separately before running live validation.
 
 ## Runner Entrypoints
 
+- `services/repo-truth-extractor/run_extraction_v5.py`
 - `services/repo-truth-extractor/run_extraction_v3.py`
 - `services/repo-truth-extractor/run_extraction_v4.py`
 
@@ -62,26 +95,72 @@ Webhook notify mode for `--batch-watch` is controlled by:
 
 Entrypoint: `services/repo-truth-extractor/run_extraction_v5.py`
 
-Output root: `extraction/repo-truth-extractor/v5/runs/`
+Operational output root: `extraction/repo-truth-extractor/v3/runs/`
+
+The v5 runner is the active execution engine, but it still writes run artifacts,
+doctor outputs, and telemetry under the `v3` extraction tree. Validation and
+monitoring should therefore inspect `extraction/repo-truth-extractor/v3/`.
 
 ### Basic usage
 
 ```bash
 # Full run — all phases, canonical behavior
-python services/repo-truth-extractor/run_extraction_v5.py \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --run-id FULL_RUN \
-  --phase ALL
+  --phase ALL \
+  --promptset-root /abs/path/to/generated/promptset
 
 # Single phase dry-run (inspect without executing)
-python services/repo-truth-extractor/run_extraction_v5.py \
+dopemux upgrades run \
+  --pipeline-version v5 \
   --run-id INSPECT \
   --phase H \
-  --dry-run
+  --dry-run \
+  --promptset-root /abs/path/to/generated/promptset
 ```
 
 > ⚠️ **Cost warning**: Each run invokes provider APIs and may incur significant charges.
 > A single accidental run cost $10 in March 2026. Never run without explicit authorization.
 > Validate using `pytest -q services/repo-truth-extractor/tests/` instead of direct execution.
+
+### Live batch safety
+
+Live batch operations are phase-scoped by default.
+
+- Supported live batch providers: `openai`, `gemini`, `xai`
+- `openrouter` remains sync and escalation only for this milestone
+- Live batch submit/watch/retrieve requires both:
+  - `--execute`
+  - `DPMX_LIVE_OK=1`
+- `--phase ALL --batch-mode --execute` is rejected unless `--allow-multi-phase-live-batch` is also present
+
+Example:
+
+```bash
+DPMX_LIVE_OK=1 dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase D \
+  --execute \
+  --batch-mode \
+  --batch-provider openai \
+  --batch-submit-only \
+  --max-partitions-per-step 3 \
+  --run-id BATCH_D_SUBMIT \
+  --promptset-root /abs/path/to/generated/promptset
+```
+
+Retrieve or watch uses the same consent gate:
+
+```bash
+DPMX_LIVE_OK=1 dopemux upgrades run \
+  --pipeline-version v5 \
+  --phase D \
+  --execute \
+  --batch-watch \
+  --run-id BATCH_D_SUBMIT \
+  --promptset-root /abs/path/to/generated/promptset
+```
 
 ### Comparison lane
 
@@ -120,7 +199,7 @@ python services/repo-truth-extractor/run_extraction_v5.py \
    partitions with the comparison model.
 3. Comparison outputs are written to a separate tree and **never overwrite canonical files**.
 4. A per-step summary (`COMPARE_SUMMARY_<STEP>.json` + `.md`) is written with side-by-side
-   metrics: schema pass/fail, repair counts, latency, token/cost usage.
+   metrics: schema pass/fail, repair counts, and mean latency.
 
 **Comparison artifact layout:**
 
@@ -171,7 +250,7 @@ artifact does not skip the comparison, and vice versa.
 
 - v3 prompts: `services/repo-truth-extractor/prompts/v3/`
 - v4 promptset: `services/repo-truth-extractor/promptsets/v4/`
-- v5 promptsets: `services/repo-truth-extractor/promptsets/v5/`
+- external generated promptsets: pass via `--promptset-root`
 - legacy prompt archive: `services/repo-truth-extractor/archive/legacy_prompts/`
 
 ## Output Roots
@@ -180,7 +259,7 @@ artifact does not skip the comparison, and vice versa.
 - v3 doctor: `extraction/repo-truth-extractor/v3/doctor/`
 - v4 runs: `extraction/repo-truth-extractor/v4/runs/`
 - v4 doctor: `extraction/repo-truth-extractor/v4/doctor/`
-- v5 runs: `extraction/repo-truth-extractor/v5/runs/`
+- v5 runtime artifacts: `extraction/repo-truth-extractor/v3/runs/`
 - v5 proofs: `extraction/repo-truth-extractor/v5/proofs/`
 
 Historical extraction outputs under old roots are preserved and read-only.

@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-03-26",
+  "recovery_branch": "codex/v5-extractor-production-recovery",
+  "recovery_worktree": "/Users/hue/.codex/worktrees/extractor-prod/dopemux-mvp",
+  "recovery_base_branch": "feat/v5-extractor-production",
+  "recovered_commits": [
+    {
+      "sha": "339d447e4edca543b1563f2b2dfa762a64f26b4a",
+      "subject": "rescue(extractor): save validation toolchain from PR #301"
+    },
+    {
+      "sha": "2c0998a01ba2a4bb1bdf40aa17552bbf6fb5be97",
+      "subject": "merge: refresh main baseline into feat/v5-extractor-production"
+    }
+  ],
+  "main_worktree_snapshot": {
+    "path": "/Users/hue/code/dopemux-mvp",
+    "head": "9a31db5348487a7d458ff297062a392abbf093f6",
+    "rebase_branch": "codex/pm-continue-04-truth-rebaseline",
+    "rebase_onto": "2a933865d5280cd910d16345d38df7ca833cc393",
+    "rebase_stopped_sha": "6be08a00b25d4a17b56f0aafe5fbe14498b6b2fd",
+    "rebase_step": "2/4",
+    "conflicts": [
+      "services/dopecon-bridge/dopecon_bridge/services/task_integration.py",
+      "services/dopecon-bridge/tests/test_task_integration_unit.py",
+      "services/task-orchestrator/app/api/project_workflow.py",
+      "tests/unit/pm/test_reads.py",
+      "tests/unit/test_task_orchestrator_project_workflow_contract.py"
+    ]
+  },
+  "git_ref_quarantine": {
+    "original": "/Users/hue/code/dopemux-mvp/.git/refs/.DS_Store",
+    "quarantined_to": "/Users/hue/.codex/quarantine/dopemux-git-refs/refs.DS_Store.20260326-1409"
+  },
+  "conclusion": {
+    "authoritative_recovered_code": "PR301 validation baseline plus merge from main",
+    "later_chat_described_work": "not proven recovered from git history during this step",
+    "continuation_rule": "resume implementation only from codex/v5-extractor-production-recovery"
+  },
+  "subsequent_main_worktree_observation": {
+    "branch": "codex/pm-continue-04-truth-rebaseline",
+    "head": "2c32f1449c6e1ec06ab5ed8ae59325d639e4f15a",
+    "status": "clean",
+    "note": "Observed after the interrupted rebase snapshot; indicates an external process continued mutating the primary worktree during recovery."
+  },
+  "archived_primary_worktree_extractor_delta": {
+    "directory": "/Users/hue/.codex/worktrees/extractor-prod/dopemux-mvp/reports/work-recovery/2026-03-26/primary-worktree-extractor-staged",
+    "artifacts": [
+      "status.txt",
+      "diffstat.txt",
+      "name-status.txt",
+      "staged.patch"
+    ],
+    "applied_to_recovery_branch": false
+  }
+}
