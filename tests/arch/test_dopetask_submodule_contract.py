@@ -20,6 +20,6 @@ def test_ci_workflow_uses_dopetask_pin_not_submodule() -> None:
 
 def test_dopetask_wrapper_uses_pip_not_submodule() -> None:
     wrapper = (REPO_ROOT / "scripts" / "dopetask").read_text(encoding="utf-8")
-    assert 'DOPETASK_PIN="$REPO_ROOT/.dopetask-pin"' in wrapper
-    assert 'install=pip' in wrapper
+    assert 'PIN_FILE="$REPO_ROOT/.dopetask-pin"' in wrapper
+    assert 'INSTALL_METHOD' in wrapper
     assert "DOPETASK_SOURCE_DIR=\"$REPO_ROOT/vendor/dopetask\"" not in wrapper
