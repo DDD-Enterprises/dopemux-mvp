@@ -6,7 +6,18 @@ from dopemux_pr_merge_specialist import engine
 from dopemux_pr_merge_specialist.schema import Finding, FindingSeverity, PRState, PullRequestState, ValidationStatus
 
 
-def _state(pr_id: int, *, base: str, head: str, pr_class: str, risk: float, diff: int) -> PullRequestState:
+def _state(
+    pr_id: int,
+    *,
+    base: str,
+    head: str,
+    pr_class: str,
+    risk: float,
+    diff: int,
+    labels: list[str] | None = None,
+    mergeable: str = "MERGEABLE",
+    merge_state_status: str = "CLEAN",
+) -> PullRequestState:
     return PullRequestState(
         pr_id=pr_id,
         title=f"PR {pr_id}",
@@ -15,8 +26,8 @@ def _state(pr_id: int, *, base: str, head: str, pr_class: str, risk: float, diff
         base_ref=base,
         head_ref=head,
         ci_status="SUCCESS",
-        mergeable="MERGEABLE",
-        merge_state_status="CLEAN",
+        mergeable=mergeable,
+        merge_state_status=merge_state_status,
         review_decision="APPROVED",
         updated_at="2026-03-12T00:00:00Z",
         additions=diff,
@@ -30,6 +41,7 @@ def _state(pr_id: int, *, base: str, head: str, pr_class: str, risk: float, diff
         lifecycle_state=PRState.DISCOVERED,
         head_sha=f"head-{pr_id}",
         base_sha="base-main",
+        labels=labels or [],
     )
 
 
@@ -66,6 +78,36 @@ def test_simple_ordering_for_small_queues():
     assert len(layers) == 1
     assert edges == {}
     assert cycle is False
+
+
+def test_sort_states_prioritizes_eligible_conflicts_over_manual_conflict_blocks():
+    eligible = _state(
+        301,
+        base="main",
+        head="feature/eligible",
+        pr_class="CONFLICTS_ONLY",
+        risk=10.0,
+        diff=15,
+        labels=["conflict:mechanical"],
+        mergeable="CONFLICTING",
+        merge_state_status="DIRTY",
+    )
+    blocked = _state(
+        302,
+        base="main",
+        head="feature/blocked",
+        pr_class="CONFLICTS_ONLY",
+        risk=1.0,
+        diff=5,
+        mergeable="CONFLICTING",
+        merge_state_status="DIRTY",
+    )
+
+    ordered, _layers, _edges, _cycle = engine.sort_states(
+        [blocked, eligible], strategy="simple"
+    )
+
+    assert [item.pr_id for item in ordered] == [301, 302]
 
 
 def test_risk_score_penalizes_active_threads_and_failures():
