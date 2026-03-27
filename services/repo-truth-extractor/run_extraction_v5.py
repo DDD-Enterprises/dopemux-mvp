@@ -623,7 +623,8 @@ GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     ],
 }
 
-OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
+_OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
+_UNUSED_GLOBALS = (_OPTIMAL_NO_CODE_PHASES,)
 OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
@@ -7002,11 +7003,6 @@ def call_llm(
             )
             retry_trace[-1]["delay_seconds"] = delay_seconds
             total_retry_delay += delay_seconds
-            if retry_callback is not None:
-                try:
-                    retry_callback(attempt + 1, status_code, failure_type, delay_seconds)
-                except Exception:
-                    pass
             if delay_seconds > 0:
                 time.sleep(delay_seconds)
     logger.error(
@@ -13587,6 +13583,29 @@ Return ONLY valid JSON matching exactly:
 """
 
 
+def _deterministic_phase_sample(
+    phase_outputs: "List[Dict[str, Any]]", n_sample: int
+) -> "List[Dict[str, Any]]":
+    """Deterministically select a subset of phase_outputs for auditing.
+
+    Uses a hash of a stable JSON representation of each item to provide
+    deterministic but well-distributed sampling without relying on RNG state.
+    """
+    if not phase_outputs or n_sample <= 0:
+        return []
+
+    def _item_hash(item: "Dict[str, Any]") -> str:
+        try:
+            # sort_keys ensures deterministic key order across runs
+            serialized = json.dumps(item, sort_keys=True, default=str)
+        except TypeError:
+            serialized = repr(item)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    sorted_items = sorted(phase_outputs, key=_item_hash)
+    return sorted_items[: min(n_sample, len(sorted_items))]
+
+
 def audit_phase_sample(
     phase_dir: "Path",
     phase_outputs: "List[Dict[str, Any]]",
@@ -13606,7 +13625,7 @@ def audit_phase_sample(
         return {"sampled": 0, "skipped": True}
 
     n_sample = min(max(1, int(len(phase_outputs) * sample_rate)), 5)
-    sample = random.sample(phase_outputs, min(n_sample, len(phase_outputs)))
+    sample = _deterministic_phase_sample(phase_outputs, n_sample)
 
     results: List[Dict[str, Any]] = []
     escalation_needed: List[str] = []
