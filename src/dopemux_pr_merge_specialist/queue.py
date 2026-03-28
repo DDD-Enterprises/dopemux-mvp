@@ -158,12 +158,15 @@ def release_queue_lock(lock_path: Optional[Path]) -> None:
 
 
 def priority_key(
-    pr: PullRequestState, policy: Optional[Dict[str, Any]] = None
+    pr: PullRequestState,
+    policy: Optional[Dict[str, Any]] = None,
+    strategy_boost: float = 0.0,
 ) -> Tuple[int, int, float, int, str, int]:
     from .scoring import AdvancedQueueScorer
     scorer = AdvancedQueueScorer(policy=policy)
 
     wsemt_score = scorer.calculate_wsemt_score(pr)
+    wsemt_score += strategy_boost
     automation_tier = 1
     if has_conflicts(pr.mergeable, pr.merge_state_status):
         recovery_state = conflict_recovery_state(pr, policy or {})
