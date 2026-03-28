@@ -113,6 +113,67 @@ def _refresh_client_state(client: GitHubClient, pr_id: int) -> None:
     client.invalidate("open_prs:")
 
 
+def _inflate_result_from_state_path(state_path: Path) -> Optional[PRResult]:
+    try:
+        payload = json.loads(state_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    try:
+        return PRResult(**_inflate_pr_result(payload))
+    except Exception:
+        return None
+
+
+def _validation_state_is_reusable(result: PRResult, pr: PullRequestState) -> bool:
+    prior_pr = result.pr_state
+    if prior_pr.pr_id != pr.pr_id:
+        return False
+    if not prior_pr.head_sha or prior_pr.head_sha != pr.head_sha:
+        return False
+    if not prior_pr.base_sha or prior_pr.base_sha != pr.base_sha:
+        return False
+    if result.validation_report is None:
+        return False
+    return (
+        _status_value(result.validation_report.status)
+        != ValidationStatus.NOT_EXECUTED.value
+    )
+
+
+def _reusable_prior_result(
+    *, out_dir: str, active_run_id: str, pr: PullRequestState
+) -> Optional[PRResult]:
+    root = Path(out_dir)
+    current_state = root / f"run_{active_run_id}" / "pr" / str(pr.pr_id) / "STATE.json"
+    candidates: List[Path] = []
+    if current_state.exists():
+        candidates.append(current_state)
+    historical = sorted(
+        (
+            path
+            for path in root.glob(f"run_*/pr/{pr.pr_id}/STATE.json")
+            if path != current_state
+        ),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    candidates.extend(historical)
+    for state_path in candidates:
+        prior_result = _inflate_result_from_state_path(state_path)
+        if prior_result and _validation_state_is_reusable(prior_result, pr):
+            return prior_result
+    return None
+
+
+def _threads_resolved_locally(result: Optional[PRResult]) -> bool:
+    if result is None:
+        return False
+    return any(
+        finding.finding_type == "threads_resolved_locally"
+        for finding in result.findings
+    )
+
+
 def _with_operator_state(
     result: PRResult, operator_state: str, *, detail: str = ""
 ) -> PRResult:
@@ -216,14 +277,36 @@ def queue_scan_internal(args: argparse.Namespace, client: GitHubClient, policy: 
         _, threads, pr, check_payload = _load_pr_context(
             client=client, pr_id=int(raw["number"]), raw=raw
         )
-        validation = ValidationReport(
-            status=ValidationStatus.NOT_EXECUTED,
-            required_for_merge_ready=bool(policy.get("validation", {}).get("require_local_validation_for_merge_ready", True)),
-            steps=[],
-            attempts=0,
-            remediation_applied=False,
+        prior_result = _reusable_prior_result(
+            out_dir=args.out_dir,
+            active_run_id=active_run_id,
+            pr=pr,
         )
-        results.append(build_plan_result(active_run_id=active_run_id, pr=pr, threads=threads, check_payload=check_payload, validation_report=validation, policy=policy))
+        validation = (
+            prior_result.validation_report
+            if prior_result and prior_result.validation_report is not None
+            else ValidationReport(
+                status=ValidationStatus.NOT_EXECUTED,
+                required_for_merge_ready=bool(policy.get("validation", {}).get("require_local_validation_for_merge_ready", True)),
+                steps=[],
+                attempts=0,
+                remediation_applied=False,
+            )
+        )
+        results.append(
+            build_plan_result(
+                active_run_id=active_run_id,
+                pr=pr,
+                threads=threads,
+                check_payload=check_payload,
+                validation_report=validation,
+                policy=policy,
+                previous_result=(
+                    prior_result.to_dict() if prior_result is not None else None
+                ),
+                threads_resolved_locally=_threads_resolved_locally(prior_result),
+            )
+        )
         states.append(pr)
     
     # Apply ordering logic
@@ -1108,6 +1191,15 @@ def queue_drain(args: argparse.Namespace) -> int:
             )
             merged_ids.update(train_merged)
             queued_ids.update(train_queued)
+            for result in results:
+                if result.lifecycle_state == PRState.MERGED.value:
+                    merged_ids.add(result.pr_state.pr_id)
+                elif (
+                    result.lifecycle_state == PRState.QUEUED_FOR_MERGE.value
+                    or str(result.artifacts.get("operator_state", ""))
+                    == "queued_for_merge"
+                ):
+                    queued_ids.add(result.pr_state.pr_id)
             
             # Reset failed IDs for this pass to allow retries if state changed
             failed_remediation_ids = set()

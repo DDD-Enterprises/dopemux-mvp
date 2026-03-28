@@ -5,7 +5,7 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-17'
-last_review: '2026-03-17'
+last_review: '2026-03-27'
 next_review: '2026-06-15'
 prelude: Readme (explanation) for dopemux documentation and developer workflows.
 ---
@@ -13,7 +13,7 @@ prelude: Readme (explanation) for dopemux documentation and developer workflows.
 
 ## Overview
 
-The Flight Deck is the advanced operational control system for PR-MERGE-SPECIALIST, providing autonomous tactic selection, continuous health monitoring, and safety-enforced PR merge operations.
+The Flight Deck is the advanced operational control system for PR-MERGE-SPECIALIST. It now delegates to the authoritative `flight` dashboard so tactical rendering, autopilot behavior, remediation, and merge execution all share the same runtime path.
 
 ## Quick Start
 
@@ -35,17 +35,15 @@ python3 -c "import sys; sys.path.insert(0, 'src'); from dopemux_pr_merge_special
 
 ```mermaid
 graph TD
-    A[CLI] --> B[FlightDeckWizard]
-    B --> C[ClosedLoopEngine]
-    C --> D{Tactic Selection}
-    D -->|APPLY_FIX| E[FusionEngine]
-    D -->|MERGE| F[Merge Processing]
-    D -->|REQUEST_REVIEW| G[Review Request]
-    E --> H[PatchEngine]
-    H --> I[Conflict Resolution]
-    I --> J[Verification Gates]
-    J --> K[Signoff Required]
-    K --> L[Ops Engine Logging]
+    A[CLI flight-deck] --> B[flight compatibility wrapper]
+    B --> C[Dashboard queue scan]
+    C --> D{Autopilot tactic selection}
+    D -->|P C F V T| E[pr_apply]
+    D -->|I| F[pr_merge]
+    D -->|A| G[pr_approve]
+    E --> H[Validation and GitHub refresh]
+    F --> H
+    G --> H
 ```
 
 ## Commands
@@ -58,7 +56,7 @@ dopemux-pr-merge flight-deck [--pr-id PR_ID] [--auto-pilot]
 
 **Options:**
 - `--pr-id`: Focus on specific PR ID
-- `--auto-pilot`: Enable semi-autonomous mode (GO_SUPERVISED_ONLY)
+- `--auto-pilot`: Engage dashboard autopilot immediately after launch
 
 **Example:**
 ```bash
