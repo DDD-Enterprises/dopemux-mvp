@@ -538,22 +538,30 @@ class DopemuxDashboard:
         if char == "\x1b":
             if self._input_fd is None:
                 return "Q"
-            rlist, _, _ = select.select([self._input_fd], [], [], 0.15)
-            if not rlist:
-                return "Q"
             suffix = ""
-            for _ in range(2):
-                rlist, _, _ = select.select([self._input_fd], [], [], 0.05)
+            deadline = time.monotonic() + 0.2
+            while len(suffix) < 8 and time.monotonic() < deadline:
+                timeout = max(0.0, min(0.05, deadline - time.monotonic()))
+                rlist, _, _ = select.select([self._input_fd], [], [], timeout)
                 if not rlist:
                     break
-                suffix += os.read(self._input_fd, 1).decode("utf-8", errors="ignore")
-                if len(suffix) >= 2:
+                suffix += os.read(self._input_fd, 1).decode(
+                    "utf-8", errors="ignore"
+                )
+                if suffix.startswith("O") and len(suffix) >= 2 and suffix[-1:].isalpha():
                     break
-            if suffix == "[A":
-                return "UP"
-            if suffix == "[B":
-                return "DOWN"
-            return "Q"
+                if suffix.startswith("[") and len(suffix) >= 2 and (
+                    suffix[-1:].isalpha() or suffix.endswith("~")
+                ):
+                    break
+            if not suffix:
+                return "Q"
+            if suffix[0] in {"[", "O"}:
+                if suffix.endswith("A"):
+                    return "UP"
+                if suffix.endswith("B"):
+                    return "DOWN"
+            return None
         return char.upper()
 
     def _refresh_dashboard_result(self, pr_id: str) -> PRResult:
