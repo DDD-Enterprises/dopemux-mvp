@@ -38,4 +38,4 @@ prelude: Agent Enablement Guide (explanation) for dopemux documentation and deve
 - Load the agent instructions from `.vibe/agents/pr-merge-specialist.md`.
 
 ### Jules
-- Use `docs/skills/pr-merge-specialist/jules/task-template.md` for autonomous task creation.
+- Use `docs/skills/pr-merge-specialist/jules/template-task.md` for autonomous task creation.

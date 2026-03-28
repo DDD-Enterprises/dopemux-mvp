@@ -27,6 +27,7 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 - `queue-drain` now performs merge handoff for post-apply `queued_for_merge` results instead of leaving rebased auto-merge PRs open with no `gh pr merge` execution step.
 - Skill template parity is restored for the mirrored `cli.py`, `policy.py`, `runtime.py`, and `validation.py` modules so the full unit suite agrees with the runtime PR Merge specialist implementation.
 - The top-level CLI help regression test now matches the current DØPEMÜX branding copy already emitted by `dopemux --help`, preventing rebased queue PRs from failing on a stale expectation.
+- Docs template assets now use `template-*` filenames so the `docs-prohibited-patterns` hook no longer blocks active PRs on legacy template path names.
 
 ## [0.1.0] - 2026-03-14
 ### Added
