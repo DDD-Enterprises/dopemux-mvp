@@ -494,7 +494,7 @@ class DopemuxDashboard:
         strategy = self.state.autopilot_strategy or getattr(
             self.args, "strategy", "hybrid"
         )
-        self._refresh_queue_state(strategy_override=strategy, prefer_top=True)
+        self._refresh_queue_state(strategy_override=strategy, prefer_top=False)
         active = self.state.active_pr
         if not active:
             self.state.status_message = "Autopilot: queue exhausted after reassessment."
@@ -883,6 +883,8 @@ class DopemuxDashboard:
             queue_plan=ordering_plan or self._default_queue_plan(pr_queue),
         )
         self._sync_active_phase()
+        if getattr(self.args, "auto_pilot", False) and self.state.prs:
+            self._engage_autopilot()
 
         if sys.stdin.isatty():
             self._input_fd = sys.stdin.fileno()
@@ -989,12 +991,27 @@ class DopemuxDashboard:
                             live.update(self.render())
                             time.sleep(0.5)
                         self.state.status_message = "BULK APPROVAL COMPLETE."
-                    elif choice in ("UP", "DOWN", "S"):
+                    elif choice in ("UP", "DOWN") or (
+                        choice == "S" and not self.state.auto_pilot
+                    ):
                         self.state.active_index = (self.state.active_index + (1 if choice != "UP" else -1)) % len(self.state.prs)
                         self.state.status_message = f"Cycled to PR #{self.state.active_pr.get('pr_id')}"
                         self.state.execution_log = []
                         self.state.last_action_result = None
                         self._sync_active_phase()
+                    elif choice == "S":
+                        active_pr_id = str(self.state.active_pr.get("pr_id"))
+                        initial_state = self.state.active_pr.get("lifecycle_state")
+                        self.state.last_action_result = initial_state
+                        self.state.status_message = (
+                            f"Autopilot: PR #{active_pr_id} remains in monitor-only state."
+                        )
+                        if self.state.auto_pilot:
+                            self._reassess_autopilot_after_action(
+                                target_pr_id=active_pr_id,
+                                initial_state=initial_state,
+                                initial_tactic="S",
+                            )
                     elif choice in ("A", "P", "I", "T", "V", "R", "C", "F"):
                         active_pr_id = str(self.state.active_pr.get('pr_id'))
                         initial_state = self.state.active_pr.get("lifecycle_state")

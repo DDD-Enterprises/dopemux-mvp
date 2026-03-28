@@ -314,7 +314,7 @@ def test_autopilot_reassess_advances_after_stalled_pr(monkeypatch) -> None:
 
     def fake_refresh_queue_state(*, strategy_override=None, prefer_top=False):
         assert strategy_override == "hybrid"
-        assert prefer_top is True
+        assert prefer_top is False
         return True
 
     monkeypatch.setattr(dashboard, "_refresh_queue_state", fake_refresh_queue_state)
