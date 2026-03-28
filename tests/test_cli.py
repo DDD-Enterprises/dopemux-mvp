@@ -35,7 +35,8 @@ class TestCLI:
         result = runner.invoke(cli, ["--help"])
 
         assert result.exit_code == 0
-        assert "ADHD-optimized development platform" in result.output
+        assert "Ritual Daemon of Focused Development" in result.output
+        assert "flight-deck for neurodivergent developers" in result.output
         assert "init" in result.output
         assert "start" in result.output
         assert "save" in result.output
