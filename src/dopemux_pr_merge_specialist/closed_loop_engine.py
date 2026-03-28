@@ -26,6 +26,7 @@ class ClosedLoopTrace:
     posture: str
     computed_at: float
     error: str | None = None
+    strategy_id: str = ""
 
 
 TACTIC_PRIORITY = [
@@ -55,13 +56,47 @@ class ClosedLoopEngine:
         state.setdefault("refreshed_at", time.time())
         return state
 
+    def select_strategy_for_state(self, state: dict) -> str:
+        """Derive merge strategy from PR state signals. Returns strategy_id."""
+        pr_class = str(state.get("pr_state", {}).get("pr_class", "") or "")
+        ci_status = str(
+            state.get("pr_state", {}).get("ci_status", "") or ""
+        ).upper()
+        mergeable = str(
+            state.get("pr_state", {}).get("mergeable", "") or ""
+        ).upper()
+        lifecycle = str(state.get("lifecycle_state", "") or "").lower()
+
+        # Conflicting PRs
+        if mergeable == "CONFLICTING":
+            if pr_class == "MIXED":
+                return "STAGED_SEQUENCE_MERGE"
+            return "OURS_THEN_PORT_SELECTIVE"
+
+        # Green and ready
+        if lifecycle in ("merge_ready", "queued_for_merge") and ci_status == "SUCCESS":
+            return "DIRECT_REBASE_MERGE"
+
+        # CI failures
+        if pr_class == "CI_ONLY":
+            return "PATCH_ISOLATION_PLAN"
+
+        # Mixed blockers
+        if pr_class == "MIXED":
+            return "STAGED_SEQUENCE_MERGE"
+
+        return "DIRECT_REBASE_MERGE"
+
     def select_next_tactic(self, state: dict, allowed_actions: list[str]) -> dict:
-        """Return {tactic, rationale, safe_to_auto_stage}. Fails closed -> DEFER."""
+        """Return {tactic, rationale, safe_to_auto_stage, strategy_id}. Fails closed -> DEFER."""
+        strategy_id = self.select_strategy_for_state(state)
+
         if not allowed_actions:
             return {
                 "tactic": "DEFER",
                 "rationale": "No allowed actions available; failing closed to DEFER.",
                 "safe_to_auto_stage": False,
+                "strategy_id": strategy_id,
             }
 
         for tactic in TACTIC_PRIORITY:
@@ -71,6 +106,7 @@ class ClosedLoopEngine:
                     "tactic": tactic,
                     "rationale": f"Selected '{tactic}' as highest-priority available action.",
                     "safe_to_auto_stage": safe,
+                    "strategy_id": strategy_id,
                 }
 
         # Fallback: pick first allowed action
@@ -79,6 +115,7 @@ class ClosedLoopEngine:
             "tactic": first,
             "rationale": f"No priority match; selected first allowed action: '{first}'.",
             "safe_to_auto_stage": False,
+            "strategy_id": strategy_id,
         }
 
     def recompute_summary(self, pr_id: str, event: dict, state: dict) -> dict:
@@ -154,6 +191,7 @@ class ClosedLoopEngine:
                 next_tactic=tactic_result["tactic"],
                 posture=state_after.get("posture", "HOLD"),
                 computed_at=time.time(),
+                strategy_id=tactic_result.get("strategy_id", ""),
             )
 
         except Exception as exc:  # noqa: BLE001
@@ -191,6 +229,7 @@ class ClosedLoopEngine:
                 "pr_id": trace.pr_id,
                 "cycle_id": trace.cycle_id,
                 "next_tactic": trace.next_tactic,
+                "strategy_id": trace.strategy_id,
                 "posture": trace.posture,
                 "computed_at": trace.computed_at,
             },
