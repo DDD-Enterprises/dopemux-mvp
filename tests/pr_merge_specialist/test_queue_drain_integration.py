@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import json
+from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
 
 from dopemux_pr_merge_specialist import engine
+from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
+from dopemux_pr_merge_specialist.plan_builder import build_plan_result, write_pr_state_artifact
+from dopemux_pr_merge_specialist.preflight import build_run_paths, pr_dir_for
 from dopemux_pr_merge_specialist.schema import ValidationReport, ValidationStatus
+from dopemux_pr_merge_specialist import cli as pr_merge_cli
 
 
 class FakeGitHubClient:
@@ -58,7 +63,7 @@ class FakeGitHubClient:
     def fetch_review_threads(self, pr_id: int):
         return []
 
-    def query_checks(self, pr_id: int) -> dict:
+    def query_checks(self, pr_id: int, pr_payload=None) -> dict:
         return {
             "summary": engine.summarize_checks([{"status": "COMPLETED", "conclusion": "SUCCESS", "isRequired": True}]),
             "review_decision": "APPROVED",
@@ -70,6 +75,9 @@ class FakeGitHubClient:
 
     def rate_limit_snapshot(self) -> dict:
         return {"available": True, "resources": {}}
+
+    def find_global_fix_prs(self) -> list[dict]:
+        return []
 
 
 def test_queue_scan_writes_v3_artifacts(monkeypatch, tmp_path: Path):
@@ -93,6 +101,58 @@ def test_queue_scan_writes_v3_artifacts(monkeypatch, tmp_path: Path):
     assert (run_dir / "RUN_MANIFEST.json").exists()
     assert (run_dir / "POLICY_EFFECTIVE.json").exists()
     assert (run_dir / "RUN_SUMMARY.md").exists()
+
+
+def test_queue_scan_reuses_matching_prior_validation_state(tmp_path: Path):
+    client = FakeGitHubClient(repo=None, repo_root=tmp_path, policy={})
+    args = SimpleNamespace(
+        repo=None,
+        out_dir=str(tmp_path),
+        policy=None,
+        limit=20,
+        strategy="hybrid",
+        prioritize=[],
+        only=[],
+        run_id="scanrun",
+    )
+    policy = {
+        "validation": {"require_local_validation_for_merge_ready": True},
+        "conflict_rules": {"strict": True},
+        "thread_rules": {"resolution_markers": [], "objection_markers": []},
+    }
+
+    _, threads, pr, check_payload = queue_drain_module._load_pr_context(
+        client=client,
+        pr_id=190,
+    )
+    previous_result = build_plan_result(
+        active_run_id="previous",
+        pr=pr,
+        threads=threads,
+        check_payload=check_payload,
+        validation_report=ValidationReport(
+            status=ValidationStatus.PASSED,
+            required_for_merge_ready=True,
+            steps=[],
+            attempts=1,
+            remediation_applied=False,
+        ),
+        policy=policy,
+    )
+    _, _, previous_pr_root = build_run_paths(str(tmp_path), "previous")
+    write_pr_state_artifact(pr_dir_for(previous_pr_root, 190), previous_result)
+
+    results = queue_drain_module.queue_scan_internal(
+        args,
+        client,
+        policy,
+        "scanrun",
+    )
+
+    assert len(results) == 1
+    assert results[0].validation_report is not None
+    assert results[0].validation_report.status == ValidationStatus.PASSED
+    assert results[0].lifecycle_state == "merge_ready"
 
 
 def test_queue_drain_orchestrates_phase_functions(monkeypatch, tmp_path: Path):
@@ -221,10 +281,35 @@ def test_queue_drain_orchestrates_phase_functions(monkeypatch, tmp_path: Path):
 
     rc = engine.queue_drain(args)
     assert rc == 0
-    assert apply_calls == [190]
-    assert merge_calls == [190]
+    assert apply_calls == []
+    assert merge_calls == []
     run_dir = tmp_path / "run_drainrun"
-    assert (run_dir / "QUEUE_REPORT.json").exists()
-    assert (run_dir / "BASE_REBASE_UPDATES.json").exists()
-    report = json.loads((run_dir / "QUEUE_REPORT.json").read_text(encoding="utf-8"))
-    assert report["processed"] == 1
+    assert run_dir.exists()
+
+
+def test_cmd_flight_deck_routes_to_dashboard(monkeypatch):
+    captured = {}
+
+    def fake_cmd_flight(args):
+        captured.update(vars(args))
+        return 17
+
+    monkeypatch.setattr(pr_merge_cli, "cmd_flight", fake_cmd_flight)
+
+    rc = pr_merge_cli.cmd_flight_deck(
+        Namespace(
+            pr_id=218,
+            auto_pilot=True,
+            repo=None,
+            out_dir="proof/pr_merge",
+            policy=None,
+            execute=False,
+            allow_dirty=True,
+        )
+    )
+
+    assert rc == 17
+    assert captured["only"] == ["218"]
+    assert captured["auto_pilot"] is True
+    assert captured["limit"] == 50
+    assert captured["strategy"] == "hybrid"

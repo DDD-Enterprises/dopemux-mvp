@@ -547,43 +547,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def cmd_flight_deck(args: argparse.Namespace) -> int:
-    """🚀 Launch Flight Deck operations center with closed-loop automation."""
-    from .closed_loop_engine import ClosedLoopEngine
-    from .github_api import GitHubClient
-    from .interactive import InteractiveMergeWizard
-    from .ops_engine import FlightDeckOpsEngine
-    from .policy import load_effective_policy
-    from .strategy_library import STRATEGY_LIBRARY
-
-    repo_root = Path.cwd()
-    policy = load_effective_policy(
-        repo_root, explicit_path=getattr(args, "policy", None)
-    )
-    client = GitHubClient(
-        repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy
-    )
-
-    # Initialize Flight Deck engines
-    ops_engine = FlightDeckOpsEngine(Path("proof/pr_merge/flight_deck/ops"))
-    closed_loop = ClosedLoopEngine(ops_engine, STRATEGY_LIBRARY)
-
-    # Configure wizard with Flight Deck enhancements
-    class FlightDeckWizard(InteractiveMergeWizard):
-        def __init__(self, manager, ops_engine, closed_loop):
-            super().__init__(manager=manager)
-            self.ops_engine = ops_engine
-            self.closed_loop = closed_loop
-            self.auto_pilot = getattr(args, "auto_pilot", False)
-            self.focus_pr_id = getattr(args, "pr_id", None)
-
-    wizard = FlightDeckWizard(client, ops_engine, closed_loop)
-    print(
-        f"🚀 Flight Deck launched in {'AUTO-PILOT' if wizard.auto_pilot else 'MANUAL'} mode"
-    )
-    if wizard.focus_pr_id:
-        print(f"🎯 Focused on PR #{wizard.focus_pr_id}")
-    wizard.run()
-    return 0
+    """🚀 Launch Flight Deck via the authoritative merge dashboard."""
+    flight_args = argparse.Namespace(**vars(args))
+    flight_args.limit = getattr(args, "limit", 50)
+    flight_args.strategy = getattr(args, "strategy", "hybrid")
+    flight_args.prioritize = list(getattr(args, "prioritize", []) or [])
+    flight_args.only = []
+    if getattr(args, "pr_id", None):
+        flight_args.only = [str(args.pr_id)]
+    return cmd_flight(flight_args)
 
 
 def cmd_fusion(args: argparse.Namespace) -> int:

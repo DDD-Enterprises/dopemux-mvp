@@ -11,12 +11,15 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 ### Changed
 - The speculative train now rebases each candidate against `origin/main` instead of chaining later PRs onto earlier speculative branches.
 - The flight dashboard passes its active `Console` into the renderer so viewport sizing reflects the live terminal instance.
+- `flight-deck` now delegates to the authoritative `flight` dashboard path so autopilot, remediation, and merge execution share the same runtime.
 
 ### Fixed
 - Validation-only PRs are no longer shown as queued-for-merge before local verification is complete.
 - A single failed speculative rebase or push no longer aborts the rest of the train pass.
 - Flight dashboard arrow-key navigation now accepts Kitty/application-cursor escape sequences instead of treating Down Arrow as an exit.
-- Flight dashboard arrow-key navigation now accepts Kitty/application-cursor escape sequences instead of treating Down Arrow as an exit.
+- Queue rescans now preserve prior executed local validation results for unchanged PR `head_sha`/`base_sha` pairs instead of resetting them to `not_executed`.
+- Queue-drain now treats already queued or merged PRs as processed state instead of re-entering patch loops on later passes.
+- Dashboard autopilot no longer treats monitor tactic `S` as queue navigation and no longer resets to the top PR after every reassessment.
 
 ## [0.1.0] - 2026-03-14
 ### Added
