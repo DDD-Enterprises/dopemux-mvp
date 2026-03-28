@@ -20,7 +20,7 @@ from .policy import PolicyError, load_effective_policy, policy_artifact_payload,
 from .runtime import CommandResult, append_command_log, execute_or_dry_run, fingerprint_payload, pid_is_running, run_command, run_id, shell_join, snapshot_environment, utc_now, write_json, write_text
 from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, TOOL_VERSION
 from .validation import run_validation, validation_report_md
-from .strategy_library import STRATEGY_LIBRARY
+from .strategy_library import STRATEGY_LIBRARY, select_strategy, StrategyAssignment, TRAIN_ELIGIBLE_STRATEGIES, STRATEGY_EXECUTION_ORDER
 
 
 
@@ -1028,11 +1028,14 @@ Your goal is to make the command `{failed_step.command}` pass.
     finally:
         subprocess.run(["git", "worktree", "remove", "--force", str(path)], cwd=repo_root)
 
-def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, worktree_dir: Path):
+def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, worktree_dir: Path) -> Dict[int, int]:
     """
     Identifies PRs blocked by the same CI failure and manages global fix PRs.
-    Modifies the 'results' list in-place.
+    Returns a dict mapping pr_id -> fix_pr_number for all PRs that should be
+    blocked pending a global fix. Does NOT mutate any PRResult instances.
     """
+    blocked_map: Dict[int, int] = {}
+
     # 1. Find existing global fix PRs and map them by fingerprint
     existing_fix_prs = client.find_global_fix_prs()
     fingerprint_to_pr_map: Dict[str, int] = {}
@@ -1054,15 +1057,11 @@ def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, wo
             continue  # Not a global blocker
 
         if fingerprint in fingerprint_to_pr_map:
-            # A global fix PR already exists. Mark all grouped PRs as blocked.
+            # A global fix PR already exists. Record all grouped PRs as blocked.
             pr_number = fingerprint_to_pr_map[fingerprint]
             print(f"Found existing global fix PR #{pr_number} for fingerprint {fingerprint}")
             for r in blocked_prs:
-                # We mutate the underlying data class instance here.
-                # Since PRResult is frozen, we might need a workaround or update the list.
-                # However, Python object mutation is complex for frozen dataclasses.
-                # We'll use object.__setattr__ as a pragmatic workaround for this internal loop state.
-                object.__setattr__(r, "blocked_by_global_fix_pr", pr_number)
+                blocked_map[r.pr_state.pr_id] = pr_number
         else:
             # New global blocker. Create a global fix PR.
             print(f"New global CI blocker detected for fingerprint: {fingerprint}. Triggering global fix.")
@@ -1078,18 +1077,20 @@ def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, wo
                 new_pr_number = _create_global_fix_pr(fingerprint, failed_step, client, worktree_dir)
                 if new_pr_number > 0:
                     for r in blocked_prs:
-                        object.__setattr__(r, "blocked_by_global_fix_pr", new_pr_number)
+                        blocked_map[r.pr_state.pr_id] = new_pr_number
                 else:
                     print(
                         f"Global fix creation failed for fingerprint {fingerprint}; "
                         "continuing with per-PR remediation."
                     )
 
+    return blocked_map
+
 
 def _ignite_speculative_train(
-    results: List[PRResult], 
-    client: GitHubClient, 
-    repo_root: Path, 
+    results: List[PRResult],
+    client: GitHubClient,
+    repo_root: Path,
     active_run_id: str,
     commands_log: Path,
     policy: Dict[str, Any],
@@ -1097,40 +1098,68 @@ def _ignite_speculative_train(
 ) -> Tuple[List[int], List[int]]:
     """
     Attempts to rebase a chain of READY PRs onto each other speculatively.
+    Only LOW-risk strategies are executed in the train; HIGH-risk strategies
+    are deferred to the per-PR closed-loop processing path.
     Returns (merged_ids, queued_ids).
     """
     # 1. Identify READY PRs with green CI and no blockers
-    # We only include PRs where the merge action would be REBASE_MERGE or AUTO_MERGE_FALLBACK
     train_candidates = [
-        r for r in results 
+        r for r in results
         if r.lifecycle_state in (PRState.MERGE_READY.value, PRState.QUEUED_FOR_MERGE.value)
         and r.pr_state.ci_status == "SUCCESS"
         and r.pr_state.active_unresolved_threads == 0
     ]
-    
+
     if len(train_candidates) < 2:
         return [], []
 
-    print(f"\n🚂 IGNITING SPECULATIVE REBASE TRAIN ({len(train_candidates)} PRs)...")
-    
+    # 2. Assign strategies and filter to train-eligible ones
+    assignments: Dict[int, StrategyAssignment] = {}
+    for r in train_candidates:
+        assignments[r.pr_state.pr_id] = select_strategy(r, policy)
+
+    eligible = [
+        r for r in train_candidates
+        if assignments[r.pr_state.pr_id].strategy_id in TRAIN_ELIGIBLE_STRATEGIES
+    ]
+
+    # Log deferred PRs
+    deferred = [
+        r for r in train_candidates
+        if assignments[r.pr_state.pr_id].strategy_id not in TRAIN_ELIGIBLE_STRATEGIES
+    ]
+    for r in deferred:
+        a = assignments[r.pr_state.pr_id]
+        print(f"  ⏭️  PR #{r.pr_state.pr_id} deferred from train (strategy: {a.strategy_id} — {a.rationale})")
+
+    if len(eligible) < 2:
+        return [], []
+
+    # 3. Sort by strategy execution order (simplest first)
+    eligible.sort(
+        key=lambda r: (
+            STRATEGY_EXECUTION_ORDER.get(assignments[r.pr_state.pr_id].strategy_id, 99),
+            r.pr_state.pr_id,
+        )
+    )
+
+    print(f"\n🚂 IGNITING SPECULATIVE REBASE TRAIN ({len(eligible)} PRs, {len(deferred)} deferred)...")
+
     merged_ids = []
     queued_ids = []
-    # Always rebase against the latest origin/main for the train
-    # Speculative chaining (current_base = pr.head_ref) is risky with GitHub's native Merge Queue
     current_base = "origin/main"
-    
-    for i, result in enumerate(train_candidates):
+
+    for i, result in enumerate(eligible):
         pr = result.pr_state
-        print(f"  [Train {i+1}] Speculative Rebase for PR #{pr.pr_id}...")
-        
-        # Prepare worktree
+        assignment = assignments[pr.pr_id]
+        print(f"  [Train {i+1}] PR #{pr.pr_id} (strategy: {assignment.strategy_id})...")
+
         worktree_path, branch, err = prepare_worktree(repo_root, pr.pr_id, active_run_id, commands_log, policy)
         if err:
             print(f"    ❌ Worktree preparation failed: {err}")
             break
-            
+
         try:
-            # Rebase onto origin/main
             ok, msg = attempt_speculative_rebase(
                 worktree_path=worktree_path,
                 onto_ref=current_base,
@@ -1138,12 +1167,11 @@ def _ignite_speculative_train(
                 execute=execute,
                 policy=policy
             )
-            
+
             if not ok:
                 print(f"    ❌ Speculative rebase failed: {msg}")
-                continue # Skip this PR but try the next one in the train
-                
-            # Push rebased head
+                continue
+
             if execute:
                 push_ok, push_msg = push_rebased_head(
                     worktree_path=worktree_path,
@@ -1155,26 +1183,24 @@ def _ignite_speculative_train(
                 if not push_ok:
                     print(f"    ❌ Push failed: {push_msg}")
                     continue
-                
-                # Trigger merge --auto
-                # If the repo uses Merge Queue, this will add it to the queue.
+
                 merge_cmd = ["gh", "pr", "merge", str(pr.pr_id), "--auto", "--rebase", "--delete-branch"]
                 if client.repo:
                     merge_cmd.extend(["--repo", client.repo])
-                
+
                 merge_res = execute_or_dry_run(merge_cmd, execute=True, cwd=repo_root, commands_log=commands_log)
                 if merge_res.returncode == 0:
-                    print(f"    ✅ Speculative rebase & auto-merge triggered.")
+                    print(f"    ✅ {assignment.strategy_id}: rebase & auto-merge triggered.")
                     queued_ids.append(pr.pr_id)
                 else:
                     print(f"    ⚠️ Auto-merge trigger failed: {merge_res.stderr}")
             else:
                 print(f"    (Dry-run) Would rebase and trigger auto-merge.")
                 queued_ids.append(pr.pr_id)
-                
+
         finally:
             cleanup_worktree(repo_root, worktree_path, branch, commands_log, policy)
-            
+
     return merged_ids, queued_ids
 
 
@@ -1203,18 +1229,20 @@ def queue_drain(args: argparse.Namespace) -> int:
         processed_ids = set()
         merged_ids = set()
         queued_ids = set()
-        failed_remediation_ids = set() # Track PRs that failed an attempt in THIS pass
+        failed_remediation_ids: set = set()  # Accumulates across passes; stuck PRs aren't retried
+        global_fix_blocked: Dict[int, int] = {}  # pr_id -> fix_pr_number; persists across passes
         limit_reached = False
-        
+
         for pass_idx in range(max_passes):
             print(f"\n--- Queue Pass {pass_idx + 1}/{max_passes} ---")
             results = queue_scan_internal(args, client, policy, active_run_id)
             if not results:
                 print("No PRs found.")
                 break
-                
-            _handle_global_ci_blockers(results, client, repo_root)
-            
+
+            pass_blocked = _handle_global_ci_blockers(results, client, repo_root)
+            global_fix_blocked.update(pass_blocked)
+
             # Ignite speculative rebase train for READY PRs
             pass_commands_log = run_dir / f"PASS_{pass_idx + 1}_TRAIN_COMMANDS.txt"
             train_merged, train_queued = _ignite_speculative_train(
@@ -1231,15 +1259,13 @@ def queue_drain(args: argparse.Namespace) -> int:
                     == "queued_for_merge"
                 ):
                     queued_ids.add(result.pr_state.pr_id)
-            
-            # Reset failed IDs for this pass to allow retries if state changed
-            failed_remediation_ids = set()
-            
+
             active_results = [
                 r
                 for r in results
                 if r.pr_state.pr_id not in merged_ids
                 and r.pr_state.pr_id not in queued_ids
+                and r.pr_state.pr_id not in failed_remediation_ids
             ]
             if not active_results:
                 print("All PRs processed, merged, or queued.")
@@ -1251,8 +1277,9 @@ def queue_drain(args: argparse.Namespace) -> int:
                     break
                 pr_id = result.pr_state.pr_id
                 
-                if result.blocked_by_global_fix_pr:
-                    print(f"PR #{pr_id}: Blocked pending global fix PR #{result.blocked_by_global_fix_pr}. Skipping remediation.")
+                fix_pr = global_fix_blocked.get(pr_id)
+                if fix_pr:
+                    print(f"PR #{pr_id}: Blocked pending global fix PR #{fix_pr}. Skipping remediation.")
                     processed_ids.add(pr_id)
                     continue
                     
@@ -1263,7 +1290,8 @@ def queue_drain(args: argparse.Namespace) -> int:
                 trace = closed_loop.run_cycle(str(pr_id), report)
                 closed_loop.emit_trace_artifacts(trace, pr_dir_for(pr_root, pr_id) / "traces")
                 tactic = trace.next_tactic
-                print(f"PR #{pr_id}: {result.lifecycle_state} -> Tactic: {tactic}")
+                pr_strategy = select_strategy(result, policy)
+                print(f"PR #{pr_id}: {result.lifecycle_state} -> Tactic: {tactic} (Strategy: {pr_strategy.strategy_id})")
                 if tactic == "MERGE" and execute:
                     try:
                         merge_result = pr_merge(
