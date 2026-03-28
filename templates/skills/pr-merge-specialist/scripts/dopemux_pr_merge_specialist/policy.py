@@ -33,6 +33,12 @@ REQUIRED_TOP_LEVEL_KEYS = (
     "retry",
     "merge",
 )
+VALID_VALIDATION_SCOPES = {
+    "repo",
+    "changed_files",
+    "docs_frontmatter_files",
+    "docs_validator_files",
+}
 
 DEFAULT_POLICY: Dict[str, Any] = {
     "version": POLICY_SCHEMA_VERSION,
@@ -51,17 +57,20 @@ DEFAULT_POLICY: Dict[str, Any] = {
         "steps": [
             {
                 "name": "pre-commit",
-                "command": ["pre-commit", "run", "--all-files"],
+                "command": ["pre-commit", "run"],
+                "scope": "changed_files",
                 "run_in_dry_run": False,
             },
             {
                 "name": "docs-frontmatter-fix",
                 "command": ["python", "scripts/docs_frontmatter_guard.py", "--fix"],
+                "scope": "docs_frontmatter_files",
                 "run_in_dry_run": False,
             },
             {
                 "name": "docs-validator",
                 "command": ["python", "scripts/docs_validator.py"],
+                "scope": "docs_validator_files",
                 "run_in_dry_run": False,
             },
             {
@@ -70,8 +79,8 @@ DEFAULT_POLICY: Dict[str, Any] = {
                     "python",
                     "scripts/check_docs_hygiene.py",
                     "--check",
-                    "--all-files",
                 ],
+                "scope": "docs_validator_files",
                 "run_in_dry_run": False,
             },
             {
@@ -80,8 +89,8 @@ DEFAULT_POLICY: Dict[str, Any] = {
                     "python",
                     "scripts/check_docs_filename_hygiene.py",
                     "--check",
-                    "--all-files",
                 ],
+                "scope": "docs_validator_files",
                 "run_in_dry_run": False,
             },
             {
@@ -249,6 +258,12 @@ def _validate_command_steps(steps: Iterable[Dict[str, Any]], *, section: str) ->
         ):
             raise PolicyError(
                 f"{section}.steps[{index}] must define a non-empty string command list."
+            )
+        scope = step.get("scope", "repo")
+        if not isinstance(scope, str) or scope not in VALID_VALIDATION_SCOPES:
+            raise PolicyError(
+                f"{section}.steps[{index}] has invalid scope {scope!r}; "
+                f"expected one of {sorted(VALID_VALIDATION_SCOPES)}."
             )
 
 
