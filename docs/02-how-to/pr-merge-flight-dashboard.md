@@ -52,6 +52,12 @@ Important behavior:
 ### Global CI Remediation
 If multiple PRs fail CI with the same error, the orchestrator identifies a stable failure fingerprint from the failing validation step and error output. Instead of fixing each PR individually, it invokes the `ci-remediation-specialist` against `main` and opens or reuses a single `global-ci-fix` PR. Other failing PRs wait on that shared fix path instead of duplicating remediation.
 
+Important constraint:
+
+- branches with failing required GitHub checks remain blocked even when local validation passes
+- auto-merge-enabled PRs are still treated as blocked if the required remote checks are red
+- bounded dry or execute runs respect `--max-prs`, so operator test runs can sample the queue without draining the whole backlog
+
 ### Optimistic Lifecycle
 The dashboard uses a state model that distinguishes local proof from GitHub lag:
 
@@ -59,6 +65,8 @@ The dashboard uses a state model that distinguishes local proof from GitHub lag:
 - `🟣` approval required: reviewer consent is the remaining gate
 - `🔵` queued: local work is done and GitHub is handling the final queue/check path
 - `🟢` ready or merged: no local blocker remains
+
+Required-check failures are not treated as queue lag. If GitHub still reports failing required checks, the PR remains blocked even when local validation is green.
 
 ## Controls
 
@@ -86,6 +94,7 @@ After launching the dashboard:
 1. Confirm validation-only PRs appear as `🟡` rather than queued.
 1. Confirm approval-only PRs appear as `🟣`.
 1. Confirm already queued auto-merge PRs appear as `🔵`.
+1. Confirm PRs with failing required GitHub checks remain blocked instead of flipping to queued-for-merge after a local pass.
 1. Confirm Up/Down arrow navigation works in your terminal emulator, including Kitty.
 
 ## ADHD Optimization
