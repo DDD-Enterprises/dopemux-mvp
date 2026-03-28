@@ -1,3 +1,15 @@
+---
+id: sequential-multi-packet-execution
+title: Sequential Multi Packet Execution
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-27'
+last_review: '2026-03-27'
+next_review: '2026-06-25'
+prelude: Sequential Multi Packet Execution (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Sequential Multi-Packet Execution Bridge (TP-DSER-004)
 
 ## Status

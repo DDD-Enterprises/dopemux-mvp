@@ -1,3 +1,15 @@
+---
+id: series-readonly-contract
+title: Series Readonly Contract
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-27'
+last_review: '2026-03-27'
+next_review: '2026-06-25'
+prelude: Series Readonly Contract (explanation) for dopemux documentation and developer
+  workflows.
+---
 # read-only Series Contract (TP-DSER-003)
 
 ## Status
