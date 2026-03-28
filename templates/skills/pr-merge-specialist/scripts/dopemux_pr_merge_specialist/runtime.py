@@ -32,6 +32,11 @@ def shell_join(cmd: Sequence[str]) -> str:
     return " ".join(shlex.quote(part) for part in cmd)
 
 
+def contains_marker(text: str, markers: Sequence[str]) -> bool:
+    lowered = text.lower()
+    return any(marker.lower() in lowered for marker in markers)
+
+
 def run_command(
     cmd: Sequence[str],
     *,
