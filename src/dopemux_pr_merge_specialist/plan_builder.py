@@ -230,28 +230,15 @@ def findings_from_pr_state(
             )
     summary = check_payload["summary"]
     if summary.required_failure > 0:
-        # OPTIMISTIC OVERRIDE: If local validation just passed, we suppress the CI failure blocker
-        # because we assume GitHub hasn't caught up to the new push yet.
-        if _status_value(validation_status) == ValidationStatus.PASSED.value:
-            findings.append(
-                Finding(
-                    kind=FindingSeverity.WARNING,
-                    finding_type="ci_failing_but_local_passed",
-                    message="GitHub CI is currently failing, but local validation passed. Assuming state transition in progress.",
-                    details=serialize_check_payload(check_payload),
-                    source="local_validation",
-                )
+        findings.append(
+            Finding(
+                kind=FindingSeverity.BLOCKER,
+                finding_type=BlockerType.REQUIRED_CHECK_FAILED.value,
+                message="Required checks are failing.",
+                details=serialize_check_payload(check_payload),
+                source="github_protection_review",
             )
-        else:
-            findings.append(
-                Finding(
-                    kind=FindingSeverity.BLOCKER,
-                    finding_type=BlockerType.REQUIRED_CHECK_FAILED.value,
-                    message="Required checks are failing.",
-                    details=serialize_check_payload(check_payload),
-                    source="github_protection_review",
-                )
-            )
+        )
     elif summary.required_pending > 0:
         # OPTIMISTIC OVERRIDE: If local validation passed, we assume it will eventually turn green on GH.
         if _status_value(validation_status) == ValidationStatus.PASSED.value:

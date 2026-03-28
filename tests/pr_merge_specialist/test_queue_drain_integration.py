@@ -9,7 +9,7 @@ from dopemux_pr_merge_specialist import engine
 from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
 from dopemux_pr_merge_specialist.plan_builder import build_plan_result, write_pr_state_artifact
 from dopemux_pr_merge_specialist.preflight import build_run_paths, pr_dir_for
-from dopemux_pr_merge_specialist.schema import ValidationReport, ValidationStatus
+from dopemux_pr_merge_specialist.schema import ValidationReport, ValidationStatus, ValidationStepResult
 from dopemux_pr_merge_specialist import cli as pr_merge_cli
 
 
@@ -313,3 +313,105 @@ def test_cmd_flight_deck_routes_to_dashboard(monkeypatch):
     assert captured["auto_pilot"] is True
     assert captured["limit"] == 50
     assert captured["strategy"] == "hybrid"
+
+
+def test_remediate_ci_failure_uses_prompt_only_gemini_command(monkeypatch, tmp_path: Path):
+    captured: dict[str, object] = {}
+
+    class FakeStdout:
+        def __init__(self) -> None:
+            self._lines = iter(["gemini failed\n", ""])
+
+        def readline(self) -> str:
+            return next(self._lines)
+
+    class FakeProcess:
+        def __init__(self) -> None:
+            self.stdout = FakeStdout()
+            self.returncode = 2
+
+        def wait(self, timeout=None) -> None:
+            return None
+
+    def fake_popen(cmd, **kwargs):
+        captured["cmd"] = cmd
+        captured["cwd"] = kwargs.get("cwd")
+        return FakeProcess()
+
+    monkeypatch.setattr(queue_drain_module.subprocess, "Popen", fake_popen)
+
+    validation = ValidationReport(
+        status=ValidationStatus.FAILED,
+        required_for_merge_ready=True,
+        steps=[
+            ValidationStepResult(
+                name="pre-commit",
+                command="pre-commit run --all-files",
+                status="failed",
+                stderr="boom",
+            )
+        ],
+        attempts=1,
+        remediation_applied=False,
+    )
+    messages: list[str] = []
+
+    remediated = queue_drain_module.remediate_ci_failure(
+        tmp_path,
+        validation,
+        lambda message, *_: messages.append(message),
+    )
+
+    assert remediated is False
+    assert captured["cwd"] == tmp_path
+    assert captured["cmd"][0] == "gemini"
+    assert "--prompt" in captured["cmd"]
+    assert "--yolo" in captured["cmd"]
+    assert "--skill" not in captured["cmd"]
+    assert any("non-zero exit code" in message for message in messages)
+
+
+def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatch, tmp_path: Path):
+    monkeypatch.setattr(
+        queue_drain_module,
+        "allowed_actions_for_result",
+        lambda _result: ["APPLY_FIX"],
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_create_global_fix_pr",
+        lambda fingerprint, failed_step, client, repo_root: -1,
+    )
+
+    failed_validation = ValidationReport(
+        status=ValidationStatus.FAILED,
+        required_for_merge_ready=True,
+        steps=[
+            ValidationStepResult(
+                name="pre-commit",
+                command="pre-commit run --all-files",
+                status="failed",
+                stderr="boom",
+            )
+        ],
+        attempts=1,
+        remediation_applied=False,
+    )
+    results = [
+        SimpleNamespace(
+            validation_report=failed_validation,
+            blocked_by_global_fix_pr=None,
+        ),
+        SimpleNamespace(
+            validation_report=failed_validation,
+            blocked_by_global_fix_pr=None,
+        ),
+    ]
+
+    queue_drain_module._handle_global_ci_blockers(
+        results,
+        FakeGitHubClient(repo=None, repo_root=tmp_path, policy={}),
+        tmp_path,
+    )
+
+    assert all(result.blocked_by_global_fix_pr is None for result in results)

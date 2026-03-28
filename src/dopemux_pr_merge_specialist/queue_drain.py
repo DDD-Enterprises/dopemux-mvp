@@ -113,6 +113,12 @@ def _refresh_client_state(client: GitHubClient, pr_id: int) -> None:
     client.invalidate("open_prs:")
 
 
+def _gemini_ci_remediation_command(prompt: str) -> List[str]:
+    # Gemini CLI no longer accepts --skill in headless mode, so the runbook
+    # must live in the prompt and the invocation stays prompt-only.
+    return ["gemini", "--prompt", prompt, "--yolo"]
+
+
 def _inflate_result_from_state_path(state_path: Path) -> Optional[PRResult]:
     try:
         payload = json.loads(state_path.read_text(encoding="utf-8"))
@@ -430,8 +436,7 @@ Identify the root cause, modify the necessary files, and ensure the command pass
     log(f"Launching Gemini CLI agent in YOLO mode (worktree: {worktree_path.name})...")
     
     try:
-        # Use --debug for even more output if needed, but for now we stream everything
-        cmd = ["gemini", "-p", prompt, "--skill", "ci-remediation-specialist", "--yolo"]
+        cmd = _gemini_ci_remediation_command(prompt)
         
         process = subprocess.Popen(
             cmd,
@@ -467,9 +472,7 @@ Identify the root cause, modify the necessary files, and ensure the command pass
         
     if process.returncode != 0:
         log(f"Agent finished with non-zero exit code ({process.returncode}).", "WARNING")
-        # We still return True if the agent made changes, but how do we know?
-        # For now, we assume if it ran, we should try validating again.
-        return True
+        return False
         
     log("Agentic remediation cycle complete.")
     return True
@@ -930,11 +933,17 @@ Output/Error:
 ```
 
 Please diagnose the issue and FIX IT against the `main` branch. You are running in YOLO mode with full tool access. 
+CRITICAL: You MUST follow the ci-remediation-specialist runbook:
+1. REPRODUCE the failure locally first by running the command `{failed_step.command}`.
+2. USE AUTO-FIXERS if applicable (e.g., ruff check --fix).
+3. APPLY a minimal surgical fix if reproduction succeeds.
+4. VERIFY that your fix makes `{failed_step.command}` pass.
+
 Identify the root cause, modify the necessary files, and verify your fix if possible.
 Your goal is to make the command `{failed_step.command}` pass.
 """
         print("Launching Gemini CLI agent for GLOBAL FIX...")
-        cmd = ["gemini", "-p", prompt, "--skill", "ci-remediation-specialist", "--yolo"]
+        cmd = _gemini_ci_remediation_command(prompt)
         
         process = subprocess.Popen(
             cmd,
@@ -1053,8 +1062,14 @@ def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, wo
             )
             if failed_step:
                 new_pr_number = _create_global_fix_pr(fingerprint, failed_step, client, worktree_dir)
-                for r in blocked_prs:
-                    object.__setattr__(r, "blocked_by_global_fix_pr", new_pr_number)
+                if new_pr_number > 0:
+                    for r in blocked_prs:
+                        object.__setattr__(r, "blocked_by_global_fix_pr", new_pr_number)
+                else:
+                    print(
+                        f"Global fix creation failed for fingerprint {fingerprint}; "
+                        "continuing with per-PR remediation."
+                    )
 
 
 def _ignite_speculative_train(
@@ -1170,10 +1185,12 @@ def queue_drain(args: argparse.Namespace) -> int:
             
     try:
         max_passes = int(getattr(args, "max_passes", 3))
+        max_prs = int(getattr(args, "max_prs", 0) or 0)
         processed_ids = set()
         merged_ids = set()
         queued_ids = set()
         failed_remediation_ids = set() # Track PRs that failed an attempt in THIS pass
+        limit_reached = False
         
         for pass_idx in range(max_passes):
             print(f"\n--- Queue Pass {pass_idx + 1}/{max_passes} ---")
@@ -1214,6 +1231,10 @@ def queue_drain(args: argparse.Namespace) -> int:
                 print("All PRs processed, merged, or queued.")
                 break
             for result in active_results:
+                if max_prs > 0 and len(processed_ids) >= max_prs:
+                    print(f"Reached max PR limit ({max_prs}); stopping queue drain.")
+                    limit_reached = True
+                    break
                 pr_id = result.pr_state.pr_id
                 
                 if result.blocked_by_global_fix_pr:
@@ -1310,6 +1331,8 @@ def queue_drain(args: argparse.Namespace) -> int:
                         )
                     except RuntimeError as e:
                         print(f"Approval error for PR #{pr_id}: {e}")
+            if limit_reached:
+                break
         print(f"\nRun ID: {active_run_id}")
         print(f"Processed PRs: {len(processed_ids)}")
         print(f"Merged: {len(merged_ids)}")

@@ -7,11 +7,13 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 - Queue-wide CI remediation via failure fingerprinting, `global-ci-fix` PR detection, and the `ci-remediation-specialist` runbook.
 - Dashboard state distinctions for validation-pending, approval-required, and queued-for-merge PRs.
 - Targeted unit coverage for dashboard console rendering and speculative train continuation behavior.
+- Regression coverage for queue-wide required-check failures, prompt-only Gemini remediation, and bounded queue-drain execution.
 
 ### Changed
 - The speculative train now rebases each candidate against `origin/main` instead of chaining later PRs onto earlier speculative branches.
 - The flight dashboard passes its active `Console` into the renderer so viewport sizing reflects the live terminal instance.
 - `flight-deck` now delegates to the authoritative `flight` dashboard path so autopilot, remediation, and merge execution share the same runtime.
+- The docs workflow now runs on pull requests and `main` pushes only, preventing PR-branch push runs from re-failing on unrelated legacy docs debt.
 
 ### Fixed
 - Validation-only PRs are no longer shown as queued-for-merge before local verification is complete.
@@ -20,6 +22,8 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 - Queue rescans now preserve prior executed local validation results for unchanged PR `head_sha`/`base_sha` pairs instead of resetting them to `not_executed`.
 - Queue-drain now treats already queued or merged PRs as processed state instead of re-entering patch loops on later passes.
 - Dashboard autopilot no longer treats monitor tactic `S` as queue navigation and no longer resets to the top PR after every reassessment.
+- Queue planning no longer downgrades failing required GitHub checks to warnings after a local validation pass; those PRs remain `apply_blocked` until the remote required checks actually clear.
+- `queue-drain --max-prs` now stops the execute loop at the requested bound instead of continuing through additional PRs in the same pass.
 
 ## [0.1.0] - 2026-03-14
 ### Added

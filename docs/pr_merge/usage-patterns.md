@@ -5,7 +5,7 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-17'
-last_review: '2026-03-17'
+last_review: '2026-03-27'
 next_review: '2026-06-15'
 prelude: Usage Patterns (explanation) for dopemux documentation and developer workflows.
 ---
@@ -33,6 +33,8 @@ python -m dopemux_pr_merge_specialist.cli pr-merge --id 42 --execute
 python -m dopemux_pr_merge_specialist.cli queue-drain --execute --max-prs 5
 ```
 
+`queue-drain` does not treat a PR as queued or merge-ready merely because local validation passed. Required GitHub check failures still block the PR until the remote checks clear.
+
 ## Common Workflows
 
 ### 1. Safe Review Cycle (Non-Mutating)
@@ -55,6 +57,14 @@ python -m dopemux_pr_merge_specialist.cli queue-drain --execute --only 42,43,44
 # Prioritize specific PRs (process first, then others)
 python -m dopemux_pr_merge_specialist.cli queue-drain --execute --prioritize 42
 ```
+
+For bounded live runs, use `--max-prs` to stop the execute loop after a fixed number of PRs:
+
+```bash
+python -m dopemux_pr_merge_specialist.cli queue-drain --execute --max-prs 3 --max-passes 1
+```
+
+This is the safest way to validate queue behavior against live GitHub state without mutating the full backlog in one run.
 
 ### 3. Custom Policy
 ```bash

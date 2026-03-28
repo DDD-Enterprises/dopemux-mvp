@@ -46,6 +46,22 @@ QUEUED_OPERATOR_STATES = {
 }
 
 
+def is_passive_queued_state(snapshot: Mapping[str, Any]) -> bool:
+    lifecycle_state = enum_value(snapshot.get("lifecycle_state", ""))
+    operator_state = str(snapshot.get("operator_state") or "")
+    auto_merge_enabled = bool(snapshot.get("auto_merge_enabled", False))
+    blockers = blocker_types_from_snapshot(snapshot)
+    needs_validation = bool(blockers & VALIDATION_BLOCKERS)
+
+    if lifecycle_state == PRState.QUEUED_FOR_MERGE.value and not needs_validation:
+        return True
+    if operator_state in QUEUED_OPERATOR_STATES and not needs_validation:
+        return True
+    if auto_merge_enabled and not needs_validation and blockers <= AUTO_MERGE_PASSIVE_BLOCKERS:
+        return True
+    return False
+
+
 def enum_value(value: Any) -> str:
     return value.value if hasattr(value, "value") else str(value)
 
@@ -93,29 +109,14 @@ def allowed_actions_for_snapshot(snapshot: Mapping[str, Any]) -> List[str]:
     merge_strategy = enum_value(snapshot.get("merge_strategy", ""))
     pr_state = str(snapshot.get("state") or "").upper()
     is_draft = bool(snapshot.get("is_draft", False))
-    auto_merge_enabled = bool(snapshot.get("auto_merge_enabled", False))
     blockers = blocker_types_from_snapshot(snapshot)
 
     if pr_state == "MERGED" or lifecycle_state == PRState.MERGED.value:
         return []
-        
-    # If we need to run validation, we should never be purely passive, even if queued for merge.
-    needs_validation = bool(blockers & VALIDATION_BLOCKERS)
 
-    if lifecycle_state == PRState.QUEUED_FOR_MERGE.value and not needs_validation:
+    if is_passive_queued_state(snapshot):
         return []
-        
-    if auto_merge_enabled:
-        if needs_validation:
-            # We must run validation. Fall through to return APPLY_FIX.
-            pass
-        elif blockers <= AUTO_MERGE_PASSIVE_BLOCKERS:
-            # All validation is done, just waiting on GitHub CI
-            return []
-            
-    if str(snapshot.get("operator_state") or "") in QUEUED_OPERATOR_STATES and not needs_validation:
-        return []
-            
+
     if merge_strategy == MergeActionType.AUTO_MERGE_FALLBACK.value and not blockers:
         return []
     if is_draft:
@@ -141,6 +142,9 @@ def allowed_actions_for_result(result: PRResult) -> List[str]:
 
 
 def dashboard_tactic_for_snapshot(snapshot: Mapping[str, Any]) -> str:
+    if is_passive_queued_state(snapshot):
+        return "S"
+
     allowed = list(snapshot.get("allowed_actions") or allowed_actions_for_snapshot(snapshot))
     blockers = blocker_types_from_snapshot(snapshot)
     ci_status = str(snapshot.get("ci_status", "") or "").upper()

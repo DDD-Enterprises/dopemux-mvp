@@ -151,10 +151,12 @@ def lifecycle_for_findings(
         if _severity_value(item.kind) == FindingSeverity.BLOCKER.value
     ]
     
-    # If the only blockers are validation related, we are APPLY_READY (Verification Pending)
+    # If the only blockers are strictly "validation not yet executed", we are APPLY_READY.
+    # Required GitHub checks still pending should remain blocked until validation or queueing
+    # logic explicitly clears them.
     non_val_blockers = [
         b for b in blockers 
-        if b.finding_type not in {"validation_not_executed", "required_check_pending"}
+        if b.finding_type != "validation_not_executed"
     ]
 
     if non_val_blockers:

@@ -5,7 +5,7 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-20'
-last_review: '2026-03-20'
+last_review: '2026-03-27'
 next_review: '2026-06-20'
 prelude: Design rationale for speculative train handling, validation-first states, and global CI remediation in the PR Merge Specialist.
 ---
@@ -26,6 +26,8 @@ The dashboard distinguishes `validation_pending`, `approval_required`, and `queu
 - `queued` means local work is done and the branch is waiting on GitHub's merge machinery.
 
 This separation prevents auto-merge branches from looking idle when they still require local verification, and it avoids showing validation-only work as if it were blocked by unrelated policy failures.
+
+The inverse also matters: a local validation pass must not erase a failing required GitHub check. Required remote check failures stay blocking until GitHub reports them green. Local proof and provider truth remain separate authorities.
 
 ## Why the Speculative Train Rebases onto `origin/main`
 
@@ -49,6 +51,8 @@ When multiple PRs fail on the same CI signature, per-branch remediation duplicat
 
 Blocked PRs remain branch-local records, but the actual systemic repair is centralized in one remediation branch and one PR.
 
+When the shared failure lives in `main` or in branch-protection workflows, the correct remediation target is still `main`; branch-local queue artifacts must remain blocked until the shared fix lands and the PR branch is updated onto that new base.
+
 ## Why the Specialist Uses a Strict Runbook
 
 The `ci-remediation-specialist` is intentionally constrained:
@@ -68,3 +72,4 @@ In this design:
 - local validation remains the readiness proof
 - the dashboard remains an operator surface, not a source of merge truth
 - the global remediation path exists only for failures that are demonstrably shared across multiple PRs
+- bounded execute runs (`--max-prs`, `--max-passes`) are operator safety rails and must be honored exactly

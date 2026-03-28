@@ -3,7 +3,8 @@ from __future__ import annotations
 import pytest
 
 from dopemux_pr_merge_specialist import engine
-from dopemux_pr_merge_specialist.schema import Finding, FindingSeverity, PRState, PullRequestState, ValidationStatus
+from dopemux_pr_merge_specialist.plan_builder import findings_from_pr_state
+from dopemux_pr_merge_specialist.schema import CheckSummary, Finding, FindingSeverity, PRState, PullRequestState, ValidationStatus
 
 
 def _state(
@@ -149,3 +150,32 @@ def test_lifecycle_for_findings_blocks_on_blockers():
         )
     ]
     assert engine.lifecycle_for_findings(findings, validation_status=ValidationStatus.NOT_EXECUTED) == PRState.APPLY_BLOCKED
+
+
+def test_findings_from_pr_state_keeps_required_check_failures_blocking_after_local_pass() -> None:
+    pr = _state(
+        401,
+        base="main",
+        head="feature/failing-checks",
+        pr_class="CI_ONLY",
+        risk=5.0,
+        diff=10,
+    )
+    findings = findings_from_pr_state(
+        pr,
+        check_payload={
+            "summary": CheckSummary(required_failure=1, total=1, failure=1),
+            "review_decision": "APPROVED",
+            "approval_required": False,
+            "blocker_types": ["required_check_failed"],
+            "warning_types": [],
+        },
+        active_threads=0,
+        validation_status=ValidationStatus.PASSED,
+        local_validation_required=True,
+        policy={},
+    )
+
+    blocker_types = {finding.finding_type for finding in findings if finding.kind == FindingSeverity.BLOCKER}
+
+    assert "required_check_failed" in blocker_types

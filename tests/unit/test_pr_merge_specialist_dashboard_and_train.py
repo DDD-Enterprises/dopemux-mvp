@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from src.dopemux_pr_merge_specialist.action_model import (
     dashboard_phase_for_snapshot,
     dashboard_tactic_for_snapshot,
+    is_passive_queued_state,
 )
 from src.dopemux_pr_merge_specialist.conflict import apply_suggestion_to_file
 from src.dopemux_pr_merge_specialist.dashboard import DopemuxDashboard, QueueState
@@ -175,6 +176,23 @@ def test_dashboard_tactic_distinguishes_validation_ci_and_threads() -> None:
     assert dashboard_phase_for_snapshot(ci_failed) == "CI Remediation"
     assert dashboard_tactic_for_snapshot(thread_blocked) == "T"
     assert dashboard_phase_for_snapshot(thread_blocked) == "Thread Review"
+
+
+def test_dashboard_tactic_treats_queued_pending_ci_as_monitor_only() -> None:
+    queued_snapshot = {
+        "state": "OPEN",
+        "lifecycle_state": "queued_for_merge",
+        "operator_state": "queued_for_merge",
+        "auto_merge_enabled": True,
+        "ci_status": "PENDING",
+        "unresolved_threads": 0,
+        "validation_report": {"status": "passed"},
+        "blockers": [{"type": "required_check_pending"}],
+    }
+
+    assert is_passive_queued_state(queued_snapshot) is True
+    assert dashboard_tactic_for_snapshot(queued_snapshot) == "S"
+    assert dashboard_phase_for_snapshot(queued_snapshot) == "Monitor"
 
 
 def test_metrics_log_event_accepts_dashboard_report_shape(tmp_path: Path) -> None:
@@ -447,6 +465,25 @@ def test_autopilot_tactic_skips_patch_for_manual_conflict_blocker() -> None:
         "operator_state": "manual_conflict_required",
         "advanced_strategy_id": "SPLIT_DECISION_REQUIRED",
         "advanced_strategy_steps": ["S"],
+    }
+
+    assert dashboard._candidate_tactics_for_snapshot(snapshot) == []
+    assert dashboard._autopilot_tactic_for_snapshot(snapshot) == "S"
+
+
+def test_autopilot_tactic_skips_verification_for_queued_pr() -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    snapshot = {
+        "state": "OPEN",
+        "lifecycle_state": "queued_for_merge",
+        "operator_state": "queued_for_merge",
+        "auto_merge_enabled": True,
+        "ci_status": "PENDING",
+        "validation_report": {"status": "passed"},
+        "unresolved_threads": 0,
+        "blockers": [{"type": "required_check_pending"}],
+        "advanced_strategy_id": "PATCH_ISOLATION_PLAN",
+        "advanced_strategy_steps": ["V", "A", "I"],
     }
 
     assert dashboard._candidate_tactics_for_snapshot(snapshot) == []
