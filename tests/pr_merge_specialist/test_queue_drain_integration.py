@@ -274,7 +274,7 @@ def test_queue_drain_hands_off_post_apply_passive_queued_result(
         "release_queue_lock",
         lambda _lock_path: None,
     )
-    monkeypatch.setattr(queue_drain_module, "pr_apply", lambda _args: prepared_result)
+    monkeypatch.setattr(queue_drain_module, "pr_apply", lambda _args, **_kw: prepared_result)
 
     def fake_merge_prepared_result(**kwargs):
         merge_handoffs.append(kwargs["prepared_result"].pr_state.pr_id)
@@ -684,7 +684,7 @@ def test_failed_remediation_excluded_from_active_results(monkeypatch, tmp_path: 
         def emit_trace_artifacts(self, _trace: object, _path: Path) -> None:
             return None
 
-    def fake_pr_apply(_args):
+    def fake_pr_apply(_args, **_kw):
         apply_call_count[0] += 1
         raise RuntimeError("apply failed")
 

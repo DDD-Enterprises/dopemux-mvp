@@ -11,6 +11,7 @@ import tempfile
 import time
 from collections import defaultdict, deque
 from dataclasses import replace
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Callable
 
@@ -576,6 +577,11 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
             repo_root=repo_root,
             policy=policy
         )
+        _implemented = sum(1 for d in applied_threads if d.disposition == ThreadDispositionType.IMPLEMENT and d.applied)
+        _declined = sum(1 for d in applied_threads if d.disposition == ThreadDispositionType.DECLINE_WITH_RATIONALE)
+        _escalated = sum(1 for d in applied_threads if d.disposition == ThreadDispositionType.ESCALATE)
+        if _implemented or _declined or _escalated:
+            log(f"Thread dispositions: {_implemented} implemented, {_declined} declined, {_escalated} escalated")
         if any(d.disposition == ThreadDispositionType.IMPLEMENT for d in applied_threads):
             log("Pushing implemented suggestions...")
             if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy):
@@ -1204,6 +1210,14 @@ def _ignite_speculative_train(
     return merged_ids, queued_ids
 
 
+def _queue_drain_progress(pr_id: int) -> Callable[[str, str], None]:
+    """Print-based progress callback for headless queue-drain mode."""
+    def _cb(msg: str, step_type: str = "INFO") -> None:
+        ts = datetime.now().strftime("%H:%M:%S")
+        print(f"[{ts}] PR #{pr_id} [{step_type}] {msg}")
+    return _cb
+
+
 def queue_drain(args: argparse.Namespace) -> int:
     from .closed_loop_engine import ClosedLoopEngine
     repo_root = Path.cwd()
@@ -1284,6 +1298,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                     continue
                     
                 processed_ids.add(pr_id)
+                cb = _queue_drain_progress(pr_id)
                 allowed = _derive_allowed_actions(result, policy)
                 report = result.to_dict()
                 report["allowed_actions"] = allowed
@@ -1297,7 +1312,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                         merge_result = pr_merge(
                             argparse.Namespace(
                                 **{**vars(args), "id": pr_id, "_queue_lock_held": True}
-                            )
+                            ), progress_callback=cb
                         )
                         if merge_result.lifecycle_state == PRState.MERGED.value or (
                             merge_result.merge_decision
@@ -1316,7 +1331,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                         apply_result = pr_apply(
                             argparse.Namespace(
                                 **{**vars(args), "id": pr_id, "_queue_lock_held": True}
-                            )
+                            ), progress_callback=cb
                         )
                         # Post-apply passive queued states still need merge handoff.
                         if _should_handoff_prepared_result(apply_result, policy):
@@ -1335,6 +1350,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                                 pr_root=pr_root,
                                 active_run_id=active_run_id,
                                 prepared_result=apply_result,
+                                progress_callback=cb,
                             )
                             if merge_result.lifecycle_state == PRState.MERGED.value or (
                                 merge_result.merge_decision
@@ -1360,7 +1376,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                         pr_ready(
                             argparse.Namespace(
                                 **{**vars(args), "id": pr_id, "_queue_lock_held": True}
-                            )
+                            ), progress_callback=cb
                         )
                     except RuntimeError as e:
                         print(f"Ready error for PR #{pr_id}: {e}")
@@ -1369,7 +1385,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                         pr_approve(
                             argparse.Namespace(
                                 **{**vars(args), "id": pr_id, "_queue_lock_held": True}
-                            )
+                            ), progress_callback=cb
                         )
                     except RuntimeError as e:
                         print(f"Approval error for PR #{pr_id}: {e}")
