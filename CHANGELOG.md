@@ -15,6 +15,8 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 ### Fixed
 - Validation-only PRs are no longer shown as queued-for-merge before local verification is complete.
 - A single failed speculative rebase or push no longer aborts the rest of the train pass.
+- Flight dashboard arrow-key navigation now accepts Kitty/application-cursor escape sequences instead of treating Down Arrow as an exit.
+- Flight dashboard arrow-key navigation now accepts Kitty/application-cursor escape sequences instead of treating Down Arrow as an exit.
 
 ## [0.1.0] - 2026-03-14
 ### Added

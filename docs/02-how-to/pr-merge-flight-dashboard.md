@@ -5,8 +5,8 @@ type: how-to
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-18'
-last_review: '2026-03-18'
-next_review: '2026-06-18'
+last_review: '2026-03-27'
+next_review: '2026-06-27'
 prelude: PR Merge Flight Dashboard (how-to) for dopemux documentation and developer workflows.
 ---
 # PR Merge Flight Dashboard Quickstart
@@ -64,6 +64,12 @@ The dashboard features non-blocking input handling. Simply press the correspondi
 - **[S] Skip**: Skip to the next PR in the queue.
 - **[Q] Quit**: Gracefully exit the dashboard and restore terminal state.
 
+Navigation behavior:
+
+- **Up / Down Arrow**: Move between PRs in the queue without exiting the dashboard.
+- **Kitty and other application-cursor terminals**: Arrow-key navigation accepts both CSI (`Esc [ A/B`) and SS3 (`Esc O A/B`) cursor sequences.
+- **Bare `Esc`**: Quit only when no cursor-key suffix arrives. Unrecognized escape suffixes are ignored instead of forcing a quit.
+
 ## Verification
 
 After launching the dashboard:
@@ -72,6 +78,7 @@ After launching the dashboard:
 1. Confirm validation-only PRs appear as `🟡` rather than queued.
 1. Confirm approval-only PRs appear as `🟣`.
 1. Confirm already queued auto-merge PRs appear as `🔵`.
+1. Confirm Up/Down arrow navigation works in your terminal emulator, including Kitty.
 
 ## ADHD Optimization
 

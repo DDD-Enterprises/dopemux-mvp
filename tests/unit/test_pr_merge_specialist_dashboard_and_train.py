@@ -250,6 +250,31 @@ def test_dashboard_decode_input_choice_maps_down_arrow(monkeypatch) -> None:
     assert dashboard._decode_input_choice("\x1b") == "DOWN"
 
 
+def test_dashboard_decode_input_choice_maps_kitty_down_arrow(monkeypatch) -> None:
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
+    dashboard._input_fd = 1
+
+    select_calls = iter(
+        [
+            ([1], [], []),
+            ([1], [], []),
+            ([], [], []),
+        ]
+    )
+    reads = iter([b"O", b"B"])
+
+    monkeypatch.setattr(
+        "src.dopemux_pr_merge_specialist.dashboard.select.select",
+        lambda *_args, **_kwargs: next(select_calls),
+    )
+    monkeypatch.setattr(
+        "src.dopemux_pr_merge_specialist.dashboard.os.read",
+        lambda *_args, **_kwargs: next(reads),
+    )
+
+    assert dashboard._decode_input_choice("\x1b") == "DOWN"
+
+
 def test_choose_autopilot_strategy_prefers_simple_for_small_independent_queue() -> None:
     dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
     strategy, reason = dashboard._choose_autopilot_strategy(
