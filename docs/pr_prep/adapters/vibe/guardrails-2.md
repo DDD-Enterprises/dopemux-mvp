@@ -145,7 +145,7 @@ Automatic downgrade to **PACKAGE_ONLY** when:
 1. `docs/pr_prep/adapters/vibe/guardrails-2.md` (this file)
 2. `docs/pr_prep/adapters/vibe/checkpoint-sequence.md`
 3. `docs/pr_prep/adapters/vibe/operator-review-form.md`
-4. `docs/pr_prep/adapters/vibe/agent-template.md`
+4. `docs/pr_prep/adapters/vibe/template-agent.md`
 
 ### Validation Artifacts
 1. `proof/pr_prep/instructions/VIBE_CHECKPOINT_VALIDATION.json`
