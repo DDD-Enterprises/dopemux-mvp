@@ -1244,6 +1244,7 @@ def queue_drain(args: argparse.Namespace) -> int:
         merged_ids = set()
         queued_ids = set()
         failed_remediation_ids: set = set()  # Accumulates across passes; stuck PRs aren't retried
+        no_progress_ids: set = set()  # PRs where tactic ran but state didn't advance
         global_fix_blocked: Dict[int, int] = {}  # pr_id -> fix_pr_number; persists across passes
         limit_reached = False
 
@@ -1280,6 +1281,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                 if r.pr_state.pr_id not in merged_ids
                 and r.pr_state.pr_id not in queued_ids
                 and r.pr_state.pr_id not in failed_remediation_ids
+                and r.pr_state.pr_id not in no_progress_ids
             ]
             if not active_results:
                 print("All PRs processed, merged, or queued.")
@@ -1362,11 +1364,16 @@ def queue_drain(args: argparse.Namespace) -> int:
                                 else:
                                     queued_ids.add(pr_id)
                         
-                        # If validation still failed after fix, we don't add to merged_ids, 
+                        # If validation still failed after fix, we don't add to merged_ids,
                         # so it will be re-scanned in next pass.
                         if not apply_result.validation_report or not apply_result.validation_report.passed:
                             print(f"PR #{pr_id}: Fix attempt completed but validation still failing.")
                             failed_remediation_ids.add(pr_id)
+                        elif pr_id not in merged_ids and pr_id not in queued_ids:
+                            # Validation passed locally but PR wasn't handed off to merge;
+                            # no point retrying in subsequent passes.
+                            no_progress_ids.add(pr_id)
+                            print(f"PR #{pr_id}: Local validation passed but PR not merge-ready; skipping in future passes.")
 
                     except RuntimeError as e:
                         print(f"Apply error for PR #{pr_id}: {e}")
@@ -1389,6 +1396,11 @@ def queue_drain(args: argparse.Namespace) -> int:
                         )
                     except RuntimeError as e:
                         print(f"Approval error for PR #{pr_id}: {e}")
+                elif tactic in ("DEFER", "REQUEST_CHANGES", "REQUEST_REVIEW"):
+                    no_progress_ids.add(pr_id)
+                elif not execute:
+                    # Dry-run: tactic won't change state, skip in future passes
+                    no_progress_ids.add(pr_id)
             if limit_reached:
                 break
         print(f"\nRun ID: {active_run_id}")

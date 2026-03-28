@@ -1049,3 +1049,125 @@ def test_closed_loop_engine_populates_strategy_in_trace():
     trace = engine.run_cycle("100", report)
     assert trace.next_tactic == "MERGE"
     assert trace.strategy_id == "DIRECT_REBASE_MERGE"
+
+
+def test_queue_drain_skips_no_progress_prs_in_subsequent_passes(
+    monkeypatch, tmp_path: Path
+):
+    """PRs that pass local validation but remain apply_blocked should not be reprocessed."""
+    apply_blocked_result = _make_result(
+        pr_id=200,
+        lifecycle_state=PRState.APPLY_BLOCKED.value,
+        ci_status="FAILURE",
+        validation_status=ValidationStatus.PASSED,
+    )
+
+    scan_call_count = [0]
+    apply_call_count = [0]
+
+    def fake_scan(*_args, **_kwargs):
+        scan_call_count[0] += 1
+        return [apply_blocked_result]
+
+    class FakeClosedLoopEngine:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def run_cycle(self, _case_id, _report):
+            return SimpleNamespace(next_tactic="APPLY_FIX")
+
+        def emit_trace_artifacts(self, _trace, _path):
+            return None
+
+    def fake_apply(_args, **_kw):
+        apply_call_count[0] += 1
+        return apply_blocked_result
+
+    monkeypatch.setattr(closed_loop_engine, "ClosedLoopEngine", FakeClosedLoopEngine)
+    monkeypatch.setattr(queue_drain_module, "GitHubClient", FakeGitHubClient)
+    monkeypatch.setattr(queue_drain_module, "load_effective_policy", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_get_ops_engine", lambda _: object())
+    monkeypatch.setattr(queue_drain_module, "queue_scan_internal", fake_scan)
+    monkeypatch.setattr(queue_drain_module, "_handle_global_ci_blockers", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_ignite_speculative_train", lambda *a, **kw: ([], []))
+    monkeypatch.setattr(queue_drain_module, "acquire_queue_lock", lambda **kw: (True, tmp_path / "q.lock", None))
+    monkeypatch.setattr(queue_drain_module, "release_queue_lock", lambda _: None)
+    monkeypatch.setattr(queue_drain_module, "pr_apply", fake_apply)
+    monkeypatch.setattr(queue_drain_module, "_should_handoff_prepared_result", lambda *a, **kw: False)
+
+    rc = queue_drain_module.queue_drain(
+        SimpleNamespace(
+            repo=None,
+            out_dir=str(tmp_path),
+            policy=None,
+            execute=True,
+            allow_dirty=True,
+            limit=20,
+            max_prs=0,
+            max_passes=3,
+            strategy="hybrid",
+            prioritize=[],
+            only=[],
+            run_id="noprogress",
+        )
+    )
+
+    assert rc == 0
+    # Scanned 2 passes (pass 1 processes, pass 2 finds nothing active), but applied only once
+    assert scan_call_count[0] == 2
+    assert apply_call_count[0] == 1
+
+
+def test_queue_drain_dry_run_skips_all_in_subsequent_passes(
+    monkeypatch, tmp_path: Path
+):
+    """In dry-run mode (no --execute), PRs should be skipped in subsequent passes."""
+    result = _make_result(
+        pr_id=201,
+        lifecycle_state=PRState.APPLY_BLOCKED.value,
+        ci_status="FAILURE",
+    )
+
+    scan_call_count = [0]
+
+    def fake_scan(*_args, **_kwargs):
+        scan_call_count[0] += 1
+        return [result]
+
+    class FakeClosedLoopEngine:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def run_cycle(self, _case_id, _report):
+            return SimpleNamespace(next_tactic="APPLY_FIX")
+
+        def emit_trace_artifacts(self, _trace, _path):
+            return None
+
+    monkeypatch.setattr(closed_loop_engine, "ClosedLoopEngine", FakeClosedLoopEngine)
+    monkeypatch.setattr(queue_drain_module, "GitHubClient", FakeGitHubClient)
+    monkeypatch.setattr(queue_drain_module, "load_effective_policy", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_get_ops_engine", lambda _: object())
+    monkeypatch.setattr(queue_drain_module, "queue_scan_internal", fake_scan)
+    monkeypatch.setattr(queue_drain_module, "_handle_global_ci_blockers", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_ignite_speculative_train", lambda *a, **kw: ([], []))
+
+    rc = queue_drain_module.queue_drain(
+        SimpleNamespace(
+            repo=None,
+            out_dir=str(tmp_path),
+            policy=None,
+            execute=False,
+            allow_dirty=True,
+            limit=20,
+            max_prs=0,
+            max_passes=3,
+            strategy="hybrid",
+            prioritize=[],
+            only=[],
+            run_id="dryrun",
+        )
+    )
+
+    assert rc == 0
+    assert scan_call_count[0] == 2  # pass 1 processes, pass 2 finds nothing

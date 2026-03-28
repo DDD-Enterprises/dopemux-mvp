@@ -517,6 +517,19 @@ class DopemuxDashboard:
             self.state.autopilot_stall_counts[active_pr_id] = (
                 self.state.autopilot_stall_counts.get(active_pr_id, 0) + 1
             )
+            # Disengage autopilot when all PRs have stalled repeatedly
+            max_stalls = 2
+            all_stalled = self.state.prs and all(
+                self.state.autopilot_stall_counts.get(str(pr.get("pr_id")), 0) >= max_stalls
+                for pr in self.state.prs
+            )
+            if all_stalled:
+                self.state.auto_pilot = False
+                self.state.autopilot_strategy = ""
+                self.state.status_message = (
+                    "AUTO-PILOT DISENGAGED: All PRs stalled. Manual intervention required."
+                )
+                return
             if len(self.state.prs) > 1:
                 self.state.active_index = (self.state.active_index + 1) % len(
                     self.state.prs
@@ -527,8 +540,10 @@ class DopemuxDashboard:
                     f"Autopilot: PR #{target_pr_id} stalled under {initial_tactic}; advancing to PR #{next_pr_id}."
                 )
             else:
+                self.state.auto_pilot = False
+                self.state.autopilot_strategy = ""
                 self.state.status_message = (
-                    f"Autopilot: PR #{target_pr_id} remains blocked under {initial_tactic}."
+                    f"AUTO-PILOT DISENGAGED: PR #{target_pr_id} blocked under {initial_tactic}."
                 )
             return
         self.state.autopilot_stall_counts.pop(str(target_pr_id), None)
