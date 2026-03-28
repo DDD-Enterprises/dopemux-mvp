@@ -887,6 +887,20 @@ def _get_ops_engine(out_dir: Path) -> FlightDeckOpsEngine:
 def _derive_allowed_actions(result: PRResult, policy: Dict[str, Any]) -> List[str]:
     return allowed_actions_for_result(result)
 
+
+def _should_handoff_prepared_result(result: PRResult, policy: Dict[str, Any]) -> bool:
+    if "MERGE" in _derive_allowed_actions(result, policy):
+        return True
+    if result.merge_decision is None:
+        return False
+    if _state_value(result.merge_decision.action) == MergeActionType.BLOCKED.value:
+        return False
+    return (
+        _state_value(result.lifecycle_state) == PRState.QUEUED_FOR_MERGE.value
+        or str(result.artifacts.get("operator_state", "")) == "queued_for_merge"
+    )
+
+
 FINGERPRINT_MARKER = "<!-- bot:failure_fingerprint:"
 
 def _parse_fingerprint_from_body(body: str) -> Optional[str]:
@@ -1276,8 +1290,8 @@ def queue_drain(args: argparse.Namespace) -> int:
                                 **{**vars(args), "id": pr_id, "_queue_lock_held": True}
                             )
                         )
-                        # Re-derive actions to see if it's merge-ready now
-                        if "MERGE" in _derive_allowed_actions(apply_result, policy):
+                        # Post-apply passive queued states still need merge handoff.
+                        if _should_handoff_prepared_result(apply_result, policy):
                             merge_result = _merge_prepared_result(
                                 args=argparse.Namespace(
                                     **{

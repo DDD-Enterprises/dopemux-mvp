@@ -5,11 +5,12 @@ from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
 
+from dopemux_pr_merge_specialist import closed_loop_engine
 from dopemux_pr_merge_specialist import engine
 from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
 from dopemux_pr_merge_specialist.plan_builder import build_plan_result, write_pr_state_artifact
 from dopemux_pr_merge_specialist.preflight import build_run_paths, pr_dir_for
-from dopemux_pr_merge_specialist.schema import ValidationReport, ValidationStatus, ValidationStepResult
+from dopemux_pr_merge_specialist.schema import MergeActionType, MergeDecision, PRResult, PRState, PullRequestState, ValidationReport, ValidationStatus, ValidationStepResult
 from dopemux_pr_merge_specialist import cli as pr_merge_cli
 
 
@@ -78,6 +79,57 @@ class FakeGitHubClient:
 
     def find_global_fix_prs(self) -> list[dict]:
         return []
+
+
+def _make_result(
+    *,
+    pr_id: int,
+    lifecycle_state: str,
+    ci_status: str,
+    merge_decision: MergeDecision | None = None,
+    auto_merge_enabled: bool = False,
+    artifacts: dict[str, str] | None = None,
+    validation_status: ValidationStatus = ValidationStatus.PASSED,
+) -> PRResult:
+    return PRResult(
+        run_id="testrun",
+        pr_state=PullRequestState(
+            pr_id=pr_id,
+            title=f"PR {pr_id}",
+            author="tester",
+            state="OPEN",
+            base_ref="main",
+            head_ref=f"feature/{pr_id}",
+            ci_status=ci_status,
+            mergeable="MERGEABLE",
+            merge_state_status="CLEAN",
+            review_decision="APPROVED",
+            auto_merge_enabled=auto_merge_enabled,
+            additions=3,
+            deletions=1,
+            changed_files=1,
+            lifecycle_state=PRState(lifecycle_state),
+            head_sha=f"head-{pr_id}",
+            base_sha="base-main",
+        ),
+        lifecycle_state=lifecycle_state,
+        apply_actions=[],
+        merge_decision=merge_decision,
+        findings=[],
+        truth_sources=[],
+        precedence_order=[],
+        decision_basis={},
+        validation_report=ValidationReport(
+            status=validation_status,
+            required_for_merge_ready=True,
+            steps=[],
+            attempts=1,
+            remediation_applied=False,
+        ),
+        thread_dispositions=[],
+        fingerprint=None,
+        artifacts=artifacts or {},
+    )
 
 
 def test_queue_scan_writes_v3_artifacts(monkeypatch, tmp_path: Path):
@@ -153,6 +205,106 @@ def test_queue_scan_reuses_matching_prior_validation_state(tmp_path: Path):
     assert results[0].validation_report is not None
     assert results[0].validation_report.status == ValidationStatus.PASSED
     assert results[0].lifecycle_state == "merge_ready"
+
+
+def test_queue_drain_hands_off_post_apply_passive_queued_result(
+    monkeypatch, tmp_path: Path
+):
+    initial_result = _make_result(
+        pr_id=190,
+        lifecycle_state=PRState.APPLY_BLOCKED.value,
+        ci_status="FAILURE",
+    )
+    prepared_result = _make_result(
+        pr_id=190,
+        lifecycle_state=PRState.QUEUED_FOR_MERGE.value,
+        ci_status="SUCCESS",
+        auto_merge_enabled=True,
+        merge_decision=MergeDecision(
+            action=MergeActionType.REBASE_MERGE,
+            command=["gh", "pr", "merge", "190", "--rebase", "--delete-branch"],
+            reason="ready",
+            reason_code="rebase_merge_ready",
+        ),
+        artifacts={"operator_state": "queued_for_merge"},
+    )
+
+    merge_handoffs: list[int] = []
+
+    class FakeClosedLoopEngine:
+        def __init__(self, *_args, **_kwargs) -> None:
+            pass
+
+        def run_cycle(self, _case_id: str, _report: dict) -> SimpleNamespace:
+            return SimpleNamespace(next_tactic="APPLY_FIX")
+
+        def emit_trace_artifacts(self, _trace: object, _path: Path) -> None:
+            return None
+
+    monkeypatch.setattr(closed_loop_engine, "ClosedLoopEngine", FakeClosedLoopEngine)
+    monkeypatch.setattr(queue_drain_module, "GitHubClient", FakeGitHubClient)
+    monkeypatch.setattr(
+        queue_drain_module,
+        "load_effective_policy",
+        lambda *_args, **_kwargs: {},
+    )
+    monkeypatch.setattr(queue_drain_module, "_get_ops_engine", lambda _run_dir: object())
+    monkeypatch.setattr(
+        queue_drain_module,
+        "queue_scan_internal",
+        lambda *_args, **_kwargs: [initial_result],
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_handle_global_ci_blockers",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_ignite_speculative_train",
+        lambda *_args, **_kwargs: ([], []),
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "acquire_queue_lock",
+        lambda **_kwargs: (True, tmp_path / "queue.lock", None),
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "release_queue_lock",
+        lambda _lock_path: None,
+    )
+    monkeypatch.setattr(queue_drain_module, "pr_apply", lambda _args: prepared_result)
+
+    def fake_merge_prepared_result(**kwargs):
+        merge_handoffs.append(kwargs["prepared_result"].pr_state.pr_id)
+        return kwargs["prepared_result"]
+
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_merge_prepared_result",
+        fake_merge_prepared_result,
+    )
+
+    rc = queue_drain_module.queue_drain(
+        SimpleNamespace(
+            repo=None,
+            out_dir=str(tmp_path),
+            policy=None,
+            execute=True,
+            allow_dirty=True,
+            limit=20,
+            max_prs=1,
+            max_passes=1,
+            strategy="hybrid",
+            prioritize=[],
+            only=[],
+            run_id="queuedhandoff",
+        )
+    )
+
+    assert rc == 0
+    assert merge_handoffs == [190]
 
 
 def test_queue_drain_orchestrates_phase_functions(monkeypatch, tmp_path: Path):
