@@ -103,11 +103,12 @@ class TestCLI:
     def test_init_command_already_initialized(self, mock_exists, mock_config):
         """Test init command when project is already initialized."""
 
-        # Mock that .dopemux directory exists
-        def side_effect(self):
-            if ".dopemux" in str(self):
-                return True
-            return False
+        # Click may probe the path type first; the command itself then checks the
+        # workspace path and the `.dopemux/` directory.
+        def side_effect(*args, **kwargs):
+            if not args:
+                return False
+            return ".dopemux" in str(args[0])
 
         mock_exists.side_effect = side_effect
 
