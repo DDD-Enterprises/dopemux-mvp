@@ -35,6 +35,8 @@ python -m dopemux_pr_merge_specialist.cli queue-drain --execute --max-prs 5
 
 `queue-drain` does not treat a PR as queued or merge-ready merely because local validation passed. Required GitHub check failures still block the PR until the remote checks clear.
 
+When `pr-apply` produces a passive `queued_for_merge` result after rebasing and validation, `queue-drain` now still executes the merge handoff step so GitHub receives the actual `gh pr merge` or auto-merge enqueue command for that PR.
+
 ## Common Workflows
 
 ### 1. Safe Review Cycle (Non-Mutating)
