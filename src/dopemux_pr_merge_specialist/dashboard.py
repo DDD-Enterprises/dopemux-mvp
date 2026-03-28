@@ -27,6 +27,7 @@ from dopemux.ui.theme import DOPEMUX_THEME
 from .action_model import (
     dashboard_phase_for_snapshot,
     dashboard_tactic_for_snapshot,
+    is_passive_queued_state,
     result_to_dashboard_entry,
 )
 from .metrics import MetricsEngine
@@ -234,6 +235,9 @@ class DopemuxDashboard:
         return self._default_queue_plan(self.state.prs)
 
     def _candidate_tactics_for_snapshot(self, snapshot: Dict[str, Any]) -> List[str]:
+        if is_passive_queued_state(snapshot):
+            return []
+
         blockers = {
             str(item.get("type") or item.get("finding_type") or "")
             for item in snapshot.get("blockers", [])
