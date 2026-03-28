@@ -6,7 +6,6 @@ import json
 import sys
 from pathlib import Path
 
-from . import engine
 from .action_model import result_to_dashboard_entry
 from .classification import classify_pr, risk_score
 from .conflict import build_conflict_analysis
@@ -51,7 +50,7 @@ def cmd_flight(args: argparse.Namespace) -> int:
     from .dashboard import DopemuxDashboard
     from .github_api import GitHubClient
     from .policy import load_effective_policy
-    from .preflight import run_id
+    from .preflight import build_run_paths, run_id
     from .queue_drain import queue_scan_internal
 
     repo_root = Path.cwd()
@@ -74,10 +73,15 @@ def cmd_flight(args: argparse.Namespace) -> int:
 
     # 2. Convert PR results to simple dicts for the dashboard
     pr_queue = [result_to_dashboard_entry(result) for result in results]
+    _, queue_dir, _ = build_run_paths(args.out_dir, active_run_id)
+    ordering_plan_path = queue_dir / "ORDERING_PLAN.json"
+    ordering_plan = {}
+    if ordering_plan_path.exists():
+        ordering_plan = json.loads(ordering_plan_path.read_text(encoding="utf-8"))
 
     # 3. Launch Dashboard
     dashboard = DopemuxDashboard(manager=client, args=args, policy=policy)
-    dashboard.run(pr_queue, active_run_id)
+    dashboard.run(pr_queue, active_run_id, ordering_plan=ordering_plan)
     return 0
 
 
@@ -148,13 +152,21 @@ def _self_check(args: argparse.Namespace) -> int:
 
     # Check 2: Schema completeness — consensus engine types exist
     try:
-        from .schema import (
-            ArbitrationRoleTrace,
-            AutonomyGateReport,
-            ConsensusDecision,
-            MergeExecutionPlan,
-            RequiredVerificationPlan,
-        )
+        schema_module = importlib.import_module("dopemux_pr_merge_specialist.schema")
+        required_schema_types = [
+            "ArbitrationRoleTrace",
+            "AutonomyGateReport",
+            "ConsensusDecision",
+            "MergeExecutionPlan",
+            "RequiredVerificationPlan",
+        ]
+        missing = [
+            name for name in required_schema_types if not hasattr(schema_module, name)
+        ]
+        if missing:
+            raise ImportError(
+                f"Missing schema consensus types: {', '.join(sorted(missing))}"
+            )
 
         results["checks"].append({"name": "schema:consensus_types", "status": "PASS"})
     except ImportError as exc:
@@ -282,36 +294,14 @@ def _health(args: argparse.Namespace) -> int:
 
 
 # Compatibility exports for existing callers/tests that import helpers from cli.
-def _classify_pr(*args, **kwargs):
-    return classify_pr(*args, **kwargs)
-
-
-def _risk_score(*args, **kwargs):
-    return risk_score(*args, **kwargs)
-
-
-def _sort_states(*args, **kwargs):
-    return sort_states(*args, **kwargs)
-
-
-def _decide_thread_disposition(*args, **kwargs):
-    return decide_thread_disposition(*args, **kwargs)
-
-
-def _build_conflict_analysis(*args, **kwargs):
-    return build_conflict_analysis(*args, **kwargs)
-
-
-def _run_merge_with_fallback(*args, **kwargs):
-    return run_merge_with_fallback(*args, **kwargs)
-
-
-def _queue_scan(*args, **kwargs):
-    return queue_scan(*args, **kwargs)
-
-
-def _queue_drain(*args, **kwargs):
-    return queue_drain(*args, **kwargs)
+_classify_pr = classify_pr
+_risk_score = risk_score
+_sort_states = sort_states
+_decide_thread_disposition = decide_thread_disposition
+_build_conflict_analysis = build_conflict_analysis
+_run_merge_with_fallback = run_merge_with_fallback
+_queue_scan = queue_scan
+_queue_drain = queue_drain
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -557,65 +547,22 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def cmd_flight_deck(args: argparse.Namespace) -> int:
-    """🚀 Launch Flight Deck operations center with closed-loop automation."""
-    from .closed_loop_engine import ClosedLoopEngine
-    from .github_api import GitHubClient
-    from .interactive import InteractiveMergeWizard
-    from .ops_engine import FlightDeckOpsEngine
-    from .policy import load_effective_policy
-    from .strategy_library import STRATEGY_LIBRARY
-
-    repo_root = Path.cwd()
-    policy = load_effective_policy(
-        repo_root, explicit_path=getattr(args, "policy", None)
-    )
-    client = GitHubClient(
-        repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy
-    )
-
-    # Initialize Flight Deck engines
-    ops_engine = FlightDeckOpsEngine(Path("proof/pr_merge/flight_deck/ops"))
-    closed_loop = ClosedLoopEngine(ops_engine, STRATEGY_LIBRARY)
-
-    # Configure wizard with Flight Deck enhancements
-    class FlightDeckWizard(InteractiveMergeWizard):
-        def __init__(self, manager, ops_engine, closed_loop):
-            super().__init__(manager=manager)
-            self.ops_engine = ops_engine
-            self.closed_loop = closed_loop
-            self.auto_pilot = getattr(args, "auto_pilot", False)
-            self.focus_pr_id = getattr(args, "pr_id", None)
-
-    wizard = FlightDeckWizard(client, ops_engine, closed_loop)
-    print(
-        f"🚀 Flight Deck launched in {'AUTO-PILOT' if wizard.auto_pilot else 'MANUAL'} mode"
-    )
-    if wizard.focus_pr_id:
-        print(f"🎯 Focused on PR #{wizard.focus_pr_id}")
-    wizard.run()
-    return 0
+    """🚀 Launch Flight Deck via the authoritative merge dashboard."""
+    flight_args = argparse.Namespace(**vars(args))
+    flight_args.limit = getattr(args, "limit", 50)
+    flight_args.strategy = getattr(args, "strategy", "hybrid")
+    flight_args.prioritize = list(getattr(args, "prioritize", []) or [])
+    flight_args.only = []
+    if getattr(args, "pr_id", None):
+        flight_args.only = [str(args.pr_id)]
+    return cmd_flight(flight_args)
 
 
 def cmd_fusion(args: argparse.Namespace) -> int:
     """🔥 Launch Fusion Engine for advanced conflict resolution."""
-    from .fusion_engine import FusionEngine
-    from .github_api import GitHubClient
     from .ops_engine import FlightDeckOpsEngine
-    from .patch_engine import PatchEngine
-    from .policy import load_effective_policy
 
-    repo_root = Path.cwd()
-    policy = load_effective_policy(
-        repo_root, explicit_path=getattr(args, "policy", None)
-    )
-    client = GitHubClient(
-        repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy
-    )
-    ops_engine = FlightDeckOpsEngine(Path("proof/pr_merge/flight_deck/fusion"))
-
-    # Initialize engines
-    patch_engine = PatchEngine(ops_engine, posture="GO_SUPERVISED_ONLY")
-    fusion_engine = FusionEngine(patch_engine, ops_engine)
+    FlightDeckOpsEngine(Path("proof/pr_merge/flight_deck/fusion"))
 
     pr_id = args.pr_id
     strategy = args.strategy
@@ -631,13 +578,16 @@ def cmd_fusion(args: argparse.Namespace) -> int:
     # 5. Emit fusion artifacts
 
     print(f"✅ Fusion analysis complete for PR #{pr_id}")
-    print(f"📁 Artifacts: proof/pr_merge/flight_deck/fusion/")
-    print(f"🎯 Next: Review VERIFICATION_GATE_REPORT.json")
+    print("📁 Artifacts: proof/pr_merge/flight_deck/fusion/")
+    print("🎯 Next: Review VERIFICATION_GATE_REPORT.json")
     return 0
 
 
 def cmd_ops(args: argparse.Namespace) -> int:
     """📊 Show Flight Deck operational metrics and health."""
+    import json
+    from pathlib import Path
+
     ops_dir = Path("proof/pr_merge/flight_deck/ops")
 
     print("📊 Flight Deck Operational Metrics")
@@ -661,7 +611,7 @@ def cmd_ops(args: argparse.Namespace) -> int:
             manifest_path = ops_dir / "OPERATIONALIZATION_MANIFEST.json"
             if manifest_path.exists():
                 manifest = json.loads(manifest_path.read_text())
-                print(f"\n📋 Manifest:")
+                print("\n📋 Manifest:")
                 print(f"   Version: {manifest.get('version', '1.0.0')}")
                 print(
                     f"   Artifacts: {', '.join(manifest.get('artifacts', {}).keys())}"
@@ -672,14 +622,14 @@ def cmd_ops(args: argparse.Namespace) -> int:
             print(f"⚠️ Error reading ops report: {e}")
 
     # Fallback: Show basic Flight Deck info
-    print(f"\n📈 Current Status: STANDBY")
-    print(f"🎛️ Posture: GO_SUPERVISED_ONLY")
-    print(f"📝 Flight Deck Sessions: 0")
-    print(f"✍️ Formal Signoffs: 0")
-    print(f"🛡️ Auto-Apply Safety: CLEAN")
-    print(f"📊 Runtime Stability: 1.0")
+    print("\n📈 Current Status: STANDBY")
+    print("🎛️ Posture: GO_SUPERVISED_ONLY")
+    print("📝 Flight Deck Sessions: 0")
+    print("✍️ Formal Signoffs: 0")
+    print("🛡️ Auto-Apply Safety: CLEAN")
+    print("📊 Runtime Stability: 1.0")
 
-    print(f"\n💡 Tip: Run 'flight-deck' or 'fusion' commands to generate metrics")
+    print("\n💡 Tip: Run 'flight-deck' or 'fusion' commands to generate metrics")
 
     return 0
 

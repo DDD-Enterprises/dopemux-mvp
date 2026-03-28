@@ -24,6 +24,7 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 - Dashboard autopilot no longer treats monitor tactic `S` as queue navigation and no longer resets to the top PR after every reassessment.
 - Queue planning no longer downgrades failing required GitHub checks to warnings after a local validation pass; those PRs remain `apply_blocked` until the remote required checks actually clear.
 - `queue-drain --max-prs` now stops the execute loop at the requested bound instead of continuing through additional PRs in the same pass.
+- Skill template parity is restored for the mirrored `cli.py`, `policy.py`, `runtime.py`, and `validation.py` modules so the full unit suite agrees with the runtime PR Merge specialist implementation.
 
 ## [0.1.0] - 2026-03-14
 ### Added
