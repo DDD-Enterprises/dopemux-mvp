@@ -1552,6 +1552,7 @@ def _handle_global_ci_blockers(
     results: List[PRResult],
     client: GitHubClient,
     worktree_dir: Path,
+    seen_stale_fingerprints: Optional[set] = None,
     logger: Optional[Callable[[str, str, str], None]] = None,
 ) -> Dict[int, int]:
     """
@@ -1611,6 +1612,10 @@ def _handle_global_ci_blockers(
         if len(blocked_prs) <= 1:
             continue  # Not a global blocker
 
+        if seen_stale_fingerprints is not None and fingerprint in seen_stale_fingerprints:
+            _log(f"Fingerprint {fingerprint[:8]} previously confirmed stale; skipping.", "INFO")
+            continue
+
         if fingerprint in fingerprint_to_pr_map:
             # A global fix PR already exists. Record all grouped PRs as blocked.
             pr_number = fingerprint_to_pr_map[fingerprint]
@@ -1650,6 +1655,8 @@ def _handle_global_ci_blockers(
                         "skipping shared remediation.",
                         "INFO",
                     )
+                    if seen_stale_fingerprints is not None:
+                        seen_stale_fingerprints.add(fingerprint)
                 else:
                     _log(
                         f"Global fix creation failed for fingerprint {fingerprint}; "
@@ -1834,6 +1841,7 @@ def queue_drain(args: argparse.Namespace) -> int:
         failed_remediation_ids: set = set()  # Accumulates across passes; stuck PRs aren't retried
         no_progress_ids: set = set()  # PRs where tactic ran but state didn't advance
         global_fix_blocked: Dict[int, int] = {}  # pr_id -> fix_pr_number; persists across passes
+        seen_stale_fingerprints: set = set()   # persists across passes
         limit_reached = False
 
         for pass_idx in range(max_passes):
@@ -1848,6 +1856,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                 results,
                 client,
                 repo_root,
+                seen_stale_fingerprints=seen_stale_fingerprints,
                 logger=lambda level, scope, message: _emit_live_run_event(
                     live_log_path,
                     level=level,
@@ -2011,9 +2020,8 @@ def queue_drain(args: argparse.Namespace) -> int:
                         cb(f"Approval error: {e}", "ERROR")
                 elif tactic in ("DEFER", "REQUEST_CHANGES", "REQUEST_REVIEW"):
                     no_progress_ids.add(pr_id)
-                elif not execute:
-                    # Dry-run: tactic won't change state, skip in future passes
-                    no_progress_ids.add(pr_id)
+                # NOTE: In dry-run, actionable tactics (APPLY_FIX/MERGE/APPROVE/READY) are intentionally
+                # NOT added to no_progress_ids — they remain eligible for subsequent passes.
             log_queue(
                 f"Completed queue pass {pass_idx + 1}/{max_passes} (processed={len(processed_ids)}, merged={len(merged_ids)}, queued={len(queued_ids)})."
             )
