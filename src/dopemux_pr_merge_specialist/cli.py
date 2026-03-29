@@ -420,7 +420,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     queue_drain_parser = sub.add_parser(
         "queue-drain",
-        help="🌊 Automated Synchronization: Orchestrate scan, plan, apply, and merge across the entire queue.",
+        help="🌊 Automated Synchronization: Orchestrate scan, remediation, remote-fingerprint clustering, and merge across the queue.",
     )
     add_common_arguments(queue_drain_parser)
     queue_drain_parser.add_argument(
@@ -515,7 +515,7 @@ def build_parser() -> argparse.ArgumentParser:
     flight_parser.set_defaults(func=cmd_flight)
 
     flight_deck_parser = sub.add_parser(
-        "flight-deck", help="🚀 Mission Control: Launch the Flight Deck operations center."
+        "flight-deck", help="🚀 Mission Control: Launch the Flight Deck operations center with shared CI blocker detection."
     )
     add_common_arguments(flight_deck_parser)
     flight_deck_parser.add_argument(
