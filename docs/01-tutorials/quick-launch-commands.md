@@ -222,24 +222,25 @@ dopemux tmux list
 dopemux tmux theme neon
 ```
 
-### Alternative Routing Presets
+### Alternative Routing
 
-Need Claude Code to hit a specific provider when using `--alt-routing`?
+Dopemux allows you to route Claude Code requests through external providers (Grok, Gemini, OpenAI) using a global routing mode.
 
 ```bash
-# Inspect all configured LiteLLM models
-dopemux alt-routing --list-models
+# Switch to global API mode (use LiteLLM + external models)
+dopemux routing api
 
-# Route every claude-* alias to Grok Code Fast with GPT-5 fallbacks
-dopemux alt-routing --preset balanced
+# Switch back to direct subscription mode
+dopemux routing direct
 
-# Manually pick models + fallback chain
-dopemux alt-routing --primary openrouter-openai-gpt-5-pro \
-  --fallbacks "openrouter-openai-gpt-5,openrouter-xai-grok-4-fast"
+# View current routing status and model mapping
+dopemux routing status
+dopemux routing config
 ```
 
-The command rewrites `.dopemux/litellm/A/litellm.config.yaml`, so the preference
-sticks for the next `dopemux start --alt-routing` run.
+When in `api` mode, running `dopemux start` automatically configures Claude Code to use the local proxies.
+
+For detailed configuration of models and providers, see the [Alternate Routing Reference](../03-reference/routing.md).
 
 ### Combining Options
 
