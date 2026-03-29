@@ -1,11 +1,19 @@
-aiohttp>=3.9.0
+# DEPRECATED: Redirecting to root pyproject.toml [services] extra
+# -----------------------------------------------------------------------------
+# This service's dependencies are now managed centrally.
+# To install this service's dependencies alongside the core package:
+#   pip install -e ".[services]"
+# -----------------------------------------------------------------------------
+
+# For legacy compatibility, we keep these listed but they should match pyproject.toml
+aiohttp>=3.12.14
 asyncpg>=0.29.0
-redis[hiredis]>=5.0.0
-httpx>=0.25.0
-pydantic>=2.0.0
-python-dateutil>=2.8.0
-uvicorn[standard]==0.32.0
-fastapi==0.115.2
+redis[hiredis]>=5.0.1
+httpx>=0.28.1
+pydantic>=2.7.0
+python-dateutil>=2.8.2
+uvicorn[standard]>=0.32.0
+fastapi>=0.115.12
 rich>=13.0.0
 toml>=0.10.0
 PyYAML>=6.0.0

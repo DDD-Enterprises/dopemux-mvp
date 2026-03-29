@@ -1,12 +1,18 @@
+# DEPRECATED: Redirecting to root pyproject.toml [services] extra
+# -----------------------------------------------------------------------------
+# This service's dependencies are now managed centrally.
+# To install this service's dependencies alongside the core package:
+#   pip install -e ".[services]"
+# -----------------------------------------------------------------------------
+
+# For legacy compatibility, we keep these listed but they should match pyproject.toml
 fastapi>=0.115.12
-uvicorn[standard]==0.27.0
-redis==5.0.1
+uvicorn[standard]>=0.32.0
+redis>=5.0.1
 pydantic>=2.7.0
 pydantic-settings>=2.1.0
-python-dateutil==2.8.2
-pytest==7.4.3
-pytest-asyncio==0.21.1
+python-dateutil>=2.8.2
 httpx>=0.28.1
-aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
-prometheus-client==0.19.0
+aiohttp>=3.12.14
+prometheus-client>=0.19.0
 fastmcp
