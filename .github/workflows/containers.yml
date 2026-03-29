@@ -108,15 +108,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.DHI_TOKEN }}
 
-      - name: ✅ Check DHI token availability
-        if: ${{ !secrets.DHI_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "::error::DHI_TOKEN secret is required to build images that depend on dhi.io base images. Configure secrets.DHI_TOKEN in repository or organization settings."
-            exit 1
-          fi
-          echo "::warning::DHI_TOKEN secret is not available in this context. Any Dockerfiles that use dhi.io/* base images may fail with a 'pull access denied' error during build."
-
       - name: 🏷️ Extract metadata
         id: meta
         uses: docker/metadata-action@v5
