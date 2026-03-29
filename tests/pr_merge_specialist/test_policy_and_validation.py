@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -107,6 +110,28 @@ def test_append_live_log_creates_append_only_stable_lines(tmp_path: Path):
     assert len(lines) == 2
     assert lines[0].endswith("[INFO] queue: first line with newline")
     assert lines[1].endswith("[WARNING] pr:42: second line")
+
+
+def test_module_entrypoint_works_without_pythonpath():
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "dopemux_pr_merge_specialist.cli",
+            "self-check",
+            "--json",
+            "--allow-dirty",
+        ],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert '"ok": true' in result.stdout
 
 
 def test_validation_scopes_commands_to_changed_pr_files(monkeypatch, tmp_path: Path):

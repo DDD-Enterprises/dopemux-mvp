@@ -869,6 +869,7 @@ def test_queue_drain_progress_writes_live_log(tmp_path: Path):
 
 def test_create_global_fix_pr_logs_no_changes_outcome(monkeypatch, tmp_path: Path):
     log_events: list[tuple[str, str, str]] = []
+    popen_env: dict[str, str] = {}
 
     def logger(level: str, scope: str, message: str) -> None:
         log_events.append((level, scope, message))
@@ -881,16 +882,22 @@ def test_create_global_fix_pr_logs_no_changes_outcome(monkeypatch, tmp_path: Pat
             return next(self._lines, "")
 
     class FakePopen:
-        def __init__(self, cmd, stdout, stderr, text, cwd, bufsize, universal_newlines):
+        def __init__(self, cmd, stdout, stderr, text, cwd, env, bufsize, universal_newlines):
             self.cmd = cmd
+            popen_env.update(env)
             self.stdout = FakeStdout(["working\n"])
             self.returncode = 0
 
-        def wait(self):
+        def wait(self, timeout=None):
             return 0
 
-    def fake_run(cmd, cwd=None, check=False, stderr=None, capture_output=False, text=False):
+    seen_commands: list[list[str]] = []
+
+    def fake_run(cmd, cwd=None, check=False, stderr=None, capture_output=False, text=False, timeout=None):
         command = list(cmd)
+        seen_commands.append(command)
+        if command and command[0] == "pytest":
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
         if command[:3] == ["git", "status", "--porcelain"]:
             return SimpleNamespace(returncode=0, stdout="", stderr="")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
@@ -909,6 +916,8 @@ def test_create_global_fix_pr_logs_no_changes_outcome(monkeypatch, tmp_path: Pat
         FakeGitHubClient(repo=None, repo_root=tmp_path, policy={}),
         tmp_path,
         logger=logger,
+        verification_command="pytest tests/ --maxfail=1",
+        targeted_nodeid="tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
     )
 
     assert pr_num == -1
@@ -917,6 +926,89 @@ def test_create_global_fix_pr_logs_no_changes_outcome(monkeypatch, tmp_path: Pat
     assert any("Launching Gemini CLI agent for GLOBAL FIX" in message for message in messages)
     assert any("Gemini global-fix process exited with code 0" in message for message in messages)
     assert any("Global fix agent made no changes." in message for message in messages)
+    assert ["pytest", "tests/test_cli.py::TestCLI::test_start_command_role_dry_run", "-q"] in seen_commands
+    assert ["pytest", "tests/test_cli.py", "-q"] in seen_commands
+    assert popen_env["HOME"] != str(Path.home())
+    assert popen_env["XDG_CONFIG_HOME"].endswith("/.config")
+
+
+def test_create_global_fix_pr_aborts_when_post_verify_fails(monkeypatch, tmp_path: Path):
+    log_events: list[tuple[str, str, str]] = []
+
+    def logger(level: str, scope: str, message: str) -> None:
+        log_events.append((level, scope, message))
+
+    class FakeStdout:
+        def __init__(self, lines: list[str]) -> None:
+            self._lines = iter(lines)
+
+        def readline(self) -> str:
+            return next(self._lines, "")
+
+    class FakePopen:
+        def __init__(self, cmd, stdout, stderr, text, cwd, env, bufsize, universal_newlines):
+            self.stdout = FakeStdout(["working\n"])
+            self.returncode = 0
+
+        def wait(self, timeout=None):
+            return 0
+
+    def fake_run(cmd, cwd=None, check=False, stderr=None, capture_output=False, text=False, timeout=None):
+        command = list(cmd)
+        if command[:3] == ["git", "status", "--porcelain"]:
+            return SimpleNamespace(returncode=0, stdout=" M changed.py\n", stderr="")
+        if command[:2] == ["git", "fetch"] or command[:2] == ["git", "branch"] or command[:2] == ["git", "worktree"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if command[:4] == ["pytest", "tests/test_cli.py::TestCLI::test_start_command_role_dry_run", "-q"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if command[:3] == ["pytest", "tests/test_cli.py", "-q"]:
+            return SimpleNamespace(returncode=1, stdout="", stderr="FAILED tests/test_cli.py::TestCLI::test_start_command_role_dry_run")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    monkeypatch.setattr("subprocess.Popen", FakePopen)
+
+    pr_num = queue_drain_module._create_global_fix_pr(
+        "abc12345deadbeef",
+        ValidationStepResult(
+            name="🧪 Unit Tests",
+            command="pytest tests/ --maxfail=1",
+            status="failed",
+            stderr="FAILED tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+        ),
+        FakeGitHubClient(repo=None, repo_root=tmp_path, policy={}),
+        tmp_path,
+        logger=logger,
+        verification_command="pytest tests/ --maxfail=1",
+        targeted_nodeid="tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+    )
+
+    assert pr_num == -1
+    messages = [message for _level, _scope, message in log_events]
+    assert any("Verifying focused remediation command" in message for message in messages)
+    assert any("Verifying fingerprint lane command" in message for message in messages)
+    assert any("aborting shared remediation without commit." in message for message in messages)
+    assert not any("Creating global fix PR on GitHub." in message for message in messages)
+
+
+def test_isolated_gemini_home_env_copies_auth_without_settings(monkeypatch, tmp_path: Path):
+    source_home = tmp_path / "source-home"
+    source_gemini = source_home / ".gemini"
+    source_gemini.mkdir(parents=True)
+    (source_gemini / "oauth_creds.json").write_text('{"token":"abc"}', encoding="utf-8")
+    (source_gemini / "google_accounts.json").write_text('{"accounts":[]}', encoding="utf-8")
+    (source_gemini / "settings.json").write_text('{"mcpServers":{"desktop-commander":{}}}', encoding="utf-8")
+
+    monkeypatch.setattr(queue_drain_module.Path, "home", lambda: source_home)
+
+    with queue_drain_module._isolated_gemini_home_env() as env:
+        isolated_home = Path(env["HOME"])
+        isolated_gemini = isolated_home / ".gemini"
+        assert isolated_gemini.exists()
+        assert (isolated_gemini / "oauth_creds.json").read_text(encoding="utf-8") == '{"token":"abc"}'
+        assert (isolated_gemini / "google_accounts.json").read_text(encoding="utf-8") == '{"accounts":[]}'
+        assert not (isolated_gemini / "settings.json").exists()
+        assert env["XDG_CONFIG_HOME"] == str(isolated_home / ".config")
 
 
 def test_handle_global_ci_blockers_groups_remote_fingerprints(monkeypatch, tmp_path: Path):
@@ -928,8 +1020,18 @@ def test_handle_global_ci_blockers_groups_remote_fingerprints(monkeypatch, tmp_p
 
     created: list[tuple[str, str]] = []
 
-    def fake_create_global_fix_pr(fingerprint, failed_step, client, repo_root, logger=None):
+    def fake_create_global_fix_pr(
+        fingerprint,
+        failed_step,
+        client,
+        repo_root,
+        logger=None,
+        verification_command=None,
+        targeted_nodeid=None,
+    ):
         created.append((fingerprint, failed_step.command))
+        assert verification_command == "pytest tests/ --maxfail=1"
+        assert targeted_nodeid == "tests/test_cli.py::TestCLI::test_start_command_role_dry_run"
         return 777
 
     monkeypatch.setattr(
