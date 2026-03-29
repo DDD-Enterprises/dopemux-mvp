@@ -107,8 +107,8 @@ jobs:
           registry: dhi.io
           username: ${{ github.actor }}
           password: ${{ secrets.DHI_TOKEN }}
-- name: ✅ Check DHI token availability
-        if: ${{ secrets.DHI_TOKEN == '' || secrets.DHI_TOKEN == null }}
+      - name: ✅ Check DHI token availability
+        if: ${{ !secrets.DHI_TOKEN }}
         run: |
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "::error::DHI_TOKEN secret is required to build images that depend on dhi.io base images. Configure secrets.DHI_TOKEN in repository or organization settings."
