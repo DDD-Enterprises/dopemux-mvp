@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
@@ -892,10 +893,17 @@ def test_create_global_fix_pr_logs_no_changes_outcome(monkeypatch, tmp_path: Pat
             return 0
 
     seen_commands: list[list[str]] = []
+    focused_precheck_calls = 0
 
-    def fake_run(cmd, cwd=None, check=False, stderr=None, capture_output=False, text=False, timeout=None):
+    def fake_run(cmd, cwd=None, check=False, stderr=None, stdout=None, capture_output=False, text=False, timeout=None):
+        nonlocal focused_precheck_calls
         command = list(cmd)
         seen_commands.append(command)
+        if command[:4] == ["pytest", "tests/test_cli.py::TestCLI::test_start_command_role_dry_run", "-q"]:
+            focused_precheck_calls += 1
+            if focused_precheck_calls == 1:
+                return SimpleNamespace(returncode=1, stdout="", stderr="FAILED tests/test_cli.py::TestCLI::test_start_command_role_dry_run")
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
         if command and command[0] == "pytest":
             return SimpleNamespace(returncode=0, stdout="", stderr="")
         if command[:3] == ["git", "status", "--porcelain"]:
@@ -932,6 +940,128 @@ def test_create_global_fix_pr_logs_no_changes_outcome(monkeypatch, tmp_path: Pat
     assert popen_env["XDG_CONFIG_HOME"].endswith("/.config")
 
 
+def test_create_global_fix_pr_skips_stale_remote_fingerprint_when_precheck_is_green(
+    monkeypatch, tmp_path: Path
+):
+    log_events: list[tuple[str, str, str]] = []
+
+    def logger(level: str, scope: str, message: str) -> None:
+        log_events.append((level, scope, message))
+
+    def fake_popen(*args, **kwargs):
+        raise AssertionError("Gemini should not launch when precheck is already green")
+
+    def fake_run(
+        cmd,
+        cwd=None,
+        check=False,
+        stderr=None,
+        stdout=None,
+        capture_output=False,
+        text=False,
+        timeout=None,
+    ):
+        command = list(cmd)
+        if command[:2] == ["git", "fetch"] or command[:2] == ["git", "branch"] or command[:2] == ["git", "worktree"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if command[:4] == ["pytest", "tests/test_cli.py::TestCLI::test_start_command_role_dry_run", "-q"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if command[:3] == ["pytest", "tests/test_cli.py", "-q"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    monkeypatch.setattr("subprocess.Popen", fake_popen)
+
+    pr_num = queue_drain_module._create_global_fix_pr(
+        "abc12345deadbeef",
+        ValidationStepResult(
+            name="🧪 Unit Tests",
+            command="pytest tests/ --maxfail=1",
+            status="failed",
+            stderr="FAILED tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+        ),
+        FakeGitHubClient(repo=None, repo_root=tmp_path, policy={}),
+        tmp_path,
+        logger=logger,
+        verification_command="pytest tests/ --maxfail=1",
+        targeted_nodeid="tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+    )
+
+    assert pr_num == -1
+    messages = [message for _level, _scope, message in log_events]
+    assert any("Pre-checking focused remediation command before launching Gemini" in message for message in messages)
+    assert any("Focused remediation command already passes on current main." in message for message in messages)
+    assert any("Pre-checking fingerprint lane command before launching Gemini" in message for message in messages)
+    assert any("treating the remote fingerprint as stale and skipping shared remediation" in message for message in messages)
+    assert not any("Launching Gemini CLI agent for GLOBAL FIX" in message for message in messages)
+
+
+def test_create_global_fix_pr_removes_stale_non_worktree_path(monkeypatch, tmp_path: Path):
+    log_events: list[tuple[str, str, str]] = []
+    stale_path = Path("/tmp") / "dopemux-global-fix-deadbeef"
+    if stale_path.exists():
+        if stale_path.is_dir():
+            shutil.rmtree(stale_path)
+        else:
+            stale_path.unlink()
+    stale_path.mkdir(parents=True)
+    (stale_path / "leftover.txt").write_text("stale", encoding="utf-8")
+
+    def logger(level: str, scope: str, message: str) -> None:
+        log_events.append((level, scope, message))
+
+    def fake_popen(*args, **kwargs):
+        raise AssertionError("Gemini should not launch for a stale-green fingerprint")
+
+    def fake_run(
+        cmd,
+        cwd=None,
+        check=False,
+        stderr=None,
+        stdout=None,
+        capture_output=False,
+        text=False,
+        timeout=None,
+    ):
+        command = list(cmd)
+        if command[:4] == ["git", "worktree", "remove", "--force"]:
+            return SimpleNamespace(returncode=128, stdout="", stderr="fatal: not a working tree")
+        if command[:2] == ["git", "fetch"] or command[:2] == ["git", "branch"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if command[:3] == ["git", "worktree", "add"]:
+            assert not stale_path.exists()
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if command[:4] == ["pytest", "tests/test_cli.py::TestCLI::test_start_command_role_dry_run", "-q"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if command[:3] == ["pytest", "tests/test_cli.py", "-q"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    monkeypatch.setattr("subprocess.Popen", fake_popen)
+
+    pr_num = queue_drain_module._create_global_fix_pr(
+        "deadbeefcafebabe",
+        ValidationStepResult(
+            name="🧪 Unit Tests",
+            command="pytest tests/ --maxfail=1",
+            status="failed",
+            stderr="FAILED tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+        ),
+        FakeGitHubClient(repo=None, repo_root=tmp_path, policy={}),
+        tmp_path,
+        logger=logger,
+        verification_command="pytest tests/ --maxfail=1",
+        targeted_nodeid="tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+    )
+
+    assert pr_num == -1
+    assert not stale_path.exists()
+    messages = [message for _level, _scope, message in log_events]
+    assert any("Removed stale global-fix path that was not an active git worktree" in message for message in messages)
+
+
 def test_create_global_fix_pr_aborts_when_post_verify_fails(monkeypatch, tmp_path: Path):
     log_events: list[tuple[str, str, str]] = []
 
@@ -953,7 +1083,7 @@ def test_create_global_fix_pr_aborts_when_post_verify_fails(monkeypatch, tmp_pat
         def wait(self, timeout=None):
             return 0
 
-    def fake_run(cmd, cwd=None, check=False, stderr=None, capture_output=False, text=False, timeout=None):
+    def fake_run(cmd, cwd=None, check=False, stderr=None, stdout=None, capture_output=False, text=False, timeout=None):
         command = list(cmd)
         if command[:3] == ["git", "status", "--porcelain"]:
             return SimpleNamespace(returncode=0, stdout=" M changed.py\n", stderr="")
