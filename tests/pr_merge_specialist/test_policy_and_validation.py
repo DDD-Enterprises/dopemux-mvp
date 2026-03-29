@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from dopemux_pr_merge_specialist.github_api import GitHubClient
 from dopemux_pr_merge_specialist.policy import PolicyError, load_effective_policy, policy_artifact_payload
 from dopemux_pr_merge_specialist.runtime import CommandResult, append_live_log
 from dopemux_pr_merge_specialist.schema import ValidationStatus
@@ -132,6 +133,29 @@ def test_module_entrypoint_works_without_pythonpath():
     )
     assert result.returncode == 0, result.stderr or result.stdout
     assert '"ok": true' in result.stdout
+
+
+def test_resolve_repo_slug_falls_back_to_git_remote(monkeypatch):
+    def fake_run_command(cmd, *, cwd=None, env=None, timeout_seconds=600):
+        command = list(cmd)
+        if command[:4] == ["gh", "repo", "view", "--json"]:
+            return CommandResult(command, 1, "", "gh auth missing")
+        if command == ["git", "remote", "get-url", "origin"]:
+            return CommandResult(
+                command,
+                0,
+                "https://github.com/DDD-Enterprises/dopemux-mvp.git\n",
+                "",
+            )
+        raise AssertionError(f"Unexpected command: {command}")
+
+    monkeypatch.setattr(
+        "dopemux_pr_merge_specialist.github_api.run_command",
+        fake_run_command,
+    )
+
+    client = GitHubClient(repo=None, repo_root=REPO_ROOT, policy={})
+    assert client.resolve_repo_slug() == "DDD-Enterprises/dopemux-mvp"
 
 
 def test_validation_scopes_commands_to_changed_pr_files(monkeypatch, tmp_path: Path):

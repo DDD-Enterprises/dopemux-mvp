@@ -315,7 +315,10 @@ def _merge_prepared_result(
     )
     result = replace(result, merge_decision=executed_decision)
     write_pr_state_artifact(pr_dir, result)
-    log("Merge successful", "SUCCESS")
+    if _state_value(executed_decision.action) == MergeActionType.AUTO_MERGE_FALLBACK.value:
+        log("Auto-merge handoff successful", "SUCCESS")
+    else:
+        log("Merge successful", "SUCCESS")
     return result
 
 def queue_scan_internal(args: argparse.Namespace, client: GitHubClient, policy: Dict[str, Any], active_run_id: str) -> List[PRResult]:

@@ -319,6 +319,96 @@ def test_queue_drain_hands_off_post_apply_passive_queued_result(
     assert merge_handoffs == [190]
 
 
+def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
+    monkeypatch, tmp_path: Path
+):
+    messages: list[tuple[str, str]] = []
+
+    monkeypatch.setattr(
+        queue_drain_module,
+        "run_merge_with_fallback",
+        lambda **_kwargs: MergeDecision(
+            action=MergeActionType.AUTO_MERGE_FALLBACK,
+            command=["gh", "pr", "merge", "190", "--auto"],
+            reason="pending checks",
+            reason_code="auto_merge_pending_checks",
+        ),
+    )
+    monkeypatch.setattr(queue_drain_module, "_refresh_client_state", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_load_pr_context",
+        lambda **_kwargs: (
+            {},
+            [],
+            PullRequestState(
+                pr_id=190,
+                title="Queued PR",
+                author="tester",
+                state="OPEN",
+                base_ref="main",
+                head_ref="feature/queued",
+                ci_status="PENDING",
+                mergeable="MERGEABLE",
+                merge_state_status="BLOCKED",
+                review_decision="",
+                labels=[],
+                is_draft=False,
+                active_unresolved_threads=0,
+                head_sha="headsha",
+                base_sha="basesha",
+            ),
+            {},
+        ),
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "build_plan_result",
+        lambda **_kwargs: _make_result(
+            pr_id=190,
+            lifecycle_state=PRState.QUEUED_FOR_MERGE.value,
+            ci_status="PENDING",
+            merge_decision=MergeDecision(
+                action=MergeActionType.AUTO_MERGE_FALLBACK,
+                command=["gh", "pr", "merge", "190", "--auto"],
+                reason="pending checks",
+                reason_code="auto_merge_pending_checks",
+            ),
+            artifacts={"operator_state": "queued_for_merge"},
+        ),
+    )
+    monkeypatch.setattr(queue_drain_module, "write_pr_state_artifact", lambda *_args, **_kwargs: None)
+
+    client = FakeGitHubClient(repo=None, repo_root=tmp_path, policy={})
+    prepared_result = _make_result(
+        pr_id=190,
+        lifecycle_state=PRState.QUEUED_FOR_MERGE.value,
+        ci_status="SUCCESS",
+        merge_decision=MergeDecision(
+            action=MergeActionType.REBASE_MERGE,
+            command=["gh", "pr", "merge", "190", "--rebase", "--delete-branch"],
+            reason="ready",
+            reason_code="rebase_merge_ready",
+        ),
+        artifacts={"operator_state": "queued_for_merge"},
+    )
+
+    result = queue_drain_module._merge_prepared_result(
+        args=Namespace(id=190, out_dir=str(tmp_path), repo=None, execute=True),
+        client=client,
+        repo_root=tmp_path,
+        policy={},
+        pr_root=tmp_path,
+        active_run_id="truthfulhandoff",
+        prepared_result=prepared_result,
+        progress_callback=lambda msg, level="INFO": messages.append((level, msg)),
+    )
+
+    assert result.lifecycle_state == PRState.QUEUED_FOR_MERGE.value
+    assert ("SUCCESS", "Auto-merge handoff successful") in messages
+    assert ("SUCCESS", "Merge successful") not in messages
+
+
 def test_queue_drain_orchestrates_phase_functions(monkeypatch, tmp_path: Path):
     monkeypatch.setattr(engine, "GitHubClient", FakeGitHubClient)
 
