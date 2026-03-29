@@ -63,6 +63,7 @@ Important constraint:
 - bounded dry or execute runs respect `--max-prs`, so operator test runs can sample the queue without draining the whole backlog
 - explicitly mapped required checks can be reproduced locally before CI remediation runs; unmapped remote failures still fail closed
 - remote fingerprint harvesting is GitHub Actions-only in the first pass; non-Actions check URLs and ambiguous log output do not trigger shared remediation
+- headless queue runs append real-time progress to `proof/pr_merge/<run-id>/LIVE_LOG.txt`; this is the canonical artifact to tail while `queue-drain` is still running
 
 ### Optimistic Lifecycle
 The dashboard uses a state model that distinguishes local proof from GitHub lag:

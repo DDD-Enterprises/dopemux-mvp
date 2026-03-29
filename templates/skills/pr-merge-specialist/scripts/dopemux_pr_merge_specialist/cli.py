@@ -65,7 +65,11 @@ def cmd_flight(args: argparse.Namespace) -> int:
 
     # 1. Perform initial scan to get prioritized PRs
     print(f"📡 Scanning subspace for PRs (Run: {active_run_id})...")
-    results = queue_scan_internal(args, client, policy, active_run_id)
+    try:
+        results = queue_scan_internal(args, client, policy, active_run_id)
+    except Exception as exc:
+        print(f"Flight scan failed: {exc}")
+        return 1
 
     if not results:
         print("📭 No PRs found in the current sector.")
@@ -219,7 +223,10 @@ def _self_check(args: argparse.Namespace) -> int:
         results["ok"] = False
 
     # Check 4: Policy loading
-    preflight_rc = preflight(args)
+    preflight_args = argparse.Namespace(**vars(args))
+    if getattr(args, "json", False):
+        preflight_args._suppress_output = True
+    preflight_rc = preflight(preflight_args)
     results["checks"].append(
         {"name": "preflight", "status": "PASS" if preflight_rc == 0 else "FAIL"}
     )
@@ -413,7 +420,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     queue_drain_parser = sub.add_parser(
         "queue-drain",
-        help="🌊 Automated Synchronization: Orchestrate scan, plan, apply, and merge across the entire queue.",
+        help="🌊 Automated Synchronization: Orchestrate scan, remediation, remote-fingerprint clustering, merge, and write LIVE_LOG.txt for headless tracking.",
     )
     add_common_arguments(queue_drain_parser)
     queue_drain_parser.add_argument(
@@ -508,7 +515,7 @@ def build_parser() -> argparse.ArgumentParser:
     flight_parser.set_defaults(func=cmd_flight)
 
     flight_deck_parser = sub.add_parser(
-        "flight-deck", help="🚀 Mission Control: Launch the Flight Deck operations center."
+        "flight-deck", help="🚀 Mission Control: Launch the Flight Deck operations center with shared CI blocker detection."
     )
     add_common_arguments(flight_deck_parser)
     flight_deck_parser.add_argument(

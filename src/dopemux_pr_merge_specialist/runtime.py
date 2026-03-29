@@ -112,6 +112,14 @@ def append_command_log(
         handle.write("\n")
 
 
+def append_live_log(path: Path, *, level: str, scope: str, message: str) -> None:
+    ensure_parent(path)
+    normalized = " ".join(str(message).replace("\r", "\n").splitlines()).strip()
+    line = f"{utc_now()} [{str(level).upper()}] {scope}: {normalized}\n"
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(line)
+
+
 def dry_run_result(cmd: Sequence[str]) -> CommandResult:
     return CommandResult(list(cmd), 0, "", "")
 

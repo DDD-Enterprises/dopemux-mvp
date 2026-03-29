@@ -18,7 +18,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Callabl
 from .action_model import allowed_actions_for_result
 from .github_api import BOT_AUTHORS, GitHubClient, RemoteCheckLogEvidence, ci_status, summarize_checks, thread_counters
 from .policy import PolicyError, load_effective_policy, policy_artifact_payload, policy_fingerprint
-from .runtime import CommandResult, append_command_log, execute_or_dry_run, fingerprint_payload, pid_is_running, run_command, run_id, shell_join, snapshot_environment, utc_now, write_json, write_text
+from .runtime import CommandResult, append_command_log, append_live_log, execute_or_dry_run, fingerprint_payload, pid_is_running, run_command, run_id, shell_join, snapshot_environment, utc_now, write_json, write_text
 from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, ValidationStepResult, TOOL_VERSION
 from .validation import run_validation, validation_report_md
 from .strategy_library import STRATEGY_LIBRARY, select_strategy, StrategyAssignment, TRAIN_ELIGIBLE_STRATEGIES, STRATEGY_EXECUTION_ORDER
@@ -1217,14 +1217,44 @@ def _harvest_remote_failure_fingerprint(
             return fingerprint
     return None
 
-def _create_global_fix_pr(fingerprint: str, failed_step: ValidationStepResult, client: GitHubClient, repo_root: Path) -> int:
+def _emit_live_run_event(
+    live_log_path: Optional[Path],
+    *,
+    level: str,
+    scope: str,
+    message: str,
+    echo: bool = True,
+) -> None:
+    if live_log_path is not None:
+        append_live_log(live_log_path, level=level, scope=scope, message=message)
+    if echo:
+        print(message)
+
+
+def _create_global_fix_pr(
+    fingerprint: str,
+    failed_step: ValidationStepResult,
+    client: GitHubClient,
+    repo_root: Path,
+    logger: Optional[Callable[[str, str, str], None]] = None,
+) -> int:
     """Creates a global fix PR against the main branch."""
     import subprocess
     
     branch = f"global-ci-fix-{fingerprint[:8]}"
     path = Path("/tmp") / f"dopemux-global-fix-{fingerprint[:8]}"
+    scope = f"global-fix:{fingerprint[:8]}"
+
+    def _log(message: str, level: str = "INFO") -> None:
+        if logger:
+            logger(level, scope, message)
+        else:
+            print(message)
     
-    print(f"Creating global fix PR for fingerprint {fingerprint} on branch {branch}")
+    _log(
+        f"Creating global fix PR for fingerprint {fingerprint} on branch {branch} (worktree: {path})",
+        "START",
+    )
     
     # 1. Prepare worktree off main
     if path.exists():
@@ -1232,9 +1262,11 @@ def _create_global_fix_pr(fingerprint: str, failed_step: ValidationStepResult, c
     subprocess.run(["git", "branch", "-D", branch], cwd=repo_root, stderr=subprocess.DEVNULL)
     
     # Fetch latest main
+    _log("Fetching latest origin/main for shared CI remediation.")
     subprocess.run(["git", "fetch", "origin", "main"], cwd=repo_root, check=True)
     subprocess.run(["git", "branch", branch, "origin/main"], cwd=repo_root, check=True)
     subprocess.run(["git", "worktree", "add", str(path), branch], cwd=repo_root, check=True)
+    _log("Prepared global-fix worktree.", "SUCCESS")
     
     try:
         # 2. Invoke Gemini CLI to fix it
@@ -1259,7 +1291,7 @@ CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 Identify the root cause, modify the necessary files, and verify your fix if possible.
 Your goal is to make the command `{failed_step.command}` pass.
 """
-        print("Launching Gemini CLI agent for GLOBAL FIX...")
+        _log("Launching Gemini CLI agent for GLOBAL FIX...", "START")
         cmd = _gemini_ci_remediation_command(prompt)
         
         process = subprocess.Popen(
@@ -1276,24 +1308,27 @@ Your goal is to make the command `{failed_step.command}` pass.
             for line in iter(process.stdout.readline, ""):
                 clean_line = line.strip()
                 if clean_line:
-                    print(f"  [gemini-global-fix] {clean_line}")
+                    _log(f"[gemini] {clean_line}")
                     if any(x in clean_line.lower() for x in ["quota", "rate limit", "429", "exhausted"]):
-                        print("CRITICAL: API QUOTA EXHAUSTED. GLOBAL FIX BLOCKED.")
+                        _log("CRITICAL: API QUOTA EXHAUSTED. GLOBAL FIX BLOCKED.", "ERROR")
         process.wait()
+        _log(f"Gemini global-fix process exited with code {process.returncode}.")
         
         if process.returncode != 0:
-            print("Global fix agent failed to complete successfully.")
+            _log("Global fix agent failed to complete successfully.", "ERROR")
             return -1
             
         # 3. Commit and push
         status = subprocess.run(["git", "status", "--porcelain"], cwd=path, capture_output=True, text=True)
         if not status.stdout.strip():
-            print("Global fix agent made no changes.")
+            _log("Global fix agent made no changes.", "WARNING")
             return -1
             
+        _log("Committing and pushing global CI remediation patch.", "START")
         subprocess.run(["git", "add", "-A"], cwd=path, check=True)
         subprocess.run(["git", "commit", "-m", f"fix: global CI remediation for {failed_step.name}\n\nAutomated fix generated by Dopemux."], cwd=path, check=True)
         subprocess.run(["git", "push", "-u", "origin", branch], cwd=path, check=True)
+        _log("Global fix branch pushed successfully.", "SUCCESS")
         
         # 4. Create PR
         pr_body = (
@@ -1314,30 +1349,42 @@ Your goal is to make the command `{failed_step.command}` pass.
         if client.repo:
             create_cmd.extend(["--repo", client.repo])
             
+        _log("Creating global fix PR on GitHub.", "START")
         pr_result = subprocess.run(create_cmd, cwd=path, capture_output=True, text=True)
         if pr_result.returncode != 0:
-            print(f"Failed to create PR: {pr_result.stderr}")
+            _log(f"Failed to create PR: {pr_result.stderr.strip()}", "ERROR")
             return -1
             
         # Extract PR number from URL returned by gh pr create
         url = pr_result.stdout.strip()
         pr_num = int(url.split("/")[-1])
-        print(f"Successfully created global fix PR #{pr_num}")
+        _log(f"Successfully created global fix PR #{pr_num}", "SUCCESS")
         return pr_num
         
     except Exception as e:
-        print(f"Error creating global fix: {e}")
+        _log(f"Error creating global fix: {e}", "ERROR")
         return -1
     finally:
         subprocess.run(["git", "worktree", "remove", "--force", str(path)], cwd=repo_root)
+        _log("Cleaned up global-fix worktree.")
 
-def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, worktree_dir: Path) -> Dict[int, int]:
+def _handle_global_ci_blockers(
+    results: List[PRResult],
+    client: GitHubClient,
+    worktree_dir: Path,
+    logger: Optional[Callable[[str, str, str], None]] = None,
+) -> Dict[int, int]:
     """
     Identifies PRs blocked by the same CI failure and manages global fix PRs.
     Returns a dict mapping pr_id -> fix_pr_number for all PRs that should be
     blocked pending a global fix. Does NOT mutate any PRResult instances.
     """
     blocked_map: Dict[int, int] = {}
+    def _log(message: str, level: str = "INFO") -> None:
+        if logger:
+            logger(level, "queue", message)
+        else:
+            print(message)
 
     # 1. Find existing global fix PRs and map them by fingerprint
     existing_fix_prs = client.find_global_fix_prs()
@@ -1385,22 +1432,34 @@ def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, wo
         if fingerprint in fingerprint_to_pr_map:
             # A global fix PR already exists. Record all grouped PRs as blocked.
             pr_number = fingerprint_to_pr_map[fingerprint]
-            print(f"Found existing global fix PR #{pr_number} for fingerprint {fingerprint}")
+            _log(
+                f"Found existing global fix PR #{pr_number} for fingerprint {fingerprint} affecting {len(blocked_prs)} PRs."
+            )
             for r, _failed_step in blocked_prs:
                 blocked_map[r.pr_state.pr_id] = pr_number
         else:
             # New global blocker. Create a global fix PR.
-            print(f"New global CI blocker detected for fingerprint: {fingerprint}. Triggering global fix.")
+            _log(
+                f"New global CI blocker detected for fingerprint {fingerprint}; triggering shared remediation for {len(blocked_prs)} PRs.",
+                "START",
+            )
             failed_step = blocked_prs[0][1]
             if failed_step:
-                new_pr_number = _create_global_fix_pr(fingerprint, failed_step, client, worktree_dir)
+                new_pr_number = _create_global_fix_pr(
+                    fingerprint,
+                    failed_step,
+                    client,
+                    worktree_dir,
+                    logger=logger,
+                )
                 if new_pr_number > 0:
                     for r, _failed_step in blocked_prs:
                         blocked_map[r.pr_state.pr_id] = new_pr_number
                 else:
-                    print(
+                    _log(
                         f"Global fix creation failed for fingerprint {fingerprint}; "
-                        "continuing with per-PR remediation."
+                        "continuing with per-PR remediation.",
+                        "WARNING",
                     )
 
     return blocked_map
@@ -1523,11 +1582,20 @@ def _ignite_speculative_train(
     return merged_ids, queued_ids
 
 
-def _queue_drain_progress(pr_id: int) -> Callable[[str, str], None]:
-    """Print-based progress callback for headless queue-drain mode."""
+def _queue_drain_progress(
+    pr_id: int, *, live_log_path: Optional[Path]
+) -> Callable[[str, str], None]:
+    """Print progress to stdout and persist it to the run live log."""
     def _cb(msg: str, step_type: str = "INFO") -> None:
         ts = datetime.now().strftime("%H:%M:%S")
         print(f"[{ts}] PR #{pr_id} [{step_type}] {msg}")
+        if live_log_path is not None:
+            append_live_log(
+                live_log_path,
+                level=step_type,
+                scope=f"pr:{pr_id}",
+                message=msg,
+            )
     return _cb
 
 
@@ -1537,19 +1605,30 @@ def queue_drain(args: argparse.Namespace) -> int:
     active_run_id = getattr(args, "run_id", None) or run_id()
     args.run_id = active_run_id
     run_dir, queue_dir, pr_root = build_run_paths(args.out_dir, active_run_id)
+    live_log_path = run_dir / "LIVE_LOG.txt"
     policy = load_effective_policy(repo_root, explicit_path=getattr(args, "policy", None))
     client = GitHubClient(repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy)
     repo_slug = client.resolve_repo_slug()
     ops = _get_ops_engine(run_dir)
     closed_loop = ClosedLoopEngine(ops, STRATEGY_LIBRARY)
+
+    def log_queue(message: str, level: str = "INFO") -> None:
+        _emit_live_run_event(
+            live_log_path,
+            level=level,
+            scope="queue",
+            message=message,
+        )
     
     execute = getattr(args, "execute", False)
     lock_path: Optional[Path] = None
+    log_queue(f"Queue drain starting (run_id={active_run_id}, execute={execute}).", "START")
     if execute:
         ok, lock_path, err = acquire_queue_lock(repo_root=repo_root, active_run_id=active_run_id)
         if not ok:
-            print(f"Error: {err}")
+            log_queue(f"Unable to acquire queue lock: {err}", "ERROR")
             return 1
+        log_queue("Acquired queue lock.", "SUCCESS")
             
     try:
         max_passes = int(getattr(args, "max_passes", 3))
@@ -1563,14 +1642,30 @@ def queue_drain(args: argparse.Namespace) -> int:
         limit_reached = False
 
         for pass_idx in range(max_passes):
-            print(f"\n--- Queue Pass {pass_idx + 1}/{max_passes} ---")
+            log_queue(f"Starting queue pass {pass_idx + 1}/{max_passes}.")
             results = queue_scan_internal(args, client, policy, active_run_id)
             if not results:
-                print("No PRs found.")
+                log_queue("Queue scan returned no PRs.")
                 break
+            log_queue(f"Queue scan returned {len(results)} PRs.")
 
-            pass_blocked = _handle_global_ci_blockers(results, client, repo_root)
+            pass_blocked = _handle_global_ci_blockers(
+                results,
+                client,
+                repo_root,
+                logger=lambda level, scope, message: _emit_live_run_event(
+                    live_log_path,
+                    level=level,
+                    scope=scope,
+                    message=message,
+                ),
+            )
             global_fix_blocked.update(pass_blocked)
+            if pass_blocked:
+                log_queue(
+                    f"Global blockers active for PRs: {sorted(pass_blocked)}.",
+                    "WARNING",
+                )
 
             # Ignite speculative rebase train for READY PRs
             pass_commands_log = run_dir / f"PASS_{pass_idx + 1}_TRAIN_COMMANDS.txt"
@@ -1598,23 +1693,26 @@ def queue_drain(args: argparse.Namespace) -> int:
                 and r.pr_state.pr_id not in no_progress_ids
             ]
             if not active_results:
-                print("All PRs processed, merged, or queued.")
+                log_queue("All PRs processed, merged, or queued.", "SUCCESS")
                 break
             for result in active_results:
                 if max_prs > 0 and len(processed_ids) >= max_prs:
-                    print(f"Reached max PR limit ({max_prs}); stopping queue drain.")
+                    log_queue(f"Reached max PR limit ({max_prs}); stopping queue drain.")
                     limit_reached = True
                     break
                 pr_id = result.pr_state.pr_id
                 
                 fix_pr = global_fix_blocked.get(pr_id)
                 if fix_pr:
-                    print(f"PR #{pr_id}: Blocked pending global fix PR #{fix_pr}. Skipping remediation.")
+                    log_queue(
+                        f"PR #{pr_id}: blocked pending global fix PR #{fix_pr}; skipping remediation.",
+                        "WARNING",
+                    )
                     processed_ids.add(pr_id)
                     continue
                     
                 processed_ids.add(pr_id)
-                cb = _queue_drain_progress(pr_id)
+                cb = _queue_drain_progress(pr_id, live_log_path=live_log_path)
                 allowed = _derive_allowed_actions(result, policy)
                 report = result.to_dict()
                 report["allowed_actions"] = allowed
@@ -1622,7 +1720,10 @@ def queue_drain(args: argparse.Namespace) -> int:
                 closed_loop.emit_trace_artifacts(trace, pr_dir_for(pr_root, pr_id) / "traces")
                 tactic = trace.next_tactic
                 pr_strategy = select_strategy(result, policy)
-                print(f"PR #{pr_id}: {result.lifecycle_state} -> Tactic: {tactic} (Strategy: {pr_strategy.strategy_id})")
+                cb(
+                    f"{result.lifecycle_state} -> Tactic: {tactic} (Strategy: {pr_strategy.strategy_id})",
+                    "TACTIC",
+                )
                 if tactic == "MERGE" and execute:
                     try:
                         merge_result = pr_merge(
@@ -1640,7 +1741,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                             else:
                                 queued_ids.add(pr_id)
                     except RuntimeError as e:
-                        print(f"Merge error for PR #{pr_id}: {e}")
+                        cb(f"Merge error: {e}", "ERROR")
                         failed_remediation_ids.add(pr_id)
                 elif tactic == "APPLY_FIX" and execute:
                     try:
@@ -1681,16 +1782,19 @@ def queue_drain(args: argparse.Namespace) -> int:
                         # If validation still failed after fix, we don't add to merged_ids,
                         # so it will be re-scanned in next pass.
                         if not apply_result.validation_report or not apply_result.validation_report.passed:
-                            print(f"PR #{pr_id}: Fix attempt completed but validation still failing.")
+                            cb("Fix attempt completed but validation still failing.", "WARNING")
                             failed_remediation_ids.add(pr_id)
                         elif pr_id not in merged_ids and pr_id not in queued_ids:
                             # Validation passed locally but PR wasn't handed off to merge;
                             # no point retrying in subsequent passes.
                             no_progress_ids.add(pr_id)
-                            print(f"PR #{pr_id}: Local validation passed but PR not merge-ready; skipping in future passes.")
+                            cb(
+                                "Local validation passed but PR not merge-ready; skipping in future passes.",
+                                "INFO",
+                            )
 
                     except RuntimeError as e:
-                        print(f"Apply error for PR #{pr_id}: {e}")
+                        cb(f"Apply error: {e}", "ERROR")
                         failed_remediation_ids.add(pr_id)
                 elif tactic == "READY" and execute:
                     try:
@@ -1700,7 +1804,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                             ), progress_callback=cb
                         )
                     except RuntimeError as e:
-                        print(f"Ready error for PR #{pr_id}: {e}")
+                        cb(f"Ready error: {e}", "ERROR")
                 elif tactic == "APPROVE" and execute:
                     try:
                         pr_approve(
@@ -1709,24 +1813,28 @@ def queue_drain(args: argparse.Namespace) -> int:
                             ), progress_callback=cb
                         )
                     except RuntimeError as e:
-                        print(f"Approval error for PR #{pr_id}: {e}")
+                        cb(f"Approval error: {e}", "ERROR")
                 elif tactic in ("DEFER", "REQUEST_CHANGES", "REQUEST_REVIEW"):
                     no_progress_ids.add(pr_id)
                 elif not execute:
                     # Dry-run: tactic won't change state, skip in future passes
                     no_progress_ids.add(pr_id)
+            log_queue(
+                f"Completed queue pass {pass_idx + 1}/{max_passes} (processed={len(processed_ids)}, merged={len(merged_ids)}, queued={len(queued_ids)})."
+            )
             if limit_reached:
                 break
         
         # Write final run summary
         write_text(run_dir / "RUN_SUMMARY.md", render_operator_summary(results))
         
-        print(f"\nRun ID: {active_run_id}")
-        print(f"Processed PRs: {len(processed_ids)}")
-        print(f"Merged: {len(merged_ids)}")
-        print(f"Queued: {len(queued_ids)}")
-        print(f"Artifacts: {run_dir}")
+        log_queue(f"Run ID: {active_run_id}", "SUCCESS")
+        log_queue(f"Processed PRs: {len(processed_ids)}", "SUCCESS")
+        log_queue(f"Merged: {len(merged_ids)}", "SUCCESS")
+        log_queue(f"Queued: {len(queued_ids)}", "SUCCESS")
+        log_queue(f"Artifacts: {run_dir}", "SUCCESS")
         return 0
     finally:
         if execute:
             release_queue_lock(lock_path)
+            log_queue("Released queue lock.")

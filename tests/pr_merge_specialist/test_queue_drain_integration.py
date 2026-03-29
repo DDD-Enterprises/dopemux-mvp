@@ -853,6 +853,72 @@ def test_extract_remote_failure_signature_returns_none_for_ambiguous_log():
     )
 
 
+def test_queue_drain_progress_writes_live_log(tmp_path: Path):
+    live_log_path = tmp_path / "LIVE_LOG.txt"
+
+    cb = queue_drain_module._queue_drain_progress(
+        42,
+        live_log_path=live_log_path,
+    )
+    cb("Running validation suite...", "START")
+
+    lines = live_log_path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    assert lines[0].endswith("[START] pr:42: Running validation suite...")
+
+
+def test_create_global_fix_pr_logs_no_changes_outcome(monkeypatch, tmp_path: Path):
+    log_events: list[tuple[str, str, str]] = []
+
+    def logger(level: str, scope: str, message: str) -> None:
+        log_events.append((level, scope, message))
+
+    class FakeStdout:
+        def __init__(self, lines: list[str]) -> None:
+            self._lines = iter(lines)
+
+        def readline(self) -> str:
+            return next(self._lines, "")
+
+    class FakePopen:
+        def __init__(self, cmd, stdout, stderr, text, cwd, bufsize, universal_newlines):
+            self.cmd = cmd
+            self.stdout = FakeStdout(["working\n"])
+            self.returncode = 0
+
+        def wait(self):
+            return 0
+
+    def fake_run(cmd, cwd=None, check=False, stderr=None, capture_output=False, text=False):
+        command = list(cmd)
+        if command[:3] == ["git", "status", "--porcelain"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    monkeypatch.setattr("subprocess.Popen", FakePopen)
+
+    pr_num = queue_drain_module._create_global_fix_pr(
+        "abc12345deadbeef",
+        ValidationStepResult(
+            name="🧪 Unit Tests",
+            command="pytest tests/ --maxfail=1",
+            status="failed",
+            stderr="FAILED tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+        ),
+        FakeGitHubClient(repo=None, repo_root=tmp_path, policy={}),
+        tmp_path,
+        logger=logger,
+    )
+
+    assert pr_num == -1
+    messages = [message for _level, _scope, message in log_events]
+    assert any("Creating global fix PR" in message for message in messages)
+    assert any("Launching Gemini CLI agent for GLOBAL FIX" in message for message in messages)
+    assert any("Gemini global-fix process exited with code 0" in message for message in messages)
+    assert any("Global fix agent made no changes." in message for message in messages)
+
+
 def test_handle_global_ci_blockers_groups_remote_fingerprints(monkeypatch, tmp_path: Path):
     monkeypatch.setattr(
         queue_drain_module,
@@ -862,7 +928,7 @@ def test_handle_global_ci_blockers_groups_remote_fingerprints(monkeypatch, tmp_p
 
     created: list[tuple[str, str]] = []
 
-    def fake_create_global_fix_pr(fingerprint, failed_step, client, repo_root):
+    def fake_create_global_fix_pr(fingerprint, failed_step, client, repo_root, logger=None):
         created.append((fingerprint, failed_step.command))
         return 777
 
@@ -972,7 +1038,7 @@ def test_global_fix_blocking_persists_across_passes(monkeypatch, tmp_path: Path)
 
     pass_counter = [0]
 
-    def fake_handle_global_ci_blockers(_results, _client, _worktree_dir):
+    def fake_handle_global_ci_blockers(_results, _client, _worktree_dir, logger=None):
         pass_counter[0] += 1
         if pass_counter[0] == 1:
             # Pass 1: both PRs are globally blocked by fix PR #999
