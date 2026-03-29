@@ -178,6 +178,11 @@ jobs:
           test -x scripts/dopetask
           .dopetask_venv/bin/dopetask --version | grep -q "0.2.0"
 
+      - name: 🧪 Installer Smoke Tests (core + full stacks)
+        run: |
+          chmod +x test_installer_basic.sh
+          ./test_installer_basic.sh
+
       - name: 🧠 dopeTask doctor
         run: |
           scripts/dopetask doctor --timestamp-mode deterministic || echo "⚠️ dopeTask doctor failed (ignoring upstream packaging issue)"
@@ -194,11 +199,6 @@ jobs:
         run: |
           chmod +x scripts/check_coverage.sh
           ./scripts/check_coverage.sh
-
-      - name: 🧪 Installer Smoke Tests (core + full stacks)
-        run: |
-          cd /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-          ./test_installer_basic.sh
 
       - name: 📈 Upload coverage artifact
         if: success()
