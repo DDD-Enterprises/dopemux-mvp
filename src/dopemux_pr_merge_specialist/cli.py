@@ -420,7 +420,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     queue_drain_parser = sub.add_parser(
         "queue-drain",
-        help="🌊 Automated Synchronization: Orchestrate scan, remediation, remote-fingerprint clustering, and merge across the queue.",
+        help="🌊 Automated Synchronization: Orchestrate scan, remediation, remote-fingerprint clustering, merge, and write LIVE_LOG.txt for headless tracking.",
     )
     add_common_arguments(queue_drain_parser)
     queue_drain_parser.add_argument(

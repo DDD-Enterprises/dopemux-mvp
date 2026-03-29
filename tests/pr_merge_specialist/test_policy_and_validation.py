@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from dopemux_pr_merge_specialist.policy import PolicyError, load_effective_policy, policy_artifact_payload
-from dopemux_pr_merge_specialist.runtime import CommandResult
+from dopemux_pr_merge_specialist.runtime import CommandResult, append_live_log
 from dopemux_pr_merge_specialist.schema import ValidationStatus
 from dopemux_pr_merge_specialist.validation import run_validation
 
@@ -85,6 +85,28 @@ def test_validation_dry_run_is_not_executed(tmp_path: Path):
     assert report.passed is False
     assert report.steps
     assert all(step.status == "planned" for step in report.steps)
+
+
+def test_append_live_log_creates_append_only_stable_lines(tmp_path: Path):
+    log_path = tmp_path / "LIVE_LOG.txt"
+
+    append_live_log(
+        log_path,
+        level="info",
+        scope="queue",
+        message="first line\nwith newline",
+    )
+    append_live_log(
+        log_path,
+        level="warning",
+        scope="pr:42",
+        message="second line",
+    )
+
+    lines = log_path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    assert lines[0].endswith("[INFO] queue: first line with newline")
+    assert lines[1].endswith("[WARNING] pr:42: second line")
 
 
 def test_validation_scopes_commands_to_changed_pr_files(monkeypatch, tmp_path: Path):
