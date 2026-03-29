@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import re
 import textwrap
 import time
 from collections import defaultdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -24,6 +26,103 @@ BOT_AUTHORS = {
     "copilot-pull-request-reviewer",
     "codecov-commenter",
 }
+GITHUB_ACTIONS_DETAILS_URL_RE = re.compile(
+    r"^https://github\.com/[^/]+/[^/]+/actions/runs/(?P<run_id>\d+)(?:/job/(?P<job_id>\d+))?/?$"
+)
+
+
+@dataclass(frozen=True)
+class RemoteCheckLogEvidence:
+    check_name: str
+    details_url: str
+    run_id: Optional[str] = None
+    job_id: Optional[str] = None
+    log_text: str = ""
+    fetch_status: str = "unsupported"
+    error: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @property
+    def ok(self) -> bool:
+        return self.fetch_status == "ok"
+
+
+def _check_rollup_name(check: Dict[str, Any]) -> str:
+    name = str(check.get("name") or check.get("context") or "").strip()
+    return name
+
+
+def _check_rollup_details_url(check: Dict[str, Any]) -> str:
+    return str(check.get("detailsUrl") or check.get("targetUrl") or "").strip()
+
+
+def _required_check_entries_by_state(
+    checks: List[Dict[str, Any]],
+    required_contexts: Sequence[str],
+    *,
+    failure_only: bool = False,
+    pending_only: bool = False,
+) -> List[Dict[str, Any]]:
+    required = {str(item).strip() for item in required_contexts if str(item).strip()}
+    entries: List[Dict[str, Any]] = []
+    seen: set[Tuple[str, str]] = set()
+    for check in checks:
+        name = _check_rollup_name(check)
+        if not name or name not in required:
+            continue
+        status = str(check.get("status") or check.get("state") or "").upper()
+        conclusion = str(check.get("conclusion") or "").upper()
+        is_pending = bool(status and status != "COMPLETED") or (
+            not conclusion and status != "COMPLETED"
+        )
+        is_failure = conclusion in CHECK_FAILURE
+        if failure_only and not is_failure:
+            continue
+        if pending_only and not is_pending:
+            continue
+        details_url = _check_rollup_details_url(check)
+        dedupe_key = (name, details_url)
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        entries.append(
+            {
+                "check_name": name,
+                "details_url": details_url,
+                "status": status,
+                "conclusion": conclusion,
+            }
+        )
+    return entries
+
+
+def _required_check_names_by_state(
+    checks: List[Dict[str, Any]],
+    required_contexts: Sequence[str],
+    *,
+    failure_only: bool = False,
+    pending_only: bool = False,
+) -> List[str]:
+    required = {str(item).strip() for item in required_contexts if str(item).strip()}
+    names: List[str] = []
+    for check in checks:
+        name = _check_rollup_name(check)
+        if not name or name not in required:
+            continue
+        status = str(check.get("status") or "").upper()
+        conclusion = str(check.get("conclusion") or "").upper()
+        is_pending = bool(status and status != "COMPLETED") or (
+            not conclusion and status != "COMPLETED"
+        )
+        is_failure = conclusion in CHECK_FAILURE
+        if failure_only and not is_failure:
+            continue
+        if pending_only and not is_pending:
+            continue
+        names.append(name)
+    return sorted(dict.fromkeys(names))
 
 
 class GitHubClient:
@@ -497,9 +596,19 @@ class GitHubClient:
         summary = summarize_checks(checks)
         review_decision = str(payload.get("reviewDecision") or "")
         protection = self.fetch_branch_protection(str(payload.get("baseRefName") or ""))
+        required_contexts = list(protection.get("required_status_checks") or [])
         approval_required = bool(protection.get("approval_required", False))
         blockers: List[str] = []
         warnings: List[str] = []
+        failed_required_checks = _required_check_names_by_state(
+            checks, required_contexts, failure_only=True
+        )
+        failed_required_check_entries = _required_check_entries_by_state(
+            checks, required_contexts, failure_only=True
+        )
+        pending_required_checks = _required_check_names_by_state(
+            checks, required_contexts, pending_only=True
+        )
         if summary.required_failure > 0:
             blockers.append("required_check_failed")
         if summary.required_pending > 0:
@@ -522,10 +631,71 @@ class GitHubClient:
             "mergeable": payload.get("mergeable", ""),
             "merge_state_status": payload.get("mergeStateStatus", ""),
             "protection": protection,
+            "failed_required_checks": failed_required_checks,
+            "failed_required_check_entries": failed_required_check_entries,
+            "pending_required_checks": pending_required_checks,
             "approval_required": approval_required,
             "blocker_types": blockers,
             "warning_types": warnings,
         }
+
+    def fetch_remote_check_log_evidence(
+        self, check_entry: Dict[str, Any]
+    ) -> RemoteCheckLogEvidence:
+        check_name = str(check_entry.get("check_name") or "").strip()
+        details_url = str(check_entry.get("details_url") or "").strip()
+        if not details_url:
+            return RemoteCheckLogEvidence(
+                check_name=check_name,
+                details_url=details_url,
+                fetch_status="missing_details_url",
+                error="Required check did not include a details URL.",
+            )
+        cache_key = f"remote_check_log:{check_name}:{details_url}"
+        cached = self._cache_get(cache_key)
+        if cached is not None:
+            return cached
+        match = GITHUB_ACTIONS_DETAILS_URL_RE.match(details_url)
+        if not match:
+            evidence = RemoteCheckLogEvidence(
+                check_name=check_name,
+                details_url=details_url,
+                fetch_status="unsupported",
+                error="Details URL is not a GitHub Actions run or job URL.",
+            )
+            self.cache[cache_key] = evidence
+            return evidence
+
+        run_id = match.group("run_id")
+        job_id = match.group("job_id")
+        cmd = ["gh", "run", "view", run_id]
+        if job_id:
+            cmd.extend(["--job", job_id])
+        cmd.append("--log")
+        if self.repo:
+            cmd.extend(["--repo", self.repo])
+        result = self._run(cmd)
+        if result.returncode != 0:
+            evidence = RemoteCheckLogEvidence(
+                check_name=check_name,
+                details_url=details_url,
+                run_id=run_id,
+                job_id=job_id,
+                fetch_status="error",
+                error=result.stderr.strip() or "Unable to fetch GitHub Actions log.",
+            )
+            self.cache[cache_key] = evidence
+            return evidence
+        evidence = RemoteCheckLogEvidence(
+            check_name=check_name,
+            details_url=details_url,
+            run_id=run_id,
+            job_id=job_id,
+            log_text=result.stdout or "",
+            fetch_status="ok",
+        )
+        self.cache[cache_key] = evidence
+        return evidence
 
     def rate_limit_snapshot(self) -> Dict[str, Any]:
         result = self._run(["gh", "api", "rate_limit"])

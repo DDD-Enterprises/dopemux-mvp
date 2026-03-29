@@ -46,6 +46,14 @@ When queue-wide CI failures repeat across multiple PRs, `queue-drain` now falls 
 
 When `pr-apply` produces a passive `queued_for_merge` result after rebasing and validation, `queue-drain` now still executes the merge handoff step so GitHub receives the actual `gh pr merge` or auto-merge enqueue command for that PR.
 
+For headless `queue-drain` runs, the canonical real-time execution stream now lives in `proof/pr_merge/<run-id>/LIVE_LOG.txt`. Use that file to tail pass progress, tactic selection, shared global-fix activity, and final run summary lines while the queue is still active.
+
+`LIVE_LOG.txt` is additive:
+
+- `COMMANDS_RUN.txt` remains per-command evidence
+- `STATE.json` remains per-PR state authority
+- `RUN_SUMMARY.md` remains the final human rollup
+
 ## Common Workflows
 
 ### 1. Safe Review Cycle (Non-Mutating)
