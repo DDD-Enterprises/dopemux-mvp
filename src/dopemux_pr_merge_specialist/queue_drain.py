@@ -10,13 +10,13 @@ import subprocess
 import tempfile
 import time
 from collections import defaultdict, deque
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Callable
 
 from .action_model import allowed_actions_for_result
-from .github_api import BOT_AUTHORS, GitHubClient, ci_status, summarize_checks, thread_counters
+from .github_api import BOT_AUTHORS, GitHubClient, RemoteCheckLogEvidence, ci_status, summarize_checks, thread_counters
 from .policy import PolicyError, load_effective_policy, policy_artifact_payload, policy_fingerprint
 from .runtime import CommandResult, append_command_log, execute_or_dry_run, fingerprint_payload, pid_is_running, run_command, run_id, shell_join, snapshot_environment, utc_now, write_json, write_text
 from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, ValidationStepResult, TOOL_VERSION
@@ -516,8 +516,7 @@ def reproduce_remote_required_check_failure(
     if not failed_required_checks:
         return None, None
 
-    mappings = list(policy.get("remote_check_repro", {}).get("steps", []))
-    if not mappings:
+    if not list(policy.get("remote_check_repro", {}).get("steps", [])):
         log(
             "Required GitHub checks are failing, but no remote-check reproduction mappings are configured.",
             "INFO",
@@ -527,9 +526,9 @@ def reproduce_remote_required_check_failure(
     timeout_seconds = int(
         policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
     )
-    for step in mappings:
-        check_name = str(step.get("check_name") or "").strip()
-        if not check_name or check_name not in failed_required_checks:
+    for check_name in failed_required_checks:
+        step = _remote_check_repro_mapping(policy, check_name)
+        if step is None:
             continue
         scope = str(step.get("scope", "repo"))
         if scope != "repo":
@@ -1068,6 +1067,20 @@ def _should_handoff_prepared_result(result: PRResult, policy: Dict[str, Any]) ->
 
 
 FINGERPRINT_MARKER = "<!-- bot:failure_fingerprint:"
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+PYTEST_NODE_ID_RE = re.compile(r"\b(?:FAILED|ERROR)\s+((?:tests|src|services|ui-dashboard)/\S+::\S+)")
+EXCEPTION_HEADER_RE = re.compile(
+    r"^(AssertionError|[A-Za-z_][A-Za-z0-9_]*(?:Error|Exception|Failure|Warning))(?:\s*:\s*.*)?$"
+)
+
+
+@dataclass(frozen=True)
+class RemoteFailureFingerprint:
+    fingerprint: str
+    check_name: str
+    command: str
+    evidence_summary: str
+    evidence: RemoteCheckLogEvidence
 
 def _parse_fingerprint_from_body(body: str) -> Optional[str]:
     """Extracts the failure fingerprint from a PR body."""
@@ -1078,6 +1091,130 @@ def _parse_fingerprint_from_body(body: str) -> Optional[str]:
             parts = line.split(FINGERPRINT_MARKER)
             if len(parts) > 1:
                 return parts[1].split("-->")[0].strip()
+    return None
+
+
+def _remote_check_repro_mapping(
+    policy: Dict[str, Any], check_name: str
+) -> Optional[Dict[str, Any]]:
+    for step in policy.get("remote_check_repro", {}).get("steps", []) or []:
+        if str(step.get("check_name") or "").strip() == check_name:
+            return step
+    return None
+
+
+def _normalize_remote_failure_line(line: str) -> str:
+    normalized = ANSI_ESCAPE_RE.sub("", line or "").strip()
+    normalized = re.sub(r"\s+", " ", normalized)
+    normalized = re.sub(r"\b\d+\.\d+s\b", "<duration>", normalized)
+    normalized = re.sub(r"\bline \d+\b", "line <n>", normalized)
+    normalized = re.sub(r":\d+:", ":<n>:", normalized)
+    normalized = re.sub(r"\b0x[0-9a-fA-F]+\b", "0xADDR", normalized)
+    return normalized.strip("[] ")
+
+
+def _extract_remote_failure_signature(log_text: str) -> Optional[Tuple[str, str, str]]:
+    for raw_line in (log_text or "").splitlines():
+        clean_line = ANSI_ESCAPE_RE.sub("", raw_line or "").strip()
+        match = PYTEST_NODE_ID_RE.search(clean_line)
+        if match:
+            node_id = match.group(1)
+            return (
+                "pytest_node",
+                node_id,
+                f"pytest failure {node_id}",
+            )
+
+    for raw_line in (log_text or "").splitlines():
+        clean_line = _normalize_remote_failure_line(raw_line)
+        if not clean_line:
+            continue
+        candidate = clean_line[2:].strip() if clean_line.startswith("E ") else clean_line
+        if EXCEPTION_HEADER_RE.match(candidate):
+            return (
+                "exception_header",
+                candidate,
+                f"failure header {candidate[:160]}",
+            )
+
+    for raw_line in (log_text or "").splitlines():
+        clean_line = _normalize_remote_failure_line(raw_line)
+        if not clean_line:
+            continue
+        lowered = clean_line.lower()
+        if (
+            clean_line.startswith("FAILED ")
+            or clean_line.startswith("ERROR ")
+            or "assertionerror" in lowered
+            or "exception" in lowered
+            or "error:" in lowered
+        ):
+            return (
+                "stable_line",
+                clean_line[:200],
+                f"failure line {clean_line[:160]}",
+            )
+    return None
+
+
+def _extract_result_check_payload(result: PRResult) -> Dict[str, Any]:
+    for finding in result.findings:
+        if finding.finding_type == BlockerType.REQUIRED_CHECK_FAILED.value:
+            return dict(finding.details or {})
+    return {}
+
+
+def _build_remote_failure_fingerprint(
+    *,
+    policy: Dict[str, Any],
+    evidence: RemoteCheckLogEvidence,
+) -> Optional[RemoteFailureFingerprint]:
+    if not evidence.ok:
+        return None
+    mapping = _remote_check_repro_mapping(policy, evidence.check_name)
+    if mapping is None:
+        return None
+    scope = str(mapping.get("scope", "repo") or "repo")
+    command = [str(part) for part in mapping.get("command", []) if str(part)]
+    if scope != "repo" or not command:
+        return None
+    signature = _extract_remote_failure_signature(evidence.log_text)
+    if signature is None:
+        return None
+    signature_kind, signature_value, summary = signature
+    fingerprint = fingerprint_payload(
+        {
+            "source": "remote_required_check",
+            "check_name": evidence.check_name,
+            "signature_kind": signature_kind,
+            "signature_value": signature_value,
+        }
+    )
+    return RemoteFailureFingerprint(
+        fingerprint=fingerprint,
+        check_name=evidence.check_name,
+        command=shell_join(command),
+        evidence_summary=summary,
+        evidence=evidence,
+    )
+
+
+def _harvest_remote_failure_fingerprint(
+    result: PRResult, client: GitHubClient
+) -> Optional[RemoteFailureFingerprint]:
+    check_payload = _extract_result_check_payload(result)
+    blocker_types = [str(item) for item in check_payload.get("blocker_types", []) or []]
+    if "required_check_failed" not in blocker_types:
+        return None
+    failed_entries = list(check_payload.get("failed_required_check_entries", []) or [])
+    for check_entry in failed_entries:
+        evidence = client.fetch_remote_check_log_evidence(check_entry)
+        fingerprint = _build_remote_failure_fingerprint(
+            policy=client.policy,
+            evidence=evidence,
+        )
+        if fingerprint is not None:
+            return fingerprint
     return None
 
 def _create_global_fix_pr(fingerprint: str, failed_step: ValidationStepResult, client: GitHubClient, repo_root: Path) -> int:
@@ -1210,12 +1347,35 @@ def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, wo
         if fingerprint:
             fingerprint_to_pr_map[fingerprint] = pr["number"]
 
-    # 2. Group failing PRs by their failure fingerprint
-    failing_prs_by_fingerprint = defaultdict(list)
+    # 2. Group failing PRs by either a local validation fingerprint or a harvested
+    # remote required-check fingerprint. Local evidence remains authoritative.
+    failing_prs_by_fingerprint: Dict[str, List[Tuple[PRResult, ValidationStepResult]]] = defaultdict(list)
     for r in results:
         allowed = allowed_actions_for_result(r)
-        if "APPLY_FIX" in allowed and r.validation_report and r.validation_report.failure_fingerprint:
-            failing_prs_by_fingerprint[r.validation_report.failure_fingerprint].append(r)
+        if "APPLY_FIX" not in allowed:
+            continue
+        if r.validation_report and r.validation_report.failure_fingerprint:
+            failed_step = r.validation_report.failing_step
+            if failed_step is not None:
+                failing_prs_by_fingerprint[
+                    r.validation_report.failure_fingerprint
+                ].append((r, failed_step))
+            continue
+        remote_failure = _harvest_remote_failure_fingerprint(r, client)
+        if remote_failure is None:
+            continue
+        failed_step = ValidationStepResult(
+            name=remote_failure.check_name,
+            command=remote_failure.command,
+            status="failed",
+            returncode=1,
+            stdout="",
+            stderr=(
+                f"{remote_failure.evidence_summary}\n\n"
+                + (remote_failure.evidence.log_text or "")[-6000:]
+            ).strip(),
+        )
+        failing_prs_by_fingerprint[remote_failure.fingerprint].append((r, failed_step))
 
     # 3. Process groups to identify and act on global blockers
     for fingerprint, blocked_prs in failing_prs_by_fingerprint.items():
@@ -1226,23 +1386,16 @@ def _handle_global_ci_blockers(results: List[PRResult], client: GitHubClient, wo
             # A global fix PR already exists. Record all grouped PRs as blocked.
             pr_number = fingerprint_to_pr_map[fingerprint]
             print(f"Found existing global fix PR #{pr_number} for fingerprint {fingerprint}")
-            for r in blocked_prs:
+            for r, _failed_step in blocked_prs:
                 blocked_map[r.pr_state.pr_id] = pr_number
         else:
             # New global blocker. Create a global fix PR.
             print(f"New global CI blocker detected for fingerprint: {fingerprint}. Triggering global fix.")
-            failed_step = next(
-                (
-                    s
-                    for s in blocked_prs[0].validation_report.steps
-                    if s.status == "failed"
-                ),
-                None,
-            )
+            failed_step = blocked_prs[0][1]
             if failed_step:
                 new_pr_number = _create_global_fix_pr(fingerprint, failed_step, client, worktree_dir)
                 if new_pr_number > 0:
-                    for r in blocked_prs:
+                    for r, _failed_step in blocked_prs:
                         blocked_map[r.pr_state.pr_id] = new_pr_number
                 else:
                     print(

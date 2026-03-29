@@ -195,7 +195,7 @@ See [docs/03-reference/00-repo-map.md](docs/03-reference/00-repo-map.md) for a f
 - **Autonomous code/docs semantic search** (dope-context)
 - **Unified ConPort client and multi-session support**
 - **Mobile mode with Happy client**
-- **PR Merge Specialist flight deck** with validation-aware queue states, speculative train handling, and global CI remediation
+- **PR Merge Specialist flight deck** with validation-aware queue states, speculative train handling, and queue-wide CI fingerprint remediation for repeated required-check failures
 
 > **Screenshot/Diagram Placeholder:**
 > ![Dashboard Screenshot Placeholder](docs/SCREENSHOT_DASHBOARD_PLACEHOLDER.png)

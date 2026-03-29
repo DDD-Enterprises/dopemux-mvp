@@ -388,6 +388,11 @@ def serialize_check_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         "mergeable": payload.get("mergeable", ""),
         "merge_state_status": payload.get("merge_state_status", ""),
         "protection": payload.get("protection", {}),
+        "failed_required_checks": payload.get("failed_required_checks", []),
+        "failed_required_check_entries": payload.get(
+            "failed_required_check_entries", []
+        ),
+        "pending_required_checks": payload.get("pending_required_checks", []),
         "blocker_types": payload.get("blocker_types", []),
         "warning_types": payload.get("warning_types", []),
     }

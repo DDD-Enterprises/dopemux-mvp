@@ -37,6 +37,13 @@ python -m dopemux_pr_merge_specialist.cli queue-drain --execute --max-prs 5
 
 For explicitly mapped required checks, `pr-apply` and `queue-drain` can now attempt a fail-closed local reproduction before invoking automated CI remediation. These mappings live in `config/pr_merge_specialist/policy.yaml` under `remote_check_repro.steps`. Unmapped required-check failures remain blocked by design.
 
+When queue-wide CI failures repeat across multiple PRs, `queue-drain` now falls back to remote fingerprint harvesting if a local validation fingerprint is not available. The first pass is intentionally narrow:
+
+- local validation fingerprints still win when a failing step was reproduced in the worktree
+- remote clustering only applies to GitHub Actions-backed required checks that expose a `detailsUrl`
+- the shared `global-ci-fix` PR path only engages when the failing required check has both a stable log-derived fingerprint and an explicit reproduction command in `remote_check_repro.steps`
+- unsupported providers, ambiguous logs, or unmapped checks remain fail-closed and continue down the existing per-PR path
+
 When `pr-apply` produces a passive `queued_for_merge` result after rebasing and validation, `queue-drain` now still executes the merge handoff step so GitHub receives the actual `gh pr merge` or auto-merge enqueue command for that PR.
 
 ## Common Workflows
