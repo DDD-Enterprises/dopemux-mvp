@@ -432,6 +432,59 @@ def test_mission_banner_reports_detached_exit_truthfully() -> None:
     assert color == "yellow"
 
 
+def test_headless_autopilot_preserves_completion_exit_state(monkeypatch) -> None:
+    dashboard = DopemuxDashboard(
+        manager=object(),
+        args=Namespace(out_dir="reports", auto_pilot=True, strategy="hybrid"),
+    )
+
+    class FakeLive:
+        def __init__(self, *_args, **_kwargs) -> None:
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> None:
+            return None
+
+        def update(self, _renderable) -> None:
+            return None
+
+        def start(self) -> None:
+            return None
+
+        def stop(self) -> None:
+            return None
+
+    monkeypatch.setattr("src.dopemux_pr_merge_specialist.dashboard.Live", FakeLive)
+    monkeypatch.setattr(
+        "src.dopemux_pr_merge_specialist.dashboard.sys.stdin",
+        SimpleNamespace(isatty=lambda: False),
+    )
+    monkeypatch.setattr(
+        dashboard,
+        "_engage_autopilot",
+        lambda: setattr(dashboard.state, "auto_pilot", True),
+    )
+    monkeypatch.setattr(
+        dashboard,
+        "_autopilot_tactic_for_snapshot",
+        lambda _snapshot: "S",
+    )
+
+    def fake_reassess(**_kwargs) -> None:
+        dashboard.state.auto_pilot = False
+        dashboard._set_exit_state("complete", "Autopilot queue exhausted after reassessment.")
+
+    monkeypatch.setattr(dashboard, "_reassess_autopilot_after_action", fake_reassess)
+
+    dashboard.run([{"pr_id": 101, "lifecycle_state": "merge_ready"}], "run")
+
+    assert dashboard.state.exit_outcome == "complete"
+    assert "queue exhausted" in dashboard.state.exit_reason.lower()
+
+
 def test_select_advanced_strategy_blocks_manual_conflict_recovery_without_opt_in() -> None:
     dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports"))
     strategy_id, rationale, steps = dashboard._select_advanced_strategy(
@@ -488,3 +541,79 @@ def test_autopilot_tactic_skips_verification_for_queued_pr() -> None:
 
     assert dashboard._candidate_tactics_for_snapshot(snapshot) == []
     assert dashboard._autopilot_tactic_for_snapshot(snapshot) == "S"
+
+
+def test_autopilot_disengages_when_all_prs_stalled() -> None:
+    """Autopilot should disengage after all PRs exceed the stall threshold."""
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports", strategy="hybrid"))
+    prs = [
+        {
+            "pr_id": 100,
+            "lifecycle_state": "apply_blocked",
+            "ci_status": "FAILURE",
+            "unresolved_threads": 0,
+            "blockers": [{"type": "required_check_failed"}],
+            "allowed_actions": ["APPLY_FIX"],
+            "validation_report": {"status": "not_executed"},
+        },
+        {
+            "pr_id": 101,
+            "lifecycle_state": "apply_blocked",
+            "ci_status": "FAILURE",
+            "unresolved_threads": 0,
+            "blockers": [{"type": "required_check_failed"}],
+            "allowed_actions": ["APPLY_FIX"],
+            "validation_report": {"status": "not_executed"},
+        },
+    ]
+    dashboard.state = QueueState(run_id="run", prs=prs)
+    dashboard.state.auto_pilot = True
+    dashboard.state.autopilot_strategy = "hybrid"
+    dashboard.state.active_index = 0
+
+    # Stub _refresh_queue_state to avoid real GitHub calls
+    dashboard._refresh_queue_state = lambda **kw: None  # type: ignore[method-assign]
+
+    # Simulate stalls: each PR stalls twice (threshold is 2)
+    for _round in range(2):
+        for i in range(len(prs)):
+            dashboard.state.active_index = i
+            dashboard._reassess_autopilot_after_action(
+                target_pr_id=str(prs[i]["pr_id"]),
+                initial_state="apply_blocked",
+                initial_tactic="C",
+            )
+
+    assert dashboard.state.auto_pilot is False
+    assert "DISENGAGED" in dashboard.state.status_message
+
+
+def test_autopilot_disengages_single_pr_stall() -> None:
+    """With a single PR, autopilot should disengage on first stall."""
+    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports", strategy="hybrid"))
+    prs = [
+        {
+            "pr_id": 100,
+            "lifecycle_state": "apply_blocked",
+            "ci_status": "FAILURE",
+            "unresolved_threads": 0,
+            "blockers": [{"type": "required_check_failed"}],
+            "allowed_actions": ["APPLY_FIX"],
+            "validation_report": {"status": "not_executed"},
+        },
+    ]
+    dashboard.state = QueueState(run_id="run", prs=prs)
+    dashboard.state.auto_pilot = True
+    dashboard.state.autopilot_strategy = "hybrid"
+    dashboard.state.active_index = 0
+
+    dashboard._refresh_queue_state = lambda **kw: None  # type: ignore[method-assign]
+
+    dashboard._reassess_autopilot_after_action(
+        target_pr_id="100",
+        initial_state="apply_blocked",
+        initial_tactic="C",
+    )
+
+    assert dashboard.state.auto_pilot is False
+    assert "DISENGAGED" in dashboard.state.status_message

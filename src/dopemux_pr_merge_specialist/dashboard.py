@@ -501,7 +501,11 @@ class DopemuxDashboard:
         self._refresh_queue_state(strategy_override=strategy, prefer_top=False)
         active = self.state.active_pr
         if not active:
-            self.state.status_message = "Autopilot: queue exhausted after reassessment."
+            self.state.auto_pilot = False
+            self.state.autopilot_strategy = ""
+            self._set_exit_state(
+                "complete", "Autopilot queue exhausted after reassessment."
+            )
             return
         active_pr_id = str(active.get("pr_id"))
         new_state = active.get("lifecycle_state")
@@ -517,6 +521,19 @@ class DopemuxDashboard:
             self.state.autopilot_stall_counts[active_pr_id] = (
                 self.state.autopilot_stall_counts.get(active_pr_id, 0) + 1
             )
+            # Disengage autopilot when all PRs have stalled repeatedly
+            max_stalls = 2
+            all_stalled = self.state.prs and all(
+                self.state.autopilot_stall_counts.get(str(pr.get("pr_id")), 0) >= max_stalls
+                for pr in self.state.prs
+            )
+            if all_stalled:
+                self.state.auto_pilot = False
+                self.state.autopilot_strategy = ""
+                self.state.status_message = (
+                    "AUTO-PILOT DISENGAGED: All PRs stalled. Manual intervention required."
+                )
+                return
             if len(self.state.prs) > 1:
                 self.state.active_index = (self.state.active_index + 1) % len(
                     self.state.prs
@@ -527,8 +544,10 @@ class DopemuxDashboard:
                     f"Autopilot: PR #{target_pr_id} stalled under {initial_tactic}; advancing to PR #{next_pr_id}."
                 )
             else:
+                self.state.auto_pilot = False
+                self.state.autopilot_strategy = ""
                 self.state.status_message = (
-                    f"Autopilot: PR #{target_pr_id} remains blocked under {initial_tactic}."
+                    f"AUTO-PILOT DISENGAGED: PR #{target_pr_id} blocked under {initial_tactic}."
                 )
             return
         self.state.autopilot_stall_counts.pop(str(target_pr_id), None)
@@ -776,7 +795,7 @@ class DopemuxDashboard:
             return None
             
         self.state.execution_log = []
-        cmd_args = argparse.Namespace(**{**vars(self.args), "id": pr_id, "execute": True, "allow_dirty": True})
+        cmd_args = argparse.Namespace(**{**vars(self.args), "id": pr_id, "execute": True, "allow_dirty": True, "run_id": self.state.run_id})
         if preflight(cmd_args) != 0:
             self.log_step("EXECUTION BLOCKED BY PREFLIGHT", "ERROR")
             self.state.status_message = f"Preflight failed for PR #{pr_id}."
@@ -905,21 +924,25 @@ class DopemuxDashboard:
                 self._live = live
                 while True:
                     live.update(self.render())
-                    if self._terminal_settings is None:
-                        self._set_exit_state(
-                            "detached",
-                            "Interactive input is unavailable; dashboard exited before queue completion.",
-                        )
-                        break
 
                     timeout = 0.5 if not self.state.auto_pilot else 2.5
-                    rlist, _, _ = select.select([sys.stdin], [], [], timeout)
-                    
                     choice = None
-                    if rlist:
-                        char = sys.stdin.read(1)
-                        choice = self._decode_input_choice(char)
-                    elif self.state.auto_pilot:
+                    if self._terminal_settings is None:
+                        if self.state.exit_outcome != "running":
+                            break
+                        if not self.state.auto_pilot:
+                            self._set_exit_state(
+                                "detached",
+                                "Interactive input is unavailable; dashboard exited before queue completion.",
+                            )
+                            break
+                        time.sleep(timeout)
+                    else:
+                        rlist, _, _ = select.select([sys.stdin], [], [], timeout)
+                        if rlist:
+                            char = sys.stdin.read(1)
+                            choice = self._decode_input_choice(char)
+                    if choice is None and self.state.auto_pilot:
                         ready_pr_ids = [
                             int(pr["pr_id"])
                             for pr in self.state.prs

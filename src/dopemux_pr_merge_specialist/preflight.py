@@ -224,6 +224,21 @@ def preflight(args: argparse.Namespace) -> int:
             remediation="Use a git version with worktree support.",
         )
     )
+    
+    ignore_case = run_command(
+        ["git", "config", "--get", "core.ignorecase"], cwd=repo_root, timeout_seconds=30
+    )
+    is_ignore_case = ignore_case.stdout.strip().lower() == "true"
+    checks.append(
+        PreflightCheck(
+            name="git_ignorecase",
+            status="warning" if is_ignore_case else "passed",
+            required=False,
+            details=f"core.ignorecase={ignore_case.stdout.strip()}",
+            remediation="Git case-insensitivity detected. Some renames might require `git mv` to be detected on this OS.",
+        )
+    )
+    
     clean_ok, clean_detail = require_clean_worktree(repo_root)
     if getattr(args, "allow_dirty", False):
         overrides.append(
@@ -292,5 +307,9 @@ def preflight(args: argparse.Namespace) -> int:
     environment.update({"repo_slug": repo_slug, "rate_limit": rate_limit})
     write_json(run_dir / "ENVIRONMENT.json", environment)
     write_json(run_dir / "POLICY_EFFECTIVE.json", policy_artifact_payload(policy))
-    print(f"Preflight artifacts: {run_dir}")
+    if not getattr(args, "_suppress_output", False):
+        if getattr(args, "json", False):
+            print(json.dumps(precheck_payload, indent=2))
+        else:
+            print(f"Preflight artifacts: {run_dir}")
     return 0 if precheck.ok else 2
