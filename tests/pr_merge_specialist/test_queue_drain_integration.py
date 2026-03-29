@@ -809,7 +809,7 @@ def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatc
     monkeypatch.setattr(
         queue_drain_module,
         "_create_global_fix_pr",
-        lambda fingerprint, failed_step, client, repo_root: -1,
+        lambda fingerprint, failed_step, client, repo_root, **kwargs: -1,
     )
 
     failed_validation = ValidationReport(
@@ -1078,7 +1078,7 @@ def test_create_global_fix_pr_skips_stale_remote_fingerprint_when_precheck_is_gr
         targeted_nodeid="tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
     )
 
-    assert pr_num == -1
+    assert pr_num == -2  # Stale fingerprint returns -2 (distinct from -1 failure)
     messages = [message for _level, _scope, message in log_events]
     assert any("Pre-checking focused remediation command before launching Gemini" in message for message in messages)
     assert any("Focused remediation command already passes on current main." in message for message in messages)
@@ -1146,7 +1146,7 @@ def test_create_global_fix_pr_removes_stale_non_worktree_path(monkeypatch, tmp_p
         targeted_nodeid="tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
     )
 
-    assert pr_num == -1
+    assert pr_num == -2  # Stale fingerprint returns -2 (distinct from -1 failure)
     assert not stale_path.exists()
     messages = [message for _level, _scope, message in log_events]
     assert any("Removed stale global-fix path that was not an active git worktree" in message for message in messages)
