@@ -1304,8 +1304,27 @@ def _create_global_fix_pr(
     
     # 1. Prepare worktree off main
     if path.exists():
-        subprocess.run(["git", "worktree", "remove", "--force", str(path)], cwd=repo_root)
-    subprocess.run(["git", "branch", "-D", branch], cwd=repo_root, stderr=subprocess.DEVNULL)
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", str(path)],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        if path.exists():
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+            _log(
+                f"Removed stale global-fix path that was not an active git worktree: {path}",
+                "WARNING",
+            )
+    subprocess.run(
+        ["git", "branch", "-D", branch],
+        cwd=repo_root,
+        stderr=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+    )
     
     # Fetch latest main
     _log("Fetching latest origin/main for shared CI remediation.")
@@ -1315,13 +1334,52 @@ def _create_global_fix_pr(
     _log("Prepared global-fix worktree.", "SUCCESS")
     
     try:
-        # 2. Invoke Gemini CLI to fix it
-        error_output = (failed_step.stderr or failed_step.stdout or "No output available")[-6000:]
         targeted_repro_command = failed_step.command
         full_verification_command = verification_command or failed_step.command
         lane_verification_command = _pytest_lane_verification_command(targeted_nodeid)
         if targeted_nodeid:
             targeted_repro_command = f"pytest {targeted_nodeid} -q"
+
+        def _run_verification(command_text: str) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                shlex.split(command_text),
+                cwd=path,
+                capture_output=True,
+                text=True,
+                timeout=900,
+            )
+
+        # 2. Re-check the current main-based worktree before launching Gemini.
+        # If the focused fingerprint already passes locally, the remote signal is stale.
+        _log(
+            f"Pre-checking focused remediation command before launching Gemini: {targeted_repro_command}",
+            "START",
+        )
+        precheck_focused = _run_verification(targeted_repro_command)
+        if precheck_focused.returncode == 0:
+            _log("Focused remediation command already passes on current main.", "SUCCESS")
+            if lane_verification_command and lane_verification_command != targeted_repro_command:
+                _log(
+                    f"Pre-checking fingerprint lane command before launching Gemini: {lane_verification_command}",
+                    "START",
+                )
+                precheck_lane = _run_verification(lane_verification_command)
+                if precheck_lane.returncode == 0:
+                    _log(
+                        "Focused remediation and lane verification already pass on current main; "
+                        "treating the remote fingerprint as stale and skipping shared remediation.",
+                        "WARNING",
+                    )
+                    return -1
+                _log(
+                    "Focused remediation passes, but the fingerprint lane still fails; continuing with shared remediation.",
+                    "INFO",
+                )
+        else:
+            _log("Focused remediation command still fails on current main; launching shared remediation.", "INFO")
+
+        # 3. Invoke Gemini CLI to fix it
+        error_output = (failed_step.stderr or failed_step.stdout or "No output available")[-6000:]
         targeted_instruction = ""
         if targeted_nodeid:
             targeted_instruction = (
@@ -1383,13 +1441,7 @@ Only edit files required for the original failure you reproduced.
             return -1
 
         _log(f"Verifying focused remediation command: {targeted_repro_command}", "START")
-        focused_verify_result = subprocess.run(
-            shlex.split(targeted_repro_command),
-            cwd=path,
-            capture_output=True,
-            text=True,
-            timeout=900,
-        )
+        focused_verify_result = _run_verification(targeted_repro_command)
         if focused_verify_result.returncode != 0:
             verify_tail = (focused_verify_result.stderr or focused_verify_result.stdout or "No output available")[-1200:]
             _log(
@@ -1402,13 +1454,7 @@ Only edit files required for the original failure you reproduced.
 
         if lane_verification_command and lane_verification_command != targeted_repro_command:
             _log(f"Verifying fingerprint lane command: {lane_verification_command}", "START")
-            verify_result = subprocess.run(
-                shlex.split(lane_verification_command),
-                cwd=path,
-                capture_output=True,
-                text=True,
-                timeout=900,
-            )
+            verify_result = _run_verification(lane_verification_command)
             if verify_result.returncode != 0:
                 verify_tail = (verify_result.stderr or verify_result.stdout or "No output available")[-1200:]
                 _log(
@@ -1477,7 +1523,17 @@ Only edit files required for the original failure you reproduced.
         _log(f"Error creating global fix: {e}", "ERROR")
         return -1
     finally:
-        subprocess.run(["git", "worktree", "remove", "--force", str(path)], cwd=repo_root)
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", str(path)],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        if path.exists():
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
         _log("Cleaned up global-fix worktree.")
 
 def _handle_global_ci_blockers(
