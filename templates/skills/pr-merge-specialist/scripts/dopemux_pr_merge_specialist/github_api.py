@@ -29,6 +29,9 @@ BOT_AUTHORS = {
 GITHUB_ACTIONS_DETAILS_URL_RE = re.compile(
     r"^https://github\.com/[^/]+/[^/]+/actions/runs/(?P<run_id>\d+)(?:/job/(?P<job_id>\d+))?/?$"
 )
+GIT_REMOTE_SLUG_RE = re.compile(
+    r"(?:github\.com[:/])(?P<owner>[^/\s]+)/(?P<repo>[^/\s]+?)(?:\.git)?$"
+)
 
 
 @dataclass(frozen=True)
@@ -200,6 +203,24 @@ class GitHubClient:
         self.cache_misses += 1
         return None
 
+    def _resolve_repo_slug_from_git_remote(self) -> Optional[str]:
+        result = run_command(
+            ["git", "remote", "get-url", "origin"],
+            cwd=self.repo_root,
+            timeout_seconds=self.timeout_seconds,
+        )
+        if result.returncode != 0:
+            return None
+        remote_url = (result.stdout or "").strip()
+        match = GIT_REMOTE_SLUG_RE.search(remote_url)
+        if not match:
+            return None
+        owner = match.group("owner").strip()
+        repo = match.group("repo").strip()
+        if not owner or not repo:
+            return None
+        return f"{owner}/{repo}"
+
     def resolve_repo_slug(self) -> str:
         cached = self._cache_get("repo_slug")
         if cached is not None:
@@ -210,10 +231,13 @@ class GitHubClient:
         result = self._run(
             ["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]
         )
-        if result.returncode != 0:
-            raise RuntimeError(f"Unable to resolve repo slug: {result.stderr.strip()}")
-        slug = result.stdout.strip()
+        if result.returncode == 0:
+            slug = result.stdout.strip()
+        else:
+            slug = self._resolve_repo_slug_from_git_remote() or ""
         if not slug or "/" not in slug:
+            if result.returncode != 0:
+                raise RuntimeError(f"Unable to resolve repo slug: {result.stderr.strip()}")
             raise RuntimeError(f"Invalid repo slug response: {slug!r}")
         self.cache["repo_slug"] = slug
         return slug
