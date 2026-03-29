@@ -35,6 +35,9 @@ jobs:
       contents: read
       packages: write
 
+    env:
+      DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -101,15 +104,15 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hardened Images (dhi.io)
-        if: ${{ secrets.DHI_TOKEN != '' }}
+        if: ${{ env.DHI_TOKEN != '' }}
         uses: docker/login-action@v3
         with:
           registry: dhi.io
           username: ${{ github.actor }}
-          password: ${{ secrets.DHI_TOKEN }}
+          password: ${{ env.DHI_TOKEN }}
 
       - name: Check DHI token availability
-        if: ${{ !secrets.DHI_TOKEN }}
+        if: ${{ env.DHI_TOKEN == '' }}
         run: |
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "::error::DHI_TOKEN secret is required to build images that depend on dhi.io base images. Configure secrets.DHI_TOKEN in repository or organization settings."
