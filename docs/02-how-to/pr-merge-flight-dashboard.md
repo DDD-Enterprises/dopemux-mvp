@@ -50,7 +50,11 @@ Important behavior:
 - GitHub remains the final merge authority when auto-merge or merge queue is enabled
 
 ### Global CI Remediation
-If multiple PRs fail CI with the same error, the orchestrator identifies a stable failure fingerprint from the failing validation step and error output. Instead of fixing each PR individually, it invokes the `ci-remediation-specialist` against `main` and opens or reuses a single `global-ci-fix` PR. Other failing PRs wait on that shared fix path instead of duplicating remediation.
+If multiple PRs fail CI with the same error, the orchestrator identifies a stable failure fingerprint and routes them through a shared remediation path instead of fixing each PR independently. The authority order is local-first:
+
+- if a PR already produced a failing local validation step, the global blocker fingerprint comes from that local validation output
+- otherwise, the queue can harvest GitHub Actions job logs for failed required checks and derive a remote fingerprint from the underlying failing test or error signature
+- when two or more PRs share that fingerprint and the failing required check has an explicit reproduction command, PRMS opens or reuses a single `global-ci-fix` PR against `main`
 
 Important constraint:
 
@@ -58,6 +62,7 @@ Important constraint:
 - auto-merge-enabled PRs are still treated as blocked if the required remote checks are red
 - bounded dry or execute runs respect `--max-prs`, so operator test runs can sample the queue without draining the whole backlog
 - explicitly mapped required checks can be reproduced locally before CI remediation runs; unmapped remote failures still fail closed
+- remote fingerprint harvesting is GitHub Actions-only in the first pass; non-Actions check URLs and ambiguous log output do not trigger shared remediation
 
 ### Optimistic Lifecycle
 The dashboard uses a state model that distinguishes local proof from GitHub lag:

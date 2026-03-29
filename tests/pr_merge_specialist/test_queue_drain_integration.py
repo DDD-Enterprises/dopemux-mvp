@@ -7,12 +7,12 @@ from types import SimpleNamespace
 
 from dopemux_pr_merge_specialist import closed_loop_engine
 from dopemux_pr_merge_specialist import engine
-from dopemux_pr_merge_specialist.github_api import GitHubClient
+from dopemux_pr_merge_specialist.github_api import GitHubClient, RemoteCheckLogEvidence
 from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
 from dopemux_pr_merge_specialist.plan_builder import build_plan_result, write_pr_state_artifact
 from dopemux_pr_merge_specialist.preflight import build_run_paths, pr_dir_for
 from dopemux_pr_merge_specialist.runtime import CommandResult
-from dopemux_pr_merge_specialist.schema import MergeActionType, MergeDecision, PRResult, PRState, PullRequestState, ValidationReport, ValidationStatus, ValidationStepResult
+from dopemux_pr_merge_specialist.schema import BlockerType, Finding, FindingSeverity, MergeActionType, MergeDecision, PRResult, PRState, PullRequestState, ValidationReport, ValidationStatus, ValidationStepResult
 from dopemux_pr_merge_specialist import cli as pr_merge_cli
 
 
@@ -82,6 +82,14 @@ class FakeGitHubClient:
     def find_global_fix_prs(self) -> list[dict]:
         return []
 
+    def fetch_remote_check_log_evidence(self, check_entry: dict) -> RemoteCheckLogEvidence:
+        return RemoteCheckLogEvidence(
+            check_name=str(check_entry.get("check_name") or ""),
+            details_url=str(check_entry.get("details_url") or ""),
+            fetch_status="unsupported",
+            error="not configured in FakeGitHubClient",
+        )
+
 
 def _make_result(
     *,
@@ -92,6 +100,7 @@ def _make_result(
     auto_merge_enabled: bool = False,
     artifacts: dict[str, str] | None = None,
     validation_status: ValidationStatus = ValidationStatus.PASSED,
+    findings: list[Finding] | None = None,
 ) -> PRResult:
     return PRResult(
         run_id="testrun",
@@ -117,7 +126,7 @@ def _make_result(
         lifecycle_state=lifecycle_state,
         apply_actions=[],
         merge_decision=merge_decision,
-        findings=[],
+        findings=findings or [],
         truth_sources=[],
         precedence_order=[],
         decision_basis={},
@@ -745,6 +754,191 @@ def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatc
 
     # Creation failed (-1), so no PRs should be in the blocked map
     assert blocked_map == {}
+
+
+def test_fetch_remote_check_log_evidence_parses_github_actions_job_url(tmp_path: Path):
+    client = GitHubClient(
+        repo="DDD-Enterprises/dopemux-mvp",
+        repo_root=tmp_path,
+        policy={"retry": {}, "timeouts": {}},
+    )
+    seen_commands: list[list[str]] = []
+
+    def fake_run(cmd):
+        seen_commands.append(list(cmd))
+        return CommandResult(list(cmd), 0, "pytest log output", "")
+
+    client._run = fake_run  # type: ignore[method-assign]
+    evidence = client.fetch_remote_check_log_evidence(
+        {
+            "check_name": "🧪 Unit Tests",
+            "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/23701466608/job/69045799064",
+        }
+    )
+
+    assert evidence.fetch_status == "ok"
+    assert evidence.run_id == "23701466608"
+    assert evidence.job_id == "69045799064"
+    assert evidence.log_text == "pytest log output"
+    assert seen_commands == [
+        [
+            "gh",
+            "run",
+            "view",
+            "23701466608",
+            "--job",
+            "69045799064",
+            "--log",
+            "--repo",
+            "DDD-Enterprises/dopemux-mvp",
+        ]
+    ]
+
+
+def test_fetch_remote_check_log_evidence_rejects_non_actions_url(tmp_path: Path):
+    client = GitHubClient(
+        repo="DDD-Enterprises/dopemux-mvp",
+        repo_root=tmp_path,
+        policy={"retry": {}, "timeouts": {}},
+    )
+
+    evidence = client.fetch_remote_check_log_evidence(
+        {
+            "check_name": "🔍 Docker Scout",
+            "details_url": "https://scout.docker.com/v/CVE-123",
+        }
+    )
+
+    assert evidence.fetch_status == "unsupported"
+    assert evidence.run_id is None
+    assert evidence.job_id is None
+
+
+def test_extract_remote_failure_signature_prefers_pytest_node_id():
+    signature = queue_drain_module._extract_remote_failure_signature(
+        """
+=========================== short test summary info ============================
+FAILED tests/test_cli.py::TestCLI::test_start_command_role_dry_run - UnboundLocalError: cannot access local variable 'project_path'
+        """.strip()
+    )
+
+    assert signature == (
+        "pytest_node",
+        "tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+        "pytest failure tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+    )
+
+
+def test_extract_remote_failure_signature_falls_back_to_exception_header():
+    signature = queue_drain_module._extract_remote_failure_signature(
+        """
+Traceback (most recent call last):
+E   AssertionError: template/runtime parity mismatch
+        """.strip()
+    )
+
+    assert signature == (
+        "exception_header",
+        "AssertionError: template/runtime parity mismatch",
+        "failure header AssertionError: template/runtime parity mismatch",
+    )
+
+
+def test_extract_remote_failure_signature_returns_none_for_ambiguous_log():
+    assert (
+        queue_drain_module._extract_remote_failure_signature(
+            "Build failed after 12.3s with no test summary available."
+        )
+        is None
+    )
+
+
+def test_handle_global_ci_blockers_groups_remote_fingerprints(monkeypatch, tmp_path: Path):
+    monkeypatch.setattr(
+        queue_drain_module,
+        "allowed_actions_for_result",
+        lambda _result: ["APPLY_FIX"],
+    )
+
+    created: list[tuple[str, str]] = []
+
+    def fake_create_global_fix_pr(fingerprint, failed_step, client, repo_root):
+        created.append((fingerprint, failed_step.command))
+        return 777
+
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_create_global_fix_pr",
+        fake_create_global_fix_pr,
+    )
+
+    remote_details = {
+        "blocker_types": ["required_check_failed"],
+        "failed_required_checks": ["🧪 Unit Tests"],
+        "failed_required_check_entries": [
+            {
+                "check_name": "🧪 Unit Tests",
+                "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/23701466608/job/69045799064",
+            }
+        ],
+    }
+    findings = [
+        Finding(
+            kind=FindingSeverity.BLOCKER,
+            finding_type=BlockerType.REQUIRED_CHECK_FAILED.value,
+            message="Required checks are failing.",
+            details=remote_details,
+            source="github_protection_review",
+        )
+    ]
+    results = [
+        _make_result(
+            pr_id=401,
+            lifecycle_state=PRState.APPLY_BLOCKED.value,
+            ci_status="FAILURE",
+            findings=findings,
+        ),
+        _make_result(
+            pr_id=402,
+            lifecycle_state=PRState.APPLY_BLOCKED.value,
+            ci_status="FAILURE",
+            findings=findings,
+        ),
+    ]
+
+    client = FakeGitHubClient(
+        repo=None,
+        repo_root=tmp_path,
+        policy={
+            "remote_check_repro": {
+                "steps": [
+                    {
+                        "check_name": "🧪 Unit Tests",
+                        "command": ["pytest", "tests/", "--maxfail=1"],
+                        "scope": "repo",
+                    }
+                ]
+            }
+        },
+    )
+    client.fetch_remote_check_log_evidence = lambda _entry: RemoteCheckLogEvidence(  # type: ignore[method-assign]
+        check_name="🧪 Unit Tests",
+        details_url="https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/23701466608/job/69045799064",
+        run_id="23701466608",
+        job_id="69045799064",
+        log_text="FAILED tests/test_cli.py::TestCLI::test_start_command_role_dry_run - UnboundLocalError",
+        fetch_status="ok",
+    )
+
+    blocked_map = queue_drain_module._handle_global_ci_blockers(
+        results,
+        client,
+        tmp_path,
+    )
+
+    assert blocked_map == {401: 777, 402: 777}
+    assert len(created) == 1
+    assert created[0][1] == "pytest tests/ --maxfail=1"
 
 
 def test_global_fix_blocking_persists_across_passes(monkeypatch, tmp_path: Path):
