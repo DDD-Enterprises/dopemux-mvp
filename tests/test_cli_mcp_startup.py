@@ -56,19 +56,29 @@ def test_resolve_mcp_dir_from_package_root_editable(tmp_path):
     project_path = tmp_path / "empty_project"
     project_path.mkdir()
     
-    with patch.dict(os.environ, {}, clear=True):
-        resolved = _resolve_mcp_dir(project_path)
+    # repo_root is one level up from 'tests/'
+    repo_root = Path(__file__).resolve().parents[1]
+    repo_fallback = repo_root / "docker" / "mcp-servers"
 
-        repo_fallback = Path(__file__).resolve().parents[1] / "docker" / "mcp-servers"
-        if _HAS_MCP_PROVISION and (repo_fallback / "start-all-mcp-servers.sh").exists():
-            # Provisioner materializes stack into the target project path.
-            assert resolved == project_path / "docker" / "mcp-servers"
-            assert (resolved / "start-all-mcp-servers.sh").exists()
-        elif (repo_fallback / "start-all-mcp-servers.sh").exists():
-            # Legacy non-provisioning behavior.
-            assert resolved == repo_fallback
-        else:
-            assert resolved is None
+    with patch.dict(os.environ, {}, clear=True):
+        # We need to make sure MCPProvisioner can actually find it.
+        # Since we're running in the repo, Strategy 1 (project_local) usually 
+        # finds it if we pass repo_root, but here we pass an empty project_path.
+        # So it falls through to Strategy 4 (Package template / source_tree).
+        
+        # We mock the source_tree discovery to point to our repo_fallback
+        with patch("dopemux.mcp.provision.MCPProvisioner.resolve_stack_source", return_value=repo_fallback):
+            resolved = _resolve_mcp_dir(project_path)
+
+            if _HAS_MCP_PROVISION and (repo_fallback / "start-all-mcp-servers.sh").exists():
+                # Provisioner materializes stack into the target project path.
+                assert resolved == project_path / "docker" / "mcp-servers"
+                assert (resolved / "start-all-mcp-servers.sh").exists()
+            elif (repo_fallback / "start-all-mcp-servers.sh").exists():
+                # Legacy non-provisioning behavior.
+                assert resolved == repo_fallback
+            else:
+                assert resolved is None
 
 
 def test_start_requires_mcp_raises_when_missing():

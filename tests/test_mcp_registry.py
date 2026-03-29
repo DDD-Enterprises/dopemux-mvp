@@ -11,12 +11,12 @@ def test_registry_contains_required_servers():
     """Canonical keys required by config generation should exist."""
     registry = MCPRegistry()
     required = {
-        "dopemux-conport",
-        "dopemux-serena",
-        "dopemux-desktop-commander",
-        "dopemux-gpt-researcher",
-        "dopemux-leantime-bridge",
-        "dopemux-dope-context",
+        "conport",
+        "serena",
+        "desktop-commander",
+        "gpt-researcher",
+        "leantime-bridge",
+        "claude-context",
     }
     available = {server.name for server in registry.list_servers()}
     missing = required - available

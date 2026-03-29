@@ -60,8 +60,10 @@ def test_build_worker_launch_spec_includes_workflow_context(monkeypatch, tmp_pat
     _, state, task, workspace = _state(monkeypatch, tmp_path)
     tmux = FakeTmuxController()
     manager = FakeInstanceManager(workspace)
+    from dopemux.workflow import orchestration
     monkeypatch.setattr(
-        "dopemux.workflow.orchestration.detect_instances_sync",
+        orchestration,
+        "detect_instances_sync",
         lambda workspace_root: [],
     )
 
@@ -83,8 +85,10 @@ def test_spawn_worker_creates_worktree_and_tmux_window(monkeypatch, tmp_path: Pa
     _, state, task, workspace = _state(monkeypatch, tmp_path)
     tmux = FakeTmuxController()
     manager = FakeInstanceManager(workspace)
+    from dopemux.workflow import orchestration
     monkeypatch.setattr(
-        "dopemux.workflow.orchestration.detect_instances_sync",
+        orchestration,
+        "detect_instances_sync",
         lambda workspace_root: [],
     )
 
@@ -120,8 +124,10 @@ def test_validate_task_completion_marks_task_done(monkeypatch, tmp_path: Path):
 
     tmux = FakeTmuxController()
     manager = FakeInstanceManager(workspace)
+    from dopemux.workflow import orchestration
     monkeypatch.setattr(
-        "dopemux.workflow.orchestration.detect_instances_sync",
+        orchestration,
+        "detect_instances_sync",
         lambda workspace_root: [],
     )
     orchestrator = WorkflowOrchestrator(

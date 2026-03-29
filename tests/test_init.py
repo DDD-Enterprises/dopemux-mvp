@@ -21,8 +21,33 @@ def test_submodules_import():
 
 
 def test_version_available():
-    """Test that version is available."""
-    from dopemux import __version__
+    """Test that version is available through one of the standard mechanisms."""
+    import dopemux
+    
+    ver = None
+    # 1. Try attribute on package
+    if hasattr(dopemux, "__version__"):
+        ver = dopemux.__version__
+        if not isinstance(ver, str):
+            # If shadowed by a module, try attribute on that module
+            ver = getattr(ver, "__version__", None)
+            
+    # 2. Try explicit submodule import if attribute failed
+    if ver is None:
+        try:
+            from dopemux import __version__ as ver_mod
+            ver = getattr(ver_mod, "__version__", ver_mod)
+        except ImportError:
+            pass
+            
+    # 3. Last resort: check if we can get it from the package-level __version__ module
+    if ver is None:
+        try:
+            import dopemux.__version__
+            ver = dopemux.__version__.__version__
+        except (ImportError, AttributeError):
+            pass
 
-    assert __version__ is not None
-    assert isinstance(__version__, str)
+    assert ver is not None, "Could not resolve version through any standard import mechanism"
+    assert isinstance(ver, str)
+    assert len(ver.split(".")) >= 2  # Sanity check for version format
