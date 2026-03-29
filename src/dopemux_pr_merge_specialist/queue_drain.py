@@ -19,7 +19,7 @@ from .action_model import allowed_actions_for_result
 from .github_api import BOT_AUTHORS, GitHubClient, ci_status, summarize_checks, thread_counters
 from .policy import PolicyError, load_effective_policy, policy_artifact_payload, policy_fingerprint
 from .runtime import CommandResult, append_command_log, execute_or_dry_run, fingerprint_payload, pid_is_running, run_command, run_id, shell_join, snapshot_environment, utc_now, write_json, write_text
-from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, TOOL_VERSION
+from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, ValidationStepResult, TOOL_VERSION
 from .validation import run_validation, validation_report_md
 from .strategy_library import STRATEGY_LIBRARY, select_strategy, StrategyAssignment, TRAIN_ELIGIBLE_STRATEGIES, STRATEGY_EXECUTION_ORDER
 
@@ -500,6 +500,96 @@ Identify the root cause, modify the necessary files, and ensure the command pass
     return True
 
 
+def reproduce_remote_required_check_failure(
+    *,
+    worktree_path: Path,
+    commands_log: Path,
+    policy: Dict[str, Any],
+    check_payload: Dict[str, Any],
+    log: Callable[[str, str], None],
+) -> Tuple[Optional[str], Optional[ValidationReport]]:
+    failed_required_checks = [
+        str(name).strip()
+        for name in check_payload.get("failed_required_checks", []) or []
+        if str(name).strip()
+    ]
+    if not failed_required_checks:
+        return None, None
+
+    mappings = list(policy.get("remote_check_repro", {}).get("steps", []))
+    if not mappings:
+        log(
+            "Required GitHub checks are failing, but no remote-check reproduction mappings are configured.",
+            "INFO",
+        )
+        return None, None
+
+    timeout_seconds = int(
+        policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+    )
+    for step in mappings:
+        check_name = str(step.get("check_name") or "").strip()
+        if not check_name or check_name not in failed_required_checks:
+            continue
+        scope = str(step.get("scope", "repo"))
+        if scope != "repo":
+            log(
+                f"Skipping remote-check reproduction for '{check_name}': unsupported scope '{scope}'.",
+                "INFO",
+            )
+            return None, None
+        command = [str(part) for part in step.get("command", []) if str(part)]
+        if not command:
+            log(
+                f"Skipping remote-check reproduction for '{check_name}': empty command mapping.",
+                "INFO",
+            )
+            return None, None
+
+        log(f"Reproducing remote required check locally: {check_name}", "START")
+        result = execute_or_dry_run(
+            command,
+            execute=True,
+            cwd=worktree_path,
+            commands_log=commands_log,
+            timeout_seconds=timeout_seconds,
+        )
+        status = "passed" if result.returncode == 0 else "failed"
+        report = ValidationReport(
+            status=(
+                ValidationStatus.PASSED
+                if result.returncode == 0
+                else ValidationStatus.FAILED
+            ),
+            required_for_merge_ready=True,
+            steps=[
+                ValidationStepResult(
+                    name=check_name,
+                    command=shell_join(command),
+                    status=status,
+                    returncode=result.returncode,
+                    stdout=result.stdout,
+                    stderr=result.stderr,
+                )
+            ],
+            attempts=1,
+            remediation_applied=False,
+        )
+        if report.passed:
+            log(
+                f"Remote required check '{check_name}' passed locally; no local reproduction found.",
+                "INFO",
+            )
+        else:
+            log(f"Remote required check '{check_name}' reproduced locally.", "ERROR")
+        return check_name, report
+    log(
+        "Required GitHub checks are failing, but none of the failing check names have local reproduction mappings.",
+        "INFO",
+    )
+    return None, None
+
+
 def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str, str], None]] = None) -> PRResult:
     def log(msg: str, s_type: str = "INFO"):
         if progress_callback:
@@ -728,7 +818,63 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
                         _refresh_client_state(client, pr.pr_id)        
         if validation.passed:
             log("Validation PASSED", "SUCCESS")
-            # Resolve threads only after validation passes
+        else:
+            log("Validation FAILED", "ERROR")
+
+        _refresh_client_state(client, pr.pr_id)
+        raw, threads, refreshed_pr, refreshed_checks = _load_pr_context(
+            client=client, pr_id=pr.pr_id
+        )
+        if validation.passed and execute:
+            reproduced_check, remote_validation = reproduce_remote_required_check_failure(
+                worktree_path=worktree_path,
+                commands_log=commands_log,
+                policy=policy,
+                check_payload=refreshed_checks,
+                log=log,
+            )
+            if remote_validation is not None and not remote_validation.passed:
+                log(
+                    f"Remote required check '{reproduced_check}' failed locally; attempting AI remediation..."
+                )
+                if remediate_ci_failure(worktree_path, remote_validation, log):
+                    reproduced_check, remote_validation = reproduce_remote_required_check_failure(
+                        worktree_path=worktree_path,
+                        commands_log=commands_log,
+                        policy=policy,
+                        check_payload=refreshed_checks,
+                        log=log,
+                    )
+                    if remote_validation is not None and remote_validation.passed:
+                        log("Remote-check remediation passed locally; re-running validation suite...", "START")
+                        validation = run_validation(
+                            repo_root=repo_root,
+                            worktree_path=worktree_path,
+                            policy=policy,
+                            execute=execute,
+                            commands_log=commands_log,
+                            pr_id=pr.pr_id,
+                            head_sha=pr.head_sha,
+                            base_sha=pr.base_sha,
+                            policy_fingerprint=policy_fingerprint(policy),
+                            lifecycle_state=(
+                                pr.lifecycle_state.value
+                                if hasattr(pr.lifecycle_state, "value")
+                                else str(pr.lifecycle_state)
+                            ),
+                            progress_callback=progress_callback
+                        )
+                        if validation.passed:
+                            log("Committing remote-check remediation fix...")
+                            if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy, log=log):
+                                _refresh_client_state(client, pr.pr_id)
+                                raw, threads, refreshed_pr, refreshed_checks = _load_pr_context(
+                                    client=client, pr_id=pr.pr_id
+                                )
+                        else:
+                            log("Full validation still failed after remote-check remediation.", "ERROR")
+
+        if validation.passed:
             resolve_verified_threads(
                 dispositions=applied_threads,
                 execute=execute,
@@ -736,13 +882,7 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
                 repo_root=repo_root,
                 policy=policy
             )
-        else:
-            log("Validation FAILED", "ERROR")
-            
-        _refresh_client_state(client, pr.pr_id)
-        raw, threads, refreshed_pr, refreshed_checks = _load_pr_context(
-            client=client, pr_id=pr.pr_id
-        )
+
         result = build_plan_result(
             active_run_id=active_run_id,
             pr=refreshed_pr,

@@ -7,9 +7,11 @@ from types import SimpleNamespace
 
 from dopemux_pr_merge_specialist import closed_loop_engine
 from dopemux_pr_merge_specialist import engine
+from dopemux_pr_merge_specialist.github_api import GitHubClient
 from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
 from dopemux_pr_merge_specialist.plan_builder import build_plan_result, write_pr_state_artifact
 from dopemux_pr_merge_specialist.preflight import build_run_paths, pr_dir_for
+from dopemux_pr_merge_specialist.runtime import CommandResult
 from dopemux_pr_merge_specialist.schema import MergeActionType, MergeDecision, PRResult, PRState, PullRequestState, ValidationReport, ValidationStatus, ValidationStepResult
 from dopemux_pr_merge_specialist import cli as pr_merge_cli
 
@@ -631,6 +633,71 @@ def test_queue_drain_propagates_resolved_run_id_to_subcommands(
     assert rc == 0
     assert len(seen_run_ids) == 1
     assert seen_run_ids[0]
+
+
+def test_query_checks_reports_exact_failed_required_check_names(tmp_path: Path):
+    client = GitHubClient(
+        repo="DDD-Enterprises/dopemux-mvp",
+        repo_root=tmp_path,
+        policy={"retry": {}, "timeouts": {}},
+    )
+    client.fetch_branch_protection = lambda _branch: {  # type: ignore[method-assign]
+        "approval_required": False,
+        "required_status_checks": ["🧪 Unit Tests", "identity-check"],
+    }
+    payload = {
+        "baseRefName": "main",
+        "reviewDecision": "",
+        "mergeable": "MERGEABLE",
+        "mergeStateStatus": "BLOCKED",
+        "statusCheckRollup": [
+            {"name": "🧪 Unit Tests", "status": "COMPLETED", "conclusion": "FAILURE"},
+            {"name": "identity-check", "status": "COMPLETED", "conclusion": "SUCCESS"},
+            {"name": "📚 Documentation Check", "status": "COMPLETED", "conclusion": "FAILURE"},
+        ],
+    }
+
+    result = client.query_checks(323, pr_payload=payload)
+
+    assert result["failed_required_checks"] == ["🧪 Unit Tests"]
+    assert result["pending_required_checks"] == []
+
+
+def test_reproduce_remote_required_check_failure_runs_mapped_command(monkeypatch, tmp_path: Path):
+    recorded_commands: list[list[str]] = []
+    messages: list[tuple[str, str]] = []
+
+    def fake_execute_or_dry_run(cmd, *, execute, cwd, commands_log, timeout_seconds=600):
+        recorded_commands.append(list(cmd))
+        return CommandResult(list(cmd), 1, "", "test failure")
+
+    monkeypatch.setattr(queue_drain_module, "execute_or_dry_run", fake_execute_or_dry_run)
+
+    check_name, report = queue_drain_module.reproduce_remote_required_check_failure(
+        worktree_path=tmp_path,
+        commands_log=tmp_path / "commands.txt",
+        policy={
+            "timeouts": {"subprocess_seconds": 30},
+            "remote_check_repro": {
+                "steps": [
+                    {
+                        "check_name": "🧪 Unit Tests",
+                        "command": ["pytest", "tests/", "--maxfail=1"],
+                        "scope": "repo",
+                    }
+                ]
+            },
+        },
+        check_payload={"failed_required_checks": ["🧪 Unit Tests"]},
+        log=lambda message, level="INFO": messages.append((message, level)),
+    )
+
+    assert check_name == "🧪 Unit Tests"
+    assert report is not None
+    assert report.status == ValidationStatus.FAILED
+    assert report.steps[0].name == "🧪 Unit Tests"
+    assert recorded_commands == [["pytest", "tests/", "--maxfail=1"]]
+    assert any("reproduced locally" in message for message, _level in messages)
 
 
 def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatch, tmp_path: Path):

@@ -26,6 +26,38 @@ BOT_AUTHORS = {
 }
 
 
+def _check_rollup_name(check: Dict[str, Any]) -> str:
+    name = str(check.get("name") or check.get("context") or "").strip()
+    return name
+
+
+def _required_check_names_by_state(
+    checks: List[Dict[str, Any]],
+    required_contexts: Sequence[str],
+    *,
+    failure_only: bool = False,
+    pending_only: bool = False,
+) -> List[str]:
+    required = {str(item).strip() for item in required_contexts if str(item).strip()}
+    names: List[str] = []
+    for check in checks:
+        name = _check_rollup_name(check)
+        if not name or name not in required:
+            continue
+        status = str(check.get("status") or "").upper()
+        conclusion = str(check.get("conclusion") or "").upper()
+        is_pending = bool(status and status != "COMPLETED") or (
+            not conclusion and status != "COMPLETED"
+        )
+        is_failure = conclusion in CHECK_FAILURE
+        if failure_only and not is_failure:
+            continue
+        if pending_only and not is_pending:
+            continue
+        names.append(name)
+    return sorted(dict.fromkeys(names))
+
+
 class GitHubClient:
     def __init__(
         self,
@@ -497,9 +529,16 @@ class GitHubClient:
         summary = summarize_checks(checks)
         review_decision = str(payload.get("reviewDecision") or "")
         protection = self.fetch_branch_protection(str(payload.get("baseRefName") or ""))
+        required_contexts = list(protection.get("required_status_checks") or [])
         approval_required = bool(protection.get("approval_required", False))
         blockers: List[str] = []
         warnings: List[str] = []
+        failed_required_checks = _required_check_names_by_state(
+            checks, required_contexts, failure_only=True
+        )
+        pending_required_checks = _required_check_names_by_state(
+            checks, required_contexts, pending_only=True
+        )
         if summary.required_failure > 0:
             blockers.append("required_check_failed")
         if summary.required_pending > 0:
@@ -522,6 +561,8 @@ class GitHubClient:
             "mergeable": payload.get("mergeable", ""),
             "merge_state_status": payload.get("mergeStateStatus", ""),
             "protection": protection,
+            "failed_required_checks": failed_required_checks,
+            "pending_required_checks": pending_required_checks,
             "approval_required": approval_required,
             "blocker_types": blockers,
             "warning_types": warnings,

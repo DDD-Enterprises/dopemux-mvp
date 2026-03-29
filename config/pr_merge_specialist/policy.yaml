@@ -36,6 +36,19 @@ validation:
     - name: root-hygiene
       command: [python, scripts/check_root_hygiene.py]
       run_in_dry_run: false
+remote_check_repro:
+  steps:
+    - check_name: "🧪 Unit Tests"
+      command:
+        - pytest
+        - tests/
+        - --maxfail=1
+        - --disable-warnings
+        - --cov=src/dopemux
+        - --cov-report=term-missing
+        - --cov-report=xml:coverage.xml
+        - --cov-report=html:htmlcov
+      scope: repo
 gates:
   require_clean_worktree: true
   allow_dirty_override: true
