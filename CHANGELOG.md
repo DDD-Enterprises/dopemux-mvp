@@ -4,12 +4,13 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- Queue-wide CI remediation via failure fingerprinting, `global-ci-fix` PR detection, and the `ci-remediation-specialist` runbook.
-- Dashboard state distinctions for validation-pending, approval-required, and queued-for-merge PRs.
-- Targeted unit coverage for dashboard console rendering and speculative train continuation behavior.
-- Regression coverage for queue-wide required-check failures, prompt-only Gemini remediation, and bounded queue-drain execution.
+- Run ID propagation across `queue-drain` and `flight` to ensure consistent artifact grouping.
+- Persistent `RUN_SUMMARY.md` writing at the end of `queue-drain` execution.
+- Git case-insensitivity warning in `preflight` for macOS environments.
 
 ### Changed
+- `stage_and_push_if_needed` now uses `git add -A` to detect case-only renames on macOS.
+- `pr_merge_loop.sh` updated with progress-based exit logic to prevent infinite retries on stuck PRs.
 - The speculative train now rebases each candidate against `origin/main` instead of chaining later PRs onto earlier speculative branches.
 - The flight dashboard passes its active `Console` into the renderer so viewport sizing reflects the live terminal instance.
 - `flight-deck` now delegates to the authoritative `flight` dashboard path so autopilot, remediation, and merge execution share the same runtime.

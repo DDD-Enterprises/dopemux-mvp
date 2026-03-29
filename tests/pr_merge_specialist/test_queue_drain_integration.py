@@ -467,6 +467,32 @@ def test_cmd_flight_deck_routes_to_dashboard(monkeypatch):
     assert captured["strategy"] == "hybrid"
 
 
+def test_self_check_json_suppresses_preflight_banner(monkeypatch, capsys):
+    def fake_preflight(args):
+        assert getattr(args, "_suppress_output", False) is True
+        if not getattr(args, "_suppress_output", False):
+            print("Preflight artifacts: noisy")
+        return 0
+
+    monkeypatch.setattr(pr_merge_cli, "preflight", fake_preflight)
+
+    rc = pr_merge_cli._self_check(
+        Namespace(
+            json=True,
+            out_dir="proof/pr_merge",
+            repo=None,
+            policy=None,
+            allow_dirty=True,
+            run_id="selfcheck",
+        )
+    )
+
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert payload["checks"][-1] == {"name": "preflight", "status": "PASS"}
+
+
 def test_remediate_ci_failure_uses_prompt_only_gemini_command(monkeypatch, tmp_path: Path):
     captured: dict[str, object] = {}
 
@@ -521,6 +547,90 @@ def test_remediate_ci_failure_uses_prompt_only_gemini_command(monkeypatch, tmp_p
     assert "--yolo" in captured["cmd"]
     assert "--skill" not in captured["cmd"]
     assert any("non-zero exit code" in message for message in messages)
+
+
+def test_queue_drain_propagates_resolved_run_id_to_subcommands(
+    monkeypatch, tmp_path: Path
+):
+    initial_result = _make_result(
+        pr_id=191,
+        lifecycle_state=PRState.APPLY_BLOCKED.value,
+        ci_status="FAILURE",
+    )
+    seen_run_ids: list[str | None] = []
+
+    class FakeClosedLoopEngine:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def run_cycle(self, _case_id, _report):
+            return SimpleNamespace(next_tactic="APPLY_FIX")
+
+        def emit_trace_artifacts(self, _trace, _path):
+            return None
+
+    def fake_apply(args, **_kw):
+        seen_run_ids.append(getattr(args, "run_id", None))
+        return initial_result
+
+    monkeypatch.setattr(closed_loop_engine, "ClosedLoopEngine", FakeClosedLoopEngine)
+    monkeypatch.setattr(queue_drain_module, "GitHubClient", FakeGitHubClient)
+    monkeypatch.setattr(
+        queue_drain_module,
+        "load_effective_policy",
+        lambda *_args, **_kwargs: {},
+    )
+    monkeypatch.setattr(queue_drain_module, "_get_ops_engine", lambda _run_dir: object())
+    monkeypatch.setattr(
+        queue_drain_module,
+        "queue_scan_internal",
+        lambda *_args, **_kwargs: [initial_result],
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_handle_global_ci_blockers",
+        lambda *_args, **_kwargs: {},
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_ignite_speculative_train",
+        lambda *_args, **_kwargs: ([], []),
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "acquire_queue_lock",
+        lambda **_kwargs: (True, tmp_path / "queue.lock", None),
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "release_queue_lock",
+        lambda _lock_path: None,
+    )
+    monkeypatch.setattr(queue_drain_module, "pr_apply", fake_apply)
+    monkeypatch.setattr(
+        queue_drain_module, "_should_handoff_prepared_result", lambda *a, **kw: False
+    )
+
+    rc = queue_drain_module.queue_drain(
+        SimpleNamespace(
+            repo=None,
+            out_dir=str(tmp_path),
+            policy=None,
+            execute=True,
+            allow_dirty=True,
+            limit=20,
+            max_prs=1,
+            max_passes=1,
+            strategy="hybrid",
+            prioritize=[],
+            only=[],
+            run_id=None,
+        )
+    )
+
+    assert rc == 0
+    assert len(seen_run_ids) == 1
+    assert seen_run_ids[0]
 
 
 def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatch, tmp_path: Path):
@@ -1049,3 +1159,125 @@ def test_closed_loop_engine_populates_strategy_in_trace():
     trace = engine.run_cycle("100", report)
     assert trace.next_tactic == "MERGE"
     assert trace.strategy_id == "DIRECT_REBASE_MERGE"
+
+
+def test_queue_drain_skips_no_progress_prs_in_subsequent_passes(
+    monkeypatch, tmp_path: Path
+):
+    """PRs that pass local validation but remain apply_blocked should not be reprocessed."""
+    apply_blocked_result = _make_result(
+        pr_id=200,
+        lifecycle_state=PRState.APPLY_BLOCKED.value,
+        ci_status="FAILURE",
+        validation_status=ValidationStatus.PASSED,
+    )
+
+    scan_call_count = [0]
+    apply_call_count = [0]
+
+    def fake_scan(*_args, **_kwargs):
+        scan_call_count[0] += 1
+        return [apply_blocked_result]
+
+    class FakeClosedLoopEngine:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def run_cycle(self, _case_id, _report):
+            return SimpleNamespace(next_tactic="APPLY_FIX")
+
+        def emit_trace_artifacts(self, _trace, _path):
+            return None
+
+    def fake_apply(_args, **_kw):
+        apply_call_count[0] += 1
+        return apply_blocked_result
+
+    monkeypatch.setattr(closed_loop_engine, "ClosedLoopEngine", FakeClosedLoopEngine)
+    monkeypatch.setattr(queue_drain_module, "GitHubClient", FakeGitHubClient)
+    monkeypatch.setattr(queue_drain_module, "load_effective_policy", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_get_ops_engine", lambda _: object())
+    monkeypatch.setattr(queue_drain_module, "queue_scan_internal", fake_scan)
+    monkeypatch.setattr(queue_drain_module, "_handle_global_ci_blockers", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_ignite_speculative_train", lambda *a, **kw: ([], []))
+    monkeypatch.setattr(queue_drain_module, "acquire_queue_lock", lambda **kw: (True, tmp_path / "q.lock", None))
+    monkeypatch.setattr(queue_drain_module, "release_queue_lock", lambda _: None)
+    monkeypatch.setattr(queue_drain_module, "pr_apply", fake_apply)
+    monkeypatch.setattr(queue_drain_module, "_should_handoff_prepared_result", lambda *a, **kw: False)
+
+    rc = queue_drain_module.queue_drain(
+        SimpleNamespace(
+            repo=None,
+            out_dir=str(tmp_path),
+            policy=None,
+            execute=True,
+            allow_dirty=True,
+            limit=20,
+            max_prs=0,
+            max_passes=3,
+            strategy="hybrid",
+            prioritize=[],
+            only=[],
+            run_id="noprogress",
+        )
+    )
+
+    assert rc == 0
+    # Scanned 2 passes (pass 1 processes, pass 2 finds nothing active), but applied only once
+    assert scan_call_count[0] == 2
+    assert apply_call_count[0] == 1
+
+
+def test_queue_drain_dry_run_skips_all_in_subsequent_passes(
+    monkeypatch, tmp_path: Path
+):
+    """In dry-run mode (no --execute), PRs should be skipped in subsequent passes."""
+    result = _make_result(
+        pr_id=201,
+        lifecycle_state=PRState.APPLY_BLOCKED.value,
+        ci_status="FAILURE",
+    )
+
+    scan_call_count = [0]
+
+    def fake_scan(*_args, **_kwargs):
+        scan_call_count[0] += 1
+        return [result]
+
+    class FakeClosedLoopEngine:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def run_cycle(self, _case_id, _report):
+            return SimpleNamespace(next_tactic="APPLY_FIX")
+
+        def emit_trace_artifacts(self, _trace, _path):
+            return None
+
+    monkeypatch.setattr(closed_loop_engine, "ClosedLoopEngine", FakeClosedLoopEngine)
+    monkeypatch.setattr(queue_drain_module, "GitHubClient", FakeGitHubClient)
+    monkeypatch.setattr(queue_drain_module, "load_effective_policy", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_get_ops_engine", lambda _: object())
+    monkeypatch.setattr(queue_drain_module, "queue_scan_internal", fake_scan)
+    monkeypatch.setattr(queue_drain_module, "_handle_global_ci_blockers", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_ignite_speculative_train", lambda *a, **kw: ([], []))
+
+    rc = queue_drain_module.queue_drain(
+        SimpleNamespace(
+            repo=None,
+            out_dir=str(tmp_path),
+            policy=None,
+            execute=False,
+            allow_dirty=True,
+            limit=20,
+            max_prs=0,
+            max_passes=3,
+            strategy="hybrid",
+            prioritize=[],
+            only=[],
+            run_id="dryrun",
+        )
+    )
+
+    assert rc == 0
+    assert scan_call_count[0] == 2  # pass 1 processes, pass 2 finds nothing

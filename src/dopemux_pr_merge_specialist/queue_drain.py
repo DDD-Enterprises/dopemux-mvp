@@ -66,24 +66,45 @@ from .worktree import prepare_worktree, cleanup_worktree, ensure_worktree_matche
 
 __all__ = ['queue_scan', 'queue_scan_internal', 'pr_plan', 'pr_apply', 'pr_merge', 'pr_approve', 'pr_ready', '_get_ops_engine', '_derive_allowed_actions', 'queue_drain', 'stage_and_push_if_needed', 'update_remaining_pr_bases']
 
-def stage_and_push_if_needed(*, worktree_path: Path, head_ref: str, active_run_id: str, pr_id: int, execute: bool, commands_log: Path, policy: Dict[str, Any]) -> bool:
+def stage_and_push_if_needed(*, worktree_path: Path, head_ref: str, active_run_id: str, pr_id: int, execute: bool, commands_log: Path, policy: Dict[str, Any], log: Optional[Callable] = None) -> bool:
+    def _log(msg: str):
+        if log:
+            log(msg)
+    
     timeout_seconds = int(policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600)
-    status = execute_or_dry_run(["git", "status", "--porcelain"], execute=execute, cwd=worktree_path, commands_log=commands_log, timeout_seconds=timeout_seconds)
+    
     if not execute:
+        status = run_command(["git", "status", "--porcelain"], cwd=worktree_path, timeout_seconds=timeout_seconds)
         return bool(status.stdout.strip())
-    if status.returncode != 0 or not status.stdout.strip():
-        return False
+        
+    _log("Staging all changes (including untracked and renames)...")
     add = run_command(["git", "add", "-A"], cwd=worktree_path, timeout_seconds=timeout_seconds)
     append_command_log(commands_log, add)
     if add.returncode != 0:
+        _log(f"Git add failed: {add.stderr}")
         return False
+        
+    status = run_command(["git", "status", "--porcelain"], cwd=worktree_path, timeout_seconds=timeout_seconds)
+    if not status.stdout.strip():
+        _log("No changes detected after staging.")
+        return False
+        
+    _log("Committing address thread suggestions...")
     commit = run_command(["git", "commit", "-m", f"review-response: address thread suggestions (pr-merge/{active_run_id}/PR-{pr_id})"], cwd=worktree_path, timeout_seconds=timeout_seconds)
     append_command_log(commands_log, commit)
     if commit.returncode != 0:
+        _log(f"Git commit failed: {commit.stderr}")
         return False
+        
+    _log(f"Pushing to origin HEAD:{head_ref}...")
     push = run_command(["git", "push", "origin", f"HEAD:{head_ref}", "--force-with-lease"], cwd=worktree_path, timeout_seconds=timeout_seconds)
     append_command_log(commands_log, push)
-    return push.returncode == 0
+    if push.returncode != 0:
+        _log(f"Git push failed: {push.stderr}")
+        return False
+        
+    _log("Push successful.")
+    return True
 
 def update_remaining_pr_bases(*, remaining: Iterable[int], execute: bool, repo: Optional[str], commands_log: Path, repo_root: Path, policy: Dict[str, Any]) -> List[Dict[str, Any]]:
     updates: List[Dict[str, Any]] = []
@@ -584,7 +605,7 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
             log(f"Thread dispositions: {_implemented} implemented, {_declined} declined, {_escalated} escalated")
         if any(d.disposition == ThreadDispositionType.IMPLEMENT for d in applied_threads):
             log("Pushing implemented suggestions...")
-            if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy):
+            if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy, log=log):
                 _refresh_client_state(client, pr.pr_id)
 
         # Phase 2: Rebase on Base Branch
@@ -703,9 +724,8 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
                 )
                 if validation.passed:
                     log("Committing AI remediation fix...")
-                    if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy):
-                        _refresh_client_state(client, pr.pr_id)
-        
+                    if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy, log=log):
+                        _refresh_client_state(client, pr.pr_id)        
         if validation.passed:
             log("Validation PASSED", "SUCCESS")
             # Resolve threads only after validation passes
@@ -1222,6 +1242,7 @@ def queue_drain(args: argparse.Namespace) -> int:
     from .closed_loop_engine import ClosedLoopEngine
     repo_root = Path.cwd()
     active_run_id = getattr(args, "run_id", None) or run_id()
+    args.run_id = active_run_id
     run_dir, queue_dir, pr_root = build_run_paths(args.out_dir, active_run_id)
     policy = load_effective_policy(repo_root, explicit_path=getattr(args, "policy", None))
     client = GitHubClient(repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy)
@@ -1244,6 +1265,7 @@ def queue_drain(args: argparse.Namespace) -> int:
         merged_ids = set()
         queued_ids = set()
         failed_remediation_ids: set = set()  # Accumulates across passes; stuck PRs aren't retried
+        no_progress_ids: set = set()  # PRs where tactic ran but state didn't advance
         global_fix_blocked: Dict[int, int] = {}  # pr_id -> fix_pr_number; persists across passes
         limit_reached = False
 
@@ -1280,6 +1302,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                 if r.pr_state.pr_id not in merged_ids
                 and r.pr_state.pr_id not in queued_ids
                 and r.pr_state.pr_id not in failed_remediation_ids
+                and r.pr_state.pr_id not in no_progress_ids
             ]
             if not active_results:
                 print("All PRs processed, merged, or queued.")
@@ -1362,11 +1385,16 @@ def queue_drain(args: argparse.Namespace) -> int:
                                 else:
                                     queued_ids.add(pr_id)
                         
-                        # If validation still failed after fix, we don't add to merged_ids, 
+                        # If validation still failed after fix, we don't add to merged_ids,
                         # so it will be re-scanned in next pass.
                         if not apply_result.validation_report or not apply_result.validation_report.passed:
                             print(f"PR #{pr_id}: Fix attempt completed but validation still failing.")
                             failed_remediation_ids.add(pr_id)
+                        elif pr_id not in merged_ids and pr_id not in queued_ids:
+                            # Validation passed locally but PR wasn't handed off to merge;
+                            # no point retrying in subsequent passes.
+                            no_progress_ids.add(pr_id)
+                            print(f"PR #{pr_id}: Local validation passed but PR not merge-ready; skipping in future passes.")
 
                     except RuntimeError as e:
                         print(f"Apply error for PR #{pr_id}: {e}")
@@ -1389,8 +1417,17 @@ def queue_drain(args: argparse.Namespace) -> int:
                         )
                     except RuntimeError as e:
                         print(f"Approval error for PR #{pr_id}: {e}")
+                elif tactic in ("DEFER", "REQUEST_CHANGES", "REQUEST_REVIEW"):
+                    no_progress_ids.add(pr_id)
+                elif not execute:
+                    # Dry-run: tactic won't change state, skip in future passes
+                    no_progress_ids.add(pr_id)
             if limit_reached:
                 break
+        
+        # Write final run summary
+        write_text(run_dir / "RUN_SUMMARY.md", render_operator_summary(results))
+        
         print(f"\nRun ID: {active_run_id}")
         print(f"Processed PRs: {len(processed_ids)}")
         print(f"Merged: {len(merged_ids)}")
