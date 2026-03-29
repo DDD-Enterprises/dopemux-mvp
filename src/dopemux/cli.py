@@ -1678,6 +1678,26 @@ def start(
     else:
         pending_profile_name = None
 
+    cwd_path = Path.cwd()
+    project_path = cwd_path
+
+    try:
+        dopemux_exists = Path.exists(project_path / ".dopemux")
+    except TypeError:
+        dopemux_exists = False
+
+    if not dopemux_exists:
+        project_path_candidate = get_workspace_root()
+        if hasattr(project_path_candidate, "__truediv__"):
+            project_path = project_path_candidate
+        else:
+            project_path = Path(project_path_candidate)
+
+        try:
+            dopemux_exists = Path.exists(project_path / ".dopemux")
+        except TypeError:
+            dopemux_exists = False
+
     if dry_run:
         console.logger.info(
             "[info]Dry run: no tmux or Claude Code processes will be started.[/info]"
@@ -1767,25 +1787,6 @@ def start(
         pass
 
         logger.error(f"Error: {e}")
-    cwd_path = Path.cwd()
-    project_path = cwd_path
-
-    try:
-        dopemux_exists = Path.exists(project_path / ".dopemux")
-    except TypeError:
-        dopemux_exists = False
-
-    if not dopemux_exists:
-        project_path_candidate = get_workspace_root()
-        if hasattr(project_path_candidate, "__truediv__"):
-            project_path = project_path_candidate
-        else:
-            project_path = Path(project_path_candidate)
-
-        try:
-            dopemux_exists = Path.exists(project_path / ".dopemux")
-        except TypeError:
-            dopemux_exists = False
 
     # Check if project is initialized
     if not dopemux_exists:

@@ -50,7 +50,9 @@
     "llm-plans",
     "dopemux_voice_branding_bundle",
     "proof_bundle",
-    "llm-docs"
+    "llm-docs",
+    "dopemux",
+    "dopemux_pr_merge_specialist"
   ],
   "allowed_root_files": [
     "SPECIMEN_LEDGER_REGEN_BIG.csv",

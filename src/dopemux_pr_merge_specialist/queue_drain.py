@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import html
 import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import tempfile
 import time
@@ -139,6 +141,29 @@ def _gemini_ci_remediation_command(prompt: str) -> List[str]:
     # Gemini CLI no longer accepts --skill in headless mode, so the runbook
     # must live in the prompt and the invocation stays prompt-only.
     return ["gemini", "--prompt", prompt, "--yolo"]
+
+
+@contextlib.contextmanager
+def _isolated_gemini_home_env() -> Iterable[Dict[str, str]]:
+    """
+    Run Gemini in a minimal temporary HOME so it does not inherit the user's
+    desktop MCP registry and stall on unrelated server discovery.
+    """
+    with tempfile.TemporaryDirectory(prefix="dopemux-gemini-home-") as temp_home:
+        temp_home_path = Path(temp_home)
+        gemini_dir = temp_home_path / ".gemini"
+        gemini_dir.mkdir(parents=True, exist_ok=True)
+
+        source_gemini_dir = Path.home() / ".gemini"
+        for name in ("oauth_creds.json", "google_accounts.json", "installation_id"):
+            source = source_gemini_dir / name
+            if source.exists():
+                shutil.copy2(source, gemini_dir / name)
+
+        env = os.environ.copy()
+        env["HOME"] = str(temp_home_path)
+        env["XDG_CONFIG_HOME"] = str(temp_home_path / ".config")
+        yield env
 
 
 def _inflate_result_from_state_path(state_path: Path) -> Optional[PRResult]:
@@ -459,30 +484,31 @@ Identify the root cause, modify the necessary files, and ensure the command pass
     
     try:
         cmd = _gemini_ci_remediation_command(prompt)
-        
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            cwd=worktree_path,
-            bufsize=1, # Line buffered
-            universal_newlines=True,
-        )
-        
-        # Stream output to log in real-time
-        if process.stdout:
-            for line in iter(process.stdout.readline, ""):
-                clean_line = line.strip()
-                if clean_line:
-                    log(f"[gemini] {clean_line}")
+        with _isolated_gemini_home_env() as gemini_env:
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                cwd=worktree_path,
+                env=gemini_env,
+                bufsize=1, # Line buffered
+                universal_newlines=True,
+            )
+            
+            # Stream output to log in real-time
+            if process.stdout:
+                for line in iter(process.stdout.readline, ""):
+                    clean_line = line.strip()
+                    if clean_line:
+                        log(f"[gemini] {clean_line}")
+                        
+                        # Proactive quota detection
+                        lowered = clean_line.lower()
+                        if any(x in lowered for x in ["quota", "rate limit", "429", "exhausted"]):
+                            log("CRITICAL: API QUOTA EXHAUSTED. GEMINI REMEDIATION BLOCKED.", "ERROR")
                     
-                    # Proactive quota detection
-                    lowered = clean_line.lower()
-                    if any(x in lowered for x in ["quota", "rate limit", "429", "exhausted"]):
-                        log("CRITICAL: API QUOTA EXHAUSTED. GEMINI REMEDIATION BLOCKED.", "ERROR")
-                
-        process.wait(timeout=timeout_seconds)
+            process.wait(timeout=timeout_seconds)
         
     except subprocess.TimeoutExpired:
         process.kill()
@@ -1081,6 +1107,23 @@ class RemoteFailureFingerprint:
     command: str
     evidence_summary: str
     evidence: RemoteCheckLogEvidence
+    targeted_nodeid: Optional[str]
+
+
+def _extract_pytest_nodeid(text: str) -> Optional[str]:
+    match = re.search(r"FAILED\s+((?:tests|test)[^\s]+::[^\s]+)", text or "")
+    if match:
+        return match.group(1).strip()
+    return None
+
+
+def _pytest_lane_verification_command(targeted_nodeid: Optional[str]) -> Optional[str]:
+    if not targeted_nodeid:
+        return None
+    file_path = targeted_nodeid.split("::", 1)[0].strip()
+    if not file_path:
+        return None
+    return f"pytest {file_path} -q"
 
 def _parse_fingerprint_from_body(body: str) -> Optional[str]:
     """Extracts the failure fingerprint from a PR body."""
@@ -1196,6 +1239,7 @@ def _build_remote_failure_fingerprint(
         command=shell_join(command),
         evidence_summary=summary,
         evidence=evidence,
+        targeted_nodeid=_extract_pytest_nodeid(evidence.log_text),
     )
 
 
@@ -1237,6 +1281,8 @@ def _create_global_fix_pr(
     client: GitHubClient,
     repo_root: Path,
     logger: Optional[Callable[[str, str, str], None]] = None,
+    verification_command: Optional[str] = None,
+    targeted_nodeid: Optional[str] = None,
 ) -> int:
     """Creates a global fix PR against the main branch."""
     import subprocess
@@ -1271,10 +1317,24 @@ def _create_global_fix_pr(
     try:
         # 2. Invoke Gemini CLI to fix it
         error_output = (failed_step.stderr or failed_step.stdout or "No output available")[-6000:]
+        targeted_repro_command = failed_step.command
+        full_verification_command = verification_command or failed_step.command
+        lane_verification_command = _pytest_lane_verification_command(targeted_nodeid)
+        if targeted_nodeid:
+            targeted_repro_command = f"pytest {targeted_nodeid} -q"
+        targeted_instruction = ""
+        if targeted_nodeid:
+            targeted_instruction = (
+                f"\nTARGETED FAILURE CONTRACT:\n"
+                f"- The first authoritative failing test is `{targeted_nodeid}`.\n"
+                f"- Reproduce and fix that exact failure first with `{targeted_repro_command}`.\n"
+                f"- Do not run the full test suite or broaden scope to unrelated failures until `{targeted_nodeid}` passes.\n"
+            )
         prompt = f"""
 You are an expert developer fixing a widespread CI failure in the dopemux-mvp workspace.
 This failure is blocking multiple PRs.
-The following command failed: {failed_step.command}
+The original blocking command failed: {full_verification_command}
+For this remediation attempt, your ONLY reproduction command is: {targeted_repro_command}
 
 Output/Error:
 ```
@@ -1283,40 +1343,89 @@ Output/Error:
 
 Please diagnose the issue and FIX IT against the `main` branch. You are running in YOLO mode with full tool access. 
 CRITICAL: You MUST follow the ci-remediation-specialist runbook:
-1. REPRODUCE the failure locally first by running the command `{failed_step.command}`.
+1. REPRODUCE the failure locally first by running the command `{targeted_repro_command}`.
 2. USE AUTO-FIXERS if applicable (e.g., ruff check --fix).
 3. APPLY a minimal surgical fix if reproduction succeeds.
-4. VERIFY that your fix makes `{failed_step.command}` pass.
+4. VERIFY that your fix makes `{targeted_repro_command}` pass.
+5. STOP after one focused remediation attempt. Do not keep exploring unrelated failures.
 
 Identify the root cause, modify the necessary files, and verify your fix if possible.
-Your goal is to make the command `{failed_step.command}` pass.
+Your goal for this agent run is to make `{targeted_repro_command}` pass.
+Only edit files required for the original failure you reproduced.
+{targeted_instruction}
 """
         _log("Launching Gemini CLI agent for GLOBAL FIX...", "START")
         cmd = _gemini_ci_remediation_command(prompt)
-        
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            cwd=path,
-            bufsize=1,
-            universal_newlines=True,
-        )
-        
-        if process.stdout:
-            for line in iter(process.stdout.readline, ""):
-                clean_line = line.strip()
-                if clean_line:
-                    _log(f"[gemini] {clean_line}")
-                    if any(x in clean_line.lower() for x in ["quota", "rate limit", "429", "exhausted"]):
-                        _log("CRITICAL: API QUOTA EXHAUSTED. GLOBAL FIX BLOCKED.", "ERROR")
-        process.wait()
+        with _isolated_gemini_home_env() as gemini_env:
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                cwd=path,
+                env=gemini_env,
+                bufsize=1,
+                universal_newlines=True,
+            )
+            
+            if process.stdout:
+                for line in iter(process.stdout.readline, ""):
+                    clean_line = line.strip()
+                    if clean_line:
+                        _log(f"[gemini] {clean_line}")
+                        if any(x in clean_line.lower() for x in ["quota", "rate limit", "429", "exhausted"]):
+                            _log("CRITICAL: API QUOTA EXHAUSTED. GLOBAL FIX BLOCKED.", "ERROR")
+            process.wait(timeout=900)
         _log(f"Gemini global-fix process exited with code {process.returncode}.")
         
         if process.returncode != 0:
             _log("Global fix agent failed to complete successfully.", "ERROR")
             return -1
+
+        _log(f"Verifying focused remediation command: {targeted_repro_command}", "START")
+        focused_verify_result = subprocess.run(
+            shlex.split(targeted_repro_command),
+            cwd=path,
+            capture_output=True,
+            text=True,
+            timeout=900,
+        )
+        if focused_verify_result.returncode != 0:
+            verify_tail = (focused_verify_result.stderr or focused_verify_result.stdout or "No output available")[-1200:]
+            _log(
+                "Focused global fix verification failed; aborting shared remediation without commit. "
+                f"Verification command: {targeted_repro_command}\n{verify_tail}",
+                "ERROR",
+            )
+            return -1
+        _log("Focused global fix verification passed.", "SUCCESS")
+
+        if lane_verification_command and lane_verification_command != targeted_repro_command:
+            _log(f"Verifying fingerprint lane command: {lane_verification_command}", "START")
+            verify_result = subprocess.run(
+                shlex.split(lane_verification_command),
+                cwd=path,
+                capture_output=True,
+                text=True,
+                timeout=900,
+            )
+            if verify_result.returncode != 0:
+                verify_tail = (verify_result.stderr or verify_result.stdout or "No output available")[-1200:]
+                _log(
+                    "Lane verification failed; aborting shared remediation without commit. "
+                    f"Verification command: {lane_verification_command}\n{verify_tail}",
+                    "ERROR",
+                )
+                return -1
+            _log("Lane verification passed for the fingerprinted failure family.", "SUCCESS")
+        else:
+            _log("Focused remediation command is already the narrowest fingerprint lane.", "SUCCESS")
+
+        if full_verification_command != targeted_repro_command:
+            _log(
+                f"Deferring broad command verification to downstream CI after shared-fix PR creation: {full_verification_command}",
+                "INFO",
+            )
             
         # 3. Commit and push
         status = subprocess.run(["git", "status", "--porcelain"], cwd=path, capture_output=True, text=True)
@@ -1361,6 +1470,9 @@ Your goal is to make the command `{failed_step.command}` pass.
         _log(f"Successfully created global fix PR #{pr_num}", "SUCCESS")
         return pr_num
         
+    except subprocess.TimeoutExpired:
+        _log("Global fix agent timed out before producing a verified fix.", "ERROR")
+        return -1
     except Exception as e:
         _log(f"Error creating global fix: {e}", "ERROR")
         return -1
@@ -1397,6 +1509,7 @@ def _handle_global_ci_blockers(
     # 2. Group failing PRs by either a local validation fingerprint or a harvested
     # remote required-check fingerprint. Local evidence remains authoritative.
     failing_prs_by_fingerprint: Dict[str, List[Tuple[PRResult, ValidationStepResult]]] = defaultdict(list)
+    remote_group_metadata: Dict[str, RemoteFailureFingerprint] = {}
     for r in results:
         allowed = allowed_actions_for_result(r)
         if "APPLY_FIX" not in allowed:
@@ -1423,6 +1536,7 @@ def _handle_global_ci_blockers(
             ).strip(),
         )
         failing_prs_by_fingerprint[remote_failure.fingerprint].append((r, failed_step))
+        remote_group_metadata.setdefault(remote_failure.fingerprint, remote_failure)
 
     # 3. Process groups to identify and act on global blockers
     for fingerprint, blocked_prs in failing_prs_by_fingerprint.items():
@@ -1445,12 +1559,19 @@ def _handle_global_ci_blockers(
             )
             failed_step = blocked_prs[0][1]
             if failed_step:
+                remote_metadata = remote_group_metadata.get(fingerprint)
                 new_pr_number = _create_global_fix_pr(
                     fingerprint,
                     failed_step,
                     client,
                     worktree_dir,
                     logger=logger,
+                    verification_command=(
+                        remote_metadata.command if remote_metadata is not None else None
+                    ),
+                    targeted_nodeid=(
+                        remote_metadata.targeted_nodeid if remote_metadata is not None else None
+                    ),
                 )
                 if new_pr_number > 0:
                     for r, _failed_step in blocked_prs:
