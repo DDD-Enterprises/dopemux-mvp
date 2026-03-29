@@ -604,7 +604,7 @@ LEANTIME_TIMEOUT=30  # seconds
 
 - **Implementation**: `services/task-orchestrator/enhanced_orchestrator.py`
 - **ADR-207**: Architecture 3.0 main document
-- **Leantime Docs**: https://docs.leantime.io/api (to verify JSON-RPC methods)
+- **Leantime Docs**: https://docs.leantime.io/api/usage (to verify JSON-RPC methods)
 
 ---
 

@@ -16,7 +16,7 @@ Status: [LOGGED] Brand compliance reference
 
 ## Dopemux Brand Compliance Checklist
 
-- Tokens come from [src/dopemux/ui/theme.py](src/dopemux/ui/theme.py), [src/dopemux/ui/dopemux.tcss](src/dopemux/ui/dopemux.tcss), [src/dopemux/ui/voice.py](src/dopemux/ui/voice.py), or [ui-dashboard/src/theme.ts](ui-dashboard/src/theme.ts).
+- Tokens come from [src/dopemux/ui/theme.py](../../src/dopemux/ui/theme.py), [src/dopemux/ui/dopemux.tcss](../../src/dopemux/ui/dopemux.tcss), [src/dopemux/ui/voice.py](../../src/dopemux/ui/voice.py), or [ui-dashboard/src/theme.ts](../../ui-dashboard/src/theme.ts).
 - No hardcoded hex colors live outside the approved theme files.
 - Rich CLI and TUI surfaces use `styled_panel()`, `styled_table()`, semantic style names, or `StatusChip` helpers instead of raw `Panel()` and `Table()` styling.
 - User-facing copy passes `validate_output()` directly or through a shared fail-closed helper.
