@@ -600,7 +600,7 @@ class TestCLI:
             assert exc_info.value.code == 1
             # Code uses console.logger.info
             mock_console.logger.info.assert_called_with(
-                "\n[yellow]⏸️ Interrupted by user[/yellow]"
+                "\n[warning]⏸️ Interrupted by user[/warning]"
             )
 
     @patch("dopemux.cli.console")
