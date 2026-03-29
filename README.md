@@ -980,6 +980,7 @@ uvicorn main:app --port 8095 --reload
 - **[Master Index](./docs/00-MASTER-INDEX.md)** - Canonical active docs navigation
 - **[PR Merge Flight Dashboard](./docs/02-how-to/pr-merge-flight-dashboard.md)** - Operator quickstart for the recovered PR merge cockpit
 - **[PR Merge Queue Orchestration](./docs/04-explanation/pr-merge-queue-orchestration.md)** - Queue-state and remediation design rationale
+- **[PR Merge Usage Patterns](./docs/pr_merge/usage-patterns.md)** - Live command patterns, bounded execute runs, and required-check reproduction behavior
 - **[ConPort Memory System](./docs/04-explanation/conport-technical-deep-dive.md)** - Knowledge graph and decision logging
 - **[Serena Code Intelligence](./docs/04-explanation/serena-v2-technical-deep-dive.md)** - LSP-based semantic navigation
 - **[System Architecture](./docs/94-architecture/system-bible.md)** - Two-plane architecture overview

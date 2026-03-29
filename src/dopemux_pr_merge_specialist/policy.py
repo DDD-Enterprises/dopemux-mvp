@@ -25,6 +25,7 @@ REQUIRED_TOP_LEVEL_KEYS = (
     "platform",
     "timeouts",
     "validation",
+    "remote_check_repro",
     "gates",
     "thread_rules",
     "check_rules",
@@ -98,6 +99,24 @@ DEFAULT_POLICY: Dict[str, Any] = {
                 "command": ["python", "scripts/check_root_hygiene.py"],
                 "run_in_dry_run": False,
             },
+        ],
+    },
+    "remote_check_repro": {
+        "steps": [
+            {
+                "check_name": "🧪 Unit Tests",
+                "command": [
+                    "pytest",
+                    "tests/",
+                    "--maxfail=1",
+                    "--disable-warnings",
+                    "--cov=src/dopemux",
+                    "--cov-report=term-missing",
+                    "--cov-report=xml:coverage.xml",
+                    "--cov-report=html:htmlcov",
+                ],
+                "scope": "repo",
+            }
         ],
     },
     "gates": {
@@ -248,7 +267,13 @@ def _validate_command_steps(steps: Iterable[Dict[str, Any]], *, section: str) ->
     for index, step in enumerate(steps):
         if not isinstance(step, dict):
             raise PolicyError(f"{section}.steps[{index}] must be a mapping.")
-        if not step.get("name"):
+        if section == "remote_check_repro":
+            check_name = step.get("check_name")
+            if not isinstance(check_name, str) or not check_name.strip():
+                raise PolicyError(
+                    f"{section}.steps[{index}] must define a non-empty 'check_name'."
+                )
+        elif not step.get("name"):
             raise PolicyError(f"{section}.steps[{index}] is missing 'name'.")
         command = step.get("command")
         if (
@@ -288,6 +313,12 @@ def validate_policy(policy: Dict[str, Any]) -> None:
     if not isinstance(validation, dict):
         raise PolicyError("validation must be a mapping.")
     _validate_command_steps(validation.get("steps", []), section="validation")
+    remote_check_repro = policy.get("remote_check_repro")
+    if not isinstance(remote_check_repro, dict):
+        raise PolicyError("remote_check_repro must be a mapping.")
+    _validate_command_steps(
+        remote_check_repro.get("steps", []), section="remote_check_repro"
+    )
     for section_name in (
         "gates",
         "thread_rules",

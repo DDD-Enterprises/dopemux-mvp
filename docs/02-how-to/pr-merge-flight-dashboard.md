@@ -57,6 +57,7 @@ Important constraint:
 - branches with failing required GitHub checks remain blocked even when local validation passes
 - auto-merge-enabled PRs are still treated as blocked if the required remote checks are red
 - bounded dry or execute runs respect `--max-prs`, so operator test runs can sample the queue without draining the whole backlog
+- explicitly mapped required checks can be reproduced locally before CI remediation runs; unmapped remote failures still fail closed
 
 ### Optimistic Lifecycle
 The dashboard uses a state model that distinguishes local proof from GitHub lag:
