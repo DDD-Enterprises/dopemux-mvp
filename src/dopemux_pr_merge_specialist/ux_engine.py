@@ -3,7 +3,7 @@ from enum import Enum, auto
 from typing import Any, Mapping, Optional
 
 from rich.console import Console
-from dopemux.ui.theme import DOPEMUX_THEME
+
 
 from .action_model import (
     blocker_types_from_snapshot,
@@ -98,7 +98,11 @@ class RichTerminalRenderer(TerminalRenderer):
     def __init__(self, mode: Optional[RenderMode] = None):
         super().__init__(mode)
 
-        self.console = Console(theme=DOPEMUX_THEME)
+        try:
+            from dopemux.ui.theme import DOPEMUX_THEME
+            self.console = Console(theme=DOPEMUX_THEME)
+        except ImportError:
+            self.console = Console()
 
     def print_header(self, text: str):
         from rich.panel import Panel
