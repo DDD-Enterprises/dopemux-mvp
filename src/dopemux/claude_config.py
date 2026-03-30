@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 # Mapping from profile-friendly names to actual Claude config names
 MCP_NAME_MAPPING = {
     # Profile name -> Claude config name (with dopemux- prefix)
+    "serena-v2": "dopemux-serena",
     "serena": "dopemux-serena",
     # Direct mappings (prefixed)
     "conport": "dopemux-conport",
