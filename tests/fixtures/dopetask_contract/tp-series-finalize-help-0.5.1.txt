@@ -1,0 +1,16 @@
+                                                                                                                                
+ Usage: dopetask tp series finalize [OPTIONS] SERIES_ID                                                                         
+                                                                                                                                
+ Open the single PR for a completed TP series.                                                                                  
+                                                                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *    series_id      TEXT  [required]                                                                                         │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *  --title            TEXT  Pull request title. [required]                                                                   │
+│    --body             TEXT  Pull request body text.                                                                          │
+│    --body-file        PATH  Pull request body file path.                                                                     │
+│    --repo             PATH  Repository path.                                                                                 │
+│    --help                   Show this message and exit.                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
