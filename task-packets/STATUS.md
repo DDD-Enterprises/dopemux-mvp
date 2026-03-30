@@ -5,7 +5,7 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-02-12'
-last_review: '2026-03-27'
+last_review: '2026-03-22'
 next_review: '2026-06-20'
 prelude: Status (explanation) for dopemux documentation and developer workflows.
 ---
@@ -35,16 +35,11 @@ Promotion determinism under audit
 PM / Task Management Plane
 Status: 🟡 In Progress
 Active Packets:
-PM-CONTINUE-05 — Transition Binding
-PM-CONTINUE-06 — Project Context + Sprint Snapshot
-PM-CONTINUE-07 — Knowledge + Technical Context
-PM-CONTINUE-08 — Truth Rebaseline
+None (stacked continuation PRs under review; packet artifacts not yet registered in `task-packets/INDEX.md`)
 Notes:
-Canonical PM read/write entrypoints now exist under `src/dopemux/pm/`
-Metadata writes route to Leantime; progress writes route to ConPort
-Workflow reads and project-scoped transitions now route through Task Orchestrator runtime state
-Project context routes through ConPort; sprint snapshot routes through Leantime; knowledge and technical reads now exist as normalized canonical-backend wrappers
-Remaining risk: project-scoped workflow views still treat unscoped runtime tasks as in-scope, and the newer PM reads are backend-thin rather than richly multi-source
+Phase 4 complete: Canonical models, store, events, and adapters implemented
+Candidate for next PRIMER-driven investigation
+No known determinism leaks
 ────────────────────
 Workflow / Execution Control Plane
 Status: 🟡 In Progress
