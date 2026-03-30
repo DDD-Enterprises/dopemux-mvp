@@ -57,38 +57,5 @@ Produce phase `S1` migration planning artifacts that transform arbitration truth
 10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 11. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every non-trivial plan claim must terminate with:
-  - `EVIDENCE: <artifact_filename>#<section_heading_or_anchor>`
-- Risk and no-go entries must cite `R8` and include `R7` when conflict-driven.
-- Candidate inclusion must reference at least one MCP-side and one hook-side evidence anchor.
-- Unsupported candidates must be listed in unknowns with explicit missing artifacts.
-- If evidence objects are emitted, include `path`, `line_range`, and `excerpt` keys.
-- Never present migration readiness without cited evidence.
-- Do not cite non-input artifacts.
-
-## Determinism Rules
-- Do not include `generated_at`, `timestamp`, `created_at`, `updated_at`, or `run_id`.
-- Keep section order fixed and candidate ordering deterministic.
-- Use fixed status tokens: `ELIGIBLE`, `INELIGIBLE`, `UNKNOWN`, `NO_GO`, `READY`.
-- Keep `MCP_TO_HOOKS_MIGRATION_OPUS.md` and `S1_MCP_TO_HOOKS_MIGRATION_PLAN.md` semantically identical.
-- Avoid speculative terms unless coupled with `UNKNOWN` and missing evidence details.
-- Normalize table columns and heading names for reproducible output.
-
-## Anti-Fabrication Rules
-- Do not invent migration targets, hooks, proxies, or service boundaries.
-- Do not infer target mechanisms without direct evidence.
-- Do not claim execution or validation was performed.
-- Do not recommend refactors or broad architecture rewrites.
-- Do not hide uncertainty; unresolved issues must stay explicit.
-- Do not modify risk severity labels without evidence anchors.
-
-## Failure Modes
-- Required artifacts missing: output conservative plan with `UNKNOWN` sections and missing input list.
-- Candidate evidence asymmetric (MCP present, hook absent or vice versa): mark candidate `INELIGIBLE` and exclude from execution steps.
-- Conflict cannot be resolved from available evidence: tie candidate to `NO_GO` and flag for PRO escalation.
-- Risk mapping incomplete: include explicit no-go placeholder and missing-risk evidence request.
-- Alias output drift between two files: regenerate both from the same deterministic content template.
-- Excessive optional-input dependence: downgrade confidence and keep stage progression conservative.
-- Multiple R-phase reports provide contradictory inputs to the synthesis: document both perspectives with evidence and flag with `status: unresolved_contradiction`.
-- Synthesis output would exceed the declared output format constraints: emit a complete-but-summarized version and note truncated sections in `coverage_notes`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
