@@ -1,59 +1,35 @@
-# Multi-stage Dockerfile for Next.js frontend
-# Stage 1: Dependencies
-FROM dhi.io/node:18-alpine as deps
+# Multi-stage Dockerfile for Vite-based React dashboard
+# Stage 1: Build
+FROM node:18-alpine as builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
+# Copy dependency manifests
+COPY ui-dashboard/package*.json ./
 
-# Install dependencies (including dev deps needed for build)
-RUN npm ci --legacy-peer-deps --only=production && \
-    npm install --legacy-peer-deps
+# Install dependencies (harmonized with fallback image logic)
+RUN npm ci --legacy-peer-deps
 
-# Stage 2: Builder
-FROM dhi.io/node:18-alpine as builder
-
-WORKDIR /app
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy source
-COPY package.json package-lock.json* ./
-COPY . .
-
-# Build Next.js application
-ENV NEXT_TELEMETRY_DISABLED=1
+# Copy source and build
+COPY ui-dashboard/ .
 RUN npm run build
 
-# Stage 3: Runtime
-FROM dhi.io/node:18-alpine as runtime
+# Stage 2: Runtime
+FROM nginx:stable-alpine as runtime
 
-WORKDIR /app
+# Copy built static assets from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-ENV NODE_ENV=production \
-    NEXT_TELEMETRY_DISABLED=1
+# Add basic Nginx config for SPA routing support
+RUN echo 'server { \
+    listen 80; \
+    location / { \
+        root /usr/share/nginx/html; \
+        index index.html index.htm; \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+EXPOSE 80
 
-# Copy built app from builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
-
-USER nextjs
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-    CMD node healthcheck.js || exit 1
-
-EXPOSE 3000
-
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "server.js"]
+CMD ["nginx", "-g", "daemon off;"]
