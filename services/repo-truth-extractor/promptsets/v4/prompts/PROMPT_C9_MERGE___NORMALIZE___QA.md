@@ -84,29 +84,10 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - When relevant, use `services/registry.yaml` as canonical service list.
 
 ## Outputs
-- `SERVICE_ENTRYPOINTS.json`
-- `EVENTBUS_SURFACE.json`
-- `EVENT_PRODUCERS.json`
-- `EVENT_CONSUMERS.json`
-- `DOPE_MEMORY_CODE_SURFACE.json`
-- `DOPE_MEMORY_SCHEMAS.json`
-- `DOPE_MEMORY_DB_WRITES.json`
-- `TRINITY_ENFORCEMENT_SURFACE.json`
-- `REFUSAL_AND_GUARDRAILS_SURFACE.json`
-- `TASKX_INTEGRATION_SURFACE.json`
-- `WORKFLOW_RUNNER_SURFACE.json`
-- `LEANTIME_INTEGRATION_SURFACE.json`
-- `DETERMINISM_RISK_LOCATIONS.json`
-- `IDEMPOTENCY_RISK_LOCATIONS.json`
-- `CONCURRENCY_RISK_LOCATIONS.json`
 - `CODE_SURFACES_QA.json`
 - `SERVICE_CATALOG.json`
-- `AGENT_ORCHESTRATION_SURFACE.json`
-- `ADHD_ENGINE_SURFACE.json`
 - `PYTHON_API_SURFACE.json`
 - `SERVICE_ENDPOINT_SURFACE.json`
-- `MODULE_DEPENDENCY_GRAPH.json`
-- `SERVICE_DEPENDENCY_GRAPH.json`
 - `COGNITIVE_FEATURES_SURFACE.json`
 
 ## Schema

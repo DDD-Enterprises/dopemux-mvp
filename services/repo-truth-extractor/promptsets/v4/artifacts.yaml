@@ -52,7 +52,6 @@ artifacts:
   - id
   allow_empty_array_fields:
   - issues
-  - status
 - phase: A
   artifact_name: REPO_COMPOSE_SERVICE_GRAPH.json
   canonical_writer_step_id: A99
@@ -319,28 +318,6 @@ artifacts:
   - id
 - phase: C
   artifact_name: DOPE_MEMORY_CODE_SURFACE.json
-  canonical_writer_step_id: C9
-  kind: json_item_list
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: itemlist_by_id
-  required_fields:
-  - path
-  - line_range
-  - id
-- phase: C
-  artifact_name: DOPE_MEMORY_DB_WRITES.json
-  canonical_writer_step_id: C9
-  kind: json_item_list
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: itemlist_by_id
-  required_fields:
-  - path
-  - line_range
-  - id
-- phase: C
-  artifact_name: DOPE_MEMORY_SCHEMAS.json
   canonical_writer_step_id: C9
   kind: json_item_list
   norm_artifact: true
@@ -933,7 +910,6 @@ artifacts:
   - id
   allow_empty_array_fields:
   - issues
-  - status
 - phase: H
   artifact_name: HOME_INVENTORY.json
   canonical_writer_step_id: H0
@@ -1741,38 +1717,6 @@ artifacts:
   merge_strategy: markdown_concat
   required_fields: []
 - phase: S
-  artifact_name: CONFLICT_LEDGER.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: CONTROL_PLANE_TRUTH_MAP.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: EVENTBUS_WIRING_TRUTH.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
   artifact_name: MCP_TO_HOOKS_MIGRATION_OPUS.md
   canonical_writer_step_id: S1
   kind: markdown
@@ -1815,46 +1759,6 @@ artifacts:
 - phase: S
   artifact_name: S3_ARCH_PROOF_HOOKS.md
   canonical_writer_step_id: S3
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: RISK_REGISTER_TOP20.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: TASKX_INTEGRATION_TRUTH.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: WORKFLOWS_TRUTH_GRAPH.md
-  canonical_writer_step_id: S0
   kind: markdown
   norm_artifact: true
   allow_timestamp_keys: false

@@ -371,8 +371,8 @@ class TestImportV3MigrationLogic(unittest.TestCase):
             (phase_dir / "norm" / "NORM.json").write_text("{}")
             (phase_dir / "qa" / "QA.json").write_text("{}")
 
-            from rich.console import Console
-            console = Console(file=open("/dev/null", "w"))
+            from dopemux.ui.theme import create_console
+            console = create_console(file=open("/dev/null", "w"))
             # Must not raise
             _display_v3_migration_summary(run_dir, "FULL_RUN", console)
 

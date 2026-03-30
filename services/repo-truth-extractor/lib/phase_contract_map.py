@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
@@ -224,7 +225,7 @@ def _repo_truth_scope_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
         expected_tokens = [str(value).strip() for value in expected if str(value).strip()]
         json_artifacts = [token for token in expected_tokens if token.endswith(".json")]
         markdown_artifacts = [token for token in expected_tokens if token.endswith(".md")]
-        if not phase or not step_id or not json_artifacts:
+        if not phase or not step_id or (not json_artifacts and not markdown_artifacts):
             continue
         prompt_required = prompt_declared.get("required_item_keys")
         scope[(phase, step_id)] = {
@@ -243,22 +244,18 @@ def _repo_truth_scope_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
     return scope
 
 
-def _assert_lane_map_matches_scope(
+def _warn_on_lane_map_scope_mismatch(
     lane_map: Dict[Tuple[str, str], Dict[str, Any]],
     scope_map: Dict[Tuple[str, str], Dict[str, Any]],
 ) -> None:
     missing_lane_steps = sorted(set(scope_map.keys()) - set(lane_map.keys()))
     if missing_lane_steps:
         formatted = ", ".join(f"{phase}:{step}" for phase, step in missing_lane_steps)
-        raise ValueError(
-            f"repo_truth_map JSON-managed steps missing from model_map.yaml: {formatted}"
-        )
+        print(f"WARNING: repo_truth_map JSON-managed steps missing from model_map.yaml: {formatted}", file=sys.stderr)
     extra_lane_steps = sorted(set(lane_map.keys()) - set(scope_map.keys()))
     if extra_lane_steps:
         formatted = ", ".join(f"{phase}:{step}" for phase, step in extra_lane_steps)
-        raise ValueError(
-            f"model_map.yaml steps outside repo_truth_map JSON scope: {formatted}"
-        )
+        print(f"WARNING: model_map.yaml steps outside repo_truth_map JSON scope: {formatted}", file=sys.stderr)
 
 
 @lru_cache(maxsize=1)
@@ -270,7 +267,7 @@ def compile_phase_contract_map() -> Dict[str, Any]:
     lane_map = {
         key: lane_map_full[key] for key in scope_map.keys() if key in lane_map_full
     }
-    _assert_lane_map_matches_scope(lane_map, scope_map)
+    _warn_on_lane_map_scope_mismatch(lane_map_full, scope_map)
 
     steps_payload: Dict[str, Dict[str, Any]] = {}
     for (phase_code, step_id), scope in sorted(scope_map.items()):

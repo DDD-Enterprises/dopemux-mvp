@@ -118,8 +118,7 @@ def make_valid_d1_success_payload(runner: Any) -> Dict[str, Any]:
 def build_smoke_run(tmp_root: Path, run_id: str) -> Dict[str, Any]:
     runner = load_runner_module()
     run_root = tmp_root / runner.V5_RUNS_ROOT / run_id
-    run_root.mkdir(parents=True, exist_ok=True)
-    dirs = runner.get_run_dirs(tmp_root, run_id)
+    run_root.mkdir(parents=True, exist_ok=True)    dirs = runner.get_run_dirs(tmp_root, run_id)
 
     runner.write_runner_identity(tmp_root, dirs["root"], run_id)
     contract_map_path = runner.write_phase_contract_map(dirs["root"], run_id)
