@@ -33,7 +33,7 @@ SAMPLE_CLAUDE_CONFIG = {
         "dopemux-conport": {
             "type": "stdio",
             "command": "uvx",
-            "args": ["--from", "context-portal-mcp", "conport-mcp"]
+            "args": ["--from", "context-portal-mcp", "dopemux-conport-mcp"]
         },
         "dopemux-serena": {
             "type": "stdio",
@@ -44,7 +44,7 @@ SAMPLE_CLAUDE_CONFIG = {
             "type": "stdio",
             "command": "uv",
             "args": ["run", "python", "server.py"],
-            "cwd": "/path/to/zen"
+            "cwd": "/path/to/dopemux-zen"
         },
         "dopemux-pal": {
             "type": "stdio",
@@ -194,7 +194,7 @@ class TestClaudeConfig:
             name="developer",
             display_name="Developer",
             description="Test",
-            mcps=["conport", "serena-v2", "zen"]  # serena-v2 maps to serena
+            mcps=["dopemux-conport", "dopemux-serena", "dopemux-zen"]  # dopemux-serena maps to serena
         )
 
         filtered = claude_config.filter_mcp_servers_for_profile(profile)
@@ -210,7 +210,7 @@ class TestClaudeConfig:
             name="test",
             display_name="Test",
             description="Test",
-            mcps=["conport", "unknown-mcp"]
+            mcps=["dopemux-conport", "unknown-mcp"]
         )
 
         with pytest.raises(ClaudeConfigError) as exc_info:
@@ -224,7 +224,7 @@ class TestClaudeConfig:
             name="minimal",
             display_name="Minimal",
             description="Minimal profile",
-            mcps=["conport", "zen"]
+            mcps=["dopemux-conport", "dopemux-zen"]
         )
 
         new_config = claude_config.apply_profile(profile, create_backup=False)
@@ -249,7 +249,7 @@ class TestClaudeConfig:
             name="test",
             display_name="Test",
             description="Test",
-            mcps=["conport"]
+            mcps=["dopemux-conport"]
         )
 
         new_config = claude_config.apply_profile(profile, dry_run=True)
@@ -267,7 +267,7 @@ class TestClaudeConfig:
             name="minimal",
             display_name="Minimal",
             description="Minimal profile",
-            mcps=["conport", "zen"],
+            mcps=["dopemux-conport", "dopemux-zen"],
         )
 
         new_config, backup_path = claude_config.apply_profile(
@@ -350,13 +350,13 @@ class TestClaudeConfig:
             name="test",
             display_name="Test",
             description="Test",
-            mcps=["conport", "serena-v2", "unknown-mcp"]
+            mcps=["dopemux-conport", "dopemux-serena", "unknown-mcp"]
         )
 
         result = claude_config.validate_profile_against_config(profile)
 
-        assert "conport" in result["available"]
-        assert "serena-v2" in result["available"]  # Maps to serena
+        assert "dopemux-conport" in result["available"]
+        assert "dopemux-serena" in result["available"]  # Maps to serena
         assert "unknown-mcp" in result["missing"]
 
 
@@ -365,16 +365,16 @@ class TestMCPNameMapping:
 
     def test_mapping_contains_common_servers(self):
         """Test mapping includes common MCP servers."""
-        assert "conport" in MCP_NAME_MAPPING
-        assert "serena-v2" in MCP_NAME_MAPPING
-        assert "zen" in MCP_NAME_MAPPING
+        assert "dopemux-conport" in MCP_NAME_MAPPING
+        assert "dopemux-serena" in MCP_NAME_MAPPING
+        assert "dopemux-zen" in MCP_NAME_MAPPING
         assert "pal" in MCP_NAME_MAPPING
 
     def test_mapping_bidirectional(self):
         """Test mapping works correctly."""
-        # serena-v2 maps to serena
-        assert MCP_NAME_MAPPING["serena-v2"] == "dopemux-serena"
+        # dopemux-serena maps to serena
+        assert MCP_NAME_MAPPING["dopemux-serena"] == "dopemux-serena"
 
         # Direct mappings map to themselves
-        assert MCP_NAME_MAPPING["conport"] == "dopemux-conport"
-        assert MCP_NAME_MAPPING["zen"] == "dopemux-zen"
+        assert MCP_NAME_MAPPING["dopemux-conport"] == "dopemux-conport"
+        assert MCP_NAME_MAPPING["dopemux-zen"] == "dopemux-zen"

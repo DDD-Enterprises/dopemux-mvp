@@ -14,6 +14,7 @@ from typing import Optional, Dict, List, Sequence
 import click
 import yaml
 from dopemux.ui.progress import branded_progress
+from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..console import console
@@ -39,33 +40,6 @@ def _log(message: str, quiet: bool = False, level: str = "info"):
         else:
             console.logger.info(f"[info]ℹ️  {message}[/info]")
 
-@trigger_group.command("command-done")
-@click.option("--async", "_async", is_flag=True, help="⚡ Asynchronous Ritual: Process the trigger in the background.")
-@click.option("--quiet", is_flag=True, help="🔇 Silence HUD: Suppress telemetry output for this trigger.")
-def trigger_command_done(_async: bool, quiet: bool):
-    """
-    ⚡ Signal Completion: Emit command termination telemetry
-
-    Writes a 'command.done' signal to the ritual ledger, marking the 
-    successful completion of a cockpit ritual.
-    """
-    event = {
-        "event_type": "command.done",
-        "source": "cli",
-        "payload": {
-            "timestamp": time.time(),
-        },
-    }
-    
-    try:
-        emit_capture_event(event, mode="auto")
-        _log("Command completion signal emitted", quiet=quiet, level="success")
-    except CaptureError as exc:
-        _log(f"Capture failed: {exc}", quiet=quiet, level="error")
-        sys.exit(1)
-    except Exception as exc:
-        _log(f"Unexpected error: {exc}", quiet=quiet, level="error")
-        sys.exit(1)
 
 
 @trigger_group.command("shell-command")

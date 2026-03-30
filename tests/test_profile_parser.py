@@ -28,7 +28,7 @@ name: minimal
 display_name: "Minimal"
 description: "Test profile"
 mcps:
-  - conport
+  - dopemux-conport
 """
         parser = ProfileParser(validate_mcps=False)
         collection = parser.parse_string(yaml_content)
@@ -37,7 +37,7 @@ mcps:
         profile = collection.profiles[0]
         assert profile.name == "minimal"
         assert profile.display_name == "Minimal"
-        assert profile.mcps == ["conport"]
+        assert profile.mcps == ["dopemux-conport"]
 
     def test_parse_full_profile_string(self):
         """Test parsing profile with all fields."""
@@ -46,9 +46,9 @@ name: developer
 display_name: "Developer"
 description: "Code implementation"
 mcps:
-  - conport
-  - serena-v2
-  - dope-context
+  - dopemux-conport
+  - dopemux-serena
+  - dopemux-claude-context
 adhd_config:
   energy_preference: medium
   attention_mode: focused
@@ -86,15 +86,15 @@ profiles:
     display_name: "Developer"
     description: "Dev profile"
     mcps:
-      - conport
-      - serena-v2
+      - dopemux-conport
+      - dopemux-serena
 
   - name: researcher
     display_name: "Researcher"
     description: "Research profile"
     mcps:
-      - conport
-      - zen
+      - dopemux-conport
+      - dopemux-zen
 """
         parser = ProfileParser(validate_mcps=False)
         collection = parser.parse_string(yaml_content)
@@ -110,14 +110,14 @@ profiles:
   display_name: "Developer"
   description: "Dev profile"
   mcps:
-    - conport
+    - dopemux-conport
 
 - name: researcher
   display_name: "Researcher"
   description: "Research profile"
   mcps:
-    - conport
-    - zen
+    - dopemux-conport
+    - dopemux-zen
 """
         parser = ProfileParser(validate_mcps=False)
         collection = parser.parse_string(yaml_content)
@@ -131,7 +131,7 @@ name: test
 display_name: "Test
 description: "Missing quote
 mcps:
-  - conport
+  - dopemux-conport
 """
         parser = ProfileParser(validate_mcps=False)
         with pytest.raises(ProfileParseError) as exc_info:
@@ -160,27 +160,27 @@ name: test
 display_name: "Test"
 # Missing description
 mcps:
-  - conport
+  - dopemux-conport
 """
         parser = ProfileParser(validate_mcps=False)
         with pytest.raises(ProfileParseError) as exc_info:
             parser.parse_string(yaml_content)
         assert "validation failed" in str(exc_info.value).lower()
 
-    def test_missing_conport(self):
-        """Test parsing profile without conport."""
+    def test_missing_dopemux_conport_missing(self):
+        """Test parsing profile without dopemux-conport."""
         yaml_content = """
 name: test
 display_name: "Test"
 description: "Test"
 mcps:
-  - serena-v2
-  - zen
+  - dopemux-serena
+  - dopemux-zen
 """
         parser = ProfileParser(validate_mcps=False)
         with pytest.raises(ProfileParseError) as exc_info:
             parser.parse_string(yaml_content)
-        assert "conport" in str(exc_info.value).lower()
+        assert "dopemux-conport" in str(exc_info.value).lower()
 
     def test_duplicate_profile_names(self):
         """Test parsing collection with duplicate names."""
@@ -189,12 +189,12 @@ profiles:
   - name: developer
     display_name: "Developer 1"
     description: "Test"
-    mcps: [conport]
+    mcps: [dopemux-conport]
 
   - name: developer
     display_name: "Developer 2"
     description: "Test"
-    mcps: [conport]
+    mcps: [dopemux-conport]
 """
         parser = ProfileParser(validate_mcps=False)
         with pytest.raises(ProfileParseError) as exc_info:
@@ -208,7 +208,7 @@ name: test
 display_name: "Test"
 description: "Test"
 mcps:
-  - conport
+  - dopemux-conport
   - unknown-mcp
   - another-unknown
 """
@@ -225,7 +225,7 @@ name: test
 display_name: "Test"
 description: "Test"
 mcps:
-  - conport
+  - dopemux-conport
   - unknown-mcp
 """
         parser = ProfileParser(validate_mcps=False)
@@ -239,10 +239,10 @@ name: test
 display_name: "Test"
 description: "Test"
 mcps:
-  - conport
+  - dopemux-conport
   - custom-mcp
 """
-        custom_mcps = ["conport", "custom-mcp"]
+        custom_mcps = ["dopemux-conport", "custom-mcp"]
         parser = ProfileParser(validate_mcps=True, available_mcps=custom_mcps)
         collection = parser.parse_string(yaml_content)
         assert len(collection.profiles) == 1
@@ -258,8 +258,8 @@ name: developer
 display_name: "Developer"
 description: "Test"
 mcps:
-  - conport
-  - serena-v2
+  - dopemux-conport
+  - dopemux-serena
 """
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             f.write(yaml_content)
@@ -290,14 +290,14 @@ mcps:
 name: developer
 display_name: "Developer"
 description: "Test"
-mcps: [conport, serena-v2]
+mcps: [dopemux-conport, dopemux-serena]
 """)
 
             (temp_path / "researcher.yaml").write_text("""
 name: researcher
 display_name: "Researcher"
 description: "Test"
-mcps: [conport, zen]
+mcps: [dopemux-conport, dopemux-zen]
 """)
 
             # Create a non-YAML file (should be ignored)
@@ -326,14 +326,14 @@ mcps: [conport, zen]
 name: developer
 display_name: "Developer 1"
 description: "Test"
-mcps: [conport]
+mcps: [dopemux-conport]
 """)
 
             (temp_path / "profile2.yaml").write_text("""
 name: developer
 display_name: "Developer 2"
 description: "Test"
-mcps: [conport]
+mcps: [dopemux-conport]
 """)
 
             parser = ProfileParser(validate_mcps=False)
@@ -347,7 +347,7 @@ mcps: [conport]
             "name": "test",
             "display_name": "Test",
             "description": "Test profile",
-            "mcps": ["conport", "zen"]
+            "mcps": ["dopemux-conport", "dopemux-zen"]
         }
 
         parser = ProfileParser(validate_mcps=False)
@@ -366,7 +366,7 @@ class TestConvenienceFunctions:
 name: test
 display_name: "Test"
 description: "Test"
-mcps: [conport]
+mcps: [dopemux-conport]
 """
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             f.write(yaml_content)
@@ -384,7 +384,7 @@ mcps: [conport]
 name: test
 display_name: "Test"
 description: "Test"
-mcps: [conport]
+mcps: [dopemux-conport]
 """
         collection = parse_profile_string(yaml_content, validate_mcps=False)
         assert len(collection.profiles) == 1
@@ -399,7 +399,7 @@ class TestErrorMessages:
 name: test
 display_name: "Test"
 # Missing description
-mcps: [conport]
+mcps: [dopemux-conport]
 """
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             f.write(yaml_content)
@@ -419,7 +419,7 @@ mcps: [conport]
 name: Invalid Name
 display_name: "Test"
 description: "Test"
-mcps: [conport]
+mcps: [dopemux-conport]
 """
         parser = ProfileParser(validate_mcps=False)
         with pytest.raises(ProfileParseError) as exc_info:

@@ -4,70 +4,21 @@
     "command": ".claude/statusline.sh"
   },
   "hooks": {
-    "Start": [
+    "command": [
       {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/session_lifecycle.py\" start"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/prompt_analyzer.py\"",
-            "timeout": 3000
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "thinkdeep|morph|batch_edit|refactor|deep_research",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/check_energy.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write|NotebookEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/track_file_edit.sh\""
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/log_progress.sh\""
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/save_context.sh\""
-          },
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/session_lifecycle.py\" stop"
-          }
-        ]
+        "events": [
+          "SessionStart",
+          "UserPromptSubmit",
+          "PreToolUse",
+          "PermissionRequest",
+          "PostToolUse",
+          "PostToolUseFailure",
+          "Stop",
+          "SubagentStop",
+          "PreCompact",
+          "SessionEnd"
+        ],
+        "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
       }
     ]
   }

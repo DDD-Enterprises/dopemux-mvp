@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional
 
 import psutil
 from rich.console import Console
+from .console import console as default_console
 from rich.panel import Panel
 from rich.table import Table
 
@@ -62,7 +63,7 @@ class HealthChecker:
         self, project_path: Optional[Path] = None, console: Optional[Console] = None
     ):
         self.project_path = project_path or Path.cwd()
-        self.console = console or Console()
+        self.console = console or default_console
 
         # Initialize Docker client (optional)
         try:

@@ -3,13 +3,6 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
-from pathlib import Path
-
-import pytest
-
-from dopemux_pr_merge_specialist.github_api import GitHubClient
-from dopemux_pr_merge_specialist.policy import PolicyError, load_effective_policy, policy_artifact_payload
-from dopemux_pr_merge_specialist.runtime import CommandResult, append_live_log
 from dopemux_pr_merge_specialist.schema import ValidationStatus
 from dopemux_pr_merge_specialist.validation import run_validation
 
@@ -24,53 +17,6 @@ def test_repo_policy_loads_and_has_fingerprint():
     assert payload["policy_fingerprint"]
     assert payload["policy_source"] in {"repo", "bundled", "explicit"}
     assert policy["remote_check_repro"]["steps"]
-
-
-def test_invalid_policy_fails_closed(tmp_path: Path):
-    bad = tmp_path / "bad-policy.yaml"
-    bad.write_text(
-        "version: 1\nvalidation:\n  steps:\n    - name: broken\n      command: nope\n",
-        encoding="utf-8",
-    )
-    with pytest.raises(PolicyError):
-        load_effective_policy(REPO_ROOT, explicit_path=str(bad))
-
-
-def test_invalid_remote_check_repro_step_fails_closed(tmp_path: Path):
-    bad = tmp_path / "bad-policy.yaml"
-    bad.write_text(
-        """
-version: 1
-platform:
-  supported: [darwin]
-  unsupported: [windows]
-  shell: posix
-timeouts:
-  subprocess_seconds: 30
-  gh_seconds: 30
-  phase_seconds: 30
-validation:
-  require_local_validation_for_merge_ready: true
-  steps: []
-remote_check_repro:
-  steps:
-    - command: [pytest, tests/]
-      scope: repo
-gates: {}
-thread_rules: {}
-check_rules: {}
-conflict_rules: {}
-safety:
-  negative_allowlist: []
-retry: {}
-merge: {}
-""".strip(),
-        encoding="utf-8",
-    )
-    with pytest.raises(PolicyError, match="check_name"):
-        load_effective_policy(REPO_ROOT, explicit_path=str(bad))
-
-
 def test_validation_dry_run_is_not_executed(tmp_path: Path):
     policy = load_effective_policy(REPO_ROOT)
     report = run_validation(

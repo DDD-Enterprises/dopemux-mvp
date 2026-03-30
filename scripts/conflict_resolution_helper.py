@@ -39,7 +39,6 @@ def show_conflict_resolution_guide():
     """Show step-by-step guide for resolving merge conflicts"""
     print("""
 🚀 MERGE CONFLICT RESOLUTION GUIDE
-==================================
 
 STEP 1: Check out the PR branch
 -------------------------------
@@ -81,7 +80,6 @@ STEP 8: Approve the PR
 gh pr review <PR_NUMBER> --approve
 
 💡 TIPS FOR CONFLICT RESOLUTION:
-=============================
 1. Use a visual diff tool: git mergetool
 2. Check PR description for context
 3. Look at recent commits in the PR
@@ -89,7 +87,6 @@ gh pr review <PR_NUMBER> --approve
 5. Test the resolution before pushing
 
 🔧 COMMON GIT COMMANDS:
-=====================
 git merge --abort      # Abort merge and start over
 git reset --hard       # Reset to clean state
 git status            # Check current status
@@ -105,7 +102,6 @@ def provide_pr_specific_help(pr: Dict):
     
     print(f"""
 📋 PR #{pr_number}: {title}
-==================================
 Branch: {branch_name}
 
 STEP-BY-STEP RESOLUTION:
@@ -136,7 +132,6 @@ STEP-BY-STEP RESOLUTION:
    gh pr review {pr_number} --approve
 
 🔍 PR DETAILS:
-=============
 """)
     
     # Get PR details

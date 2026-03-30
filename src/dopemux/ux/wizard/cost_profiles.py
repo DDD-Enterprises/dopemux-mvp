@@ -214,6 +214,18 @@ def run_cost_selection(state: WizardState) -> StageResult:
     """Stage 4 — Display cost profiles and let user select a routing policy."""
     corpus_size = state.corpus_total_size or 50_000_000  # fallback to ~50MB
 
+    # Factor in prescan savings if intelligence router is available
+    if state.intelligence_router:
+        savings = state.intelligence_router.estimate_token_savings(state.corpus_manifest)
+        savings_pct = savings.get("estimated_reduction_pct", 0)
+        if savings_pct > 0:
+            effective_size = int(corpus_size * (1 - savings_pct / 100))
+            console.print(
+                f"  [success]Prescan intelligence: ~{savings_pct:.1f}% token reduction "
+                f"({corpus_size / (1024*1024):.1f} MB → {effective_size / (1024*1024):.1f} MB effective)[/success]\n"
+            )
+            corpus_size = effective_size
+
     rows = _build_policy_rows(corpus_size)
     render_cost_table(rows, corpus_size, selected=state.selected_policy)
 

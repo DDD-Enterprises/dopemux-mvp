@@ -16,7 +16,7 @@ from .stages import AUTHORITY_CLASSES, StageResult, StageStatus, WizardState
 def run_corpus_audit(state: WizardState) -> StageResult:
     """Stage 2 — Run the prescan script and parse + display results."""
     import os
-    from dopemux.ui.prompts import dopemux_confirm
+    from rich.prompt import Confirm
 
     prescan_script = state.repo_root / "scripts" / "doc_audit_prescan.py"
     if not prescan_script.exists():
@@ -92,7 +92,7 @@ def run_corpus_audit(state: WizardState) -> StageResult:
             "but gives higher precision for edge cases.\n\n"
             "[bold]Your XAI_API_KEY is set.[/bold] You can upgrade to Grok classification now.",
         )
-        if dopemux_confirm("[cyan]Use Grok 420 for LLM-based classification?[/cyan]", default=False):
+        if Confirm.ask("[cyan]Use Grok 420 for LLM-based classification?[/cyan]", default=False):
             console.print("[bold cyan]Running prescan with Grok 420…[/bold cyan]\n")
             cmd = [
                 sys.executable,
