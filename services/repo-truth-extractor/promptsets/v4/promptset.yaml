@@ -338,8 +338,6 @@ phases:
       - phase_scope
       outputs:
       - DOPE_MEMORY_CODE_SURFACE.json
-      - DOPE_MEMORY_SCHEMAS.json
-      - DOPE_MEMORY_DB_WRITES.json
     - step_id: C4
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md
       coverage_targets:
@@ -379,29 +377,10 @@ phases:
       coverage_targets:
       - phase_scope
       outputs:
-      - SERVICE_ENTRYPOINTS.json
-      - EVENTBUS_SURFACE.json
-      - EVENT_PRODUCERS.json
-      - EVENT_CONSUMERS.json
-      - DOPE_MEMORY_CODE_SURFACE.json
-      - DOPE_MEMORY_SCHEMAS.json
-      - DOPE_MEMORY_DB_WRITES.json
-      - TRINITY_ENFORCEMENT_SURFACE.json
-      - REFUSAL_AND_GUARDRAILS_SURFACE.json
-      - TASKX_INTEGRATION_SURFACE.json
-      - WORKFLOW_RUNNER_SURFACE.json
-      - LEANTIME_INTEGRATION_SURFACE.json
-      - DETERMINISM_RISK_LOCATIONS.json
-      - IDEMPOTENCY_RISK_LOCATIONS.json
-      - CONCURRENCY_RISK_LOCATIONS.json
       - CODE_SURFACES_QA.json
       - SERVICE_CATALOG.json
-      - AGENT_ORCHESTRATION_SURFACE.json
-      - ADHD_ENGINE_SURFACE.json
       - PYTHON_API_SURFACE.json
       - SERVICE_ENDPOINT_SURFACE.json
-      - MODULE_DEPENDENCY_GRAPH.json
-      - SERVICE_DEPENDENCY_GRAPH.json
       - COGNITIVE_FEATURES_SURFACE.json
     - step_id: C10
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md
@@ -1001,15 +980,6 @@ phases:
       coverage_targets:
       - phase_scope
       outputs:
-      - CONTROL_PLANE_TRUTH_MAP.md
-      - DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
-      - EVENTBUS_WIRING_TRUTH.md
-      - TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
-      - TASKX_INTEGRATION_TRUTH.md
-      - WORKFLOWS_TRUTH_GRAPH.md
-      - PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
-      - CONFLICT_LEDGER.md
-      - RISK_REGISTER_TOP20.md
       - ARCHITECTURE_SYNTHESIS_OPUS.md
       - S0_ARCHITECTURE_SYNTHESIS_OPUS.md
     - step_id: S1

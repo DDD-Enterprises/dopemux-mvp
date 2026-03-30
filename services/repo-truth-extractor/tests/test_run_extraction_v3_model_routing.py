@@ -164,7 +164,7 @@ def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "C", "C1") == [
         ("xai", "grok-code-fast-1", "XAI_API_KEY"),
-        ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
+        ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D4") == [
         ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),

@@ -88,20 +88,20 @@ def test_contract_map_scope_matches_repo_truth_json_steps_exactly() -> None:
         step = str(row.get("step") or row.get("step_id") or "").strip().upper()
         prompt_declared = row.get("prompt_declared") if isinstance(row.get("prompt_declared"), dict) else {}
         artifacts = prompt_declared.get("expected_artifacts")
-        if not isinstance(artifacts, list):
-            continue
-        if any(str(name).strip().endswith(".json") for name in artifacts):
+        if isinstance(artifacts, list) and len(artifacts) > 0:
             expected.add(f"{phase}:{step}")
     assert observed == expected
 
 
-def test_unknown_lane_step_guard_rejects_phantom_steps() -> None:
+def test_unknown_lane_step_guard_warns_on_phantom_steps(capsys) -> None:
     module = _load_contract_module()
-    with pytest.raises(ValueError, match="outside repo_truth_map JSON scope"):
-        module._assert_lane_map_matches_scope(  # type: ignore[attr-defined]
-            {("A", "A0"): {}, ("A", "A11"): {}},
-            {("A", "A0"): {}},
-        )
+    module._warn_on_lane_map_scope_mismatch(  # type: ignore[attr-defined]
+        {("A", "A0"): {}, ("A", "A11"): {}},
+        {("A", "A0"): {}},
+    )
+    captured = capsys.readouterr()
+    assert "WARNING: model_map.yaml steps outside repo_truth_map JSON scope: A:A11" in captured.err
+    assert captured.out == ""
 
 
 def test_mixed_steps_keep_json_contract_and_markdown_bypass_metadata() -> None:

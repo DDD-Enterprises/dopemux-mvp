@@ -66,8 +66,6 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 
 ## Outputs
 - `DOPE_MEMORY_CODE_SURFACE.json`
-- `DOPE_MEMORY_SCHEMAS.json`
-- `DOPE_MEMORY_DB_WRITES.json`
 
 ## Schema
 - Use deterministic containers only:
@@ -80,20 +78,6 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `canonical_writer_step_id`: `C9`
     - `id_rule`: `DOPE_MEMORY_CODE_SURFACE:<stable-hash(path|symbol|name)>`
     - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
-    - `required_registry_fields`: `path, line_range, id`
-  - `DOPE_MEMORY_SCHEMAS.json`
-    - `kind`: `json_item_list`
-    - `merge_strategy`: `itemlist_by_id`
-    - `canonical_writer_step_id`: `C9`
-    - `id_rule`: `DOPE_MEMORY_SCHEMAS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, evidence, path, line_range`
-    - `required_registry_fields`: `path, line_range, id`
-  - `DOPE_MEMORY_DB_WRITES.json`
-    - `kind`: `json_item_list`
-    - `merge_strategy`: `itemlist_by_id`
-    - `canonical_writer_step_id`: `C9`
-    - `id_rule`: `DOPE_MEMORY_DB_WRITES:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, evidence, path, line_range`
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure

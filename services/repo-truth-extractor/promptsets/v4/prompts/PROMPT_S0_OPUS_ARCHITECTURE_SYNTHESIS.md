@@ -32,15 +32,6 @@ Produce phase `S0` synthesis artifacts from arbitration truth inputs with determ
   - Consume only precollected phase inputs. Do not scan source trees directly.
 
 ## Outputs
-- `CONTROL_PLANE_TRUTH_MAP.md`
-- `DOPE_MEMORY_IMPLEMENTATION_TRUTH.md`
-- `EVENTBUS_WIRING_TRUTH.md`
-- `TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md`
-- `TASKX_INTEGRATION_TRUTH.md`
-- `WORKFLOWS_TRUTH_GRAPH.md`
-- `PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
-- `CONFLICT_LEDGER.md`
-- `RISK_REGISTER_TOP20.md`
 - `ARCHITECTURE_SYNTHESIS_OPUS.md`
 - `S0_ARCHITECTURE_SYNTHESIS_OPUS.md`
 

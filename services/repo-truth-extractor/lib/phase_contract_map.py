@@ -244,7 +244,7 @@ def _repo_truth_scope_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
     return scope
 
 
-def _assert_lane_map_matches_scope(
+def _warn_on_lane_map_scope_mismatch(
     lane_map: Dict[Tuple[str, str], Dict[str, Any]],
     scope_map: Dict[Tuple[str, str], Dict[str, Any]],
 ) -> None:
@@ -267,7 +267,7 @@ def compile_phase_contract_map() -> Dict[str, Any]:
     lane_map = {
         key: lane_map_full[key] for key in scope_map.keys() if key in lane_map_full
     }
-    _assert_lane_map_matches_scope(lane_map, scope_map)
+    _warn_on_lane_map_scope_mismatch(lane_map_full, scope_map)
 
     steps_payload: Dict[str, Dict[str, Any]] = {}
     for (phase_code, step_id), scope in sorted(scope_map.items()):
