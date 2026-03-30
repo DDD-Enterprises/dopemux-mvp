@@ -1144,6 +1144,7 @@ class RunnerConfig:
     webhook_auto_continue: bool = False
     live_ok: bool = False
     max_cost_usd: Optional[float] = None
+    ledger: Optional[Any] = None
     selected_s_steps: Optional[Tuple[str, ...]] = None
     selected_execution_step: Optional[str] = None
     d0_max_files: Optional[int] = None
@@ -1156,6 +1157,8 @@ class RunnerConfig:
     compare_steps: Optional[Tuple[str, ...]] = None
     prescan_dir: Optional[str] = None  # Path to prescan output for intelligence routing
     router: Optional[Any] = None  # IntelligenceRouter instance
+    max_cost_usd: Optional[float] = None
+    ledger: Optional[Any] = None
 
 
 @dataclass(frozen=True)
@@ -10655,9 +10658,20 @@ def execute_step_for_partitions(
                             details=f"partition={partition_id} requests=1",
                         )
                     try:
+                        if cfg.ledger and not cfg.ledger.check_limit():
+                            logger.error(f"❌ Hard cost ceiling (${cfg.max_cost_usd}) exceeded. Aborting batch submit.")
+                            sys.exit(1)
+                            
                         batch_job_id = batch_client.submit(
                             batch_requests, BatchRoute(*selected_route), step_context
                         )
+                        
+                        if cfg.ledger:
+                            # Estimate tokens for batch requests (1 request per partition here)
+                            in_toks = sum((len(req.get("body", {}).get("messages", [{}])[-1].get("content", "")) + 20) // 4 for req in batch_requests)
+                            out_toks = 1000  # Arbitrary estimate for batch output
+                            cfg.ledger.accumulate(phase, in_toks, out_toks)
+                            
                         job_row = {
                             "run_id": run_id,
                             "phase_id": phase,
@@ -15685,6 +15699,12 @@ def main() -> None:
 
             def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
                 provider, model_id, api_key_env = route
+                
+                # Pre-flight check against hard limit
+                if cfg.ledger and not cfg.ledger.check_limit():
+                    logger.error(f"❌ Hard cost ceiling (${cfg.max_cost_usd}) exceeded. Aborting.")
+                    sys.exit(1)
+
                 result = call_llm(
                     provider=provider,
                     model_id=model_id,
@@ -15693,6 +15713,13 @@ def main() -> None:
                     user_content=rendered_prompt,
                     cfg=cfg,
                 )
+                
+                # Accumulate estimated spend
+                if cfg.ledger:
+                    in_toks = (len(rendered_prompt) + 20) // 4
+                    out_toks = len(str(result.get("text") or "")) // 4
+                    cfg.ledger.accumulate(step.phase, in_toks, out_toks)
+                
                 meta = dict(result.get("meta") or {})
                 response_text = str(result.get("text") or "")
                 payload = None
@@ -15921,6 +15948,9 @@ def main() -> None:
         prescan_dir=getattr(args, "prescan_dir", None),
         router=router,
     )
+
+    if SpendLedger is not None:
+        cfg.ledger = SpendLedger(run_dir=dirs["root"], run_id=run_id, max_cost_usd=cfg.max_cost_usd)
 
     # --profile: load extraction profile and apply phase filtering + budget overrides
     _active_profile = None
