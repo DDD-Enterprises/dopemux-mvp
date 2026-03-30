@@ -65,18 +65,22 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `service_id, category, description, ports, health, repo_locations, entrypoints, interfaces, dependencies, config`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the deep service catalog partition as primary scan surface
-2. Extract deep service catalog facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted deep service catalog elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each SERVICE_CATALOG_DEEP item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the deep service catalog partition as primary scan surface.
+2. Aggregate service identity: extract names and IDs from `services/registry.yaml`, `package.json`, or `pyproject.toml` files within service directories.
+3. Identify network exposure: scan `compose.yml`, `Dockerfile`, and code for `EXPOSE` instructions, port assignments, and bind addresses.
+4. Locate health check logic: search for dedicated health check functions, `/health` routes, or `HEALTHCHECK` instructions in Dockerfiles.
+5. Map repository locations: identify the primary source directories and owners for each service listed in the registry.
+6. Synthesize deep facts: combine entrypoint data (from C1), interface data (from C2, C7), and dependency data (from C5, C16) into a unified service profile.
+7. Identify configuration surfaces: search for `os.getenv`, `pydantic.BaseSettings`, or `.env` file loading that defines the service's runtime configuration.
+8. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in service catalog metadata.
+9. For each SERVICE_CATALOG_DEEP item, populate `id`, required fields, and `evidence`.
+10. Legacy Context is intent guidance only and is never evidence.
+11. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+12. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+13. Attach evidence to every non-derived field and every relationship edge.
+14. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+15. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+16. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

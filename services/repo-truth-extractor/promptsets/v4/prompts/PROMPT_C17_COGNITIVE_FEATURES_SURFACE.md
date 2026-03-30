@@ -66,8 +66,8 @@ Extract all cognitive accommodation features across the codebase: ADHD accommoda
 - For `task_accommodation` items, include: `decomposition_strategy`, `complexity_scorer`, `scheduling_rule`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the full code partition as scan surface
-2. Scan for ADHD accommodation features: focus timers, Pomodoro sessions, break logic, interruption shielding, session boundaries (25-minute focus windows per workspace config)
+1. Load upstream inventory and partitions; use the full code partition as scan surface.
+2. Scan for ADHD accommodation features: locate code implementing focus timers, Pomodoro sessions (e.g., 25-minute intervals), break logic, and interruption shielding decorators.
 3. Scan for energy-aware routing: functions/classes that assess user energy level, route tasks based on energy, implement low-energy fallbacks, tag tasks with energy requirements
 4. Scan for attention management: cognitive load estimation functions, context-switch cost calculations, attention budget allocators, distraction guards
 5. Scan for dopamine reward loops: streak counters, completion rewards, progress bars/visualizations, gamification elements, achievement systems
@@ -76,12 +76,12 @@ Extract all cognitive accommodation features across the codebase: ADHD accommoda
 8. Cross-reference with `ADHD_ENGINE_SURFACE.json` to ensure complete coverage and identify features outside the core engine
 9. Cross-reference with `AGENT_ORCHESTRATION_SURFACE.json` to find cognitive features embedded in agent routing
 10. Cross-reference with `TASKX_INTEGRATION_SURFACE.json` to find task-level accommodations
-11. For each feature, classify `feature_domain`, extract `implementation_status` based on code evidence (full implementation vs. stub/TODO)
-12. Build deterministic IDs using stable content keys (path/feature_domain/symbol)
-13. Attach evidence to every non-derived field and every relationship edge
-14. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash)
-15. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps
-16. Emit exactly the declared outputs and no additional files
+11. For each feature, classify `feature_domain`, extract `implementation_status` (implemented|stub|planned).
+12. Build deterministic IDs using stable content keys (path/feature_domain/symbol).
+13. Attach evidence to every non-derived field and every relationship edge.
+14. Normalize arrays by stable sort keys; deduplicate by ID.
+15. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+16. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

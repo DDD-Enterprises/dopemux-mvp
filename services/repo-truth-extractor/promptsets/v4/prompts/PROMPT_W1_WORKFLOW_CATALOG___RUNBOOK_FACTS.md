@@ -38,18 +38,21 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the workflow catalog and runbook partition as primary scan surface
-2. Extract workflow catalog and runbook facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted workflow catalog and runbook elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each WORKFLOW_CATALOG item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the workflow catalog and runbook partition as primary scan surface.
+2. Identify executable workflows in `scripts/**`: scan for `main()` entrypoints in Python/Ruby scripts and `set -e` blocks in Shell scripts that define multi-step sequences.
+3. Locate runbook facts in `docs/02-how-to/**` and `docs/03-reference/**`: search for step-by-step instructions and command blocks (marked with ` ``` `).
+4. Extract literal steps: for each identified workflow, list the specific commands or function calls executed in sequence, along with their prerequisites.
+5. Scan `compose.yml` for multi-service `command:` overrides that define specific runtime workflows (e.g., `seed-db`, `run-tests`).
+6. Build relationship graph: link documentation runbooks to their corresponding executable script files and service entrypoints.
+7. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in workflow definitions.
+8. For each WORKFLOW_CATALOG item, populate `id`, required fields, and `evidence`.
+9. Legacy Context is intent guidance only and is never evidence.
+10. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+11. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+12. Attach evidence to every non-derived field and every relationship edge.
+13. Normalize arrays by stable sort keys; deduplicate by ID.
+14. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+15. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

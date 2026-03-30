@@ -40,18 +40,21 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the multi-service coordination (compose/tmux) partition as primary scan surface
-2. Extract multi-service coordination (compose/tmux) facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted multi-service coordination (compose/tmux) elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each WORKFLOW_COORDINATION_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the multi-service coordination (compose/tmux) partition as primary scan surface.
+2. Map Docker Compose coordination: scan `compose.yml` for `depends_on`, `healthcheck`, `networks`, and `volumes` that define service inter-dependencies.
+3. Map TMUX coordination: scan `tmux.conf` or `*.tmux.yaml` for session layouts, window names, and specific commands sent to panes via `send-keys`.
+4. Identify synchronization points: search for `wait-for-it.sh`, `nc -z`, or health-check polling loops that block service startup until dependencies are ready.
+5. Locate global orchestrator logic: identify scripts like `dopemux.rb` or `install.sh` that trigger both Compose and TMUX setup in sequence.
+6. Build coordination graph: trace how a single orchestrator command propagates through TMUX panes to eventually start Docker Compose services.
+7. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in service coordination.
+8. For each WORKFLOW_COORDINATION_SURFACE item, populate `id`, required fields, and `evidence`.
+9. Legacy Context is intent guidance only and is never evidence.
+10. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+11. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+12. Attach evidence to every non-derived field and every relationship edge.
+13. Normalize arrays by stable sort keys; deduplicate by ID.
+14. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+15. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
