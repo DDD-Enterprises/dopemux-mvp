@@ -13,7 +13,7 @@ version: 1
 # Routing mode: determines how Claude Code requests are handled
 # - "subscription": Direct to Anthropic (no proxy, requires ANTHROPIC_API_KEY)
 # - "api": Route through global LiteLLM proxy (requires LiteLLM services)
-mode: subscription
+mode: api
 
 # Port configuration for LiteLLM and CCR services
 ports:
@@ -23,11 +23,19 @@ ports:
 # Provider definitions - API keys are NOT stored here
 # Keys must be in ~/.dopemux/routing.env
 providers:
+  - name: gemini
+    label: "Google Gemini"
+    api_key_env: "GEMINI_API_KEY"
+
   - name: xai
     label: "xAI Grok"
     api_key_env: "XAI_API_KEY"
     base_url: "https://api.x.ai/v1"
-    
+
+  - name: openai
+    label: "OpenAI"
+    api_key_env: "OPENAI_API_KEY"
+
   - name: openrouter
     label: "OpenRouter"
     api_key_env: "OPENROUTER_API_KEY"
@@ -38,104 +46,120 @@ providers:
 
 # Model definitions - reference providers by name
 models:
-  # GEMINI (direct)
+  # GEMINI (direct via Google AI)
   - name: gemini-2.5-flash-lite
     provider: gemini
-    litellm_model: "gemini/gemini-2.5-flash-lite"
-    params:
-      thinking: { type: "disabled", budget_tokens: 0 }
+    model_id: "gemini/gemini-2.5-flash-lite"
+    max_tokens: 131072
 
   - name: gemini-2.5-flash
     provider: gemini
-    litellm_model: "gemini/gemini-2.5-flash"
-    params:
-      thinking: { type: "disabled", budget_tokens: 0 }
+    model_id: "gemini/gemini-2.5-flash"
+    max_tokens: 131072
 
   - name: gemini-2.5-pro
     provider: gemini
-    litellm_model: "gemini/gemini-2.5-pro"
-    params:
-      thinking: { type: "enabled", budget_tokens: 1024 }
+    model_id: "gemini/gemini-2.5-pro"
+    max_tokens: 131072
 
-  # XAI (direct)
-  - name: grok-4.1-fast-reasoning
+  # XAI / GROK (direct)
+  - name: grok-4.20-beta-reasoning
     provider: xai
-    litellm_model: "xai/grok-4-1-fast-reasoning"
+    model_id: "xai/grok-4.20-beta-reasoning"
+    max_tokens: 2000000
 
-  - name: grok-4.1-fast
+  - name: grok-4.20-multi-agent-beta
     provider: xai
-    litellm_model: "xai/grok-4-1-fast-non-reasoning"
+    model_id: "xai/grok-4.20-multi-agent-beta"
+    max_tokens: 2000000
 
-  - name: grok-4-fast-reasoning
+  - name: grok-4.20-heavy
     provider: xai
-    litellm_model: "xai/grok-4-fast-reasoning"
-
-  - name: grok-4-fast
-    provider: xai
-    litellm_model: "xai/grok-4-fast-non-reasoning"
+    model_id: "xai/grok-4.20-heavy"
+    max_tokens: 2000000
 
   - name: grok-code-fast-1
     provider: xai
-    litellm_model: "xai/grok-code-fast-1"
-
-  # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: comparison lane model
-  - name: grok-4.20-beta
-    provider: xai
-    litellm_model: "xai/grok-4.20-beta"
-    notes: "Comparison-lane model only. Not canonical. Registered by TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001."
+    model_id: "xai/grok-code-fast-1"
+    max_tokens: 131072
 
   # OPENAI (direct)
-  - name: gpt-5.2
+  - name: gpt-5.4-pro
     provider: openai
-    litellm_model: "openai/gpt-5.2"
+    model_id: "openai/gpt-5.4-pro"
+    max_tokens: 272000
 
-  - name: gpt-5.2-codex
+  - name: gpt-5.4-thinking
     provider: openai
-    litellm_model: "openai/gpt-5.2-codex"
+    model_id: "openai/gpt-5.4-thinking"
+    max_tokens: 272000
 
-  - name: gpt-5-mini
+  - name: gpt-5.4-mini
     provider: openai
-    litellm_model: "openai/gpt-5-mini"
+    model_id: "openai/gpt-5.4-mini"
+    max_tokens: 272000
 
-  - name: gpt-5-nano
+  - name: gpt-5.4-nano
     provider: openai
-    litellm_model: "openai/gpt-5-nano"
+    model_id: "openai/gpt-5.4-nano"
+    max_tokens: 272000
+
+  # OPENROUTER (aggregator)
+  - name: openrouter-gpt-5.4-pro
+    provider: openrouter
+    model_id: "openrouter/openai/gpt-5.4-pro"
+    max_tokens: 272000
 
 # Slot definitions - assign models to usage slots
 # These are exposed to Claude Code via CCR
 slots:
   default: gemini-2.5-flash-lite
   bulk: gemini-2.5-flash-lite
-  format: grok-4.1-fast
-  think: grok-4.1-fast-reasoning
+  format: gpt-5.4-mini
+  think: grok-4.20-beta-reasoning
   background: gemini-2.5-flash-lite
-  longContext: grok-4.1-fast
-  arbiter: gpt-5.2
+  longContext: grok-4.20-multi-agent-beta
+  arbiter: gpt-5.4-pro
   codex: grok-code-fast-1
-  opus: gpt-5.2-codex
-  sonnet: grok-4.1-fast-reasoning
+  opus: gpt-5.4-thinking
+  sonnet: grok-4.20-multi-agent-beta
   haiku: gemini-2.5-flash-lite
 
 # Fallback chain for resilience
 fallbacks:
   gemini-2.5-flash-lite:
-    - grok-4.1-fast
-    - grok-4.1-fast-reasoning
-    - gpt-5.2
+    - gpt-5.4-mini
+    - grok-4.20-beta-reasoning
   gemini-2.5-flash:
-    - grok-4.1-fast
-    - grok-4.1-fast-reasoning
-    - gpt-5.2
-  grok-4.1-fast:
-    - grok-4.1-fast-reasoning
-    - gpt-5.2
-  grok-4.1-fast-reasoning:
-    - gpt-5.2
+    - gpt-5.4-mini
+    - grok-4.20-beta-reasoning
+  gemini-2.5-pro:
+    - gpt-5.4-pro
+    - grok-4.20-beta-reasoning
+  gpt-5.4-pro:
+    - grok-4.20-heavy
+    - gemini-2.5-pro
+  gpt-5.4-thinking:
+    - grok-4.20-beta-reasoning
+    - gpt-5.4-pro
+  gpt-5.4-mini:
+    - gemini-2.5-flash-lite
+    - grok-4.20-beta-reasoning
+  grok-4.20-beta-reasoning:
+    - gpt-5.4-thinking
+    - gemini-2.5-pro
+  grok-4.20-multi-agent-beta:
+    - gpt-5.4-pro
+    - grok-4.20-heavy
+  grok-code-fast-1:
+    - gpt-5.4-pro
+    - gemini-2.5-flash
 
 # Default fallback list (ordered)
 default_fallbacks:
-  - grok-4.1-fast
-  - gpt-5.2
+  - gpt-5.4-mini
+  - gemini-2.5-flash-lite
+  - grok-4.20-beta-reasoning
 
 # Model alias map for compatibility
 # Maps common model names to Dopemux slot names

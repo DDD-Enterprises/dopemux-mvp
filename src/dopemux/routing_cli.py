@@ -2,6 +2,7 @@
 
 import click
 import logging
+from pathlib import Path
 
 from dopemux.launchd_services import LaunchdServiceManager
 
@@ -83,6 +84,61 @@ def reload():
         click.echo("✅ Services reloaded!")
     except Exception as e:
         logger.error(f"Failed to reload services: {e}")
+        click.echo(f"❌ Error: {e}", err=True)
+        raise
+
+
+@routing.command()
+@click.option("--restart/--no-restart", default=True, help="Restart services after switching (default: True)")
+def api(restart: bool):
+    """Switch to API mode (route through LiteLLM + external models)."""
+    try:
+        manager = LaunchdServiceManager.get_instance()
+        config = manager.routing_config.load()
+
+        if config.get("mode") == "api":
+            click.echo("ℹ️  Already in API mode")
+            return
+
+        _set_routing_mode(manager.routing_config.config_path, "api")
+        click.echo("✅ Switched to API mode (external models via LiteLLM)")
+
+        _set_claude_base_url("http://127.0.0.1:4010")
+        click.echo("✅ Updated Claude Code baseUrl → http://127.0.0.1:4010")
+
+        if restart:
+            click.echo("🔄 Restarting services...")
+            manager.routing_config._loaded = False
+            manager.routing_config.load()
+            manager._regenerate_configs()
+            manager.reload_services()
+            click.echo("✅ Services restarted!")
+
+    except Exception as e:
+        logger.error(f"Failed to switch to API mode: {e}")
+        click.echo(f"❌ Error: {e}", err=True)
+        raise
+
+
+@routing.command()
+def direct():
+    """Switch to direct/subscription mode (route straight to Anthropic API)."""
+    try:
+        manager = LaunchdServiceManager.get_instance()
+        config = manager.routing_config.load()
+
+        if config.get("mode") == "subscription":
+            click.echo("ℹ️  Already in subscription (direct) mode")
+            return
+
+        _set_routing_mode(manager.routing_config.config_path, "subscription")
+        click.echo("✅ Switched to subscription mode (direct to Anthropic)")
+
+        _set_claude_base_url("https://api.anthropic.com")
+        click.echo("✅ Updated Claude Code baseUrl → https://api.anthropic.com")
+
+    except Exception as e:
+        logger.error(f"Failed to switch to direct mode: {e}")
         click.echo(f"❌ Error: {e}", err=True)
         raise
 
@@ -309,6 +365,27 @@ def repair(max_passes: int, allow_sync_keys: bool):
         logger.error(f"Failed to repair services: {e}")
         click.echo(f"❌ Error: {e}", err=True)
         raise
+
+
+def _set_routing_mode(config_path: Path, mode: str) -> None:
+    """Update the mode field in routing.yaml in-place."""
+    import re
+    content = config_path.read_text()
+    content = re.sub(r"^mode:\s*\w+", f"mode: {mode}", content, flags=re.MULTILINE)
+    config_path.write_text(content)
+
+
+def _set_claude_base_url(url: str) -> None:
+    """Update apiConfiguration.baseUrl in ~/.claude/settings.json."""
+    import json
+    settings_path = Path.home() / ".claude" / "settings.json"
+    if not settings_path.exists():
+        return
+    settings = json.loads(settings_path.read_text())
+    if "apiConfiguration" not in settings:
+        settings["apiConfiguration"] = {}
+    settings["apiConfiguration"]["baseUrl"] = url
+    settings_path.write_text(json.dumps(settings, indent=2) + "\n")
 
 
 def register_routing_commands(cli_group):

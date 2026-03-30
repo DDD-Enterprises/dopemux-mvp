@@ -235,17 +235,22 @@ class TestClaudeLauncher:
         with patch.object(ClaudeLauncher, "_detect_claude"):
             launcher = ClaudeLauncher(config_manager)
 
-        with patch("rich.console.Console.print") as mock_print:
-            launcher._prepare_environment()
+        # Mock RoutingConfig to be in subscription mode for this test
+        # to avoid RuntimeError from missing CCR keys in api mode
+        with patch("dopemux.claude.launcher.RoutingConfig") as mock_routing:
+            mock_routing.load_default.return_value.get_mode.return_value = "subscription"
+            
+            with patch("rich.console.Console.print") as mock_print:
+                launcher._prepare_environment()
 
-            # Should note that no fallback API keys are available.
-            mock_print.assert_called()
-            warning_calls = [
-                call
-                for call in mock_print.call_args_list
-                if "No fallback API keys set" in str(call)
-            ]
-            assert len(warning_calls) > 0
+                # Should note that no fallback API keys are available.
+                mock_print.assert_called()
+                warning_calls = [
+                    call
+                    for call in mock_print.call_args_list
+                    if "No fallback API keys set" in str(call)
+                ]
+                assert len(warning_calls) > 0
 
     def test_resolve_env_vars(self, config_manager):
         """Test resolving environment variables in MCP server config."""
