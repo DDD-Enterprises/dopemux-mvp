@@ -224,6 +224,8 @@ class TransitionWorkflowRequest(BaseModel):
     transition: str
     actor: Optional[str] = None
     idempotency_key: Optional[str] = None
+    expected_version: Optional[int] = None
+    reason: Optional[str] = None
 
 
 class WorkflowEnvelopeBase(BaseModel):

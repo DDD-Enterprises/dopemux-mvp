@@ -98,11 +98,34 @@ async def test_taskmaster_to_pm_e2e_flow(mock_httpx):
     for call in mock_httpx.sync_client.post.call_args_list:
         args, kwargs = call
         url = args[0] if args else kwargs.get("url", "")
-        if "/route/pm" in str(url):
+        if "/api/projects/test-ws/workflow/transition" in str(url):
             payload = kwargs.get("json", {})
-            if payload.get("operation") == "orchestrator.transition":
+            if payload.get("workflow_id") == task_id:
                 transition_called = True
-                
+
+    assert transition_called is True
+
+
+@pytest.mark.asyncio
+async def test_taskmaster_transition_uses_project_scoped_workflow_endpoint(mock_httpx):
+    adapter = TaskMasterBridgeAdapter(workspace_id="test-ws")
+    created = await adapter.create_task(
+        title="Scoped transition task",
+        description="Ensure project-scoped transition path is used",
+    )
+    task_id = created["canonical_id"]
+
+    await adapter.update_task_status(task_id, "IN_PROGRESS")
+
+    transition_called = False
+    for call in mock_httpx.sync_client.post.call_args_list:
+        args, kwargs = call
+        url = args[0] if args else kwargs.get("url", "")
+        if "/api/projects/test-ws/workflow/transition" in str(url):
+            payload = kwargs.get("json", {})
+            if payload.get("workflow_id") == task_id:
+                transition_called = True
+
     assert transition_called is True
 
 
@@ -136,9 +159,9 @@ async def test_cli_to_pm_e2e_flow(mock_httpx, tmp_path):
     for call in mock_httpx.sync_client.post.call_args_list:
         args, kwargs = call
         url = args[0] if args else kwargs.get("url", "")
-        if "/route/pm" in str(url):
+        if "/api/projects/default/workflow/transition" in str(url):
             payload = kwargs.get("json", {})
-            if payload.get("operation") == "orchestrator.transition":
+            if payload.get("workflow_id") == task_id:
                 transition_called = True
-                
+
     assert transition_called is True

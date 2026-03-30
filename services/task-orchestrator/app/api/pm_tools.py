@@ -1,6 +1,7 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from typing import Dict, Any
+import httpx
 from src.dopemux.pm.writes import (
     pm_update_work_item,
     pm_transition_work_item,
@@ -12,6 +13,26 @@ from src.dopemux.pm.models import PMTaskStatus
 
 router = APIRouter(prefix="/api/pm", tags=["pm-plane"])
 logger = logging.getLogger(__name__)
+
+
+class _LocalTaskOrchestratorWriteClient:
+    """Bridge PM write calls into the local project-scoped workflow runtime."""
+
+    def transition(self, task_id: str, status: Any, reason: str, expected_version: int, idempotency_key: str):
+        transition_name = status.value.lower() if hasattr(status, "value") else str(status).lower()
+        project_id = "default"
+        payload = {
+            "workflow_id": task_id,
+            "transition": transition_name,
+            "actor": "task-orchestrator",
+            "idempotency_key": idempotency_key,
+            "expected_version": expected_version,
+            "reason": reason,
+        }
+        with httpx.Client(base_url="http://localhost:3014", timeout=10.0) as client:
+            response = client.post(f"/api/projects/{project_id}/workflow/transition", json=payload)
+            response.raise_for_status()
+            return response.json()
 
 def _record_metrics_and_log(request: Request, operation: str, receipt: CanonicalReceipt = None, failed: bool = False):
     """Log structured info and update Prometheus metrics on the coordinator."""
@@ -68,7 +89,7 @@ def get_pm_config(request: Request) -> PMWriteConfig:
     coordinator = getattr(request.app.state, "coordinator", None)
     
     leantime = getattr(coordinator, "leantime_client", None)
-    orchestrator = getattr(coordinator, "workflow_service", None)
+    orchestrator = _LocalTaskOrchestratorWriteClient()
     conport = getattr(coordinator, "conport_client", None)
     memory = getattr(coordinator, "memory_client", None)
     
