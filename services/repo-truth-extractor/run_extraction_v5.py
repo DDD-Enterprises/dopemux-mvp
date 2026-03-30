@@ -783,7 +783,6 @@ def prompt_root() -> Path:
     if v4_path.exists():
         return v4_path
     return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
-    return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
 
 
 _ACTIVE_S_PROMPTS_MODE = S_PROMPTS_AUTO
@@ -1126,6 +1125,7 @@ class RunnerConfig:
     webhook_required: bool = False
     webhook_auto_continue: bool = False
     live_ok: bool = False
+    max_cost_usd: Optional[float] = None
     selected_s_steps: Optional[Tuple[str, ...]] = None
     selected_execution_step: Optional[str] = None
     d0_max_files: Optional[int] = None
@@ -15213,6 +15213,12 @@ def main() -> None:
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-files-docs", type=int, default=35)
+    parser.add_argument(
+        "--max-cost-usd",
+        type=float,
+        default=None,
+        help="Abort if projected run cost exceeds this USD limit.",
+    )
     parser.add_argument("--max-files-code", type=int, default=20)
     parser.add_argument("--max-chars", type=int, default=650000)
     parser.add_argument("--max-request-bytes", type=int, default=200000)
@@ -15648,7 +15654,8 @@ def main() -> None:
             ),
             webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
             webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
-            live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+            live_ok=bool(args.execute and _env_is_truthy(DPMX_LIVE_OK_ENV)),
+            max_cost_usd=getattr(args, "max_cost_usd", None),
             selected_execution_step=selected_execution_step,
             d0_max_files=args.d0_max_files,
             d1_max_files=args.d1_max_files,
@@ -15877,7 +15884,8 @@ def main() -> None:
         ),
         webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
         webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
-        live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+        live_ok=bool(args.execute and _env_is_truthy(DPMX_LIVE_OK_ENV)),
+        max_cost_usd=getattr(args, "max_cost_usd", None),
         selected_s_steps=(
             tuple(args.s_steps) if isinstance(args.s_steps, list) else None
         ),
@@ -16138,6 +16146,18 @@ def main() -> None:
             _ACTIVE_INTELLIGENCE_ROUTER = IntelligenceRouter.from_dir(_prescan_path)
             if _ACTIVE_INTELLIGENCE_ROUTER:
                 logger.info("Loaded intelligence router from %s", _prescan_path)
+                
+                if cfg.max_cost_usd is not None:
+                    cost_info = _ACTIVE_INTELLIGENCE_ROUTER.intel.get("cost_estimate", {})
+                    net_estimates = cost_info.get("net_estimates", {})
+                    est_total = net_estimates.get("total_cost_usd", 0)
+                    if est_total > cfg.max_cost_usd:
+                        logger.error(
+                            "❌ Projected run cost ($%.2f) exceeds --max-cost-usd limit ($%.2f). Aborting.",
+                            est_total,
+                            cfg.max_cost_usd,
+                        )
+                        sys.exit(1)
             else:
                 logger.warning("Prescan dir exists but router failed to load: %s", _prescan_path)
         else:
