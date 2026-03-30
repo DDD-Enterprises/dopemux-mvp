@@ -78,6 +78,7 @@ from .schema import (
     MergeDecision,
     OverrideRecord,
     PhaseRecord,
+    PolicyResolution,
     PreflightCheck,
     PreflightResult,
     PRResult,
@@ -172,6 +173,12 @@ def preflight(args: argparse.Namespace) -> int:
     policy = load_effective_policy(
         repo_root, explicit_path=getattr(args, "policy", None)
     )
+    meta = policy.get("_meta", {})
+    policy_resolution = PolicyResolution(
+        source=meta.get("source", "unknown"),
+        path=meta.get("path", ""),
+        fingerprint=meta.get("fingerprint", ""),
+    )
     client = GitHubClient(
         repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy
     )
@@ -238,5 +245,24 @@ def preflight(args: argparse.Namespace) -> int:
             remediation="Git case-insensitivity detected. Some renames might require `git mv` to be detected on this OS.",
         )
     )
-    
+
+    ok = all(c.status == "passed" or not c.required for c in checks)
+    precheck = PreflightResult(
+        ok=ok,
+        checks=checks,
+        policy_resolution=policy_resolution,
+        override_records=overrides,
+    )
+
+    if run_dir and active_run_id:
+        manifest = manifest_for_run(
+            active_run_id=active_run_id,
+            mode=getattr(args, "mode", "preflight"),
+            repo_root=repo_root,
+            repo_slug=repo_slug,
+            policy=policy,
+        )
+        write_manifest(run_dir, manifest)
+        write_json(run_dir / "PREFLIGHT_RESULT.json", precheck.to_dict())
+
     return 0 if precheck.ok else 2
