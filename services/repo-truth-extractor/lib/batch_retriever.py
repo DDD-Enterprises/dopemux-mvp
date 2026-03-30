@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""
-OpenAI Batch Retrieval Module
-
-This module provides functionality to retrieve OpenAI batch processing results
-and integrate them with the webhook-based workflow.
-"""
+"""Provider-aware batch retrieval and webhook integration helpers."""
 
 from __future__ import annotations
 
@@ -13,15 +8,291 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 try:
-    from .batch_clients import OpenAIBatchClient
+    from .batch_clients import (
+        BatchResult,
+        GeminiBatchClient,
+        OpenAIBatchClient,
+        UnsupportedBatchProvider,
+        XAIBatchClient,
+    )
 except ImportError:
-    from batch_clients import OpenAIBatchClient
+    from batch_clients import (  # type: ignore
+        BatchResult,
+        GeminiBatchClient,
+        OpenAIBatchClient,
+        UnsupportedBatchProvider,
+        XAIBatchClient,
+    )
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+OPENAI_COMPATIBLE_PROVIDERS = {"openai", "xai"}
+SUPPORTED_RETRIEVAL_PROVIDERS = OPENAI_COMPATIBLE_PROVIDERS | {"gemini"}
+TERMINAL_BATCH_STATES = {
+    "completed",
+    "succeeded",
+    "done",
+    "failed",
+    "expired",
+    "cancelled",
+    "canceled",
+    "timeout",
+}
+
+
+def _normalize_provider(provider: str) -> str:
+    normalized = str(provider or "").strip().lower()
+    if normalized not in SUPPORTED_RETRIEVAL_PROVIDERS:
+        raise UnsupportedBatchProvider(
+            "OpenRouter is not supported for live batch execution. Use openai, gemini, or xai. "
+            "OpenRouter remains available for sync routing."
+            if normalized == "openrouter"
+            else f"Unsupported batch provider: {provider}"
+        )
+    return normalized
+
+
+def _build_retrieval_client(provider: str, api_key: str):
+    provider_id = _normalize_provider(provider)
+    if provider_id == "openai":
+        return OpenAIBatchClient(api_key=api_key)
+    if provider_id == "xai":
+        return XAIBatchClient(api_key=api_key)
+    if provider_id == "gemini":
+        return GeminiBatchClient(api_key=api_key)
+    raise UnsupportedBatchProvider(f"Unsupported batch provider: {provider}")
+
+
+def _read_content_as_text(content: Any) -> str:
+    if hasattr(content, "text"):
+        return str(content.text)
+    if hasattr(content, "read"):
+        value = content.read()
+        if isinstance(value, (bytes, bytearray)):
+            return value.decode("utf-8", errors="replace")
+        return str(value)
+    return str(content)
+
+
+def _download_openai_compatible_file(
+    client: OpenAIBatchClient,
+    file_id: str,
+    destination: Path,
+    *,
+    max_retries: int,
+    retry_delay: int,
+) -> str:
+    last_error = ""
+    for attempt in range(max_retries):
+        try:
+            content = client._client.files.content(file_id)  # type: ignore[attr-defined]
+            destination.write_text(_read_content_as_text(content), encoding="utf-8")
+            return ""
+        except Exception as exc:  # pragma: no cover - defensive transport errors
+            last_error = str(exc)
+            if attempt == max_retries - 1:
+                break
+            time.sleep(retry_delay)
+    return last_error or "download_failed"
+
+
+def _serialize_batch_results(results: List[BatchResult]) -> List[Dict[str, Any]]:
+    payload: List[Dict[str, Any]] = []
+    for row in results:
+        payload.append(
+            {
+                "custom_id": row.custom_id,
+                "output_text": row.output_text,
+                "error": row.error,
+                "meta": row.meta,
+            }
+        )
+    return payload
+
+
+def retrieve_openai_compatible_batch(
+    provider: str,
+    api_key: str,
+    batch_id: str,
+    output_dir: Path,
+    max_retries: int = 3,
+    retry_delay: int = 5,
+) -> Tuple[bool, Dict[str, Any]]:
+    provider_id = _normalize_provider(provider)
+    client = _build_retrieval_client(provider_id, api_key)
+    assert isinstance(client, OpenAIBatchClient)
+    result: Dict[str, Any] = {
+        "batch_id": batch_id,
+        "provider": provider_id,
+        "status": "unknown",
+        "output_file": None,
+        "error_file": None,
+        "error": None,
+        "results": [],
+    }
+
+    try:
+        batch_info = client.get_batch_info(batch_id)
+        status = str(batch_info.get("status") or "unknown").lower()
+        result["status"] = status
+        result["created_at"] = batch_info.get("created_at")
+        result["completed_at"] = batch_info.get("completed_at")
+        result["failed_at"] = batch_info.get("failed_at")
+        result["expired_at"] = batch_info.get("expired_at")
+        logger.info("Batch %s (%s): status=%s", batch_id, provider_id, status)
+
+        output_file_id = str(batch_info.get("output_file_id") or "")
+        error_file_id = str(batch_info.get("error_file_id") or "")
+
+        if status in {"completed", "succeeded", "done"}:
+            results = client.fetch_results(batch_id)
+            result["results"] = _serialize_batch_results(results)
+            if output_file_id:
+                output_path = output_dir / f"{batch_id}_output.jsonl"
+                download_error = _download_openai_compatible_file(
+                    client,
+                    output_file_id,
+                    output_path,
+                    max_retries=max_retries,
+                    retry_delay=retry_delay,
+                )
+                if download_error:
+                    result["error"] = (
+                        f"Failed to download output after {max_retries} attempts: {download_error}"
+                    )
+                else:
+                    result["output_file"] = str(output_path)
+        elif status in {"failed", "expired", "cancelled", "canceled", "timeout"} and error_file_id:
+            error_path = output_dir / f"{batch_id}_error.jsonl"
+            download_error = _download_openai_compatible_file(
+                client,
+                error_file_id,
+                error_path,
+                max_retries=max_retries,
+                retry_delay=retry_delay,
+            )
+            if download_error:
+                result["error"] = (
+                    f"Failed to download error after {max_retries} attempts: {download_error}"
+                )
+            else:
+                result["error_file"] = str(error_path)
+        return True, result
+    except Exception as exc:
+        result["error"] = f"Batch retrieval failed: {exc}"
+        logger.error("%s", result["error"])
+        return False, result
+
+
+def retrieve_gemini_batch(
+    api_key: str,
+    batch_id: str,
+    output_dir: Path,
+    max_retries: int = 3,
+    retry_delay: int = 5,
+) -> Tuple[bool, Dict[str, Any]]:
+    del max_retries, retry_delay
+    client = GeminiBatchClient(api_key=api_key)
+    result: Dict[str, Any] = {
+        "batch_id": batch_id,
+        "provider": "gemini",
+        "status": "unknown",
+        "output_file": None,
+        "error_file": None,
+        "error": None,
+        "results": [],
+    }
+    try:
+        status = str(client.poll(batch_id) or "unknown").lower()
+        result["status"] = status
+        logger.info("Batch %s (gemini): status=%s", batch_id, status)
+        if status in {"completed", "succeeded", "done"}:
+            results = client.fetch_results(batch_id)
+            result["results"] = _serialize_batch_results(results)
+            output_path = output_dir / f"{batch_id}_output.json"
+            output_path.write_text(
+                json.dumps({"provider": "gemini", "batch_id": batch_id, "results": result["results"]}, indent=2, ensure_ascii=True)
+                + "\n",
+                encoding="utf-8",
+            )
+            result["output_file"] = str(output_path)
+        elif status in {"failed", "expired", "cancelled", "canceled", "timeout"}:
+            error_path = output_dir / f"{batch_id}_error.json"
+            error_path.write_text(
+                json.dumps({"provider": "gemini", "batch_id": batch_id, "status": status}, indent=2, ensure_ascii=True)
+                + "\n",
+                encoding="utf-8",
+            )
+            result["error_file"] = str(error_path)
+        return True, result
+    except Exception as exc:
+        result["error"] = f"Batch retrieval failed: {exc}"
+        logger.error("%s", result["error"])
+        return False, result
+
+
+def retrieve_batch(
+    provider: str,
+    api_key: str,
+    batch_id: str,
+    output_dir: Path,
+    max_retries: int = 3,
+    retry_delay: int = 5,
+) -> Tuple[bool, Dict[str, Any]]:
+    provider_id = _normalize_provider(provider)
+    if provider_id == "gemini":
+        return retrieve_gemini_batch(
+            api_key=api_key,
+            batch_id=batch_id,
+            output_dir=output_dir,
+            max_retries=max_retries,
+            retry_delay=retry_delay,
+        )
+    return retrieve_openai_compatible_batch(
+        provider=provider_id,
+        api_key=api_key,
+        batch_id=batch_id,
+        output_dir=output_dir,
+        max_retries=max_retries,
+        retry_delay=retry_delay,
+    )
+
+
+def retrieve_batches(
+    provider: str,
+    api_key: str,
+    batch_ids: List[str],
+    output_dir: Path,
+    max_retries: int = 3,
+    retry_delay: int = 5,
+) -> Dict[str, Dict[str, Any]]:
+    provider_id = _normalize_provider(provider)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results: Dict[str, Dict[str, Any]] = {}
+    for batch_id in batch_ids:
+        _success, result = retrieve_batch(
+            provider=provider_id,
+            api_key=api_key,
+            batch_id=batch_id,
+            output_dir=output_dir,
+            max_retries=max_retries,
+            retry_delay=retry_delay,
+        )
+        results[batch_id] = result
+
+    completed = sum(1 for row in results.values() if row.get("status") in {"completed", "succeeded", "done"})
+    failed = sum(1 for row in results.values() if row.get("status") in {"failed", "expired", "cancelled", "canceled", "timeout"})
+    errors = sum(1 for row in results.values() if row.get("error"))
+    logger.info("\nBatch Retrieval Summary (%s):", provider_id)
+    logger.info("  Completed: %s", completed)
+    logger.info("  Failed/Expired: %s", failed)
+    logger.info("  Errors: %s", errors)
+    logger.info("  Total: %s", len(results))
+    return results
 
 
 def retrieve_openai_batch(
@@ -29,101 +300,9 @@ def retrieve_openai_batch(
     batch_id: str,
     output_dir: Path,
     max_retries: int = 3,
-    retry_delay: int = 5
+    retry_delay: int = 5,
 ) -> Tuple[bool, Dict[str, Any]]:
-    """
-    Retrieve a single OpenAI batch and download its results.
-    
-    Args:
-        api_key: OpenAI API key
-        batch_id: Batch ID to retrieve
-        output_dir: Directory to save output/error files
-        max_retries: Maximum number of retries for failed downloads
-        retry_delay: Delay between retries in seconds
-        
-    Returns:
-        Tuple of (success, result_dict) where result_dict contains:
-        - batch_id: The batch ID
-        - status: Batch status
-        - output_file: Path to output file if downloaded
-        - error_file: Path to error file if downloaded
-        - error: Error message if any
-    """
-    client = OpenAIBatchClient(api_key=api_key)
-    result = {
-        "batch_id": batch_id,
-        "status": "unknown",
-        "output_file": None,
-        "error_file": None,
-        "error": None
-    }
-    
-    try:
-        # Get batch information
-        batch_info = client.get_batch_info(batch_id)
-        status = batch_info["status"]
-        result["status"] = status
-        
-        logger.info(f"Batch {batch_id}: status={status}")
-        
-        # Download output file if completed
-        if status == "completed" and batch_info["output_file_id"]:
-            for attempt in range(max_retries):
-                try:
-                    content = client._client.files.content(batch_info["output_file_id"])
-                    output_path = output_dir / f"{batch_id}_output.jsonl"
-                    
-                    # Handle different response types
-                    if hasattr(content, "read"):
-                        output_path.write_bytes(content.read())
-                    elif hasattr(content, "text"):
-                        output_path.write_text(content.text, encoding="utf-8")
-                    else:
-                        output_path.write_text(str(content), encoding="utf-8")
-                    
-                    result["output_file"] = str(output_path)
-                    logger.info(f"  ↓ Downloaded output to {output_path}")
-                    break
-                    
-                except Exception as e:
-                    if attempt == max_retries - 1:
-                        result["error"] = f"Failed to download output after {max_retries} attempts: {e}"
-                        logger.error(result["error"])
-                    else:
-                        time.sleep(retry_delay)
-        
-        # Download error file if failed or expired
-        elif status in ("failed", "expired") and batch_info["error_file_id"]:
-            for attempt in range(max_retries):
-                try:
-                    content = client._client.files.content(batch_info["error_file_id"])
-                    error_path = output_dir / f"{batch_id}_error.jsonl"
-                    
-                    # Handle different response types
-                    if hasattr(content, "read"):
-                        error_path.write_bytes(content.read())
-                    elif hasattr(content, "text"):
-                        error_path.write_text(content.text, encoding="utf-8")
-                    else:
-                        error_path.write_text(str(content), encoding="utf-8")
-                    
-                    result["error_file"] = str(error_path)
-                    logger.info(f"  ↓ Downloaded error to {error_path}")
-                    break
-                    
-                except Exception as e:
-                    if attempt == max_retries - 1:
-                        result["error"] = f"Failed to download error file after {max_retries} attempts: {e}"
-                        logger.error(result["error"])
-                    else:
-                        time.sleep(retry_delay)
-        
-        return True, result
-        
-    except Exception as e:
-        result["error"] = f"Batch retrieval failed: {e}"
-        logger.error(result["error"])
-        return False, result
+    return retrieve_openai_compatible_batch("openai", api_key, batch_id, output_dir, max_retries, retry_delay)
 
 
 def retrieve_openai_batches(
@@ -131,42 +310,39 @@ def retrieve_openai_batches(
     batch_ids: List[str],
     output_dir: Path,
     max_retries: int = 3,
-    retry_delay: int = 5
+    retry_delay: int = 5,
 ) -> Dict[str, Dict[str, Any]]:
-    """
-    Retrieve multiple OpenAI batches and download their results.
-    
-    Args:
-        api_key: OpenAI API key
-        batch_ids: List of batch IDs to retrieve
-        output_dir: Directory to save output/error files
-        max_retries: Maximum number of retries for failed downloads
-        retry_delay: Delay between retries in seconds
-        
-    Returns:
-        Dictionary mapping batch_id -> result_dict
-    """
-    output_dir.mkdir(exist_ok=True)
-    results = {}
-    
-    for batch_id in batch_ids:
-        success, result = retrieve_openai_batch(
-            api_key, batch_id, output_dir, max_retries, retry_delay
-        )
-        results[batch_id] = result
-    
-    # Summary statistics
-    completed = sum(1 for r in results.values() if r["status"] == "completed")
-    failed = sum(1 for r in results.values() if r["status"] in ("failed", "expired"))
-    errors = sum(1 for r in results.values() if r["error"])
-    
-    logger.info(f"\nBatch Retrieval Summary:")
-    logger.info(f"  Completed: {completed}")
-    logger.info(f"  Failed/Expired: {failed}")
-    logger.info(f"  Errors: {errors}")
-    logger.info(f"  Total: {len(results)}")
-    
-    return results
+    return retrieve_batches("openai", api_key, batch_ids, output_dir, max_retries, retry_delay)
+
+
+def retrieve_xai_batch(
+    api_key: str,
+    batch_id: str,
+    output_dir: Path,
+    max_retries: int = 3,
+    retry_delay: int = 5,
+) -> Tuple[bool, Dict[str, Any]]:
+    return retrieve_openai_compatible_batch("xai", api_key, batch_id, output_dir, max_retries, retry_delay)
+
+
+def retrieve_xai_batches(
+    api_key: str,
+    batch_ids: List[str],
+    output_dir: Path,
+    max_retries: int = 3,
+    retry_delay: int = 5,
+) -> Dict[str, Dict[str, Any]]:
+    return retrieve_batches("xai", api_key, batch_ids, output_dir, max_retries, retry_delay)
+
+
+def retrieve_gemini_batches(
+    api_key: str,
+    batch_ids: List[str],
+    output_dir: Path,
+    max_retries: int = 3,
+    retry_delay: int = 5,
+) -> Dict[str, Dict[str, Any]]:
+    return retrieve_batches("gemini", api_key, batch_ids, output_dir, max_retries, retry_delay)
 
 
 def integrate_batch_results_with_webhook(
@@ -175,36 +351,17 @@ def integrate_batch_results_with_webhook(
     run_id: str,
     phase: str,
     step_id: str,
-    partition_id: str
+    partition_id: str,
+    provider: str = "openai",
 ) -> int:
-    """
-    Integrate retrieved batch results with the webhook event store.
-    
-    This function creates synthetic webhook events for completed batches
-    so they can be processed by the existing webhook-based workflow.
-    
-    Args:
-        batch_results: Dictionary of batch results from retrieve_openai_batches
-        event_store: Webhook event store
-        run_id: Run ID to associate with events
-        phase: Phase ID
-        step_id: Step ID
-        partition_id: Partition ID
-        
-    Returns:
-        Number of events successfully integrated
-    """
     events_integrated = 0
-    
+    provider_id = str(provider or "openai").strip().lower()
     for batch_id, result in batch_results.items():
-        status = result["status"]
-        
-        # Only create events for terminal states
-        if status not in ("completed", "failed", "expired"):
+        status = str(result.get("status") or "").strip().lower()
+        if status not in TERMINAL_BATCH_STATES:
             continue
-        
-        # Create synthetic webhook payload
-        event_type = "batch.completed" if status == "completed" else "batch.failed"
+
+        event_type = "batch.completed" if status in {"completed", "succeeded", "done"} else "batch.failed"
         payload = {
             "schema": "DPMX_WEBHOOK_V1",
             "event": event_type,
@@ -216,14 +373,13 @@ def integrate_batch_results_with_webhook(
             "batch_id": batch_id,
             "status": status,
             "generated_at_utc": result.get("completed_at", ""),
-            "provider": "openai",
+            "provider": provider_id,
             "provider_ref": batch_id,
         }
-        
+
         try:
-            # Insert webhook event
             inserted = event_store.insert_webhook_event_if_absent(
-                provider="openai",
+                provider=provider_id,
                 idempotency_key=f"batch_{batch_id}",
                 event_type=event_type,
                 event_id=f"batch_{batch_id}",
@@ -232,22 +388,19 @@ def integrate_batch_results_with_webhook(
                 headers_json="{}",
                 signature_valid=True,
             )
-            
             if inserted:
-                # Create corresponding run event
                 from ledger.interface import RunEventInsert
-                
+
                 webhook_event_id = None
                 if hasattr(event_store, "fetch_webhook_event_id"):
-                    webhook_event_id = event_store.fetch_webhook_event_id("openai", f"batch_{batch_id}")
-                
+                    webhook_event_id = event_store.fetch_webhook_event_id(provider_id, f"batch_{batch_id}")
                 event_store.append_run_event(
                     RunEventInsert(
                         run_id=run_id,
                         phase=phase,
                         step_id=step_id,
                         partition_id=partition_id,
-                        provider="openai",
+                        provider=provider_id,
                         event_type=event_type,
                         event_id=f"batch_{batch_id}",
                         provider_ref=batch_id,
@@ -257,50 +410,58 @@ def integrate_batch_results_with_webhook(
                     )
                 )
                 events_integrated += 1
-                logger.info(f"Integrated batch {batch_id} as webhook event")
-            else:
-                logger.debug(f"Batch {batch_id} already processed (duplicate)")
-                
-        except Exception as e:
-            logger.error(f"Failed to integrate batch {batch_id}: {e}")
-    
+                logger.info("Integrated batch %s as webhook event", batch_id)
+        except Exception as exc:
+            logger.error("Failed to integrate batch %s: %s", batch_id, exc)
     return events_integrated
 
 
-def main() -> None:
-    """Command-line interface for batch retrieval."""
+def main() -> int:
     import argparse
-    
-    parser = argparse.ArgumentParser("OpenAI Batch Retriever")
-    parser.add_argument("batch_ids", nargs="+", help="OpenAI batch IDs to retrieve")
-    parser.add_argument("--output-dir", type=Path, default=Path("batch_downloads"),
-                       help="Directory to save output files")
-    parser.add_argument("--api-key-env", type=str, default="OPENAI_API_KEY",
-                       help="Environment variable containing OpenAI API key")
-    
-    args = parser.parse_args()
-    
-    api_key = os.environ.get(args.api_key_env)
-    if not api_key:
-        print(f"ERROR: {args.api_key_env} environment variable not set")
-        return 1
-    
-    results = retrieve_openai_batches(
-        api_key=api_key,
-        batch_ids=args.batch_ids,
-        output_dir=args.output_dir
+
+    parser = argparse.ArgumentParser("Batch Retriever")
+    parser.add_argument("batch_ids", nargs="+", help="Batch IDs to retrieve")
+    parser.add_argument(
+        "--provider",
+        choices=sorted(SUPPORTED_RETRIEVAL_PROVIDERS),
+        default="openai",
+        help="Live batch provider to retrieve from.",
     )
-    
-    print(f"\nRetrieved {len(results)} batches")
+    parser.add_argument("--output-dir", type=Path, default=Path("batch_downloads"), help="Directory to save output files")
+    parser.add_argument("--api-key-env", type=str, default=None, help="Environment variable containing the provider API key")
+    args = parser.parse_args()
+
+    default_env = {
+        "openai": "OPENAI_API_KEY",
+        "gemini": "GEMINI_API_KEY",
+        "xai": "XAI_API_KEY",
+    }[args.provider]
+    api_key_env = args.api_key_env or default_env
+    api_key = os.environ.get(api_key_env)
+    if not api_key:
+        print(f"ERROR: {api_key_env} environment variable not set")
+        return 1
+
+    try:
+        results = retrieve_batches(
+            provider=args.provider,
+            api_key=api_key,
+            batch_ids=args.batch_ids,
+            output_dir=args.output_dir,
+        )
+    except UnsupportedBatchProvider as exc:
+        print(f"ERROR: {exc}")
+        return 1
+
+    print(f"\nRetrieved {len(results)} batches from {args.provider}")
     for batch_id, result in results.items():
         print(f"  {batch_id}: {result['status']}")
-        if result['output_file']:
+        if result.get("output_file"):
             print(f"    Output: {result['output_file']}")
-        if result['error_file']:
+        if result.get("error_file"):
             print(f"    Error: {result['error_file']}")
-        if result['error']:
+        if result.get("error"):
             print(f"    Error: {result['error']}")
-    
     return 0
 
 

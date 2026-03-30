@@ -1110,6 +1110,14 @@ artifacts:
   - path
   - line_range
   - id
+- phase: Q
+  artifact_name: QA_ARTIFACT_COLLISION_REPORT.json
+  canonical_writer_step_id: Q11
+  kind: json_item_list
+  norm_artifact: false
+  allow_timestamp_keys: true
+  merge_strategy: itemlist_by_id
+  required_fields: []
 - phase: R
   artifact_name: CONFLICT_LEDGER.md
   canonical_writer_step_id: R7

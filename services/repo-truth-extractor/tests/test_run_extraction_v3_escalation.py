@@ -68,14 +68,25 @@ def _fake_context(**kwargs):  # type: ignore[no-untyped-def]
 def test_parse_failure_escalates_to_next_hop(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     runner = _load_runner_module()
     phase_dir, prompt_spec, partitions = _prepare_step(runner, tmp_path)
+    monkeypatch.setattr(runner, "_step_contract_for", lambda phase, step_id: None)
     monkeypatch.setattr(runner, "build_partition_context", _fake_context)
     monkeypatch.setattr(
         runner,
-        "resolve_step_ladder",
-        lambda routing_policy, phase, step_id: [
-            ("openai", "model-hop1", "OPENAI_API_KEY"),
-            ("openai", "model-hop2", "OPENAI_API_KEY"),
-        ],
+        "resolve_effective_step_route",
+        lambda *args, **kwargs: {
+            "step_tier": "extract",
+            "step_type": "extract",
+            "ladder": [
+                ("openai", "model-hop1", "OPENAI_API_KEY"),
+                ("openai", "model-hop2", "OPENAI_API_KEY"),
+            ],
+            "provider": "openai",
+            "model_id": "model-hop1",
+            "api_key_env": "OPENAI_API_KEY",
+            "reason": "test_override",
+            "strict_required": False,
+            "strict_route_attempts": [],
+        },
     )
 
     def fake_call_llm(**kwargs):  # type: ignore[no-untyped-def]
@@ -110,14 +121,25 @@ def test_parse_failure_escalates_to_next_hop(monkeypatch: pytest.MonkeyPatch, tm
 def test_schema_failure_escalates_to_next_hop(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     runner = _load_runner_module()
     phase_dir, prompt_spec, partitions = _prepare_step(runner, tmp_path)
+    monkeypatch.setattr(runner, "_step_contract_for", lambda phase, step_id: None)
     monkeypatch.setattr(runner, "build_partition_context", _fake_context)
     monkeypatch.setattr(
         runner,
-        "resolve_step_ladder",
-        lambda routing_policy, phase, step_id: [
-            ("openai", "model-hop1", "OPENAI_API_KEY"),
-            ("openai", "model-hop2", "OPENAI_API_KEY"),
-        ],
+        "resolve_effective_step_route",
+        lambda *args, **kwargs: {
+            "step_tier": "extract",
+            "step_type": "extract",
+            "ladder": [
+                ("openai", "model-hop1", "OPENAI_API_KEY"),
+                ("openai", "model-hop2", "OPENAI_API_KEY"),
+            ],
+            "provider": "openai",
+            "model_id": "model-hop1",
+            "api_key_env": "OPENAI_API_KEY",
+            "reason": "test_override",
+            "strict_required": False,
+            "strict_route_attempts": [],
+        },
     )
 
     def fake_call_llm(**kwargs):  # type: ignore[no-untyped-def]
@@ -168,11 +190,20 @@ def test_disable_escalation_forces_single_hop(monkeypatch: pytest.MonkeyPatch, t
     monkeypatch.setattr(runner, "build_partition_context", _fake_context)
     monkeypatch.setattr(
         runner,
-        "resolve_step_ladder",
-        lambda routing_policy, phase, step_id: [
-            ("openai", "model-hop1", "OPENAI_API_KEY"),
-            ("openai", "model-hop2", "OPENAI_API_KEY"),
-        ],
+        "resolve_effective_step_route",
+        lambda *args, **kwargs: {
+            "step_tier": "extract",
+            "step_type": "extract",
+            "ladder": [
+                ("openai", "model-hop1", "OPENAI_API_KEY"),
+                ("openai", "model-hop2", "OPENAI_API_KEY"),
+            ],
+            "provider": "openai",
+            "model_id": "model-hop1",
+            "api_key_env": "OPENAI_API_KEY",
+            "reason": "test_override",
+            "strict_required": False,
+        },
     )
 
     def fake_call_llm(**kwargs):  # type: ignore[no-untyped-def]

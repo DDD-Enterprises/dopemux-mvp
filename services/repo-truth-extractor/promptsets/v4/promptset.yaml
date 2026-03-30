@@ -662,6 +662,7 @@ phases:
     - Q2
     - Q3
     - Q9
+    - Q11
     steps:
     - step_id: Q0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md
@@ -694,6 +695,12 @@ phases:
       outputs:
       - PIPELINE_DOCTOR_REPORT.json
       - QA_SERVICE_COVERAGE.json
+    - step_id: Q11
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q11_ARTIFACT_COLLISION_REPORT.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - QA_ARTIFACT_COLLISION_REPORT.json
   R:
     required_steps:
     - R0
