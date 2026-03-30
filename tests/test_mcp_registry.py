@@ -17,7 +17,8 @@ def test_registry_contains_required_servers():
         "dopemux-gpt-researcher",
         "dopemux-leantime-bridge",
         "dopemux-claude-context",
-    }    available = {server.name for server in registry.list_servers()}
+    }
+    available = {server.name for server in registry.list_servers()}
     missing = required - available
     assert not missing, f"Missing required MCP entries: {sorted(missing)}"
 

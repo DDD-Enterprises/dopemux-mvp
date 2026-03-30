@@ -54,37 +54,5 @@ Produce phase `S3` proof-hook artifacts that transform architecture and migratio
 10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 11. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Each hook row must include evidence anchors for the source claim.
-- Verification suggestions must cite the claim evidence they validate.
-- Risk links must reference `R8` anchors when available.
-- Missing evidence must force `UNKNOWN` confidence and explicit gap notes.
-- Structured evidence snippets must include `path`, `line_range`, and `excerpt` when present.
-- No hook may cite artifacts outside supplied inputs.
-- No claim can be marked high confidence without direct evidence support.
-
-## Determinism Rules
-- Do not emit runtime identity fields such as `generated_at`, `timestamp`, `created_at`, `updated_at`, or `run_id`.
-- Use fixed column order and deterministic row sorting by `claim_id`.
-- Normalize confidence tokens to `HIGH`, `MEDIUM`, `LOW`, or `UNKNOWN`.
-- Keep suggestion wording concise and stable across runs.
-- Keep both output files semantically identical for compatibility.
-- Avoid narrative digressions that can reorder content non-deterministically.
-
-## Anti-Fabrication Rules
-- Do not invent commands, expected signals, or claim IDs absent from evidence.
-- Do not claim hooks were executed or verified.
-- Do not infer infrastructure surfaces not represented in S0/S1/S2.
-- Do not hide uncertainty behind broad confidence labels.
-- Do not emit risk mappings without explicit anchors.
-- Do not merge unrelated claims into a single hook entry.
-
-## Failure Modes
-- Claims cannot be mapped to verification suggestions: retain in unknown hooks register.
-- Missing decision dossier input: degrade to partial hooks with explicit scope warning.
-- Risk linkage absent: keep hook but mark risk link `UNKNOWN` with required evidence list.
-- Duplicate claim IDs: merge evidence deterministically and preserve strongest expected signal text.
-- Alias output mismatch: regenerate both outputs from one normalized hook table.
-- Overly broad command suggestions: reduce to minimal bounded checks and note limitations.
-- Multiple R-phase reports provide contradictory inputs to the synthesis: document both perspectives with evidence and flag with `status: unresolved_contradiction`.
-- Synthesis output would exceed the declared output format constraints: emit a complete-but-summarized version and note truncated sections in `coverage_notes`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

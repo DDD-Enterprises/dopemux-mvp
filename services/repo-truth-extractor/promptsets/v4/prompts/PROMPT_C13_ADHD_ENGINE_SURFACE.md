@@ -63,40 +63,5 @@ Extract the ADHD engine subsystem: focus timer mechanics, dopamine reward loop p
 13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps
 14. Emit exactly the declared outputs and no additional files
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent ADHD mechanisms, timer configurations, reward patterns, or cognitive metrics.
-- Do not infer ADHD functionality from variable names alone; require direct code evidence (function bodies, class definitions, config values).
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-- Do not assume a module implements ADHD accommodation without verifying its actual behavior in code.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- No ADHD engine found: if `src/dopemux/adhd/` and `services/adhd_engine/` do not exist, emit empty container with `coverage_notes: "ADHD engine directories not found"`.
-- Partial implementation: if ADHD features are partially implemented, emit with `status: partial_implementation` and evidence of what exists vs. stubs.
-- Hidden coupling: if ADHD engine modifies other subsystems through side effects, emit with `status: implicit_coupling`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

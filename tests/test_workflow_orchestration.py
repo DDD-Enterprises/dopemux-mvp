@@ -1,59 +1,41 @@
-import subprocess
 from pathlib import Path
-from types import SimpleNamespace
 
-from dopemux.workflow import WorkflowKernel
-from dopemux.workflow.orchestration import WorkflowOrchestrator
+from dopemux.workflow import WorkflowOrchestrator, WorkflowState, WorkflowTask
 
 
-class FakeInstanceManager:
-    def __init__(self, workspace_root: Path) -> None:
-        self.workspace_root = workspace_root
+class DummyInstanceManager:
+    AVAILABLE_PORTS = [3000, 3030]
 
-    def get_next_available_instance(self, running):
-        return ("B", 4310)
+    def create_worktree(self, instance_id: str, branch_name: str) -> Path:
+        return Path(f"/tmp/{instance_id}/{branch_name.replace('/', '-')}")
 
-    def get_instance_env_vars(self, instance_id, port_base, worktree_path):
+    def get_instance_env_vars(self, instance_id: str, port_base: int, worktree_path):
         return {
             "DOPEMUX_INSTANCE_ID": instance_id,
+            "DOPEMUX_WORKSPACE_ROOT": str(worktree_path or "/tmp/main"),
             "DOPEMUX_PORT_BASE": str(port_base),
-            "DOPEMUX_WORKSPACE_ROOT": str(worktree_path),
         }
 
-    def create_worktree(self, instance_id, branch_name):
-        path = self.workspace_root / "worktrees" / instance_id
-        path.mkdir(parents=True, exist_ok=True)
-        return path
+    def get_next_available_instance(self, running_instances):
+        return ("B", 3030)
+
+    def _instance_id_to_port(self, instance_id: str) -> int:
+        return 3030
 
 
-class FakeTmuxController:
-    def __init__(self) -> None:
-        self.calls = []
-
-    def get_active_session_name(self):
-        return "dopemux-main"
-
-    def new_window(self, **kwargs):
-        self.calls.append(kwargs)
-
-
-def _state(monkeypatch, tmp_path: Path):
-    workspace = tmp_path / "workspace"
-    workspace.mkdir()
-    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(workspace))
-    monkeypatch.setenv("DOPEMUX_MAIN_REPO", str(workspace))
-    monkeypatch.setenv("DOPEMUX_INSTANCE_ID", "A")
-    monkeypatch.setattr(
-        WorkflowKernel,
-        "probe_pm_authority",
-        lambda self: {"authority": "local-mirror", "reachable": False, "url": "http://localhost:8000"},
+def test_prepare_executor_launch_reuses_existing_instance_conventions(monkeypatch, tmp_path):
+    monkeypatch.setattr("dopemux.workflow.store.detect_instances_sync", lambda workspace_root: [])
+    orchestrator = WorkflowOrchestrator(tmp_path, instance_manager=DummyInstanceManager())
+    state = WorkflowState.new(
+        workflow_id="wf-1",
+        workspace_root=tmp_path,
+        instance_id="main",
+        mode="internal",
+        max_iterations=5,
+        max_minutes=30,
+        completion_token="DONE",
     )
-    kernel = WorkflowKernel(workspace)
-    state = kernel.init_workflow(prompt="Implement isolated worker support")
-    task = state.current_task()
-    assert task is not None
-    task.verification_commands = ["pytest -q tests/test_workflow_service.py"]
-    return kernel, state, task, workspace
+    task = WorkflowTask(task_id="task-1", title="Implement")
 
 
 def test_build_worker_launch_spec_includes_workflow_context(monkeypatch, tmp_path: Path):
@@ -75,10 +57,10 @@ def test_build_worker_launch_spec_includes_workflow_context(monkeypatch, tmp_pat
     spec = orchestrator.build_worker_launch_spec(state, task)
 
     assert spec.instance_id == "B"
-    assert spec.branch_name.startswith("codex/workflow-")
-    assert "--role workflow-executor" in spec.command
-    assert spec.environment["DOPEMUX_WORKFLOW_ID"] == state.workflow_id
-    assert spec.environment["DOPEMUX_WORKFLOW_TASK_ID"] == task.task_id
+    assert spec.command == ["dopemux", "start", "--role", "workflow-executor"]
+    assert spec.worktree_path.endswith("workflow-wf-1-task-1")
+    assert spec.env["DOPEMUX_INSTANCE_ID"] == "B"
+    assert task.worktree_path == spec.worktree_path
 
 
 def test_spawn_worker_creates_worktree_and_tmux_window(monkeypatch, tmp_path: Path):
@@ -91,13 +73,10 @@ def test_spawn_worker_creates_worktree_and_tmux_window(monkeypatch, tmp_path: Pa
         "detect_instances_sync",
         lambda workspace_root: [],
     )
+    task = WorkflowTask(task_id="task-2", title="Review")
 
-    orchestrator = WorkflowOrchestrator(
-        workspace,
-        tmux_controller=tmux,
-        instance_manager=manager,
-    )
-    spec = orchestrator.spawn_worker(state, task)
+    spec = orchestrator.prepare_executor_launch(state, task)
+    shell_command = orchestrator.shell_command(spec)
 
     assert spec.worktree_path.exists()
     assert tmux.calls

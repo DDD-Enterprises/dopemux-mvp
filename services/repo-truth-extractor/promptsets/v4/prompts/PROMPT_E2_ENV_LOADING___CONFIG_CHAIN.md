@@ -39,11 +39,21 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the env loading and config chain partition as primary scan surface
-2. Extract env loading and config chain facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted env loading and config chain elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each ENV_CHAIN item, populate `id`, required fields, and `evidence`
+1.  **Initialize Scan Context**: Load `EXECUTION_INVENTORY.json`. Focus on source code (`*.py`, `*.ts`), `.env.example`, and `config/*.yaml`.
+2.  **Scan for Environment Access**:
+    *   In Python: Identify `os.getenv`, `os.environ`, `dotenv.load_dotenv`, and Pydantic `BaseSettings`.
+    *   In TypeScript/JS: Identify `process.env`.
+    *   In Docker/Compose: Identify `environment:` and `env_file:` sections.
+3.  **Identify Configuration Cascades**:
+    *   Find functions like `load_config()`, `get_settings()`, or `init_app()`.
+    *   Trace how variables are merged (e.g., CLI args > Env Vars > Default Config).
+4.  **Extract Variable Metadata**: For each variable, record:
+    *   `name`: The literal env var name.
+    *   `default`: The hardcoded fallback value.
+    *   `is_required`: Boolean based on `raise` if missing or Pydantic validation.
+    *   `source`: File and line where it is first defined or accessed.
+5.  **Evidence Anchoring**: Attach exact excerpts for every access point and default value.
+6.  **Validate**: Deduplicate by variable name and file path. Emit `ENV_LOADING_CONFIG_CHAIN.json`.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -52,41 +62,8 @@ Focus on concrete, machine-verifiable implementation facts.
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
-- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

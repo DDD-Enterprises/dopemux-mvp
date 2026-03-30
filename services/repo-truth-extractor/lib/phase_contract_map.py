@@ -225,7 +225,7 @@ def _repo_truth_scope_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
         expected_tokens = [str(value).strip() for value in expected if str(value).strip()]
         json_artifacts = [token for token in expected_tokens if token.endswith(".json")]
         markdown_artifacts = [token for token in expected_tokens if token.endswith(".md")]
-        if not phase or not step_id or (not json_artifacts and not markdown_artifacts):
+        if not phase or not step_id or not json_artifacts:
             continue
         prompt_required = prompt_declared.get("required_item_keys")
         scope[(phase, step_id)] = {
@@ -261,13 +261,11 @@ def _warn_on_lane_map_scope_mismatch(
 @lru_cache(maxsize=1)
 def compile_phase_contract_map() -> Dict[str, Any]:
     artifact_rules = _artifact_rules_by_key()
+    lane_map = _model_map_by_key()
     prompt_paths = _prompt_path_by_step()
     scope_map = _repo_truth_scope_by_key()
-    lane_map_full = _model_map_by_key()
-    lane_map = {
-        key: lane_map_full[key] for key in scope_map.keys() if key in lane_map_full
-    }
-    _warn_on_lane_map_scope_mismatch(lane_map_full, scope_map)
+    scoped_lane_map = {key: lane_map[key] for key in scope_map.keys() if key in lane_map}
+    _warn_on_lane_map_scope_mismatch(lane_map, scope_map)
 
     steps_payload: Dict[str, Dict[str, Any]] = {}
     for (phase_code, step_id), scope in sorted(scope_map.items()):

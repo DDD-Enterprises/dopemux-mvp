@@ -49,54 +49,18 @@ Extract agent orchestration surfaces: the `AgentType` enum, `AgentManager` class
 - For `lifecycle_state` items, include: `state_name`, `transitions_to`, `trigger`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the agent orchestration partition as primary scan surface
-2. Locate the `AgentType` enum (or equivalent type union) — extract every enum value with its string representation and evidence (path + line_range + excerpt)
-3. Locate the `AgentManager` class (or equivalent orchestrator) — extract all public methods with signatures, parameters, and return types
-4. Scan for agent launch patterns: factory methods, `spawn()`, `create_agent()`, subprocess invocations, or MCP tool registrations that instantiate agents
-5. Scan for inter-agent communication protocols: eventbus subscriptions, direct method calls between agent instances, MCP tool invocations, shared state patterns
-6. Extract lifecycle state machines: initialization → running → paused → completed → error states with transition triggers
-7. Cross-reference with `EVENTBUS_SURFACE.json` and `EVENT_PRODUCERS.json` / `EVENT_CONSUMERS.json` to identify agent-eventbus bindings
-8. Build deterministic IDs using stable content keys (path/agent_type/symbol)
-9. Attach evidence to every non-derived field and every relationship edge
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash)
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps
-12. Emit exactly the declared outputs and no additional files
+1. Load upstream inventory and partitions; use the agent orchestration partition as primary scan surface.
+2. Locate the `AgentType` enum (or equivalent type union) — extract every enum value with its string representation and evidence.
+3. Locate the `AgentManager` class (or equivalent orchestrator) — extract all public methods with signatures, parameters, and return types.
+4. Scan for agent launch patterns: factory methods (e.g., `AgentFactory.get_agent`), `spawn()`, `create_agent()`, `run_in_background=True`, subprocess invocations, or MCP tool registrations that instantiate agents.
+5. Scan for inter-agent communication protocols: search for eventbus subscriptions, direct method calls between agent instances, and usage of `AgentMessage` or equivalent payload types.
+6. Extract lifecycle state machines: trace transitions through `READY`, `BUSY`, `IDLE`, `DONE`, and `ERROR` states in agent logic.
+7. Cross-reference with `EVENTBUS_SURFACE.json` to identify agent-eventbus bindings and specific message topics.
+8. Build deterministic IDs using stable content keys (path/agent_type/symbol).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID.
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-- `AgentType` enum values MUST have evidence pointing to the enum class definition, not usage sites.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent agent types, orchestration methods, communication protocols, or lifecycle states.
-- Do not infer agent behavior from class names alone; require direct code evidence (enum definitions, method bodies, decorator registrations).
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-- Do not assume an agent type exists because a directory is named after it; verify `AgentType` enum evidence.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- No `AgentType` enum found: emit items with `agent_type: UNKNOWN` and note the enum pattern was not located.
-- Dynamic agent registration: if agents are registered at runtime (not statically), emit with `status: dynamic_registration` and capture the registration call evidence.
-- Hidden agent communication: if agents communicate through shared state rather than explicit protocols, emit with `status: implicit_communication`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

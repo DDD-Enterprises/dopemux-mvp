@@ -134,11 +134,11 @@ class TestProfile:
             name="minimal",
             display_name="Minimal",
             description="Test profile",
-            mcps=["conport"]
+            mcps=["dopemux-conport"]
         )
         assert profile.name == "minimal"
         assert profile.display_name == "Minimal"
-        assert profile.mcps == ["conport"]
+        assert profile.mcps == ["dopemux-conport"]
         assert profile.adhd_config is None
         assert profile.auto_detection is None
 
@@ -148,7 +148,7 @@ class TestProfile:
             name="developer",
             display_name="Developer",
             description="Code implementation",
-            mcps=["conport", "serena-v2", "dope-context"],
+            mcps=["dopemux-conport", "dopemux-serena", "dopemux-claude-context"],
             adhd_config=ADHDConfig(
                 energy_preference=EnergyPreference.MEDIUM,
                 attention_mode=AttentionMode.FOCUSED,
@@ -175,7 +175,7 @@ class TestProfile:
                 name=name,
                 display_name="Test",
                 description="Test",
-                mcps=["conport"]
+                mcps=["dopemux-conport"]
             )
             assert profile.name == name
 
@@ -192,20 +192,20 @@ class TestProfile:
                     name=name,
                     display_name="Test",
                     description="Test",
-                    mcps=["conport"]
+                    mcps=["dopemux-conport"]
                 )
             assert "lowercase, alphanumeric with hyphens" in str(exc_info.value)
 
-    def test_conport_required(self):
-        """Test that conport is required in MCP list."""
+    def test_dopemux_conport_required(self):
+        """Test that dopemux-conport is required in MCP list."""
         with pytest.raises(ValidationError) as exc_info:
             Profile(
                 name="test",
                 display_name="Test",
                 description="Test",
-                mcps=["serena-v2", "zen"]  # Missing conport
+                mcps=["dopemux-serena", "dopemux-zen"]  # Missing dopemux-conport
             )
-        assert "conport" in str(exc_info.value).lower()
+        assert "dopemux-conport" in str(exc_info.value).lower()
         assert "required" in str(exc_info.value).lower()
 
     def test_duplicate_mcps_rejected(self):
@@ -215,7 +215,7 @@ class TestProfile:
                 name="test",
                 display_name="Test",
                 description="Test",
-                mcps=["conport", "zen", "zen"]  # Duplicate zen
+                mcps=["dopemux-conport", "dopemux-zen", "dopemux-zen"]  # Duplicate dopemux-zen
             )
         assert "Duplicate MCP servers" in str(exc_info.value)
 
@@ -241,7 +241,7 @@ class TestProfileCollection:
                     name="developer",
                     display_name="Developer",
                     description="Test",
-                    mcps=["conport"]
+                    mcps=["dopemux-conport"]
                 )
             ]
         )
@@ -256,13 +256,13 @@ class TestProfileCollection:
                     name="developer",
                     display_name="Developer",
                     description="Dev profile",
-                    mcps=["conport", "serena-v2"]
+                    mcps=["dopemux-conport", "dopemux-serena"]
                 ),
                 Profile(
                     name="researcher",
                     display_name="Researcher",
                     description="Research profile",
-                    mcps=["conport", "zen", "gpt-researcher"]
+                    mcps=["dopemux-conport", "dopemux-zen", "dopemux-gpt-researcher"]
                 )
             ]
         )
@@ -277,13 +277,13 @@ class TestProfileCollection:
                         name="developer",
                         display_name="Developer 1",
                         description="Test",
-                        mcps=["conport"]
+                        mcps=["dopemux-conport"]
                     ),
                     Profile(
                         name="developer",
                         display_name="Developer 2",
                         description="Test",
-                        mcps=["conport"]
+                        mcps=["dopemux-conport"]
                     )
                 ]
             )
@@ -298,13 +298,13 @@ class TestProfileCollection:
                     name="developer",
                     display_name="Developer",
                     description="Test",
-                    mcps=["conport"]
+                    mcps=["dopemux-conport"]
                 ),
                 Profile(
                     name="researcher",
                     display_name="Researcher",
                     description="Test",
-                    mcps=["conport"]
+                    mcps=["dopemux-conport"]
                 )
             ]
         )
@@ -324,13 +324,13 @@ class TestProfileCollection:
                     name="developer",
                     display_name="Developer",
                     description="Test",
-                    mcps=["conport"]
+                    mcps=["dopemux-conport"]
                 ),
                 Profile(
                     name="researcher",
                     display_name="Researcher",
                     description="Test",
-                    mcps=["conport"]
+                    mcps=["dopemux-conport"]
                 )
             ]
         )
@@ -346,13 +346,13 @@ class TestProfileCollection:
                     name="valid",
                     display_name="Valid",
                     description="Test",
-                    mcps=["conport", "serena-v2"]
+                    mcps=["dopemux-conport", "dopemux-serena"]
                 ),
                 Profile(
                     name="invalid",
                     display_name="Invalid",
                     description="Test",
-                    mcps=["conport", "unknown-mcp", "another-unknown"]
+                    mcps=["dopemux-conport", "unknown-mcp", "another-unknown"]
                 )
             ]
         )

@@ -1,0 +1,195 @@
+     1	"""PAL MCP client for Task Orchestrator complex task planning."""
+     2	
+     3	from typing import Dict, Any, List, Optional
+     4	import sys
+     5	import os
+     6	import logging
+     7	
+     8	logger = logging.getLogger(__name__)
+     9	
+    10	# Try to import the genetic_agent PALClient, fall back to mock if not available
+    11	try:
+    12	    # Add the genetic_agent path to import the shared MCP client
+    13	    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'genetic_agent', 'genetic_agent'))
+    14	    from genetic_agent.shared.mcp.pal_client import PALClient as BasePALClient
+    15	except ImportError:
+    16	    # Mock implementation for development
+    17	    class BasePALClient:
+    18	        def __init__(self, base_url: str, config):
+    19	            self.base_url = base_url
+    20	            self.config = config
+    21	
+    22	        async def plan_complex_task(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
+    23	            """Mock implementation of complex task planning."""
+    24	            return {
+    25	                "plan": f"Mock plan for: {task_data.get('description', 'Unknown task')}",
+    26	                "subtasks": [
+    27	                    {"id": "subtask_1", "description": "First subtask", "duration": 15},
+    28	                    {"id": "subtask_2", "description": "Second subtask", "duration": 15}
+    29	                ],
+    30	                "estimated_total": task_data.get('estimated_minutes', 30)
+    31	            }
+    32	
+    33	class TaskOrchestratorPALClient(BasePALClient):
+    34	    """PAL MCP client specialized for task orchestration and planning."""
+    35	
+    36	    def __init__(self, base_url: str, config):
+    37	        """Initialize with task orchestration settings."""
+    38	        super().__init__(base_url, config)
+    39	
+    40	    async def plan_task_breakdown(self, complex_task: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+    41	        """Use Zen planner to break down complex tasks into manageable subtasks."""
+    42	        task_description = complex_task.get('description', 'Unknown task')
+    43	        complexity = complex_task.get('complexity', 0.5)
+    44	        estimated_duration = complex_task.get('estimated_minutes', 30)
+    45	
+    46	        planning_prompt = f"""Break down this complex task into manageable subtasks for ADHD-friendly execution:
+    47	
+    48	Task: {task_description}
+    49	Complexity: {complexity}
+    50	Total Duration: {estimated_duration} minutes
+    51	
+    52	Context:
+    53	- Current energy: {context.get('energy_level', 'unknown')}
+    54	- Attention state: {context.get('attention_state', 'unknown')}
+    55	- Cognitive load: {context.get('cognitive_load', 0.5)}
+    56	- Available time: {context.get('available_time', 60)} minutes
+    57	
+    58	Create a detailed breakdown that:
+    59	1. Divides the task into 3-7 logical subtasks
+    60	2. Estimates duration for each subtask (10-25 minutes each)
+    61	3. Identifies dependencies and optimal execution order
+    62	4. Includes ADHD-friendly accommodations
+    63	5. Provides progress checkpoints
+    64	
+    65	Format: {{
+    66	  "subtasks": [
+    67	    {{
+    68	      "name": "subtask name",
+    69	      "description": "detailed description",
+    70	      "duration_minutes": 15,
+    71	      "dependencies": ["prerequisite task"],
+    72	      "adhd_accommodations": ["specific accommodations"]
+    73	    }}
+    74	  ],
+    75	  "execution_order": ["task1", "task2", "task3"],
+    76	  "total_duration": 45,
+    77	  "break_points": ["after task2", "after task4"],
+    78	  "progress_checkpoints": ["complete task1", "complete task3"],
+    79	  "risk_mitigation": ["strategies for common issues"],
+    80	  "confidence": 0.8
+    81	}}"""
+    82	
+    83	        try:
+    84	            async with self:
+    85	                response = await self.planner(
+    86	                    step=planning_prompt,
+    87	                    step_number=1,
+    88	                    total_steps=1,
+    89	                    next_step_required=False,
+    90	                    model="gemini-2.5-pro"
+    91	                )
+    92	
+    93	                return response.get('plan', {
+    94	                    'subtasks': [{
+    95	                        'name': 'Basic execution',
+    96	                        'description': task_description,
+    97	                        'duration_minutes': estimated_duration,
+    98	                        'dependencies': [],
+    99	                        'adhd_accommodations': ['Standard breaks']
+   100	                    }],
+   101	                    'execution_order': ['Basic execution'],
+   102	                    'total_duration': estimated_duration,
+   103	                    'break_points': [],
+   104	                    'progress_checkpoints': [],
+   105	                    'risk_mitigation': ['Standard practices'],
+   106	                    'confidence': 0.3
+   107	                })
+   108	
+   109	        except Exception as e:
+   110	            logger.error(f"Zen task breakdown planning failed: {e}")
+   111	            return {
+   112	                'subtasks': [{
+   113	                    'name': 'Fallback task',
+   114	                    'description': task_description,
+   115	                    'duration_minutes': min(estimated_duration, 25),
+   116	                    'dependencies': [],
+   117	                    'adhd_accommodations': ['Take breaks as needed']
+   118	                }],
+   119	                'execution_order': ['Fallback task'],
+   120	                'total_duration': estimated_duration,
+   121	                'break_points': [],
+   122	                'progress_checkpoints': [],
+   123	                'risk_mitigation': ['Fallback to basic execution'],
+   124	                'confidence': 0.2
+   125	            }
+   126	
+   127	    async def prioritize_task_queue(self, task_queue: List[Dict[str, Any]], adhd_context: Dict[str, Any]) -> Dict[str, Any]:
+   128	        """Use Zen planner to intelligently prioritize tasks based on ADHD state and energy patterns."""
+   129	        task_summaries = [f"{i+1}. {t['description']} (complexity: {t.get('complexity', 0.5)}, duration: {t.get('estimated_minutes', 30)}min)"
+   130	                         for i, t in enumerate(task_queue)]
+   131	
+   132	        prioritization_prompt = f"""Prioritize this task queue for optimal ADHD-friendly execution:
+   133	
+   134	Tasks:
+   135	{chr(10).join(task_summaries)}
+   136	
+   137	ADHD Context:
+   138	- Current energy: {adhd_context.get('energy_level', 'unknown')}
+   139	- Attention state: {adhd_context.get('attention_state', 'unknown')}
+   140	- Cognitive load: {adhd_context.get('cognitive_load', 0.5)}
+   141	- Time available: {adhd_context.get('available_time', 120)} minutes
+   142	- Peak energy hours: {adhd_context.get('peak_hours', 'unknown')}
+   143	
+   144	Prioritize tasks considering:
+   145	1. Energy alignment (high-energy tasks first)
+   146	2. Attention compatibility (focus vs creative tasks)
+   147	3. Cognitive load distribution (avoid overload)
+   148	4. Task interdependencies (prerequisites first)
+   149	5. ADHD-friendly chunking (25-minute sessions)
+   150	6. Break scheduling (prevent hyperfocus)
+   151	
+   152	Format: {{
+   153	  "prioritized_order": [task_indices],
+   154	  "execution_batches": [[task_indices_for_batch1], [task_indices_for_batch2]],
+   155	  "estimated_completion": "X hours Y minutes",
+   156	  "break_schedule": ["after batch 1", "after batch 2"],
+   157	  "energy_distribution": "high-medium-low or balanced",
+   158	  "rationale": "detailed reasoning for prioritization"
+   159	}}"""
+   160	
+   161	        try:
+   162	            async with self:
+   163	                response = await self.planner(
+   164	                    step=prioritization_prompt,
+   165	                    step_number=1,
+   166	                    total_steps=1,
+   167	                    next_step_required=False,
+   168	                    model="gemini-2.5-pro"
+   169	                )
+   170	
+   171	                plan = response.get('plan', '')
+   172	                # Parse the prioritization plan
+   173	                if 'prioritized_order' in plan:
+   174	                    return plan
+   175	                else:
+   176	                    # Fallback to simple prioritization
+   177	                    return {
+   178	                        'prioritized_order': list(range(len(task_queue))),
+   179	                        'execution_batches': [list(range(len(task_queue)))],
+   180	                        'estimated_completion': f"{sum(t.get('estimated_minutes', 30) for t in task_queue)} minutes",
+   181	                        'break_schedule': [],
+   182	                        'energy_distribution': 'sequential',
+   183	                        'rationale': 'Fallback to original order'
+   184	                    }
+   185	
+   186	        except Exception as e:
+   187	            logger.error(f"Zen task prioritization failed: {e}")
+   188	            return {
+   189	                'prioritized_order': list(range(len(task_queue))),
+   190	                'execution_batches': [list(range(len(task_queue)))],
+   191	                'estimated_completion': f"{sum(t.get('estimated_minutes', 30) for t in task_queue)} minutes",
+   192	                'break_schedule': [],
+   193	                'energy_distribution': 'sequential',
+   194	                'rationale': 'Zen prioritization unavailable'
+   195	            }

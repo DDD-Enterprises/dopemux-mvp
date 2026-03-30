@@ -40,11 +40,21 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the service startup graph partition as primary scan surface
-2. Extract service startup graph facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted service startup graph elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each STARTUP_GRAPH item, populate `id`, required fields, and `evidence`
+1.  **Initialize Scan Context**: Load `EXECUTION_INVENTORY.json`. Focus on `docker-compose.yml`, `Dockerfile`, and systemd/init scripts.
+2.  **Extract Service Dependencies**:
+    *   Parse `docker-compose.yml` for `depends_on`, `links`, and `networks`.
+    *   Identify dependency types: `service_started`, `service_healthy`, `service_completed_successfully`.
+3.  **Identify Wait-for Patterns**:
+    *   Scan entrypoint scripts (`*.sh`) for `wait-for-it.sh`, `nc -z`, or `while ! curl ...; do sleep 1; done`.
+    *   Extract timeout and retry logic associated with these waits.
+4.  **Extract Health Checks**:
+    *   Record `test`, `interval`, `timeout`, and `retries` from `docker-compose.yml` or `Dockerfile`.
+5.  **Build Graph Nodes**: For each service, record:
+    *   `service_id`: The canonical name from the registry or compose file.
+    *   `startup_command`: The literal `command:` or `ENTRYPOINT`.
+    *   `dependencies`: List of parent service IDs and condition types.
+6.  **Evidence Anchoring**: Attach exact line ranges for every dependency and health check definition.
+7.  **Validate**: Ensure graph is a DAG (note circulars in `coverage_notes`). Emit `SERVICE_STARTUP_GRAPH.json`.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -53,41 +63,8 @@ Focus on concrete, machine-verifiable implementation facts.
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
-- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

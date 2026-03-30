@@ -20,56 +20,13 @@ Focus on concrete, machine-verifiable implementation facts.
 - `scripts/**`
 - `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
 - `installers/**`
 - `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
-- `installers/**`
-- `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.claude/**`
-- `.github/**`
-- `.taskx/**`
-- `config/**`
-- `scripts/**`
-- `docker/**`
 - `compose.yml`
 - `docker-compose*.yml`
 - `README.md`
@@ -110,54 +67,26 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream A-Phase artifacts (A0-A8); use the full repo control inventory as scan surface for implicit behavior discovery
-2. Scan instruction files and config for implicit behaviors: defaults not documented, fallback chains, silent retries, auto-migrations
-3. Cross-reference declared behavior with actual code to find undocumented side effects
-4. For each implicit behavior, assess risk: classify impact if the behavior changes unexpectedly
-5. For each IMPLICIT_BEHAVIOR_HINTS item, populate `id`, behavior description, risk, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load all upstream A-Phase artifacts (A0-A8); focus on "convention over configuration" and undocumented defaults.
+2. Scan configuration loaders and "defaults" modules (e.g., `src/dopemux/config/defaults.py`, `config/settings.yaml`) for:
+   - `config search order`: identify the sequence of paths checked for environment or config files (e.g., `./.env`, `~/.dopemux/env`).
+   - `default paths`: identify hardcoded fallbacks for log files, databases, or cache directories.
+3. Scan for "if-file-exists" behaviors: identify logic that triggers automatically based on the presence of marker files like `.dopetask-pin`, `.git`, or `.mcp-proxy-config.local`.
+4. Identify "silent" operational behaviors:
+   - `fallback_chains`: identify models or servers swapped automatically without explicit user configuration.
+   - `auto_migrations`: search for scripts or decorators that run schema updates on service startup.
+5. Extract environment variable toggles: identify `env` keys that enable hidden or implicit modes (e.g., `DEBUG_MODE`, `SKIP_VALIDATION`, `OFFLINE_ONLY`).
+6. Build relationship graph: link implicit behaviors to the files or environment conditions that trigger them.
+7. For each IMPLICIT_BEHAVIOR_HINTS item, populate `id` (hint:<stable_id>), description, risk, and `evidence`.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path|symbol|name).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID.
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Intentional undocumented behavior: if a behavior appears intentionally undocumented, emit with `status: likely_intentional`
-- Version-dependent behavior: if behavior depends on a specific version, emit with `version_constraint` and evidence
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

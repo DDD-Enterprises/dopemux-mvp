@@ -14,38 +14,14 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - `ui-dashboard/**`
 - `ui-dashboard-backend/**`
 
-- `src/**`
-- `services/**`
-- `components/**`
-- `dashboard/**`
-- `plugins/**`
-- `ui-dashboard/**`
-- `ui-dashboard-backend/**`
-
-- `src/**`
-- `services/**`
-- `components/**`
-- `dashboard/**`
-- `plugins/**`
-- `ui-dashboard/**`
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
 
 - `services/agents/**`
 - `src/dopemux/hooks/**`
 - `src/dopemux/agent_orchestrator.py`
 
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
 
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
 
-- `src/**`
-- `services/**`
+
 - `docker/**`
 - `compose.yml`
 - `docker-compose*.yml`
@@ -87,54 +63,25 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the workflow runner and multi-service coordination partition as primary scan surface
-2. Extract workflow runner and multi-service coordination facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted workflow runner and multi-service coordination elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each WORKFLOW_RUNNER_SURFACES item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the workflow runner and multi-service coordination partition as primary scan surface.
+2. Identify workflow scripts: scan `scripts/**` and `tools/**` for `*.sh`, `*.py`, or `*.rb` files that orchestrate or start multiple services.
+3. Scan `tmux.conf`, `tmux-*.yaml`, or `*.tmux` files to identify session/window/pane layouts and multi-service startup sequences.
+4. Search for orchestrator configurations: scan `orchestrator.yaml`, `workflow.yaml`, or equivalent files that define multi-step execution graphs or service dependencies.
+5. Identify `Makefile` and `Taskfile` targets that wrap multiple service commands (e.g., `start-all`, `deploy-stack`, `setup-env`).
+6. Trace execution ordering: identify `sleep` commands, `wait-for-it` patterns, or explicit health-check polling loops in startup scripts.
+7. Build relationship graph: map the coordination flow from the runner script/target to the individual services and their specific startup order.
+8. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in service coordination logic.
+9. For each WORKFLOW_RUNNER_SURFACES item, populate `id`, required fields, and `evidence`.
+10. Legacy Context is intent guidance only and is never evidence.
+11. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+12. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+13. Attach evidence to every non-derived field and every relationship edge.
+14. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+15. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+16. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
-- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

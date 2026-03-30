@@ -70,7 +70,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -99,7 +99,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -128,7 +128,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -157,7 +157,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -186,7 +186,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -215,7 +215,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -244,7 +244,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -273,7 +273,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -302,7 +302,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -418,7 +418,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openrouter
-    model_id: openai/gpt-5-mini
+    model_id: openai/gpt-5.4
     api_key_env: OPENROUTER_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -471,7 +471,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -500,7 +500,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -529,7 +529,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -558,7 +558,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openrouter
-    model_id: openai/gpt-5-mini
+    model_id: openai/gpt-5.4
     api_key_env: OPENROUTER_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -616,7 +616,7 @@ steps:
     strict_json_schema: false
     strict_passthrough_verified: false
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -732,7 +732,7 @@ steps:
     strict_json_schema: false
     strict_passthrough_verified: false
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -761,7 +761,7 @@ steps:
     strict_json_schema: false
     strict_passthrough_verified: false
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -790,7 +790,7 @@ steps:
     strict_json_schema: false
     strict_passthrough_verified: false
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -843,7 +843,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openrouter
-    model_id: openai/gpt-5-mini
+    model_id: openai/gpt-5.4
     api_key_env: OPENROUTER_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -872,7 +872,7 @@ steps:
     strict_json_schema: false
     strict_passthrough_verified: false
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -901,7 +901,7 @@ steps:
     strict_json_schema: false
     strict_passthrough_verified: false
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1264,7 +1264,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1293,7 +1293,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1322,7 +1322,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1351,7 +1351,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1380,7 +1380,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1409,7 +1409,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1438,7 +1438,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openrouter
-    model_id: openai/gpt-5-mini
+    model_id: openai/gpt-5.4
     api_key_env: OPENROUTER_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1520,7 +1520,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1549,7 +1549,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1578,7 +1578,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1600,6 +1600,35 @@ steps:
     strict_json_schema: false
     strict_passthrough_verified: false
 - phase: G
+  step_id: G5
+  lane_class: CE
+  strict_schema_required_primary: true
+  sidefill_enabled: true
+  repair_mode: targeted_then_envelope
+  primary_routes:
+  - provider: openrouter
+    model_id: openai/gpt-5.3-codex
+    api_key_env: OPENROUTER_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openrouter
+    model_id: openai/gpt-5.4
+    api_key_env: OPENROUTER_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  repair_routes:
+  - provider: openrouter
+    model_id: openai/gpt-5.4
+    api_key_env: OPENROUTER_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  sidefill_routes:
+  - provider: openrouter
+    model_id: openai/gpt-5.4
+    api_key_env: OPENROUTER_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+- phase: G
   step_id: G9
   lane_class: AGG
   strict_schema_required_primary: true
@@ -1607,7 +1636,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openrouter
-    model_id: openai/gpt-5-mini
+    model_id: openai/gpt-5.4
     api_key_env: OPENROUTER_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1689,7 +1718,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1747,7 +1776,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1776,7 +1805,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1805,7 +1834,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1834,7 +1863,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1863,7 +1892,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openrouter
-    model_id: openai/gpt-5-mini
+    model_id: openai/gpt-5.4
     api_key_env: OPENROUTER_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -2239,10 +2268,10 @@ steps:
     strict_passthrough_verified: true
 - phase: Q
   step_id: Q11
-  lane_class: CE
+  lane_class: AGG
   strict_schema_required_primary: true
-  sidefill_enabled: true
-  repair_mode: targeted_then_envelope
+  sidefill_enabled: false
+  repair_mode: envelope
   primary_routes:
   - provider: gemini
     model_id: gemini-3.1-pro-preview
@@ -2594,7 +2623,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2623,7 +2652,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2652,7 +2681,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2681,7 +2710,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4-1-fast-reasoning
+    model_id: grok-4.20-beta-0309-reasoning
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2710,7 +2739,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openrouter
-    model_id: openai/gpt-5-mini
+    model_id: openai/gpt-5.4
     api_key_env: OPENROUTER_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3333,6 +3362,35 @@ steps:
     strict_passthrough_verified: false
 - phase: R
   step_id: R10
+  lane_class: BULK_DOCS_GENERAL
+  strict_schema_required_primary: false
+  sidefill_enabled: false
+  repair_mode: targeted_only
+  primary_routes:
+  - provider: gemini
+    model_id: gemini-3-flash-preview
+    api_key_env: GEMINI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
+    model_id: grok-4.20-beta-0309-non-reasoning
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  repair_routes:
+  - provider: xai
+    model_id: grok-4.20-beta-0309-non-reasoning
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  sidefill_routes:
+  - provider: xai
+    model_id: grok-4.20-beta-0309-reasoning
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+- phase: R
+  step_id: R11
   lane_class: BULK_DOCS_GENERAL
   strict_schema_required_primary: false
   sidefill_enabled: false

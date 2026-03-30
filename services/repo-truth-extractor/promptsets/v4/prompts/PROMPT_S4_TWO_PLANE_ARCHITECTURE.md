@@ -43,23 +43,5 @@ Produce phase `S4` synthesis artifacts analyzing the Dual-Plane Architecture (PM
 6. Write the analysis with strict evidence anchors.
 7. Mirror the outputs into their respective alias files.
 
-## Evidence Rules
-- Every structural claim must carry a citation to the provided R/S input artifacts.
-- No inference outside of actual evidence (e.g. do not invent new planes or hand-off mechanisms).
-- Unsupported intersections must be marked `UNKNOWN` with missing evidence rationale.
-- All evidence citations must include `path`, `line_range`, and `excerpt` keys.
-
-## Determinism Rules
-- Sort all intersection lists deterministically by boundary name.
-- Do not output timestamps, run IDs, or `generated_at` fields.
-- Ensure identical semantics for BOTH alias files; the output must be stable across multiple runs with the same input.
-- Avoid any nondeterministic elements such as randomly ordered lists or speculative language.
-
-## Anti-Fabrication Rules
-- Do not hallucinate external integrations without evidence.
-- Do not invent new components that span planes unless specified in the truth inputs.
-- Do not assume a plane performs a task without an explicit workflow trace.
-
-## Failure Modes
-- Missing context from S0 or R3: Add partial completeness warning and list missing inputs.
-- If no explicit dual-plane distinction exists in evidence, output `UNKNOWN` and describe the observed monolithic state.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

@@ -83,16 +83,6 @@ class PMTechnicalContextResult(PMReadEnvelope):
     technical_findings: List[Dict[str, Any]] = Field(default_factory=list)
 
 
-_orchestrator = TaskOrchestratorAdapter()
-_conport = ConPortAdapter()
-
-
-class _PMMCPConfig:
-    def __init__(self, timeout: int = 30, health_check_interval: int = 300):
-        self.timeout = timeout
-        self.health_check_interval = health_check_interval
-
-
 def _project_provenance(source: str, query_mode: str, project_id: str) -> PMReadProvenance:
     return PMReadProvenance(source=source, query_mode=query_mode, project_id=project_id)
 

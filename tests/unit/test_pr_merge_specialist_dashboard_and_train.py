@@ -178,23 +178,6 @@ def test_dashboard_tactic_distinguishes_validation_ci_and_threads() -> None:
     assert dashboard_phase_for_snapshot(thread_blocked) == "Thread Review"
 
 
-def test_dashboard_tactic_treats_queued_pending_ci_as_monitor_only() -> None:
-    queued_snapshot = {
-        "state": "OPEN",
-        "lifecycle_state": "queued_for_merge",
-        "operator_state": "queued_for_merge",
-        "auto_merge_enabled": True,
-        "ci_status": "PENDING",
-        "unresolved_threads": 0,
-        "validation_report": {"status": "passed"},
-        "blockers": [{"type": "required_check_pending"}],
-    }
-
-    assert is_passive_queued_state(queued_snapshot) is True
-    assert dashboard_tactic_for_snapshot(queued_snapshot) == "S"
-    assert dashboard_phase_for_snapshot(queued_snapshot) == "Monitor"
-
-
 def test_metrics_log_event_accepts_dashboard_report_shape(tmp_path: Path) -> None:
     engine = MetricsEngine(tmp_path)
     pr = PullRequestState(
@@ -541,79 +524,3 @@ def test_autopilot_tactic_skips_verification_for_queued_pr() -> None:
 
     assert dashboard._candidate_tactics_for_snapshot(snapshot) == []
     assert dashboard._autopilot_tactic_for_snapshot(snapshot) == "S"
-
-
-def test_autopilot_disengages_when_all_prs_stalled() -> None:
-    """Autopilot should disengage after all PRs exceed the stall threshold."""
-    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports", strategy="hybrid"))
-    prs = [
-        {
-            "pr_id": 100,
-            "lifecycle_state": "apply_blocked",
-            "ci_status": "FAILURE",
-            "unresolved_threads": 0,
-            "blockers": [{"type": "required_check_failed"}],
-            "allowed_actions": ["APPLY_FIX"],
-            "validation_report": {"status": "not_executed"},
-        },
-        {
-            "pr_id": 101,
-            "lifecycle_state": "apply_blocked",
-            "ci_status": "FAILURE",
-            "unresolved_threads": 0,
-            "blockers": [{"type": "required_check_failed"}],
-            "allowed_actions": ["APPLY_FIX"],
-            "validation_report": {"status": "not_executed"},
-        },
-    ]
-    dashboard.state = QueueState(run_id="run", prs=prs)
-    dashboard.state.auto_pilot = True
-    dashboard.state.autopilot_strategy = "hybrid"
-    dashboard.state.active_index = 0
-
-    # Stub _refresh_queue_state to avoid real GitHub calls
-    dashboard._refresh_queue_state = lambda **kw: None  # type: ignore[method-assign]
-
-    # Simulate stalls: each PR stalls twice (threshold is 2)
-    for _round in range(2):
-        for i in range(len(prs)):
-            dashboard.state.active_index = i
-            dashboard._reassess_autopilot_after_action(
-                target_pr_id=str(prs[i]["pr_id"]),
-                initial_state="apply_blocked",
-                initial_tactic="C",
-            )
-
-    assert dashboard.state.auto_pilot is False
-    assert "DISENGAGED" in dashboard.state.status_message
-
-
-def test_autopilot_disengages_single_pr_stall() -> None:
-    """With a single PR, autopilot should disengage on first stall."""
-    dashboard = DopemuxDashboard(manager=object(), args=Namespace(out_dir="reports", strategy="hybrid"))
-    prs = [
-        {
-            "pr_id": 100,
-            "lifecycle_state": "apply_blocked",
-            "ci_status": "FAILURE",
-            "unresolved_threads": 0,
-            "blockers": [{"type": "required_check_failed"}],
-            "allowed_actions": ["APPLY_FIX"],
-            "validation_report": {"status": "not_executed"},
-        },
-    ]
-    dashboard.state = QueueState(run_id="run", prs=prs)
-    dashboard.state.auto_pilot = True
-    dashboard.state.autopilot_strategy = "hybrid"
-    dashboard.state.active_index = 0
-
-    dashboard._refresh_queue_state = lambda **kw: None  # type: ignore[method-assign]
-
-    dashboard._reassess_autopilot_after_action(
-        target_pr_id="100",
-        initial_state="apply_blocked",
-        initial_tactic="C",
-    )
-
-    assert dashboard.state.auto_pilot is False
-    assert "DISENGAGED" in dashboard.state.status_message

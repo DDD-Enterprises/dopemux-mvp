@@ -64,94 +64,94 @@ Top `40` underrepresented items from `reports/strict_closure/conport_full_todo_c
 ## Implementation Updates (Current Wave)
 
 1. Row `1` (`LiteLLM BLOCKED`) has been runtime-reverified and reclassified as `resolved_in_runtime`:
-- `docs/05-audit-reports/litellm-blocker-verification-2026-02-06.md`
+- `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
 1. Profile/auto-detection cluster (rows `19` through `35`) has been reclassified with verification:
 - `12 implemented`, `3 partial`
-- `docs/05-audit-reports/profile-workstream-verification-2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
 1. Row `39` (shared MCP response-budget utility) is now implemented:
-- `docs/05-audit-reports/mcp-response-budget-verification-2026-02-06.md`
+- `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
 1. Row `38` (MCP token-budget monitoring/logging) is now implemented:
-- `docs/05-audit-reports/mcp-budget-monitoring-verification-2026-02-06.md`
+- `docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md`
 1. Deep status-field extraction surfaced `4` additional checkpoint tasks from ConPort `custom_data`, now promoted into the master miss matrix:
-- `docs/05-audit-reports/conport-deep-status-task-extract-2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_DEEP_STATUS_TASK_EXTRACT_2026-02-06.md`
 1. Row `5` (`1.2.3 Config backup & safety`) is now implemented:
-- `docs/05-audit-reports/config-backup-safety-verification-2026-02-06.md`
+- `docs/05-audit-reports/CONFIG_BACKUP_SAFETY_VERIFICATION_2026-02-06.md`
 1. Row `6` (`1.2.4 Integration tests`) is now implemented:
-- `docs/05-audit-reports/profile-config-integration-verification-2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_CONFIG_INTEGRATION_VERIFICATION_2026-02-06.md`
 1. Row `7` (`1.4.1 End-to-end test suite`) is now implemented:
-- `docs/05-audit-reports/profile-start-e2e-verification-2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_START_E2E_VERIFICATION_2026-02-06.md`
 1. Row `8` (`1.4.2 Documentation`) is now implemented:
-- `docs/05-audit-reports/profile-documentation-verification-2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_DOCUMENTATION_VERIFICATION_2026-02-06.md`
 1. Row `9` (`2.1.3 ADHD Engine client`) is now implemented.
-Evidence: `docs/05-audit-reports/adhd-engine-profile-detector-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/ADHD_ENGINE_PROFILE_DETECTOR_VERIFICATION_2026-02-06.md`
 1. Row `10` (`2.1.5 File pattern analyzer`) is now implemented.
-Evidence: `docs/05-audit-reports/file-pattern-analyzer-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/FILE_PATTERN_ANALYZER_VERIFICATION_2026-02-06.md`
 1. Row `11` (`2.2.4 Unit tests`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-detector-threshold-tests-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_DETECTOR_THRESHOLD_TESTS_VERIFICATION_2026-02-06.md`
 1. Row `12` (`3.2.3 Config swap and restart`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-config-swap-restart-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_CONFIG_SWAP_RESTART_VERIFICATION_2026-02-06.md`
 1. Row `13` (`3.2.4 Error recovery and rollback`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-error-recovery-rollback-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_ERROR_RECOVERY_ROLLBACK_VERIFICATION_2026-02-06.md`
 1. Row `15` (`3.3.1 dopemux switch <profile> command`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-switch-command-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_SWITCH_COMMAND_VERIFICATION_2026-02-06.md`
 1. Row `16` (`3.3.2 Switch time optimization`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-switch-time-optimization-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_SWITCH_TIME_OPTIMIZATION_VERIFICATION_2026-02-06.md`
 1. Row `18` (`3.3.3 Integration tests`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-switch-integration-tests-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_SWITCH_INTEGRATION_TESTS_VERIFICATION_2026-02-06.md`
 1. Row `19` (`4.1.1 Detect current profile from config`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-current-detection-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_CURRENT_DETECTION_VERIFICATION_2026-02-06.md`
 1. Row `20` (`4.2.1 Background detection service`) is now implemented.
-Evidence: `docs/05-audit-reports/auto-detection-service-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
 1. Row `21` (`4.2.2 Suggestion UI design`) is now implemented.
-Evidence: `docs/05-audit-reports/auto-detection-service-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
 1. Row `22` (`4.2.3 Suggestion acceptance flow`) is now implemented.
-Evidence: `docs/05-audit-reports/auto-detection-service-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
 1. Row `23` (`4.2.4 Configuration options`) is now implemented.
-Evidence: `docs/05-audit-reports/auto-detection-service-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
 1. Row `24` (`4.3.1 profile create`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-management-commands-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
 1. Row `25` (`4.3.2 profile edit`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-management-commands-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
 1. Row `26` (`4.3.3 profile copy`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-management-commands-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
 1. Row `27` (`4.3.4 profile delete`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-management-commands-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
 1. Row `28` (`4.3.5 profile current`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-management-commands-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
 1. Row `29` (`4.4.1 Metrics collection`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-analytics-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
 1. Row `30` (`4.4.2 profile stats command`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-analytics-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
 1. Row `31` (`4.4.3 Analytics dashboard`) is now implemented.
-Evidence: `docs/05-audit-reports/profile-analytics-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
 1. Row `14` (`3.3.1 Configure dope-context auto-index for decisions`) is now implemented with workspace-scoped decision retrieval config and unified-search integration.
-Evidence: `docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md`
 1. Row `17` (`3.3.2 Test unified search (code + decisions + docs)`) is now implemented with dope-context tests covering code/docs/decision merged results.
-Evidence: `docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md`
 1. Row `32` (`4.4.4 Profile optimization suggestions`) is now implemented with deterministic suggestion generation and ConPort archival.
-Evidence: `docs/05-audit-reports/profile-optimization-suggestions-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_OPTIMIZATION_SUGGESTIONS_VERIFICATION_2026-02-06.md`
 1. Row `33` (`4.5.1 Usage pattern analysis`) is now implemented with `dopemux profile analyze-usage` and analyzer test coverage.
-Evidence: `docs/05-audit-reports/profile-usage-analysis-and-init-wizard-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md`
 1. Row `34` (`4.5.2 dopemux profile init wizard`) is now implemented and verified with unit coverage for profile construction and YAML persistence.
-Evidence: `docs/05-audit-reports/profile-usage-analysis-and-init-wizard-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md`
 1. Row `35` (`4.5.3 Migration guide documentation`) is now implemented with code-truth migration workflow content.
-Evidence: `docs/05-audit-reports/profile-documentation-completion-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
 1. Row `36` (`4.6.1 User documentation`) is now implemented with a complete profile user tutorial aligned to current CLI behavior.
-Evidence: `docs/05-audit-reports/profile-documentation-completion-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
 1. Row `37` (`4.6.2 Developer documentation`) is now implemented with architecture, interfaces, and signal-collector extension guidance.
-Evidence: `docs/05-audit-reports/profile-documentation-completion-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
 1. Row `40` (`Day 10: Week 2 Integration & Testing`) is now implemented via a reusable integration harness script and full execution evidence.
-Evidence: `docs/05-audit-reports/profile-week2-integration-testing-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_WEEK2_INTEGRATION_TESTING_VERIFICATION_2026-02-06.md`
 1. Row `2` (`EPIC 2: Auto-Detection Engine deliverables`) is now implemented with compatibility-facade modules for signal collection and profile scoring.
-Evidence: `docs/05-audit-reports/profile-epic-compat-shims-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md`
 1. Row `3` (`EPIC 3: Profile Switching deliverables`) is now implemented with session-state, Claude-config manager, and orchestrated switcher module facades.
-Evidence: `docs/05-audit-reports/profile-epic-compat-shims-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md`
 1. Row `4` (`EPIC 4: UX Integration deliverables`) is now implemented with statusline, suggestion-engine, analytics, and migration compatibility modules plus verification tests.
-Evidence: `docs/05-audit-reports/profile-epic-compat-shims-verification-2026-02-06.md`
+Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md`
 1. Live ConPort runtime backlog extraction now identifies an additional `66` underrepresented active items from `progress_entries` that are not yet explicit in master docs and are promoted into a dedicated owner matrix.
-Evidence: `docs/05-audit-reports/conport-live-backlog-underrepresented-matrix-2026-02-06.md`
+Evidence: `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`
 1. Live underrepresented set has now been triaged into a focused true-open execution packet (`25` items), with eight items reclassified as resolved in current wave.
-Evidence: `docs/05-audit-reports/conport-live-backlog-execution-packet-2026-02-06.md`
+Evidence: `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`
 
 ## Source
 

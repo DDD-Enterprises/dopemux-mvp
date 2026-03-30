@@ -1,3 +1,9 @@
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+from threading import Barrier, Thread
+from typing import List
+
 import pytest
 
 from dopemux.execution.models import (
@@ -14,6 +20,29 @@ from dopemux.execution.store import (
     PacketNotReadyError,
     StaleLeaseError,
 )
+from src.dopemux.execution.store import (
+    FencingTokenMismatchError,
+    InMemoryExecutionStore,
+    InMemoryLeaseStore,
+    LeaseExpiredError,
+    LeaseOwnershipError,
+    LeaseStateError,
+    NoClaimablePacketError,
+    PacketNotClaimableError,
+    ReleaseConflictError,
+)
+
+
+class FailingResultExecutionStore(InMemoryExecutionStore):
+    def create_result(self, result):
+        raise RuntimeError("result persistence failed")
+
+
+
+class FailingResultExecutionStore(InMemoryExecutionStore):
+    def create_result(self, result):
+        raise RuntimeError("result persistence failed")
+
 
 @pytest.fixture
 def execution_store():
@@ -76,16 +105,10 @@ def test_heartbeat_expired_lease(execution_store, lease_store):
         lease_store.heartbeat(lease.lease_id)
 
 def test_release_packet(execution_store, lease_store):
-    packet = ExecutionPacket(packet_id="TP-1", owner_id="user1")
-    execution_store.create_packet(packet)
-    lease = lease_store.checkout("TP-1", "agent-1", ttl_seconds=60)
+    from dopemux.execution.models import ExecutionDisposition
 
-    released_lease = lease_store.release(
-        lease.lease_id,
-        final_state=PacketState.PROOF_GENERATED,
-        disposition=ExecutionDisposition.SUCCEEDED,
-        result_summary="Completed successfully",
-        artifacts={"test": "data"},
+        artifacts={"test": "data"}
+        artifacts={"test": "data"}
     )
 
     assert execution_store.get_packet("TP-1").state == PacketState.PROOF_GENERATED
@@ -94,6 +117,10 @@ def test_release_packet(execution_store, lease_store):
     assert released_lease.result.disposition == ExecutionDisposition.SUCCEEDED
     assert released_lease.result.result_summary == "Completed successfully"
     assert released_lease.result.artifacts == {"test": "data"}
+    released_lease = lease_store.release(lease.lease_id, final_state=PacketState.PROOF_GENERATED)
+
+    assert execution_store.get_packet("TP-1").state == PacketState.PROOF_GENERATED
+    assert released_lease.state == LeaseState.RELEASED
 
 def test_reclaim_expired_lease(execution_store, lease_store):
     packet = ExecutionPacket(packet_id="TP-1", owner_id="user1")

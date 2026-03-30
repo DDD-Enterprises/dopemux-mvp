@@ -52,26 +52,5 @@ Generate architecture diagrams in Mermaid format from upstream extraction artifa
 9. If an artifact is missing or empty, emit the section with a note: `⚠️ Source artifact not available: <filename>`
 10. Emit exactly the declared output and no additional files
 
-## Evidence Rules
-- Every diagram element must be traceable to a specific item in an upstream artifact.
-- Evidence anchors use the form: `EVIDENCE: <artifact_filename>#<item_id>`
-- Do not include diagram elements that cannot be traced to upstream artifact items.
-- If upstream data is conflicting, include both representations and annotate with `[CONFLICT]`.
-
-## Determinism Rules
-- Do not include `generated_at`, `timestamp`, `created_at`, `updated_at`, or `run_id`.
-- Use fixed heading order and fixed node ordering by deterministic keys (alphabetical by service_id, module path, etc.).
-- Mermaid node IDs must be deterministic: derived from the upstream item ID.
-- Avoid speculative language; every diagram element must cite evidence.
-
-## Anti-Fabrication Rules
-- Do not invent services, modules, relationships, or architectural components.
-- Do not add conceptual layers not evidenced in upstream artifacts.
-- Do not scan the repository directly — all information must come from declared inputs.
-- If an upstream artifact is empty, do not fabricate placeholder content.
-
-## Failure Modes
-- Missing required upstream artifacts: emit the section header with `⚠️ Source artifact not available` and continue with remaining sections.
-- Empty upstream artifacts: emit the section with `⚠️ Source artifact empty — no diagram generated`.
-- Conflicting upstream data: include both perspectives with `[CONFLICT]` annotation and evidence for both.
-- Too many nodes for readable diagram: collapse into aggregate nodes and note truncation with `[COLLAPSED: N items]`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

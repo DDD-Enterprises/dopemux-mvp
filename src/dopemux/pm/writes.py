@@ -6,18 +6,21 @@ Implements ADR-PM-001 boundary enforcement and canonical receipts.
 
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+
 from pydantic import BaseModel, Field
 
 from .models import PMTaskStatus, WORKFLOW_SIGNIFICANT_FIELDS
 
-ALLOWED_METADATA_FIELDS = frozenset(
-    {
-        "title", "headline", "description", "details", "assignee", "assigned_to",
-        "owner", "labels", "tags", "due_date", "start_date", "end_date", "priority",
-        "estimate", "story_points", "notes", "comments", "reflection_metadata",
-        "linked_ids", "refs", "meta", "source_task_id", "milestone",
-    }
-)
+# Allowed PM metadata fields that do not change workflow legality
+ALLOWED_METADATA_FIELDS = {
+    "title", "headline", "description", "details",
+    "assignee", "assigned_to", "owner",
+    "labels", "tags",
+    "due_date", "start_date", "end_date",
+    "priority", "estimate", "story_points",
+    "notes", "comments",
+    "reflection_metadata"
+}
 
 EXPLICIT_WORKFLOW_FIELDS = frozenset(
     {field.lower() for field in WORKFLOW_SIGNIFICANT_FIELDS}
@@ -29,6 +32,7 @@ WORKFLOW_FIELD_SUFFIXES = ("_status", "_state", "_phase", "_stage")
 
 def _looks_workflow_significant_key(key_lower: str) -> bool:
     """Fail closed for likely workflow keys without substring collisions."""
+
     return key_lower.endswith(WORKFLOW_FIELD_SUFFIXES)
 
 

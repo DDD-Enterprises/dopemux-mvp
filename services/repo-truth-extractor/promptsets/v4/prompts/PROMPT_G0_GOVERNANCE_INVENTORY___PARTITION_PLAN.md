@@ -45,12 +45,13 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan governance targets (`.github/workflows/`, `.pre-commit-config.yaml`, `CODEOWNERS`, `LICENSE`) targets; collect path, type, and content metadata for each artifact
-2. Classify each artifact by category relevant to the governance targets (`.github/workflows/`, `.pre-commit-config.yaml`, `CODEOWNERS`, `LICENSE`) domain
-3. Build GOV_PARTITIONS by grouping files into logical categories with rationale
-4. For each GOV_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
-5. For each GOV_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
+1. Scan `.github/workflows/**`, `.pre-commit-config.yaml`, `CODEOWNERS`, `LICENSE`, `.gitignore`, and `pyproject.toml` for all governance and policy definitions.
+2. Extract **CI Gates**: Identify job names, triggers, and success criteria in GitHub Actions that enforce quality bars.
+3. Extract **Policy Files**: Inventory `LICENSE`, `CODEOWNERS`, and repo-level `.gitignore` rules for mandatory enforcement.
+4. Extract **Environment Scoping**: Identify where `.env` or configuration files are loaded in scripts and entrypoints.
+5. Catalog **Credential Loaders**: Locate code patterns that load secrets (e.g., `os.getenv`, `pydantic.BaseSettings`) without exposing values.
+6. Build the partition plan by grouping governance items into cohesive partitions: CI, Hygiene, Policy, and Security.
+7. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.
@@ -58,41 +59,8 @@ Focus on CI gates, policy enforcement, and governance drift risks.
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`
-- Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

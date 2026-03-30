@@ -136,7 +136,7 @@ Planned:
 ## Related Documentation
 
 - [ADHD Engine Documentation](../adhd-intelligence/adhd-complete-documentation.md)
-- [Architecture Overview](../../../04-explanation/architecture/dopemux-architecture-overview-2.md)
+- [Architecture Overview](../../../04-explanation/architecture/dopemux-architecture-overview.md)
 - [Implementation Plans](../../../archive/implementation-plans/)
 
 ## Troubleshooting

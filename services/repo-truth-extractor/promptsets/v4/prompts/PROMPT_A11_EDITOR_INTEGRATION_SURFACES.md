@@ -58,53 +58,23 @@ Extract editor and IDE integration surfaces: configuration files, settings, exte
 - `scope` enum: `workspace | user | project | global`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the editor/IDE partition as primary scan surface
-2. Scan `.vibe/`, `.claude/`, `.cursor/`, `.vscode/` directories for editor-specific configuration files
-3. Extract MCP proxy configurations from `mcp-proxy-config*.yaml` and `mcp-proxy-config.json`
-4. Identify Claude Code settings: `claude_desktop_config.json`, `claude.json`, `.claude/` directory structures
-5. Extract Copilot integration points: copilot-related YAML configs, GitHub Copilot settings
-6. Parse `.editorconfig` and `*.code-workspace` files for workspace-level settings
-7. For each integration point, classify `editor_type`, `scope`, and extract `config_key`/`config_value` pairs
-8. Cross-reference with `REPO_MCP_SERVER_DEFS.json` and `REPO_MCP_PROXY_SURFACE.json` to identify MCP-editor bindings
-9. Build deterministic IDs using stable content keys (path/editor_type/config_key)
-10. Attach evidence to every non-derived field and every relationship edge
-11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash)
-12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps
-13. Emit exactly the declared outputs and no additional files
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on editor and IDE integration surfaces.
+2. Scan `.vscode/settings.json`, `.vscode/extensions.json`, and `.cursor/rules/` for editor-specific behaviors and constraints.
+3. Scan `mcp-proxy-config*.yaml` and `mcp-proxy-config.json` for editor-facing MCP proxy configurations and tool bindings.
+4. Extract Claude Code configuration facts: scan `.claude/config.json` and `claude_desktop_config.json` for tool registrations and agent profiles.
+5. Identify Copilot instruction sets: scan `.github/copilot-instructions.md` and related YAML metadata for repository-wide AI guidance.
+6. Parse `.editorconfig` for formatting contracts and `*.code-workspace` files for multi-root project definitions.
+7. For each integration point, extract mandatory fields:
+   - `editor_type`: categorize as `vscode`, `cursor`, `claude_code`, `copilot`, or `editorconfig`.
+   - `config_key` and `config_value`: capture literal setting pairs (e.g., `"editor.formatOnSave": true`).
+   - `scope`: classify as `workspace` (in-repo) or `project`.
+8. Cross-reference with `REPO_MCP_SERVER_DEFS.json` to identify which MCP tools are explicitly bound to which editor interface.
+9. For each EDITOR_INTEGRATION_SURFACE item, populate `id`, required fields, and `evidence`.
+10. Build deterministic IDs using stable content keys (path|editor_type|config_key).
+11. Attach evidence to every non-derived field and every relationship edge.
+12. Normalize arrays by stable sort keys; deduplicate by ID.
+13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+14. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent editor settings, extensions, config keys, or integration points.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-- Do not assume an editor is integrated because a config directory exists; verify actual config content.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Unrecognized editor config format: emit item with `editor_type: other` and raw content evidence.
-- Multiple editors sharing same MCP proxy: emit separate items per editor binding with cross-reference evidence.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

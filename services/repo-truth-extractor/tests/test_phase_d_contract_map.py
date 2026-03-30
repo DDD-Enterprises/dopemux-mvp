@@ -88,7 +88,9 @@ def test_contract_map_scope_matches_repo_truth_json_steps_exactly() -> None:
         step = str(row.get("step") or row.get("step_id") or "").strip().upper()
         prompt_declared = row.get("prompt_declared") if isinstance(row.get("prompt_declared"), dict) else {}
         artifacts = prompt_declared.get("expected_artifacts")
-        if isinstance(artifacts, list) and len(artifacts) > 0:
+        if not isinstance(artifacts, list):
+            continue
+        if any(str(name).strip().endswith(".json") for name in artifacts):
             expected.add(f"{phase}:{step}")
     assert observed == expected
 
