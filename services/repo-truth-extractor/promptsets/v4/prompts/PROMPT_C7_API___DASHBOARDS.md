@@ -60,8 +60,79 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `C7`
     - `id_rule`: `API_DASHBOARD_SURFACE:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_item_fields`: `id, http_method, path_template, handler_symbol, auth_required, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
+
+### Item Schema
+```json
+{
+  "id": "API_DASHBOARD_SURFACE:<hash>",
+  "http_method": "GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD|WEBSOCKET",
+  "path_template": "<route path, e.g. '/api/v1/tasks/{task_id}'>",
+  "handler_symbol": "<function or method name handling the route>",
+  "service_name": "<service name from registry.yaml>",
+  "request_body_schema": "<Pydantic model name or null for no body>",
+  "response_model": "<Pydantic model name or null if untyped>",
+  "response_codes": ["200", "404", "422"],
+  "auth_required": true,
+  "auth_mechanism": "depends_injection|bearer_token|api_key|none|unknown",
+  "rate_limited": false,
+  "rate_limit_spec": "<e.g. '100/minute' or null>",
+  "tags": ["<FastAPI tags if declared>"],
+  "is_deprecated": false,
+  "path": "<repo-relative path to route definition>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+### HTTP Method Definitions
+- **GET**: Read-only retrieval of resources
+- **POST**: Create new resources or trigger actions
+- **PUT**: Full replacement of a resource
+- **PATCH**: Partial update of a resource
+- **DELETE**: Remove a resource
+- **OPTIONS**: CORS preflight or capability discovery
+- **HEAD**: Headers-only GET (no body)
+- **WEBSOCKET**: WebSocket upgrade endpoint
+
+### Auth Mechanism Definitions
+- **depends_injection**: Auth enforced via FastAPI `Depends()` (e.g., `Depends(get_current_user)`)
+- **bearer_token**: JWT or OAuth2 Bearer token in Authorization header
+- **api_key**: API key in header, query parameter, or cookie
+- **none**: No authentication required (public endpoint)
+- **unknown**: Auth presence unclear from code evidence
+
+### Severity Classification (for dashboard items)
+- **critical**: Endpoint has no auth but handles sensitive data
+- **high**: Endpoint missing error handling or has unvalidated inputs
+- **medium**: Endpoint lacks rate limiting or response schema
+- **low**: Documentation or deprecation annotation missing
+
+### Worked Example
+```json
+{
+  "id": "API_DASHBOARD_SURFACE:b7e2d1f8",
+  "http_method": "POST",
+  "path_template": "/api/v1/tasks/{task_id}/decompose",
+  "handler_symbol": "decompose_task",
+  "service_name": "task-orchestrator",
+  "request_body_schema": "DecomposeRequest",
+  "response_model": "DecomposeResponse",
+  "response_codes": ["200", "404", "422"],
+  "auth_required": false,
+  "auth_mechanism": "none",
+  "rate_limited": false,
+  "rate_limit_spec": null,
+  "tags": ["tasks"],
+  "is_deprecated": false,
+  "path": "services/task-orchestrator/app/api/pm_tools.py",
+  "line_range": [45, 78],
+  "status": "ok",
+  "evidence": [{"path": "services/task-orchestrator/app/api/pm_tools.py", "line_range": [45, 47], "excerpt": "@router.post('/api/v1/tasks/{task_id}/decompose', response_model=DecomposeResponse)"}]
+}
+```
 
 ## Extraction Procedure
 1. Load upstream inventory and partitions; use the API endpoint and dashboard partition as primary scan surface.

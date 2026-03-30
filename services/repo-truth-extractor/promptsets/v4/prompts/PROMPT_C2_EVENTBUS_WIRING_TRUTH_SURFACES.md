@@ -52,22 +52,113 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `C9`
     - `id_rule`: `EVENTBUS_SURFACE:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_item_fields`: `id, event_name, channel, transport, retry_policy, ordering_guarantee, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `EVENT_PRODUCERS.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `C9`
     - `id_rule`: `EVENT_PRODUCERS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, evidence, path, line_range`
+    - `required_item_fields`: `id, event_name, producer_symbol, call_pattern, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `EVENT_CONSUMERS.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `C9`
     - `id_rule`: `EVENT_CONSUMERS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, evidence, path, line_range`
+    - `required_item_fields`: `id, event_name, consumer_symbol, registration_pattern, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
+
+### Item Schema — EVENTBUS_SURFACE
+```json
+{
+  "id": "EVENTBUS_SURFACE:<hash>",
+  "event_name": "<literal event/topic name string>",
+  "channel": "<bus/adapter name, e.g. 'event_bus', 'redis_pubsub', 'celery'>",
+  "transport": "in_process|redis|rabbitmq|kafka|http_webhook|unknown",
+  "is_async": true,
+  "retry_policy": "none|fixed_delay|exponential_backoff|custom",
+  "max_retries": "<integer or null if unlimited/unset>",
+  "dlq_target": "<dead-letter queue/topic name, or null if none>",
+  "ordering_guarantee": "none|fifo|key_based|partition_ordered",
+  "payload_schema_ref": "<path to Pydantic model or TypedDict defining payload, or null>",
+  "path": "<repo-relative path to bus/adapter definition>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+### Transport Type Definitions
+- **in_process**: Events dispatched via function calls within a single process (e.g., `EventBus.emit()`)
+- **redis**: Events published/subscribed via Redis Pub/Sub or Streams
+- **rabbitmq**: Events routed via RabbitMQ exchanges/queues
+- **kafka**: Events produced/consumed via Kafka topics
+- **http_webhook**: Events delivered via HTTP POST callbacks
+- **unknown**: Transport mechanism cannot be determined from code evidence
+
+### Retry Policy Definitions
+- **none**: No retry on delivery failure; fire-and-forget
+- **fixed_delay**: Retry after a constant interval (e.g., 5s between retries)
+- **exponential_backoff**: Retry with increasing delay (e.g., 1s, 2s, 4s, 8s...)
+- **custom**: Application-defined retry logic (document in description)
+
+### Ordering Guarantee Definitions
+- **none**: No ordering; events may arrive in any order
+- **fifo**: Strict first-in-first-out ordering for all events on this channel
+- **key_based**: Ordering guaranteed within a partition key (e.g., by entity ID)
+- **partition_ordered**: Ordering within partitions but not across them
+
+### Item Schema — EVENT_PRODUCERS
+```json
+{
+  "id": "EVENT_PRODUCERS:<hash>",
+  "event_name": "<event/topic name emitted>",
+  "producer_symbol": "<function or method that emits>",
+  "producer_service": "<service name from registry.yaml, or module path>",
+  "call_pattern": "emit|publish|send|dispatch|fire|custom",
+  "path": "<repo-relative path to call site>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+### Item Schema — EVENT_CONSUMERS
+```json
+{
+  "id": "EVENT_CONSUMERS:<hash>",
+  "event_name": "<event/topic name consumed>",
+  "consumer_symbol": "<handler function or method>",
+  "consumer_service": "<service name from registry.yaml, or module path>",
+  "registration_pattern": "decorator|subscribe_call|handler_class|config_binding",
+  "is_blocking": true,
+  "path": "<repo-relative path to handler registration>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+### Worked Example
+```json
+{
+  "id": "EVENTBUS_SURFACE:a3f1b2c4",
+  "event_name": "task.completed",
+  "channel": "event_bus",
+  "transport": "in_process",
+  "is_async": false,
+  "retry_policy": "none",
+  "max_retries": null,
+  "dlq_target": null,
+  "ordering_guarantee": "none",
+  "payload_schema_ref": "src/dopemux/events/types.py::TaskCompletedEvent",
+  "path": "services/dopecon-bridge/dopecon_bridge/event_bus.py",
+  "line_range": [15, 42],
+  "status": "ok",
+  "evidence": [{"path": "services/dopecon-bridge/dopecon_bridge/event_bus.py", "line_range": [15, 20], "excerpt": "class EventBus:\n    def emit(self, event_name: str, payload: dict):"}]
+}
+```
 
 ## Extraction Procedure
 1. Load upstream inventory and partitions; use the eventbus wiring partition as primary scan surface.

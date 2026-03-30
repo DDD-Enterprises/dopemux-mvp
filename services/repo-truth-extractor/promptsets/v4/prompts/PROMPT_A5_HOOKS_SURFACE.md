@@ -61,8 +61,58 @@ Focus on concrete, machine-verifiable implementation facts.
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `A99`
     - `id_rule`: `REPO_HOOKS_SURFACE:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_item_fields`: `id, hook_name, hook_type, trigger, handler_path, is_blocking, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
+
+### Item Schema
+```json
+{
+  "id": "REPO_HOOKS_SURFACE:<hash>",
+  "hook_name": "<human-readable hook identifier>",
+  "hook_type": "git_hook|claude_hook|github_action|fastapi_event|signal_handler|pre_commit|taskx_hook|launchd_trigger",
+  "trigger": "<event or condition that fires the hook>",
+  "handler_path": "<repo-relative path to handler script or function>",
+  "handler_symbol": "<function name or script entrypoint, or null for whole-file scripts>",
+  "command": "<literal command string executed, or null if code-based>",
+  "is_blocking": true,
+  "timeout_seconds": "<configured timeout, or null if none>",
+  "invoked_paths": ["<repo-relative paths called by this hook>"],
+  "path": "<repo-relative path to hook definition/registration>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+### Hook Type Definitions
+- **git_hook**: Git hooks in `.githooks/` or `.git/hooks/` (pre-commit, pre-push, post-merge, etc.)
+- **claude_hook**: Claude Code hooks defined in `.claude/settings.json` under `hooks` key with trigger/glob/command
+- **github_action**: GitHub Actions workflows in `.github/workflows/` triggered by `on:` events
+- **fastapi_event**: FastAPI lifecycle events registered via `@app.on_event()` or `app.add_event_handler()`
+- **signal_handler**: OS signal handlers registered via `signal.signal()` or framework equivalents
+- **pre_commit**: Pre-commit framework hooks in `.pre-commit-config.yaml`
+- **taskx_hook**: TaskX/Dopemux hooks in `.taskx/` configuration or `src/dopemux/hooks/`
+- **launchd_trigger**: macOS launchd-triggered scripts defined in plist files
+
+### Worked Example
+```json
+{
+  "id": "REPO_HOOKS_SURFACE:c4a8e2f1",
+  "hook_name": "PrePush lint check",
+  "hook_type": "claude_hook",
+  "trigger": "PrePush",
+  "handler_path": ".claude/settings.json",
+  "handler_symbol": null,
+  "command": "scripts/lint-docs.sh",
+  "is_blocking": true,
+  "timeout_seconds": null,
+  "invoked_paths": ["scripts/lint-docs.sh"],
+  "path": ".claude/settings.json",
+  "line_range": [12, 18],
+  "status": "ok",
+  "evidence": [{"path": ".claude/settings.json", "line_range": [12, 18], "excerpt": "\"hooks\": {\"PrePush\": [{\"command\": \"scripts/lint-docs.sh\"}]}"}]
+}
+```
 
 ## Extraction Procedure
 1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on the hooks partition.

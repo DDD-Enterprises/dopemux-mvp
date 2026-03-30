@@ -64,29 +64,160 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `C9`
     - `id_rule`: `DETERMINISM_RISK_LOCATIONS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, risk, severity, location, evidence`
+    - `required_item_fields`: `id, risk_type, severity, affected_symbol, non_deterministic_call, mitigation_present, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `IDEMPOTENCY_RISK_LOCATIONS.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `C9`
     - `id_rule`: `IDEMPOTENCY_RISK_LOCATIONS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, risk, severity, location, evidence`
+    - `required_item_fields`: `id, risk_type, severity, affected_symbol, operation, mitigation_present, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `CONCURRENCY_RISK_LOCATIONS.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `C9`
     - `id_rule`: `CONCURRENCY_RISK_LOCATIONS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, risk, severity, location, evidence`
+    - `required_item_fields`: `id, risk_type, severity, affected_symbol, shared_resource, access_pattern, mitigation_present, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `SECRETS_RISK_LOCATIONS.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `C8`
     - `id_rule`: `SECRETS_RISK_LOCATIONS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, risk, severity, location, evidence`
+    - `required_item_fields`: `id, risk_type, severity, affected_symbol, secret_category, exposure_vector, mitigation_present, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
+
+### Item Schema — DETERMINISM_RISK_LOCATIONS
+```json
+{
+  "id": "DETERMINISM_RISK_LOCATIONS:<hash>",
+  "risk_type": "random_call|uuid_generation|timestamp_dependency|dict_iteration|set_iteration|floating_point|os_dependent|locale_dependent",
+  "severity": "critical|high|medium|low",
+  "affected_symbol": "<function or method containing the non-deterministic call>",
+  "non_deterministic_call": "<exact function call, e.g. 'random.choice(items)'>",
+  "in_critical_path": true,
+  "mitigation_present": false,
+  "mitigation_description": "<description of seed/mock/override if present, or null>",
+  "path": "<repo-relative path>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+#### Determinism Risk Type Definitions
+- **random_call**: Use of `random.*`, `secrets.*`, `numpy.random.*` without seed control
+- **uuid_generation**: Use of `uuid.uuid4()` or `uuid.uuid1()` producing non-reproducible IDs
+- **timestamp_dependency**: Use of `datetime.now()`, `time.time()`, `time.monotonic()` in output-affecting logic
+- **dict_iteration**: Reliance on dictionary ordering in Python < 3.7 patterns or cross-process serialization
+- **set_iteration**: Iteration over sets where order affects output
+- **floating_point**: Floating-point arithmetic in equality checks or hash computation
+- **os_dependent**: Path separators, line endings, or locale-dependent string operations
+- **locale_dependent**: String comparison, sorting, or formatting affected by locale settings
+
+### Item Schema — IDEMPOTENCY_RISK_LOCATIONS
+```json
+{
+  "id": "IDEMPOTENCY_RISK_LOCATIONS:<hash>",
+  "risk_type": "db_write_no_upsert|file_append_no_dedup|counter_increment|side_effect_on_retry|missing_idempotency_key|duplicate_event_emission",
+  "severity": "critical|high|medium|low",
+  "affected_symbol": "<function or method with idempotency risk>",
+  "operation": "<description of the non-idempotent operation>",
+  "mitigation_present": false,
+  "mitigation_description": "<idempotency key, upsert, dedup logic, or null>",
+  "path": "<repo-relative path>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+#### Idempotency Risk Type Definitions
+- **db_write_no_upsert**: INSERT/UPDATE without ON CONFLICT or unique constraint guard
+- **file_append_no_dedup**: File writes using append mode without deduplication checks
+- **counter_increment**: Atomic counter increments that double-count on retry
+- **side_effect_on_retry**: External API calls or notifications that fire again on retry
+- **missing_idempotency_key**: Endpoint or handler that accepts retries without idempotency token
+- **duplicate_event_emission**: Event bus publish that emits duplicates on handler retry
+
+### Item Schema — CONCURRENCY_RISK_LOCATIONS
+```json
+{
+  "id": "CONCURRENCY_RISK_LOCATIONS:<hash>",
+  "risk_type": "shared_mutable_state|race_condition|deadlock_potential|thread_unsafe_call|async_blocking|missing_lock|global_state_mutation",
+  "severity": "critical|high|medium|low",
+  "affected_symbol": "<function or method with concurrency risk>",
+  "shared_resource": "<name of shared state, global variable, or file>",
+  "access_pattern": "read_write|write_write|read_only",
+  "mitigation_present": false,
+  "mitigation_description": "<lock, queue, atomic op, or null>",
+  "path": "<repo-relative path>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+#### Concurrency Risk Type Definitions
+- **shared_mutable_state**: Module-level or class-level mutable variables accessed from multiple threads/tasks
+- **race_condition**: Check-then-act patterns without synchronization (TOCTOU)
+- **deadlock_potential**: Multiple locks acquired in inconsistent order
+- **thread_unsafe_call**: Calling non-thread-safe functions (e.g., `sqlite3` from multiple threads)
+- **async_blocking**: Synchronous blocking calls inside `async def` (e.g., `time.sleep`, `requests.get`)
+- **missing_lock**: Concurrent writes to shared resource without mutex/semaphore
+- **global_state_mutation**: Mutation of module-level dictionaries, lists, or objects during request handling
+
+### Item Schema — SECRETS_RISK_LOCATIONS
+```json
+{
+  "id": "SECRETS_RISK_LOCATIONS:<hash>",
+  "risk_type": "hardcoded_secret|env_var_no_default|secret_in_log|secret_in_url|unencrypted_storage|weak_credential|exposed_in_error",
+  "severity": "critical|high|medium|low",
+  "affected_symbol": "<function or location containing the risk>",
+  "secret_category": "api_key|oauth_token|db_password|jwt_secret|encryption_key|webhook_secret|generic_credential",
+  "exposure_vector": "<how the secret could leak: log, error message, URL parameter, git history, etc.>",
+  "mitigation_present": false,
+  "mitigation_description": "<vault, env var, .gitignore rule, or null>",
+  "path": "<repo-relative path>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+#### Secrets Risk Type Definitions
+- **hardcoded_secret**: Literal secret value in source code (API keys, passwords, tokens)
+- **env_var_no_default**: `os.environ["KEY"]` without fallback — crashes on missing secret
+- **secret_in_log**: Secret values passed to `logger.*()` or `print()` calls
+- **secret_in_url**: Secrets embedded in URL query parameters or path segments
+- **unencrypted_storage**: Secrets written to disk/database without encryption
+- **weak_credential**: Default passwords, empty strings, or well-known test credentials
+- **exposed_in_error**: Secrets leaked in exception messages or HTTP error responses
+
+#### Severity Thresholds (all risk types)
+- **critical**: Secret exposed in production-reachable code path or data corruption risk from concurrency bug
+- **high**: Risk in code that runs on every request/event, or secret with broad access scope
+- **medium**: Risk in periodic/background code, or secret with narrow scope
+- **low**: Risk in test/dev-only code, or theoretical risk with existing partial mitigation
+
+### Worked Example (DETERMINISM_RISK_LOCATIONS)
+```json
+{
+  "id": "DETERMINISM_RISK_LOCATIONS:e8c4f2a1",
+  "risk_type": "random_call",
+  "severity": "high",
+  "affected_symbol": "_select_phase_sample",
+  "non_deterministic_call": "random.sample(files, sample_size)",
+  "in_critical_path": true,
+  "mitigation_present": true,
+  "mitigation_description": "Replaced with hash-based _deterministic_phase_sample in bundle branch",
+  "path": "services/repo-truth-extractor/run_extraction_v5.py",
+  "line_range": [13690, 13698],
+  "status": "ok",
+  "evidence": [{"path": "services/repo-truth-extractor/run_extraction_v5.py", "line_range": [13690, 13694], "excerpt": "def _deterministic_phase_sample(files, n, seed_salt):\n    scored = sorted(files, key=lambda f: hashlib.sha256("}]
+}
+```
 
 ## Extraction Procedure
 1. Load upstream inventory and partitions; use the determinism, idempotency, and concurrency partition as primary scan surface.
