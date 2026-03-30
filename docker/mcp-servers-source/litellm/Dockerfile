@@ -16,9 +16,9 @@ RUN pip install --no-cache-dir \
     prisma \
     pyyaml
 
-# Copy configuration and entrypoint from current directory
-COPY litellm.config.yaml /app/config.yaml
-COPY entrypoint.sh /app/entrypoint.sh
+# Copy configuration and entrypoint from root build context
+COPY docker/mcp-servers-source/litellm/litellm.config.yaml /app/config.yaml
+COPY docker/mcp-servers-source/litellm/entrypoint.sh /app/entrypoint.sh
 
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh

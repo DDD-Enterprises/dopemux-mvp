@@ -55,12 +55,12 @@ jobs:
           # -- MCP: ConPort
           - service: conport
             dockerfile: docker/mcp-servers-source/conport/Dockerfile
-            context: docker/mcp-servers-source/conport
+            context: .
 
           # -- MCP: LiteLLM proxy
           - service: litellm
             dockerfile: docker/mcp-servers-source/litellm/Dockerfile
-            context: docker/mcp-servers-source/litellm
+            context: .
 
           # -- Cognitive: Task Orchestrator
           - service: task-orchestrator
@@ -70,7 +70,7 @@ jobs:
           # -- Cognitive: Claude Brain
           - service: claude-brain
             dockerfile: services/claude_brain/Dockerfile
-            context: services/claude_brain
+            context: .
 
           # -- Cognitive: ADHD Engine
           - service: adhd-engine
@@ -80,7 +80,7 @@ jobs:
           # -- Coordination: DopeconBridge
           - service: dopecon-bridge
             dockerfile: services/dopecon-bridge/Dockerfile
-            context: services/dopecon-bridge
+            context: .
 
           # -- Integration: Webhook Receiver
           - service: webhook-receiver
@@ -89,8 +89,8 @@ jobs:
 
           # -- Memory: Dope Memory
           - service: dope-memory
-            dockerfile: services/working-memory-assistant/Dockerfile
-            context: services/working-memory-assistant
+            dockerfile: services/working-memory-assistant/Dockerfile.dope-memory
+            context: .
 
     steps:
       - name: Checkout code

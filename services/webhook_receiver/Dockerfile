@@ -2,9 +2,13 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY services/webhook_receiver/requirements.txt /app/services/webhook_receiver/requirements.txt
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/
+
 RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir -r /app/services/webhook_receiver/requirements.txt
+# Install Python dependencies from centralized manifest
+RUN pip install --no-cache-dir .[services]
 
 COPY services/webhook_receiver /app/services/webhook_receiver
 

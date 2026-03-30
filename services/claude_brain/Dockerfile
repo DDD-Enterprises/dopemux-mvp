@@ -9,14 +9,15 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements.txt .
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/__init__.py
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies from centralized manifest
+RUN pip install --no-cache-dir .[services]
 
-# Copy application code
-COPY . .
+# Copy application code (relative to root build context)
+COPY services/claude_brain/ .
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
