@@ -924,10 +924,12 @@ def start(
     # Preflight: Validate and fix agents
     try:
         workspace_root = get_workspace_root()
+        project_path = Path(workspace_root) if workspace_root else Path.cwd()
         if workspace_root:
             validate_agents_in_workspace(workspace_root)
     except Exception as e:
         console.logger.warning(f"Agent validation warning: {e}")
+        project_path = Path.cwd()
 
     # ── Routing mode from config (replaces legacy flags) ───────────────
     routing_mode = None
