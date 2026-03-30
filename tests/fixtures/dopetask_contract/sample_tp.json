@@ -1,0 +1,8 @@
+{
+  "tp_id": "TP-PROBE-001",
+  "title": "Probe Task",
+  "instructions": "Confirm series execution",
+  "tasks": [
+    {"id": "task1", "description": "First step"}
+  ]
+}

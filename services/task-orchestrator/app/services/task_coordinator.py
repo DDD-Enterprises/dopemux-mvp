@@ -27,10 +27,8 @@ from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from enum import Enum
-from uuid import UUID
 
 import asyncio
-import inspect
 import logging
 import os
 
@@ -45,13 +43,6 @@ from ..adapters.conport_adapter import ConPortEventAdapter
 from intelligence.cognitive_load_balancer import CognitiveLoadBalancer
 from intelligence.context_switch_recovery import ContextSwitchRecovery
 from pal_client import TaskOrchestratorPALClient
-
-from dopemux.pm.store import InMemoryPMTaskStore
-from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest, content_hash_task_id
-from dopemux.pm.mapping import ORCHESTRATOR_TO_CANONICAL, CANONICAL_TO_ORCHESTRATOR
-
-from dopemux.execution.store import get_execution_store, get_lease_store, PacketNotFoundError, PacketNotReadyError
-from dopemux.execution.models import ExecutionPacket, PacketState
 
 logger = logging.getLogger(__name__)
 
@@ -105,8 +96,6 @@ class TaskCoordinator:
         self.break_duration = 300  # 5 minute breaks
         self.max_context_switches = 2
         
-        # Canonical PM Task Store
-        self.pm_store = InMemoryPMTaskStore()
         # Task storage (in-memory for now, will sync to ConPort)
         self.tasks: Dict[str, OrchestrationTask] = {}
 
@@ -284,7 +273,7 @@ class TaskCoordinator:
     
     async def store_task(self, task: OrchestrationTask) -> bool:
         """
-        Store task canonically and in memory, then optionally sync to ConPort.
+        Store task in memory and optionally sync to ConPort.
         
         Args:
             task: OrchestrationTask to store
@@ -293,24 +282,11 @@ class TaskCoordinator:
             True if stored successfully
         """
         try:
-            # Enforce canonical store invariant for task creation
-            canonical_status = ORCHESTRATOR_TO_CANONICAL.get(task.status.value, PMTaskStatus.TODO)
-            pm_task = PMTask(
-                task_id=task.id,
-                title=task.title,
-                description=task.description or "",
-                status=canonical_status,
-                source="orchestrator",
-                created_at_utc=datetime.now(timezone.utc),
-                updated_at_utc=datetime.now(timezone.utc),
-            )
-            self.pm_store.create(pm_task)
-            
-            # Update local memory representation with canonical metadata if needed
             self.tasks[task.id] = task
-            logger.debug(f"Stored task {task.id} in memory cache & canonical PM store")
+            logger.debug(f"Stored task {task.id} in memory cache")
             
             # Optionally sync to ConPort in background
+            # (Don't await to avoid blocking)
             asyncio.create_task(self._sync_task_to_conport(task))
             
             return True
@@ -496,10 +472,6 @@ class TaskCoordinator:
             "context_switches": 0
         }
 
-        execution_store = get_execution_store()
-        lease_store = get_lease_store()
-        monitor_accepts_lease = "lease_id" in inspect.signature(self._monitor_execution).parameters
-
         for task_id in sequenced_tasks:
             # Execute task (placeholder - actual execution via agents)
             # Find the task object from internal storage
@@ -508,98 +480,31 @@ class TaskCoordinator:
                 logger.warning(f"⚠️ Task {task_id} not found in coordinator cache")
                 results["failed"].append(task_id)
                 continue
-            lease = None
             try:
-                # 1. Ensure ExecutionPacket exists in the Execution Plane
-                if not execution_store.get_packet(task_id):
-                    execution_store.create_packet(ExecutionPacket(
-                        packet_id=task_id,
-                        owner_id="orchestrator",
-                        state=PacketState.READY,
-                        metadata={"title": task.title}
-                    ))
-                
-                # 2. Acquire Lease
-                agent_id = task.assigned_agent.value if task.assigned_agent else "unassigned-agent"
-                lease = lease_store.checkout(task_id, agent_id, ttl_seconds=300)
-                logger.info(f"🔑 Leased packet {task_id} to {agent_id} (Lease ID: {lease.lease_id})")
-
-                # Sync status transition idempotently via Canonical Store
-                try:
-                    pm_task = self.pm_store.get(task_id)
-                    expected_version = pm_task.version if pm_task else 1
-                    pm_task = self.pm_store.transition(
-                        task_id,
-                        PMTransitionRequest(
-                            idempotency_key=f"start-{task_id}",
-                            expected_version=expected_version,
-                            new_status=PMTaskStatus.IN_PROGRESS,
-                            ts_utc=datetime.now(timezone.utc),
-                            source="orchestrator"
-                        )
-                    )
-                    task.status = TaskStatus(CANONICAL_TO_ORCHESTRATOR[pm_task.status])
-                except Exception as e:
-                    logger.warning(f"Failed canonical transition to IN_PROGRESS for {task_id}: {e}")
-                    task.status = TaskStatus.IN_PROGRESS
-                
+                # Update status
+                task.status = TaskStatus.IN_PROGRESS
                 results["in_progress"].append(task_id)
 
-                # Preserve compatibility with test/local monitor overrides that only accept `task`.
-                if monitor_accepts_lease:
-                    await self._monitor_execution(task, lease_id=lease.lease_id)
-                else:
-                    await self._monitor_execution(task)
+                # Simulate execution with monitoring
+                # We await this to maintain sequential execution order
+                await self._monitor_execution(task)
 
-                # Mark task as completed after successful monitoring idempotently
-                try:
-                    pm_task = self.pm_store.get(task_id)
-                    expected_version = pm_task.version if pm_task else 1
-                    pm_task = self.pm_store.transition(
-                        task_id,
-                        PMTransitionRequest(
-                            idempotency_key=f"complete-{task_id}",
-                            expected_version=expected_version,
-                            new_status=PMTaskStatus.DONE,
-                            ts_utc=datetime.now(timezone.utc),
-                            source="orchestrator"
-                        )
-                    )
-                    task.status = TaskStatus(CANONICAL_TO_ORCHESTRATOR[pm_task.status])
-                except Exception as e:
-                    logger.warning(f"Failed canonical transition to COMPLETED for {task_id}: {e}")
-                    task.status = TaskStatus.COMPLETED
-
-                # 3. Release Lease
-                lease_store.release(lease.lease_id, final_state=PacketState.PROOF_GENERATED)
-                lease = None
-                logger.info(f"✅ Released lease for packet {task_id}")
-
+                # Mark task as completed after successful monitoring
+                task.status = TaskStatus.COMPLETED
                 results["completed"].append(task_id)
                 results["in_progress"].remove(task_id)
 
                 # Sync to ConPort
                 await self.conport_adapter.update_task_in_conport(task)
 
-            except (PacketNotReadyError, PacketNotFoundError) as e:
-                logger.warning(f"⚠️ Could not lease packet {task_id}: {e}")
-                results["failed"].append(task_id)
-                continue
             except Exception as e:
                 logger.error(f"❌ Task execution failed {task_id}: {e}")
-                task.status = TaskStatus.BLOCKED
+                task.status = TaskStatus.FAILED
                 # Remove from in_progress if it was added
                 if task_id in results["in_progress"]:
                     results["in_progress"].remove(task_id)
                 results["failed"].append(task_id)
                 break
-            finally:
-                if lease is not None:
-                    try:
-                        lease_store.release(lease.lease_id, final_state=PacketState.READY)
-                        logger.info(f"↩️ Released failed lease for packet {task_id}")
-                    except Exception as release_error:
-                        logger.warning(f"Failed to release lease for {task_id}: {release_error}")
 
         # Check for context switching
         await self.context_recovery.detect_context_switch()
@@ -629,9 +534,9 @@ class TaskCoordinator:
         energy_cost = base_cost * energy_modifiers.get(adhd_state.get('energy'), 1.0)
         return min(1.0, energy_cost)  # Cap at 1.0
 
-    async def _monitor_execution(self, task: OrchestrationTask, lease_id: Optional[UUID] = None):
+    async def _monitor_execution(self, task: OrchestrationTask):
         """
-        Monitor task execution with ADHD-aware breaks and lease heartbeats.
+        Monitor task execution with ADHD-aware breaks.
         """
         # Simulate task duration (demo mode)
         # In a real system, this would monitor an actual agent's progress
@@ -640,19 +545,8 @@ class TaskCoordinator:
         if self.coordination_state.session_start_time is None:
             self.coordination_state.session_start_time = start_time
 
-        lease_store = get_lease_store()
-
         # Check energy decay over time
         while (datetime.now() - start_time).total_seconds() < simulated_duration:
-            # Pulse heartbeat if we have a lease
-            if lease_id:
-                try:
-                    lease_store.heartbeat(lease_id)
-                    logger.debug(f"💓 Heartbeat for lease {lease_id}")
-                except Exception as e:
-                    logger.error(f"💔 Heartbeat failed for lease {lease_id}: {e}")
-                    raise
-
             # Update global session timer based on elapsed time since session start
             elapsed = (datetime.now() - self.coordination_state.session_start_time).total_seconds()
             self.coordination_state.focus_session_timer = int(elapsed)

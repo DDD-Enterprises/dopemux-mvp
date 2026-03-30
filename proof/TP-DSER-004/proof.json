@@ -1,0 +1,37 @@
+{
+  "tp_id": "TP-DSER-004",
+  "branch": "tp-dser-sequential-bridge-stack",
+  "plan_input_example": {
+    "plan_id": "PLAN-FORENSIC-001",
+    "packets": [
+      {"tp_id": "TP-001", "depends_on": []},
+      {"tp_id": "TP-002", "depends_on": ["TP-001"]}
+    ]
+  },
+  "execution_trace_example": [
+    {
+      "tp_id": "TP-001",
+      "engine_lane": "closed_loop",
+      "run_id": "2026-03-27T03-00-00Z-abc12345",
+      "bundle_path": "bundles/closed_loop/2026-03-27T03-00-00Z-abc12345/TP-001_PROOF_BUNDLE.json",
+      "success": true,
+      "error": null,
+      "computed_at": 1774605600.0
+    }
+  ],
+  "result_summary": {
+    "status": "SUCCESS",
+    "attempted_count": 2,
+    "completed_count": 2,
+    "failure_point": null
+  },
+  "failure_case_example": {
+    "plan_id": "PLAN-FAIL-DEMO",
+    "failure_point": "TP-002",
+    "error_sample": "Engine run failed. Review errors and relaunch with corrected context."
+  },
+  "tests": {
+    "test_dopetask_sequential_plan_runner.py": "PASS (6 items)",
+    "hostile_tests": "VERIFIED (duplicate_ids, cycles, missing_deps)"
+  }
+}

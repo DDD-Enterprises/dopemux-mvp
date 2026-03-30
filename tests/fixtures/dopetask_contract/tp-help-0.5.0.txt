@@ -1,0 +1,15 @@
+                                                                                                                                
+ Usage: dopetask tp [OPTIONS] COMMAND [ARGS]...                                                                                 
+                                                                                                                                
+ Task Packet workflow commands                                                                                                  
+                                                                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ run     Run complete TP lifecycle (scaffold; writes deterministic proof pack).                                               │
+│ exec    Execute a Task Packet using a specific agent profile.                                                                │
+│ git     Task Packet git workflow commands                                                                                    │
+│ series  JSON Task Packet series commands                                                                                     │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+

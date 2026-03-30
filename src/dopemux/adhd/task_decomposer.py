@@ -34,6 +34,7 @@ from dopemux.pm.writes import (
     pm_transition_work_item,
     pm_update_work_item,
 )
+from dopemux.execution.models import ExecutionPacket, PacketState
 
 class TaskStatus(Enum):
     """Simple task lifecycle states mapping to Canonical PM status."""
@@ -64,6 +65,24 @@ class TaskRecord:
         data = asdict(self)
         data["status"] = self.status.value
         return data
+
+    def to_execution_packet(self, owner_id: str) -> ExecutionPacket:
+        """Wrap the local task mirror as an execution packet."""
+        state_map = {
+            TaskStatus.PENDING: PacketState.READY,
+            TaskStatus.IN_PROGRESS: PacketState.EXECUTING,
+            TaskStatus.COMPLETED: PacketState.PROOF_GENERATED,
+        }
+        return ExecutionPacket(
+            packet_id=self.id,
+            owner_id=owner_id,
+            state=state_map.get(self.status, PacketState.READY),
+            metadata={
+                "description": self.description,
+                "priority": self.priority,
+                "estimated_duration": self.estimated_duration,
+            },
+        )
 
     @classmethod
     def from_dict(cls, data: Dict[str, object]) -> "TaskRecord":

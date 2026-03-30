@@ -1,0 +1,23 @@
+{
+  "tp_id": "TP-DSER-003",
+  "branch": "tp-dser-001-dopetask-probe",
+  "read_only_contract": "ESTABLISHED",
+  "supported_statuses": ["PLANNED", "IN_PROGRESS", "VALIDATED", "FINALIZED", "FAILED", "SKIPPED"],
+  "unsupported_statuses": ["Arbitrary strings (mapped to UNKNOWN)"],
+  "no_execution_support": true,
+  "tests": {
+    "test_dopetask_series_loader.py": "PASS",
+    "test_dopetask_series_status_mapper.py": "PASS",
+    "test_dopetask_series_adapter.py": "PASS"
+  },
+  "touched_files": [
+    "src/dopemux_pr_merge_specialist/dopetask_series_models.py",
+    "src/dopemux_pr_merge_specialist/dopetask_series_loader.py",
+    "src/dopemux_pr_merge_specialist/dopetask_status_mapper.py",
+    "src/dopemux_pr_merge_specialist/dopetask_adapter.py",
+    "tests/unit/test_dopetask_series_loader.py",
+    "tests/unit/test_dopetask_series_status_mapper.py",
+    "tests/unit/test_dopetask_series_adapter.py",
+    "docs/integrations/dopetask/series-readonly-contract.md"
+  ]
+}

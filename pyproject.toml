@@ -74,7 +74,7 @@ dev = [
     "pip-audit>=2.7.0",
     "bandit>=1.7.0",
     "semgrep>=1.90.0",
-    "dopetask==0.2.0",
+    "dopetask==0.5.1",
 ]
 services = [
     "asyncpg>=0.29.0",

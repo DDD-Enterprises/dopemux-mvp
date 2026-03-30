@@ -1,0 +1,17 @@
+{
+  "tp_id": "TP-DSER-001",
+  "branch": "tp-dser-001-dopetask-probe",
+  "probed_versions": ["0.5.1", "0.5.0", "0.2.0"],
+  "outcomes": {
+    "0.5.1": "Series support confirmed",
+    "0.5.0": "Series support confirmed",
+    "0.2.0": "No series support"
+  },
+  "touched_files": [
+    "docs/integrations/dopetask/UPSTREAM_CONTRACT_PROBE_2026-03-26.md",
+    "docs/integrations/dopetask/UPSTREAM_CONTRACT_SUMMARY.md",
+    "tests/fixtures/dopetask_contract/*",
+    "proof/TP-DSER-001/proof.json"
+  ],
+  "verdict": "Go (Migrate to 0.5.1)"
+}

@@ -7,7 +7,7 @@ Workflow / Execution Control Plane.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -30,6 +30,27 @@ class LeaseState(str, Enum):
     ACTIVE = "ACTIVE"  # Lease is within TTL
     EXPIRED = "EXPIRED"  # Heartbeat missed; packet returned to READY
     RELEASED = "RELEASED"  # Graceful handoff or completion
+
+
+class ExecutionDisposition(str, Enum):
+    """Final outcome of an execution attempt."""
+
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    ABORTED = "ABORTED"
+
+
+class ExecutionResult(BaseModel):
+    """Immutable record of an execution attempt."""
+
+    packet_id: str
+    lease_id: UUID
+    agent_id: str
+    disposition: ExecutionDisposition
+    result_summary: str
+    artifacts: Dict[str, Any] = Field(default_factory=dict)
+    started_at_utc: datetime
+    completed_at_utc: datetime
 
 
 class ExecutionPacket(BaseModel):
@@ -59,5 +80,6 @@ class PacketLease(BaseModel):
     expires_at_utc: datetime = Field(..., description="Hard deadline for next heartbeat")
     ttl_seconds: int = Field(..., description="Original lease duration in seconds")
     state: LeaseState = Field(default=LeaseState.ACTIVE)
+    result: Optional[ExecutionResult] = None
 
     model_config = {"frozen": False}

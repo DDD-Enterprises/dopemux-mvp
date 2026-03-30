@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field
 
 from .models import PMTaskStatus, WORKFLOW_SIGNIFICANT_FIELDS
+from .mapping import CANONICAL_TO_ORCHESTRATOR
 
 ALLOWED_METADATA_FIELDS = frozenset(
     {
@@ -117,6 +118,10 @@ class PMWriteConfig(BaseModel):
     conport_client: Any
     memory_client: Any
 
+
+def _transition_name_for_status(status: PMTaskStatus) -> str:
+    return CANONICAL_TO_ORCHESTRATOR.get(status, status.value).lower()
+
 def pm_update_work_item(
     config: PMWriteConfig,
     task_id: str,
@@ -169,6 +174,10 @@ def pm_transition_work_item(
     reason: str,
     idempotency_key: str,
     expected_version: int,
+    *,
+    project_id: str = "default",
+    workflow_id: Optional[str] = None,
+    actor: str = "dopemux",
 ) -> CanonicalReceipt:
     """
     Transition the workflow state of a work item.
@@ -180,9 +189,42 @@ def pm_transition_work_item(
     if config.orchestrator_client is None:
         raise RuntimeError("Task Orchestrator client (Workflow Authority) is not configured.")
 
+    version_after = expected_version + 1
     try:
-        # Client implementations are responsible for enforcing idempotency
-        config.orchestrator_client.transition(task_id, new_status, reason, expected_version, idempotency_key=idempotency_key)
+        transition_response = None
+        transition_name = _transition_name_for_status(new_status)
+        target_workflow_id = workflow_id or task_id
+        try:
+            transition_response = config.orchestrator_client.transition(
+                project_id=project_id,
+                workflow_id=target_workflow_id,
+                transition_name=transition_name,
+                actor=actor,
+                idempotency_key=idempotency_key,
+                expected_version=expected_version,
+                reason=reason,
+            )
+        except TypeError:
+            # Compatibility path for older sync bridge clients that still expose
+            # the task-centric transition signature.
+            transition_response = config.orchestrator_client.transition(
+                task_id,
+                new_status,
+                reason,
+                expected_version,
+                idempotency_key=idempotency_key,
+            )
+        if isinstance(transition_response, dict):
+            legality_result = transition_response.get("legality_result")
+            if legality_result and legality_result != "allowed":
+                raise RuntimeError(
+                    f"Task Orchestrator rejected transition with legality_result={legality_result}"
+                )
+            version_after = (
+                transition_response.get("resulting_state", {}).get("version")
+                or transition_response.get("transition_receipt", {}).get("version_after")
+                or version_after
+            )
     except Exception as e:
         raise RuntimeError(f"Canonical write failed: {e}") from e
 
@@ -206,7 +248,7 @@ def pm_transition_work_item(
         canonical_system="task-orchestrator",
         canonical_id=task_id,
         success=True,
-        version=expected_version + 1,
+        version=version_after,
         operation_type="transition",
         reflection_state=reflection_state,
         mirror_receipts=[

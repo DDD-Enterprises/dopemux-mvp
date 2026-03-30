@@ -21,8 +21,34 @@ class MockLeantimeClient:
 class MockOrchestratorClient:
     def __init__(self):
         self.calls = []
-    def transition(self, task_id, new_status, reason, expected_version, idempotency_key):
-        self.calls.append(("transition", task_id, new_status, reason, expected_version, idempotency_key))
+    def transition(
+        self,
+        *,
+        project_id,
+        workflow_id,
+        transition_name,
+        actor,
+        idempotency_key,
+        expected_version,
+        reason,
+    ):
+        self.calls.append(
+            (
+                "transition",
+                project_id,
+                workflow_id,
+                transition_name,
+                actor,
+                reason,
+                expected_version,
+                idempotency_key,
+            )
+        )
+        return {
+            "legality_result": "allowed",
+            "transition_receipt": {"version_after": expected_version + 1},
+            "resulting_state": {"version": expected_version + 1},
+        }
 
 class MockConportClient:
     def __init__(self):
@@ -171,6 +197,16 @@ def test_pm_transition_work_item_partial_failure():
     assert receipt.reflection_state == "degraded"
     assert receipt.reconciliation_state == "PARTIAL"
     assert len(orch_client.calls) == 1
+    assert orch_client.calls[0] == (
+        "transition",
+        "default",
+        "task-1",
+        "in_progress",
+        "dopemux",
+        "starting work",
+        1,
+        "key-2",
+    )
     
     mirror = receipt.mirror_receipts[0]
     assert mirror.system == "leantime"
@@ -199,6 +235,16 @@ def test_pm_transition_work_item_successful_reflection():
     assert receipt.success
     assert receipt.reflection_state == "succeeded"
     assert receipt.reconciliation_state == "SYNCED"
+    assert orch_client.calls[-1] == (
+        "transition",
+        "default",
+        "task-1",
+        "in_progress",
+        "dopemux",
+        "starting work",
+        3,
+        "key-2",
+    )
     assert leantime_client.calls[-1] == ("update_status", "task-1", PMTaskStatus.IN_PROGRESS.value, "key-2")
 
 def test_pm_log_progress_fail_closed():
