@@ -15264,7 +15264,19 @@ def main() -> None:
     )
     parser.add_argument("--disable-escalation", action="store_true")
     parser.add_argument("--escalation-max-hops", type=int, default=2)
-    parser.add_argument("--batch-mode", action="store_true")
+    parser.add_argument(
+        "--batch-mode",
+        dest="batch_mode",
+        action="store_true",
+        default=True,
+        help="Use Batch API for LLM calls (default: True).",
+    )
+    parser.add_argument(
+        "--no-batch",
+        dest="batch_mode",
+        action="store_false",
+        help="Disable Batch API and use synchronous calls.",
+    )
     parser.add_argument(
         "--batch-submit-only",
         action="store_true",
