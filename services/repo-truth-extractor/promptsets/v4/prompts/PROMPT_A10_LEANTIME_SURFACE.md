@@ -21,53 +21,17 @@ Capture only implementation facts that are directly evidenced in source and conf
 - `tools/**`
 
 - `services/leantime-bridge/**`
-- `config/**`
 - `compose.yml`
 - `docker-compose*.yml`
 - `src/dopemux/**`
 - `.claude.json`
 - `README.md`
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `configs/**`
-- `docker/**`
 - `installers/**`
 - `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `configs/**`
-- `docker/**`
-- `installers/**`
-- `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
 - Upstream normalized artifacts available to this step:
   - `REPOCTRL_INVENTORY.json`
@@ -120,36 +84,8 @@ Capture only implementation facts that are directly evidenced in source and conf
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must include at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative.
-- `excerpt` must be exact and <= 200 chars.
-- If evidence is missing, keep field as `UNKNOWN` with `missing_evidence_reason`.
-
-## Determinism Rules
-- Norm output MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort items by `(path, line_start, id)` when available, otherwise by `id`.
-- Deduplicate by `id`; merge evidence by unique `(path,line_range,excerpt)`.
-- For scalar conflicts choose non-empty value, else lexicographically smallest stable value.
-
-## Anti-Fabrication Rules
-- Do not invent Leantime endpoints, credentials, commands, or bridge behavior.
-- Do not infer configuration support from filenames alone; require direct text/code evidence.
-- Do not copy QA metadata into norm output.
-- Keep unresolved values as `UNKNOWN`; never substitute guesses.
-
-## Failure Modes
-- Missing files: emit valid empty `ItemList` and include `missing_inputs` notes in items.
-- Ambiguous or conflicting config: emit candidates with `status: needs_review` and evidence.
-- Partial scan: emit partial output with explicit `coverage_notes` and evidence gaps.
-- Parse failures: keep deterministic partial output and capture `parse_error` in item notes.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

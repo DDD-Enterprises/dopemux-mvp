@@ -62,41 +62,5 @@ Extract agent orchestration surfaces: the `AgentType` enum, `AgentManager` class
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-- `AgentType` enum values MUST have evidence pointing to the enum class definition, not usage sites.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent agent types, orchestration methods, communication protocols, or lifecycle states.
-- Do not infer agent behavior from class names alone; require direct code evidence (enum definitions, method bodies, decorator registrations).
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-- Do not assume an agent type exists because a directory is named after it; verify `AgentType` enum evidence.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- No `AgentType` enum found: emit items with `agent_type: UNKNOWN` and note the enum pattern was not located.
-- Dynamic agent registration: if agents are registered at runtime (not statically), emit with `status: dynamic_registration` and capture the registration call evidence.
-- Hidden agent communication: if agents communicate through shared state rather than explicit protocols, emit with `status: implicit_communication`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

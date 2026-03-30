@@ -83,43 +83,5 @@ Extract all cognitive accommodation features across the codebase: ADHD accommoda
 15. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 16. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-- `implementation_status` must cite evidence: `implemented` requires function body, `stub` requires TODO/placeholder, `planned` requires doc/comment reference.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent cognitive features, learning mechanisms, or energy-aware behaviors.
-- Do not infer cognitive accommodation from variable names alone; require direct code evidence (function bodies, class definitions, config values).
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-- Do not assume a feature is "self-learning" without evidence of feedback loops or adaptation logic.
-- Do not classify a simple timer as an "ADHD accommodation" without evidence it serves that purpose.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Feature spread across multiple files: emit a single item with multiple evidence objects spanning all relevant source locations.
-- Ambiguous feature domain: if a feature spans multiple domains (e.g., energy-aware ADHD accommodation), emit with the primary domain and add `related_domains: [...]`.
-- Planned-but-not-implemented features: emit with `implementation_status: planned` and evidence from documentation/comments only.
-- Self-learning without persistence: if adaptation logic exists but has no persistence mechanism, emit with `persistence_mechanism: UNKNOWN` and `status: volatile_only`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

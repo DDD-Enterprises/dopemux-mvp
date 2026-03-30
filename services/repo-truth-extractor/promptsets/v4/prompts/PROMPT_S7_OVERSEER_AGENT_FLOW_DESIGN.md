@@ -31,22 +31,5 @@ The output format is highly unstructured markdown, but it must conform to the se
 3. Synthesize JSON insights into a cohesive markdown document.
 4. Output MD file according strictly to the schema.
 
-## Evidence Rules
-- Cite sources using `EVIDENCE: artifact#section` notation.
-- Ensure all claims trace back to one of the upstream JSON artifacts.
-- Do not invent architecture if absent in source artifacts.
-
-## Determinism Rules
-- ALWAYS produce the exact same layout given the same input artifacts.
-- NEVER include runtime timestamps (`generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`).
-- Sort any lists alphabetically by component name.
-
-## Anti-Fabrication Rules
-- Hallucination Protocol: Only document paths and components explicitly stated in upstream graphs.
-- If an agent flow is disconnected, document it as disconnected.
-- Do not interpolate missing agent routing logic.
-
-## Failure Modes
-- `insufficient_input_artifacts`: Required JSON artifacts are missing from the context.
-- `unparseable_synthesis`: The markdown generation failed to adhere to the requested structure.
-- `drift_detected`: The synthesized markdown conflicts with the strict DAG extracted in C-phase.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

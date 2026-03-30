@@ -16,38 +16,17 @@ This step maps implementation truth, not intended architecture.
 
 - `services/leantime-bridge/**`
 - `src/dopemux/**`
-- `services/**`
 - `config/**`
 - `compose.yml`
 - `docker-compose*.yml`
 - `services/registry.yaml`
-- `src/**`
-- `components/**`
-- `dashboard/**`
-- `plugins/**`
-- `ui-dashboard/**`
-- `ui-dashboard-backend/**`
-
-- `src/**`
-- `components/**`
-- `dashboard/**`
-- `plugins/**`
-- `ui-dashboard/**`
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
 
 - `services/agents/**`
 - `src/dopemux/hooks/**`
 - `src/dopemux/agent_orchestrator.py`
 
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
 
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
+
 
 - Upstream normalized artifacts:
   - `CODE_INVENTORY.json`
@@ -94,36 +73,8 @@ This step maps implementation truth, not intended architecture.
 8. Deduplicate and sort items by `(path, line_start, id)` to ensure reproducible output.
 9. Emit exactly one output file: `LEANTIME_INTEGRATION_SURFACE.json`.
 
-## Evidence Rules
-- Every item and non-derived field requires evidence:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- Evidence must come from repository sources only.
-- Use multiple evidence records for cross-file relationships.
-- If evidence is incomplete, keep `UNKNOWN` with `missing_evidence_reason`.
-
-## Determinism Rules
-- No timestamps or run metadata in norm output.
-- Sort items by `(path, line_start, id)` then stable JSON text fallback.
-- Deduplicate by `id`.
-- Merge evidence as deterministic set union on `(path,line_range,excerpt)`.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, queue topics, events, or dependency links.
-- Do not assume any interface is active without explicit evidence.
-- Do not synthesize architecture claims unsupported by code/config.
-- If uncertain, emit `status: needs_review` rather than guessing.
-
-## Failure Modes
-- Missing integration files: emit empty `ItemList` with `coverage_notes`.
-- Ambiguous symbol resolution: emit multiple candidates with explicit ambiguity notes.
-- Parse failures: preserve partial deterministic output and attach error notes.
-- Upstream artifact mismatch: keep extracted evidence and mark unresolved joins.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

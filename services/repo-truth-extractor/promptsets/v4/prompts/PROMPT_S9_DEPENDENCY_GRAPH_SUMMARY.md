@@ -49,26 +49,5 @@ Analyze dependency graphs to identify hotspots, circular dependencies, coupling 
 9. Cross-reference with `SERVICE_CATALOG.json` (if available) for service categorization
 10. Emit exactly the declared output and no additional files
 
-## Evidence Rules
-- Every metric and finding must trace back to specific edges or nodes in the upstream dependency graphs.
-- Evidence anchors use the form: `EVIDENCE: <artifact_filename>#<edge_id>`
-- Cycle claims must list every edge ID in the cycle path.
-- Hotspot rankings must cite the specific incoming edge IDs counted.
-
-## Determinism Rules
-- Do not include `generated_at`, `timestamp`, `created_at`, `updated_at`, or `run_id`.
-- Use fixed heading order and fixed table row ordering by deterministic keys.
-- Sort hotspot tables by in-degree descending, then alphabetical by node name.
-- Sort cycle reports by cycle length ascending, then alphabetical by first node in cycle.
-
-## Anti-Fabrication Rules
-- Do not invent dependencies, cycles, or coupling metrics not supported by upstream graph data.
-- Do not scan the repository directly — all information must come from declared inputs.
-- Do not speculate about the impact of dependencies; only report structural facts with evidence.
-- If a metric cannot be computed due to missing data, report `UNKNOWN` with explanation.
-
-## Failure Modes
-- Missing required upstream artifacts: emit `⚠️ Source artifact not available` and skip dependent sections.
-- Empty dependency graph: emit `⚠️ Graph is empty — no analysis possible`.
-- Very large graphs (>1000 edges): report aggregate statistics and top-N items with truncation notes.
-- Disconnected components: report as separate subgraph analysis within each section.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
