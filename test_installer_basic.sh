@@ -137,7 +137,9 @@ echo ""
 # Test 7: Installer Smoke (Full stack, interactive, test mode)
 echo "Test 7: Installer Smoke (Full stack, interactive, test mode)"
 echo "==========================================================="
-run_install_smoke "Full stack interactive smoke test" "full" "no" "y"
+# Provide 'y' for initial confirmation if needed, then many newlines for env vars and workspace path
+INPUT_STREAM=$(printf 'y\n%.0s' {1..20})
+run_install_smoke "Full stack interactive smoke test" "full" "no" "$INPUT_STREAM"
 echo ""
 
 echo "📊 Test Summary"

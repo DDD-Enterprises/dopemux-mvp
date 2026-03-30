@@ -303,7 +303,10 @@ choose_install_stack() {
         echo "  1) Core services (Postgres, Redis, Qdrant, ConPort, ADHD Engine, Task Orchestrator)"
         echo "  2) Research stack (adds GPT-Researcher, Exa)"
         echo "  3) Full stack (adds everything including PM, LiteLLM, Agents)"
-        read -p "$(echo -e "${CYAN}?${NC} Choose [1/2/3]: ")" stack_choice
+        if ! read -p "$(echo -e "${CYAN}?${NC} Choose [1/2/3]: ")" stack_choice; then
+            echo >&2 "EOF encountered"
+            exit 1
+        fi
         case "${stack_choice:-1}" in
             3) SELECTED_STACK="full" ;;
             2) SELECTED_STACK="research" ;;
@@ -391,17 +394,17 @@ resolve_env_value() {
         
         if [ "$sensitive" = "true" ]; then
             if [ -n "$default" ]; then
-                read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [****]: ")" input
+                if ! read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [****]: ")" input; then echo >&2 "EOF"; exit 1; fi
                 echo >&2
             else
-                read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input
+                if ! read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input; then echo >&2 "EOF"; exit 1; fi
                 echo >&2
             fi
         else
             if [ -n "$default" ]; then
-                read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [$default]: ")" input
+                if ! read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [$default]: ")" input; then echo >&2 "EOF"; exit 1; fi
             else
-                read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input
+                if ! read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input; then echo >&2 "EOF"; exit 1; fi
             fi
         fi
         
@@ -615,9 +618,15 @@ ask_yes_no() {
     local yn
     while true; do
         if [ "$default" = "y" ]; then
-            read -p "$(echo -e "${CYAN}?${NC} $prompt [Y/n]: ")" yn
+            if ! read -p "$(echo -e "${CYAN}?${NC} $prompt [Y/n]: ")" yn; then
+                echo >&2 "EOF encountered"
+                return 1
+            fi
         else
-            read -p "$(echo -e "${CYAN}?${NC} $prompt [y/N]: ")" yn
+            if ! read -p "$(echo -e "${CYAN}?${NC} $prompt [y/N]: ")" yn; then
+                echo >&2 "EOF encountered"
+                return 1
+            fi
         fi
         
         yn=${yn:-$default}
