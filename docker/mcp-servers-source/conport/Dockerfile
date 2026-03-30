@@ -3,6 +3,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     bash \
@@ -11,23 +15,23 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies for enhanced server with database persistence
-RUN pip install uv aiohttp asyncpg redis mcp prometheus-client fastapi uvicorn
+# Install dependencies from centralized manifest
+RUN pip install --no-cache-dir .[services]
 
-# Copy shared monitoring module
+# Copy shared monitoring module (relative to root build context)
 RUN mkdir -p /app/shared/monitoring
-COPY shared_monitoring.py /app/shared/monitoring/base.py
-COPY shared_monitoring_init.py /app/shared/monitoring/__init__.py
+COPY docker/mcp-servers-source/conport/shared_monitoring.py /app/shared/monitoring/base.py
+COPY docker/mcp-servers-source/conport/shared_monitoring_init.py /app/shared/monitoring/__init__.py
 
-# Copy the enhanced server with PostgreSQL + Redis persistence
-COPY server.py .
-COPY enhanced_server.py .
-COPY instance_detector.py .
-COPY integration_bridge_client.py .
-COPY conport_mcp_stdio.py .
-COPY schema.sql .
-COPY info_server.py .
-COPY start_with_info.sh .
+# Copy the enhanced server with PostgreSQL + Redis persistence (relative to root)
+COPY docker/mcp-servers-source/conport/server.py .
+COPY docker/mcp-servers-source/conport/enhanced_server.py .
+COPY docker/mcp-servers-source/conport/instance_detector.py .
+COPY docker/mcp-servers-source/conport/integration_bridge_client.py .
+COPY docker/mcp-servers-source/conport/conport_mcp_stdio.py .
+COPY docker/mcp-servers-source/conport/schema.sql .
+COPY docker/mcp-servers-source/conport/info_server.py .
+COPY docker/mcp-servers-source/conport/start_with_info.sh .
 
 # Expose ports (MCP server + info server)
 EXPOSE 3004 4004

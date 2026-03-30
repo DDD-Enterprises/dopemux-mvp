@@ -4,12 +4,19 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     build-essential \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# Install dependencies from centralized manifest
+RUN pip install --no-cache-dir .[services]
 
 # Clone GPT Researcher MCP server to /app/gptr-mcp
 RUN git clone https://github.com/assafelovic/gptr-mcp.git /app/gptr-mcp
@@ -18,18 +25,14 @@ RUN git clone https://github.com/assafelovic/gptr-mcp.git /app/gptr-mcp
 RUN sed -i 's/port=8000/port=int(os.getenv("MCP_SERVER_PORT", "8000"))/g' /app/gptr-mcp/server.py
 
 # Install Python dependencies from the cloned repo
-RUN pip install --no-cache-dir -r /app/gptr-mcp/requirements.txt && \
-    pip install --no-cache-dir aiohttp requests fastapi uvicorn
-
-# Note: Removed forced langchain version downgrades - let gpt-researcher determine compatible versions
-# The gpt-researcher package will install the correct langchain versions it needs
+RUN pip install --no-cache-dir -r /app/gptr-mcp/requirements.txt
 
 # Create logs and data directories
 RUN mkdir -p /app/logs /app/data
 
-# Copy wrapper and environment files
-COPY wrapper.py /app/wrapper.py
-COPY .env.template /app/.env
+# Copy wrapper and environment files (relative to root)
+COPY docker/mcp-servers-source/gptr-mcp/wrapper.py /app/wrapper.py
+COPY docker/mcp-servers-source/gptr-mcp/.env.template /app/.env
 
 # Expose MCP server ports
 EXPOSE 3009 3013

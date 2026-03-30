@@ -324,7 +324,7 @@ Alternative: Set CLAUDE_PATH environment variable
         # If routing mode is api, configure for proxy routing
         if routing_mode == "api":
             # Set CCR as the deterministic proxy target (no LiteLLM fallback)
-            ccr_port = routing_config.ports["ccr"]
+            ccr_port = routing_config.config["ports"]["ccr"]
             ccr_url = f"http://127.0.0.1:{ccr_port}"
             env["ANTHROPIC_BASE_URL"] = ccr_url
             env["ANTHROPIC_API_BASE"] = ccr_url

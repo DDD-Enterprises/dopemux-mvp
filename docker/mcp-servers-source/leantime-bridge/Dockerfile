@@ -2,6 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/
+
 ENV PYTHONUNBUFFERED=1 \
     MCP_SERVER_HOST=0.0.0.0 \
     MCP_SERVER_PORT=3015 \
@@ -11,11 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+# Install dependencies from centralized manifest
+RUN pip install --no-cache-dir .[services]
 
-COPY leantime_bridge /app/leantime_bridge
-COPY mcp_stdio.py /app/mcp_stdio.py
+COPY docker/mcp-servers-source/leantime-bridge/leantime_bridge /app/leantime_bridge
+COPY docker/mcp-servers-source/leantime-bridge/mcp_stdio.py /app/mcp_stdio.py
 
 RUN mkdir -p /app/data /app/logs && \
     useradd --create-home --shell /bin/bash mcp && \

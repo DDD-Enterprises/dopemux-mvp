@@ -1360,7 +1360,7 @@ def test_global_fix_blocking_persists_across_passes(monkeypatch, tmp_path: Path)
 
     pass_counter = [0]
 
-    def fake_handle_global_ci_blockers(_results, _client, _worktree_dir, logger=None):
+    def fake_handle_global_ci_blockers(_results, _client, _worktree_dir, seen_stale_fingerprints=None, logger=None):
         pass_counter[0] += 1
         if pass_counter[0] == 1:
             # Pass 1: both PRs are globally blocked by fix PR #999
@@ -1877,10 +1877,10 @@ def test_queue_drain_skips_no_progress_prs_in_subsequent_passes(
     assert apply_call_count[0] == 1
 
 
-def test_queue_drain_dry_run_skips_all_in_subsequent_passes(
+def test_queue_drain_dry_run_processes_actionable_prs_in_all_passes(
     monkeypatch, tmp_path: Path
 ):
-    """In dry-run mode (no --execute), PRs should be skipped in subsequent passes."""
+    """In dry-run mode, actionable tactics should NOT be skipped in subsequent passes."""
     result = _make_result(
         pr_id=201,
         lifecycle_state=PRState.APPLY_BLOCKED.value,
@@ -1929,4 +1929,59 @@ def test_queue_drain_dry_run_skips_all_in_subsequent_passes(
     )
 
     assert rc == 0
-    assert scan_call_count[0] == 2  # pass 1 processes, pass 2 finds nothing
+    assert scan_call_count[0] == 3  # all 3 passes execute
+
+
+def test_stale_fingerprint_cached_between_passes(monkeypatch, tmp_path: Path):
+    """When a fingerprint is marked stale (-2), it is cached and skipped in subsequent passes."""
+    failed_validation = ValidationReport(
+        status=ValidationStatus.FAILED,
+        required_for_merge_ready=True,
+        steps=[
+            ValidationStepResult(
+                name="pre-commit",
+                command="pre-commit run --all-files",
+                status="failed",
+                stderr="boom",
+            )
+        ],
+        attempts=1,
+        remediation_applied=False,
+    )
+    
+    fingerprint = failed_validation.failure_fingerprint
+    results = [
+        SimpleNamespace(
+            pr_state=SimpleNamespace(pr_id=101),
+            validation_report=failed_validation,
+            apply_actions=[],
+        ),
+        SimpleNamespace(
+            pr_state=SimpleNamespace(pr_id=102),
+            validation_report=failed_validation,
+            apply_actions=[],
+        ),
+    ]
+
+    def fake_allowed_actions(result):
+        return ["APPLY_FIX"]
+    monkeypatch.setattr(queue_drain_module, "allowed_actions_for_result", fake_allowed_actions)
+
+    call_count = [0]
+    def fake_create_global_fix_pr(*args, **kwargs):
+        call_count[0] += 1
+        return -2  # simulate stale fingerprint
+
+    monkeypatch.setattr(queue_drain_module, "_create_global_fix_pr", fake_create_global_fix_pr)
+
+    client = FakeGitHubClient(repo=None, repo_root=tmp_path, policy={})
+
+    # Pass 1
+    seen_stale_fingerprints = set()
+    queue_drain_module._handle_global_ci_blockers(results, client, tmp_path, seen_stale_fingerprints=seen_stale_fingerprints)
+    assert call_count[0] == 1
+    assert fingerprint in seen_stale_fingerprints
+
+    # Pass 2
+    queue_drain_module._handle_global_ci_blockers(results, client, tmp_path, seen_stale_fingerprints=seen_stale_fingerprints)
+    assert call_count[0] == 1  # Should not be called again

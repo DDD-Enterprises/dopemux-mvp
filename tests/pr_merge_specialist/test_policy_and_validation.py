@@ -123,6 +123,7 @@ def test_module_entrypoint_works_without_pythonpath():
             "dopemux_pr_merge_specialist.cli",
             "self-check",
             "--json",
+            "--smoke",
             "--allow-dirty",
         ],
         cwd=REPO_ROOT,

@@ -2,20 +2,25 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies (including serena from git)
-# Pinning to main branch for now, ideally should be a tag
-RUN pip install "git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb" mcp-proxy fastapi uvicorn
+# Install dependencies from centralized manifest
+# We also include serena from git as before
+RUN pip install --no-cache-dir .[services] && \
+    pip install --no-cache-dir "git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb"
 
-# Copy wrapper script and info server
-COPY wrapper.py /app/wrapper.py
-COPY info_server.py /app/info_server.py
-COPY start_with_info.sh /app/start_with_info.sh
+# Copy wrapper script and info server (relative to root)
+COPY docker/mcp-servers-source/serena/wrapper.py /app/wrapper.py
+COPY docker/mcp-servers-source/serena/info_server.py /app/info_server.py
+COPY docker/mcp-servers-source/serena/start_with_info.sh /app/start_with_info.sh
 
 # Expose ports (MCP server + info server)
 EXPOSE 3006 4006

@@ -223,15 +223,18 @@ def _self_check(args: argparse.Namespace) -> int:
         results["ok"] = False
 
     # Check 4: Policy loading
-    preflight_args = argparse.Namespace(**vars(args))
-    if getattr(args, "json", False):
-        preflight_args._suppress_output = True
-    preflight_rc = preflight(preflight_args)
-    results["checks"].append(
-        {"name": "preflight", "status": "PASS" if preflight_rc == 0 else "FAIL"}
-    )
-    if preflight_rc != 0:
-        results["ok"] = False
+    if getattr(args, "smoke", False):
+        results["checks"].append({"name": "preflight", "status": "SKIPPED"})
+    else:
+        preflight_args = argparse.Namespace(**vars(args))
+        if getattr(args, "json", False):
+            preflight_args._suppress_output = True
+        preflight_rc = preflight(preflight_args)
+        results["checks"].append(
+            {"name": "preflight", "status": "PASS" if preflight_rc == 0 else "FAIL"}
+        )
+        if preflight_rc != 0:
+            results["ok"] = False
 
     if getattr(args, "json", False):
         print(json.dumps(results, indent=2))
@@ -476,6 +479,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="✅ Sensor Audit: Verify specialist imports, schema completeness, and policy loading.",
     )
     add_common_arguments(self_check_parser)
+    self_check_parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="💨 Smoke Test: Skip environment-dependent preflight checks.",
+    )
     self_check_parser.set_defaults(func=_self_check)
 
     health_parser = sub.add_parser(

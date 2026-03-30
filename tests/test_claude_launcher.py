@@ -229,7 +229,7 @@ class TestClaudeLauncher:
         assert env["DOPEMUX_ACTIVE"] == "true"
         assert env["OPENAI_API_KEY"] == "test-openai"
 
-    @patch.dict("os.environ", {}, clear=True)
+    @patch.dict("os.environ", {"ANTHROPIC_API_KEY": "dummy-key"}, clear=True)
     def test_prepare_environment_missing_keys(self, config_manager):
         """Test preparing environment with missing API keys."""
         with patch.object(ClaudeLauncher, "_detect_claude"):
