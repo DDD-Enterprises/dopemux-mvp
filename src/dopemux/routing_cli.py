@@ -368,10 +368,6 @@ def repair(max_passes: int, allow_sync_keys: bool):
 
 
 def _set_routing_mode(config_path: Path, mode: str) -> None:
-    """Update the mode field in routing.yaml in-place."""
-    import re
-    content = config_path.read_text()
-    content = re.sub(r"^mode:\s*\w+", f"mode: {mode}", content, flags=re.MULTILINE)
     config_path.write_text(content)
 
 

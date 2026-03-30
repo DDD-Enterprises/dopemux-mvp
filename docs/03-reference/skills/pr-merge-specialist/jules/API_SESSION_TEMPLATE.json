@@ -1,0 +1,10 @@
+{
+  "session_intent": "PR_REMEDIATION",
+  "capabilities_required": ["GITHUB_GRAPHQL", "SHELL_EXECUTION"],
+  "enforcement_rules": [
+    "Evidence before mutation",
+    "High-risk conflict = No auto-resolve",
+    "Ambiguity = Human escalation"
+  ],
+  "tool_invocation": "python3 -m src.dopemux_pr_merge_specialist.cli pr-fix --id {{PR_ID}}"
+}

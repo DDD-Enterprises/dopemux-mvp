@@ -1,0 +1,94 @@
+     1	"""
+     2	DopeconBridge Connector for Task-Orchestrator
+     3	
+     4	Connects Task-Orchestrator to ConPort-KG event system for task progress tracking.
+     5	Enhances existing event subscription with publishing capabilities.
+     6	"""
+     7	
+     8	import asyncio
+     9	import logging
+    10	import sys
+    11	from pathlib import Path
+    12	from typing import Optional, Any
+    13	
+    14	logger = logging.getLogger(__name__)
+    15	
+    16	_integration_manager: Optional[Any] = None
+    17	_integration_enabled = True
+    18	
+    19	
+    20	def initialize_integration(workspace_id: str, event_bus_url: str = "redis://localhost:6379"):
+    21	    """Initialize Task-Orchestrator integration with ConPort-KG"""
+    22	    global _integration_manager, _integration_enabled
+    23	
+    24	    try:
+    25	        bridge_path = str(Path(__file__).parent.parent / "mcp-dopecon-bridge")
+    26	        if bridge_path not in sys.path:
+    27	            sys.path.insert(0, bridge_path)
+    28	
+    29	        from event_bus import EventBus
+    30	        from integrations.task_orchestrator import TaskOrchestratorIntegrationManager
+    31	
+    32	        event_bus = EventBus(redis_url=event_bus_url)
+    33	        _integration_manager = TaskOrchestratorIntegrationManager(
+    34	            event_bus=event_bus,
+    35	            workspace_id=workspace_id
+    36	        )
+    37	
+    38	        asyncio.create_task(_initialize_async(event_bus))
+    39	
+    40	        logger.info(f"✅ Task-Orchestrator integration enabled (bidirectional)")
+    41	
+    42	    except Exception as e:
+    43	        logger.warning(f"⚠️  Task-Orchestrator integration disabled: {e}")
+    44	        _integration_enabled = False
+    45	
+    46	
+    47	async def _initialize_async(event_bus):
+    48	    """Initialize EventBus connection"""
+    49	    try:
+    50	        await event_bus.initialize()
+    51	    except Exception as e:
+    52	        logger.error(f"EventBus initialization failed: {e}")
+    53	
+    54	
+    55	async def emit_task_status_change(
+    56	    task_id: str,
+    57	    task_title: str,
+    58	    old_status: str,
+    59	    new_status: str,
+    60	    progress_percentage: float = 0.0,
+    61	    complexity: Optional[float] = None
+    62	):
+    63	    """
+    64	    Emit task status change event.
+    65	
+    66	    Args:
+    67	        task_id: Task identifier
+    68	        task_title: Task title/description
+    69	        old_status: Previous status
+    70	        new_status: New status (TODO/IN_PROGRESS/DONE/BLOCKED)
+    71	        progress_percentage: Completion percentage
+    72	        complexity: Optional task complexity
+    73	    """
+    74	    if not _integration_enabled or _integration_manager is None:
+    75	        return
+    76	
+    77	    try:
+    78	        await _integration_manager.handle_task_status_change(
+    79	            task_id=task_id,
+    80	            task_title=task_title,
+    81	            old_status=old_status,
+    82	            new_status=new_status,
+    83	            progress_percentage=progress_percentage,
+    84	            complexity=complexity
+    85	        )
+    86	    except Exception as e:
+    87	        logger.debug(f"Event emission failed (non-blocking): {e}")
+    88	
+    89	
+    90	def get_integration_metrics() -> dict:
+    91	    """Get integration metrics"""
+    92	    if _integration_manager:
+    93	        return _integration_manager.get_metrics()
+    94	    return {"integration_enabled": False}

@@ -1,15 +1,15 @@
 ---
-id: PM_IMPLEMENTATION_LEDGER
-title: PM Plane Implementation Ledger (Post-Merge)
+id: pm-implementation-ledger
+title: Pm Implementation Ledger
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-22'
-last_review: '2026-03-27'
-next_review: '2026-06-22'
-prelude: Post-merge PM-plane implementation ledger replacing the older Phase 0 gap view.
+date: '2026-03-30'
+last_review: '2026-03-30'
+next_review: '2026-06-28'
+prelude: Pm Implementation Ledger (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # PM Plane Implementation Ledger (Post-Merge)
 
 **Status**: Active Ledger
@@ -87,3 +87,43 @@ The PM continuation stack changed the repo from "normalized PM tools missing" to
 - Metadata writes resolve to Leantime; progress writes resolve to ConPort; chronicle reads resolve to dope-memory.
 - Project-scoped workflow reads and transitions are now bound to Task Orchestrator runtime state.
 - The PM plane is **substantially implemented**, with remaining gaps concentrated in richer multi-source enrichment rather than missing canonical entrypoints.
+**Replaces**: Phase 0 Gap View (`docs/planes/pm/pm-plane-gaps.md`)
+
+This ledger records runtime truth, not target architecture prose. When the runtime diverges from the normalized PM-plane contract, the status is marked `partial` rather than promoted to `implemented`.
+
+## 1. Normalized PM-plane tools
+
+| Tool | Status | Runtime evidence | Notes |
+|---|---|---|---|
+| `pm_get_project_context` | Partial | `src/dopemux/pm/reads.py` | Exists, but currently returns a fail-closed Leantime envelope with empty `context_data`; it does not yet satisfy the ConPort-enriched contract described in the normalized tool docs. |
+| `pm_get_priority_queue` | Partial | `src/dopemux/pm/reads.py`; `services/task-orchestrator/app/api/project_workflow.py` | Normalized read exists and routes to Task Orchestrator, but the current project-scoped route returns a fail-closed unavailable envelope with no authoritative queue items yet. |
+| `pm_get_blockers` | Partial | `src/dopemux/pm/reads.py`; `services/task-orchestrator/app/api/project_workflow.py` | Normalized read exists and routes to Task Orchestrator, but the current project-scoped route returns a fail-closed unavailable blocker envelope rather than authoritative blocker state. |
+| `pm_get_workflow_state` | Partial | `src/dopemux/pm/reads.py`; `services/task-orchestrator/app/api/project_workflow.py` | Normalized read exists and routes to Task Orchestrator, but the current project-scoped route returns a fail-closed unavailable workflow-state envelope rather than authoritative transition state. |
+| `pm_update_work_item` | Implemented | `src/dopemux/pm/writes.py` | Canonical metadata write exists and rejects workflow-significant payloads. |
+| `pm_transition_work_item` | Partial | `src/dopemux/pm/writes.py`; `services/task-orchestrator/app/api/project_workflow.py` | Canonical write helper exists, but the project-scoped Task Orchestrator transition endpoint currently returns `legality_result="unavailable"` until a canonical runtime binding is added. |
+| `pm_get_sprint_snapshot` | Partial | `src/dopemux/pm/reads.py` | Exists, but currently returns a fail-closed Leantime envelope with empty `snapshot_data`. |
+| `pm_get_decision_context` | Implemented | `src/dopemux/pm/reads.py` | Normalized ConPort-backed decision-context read exists. |
+| `pm_log_progress` | Implemented | `src/dopemux/pm/writes.py` | Canonical ConPort write exists with dope-memory mirror receipts. |
+| `pm_get_work_chronicle` | Implemented | `src/dopemux/pm/chronicle.py` | Normalized dope-memory chronicle read exists with fail-closed behavior. |
+| `pm_search_project_knowledge` | Missing | Not found under `src/dopemux/pm/` or service adapters | Target contract exists in docs only. |
+| `pm_get_technical_context` | Missing | Not found under `src/dopemux/pm/` or service adapters | Target contract exists in docs only. |
+
+## 2. Canonical runtime entrypoints
+
+- **Canonical PM read entrypoint**: `src/dopemux/pm/reads.py`
+- **Canonical PM write entrypoint**: `src/dopemux/pm/writes.py`
+- **Canonical PM chronicle entrypoint**: `src/dopemux/pm/chronicle.py`
+- **Canonical PM event envelope**: `src/dopemux/events/types.py` (`PMEvent`)
+
+The duplicate legacy entrypoints `src/dopemux/pm/read.py` and `src/dopemux/pm/write.py` were removed during the PM continuation stack so the active runtime no longer has competing singular/plural PM modules.
+
+## 3. Runtime truths now established
+
+### Normalized workflow reads are present but still thin
+- `pm_get_priority_queue`, `pm_get_blockers`, and `pm_get_workflow_state` now exist in `src/dopemux/pm/reads.py`.
+- Their canonical backend is Task Orchestrator, not Leantime.
+- `services/task-orchestrator/app/api/project_workflow.py` now serves non-recursive fail-closed envelopes instead of recursively calling back through the public PM read adapter.
+
+### CLI Orphan-State Gaps
+- **Local Task Records:** The CLI creates tasks with a local `TaskRecord` representation that risks being orphaned if not synced cleanly back to ConPort/Leantime. (Evidence: `src/dopemux/adhd/task_decomposer.py:L40-L81`)
+>>>>>>> codex/pm-jules-000-baseline-ledger

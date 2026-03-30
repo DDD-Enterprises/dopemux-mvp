@@ -46,27 +46,5 @@ Generate a unified API surface reference document from upstream extraction artif
 7. If a required artifact is missing, emit the section header with `⚠️ Source artifact not available`
 8. Emit exactly the declared output and no additional files
 
-## Evidence Rules
-- Every reference entry must cite the specific item ID from its source artifact.
-- Evidence anchors use the form: `EVIDENCE: <artifact_filename>#<item_id>`
-- Cross-reference matrix entries must cite items from both/all surfaces being connected.
-- Do not include entries that cannot be traced to upstream artifact items.
-
-## Determinism Rules
-- Do not include `generated_at`, `timestamp`, `created_at`, `updated_at`, or `run_id`.
-- Use fixed heading order and fixed table row ordering by deterministic keys.
-- Sort Python API entries by module path, then symbol name alphabetically.
-- Sort service endpoints by service_id, then endpoint_path alphabetically.
-- Sort CLI commands by command hierarchy depth, then name alphabetically.
-
-## Anti-Fabrication Rules
-- Do not invent API entries, endpoints, or CLI commands not present in upstream artifacts.
-- Do not scan the repository directly — all information must come from declared inputs.
-- Do not add usage examples or tutorial content; this is a factual reference only.
-- If upstream data is incomplete, note gaps with `UNKNOWN` rather than inferring.
-
-## Failure Modes
-- Missing required upstream artifacts: emit the section header with `⚠️ Source artifact not available` and continue.
-- Empty upstream artifacts: emit the section with `⚠️ Source artifact empty — no reference entries generated`.
-- No cross-references found: emit the matrix section with a note that no matches were detected.
-- Very large API surface (>500 items): include all items but collapse implementation details; note `[DETAIL_COLLAPSED]`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

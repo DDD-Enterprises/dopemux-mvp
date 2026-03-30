@@ -1,0 +1,167 @@
+     1	#!/usr/bin/env python3
+     2	"""
+     3	Task-Orchestrator Query HTTP Server - Component 5 Wiring
+     4	Exposes orchestrator state via REST API on PORT_BASE+17 (default: 3017)
+     5	"""
+     6	
+     7	import asyncio
+     8	import logging
+     9	import os
+    10	from typing import Dict, Any, List, Optional
+    11	from fastapi import FastAPI, HTTPException, Query as QueryParam
+    12	from fastapi.middleware.cors import CORSMiddleware
+    13	import uvicorn
+    14	
+    15	# Import orchestrator (assuming enhanced_orchestrator.py is in same directory)
+    16	from enhanced_orchestrator import EnhancedTaskOrchestrator
+    17	
+    18	logging.basicConfig(level=logging.INFO)
+    19	logger = logging.getLogger(__name__)
+    20	
+    21	# Configuration
+    22	PORT_BASE = int(os.getenv("PORT_BASE", "3000"))
+    23	QUERY_PORT = PORT_BASE + 17  # 3017, 3047, 3077, etc.
+    24	LEANTIME_URL = os.getenv("LEANTIME_URL", "http://leantime:80")
+    25	LEANTIME_TOKEN = os.getenv("LEANTIME_TOKEN", "")
+    26	REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
+    27	WORKSPACE_ID = os.getenv("DOPEMUX_WORKSPACE_ROOT", "/Users/hue/code/dopemux-mvp")
+    28	
+    29	# Create FastAPI app
+    30	app = FastAPI(
+    31	    title="Task-Orchestrator Query API",
+    32	    description="Component 5: Cross-plane query endpoints for orchestrator state",
+    33	    version="1.0.0"
+    34	)
+    35	
+    36	# CORS
+    37	app.add_middleware(
+    38	    CORSMiddleware,
+    39	    allow_origins=["*"],
+    40	    allow_credentials=True,
+    41	    allow_methods=["*"],
+    42	    allow_headers=["*"],
+    43	)
+    44	
+    45	# Global orchestrator instance
+    46	orchestrator: Optional[EnhancedTaskOrchestrator] = None
+    47	
+    48	
+    49	@app.on_event("startup")
+    50	async def startup():
+    51	    """Initialize orchestrator on startup."""
+    52	    global orchestrator
+    53	    logger.info("🚀 Starting Task-Orchestrator Query Server...")
+    54	
+    55	    # Get MCP tools for ConPort integration
+    56	    from orchestrator_mcp_tools import get_mcp_tools
+    57	    mcp_tools = await get_mcp_tools()
+    58	
+    59	    orchestrator = EnhancedTaskOrchestrator(
+    60	        leantime_url=LEANTIME_URL,
+    61	        leantime_token=LEANTIME_TOKEN,
+    62	        redis_url=REDIS_URL,
+    63	        workspace_id=WORKSPACE_ID,
+    64	        mcp_tools=mcp_tools
+    65	    )
+    66	    
+    67	    await orchestrator.initialize()
+    68	    logger.info(f"✅ Query server ready on port {QUERY_PORT}")
+    69	
+    70	
+    71	@app.on_event("shutdown")
+    72	async def shutdown():
+    73	    """Cleanup on shutdown."""
+    74	    global orchestrator
+    75	    if orchestrator:
+    76	        orchestrator.running = False
+    77	        logger.info("👋 Query server shutting down")
+    78	
+    79	
+    80	@app.get("/health")
+    81	async def health():
+    82	    """Health check endpoint."""
+    83	    return {
+    84	        "status": "healthy",
+    85	        "port": QUERY_PORT,
+    86	        "orchestrator_running": orchestrator.running if orchestrator else False
+    87	    }
+    88	
+    89	
+    90	@app.get("/tasks")
+    91	async def get_tasks(
+    92	    status: Optional[str] = QueryParam(None),
+    93	    sprint_id: Optional[str] = QueryParam(None),
+    94	    limit: int = QueryParam(50, ge=1, le=200)
+    95	):
+    96	    """Query tasks from orchestrator."""
+    97	    if not orchestrator:
+    98	        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+    99	    
+   100	    tasks = await orchestrator.get_tasks(
+   101	        status_filter=status,
+   102	        sprint_id_filter=sprint_id,
+   103	        limit=limit
+   104	    )
+   105	    
+   106	    return tasks
+   107	
+   108	
+   109	@app.get("/tasks/{task_id}")
+   110	async def get_task(task_id: str):
+   111	    """Get single task details."""
+   112	    if not orchestrator:
+   113	        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+   114	    
+   115	    task = await orchestrator.get_task_by_id(task_id)
+   116	    
+   117	    if not task:
+   118	        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+   119	    
+   120	    return task
+   121	
+   122	
+   123	@app.get("/adhd-state")
+   124	async def get_adhd_state():
+   125	    """Get current ADHD state."""
+   126	    if not orchestrator:
+   127	        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+   128	    
+   129	    return await orchestrator.get_adhd_state()
+   130	
+   131	
+   132	@app.get("/recommendations")
+   133	async def get_recommendations(
+   134	    limit: int = QueryParam(5, ge=1, le=20)
+   135	):
+   136	    """Get ADHD-aware task recommendations."""
+   137	    if not orchestrator:
+   138	        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+   139	    
+   140	    return await orchestrator.get_task_recommendations(limit=limit)
+   141	
+   142	
+   143	@app.get("/session")
+   144	async def get_session():
+   145	    """Get current session status."""
+   146	    if not orchestrator:
+   147	        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+   148	    
+   149	    return await orchestrator.get_session_status()
+   150	
+   151	
+   152	@app.get("/active-sprint")
+   153	async def get_active_sprint_info():
+   154	    """Get active sprint information."""
+   155	    if not orchestrator:
+   156	        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+   157	
+   158	    return await orchestrator.get_active_sprint_info()
+   159	
+   160	
+   161	if __name__ == "__main__":
+   162	    uvicorn.run(
+   163	        "query_server:app",
+   164	        host="0.0.0.0",
+   165	        port=QUERY_PORT,
+   166	        log_level="info"
+   167	    )

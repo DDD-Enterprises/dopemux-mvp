@@ -203,6 +203,29 @@ class TestModelMapSynthesisLane(unittest.TestCase):
     def test_s12_is_ce(self):
         self.assertEqual(self._step("S12")["lane_class"], "CE")
 
+    def test_synthesis_has_sidefill_enabled(self):
+        synthesis_steps = [s for s in self.steps if s["lane_class"] == "SYNTHESIS"]
+        for s in synthesis_steps:
+            self.assertTrue(s["sidefill_enabled"], f"{s['step_id']} should have sidefill_enabled=true")
+
+    def test_synthesis_has_reasoning_primary(self):
+        synthesis_steps = [s for s in self.steps if s["lane_class"] == "SYNTHESIS"]
+        for s in synthesis_steps:
+            primary_models = [r["model_id"] for r in s["primary_routes"]]
+            self.assertIn(
+                "grok-4.20-beta-0309-reasoning",
+                primary_models,
+                f"{s['step_id']} should have grok-reasoning in primary",
+            )
+
+    def test_synthesis_repair_mode(self):
+        synthesis_steps = [s for s in self.steps if s["lane_class"] == "SYNTHESIS"]
+        for s in synthesis_steps:
+            self.assertEqual(
+                s["repair_mode"], "targeted_then_envelope",
+                f"{s['step_id']} should use targeted_then_envelope repair"
+            )
+
 
 # ---------------------------------------------------------------------------
 # Prompt contract amendments

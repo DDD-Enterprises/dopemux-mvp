@@ -594,6 +594,7 @@ phases:
     - G2
     - G3
     - G4
+    - G5
     - G9
     steps:
     - step_id: G0
@@ -627,6 +628,12 @@ phases:
       - phase_scope
       outputs:
       - GOV_SECRETS_SURFACE.json
+    - step_id: G5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G5_AUTH_FLOW_SURFACE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - AUTH_FLOW_SURFACE.json
     - step_id: G9
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md
       coverage_targets:
@@ -693,6 +700,7 @@ phases:
     - R8
     - R9
     - R10
+    - R11
     steps:
     - step_id: R0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md
@@ -762,6 +770,12 @@ phases:
       - phase_scope
       outputs:
       - TWO_PLANE_ARCHITECTURE_TRUTH.md
+    - step_id: R11
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R11_SECURITY_RISK_SYNTHESIS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - SECURITY_RISK_SYNTHESIS.md
   X:
     required_steps:
     - X0

@@ -85,39 +85,5 @@ Identify unreachable, unused, and deprecated code: functions/classes never impor
 11. Build deterministic IDs using stable content keys `(file_path|symbol_name|dead_code_type)`.
 12. Emit exactly `DEAD_CODE_INVENTORY.json` and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not classify code as dead without evidence of non-usage across the scanned scope.
-- Do not assume dynamic dispatch means code is alive; mark as `confidence: low` instead.
-- Entry point functions (main, CLI handlers, API route handlers) are NOT dead code even if no module imports them.
-- Test-only references should be noted in `referenced_by` but do not prevent dead code classification.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Dynamic imports: if `importlib`, `__import__()`, or `getattr()` patterns are detected, lower confidence for all unreferenced symbols in that module.
-- Too many dead code items: if >500 items found, emit only confidence high items and note truncation in `coverage_notes`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

@@ -16,9 +16,9 @@ prelude: Full-bundle ConPort TODO/BLOCKED coverage check against current master 
 
 This pass scans all available ConPort import bundles under `reports/conport_sqlite_exports/**/import_bundles/*_conport_import_bundle.json` and evaluates TODO/BLOCKED description coverage against the active master fix docs:
 
-1. `docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06.md`
-1. `docs/05-audit-reports/final-state-feature-baseline-and-execution-plan-2026-02-06.md`
-1. `docs/05-audit-reports/leantime-bridge-readiness-2026-02-06.md`
+1. `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
+1. `docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md`
+1. `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
 ## Summary
 
@@ -45,7 +45,7 @@ Follow-on deep extraction added nested status records from `custom_data.value` p
 Evidence:
 
 - `reports/strict_closure/conport_deep_status_task_extract_2026-02-06.json`
-- `docs/05-audit-reports/conport-deep-status-task-extract-2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_DEEP_STATUS_TASK_EXTRACT_2026-02-06.md`
 
 ## Runtime Override Notes
 
@@ -58,7 +58,7 @@ The only historical `BLOCKED` entry in this extraction has been runtime-verified
 Evidence:
 
 - `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`
-- `docs/05-audit-reports/litellm-blocker-verification-2026-02-06.md`
+- `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
 
 ## Highest-Priority Underrepresented Items
 

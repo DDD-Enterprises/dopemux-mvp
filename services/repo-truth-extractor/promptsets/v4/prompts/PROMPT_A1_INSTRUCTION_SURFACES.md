@@ -20,56 +20,13 @@ Focus on concrete, machine-verifiable implementation facts.
 - `scripts/**`
 - `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
 - `installers/**`
 - `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
-- `installers/**`
-- `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.claude/**`
-- `.github/**`
-- `.taskx/**`
-- `config/**`
-- `scripts/**`
-- `docker/**`
 - `compose.yml`
 - `docker-compose*.yml`
 - `README.md`
@@ -109,54 +66,27 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the instruction partition as primary scan surface
-2. Extract instruction facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted instruction elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each INSTRUCTION_SURFACES item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on the instruction partition as primary scan surface.
+2. Scan `.claude/`, `.vibe/`, `.dopemux/`, and `.github/` for instruction-bearing files:
+   - Identify `.md`, `.json`, `.yaml`, and `.txt` files containing keywords: "system instructions", "persona", "prompt template", "workflow playbook", "agent rules".
+   - Categorize each source by `kind`: `claude_system`, `agent_profile`, `tooling_instructions`, `prompt_template`, or `workflow_playbook`.
+3. Extract literal tool references: scan instruction text for mentions of "conport", "serena", "mcp", "litellm", "taskx", and "dope-context".
+4. Identify service references: scan for "dashboard", "orchestrator", "proxy", "brainz", or "supervisor".
+5. Extract specific behavior and boundary claims:
+   - `declared_behaviors`: capture literal "Should..." or "Always..." statements.
+   - `declared_boundaries`: capture "Must NOT...", "Never...", or "Forbidden" constraints.
+   - `declared_dataflows`: capture descriptions of data movement between components.
+6. Build relationship graph: map instruction files to the tools and services they explicitly mention or claim to control.
+7. For each REPO_INSTRUCTION_SURFACE item, populate `id`, `kind`, `scope`, and mandatory `evidence` (path, line_range, excerpt).
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path|symbol|name).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID.
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
-- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

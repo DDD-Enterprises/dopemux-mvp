@@ -28,15 +28,14 @@ class ProfileWizard:
 
     # Available MCP servers
     ALL_MCPS = [
-        "serena-v2",
-        "conport",
-        "dope-context",
-        "pal",
-        "zen",
-        "gpt-researcher",
-        "exa",
-        "desktop-commander",
-        "mas-sequential-thinking"
+        "dopemux-serena",
+        "dopemux-conport",
+        "dopemux-claude-context",
+        "dopemux-pal",
+        "dopemux-zen",
+        "dopemux-gpt-researcher",
+        "dopemux-desktop-commander",
+        "dopemux-leantime-bridge"
     ]
 
     def __init__(self, repo_path: Optional[Path] = None):
@@ -97,7 +96,7 @@ class ProfileWizard:
         if mcp_choice == "recommended":
             selected_mcps = analysis.suggested_mcps
         elif mcp_choice == "minimal":
-            selected_mcps = ["serena-v2", "conport"]
+            selected_mcps = ["dopemux-serena", "dopemux-conport"]
         elif mcp_choice == "full":
             selected_mcps = self.ALL_MCPS
         else:  # custom

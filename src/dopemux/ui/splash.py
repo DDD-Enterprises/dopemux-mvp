@@ -1,37 +1,21 @@
-"""
-DØPEMÜX Boot Sequence and Splash Screens
-"""
 import time
 from rich.live import Live
-from rich.console import Group
 from rich.text import Text
-from rich.panel import Panel
 from .theme import Glyphs
 
-DOPEMUX_ASCII = """
-[mint]
-██████╗  [ritual.cyan]Ø[/ritual.cyan] ██████╗ ███████╗[violet]███╗   ███╗[/violet]██╗   ██╗██╗  ██╗
-██╔══██╗   ██╔══██╗██╔════╝[violet]████╗ ████║[/violet]██║   ██║╚██╗██╔╝
-██║  ██║   ██████╔╝█████╗  [violet]██╔████╔██║[/violet]██║   ██║ ╚███╔╝ 
-██║  ██║   ██╔═══╝ ██╔══╝  [violet]██║╚██╔╝██║[/violet]██║   ██║ ██╔██╗ 
-██████╔╝   ██║     ███████╗[violet]██║ ╚═╝ ██║[/violet]╚██████╔╝██╔╝ ██╗
-╚═════╝    ╚═╝     ╚══════╝[violet]╚═╝     ╚═╝[/violet] ╚═════╝ ╚═╝  ╚═╝
-[/mint]
-"""
-
 def boot_sequence():
-    """
-    Displays a cinematic boot sequence simulating neural link mounting.
-    """
+    """Display a cyber-themed boot sequence."""
     messages = [
-        ("Initializing flight-deck telemetry...", "OK", "mint"),
-        ("Mounting neural context...", "ACTIVE", "ritual.cyan"),
-        ("Synchronizing MCP tool boundaries...", "OK", "mint"),
-        ("Calibrating cognitive sensors...", "ENGAGED", "gilt.edge"),
+        ("INITIALIZING CORE SENSORS", "READY", "mint"),
+        ("SYNCHRONIZING ATTENTION MAP", "ALIGNED", "electric_blue"),
+        ("LOADING WORKTREE ISOLATION", "ENGAGED", "soft_yellow"),
+        ("PRIMING RITUAL CHAMBER", "STABLE", "lavender"),
     ]
     
-    with Live(Text("", justify="center"), refresh_per_second=15, transient=True) as live:
-        current_text = Text.from_markup(DOPEMUX_ASCII)
+    current_text = Text()
+    current_text.append(f"\n{Glyphs.INFO} [bold]DØPEMÜX CORE SYSTEM IGNITION[/bold]\n", style="lavender")
+    
+    with Live(current_text, refresh_per_second=10, transient=True) as live:
         live.update(current_text)
         time.sleep(0.4)
         
@@ -42,6 +26,9 @@ def boot_sequence():
             time.sleep(0.3)
             current_text.append(f"[{status}]", style=f"bold {color}")
             live.update(current_text)
-            time.sleep(0.1)
+            time.sleep(0.2)
             
-        time.sleep(0.5)
+        current_text.append("\n\n" + "="*40 + "\n", style="text.dim")
+        current_text.append(f"{Glyphs.FIRE} [bold]SYSTEM LIVE - RITUAL COMMENCING[/bold]\n", style="mint")
+        live.update(current_text)
+        time.sleep(0.8)

@@ -64,56 +64,25 @@ Extract hook contracts and event flow graphs: map every hook trigger to its hand
 - `direction` enum: `producer_to_consumer | request_response | broadcast | pub_sub`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the hooks/events partition as primary scan surface
-2. Scan `src/dopemux/hooks/**` for hook registration patterns: decorators, registration calls, handler mappings
-3. Scan `src/dopemux/events/**` and `src/dopemux/event_bus.py` for event type definitions, publish/subscribe patterns
-4. Scan `.claude/hooks/**` for Claude Code hook definitions (pre/post hooks, validation hooks)
-5. Scan `.githooks/**` for git hook scripts and their trigger conditions
-6. For each hook contract, extract the event envelope: `trigger_source` → `handler_path` → `event_types[]` → `transport_mechanism`
-7. Classify each hook into a `lifecycle_phase` based on when it fires in the system lifecycle
-8. Build the event flow graph: for each event type, trace producer → consumer paths with transport annotations
-9. Cross-reference with `REPO_HOOKS_SURFACE.json` to ensure coverage of previously identified hooks
-10. Build deterministic IDs using stable content keys (path/trigger_source/handler_path for contracts, source/target/event_type for flows)
-11. Attach evidence to every non-derived field and every relationship edge
-12. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash)
-13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps
-14. Emit exactly the declared outputs and no additional files
+1. Load upstream `REPOCTRL_INVENTORY.json`, `REPOCTRL_PARTITIONS.json`, and `REPO_HOOKS_SURFACE.json`.
+2. Scan `src/dopemux/hooks/**/*.py` and `src/dopemux/mcp/hooks.py` for registration and handler patterns:
+   - Search for decorators: `@hook`, `@on_event`, `@register_handler`.
+   - Search for registration calls: `event_bus.subscribe()`, `hooks.add()`, `callback_manager.register()`.
+3. Map every hook trigger to its operational contract:
+   - `trigger_source`: identify the event ID or condition that fires the hook.
+   - `handler_path`: locate the function or script that executes on trigger.
+   - `event_types`: identify the literal event names (e.g., `TASK_CREATED`, `GIT_PRE_COMMIT`).
+   - `transport_mechanism`: categorize as `eventbus`, `direct_call`, `webhook`, `mcp_tool`, or `signal`.
+   - `lifecycle_phase`: identify phase (e.g., `pre_launch`, `post_launch`, `on_message`, `on_error`).
+4. Scan `src/dopemux/event_bus.py` and `src/dopemux/events/*.py` to build the `EVENT_FLOW_GRAPH`:
+   - Identify `producers`: where `event_bus.publish()` or `emit()` is called.
+   - Identify `consumers`: where handlers are registered via subscription.
+   - Trace flow from `source` component to `target` component per `event_type`.
+5. Build deterministic IDs using stable content keys (path|trigger_source|handler_path).
+6. Attach evidence to every non-derived field, anchoring to both the trigger registration AND the handler definition.
+7. Normalize arrays by stable sort keys; deduplicate by ID.
+8. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+9. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-- Hook contracts must include evidence for both the trigger registration AND the handler definition.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent hook contracts, event types, handlers, or transport mechanisms.
-- Do not infer event flow from naming conventions alone; require direct code evidence (registration calls, decorators, import chains).
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-- Do not assume a function is a hook handler without verifying its registration or decorator.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Orphaned hooks: hooks registered but handler not found — emit with `handler_path: UNKNOWN` and `status: orphaned`
-- Circular event flows: if event A triggers B which triggers A, emit both edges and add `status: circular_dependency`
-- Mixed transport: if a hook uses multiple transport mechanisms, emit separate items per transport with cross-reference
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

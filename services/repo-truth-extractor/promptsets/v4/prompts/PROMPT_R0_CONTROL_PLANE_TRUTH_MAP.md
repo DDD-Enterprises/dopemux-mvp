@@ -34,12 +34,14 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, evidence`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for control plane truth map synthesis
-2. Synthesize CONTROL_PLANE_TRUTH_MAP: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load Phase A, H, D, and C normalized artifacts from `extraction/**/norm/`.
+2. Map **Repo Control Plane**: Extract `instruction_surfaces`, `hooks`, `compose`, `router`, `litellm`, and `mcp` definitions from Phase A/C.
+3. Map **Home Control Plane**: Extract `configs`, `router`, `litellm`, `mcp`, and `sqlite` metadata from Phase H.
+4. Construct **Invocation Graph**: Trace triggers from repo instructions to service startup (Compose/Tmux).
+5. Identify **Coupling Points**: Match control-plane configs to code entrypoints (Phase C).
+6. Flag **Portability Risks**: Identify hardcoded machine paths or non-portable environment dependencies.
+7. Arbitration: If A/D (Intent) conflicts with C (Implementation), mark `status: conflict` and cite both.
+8. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.
@@ -47,41 +49,8 @@ Focus on concrete, machine-verifiable implementation facts.
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header
-- Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

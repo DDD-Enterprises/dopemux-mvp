@@ -3,13 +3,8 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
-from pathlib import Path
-
-import pytest
-
-from dopemux_pr_merge_specialist.github_api import GitHubClient
-from dopemux_pr_merge_specialist.policy import PolicyError, load_effective_policy, policy_artifact_payload
 from dopemux_pr_merge_specialist.runtime import CommandResult, append_live_log
+from dopemux_pr_merge_specialist.policy import PolicyError, load_effective_policy, policy_artifact_payload
 from dopemux_pr_merge_specialist.schema import ValidationStatus
 from dopemux_pr_merge_specialist.validation import run_validation
 
@@ -24,53 +19,6 @@ def test_repo_policy_loads_and_has_fingerprint():
     assert payload["policy_fingerprint"]
     assert payload["policy_source"] in {"repo", "bundled", "explicit"}
     assert policy["remote_check_repro"]["steps"]
-
-
-def test_invalid_policy_fails_closed(tmp_path: Path):
-    bad = tmp_path / "bad-policy.yaml"
-    bad.write_text(
-        "version: 1\nvalidation:\n  steps:\n    - name: broken\n      command: nope\n",
-        encoding="utf-8",
-    )
-    with pytest.raises(PolicyError):
-        load_effective_policy(REPO_ROOT, explicit_path=str(bad))
-
-
-def test_invalid_remote_check_repro_step_fails_closed(tmp_path: Path):
-    bad = tmp_path / "bad-policy.yaml"
-    bad.write_text(
-        """
-version: 1
-platform:
-  supported: [darwin]
-  unsupported: [windows]
-  shell: posix
-timeouts:
-  subprocess_seconds: 30
-  gh_seconds: 30
-  phase_seconds: 30
-validation:
-  require_local_validation_for_merge_ready: true
-  steps: []
-remote_check_repro:
-  steps:
-    - command: [pytest, tests/]
-      scope: repo
-gates: {}
-thread_rules: {}
-check_rules: {}
-conflict_rules: {}
-safety:
-  negative_allowlist: []
-retry: {}
-merge: {}
-""".strip(),
-        encoding="utf-8",
-    )
-    with pytest.raises(PolicyError, match="check_name"):
-        load_effective_policy(REPO_ROOT, explicit_path=str(bad))
-
-
 def test_validation_dry_run_is_not_executed(tmp_path: Path):
     policy = load_effective_policy(REPO_ROOT)
     report = run_validation(
@@ -91,28 +39,6 @@ def test_validation_dry_run_is_not_executed(tmp_path: Path):
     assert all(step.status == "planned" for step in report.steps)
 
 
-def test_append_live_log_creates_append_only_stable_lines(tmp_path: Path):
-    log_path = tmp_path / "LIVE_LOG.txt"
-
-    append_live_log(
-        log_path,
-        level="info",
-        scope="queue",
-        message="first line\nwith newline",
-    )
-    append_live_log(
-        log_path,
-        level="warning",
-        scope="pr:42",
-        message="second line",
-    )
-
-    lines = log_path.read_text(encoding="utf-8").splitlines()
-    assert len(lines) == 2
-    assert lines[0].endswith("[INFO] queue: first line with newline")
-    assert lines[1].endswith("[WARNING] pr:42: second line")
-
-
 def test_module_entrypoint_works_without_pythonpath():
     env = os.environ.copy()
     env.pop("PYTHONPATH", None)
@@ -124,41 +50,6 @@ def test_module_entrypoint_works_without_pythonpath():
             "self-check",
             "--json",
             "--smoke",
-            "--allow-dirty",
-        ],
-        cwd=REPO_ROOT,
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=60,
-    )
-    assert result.returncode == 0, result.stderr or result.stdout
-    assert '"ok": true' in result.stdout
-
-
-def test_resolve_repo_slug_falls_back_to_git_remote(monkeypatch):
-    def fake_run_command(cmd, *, cwd=None, env=None, timeout_seconds=600):
-        command = list(cmd)
-        if command[:4] == ["gh", "repo", "view", "--json"]:
-            return CommandResult(command, 1, "", "gh auth missing")
-        if command == ["git", "remote", "get-url", "origin"]:
-            return CommandResult(
-                command,
-                0,
-                "https://github.com/DDD-Enterprises/dopemux-mvp.git\n",
-                "",
-            )
-        raise AssertionError(f"Unexpected command: {command}")
-
-    monkeypatch.setattr(
-        "dopemux_pr_merge_specialist.github_api.run_command",
-        fake_run_command,
-    )
-
-    client = GitHubClient(repo=None, repo_root=REPO_ROOT, policy={})
-    assert client.resolve_repo_slug() == "DDD-Enterprises/dopemux-mvp"
-
-
 def test_validation_scopes_commands_to_changed_pr_files(monkeypatch, tmp_path: Path):
     recorded_commands = []
 

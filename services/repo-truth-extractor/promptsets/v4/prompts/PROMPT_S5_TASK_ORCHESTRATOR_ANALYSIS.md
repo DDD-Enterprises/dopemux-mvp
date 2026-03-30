@@ -43,22 +43,5 @@ Produce phase `S5` synthesis artifacts analyzing the Task Orchestrator. This ste
 5. Identify unevidenced or highly-coupled dependencies and Operational Gaps.
 6. Format identically into both `TASK_ORCHESTRATOR_SYNTHESIS.md` and `S5_TASK_ORCHESTRATOR.md`.
 
-## Evidence Rules
-- Every mechanism (e.g., routing algorithm, dependency check) must cite the provided extraction file.
-- Fallback behaviors must explicitly reference code or control truth evidence.
-- Do not cite files outside of the provided scope.
-- All evidence citations must include `path`, `line_range`, and `excerpt` keys.
-
-## Determinism Rules
-- Fix the output structure and sort lists lexicographically by dependency name.
-- Avoid runtime elements like timestamps, run IDs, or `generated_at` fields.
-- Ensure the output is stable and invariant; the exact same input must yield the exact same output bytes.
-- Speculative language or varying descriptions are forbidden.
-
-## Anti-Fabrication Rules
-- Do not infer orchestrator plugins or modules that have no presence in the artifacts.
-- Do not claim the orchestrator controls services decoupled in the `WORKFLOWS_TRUTH_GRAPH.md`.
-
-## Failure Modes
-- Missing TaskX / Task Orchestrator inputs: state `UNKNOWN` orchestrator status and abort further evaluation.
-- Contradictory truth sources: emit `ESCALATE_TO_PRO` describing the contradiction.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

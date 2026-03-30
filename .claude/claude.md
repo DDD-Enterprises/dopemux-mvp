@@ -54,6 +54,14 @@ You are working on a **python project** with Dopemux ADHD optimizations enabled.
 
 ## Project Standards
 
+### Documentation Standards
+- Follow `docs/03-reference/contributing.md` for all doc changes
+- Always place docs in correct Diataxis section (01-tutorials through 92-runbooks)
+- Never create `-2`/`-3` filename copies - use git for versioning
+- Always use lowercase kebab-case filenames
+- All docs require YAML frontmatter (id, title, type, owner, date, status, prelude)
+- Run `scripts/lint-docs.sh` after doc changes to check hygiene
+- Archive superseded docs by moving to `archive/`, not by renaming
 
 ### Code Organization
 - Use src/ layout for packages

@@ -1,0 +1,10 @@
+     1	services/taskmaster/__pycache__/bridge_adapter.cpython-313.pyc
+     2	services/taskmaster/__pycache__/server.cpython-313.pyc
+     3	services/taskmaster/bridge_adapter.py
+     4	services/taskmaster/server.py
+     5	services/taskmaster/src/dopemux_taskmaster.egg-info/PKG-INFO
+     6	services/taskmaster/src/dopemux_taskmaster.egg-info/SOURCES.txt
+     7	services/taskmaster/src/dopemux_taskmaster.egg-info/dependency_links.txt
+     8	services/taskmaster/src/dopemux_taskmaster.egg-info/entry_points.txt
+     9	services/taskmaster/src/dopemux_taskmaster.egg-info/requires.txt
+    10	services/taskmaster/src/dopemux_taskmaster.egg-info/top_level.txt

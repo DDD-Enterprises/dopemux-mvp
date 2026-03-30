@@ -52,6 +52,7 @@ artifacts:
   - id
   allow_empty_array_fields:
   - issues
+  - status
 - phase: A
   artifact_name: REPO_COMPOSE_SERVICE_GRAPH.json
   canonical_writer_step_id: A99
@@ -886,6 +887,17 @@ artifacts:
   - path
   - line_range
   - id
+- phase: G
+  artifact_name: AUTH_FLOW_SURFACE.json
+  canonical_writer_step_id: G5
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
 - phase: H
   artifact_name: HOMECTRL_NORM_MANIFEST.json
   canonical_writer_step_id: H9
@@ -910,6 +922,7 @@ artifacts:
   - id
   allow_empty_array_fields:
   - issues
+  - status
 - phase: H
   artifact_name: HOME_INVENTORY.json
   canonical_writer_step_id: H0
@@ -1199,6 +1212,14 @@ artifacts:
 - phase: R
   artifact_name: TWO_PLANE_ARCHITECTURE_TRUTH.md
   canonical_writer_step_id: R10
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: R
+  artifact_name: SECURITY_RISK_SYNTHESIS.md
+  canonical_writer_step_id: R11
   kind: markdown
   norm_artifact: true
   allow_timestamp_keys: false

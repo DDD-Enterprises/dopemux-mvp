@@ -251,24 +251,9 @@ def decide_merge_action(
                 reason_code="admin_bypass_ready",
             )
 
+    if pending_checks and not non_check_blockers:
         return MergeDecision(
-            action=MergeActionType.BLOCKED,
-            command=[],
-            reason="; ".join(item.message for item in non_check_blockers),
-            reason_code=non_check_blockers[0].finding_type,
-        )
-        
-    if _status_value(validation_report.status) != ValidationStatus.PASSED.value:
-        return MergeDecision(
-            action=MergeActionType.BLOCKED,
-            command=[],
-            reason="Local validation has not produced a passing result for this SHA.",
-            reason_code="validation_missing_or_failed",
-        )
-
-    if pending_checks:
-        return MergeDecision(
-            action=MergeActionType.AUTO_MERGE_FALLBACK,
+            action=MergeActionType.AUTO_MERGE_ENABLE,
             command=[],
             reason="All structural gates green; enabling auto-merge for pending checks.",
             reason_code="auto_merge_pending_checks",

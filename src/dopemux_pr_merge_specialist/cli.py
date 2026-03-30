@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 
+from . import engine
 from .action_model import result_to_dashboard_entry
 from .classification import classify_pr, risk_score
 from .conflict import build_conflict_analysis
@@ -486,44 +487,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     self_check_parser.set_defaults(func=_self_check)
 
-    health_parser = sub.add_parser(
-        "health", help="📊 Operational HUD: Show current health metrics and scale-gate decisions."
-    )
-    add_common_arguments(health_parser)
-    health_parser.set_defaults(func=_health)
-
-    interactive_parser = sub.add_parser(
-        "interactive", help="🚀 Remediation Cockpit: Launch the interactive merge wizard and flight deck."
-    )
-    add_common_arguments(interactive_parser)
-    interactive_parser.set_defaults(func=cmd_interactive)
-
-    flight_parser = sub.add_parser(
-        "flight", help="📊 Grand Orchestrator: Launch the persistent PR merge dashboard."
-    )
-    add_common_arguments(flight_parser)
-    flight_parser.add_argument(
-        "--limit", type=int, default=50, help="📊 HUD Limit: Maximum PRs to render in the dashboard."
-    )
-    flight_parser.add_argument(
-        "--strategy", choices=["simple", "hybrid"], default="hybrid", help="🧠 Sorting Ritual: Cognitive strategy for prioritization."
-    )
-    flight_parser.add_argument(
-        "--prioritize",
-        action="append",
-        default=[],
-        help="🎯 Focal Priority: PR identifiers to move to the front.",
-    )
-    flight_parser.add_argument(
-        "--only",
-        action="append",
-        default=[],
-        help="🔬 Isolated Focus: PR identifiers to include exclusively.",
-    )
-    flight_parser.set_defaults(func=cmd_flight)
-
     flight_deck_parser = sub.add_parser(
-        "flight-deck", help="🚀 Mission Control: Launch the Flight Deck operations center with shared CI blocker detection."
+        "flight-deck",
+        help="🚀 Grand Orchestration: Launch the interactive PR merge cockpit.",
     )
     add_common_arguments(flight_deck_parser)
     flight_deck_parser.add_argument(
@@ -608,33 +574,17 @@ def cmd_ops(args: argparse.Namespace) -> int:
     print("📊 Flight Deck Operational Metrics")
     print("=" * 50)
 
-    # Read existing operational report if available
-    report_path = ops_dir / "OPERATIONALIZATION_REPORT.json"
-    if report_path.exists():
+    # Read metrics summary if available
+    metrics_summary_path = Path("proof/pr_merge/metrics/METRICS_SUMMARY.json")
+    if metrics_summary_path.exists():
         try:
-            report = json.loads(report_path.read_text())
-            print(f"\n📈 Current Status: {report.get('status', 'UNKNOWN')}")
-            print(f"🎛️ Posture: {report.get('posture', 'GO_SUPERVISED_ONLY')}")
-            print(f"📝 Flight Deck Sessions: {report.get('flight_deck_sessions', 0)}")
-            print(f"✍️ Formal Signoffs: {report.get('formal_signoffs', 0)}")
-            print(
-                f"🛡️ Auto-Apply Safety: {report.get('auto_apply_safety_record', 'UNKNOWN')}"
-            )
-            print(f"📊 Runtime Stability: {report.get('runtime_stability', 1.0)}")
-
-            # Show manifest if available
-            manifest_path = ops_dir / "OPERATIONALIZATION_MANIFEST.json"
-            if manifest_path.exists():
-                manifest = json.loads(manifest_path.read_text())
-                print("\n📋 Manifest:")
-                print(f"   Version: {manifest.get('version', '1.0.0')}")
-                print(
-                    f"   Artifacts: {', '.join(manifest.get('artifacts', {}).keys())}"
-                )
-
-            return 0
-        except Exception as e:
-            print(f"⚠️ Error reading ops report: {e}")
+            m_summary = json.loads(metrics_summary_path.read_text())
+            print(f"\n📊 Performance Summary:")
+            print(f"   Success Rate: {m_summary.get('success_rate', 0.0)*100:.1f}%")
+            print(f"   Avg Duration: {m_summary.get('avg_duration_ms', 0.0)/1000:.2f}s")
+            print(f"   Threads Resolved (Session): {m_summary.get('total_threads_resolved_session', 0)}")
+        except Exception:
+            pass
 
     # Fallback: Show basic Flight Deck info
     print("\n📈 Current Status: STANDBY")
