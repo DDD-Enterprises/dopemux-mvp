@@ -47,7 +47,6 @@ try:
         GeminiBatchClient,
         OpenAIBatchClient,
         OpenRouterBatchClient,
-        UnsupportedBatchProvider,
         XAIBatchClient,
     )
 except ModuleNotFoundError:
@@ -67,7 +66,6 @@ except ModuleNotFoundError:
     OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
     XAIBatchClient = batch_clients_module.XAIBatchClient
     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
-    UnsupportedBatchProvider = batch_clients_module.UnsupportedBatchProvider
 
 try:
     from lib.intelligence_router import IntelligenceRouter
@@ -624,7 +622,6 @@ GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
 }
 
 _OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
-_UNUSED_GLOBALS = (_OPTIMAL_NO_CODE_PHASES,)
 OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
