@@ -81,13 +81,13 @@ prelude: Prioritized execution packet from live ConPort backlog undercoverage, f
 ## Notes
 
 1. `profile_alias_or_residual` items are intentionally excluded here and treated as wording/coverage alias candidates unless contradicted by runtime evidence.
-1. This packet is additive to `docs/05-audit-reports/conport-underrepresented-execution-packet-2026-02-06.md` and targets live runtime backlog drift specifically.
+1. This packet is additive to `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md` and targets live runtime backlog drift specifically.
 1. All 25 true-open lines from this packet are now explicitly promoted into the master miss matrix to close literal line-coverage drift:
-   `docs/05-audit-reports/conport-master-todo-miss-matrix-2026-02-06.md`.
+   `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`.
 1. Post-promotion recheck confirms exact line-coverage closure for this packet (`0` exact misses out of `25`):
    `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`.
 1. Detailed verification for the `kg_dependency_unification` subset is captured in:
-   `docs/05-audit-reports/kg-dependency-unification-verification-2026-02-06.md`.
+   `docs/05-audit-reports/KG_DEPENDENCY_UNIFICATION_VERIFICATION_2026-02-06.md`.
 
 ## Source Artifacts
 

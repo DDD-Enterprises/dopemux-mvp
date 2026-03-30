@@ -26,55 +26,6 @@ def detect_render_mode() -> RenderMode:
     except ImportError:
         return RenderMode.PLAIN
 
-
-VALIDATION_BLOCKER_TYPES = {"validation_not_executed", "required_check_pending"}
-
-
-def dashboard_status_kind(snapshot: Mapping[str, Any]) -> str:
-    blockers = {
-        str(item.get("type") or item.get("finding_type") or "")
-        for item in (snapshot.get("blockers") or [])
-        if isinstance(item, Mapping)
-    }
-    lifecycle_state = str(snapshot.get("lifecycle_state") or "").upper()
-    operator_state = str(snapshot.get("operator_state") or "")
-    mergeable = str(snapshot.get("mergeable") or "").upper()
-    merge_state_status = str(snapshot.get("merge_state_status") or "").upper()
-
-    if bool(snapshot.get("is_draft")):
-        return "draft"
-    if operator_state == "queued_for_merge" or lifecycle_state == "QUEUED_FOR_MERGE":
-        return "queued"
-    if blockers == {"approval_missing"}:
-        return "approval_required"
-    if blockers and blockers <= VALIDATION_BLOCKER_TYPES:
-        return "validation_pending"
-    if mergeable == "CONFLICTING" or merge_state_status in {"DIRTY", "HAS_HOOKS"}:
-        return "conflict"
-    if "MERGED" in lifecycle_state:
-        return "merged"
-    if "READY" in lifecycle_state:
-        return "ready"
-    if "BLOCKED" in lifecycle_state:
-        return "blocked"
-    return "pending"
-
-
-def dashboard_status_icon(snapshot: Mapping[str, Any]) -> str:
-    status = dashboard_status_kind(snapshot)
-    return {
-        "draft": "📝",
-        "queued": "🔵",
-        "approval_required": "🟣",
-        "validation_pending": "🟡",
-        "conflict": "🔴",
-        "blocked": "🔴",
-        "ready": "🟢",
-        "merged": "🟢",
-        "pending": "⏳",
-    }.get(status, "⏳")
-
-
 class TerminalRenderer:
     """Base class for all terminal output."""
 
@@ -102,6 +53,7 @@ class RichTerminalRenderer(TerminalRenderer):
 
     def __init__(self, mode: Optional[RenderMode] = None):
         super().__init__(mode)
+
         self.console = Console(theme=DOPEMUX_THEME)
 
     def print_header(self, text: str):
@@ -410,36 +362,6 @@ class RichTerminalRenderer(TerminalRenderer):
             resolved_session = state.resolved_threads_in_session if hasattr(state, "resolved_threads_in_session") else 0
             if resolved_session > 0:
                 threads_text.append(f" (+{resolved_session})", style="success")
-            
-            is_draft = bool(active.get("is_draft", False))
-            draft_text = Text.assemble(("DRAFT: ", "bold"), ("YES" if is_draft else "NO", "warning" if is_draft else "text.dim"))
-            
-            middle_grid.add_row(Align.center(ci_text), Align.center(v_text), Align.center(threads_text), Align.center(draft_text))
-            cockpit["middle"].update(Panel(middle_grid, title="SYSTEM METRICS", border_style="info"))
-
-            # Bottom row: Objective or Execution Log
-            log_text = Text()
-            execution_log = getattr(state, "execution_log", [])
-            if not execution_log:
-                lc_state = str(active.get("lifecycle_state", "discovered")).upper()
-                obj_text = Text()
-                conflict_blocked = (
-                    operator_state == "manual_conflict_required"
-                    or "manual_conflict_required" in blocker_types
-                )
-                semantic_conflict = (
-                    operator_state == "semantic_conflict_blocked"
-                    or "semantic_conflict_blocked" in blocker_types
-                )
-                conflict_eligible = (
-                    not conflict_blocked
-                    and not semantic_conflict
-                    and (
-                        "conflict_detected" in blocker_types
-                        or mergeable == "CONFLICTING"
-                        or state_status in ("DIRTY", "HAS_HOOKS")
-                    )
-                )
                 if is_draft:
                     obj_text.append("🎯 OBJECTIVE: Transition PR out of DRAFT mode.\n", style="bold warning")
                     obj_text.append("NEXT STEP: Press [R] to mark as READY FOR REVIEW.", style="text")
@@ -452,22 +374,6 @@ class RichTerminalRenderer(TerminalRenderer):
                 elif conflict_blocked:
                     obj_text.append("🎯 OBJECTIVE: Decide whether conflict recovery is safe.\n", style="bold error")
                     obj_text.append("NEXT STEP: Add `conflict:mechanical` only for safe docs/tests/lockfile conflicts, otherwise resolve manually.", style="text")
-                elif approval_blocked:
-                    obj_text.append("🎯 OBJECTIVE: Satisfy the missing approval gate.\n", style="bold magenta")
-                    obj_text.append("NEXT STEP: Press [A] to approve. Auto-merge should proceed after approval if all other gates stay green.", style="text")
-                elif validation_only_blocked:
-                    if v_status == "FAILED":
-                        obj_text.append("🎯 OBJECTIVE: Resolve local validation failures.\n", style="bold error")
-                        obj_text.append("NEXT STEP: Press [F] to attempt auto-fix for validation failures.", style="text")
-                    else:
-                        obj_text.append("🎯 OBJECTIVE: Run local verification before merge readiness.\n", style="bold warning")
-                        obj_text.append("NEXT STEP: Press [V] to execute validation. Merge follows only after validation passes.", style="text")
-                elif ci == "FAILURE":
-                    obj_text.append("🎯 OBJECTIVE: Remediate broken CI checks.\n", style="bold error")
-                    obj_text.append("NEXT STEP: Press [C] to invoke CI Remediation via specialist agent.", style="text")
-                elif conflict_eligible:
-                    obj_text.append("🎯 OBJECTIVE: Attempt mechanical conflict recovery.\n", style="bold error")
-                    obj_text.append("NEXT STEP: Press [P] to try the safe conflict-recovery path, then re-verify queue state.", style="text")
                 elif "READY" in lc_state:
                     obj_text.append("🎯 OBJECTIVE: Final sign-off and integration.\n", style="bold success")
                     obj_text.append("NEXT STEP: Press [A] to Approve or [I] to Implement Merge.", style="text")
@@ -490,27 +396,6 @@ class RichTerminalRenderer(TerminalRenderer):
                     f"[{getattr(state, 'active_phase', 'Monitor')}] current phase\n",
                     style="bold info",
                 )
-                for step in execution_log[-5:]:
-                    s_type = step.get("type", "INFO")
-                    s_msg = step.get("message", "")
-                    s_ts = step.get("timestamp", "")
-                    color = "success" if s_type == "SUCCESS" else "error" if s_type == "ERROR" else "warning" if s_type == "START" else "text"
-                    log_text.append(f"[{s_ts}] {s_msg}\n", style=color)
-                
-                cockpit["bottom"].update(Panel(log_text, title="EXECUTION LOG", border_style="warning"))
-            
-            layout["cockpit"].update(cockpit)
-        else:
-            layout["cockpit"].update(
-                Panel("No PR selected", border_style="text.disabled")
-            )
-
-        # Footer
-        controls = Text.assemble(
-            ("[A] ", "bold info"), "Approve  ",
-            ("[B] ", "bold info"), "Bulk Approve  ",
-            ("[C] ", "bold warning"), "Remediate  ",
-            ("[F] ", "bold error"), "Fix  ",
             ("[R] ", "bold success"), "Ready  ",
             ("[P] ", "bold magenta"), "Patch  ",
             ("[I] ", "bold warning"), "Implement  ",

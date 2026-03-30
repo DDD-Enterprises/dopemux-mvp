@@ -131,7 +131,7 @@ class DdgProgress(Base):
 
 
 class DdgEmbedding(Base):
-    """Optional embeddings cache. Non-canonical retrieval aid only."""
+    """Optional embeddings store (fallback when vector DB not used)."""
     __tablename__ = "ddg_embeddings"
 
     id = Column(String, primary_key=True)  # decision_id

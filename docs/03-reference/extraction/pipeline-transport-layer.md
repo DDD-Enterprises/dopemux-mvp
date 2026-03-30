@@ -1,77 +1,84 @@
 ---
-id: EXTRACTION-PIPELINE-TRANSPORT-LAYER
-title: Extraction Pipeline Transport Layer
-type: reference
+id: PIPELINE_TRANSPORT_LAYER
+title: Pipeline Transport Layer
+type: explanation
 owner: '@hu3mann'
+author: '@hu3mann'
 date: '2026-02-20'
-author: '@codex'
-prelude: Provider transports, endpoints, and request-meta evidence for extraction
-  runs.
-graph_metadata:
-  node_type: DocPage
-  impact: medium
-  relates_to:
-  - services/repo-truth-extractor/run_extraction_v3.py
-  - services/repo-truth-extractor/lib/request_meta_classification.py
-last_review: '2026-02-21'
-next_review: '2026-05-22'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Pipeline Transport Layer (explanation) for dopemux documentation and developer
+  workflows.
 ---
-# Extraction Pipeline Transport Layer
+# Pipeline Transport Layer
 
-This document describes transport behavior in `services/repo-truth-extractor/run_extraction_v3.py`:
+This file describes the transport reliability layer in
+`/Users/hue/code/dopemux-mvp/UPGRADES/run_extraction_v3.py`.
 
-- provider selection and routing (phase -> provider/model)
-- transport protocols and endpoints
-- deterministic retry/backoff behavior
-- request-meta evidence artifacts
+## Chunking Rules
 
-## Providers and endpoints
+- Deterministic plan: partitions are chunked in stable order using
+  `(path, mtime, size)` with `path` as primary key.
+- Chunk budget is character-based (`--max-chars`) with a soft target (~70%).
+- Per-file truncation uses `--file-truncate-chars` and includes deterministic
+  head + tail snippets.
+- Runtime chunk manifest is written to:
+  `inputs/CHUNK_MANIFEST_<step>.json`
+  with:
+  `chunk_id`, `file_entries`, truncation flags, per-file injected bytes,
+  `injected_text_sha256`, and `chunk_key`.
 
-Default per-phase routing is defined in `MODEL_ROUTING` in `services/repo-truth-extractor/run_extraction_v3.py` and is overrideable via CLI.
+## Retry Matrix
 
-Transport endpoints:
+- No retry: missing API key, `400`, `401`, `403`.
+- Retry with exponential backoff + deterministic jitter:
+  `408`, `429`, `500`, `502`, `503`, `504`, network timeout/connection errors.
+- Attempt cap: 6.
+- Total retry-time cap per chunk: 10 minutes.
+- On retry exhaustion or non-retryable error, write:
+  `raw/<step>__<chunk>.FAILED.json`.
 
-- `gemini` (Google)
-  - SDK: `https://generativelanguage.googleapis.com`
-  - OpenAI-compat: `https://generativelanguage.googleapis.com/v1beta/openai`
-- `openai` (OpenAI): `https://api.openai.com/v1`
-- `xai` (xAI): `https://api.x.ai/v1`
+## Backpressure / Throttle
 
-## Request meta evidence
+- Provider-scoped limiter for OpenAI/Gemini/xAI with configurable:
+  `RPM`, `TPM`, and `max_inflight`.
+- OpenAI header feedback is applied when present:
+  `x-ratelimit-remaining-*`, `x-ratelimit-reset-*`.
+- On `429`, limiter adaptively increases min delay and reduces inflight floor to 1.
 
-When a partition attempt fails (or enters a retry lane), the runner emits:
+## Resume Semantics
 
-- `raw/<STEP>__<PARTITION>.REQUEST_META.json` (and `...R1.REQUEST_META.json`, etc for retry attempts)
+Unit of work:
+`(phase, step, partition_id/chunk_id)`.
 
-The sidecar includes:
+For each unit:
+- Raw output: `raw/<step>__<chunk>.json`
+- Meta ledger: `raw/<step>__<chunk>.request_meta.json`
+- Payload cache: `inputs/payload_cache/<step>__<chunk>.prompt.txt`
 
-- effective provider/model routing and endpoint (`endpoint_effective` is redacted of query keys)
-- request payload sizing (`request_payload_bytes`)
-- deterministic retry trace and 429 backoff policy
-- `provider_signature` and `routing_signature` (audit identity)
-- canonical failure typing (`final_failure_type`) with `classification_version=reqmeta_v1`
+`--resume` skips only when:
+1. output JSON exists and parses,
+2. meta exists,
+3. stored `chunk_key` matches recomputed `chunk_key`.
 
-Phase-level aggregation:
+## Norm Gate Behavior
 
-- `qa/PHASE_REQUEST_META_INDEX.json` (histograms + examples + backoff/cooldown counters)
+`normalize_step` now requires full chunk coverage per artifact:
+- If `len(chunks_for_artifact) != len(planned_chunks)`, that artifact is marked
+  missing and not written to `norm/`.
 
-## Deterministic retry/backoff
+This prevents partial-merge garbage and preserves strict upstream gating for Phase R.
 
-Retry is controlled by:
+## Tuning
 
-- `--retry-policy none|default`
-- `--retry-max-attempts`, `--retry-base-seconds`, `--retry-max-seconds`
+Chunk and payload geometry:
+- `--max-files-docs`
+- `--max-files-code`
+- `--max-chars`
+- `--file-truncate-chars`
 
-Special case:
-
-- HTTP 429 uses deterministic backoff `(2, 4, 8, 16)` seconds (bounded by `--retry-max-attempts`)
-
-Backoff/cooldown decisions are summarized in `qa/PHASE_REQUEST_META_INDEX.json`.
-
-## Payload sizing controls
-
-Primary controls:
-
-- `--max-files-docs`, `--max-files-code`
-- `--max-chars`, `--file-truncate-chars`
-- `--max-request-bytes` (fail-closed before sending when exceeded)
+Provider quotas:
+- `--rpm-openai`, `--tpm-openai`
+- `--rpm-gemini`, `--tpm-gemini`
+- `--rpm-xai`, `--tpm-xai`
+- `--max-inflight`

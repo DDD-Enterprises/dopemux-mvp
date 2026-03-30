@@ -202,7 +202,7 @@ S_PROMPTS_AUTO = "auto"
 S_PROMPTS_REGISTRY = "registry"
 S_PROMPTS_LEGACY = "legacy"
 S_PROMPTS_MODES = {S_PROMPTS_AUTO, S_PROMPTS_REGISTRY, S_PROMPTS_LEGACY}
-PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(13))
+PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(7))
 PHASE_S_BASE_STEP_SET = set(PHASE_S_BASE_STEPS)
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
@@ -621,7 +621,7 @@ GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     ],
 }
 
-_OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
+OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
 OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
@@ -871,7 +871,7 @@ def _validate_s_steps(selected: List[str]) -> None:
     unknown = [step_id for step_id in selected if step_id not in PHASE_S_BASE_STEP_SET]
     if unknown:
         raise RuntimeError(
-            "Phase S step selection only allows S0-S12. "
+            "Phase S step selection only allows S0-S6. "
             f"Unsupported steps: {', '.join(sorted(unknown, key=step_sort_key))}"
         )
 
@@ -1044,12 +1044,12 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
     "G": {"G0", "G1", "G2", "G3", "G4", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9", "Q11"},
+    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9"},
     "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10"},
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12"},
+    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6"},
     "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 
@@ -7000,6 +7000,11 @@ def call_llm(
             )
             retry_trace[-1]["delay_seconds"] = delay_seconds
             total_retry_delay += delay_seconds
+            if retry_callback is not None:
+                try:
+                    retry_callback(attempt + 1, status_code, failure_type, delay_seconds)
+                except Exception:
+                    pass
             if delay_seconds > 0:
                 time.sleep(delay_seconds)
     logger.error(
@@ -13580,29 +13585,6 @@ Return ONLY valid JSON matching exactly:
 """
 
 
-def _deterministic_phase_sample(
-    phase_outputs: "List[Dict[str, Any]]", n_sample: int
-) -> "List[Dict[str, Any]]":
-    """Deterministically select a subset of phase_outputs for auditing.
-
-    Uses a hash of a stable JSON representation of each item to provide
-    deterministic but well-distributed sampling without relying on RNG state.
-    """
-    if not phase_outputs or n_sample <= 0:
-        return []
-
-    def _item_hash(item: "Dict[str, Any]") -> str:
-        try:
-            # sort_keys ensures deterministic key order across runs
-            serialized = json.dumps(item, sort_keys=True, default=str)
-        except TypeError:
-            serialized = repr(item)
-        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-    sorted_items = sorted(phase_outputs, key=_item_hash)
-    return sorted_items[: min(n_sample, len(sorted_items))]
-
-
 def audit_phase_sample(
     phase_dir: "Path",
     phase_outputs: "List[Dict[str, Any]]",
@@ -13622,7 +13604,7 @@ def audit_phase_sample(
         return {"sampled": 0, "skipped": True}
 
     n_sample = min(max(1, int(len(phase_outputs) * sample_rate)), 5)
-    sample = _deterministic_phase_sample(phase_outputs, n_sample)
+    sample = random.sample(phase_outputs, min(n_sample, len(phase_outputs)))
 
     results: List[Dict[str, Any]] = []
     escalation_needed: List[str] = []
@@ -15278,7 +15260,7 @@ def main() -> None:
         "--s-steps",
         type=str,
         default=None,
-        help="Comma-separated subset of Phase S base steps (S0-S12) to execute.",
+        help="Comma-separated subset of Phase S base steps (S0-S6) to execute.",
     )
     parser.add_argument("--disable-escalation", action="store_true")
     parser.add_argument("--escalation-max-hops", type=int, default=2)

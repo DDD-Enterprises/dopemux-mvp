@@ -1,0 +1,61 @@
+     1	"""
+     2	Task-Orchestrator Configuration - Environment-based settings.
+     3	
+     4	Centralizes all configuration from environment variables.
+     5	"""
+     6	
+     7	import os
+     8	from dataclasses import dataclass, field
+     9	from typing import Dict, Any
+    10	
+    11	
+    12	@dataclass
+    13	class Settings:
+    14	    """Task-Orchestrator configuration."""
+    15	    
+    16	    # Environment
+    17	    environment: str = field(default_factory=lambda: os.getenv("ENVIRONMENT", "dev"))
+    18	    log_level: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "info").upper())
+    19	    
+    20	    # Service identification
+    21	    service_name: str = "task-orchestrator"
+    22	    
+    23	    # Instance configuration
+    24	    instance_name: str = field(default_factory=lambda: os.getenv("DOPEMUX_INSTANCE", "default"))
+    25	    port_base: int = field(default_factory=lambda: int(os.getenv("PORT_BASE", "3000")))
+    26	    port: int = 0  # Set in __post_init__
+    27	    
+    28	    # Leantime connection
+    29	    leantime_url: str = field(default_factory=lambda: os.getenv("LEANTIME_URL", "http://leantime:8080"))
+    30	    leantime_token: str = field(default_factory=lambda: os.getenv("LEANTIME_TOKEN", ""))
+    31	    
+    32	    # Redis
+    33	    redis_url: str = field(default_factory=lambda: os.getenv("REDIS_URL", "redis://redis:6379"))
+    34	    redis_password: str = field(default_factory=lambda: os.getenv("REDIS_PASSWORD", ""))
+    35	    redis_db: int = 2  # Separate DB for orchestrator
+    36	    
+    37	    # ConPort
+    38	    conport_url: str = field(default_factory=lambda: os.getenv("CONPORT_URL", "http://conport:8005"))
+    39	    
+    40	    # Workspace
+    41	    workspace_id: str = field(default_factory=lambda: os.getenv("WORKSPACE_ID", "/Users/hue/code/dopemux-mvp"))
+    42	    
+    43	    # ADHD configuration
+    44	    adhd_config: Dict[str, Any] = field(default_factory=lambda: {
+    45	        "max_concurrent_tasks": 3,
+    46	        "break_enforcement": True,
+    47	        "context_switch_penalty": 0.3,
+    48	        "energy_level_matching": True,
+    49	        "implicit_progress_tracking": True,
+    50	        "break_interval_minutes": 25,
+    51	        "mandatory_break_minutes": 90,
+    52	        "hyperfocus_warning_minutes": 60
+    53	    })
+    54	    
+    55	    def __post_init__(self):
+    56	        """Compute derived configuration values."""
+    57	        self.port = int(os.getenv("PORT", str(self.port_base + 14)))  # Task-Orchestrator port
+    58	
+    59	
+    60	# Global settings instance
+    61	settings = Settings()

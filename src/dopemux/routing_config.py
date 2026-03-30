@@ -308,10 +308,6 @@ class RoutingConfig:
         models = self.config.get("models", [])
         slots = self.config.get("slots", {})
 
-        all_model_names = [m["name"] for m in models]
-        all_model_names.extend(slots.keys())
-        all_model_names = list(dict.fromkeys(all_model_names))
-
         default_model = slots.get("default", all_model_names[0] if all_model_names else "default")
 
         return {
@@ -332,6 +328,7 @@ class RoutingConfig:
                 "default": f"litellm,{default_model}",
             },
         }
+
 
     def _get_provider_by_name(self, name: str) -> Dict[str, Any]:
         """Get provider by name."""

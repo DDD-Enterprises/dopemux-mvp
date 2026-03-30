@@ -54,6 +54,14 @@ For headless `queue-drain` runs, the canonical real-time execution stream now li
 - `STATE.json` remains per-PR state authority
 - `RUN_SUMMARY.md` remains the final human rollup
 
+=======
+>>>>>>> codex/pr-merge-queue-unblockers
+=======
+When `pr-apply` produces a passive `queued_for_merge` result after rebasing and validation, `queue-drain` now still executes the merge handoff step so GitHub receives the actual `gh pr merge` or auto-merge enqueue command for that PR.
+
+>>>>>>> codex/pr-merge-queued-handoff
+=======
+>>>>>>> wt-collect-dopemux-pr321-20260330023335
 ## Common Workflows
 
 ### 1. Safe Review Cycle (Non-Mutating)

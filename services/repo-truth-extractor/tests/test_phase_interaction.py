@@ -203,6 +203,90 @@ class TestModelMapSynthesisLane(unittest.TestCase):
     def test_s12_is_ce(self):
         self.assertEqual(self._step("S12")["lane_class"], "CE")
 
+    def test_synthesis_has_sidefill_enabled(self):
+        synthesis_steps = [s for s in self.steps if s["lane_class"] == "SYNTHESIS"]
+        for s in synthesis_steps:
+            self.assertTrue(s["sidefill_enabled"], f"{s['step_id']} should have sidefill_enabled=true")
+
+    def test_synthesis_has_reasoning_primary(self):
+        synthesis_steps = [s for s in self.steps if s["lane_class"] == "SYNTHESIS"]
+        for s in synthesis_steps:
+            primary_models = [r["model_id"] for r in s["primary_routes"]]
+            self.assertIn(
+                "grok-4.20-beta-0309-reasoning",
+                primary_models,
+                f"{s['step_id']} should have grok-reasoning in primary",
+            )
+
+    def test_synthesis_repair_mode(self):
+        synthesis_steps = [s for s in self.steps if s["lane_class"] == "SYNTHESIS"]
+        for s in synthesis_steps:
+            self.assertEqual(
+                s["repair_mode"], "targeted_then_envelope",
+                f"{s['step_id']} should use targeted_then_envelope repair"
+            )
+
+
+# ---------------------------------------------------------------------------
+# --check-phases CLI readiness table
+# ---------------------------------------------------------------------------
+class TestCheckPhasesCLI(unittest.TestCase):
+    def test_check_phases_constants_exist(self):
+        mod = _load_extract_cmds()
+        self.assertTrue(hasattr(mod, "_PHASE_ORDER"))
+        self.assertTrue(hasattr(mod, "_R_REQUIRED"))
+        self.assertTrue(hasattr(mod, "_R_OPTIONAL"))
+        self.assertTrue(hasattr(mod, "_S_REQUIRED"))
+        self.assertTrue(hasattr(mod, "_S_OPTIONAL"))
+
+    def test_phase_order_has_14_phases(self):
+        mod = _load_extract_cmds()
+        self.assertEqual(len(mod._PHASE_ORDER), 14)
+
+    def test_r_deps_match_v5_constants(self):
+        mod = _load_extract_cmds()
+        v5 = _load_v5()
+        self.assertEqual(mod._R_REQUIRED, set(v5.R_REQUIRED_INPUT_PHASES))
+        self.assertEqual(mod._R_OPTIONAL, set(v5.R_OPTIONAL_INPUT_PHASES))
+
+    def test_display_phase_readiness_with_empty_run(self):
+        import tempfile
+        from unittest.mock import MagicMock
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            v5_root = tmp / "v5"
+            runs = v5_root / "runs" / "TEST_RUN"
+            runs.mkdir(parents=True)
+            for p in ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]:
+                (runs / p).mkdir()
+
+            mod = _load_extract_cmds()
+            console = MagicMock()
+            mod._display_phase_readiness(console, v5_root, "TEST_RUN")
+            # Should have called console.print multiple times
+            self.assertTrue(console.print.called)
+
+    def test_display_phase_readiness_with_completed_phases(self):
+        import tempfile
+        from unittest.mock import MagicMock
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            v5_root = tmp / "v5"
+            runs = v5_root / "runs" / "TEST_RUN"
+            runs.mkdir(parents=True)
+            for p in ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]:
+                phase_dir = runs / p
+                phase_dir.mkdir()
+                (phase_dir / "raw").mkdir()
+                (phase_dir / "norm").mkdir()
+            # Populate A norm
+            (runs / "A" / "norm" / "TEST.json").write_text("{}")
+
+            mod = _load_extract_cmds()
+            console = MagicMock()
+            mod._display_phase_readiness(console, v5_root, "TEST_RUN")
+            self.assertTrue(console.print.called)
+
 
 # ---------------------------------------------------------------------------
 # Prompt contract amendments

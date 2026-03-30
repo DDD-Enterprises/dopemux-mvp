@@ -4,9 +4,10 @@ This module defines the neon mint palette, Rich Theme object, glyph constants,
 status chips, and helper factories that every dopemux CLI command must use.
 
 Usage:
+from rich.console import Console
     from dopemux.ui.theme import DOPEMUX_THEME, Glyphs, StatusChip, styled_table, styled_panel
-    from dopemux.console import console  # already themed
 
+    console = Console(theme=DOPEMUX_THEME)
     console.print(f"{Glyphs.SUCCESS} All checks passed", style="success")
     console.print(StatusChip.LIVE.render("Pipeline running"))
 """
@@ -26,18 +27,20 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
+
 def get_active_theme_name() -> str:
-    """Return the name of the active theme from environment, config, or default."""
+    """Return the name of the active theme from environment or default.
+
+    This function is intentionally kept free of config imports and heavy logic
+    to avoid import-time cycles. Higher-level code (CLI/config) should
+    initialize and propagate the theme as needed.
+    """
     env_theme = os.environ.get("DOPEMUX_THEME")
     if env_theme:
         return env_theme.lower()
-    
-    try:
-        from dopemux.config.manager import ConfigManager
-        config = ConfigManager().load_config()
-        return config.theme.lower()
-    except Exception:
-        return "pastel-neon-dreams"
+
+    # Fallback default theme when no environment override is set.
+    return "pastel-neon-dreams"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Dynamic Color Palette (Legacy / Compatibility)
@@ -160,8 +163,6 @@ def build_theme(name: str) -> Theme:
             "success.soft": "#66FF66",
             "error": "bold #FF00FF",
             "warning": "#FFFF00",
-            "gold": "#FFFF00",
-            "amber": "#FFFF66",
             "warning.soft": "#FFFF66",
             "info": "#66FFFF",
             "debug": "#FF66FF",
@@ -216,8 +217,6 @@ def build_theme(name: str) -> Theme:
             "success": "#7FFFD4",
             "error": "bold #FF69B4",
             "warning": "#FFFFE0",
-            "gold": "#FFFFE0",
-            "amber": "#FFCF78",
             "info": "#B2FFFF",
             "debug": "#FFB2FF",
             "hazard": "#FFFFE0",

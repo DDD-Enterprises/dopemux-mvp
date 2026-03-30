@@ -1,0 +1,131 @@
+     1	#!/usr/bin/env python3
+     2	"""
+     3	Demo: Event Coordinator Suppression Telemetry
+     4	
+     5	Shows how to use the new telemetry features to measure signal/noise ratio
+     6	and understand which suppression rules are most active.
+     7	"""
+     8	
+     9	import asyncio
+    10	import sys
+    11	from pathlib import Path
+    12	
+    13	# Add parent directory to path
+    14	sys.path.insert(0, str(Path(__file__).parent.parent))
+    15	
+    16	from event_coordinator import (
+    17	    EventCoordinator,
+    18	    CoordinationEvent,
+    19	    EventType,
+    20	    EventPriority
+    21	)
+    22	
+    23	
+    24	async def demo():
+    25	    """Demonstrate suppression telemetry."""
+    26	    print("🚀 Event Coordinator Suppression Telemetry Demo\n")
+    27	
+    28	    # Create coordinator (won't actually connect to Redis in demo)
+    29	    coordinator = EventCoordinator(redis_url="redis://localhost:6379")
+    30	
+    31	    # Simulate different scenarios
+    32	
+    33	    # Scenario 1: Normal operation (high signal/noise)
+    34	    print("📊 Scenario 1: Normal operation")
+    35	    coordinator.current_focus_mode = "normal"
+    36	    coordinator.current_energy_level = "medium"
+    37	    coordinator._get_recent_event_count = lambda _: asyncio.create_task(
+    38	        asyncio.coroutine(lambda: 0)()
+    39	    )
+    40	
+    41	    for i in range(10):
+    42	        event = CoordinationEvent(
+    43	            id=f"normal_{i}",
+    44	            event_type=EventType.TASK_CREATED,
+    45	            priority=EventPriority.MEDIUM,
+    46	            source_system="demo",
+    47	            target_systems=["test"],
+    48	            cognitive_load=0.5
+    49	        )
+    50	        await coordinator._should_process_event(event)
+    51	
+    52	    report = coordinator.get_suppression_report()
+    53	    print(f"  Events received: {report['summary']['events_received']}")
+    54	    print(f"  Events passed: {report['summary']['events_passed']}")
+    55	    print(f"  Signal/Noise ratio: {report['summary']['signal_noise_ratio']:.2f}")
+    56	    print(f"  Suppression rate: {report['summary']['suppression_rate_pct']:.1f}%\n")
+    57	
+    58	    # Scenario 2: Deep focus mode (lower signal/noise)
+    59	    print("📊 Scenario 2: Deep focus mode - suppress low priority")
+    60	    coordinator.current_focus_mode = "deep"
+    61	
+    62	    for i in range(5):
+    63	        event = CoordinationEvent(
+    64	            id=f"deep_low_{i}",
+    65	            event_type=EventType.TASK_UPDATED,
+    66	            priority=EventPriority.LOW,  # Will be suppressed
+    67	            source_system="demo",
+    68	            target_systems=["test"]
+    69	        )
+    70	        await coordinator._should_process_event(event)
+    71	
+    72	    report = coordinator.get_suppression_report()
+    73	    print(f"  Events received: {report['summary']['events_received']}")
+    74	    print(f"  Events passed: {report['summary']['events_passed']}")
+    75	    print(f"  Signal/Noise ratio: {report['summary']['signal_noise_ratio']:.2f}")
+    76	    print(f"  Suppression rate: {report['summary']['suppression_rate_pct']:.1f}%")
+    77	    print(f"  Suppressed by deep_focus_priority: {report['per_rule_breakdown']['deep_focus_priority']}\n")
+    78	
+    79	    # Scenario 3: Low energy mode (suppress high cognitive load)
+    80	    print("📊 Scenario 3: Low energy - suppress complex events")
+    81	    coordinator.current_focus_mode = "normal"
+    82	    coordinator.current_energy_level = "low"
+    83	
+    84	    for i in range(3):
+    85	        event = CoordinationEvent(
+    86	            id=f"low_energy_{i}",
+    87	            event_type=EventType.SPRINT_STARTED,
+    88	            priority=EventPriority.MEDIUM,
+    89	            source_system="demo",
+    90	            target_systems=["test"],
+    91	            cognitive_load=0.9  # High cognitive load - will be suppressed
+    92	        )
+    93	        await coordinator._should_process_event(event)
+    94	
+    95	    report = coordinator.get_suppression_report()
+    96	    print(f"  Events received: {report['summary']['events_received']}")
+    97	    print(f"  Events passed: {report['summary']['events_passed']}")
+    98	    print(f"  Signal/Noise ratio: {report['summary']['signal_noise_ratio']:.2f}")
+    99	    print(f"  Suppression rate: {report['summary']['suppression_rate_pct']:.1f}%")
+   100	    print(f"  Suppressed by energy_level: {report['per_rule_breakdown']['energy_level']}\n")
+   101	
+   102	    # Full report
+   103	    print("📊 Full Suppression Report:")
+   104	    print("=" * 60)
+   105	
+   106	    print("\n📈 Summary:")
+   107	    for key, value in report['summary'].items():
+   108	        print(f"  {key}: {value}")
+   109	
+   110	    print("\n🎯 Per-Rule Breakdown:")
+   111	    for rule, count in report['per_rule_breakdown'].items():
+   112	        if count > 0:
+   113	            print(f"  {rule}: {count}")
+   114	
+   115	    print("\n📋 Per-Event-Type:")
+   116	    for event_type, stats in report['per_event_type'].items():
+   117	        print(f"  {event_type}: received={stats['received']}, suppressed={stats['suppressed']}")
+   118	
+   119	    print("\n🎚️ Per-Priority:")
+   120	    for priority, stats in report['per_priority'].items():
+   121	        print(f"  {priority}: received={stats['received']}, suppressed={stats['suppressed']}")
+   122	
+   123	    print("\n🧠 ADHD State:")
+   124	    for key, value in report['adhd_state'].items():
+   125	        print(f"  {key}: {value}")
+   126	
+   127	    print("\n✅ Demo complete!")
+   128	
+   129	
+   130	if __name__ == "__main__":
+   131	    asyncio.run(demo())

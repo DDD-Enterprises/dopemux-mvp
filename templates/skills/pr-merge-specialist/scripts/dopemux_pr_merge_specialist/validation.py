@@ -93,55 +93,6 @@ def _collect_changed_files(
         collected.extend(line.strip() for line in result.stdout.splitlines())
     return _unique_paths(collected)
 
-
-def validation_fingerprint(
-    *,
-    pr_id: int,
-    head_sha: str,
-    base_sha: str,
-    policy_fingerprint: str,
-    lifecycle_state: str,
-) -> Fingerprint:
-    payload = {
-        "pr_id": pr_id,
-        "head_sha": head_sha,
-        "base_sha": base_sha,
-        "policy_fingerprint": policy_fingerprint,
-        "lifecycle_state": lifecycle_state,
-    }
-    digest = fingerprint_payload(payload)
-    return Fingerprint(
-        input_fingerprint=digest,
-        valid_for_sha=head_sha,
-        stale_if=[
-            "PR head SHA changes",
-            "base SHA changes",
-            "effective policy fingerprint changes",
-            "applied tree contents change",
-        ],
-        created_from_state=lifecycle_state,
-    )
-
-
-def run_validation(
-    *,
-    repo_root: Path,
-    worktree_path: Optional[Path],
-    policy: Dict[str, Any],
-    execute: bool,
-    commands_log: Path,
-    pr_id: int,
-    head_sha: str,
-    base_sha: str,
-    policy_fingerprint: str,
-    lifecycle_state: str,
-    progress_callback: Optional[Callable[[str, str], None]] = None,
-) -> ValidationReport:
-    target_cwd = worktree_path or repo_root
-    steps_cfg = list(policy.get("validation", {}).get("steps", []))
-    timeout_seconds = int(
-        policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
-    )
     fingerprint = validation_fingerprint(
         pr_id=pr_id,
         head_sha=head_sha,

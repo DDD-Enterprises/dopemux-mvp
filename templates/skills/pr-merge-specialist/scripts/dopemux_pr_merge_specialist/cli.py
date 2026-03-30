@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 
+from . import engine
 from .action_model import result_to_dashboard_entry
 from .classification import classify_pr, risk_score
 from .conflict import build_conflict_analysis
@@ -235,83 +236,11 @@ def _self_check(args: argparse.Namespace) -> int:
         )
         if preflight_rc != 0:
             results["ok"] = False
-
-    if getattr(args, "json", False):
-        print(json.dumps(results, indent=2))
-    else:
-        for check in results["checks"]:
-            icon = "PASS" if check["status"] == "PASS" else "FAIL"
-            print(
-                f"  [{icon}] {check['name']}"
-                + (f" — {check.get('error', '')}" if check.get("error") else "")
-            )
-        print(f"\nSelf-check: {'OK' if results['ok'] else 'FAILED'}")
-
-    return 0 if results["ok"] else 1
-
-
-def _health(args: argparse.Namespace) -> int:
-    """Show current health metrics and scale-gate decision."""
-    from .ops_engine import FlightDeckOpsEngine
-
-    ops_dir = Path(args.out_dir) / "ops"
-    if not ops_dir.exists():
-        if getattr(args, "json", False):
-            print(
-                json.dumps(
-                    {
-                        "status": "NO_DATA",
-                        "note": "No ops directory found. Run queue-drain first.",
-                    }
-                )
-            )
-        else:
-            print(
-                "No ops data found. Run queue-drain first to generate health metrics."
-            )
-        return 0
-
-    ops = FlightDeckOpsEngine(ops_dir)
-    health = ops.compute_rolling_health()
-    compliance = ops.compute_signoff_compliance()
-    incidents = ops.compute_incident_trends()
-    drift = ops.detect_posture_drift()
-    combined = {**health, **compliance, **incidents}
-    gate = ops.generate_scale_gate_decision(combined)
-
-    report = {
-        "rolling_health": health,
-        "signoff_compliance": compliance,
-        "incident_trends": incidents,
-        "posture_drift": drift,
-        "scale_gate_decision": gate,
-    }
-
-    if getattr(args, "json", False):
-        print(json.dumps(report, indent=2))
-    else:
-        print(f"Rolling Health:      {health.get('status', 'UNKNOWN')}")
-        print(f"Signoff Compliance:  {compliance.get('status', 'UNKNOWN')}")
-        print(
-            f"Incident Trends:     {incidents.get('status', 'UNKNOWN')} (severity: {incidents.get('severity', 'N/A')})"
-        )
-        print(f"Posture Drift:       {drift.get('status', 'UNKNOWN')}")
-        print(f"Scale Gate Decision: {gate.get('decision', 'UNKNOWN')}")
-        if gate.get("rationale"):
-            for r in gate["rationale"]:
-                print(f"  - {r}")
-    return 0
-
-
-# Compatibility exports for existing callers/tests that import helpers from cli.
-_classify_pr = classify_pr
-_risk_score = risk_score
-_sort_states = sort_states
-_decide_thread_disposition = decide_thread_disposition
-_build_conflict_analysis = build_conflict_analysis
-_run_merge_with_fallback = run_merge_with_fallback
-_queue_scan = queue_scan
-_queue_drain = queue_drain
+    results["checks"].append(
+        {"name": "preflight", "status": "PASS" if preflight_rc == 0 else "FAIL"}
+    )
+    if preflight_rc != 0:
+        results["ok"] = False
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -484,46 +413,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="💨 Smoke Test: Skip environment-dependent preflight checks.",
     )
-    self_check_parser.set_defaults(func=_self_check)
-
-    health_parser = sub.add_parser(
-        "health", help="📊 Operational HUD: Show current health metrics and scale-gate decisions."
-    )
-    add_common_arguments(health_parser)
-    health_parser.set_defaults(func=_health)
-
-    interactive_parser = sub.add_parser(
-        "interactive", help="🚀 Remediation Cockpit: Launch the interactive merge wizard and flight deck."
-    )
-    add_common_arguments(interactive_parser)
-    interactive_parser.set_defaults(func=cmd_interactive)
-
-    flight_parser = sub.add_parser(
-        "flight", help="📊 Grand Orchestrator: Launch the persistent PR merge dashboard."
-    )
-    add_common_arguments(flight_parser)
-    flight_parser.add_argument(
-        "--limit", type=int, default=50, help="📊 HUD Limit: Maximum PRs to render in the dashboard."
-    )
-    flight_parser.add_argument(
-        "--strategy", choices=["simple", "hybrid"], default="hybrid", help="🧠 Sorting Ritual: Cognitive strategy for prioritization."
-    )
-    flight_parser.add_argument(
-        "--prioritize",
-        action="append",
-        default=[],
-        help="🎯 Focal Priority: PR identifiers to move to the front.",
-    )
-    flight_parser.add_argument(
-        "--only",
-        action="append",
-        default=[],
-        help="🔬 Isolated Focus: PR identifiers to include exclusively.",
-    )
-    flight_parser.set_defaults(func=cmd_flight)
-
-    flight_deck_parser = sub.add_parser(
-        "flight-deck", help="🚀 Mission Control: Launch the Flight Deck operations center with shared CI blocker detection."
     )
     add_common_arguments(flight_deck_parser)
     flight_deck_parser.add_argument(
@@ -603,30 +492,6 @@ def cmd_ops(args: argparse.Namespace) -> int:
     import json
     from pathlib import Path
 
-    ops_dir = Path("proof/pr_merge/flight_deck/ops")
-
-    print("📊 Flight Deck Operational Metrics")
-    print("=" * 50)
-
-    # Read existing operational report if available
-    report_path = ops_dir / "OPERATIONALIZATION_REPORT.json"
-    if report_path.exists():
-        try:
-            report = json.loads(report_path.read_text())
-            print(f"\n📈 Current Status: {report.get('status', 'UNKNOWN')}")
-            print(f"🎛️ Posture: {report.get('posture', 'GO_SUPERVISED_ONLY')}")
-            print(f"📝 Flight Deck Sessions: {report.get('flight_deck_sessions', 0)}")
-            print(f"✍️ Formal Signoffs: {report.get('formal_signoffs', 0)}")
-            print(
-                f"🛡️ Auto-Apply Safety: {report.get('auto_apply_safety_record', 'UNKNOWN')}"
-            )
-            print(f"📊 Runtime Stability: {report.get('runtime_stability', 1.0)}")
-
-            # Show manifest if available
-            manifest_path = ops_dir / "OPERATIONALIZATION_MANIFEST.json"
-            if manifest_path.exists():
-                manifest = json.loads(manifest_path.read_text())
-                print("\n📋 Manifest:")
                 print(f"   Version: {manifest.get('version', '1.0.0')}")
                 print(
                     f"   Artifacts: {', '.join(manifest.get('artifacts', {}).keys())}"
