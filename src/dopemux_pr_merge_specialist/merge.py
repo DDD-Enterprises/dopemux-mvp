@@ -398,7 +398,7 @@ def run_merge_with_fallback(
                 reason=f"Fallback auto-merge failed: {fallback.stderr.strip()}",
                 reason_code="auto_merge_fallback_failed",
             )
-    elif action in (MergeActionType.AUTO_MERGE_ENABLE.value, MergeActionType.AUTO_MERGE_FALLBACK.value):
+    elif action in (MergeActionType.AUTO_MERGE_FALLBACK.value, MergeActionType.AUTO_MERGE_FALLBACK.value):
         # For auto-merge, we still use the 'gh pr merge --auto' command via shell for now
         # until client support is added, but REBASE is the preference.
         command = ["gh", "pr", "merge", str(pr_id), "--auto", "--rebase"]

@@ -1,8 +1,4 @@
-
 from __future__ import annotations
-import sys
-sys.modules.pop("dopemux", None)
-
 
 import importlib.util
 import subprocess
@@ -10,9 +6,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-import dopemux.commands
-import dopemux.commands.extractor_validation
 
+# Direct imports to avoid sys.modules string resolution issues
+from dopemux.commands import extractor_validation
 from dopemux.commands.extractor_validation import (
     LiveValidationRunner,
     ValidationConfig,
@@ -87,7 +83,7 @@ def test_run_command_records_timeout_as_failed_step(
     (repo_root / "services" / "repo-truth-extractor").mkdir(parents=True, exist_ok=True)
 
     monkeypatch.setattr(
-        "dopemux.commands.extractor_validation._resolve_extractor_root",
+        extractor_validation, "_resolve_extractor_root",
         lambda _cwd: repo_root,
     )
 
@@ -101,7 +97,7 @@ def test_run_command_records_timeout_as_failed_step(
     def fake_run(*args, **kwargs):  # type: ignore[no-untyped-def]
         raise subprocess.TimeoutExpired(cmd=kwargs.get("args", args[0]), timeout=3.0, output="partial", stderr="late")
 
-    monkeypatch.setattr("dopemux.commands.extractor_validation.subprocess.run", fake_run)
+    monkeypatch.setattr(extractor_validation.subprocess, "run", fake_run)
 
     record = runner._run_command(
         "timeout_case",
@@ -124,13 +120,16 @@ def test_repo_local_cli_origin_guard_fails_for_site_packages(
     (repo_root / "src" / "dopemux").mkdir(parents=True, exist_ok=True)
 
     monkeypatch.setattr(
-        "dopemux.commands.extractor_validation._resolve_extractor_root",
+        extractor_validation, "_resolve_extractor_root",
         lambda _cwd: repo_root,
     )
+    
+    # Use a dummy module for dopemux to simulate site-packages load
+    dummy_dopemux = SimpleNamespace(__file__="/tmp/site-packages/dopemux/__init__.py")
     monkeypatch.setitem(
         __import__("sys").modules,
         "dopemux",
-        SimpleNamespace(__file__="/tmp/site-packages/dopemux/__init__.py"),
+        dummy_dopemux,
     )
 
     runner = LiveValidationRunner(
@@ -155,7 +154,7 @@ def test_record_pal_apilookup_writes_machine_readable_artifact(
     (promptset_root / "model_map.yaml").write_text("version: '2.0'\nsteps: []\n", encoding="utf-8")
 
     monkeypatch.setattr(
-        "dopemux.commands.extractor_validation._resolve_extractor_root",
+        extractor_validation, "_resolve_extractor_root",
         lambda _cwd: repo_root,
     )
 
@@ -191,10 +190,12 @@ def test_optional_pal_failure_is_recorded_but_not_raised(
     service_root.mkdir(parents=True, exist_ok=True)
     promptset_root.mkdir(parents=True, exist_ok=True)
     (promptset_root / "model_map.yaml").write_text("version: '2.0'\nsteps: []\n", encoding="utf-8")
+    
     monkeypatch.setattr(
-        "dopemux.commands.extractor_validation._resolve_extractor_root",
+        extractor_validation, "_resolve_extractor_root",
         lambda _cwd: repo_root,
     )
+    
     runner = LiveValidationRunner(
         ValidationConfig(
             promptset_root=promptset_root,
@@ -222,14 +223,18 @@ def test_phase_slice_stage_runs_preflight_then_probe_then_pilot_then_slice(
     promptset_root.mkdir(parents=True, exist_ok=True)
     pricing_manifest = tmp_path / "pricing.json"
     pricing_manifest.write_text('{"route_call_upper_bounds":{"openai/gpt-5-mini":0.1}}\n', encoding="utf-8")
+    
     monkeypatch.setattr(
-        "dopemux.commands.extractor_validation._resolve_extractor_root",
+        extractor_validation, "_resolve_extractor_root",
         lambda _cwd: repo_root,
     )
+    
+    # Set up a clean dopemux module for the origin check
+    dummy_dopemux = SimpleNamespace(__file__=str((repo_root / "src" / "dopemux" / "__init__.py").resolve()))
     monkeypatch.setitem(
         __import__("sys").modules,
         "dopemux",
-        SimpleNamespace(__file__=str((repo_root / "src" / "dopemux" / "__init__.py").resolve())),
+        dummy_dopemux,
     )
 
     runner = LiveValidationRunner(

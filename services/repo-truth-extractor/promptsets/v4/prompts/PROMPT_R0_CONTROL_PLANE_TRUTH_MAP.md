@@ -42,12 +42,21 @@ Focus on concrete, machine-verifiable implementation facts.
 6. Flag **Portability Risks**: Identify hardcoded machine paths or non-portable environment dependencies.
 7. Arbitration: If A/D (Intent) conflicts with C (Implementation), mark `status: conflict` and cite both.
 8. Legacy Context is intent guidance only and is never evidence.
+<<<<<<< HEAD
 9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 10. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 11. Attach evidence to every non-derived field and every relationship edge.
 12. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
 13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 14. Emit exactly the declared outputs and no additional files.
+=======
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
+>>>>>>> 12f30a09d (feat(prompts): rewrite Phase R, B, G, and E extraction procedures (Pass 4) - concrete instructions for synthesis, boundaries, governance, and execution)
 
 ## Shared Rules
 Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
