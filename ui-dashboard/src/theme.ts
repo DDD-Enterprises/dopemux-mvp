@@ -15,6 +15,25 @@ export const brandTokens = {
   gradients: {
     halo: 'radial-gradient(circle at 20% 20%, rgba(125, 251, 246, 0.25), rgba(2, 6, 23, 0.95))',
     velvet: 'linear-gradient(135deg, rgba(4, 22, 40, 0.9), rgba(26, 5, 32, 0.9))',
+    focusCard: 'linear-gradient(180deg, rgba(125, 251, 246, 0.05), rgba(4, 22, 40, 0.95))',
+  },
+  borders: {
+    cyan: 'rgba(125, 251, 246, 0.3)',
+    mint: 'rgba(148, 250, 219, 0.3)',
+    gold: 'rgba(255, 207, 120, 0.3)',
+    subtle: 'rgba(246, 247, 251, 0.1)',
+  },
+  shadows: {
+    panel: '0 30px 80px rgba(4, 3, 31, 0.45)',
+    goldBloom: '0 0 20px rgba(255, 207, 120, 0.2)',
+  },
+  text: {
+    primary: '#F6F7FB',
+    secondary: 'rgba(246, 247, 251, 0.65)',
+  },
+  surfaces: {
+    panel: 'rgba(4, 22, 40, 0.8)',
+    chip: 'rgba(125, 251, 246, 0.15)',
   },
   chips: {
     live: '[LIVE]',
@@ -52,8 +71,8 @@ const theme = createTheme({
       paper: brandTokens.colors.voidNavy,
     },
     text: {
-      primary: '#F6F7FB',
-      secondary: alpha('#F6F7FB', 0.65),
+      primary: brandTokens.text.primary,
+      secondary: brandTokens.text.secondary,
     },
     warning: {
       main: brandTokens.colors.giltEdge,
@@ -80,7 +99,7 @@ const theme = createTheme({
       styleOverrides: {
         body: {
           backgroundImage: brandTokens.gradients.halo,
-          color: '#F6F7FB',
+          color: brandTokens.text.primary,
         },
       },
     },
@@ -88,8 +107,8 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           background: brandTokens.gradients.velvet,
-          border: `1px solid ${alpha(brandTokens.colors.ritualCyan, 0.25)}`,
-          boxShadow: '0 30px 80px rgba(4, 3, 31, 0.45)',
+          border: `1px solid ${brandTokens.borders.cyan}`,
+          boxShadow: brandTokens.shadows.panel,
         },
       },
     },
