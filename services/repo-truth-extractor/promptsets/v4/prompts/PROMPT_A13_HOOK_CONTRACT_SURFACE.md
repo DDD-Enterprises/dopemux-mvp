@@ -64,20 +64,25 @@ Extract hook contracts and event flow graphs: map every hook trigger to its hand
 - `direction` enum: `producer_to_consumer | request_response | broadcast | pub_sub`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the hooks/events partition as primary scan surface
-2. Scan `src/dopemux/hooks/**` for hook registration patterns: decorators, registration calls, handler mappings
-3. Scan `src/dopemux/events/**` and `src/dopemux/event_bus.py` for event type definitions, publish/subscribe patterns
-4. Scan `.claude/hooks/**` for Claude Code hook definitions (pre/post hooks, validation hooks)
-5. Scan `.githooks/**` for git hook scripts and their trigger conditions
-6. For each hook contract, extract the event envelope: `trigger_source` → `handler_path` → `event_types[]` → `transport_mechanism`
-7. Classify each hook into a `lifecycle_phase` based on when it fires in the system lifecycle
-8. Build the event flow graph: for each event type, trace producer → consumer paths with transport annotations
-9. Cross-reference with `REPO_HOOKS_SURFACE.json` to ensure coverage of previously identified hooks
-10. Build deterministic IDs using stable content keys (path/trigger_source/handler_path for contracts, source/target/event_type for flows)
-11. Attach evidence to every non-derived field and every relationship edge
-12. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash)
-13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps
-14. Emit exactly the declared outputs and no additional files
+1. Load upstream `REPOCTRL_INVENTORY.json`, `REPOCTRL_PARTITIONS.json`, and `REPO_HOOKS_SURFACE.json`.
+2. Scan `src/dopemux/hooks/**/*.py` and `src/dopemux/mcp/hooks.py` for registration and handler patterns:
+   - Search for decorators: `@hook`, `@on_event`, `@register_handler`.
+   - Search for registration calls: `event_bus.subscribe()`, `hooks.add()`, `callback_manager.register()`.
+3. Map every hook trigger to its operational contract:
+   - `trigger_source`: identify the event ID or condition that fires the hook.
+   - `handler_path`: locate the function or script that executes on trigger.
+   - `event_types`: identify the literal event names (e.g., `TASK_CREATED`, `GIT_PRE_COMMIT`).
+   - `transport_mechanism`: categorize as `eventbus`, `direct_call`, `webhook`, `mcp_tool`, or `signal`.
+   - `lifecycle_phase`: identify phase (e.g., `pre_launch`, `post_launch`, `on_message`, `on_error`).
+4. Scan `src/dopemux/event_bus.py` and `src/dopemux/events/*.py` to build the `EVENT_FLOW_GRAPH`:
+   - Identify `producers`: where `event_bus.publish()` or `emit()` is called.
+   - Identify `consumers`: where handlers are registered via subscription.
+   - Trace flow from `source` component to `target` component per `event_type`.
+5. Build deterministic IDs using stable content keys (path|trigger_source|handler_path).
+6. Attach evidence to every non-derived field, anchoring to both the trigger registration AND the handler definition.
+7. Normalize arrays by stable sort keys; deduplicate by ID.
+8. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+9. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

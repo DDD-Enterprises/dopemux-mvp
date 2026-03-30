@@ -103,12 +103,22 @@ Capture only implementation facts that are directly evidenced in source and conf
   - CLI command entrypoints that enable Leantime integration
 
 ## Extraction Procedure
-1. Enumerate Leantime-related files and symbols from in-scope paths.
-2. Extract concrete control-plane facts (ports, env vars, command wiring, enable flags).
-3. Build deterministic IDs from stable `(path, symbol/name, key)`.
-4. Attach evidence to every non-derived field and integration relation.
-5. Normalize with stable sorting and deterministic deduplication.
-6. Emit exactly the declared output file.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on Leantime integration surfaces.
+2. Scan `services/leantime-bridge/**`, `compose.yml`, and `config/leantime/*.yaml` for service and network facts:
+   - `leantime_service`: identify container name, image, and explicit `ports` (e.g., 80, 443, 8061).
+   - `mcp_transport`: scan for "leantime" tools in `mcp-proxy-config.yaml` or `src/dopemux/mcp/leantime.py`.
+   - `endpoint_urls`: identify literal Leantime API or webhook URLs (e.g., `LEANTIME_API_URL`).
+3. Extract environment variable contracts: search for `LEANTIME_API_KEY`, `LEANTIME_DB_*`, `LEANTIME_URL`, or `LEANTIME_TOKEN`.
+4. Identify CLI and workflow integration points:
+   - Search for literal commands: `dopemux leantime sync`, `taskx --leantime`, or `leantime-bridge import`.
+5. Build relationship graph: link the Leantime bridge service to the core Dopemux router, MCP proxy, and TaskX surfaces.
+6. For each REPO_LEANTIME_SURFACE item, populate `id` (stable-hash of path|name), required fields, and `evidence`.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path|symbol|name).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID.
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must include at least one evidence object:

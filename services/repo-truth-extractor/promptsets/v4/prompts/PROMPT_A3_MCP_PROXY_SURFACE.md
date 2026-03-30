@@ -104,18 +104,23 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the MCP proxy partition as primary scan surface
-2. Extract MCP proxy facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted MCP proxy elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each MCP_PROXY_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on the MCP proxy partition.
+2. Scan `mcp-proxy-config.yaml`, `mcp-proxy-config.copilot.yaml`, and `configs/proxy/*.json` for proxy definitions.
+3. Identify proxy endpoints: scan for `endpoint`, `url`, `listen`, `port`, or `host` fields.
+4. Extract upstream targets and routing rules:
+   - `upstream_targets`: search for `upstreams`, `targets`, `backends`, or `proxy_pass` blocks.
+   - `routes`: identify path-to-server mappings (e.g., `/mcp/google-search` -> `google-search-server`).
+5. Identify authentication and security handling:
+   - `auth_method`: scan for `auth`, `api_key`, `bearer`, `token`, or `headers` keys.
+6. Record routing logic: scan for explicit "search order", "fallback", or "retry" logic in the proxy config.
+7. Build relationship graph: trace the flow from proxy endpoint to upstream MCP server targets.
+8. For each REPO_MCP_PROXY_SURFACE item, populate `id` (mcp-proxy:<name_or_path>), required fields, and `evidence`.
+9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+10. Build deterministic IDs using stable content keys (path|symbol|name).
+11. Attach evidence to every non-derived field and every relationship edge.
+12. Normalize arrays by stable sort keys; deduplicate by ID.
+13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+14. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

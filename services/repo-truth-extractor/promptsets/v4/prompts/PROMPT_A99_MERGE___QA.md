@@ -207,19 +207,33 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all declared upstream A-phase artifacts and verify schema compliance, required fields, and deterministic ordering before merging.
-2. For each declared output artifact, merge only the upstream artifacts relevant to that artifact name using the registry-defined merge strategy.
-3. Emit `REPOCTRL_NORM_MANIFEST.json` as the deterministic manifest of declared outputs, including artifact name, writer step, item counts when available, checksum when derivable from input content, and evidence anchors.
-4. Emit `REPOCTRL_QA.json` as the QA artifact summarizing expected artifacts present/missing, empty-artifact detection, duplicate-ID/evidence checks, and coverage gaps.
-5. Cross-check coverage: verify every inventory item that should surface in A-phase outputs is either represented or explicitly flagged with an evidence-backed gap.
-6. For each output item, populate `id`, required fields, and `evidence` per the schema contracts in this prompt and the artifact registry.
-7. Legacy Context is intent guidance only and is never evidence.
-8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-10. Attach evidence to every non-derived field and every relationship edge.
-11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-13. Emit exactly the declared outputs and no additional files.
+1. Load all upstream A-phase artifacts (A1-A13) and verify `ItemList` schema compliance and ID uniqueness.
+2. Perform deterministic merge for each target output:
+   - `REPO_INSTRUCTION_SURFACE.json`: merge all items from A1, sorting by `(path, line_range, id)`.
+   - `REPO_MCP_SERVER_DEFS.json`: merge all items from A2.
+   - `REPO_MCP_PROXY_SURFACE.json`: merge all items from A3.
+   - `REPO_ROUTER_SURFACE.json`: merge all items from A4.
+   - `REPO_HOOKS_SURFACE.json`: merge all items from A5.
+   - `REPO_COMPOSE_SERVICE_GRAPH.json`: merge all items from A6.
+   - `REPO_LITELLM_SURFACE.json`: merge all items from A7.
+   - `REPO_TASKX_SURFACE.json`: merge all items from A8.
+   - `REPO_IMPLICIT_BEHAVIOR_HINTS.json`: merge all items from A9.
+   - `REPO_LEANTIME_SURFACE.json`: merge all items from A10.
+3. Generate `REPOCTRL_NORM_MANIFEST.json`:
+   - Enumerate all merged artifacts.
+   - Record `artifact_name`, `sha256` hash of content, `item_count`, and `writer_step_id: A99`.
+4. Generate `REPOCTRL_QA.json`:
+   - Perform "missing-artifact" checks: flag any expected output names not successfully merged.
+   - Perform "shadow/collision" checks: identify items with identical IDs but conflicting fields.
+   - Perform "evidence-gap" checks: identify items with `UNKNOWN` fields or missing evidence anchors.
+   - Record `status`, `checks` (list of pass/fail), and `issues` (list of specific gaps).
+5. Ensure absolute determinism: no timestamps, no `run_id`, stable sort by ID then path, reproducible byte-for-byte output.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path|symbol|name).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID.
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

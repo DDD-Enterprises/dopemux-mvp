@@ -105,18 +105,25 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the router partition as primary scan surface
-2. Extract router facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted router elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each ROUTER_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on the router partition.
+2. Scan `litellm.config`, `config/router/*.yaml`, and `src/dopemux/router/**/*.py` for routing tables and model definitions.
+3. Extract provider and model mappings:
+   - Identify `model_list`, `routers`, or explicit model-to-provider mappings.
+4. Identify routing triggers and logic:
+   - `trigger`: scan for `if`, `when`, `tag`, `filter`, or `metadata` rules used for route selection.
+   - `fallback_ladder`: identify `fallbacks`, `retry_models`, or sequential provider lists.
+5. Extract operational policies:
+   - `retry_policy`: scan for `retries`, `backoff`, or `retry_on` configuration.
+   - `rate_limit_policy`: scan for `rpm`, `tpm`, `rate_limit`, or `quota` keys.
+6. Identify named `profiles` (e.g., "fast-low-cost", "high-reasoning") and their associated model sets.
+7. Build relationship graph: trace connections between triggers, providers, and fallback models.
+8. For each ROUTER_SURFACE item, populate `id` (route:<stable_id>), required fields, and `evidence`.
+9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+10. Build deterministic IDs using stable content keys (path|symbol|name).
+11. Attach evidence to every non-derived field and every relationship edge.
+12. Normalize arrays by stable sort keys; deduplicate by ID.
+13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+14. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

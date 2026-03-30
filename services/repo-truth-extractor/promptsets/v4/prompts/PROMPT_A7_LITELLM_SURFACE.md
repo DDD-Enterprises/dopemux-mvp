@@ -108,16 +108,22 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the LiteLLM partition as primary scan surface
-2. Extract LiteLLM facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted LiteLLM elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each LITELLM_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on LiteLLM configuration surfaces.
+2. Scan `litellm.config`, `config/litellm/*.yaml`, and `src/dopemux/router/litellm_proxy.py` for model and provider declarations.
+3. For each LiteLLM configuration entry, extract mandatory facts:
+   - `provider`: identify the target LLM provider (e.g., "openai", "anthropic", "vertex_ai").
+   - `model`: extract the literal model string or alias (e.g., "gpt-4-turbo", "claude-3-opus").
+   - `env_var_requirements`: list specific environment variable names (e.g., `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`).
+   - `budgets` and `rate_limits`: identify `max_budget`, `max_parallel_requests`, `rpm`, or `tpm` constraints.
+   - `cache_settings`: identify cache type (redis, in-memory) and TTL if defined.
+   - `logging_or_db`: identify `success_callback`, `failure_callback`, or `database_url` for telemetry.
+4. Identify any explicit "proxy" or "server" endpoints defined in the LiteLLM config or compose files.
+5. Build relationship graph: link models to their respective providers and environment variable requirements.
+6. For each LITELLM_SURFACE item, populate `id` (litellm:<stable_id>), required fields, and `evidence`.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Build deterministic IDs using stable content keys (path|symbol|name).
 9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Normalize arrays by stable sort keys; deduplicate by ID.
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 

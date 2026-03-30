@@ -109,18 +109,23 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the TaskX partition as primary scan surface
-2. Extract TaskX facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted TaskX elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each TASKX_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on TaskX configuration and invocation surfaces.
+2. Scan `.taskx/`, `task-packets/`, and `config/taskx/*.yaml` for TaskX metadata and packet definitions.
+3. Identify TaskX invocations in scripts and workflows:
+   - Search for literal command strings: `taskx run`, `taskx-cli`, or `python -m taskx`.
+4. Extract concrete implementation facts:
+   - `packet_path`: locate where task packets (CSV, JSON, YAML) are stored or generated.
+   - `instruction_surfaces`: identify files or directories used for task-specific "custom instructions" or "prompts".
+   - `operator_surface`: identify "operator profiles" or "agent definitions" used during execution.
+5. Trace connections between task packets, the instructions they reference, and the operators invoked to process them.
+6. Build relationship graph: map the flow from a task trigger to the final packet output.
+7. For each TASKX_SURFACE item, populate `id` (taskx:<stable_id>), required fields, and `evidence`.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path|symbol|name).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID.
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

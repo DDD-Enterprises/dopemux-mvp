@@ -110,18 +110,23 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream A-Phase artifacts (A0-A8); use the full repo control inventory as scan surface for implicit behavior discovery
-2. Scan instruction files and config for implicit behaviors: defaults not documented, fallback chains, silent retries, auto-migrations
-3. Cross-reference declared behavior with actual code to find undocumented side effects
-4. For each implicit behavior, assess risk: classify impact if the behavior changes unexpectedly
-5. For each IMPLICIT_BEHAVIOR_HINTS item, populate `id`, behavior description, risk, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load all upstream A-Phase artifacts (A0-A8); focus on "convention over configuration" and undocumented defaults.
+2. Scan configuration loaders and "defaults" modules (e.g., `src/dopemux/config/defaults.py`, `config/settings.yaml`) for:
+   - `config search order`: identify the sequence of paths checked for environment or config files (e.g., `./.env`, `~/.dopemux/env`).
+   - `default paths`: identify hardcoded fallbacks for log files, databases, or cache directories.
+3. Scan for "if-file-exists" behaviors: identify logic that triggers automatically based on the presence of marker files like `.dopetask-pin`, `.git`, or `.mcp-proxy-config.local`.
+4. Identify "silent" operational behaviors:
+   - `fallback_chains`: identify models or servers swapped automatically without explicit user configuration.
+   - `auto_migrations`: search for scripts or decorators that run schema updates on service startup.
+5. Extract environment variable toggles: identify `env` keys that enable hidden or implicit modes (e.g., `DEBUG_MODE`, `SKIP_VALIDATION`, `OFFLINE_ONLY`).
+6. Build relationship graph: link implicit behaviors to the files or environment conditions that trigger them.
+7. For each IMPLICIT_BEHAVIOR_HINTS item, populate `id` (hint:<stable_id>), description, risk, and `evidence`.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path|symbol|name).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID.
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

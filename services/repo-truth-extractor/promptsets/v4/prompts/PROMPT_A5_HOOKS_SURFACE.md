@@ -118,16 +118,20 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the hooks partition as primary scan surface
-2. Extract hooks facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted hooks elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each HOOKS_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on the hooks partition.
+2. Scan `.githooks/`, `.github/workflows/`, and `.pre-commit-config.yaml` for external hook triggers.
+3. Scan `src/dopemux/hooks/**` and `src/dopemux/mcp/hooks.py` for internal hook registrations and decorators.
+4. For each hook identified, extract mandatory fields:
+   - `hook_type`: categorize as "git-hook", "pre-commit", "ci-pipeline", "task-hook", or "mcp-hook".
+   - `trigger`: identify the triggering event (e.g., `git commit`, `cron`, `workflow_dispatch`, `on_task_start`).
+   - `command`: extract the literal shell command string or python function name invoked.
+   - `invoked_paths`: list file patterns the hook watches or modifies (e.g., `*.py`, `docs/**`).
+5. Build relationship graph: link hooks to the files they monitor and the commands they execute.
+6. For each HOOKS_SURFACE item, populate `id` (hook:<type>:<name>), required fields, and `evidence`.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Build deterministic IDs using stable content keys (path|symbol|name).
 9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Normalize arrays by stable sort keys; deduplicate by ID.
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
