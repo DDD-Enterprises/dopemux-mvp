@@ -493,25 +493,52 @@ class GrokPassRunner:
         payload: str,
         api_key: str,
     ) -> dict | None:
-        """Call Grok 420 for a single pass. Returns parsed response or None."""
+        """Call LLM for a single pass with optimized model routing.
+        
+        Routes dedup/discover/feasibility to cheaper gpt-5-nano by default.
+        """
         try:
             import openai
         except ImportError:
             logger.error("❌ 'openai' package not installed: pip install openai>=1.0.0")
             return None
 
+        # A5: Optimization - use cheaper models for high-volume preliminary passes
+        # Default pass-to-model/provider mapping
+        PASS_TO_PROVIDER_MODEL = {
+            "dedup": ("openai", "gpt-5-nano"),
+            "discover": ("openai", "gpt-5-nano"),
+            "feasibility": ("openai", "gpt-5-nano"),
+            "optimize": (self.config.provider, self.config.model),
+        }
+        
+        provider, model_id = PASS_TO_PROVIDER_MODEL.get(pass_id, (self.config.provider, self.config.model))
+        
+        # Resolve credentials for the selected provider
+        if provider == "openai":
+            base_url = None # Use default OpenAI URL
+            current_api_key = os.environ.get("OPENAI_API_KEY")
+            if not current_api_key:
+                logger.warning(f"⚠️ OPENAI_API_KEY not found for cheap pass '{pass_id}', falling back to {self.config.model}")
+                provider, model_id = self.config.provider, self.config.model
+                current_api_key = api_key # Use the one passed in (which is XAI_API_KEY)
+                base_url = self.config.xai_base_url
+        else:
+            base_url = self.config.xai_base_url
+            current_api_key = api_key
+
         system_prompt = PASS_SYSTEM_PROMPTS[pass_id]
-        client = openai.OpenAI(api_key=api_key, base_url=self.config.xai_base_url)
+        client = openai.OpenAI(api_key=current_api_key, base_url=base_url)
 
         payload_size = len(payload.encode("utf-8"))
         logger.info(
-            f"   📡 Calling {self.config.model} for {pass_id} pass "
+            f"   📡 Calling {model_id} ({provider}) for {pass_id} pass "
             f"({payload_size / 1024:.1f}KB payload)..."
         )
 
         try:
             response = client.chat.completions.create(
-                model=self.config.model,
+                model=model_id,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": payload},
@@ -532,7 +559,7 @@ class GrokPassRunner:
             return parsed
 
         except Exception as e:
-            logger.error(f"❌ {pass_id} pass failed: {e}")
+            logger.error(f"❌ {pass_id} pass failed on {model_id}: {e}")
             return None
 
     def _parse_pass_response(self, pass_id: str, raw: str) -> dict:
