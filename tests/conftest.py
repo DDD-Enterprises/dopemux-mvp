@@ -1,3 +1,18 @@
+import os
+import sys
+from pathlib import Path
+src_path = str(Path(__file__).resolve().parents[1] / "src")
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
+
+import os
+import sys
+from pathlib import Path
+project_root = Path(__file__).resolve().parents[1]
+src_path = str(project_root / "src")
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
+
 """
 Pytest configuration and shared fixtures.
 """
