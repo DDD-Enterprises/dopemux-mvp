@@ -8,8 +8,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install dependencies (including dev deps needed for build)
-RUN npm ci --only=production && \
-    npm install
+RUN npm ci --legacy-peer-deps --only=production && \
+    npm install --legacy-peer-deps
 
 # Stage 2: Builder
 FROM dhi.io/node:18-alpine as builder

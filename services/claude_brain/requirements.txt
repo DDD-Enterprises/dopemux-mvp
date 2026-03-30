@@ -1,24 +1,19 @@
-# Claude Brain Service Dependencies
+# DEPRECATED: Redirecting to root pyproject.toml [services] extra
+# -----------------------------------------------------------------------------
+# This service's dependencies are now managed centrally.
+# To install this service's dependencies alongside the core package:
+#   pip install -e ".[services]"
+# -----------------------------------------------------------------------------
 
-# Web Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-
-# AI/ML Libraries
-litellm==1.61.15
-openai==1.3.0
-anthropic==0.7.0
-
-# Data Processing
-pydantic==2.5.0
-redis==5.0.1
-
-# HTTP Client
-aiohttp==3.13.3
-
-# Utilities
-python-dotenv==1.0.0
-
-# Development
-pytest==7.4.3
-pytest-asyncio==0.21.1
+# For legacy compatibility, we keep these listed but they should match pyproject.toml
+fastapi>=0.115.12
+uvicorn[standard]>=0.32.0
+litellm>=1.0.0
+openai>=1.61.0
+anthropic>=0.18.0
+pydantic>=2.7.0
+redis>=5.0.1
+aiohttp>=3.12.14
+python-dotenv>=1.0.0
+pytest>=7.4.3
+pytest-asyncio>=0.23.0
