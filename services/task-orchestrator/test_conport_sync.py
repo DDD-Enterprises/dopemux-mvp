@@ -18,8 +18,8 @@ from typing import List
 import sys
 sys.path.insert(0, str(Path(__file__).parent))
 
-from task_orchestrator.models import OrchestrationTask, TaskStatus, AgentType
-from app.adapters.conport_adapter import ConPortEventAdapter, safe_orchestration_task_to_conport_progress, safe_conport_progress_to_orchestration_task
+from enhanced_orchestrator import OrchestrationTask, TaskStatus, AgentType
+from adapters.conport_adapter import ConPortEventAdapter, safe_orchestration_task_to_conport_progress, safe_conport_progress_to_orchestration_task
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

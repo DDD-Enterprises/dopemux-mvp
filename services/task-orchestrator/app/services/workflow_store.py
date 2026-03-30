@@ -44,7 +44,6 @@ class WorkflowStore:
 
     IDEAS_CATEGORY = "workflow_ideas"
     EPICS_CATEGORY = "workflow_epics"
-    AUDIT_CATEGORY = "workflow_audit"
 
     def __init__(
         self,
@@ -129,38 +128,6 @@ class WorkflowStore:
             key=epic_id,
             value=epic,
         )
-
-    async def save_audit_record(self, record: Mapping[str, Any]) -> bool:
-        audit_id = str(record.get("id", ""))
-        if not audit_id:
-            raise WorkflowStoreError("audit id is required")
-        return await self.upsert_custom_data(
-            category=self.AUDIT_CATEGORY,
-            key=audit_id,
-            value=record,
-        )
-
-    async def get_idea_by_idempotency_key(self, key: str) -> Optional[Dict[str, Any]]:
-        rows = await self.get_custom_data(
-            category=self.IDEAS_CATEGORY,
-            limit=1000,
-        )
-        for row in rows:
-            payload = self._payload_from_row(row)
-            if payload.get("idempotency_key") == key:
-                return payload
-        return None
-
-    async def get_epic_by_idempotency_key(self, key: str) -> Optional[Dict[str, Any]]:
-        rows = await self.get_custom_data(
-            category=self.EPICS_CATEGORY,
-            limit=1000,
-        )
-        for row in rows:
-            payload = self._payload_from_row(row)
-            if payload.get("idempotency_key") == key:
-                return payload
-        return None
 
     async def get_idea(self, idea_id: str) -> Optional[Dict[str, Any]]:
         rows = await self.get_custom_data(
