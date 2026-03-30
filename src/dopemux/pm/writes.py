@@ -5,10 +5,55 @@ Implements ADR-PM-001 boundary enforcement and canonical receipts.
 """
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field
 
 from .models import PMTaskStatus, WORKFLOW_SIGNIFICANT_FIELDS
+
+ALLOWED_METADATA_FIELDS = frozenset(
+    {
+        "title", "headline", "description", "details", "assignee", "assigned_to",
+        "owner", "labels", "tags", "due_date", "start_date", "end_date", "priority",
+        "estimate", "story_points", "notes", "comments", "reflection_metadata",
+        "linked_ids", "refs", "meta", "source_task_id", "milestone",
+    }
+)
+
+EXPLICIT_WORKFLOW_FIELDS = frozenset(
+    {field.lower() for field in WORKFLOW_SIGNIFICANT_FIELDS}
+    | {"state", "phase", "stage", "transition", "blocked", "blocker", "promote", "demote", "next_action"}
+)
+
+WORKFLOW_FIELD_SUFFIXES = ("_status", "_state", "_phase", "_stage")
+
+
+def _looks_workflow_significant_key(key_lower: str) -> bool:
+    """Fail closed for likely workflow keys without substring collisions."""
+    return key_lower.endswith(WORKFLOW_FIELD_SUFFIXES)
+
+
+def classify_pm_write(payload: Dict[str, Any]) -> Tuple[List[str], List[str]]:
+    """Classify payload keys into metadata and workflow-significant fields."""
+    metadata_fields: List[str] = []
+    workflow_fields: List[str] = []
+    for key in payload.keys():
+        key_lower = key.lower()
+        if key_lower in EXPLICIT_WORKFLOW_FIELDS:
+            workflow_fields.append(key)
+        elif key_lower in ALLOWED_METADATA_FIELDS:
+            metadata_fields.append(key)
+        elif _looks_workflow_significant_key(key_lower):
+            workflow_fields.append(key)
+        else:
+            metadata_fields.append(key)
+    return metadata_fields, workflow_fields
+
+
+def is_workflow_significant_payload(payload: Dict[str, Any]) -> bool:
+    """Return True when a payload contains workflow-significant fields."""
+    _, workflow_fields = classify_pm_write(payload)
+    return bool(workflow_fields)
+
 
 class MirrorReceipt(BaseModel):
     """Result of a best-effort mirror write to an external system.
