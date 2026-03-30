@@ -14,14 +14,38 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - `ui-dashboard/**`
 - `ui-dashboard-backend/**`
 
+- `src/**`
+- `services/**`
+- `components/**`
+- `dashboard/**`
+- `plugins/**`
+- `ui-dashboard/**`
+- `ui-dashboard-backend/**`
+
+- `src/**`
+- `services/**`
+- `components/**`
+- `dashboard/**`
+- `plugins/**`
+- `ui-dashboard/**`
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/agent_orchestrator.py`
 
 - `services/agents/**`
 - `src/dopemux/hooks/**`
 - `src/dopemux/agent_orchestrator.py`
 
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/agent_orchestrator.py`
 
+- `services/agents/**`
+- `src/dopemux/hooks/**`
+- `src/dopemux/agent_orchestrator.py`
 
-
+- `src/**`
+- `services/**`
 - `docker/**`
 - `compose.yml`
 - `docker-compose*.yml`
@@ -161,24 +185,54 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 ```
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the eventbus wiring partition as primary scan surface.
-2. Identify event bus classes and adapters: search for classes inheriting from base event bus types or using Redis/Nats/RabbitMQ client libraries.
-3. Search for literal event names and topics defined as string constants (e.g., `TOPIC_USER_CREATED = "user.created"`) to map the event vocabulary.
-4. Locate producer call sites: search for `.publish(`, `.emit(`, `.send_event(`, or equivalent method calls that push data to the bus.
-5. Locate consumer registration and handlers: search for decorators like `@bus.subscribe(`, `@event_handler(`, or explicit registration calls like `bus.add_listener(`.
-6. Build relationship graph: trace connections between producers, topics, and consumers by matching event identifiers.
-7. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in event routing or schema enforcement.
-8. For each EVENTBUS_SURFACES item, populate `id`, required fields, and `evidence`.
-9. Legacy Context is intent guidance only and is never evidence.
-10. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-11. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-12. Attach evidence to every non-derived field and every relationship edge.
-13. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-14. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-15. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the eventbus wiring partition as primary scan surface
+2. Extract eventbus wiring facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted eventbus wiring elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each EVENTBUS_SURFACES item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
-## Shared Rules
-Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
+## Evidence Rules
+- Every load-bearing value must carry at least one evidence object:
+```json
+{
+  "path": "<repo-relative-path>",
+  "line_range": [<start>, <end>],
+  "excerpt": "<exact substring <=200 chars>"
+}
+```
+- `path` must be repo-relative (never absolute in norm artifacts).
+- `excerpt` must be exact (no paraphrase) and <= 200 chars.
+- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
+
+## Determinism Rules
+- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
+- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
+- Merge duplicates deterministically:
+  - union evidence by `(path,line_range,excerpt)`
+  - union arrays with stable sort
+  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
+- Output byte content must be reproducible for same commit + same configuration.
+
+## Anti-Fabrication Rules
+- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
+- Do not infer intent from filenames alone; require direct textual/code evidence.
+- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
+- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
+
+## Failure Modes
+- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
+- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
+- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
