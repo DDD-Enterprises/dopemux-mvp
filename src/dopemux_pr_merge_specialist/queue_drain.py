@@ -457,30 +457,36 @@ def remediate_ci_failure(worktree_path: Path, validation_report: ValidationRepor
     failed_steps = [s for s in validation_report.steps if s.status == "failed"]
     if not failed_steps:
         return False
-        
-    step = failed_steps[0]
-    log(f"Engaging agentic remediation for step '{step.name}'...")
-    
-    error_output = (step.stderr or step.stdout or "No output available")[-6000:]
-    
+
+    step_names = ", ".join(f"'{s.name}'" for s in failed_steps)
+    log(f"Engaging agentic remediation for {len(failed_steps)} failing step(s): {step_names}...")
+
+    # Build a section for each failing step so Gemini sees all failures at once
+    failure_sections = []
+    for s in failed_steps:
+        error_output = (s.stderr or s.stdout or "No output available")[-4000:]
+        failure_sections.append(
+            f"### Step: {s.name}\nCommand: {s.command}\n```\n{error_output}\n```"
+        )
+    all_failures = "\n\n".join(failure_sections)
+
+    primary_command = failed_steps[0].command
+
     prompt = f"""
-You are an expert developer fixing a CI failure in the dopemux-mvp workspace.
-The following command failed in this worktree: {step.command}
+You are an expert developer fixing CI failures in the dopemux-mvp workspace.
+There are {len(failed_steps)} failing step(s) that must ALL pass before this PR can merge.
 
-Output/Error:
-```
-{error_output}
-```
+{all_failures}
 
-Please diagnose the issue and FIX IT. You are running in YOLO mode with full tool access. 
+Please diagnose and FIX ALL failures above. You are running in YOLO mode with full tool access.
 
 CRITICAL: You MUST follow the ci-remediation-specialist runbook:
-1. REPRODUCE the failure locally first by running the command `{step.command}`.
+1. REPRODUCE each failure locally by running its command.
 2. USE AUTO-FIXERS if applicable (e.g., ruff check --fix).
-3. APPLY a minimal surgical fix if reproduction succeeds.
-4. VERIFY that your fix makes `{step.command}` pass.
+3. APPLY minimal surgical fixes.
+4. VERIFY that ALL commands pass before finishing.
 
-Identify the root cause, modify the necessary files, and ensure the command passes.
+Fix all root causes. The PR cannot merge until every listed step passes.
 """
     
     log(f"Launching Gemini CLI agent in YOLO mode (worktree: {worktree_path.name})...")
