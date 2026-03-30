@@ -109,18 +109,24 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the instruction partition as primary scan surface
-2. Extract instruction facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted instruction elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each INSTRUCTION_SURFACES item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on the instruction partition as primary scan surface.
+2. Scan `.claude/`, `.vibe/`, `.dopemux/`, and `.github/` for instruction-bearing files:
+   - Identify `.md`, `.json`, `.yaml`, and `.txt` files containing keywords: "system instructions", "persona", "prompt template", "workflow playbook", "agent rules".
+   - Categorize each source by `kind`: `claude_system`, `agent_profile`, `tooling_instructions`, `prompt_template`, or `workflow_playbook`.
+3. Extract literal tool references: scan instruction text for mentions of "conport", "serena", "mcp", "litellm", "taskx", and "dope-context".
+4. Identify service references: scan for "dashboard", "orchestrator", "proxy", "brainz", or "supervisor".
+5. Extract specific behavior and boundary claims:
+   - `declared_behaviors`: capture literal "Should..." or "Always..." statements.
+   - `declared_boundaries`: capture "Must NOT...", "Never...", or "Forbidden" constraints.
+   - `declared_dataflows`: capture descriptions of data movement between components.
+6. Build relationship graph: map instruction files to the tools and services they explicitly mention or claim to control.
+7. For each REPO_INSTRUCTION_SURFACE item, populate `id`, `kind`, `scope`, and mandatory `evidence` (path, line_range, excerpt).
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path|symbol|name).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID.
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

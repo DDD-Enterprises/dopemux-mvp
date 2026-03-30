@@ -107,16 +107,25 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the compose service graph partition as primary scan surface
-2. Extract compose service graph facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted compose service graph elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each COMPOSE_SERVICE_GRAPH item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on the compose service graph partition.
+2. Scan `compose.yml`, `docker-compose*.yml`, and `compose/*.yml` for service definitions and architecture maps.
+3. For each service block found under `services:`, extract mandatory implementation facts:
+   - `service_name`: the top-level service key.
+   - `image` or `build`: extract the literal image tag or the local Dockerfile/context path.
+   - `env`: list environment variable keys defined in `environment` or referenced in `env_file`.
+   - `ports`: extract literal port mappings (e.g., "8080:80").
+   - `volumes`: list source/target mount points and named volume references.
+   - `depends_on`: capture explicit service dependencies and healthcheck requirements.
+   - `networks`: list network aliases and driver types.
+4. Identify top-level infrastructure definitions:
+   - `networks`: scan for global network configurations and external flags.
+   - `volumes`: scan for global volume drivers and local paths.
+5. Build relationship graph: map services as `nodes` and `depends_on` or `network` links as `edges`.
+6. For each COMPOSE_SERVICE_GRAPH item, populate `id` (service:<name>), required fields, and `evidence`.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Build deterministic IDs using stable content keys (path|symbol|name).
 9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Normalize arrays by stable sort keys; deduplicate by ID.
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
