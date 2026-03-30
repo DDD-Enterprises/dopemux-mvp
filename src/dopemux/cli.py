@@ -2710,6 +2710,27 @@ def native_hooks_register(is_global: bool):
         console.print(f"[info]Dopemux native hooks already registered in {settings_path}[/info]")
 
 
+@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def pr_merge_command(args):
+    """
+    🚀 Policy-Governed Enforcement: PR Merge Specialist
+
+    Engages the PR remediation and queue diagnosis engine. This specialist 
+    synchronizes across active pull requests, performing WSEMT-prioritized 
+    merging and automated conflict resolution.
+    """
+    import sys
+    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
+    
+    # Bridge to the specialist's argparse CLI
+    sys.argv = ["dopemux pr-merge"] + list(args)
+    try:
+        pr_merge_main()
+    except SystemExit as e:
+        sys.exit(e.code)
+
+
 @cli.command()
 @click.option("--attention", "-a", is_flag=True, help="🧠 Cognitive Load: Show attention metrics and focus state.")
 @click.option("--context", "-c", is_flag=True, help="🔬 Mental Model: Show active mental model and context density.")
