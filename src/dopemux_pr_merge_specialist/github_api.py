@@ -296,6 +296,41 @@ class GitHubClient:
         result = self._run(cmd)
         return result.returncode == 0
 
+    def merge_pr(
+        self,
+        pr_id: int,
+        *,
+        title: str,
+        method: str = "squash",
+        admin_bypass: bool = False,
+    ) -> bool:
+        """Merge a pull request, optionally bypassing branch protection."""
+        if admin_bypass:
+            repo_slug = self.resolve_repo_slug()
+            cmd = [
+                "gh",
+                "api",
+                f"repos/{repo_slug}/pulls/{pr_id}/merge",
+                "--method",
+                "PUT",
+                "-f",
+                f"merge_method={method}",
+                "-f",
+                f"commit_title={title}",
+            ]
+        else:
+            cmd = [
+                "gh",
+                "pr",
+                "merge",
+                str(pr_id),
+                f"--{method}",
+                "--delete-branch",
+                *self._repo_args(),
+            ]
+        result = self._run(cmd)
+        return result.returncode == 0
+
     def get_authenticated_user(self) -> str:
         """Get the login of the currently authenticated user."""
         cached = self._cache_get("auth_user")
