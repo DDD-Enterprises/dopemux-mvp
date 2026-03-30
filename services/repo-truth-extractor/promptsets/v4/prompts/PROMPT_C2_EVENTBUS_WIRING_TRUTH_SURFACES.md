@@ -185,18 +185,21 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 ```
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the eventbus wiring partition as primary scan surface
-2. Extract eventbus wiring facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted eventbus wiring elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each EVENTBUS_SURFACES item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the eventbus wiring partition as primary scan surface.
+2. Identify event bus classes and adapters: search for classes inheriting from base event bus types or using Redis/Nats/RabbitMQ client libraries.
+3. Search for literal event names and topics defined as string constants (e.g., `TOPIC_USER_CREATED = "user.created"`) to map the event vocabulary.
+4. Locate producer call sites: search for `.publish(`, `.emit(`, `.send_event(`, or equivalent method calls that push data to the bus.
+5. Locate consumer registration and handlers: search for decorators like `@bus.subscribe(`, `@event_handler(`, or explicit registration calls like `bus.add_listener(`.
+6. Build relationship graph: trace connections between producers, topics, and consumers by matching event identifiers.
+7. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in event routing or schema enforcement.
+8. For each EVENTBUS_SURFACES item, populate `id`, required fields, and `evidence`.
+9. Legacy Context is intent guidance only and is never evidence.
+10. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+11. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+12. Attach evidence to every non-derived field and every relationship edge.
+13. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+14. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+15. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

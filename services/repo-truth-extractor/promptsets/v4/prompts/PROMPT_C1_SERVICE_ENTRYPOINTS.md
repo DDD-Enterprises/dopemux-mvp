@@ -134,18 +134,22 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 ```
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the service entrypoint partition as primary scan surface
-2. Extract service entrypoint facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted service entrypoint elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each SERVICE_ENTRYPOINTS item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the service entrypoint partition as primary scan surface.
+2. Scan `src/**` and `services/**` for `if __name__ == "__main__":` blocks and `main()` functions to identify direct execution entrypoints.
+3. Scan `compose.yml` and `docker-compose*.yml` for `command:` and `entrypoint:` fields to identify canonical service start strings and runtime parameters.
+4. Search for FastAPI/Flask app definitions (e.g., `app = FastAPI()`, `app = Flask(__name__)`) and decorators like `@app.get`, `@app.post`, `@app.route` to map API entrypoints.
+5. Identify CLI entrypoints in `pyproject.toml` (under `[project.scripts]`), `setup.py` (under `entry_points`), or `Makefile` targets.
+6. Locate uvicorn, gunicorn, or celery invocation patterns in shell scripts (`*.sh`) and service definition files.
+7. Build relationship graph: trace connections between extracted service entrypoint elements and their underlying module symbols.
+8. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts between code-level entrypoints and orchestration-level commands.
+9. For each SERVICE_ENTRYPOINTS item, populate `id`, required fields, and `evidence`.
+10. Legacy Context is intent guidance only and is never evidence.
+11. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+12. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+13. Attach evidence to every non-derived field and every relationship edge.
+14. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+15. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+16. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
