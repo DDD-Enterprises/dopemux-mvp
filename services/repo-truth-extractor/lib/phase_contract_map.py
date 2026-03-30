@@ -264,11 +264,13 @@ def _assert_lane_map_matches_scope(
 @lru_cache(maxsize=1)
 def compile_phase_contract_map() -> Dict[str, Any]:
     artifact_rules = _artifact_rules_by_key()
-    lane_map = _model_map_by_key()
     prompt_paths = _prompt_path_by_step()
     scope_map = _repo_truth_scope_by_key()
-    scoped_lane_map = {key: lane_map[key] for key in scope_map.keys() if key in lane_map}
-    _assert_lane_map_matches_scope(scoped_lane_map, scope_map)
+    lane_map_full = _model_map_by_key()
+    lane_map = {
+        key: lane_map_full[key] for key in scope_map.keys() if key in lane_map_full
+    }
+    _assert_lane_map_matches_scope(lane_map, scope_map)
 
     steps_payload: Dict[str, Dict[str, Any]] = {}
     for (phase_code, step_id), scope in sorted(scope_map.items()):

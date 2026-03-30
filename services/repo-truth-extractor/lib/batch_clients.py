@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Sequence
 
 
+class UnsupportedBatchProvider(RuntimeError):
+    """Raised when a provider is not supported for live batch execution."""
+
+
 @dataclass(frozen=True)
 class BatchRequest:
     custom_id: str
@@ -78,12 +82,8 @@ class OpenAIBatchClient:
                 "temperature": 0.1,
             }
             if req.force_json_output:
-                # v4/TP-008: Default to strict mode for batch JSON output if supported.
-                # In a full implementation, we'd check if the model supports it.
                 body["response_format"] = {"type": "json_object"}
-                # If strict is explicitly requested in metadata or implied by lane
                 if req.metadata.get("strict") == "true":
-                    # Placeholder for actual JSON Schema if using json_schema type
                     pass
             payload_rows.append(
                 {
@@ -124,7 +124,6 @@ class OpenAIBatchClient:
         return str(getattr(batch_obj, "status", "") or "").lower()
 
     def get_batch_info(self, job_id: str) -> Dict[str, Any]:
-        """Retrieve batch information including status and file IDs."""
         batch_obj = self._client.batches.retrieve(job_id)
         return {
             "id": str(getattr(batch_obj, "id", "")),
@@ -188,6 +187,17 @@ class XAIBatchClient(OpenAIBatchClient):
 class OpenRouterBatchClient(OpenAIBatchClient):
     def __init__(self, api_key: str, base_url: str = "https://openrouter.ai/api/v1") -> None:
         super().__init__(api_key=api_key, base_url=base_url)
+
+    def submit(
+        self,
+        requests: Sequence[BatchRequest],
+        route: BatchRoute,
+        step_context: Dict[str, Any],
+    ) -> str:
+        raise UnsupportedBatchProvider(
+            "OpenRouter is not supported for live batch execution. Use openai, gemini, or xai. "
+            "OpenRouter remains available for sync routing."
+        )
 
 
 class GeminiBatchClient:
@@ -259,4 +269,3 @@ class GeminiBatchClient:
 
     def cancel(self, job_id: str) -> None:
         self._client.batches.cancel(name=job_id)
-
