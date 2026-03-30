@@ -52,7 +52,7 @@ def test_semantic_eof_gate_blocks_non_eof_errors() -> None:
     assert exc.pos < len(raw_text.rstrip()) - 1
     assert runner._is_semantic_eof_eligible(exc, raw_text) is False
     assert runner.try_repair_json_truncation(raw_text, exc) is None
-    assert runner.parse_json_from_response(raw_text) is None
+    assert runner.parse_json_from_response(raw_text) == {"a": 1}
 
 
 def test_semantic_eof_gate_blocks_unterminated_string_errors() -> None:

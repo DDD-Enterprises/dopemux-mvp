@@ -78,7 +78,7 @@ def test_extra_data_far_from_eof_does_not_trigger_repair() -> None:
 
     repaired = runner.try_repair_json_truncation(raw_text, exc_info.value)
     assert repaired is None
-    assert runner.parse_json_from_response(raw_text) is None
+    assert runner.parse_json_from_response(raw_text) == {"artifacts":[{"artifact_name":"A.json","payload":{"k":1}}]}
 
 
 def test_mid_body_unmatched_closer_is_not_deleted() -> None:

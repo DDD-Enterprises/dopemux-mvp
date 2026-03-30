@@ -16,11 +16,6 @@ except Exception:  # pragma: no cover - optional rich rendering
 
 
 _STAGE_ORDER = ("preflight", "provider_probe", "batch_pilot", "phase_slice", "full_phased")
-_STATUS_STYLE = {
-    "pass": ("[LOGGED]", "cyan"),
-    "fail": ("[BLOCKER]", "red"),
-    "warn": ("[OVERRIDE]", "yellow"),
-}
 
 
 class BatchValidationUI:
