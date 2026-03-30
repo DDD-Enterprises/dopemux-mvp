@@ -85,7 +85,7 @@ Feature specifications and capabilities.
 - **[F001: Untracked Work Detection](f001-enhanced-untracked-work-system-2.md)** - Enhanced work tracking
 - **[F001: Basic Untracked Work (Historical)](../archive/sessions/serena/v2/f001-usage-examples.md)** - Early implementation notes
 - **[F002: Multi-Session Support](f002-multi-session-support-2.md)** - Multiple session handling
-- **[PR Merge Flight Dashboard Reference](../systems/dashboard/overview.md)** - Technical architecture for the PR merge TUI
+- **[PR Merge Flight Dashboard Reference](systems/dashboard/overview.md)** - Technical architecture for the PR merge TUI
 
 ### Research & Background
 - **[Python Tmux Research](python-tmux-research.md)** - Technical research on tmux integration

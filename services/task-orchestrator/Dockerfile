@@ -7,13 +7,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
-COPY services/task-orchestrator/requirements.txt .
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/__init__.py
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies from centralized manifest
+RUN pip install --no-cache-dir .[services]
 
-# Copy application code and dopemux package
+# Copy application code and dopemux package (relative to root build context)
 COPY services/task-orchestrator/app /app/app
 COPY services/task-orchestrator/intelligence /app/intelligence
 COPY services/task-orchestrator/task_orchestrator /app/task_orchestrator

@@ -264,9 +264,9 @@ class TestConfigManager:
             docker_compose_bin="docker compose",
         )
 
-        assert "dopemux-conport" in defaults
-        assert "dopemux-serena" in defaults
-        assert "dopemux-dope-context" in defaults
+        assert "conport" in defaults
+        assert "serena" in defaults
+        assert "claude-context" in defaults
 
     def test_detect_docker_mode_timeout_returns_false(self, config_manager):
         """Docker mode detection should fail closed if docker compose hangs."""

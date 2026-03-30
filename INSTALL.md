@@ -239,8 +239,25 @@ Dopemux uses a modular Docker Compose architecture to manage its diverse service
 - **`docker/compose.research.yml`**: Deep research agents (GPT-Researcher, Exa).
 - **`docker/compose.agents.yml`**: Desktop automation and Webhook receivers.
 
+### Dependency Management
+Dopemux uses a consolidated dependency architecture centered in `pyproject.toml`. This ensures conflict-free environments and faster installations by resolving all requirements in a single pass.
+
+**Installation Extras:**
+- `dev`: Standard development tools (pytest, black, mypy, etc.).
+- `services`: Complete set of dependencies for all containerized and local services (FastAPI, Redis, PostgreSQL, etc.).
+- `all`: A shorthand for `[dev,services]`.
+
+**Preferred Installation Method:**
+```bash
+# Core package only
+pip install -e .
+
+# Full suite for testing and development
+pip install -e .[all]
+```
+
 ### Python Environment
-The `dopemux` CLI is installed into a dedicated virtual environment at `~/.dopemux/venv`. This prevents conflicts with your system Python and ensures all dependencies are isolated. The installer automatically adds this path to your `~/.zshrc` or `~/.bashrc`.
+The `dopemux` CLI is installed into a dedicated virtual environment at `~/.dopemux/venv`.
 
 ## 🖥️ System Requirements
 

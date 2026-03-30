@@ -11,14 +11,17 @@ WORKDIR /app
 # Keep minimal; remove what you don't need
 RUN apk add --no-cache build-base gcc musl-dev libffi-dev openssl-dev curl
 
-# Copy ONLY requirements first (better caching)
-COPY services/adhd_engine/requirements.txt /app/requirements.txt
-RUN python -m venv /app/venv && /app/venv/bin/pip install --no-cache-dir -r /app/requirements.txt
+# Copy dependency manifests first for better caching
+COPY pyproject.toml /app/pyproject.toml
+COPY src/dopemux/__init__.py /app/src/dopemux/__init__.py
+RUN python -m venv /app/venv && \
+    /app/venv/bin/pip install --no-cache-dir /app/.[services]
 
-# Copy code + shared libs
+# Copy code + shared libs (relative to root build context)
 COPY services/adhd_engine /app/services/adhd_engine
 COPY services/adhd_engine/mcp_stdio.py /app/mcp_stdio.py
 COPY services/shared /app/services/shared
+# Note: src/dopemux/__init__.py was already copied above
 COPY src/dopemux /app/src/dopemux
 # Copy repo root shared/ for monitoring module
 COPY shared /app/shared

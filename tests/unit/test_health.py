@@ -13,34 +13,33 @@ sys.modules["psutil"] = mock_psutil
 mock_docker = MagicMock()
 sys.modules["docker"] = mock_docker
 
-# Mock rich submodules if needed
-mock_rich_panel = MagicMock()
-sys.modules["rich.panel"] = mock_rich_panel
-mock_rich_table = MagicMock()
-sys.modules["rich.table"] = mock_rich_table
-
+# Ensure tests always patch the module references used by HealthChecker,
+# even if dopemux.health was imported earlier by another test module.
+from rich.console import Console
+from dopemux.ui.theme import DOPEMUX_THEME
 import dopemux.health as health_module
 from dopemux.health import HealthChecker, HealthStatus, ServiceHealth
 
-# Ensure tests always patch the module references used by HealthChecker,
-# even if dopemux.health was imported earlier by another test module.
 health_module.psutil = mock_psutil
 health_module.docker = mock_docker
 
 class TestHealthChecker:
     @pytest.fixture
     def health_checker(self, temp_project_dir):
-        return HealthChecker(project_path=temp_project_dir)
+        console = Console(theme=DOPEMUX_THEME)
+        return HealthChecker(project_path=temp_project_dir, console=console)
 
     def test_init(self, temp_project_dir):
-        checker = HealthChecker(project_path=temp_project_dir)
+        console = Console(theme=DOPEMUX_THEME)
+        checker = HealthChecker(project_path=temp_project_dir, console=console)
         assert checker.project_path == temp_project_dir
         assert checker.docker_client is not None
         assert "dopemux_core" in checker.checks
 
     def test_init_no_docker(self, temp_project_dir):
         with patch("dopemux.health.docker.from_env", side_effect=Exception("Docker failed")):
-            checker = HealthChecker(project_path=temp_project_dir)
+            console = Console(theme=DOPEMUX_THEME)
+            checker = HealthChecker(project_path=temp_project_dir, console=console)
             assert checker.docker_client is None
 
     def test_check_all(self, health_checker):

@@ -14,4 +14,4 @@ prelude: Workspace Troubleshooting (explanation) for dopemux documentation and d
 
 See the main troubleshooting playbook for diagnostics and fixes.
 
-- [Troubleshooting Playbook](../troubleshooting-playbook.md)
+- [Troubleshooting Playbook](../../02-how-to/troubleshooting.md)

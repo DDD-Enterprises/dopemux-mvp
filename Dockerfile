@@ -13,16 +13,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements.txt pyproject.toml MANIFEST.in ./
+# Copy dependency manifests first for better caching
+COPY pyproject.toml MANIFEST.in ./
+COPY src/dopemux/__init__.py src/dopemux/
 
 # Create virtual environment
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install Python dependencies
+# Install Python dependencies from centralized manifest
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir .
 
 # Stage 2: Runtime
 FROM dhi.io/python:3.11-slim

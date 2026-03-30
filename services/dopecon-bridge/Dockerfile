@@ -12,14 +12,16 @@ RUN apt-get update && apt-get install -y \
 # Set up working directory
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt .
+# Copy dependency manifests first for better caching
+# We need pyproject.toml and the core package structure for pip install .[services]
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/__init__.py
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies from centralized manifest
+RUN pip install --no-cache-dir .[services]
 
-# Copy application code
-COPY . .
+# Copy application code (relative to root build context)
+COPY services/dopecon-bridge/ .
 
 # Create logs and data directories
 RUN mkdir -p /app/logs /app/data

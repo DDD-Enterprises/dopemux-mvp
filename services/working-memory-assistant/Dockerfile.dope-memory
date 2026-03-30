@@ -28,22 +28,23 @@ RUN apt-get update && apt-get install -y \
 # Create app directory
 WORKDIR /app
 
-# Copy requirements (reuse existing but we only need a subset)
-COPY requirements.txt .
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/__init__.py
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies from centralized manifest
+RUN pip install --no-cache-dir .[services]
 
-# Copy application code
-COPY chronicle/ ./chronicle/
-COPY promotion/ ./promotion/
-COPY mcp/ ./mcp/
-COPY reflection/ ./reflection/
-COPY trajectory/ ./trajectory/
-COPY canonical_ledger.py .
-COPY dope_memory_main.py .
-COPY eventbus_consumer.py .
-COPY postgres_mirror_sync.py .
+# Copy application code (relative to root build context)
+COPY services/working-memory-assistant/chronicle/ ./chronicle/
+COPY services/working-memory-assistant/promotion/ ./promotion/
+COPY services/working-memory-assistant/mcp/ ./mcp/
+COPY services/working-memory-assistant/reflection/ ./reflection/
+COPY services/working-memory-assistant/trajectory/ ./trajectory/
+COPY services/working-memory-assistant/canonical_ledger.py .
+COPY services/working-memory-assistant/dope_memory_main.py .
+COPY services/working-memory-assistant/eventbus_consumer.py .
+COPY services/working-memory-assistant/postgres_mirror_sync.py .
 
 
 # Create non-root user

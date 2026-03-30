@@ -6,13 +6,13 @@ import os
 import sys
 import subprocess
 import time
+import json
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Optional, Dict, List, Sequence
 
 import click
 import yaml
-from dopemux.ui.progress import branded_progress
 from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -30,6 +30,15 @@ def trigger_group():
     """
     pass
 
+def _log(message: str, quiet: bool = False, level: str = "info"):
+    if not quiet:
+        if level == "error":
+            console.logger.error(f"[error]❌ {message}[/error]")
+        elif level == "success":
+            console.logger.info(f"[success]✅ {message}[/success]")
+        else:
+            console.logger.info(f"[info]ℹ️  {message}[/info]")
+
 @trigger_group.command("command-done")
 @click.option("--async", "_async", is_flag=True, help="⚡ Asynchronous Ritual: Process the trigger in the background.")
 @click.option("--quiet", is_flag=True, help="🔇 Silence HUD: Suppress telemetry output for this trigger.")
@@ -40,6 +49,23 @@ def trigger_command_done(_async: bool, quiet: bool):
     Writes a 'command.done' signal to the ritual ledger, marking the 
     successful completion of a cockpit ritual.
     """
+    event = {
+        "event_type": "command.done",
+        "source": "cli",
+        "payload": {
+            "timestamp": time.time(),
+        },
+    }
+    
+    try:
+        emit_capture_event(event, mode="auto")
+        _log("Command completion signal emitted", quiet=quiet, level="success")
+    except CaptureError as exc:
+        _log(f"Capture failed: {exc}", quiet=quiet, level="error")
+        sys.exit(1)
+    except Exception as exc:
+        _log(f"Unexpected error: {exc}", quiet=quiet, level="error")
+        sys.exit(1)
 
 
 @trigger_group.command("shell-command")
@@ -53,5 +79,27 @@ def trigger_shell_command(context: str, _async: bool, quiet: bool):
     Writes a 'shell.command' signal to the ritual ledger, capturing 
     the active shell context and ritual coordinates.
     """
+    payload = {}
+    if context:
+        try:
+            payload = json.loads(context)
+            if not isinstance(payload, dict):
+                payload = {"raw_context": context}
+        except json.JSONDecodeError:
+            payload = {"raw_context": context}
 
-
+    event = {
+        "event_type": "shell.command",
+        "source": "cli",
+        "payload": payload,
+    }
+    
+    try:
+        emit_capture_event(event, mode="auto")
+        _log("Shell command signal emitted", quiet=quiet, level="success")
+    except CaptureError as exc:
+        _log(f"Capture failed: {exc}", quiet=quiet, level="error")
+        sys.exit(1)
+    except Exception as exc:
+        _log(f"Unexpected error: {exc}", quiet=quiet, level="error")
+        sys.exit(1)
