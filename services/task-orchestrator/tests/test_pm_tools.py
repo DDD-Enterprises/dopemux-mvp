@@ -5,7 +5,6 @@ from app.main import app
 client = TestClient(app)
 
 def test_pm_update_work_item_emits_metric(monkeypatch):
-    import src.dopemux.pm.writes
     from src.dopemux.pm.writes import CanonicalReceipt
     
     def mock_pm_transition_work_item(*args, **kwargs):
@@ -17,7 +16,7 @@ def test_pm_update_work_item_emits_metric(monkeypatch):
             reconciliation_state="SYNCED"
         )
         
-    monkeypatch.setattr("src.dopemux.pm.writes.pm_transition_work_item", mock_pm_transition_work_item)
+    monkeypatch.setattr("app.api.pm_tools.pm_transition_work_item", mock_pm_transition_work_item)
     
     
     class MockClient:
@@ -41,7 +40,6 @@ def test_pm_update_work_item_emits_metric(monkeypatch):
 
 
 def test_pm_update_work_item_mirror_failure_emits_metric(monkeypatch):
-    import src.dopemux.pm.writes
     from src.dopemux.pm.writes import CanonicalReceipt, MirrorReceipt
     
     def mock_pm_transition_work_item(*args, **kwargs):
@@ -53,7 +51,7 @@ def test_pm_update_work_item_mirror_failure_emits_metric(monkeypatch):
             reconciliation_state="PARTIAL"
         )
         
-    monkeypatch.setattr("src.dopemux.pm.writes.pm_transition_work_item", mock_pm_transition_work_item)
+    monkeypatch.setattr("app.api.pm_tools.pm_transition_work_item", mock_pm_transition_work_item)
     
     class MockClient:
         def update_task(self, *args, **kwargs):
@@ -75,4 +73,3 @@ def test_pm_update_work_item_mirror_failure_emits_metric(monkeypatch):
     assert metrics.get("pm_mirror_failures_total", 0) == 1
     assert metrics.get("pm_reconciliation_pending_total", 0) == 1
     assert metrics.get("pm_degraded_results_total", 0) == 1
-
