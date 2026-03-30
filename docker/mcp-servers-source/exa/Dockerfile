@@ -2,17 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies from centralized manifest
+RUN pip install --no-cache-dir .[services]
 
-# Copy application code
-COPY exa_server.py .
+# Copy application code (relative to root)
+COPY docker/mcp-servers-source/exa/exa_server.py .
 
 # Environment variables
 ENV MCP_SERVER_PORT=3011

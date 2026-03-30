@@ -21,10 +21,12 @@ WORKDIR /app
 # === Dependencies Stage ===
 FROM base as dependencies
 
-# Copy requirements and install Python dependencies
-COPY research_api/requirements.txt .
+# Copy dependency manifests first for better caching
+COPY pyproject.toml .
+COPY src/dopemux/__init__.py src/dopemux/
+
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir .[services]
 
 # Install gpt-researcher (will be configurable for different versions)
 RUN pip install --no-cache-dir gpt-researcher
@@ -33,8 +35,8 @@ RUN pip install --no-cache-dir gpt-researcher
 FROM dependencies as application
 
 # Copy research_api source code (renamed from backend to avoid package collision)
-COPY research_api/ ./research_api/
-COPY --chown=dopemux:dopemux . .
+COPY services/dopemux-gpt-researcher/research_api/ ./research_api/
+COPY --chown=dopemux:dopemux services/dopemux-gpt-researcher/ .
 
 # Create necessary directories
 RUN mkdir -p /app/logs /app/data /app/cache && \

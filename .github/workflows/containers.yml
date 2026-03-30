@@ -48,9 +48,7 @@ jobs:
             context: .
 
           # -- Frontend
-          - service: dopemux-frontend
-            dockerfile: Dockerfile.frontend
-            context: .
+          # Removed - ui-dashboard deprecated
 
           # -- MCP: ConPort
           - service: conport
