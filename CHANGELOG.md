@@ -4,6 +4,7 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- Consolidated V5 extraction engine and validation toolchain (PR #313).
 - Run ID propagation across `queue-drain` and `flight` to ensure consistent artifact grouping.
 - Persistent `RUN_SUMMARY.md` writing at the end of `queue-drain` execution.
 - Git case-insensitivity warning in `preflight` for macOS environments.
