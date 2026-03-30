@@ -39,7 +39,6 @@ from ..models.workflow import (
     UpdateIdeaRequest,
     WorkflowEpic,
     WorkflowIdea,
-    TransitionAuditRecord,
     normalize_tags,
     utc_now_iso,
 )
@@ -113,13 +112,6 @@ class WorkflowService:
 
     async def create_idea(self, request: CreateIdeaRequest) -> WorkflowIdea:
         self._require_enabled()
-        idemp_key = getattr(request, "idempotency_key", None)
-        if idemp_key:
-            if hasattr(self.store, "get_idea_by_idempotency_key"):
-                existing = await self._call_store(self.store.get_idea_by_idempotency_key(idemp_key))
-                if existing:
-                    return WorkflowIdea(**existing)
-
         now = utc_now_iso()
         idea = WorkflowIdea(
             id=f"idea_{uuid4().hex}",
@@ -131,8 +123,6 @@ class WorkflowService:
             status="new",
             created_at=now,
             updated_at=now,
-            version=1,
-            idempotency_key=getattr(request, "idempotency_key", None),
         )
         await self._save_idea_or_raise(idea)
         self.metrics["workflow_ideas_created_total"] += 1
@@ -155,9 +145,6 @@ class WorkflowService:
     async def update_idea(self, idea_id: str, request: UpdateIdeaRequest) -> WorkflowIdea:
         self._require_enabled()
         idea = await self.get_idea(idea_id)
-        idemp_key = getattr(request, "idempotency_key", None)
-        if idemp_key and idea.idempotency_key == idemp_key:
-            return idea
 
         if idea.status == "promoted" and request.status and request.status != "promoted":
             raise WorkflowConflictError("promoted ideas cannot be moved to a non-promoted state")
@@ -166,32 +153,20 @@ class WorkflowService:
             idea.title = request.title
         if request.description is not None:
             idea.description = request.description
-        if request.status is not None and request.status != idea.status:
-            raise WorkflowConflictError("direct status mutation blocked: use transition API")
+        if request.status is not None:
+            idea.status = request.status
         if request.tags is not None:
             idea.tags = request.tags
 
         if idea.status == "promoted" and not idea.promoted_to_epic_id:
             raise WorkflowConflictError("promoted ideas must include promoted_to_epic_id")
 
-        if getattr(request, "version", None) is not None and request.version != idea.version:
-            raise WorkflowConflictError("stale version update rejected")
-
         idea.updated_at = utc_now_iso()
-        idea.version += 1
-        idea.idempotency_key = getattr(request, "idempotency_key", None)
         await self._save_idea_or_raise(idea)
         return idea
 
     async def create_epic(self, request: CreateEpicRequest) -> WorkflowEpic:
         self._require_enabled()
-        idemp_key = getattr(request, "idempotency_key", None)
-        if idemp_key:
-            if hasattr(self.store, "get_epic_by_idempotency_key"):
-                existing = await self._call_store(self.store.get_epic_by_idempotency_key(idemp_key))
-                if existing:
-                    return WorkflowEpic(**existing)
-
         now = utc_now_iso()
         epic = WorkflowEpic(
             id=f"epic_{uuid4().hex}",
@@ -206,8 +181,6 @@ class WorkflowService:
             adhd_metadata=request.adhd_metadata,
             created_at=now,
             updated_at=now,
-            version=1,
-            idempotency_key=getattr(request, "idempotency_key", None),
         )
         await self._save_epic_or_raise(epic)
         self.metrics["workflow_epics_created_total"] += 1
@@ -236,9 +209,6 @@ class WorkflowService:
     async def update_epic(self, epic_id: str, request: UpdateEpicRequest) -> WorkflowEpic:
         self._require_enabled()
         epic = await self.get_epic(epic_id)
-        idemp_key = getattr(request, "idempotency_key", None)
-        if idemp_key and epic.idempotency_key == idemp_key:
-            return epic
 
         if request.title is not None:
             epic.title = request.title
@@ -250,25 +220,16 @@ class WorkflowService:
             epic.acceptance_criteria = request.acceptance_criteria
         if request.priority is not None:
             epic.priority = request.priority
-        if request.status is not None and request.status != epic.status:
-            raise WorkflowConflictError("direct status mutation blocked: use transition API")
+        if request.status is not None:
+            epic.status = request.status
         if request.tags is not None:
             epic.tags = request.tags
         if request.leantime_project_id is not None:
-            if epic.leantime_project_id is not None and epic.leantime_project_id != request.leantime_project_id:
-                raise WorkflowConflictError("conflicting linked-ID overwrite fails closed")
             epic.leantime_project_id = request.leantime_project_id
-        if request.leantime_reflection is not None:
-            epic.leantime_reflection = request.leantime_reflection
         if request.adhd_metadata is not None:
             epic.adhd_metadata = request.adhd_metadata
 
-        if getattr(request, "version", None) is not None and request.version != epic.version:
-            raise WorkflowConflictError("stale version update rejected")
-
         epic.updated_at = utc_now_iso()
-        epic.version += 1
-        epic.idempotency_key = getattr(request, "idempotency_key", None)
         await self._save_epic_or_raise(epic)
         return epic
 
@@ -289,40 +250,6 @@ class WorkflowService:
                 "already_promoted": True,
                 "warning": None,
             }
-            
-        idemp_key = getattr(request, "idempotency_key", None)
-        if idemp_key and hasattr(self.store, "get_epic_by_idempotency_key"):
-            existing_epic = await self._call_store(self.store.get_epic_by_idempotency_key(idemp_key))
-            if existing_epic and existing_epic.get("created_from_idea_id") == idea.id:
-                audit_record = TransitionAuditRecord(
-                    id=f"audit_{uuid4().hex}",
-                    entity_id=idea.id,
-                    transition_type="promote_idea",
-                    from_state=idea.status,
-                    to_state="promoted",
-                    actor="system",
-                    timestamp=utc_now_iso(),
-                    idempotency_key=idemp_key,
-                    version_before=idea.version,
-                    version_after=idea.version + 1,
-                    linked_ids_snapshot={"promoted_to_epic_id": existing_epic["id"]},
-                )
-                
-                saved_audit = await self._call_store(self.store.save_audit_record(audit_record.dict()))
-                if not saved_audit:
-                    raise WorkflowUnavailableError("failed to persist workflow transition audit")
-
-                idea.status = "promoted"
-                idea.promoted_to_epic_id = existing_epic["id"]
-                idea.updated_at = utc_now_iso()
-                idea.version += 1
-                await self._save_idea_or_raise(idea)
-                return {
-                    "idea": idea,
-                    "epic": WorkflowEpic(**existing_epic),
-                    "already_promoted": True,
-                    "warning": None,
-                }
 
         now = utc_now_iso()
         epic = WorkflowEpic(
@@ -338,75 +265,22 @@ class WorkflowService:
             adhd_metadata=request.adhd_metadata,
             created_at=now,
             updated_at=now,
-            version=1,
-            idempotency_key=getattr(request, "idempotency_key", None),
         )
 
         sync_to_leantime = request.sync_to_leantime and self.default_sync_to_leantime
         warning: Optional[str] = None
         if sync_to_leantime:
-            from app.models.workflow import LeantimeReflection, utc_now_iso as iso_time
             leantime_project_id, warning = await self._sync_epic_to_leantime(epic)
             epic.leantime_project_id = leantime_project_id
-            
             if warning:
                 logger.warning("Workflow promotion Leantime sync degraded: %s", warning)
                 self.metrics["workflow_promotion_failures_total"] += 1
-                epic.leantime_reflection = LeantimeReflection(
-                    status="degraded",
-                    warning=warning,
-                    last_synced_at=iso_time(),
-                    leantime_project_id=leantime_project_id,
-                    drift_detected=True
-                )
-            else:
-                epic.leantime_reflection = LeantimeReflection(
-                    status="success",
-                    last_synced_at=iso_time(),
-                    leantime_project_id=leantime_project_id,
-                    drift_detected=False
-                )
 
         await self._save_epic_or_raise(epic)
 
-        audit_record = TransitionAuditRecord(
-            id=f"audit_{uuid4().hex}",
-            entity_id=idea.id,
-            transition_type="promote_idea",
-            from_state=idea.status,
-            to_state="promoted",
-            actor="system",
-            timestamp=utc_now_iso(),
-            idempotency_key=getattr(request, "idempotency_key", None),
-            version_before=idea.version,
-            version_after=idea.version + 1,
-            linked_ids_snapshot={"promoted_to_epic_id": epic.id},
-        )
-        
-audit_persisted = True
-        try:
-            saved_audit = await self._call_store(
-                self.store.save_audit_record(audit_record.dict())
-            )
-            if not saved_audit:
-                audit_persisted = False
-        except WorkflowUnavailableError:
-            audit_persisted = False
-
-        if not audit_persisted:
-            logger.warning(
-                "Workflow promotion audit persistence degraded for idea %s -> epic %s",
-                idea.id,
-                epic.id,
-            )
-            self.metrics["workflow_promotion_failures_total"] += 1
-            if warning:
-                warning = f"{warning}; audit persistence degraded"
-            else:
-                warning = "audit persistence degraded"
+        idea.status = "promoted"
         idea.promoted_to_epic_id = epic.id
         idea.updated_at = utc_now_iso()
-        idea.version += 1
         await self._save_idea_or_raise(idea)
 
         self.metrics["workflow_epics_created_total"] += 1
