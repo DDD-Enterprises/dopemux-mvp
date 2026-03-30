@@ -15,7 +15,7 @@ from textual.app import App, ComposeResult
 from textual.reactive import reactive
 from textual.widgets import DataTable, Footer, Header, Static
 
-from .theme import Glyphs, StatusChip, styled_panel, styled_table
+from .theme import Glyphs, StatusChip, styled_panel, styled_table, styled_gauge
 from .voice import VoiceEngine, VoiceMode
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -136,7 +136,7 @@ class ADHDStatePanel(Static):
         energy_style, border_style, energy_icon = _energy_state(self.energy, self.cognitive_load)
         attention_style, attention_label = _attention_state(self.attention)
         load_style, load_label = _load_state(self.cognitive_load)
-        load_bar = self._make_gauge(self.cognitive_load)
+        load_bar = styled_gauge(self.cognitive_load, complete_style=load_style)
         flow_status = (
             f"[info]{Glyphs.RUNNING} Flow ritual active[/]"
             if self.in_flow
@@ -156,7 +156,7 @@ class ADHDStatePanel(Static):
         )
         table.add_row(
             "[label]🧠 Cognitive load[/]",
-            f"[{load_style}]{load_label}[/] [text.dim]{load_bar} {int(self.cognitive_load * 100)}%[/]",
+            f"[{load_style}]{load_label}[/] {load_bar} [text.dim]{int(self.cognitive_load * 100)}%[/]",
         )
         table.add_row(
             "[label]👁 Attention[/]",
@@ -166,12 +166,6 @@ class ADHDStatePanel(Static):
         table.add_row("[label]Aftercare[/]", break_warning)
 
         return styled_panel(table, title="[blink]🧠 ADHD STATE[/blink]", border_style=border_style)
-
-    @staticmethod
-    def _make_gauge(value: float) -> str:
-        filled = int(value * 10)
-        return f"[{'|' * filled}{'·' * (10 - filled)}]"
-
 
 class ProductivityPanel(Static):
     """Tasks and velocity metrics (Tier 2)."""
@@ -212,14 +206,20 @@ class ProductivityPanel(Static):
                 pass
 
     def render(self) -> object:
+        is_complete = self.tasks_completed >= self.tasks_total and self.tasks_total > 0
         rate = self.tasks_completed / self.tasks_total if self.tasks_total > 0 else 0
-        bar = "█" * int(rate * 10) + "░" * (10 - int(rate * 10))
+        bar = styled_gauge(rate)
         sparkline = "".join("▁▂▃▄▅▆▇█"[min(v, 7)] for v in self.velocity)
 
         table = _grid_table()
+        task_label = (
+            f"[success]{Glyphs.SUCCESS} RITUAL COMPLETE[/]"
+            if is_complete
+            else f"[label]{Glyphs.CODE} Tasks[/]"
+        )
         table.add_row(
-            f"[label]{Glyphs.CODE} Tasks[/]",
-            f"[mint.soft]{self.tasks_completed}/{self.tasks_total}[/] [text.dim]({int(rate * 100)}%) {bar}[/]",
+            task_label,
+            f"[mint.soft]{self.tasks_completed}/{self.tasks_total}[/] {bar} [text.dim]({int(rate * 100)}%)[/]",
         )
         table.add_row(
             f"[label]{Glyphs.INFO} Decisions[/]",
