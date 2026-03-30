@@ -45,12 +45,13 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan governance targets (`.github/workflows/`, `.pre-commit-config.yaml`, `CODEOWNERS`, `LICENSE`) targets; collect path, type, and content metadata for each artifact
-2. Classify each artifact by category relevant to the governance targets (`.github/workflows/`, `.pre-commit-config.yaml`, `CODEOWNERS`, `LICENSE`) domain
-3. Build GOV_PARTITIONS by grouping files into logical categories with rationale
-4. For each GOV_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
-5. For each GOV_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
+1. Scan `.github/workflows/**`, `.pre-commit-config.yaml`, `CODEOWNERS`, `LICENSE`, `.gitignore`, and `pyproject.toml` for all governance and policy definitions.
+2. Extract **CI Gates**: Identify job names, triggers, and success criteria in GitHub Actions that enforce quality bars.
+3. Extract **Policy Files**: Inventory `LICENSE`, `CODEOWNERS`, and repo-level `.gitignore` rules for mandatory enforcement.
+4. Extract **Environment Scoping**: Identify where `.env` or configuration files are loaded in scripts and entrypoints.
+5. Catalog **Credential Loaders**: Locate code patterns that load secrets (e.g., `os.getenv`, `pydantic.BaseSettings`) without exposing values.
+6. Build the partition plan by grouping governance items into cohesive partitions: CI, Hygiene, Policy, and Security.
+7. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

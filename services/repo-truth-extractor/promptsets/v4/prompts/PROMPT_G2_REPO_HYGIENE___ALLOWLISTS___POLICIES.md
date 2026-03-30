@@ -39,11 +39,11 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the repo hygiene and allowlists partition as primary scan surface
-2. Extract repo hygiene and allowlists facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted repo hygiene and allowlists elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each GOV_HYGIENE_POLICIES item, populate `id`, required fields, and `evidence`
+1. Load `GOV_INVENTORY.json` and `GOV_PARTITIONS.json` from upstream.
+2. Extract **Hygiene Rules**: Parse `.gitignore` for forbidden patterns and `.pre-commit-config.yaml` for mandatory hooks.
+3. Map **Allowlists**: Identify explicitly permitted exceptions in policy files or linter configs (e.g., `.eslintignore`) with evidence.
+4. Trace **Enforcement Scripts**: Locate any `scripts/` or `Make` targets that perform "lint-like" repo hygiene checks.
+5. Identify **Drift**: Flag any files in the repo that violate the current `.gitignore` or `CODEOWNERS` rules.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

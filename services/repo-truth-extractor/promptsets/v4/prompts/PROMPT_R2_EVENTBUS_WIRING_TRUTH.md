@@ -37,12 +37,14 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, evidence`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for eventbus wiring truth
-2. Synthesize EVENTBUS_WIRING_TRUTH: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load Phase A, H, D, and C artifacts, focusing on `EVENTBUS_WIRING_TRUTH_SURFACES.json`.
+2. Map **Implementations**: Identify event bus adapters (e.g., local, redis, file-based) from Phase C.
+3. Trace **Producers**: Map event names to code locations where events are emitted.
+4. Trace **Consumers**: Map event names to handler functions or subscriber classes.
+5. Link **Dispatch Paths**: Connect producer calls to consumer execution via the identified adapter.
+6. Arbitration: If event names are computed dynamically, mark as `(computed)` and cite the calculation logic.
+7. Output Format: Produce a table: `Event | Producers (CODE) | Consumers (CODE) | Adapter (CODE)`.
+8. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

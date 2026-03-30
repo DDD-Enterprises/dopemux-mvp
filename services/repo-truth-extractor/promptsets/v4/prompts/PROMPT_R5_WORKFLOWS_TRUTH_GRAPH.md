@@ -40,12 +40,14 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `nodes, edges, schema`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for workflows truth graph
-2. Synthesize WORKFLOWS_TRUTH_GRAPH: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load Phase A, C, and W (Workflow) artifacts, specifically `WORKFLOW_RUNNER_SURFACE.json`, `HOME_TMUX_WORKFLOW_SURFACE.json`, and `COMPOSE_SERVICE_GRAPH.json`.
+2. Map **Bootstrap Flows**: Identify how the system starts via Tmux, Docker Compose, or standalone scripts from Phase A/W.
+3. Trace **Multi-Service Workflows**: Connect services into a dependency graph, identifying order of execution and state triggers.
+4. Extract **I/O & Artifacts**: Identify explicit file inputs, outputs, and intermediate artifacts for each workflow step.
+5. Identify **Instruction-Driven Steps**: Map how `.md` or `.json` instruction files drive specific runner behaviors (Phase W).
+6. Arbitration: Resolve conflicts between `W` (Workflow Inventory) and `C` (Code Implementation) by prioritizing evidenced code paths.
+7. Output Format: Produce a Markdown graph with nodes (steps/services) and edges (triggers/dependencies), plus a list of workflows (W1..Wn) with literal citations.
+8. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

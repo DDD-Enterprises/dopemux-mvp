@@ -39,11 +39,21 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the env loading and config chain partition as primary scan surface
-2. Extract env loading and config chain facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted env loading and config chain elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each ENV_CHAIN item, populate `id`, required fields, and `evidence`
+1.  **Initialize Scan Context**: Load `EXECUTION_INVENTORY.json`. Focus on source code (`*.py`, `*.ts`), `.env.example`, and `config/*.yaml`.
+2.  **Scan for Environment Access**:
+    *   In Python: Identify `os.getenv`, `os.environ`, `dotenv.load_dotenv`, and Pydantic `BaseSettings`.
+    *   In TypeScript/JS: Identify `process.env`.
+    *   In Docker/Compose: Identify `environment:` and `env_file:` sections.
+3.  **Identify Configuration Cascades**:
+    *   Find functions like `load_config()`, `get_settings()`, or `init_app()`.
+    *   Trace how variables are merged (e.g., CLI args > Env Vars > Default Config).
+4.  **Extract Variable Metadata**: For each variable, record:
+    *   `name`: The literal env var name.
+    *   `default`: The hardcoded fallback value.
+    *   `is_required`: Boolean based on `raise` if missing or Pydantic validation.
+    *   `source`: File and line where it is first defined or accessed.
+5.  **Evidence Anchoring**: Attach exact excerpts for every access point and default value.
+6.  **Validate**: Deduplicate by variable name and file path. Emit `ENV_LOADING_CONFIG_CHAIN.json`.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

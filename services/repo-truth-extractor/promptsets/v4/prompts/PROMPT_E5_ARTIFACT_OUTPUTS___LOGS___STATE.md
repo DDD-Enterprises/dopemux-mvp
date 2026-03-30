@@ -43,11 +43,24 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the artifact outputs, logs, and state partition as primary scan surface
-2. Extract artifact outputs, logs, and state facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted artifact outputs, logs, and state elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each ARTIFACT_OUTPUTS item, populate `id`, required fields, and `evidence`
+1.  **Initialize Scan Context**: Load `EXECUTION_INVENTORY.json`. Target logging configurations, database initialization code, and Docker volume mounts.
+2.  **Identify Log Destinations**:
+    *   Scan code for `logging.FileHandler`, `RotatingFileHandler`, `Sentry`, or custom log writers.
+    *   Identify log file patterns: `/var/log/*.log`, `logs/app.log`.
+    *   Extract log format and rotation policies if present.
+3.  **Map Persistent State**:
+    *   Scan for database connection strings: `sqlite3.connect`, `PostgreSQL` DSNs.
+    *   Identify local file-based state: `Path("data/state.json")`, `.dopemux/sessions/*.json`.
+    *   Extract Docker volume mappings from `docker-compose.yml` that point to local folders.
+4.  **Detect Artifact Generators**:
+    *   Identify code paths that write files: `open(..., 'w')`, `df.to_csv()`, `json.dump()`.
+    *   Record the type of artifact: `log`, `state`, `cache`, `report`, `export`.
+5.  **Build Output Items**: For each destination, record:
+    *   `artifact_path`: The literal path or pattern.
+    *   `persistence_type`: `volatile` (memory/stdout) or `durable` (disk/DB).
+    *   `component_owner`: The service or module that writes to this location.
+6.  **Evidence Anchoring**: Attach exact excerpts showing the file path hardcoding or volume mount definition.
+7.  **Validate**: Deduplicate by artifact path. Emit `EXEC_ARTIFACT_IO_MAP.json`.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

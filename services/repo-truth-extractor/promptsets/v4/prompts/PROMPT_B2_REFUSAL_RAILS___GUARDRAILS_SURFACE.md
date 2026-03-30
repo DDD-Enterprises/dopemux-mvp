@@ -39,11 +39,11 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the refusal rails and guardrails partition as primary scan surface
-2. Extract refusal rails and guardrails facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted refusal rails and guardrails elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each REFUSAL_RAILS item, populate `id`, required fields, and `evidence`
+1. Load `BOUNDARY_INVENTORY.json` and `BOUNDARY_PARTITIONS.json` from upstream.
+2. Extract **Refusal Rails**: Identify exception handlers (e.g., `401 Unauthorized`, `403 Forbidden`) and trace how errors propagate to the caller.
+3. Map **Guardrail Surface**: Locate `.claude/settings.json` "preventions" or "guardrails" sections and match them to evidenced code blocks.
+4. Identify **Policy Enforcement**: Scan for centralized policy checks or internal `check_policy` functions that govern cross-service access.
+5. Resolve **Shadowed Guards**: If multiple guards apply (e.g., middleware + endpoint decorator), document the sequence and precedence.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

@@ -50,12 +50,14 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for dope memory implementation truth
-2. Synthesize DOPE_MEMORY_IMPLEMENTATION_TRUTH: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load `DOPE_MEMORY_SCHEMAS.json`, `DOPE_MEMORY_DB_WRITES.json`, and Phase A/H/C/D artifacts.
+2. Inventory **Memory Adapters**: Identify SQLite/Postgres usage and connection logic from Phase C.
+3. Map **Schemas & Writes**: Align `DOPE_MEMORY_SCHEMAS.json` and `DOPE_MEMORY_DB_WRITES.json` to code symbols in Phase C.
+4. Trace **Retention/TTL**: Locate data expiration logic in `C` or `A` phases.
+5. Map **Control-Plane Links**: Bind memory configurations to env vars or Compose wiring from Phase A.
+6. Arbitration: Resolve intent conflicts via Phase D `DOC_SUPERSESSION`; if implementation differs from docs, mark as `GAPS/CONFLICTS`.
+7. Output Format: Organize by 1) IMPLEMENTED (CODE), 2) PLANNED (DOC), 3) GAPS/CONFLICTS.
+8. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

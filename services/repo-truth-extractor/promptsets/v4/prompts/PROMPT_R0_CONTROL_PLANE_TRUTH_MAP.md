@@ -34,12 +34,14 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, evidence`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for control plane truth map synthesis
-2. Synthesize CONTROL_PLANE_TRUTH_MAP: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load Phase A, H, D, and C normalized artifacts from `extraction/**/norm/`.
+2. Map **Repo Control Plane**: Extract `instruction_surfaces`, `hooks`, `compose`, `router`, `litellm`, and `mcp` definitions from Phase A/C.
+3. Map **Home Control Plane**: Extract `configs`, `router`, `litellm`, `mcp`, and `sqlite` metadata from Phase H.
+4. Construct **Invocation Graph**: Trace triggers from repo instructions to service startup (Compose/Tmux).
+5. Identify **Coupling Points**: Match control-plane configs to code entrypoints (Phase C).
+6. Flag **Portability Risks**: Identify hardcoded machine paths or non-portable environment dependencies.
+7. Arbitration: If A/D (Intent) conflicts with C (Implementation), mark `status: conflict` and cite both.
+8. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

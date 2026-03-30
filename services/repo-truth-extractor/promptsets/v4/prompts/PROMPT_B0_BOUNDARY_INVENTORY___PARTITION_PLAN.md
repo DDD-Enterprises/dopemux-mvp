@@ -45,14 +45,13 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan `src/**`, `services/**`, `docs/90-adr/**`, `.claude/**`, and `AGENTS.md` for all API surface definitions, endpoint declarations, route registrations, middleware chains, and MCP tool manifests.
-2. For each discovered endpoint or boundary point, extract: protocol (HTTP/gRPC/MCP/CLI), path or method signature, input validation constraints, authentication requirements, and rate limit annotations with exact file:line evidence.
-3. Catalog all refusal rails and authorization guard clauses by tracing decorator chains, middleware stacks, and policy enforcement functions; record the guard condition, protected resource, and bypass risk.
-4. Cross-reference discovered boundaries against `services/registry.yaml` to assign each boundary to its canonical service_id; flag any boundary not attributable to a registered service.
-5. Build the partition plan by grouping boundary items into cohesive partitions based on owning service, protocol family, and directory locality; assign each partition a stable `partition_id` derived from `SHA256(sorted(file_paths))`.
-6. For each BOUNDARY_INVENTORY item, populate `id` using `BOUNDARY_INVENTORY:<stable-hash(path|symbol|name)>`, `path`, `kind` (endpoint|guard|policy|middleware), `summary`, and `evidence` array with repo-relative paths, line ranges, and exact excerpts.
-7. For each BOUNDARY_PARTITIONS item, populate `id` using `BOUNDARY_PARTITIONS:<stable-hash(path|symbol|name)>`, `partition_id`, `files` (sorted list), `reason`, and `evidence`.
-8. Legacy Context is intent guidance only and is never evidence.
+1. Scan `src/**`, `services/**`, `docs/90-adr/**`, `.claude/settings.json`, and `AGENTS.md` for all API surface definitions, FastAPI `Depends()` auth enforcements, tool permissions, and agent declarations.
+2. For each discovered endpoint or boundary point, extract: protocol (HTTP/MCP/CLI), method signature, input validation, authentication requirements, and rate limit annotations with exact evidence.
+3. Catalog all **Refusal Rails** and authorization guard clauses by tracing `raise HTTPException`, decorator chains, and policy enforcement functions in `.claude/settings.json`.
+4. Inventory **Agent Boundaries**: Extract role-based access control (RBAC) and tool-use constraints declared in `AGENTS.md`.
+5. Cross-reference discovered boundaries against `services/registry.yaml` to assign each boundary to its canonical service_id.
+6. Build the partition plan by grouping boundary items into cohesive partitions based on owning service, protocol family, and directory locality.
+7. Legacy Context is intent guidance only and is never evidence.
 9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 10. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 11. Attach evidence to every non-derived field and every relationship edge.

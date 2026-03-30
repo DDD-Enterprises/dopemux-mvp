@@ -38,12 +38,13 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, evidence`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for trinity boundary enforcement trace
-2. Synthesize TRINITY_BOUNDARY_ENFORCEMENT_TRACE: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load Phase A, B, C, and D artifacts, focusing on `TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.json`.
+2. Trace **Enforcement Points**: Identify exact symbols/files where boundary checks (FastAPI `Depends`, etc.) are implemented.
+3. Map **Refusal Rails**: Trace how authorization failures propagate to the user/caller.
+4. Identify **Bypass Paths**: Document any evidenced routes that circumvent boundary checks.
+5. Arbitration: Explicitly separate IMPLEMENTED checks (Phase C) from PLANNED rules (Phase D).
+6. Output Format: 1) Boundary list with enforcement status, 2) Guardrail pipeline diagram (text), 3) Bypass risks.
+7. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

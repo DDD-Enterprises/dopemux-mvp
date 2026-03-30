@@ -41,12 +41,14 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, risk, severity, location, evidence`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for portability and migration risk ledger
-2. Synthesize PORTABILITY_RISK_LEDGER: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load Phase A, H, G (Governance), and C artifacts from `extraction/**/norm/`.
+2. Identify **Home-Only Dependencies**: Scan for absolute paths or hardcoded references to `~/.config`, `~/.gemini`, or `~/.dopemux` in Phase H/A.
+3. Inventory **Required Env Vars**: Extract mandatory environment variables from `compose.yml`, `.env.template`, and Phase C code surfaces.
+4. Assess **MCP vs. Hooks**: Compare current MCP server definitions (Phase A) against potential Hook implementation patterns in Phase C.
+5. Identify **Migration Risks**: Document specific code or config patterns that would break if migrated to a different runner or hook system.
+6. Arbitration: Cite every risk with evidence from Phase A (Architecture) or Phase C (Code).
+7. Output Format: Produce a ledger table: `ID | Risk | Severity | Location | Evidence`.
+8. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

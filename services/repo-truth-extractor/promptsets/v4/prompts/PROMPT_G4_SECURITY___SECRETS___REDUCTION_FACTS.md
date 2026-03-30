@@ -41,12 +41,13 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the security, secrets, and reduction facts partition as primary scan surface
-2. Extract security, secrets, and reduction facts facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted security, secrets, and reduction facts elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each GOV_SECRETS_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load `GOV_INVENTORY.json` and relevant partitions from upstream.
+2. Extract **Credential Reading Patterns**: Scan code for `os.environ`, `dotenv`, and Secret Manager API calls (symbols and paths only).
+3. Identify **Hardcoded Risk**: Scan for potential hardcoded secrets or default credentials in configs and scripts (Patterns + Paths only).
+4. Map **Secret Loaders**: Identify exact symbols/classes responsible for injecting secrets into the runtime environment.
+5. Check **.gitignore Violations**: Verify if any evidenced secret files (e.g., `.env`, `*.pem`) are missing from `.gitignore`.
+6. Arbitration: Never extract secret contents; document only the location, pattern, and loader symbol with evidence.
+7. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.
