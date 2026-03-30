@@ -8,8 +8,43 @@ from pathlib import Path
 
 from .dopetask_archive_resolver import DopetaskArchiveResolver
 from .dopetask_bundle_loader import BundleSchemaError, DopetaskBundleLoader
-from .dopetask_series_loader import DopetaskSeriesLoader, SeriesSchemaError
-from .dopetask_series_models import DopetaskSeriesResult
+from .dopetask_compatibility_mode import DopetaskCompatibilityMode
+from .dopetask_status_mapper import (
+    DopetaskAdapterResult,
+    DopetaskGovernance,
+    DopetaskIntegration,
+    DopetaskOperatorView,
+    DopetaskPosture,
+    DopetaskProofRef,
+    DopetaskStatusMapper,
+    DopetaskSummary,
+    DopetaskTarget,
+    DopetaskTPIdentity,
+)
+from .runtime import utc_now
+
+
+class DopetaskAdapter:
+    """Top-level coordinator: load bundle → map states → emit normalized result.
+
+    Usage (bundle-first):
+        adapter = DopetaskAdapter(loader, mapper)
+        result  = adapter.from_bundle_path(Path("proof/.../MANIFEST.json"))
+
+    Usage (launch-first):
+        adapter = DopetaskAdapter(loader, mapper, launcher=launcher)
+        result  = adapter.from_tp_id("TP-PRMS-052", context={})
+    """
+
+    def __init__(
+        self,
+        loader: DopetaskBundleLoader,
+        mapper: DopetaskStatusMapper,
+        launcher=None,  # DopetaskPacketLauncher | None
+        repo: str = "dopemux-mvp",
+        worktree: str = "",
+        archive_resolver: DopetaskArchiveResolver | None = None,
+        compat_mode: DopetaskCompatibilityMode | None = None,
     ) -> None:
         self.loader = loader
         self.mapper = mapper
@@ -18,7 +53,11 @@ from .dopetask_series_models import DopetaskSeriesResult
         self.worktree = worktree or str(Path.cwd())
         self._archive_resolver = archive_resolver or DopetaskArchiveResolver()
         self._compat_mode = compat_mode or DopetaskCompatibilityMode()
-        self.series_loader = series_loader or DopetaskSeriesLoader()
+
+    # ------------------------------------------------------------------
+    # Public entry points
+    # ------------------------------------------------------------------
+
     def from_bundle_path(self, bundle_path: Path) -> DopetaskAdapterResult:
         """Build a normalized result from an existing bundle file."""
         errors: list[str] = []

@@ -83,6 +83,24 @@ except ImportError:
             IntelligenceRouter = None
     else:
         IntelligenceRouter = None
+
+try:
+    from lib.spend_ledger import SpendLedger
+except ImportError:
+    spend_ledger_path = RUNNER_SERVICE_DIR / "lib" / "spend_ledger.py"
+    if spend_ledger_path.exists():
+        spend_ledger_spec = importlib.util.spec_from_file_location(
+            "repo_truth_spend_ledger", spend_ledger_path
+        )
+        if spend_ledger_spec and spend_ledger_spec.loader:
+            spend_ledger_module = importlib.util.module_from_spec(spend_ledger_spec)
+            spend_ledger_spec.loader.exec_module(spend_ledger_module)
+            SpendLedger = spend_ledger_module.SpendLedger
+        else:
+            SpendLedger = None
+    else:
+        SpendLedger = None
+
 try:
     from lib.phase_contract_map import (
         CONTRACT_MAP_FILENAME as PHASE_CONTRACT_MAP_FILENAME,

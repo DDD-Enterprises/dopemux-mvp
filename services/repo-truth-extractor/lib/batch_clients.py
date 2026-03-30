@@ -150,15 +150,27 @@ class OpenAIBatchClient:
         else:
             raw_text = str(content_obj)
 
+        import logging
+        logger = logging.getLogger(__name__)
+
         results: List[BatchResult] = []
+        total_lines = 0
+        discarded_lines = 0
+        
         for line in raw_text.splitlines():
             line = line.strip()
             if not line:
                 continue
+            total_lines += 1
             try:
                 row = json.loads(line)
-            except Exception:
+            except Exception as e:
+                discarded_lines += 1
+                logger.warning(f"Discarding invalid JSON line in batch result: {line[:200]}... Error: {e}")
                 continue
+
+        if total_lines > 0 and (discarded_lines / total_lines) > 0.05:
+            raise RuntimeError(f"BatchCorruptionError: {discarded_lines}/{total_lines} results discarded (>5%)")
             custom_id = str(row.get("custom_id") or "")
             response = row.get("response") if isinstance(row.get("response"), dict) else {}
             body = response.get("body") if isinstance(response.get("body"), dict) else {}
