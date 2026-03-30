@@ -147,7 +147,7 @@ class RoutingConfig:
                 raise RoutingConfigError(
                     f"Model {model['name']} missing 'provider' field"
                 )
-            if "model_id" not in model:
+            if "model_id" not in model and "litellm_model" not in model:
                 raise RoutingConfigError(
                     f"Model {model['name']} missing 'model_id' field"
                 )
@@ -241,7 +241,7 @@ class RoutingConfig:
             provider = self._get_provider_by_name(model["provider"])
 
             litellm_params = {
-                "model": model["model_id"],
+                "model": model.get("model_id") or model.get("litellm_model"),
                 "api_key": f"os.environ/{provider['api_key_env']}",
                 "max_tokens": model.get("max_tokens", 131072),
             }
@@ -298,29 +298,39 @@ class RoutingConfig:
         """Generate Claude Code Router configuration.
 
         Args:
-            litellm_url: URL of the LiteLLM proxy
+            litellm_url: URL of the LiteLLM proxy (without /v1)
             litellm_key: Master key for LiteLLM
             ccr_api_key: API key for CCR itself
 
         Returns:
-            Dictionary containing CCR configuration
-
-        Note:
-            This does NOT include upstream API keys - those are handled by
-            environment variables.
+            Dictionary containing CCR configuration in CCR's expected format
         """
+        models = self.config.get("models", [])
         slots = self.config.get("slots", {})
 
-        # CCR exposes slot names as model names
-        ccr_models = list(slots.keys())
+        all_model_names = [m["name"] for m in models]
+        all_model_names.extend(slots.keys())
+        all_model_names = list(dict.fromkeys(all_model_names))
+
+        default_model = slots.get("default", all_model_names[0] if all_model_names else "default")
 
         return {
-            "provider": "litellm",
-            "upstream_url": litellm_url,
-            "upstream_key_var": "DOPEMUX_LITELLM_MASTER_KEY",
-            "models": ccr_models,
-            "api_key": ccr_api_key,
-            "listen_port": self.config["ports"]["ccr"],
+            "LOG": True,
+            "LOG_LEVEL": "info",
+            "HOST": "127.0.0.1",
+            "PORT": self.config["ports"]["ccr"],
+            "API_TIMEOUT_MS": 600000,
+            "Providers": [
+                {
+                    "name": "litellm",
+                    "api_base_url": f"{litellm_url}/v1",
+                    "api_key": litellm_key,
+                    "models": all_model_names,
+                }
+            ],
+            "Router": {
+                "default": f"litellm,{default_model}",
+            },
         }
 
     def _get_provider_by_name(self, name: str) -> Dict[str, Any]:

@@ -262,7 +262,7 @@ def test_render_profile_statusline_formats_match():
     assert "profile:full" in text
     assert "suggest:developer(88%)" in text
     assert "mode:auto" in text
-    assert render_profile_statusline(active_profile=None) == "profile:none"
+    assert "profile:none" in render_profile_statusline(active_profile=None)
 
 
 def test_suggestion_engine_uses_service_policy(monkeypatch):

@@ -587,26 +587,23 @@ mcp__conport__update_active_context \
 
 ### Claude Code Router integration
 
+Dopemux provides a global routing system to use external models (Grok, Gemini, OpenAI) with Claude Code.
+
 ```bash
-# Install claude-code-router and Claude Code CLIs globally
-./scripts/install_claude_code_router.sh
+# Switch to API mode (use Grok/Gemini/OpenAI)
+dopemux routing api
 
-# Start Dopemux with LiteLLM routing (Claude → grok-code-fast-1 → gpt-5)
-dopemux start --litellm
+# Switch back to direct Anthropic subscription
+dopemux routing direct
 
-# Start Dopemux with Claude OAuth (default; no LiteLLM)
+# Start Dopemux (automatically uses active mode)
 dopemux start
 ```
 
-- Dopemux automatically provisions a dedicated Claude Code Router home under
-  `.dopemux/claude-code-router/<instance>` so multi-instance sessions never
-  fight over a shared `~/.claude-code-router` directory.
-- If you are routing to a custom upstream without LiteLLM, export the following
-  before `dopemux start`:
-  - `CLAUDE_CODE_ROUTER_UPSTREAM_URL` – full `/v1/chat/completions` endpoint
-  - `CLAUDE_CODE_ROUTER_UPSTREAM_KEY` – API key if required
-- `CLAUDE_CODE_ROUTER_MODELS` – comma-separated model names (e.g. `deepseek-chat,deepseek-reasoner`)
-- Use `--no-claude-router` if you need to fall back to direct Anthropics access.
+- **API Mode**: Routes through LiteLLM + CCR local proxies. Requires API keys in `~/.dopemux/routing.env`.
+- **Subscription Mode**: Direct to Anthropic API. Uses your existing OAuth or Anthropic subscription.
+
+See [Alternate Routing Reference](docs/03-reference/routing.md) for detailed configuration.
 
 💡 **Multi-workspace tip:** running `python3 scripts/render_workspace_configs.py` inside any clone creates `~/.dopemux/workspaces/<slug>/env`. Source that file before starting Dopemux so Docker containers, MCP proxies, and scripts share the correct `DOPEMUX_WORKSPACE_*` variables per clone.
 

@@ -136,6 +136,19 @@ class LaunchdServiceManager:
         
         return f"dopemux_{prefix}_{secrets.token_urlsafe(16)}"
 
+    def _read_routing_env(self) -> Dict[str, str]:
+        """Read key=value pairs from routing.env."""
+        env_path = self.DOPEMUX_DIR / "routing.env"
+        result: Dict[str, str] = {}
+        if env_path.exists():
+            with open(env_path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        key, value = line.split("=", 1)
+                        result[key] = value
+        return result
+
     def _generate_litellm_wrapper_script(self) -> None:
         """Generate wrapper script for LiteLLM service."""
         script_path = self.SCRIPTS_DIR / "litellm_wrapper.sh"
@@ -155,14 +168,15 @@ class LaunchdServiceManager:
 
 set -eo pipefail
 
-# Load environment variables
-if [ -f "{home_dir}/.dopemux/routing.env" ]; then
-    source "{home_dir}/.dopemux/routing.env"
-fi
+# Load and export all environment variables
+set -a
+source "{home_dir}/.dopemux/routing.env"
+set +a
 
 # Set default values if not set
 LITELLM_PORT=${{DOPEMUX_LITELLM_PORT:-4000}}
 LITELLM_MASTER_KEY=${{DOPEMUX_LITELLM_MASTER_KEY:-""}}
+export LITELLM_MASTER_KEY
 
 if [ -z "$LITELLM_MASTER_KEY" ]; then
     echo "❌ Error: DOPEMUX_LITELLM_MASTER_KEY not set in routing.env"
@@ -211,10 +225,10 @@ exec "{litellm_bin}" --config "{home_dir}/.dopemux/litellm/litellm.config.yaml" 
 
 set -eo pipefail
 
-# Load environment variables
-if [ -f "{home_dir}/.dopemux/routing.env" ]; then
-    source "{home_dir}/.dopemux/routing.env"
-fi
+# Load and export all environment variables
+set -a
+source "{home_dir}/.dopemux/routing.env"
+set +a
 
 # Set default values if not set
 CCR_PORT=${{DOPEMUX_CCR_PORT:-4010}}
@@ -268,20 +282,26 @@ exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
 
     def _generate_ccr_config(self) -> None:
         """Generate CCR configuration from routing config."""
-        config_path = self.CCR_DIR / "config.json"
-        
-        # Generate CCR config
+        # CCR reads from ~/.claude-code-router/config.json (not ~/.dopemux/ccr/)
+        ccr_home = Path.home() / ".claude-code-router"
+        ccr_home.mkdir(parents=True, exist_ok=True)
+        config_path = ccr_home / "config.json"
+
+        # Read actual key values from routing.env (CCR is a Node.js app, no shell expansion)
+        env_vars = self._read_routing_env()
+        litellm_port = env_vars.get("DOPEMUX_LITELLM_PORT", "4000")
+        litellm_key = env_vars.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+
         ccr_config = self.routing_config.generate_ccr_config(
-            litellm_url="http://localhost:${DOPEMUX_LITELLM_PORT:-4000}",
-            litellm_key="${DOPEMUX_LITELLM_MASTER_KEY}",
-            ccr_api_key="${DOPEMUX_CCR_API_KEY}"
+            litellm_url=f"http://127.0.0.1:{litellm_port}",
+            litellm_key=litellm_key,
+            ccr_api_key=env_vars.get("DOPEMUX_CCR_API_KEY", ""),
         )
-        
-        # Write to file
+
+        import json
         with open(config_path, "w") as f:
-            import json
             json.dump(ccr_config, f, indent=2)
-        
+
         logger.info(f"Generated CCR config: {config_path}")
 
     def _generate_litellm_plist(self) -> None:
