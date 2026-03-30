@@ -1,0 +1,60 @@
+██████╗  ██████╗ ██████╗ ███████╗████████╗ █████╗ ███████╗██╗  ██╗
+██╔══██╗██╔═══██╗██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
+██║  ██║██║   ██║██████╔╝█████╗     ██║   ███████╗███████╗█████╔╝ 
+██║  ██║██║   ██║██╔═══╝ ██╔══╝     ██║   ██╔══██║╚════██║██╔═██╗ 
+██████╔╝╚██████╔╝██║     ███████╗   ██║   ██║  ██║███████║██║  ██╗
+╚═════╝  ╚═════╝ ╚═╝     ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+
+DETERMINISTIC TASK EXECUTION KERNEL
+NO FALLBACKS. NO RETRIES. NO GHOST BEHAVIOR.
+ONE INVOCATION. ONE PATH. ONE OUTCOME.
+Theme: mintwave  Toggle: DOPETASK_NEON=0
+
+                                                                                                                                
+ Usage: dopetask [OPTIONS] COMMAND [ARGS]...                                                                                    
+                                                                                                                                
+ dopeTask - Minimal Task Packet Lifecycle CLI                                                                                   
+                                                                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --version                     Show dopeTask version and exit.                                                                │
+│ --install-completion          Install completion for the current shell.                                                      │
+│ --show-completion             Show completion for the current shell, to copy it or customize the installation.               │
+│ --help                        Show this message and exit.                                                                    │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ worship           Console-only easter egg (no artifacts).                                                                    │
+│ init              Bootstrap dopeTask integration into the current repository.                                                │
+│ compile-tasks     Compile task packets from spec.                                                                            │
+│ run-task          Execute a task packet (create run workspace).                                                              │
+│ collect-evidence  Collect verification evidence from a task run.                                                             │
+│ gate-allowlist    Run allowlist compliance gate on a task run.                                                               │
+│ promote-run       Promote a task run by issuing completion token.                                                            │
+│ commit-run        Create git commit for a task run (allowlist-enforced).                                                     │
+│ spec-feedback     Generate spec feedback from completed runs.                                                                │
+│ loop              Run complete task packet lifecycle loop.                                                                   │
+│ commit-sequence   Execute the COMMIT PLAN defined in the Task Packet.                                                        │
+│                   Creates one commit per step, staging only allowlisted changed files.                                       │
+│                   Refuses to run on main branch.                                                                             │
+│                   Refuses if index contains pre-staged changes.                                                              │
+│ finish            Finalize a Task Packet run.                                                                                │
+│                   Rebases task branch onto origin/main, fast-forwards main,                                                  │
+│                   pushes to remote, verifies sync, and optionally cleans up.                                                 │
+│ orchestrate       Run dopeTask orchestrator v0 for a packet.                                                                 │
+│ doctor            Run installation integrity checks and generate DOCTOR_REPORT.                                              │
+│ upgrade           Upgrade dopeTask in the current repository.                                                                │
+│ ci-gate           Run CI gate checks (doctor + promotion validation).                                                        │
+│ ops               Manage operator system instructions.                                                                       │
+│ neon              Neon terminal cosmetics (console-only). Artifacts stay sterile.                                            │
+│ metrics           Local-only opt-in usage metrics (no telemetry).                                                            │
+│ tp                Task Packet workflow commands                                                                              │
+│ manifest          Task packet manifest lifecycle and replay checks                                                           │
+│ wt                Worktree lifecycle commands for deterministic packet execution                                             │
+│ docs              Documentation maintenance commands                                                                         │
+│ route             Assisted deterministic routing commands                                                                    │
+│ pr                Assisted pull request flow commands                                                                        │
+│ dopemux           Dopemux-integrated dopeTask commands with automatic path detection                                         │
+│ project           Project file initialization and directive pack toggles                                                     │
+│ bundle            Case bundle management commands                                                                            │
+│ case              Case audit commands                                                                                        │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+

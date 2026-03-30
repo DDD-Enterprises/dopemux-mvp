@@ -1,0 +1,19 @@
+{
+  "tp_id": "TP-DSER-002",
+  "branch": "tp-dser-001-dopetask-probe",
+  "dopetask_version_before": "0.2.0",
+  "dopetask_version_after": "0.5.1",
+  "install_mode_used": "pip",
+  "wrapper_outcome": "SUCCESS (0.5.1)",
+  "series_cli_exists": "TRUE (Confirmed in TP-DSER-001)",
+  "test_results": "PASS",
+  "touched_files": [
+    ".dopetask-pin",
+    "pyproject.toml",
+    "scripts/dopetask",
+    "tests/unit/test_dopetask_wrapper_submodule.py",
+    "tests/arch/test_dopetask_submodule_contract.py",
+    "docs/integrations/dopetask/INSTALL_MIGRATION.md",
+    "proof/TP-DSER-002/proof.json"
+  ]
+}
