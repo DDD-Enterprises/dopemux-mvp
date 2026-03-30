@@ -42,11 +42,78 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the workflow state dependencies (home vs repo) partition as primary scan surface
-2. Extract workflow state dependencies (home vs repo) facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted workflow state dependencies (home vs repo) elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each WORKFLOW_STATE_COUPLING item, populate `id`, required fields, and `evidence`
+1.  **Initialize Scan Context**:
+    *   Load `WORKFLOW_INVENTORY.json`, `WORKFLOW_PARTITIONS.json`, `WORKFLOW_CATALOG.json`, `WORKFLOW_IO_MAP.json`, `WORKFLOW_COORDINATION_SURFACE.json`, `WORKFLOW_FAILURE_RECOVERY.json`.
+    *   Define the primary scan surface using the workflow state dependencies (home vs repo) partition from `WORKFLOW_PARTITIONS.json`.
+    *   Identify all files within the `Source scope` (lines 9-13: `scripts/**`, `services/**`, `docs/02-how-to/**`, `docs/03-reference/**`, `compose.yml`) for detailed content analysis.
+
+2.  **Extract Workflow State Coupling Facts (Home vs. Repo)**:
+    For each file identified in the scan context, perform the following pattern matching and fact extraction to identify paths resolved outside the repository root:
+    *   **Python Files (`.py`)**:
+        *   **`os.path.expanduser`**:
+            *   Identify calls to `os.path.expanduser(<path>)`.
+            *   **Extract**: The argument `<path>` and the context of the call.
+            *   **Classify**: "Home directory expansion".
+        *   **Explicit Home Dir Environment Variables**:
+            *   Identify usage of `os.environ.get('HOME')`, `os.getenv('HOME')`, `os.path.expandvars('$HOME')`, `os.path.expandvars('%USERPROFILE%')` or similar in string formatting/concatenation.
+            *   **Extract**: The environment variable accessed and its usage context.
+            *   **Classify**: "Environment variable based home path".
+        *   **Hardcoded Home Paths**:
+            *   Identify string literals containing `~`, `/home/`, `/Users/` (e.g., `pathlib.Path('~/config.ini')`, `"/home/user/data"`).
+            *   **Extract**: The literal path string.
+            *   **Classify**: "Hardcoded absolute/home path".
+        *   **Absolute Path Construction/Resolution**:
+            *   Identify `os.path.abspath()`, `os.path.realpath()`, or `pathlib.Path.resolve()` calls on paths that are not demonstrably relative to the repository root.
+            *   **Extract**: The path argument and the context.
+            *   **Classify**: "Absolute path resolution".
+    *   **Shell Scripts (`.sh`, `.bash`, etc.)**:
+        *   **Tilde `~`**:
+            *   Identify usage of `~`, `~/`, `~$USER/`, or similar expansions in commands or assignments.
+            *   **Extract**: The specific tilde expansion and its context.
+            *   **Classify**: "Shell tilde expansion".
+        *   **Explicit Home Dir Environment Variables**:
+            *   Identify usage of `$HOME`, `$USERPROFILE`, or similar environment variables in commands or assignments.
+            *   **Extract**: The environment variable and its usage context.
+            *   **Classify**: "Shell environment variable based home path".
+        *   **Hardcoded Home Paths**:
+            *   Identify string literals containing `/home/`, `/Users/` (e.g., `cd /home/user/logs`, `cp /Users/shared/file`).
+            *   **Extract**: The literal path string.
+            *   **Classify**: "Hardcoded absolute/home path".
+        *   **Absolute Path Resolution Commands**:
+            *   Identify commands like `readlink -f`, `realpath` when applied to paths that may resolve outside the repository.
+            *   **Extract**: The command and its path argument.
+            *   **Classify**: "Shell absolute path resolution".
+    *   **YAML Files (`.yaml`, `compose.yml`, `docs/02-how-to/**.yaml` for configuration)**:
+        *   **Hardcoded Home Paths**:
+            *   Identify string values for volume mounts, paths, or configuration parameters containing `~`, `/home/`, `/Users/` (e.g., `volumes: - ~/data:/app/data`, `config_path: /Users/shared/config.json`).
+            *   **Extract**: The path string and its YAML key context.
+            *   **Classify**: "Declarative hardcoded absolute/home path".
+        *   **Environment Variable Usage**:
+            *   Identify use of environment variable syntax like `${HOME}` or `$HOME` within path strings.
+            *   **Extract**: The environment variable used in the path.
+            *   **Classify**: "Declarative environment variable path".
+    *   **Identify codebase reaching outside repository root**: For each identified path, determine if it resolves to a location *not* contained within the repository's root directory. This is the primary criterion for an item of type `WORKFLOW_STATE_COUPLING`.
+
+3.  **Populate WORKFLOW_STATE_COUPLING Items**:
+    *   For each identified fact representing a state dependency outside the repository root, construct a `WORKFLOW_STATE_COUPLING` item.
+    *   **`id`**: Generate a deterministic ID using `WORKFLOW_STATE_COUPLING:<stable-hash(path|symbol|name|extracted_path_expression)>`. For a `~/config`, `name` could be the variable name or file, and `extracted_path_expression` "`/~/config`".
+    *   **`path`**: Record the repo-relative path to the source file (e.g., `services/my_service/main.py`).
+    *   **`line_range`**: Record the exact `[start, end]` line numbers of the evidence.
+    *   **`evidence`**: Create an evidence object as per lines 58-63: `{"path": "<repo-relative-path>", "line_range": [<start>, <end>], "excerpt": "<exact substring <=200 chars>"}`. The `excerpt` must be the exact text snippet.
+    *   **`type`**: Record the classification from Step 2 (e.g., "Home directory expansion", "Hardcoded absolute/home path").
+    *   **`expression`**: Store the extracted path expression (e.g., `os.path.expanduser('~/.config')`, `~/data`, `/home/user/logs`, `$HOME/cache`).
+    *   **`is_absolute`**: Boolean indicating if the path expression is inherently absolute or resolves to an absolute path.
+    *   **`is_home_relative`**: Boolean indicating if the path expression uses `~` or `$HOME`.
+
+4.  **Correlate with Upstream Artifacts**:
+    *   For each `WORKFLOW_STATE_COUPLING` item, attempt to link it to specific workflows or services defined in `WORKFLOW_INVENTORY.json` or `WORKFLOW_CATALOG.json`.
+    *   Establish relationships (edges) in the output graph if applicable, documenting the connection with evidence.
+
+5.  **Finalize and Validate Outputs**:
+    *   Ensure all `WORKFLOW_STATE_COUPLING` items have an `id`, `path`, `line_range`, and at least one `evidence` object.
+    *   Apply deterministic sorting (lines 71-72) and deduplication (lines 73-77) to the `items` list.
+    *   Validate all required fields (lines 40-41); emit `UNKNOWN` with `missing_evidence_reason` for unsatisfied values.
+    *   Emit exactly one `WORKFLOW_STATE_COUPLING.json` file.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

@@ -88,18 +88,21 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the API endpoint and dashboard partition as primary scan surface
-2. Extract API endpoint and dashboard facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted API endpoint and dashboard elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each API_DASHBOARD_SURFACES item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the API endpoint and dashboard partition as primary scan surface.
+2. Extract API routes: scan `src/**` and `services/**` for router definitions (e.g., `APIRouter()`, `Blueprint()`) and route decorators (e.g., `@app.get`, `@router.post`).
+3. Identify dashboard definitions: search for UI components in `dashboard/**`, `ui-dashboard/**`, or `components/**` that render system state or metrics.
+4. Locate monitoring and health endpoints: search for routes like `/health`, `/metrics`, `/status`, or Prometheus-style exporter configurations.
+5. Identify frontend-to-backend mappings: search for `fetch(`, `axios.`, or `api.get(` calls in JavaScript/TypeScript files to identify backend dependencies.
+6. Build relationship graph: trace connections between API endpoints and the dashboard components that display their data.
+7. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in API surface definitions.
+8. For each API_DASHBOARD_SURFACES item, populate `id`, required fields, and `evidence`.
+9. Legacy Context is intent guidance only and is never evidence.
+10. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+11. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+12. Attach evidence to every non-derived field and every relationship edge.
+13. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+14. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+15. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

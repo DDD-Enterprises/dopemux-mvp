@@ -39,18 +39,22 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the workflow inputs/outputs/artifacts partition as primary scan surface
-2. Extract workflow inputs/outputs/artifacts facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted workflow inputs/outputs/artifacts elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each WORKFLOW_IO_MAP item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the workflow inputs/outputs/artifacts partition as primary scan surface.
+2. Identify workflow inputs: search for `argparse`, `sys.argv`, `os.getenv`, or `input()` calls in scripts, and environment variable requirements in `compose.yml`.
+3. Locate artifact production (outputs): search for `open('...', 'w')`, `.to_csv()`, `json.dump()`, or shell redirection `> log.txt` patterns that create persistent files.
+4. Scan for data transformation steps: identify code that reads a file (`input`), processes it, and writes a new file (`artifact`).
+5. Map artifact locations: identify standard output directories like `out/`, `reports/`, `logs/`, and `proof/`.
+6. Identify network and side-effect outputs: search for `requests.*`, `httpx.*`, or database write operations (cross-reference with C3).
+7. Build relationship graph: trace the flow of data from inputs to transformation logic and final artifact production.
+8. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in workflow I/O mapping.
+9. For each WORKFLOW_IO_MAP item, populate `id`, required fields, and `evidence`.
+10. Legacy Context is intent guidance only and is never evidence.
+11. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+12. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+13. Attach evidence to every non-derived field and every relationship edge.
+14. Normalize arrays by stable sort keys; deduplicate by ID.
+15. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+16. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

@@ -49,18 +49,18 @@ Extract agent orchestration surfaces: the `AgentType` enum, `AgentManager` class
 - For `lifecycle_state` items, include: `state_name`, `transitions_to`, `trigger`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the agent orchestration partition as primary scan surface
-2. Locate the `AgentType` enum (or equivalent type union) — extract every enum value with its string representation and evidence (path + line_range + excerpt)
-3. Locate the `AgentManager` class (or equivalent orchestrator) — extract all public methods with signatures, parameters, and return types
-4. Scan for agent launch patterns: factory methods, `spawn()`, `create_agent()`, subprocess invocations, or MCP tool registrations that instantiate agents
-5. Scan for inter-agent communication protocols: eventbus subscriptions, direct method calls between agent instances, MCP tool invocations, shared state patterns
-6. Extract lifecycle state machines: initialization → running → paused → completed → error states with transition triggers
-7. Cross-reference with `EVENTBUS_SURFACE.json` and `EVENT_PRODUCERS.json` / `EVENT_CONSUMERS.json` to identify agent-eventbus bindings
-8. Build deterministic IDs using stable content keys (path/agent_type/symbol)
-9. Attach evidence to every non-derived field and every relationship edge
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash)
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps
-12. Emit exactly the declared outputs and no additional files
+1. Load upstream inventory and partitions; use the agent orchestration partition as primary scan surface.
+2. Locate the `AgentType` enum (or equivalent type union) — extract every enum value with its string representation and evidence.
+3. Locate the `AgentManager` class (or equivalent orchestrator) — extract all public methods with signatures, parameters, and return types.
+4. Scan for agent launch patterns: factory methods (e.g., `AgentFactory.get_agent`), `spawn()`, `create_agent()`, `run_in_background=True`, subprocess invocations, or MCP tool registrations that instantiate agents.
+5. Scan for inter-agent communication protocols: search for eventbus subscriptions, direct method calls between agent instances, and usage of `AgentMessage` or equivalent payload types.
+6. Extract lifecycle state machines: trace transitions through `READY`, `BUSY`, `IDLE`, `DONE`, and `ERROR` states in agent logic.
+7. Cross-reference with `EVENTBUS_SURFACE.json` to identify agent-eventbus bindings and specific message topics.
+8. Build deterministic IDs using stable content keys (path/agent_type/symbol).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID.
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

@@ -92,18 +92,21 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the trinity boundary enforcement partition as primary scan surface
-2. Extract trinity boundary enforcement facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted trinity boundary enforcement elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each TRINITY_SURFACES item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the trinity boundary enforcement partition as primary scan surface.
+2. Identify boundary enforcement points: search for decorators like `@boundary_check`, `@gatekeeper`, or `@authorize` that wrap sensitive functions.
+3. Locate refusal logic and guardrails: search for keywords like "refusal", "forbidden", "unauthorized", "block", or "rail" in error handling, middleware, and validation modules.
+4. Trace gating chains: identify sequences of checks in FastAPI/Flask middleware, base class methods, or decorator stacks.
+5. Scan CLI paths and routers for explicit permission or boundary validation calls (e.g., `check_access(user, resource)`).
+6. Build relationship graph: map which boundaries and guardrails protect which service entrypoints and data access paths.
+7. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in security policy enforcement.
+8. For each TRINITY_SURFACES item, populate `id`, required fields, and `evidence`.
+9. Legacy Context is intent guidance only and is never evidence.
+10. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+11. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+12. Attach evidence to every non-derived field and every relationship edge.
+13. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+14. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+15. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:

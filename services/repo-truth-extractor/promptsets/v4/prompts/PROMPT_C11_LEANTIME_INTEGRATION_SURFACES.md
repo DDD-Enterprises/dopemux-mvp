@@ -84,12 +84,15 @@ This step maps implementation truth, not intended architecture.
   - config/env dependency for Leantime behavior
 
 ## Extraction Procedure
-1. Discover integration candidates from service and core code paths.
-2. Validate each candidate using direct evidence (handler, call site, wiring, config key).
-3. Build deterministic IDs and normalized item payloads.
-4. Attach evidence per field and per relationship.
-5. Deduplicate and sort deterministically.
-6. Emit exactly one output file.
+1. Locate Leantime bridge modules: scan `services/leantime-bridge/**` and identify its exported APIs, models, and service classes.
+2. Search for Leantime API call sites: identify code using `leantime_client`, direct `requests` calls to Leantime URLs, or equivalent bridge methods.
+3. Identify Leantime-related events: search for event topics (cross-reference with C2) like `leantime.*` or `ticket.*` that signify integration flows.
+4. Locate configuration dependencies: search for environment variables like `LEANTIME_API_KEY`, `LEANTIME_URL`, or `LEANTIME_PROJECT_ID` in config modules.
+5. Map cross-service flows: trace how dashboard actions or TaskX completions trigger updates in Leantime via the bridge service.
+6. Build deterministic IDs and normalized item payloads for each identified integration point.
+7. Attach evidence per field and per relationship using direct code excerpts.
+8. Deduplicate and sort items by `(path, line_start, id)` to ensure reproducible output.
+9. Emit exactly one output file: `LEANTIME_INTEGRATION_SURFACE.json`.
 
 ## Evidence Rules
 - Every item and non-derived field requires evidence:

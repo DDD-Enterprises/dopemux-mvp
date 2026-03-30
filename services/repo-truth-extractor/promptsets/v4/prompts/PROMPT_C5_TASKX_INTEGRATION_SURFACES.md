@@ -86,18 +86,21 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the TaskX integration partition as primary scan surface
-2. Extract TaskX integration facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted TaskX integration elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each TASKX_INTEGRATION_SURFACES item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the TaskX integration partition as primary scan surface.
+2. Locate all calls to TaskX APIs: search for imports of `taskx` and calls to methods like `taskx.create_task`, `taskx.submit`, or `taskx.get_status`.
+3. Identify packet read/write paths: search for code handling `TaskPacket` objects, `.to_json()`, or `.from_json()` calls related to task serialization.
+4. Find operator instruction compilation: search for logic that generates templates, prompts, or instruction sets specifically for TaskX execution.
+5. Identify result processing: search for callback handlers, polling loops, or event listeners that ingest TaskX completion data.
+6. Build relationship graph: trace the lifecycle of a task from creation in code to its representation in a TaskPacket and eventual result handling.
+7. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in task orchestration logic.
+8. For each TASKX_INTEGRATION_SURFACES item, populate `id`, required fields, and `evidence`.
+9. Legacy Context is intent guidance only and is never evidence.
+10. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+11. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+12. Attach evidence to every non-derived field and every relationship edge.
+13. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+14. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+15. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
