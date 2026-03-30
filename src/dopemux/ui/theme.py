@@ -556,3 +556,30 @@ def error_panel(problem: str, why: str, fix: str, title: str = "Error") -> Panel
         f"[text.dim]Fix:[/text.dim] [mint]{fix}[/mint]"
     )
     return styled_panel(body, title=f"{Glyphs.ERROR} {title}", border_style="error")
+
+
+def styled_gauge(
+    value: float,
+    width: int = 10,
+    complete_style: str = "bar.complete",
+    remaining_style: str = "bar.remaining",
+) -> str:
+    """Create a branded progress gauge with dopemux styling.
+
+    Args:
+        value: Float between 0.0 and 1.0.
+        width: Total width in characters.
+        complete_style: Rich style for the completed portion.
+        remaining_style: Rich style for the remaining portion.
+
+    Returns:
+        Rich markup string for the gauge (e.g., "[mint]████[/][grey]░░░░░░[/]").
+    """
+    safe_value = max(0.0, min(1.0, value))
+    filled_len = int(safe_value * width)
+    remaining_len = width - filled_len
+
+    filled = "█" * filled_len
+    remaining = "░" * remaining_len
+
+    return f"[{complete_style}]{filled}[/][{remaining_style}]{remaining}[/]"
