@@ -49,11 +49,21 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the runtime modes and delta report partition as primary scan surface
-2. Extract runtime modes and delta report facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted runtime modes and delta report elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each RUNTIME_MODES item, populate `id`, required fields, and `evidence`
+1.  **Initialize Scan Context**: Load `EXECUTION_INVENTORY.json`. Focus on configuration loaders, CLI entrypoints, and feature toggle files.
+2.  **Identify Mode Triggers**:
+    *   Scan for environment variables that switch modes: `APP_ENV`, `NODE_ENV`, `STAGE`, `DEBUG`.
+    *   Scan for CLI flags: `--dev`, `--prod`, `--test`, `--dry-run`.
+3.  **Map Mode-Specific Behavior**:
+    *   Identify conditional logic in code: `if settings.is_dev:`, `if os.environ.get("DEBUG") == "1":`.
+    *   Extract differences in: logging levels, database connection strings, security enforcements, and available API endpoints.
+4.  **Detect Feature Toggles**:
+    *   Scan for toggle definitions: `features.json`, `unleash` configs, or hardcoded boolean flags.
+5.  **Build Mode Items**: For each identified mode, record:
+    *   `mode_name`: e.g., "production", "development", "maintenance".
+    *   `trigger_condition`: The literal env var or flag that activates it.
+    *   `affected_behavior`: A concise description of what changes in this mode.
+6.  **Evidence Anchoring**: Attach exact excerpts showing the conditional checks and mode definitions.
+7.  **Validate**: Apply stable sorting by mode name. Emit `RUNTIME_MODES_DELTA.json`.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

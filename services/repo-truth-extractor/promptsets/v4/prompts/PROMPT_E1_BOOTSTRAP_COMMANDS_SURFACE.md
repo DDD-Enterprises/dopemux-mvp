@@ -38,11 +38,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the bootstrap commands partition as primary scan surface
-2. Extract bootstrap commands facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted bootstrap commands elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each BOOTSTRAP_COMMANDS item, populate `id`, required fields, and `evidence`
+1.  **Initialize Scan Context**: Load `EXECUTION_INVENTORY.json` and `EXECUTION_PARTITIONS.json`. Target scripts (`*.sh`, `*.ps1`), `Makefile`, `Dockerfile`, and `setup.py`/`pyproject.toml`.
+2.  **Extract Install & Init Commands**:
+    *   In `Makefile`: Identify targets like `install`, `setup`, `init`, `deps`, and `build`. Record the literal recipe lines.
+    *   In `install.sh`/`bootstrap.sh`: Extract key command sequences (e.g., `pip install`, `npm install`, `apt-get`).
+    *   In `Dockerfile`: Extract `RUN` commands specifically performing setup or dependency installation.
+3.  **Map Command Metadata**: For each command, identify:
+    *   `command_string`: The literal shell/executable string.
+    *   `interpreter`: `bash`, `python`, `make`, etc.
+    *   `is_idempotent`: Identify guards like `if [ ! -f ... ]` or `|| true`.
+4.  **Populate Items**: Construct `BOOTSTRAP_COMMANDS` items with deterministic IDs based on `path|command_string`.
+5.  **Evidence Anchoring**: Attach exact excerpts and line ranges for every command and guard identified.
+6.  **Validate**: Apply deterministic sorting by path and line number. Emit `BOOTSTRAP_COMMANDS_SURFACE.json`.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

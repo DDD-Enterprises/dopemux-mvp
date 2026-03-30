@@ -44,12 +44,15 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, evidence`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for conflict ledger
-2. Synthesize CONFLICT_LEDGER: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load Phase D (Docs), Phase C (Code), and Phase A (Architecture) artifacts from upstream norm results.
+2. Identify **Doc-vs-Code Conflicts**: Compare architectural claims in `docs/**/*.md` against actual implementations in Phase C artifacts.
+3. Identify **Doc-vs-Doc Conflicts**: Scan for contradictory statements within documentation files (Phase D).
+4. Apply **Arbitration Rules**:
+    - Code (Phase C) always overrides Documentation (Phase D).
+    - For Doc-vs-Doc, apply `DOC_SUPERSESSION` logic (newer/higher-authority docs win).
+5. Document **Authority Decisions**: Explicitly state which source was chosen as "truth" and why, citing both sides.
+6. Output Format: List each conflict with "Side A", "Side B", "Resolution", and "Rationale", citing evidence for all claims.
+7. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

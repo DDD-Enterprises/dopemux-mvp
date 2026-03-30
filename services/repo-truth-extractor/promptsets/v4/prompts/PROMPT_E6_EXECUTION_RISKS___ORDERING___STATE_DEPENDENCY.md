@@ -44,11 +44,25 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the execution risks, ordering, and state dependency partition as primary scan surface
-2. Extract execution risks, ordering, and state dependency facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted execution risks, ordering, and state dependency elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each EXEC_RISKS item, populate `id`, required fields, and `evidence`
+1.  **Initialize Scan Context**: Load `EXECUTION_INVENTORY.json`, `SERVICE_STARTUP_GRAPH.json`, and `ENV_LOADING_CONFIG_CHAIN.json`.
+2.  **Scan for Port Conflicts**:
+    *   Identify hardcoded ports in code and config: `port=8000`, `EXPOSE 8080`, `bind: "0.0.0.0:5000"`.
+    *   Cross-reference with `docker-compose.yml` to find overlapping host port mappings.
+3.  **Identify Startup Race Conditions**:
+    *   Detect services that share a common state file or DB but lack `depends_on` or health-check guards.
+    *   Find non-atomic file writes (`open('w').write()`) used for shared state.
+4.  **Detect Order-of-Execution Risks**:
+    *   Identify circular dependencies in `docker-compose.yml`.
+    *   Find shell scripts that execute background tasks (`&`) without `wait` or status checking.
+5.  **Analyze Resource Exhaustion Risks**:
+    *   Scan for unbounded loops or recursions in execution entrypoints.
+    *   Identify missing `memory` or `cpu` limits in `docker-compose.yml`.
+6.  **Build Risk Items**: For each risk, record:
+    *   `risk_type`: e.g., `port_conflict`, `race_condition`, `circular_dependency`.
+    *   `severity`: `critical`, `high`, `medium`, `low`.
+    *   `mitigation_evidence`: Any existing code meant to prevent this risk (e.g., a `try/except` around bind).
+7.  **Evidence Anchoring**: Attach exact excerpts for the risk source and any mitigation logic.
+8.  **Validate**: Sort by severity then path. Emit `EXECUTION_RISKS_REGISTER.json`.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

@@ -38,11 +38,11 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the boundary assertion and code enforcement partition as primary scan surface
-2. Extract boundary assertion and code enforcement facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted boundary assertion and code enforcement elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each BOUNDARY_ASSERTIONS item, populate `id`, required fields, and `evidence`
+1. Load `BOUNDARY_INVENTORY.json` and `BOUNDARY_PARTITIONS.json` from upstream.
+2. Extract **Enforcement Points**: Scan code for FastAPI `Depends(verify_...)`, `Security()`, or custom auth decorators that guard sensitive operations.
+3. Map **Assertion Logic**: Identify the concrete check performed (e.g., token validation, role-based scope verification) with exact evidence.
+4. Trace **Enforcement Context**: Link checks to the specific service or agent (from `AGENTS.md`) being protected.
+5. Cross-reference with inventory to identify overrides, shadows, or gaps where a declared boundary lacks code enforcement.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

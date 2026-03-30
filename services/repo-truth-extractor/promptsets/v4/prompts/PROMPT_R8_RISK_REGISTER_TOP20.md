@@ -45,12 +45,13 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, risk, severity, location, evidence`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for risk register top-20
-2. Synthesize RISK_REGISTER_TOP20: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load Phase R6 (Portability Risks), R7 (Conflicts), B (Boundaries), and C (Code Health/Dead Code) artifacts.
+2. Extract **Quality Risks**: Pull from `CODE_HEALTH_SURFACE.json` (complexity) and `DEAD_CODE_INVENTORY.json`.
+3. Extract **Integrity Risks**: Identify non-deterministic logic, concurrency issues, or idempotency failures from Phase C8 scans.
+4. Extract **Security Risks**: Map boundary bypasses identified in Phase R3 (Trinity) or B3 (Bypass Paths).
+5. Perform **Severity Ranking**: Assign risk levels (Critical/High/Medium/Low) based on evidence impact.
+6. Output Format: List Top-20 risks with `ID | Risk | Severity | Location | Evidence`.
+7. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

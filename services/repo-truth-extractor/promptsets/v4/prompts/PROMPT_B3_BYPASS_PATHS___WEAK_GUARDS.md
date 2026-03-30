@@ -40,11 +40,11 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream B0-B2 artifacts; scan for paths that bypass boundary enforcement
-2. Identify weak guards: locate checks that can be circumvented via env vars, debug flags, or missing validation
-3. Trace bypass paths end-to-end: for each bypass, document the entry point, the skipped check, and the unguarded action
-4. Assess bypass severity: classify as critical (security bypass), high (auth bypass), medium (validation skip), or low (cosmetic)
-5. For each BYPASS_PATHS item, populate `id`, bypass description, severity, and `evidence`
+1. Load `BOUNDARY_ENFORCEMENT_POINTS.json` and `REFUSAL_GUARDRAILS_SURFACE.json`.
+2. Identify **Weak Guards**: Locate checks that can be circumvented via `DEBUG=True`, `SKIP_AUTH=1`, or missing `Depends()` on sensitive sub-routes.
+3. Trace **Bypass Paths**: Document evidenced routes that allow unauthorized access to sensitive data without triggering refusal rails.
+4. Check **Permission Leaks**: Verify if `.claude/settings.json` allows tools to access files or perform actions outside their declared scope.
+5. Arbitration: Only report bypasses evidenced by an alternate code path or a missing check near a sensitive operation.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

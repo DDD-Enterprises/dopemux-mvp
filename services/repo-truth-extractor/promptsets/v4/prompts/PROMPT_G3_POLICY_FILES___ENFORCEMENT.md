@@ -40,11 +40,11 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the policy files and enforcement partition as primary scan surface
-2. Extract policy files and enforcement facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted policy files and enforcement elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each GOV_POLICIES item, populate `id`, required fields, and `evidence`
+1. Load `GOV_INVENTORY.json`, `GOV_CI_GATES.json`, and `GOV_HYGIENE_POLICIES.json`.
+2. Extract **Policy Enforcement Paths**: Connect policy declarations (e.g., `LICENSE`) to concrete CI gates or pre-commit hooks.
+3. Map **Authority Owners**: Link specific files/folders to owners identified in `CODEOWNERS` with exact evidence.
+4. Document **Escalation Rails**: Trace how policy violations are reported and to whom (based on `CODEOWNERS` or PR templates).
+5. Resolve **Conflicting Policies**: If multiple policies apply to the same scope, apply the most restrictive rule and cite both.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

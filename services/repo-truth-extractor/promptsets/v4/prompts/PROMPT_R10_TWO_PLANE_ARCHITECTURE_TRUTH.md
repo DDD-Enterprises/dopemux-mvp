@@ -46,11 +46,14 @@ Focus on explicit boundaries, authority ownership, and integration edges proven 
   - `evidence`
 
 ## Extraction Procedure
-1. Extract explicit plane and boundary claims from upstream artifacts.
-2. Build ownership rows by matching surfaces to evidenced owner components.
-3. Identify cross-plane integration edges with direct evidence.
-4. Capture drift/risk items only when explicitly supported by evidence.
-5. Emit required sections in deterministic order.
+1. Load `SERVICE_CATALOG.json`, `TRINITY_ENFORCEMENT_SURFACE.json`, and Boundary artifacts from upstream.
+2. Map **Plane Definitions**: Extract explicit plane definitions (e.g., Control vs. Runtime) from ADRs and Explanation docs (Phase D).
+3. Build **Authority Ownership Matrix**: Match each service surface to an evidenced owner plane based on code location and config authority.
+4. Trace **Cross-Plane Integration**: Identify events or API calls that cross plane boundaries with direct evidence.
+5. Identify **Drift & Failure Rails**: Document evidenced cases where authority ownership is violated or boundaries are bypassed (Phase R3).
+6. Arbitration: If plane ownership is ambiguous, mark as `UNKNOWN` and cite the conflicting or missing evidence.
+7. Emit required sections in deterministic order as defined in the schema.
+8. Legacy Context is intent guidance only and is never evidence.
 
 ## Evidence Rules
 - Every claim and matrix row must include evidence objects:

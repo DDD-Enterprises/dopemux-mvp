@@ -40,11 +40,21 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the service startup graph partition as primary scan surface
-2. Extract service startup graph facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted service startup graph elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each STARTUP_GRAPH item, populate `id`, required fields, and `evidence`
+1.  **Initialize Scan Context**: Load `EXECUTION_INVENTORY.json`. Focus on `docker-compose.yml`, `Dockerfile`, and systemd/init scripts.
+2.  **Extract Service Dependencies**:
+    *   Parse `docker-compose.yml` for `depends_on`, `links`, and `networks`.
+    *   Identify dependency types: `service_started`, `service_healthy`, `service_completed_successfully`.
+3.  **Identify Wait-for Patterns**:
+    *   Scan entrypoint scripts (`*.sh`) for `wait-for-it.sh`, `nc -z`, or `while ! curl ...; do sleep 1; done`.
+    *   Extract timeout and retry logic associated with these waits.
+4.  **Extract Health Checks**:
+    *   Record `test`, `interval`, `timeout`, and `retries` from `docker-compose.yml` or `Dockerfile`.
+5.  **Build Graph Nodes**: For each service, record:
+    *   `service_id`: The canonical name from the registry or compose file.
+    *   `startup_command`: The literal `command:` or `ENTRYPOINT`.
+    *   `dependencies`: List of parent service IDs and condition types.
+6.  **Evidence Anchoring**: Attach exact line ranges for every dependency and health check definition.
+7.  **Validate**: Ensure graph is a DAG (note circulars in `coverage_notes`). Emit `SERVICE_STARTUP_GRAPH.json`.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).

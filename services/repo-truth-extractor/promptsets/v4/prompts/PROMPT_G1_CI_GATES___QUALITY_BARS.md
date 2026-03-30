@@ -38,11 +38,11 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the CI gates and quality bars partition as primary scan surface
-2. Extract CI gates and quality bars facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted CI gates and quality bars elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each GOV_CI_GATES item, populate `id`, required fields, and `evidence`
+1. Load `GOV_INVENTORY.json` and `GOV_PARTITIONS.json` from upstream.
+2. Extract **CI Gate Logic**: Scan `.github/workflows/` for `jobs`, `steps`, and `if:` conditions that enforce quality bars (lint, test, build).
+3. Map **Quality Bar Requirements**: Identify exact tool versions and command-line flags used for enforcement (e.g., `pytest --min-coverage=80`) with evidence.
+4. Trace **Failure Modes**: Document how a CI failure impacts the overall pipeline (e.g., block merge, notify owners).
+5. Cross-reference with inventory to identify shadows or gaps where a declared policy lacks a corresponding CI gate.
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
