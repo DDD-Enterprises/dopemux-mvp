@@ -104,11 +104,13 @@ class NativeHookAdapter:
             "systemMessage": message,
             "hookSpecificOutput": {
                 "permissionDecision": "deny",
+                "decision": "block",
+
             },
         }
         if additional_context:
             payload["hookSpecificOutput"]["additionalContext"] = additional_context
-        return self._emit(payload, EXIT_SUCCESS)
+        return self._emit(payload, EXIT_BLOCK)
 
     def _block_stop(self, message: str, additional_context: Optional[str] = None) -> Tuple[int, Dict[str, Any]]:
         payload: Dict[str, Any] = {
@@ -119,9 +121,12 @@ class NativeHookAdapter:
             payload["hookSpecificOutput"] = {
                 "additionalContext": additional_context,
             }
-        return self._emit(payload, EXIT_SUCCESS)
+        return self._emit(payload, EXIT_BLOCK)
 
     def _active_state(self):
+        self.kernel = WorkflowKernel(self.project_root)
+        state = self.kernel.resolve()
+
         state = self.kernel.resolve()
         if not state:
             return None
@@ -196,7 +201,9 @@ class NativeHookAdapter:
             return self._allow()
 
         tool_name = str(data.get("tool_name") or "unknown")
-        if state.max_iterations > 0 and state.iteration > state.max_iterations:
+
+        if state.max_iterations is not None and state.iteration >= state.max_iterations:
+
             return self._deny_tool(
                 f"Workflow iteration limit reached ({state.iteration}/{state.max_iterations}).",
                 _workflow_context_lines(state, include_gates=True),
@@ -291,6 +298,9 @@ class NativeHookAdapter:
                 additional_context=_workflow_context_lines(state),
             )
 
+        if state.latest_checkpoint(phase=state.phase) and state.latest_checkpoint(phase=state.phase).status.is_stop_safe:
+            return self._allow(system_message="Safe checkpoint detected.", additional_context=_workflow_context_lines(state))
+
         if contains_completion_token(response_text, state.completion_token) or state.status == WorkflowStatus.COMPLETE:
             return self._allow(
                 system_message="Workflow completion token observed.",
@@ -348,7 +358,15 @@ if __name__ == "__main__":
 
 def handle_event(event_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     """Legacy/Testing entry point wrapping NativeHookAdapter."""
-    adapter = NativeHookAdapter()
+    if "env" in payload:
+        for k, v in payload["env"].items():
+            os.environ[k] = str(v)
+    adapter = NativeHookAdapter(project_root=Path(payload.get("cwd", Path.cwd())))
     payload["hook_event_name"] = event_name
-    _, response = adapter.handle_event(payload)
+    exit_code, response = adapter.handle_event(payload)
+    if exit_code == EXIT_BLOCK:
+        response["decision"] = "block"
+    return response
+
+
     return response

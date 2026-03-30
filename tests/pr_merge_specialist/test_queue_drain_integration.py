@@ -4,6 +4,7 @@ import json
 import shutil
 from dopemux_pr_merge_specialist.github_api import GitHubClient, RemoteCheckLogEvidence
 from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
+from dopemux_pr_merge_specialist import closed_loop_engine
 from dopemux_pr_merge_specialist.plan_builder import build_plan_result, write_pr_state_artifact
 from dopemux_pr_merge_specialist.preflight import build_run_paths, pr_dir_for
 from dopemux_pr_merge_specialist.runtime import CommandResult
@@ -12,6 +13,8 @@ from dopemux_pr_merge_specialist.schema import MergeActionType, MergeDecision, P
 from dopemux_pr_merge_specialist import cli as pr_merge_cli
 from pathlib import Path
 from types import SimpleNamespace
+from argparse import Namespace
+from unittest.mock import Mock
 
 from dopemux_pr_merge_specialist import engine
 from dopemux_pr_merge_specialist.schema import ValidationReport, ValidationStatus
@@ -1042,6 +1045,8 @@ def test_failed_remediation_excluded_from_active_results(monkeypatch, tmp_path: 
     )
 
     apply_call_count = [0]
+    scan_call_count = [0]
+
 
     class FakeClosedLoopEngine:
         def __init__(self, *_args, **_kwargs) -> None:
@@ -1426,6 +1431,7 @@ def test_closed_loop_engine_populates_strategy_in_trace():
 
     scan_call_count = [0]
 
+
     def fake_scan(*_args, **_kwargs):
         scan_call_count[0] += 1
         return [result]
@@ -1505,6 +1511,8 @@ def test_stale_fingerprint_cached_between_passes(monkeypatch, tmp_path: Path):
     monkeypatch.setattr(queue_drain_module, "allowed_actions_for_result", fake_allowed_actions)
 
     call_count = [0]
+    scan_call_count = [0]
+
     def fake_create_global_fix_pr(*args, **kwargs):
         call_count[0] += 1
         return -2  # simulate stale fingerprint

@@ -1,4 +1,8 @@
+
 from __future__ import annotations
+import sys
+sys.modules.pop("dopemux", None)
+
 
 import importlib.util
 import subprocess
@@ -6,6 +10,8 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import dopemux.commands
+import dopemux.commands.extractor_validation
 
 from dopemux.commands.extractor_validation import (
     LiveValidationRunner,

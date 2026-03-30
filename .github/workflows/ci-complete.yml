@@ -34,6 +34,15 @@ jobs:
           pip install pre-commit
           pre-commit install --install-hooks
 
+      - name: 📌 Verify dopetask pin contract
+        run: |
+          if [[ ! -f .dopetask-pin ]]; then
+            echo "ERROR: .dopetask-pin is missing (required by arch contract)" >&2
+            exit 1
+          fi
+          echo "Found .dopetask-pin: $(cat .dopetask-pin)"
+
+
       - name: 🧹 Enforce repo root hygiene
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then

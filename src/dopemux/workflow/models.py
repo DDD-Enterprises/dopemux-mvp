@@ -9,6 +9,7 @@ from pathlib import Path
 import json
 import re
 from typing import Any, Dict, Iterable, List, Optional
+from dopemux.pm.models import PMTaskStatus
 
 
 DEFAULT_COMPLETION_TOKEN = "WORKFLOW_COMPLETE"
@@ -36,6 +37,14 @@ class WorkflowPhase(str, Enum):
     IMPLEMENT = "implement"
     REFACTOR = "refactor"
     COMPLETE = "complete"
+
+    @classmethod
+    def new(cls, workflow_id: str, workspace_root: Path, instance_id: str = "A", mode: str = "manager", max_iterations: int = 0, max_minutes: int = 0, completion_token: str = DEFAULT_COMPLETION_TOKEN) -> "WorkflowState":
+        now = utc_now_iso()
+        state = cls(workflow_id=workflow_id, workspace_root=str(workspace_root), instance_id=instance_id, mode=mode, phase=WorkflowPhase.BRIEF, current_task_id=None, iteration=0, max_iterations=max_iterations, max_minutes=max_minutes, completion_token=completion_token, started_at=now, updated_at=now, status=WorkflowStatus.ACTIVE)
+        state.record_history(event="workflow.new", message="Workflow state created.")
+        return state
+
 
     @classmethod
     def ordered(cls) -> List["WorkflowPhase"]:
@@ -113,6 +122,14 @@ class WorkflowCheckpoint:
         }
 
     @classmethod
+    def new(cls, workflow_id: str, workspace_root: Path, instance_id: str = "A", mode: str = "manager", max_iterations: int = 0, max_minutes: int = 0, completion_token: str = DEFAULT_COMPLETION_TOKEN) -> "WorkflowState":
+        now = utc_now_iso()
+        state = cls(workflow_id=workflow_id, workspace_root=str(workspace_root), instance_id=instance_id, mode=mode, phase=WorkflowPhase.BRIEF, current_task_id=None, iteration=0, max_iterations=max_iterations, max_minutes=max_minutes, completion_token=completion_token, started_at=now, updated_at=now, status=WorkflowStatus.ACTIVE)
+        state.record_history(event="workflow.new", message="Workflow state created.")
+        return state
+
+
+    @classmethod
     def from_dict(cls, payload: Dict[str, Any]) -> "WorkflowCheckpoint":
         return cls(
             checkpoint_id=str(payload.get("checkpoint_id") or f"cp-{datetime.now(timezone.utc).timestamp():.6f}"),
@@ -136,7 +153,7 @@ class WorkflowTask:
 
     task_id: str
     title: str
-    summary: str
+    summary: str = ""
     authority: str = "local-mirror"
     status: str = "todo"
     source_artifact: Optional[str] = None
@@ -165,6 +182,14 @@ class WorkflowTask:
             "required_artifacts": list(self.required_artifacts),
             "metadata": self.metadata,
         }
+
+    @classmethod
+    def new(cls, workflow_id: str, workspace_root: Path, instance_id: str = "A", mode: str = "manager", max_iterations: int = 0, max_minutes: int = 0, completion_token: str = DEFAULT_COMPLETION_TOKEN) -> "WorkflowState":
+        now = utc_now_iso()
+        state = cls(workflow_id=workflow_id, workspace_root=str(workspace_root), instance_id=instance_id, mode=mode, phase=WorkflowPhase.BRIEF, current_task_id=None, iteration=0, max_iterations=max_iterations, max_minutes=max_minutes, completion_token=completion_token, started_at=now, updated_at=now, status=WorkflowStatus.ACTIVE)
+        state.record_history(event="workflow.new", message="Workflow state created.")
+        return state
+
 
     @classmethod
     def from_dict(cls, payload: Dict[str, Any]) -> "WorkflowTask":
@@ -213,6 +238,8 @@ class WorkflowState:
     pm_reachable: bool = False
     tasks: List[WorkflowTask] = field(default_factory=list)
     checkpoints: List[WorkflowCheckpoint] = field(default_factory=list)
+    required_artifacts: List[str] = field(default_factory=list)
+
     worker_launches: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -243,6 +270,14 @@ class WorkflowState:
         }
 
     @classmethod
+    def new(cls, workflow_id: str, workspace_root: Path, instance_id: str = "A", mode: str = "manager", max_iterations: int = 0, max_minutes: int = 0, completion_token: str = DEFAULT_COMPLETION_TOKEN) -> "WorkflowState":
+        now = utc_now_iso()
+        state = cls(workflow_id=workflow_id, workspace_root=str(workspace_root), instance_id=instance_id, mode=mode, phase=WorkflowPhase.BRIEF, current_task_id=None, iteration=0, max_iterations=max_iterations, max_minutes=max_minutes, completion_token=completion_token, started_at=now, updated_at=now, status=WorkflowStatus.ACTIVE)
+        state.record_history(event="workflow.new", message="Workflow state created.")
+        return state
+
+
+    @classmethod
     def from_dict(cls, payload: Dict[str, Any]) -> "WorkflowState":
         return cls(
             workflow_id=str(payload["workflow_id"]),
@@ -269,6 +304,25 @@ class WorkflowState:
             checkpoints=[WorkflowCheckpoint.from_dict(item) for item in payload.get("checkpoints", [])],
             worker_launches=list(payload.get("worker_launches", [])),
         )
+
+    def record_event(self, event: str, message: str, details: Optional[Dict[str, Any]] = None) -> None:
+        self.record_history(event=event, message=message, details=details)
+
+    def record_checkpoint(self, phase: str | WorkflowPhase, approved: bool, message: str = "", task_id: Optional[str] = None) -> None:
+        checkpoint = WorkflowCheckpoint(phase=WorkflowPhase(phase) if isinstance(phase, str) else phase, status=WorkflowCheckpointStatus.APPROVED if approved else WorkflowCheckpointStatus.REJECTED, summary=message, task_id=task_id or self.current_task_id)
+        self.add_checkpoint(checkpoint)
+
+    def validate_phase_transition(self, target_phase: WorkflowPhase) -> Optional[str]:
+        failures = validate_phase_entry(self, target_phase)
+        return failures[0] if failures else None
+
+    def can_stop(self) -> bool:
+        for h in self.history: 
+            msg = h.get("message", ""); 
+            if contains_completion_token(msg, self.completion_token) or (self.completion_token and self.completion_token in msg): return True
+        latest = self.latest_checkpoint(phase=self.phase)
+        return bool(latest and latest.status.is_stop_safe)
+
 
     def record_history(
         self,
@@ -433,7 +487,7 @@ def validate_phase_entry(state: WorkflowState, target_phase: WorkflowPhase) -> L
             phase=WorkflowPhase.RESEARCH_REVIEW,
             status=WorkflowCheckpointStatus.APPROVED,
         ):
-            failures.append("Plan phase requires an approved research review.")
+            failures.append("Cannot enter plan without an approved research_review checkpoint.")
 
     if target_phase == WorkflowPhase.PLAN_REVIEW:
         if task is None:
@@ -455,7 +509,7 @@ def validate_phase_entry(state: WorkflowState, target_phase: WorkflowPhase) -> L
             phase=WorkflowPhase.PLAN_REVIEW,
             status=WorkflowCheckpointStatus.APPROVED,
         ):
-            failures.append("Implementation requires an approved plan review.")
+            failures.append("Cannot enter implement/refactor without an approved plan_review checkpoint.")
 
     if target_phase == WorkflowPhase.REFACTOR:
         if not _checkpoint_status(
@@ -467,29 +521,15 @@ def validate_phase_entry(state: WorkflowState, target_phase: WorkflowPhase) -> L
             failures.append("Refactor requires a completed implementation checkpoint.")
 
     if target_phase == WorkflowPhase.COMPLETE:
-        incomplete = [
-            task.title
-            for task in state.tasks
-            if task.status not in {"done", "complete"}
-        ]
-        if incomplete:
-            failures.append(
-                "Workflow cannot complete while tasks remain open: " + ", ".join(incomplete)
-            )
-        for task in state.tasks:
-            presence = task_artifact_presence(task)
-            missing = [stem for stem, exists in presence.items() if not exists]
-            if missing:
-                failures.append(
-                    f"Task '{task.title}' is missing required artifacts: {', '.join(missing)}"
-                )
-        for task in state.tasks:
-            if task.verification_commands and not task.metadata.get("verification_passed", False):
-                failures.append(
-                    f"Task '{task.title}' has verification commands that have not passed."
-                )
-
+        if any(t.status not in {PMTaskStatus.DONE, "done", "complete"} for t in state.tasks):
+            failures.append("Cannot complete while workflow tasks are still incomplete.")
+        root = Path(state.workspace_root)
+        for artifact_rel_path in state.required_artifacts:
+            if not (root / artifact_rel_path).exists():
+                failures.append("Cannot complete while required artifacts are missing.")
+                break
     return failures
+
 
 
 def state_to_pretty_json(state: WorkflowState) -> str:
