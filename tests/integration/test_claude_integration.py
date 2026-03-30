@@ -143,7 +143,8 @@ class TestClaudeCodeIntegration:
 
     @patch("subprocess.Popen")
     @patch("tempfile.mkstemp")
-    def test_complete_launch_workflow(self, mock_mkstemp, mock_popen):
+    @patch("dopemux.claude.launcher.RoutingConfig")
+    def test_complete_launch_workflow(self, mock_routing_config, mock_mkstemp, mock_popen):
         """Test complete Claude Code launch workflow."""
         mock_mkstemp.return_value = (1, "/tmp/dopemux-claude-settings.json")
         mock_process = Mock()
