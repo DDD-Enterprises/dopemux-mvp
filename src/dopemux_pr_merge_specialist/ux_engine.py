@@ -396,6 +396,12 @@ class RichTerminalRenderer(TerminalRenderer):
                     f"[{getattr(state, 'active_phase', 'Monitor')}] current phase\n",
                     style="bold info",
                 )
+
+        controls = Text.assemble(
+            ("[A] ", "bold info"), "Approve  ",
+            ("[B] ", "bold cyan"), "Bulk Approve  ",
+            ("[C] ", "bold warning"), "Remediate  ",
+            ("[F] ", "bold error"), "Fix  ",
             ("[R] ", "bold success"), "Ready  ",
             ("[P] ", "bold magenta"), "Patch  ",
             ("[I] ", "bold warning"), "Implement  ",
