@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 # ---------------------------------------------------------------------------
 # Canonical value sets
@@ -78,8 +78,6 @@ POSTURE_BLOCKED_ACTIONS: dict[str, list[str]] = {
 # ---------------------------------------------------------------------------
 # Dataclasses (also imported by dopetask_bundle_loader and dopetask_adapter)
 # ---------------------------------------------------------------------------
-
-
 @dataclass
 class DopetaskTPIdentity:
     id: str

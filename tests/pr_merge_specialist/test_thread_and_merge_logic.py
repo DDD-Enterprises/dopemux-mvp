@@ -25,6 +25,16 @@ class DummyClient:
     def invalidate(self, prefix: str) -> None:
         return None
 
+    def merge_pr(
+        self,
+        pr_id: int,
+        *,
+        title: str,
+        method: str = "squash",
+        admin_bypass: bool = False,
+    ) -> bool:
+        return True
+
 
 def _policy() -> dict:
     return {
