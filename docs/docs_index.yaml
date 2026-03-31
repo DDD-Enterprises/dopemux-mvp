@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-03-19'
+last_updated: '2026-03-30'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: QUICK_START.md
@@ -110,6 +110,7 @@ reference:
   dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
 explanation:
   directory: docs/04-explanation/
+  memory_persistence: docs/04-explanation/technical-deep-dives/memory-and-persistence-deep-dive.md
   serena_v2: docs/04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md
   conport: docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md
   dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md

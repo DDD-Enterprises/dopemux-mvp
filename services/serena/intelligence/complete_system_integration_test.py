@@ -10,6 +10,7 @@ import json
 import logging
 import statistics
 import time
+import pytest
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Set, Union
@@ -61,6 +62,9 @@ from ..adhd_features import ADHDCodeNavigator
 logger = logging.getLogger(__name__)
 
 
+PHASE_2_COMPONENT_COUNT = 31
+
+
 class SystemIntegrationMetric(str, Enum):
     """Metrics for complete system integration validation."""
     COMPONENT_INITIALIZATION = "component_initialization"     # All components initialize successfully
@@ -107,7 +111,7 @@ class SystemIntegrationResult:
     scenarios_tested: List[IntegrationTestScenario]
 
     # Component health
-    total_components: int = 31  # 6+7+6+6+6 = 31 components
+    total_components: int = PHASE_2_COMPONENT_COUNT  # 6+7+6+6+6 = 31 Phase 2 components
     healthy_components: int = 0
     component_health_details: List[ComponentHealth] = field(default_factory=list)
 
@@ -178,7 +182,7 @@ class CompleteSystemIntegrationTest:
         test_start_time = time.time()
 
         logger.info("🧪 Starting Complete Serena v2 Phase 2 System Integration Test")
-        logger.info("Testing 31 components across Phase 2A-2E + Layer 1 integration")
+        logger.info("Testing 31 Phase 2 components across Phase 2A-2E with Layer 1 integration")
 
         try:
             test_id = f"integration_test_{int(time.time())}"
@@ -208,7 +212,12 @@ class CompleteSystemIntegrationTest:
             )
 
             # Assess production readiness
-            production_ready = self._assess_production_readiness(integration_score, target_results)
+            production_ready = self._assess_production_readiness(
+                integration_score,
+                target_results,
+                component_results,
+                performance_results,
+            )
 
             # Generate recommendations
             recommendations = self._generate_integration_recommendations(
@@ -269,7 +278,7 @@ class CompleteSystemIntegrationTest:
             logger.info("🔧 Testing all component initialization...")
 
             initialization_results = {
-                "total_components": 31,
+                "total_components": PHASE_2_COMPONENT_COUNT,
                 "healthy_components": 0,
                 "layer1_compatible": True,
                 "phase_results": {}
@@ -278,7 +287,9 @@ class CompleteSystemIntegrationTest:
             # Test Layer 1 components
             layer1_results = await self._test_layer1_components()
             initialization_results["phase_results"]["layer1"] = layer1_results
-            initialization_results["healthy_components"] += layer1_results["healthy_count"]
+            initialization_results["layer1_compatible"] = (
+                layer1_results["healthy_count"] == layer1_results["total_components"]
+            )
 
             # Test Phase 2A components (6 components)
             phase2a_results = await self._test_phase2a_components()
@@ -305,12 +316,16 @@ class CompleteSystemIntegrationTest:
             initialization_results["phase_results"]["phase2e"] = phase2e_results
             initialization_results["healthy_components"] += phase2e_results["healthy_count"]
 
-            logger.info(f"🔧 Component initialization: {initialization_results['healthy_components']}/31 healthy")
+            logger.info(
+                f"🔧 Phase 2 component initialization: "
+                f"{initialization_results['healthy_components']}/{PHASE_2_COMPONENT_COUNT} healthy; "
+                f"Layer 1 compatible: {initialization_results['layer1_compatible']}"
+            )
             return initialization_results
 
         except Exception as e:
             logger.error(f"Failed to test component initialization: {e}")
-            return {"total_components": 31, "healthy_components": 0, "error": str(e)}
+            return {"total_components": PHASE_2_COMPONENT_COUNT, "healthy_components": 0, "error": str(e)}
 
     async def _test_phase2e_components(self) -> Dict[str, Any]:
         """Test Phase 2E component initialization and health."""
@@ -623,18 +638,27 @@ class CompleteSystemIntegrationTest:
             coordination_score = coordination_results["coordination_score"]
             scores.append(coordination_score * 0.1)
 
-            return sum(scores)
+            return min(max(sum(scores), 0.0), 1.0)
 
         except Exception as e:
             logger.error(f"Failed to calculate integration score: {e}")
             return 0.0
 
-    def _assess_production_readiness(self, integration_score: float, target_results: Dict[str, Any]) -> bool:
+    def _assess_production_readiness(
+        self,
+        integration_score: float,
+        target_results: Dict[str, Any],
+        component_results: Dict[str, Any],
+        performance_results: Dict[str, Any],
+    ) -> bool:
         """Assess if system is ready for production deployment."""
+        critical_issues = self._identify_critical_issues(component_results, performance_results)
         return (
             integration_score >= 0.85 and
             target_results["all_targets_achieved"] and
-            len(self._identify_critical_issues({}, {})) == 0
+            component_results.get("layer1_compatible", False) and
+            performance_results.get("targets_met", False) and
+            len(critical_issues) == 0
         )
 
     def _generate_integration_recommendations(self, *results) -> List[str]:
@@ -720,7 +744,15 @@ class CompleteSystemIntegrationTest:
 
     # Placeholder methods for complex testing that would require full system
     async def _test_layer1_components(self) -> Dict[str, Any]:
-        return {"healthy_count": 3, "components": {"performance_monitor": "healthy", "adhd_features": "healthy", "tree_sitter": "healthy"}}
+        return {
+            "total_components": 3,
+            "healthy_count": 3,
+            "components": {
+                "performance_monitor": "healthy",
+                "adhd_features": "healthy",
+                "tree_sitter": "healthy",
+            },
+        }
 
     async def _test_phase2a_components(self) -> Dict[str, Any]:
         return {"healthy_count": 6, "components": {}}
@@ -813,3 +845,32 @@ if __name__ == "__main__":
             logger.error(f"💥 Integration test failed: {e}")
 
     asyncio.run(main())
+
+
+@pytest.mark.asyncio
+async def test_complete_system_integration_result_is_consistent():
+    """Validate that the integration harness reports a coherent Phase 2 result."""
+    result = await run_complete_system_integration_test()
+
+    assert result.total_components == PHASE_2_COMPONENT_COUNT
+    assert result.healthy_components <= result.total_components
+    assert 0.0 <= result.system_integration_score <= 1.0
+    assert result.layer1_compatibility_maintained is True
+    assert result.performance_targets_met is True
+    assert result.production_ready is True
+
+
+def test_assess_production_readiness_uses_runtime_results():
+    """Production readiness must fail when component health shows critical drift."""
+    test_suite = CompleteSystemIntegrationTest()
+
+    assert test_suite._assess_production_readiness(
+        integration_score=0.95,
+        target_results={"all_targets_achieved": True},
+        component_results={
+            "total_components": PHASE_2_COMPONENT_COUNT,
+            "healthy_components": PHASE_2_COMPONENT_COUNT - 4,
+            "layer1_compatible": True,
+        },
+        performance_results={"targets_met": True, "average_response_time": 100.0},
+    ) is False

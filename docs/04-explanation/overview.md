@@ -5,8 +5,8 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-19'
-last_review: '2026-03-19'
-next_review: '2026-06-19'
+last_review: '2026-03-30'
+next_review: '2026-06-30'
 prelude: Understanding-oriented explanation index for architecture, design rationale, and system behavior.
 ---
 # Explanation Overview
@@ -23,6 +23,7 @@ Explanation docs provide architecture and design context for why the system work
 
 ## Highlighted Active Topics
 
+- [Memory And Persistence Deep Dive](technical-deep-dives/memory-and-persistence-deep-dive.md)
 - [Workflow Kit Architecture](workflow-kit-architecture.md)
 - [PR Merge Queue Orchestration](pr-merge-queue-orchestration.md)
 - [Workflow Kit Transfer RFC](../91-rfc/workflow-kit-pickle-mechanics-transfer.md)
