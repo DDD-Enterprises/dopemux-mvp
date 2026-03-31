@@ -12,10 +12,27 @@ prelude: Serena V2 Architecture Analysis (explanation) for dopemux documentation
 ---
 # Serena v2 Complete Architecture Analysis
 
+## Status Update (2026-03-31)
+
+This document is a historical design-analysis snapshot, not the authority for current deployment status, tool counts, or production readiness.
+
+Current repo truth:
+
+- deployed/runtime Serena surface: dockerized wrapper under `docker/mcp-servers-source/serena/`
+- local richer implementation: `services/serena/` as an `implementation_candidate`
+- current local MCP tool count: `33`
+- current local LSP engine: `EnhancedLSPWrapper`
+
+Use these documents for current truth instead:
+
+- [capability-manifest.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/capability-manifest.md)
+- [deployment-alignment-and-sanctioned-contract.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/deployment-alignment-and-sanctioned-contract.md)
+- [runtime-candidate-inventory.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/runtime-candidate-inventory.md)
+
 **Analysis Date:** 2025-10-02
 **Analysis Method:** Zen ultrathink deep research
 **Confidence Level:** Almost Certain (95%+)
-**Status:** PRODUCTION-READY CODE - NEEDS VALIDATION TESTING
+**Status:** Historical analysis snapshot; superseded for deployment/readiness claims by March 31, 2026 runtime audit
 
 ---
 
@@ -34,7 +51,7 @@ Serena v2 is a **fully implemented 31-component enterprise AI navigation system*
 
 ## System Architecture Overview
 
-### Layer 1: Navigation Intelligence (Production Ready - 82.5% success rate)
+### Layer 1: Navigation Intelligence (Historical Performance Snapshot - 82.5% success rate)
 
 **Core Components (13 modules):**
 1. enhanced_lsp.py (38KB) - Multi-language LSP with ADHD optimizations

@@ -257,7 +257,7 @@ result = await mcp__serena-v2__find_test_file(
 }
 ```
 
-### 6. Navigation Patterns (Placeholder)
+### 6. Navigation Patterns
 
 Analyze navigation patterns across workspaces:
 
@@ -267,8 +267,9 @@ result = await mcp__serena-v2__get_navigation_patterns(
     workspace_paths=["/workspace1", "/workspace2"]
 )
 
-# Currently returns placeholder (Phase 3 feature)
-# Will learn navigation patterns across workspaces
+# Returns aggregated per-workspace history summaries when persisted
+# navigation history is available, with explicit degraded metadata
+# when a workspace has no usable history.
 ```
 
 ---
@@ -280,7 +281,7 @@ result = await mcp__serena-v2__get_navigation_patterns(
 Serena creates per-workspace instances automatically:
 
 ```python
-from serena.v2.multi_workspace_wrapper import SerenaMultiWorkspace
+from services.serena.multi_workspace_wrapper import SerenaMultiWorkspace
 
 wrapper = SerenaMultiWorkspace()
 
