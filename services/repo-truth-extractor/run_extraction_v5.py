@@ -1143,8 +1143,6 @@ class RunnerConfig:
     webhook_required: bool = False
     webhook_auto_continue: bool = False
     live_ok: bool = False
-    max_cost_usd: Optional[float] = None
-    ledger: Optional[Any] = None
     selected_s_steps: Optional[Tuple[str, ...]] = None
     selected_execution_step: Optional[str] = None
     d0_max_files: Optional[int] = None
@@ -10667,8 +10665,8 @@ def execute_step_for_partitions(
                         )
                         
                         if cfg.ledger:
-                            # Estimate tokens for batch requests (1 request per partition here)
-                            in_toks = sum((len(req.get("body", {}).get("messages", [{}])[-1].get("content", "")) + 20) // 4 for req in batch_requests)
+                            # Estimate tokens for batch requests
+                            in_toks = sum(len(req.user_content) // 4 for req in batch_requests)
                             out_toks = 1000  # Arbitrary estimate for batch output
                             cfg.ledger.accumulate(phase, in_toks, out_toks)
                             
@@ -13617,6 +13615,26 @@ Return ONLY valid JSON matching exactly:
 """
 
 
+def _deterministic_phase_sample(
+    phase_outputs: "List[Dict[str, Any]]", n_sample: int
+) -> "List[Dict[str, Any]]":
+    """Deterministically select a subset of phase_outputs for auditing.
+
+    Uses hash-based selection for reproducible audit sampling across runs.
+    """
+    if not phase_outputs or n_sample <= 0:
+        return []
+
+    # Hash each item deterministically for selection
+    indexed = [(i, hashlib.sha256(json.dumps(item, sort_keys=True, default=str).encode()).hexdigest())
+               for i, item in enumerate(phase_outputs)]
+    # Sort by hash for deterministic selection
+    sorted_indexed = sorted(indexed, key=lambda x: x[1])
+    # Select the first n_sample items
+    selected_indices = [idx for idx, _ in sorted_indexed[:n_sample]]
+    return [phase_outputs[idx] for idx in sorted(selected_indices)]
+
+
 def audit_phase_sample(
     phase_dir: "Path",
     phase_outputs: "List[Dict[str, Any]]",
@@ -13636,7 +13654,7 @@ def audit_phase_sample(
         return {"sampled": 0, "skipped": True}
 
     n_sample = min(max(1, int(len(phase_outputs) * sample_rate)), 5)
-    sample = random.sample(phase_outputs, min(n_sample, len(phase_outputs)))
+    sample = _deterministic_phase_sample(phase_outputs, n_sample)
 
     results: List[Dict[str, Any]] = []
     escalation_needed: List[str] = []
