@@ -10,15 +10,15 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport_prmerge/20260329_203806-312",
+        "mcp-conport_bundle/all-active-work-20260330",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "prmerge/20260329_203806-312",
-        "DOPEMUX_WORKSPACE_ID": "/private/tmp/dopemux-pr-merge-312-20260329_203806"
+        "DOPEMUX_INSTANCE_ID": "bundle/all-active-work-20260330",
+        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
       }
     },
     "gpt-researcher_wrapped": {
