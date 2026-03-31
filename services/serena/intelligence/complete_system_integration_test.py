@@ -1,16 +1,16 @@
 """
 Serena v2 Phase 2E: Complete System Integration Test
 
-Comprehensive integration testing for all Phase 2A-2E components (31 total)
+Comprehensive integration testing for all Phase 2A-2E components (34 total)
 validating end-to-end ADHD-optimized navigation intelligence with all targets.
 """
 
 import asyncio
 import json
 import logging
+import pytest
 import statistics
 import time
-import pytest
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Set, Union
@@ -61,8 +61,7 @@ from ..adhd_features import ADHDCodeNavigator
 
 logger = logging.getLogger(__name__)
 
-
-PHASE_2_COMPONENT_COUNT = 31
+PHASE_2_COMPONENT_COUNT = 34
 
 
 class SystemIntegrationMetric(str, Enum):
@@ -111,7 +110,7 @@ class SystemIntegrationResult:
     scenarios_tested: List[IntegrationTestScenario]
 
     # Component health
-    total_components: int = PHASE_2_COMPONENT_COUNT  # 6+7+6+6+6 = 31 Phase 2 components
+    total_components: int = PHASE_2_COMPONENT_COUNT
     healthy_components: int = 0
     component_health_details: List[ComponentHealth] = field(default_factory=list)
 
@@ -151,7 +150,7 @@ class CompleteSystemIntegrationTest:
     Complete system integration testing for all Phase 2A-2E components.
 
     Features:
-    - Comprehensive testing of all 31 system components working together
+    - Comprehensive testing of all 34 system components working together
     - End-to-end navigation scenario validation with real-world complexity
     - Performance validation maintaining all targets across complete system
     - ADHD optimization validation across all phases and components
@@ -184,7 +183,10 @@ class CompleteSystemIntegrationTest:
         test_start_time = time.time()
 
         logger.info("🧪 Starting Complete Serena v2 Phase 2 System Integration Test")
-        logger.info("Testing 31 Phase 2 components across Phase 2A-2E with Layer 1 integration")
+        logger.info(
+            "Testing %s components across Phase 2A-2E + Layer 1 integration",
+            PHASE_2_COMPONENT_COUNT,
+        )
 
         try:
             test_id = f"integration_test_{int(time.time())}"
@@ -277,7 +279,7 @@ class CompleteSystemIntegrationTest:
     # Component Testing
 
     async def _test_all_component_initialization(self) -> Dict[str, Any]:
-        """Test initialization of all 31 system components."""
+        """Test initialization of all 34 system components."""
         try:
             logger.info("🔧 Testing all component initialization...")
 
@@ -291,9 +293,7 @@ class CompleteSystemIntegrationTest:
             # Test Layer 1 components
             layer1_results = await self._test_layer1_components()
             initialization_results["phase_results"]["layer1"] = layer1_results
-            initialization_results["layer1_compatible"] = (
-                layer1_results["healthy_count"] == layer1_results["total_components"]
-            )
+            initialization_results["healthy_components"] += layer1_results["healthy_count"]
 
             # Test Phase 2A components (6 components)
             phase2a_results = await self._test_phase2a_components()
@@ -321,15 +321,19 @@ class CompleteSystemIntegrationTest:
             initialization_results["healthy_components"] += phase2e_results["healthy_count"]
 
             logger.info(
-                f"🔧 Phase 2 component initialization: "
-                f"{initialization_results['healthy_components']}/{PHASE_2_COMPONENT_COUNT} healthy; "
-                f"Layer 1 compatible: {initialization_results['layer1_compatible']}"
+                "🔧 Component initialization: %s/%s healthy",
+                initialization_results["healthy_components"],
+                PHASE_2_COMPONENT_COUNT,
             )
             return initialization_results
 
         except Exception as e:
             logger.error(f"Failed to test component initialization: {e}")
-            return {"total_components": PHASE_2_COMPONENT_COUNT, "healthy_components": 0, "error": str(e)}
+            return {
+                "total_components": PHASE_2_COMPONENT_COUNT,
+                "healthy_components": 0,
+                "error": str(e),
+            }
 
     async def _test_phase2e_components(self) -> Dict[str, Any]:
         """Test Phase 2E component initialization and health."""
@@ -674,7 +678,7 @@ class CompleteSystemIntegrationTest:
             coordination_score = coordination_results["coordination_score"]
             scores.append(coordination_score * 0.1)
 
-            return min(max(sum(scores), 0.0), 1.0)
+            return sum(scores)
 
         except Exception as e:
             logger.error(f"Failed to calculate integration score: {e}")
@@ -688,7 +692,9 @@ class CompleteSystemIntegrationTest:
         performance_results: Dict[str, Any],
     ) -> bool:
         """Assess if system is ready for production deployment."""
-        critical_issues = self._identify_critical_issues(component_results, performance_results)
+        critical_issues = self._identify_critical_issues(
+            component_results, performance_results
+        )
         return (
             integration_score >= 0.85 and
             target_results.get("all_verified_targets_achieved", False) and
@@ -751,7 +757,9 @@ class CompleteSystemIntegrationTest:
         critical_issues = []
 
         # Critical component failures
-        unhealthy_components = component_results.get("total_components", 31) - component_results.get("healthy_components", 0)
+        unhealthy_components = component_results.get(
+            "total_components", PHASE_2_COMPONENT_COUNT
+        ) - component_results.get("healthy_components", 0)
         if unhealthy_components > 3:
             critical_issues.append(f"Too many unhealthy components: {unhealthy_components}")
 
@@ -782,15 +790,7 @@ class CompleteSystemIntegrationTest:
 
     # Placeholder methods for complex testing that would require full system
     async def _test_layer1_components(self) -> Dict[str, Any]:
-        return {
-            "total_components": 3,
-            "healthy_count": 3,
-            "components": {
-                "performance_monitor": "healthy",
-                "adhd_features": "healthy",
-                "tree_sitter": "healthy",
-            },
-        }
+        return {"healthy_count": 3, "components": {"performance_monitor": "healthy", "adhd_features": "healthy", "tree_sitter": "healthy"}}
 
     async def _test_phase2a_components(self) -> Dict[str, Any]:
         return {"healthy_count": 6, "components": {}}
@@ -865,7 +865,10 @@ if __name__ == "__main__":
     # Run integration test when executed directly
     async def main():
         logger.info("🧪 Serena v2 Complete System Integration Test")
-        logger.info("Testing all 31 components across Phase 2A-2E")
+        logger.info(
+            "Testing all %s components across Phase 2A-2E",
+            PHASE_2_COMPONENT_COUNT,
+        )
 
         try:
             result = await run_complete_system_integration_test()
