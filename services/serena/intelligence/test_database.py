@@ -42,11 +42,11 @@ from services.serena.intelligence.database import (
     ASYNCPG_AVAILABLE,
 )
 from services.serena.performance_monitor import PerformanceMonitor
+from services.serena.adhd_features import CodeComplexityAnalyzer
 
 
 
 # ============================================================================
-# TEST FIXTURES
 # TEST FIXTURES
 # ============================================================================
 
