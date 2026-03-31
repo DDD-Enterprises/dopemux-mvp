@@ -168,6 +168,9 @@ class OpenAIBatchClient:
                 discarded_lines += 1
                 logger.warning(f"Discarding invalid JSON line in batch result: {line[:200]}... Error: {e}")
                 continue
+
+        if total_lines > 0 and (discarded_lines / total_lines) > 0.05:
+            raise RuntimeError(f"BatchCorruptionError: {discarded_lines}/{total_lines} results discarded (>5%)")
             custom_id = str(row.get("custom_id") or "")
             response = row.get("response") if isinstance(row.get("response"), dict) else {}
             body = response.get("body") if isinstance(response.get("body"), dict) else {}
