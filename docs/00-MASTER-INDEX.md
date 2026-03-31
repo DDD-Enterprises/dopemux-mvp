@@ -3,8 +3,8 @@ id: 00-MASTER-INDEX
 title: 00 Master Index
 type: explanation
 owner: '@hu3mann'
-last_review: '2026-03-19'
-next_review: '2026-06-19'
+last_review: '2026-03-30'
+next_review: '2026-06-30'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: 00 Master Index (explanation) for dopemux documentation and developer workflows.
@@ -183,6 +183,7 @@ Status: [LOGGED] Topology Complete
 - Additional governance contracts are tracked in the active backlog and linked from the Authority Map.
 
 ### Technical Deep Dives
+- [Memory And Persistence Deep Dive](04-explanation/technical-deep-dives/memory-and-persistence-deep-dive.md)
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)
 - [ConPort Technical Deep Dive](04-explanation/technical-deep-dives/conport-technical-deep-dive.md)
 - [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md)

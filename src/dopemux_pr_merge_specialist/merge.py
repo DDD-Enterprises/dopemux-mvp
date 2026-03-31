@@ -236,25 +236,37 @@ def decide_merge_action(
     ]
 
     if non_check_blockers:
-        # If the only non-check blocker is APPROVAL_MISSING, and checks are otherwise green,
-        # we can consider an admin bypass squash merge.
         if (
-            len(non_check_blockers) == 1 
+            len(non_check_blockers) == 1
             and non_check_blockers[0].finding_type == BlockerType.APPROVAL_MISSING.value
             and not pending_checks
             and _status_value(validation_report.status) == ValidationStatus.PASSED.value
         ):
             return MergeDecision(
                 action=MergeActionType.ADMIN_BYPASS_SQUASH,
-                command=[],
+                command=["gh", "pr", "merge", str(pr.pr_id), "--admin", "--squash", "--delete-branch"],
                 reason="Only missing approvals remain; opting for admin-bypass squash merge.",
                 reason_code="admin_bypass_ready",
             )
-
-    if pending_checks and not non_check_blockers:
         return MergeDecision(
-            action=MergeActionType.AUTO_MERGE_ENABLE,
+            action=MergeActionType.BLOCKED,
             command=[],
+            reason="; ".join(item.message for item in non_check_blockers),
+            reason_code=non_check_blockers[0].finding_type,
+        )
+
+    if _status_value(validation_report.status) != ValidationStatus.PASSED.value:
+        return MergeDecision(
+            action=MergeActionType.BLOCKED,
+            command=[],
+            reason="Local validation has not produced a passing result for this SHA.",
+            reason_code="validation_missing_or_failed",
+        )
+
+    if pending_checks:
+        return MergeDecision(
+            action=MergeActionType.AUTO_MERGE_FALLBACK,
+            command=["gh", "pr", "merge", str(pr.pr_id), "--auto", "--rebase", "--delete-branch"],
             reason="All structural gates green; enabling auto-merge for pending checks.",
             reason_code="auto_merge_pending_checks",
         )
@@ -271,7 +283,7 @@ def decide_merge_action(
 
     return MergeDecision(
         action=MergeActionType.REBASE_MERGE,
-        command=[],
+        command=["gh", "pr", "merge", str(pr.pr_id), "--rebase", "--delete-branch"],
         reason="All gates are green; rebase merge selected by default.",
         reason_code="rebase_merge_ready",
     )
