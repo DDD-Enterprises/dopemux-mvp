@@ -12,16 +12,27 @@ prelude: Import Issue Resolution (reference) for dopemux documentation and devel
 ---
 # Import Issue Resolution - Database Tests
 
+## Status Update (2026-03-31)
+
+The import-path issue described below has been resolved for the current local test layout.
+
+Current repo truth:
+
+- package-qualified imports now use `services.serena...`
+- current test path: `services/serena/intelligence/test_database.py`
+- `pytest services/serena --collect-only -q` now succeeds from repo root
+- this document remains useful as a historical root-cause note, but not as the current execution guide
+
 **Date**: 2025-10-24
-**Status**: ⚠️ ROOT CAUSE IDENTIFIED
+**Status**: historical root cause documented; current local layout repaired
 
 ---
 
 ## Problem
 
-Pytest cannot import `SerenaIntelligenceDatabase` from `database.py`:
+Pytest could not import `SerenaIntelligenceDatabase` from `database.py`:
 ```
-ImportError: cannot import name 'SerenaIntelligenceDatabase' from 'services.serena.v2.intelligence.database'
+ImportError: cannot import name 'SerenaIntelligenceDatabase' from 'services.serena.intelligence.database'
 ```
 
 ## Root Cause
@@ -41,19 +52,19 @@ ImportError: attempted relative import with no known parent package
 
 ✅ **Direct Python import works**:
 ```bash
-python -c "from services.serena.v2.intelligence.database import SerenaIntelligenceDatabase"
+python -c "from services.serena.intelligence.database import SerenaIntelligenceDatabase"
 # SUCCESS
 ```
 
 ❌ **Direct execution fails**:
 ```bash
-python services/serena/v2/intelligence/database.py
+python services/serena/intelligence/database.py
 # ImportError: attempted relative import with no known parent package
 ```
 
 ❌ **Pytest fails**:
 ```bash
-pytest services/serena/v2/intelligence/test_database.py
+pytest services/serena/intelligence/test_database.py
 # ImportError: cannot import name 'SerenaIntelligenceDatabase'
 ```
 
@@ -61,8 +72,8 @@ pytest services/serena/v2/intelligence/test_database.py
 
 ### Option 1: Move tests to tests/ directory (RECOMMENDED)
 ```bash
-mkdir -p tests/serena/v2/intelligence
-mv services/serena/v2/intelligence/test_database.py tests/serena/v2/intelligence/
+mkdir -p tests/serena/intelligence
+mv services/serena/intelligence/test_database.py tests/serena/intelligence/
 ```
 
 Benefits:
@@ -71,7 +82,7 @@ Benefits:
 - Pytest handles paths automatically
 
 ### Option 2: Add conftest.py
-Create `services/serena/v2/intelligence/conftest.py`:
+Create `services/serena/intelligence/conftest.py`:
 ```python
 import sys
 from pathlib import Path
@@ -89,8 +100,8 @@ from ..performance_monitor import PerformanceMonitor
 from ..adhd_features import CodeComplexityAnalyzer
 
 # After
-from services.serena.v2.performance_monitor import PerformanceMonitor
-from services.serena.v2.adhd_features import CodeComplexityAnalyzer
+from services.serena.performance_monitor import PerformanceMonitor
+from services.serena.adhd_features import CodeComplexityAnalyzer
 ```
 
 Benefits:
@@ -120,8 +131,8 @@ python_functions = test_*
 **Use Option 3** (absolute imports in database.py):
 
 1. Change database.py imports to absolute (5 min)
-1. Test import: `python -c "from services.serena.v2.intelligence.database import SerenaIntelligenceDatabase"`
-1. Run tests: `pytest services/serena/v2/intelligence/test_database.py`
+1. Test import: `python -c "from services.serena.intelligence.database import SerenaIntelligenceDatabase"`
+1. Run tests: `pytest services/serena/intelligence/test_database.py`
 1. Proceed to GREEN phase
 
 **Time to fix**: 10-15 minutes
