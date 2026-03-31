@@ -269,7 +269,7 @@ def compile_phase_contract_map() -> Dict[str, Any]:
 
     steps_payload: Dict[str, Dict[str, Any]] = {}
     for (phase_code, step_id), scope in sorted(scope_map.items()):
-        lane = lane_map[(phase_code, step_id)]
+        lane = scoped_lane_map[(phase_code, step_id)]
         expected_artifacts = list(scope["json_artifacts"])
         markdown_artifacts = list(scope.get("markdown_artifacts") or [])
         prompt_path = prompt_paths.get((phase_code, step_id))
