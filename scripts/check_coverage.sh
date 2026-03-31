@@ -8,11 +8,20 @@ MODULES="dopemux.mcp.provision,dopemux.mcp.instance_overlay"
 echo "Running scoped coverage for: $MODULES"
 
 export PYTHONPATH=$PYTHONPATH:$(pwd)/src
-pytest tests/mcp -q \
-    --cov=dopemux.mcp.provision \
-    --cov=dopemux.mcp.instance_overlay \
-    --cov-report=term-missing \
-    --cov-fail-under=80
+
+if command -v uv >/dev/null 2>&1; then
+    uv run --frozen pytest tests/mcp -q \
+        --cov=dopemux.mcp.provision \
+        --cov=dopemux.mcp.instance_overlay \
+        --cov-report=term-missing \
+        --cov-fail-under=80
+else
+    pytest tests/mcp -q \
+        --cov=dopemux.mcp.provision \
+        --cov=dopemux.mcp.instance_overlay \
+        --cov-report=term-missing \
+        --cov-fail-under=80
+fi
 
 RESULT=$?
 

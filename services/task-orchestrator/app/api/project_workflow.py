@@ -2,10 +2,13 @@
 
 import logging
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from fastapi import APIRouter, HTTPException, Request
+from dopemux.pm.mapping import CANONICAL_TO_ORCHESTRATOR, ORCHESTRATOR_TO_CANONICAL
+from dopemux.pm.models import PMTaskStatus, PMTransitionRequest
 
 from app.models.workflow import (
     BlockersResult,
@@ -23,6 +26,7 @@ router = APIRouter(prefix="/api/projects/{project_id}/workflow", tags=["project-
 PriorityQueueResult.model_rebuild()
 BlockersResult.model_rebuild()
 WorkflowStateResult.model_rebuild()
+TransitionResult.model_rebuild()
 logger = logging.getLogger(__name__)
 
 _workflow_service_instance: Optional[WorkflowService] = None
@@ -41,6 +45,11 @@ _EPIC_PRIORITY_ORDER: Dict[EpicPriority, int] = {
 }
 _IDEA_STATUSES: Sequence[IdeaStatus] = ("new", "under-review", "approved", "rejected", "promoted")
 _EPIC_STATUSES: Sequence[EpicStatus] = ("planned", "in-planning", "ready", "in-progress", "done")
+_RUNTIME_TRANSITIONS: Dict[str, Tuple[Tuple[PMTaskStatus, ...], PMTaskStatus]] = {
+    "start": ((PMTaskStatus.TODO,), PMTaskStatus.IN_PROGRESS),
+    "block": ((PMTaskStatus.TODO, PMTaskStatus.IN_PROGRESS, PMTaskStatus.BLOCKED), PMTaskStatus.BLOCKED),
+    "done": ((PMTaskStatus.IN_PROGRESS,), PMTaskStatus.DONE),
+}
 
 
 def _workflow_service() -> WorkflowService:
@@ -182,7 +191,7 @@ def _empty_workflow_state_result(project_id: str) -> WorkflowStateResult:
     )
 
 
-def _workflow_service(request: Request):
+def _workflow_service_from_request(request: Request):
     """Get the workflow service from the app state coordinator."""
     coordinator = getattr(request.app.state, "coordinator", None)
     if not coordinator:
@@ -193,6 +202,95 @@ def _workflow_service(request: Request):
         raise HTTPException(status_code=503, detail="workflow service unavailable")
     
     return service
+
+
+def _task_runtime(request: Optional[Request] = None):
+    """Return the task runtime when the service is running in runtime mode."""
+
+    if request is None:
+        return None
+    app = getattr(request, "app", None)
+    state = getattr(app, "state", None)
+    return getattr(state, "task_runtime", None)
+
+
+def _runtime_canonical_status(runtime: Any, task_id: str) -> Optional[PMTaskStatus]:
+    """Resolve a task's canonical PM status from the runtime and PM mirror."""
+
+    pm_store = getattr(runtime, "pm_store", None)
+    if pm_store is not None:
+        pm_task = pm_store.get(task_id)
+        if pm_task is not None:
+            return pm_task.status
+
+    task = getattr(runtime, "tasks", {}).get(task_id)
+    if task is None:
+        return None
+    return ORCHESTRATOR_TO_CANONICAL.get(getattr(task.status, "value", str(task.status)))
+
+
+def _runtime_blockers_for_task(runtime: Any, task: Any) -> List[str]:
+    """Return dependency ids preventing a runtime task from becoming ready."""
+
+    blockers: List[str] = []
+    for dependency_id in getattr(task, "dependencies", []):
+        if _runtime_canonical_status(runtime, dependency_id) != PMTaskStatus.DONE:
+            blockers.append(dependency_id)
+    return blockers
+
+
+def _runtime_queue_snapshot(runtime: Any) -> Tuple[List[Dict[str, Any]], List[str]]:
+    """Build ready queue items and blocker ids from the runtime task graph."""
+
+    queue_items: List[Dict[str, Any]] = []
+    blockers: List[str] = []
+    tasks = getattr(runtime, "tasks", {})
+    for task in tasks.values():
+        canonical_status = _runtime_canonical_status(runtime, task.id)
+        if canonical_status == PMTaskStatus.DONE:
+            continue
+
+        dependency_blockers = _runtime_blockers_for_task(runtime, task)
+        if dependency_blockers:
+            blockers.append(task.id)
+            continue
+
+        if canonical_status == PMTaskStatus.TODO:
+            queue_items.append(
+                {
+                    "id": task.id,
+                    "workflow_id": task.id,
+                    "title": task.title,
+                    "status": canonical_status.value,
+                    "priority": getattr(task, "priority", None),
+                    "dependencies": list(getattr(task, "dependencies", [])),
+                }
+            )
+
+    queue_items.sort(key=lambda item: (-int(item.get("priority") or 0), str(item["id"])))
+    blockers.sort()
+    return queue_items, blockers
+
+
+def _runtime_allowed_transitions(runtime: Any) -> List[str]:
+    """Derive the currently legal transition names from runtime state."""
+
+    queue_items, _ = _runtime_queue_snapshot(runtime)
+    transitions: List[str] = []
+    if queue_items:
+        transitions.extend(["start", "block"])
+    if any(_runtime_canonical_status(runtime, task.id) == PMTaskStatus.IN_PROGRESS for task in runtime.tasks.values()):
+        transitions.append("done")
+    return transitions
+
+
+def _runtime_task_status_after_transition(target: PMTaskStatus):
+    """Map canonical PM status back into the task-runtime status dialect."""
+
+    from task_orchestrator.models import TaskStatus
+
+    runtime_status = CANONICAL_TO_ORCHESTRATOR[target]
+    return TaskStatus(runtime_status)
 
 
 @router.get("/queue", response_model=PriorityQueueResult)
@@ -208,6 +306,18 @@ async def get_project_workflow_queue(project_id: str, request: Request):
 
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
+
+    runtime = _task_runtime(request)
+    if runtime is not None:
+        queue_items, blockers = _runtime_queue_snapshot(runtime)
+        return PriorityQueueResult(
+            project_id=project_id,
+            linked_ids={},
+            legality_result="allowed",
+            blockers=blockers,
+            next_action=queue_items[0] if queue_items else None,
+            queue_items=queue_items,
+        )
 
     try:
         _, epics = await _load_project_records(project_id)
@@ -286,6 +396,28 @@ async def get_project_workflow_state(project_id: str, request: Request):
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
 
+    runtime = _task_runtime(request)
+    if runtime is not None:
+        queue_items, blockers = _runtime_queue_snapshot(runtime)
+        return WorkflowStateResult(
+            project_id=project_id,
+            linked_ids={},
+            legality_result="allowed",
+            blockers=blockers,
+            next_action=queue_items[0] if queue_items else None,
+            state={
+                "task_count": len(runtime.tasks),
+                "ready_count": len(queue_items),
+                "in_progress_count": sum(
+                    1
+                    for task in runtime.tasks.values()
+                    if _runtime_canonical_status(runtime, task.id) == PMTaskStatus.IN_PROGRESS
+                ),
+                "blocked_count": len(blockers),
+            },
+            allowed_transitions=_runtime_allowed_transitions(runtime),
+        )
+
     try:
         ideas, epics = await _load_project_records(project_id)
     except Exception as exc:
@@ -307,8 +439,11 @@ async def get_project_workflow_state(project_id: str, request: Request):
     )
 
 
-@router.post("/transition", response_model=TransitionResult)
-async def transition_project_workflow(project_id: str, payload: TransitionWorkflowRequest, request: Request):
+async def execute_transition_project_workflow(
+    project_id: str,
+    payload: TransitionWorkflowRequest,
+    request: Optional[Request] = None,
+):
     """
     Transition a workflow item to a new state.
 
@@ -321,14 +456,84 @@ async def transition_project_workflow(project_id: str, payload: TransitionWorkfl
     if project_id == "no_state":
         raise HTTPException(status_code=404, detail="workflow state unavailable")
 
+    runtime = _task_runtime(request)
+    if runtime is not None:
+        task = runtime.tasks.get(payload.workflow_id)
+        current_status = _runtime_canonical_status(runtime, payload.workflow_id)
+        current_pm_task = runtime.pm_store.get(payload.workflow_id)
+        if task is None or current_status is None:
+            raise HTTPException(status_code=404, detail="workflow entity not found")
+
+        transition_name = payload.transition.lower()
+        transition_spec = _RUNTIME_TRANSITIONS.get(transition_name)
+        if transition_spec is None:
+            return TransitionResult(
+                project_id=project_id,
+                workflow_id=payload.workflow_id,
+                linked_ids={},
+                legality_result="illegal",
+                blockers=[],
+                next_action=None,
+                transition_receipt={"status": "illegal", "transition": payload.transition},
+                resulting_state={"workflow_id": payload.workflow_id, "current_status": current_status.value},
+            )
+
+        allowed_from, target_status = transition_spec
+        if current_status not in allowed_from:
+            return TransitionResult(
+                project_id=project_id,
+                workflow_id=payload.workflow_id,
+                linked_ids={},
+                legality_result="illegal",
+                blockers=[],
+                next_action=None,
+                transition_receipt={"status": "illegal", "transition": payload.transition},
+                resulting_state={"workflow_id": payload.workflow_id, "current_status": current_status.value},
+            )
+
+        pm_task = runtime.pm_store.transition(
+            payload.workflow_id,
+            PMTransitionRequest(
+                idempotency_key=payload.idempotency_key or f"runtime-{payload.workflow_id}-{transition_name}",
+                expected_version=payload.expected_version or (current_pm_task.version if current_pm_task else 1),
+                new_status=target_status,
+                ts_utc=datetime.now(timezone.utc),
+                source=payload.actor or "system",
+                reason=payload.reason,
+            ),
+        )
+        task.status = _runtime_task_status_after_transition(target_status)
+        return TransitionResult(
+            project_id=project_id,
+            workflow_id=payload.workflow_id,
+            linked_ids={},
+            legality_result="allowed",
+            blockers=[],
+            next_action=None,
+            transition_receipt={
+                "status": "success",
+                "transition": payload.transition,
+                "canonical_backend": "task-orchestrator",
+                "version_after": pm_task.version,
+            },
+            resulting_state={
+                "workflow_id": payload.workflow_id,
+                "status": pm_task.status.value,
+                "version": pm_task.version,
+            },
+        )
+
     # Simulate missing required workflow entity linkage or illegal transition
-    if request.workflow_id == "missing_linkage":
+    if payload.workflow_id == "missing_linkage":
         raise HTTPException(status_code=404, detail="missing required workflow entity linkage")
 
-    if request.transition == "illegal_target":
+    if payload.transition == "illegal_target":
         raise HTTPException(status_code=400, detail="transition request references illegal or unresolved target")
 
-    service = _workflow_service(request)
+    if request is None:
+        raise HTTPException(status_code=503, detail="workflow request context unavailable")
+
+    service = _workflow_service_from_request(request)
     
     try:
         # Check if the epic exists before transitioning to follow fail-closed invariants
@@ -356,6 +561,11 @@ async def transition_project_workflow(project_id: str, payload: TransitionWorkfl
         legality_result="allowed",
         blockers=[],
         next_action=None,
-        transition_receipt={"transition": request.transition, "status": "success"},
-        resulting_state={"status": request.transition},
+        transition_receipt={"transition": payload.transition, "status": "success"},
+        resulting_state={"status": payload.transition},
     )
+
+
+@router.post("/transition", response_model=TransitionResult)
+async def transition_project_workflow(project_id: str, payload: TransitionWorkflowRequest, request: Request):
+    return await execute_transition_project_workflow(project_id, payload, request)

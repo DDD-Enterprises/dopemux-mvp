@@ -52,35 +52,47 @@ help:
 
 # Installation targets
 install:
-	pip install -e .
+	uv sync --frozen
 
 install-dev:
-	pip install -e .[dev]
+	uv sync --frozen --extra dev
 
 # Testing targets
 test:
-	pytest
+	uv run --frozen pytest tests
 
 test-unit:
-	pytest -m "not integration"
+	uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov
 
 test-integration:
-	pytest -m integration
+	uv sync --frozen --extra test --extra services
+	uv run --frozen pytest tests/integration --maxfail=1 --disable-warnings --no-cov
 
 test-coverage:
-	pytest --cov-report=term-missing --cov-report=html
+	uv sync --frozen --extra test
+	uv run --frozen pytest --cov-report=term-missing --cov-report=html
 
 test-fast:
-	pytest -m "not slow"
+	uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov
 
 test-verbose:
-	pytest -v
+	uv run --frozen pytest -v
+
+ci-fast:
+	uv sync --frozen --extra test
+	uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov
+
+ci-extended:
+	uv sync --frozen --extra test --extra services
+	uv run --frozen pytest tests/integration --maxfail=1 --disable-warnings --no-cov
+	./test_installer_basic.sh
+	./scripts/check_coverage.sh
 
 test-extractor:
-	pytest --no-cov services/repo-truth-extractor/tests
+	uv run --frozen pytest --no-cov services/repo-truth-extractor/tests
 
 test-extractor-smoke:
-	pytest --no-cov tests/unit/test_run_extraction_v3_phase_m.py tests/unit/test_run_extraction_v3_pipeline_controls.py
+	uv run --frozen pytest --no-cov tests/unit/test_run_extraction_v3_phase_m.py tests/unit/test_run_extraction_v3_pipeline_controls.py
 
 # Quality targets
 lint:

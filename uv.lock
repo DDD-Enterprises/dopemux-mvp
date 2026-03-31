@@ -1299,6 +1299,12 @@ services = [
     { name = "tree-sitter-rust" },
     { name = "tree-sitter-typescript" },
 ]
+test = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -1349,9 +1355,13 @@ requires-dist = [
     { name = "pymilvus", specifier = ">=2.3.0" },
     { name = "pymupdf", marker = "extra == 'services'", specifier = ">=1.23.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.3" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=7.4.3" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
+    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = ">=0.23.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
+    { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=4.0.0" },
     { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.12.0" },
+    { name = "pytest-mock", marker = "extra == 'test'", specifier = ">=3.12.0" },
     { name = "python-dateutil", specifier = ">=2.8.2" },
     { name = "python-docx", specifier = ">=0.8.11" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
@@ -1384,7 +1394,7 @@ requires-dist = [
     { name = "voyageai", specifier = ">=0.2.0" },
     { name = "watchdog", specifier = ">=3.0.0" },
 ]
-provides-extras = ["dev", "services", "all"]
+provides-extras = ["test", "dev", "services", "all"]
 
 [[package]]
 name = "dopetask"
