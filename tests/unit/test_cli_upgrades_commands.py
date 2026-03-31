@@ -239,9 +239,6 @@ def test_upgrades_run_forwards_promptset_root() -> None:
     assert "." in kwargs["args"]
 
 
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
 def test_upgrades_run_rejects_openrouter_batch_provider_choice() -> None:
     runner = CliRunner()
     result = runner.invoke(
@@ -263,7 +260,6 @@ def test_upgrades_run_rejects_openrouter_batch_provider_choice() -> None:
     assert "openrouter" in result.output
 
 
-<<<<<<< Updated upstream
 def test_extractor_alias_warns_and_executes() -> None:
     runner = CliRunner()
     with patch("dopemux.cli._run_extractor_runner") as mocked:
@@ -348,7 +344,6 @@ def test_upgrades_validate_live_invokes_validation_runner() -> None:
                 [
                     "upgrades",
                     "validate-live",
-<<<<<<< Updated upstream
                     "--stage",
                     "provider_probe",
                     "--promptset-root",
@@ -387,9 +382,6 @@ def test_upgrades_validate_live_fails_when_runner_reports_blockers() -> None:
 
     assert result.exit_code != 0
     assert "repo_local_cli_origin: stale install" in result.output
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
 
 
 def test_upgrades_validate_live_accepts_phase_slice_stage_and_provider() -> None:
@@ -426,4 +418,3 @@ def test_upgrades_validate_live_accepts_phase_slice_stage_and_provider() -> None
     config = mocked.call_args.args[0]
     assert config.stage == "phase_slice"
     assert config.selected_provider == "xai"
-<<<<<<< Updated upstream

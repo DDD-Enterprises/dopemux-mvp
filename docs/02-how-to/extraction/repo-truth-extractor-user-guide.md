@@ -262,7 +262,6 @@ dopemux upgrades validate-live \
   --stage preflight
 ```
 
-<<<<<<< Updated upstream
 Validation stages:
 
 - `preflight`
@@ -271,17 +270,11 @@ Validation stages:
 - `phase_slice`
 - `full_phased`
 
-### For paid slice and full stages, provide a pricing manifest so spend caps can be enforced:
-=======
-For paid stages, provide a pricing manifest so spend caps can be enforced:
->>>>>>> feature/docs-brand-refresh-consolidated
-=======
->>>>>>> Stashed changes
+For paid slice and full stages, provide a pricing manifest so spend caps can be enforced:
 
 ```bash
 dopemux upgrades validate-live \
   --promptset-root /abs/path/to/generated/promptset \
-<<<<<<< Updated upstream
   --stage phase_slice \
   --provider openai \
   --pricing-manifest /abs/path/to/pricing_manifest.json
@@ -300,26 +293,6 @@ Use the phase-scoped confidence ramp:
 4. `phase_slice`
 5. `full_phased`
 
-=======
-  --stage phase_slice \
-  --provider openai \
-  --pricing-manifest /abs/path/to/pricing_manifest.json
-```
-
-Live validation stages that would spend money still require explicit consent:
-
-- `--execute` on the underlying runner path
-- `DPMX_LIVE_OK=1`
-
-Use the phase-scoped confidence ramp:
-
-1. `preflight`
-2. `provider_probe`
-3. `batch_pilot`
-4. `phase_slice`
-5. `full_phased`
-
->>>>>>> Stashed changes
 If `validate-live` exits immediately with an import-origin error, the command is not running from the current checkout. Reinstall with `pip install -e ".[dev]"` or rerun with `PYTHONPATH=src`.
 
 ## 8. Interpreting stdout quickly
