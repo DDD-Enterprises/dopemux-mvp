@@ -131,6 +131,8 @@ class SystemIntegrationResult:
     one_week_convergence_validated: bool = False
     eighty_five_percent_success_validated: bool = False
     thirty_percent_time_reduction_validated: bool = False
+    verified_targets_met: bool = False
+    synthetic_target_checks_remaining: int = 0
 
     # Integration quality
     cross_phase_coordination_score: float = 0.0
@@ -244,6 +246,8 @@ class CompleteSystemIntegrationTest:
                 one_week_convergence_validated=target_results["convergence_validated"],
                 eighty_five_percent_success_validated=target_results["success_rate_validated"],
                 thirty_percent_time_reduction_validated=target_results["time_reduction_validated"],
+                verified_targets_met=target_results["all_verified_targets_achieved"],
+                synthetic_target_checks_remaining=target_results["synthetic_target_count"],
                 cross_phase_coordination_score=coordination_results["coordination_score"],
                 end_to_end_scenarios_passed=scenario_results["scenarios_passed"],
                 layer1_compatibility_maintained=component_results["layer1_compatible"],
@@ -461,26 +465,47 @@ class CompleteSystemIntegrationTest:
                 "convergence_validated": False,
                 "success_rate_validated": False,
                 "time_reduction_validated": False,
-                "all_targets_achieved": False
+                "all_targets_achieved": False,
+                "all_verified_targets_achieved": False,
+                "verified_target_count": 0,
+                "synthetic_target_count": 0,
+                "target_details": {},
             }
 
             # Validate 1-week convergence target (Phase 2B)
             convergence_validation = await self._validate_convergence_target()
             target_results["convergence_validated"] = convergence_validation["achieved"]
+            target_results["target_details"]["convergence"] = convergence_validation
 
             # Validate >85% navigation success target (Phase 2C)
             success_validation = await self._validate_success_rate_target()
             target_results["success_rate_validated"] = success_validation["achieved"]
+            target_results["target_details"]["success_rate"] = success_validation
 
             # Validate 30% time reduction target (Phase 2D)
             time_reduction_validation = await self._validate_time_reduction_target()
             target_results["time_reduction_validated"] = time_reduction_validation["achieved"]
+            target_results["target_details"]["time_reduction"] = time_reduction_validation
 
             # Overall target achievement
             target_results["all_targets_achieved"] = (
                 target_results["convergence_validated"] and
                 target_results["success_rate_validated"] and
                 target_results["time_reduction_validated"]
+            )
+            target_results["verified_target_count"] = sum(
+                1
+                for detail in target_results["target_details"].values()
+                if detail.get("validation_mode") == "verified" and detail.get("achieved")
+            )
+            target_results["synthetic_target_count"] = sum(
+                1
+                for detail in target_results["target_details"].values()
+                if detail.get("validation_mode") != "verified"
+            )
+            target_results["all_verified_targets_achieved"] = (
+                target_results["verified_target_count"] == len(target_results["target_details"])
+                and len(target_results["target_details"]) > 0
             )
 
             logger.info(f"🎯 Target validation: "
@@ -492,7 +517,15 @@ class CompleteSystemIntegrationTest:
 
         except Exception as e:
             logger.error(f"Failed to validate target achievements: {e}")
-            return {"convergence_validated": False, "success_rate_validated": False, "time_reduction_validated": False, "error": str(e)}
+            return {
+                "convergence_validated": False,
+                "success_rate_validated": False,
+                "time_reduction_validated": False,
+                "all_verified_targets_achieved": False,
+                "verified_target_count": 0,
+                "synthetic_target_count": 0,
+                "error": str(e),
+            }
 
     async def _validate_convergence_target(self) -> Dict[str, Any]:
         """Validate 1-week learning convergence target."""
@@ -503,7 +536,8 @@ class CompleteSystemIntegrationTest:
                 "achieved": True,
                 "convergence_time_days": 6.2,
                 "confidence": 0.87,
-                "validation_method": "simulation"
+                "validation_method": "simulation",
+                "validation_mode": "synthetic",
             }
 
         except Exception as e:
@@ -519,7 +553,8 @@ class CompleteSystemIntegrationTest:
                 "achieved": True,
                 "success_rate": 0.87,
                 "confidence": 0.92,
-                "validation_method": "simulation"
+                "validation_method": "simulation",
+                "validation_mode": "synthetic",
             }
 
         except Exception as e:
@@ -535,7 +570,8 @@ class CompleteSystemIntegrationTest:
                 "achieved": True,
                 "time_reduction": 0.32,
                 "confidence": 0.89,
-                "validation_method": "simulation"
+                "validation_method": "simulation",
+                "validation_mode": "synthetic",
             }
 
         except Exception as e:
@@ -655,7 +691,7 @@ class CompleteSystemIntegrationTest:
         critical_issues = self._identify_critical_issues(component_results, performance_results)
         return (
             integration_score >= 0.85 and
-            target_results["all_targets_achieved"] and
+            target_results.get("all_verified_targets_achieved", False) and
             component_results.get("layer1_compatible", False) and
             performance_results.get("targets_met", False) and
             len(critical_issues) == 0
@@ -685,7 +721,9 @@ class CompleteSystemIntegrationTest:
                 recommendations.append("🧠 Enhance ADHD accommodations for better user experience")
 
             # Target achievement recommendations
-            if not target_results["all_targets_achieved"]:
+            if not target_results.get("all_verified_targets_achieved", False):
+                if target_results.get("synthetic_target_count", 0) > 0:
+                    recommendations.append("🧪 Replace synthetic target checks with runtime-backed validation before deployment")
                 if not target_results["convergence_validated"]:
                     recommendations.append("📚 Validate 1-week learning convergence")
                 if not target_results["success_rate_validated"]:
@@ -804,7 +842,8 @@ async def validate_production_readiness(workspace_id: str = "/test/workspace") -
             "targets_achieved": {
                 "convergence": integration_result.one_week_convergence_validated,
                 "success_rate": integration_result.eighty_five_percent_success_validated,
-                "time_reduction": integration_result.thirty_percent_time_reduction_validated
+                "time_reduction": integration_result.thirty_percent_time_reduction_validated,
+                "verified_targets_met": integration_result.verified_targets_met,
             },
             "performance_compliant": integration_result.performance_targets_met,
             "adhd_optimized": integration_result.adhd_targets_achieved,
@@ -857,7 +896,9 @@ async def test_complete_system_integration_result_is_consistent():
     assert 0.0 <= result.system_integration_score <= 1.0
     assert result.layer1_compatibility_maintained is True
     assert result.performance_targets_met is True
-    assert result.production_ready is True
+    assert result.verified_targets_met is False
+    assert result.synthetic_target_checks_remaining == 3
+    assert result.production_ready is False
 
 
 def test_assess_production_readiness_uses_runtime_results():
@@ -866,7 +907,7 @@ def test_assess_production_readiness_uses_runtime_results():
 
     assert test_suite._assess_production_readiness(
         integration_score=0.95,
-        target_results={"all_targets_achieved": True},
+        target_results={"all_verified_targets_achieved": False},
         component_results={
             "total_components": PHASE_2_COMPONENT_COUNT,
             "healthy_components": PHASE_2_COMPONENT_COUNT - 4,
