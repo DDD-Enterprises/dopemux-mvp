@@ -7,7 +7,7 @@ import json
 import pytest
 
 import server
-
+from server import handle_call_tool
 
 
 class TestServerTools:
@@ -16,7 +16,7 @@ class TestServerTools:
     @pytest.mark.asyncio
     async def test_handle_call_tool_unknown(self):
         """Test calling an unknown tool"""
-        result = await server.handle_call_tool("unknown_tool", {})
+        result = await handle_call_tool("unknown_tool", {})
         assert len(result) == 1
         assert "Unknown tool: unknown_tool" in result[0].text
 
@@ -92,7 +92,7 @@ class TestServerTools:
     @pytest.mark.asyncio
     async def test_handle_version(self):
         """Test getting version info"""
-        result = await server.handle_call_tool("version", {})
+        result = await handle_call_tool("version", {})
         assert len(result) == 1
 
         response = result[0].text
@@ -133,7 +133,7 @@ class TestServerTools:
         monkeypatch.setattr(server, "_activity_jsonl_path", lambda: activity_path)
         monkeypatch.setitem(server.TOOLS, "fake", FakeTool())
 
-        result = await server.handle_call_tool(
+        result = await handle_call_tool(
             "fake",
             {"trace_id": "trace_abc", "prompt": "hello"},
         )
