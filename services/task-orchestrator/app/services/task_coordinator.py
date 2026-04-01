@@ -50,7 +50,14 @@ from dopemux.pm.store import InMemoryPMTaskStore
 from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest, content_hash_task_id
 from dopemux.pm.mapping import ORCHESTRATOR_TO_CANONICAL, CANONICAL_TO_ORCHESTRATOR
 
-from dopemux.execution.store import get_execution_store, get_lease_store, PacketNotFoundError, PacketNotReadyError
+from dopemux.execution.store import (
+    LeaseNotFoundError,
+    PacketNotFoundError,
+    PacketNotReadyError,
+    StaleLeaseError,
+    get_execution_store,
+    get_lease_store,
+)
 from dopemux.execution.models import ExecutionPacket, PacketState
 
 logger = logging.getLogger(__name__)
@@ -499,11 +506,48 @@ class TaskCoordinator:
                 task.status = TaskStatus.IN_PROGRESS
                 results["in_progress"].append(task_id)
 
+                packet = execution_store.get_packet(task_id)
+                if packet is None:
+                    execution_store.create_packet(
+                        ExecutionPacket(
+                            packet_id=task_id,
+                            owner_id=self.workspace_id,
+                            state=PacketState.READY,
+                            metadata={
+                                "title": task.title,
+                                "description": task.description,
+                                "priority": task.priority,
+                                "assigned_agent": (
+                                    task.assigned_agent.value
+                                    if task.assigned_agent is not None
+                                    else None
+                                ),
+                            },
+                        )
+                    )
+
+                lease = lease_store.checkout(
+                    task_id,
+                    agent_id=(
+                        task.assigned_agent.value
+                        if task.assigned_agent is not None
+                        else "task-coordinator"
+                    ),
+                    ttl_seconds=max(60, task.break_frequency_minutes * 60),
+                )
+
                 # Preserve compatibility with test/local monitor overrides that only accept `task`.
-                if monitor_accepts_lease:
-                    await self._monitor_execution(task, lease_id=lease.lease_id)
-                else:
-                    await self._monitor_execution(task)
+                try:
+                    if monitor_accepts_lease:
+                        await self._monitor_execution(task, lease_id=lease.lease_id)
+                    else:
+                        await self._monitor_execution(task)
+                except (LeaseNotFoundError, StaleLeaseError):
+                    logger.warning(
+                        "⚠️ Lease %s lost during monitoring for %s; continuing closeout",
+                        lease.lease_id,
+                        task_id,
+                    )
 
                 # Mark task as completed after successful monitoring
                 task.status = TaskStatus.COMPLETED
@@ -512,6 +556,20 @@ class TaskCoordinator:
 
                 # Sync to ConPort
                 await self.conport_adapter.update_task_in_conport(task)
+
+                try:
+                    lease_store.release(
+                        lease.lease_id,
+                        final_state=PacketState.PROOF_GENERATED,
+                    )
+                except (LeaseNotFoundError, StaleLeaseError):
+                    # Treat successful monitoring as authoritative and force the
+                    # packet closed if the lease record was already reclaimed.
+                    execution_store.update_packet_state(
+                        task_id,
+                        PacketState.PROOF_GENERATED,
+                    )
+                lease = None
 
             except (PacketNotReadyError, PacketNotFoundError) as e:
                 logger.warning(f"⚠️ Could not lease packet {task_id}: {e}")
