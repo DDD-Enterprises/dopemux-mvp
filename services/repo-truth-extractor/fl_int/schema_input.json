@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "run_root",
+    "required_phase_ids",
+    "optional_phase_ids",
+    "available_phase_ids",
+    "missing_required_phase_ids",
+    "phases"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "enum": ["FL_INT_INPUT_V1"]},
+    "run_id": {"type": "string"},
+    "run_root": {"type": "string"},
+    "required_phase_ids": {"type": "array", "items": {"type": "string"}},
+    "optional_phase_ids": {"type": "array", "items": {"type": "string"}},
+    "available_phase_ids": {"type": "array", "items": {"type": "string"}},
+    "missing_required_phase_ids": {"type": "array", "items": {"type": "string"}},
+    "phases": {"type": "object"}
+  }
+}

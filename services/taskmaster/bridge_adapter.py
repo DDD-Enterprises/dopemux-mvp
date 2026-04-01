@@ -29,6 +29,57 @@ from dopemux.pm.writes import PMWriteConfig, pm_update_work_item, pm_transition_
 from dopemux.pm.mapping import TASKMASTER_TO_CANONICAL
 from dopemux.pm.adapters.orchestrator import SyncTaskOrchestratorAdapter
 
+logger = logging.getLogger(__name__)
+
+
+class SyncBridgeAdapterClientStub:
+    """Uses a synchronous HTTPX client to implement proxy clients for PMWriteConfig.
+    This guarantees block execution and explicit fail-closed exceptions.
+    """
+    def __init__(self, config: DopeconBridgeConfig):
+        self.base_url = config.base_url
+        self.headers = {"Authorization": f"Bearer {config.token}", "x-source-plane": config.source_plane}
+        self.client = httpx.Client(base_url=self.base_url, headers=self.headers, timeout=config.timeout)
+
+class SyncLeantimeBridgeClient(SyncBridgeAdapterClientStub):
+    def update_task(self, task_id: str, updates: Dict[str, Any], idempotency_key: str):
+        payload = {
+            "source": "cognitive",
+            "operation": "leantime.update_task",
+            "data": {"task_id": task_id, "updates": updates, "idempotency_key": idempotency_key},
+            "requester": "taskmaster"
+        }
+        resp = self.client.post("/route/pm", json=payload)
+        resp.raise_for_status()
+            
+    def update_status(self, task_id: str, status: str, idempotency_key: str):
+        payload = {
+            "source": "cognitive",
+            "operation": "leantime.update_status",
+            "data": {"task_id": task_id, "status": status, "idempotency_key": idempotency_key},
+            "requester": "taskmaster"
+        }
+        resp = self.client.post("/route/pm", json=payload)
+        resp.raise_for_status()
+
+class SyncOrchestratorBridgeClient(SyncBridgeAdapterClientStub):
+    def __init__(self, config: DopeconBridgeConfig, project_id: str = "default"):
+        super().__init__(config)
+        self.project_id = project_id
+        self.task_orchestrator = SyncTaskOrchestratorAdapter(default_project_id=project_id)
+
+    def transition(self, task_id: str, status: Any, reason: str, expected_version: int, idempotency_key: str):
+        transition_name = status.value.lower() if hasattr(status, "value") else str(status).lower()
+        return self.task_orchestrator.transition(
+            project_id=self.project_id,
+            workflow_id=task_id,
+            transition_name=transition_name,
+            actor="taskmaster",
+            idempotency_key=idempotency_key,
+            expected_version=expected_version,
+            reason=reason,
+        )
+
 class SyncConportBridgeClient(SyncBridgeAdapterClientStub):
     def record_progress(self, task_id: str, progress_notes: str, is_decision: bool, idempotency_key: str):
         payload = {

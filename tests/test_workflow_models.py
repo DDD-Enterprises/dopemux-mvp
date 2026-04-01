@@ -1,10 +1,10 @@
 from pathlib import Path
 
+from dopemux.pm.models import PMTaskStatus
 from dopemux.workflow import (
     WorkflowPhase,
     WorkflowState,
     WorkflowTask,
-    WorkflowTaskStatus,
 )
 
 
@@ -76,14 +76,14 @@ def test_complete_gate_requires_artifacts_and_completed_tasks(tmp_path):
     state.record_checkpoint("plan_review", True, message="plan_review approved")
     state.required_artifacts = ["reports/proof.json"]
     state.tasks = [
-        WorkflowTask(task_id="task-1", title="Task 1", status=WorkflowTaskStatus.PENDING),
+        WorkflowTask(task_id="task-1", title="Task 1", status=PMTaskStatus.TODO),
     ]
 
     assert state.validate_phase_transition(WorkflowPhase.COMPLETE) == (
         "Cannot complete while workflow tasks are still incomplete."
     )
 
-    state.tasks[0].status = WorkflowTaskStatus.COMPLETED
+    state.tasks[0].status = PMTaskStatus.DONE
     assert state.validate_phase_transition(WorkflowPhase.COMPLETE) == (
         "Cannot complete while required artifacts are missing."
     )

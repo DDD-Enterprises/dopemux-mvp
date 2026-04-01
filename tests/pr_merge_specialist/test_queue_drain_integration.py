@@ -564,15 +564,6 @@ def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatc
         ),
     ]
 
-    blocked_map = queue_drain_module._handle_global_ci_blockers(
-            validation_report=failed_validation,
-        ),
-        SimpleNamespace(
-            pr_state=SimpleNamespace(pr_id=102),
-            validation_report=failed_validation,
-        ),
-    ]
-
     queue_drain_module._handle_global_ci_blockers(
         results,
         FakeGitHubClient(repo=None, repo_root=tmp_path, policy={}),
@@ -777,6 +768,30 @@ def test_create_global_fix_pr_removes_stale_non_worktree_path(monkeypatch, tmp_p
     assert any("Removed stale global-fix path that was not an active git worktree" in message for message in messages)
 
 
+def test_create_global_fix_pr_aborts_if_no_changes_found(monkeypatch, tmp_path: Path):
+    log_events: list[tuple[str, str, str]] = []
+
+    def logger(level: str, scope: str, message: str) -> None:
+        log_events.append((level, scope, message))
+
+    class FakePopen:
+        def __init__(self, *args, **kwargs):
+            self.returncode = 0
+            self.stdout = SimpleNamespace(readline=lambda: "")
+
+        def wait(self, timeout=None):
+            return 0
+
+    def fake_run(
+        cmd,
+        cwd=None,
+        check=False,
+        stderr=None,
+        stdout=None,
+        capture_output=False,
+        text=False,
+        timeout=None,
+    ):
         command = list(cmd)
         if command[:3] == ["git", "status", "--porcelain"]:
             return SimpleNamespace(returncode=0, stdout=" M changed.py\n", stderr="")
@@ -841,16 +856,19 @@ def test_handle_global_ci_blockers_groups_remote_fingerprints(monkeypatch, tmp_p
 
     created: list[tuple[str, str]] = []
 
+    def fake_create_global_fix_pr(
+        fingerprint,
+        failed_step,
+        client,
+        repo_root,
+        logger,
+        verification_command,
+        targeted_nodeid,
+    ):
         created.append((fingerprint, failed_step.command))
         assert verification_command == "pytest tests/ --maxfail=1"
         assert targeted_nodeid == "tests/test_cli.py::TestCLI::test_start_command_role_dry_run"
         return 777
-
-    monkeypatch.setattr(
-        queue_drain_module,
-        "_create_global_fix_pr",
-        fake_create_global_fix_pr,
-    )
 
     remote_details = {
         "blocker_types": ["required_check_failed"],

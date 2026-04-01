@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+from pathlib import Path
 from dopemux_pr_merge_specialist.runtime import CommandResult, append_live_log
 from dopemux_pr_merge_specialist.policy import PolicyError, load_effective_policy, policy_artifact_payload
 from dopemux_pr_merge_specialist.schema import ValidationStatus
@@ -50,6 +51,14 @@ def test_module_entrypoint_works_without_pythonpath():
             "self-check",
             "--json",
             "--smoke",
+        ],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0
+
+
 def test_validation_scopes_commands_to_changed_pr_files(monkeypatch, tmp_path: Path):
     recorded_commands = []
 

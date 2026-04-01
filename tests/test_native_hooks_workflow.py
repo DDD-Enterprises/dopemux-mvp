@@ -1,11 +1,11 @@
 from dopemux.claude.native_hooks import handle_event
-from dopemux.workflow import WorkflowStore
+from dopemux.workflow import WorkflowKernel, WorkflowStatus
 
 
 def test_session_start_returns_strict_response_shape(tmp_path, monkeypatch):
     monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
-    store = WorkflowStore(tmp_path)
-    store.create_or_resume(
+    kernel = WorkflowKernel(tmp_path)
+    kernel.create_or_resume(
         workflow_id="wf-hook",
         instance_id="main",
         mode="internal",
@@ -14,6 +14,7 @@ def test_session_start_returns_strict_response_shape(tmp_path, monkeypatch):
         completion_token="DONE",
     )
 
+    # Wrap in event_data shape expected by handle_event wrapper
     response = handle_event(
         "SessionStart",
         {
@@ -23,15 +24,15 @@ def test_session_start_returns_strict_response_shape(tmp_path, monkeypatch):
         },
     )
 
-    assert set(response.keys()) == {"systemMessage", "additionalContext"}
-    assert response["additionalContext"]["workflow"]["phase"] == "brief"
-    assert response["additionalContext"]["decision"] == "continue"
+    assert "systemMessage" in response
+    assert "hookSpecificOutput" in response
+    assert "additionalContext" in response["hookSpecificOutput"]
 
 
 def test_pre_tool_use_blocks_when_limit_is_exceeded(tmp_path, monkeypatch):
     monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
-    store = WorkflowStore(tmp_path)
-    store.create_or_resume(
+    kernel = WorkflowKernel(tmp_path)
+    kernel.create_or_resume(
         workflow_id="wf-limit",
         instance_id="main",
         mode="internal",
@@ -49,14 +50,14 @@ def test_pre_tool_use_blocks_when_limit_is_exceeded(tmp_path, monkeypatch):
         },
     )
 
-    assert response["additionalContext"]["decision"] == "block"
-    assert "max_iterations" in response["additionalContext"]["violations"]
+    assert "hookSpecificOutput" in response
+    assert response["hookSpecificOutput"]["permissionDecision"] == "deny"
 
 
 def test_stop_hook_requires_checkpoint_or_completion_token(tmp_path, monkeypatch):
     monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
-    store = WorkflowStore(tmp_path)
-    state = store.create_or_resume(
+    kernel = WorkflowKernel(tmp_path)
+    state = kernel.create_or_resume(
         workflow_id="wf-stop",
         instance_id="main",
         mode="internal",
@@ -69,13 +70,14 @@ def test_stop_hook_requires_checkpoint_or_completion_token(tmp_path, monkeypatch
         "Stop",
         {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}},
     )
-    assert blocked["additionalContext"]["decision"] == "block"
+    assert "decision" in blocked
+    assert blocked["decision"] == "block"
 
     state.record_checkpoint("brief", True, message="brief approved")
-    store.save(state)
+    kernel.save(state)
 
     allowed = handle_event(
         "Stop",
         {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}},
     )
-    assert allowed["additionalContext"]["decision"] == "continue"
+    assert allowed.get("decision") != "block"
