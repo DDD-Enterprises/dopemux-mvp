@@ -1,4 +1,5 @@
 import pytest
+import dopemux.pm.reads as pm_reads
 from dopemux.pm.reads import (
     PMBlockersResult,
     PMDecisionContextResult,
