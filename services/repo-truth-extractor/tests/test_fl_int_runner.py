@@ -111,3 +111,46 @@ def test_normalize_step_payload_accepts_artifact_named_f0_envelope() -> None:
         "schema": "DESIGN_CLAIMS_RAW@v1",
         "items": [],
     }
+
+
+def test_normalize_step_payload_derives_f4_meta_from_prior_outputs() -> None:
+    module = load_run_module()
+    payload = module.normalize_step_payload(
+        "F4",
+        {
+            "canonical_design": {
+                "canonical_design_md": "# Canonical Design\n\n## Current State\n",
+                "schema": "CANONICAL_DESIGN@v1",
+            },
+            "status": "OK",
+        },
+        {
+            "F1": {
+                "design_claims_classified": {
+                    "schema": "DESIGN_CLAIMS_CLASSIFIED@v1",
+                    "items": [
+                        {"id": "c1", "evidence_class": "REPO_PROVEN_CURRENT"},
+                        {"id": "c2", "evidence_class": "HISTORICAL"},
+                        {"id": "c3", "evidence_class": "TARGET"},
+                        {"id": "c4", "evidence_class": "UNKNOWN"},
+                    ],
+                }
+            },
+            "F2": {
+                "design_contradictions": {
+                    "schema": "DESIGN_CONTRADICTIONS@v1",
+                    "items": [
+                        {"id": "k1", "status": "unresolved"},
+                    ],
+                }
+            },
+        },
+    )
+    assert payload["canonical_design_markdown"].startswith("# Canonical Design")
+    assert payload["meta"]["contradictions"] == [{"contradiction_id": "k1", "status": "unresolved"}]
+    assert payload["meta"]["statistics"] == {
+        "repo_proven_current_count": 1,
+        "historical_count": 1,
+        "target_count": 1,
+        "unknown_count": 1,
+    }
