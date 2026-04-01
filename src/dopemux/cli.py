@@ -4736,6 +4736,8 @@ _ROUTING_POLICY_CHOICES = [
     "balanced_grok_openrouter",
     "quality",
     "openrouter",
+    "gemini_primary",
+    "optimal",
 ]
 _LEGACY_DEFAULT_ROUTING_POLICY = "cost"
 _V5_DEFAULT_ROUTING_POLICY = "balanced_openrouter"
