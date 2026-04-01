@@ -47,6 +47,13 @@ prelude: Canonical catalog of active documentation indexes, policy files, and do
 - `templates/skills/code-implementer/`
 - `templates/skills/quality-refactorer/`
 
+## Supervisor Authority Packet Set
+
+- `docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md`
+
 ## Required Validation Commands
 
 ```bash
@@ -62,6 +69,7 @@ Active docs are maintained in Diataxis-aligned folders under `docs/`.
 Active subsystem and plane hubs that should be reconciled when impacted:
 - `docs/planes/pm/hub-2.md`
 - `docs/planes/pm/readme-2.md`
+- `docs/planes/pm/_evidence/readme-3.md`
 
 Exclude these trees from mandatory active index reconciliation unless directly touched:
 - `docs/archive/**`

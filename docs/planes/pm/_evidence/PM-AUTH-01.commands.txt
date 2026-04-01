@@ -1,0 +1,10 @@
+# PM-AUTH-01 command log
+nl -ba services/task-orchestrator/app/api/project_workflow.py
+nl -ba services/task-orchestrator/app/services/workflow_store.py
+nl -ba services/task-orchestrator/app/services/workflow_service.py
+nl -ba services/task-orchestrator/tests/test_workflow.py
+nl -ba src/integrations/leantime_jsonrpc_client.py
+nl -ba services/dopecon-bridge/tests/test_leantime_route_contract.py
+nl -ba services/dopecon-bridge/dopecon_bridge/leantime_contract.py
+nl -ba src/dopemux/pm/reads.py
+nl -ba src/dopemux/pm/writes.py

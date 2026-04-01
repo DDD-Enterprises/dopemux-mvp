@@ -46,6 +46,12 @@ Purpose: evidence-first audit, redesign constraints, and deterministic rails for
 - Phase 1 friction evidence: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
 - Phase 1 telemetry evidence: `docs/planes/pm/_evidence/PM-TELEM-01.outputs/`
 - Rails notes: `docs/planes/pm/_evidence/PM-RAILS-01.outputs/`
+- PM authority evidence bundle: `docs/planes/pm/_evidence/PM-AUTH-01.outputs/`
+- PM authority command log: `docs/planes/pm/_evidence/PM-AUTH-01.commands.txt`
+- Runtime-truth summaries:
+  - `docs/planes/pm/_evidence/task-orchestrator-runtime-truth/`
+  - `docs/planes/pm/_evidence/leantime-runtime-truth/`
+  - `docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/`
 - Handoffs: `docs/planes/pm/_handoff/`
 
 ## Current authority and contract set
@@ -55,6 +61,13 @@ Purpose: evidence-first audit, redesign constraints, and deterministic rails for
 - `docs/planes/pm/pm-plane-normalized-tool-surface.md`
 - `docs/planes/pm/pm-plane-read-matrix.md`
 - `docs/planes/pm/pm-plane-write-surface-policy.md`
+
+## Current supervisor authority packet set
+
+- `docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md`
 
 ## Verification Commands
 - Phase 0 verifier:

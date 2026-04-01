@@ -30,6 +30,11 @@ Treat only these paths as the active bridge runtime:
 - `services/dopecon-bridge/main.py`
 - `services/dopecon-bridge/dopecon_bridge/`
 
+Observed runtime defaults:
+
+- service port default is `PORT_BASE + 16`, which resolves to `3016` when `PORT_BASE=3000`
+- the bridge config still defaults `TASK_ORCHESTRATOR_URL` to `http://<container-prefix>-task-orchestrator:8000`
+
 Root-level legacy files such as `kg_endpoints.py`, `orchestrator_endpoints.py`, and other historical helper modules are excluded from the active runtime unless explicitly reintroduced by a later decision.
 
 ## Sanctioned active surfaces
@@ -65,3 +70,18 @@ These are not sanctioned as active runtime contract paths:
 ## Local state rule
 
 Any surviving bridge-local SQL state is transitional and non-canonical. Local tables may support migration or cache behavior, but they are not PM-plane truth.
+
+## Current drift to keep explicit
+
+- Task Orchestrator workflow persistence still depends on bridge-mediated `custom_data` categories for ideas, epics, and audit records.
+- The bridge config still assumes a Task Orchestrator URL on port `8000`, while the Task Orchestrator runtime config defaults to `3014`.
+- Workflow-significant PM mutations remain fail-closed on `/route/pm`; bridge routing is not an alternative authority path.
+
+## Evidence companions
+
+- `docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md`
+- `docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/transport-and-runbook.md`
+- `docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/drift-report.md`
+- `docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md`
