@@ -27,6 +27,10 @@ Explanation docs provide architecture and design context for why the system work
 - [Workflow Kit Architecture](workflow-kit-architecture.md)
 - [PR Merge Queue Orchestration](pr-merge-queue-orchestration.md)
 - [Workflow Kit Transfer RFC](../91-rfc/workflow-kit-pickle-mechanics-transfer.md)
+- [Supervisor Memory and PM Authority Reconciliation](../05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md)
+- [Task Orchestrator Runtime Truth Executive Summary](../planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md)
+- [Leantime Runtime Truth Executive Summary](../planes/pm/_evidence/leantime-runtime-truth/executive-summary.md)
+- [dopecon-bridge Runtime Truth Executive Summary](../planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md)
 
 ## Update Policy
 

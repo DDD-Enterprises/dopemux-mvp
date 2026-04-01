@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-03-31'
+last_updated: '2026-04-01'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: QUICK_START.md
@@ -34,10 +34,12 @@ systems:
 services:
   task-orchestrator:
     readme: docs/03-reference/services/task-orchestrator.md
-    followups: docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md
+    followups: docs/planes/pm/task-orchestrator-leantime-followups.md
+    runtime_truth: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
     docs_dir: services/task-orchestrator/docs/
   dopecon-bridge:
     readme: services/dopecon-bridge/README.md
+    runtime_truth: docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
     docs_dir: services/dopecon-bridge/
   adhd-engine:
     readme: services/adhd_engine/README.md
@@ -59,6 +61,8 @@ architecture:
   pm_plane_hub: docs/planes/pm/hub-2.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
+  pm_authority_reconciliation: docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md
+  pm_authority_enforcement: docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md
 how_to:
   directory: docs/02-how-to/
   deployment: docs/02-how-to/deployment-guide.md
@@ -99,6 +103,8 @@ reference:
   pm_plane_write_matrix: docs/planes/pm/pm-plane-write-matrix.md
   pm_plane_read_matrix: docs/planes/pm/pm-plane-read-matrix.md
   pm_plane_write_surface_policy: docs/planes/pm/pm-plane-write-surface-policy.md
+  supervisor_pm_server_matrix: docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md
+  supervisor_pm_evidence_packet: docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md
   mcp_token_management_best_practices: docs/03-reference/best-practices/mcp-token-management.md
   memory_capture_cli: docs/03-reference/memory-capture-cli.md
   repo_truth_extractor_pipeline_phases: docs/03-reference/extraction/pipeline-phases.md
@@ -120,6 +126,14 @@ explanation:
   pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
+  pm_runtime_truth_task_orchestrator: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
+  pm_runtime_truth_leantime: docs/planes/pm/_evidence/leantime-runtime-truth/executive-summary.md
+  pm_runtime_truth_dopecon_bridge: docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
+supervisor_packets:
+  pm_server_matrix: docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md
+  pm_evidence_packet: docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md
+  pm_authority_reconciliation: docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md
+  pm_authority_enforcement: docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md
 archive:
   completed_projects: docs/archive/completed-projects/
   session_notes: docs/archive/session-notes/
