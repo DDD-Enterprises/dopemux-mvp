@@ -26,6 +26,54 @@ def detect_render_mode() -> RenderMode:
     except ImportError:
         return RenderMode.PLAIN
 
+
+VALIDATION_BLOCKER_TYPES = {"validation_not_executed", "required_check_pending"}
+
+
+def dashboard_status_kind(snapshot: Mapping[str, Any]) -> str:
+    blockers = {
+        str(item.get("type") or item.get("finding_type") or "")
+        for item in (snapshot.get("blockers") or [])
+        if isinstance(item, Mapping)
+    }
+    lifecycle_state = str(snapshot.get("lifecycle_state") or "").upper()
+    operator_state = str(snapshot.get("operator_state") or "")
+    mergeable = str(snapshot.get("mergeable") or "").upper()
+    merge_state_status = str(snapshot.get("merge_state_status") or "").upper()
+
+    if bool(snapshot.get("is_draft")):
+        return "draft"
+    if operator_state == "queued_for_merge" or lifecycle_state == "QUEUED_FOR_MERGE":
+        return "queued"
+    if blockers == {"approval_missing"}:
+        return "approval_required"
+    if blockers and blockers <= VALIDATION_BLOCKER_TYPES:
+        return "validation_pending"
+    if mergeable == "CONFLICTING" or merge_state_status in {"DIRTY", "HAS_HOOKS"}:
+        return "conflict"
+    if "MERGED" in lifecycle_state:
+        return "merged"
+    if "READY" in lifecycle_state:
+        return "ready"
+    if "BLOCKED" in lifecycle_state:
+        return "blocked"
+    return "pending"
+
+
+def dashboard_status_icon(snapshot: Mapping[str, Any]) -> str:
+    status = dashboard_status_kind(snapshot)
+    return {
+        "draft": "📝",
+        "queued": "🔵",
+        "approval_required": "🟣",
+        "validation_pending": "🟡",
+        "conflict": "🔴",
+        "blocked": "🔴",
+        "ready": "🟢",
+        "merged": "🟢",
+        "pending": "⏳",
+    }.get(status, "⏳")
+
 class TerminalRenderer:
     """Base class for all terminal output."""
 
