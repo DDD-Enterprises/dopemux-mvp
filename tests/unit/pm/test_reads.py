@@ -1,5 +1,4 @@
 import pytest
-import dopemux.pm.reads as pm_reads
 from dopemux.pm.reads import (
     PMBlockersResult,
     PMDecisionContextResult,
@@ -105,7 +104,10 @@ async def test_pm_get_project_context_routes_to_conport(monkeypatch):
             "linked_ids": {"conport_context": "ctx-123"},
         }
     )
-    monkeypatch.setattr(pm_reads, "_conport_context_client", lambda: fake_client)
+    monkeypatch.setattr(
+        "dopemux.pm.reads._conport_context_client",
+        lambda: fake_client,
+    )
 
     result = await pm_get_project_context("proj-123")
 
@@ -155,7 +157,10 @@ async def test_pm_get_sprint_snapshot_routes_to_leantime(monkeypatch):
             data=[{"id": 1, "headline": "Boundary"}, {"id": 2, "headline": "Reads"}],
         ),
     )
-    monkeypatch.setattr(pm_reads, "_leantime_client", lambda: fake_client)
+    monkeypatch.setattr(
+        "dopemux.pm.reads._leantime_client",
+        lambda: fake_client,
+    )
 
     result = await pm_get_sprint_snapshot("123")
 
@@ -182,7 +187,7 @@ async def test_pm_get_sprint_snapshot_fails_closed_for_non_numeric_project_id():
 @pytest.mark.asyncio
 async def test_pm_get_decision_context(monkeypatch):
     fake_client = FakeConPortDecisionClient({"decisions": [{"id": "d-1"}]})
-    monkeypatch.setattr(pm_reads, "_conport", fake_client)
+    monkeypatch.setattr("dopemux.pm.reads._conport", fake_client)
 
     result = await pm_get_decision_context("proj-123")
 
@@ -198,7 +203,10 @@ async def test_pm_search_project_knowledge_routes_to_dope_context(monkeypatch):
         {"results": [{"path": "docs/pm.md", "summary": "PM contract", "score": 0.91}]},
         "search_all",
     )
-    monkeypatch.setattr(pm_reads, "_dope_context_client", lambda: fake_client)
+    monkeypatch.setattr(
+        "dopemux.pm.reads._dope_context_client",
+        lambda: fake_client,
+    )
 
     result = await pm_search_project_knowledge("proj-123", "release notes", top_k=3)
 
@@ -216,7 +224,10 @@ async def test_pm_get_technical_context_routes_to_serena(monkeypatch):
         {"symbols": [{"name": "TaskCoordinator", "file_path": "task_coordinator.py", "line": 42}]},
         "find_symbol",
     )
-    monkeypatch.setattr(pm_reads, "_serena_client", lambda: fake_client)
+    monkeypatch.setattr(
+        "dopemux.pm.reads._serena_client",
+        lambda: fake_client,
+    )
 
     result = await pm_get_technical_context("proj-123", "TaskCoordinator")
 
