@@ -47,6 +47,8 @@ def test_reduction_materially_shrinks_large_prompts(tmp_path: Path) -> None:
     original_f0_input = run_module._step_input_payload(f0_step, input_payload, {})
     original_f0_prompt = run_module._render_prompt(f0_step, original_f0_input, {})
     f0_reduction = reduce_module.reduce_f0_input(input_payload)
+    assert f0_reduction["caps"]["batch_target_chars"] == 20000
+    assert len(f0_reduction["batches"]) >= 3
     reduced_f0_prompt_lengths = []
     for batch in f0_reduction["batches"]:
         batch_rows = run_module._batch_rows_for_ids(f0_reduction["selected_chunks"], batch["selected_ids"])
