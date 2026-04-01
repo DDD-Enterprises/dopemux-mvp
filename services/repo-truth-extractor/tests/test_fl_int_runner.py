@@ -95,3 +95,19 @@ def test_run_fl_int_dry_run_via_cli(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["status"] == "DRY_RUN"
     assert (run_root / "postprocess" / "fl_int_v1" / "FL_INT_MACHINE_SUMMARY.json").exists()
+
+
+def test_normalize_step_payload_accepts_artifact_named_f0_envelope() -> None:
+    module = load_run_module()
+    payload = module.normalize_step_payload(
+        "F0",
+        {
+            "DESIGN_CLAIMS_RAW": [],
+        },
+    )
+    assert payload["status"] == "OK"
+    assert payload["missing_evidence"] == []
+    assert payload["design_claims_raw"] == {
+        "schema": "DESIGN_CLAIMS_RAW@v1",
+        "items": [],
+    }
