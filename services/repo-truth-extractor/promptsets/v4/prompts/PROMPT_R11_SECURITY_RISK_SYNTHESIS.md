@@ -137,6 +137,8 @@ The output must follow this exact section structure:
 - Every risk finding must reference at least one upstream artifact item by ID.
 - Use format: `[SEC-XXX] ← ARTIFACT_NAME:item_id` for traceability.
 - Include exact evidence excerpts from upstream artifacts (max 200 chars each).
+- Every cited evidence object must preserve `path` and `line_range` from the upstream source item. Do not emit evidence citations that omit either field.
+- In `## Evidence Traceability`, each finding must include concrete source anchors using this shape: `path: <repo-relative-path>`, `line_range: [start, end]`, `excerpt: <trimmed text>`.
 - If upstream artifact was empty or missing, note in Coverage Notes and mark affected findings as `needs_review`.
 - Do not introduce new evidence not present in upstream artifacts — this is a synthesis step.
 
