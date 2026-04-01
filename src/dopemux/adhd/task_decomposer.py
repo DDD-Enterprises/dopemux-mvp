@@ -185,6 +185,13 @@ class TaskDecomposer:
         # This method is maintained for future bulk-sync/recovery logic.
         pass
 
+    def backfill_to_pm_plane(self) -> None:
+        """Best-effort background sync of all pending local tasks to the PM Plane."""
+        # Current implementation treats synchronization as synchronous during
+        # CRUD operations when pm_config is present. This method is a hook
+        # for future background reconciliation or recovery.
+        pass
+
     # --------------------------------------------------------------------- #
     # CRUD operations
     # --------------------------------------------------------------------- #
@@ -197,6 +204,10 @@ class TaskDecomposer:
         **extra: Any,
     ) -> str:
         """Create a task and register it with the PM Plane."""
+        # Backward compatibility for 'duration'
+        if "duration" in extra:
+            estimated_duration = extra.pop("duration")
+
         task_id = content_hash_task_id("cli", None, description)
         
         # 1. Create locally
@@ -290,11 +301,12 @@ class TaskDecomposer:
                 task.sync_pending = True
                 task.last_sync_error = str(e)
 
+        now = _now()
         task.status = TaskStatus.COMPLETED
         task.progress = 1.0
         if not task.started_at:
-            task.started_at = _now()
-        task.completed_at = _now()
+            task.started_at = now
+        task.completed_at = now
         self._save()
         return True
 
@@ -320,14 +332,27 @@ class TaskDecomposer:
         """Return all managed tasks."""
         return [t.to_dict() for t in self._tasks.values()]
 
+    def __iter__(self) -> Iterable[TaskRecord]:
+        """Allow iteration over all managed tasks."""
+        for task in self._tasks.values():
+            yield task
+
     def get_progress(self) -> Dict[str, Any]:
         """Return task completion summary."""
         total = len(self._tasks)
         completed = sum(1 for t in self._tasks.values() if t.status == TaskStatus.COMPLETED)
-        return {
+        in_progress = sum(1 for t in self._tasks.values() if t.status == TaskStatus.IN_PROGRESS)
+
+        summary = {
             "total": total,
             "completed": completed,
+            "in_progress": in_progress,
             "percent": (completed / total * 100) if total > 0 else 0.0
+        }
+
+        return {
+            "summary": summary,
+            "tasks": [t.to_dict() for t in self._tasks.values()]
         }
 
     def _load(self) -> None:

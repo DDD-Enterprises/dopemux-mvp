@@ -10,15 +10,15 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport_prmerge/20260329_203806-312",
+        "mcp-conport_prmerge/post_rebase_drain-366",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "prmerge/20260329_203806-312",
-        "DOPEMUX_WORKSPACE_ID": "/private/tmp/dopemux-pr-merge-312-20260329_203806"
+        "DOPEMUX_INSTANCE_ID": "prmerge/post_rebase_drain-366",
+        "DOPEMUX_WORKSPACE_ID": "/private/tmp/dopemux-pr-merge-366-post_rebase_drain"
       }
     },
     "gpt-researcher_wrapped": {
