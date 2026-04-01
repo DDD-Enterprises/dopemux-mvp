@@ -20,7 +20,16 @@ from typing import Dict, List, Optional, Tuple, Any
 
 import yaml
 
+from dopemux.litellm_trace_logger import (
+    LOGGING_ENABLED_ENV,
+    LOG_PATH_ENV,
+    INSTANCE_ID_ENV,
+    TRACE_HEADER_NAME,
+    emit_startup_event,
+)
+
 logger = logging.getLogger(__name__)
+TRACE_CALLBACK_PATH = "dopemux.litellm_trace_logger.DopemuxLiteLLMTraceLogger"
 
 
 class LiteLLMManagerError(RuntimeError):
@@ -37,6 +46,7 @@ class LiteLLMProcessInfo:
         config_path: Path,
         config_data: Dict[str, Any],
         log_path: Path,
+        structured_log_path: Path,
         master_key: str,
         process: subprocess.Popen,
         db_enabled: bool = False,
@@ -47,6 +57,7 @@ class LiteLLMProcessInfo:
         self.config_path = config_path
         self.config_data = config_data
         self.log_path = log_path
+        self.structured_log_path = structured_log_path
         self.master_key = master_key
         self.process = process
         self.db_enabled = db_enabled
@@ -234,6 +245,7 @@ class LiteLLMManager:
             
             # Set up logging
             log_path = instance_dir / "litellm.log"
+            structured_log_path = instance_dir / "litellm.events.jsonl"
             
             # Check if port is available
             if self._is_port_in_use(port):
@@ -249,6 +261,7 @@ class LiteLLMManager:
                 config_path=config_path,
                 config_data=config_data,
                 log_path=log_path,
+                structured_log_path=structured_log_path,
                 master_key=master_key,
                 process=process,
                 db_enabled=db_enabled,
@@ -351,6 +364,8 @@ class LiteLLMManager:
                 "DOPEMUX_CLAUDE_VIA_LITELLM": "1",
                 "DOPEMUX_LITELLM_MASTER_KEY": process_info.master_key,
                 "DOPEMUX_LITELLM_PORT": str(process_info.port),
+                "DOPEMUX_LITELLM_TRACE_HEADER": TRACE_HEADER_NAME,
+                "DOPEMUX_LITELLM_JSONL_LOG_PATH": str(process_info.structured_log_path),
                 "LITELLM_PROXY_URL": process_info.base_url,
                 "LITELLM_MASTER_KEY": process_info.master_key,
             }
@@ -410,6 +425,19 @@ class LiteLLMManager:
         # Set master key
         general_settings = config_data.setdefault("general_settings", {})
         general_settings["master_key"] = master_key
+
+        litellm_settings = config_data.setdefault("litellm_settings", {})
+        callbacks = litellm_settings.get("callbacks")
+        if callbacks is None:
+            litellm_settings["callbacks"] = [TRACE_CALLBACK_PATH]
+        elif isinstance(callbacks, list):
+            if TRACE_CALLBACK_PATH not in callbacks:
+                callbacks.append(TRACE_CALLBACK_PATH)
+        else:
+            normalized_callbacks = [callbacks]
+            if TRACE_CALLBACK_PATH not in normalized_callbacks:
+                normalized_callbacks.append(TRACE_CALLBACK_PATH)
+            litellm_settings["callbacks"] = normalized_callbacks
         
         # Handle database configuration
         if db_enabled and db_url:
@@ -439,7 +467,17 @@ class LiteLLMManager:
         # Prepare environment
         env = os.environ.copy()
         env["LITELLM_MASTER_KEY"] = master_key
-        
+        env[LOGGING_ENABLED_ENV] = "1"
+        env[LOG_PATH_ENV] = str(log_path.with_suffix(".events.jsonl"))
+        env[INSTANCE_ID_ENV] = config_path.parent.name
+
+        src_path = self.project_root / "src"
+        existing_pythonpath = env.get("PYTHONPATH", "")
+        pythonpath_parts = [str(src_path)]
+        if existing_pythonpath:
+            pythonpath_parts.append(existing_pythonpath)
+        env["PYTHONPATH"] = os.pathsep.join(pythonpath_parts)
+
         if db_enabled and db_url:
             env["DATABASE_URL"] = db_url
         else:
@@ -458,6 +496,18 @@ class LiteLLMManager:
         log_file = open(log_path, "a", encoding="utf-8")
         
         try:
+            emit_startup_event(
+                log_path=env[LOG_PATH_ENV],
+                instance_id=config_path.parent.name,
+                config_path=str(config_path),
+                text_log_path=str(log_path),
+                structured_log_path=env[LOG_PATH_ENV],
+                port=port,
+                has_aliases=bool((yaml.safe_load(config_path.read_text()) or {}).get("router_settings", {}).get("model_group_alias")),
+                has_fallbacks=bool((yaml.safe_load(config_path.read_text()) or {}).get("router_settings", {}).get("fallbacks")),
+                db_enabled=db_enabled,
+                spend_logging_disabled=env.get("LITELLM_DISABLE_SPEND_LOGGING") == "true",
+            )
             process = subprocess.Popen(
                 cmd,
                 cwd=str(self.project_root),
@@ -513,6 +563,7 @@ class LiteLLMManager:
                     "last_health_check": process_info.last_health_check.isoformat(),
                     "start_time": process_info.start_time.isoformat(),
                     "db_enabled": process_info.db_enabled,
+                    "structured_log_path": str(process_info.structured_log_path),
                 }
         
         return status
