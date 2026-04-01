@@ -5,7 +5,6 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize, reopened]
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -158,16 +157,16 @@ jobs:
           python-version: "3.11"
 
       - name: ⚡ Setup uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
 
       - name: 📦 Sync fast unit test environment
-        run: uv sync --frozen --extra test
+        run: uv sync --frozen --extra test --extra services
 
       - name: ▶️ Run fast unit gate
-        run: uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov
+        run: uv run --frozen pytest tests/unit -n auto --maxfail=1 --disable-warnings --no-cov
 
   installer-smoke:
     name: "🧪 Installer Smoke"
@@ -200,7 +199,7 @@ jobs:
           python-version: "3.11"
 
       - name: ⚡ Setup uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -231,7 +230,7 @@ jobs:
           python-version: "3.11"
 
       - name: ⚡ Setup uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -240,7 +239,7 @@ jobs:
         run: uv sync --frozen --extra test --extra services
 
       - name: ▶️ Run integration lane
-        run: uv run --frozen pytest tests/integration --maxfail=1 --disable-warnings --no-cov
+        run: uv run --frozen pytest tests/integration -n auto --maxfail=1 --disable-warnings --no-cov
 
   # Final summary for ADHD-friendly overview
   ci-summary:

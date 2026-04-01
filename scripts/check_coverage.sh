@@ -8,7 +8,6 @@ MODULES="dopemux.mcp.provision,dopemux.mcp.instance_overlay"
 echo "Running scoped coverage for: $MODULES"
 
 export PYTHONPATH=$PYTHONPATH:$(pwd)/src
-
 if command -v uv >/dev/null 2>&1; then
     uv run --frozen pytest tests/mcp -q \
         --cov=dopemux.mcp.provision \

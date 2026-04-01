@@ -164,6 +164,7 @@ def build_theme(name: str) -> Theme:
             "error": "bold #FF00FF",
             "warning": "#FFFF00",
             "gold": "#FFFF00",
+            "amber": "#FFCF78",
             "warning.soft": "#FFFF66",
             "info": "#66FFFF",
             "debug": "#FF66FF",
@@ -219,6 +220,7 @@ def build_theme(name: str) -> Theme:
             "error": "bold #FF69B4",
             "warning": "#FFFFE0",
             "gold": "#FFFFE0",
+            "amber": "#FFCF78",
             "info": "#B2FFFF",
             "debug": "#FFB2FF",
             "hazard": "#FFFFE0",
@@ -275,6 +277,8 @@ class Glyphs:
     PENDING = "\uf017"  # nf-fa-clock_o
     BLOCKED = "\uf05e"  # nf-fa-ban
     SKIPPED = "\uf050"  # nf-fa-forward
+    FIRE = "\uf06d"  # nf-fa-fire
+    GOLD = "\uf091"  # nf-fa-trophy
 
     # ── Dev ──
     GIT = "\ue725"  # nf-dev-git_branch
@@ -307,6 +311,8 @@ class Glyphs:
         PENDING: "~",
         BLOCKED: "#",
         SKIPPED: "-",
+        FIRE: "^",
+        GOLD: "*",
         GIT: "Y",
         CODE: "<>",
         PACKAGE: "[]",
@@ -558,3 +564,30 @@ def error_panel(problem: str, why: str, fix: str, title: str = "Error") -> Panel
         f"[text.dim]Fix:[/text.dim] [mint]{fix}[/mint]"
     )
     return styled_panel(body, title=f"{Glyphs.ERROR} {title}", border_style="error")
+
+
+def styled_gauge(
+    value: float,
+    width: int = 10,
+    complete_style: str = "bar.complete",
+    remaining_style: str = "bar.remaining",
+) -> str:
+    """Create a branded progress gauge with dopemux styling.
+
+    Args:
+        value: Float between 0.0 and 1.0.
+        width: Total width in characters.
+        complete_style: Rich style for the completed portion.
+        remaining_style: Rich style for the remaining portion.
+
+    Returns:
+        Rich markup string for the gauge (e.g., "[mint]████[/][grey]░░░░░░[/]").
+    """
+    safe_value = max(0.0, min(1.0, value))
+    filled_len = int(safe_value * width)
+    remaining_len = width - filled_len
+
+    filled = "█" * filled_len
+    remaining = "░" * remaining_len
+
+    return f"[{complete_style}]{filled}[/][{remaining_style}]{remaining}[/]"

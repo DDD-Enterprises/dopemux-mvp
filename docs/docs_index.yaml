@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-03-30'
+last_updated: '2026-03-31'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: QUICK_START.md
@@ -105,12 +105,12 @@ reference:
   repo_truth_extractor_pipeline_reliability: docs/03-reference/extraction/pipeline-reliability.md
   repo_truth_extractor_doctor_reprocess: docs/03-reference/extraction/doctor-reprocess.md
   repo_truth_extractor_prompt_contract: docs/03-reference/extraction/prompt-contract-v4.md
+  repo_truth_extractor_fl_int_postprocess: docs/03-reference/extraction/fl-int-postprocess.md
   repo_truth_extractor_v5_ui_live_output: docs/03-reference/extraction/v5-ui-live-output.md
   dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md
   dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
 explanation:
   directory: docs/04-explanation/
-  memory_persistence: docs/04-explanation/technical-deep-dives/memory-and-persistence-deep-dive.md
   serena_v2: docs/04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md
   conport: docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md
   dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md

@@ -67,6 +67,7 @@ jobs:
       command: '${{ steps.extract_command.outputs.command }}'
       request: '${{ steps.extract_command.outputs.request }}'
       additional_context: '${{ steps.extract_command.outputs.additional_context }}'
+      has_gemini_credentials: '${{ steps.detect_gemini_credentials.outputs.available }}'
       issue_number: '${{ github.event.pull_request.number || github.event.issue.number }}'
     steps:
       - name: 'Mint identity token'
@@ -113,6 +114,19 @@ jobs:
               core.setOutput('command', 'fallthrough');
             }
 
+      - name: 'Detect Gemini credentials'
+        id: 'detect_gemini_credentials'
+        env:
+          GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
+          GOOGLE_API_KEY: '${{ secrets.GOOGLE_API_KEY }}'
+          GCP_WIF_PROVIDER: '${{ vars.GCP_WIF_PROVIDER }}'
+        run: |-
+          if [[ -n "${GEMINI_API_KEY}" || -n "${GOOGLE_API_KEY}" || -n "${GCP_WIF_PROVIDER}" ]]; then
+            echo 'available=true' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'available=false' >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: 'Acknowledge request'
         env:
           GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
@@ -128,7 +142,7 @@ jobs:
   review:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'review' }}
+      ${{ needs.dispatch.outputs.command == 'review' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
     uses: './.github/workflows/gemini-review.yml'
     permissions:
       contents: 'read'
@@ -142,7 +156,7 @@ jobs:
   triage:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'triage' }}
+      ${{ needs.dispatch.outputs.command == 'triage' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
     uses: './.github/workflows/gemini-triage.yml'
     permissions:
       contents: 'read'
@@ -156,7 +170,7 @@ jobs:
   invoke:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'invoke' }}
+      ${{ needs.dispatch.outputs.command == 'invoke' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
     uses: './.github/workflows/gemini-invoke.yml'
     permissions:
       contents: 'read'
@@ -170,7 +184,7 @@ jobs:
   plan-execute:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'approve' }}
+      ${{ needs.dispatch.outputs.command == 'approve' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
     uses: './.github/workflows/gemini-plan-execute.yml'
     permissions:
       contents: 'write'

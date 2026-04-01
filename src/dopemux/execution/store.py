@@ -31,6 +31,15 @@ class PacketNotFoundError(ExecutionError):
         super().__init__(f"Packet not found: {packet_id}")
 
 
+class PacketNotReadyError(ExecutionError):
+    """Raised when a packet is not in a state that allows checkout."""
+
+    def __init__(self, packet_id: str, state: PacketState) -> None:
+        self.packet_id = packet_id
+        self.state = state
+        super().__init__(f"Packet {packet_id} is not ready (current state: {state})")
+
+
 class PacketNotClaimableError(ExecutionError):
     """Raised when a packet exists but cannot be claimed."""
 
@@ -122,11 +131,67 @@ class LeaseStore(ABC):
             LeaseExpiredError: lease has already expired.
             StaleLeaseError: lease is no longer authoritative.
         """
+        pass
+
+    @abstractmethod
+    def release(
+        self,
+        lease_id: UUID,
+        final_state: PacketState,
+        disposition: ExecutionDisposition = ExecutionDisposition.SUCCEEDED,
+        result_summary: str = "",
+        artifacts: Optional[Dict[str, Any]] = None,
+    ) -> PacketLease:
+        """
         Transition packet to final_state and mark lease as RELEASED.
 
         Raises:
             LeaseNotFoundError: lease_id does not exist.
             StaleLeaseError: lease is no longer authoritative.
+        """
+        pass
+
+
+class InMemoryExecutionStore(ExecutionStore):
+    """Thread-safe in-memory implementation of ExecutionStore."""
+
+    def __init__(self) -> None:
+        self._packets: Dict[str, ExecutionPacket] = {}
+        self._lock = Lock()
+
+    def create_packet(self, packet: ExecutionPacket) -> ExecutionPacket:
+        with self._lock:
+            if packet.packet_id in self._packets:
+                return self._packets[packet.packet_id]
+            self._packets[packet.packet_id] = packet.model_copy()
+            return self._packets[packet.packet_id]
+
+    def get_packet(self, packet_id: str) -> Optional[ExecutionPacket]:
+        with self._lock:
+            packet = self._packets.get(packet_id)
+            return packet.model_copy() if packet else None
+
+    def list_ready_packets(self) -> List[ExecutionPacket]:
+        with self._lock:
+            return [
+                p.model_copy()
+                for p in self._packets.values()
+                if p.state == PacketState.READY
+            ]
+
+    def update_packet_state(self, packet_id: str, state: PacketState) -> ExecutionPacket:
+        with self._lock:
+            if packet_id not in self._packets:
+                raise PacketNotFoundError(packet_id)
+            self._packets[packet_id].state = state
+            self._packets[packet_id].updated_at_utc = datetime.now(timezone.utc)
+            return self._packets[packet_id].model_copy()
+
+
+class InMemoryLeaseStore(LeaseStore):
+    """Thread-safe in-memory implementation of LeaseStore."""
+
+    def __init__(self, execution_store: ExecutionStore) -> None:
         self._execution_store = execution_store
         self._leases: Dict[UUID, PacketLease] = {}
         # Track active lease per packet_id
@@ -151,6 +216,7 @@ class LeaseStore(ABC):
                 if lease.expires_at_utc > now:
                     raise PacketNotReadyError(packet_id, packet.state)
 
+                # Auto-expire the old lease
                 lease.state = LeaseState.EXPIRED
                 del self._packet_to_lease[packet_id]
 
@@ -210,6 +276,8 @@ class LeaseStore(ABC):
                 raise StaleLeaseError(lease_id, lease.packet_id)
 
             now = datetime.now(timezone.utc)
+            if not result_summary:
+                result_summary = "Completed successfully"
             lease.state = LeaseState.RELEASED
             lease.result = ExecutionResult(
                 packet_id=lease.packet_id,

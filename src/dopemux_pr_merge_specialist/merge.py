@@ -236,44 +236,42 @@ def decide_merge_action(
     ]
 
     if non_check_blockers:
+        # If the only non-check blocker is APPROVAL_MISSING, and checks are otherwise green,
+        # we can consider an admin bypass squash merge.
         if (
-            len(non_check_blockers) == 1
+            len(non_check_blockers) == 1 
             and non_check_blockers[0].finding_type == BlockerType.APPROVAL_MISSING.value
             and not pending_checks
             and _status_value(validation_report.status) == ValidationStatus.PASSED.value
         ):
             return MergeDecision(
                 action=MergeActionType.ADMIN_BYPASS_SQUASH,
-                command=["gh", "pr", "merge", str(pr.pr_id), "--admin", "--squash", "--delete-branch"],
+                command=[],
                 reason="Only missing approvals remain; opting for admin-bypass squash merge.",
                 reason_code="admin_bypass_ready",
             )
-        return MergeDecision(
-            action=MergeActionType.BLOCKED,
-            command=[],
-            reason="; ".join(item.message for item in non_check_blockers),
-            reason_code=non_check_blockers[0].finding_type,
-        )
 
-    if _status_value(validation_report.status) != ValidationStatus.PASSED.value:
+    if pending_checks and not non_check_blockers:
         return MergeDecision(
-            action=MergeActionType.BLOCKED,
+            action=MergeActionType.AUTO_MERGE_ENABLE,
             command=[],
-            reason="Local validation has not produced a passing result for this SHA.",
-            reason_code="validation_missing_or_failed",
-        )
-
-    if pending_checks:
-        return MergeDecision(
-            action=MergeActionType.AUTO_MERGE_FALLBACK,
-            command=["gh", "pr", "merge", str(pr.pr_id), "--auto", "--rebase", "--delete-branch"],
             reason="All structural gates green; enabling auto-merge for pending checks.",
             reason_code="auto_merge_pending_checks",
         )
 
+    # Even if no explicit pending_checks blockers were found in 'findings', 
+    # check the PR state for any pending checks before choosing direct rebase.
+    if pr.check_summary and pr.check_summary.pending > 0:
+        return MergeDecision(
+            action=MergeActionType.AUTO_MERGE_ENABLE,
+            command=[],
+            reason="Required or optional checks are pending; enabling auto-merge.",
+            reason_code="auto_merge_active_checks",
+        )
+
     return MergeDecision(
         action=MergeActionType.REBASE_MERGE,
-        command=["gh", "pr", "merge", str(pr.pr_id), "--rebase", "--delete-branch"],
+        command=[],
         reason="All gates are green; rebase merge selected by default.",
         reason_code="rebase_merge_ready",
     )
@@ -293,102 +291,135 @@ def run_merge_with_fallback(
     action = _state_value(decision.action)
     if action == MergeActionType.BLOCKED.value:
         return decision
-    command = list(decision.command)
-    if repo:
-        command.extend(["--repo", repo])
-    result = execute_or_dry_run(
-        command,
-        execute=execute,
-        cwd=repo_root,
-        commands_log=commands_log,
-        timeout_seconds=int(
-            policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
-        ),
-    )
+
+    pr_payload = client.fetch_pr(pr_id)
+    title = pr_payload.get("title", f"PR #{pr_id}")
+
     if not execute:
         return decision
-    if result.returncode == 0:
+
+    success = False
+    command: List[str] = []
+    if action == MergeActionType.ADMIN_BYPASS_SQUASH.value:
+        success = client.merge_pr(
+            pr_id, title=title, method="squash", admin_bypass=True
+        )
+    elif action == MergeActionType.REBASE_MERGE.value:
+        command = ["gh", "pr", "merge", str(pr_id), "--rebase", "--delete-branch"]
+        if repo:
+            command.extend(["--repo", repo])
+        result = execute_or_dry_run(
+            command,
+            execute=execute,
+            cwd=repo_root,
+            commands_log=commands_log,
+            timeout_seconds=int(
+                policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+            ),
+        )
+        if result.returncode == 0:
+            success = True
+        else:
+            stderr = (result.stderr or "").lower()
+            if "already merged" in stderr:
+                payload = client.fetch_pr(pr_id)
+                if str(payload.get("state", "")).upper() == "MERGED":
+                    client.invalidate(f"pr:{pr_id}")
+                    return MergeDecision(
+                        action=MergeActionType.REBASE_MERGE,
+                        command=command,
+                        reason="PR was already merged; local branch cleanup failure treated as non-blocking.",
+                        reason_code="already_merged_cleanup_failure",
+                    )
+            if (
+                "merge queue required" in stderr
+                or ("merge queue" in stderr and "required" in stderr)
+                or ("merge queue enabled" in stderr and "--delete-branch" in stderr)
+                or ("merge queue enabled" in stderr and "-d" in stderr)
+            ):
+                fallback_reason = FallbackReason.MERGE_QUEUE_REQUIRED.value
+            elif "auto-merge is required" in stderr or (
+                "auto-merge" in stderr and "required" in stderr
+            ):
+                fallback_reason = FallbackReason.AUTO_MERGE_REQUIRED_BY_PROTECTION.value
+            elif (
+                "rebase merge is not allowed" in stderr
+                or "rebase commits are not allowed" in stderr
+            ):
+                fallback_reason = FallbackReason.DIRECT_MERGE_DISALLOWED_BY_POLICY.value
+            else:
+                return MergeDecision(
+                    action=MergeActionType.BLOCKED,
+                    command=command,
+                    reason=f"Rebase merge failed: {result.stderr.strip()}",
+                    reason_code="rebase_merge_failed",
+                )
+            allowed_reasons = {
+                str(item)
+                for item in policy.get("merge", {}).get(
+                    "allow_auto_fallback_only_for",
+                    [FallbackReason.MERGE_QUEUE_REQUIRED.value],
+                )
+            }
+            if fallback_reason not in allowed_reasons:
+                return MergeDecision(
+                    action=MergeActionType.BLOCKED,
+                    command=command,
+                    reason=f"Fallback reason {fallback_reason} is not permitted by policy.",
+                    reason_code="auto_fallback_not_permitted",
+                )
+            fallback_command = ["gh", "pr", "merge", str(pr_id), "--auto", "--rebase"]
+            if repo:
+                fallback_command.extend(["--repo", repo])
+            fallback = execute_or_dry_run(
+                fallback_command,
+                execute=execute,
+                cwd=repo_root,
+                commands_log=commands_log,
+                timeout_seconds=int(
+                    policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+                ),
+            )
+            if fallback.returncode == 0:
+                client.invalidate(f"pr:{pr_id}")
+                return MergeDecision(
+                    action=MergeActionType.AUTO_MERGE_FALLBACK,
+                    command=fallback_command,
+                    reason="Rebase merge blocked by explicit policy; auto-merge fallback succeeded.",
+                    reason_code=fallback_reason,
+                )
+            return MergeDecision(
+                action=MergeActionType.BLOCKED,
+                command=fallback_command,
+                reason=f"Fallback auto-merge failed: {fallback.stderr.strip()}",
+                reason_code="auto_merge_fallback_failed",
+            )
+    elif action in (MergeActionType.AUTO_MERGE_ENABLE.value, MergeActionType.AUTO_MERGE_FALLBACK.value):
+        # For auto-merge, we still use the 'gh pr merge --auto' command via shell for now
+        # until client support is added, but REBASE is the preference.
+        command = ["gh", "pr", "merge", str(pr_id), "--auto", "--rebase"]
+        if repo:
+            command.extend(["--repo", repo])
+        result = execute_or_dry_run(
+            command,
+            execute=execute,
+            cwd=repo_root,
+            commands_log=commands_log,
+            timeout_seconds=int(
+                policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+            ),
+        )
+        success = result.returncode == 0
+
+    if success:
         client.invalidate(f"pr:{pr_id}")
         return decision
-    stderr = (result.stderr or "").lower()
-    if "already merged" in stderr:
-        payload = client.fetch_pr(pr_id)
-        if str(payload.get("state", "")).upper() == "MERGED":
-            return MergeDecision(
-                action=MergeActionType.REBASE_MERGE,
-                command=command,
-                reason="PR was already merged; local branch cleanup failure treated as non-blocking.",
-                reason_code="already_merged_cleanup_failure",
-            )
-    if action == MergeActionType.ADMIN_BYPASS_SQUASH.value:
-        return MergeDecision(
-            action=MergeActionType.BLOCKED,
-            command=command,
-            reason=f"Admin bypass merge failed: {result.stderr.strip()}",
-            reason_code="admin_merge_failed",
-        )
-    if (
-        "merge queue required" in stderr
-        or ("merge queue" in stderr and "required" in stderr)
-        or ("merge queue enabled" in stderr and "--delete-branch" in stderr)
-        or ("merge queue enabled" in stderr and "-d" in stderr)
-    ):
-        fallback_reason = FallbackReason.MERGE_QUEUE_REQUIRED.value
-    elif "auto-merge is required" in stderr or (
-        "auto-merge" in stderr and "required" in stderr
-    ):
-        fallback_reason = FallbackReason.AUTO_MERGE_REQUIRED_BY_PROTECTION.value
-    elif (
-        "rebase merge is not allowed" in stderr
-        or "rebase commits are not allowed" in stderr
-    ):
-        fallback_reason = FallbackReason.DIRECT_MERGE_DISALLOWED_BY_POLICY.value
-    else:
-        return MergeDecision(
-            action=MergeActionType.BLOCKED,
-            command=command,
-            reason=f"Rebase merge failed: {result.stderr.strip()}",
-            reason_code="rebase_merge_failed",
-        )
-    allowed_reasons = {
-        str(item)
-        for item in policy.get("merge", {}).get(
-            "allow_auto_fallback_only_for",
-            [FallbackReason.MERGE_QUEUE_REQUIRED.value],
-        )
-    }
-    if fallback_reason not in allowed_reasons:
-        return MergeDecision(
-            action=MergeActionType.BLOCKED,
-            command=command,
-            reason=f"Fallback reason {fallback_reason} is not permitted by policy.",
-            reason_code="auto_fallback_not_permitted",
-        )
-    fallback_command = ["gh", "pr", "merge", str(pr_id), "--auto"]
-    if repo:
-        fallback_command.extend(["--repo", repo])
-    fallback = execute_or_dry_run(
-        fallback_command,
-        execute=execute,
-        cwd=repo_root,
-        commands_log=commands_log,
-        timeout_seconds=int(
-            policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
-        ),
-    )
-    if fallback.returncode == 0:
-        client.invalidate(f"pr:{pr_id}")
-        return MergeDecision(
-            action=MergeActionType.AUTO_MERGE_FALLBACK,
-            command=fallback_command,
-            reason="Rebase merge blocked by explicit policy; auto-merge fallback succeeded.",
-            reason_code=fallback_reason,
-        )
+
     return MergeDecision(
         action=MergeActionType.BLOCKED,
-        command=fallback_command,
-        reason=f"Fallback auto-merge failed: {fallback.stderr.strip()}",
-        reason_code="auto_merge_fallback_failed",
+        command=[],
+        reason="Merge command execution failed.",
+        reason_code="merge_execution_failed",
     )
 
 

@@ -315,7 +315,7 @@ def _merge_prepared_result(
     )
     result = replace(result, merge_decision=executed_decision)
     write_pr_state_artifact(pr_dir, result)
-    if _state_value(executed_decision.action) == MergeActionType.AUTO_MERGE_FALLBACK.value:
+    if _state_value(executed_decision.action) in (MergeActionType.AUTO_MERGE_FALLBACK.value, MergeActionType.AUTO_MERGE_ENABLE.value):
         log("Auto-merge handoff successful", "SUCCESS")
     else:
         log("Merge successful", "SUCCESS")
@@ -1938,7 +1938,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                         if merge_result.lifecycle_state == PRState.MERGED.value or (
                             merge_result.merge_decision
                             and _state_value(merge_result.merge_decision.action)
-                            == MergeActionType.AUTO_MERGE_FALLBACK.value
+                            in (MergeActionType.AUTO_MERGE_FALLBACK.value, MergeActionType.AUTO_MERGE_ENABLE.value)
                         ):
                             if merge_result.lifecycle_state == PRState.MERGED.value:
                                 merged_ids.add(pr_id)
@@ -1976,7 +1976,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                             if merge_result.lifecycle_state == PRState.MERGED.value or (
                                 merge_result.merge_decision
                                 and _state_value(merge_result.merge_decision.action)
-                                == MergeActionType.AUTO_MERGE_FALLBACK.value
+                                in (MergeActionType.AUTO_MERGE_FALLBACK.value, MergeActionType.AUTO_MERGE_ENABLE.value)
                             ):
                                 if merge_result.lifecycle_state == PRState.MERGED.value:
                                     merged_ids.add(pr_id)

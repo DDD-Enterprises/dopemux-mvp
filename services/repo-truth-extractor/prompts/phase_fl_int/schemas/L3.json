@@ -1,0 +1,59 @@
+{
+  "type": "object",
+  "required": ["status", "feature_ledger_routing", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "feature_ledger_routing": {
+      "type": "object",
+      "required": ["schema", "items"],
+      "properties": {
+        "schema": {"type": "string", "enum": ["FEATURE_LEDGER_ROUTING@v1"]},
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "path",
+              "line_range",
+              "feature_id",
+              "routing_bucket",
+              "plane",
+              "evidence_class",
+              "temporal_status",
+              "reason",
+              "evidence"
+            ],
+            "properties": {
+              "id": {"type": "string"},
+              "path": {"type": "string"},
+              "line_range": {"type": "array", "items": {"type": "integer"}},
+              "feature_id": {"type": "string"},
+              "routing_bucket": {
+                "type": "string",
+                "enum": ["canonical", "historical_appendix", "uncertain_appendix", "excluded_non_feature"]
+              },
+              "plane": {"type": "string"},
+              "evidence_class": {"type": "string"},
+              "temporal_status": {"type": "string"},
+              "reason": {"type": "string"},
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["path", "line_range", "excerpt"],
+                  "properties": {
+                    "path": {"type": "string"},
+                    "line_range": {"type": "array", "items": {"type": "integer"}},
+                    "excerpt": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}

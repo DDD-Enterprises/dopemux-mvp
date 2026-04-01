@@ -55,6 +55,9 @@ Detailed reference for Dopemux components.
 - **[Internal Workflow Kit Reference](internal-workflow-kit.md)** - Phases, state schema, checkpoint tokens, and role assets
 - **[CI Remediation Specialist Skill](ci-remediation-specialist.md)** - Runbook, invocation contract, and queue integration
 
+### Extraction
+- **[FL INT Post-Processing](extraction/fl-int-postprocess.md)** - Standalone bounded v1 design-synthesis and feature-ledger post-pass
+
 ---
 
 ## Configuration

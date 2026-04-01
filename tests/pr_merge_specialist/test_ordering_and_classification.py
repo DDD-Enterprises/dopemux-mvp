@@ -43,6 +43,9 @@ def _state(
         head_sha=f"head-{pr_id}",
         base_sha="base-main",
         labels=labels or [],
+    )
+
+
 def test_risk_score_penalizes_active_threads_and_failures():
     low = engine.risk_score(
         pr_class="READY",
