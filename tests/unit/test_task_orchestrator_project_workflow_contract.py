@@ -1,9 +1,14 @@
+from __future__ import annotations
+
+import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-import sys
 from pathlib import Path
 
 import pytest
+
+from dopemux.pm.models import PMTask, PMTaskStatus
+from dopemux.pm.store import InMemoryPMTaskStore
 SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestrator"
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
