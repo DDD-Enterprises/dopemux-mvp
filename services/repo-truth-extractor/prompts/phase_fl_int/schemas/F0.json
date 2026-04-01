@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "required": ["status", "design_claims_raw", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "design_claims_raw": {
+      "type": "object",
+      "required": ["schema", "items"],
+      "properties": {
+        "schema": {"type": "string", "enum": ["DESIGN_CLAIMS_RAW@v1"]},
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "path", "line_range", "claim_text", "source_artifact", "plane", "evidence"],
+            "properties": {
+              "id": {"type": "string"},
+              "path": {"type": "string"},
+              "line_range": {"type": "array", "items": {"type": "integer"}},
+              "claim_text": {"type": "string"},
+              "source_artifact": {"type": "string"},
+              "plane": {"type": "string"},
+              "notes": {"type": "array", "items": {"type": "string"}},
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["path", "line_range", "excerpt"],
+                  "properties": {
+                    "path": {"type": "string"},
+                    "line_range": {"type": "array", "items": {"type": "integer"}},
+                    "excerpt": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}

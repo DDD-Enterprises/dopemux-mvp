@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import json
 from pathlib import Path
 import sys
@@ -67,6 +68,7 @@ def _build_cfg(args: argparse.Namespace) -> runner.RunnerConfig:
 
 def _prompt_executor(cfg: runner.RunnerConfig):
     def _execute(step: FLIntStep, rendered_prompt: str, schema: dict, _prior_outputs: dict) -> dict:
+        step_cfg = replace(cfg, escalation_max_hops=max(0, int(step.max_hops) - 1))
         ladder = ladder_for_step(step)
 
         def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
@@ -77,7 +79,7 @@ def _prompt_executor(cfg: runner.RunnerConfig):
                 api_key_env=api_key_env,
                 system_prompt="Return JSON only.",
                 user_content=rendered_prompt,
-                cfg=cfg,
+                cfg=step_cfg,
             )
             meta = dict(result.get("meta") or {})
             response_text = str(result.get("text") or "")
@@ -115,7 +117,7 @@ def _prompt_executor(cfg: runner.RunnerConfig):
             routing_policy=cfg.routing_policy,
             routing_tier=step.routing_tier,
             ladder=ladder,
-            cfg=cfg,
+            cfg=step_cfg,
             execute_attempt=_execute_attempt,
             ui=None,
         )
