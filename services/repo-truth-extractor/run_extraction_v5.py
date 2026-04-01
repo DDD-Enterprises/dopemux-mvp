@@ -22,6 +22,7 @@ import threading
 import time
 import importlib.util
 import random
+import uuid
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
@@ -1222,6 +1223,8 @@ class UI:
     def _emit_event(self, payload: Dict[str, Any]) -> None:
         row = dict(payload)
         row.setdefault("ts", now_iso())
+        row.setdefault("component", EXTRACTOR_COMPONENT_NAME)
+        row.setdefault("event_type", str(row.get("type") or "event"))
         row.setdefault("run_id", self.run_id)
         row.setdefault("run_root", str(self.run_root.resolve()))
         try:
@@ -1231,6 +1234,124 @@ class UI:
         except Exception:
             # UI event persistence must never alter execution flow.
             return
+
+    def make_trace_context(
+        self,
+        *,
+        phase: str,
+        step_id: str,
+        partition_id: Optional[str] = None,
+        parent_trace_id: Optional[str] = None,
+        parent_span_id: Optional[str] = None,
+    ) -> Dict[str, str]:
+        trace_id = str(parent_trace_id or "").strip() or _new_trace_id()
+        context = {
+            "trace_id": trace_id,
+            "span_id": _new_span_id(),
+        }
+        if parent_span_id:
+            context["parent_span_id"] = str(parent_span_id)
+        context["phase"] = phase
+        context["step_id"] = step_id
+        if partition_id:
+            context["partition_id"] = partition_id
+        return context
+
+    def llm_request_event(
+        self,
+        *,
+        phase: str,
+        step_id: str,
+        status: str,
+        trace_id: str,
+        span_id: str,
+        parent_span_id: Optional[str] = None,
+        partition_id: Optional[str] = None,
+        provider: Optional[str] = None,
+        model_id: Optional[str] = None,
+        route: Optional[str] = None,
+        routing_policy: Optional[str] = None,
+        attempt: Optional[int] = None,
+        hop: Optional[int] = None,
+        latency_ms: Optional[int] = None,
+        status_code: Optional[int] = None,
+        failure_type: Optional[str] = None,
+        finish_reason: Optional[str] = None,
+        request_payload_bytes: Optional[int] = None,
+        prompt_tokens: Optional[int] = None,
+        completion_tokens: Optional[int] = None,
+        reasoning_tokens: Optional[int] = None,
+        cached_tokens: Optional[int] = None,
+        estimated_cost_usd: Optional[float] = None,
+        actual_cost_usd: Optional[float] = None,
+        upstream_request_id: Optional[str] = None,
+        upstream_generation_id: Optional[str] = None,
+        batch_id: Optional[str] = None,
+        extra: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        payload: Dict[str, Any] = {
+            "type": f"llm_request_{status}",
+            "event_type": f"llm_request_{status}",
+            "phase": phase,
+            "step": step_id,
+            "partition_id": partition_id,
+            "trace_id": trace_id,
+            "span_id": span_id,
+            "parent_span_id": parent_span_id,
+            "provider": provider,
+            "model_id": model_id,
+            "route": route,
+            "routing_policy": routing_policy,
+            "attempt": attempt,
+            "hop": hop,
+            "latency_ms": latency_ms,
+            "status": status,
+            "status_code": status_code,
+            "failure_type": failure_type,
+            "finish_reason": finish_reason,
+            "request_payload_bytes": request_payload_bytes,
+            "tokens_prompt": prompt_tokens,
+            "tokens_completion": completion_tokens,
+            "tokens_reasoning": reasoning_tokens,
+            "tokens_cached": cached_tokens,
+            "estimated_cost_usd": estimated_cost_usd,
+            "actual_cost_usd": actual_cost_usd,
+            "upstream_request_id": upstream_request_id,
+            "upstream_generation_id": upstream_generation_id,
+            "batch_id": batch_id,
+        }
+        if extra:
+            payload.update(_clean_event_value(extra))
+        self._emit_event({k: v for k, v in payload.items() if v is not None})
+
+    def spend_ledger_event(
+        self,
+        *,
+        phase: str,
+        trace_id: str,
+        span_id: str,
+        parent_span_id: Optional[str] = None,
+        prompt_tokens: int,
+        completion_tokens: int,
+        estimated_cost_usd: Optional[float] = None,
+        partition_id: Optional[str] = None,
+        step_id: Optional[str] = None,
+    ) -> None:
+        self._emit_event(
+            {
+                "type": "spend_ledger_accumulate",
+                "event_type": "spend_ledger_accumulate",
+                "phase": phase,
+                "step": step_id,
+                "partition_id": partition_id,
+                "trace_id": trace_id,
+                "span_id": span_id,
+                "parent_span_id": parent_span_id,
+                "tokens_prompt": int(prompt_tokens),
+                "tokens_completion": int(completion_tokens),
+                "estimated_cost_usd": estimated_cost_usd,
+            }
+        )
 
     def _print_plain(self, line: str) -> None:
         print(line, flush=True)
@@ -2285,6 +2406,34 @@ _TELEMETRY_SNAPSHOT_LOCK: threading.Lock = threading.Lock()
 
 _HTTP_SESSION: Optional[requests.Session] = None
 _HTTP_SESSION_LOCK: threading.Lock = threading.Lock()
+TRACE_HEADER_NAME = "X-Dopemux-Trace-Id"
+EXTRACTOR_COMPONENT_NAME = "repo_truth_extractor"
+
+
+def _new_trace_id() -> str:
+    return uuid.uuid4().hex
+
+
+def _new_span_id() -> str:
+    return uuid.uuid4().hex[:16]
+
+
+def _clean_event_value(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {
+            str(key): _clean_event_value(subvalue)
+            for key, subvalue in value.items()
+            if subvalue is not None
+        }
+    if isinstance(value, (list, tuple)):
+        return [_clean_event_value(item) for item in value if item is not None]
+    return str(value)
 
 
 def _get_http_session() -> requests.Session:
@@ -6440,18 +6589,39 @@ def summarize_llm_response(
     summary: Dict[str, Any] = {"text_length": len(response_text)}
     finish_reason = None
     candidate_count: Optional[int] = None
+    response_id: Optional[str] = None
+    prompt_tokens: Optional[int] = None
+    completion_tokens: Optional[int] = None
+    total_tokens: Optional[int] = None
 
     if provider == "gemini":
         candidates = getattr(response_obj, "candidates", None) or []
         candidate_count = len(candidates)
         if candidates:
             finish_reason = getattr(candidates[0], "finish_reason", None)
+        usage_metadata = getattr(response_obj, "usage_metadata", None)
+        if usage_metadata is not None:
+            prompt_tokens = getattr(usage_metadata, "prompt_token_count", None)
+            completion_tokens = getattr(usage_metadata, "candidates_token_count", None)
+            total_tokens = getattr(usage_metadata, "total_token_count", None)
     else:
         choices = None
         if isinstance(response_json, dict):
             choices = response_json.get("choices")
+            response_id = str(response_json.get("id") or "") or None
+            usage = response_json.get("usage")
+            if isinstance(usage, dict):
+                prompt_tokens = usage.get("prompt_tokens")
+                completion_tokens = usage.get("completion_tokens")
+                total_tokens = usage.get("total_tokens")
         else:
             choices = getattr(response_obj, "choices", None)
+            response_id = str(getattr(response_obj, "id", "") or "") or None
+            usage = getattr(response_obj, "usage", None)
+            if usage is not None:
+                prompt_tokens = getattr(usage, "prompt_tokens", None)
+                completion_tokens = getattr(usage, "completion_tokens", None)
+                total_tokens = getattr(usage, "total_tokens", None)
         if isinstance(choices, list):
             candidate_count = len(choices)
             if choices:
@@ -6461,6 +6631,14 @@ def summarize_llm_response(
         summary["candidate_count"] = candidate_count
     if finish_reason:
         summary["finish_reason"] = finish_reason
+    if response_id:
+        summary["response_id"] = response_id
+    if prompt_tokens is not None:
+        summary["prompt_tokens"] = int(prompt_tokens)
+    if completion_tokens is not None:
+        summary["completion_tokens"] = int(completion_tokens)
+    if total_tokens is not None:
+        summary["total_tokens"] = int(total_tokens)
     return summary
 
 
@@ -6618,6 +6796,8 @@ def call_llm(
     structured_output_override: Optional[Dict[str, Any]] = None,
     retry_callback: Optional[Callable] = None,
     timeout_seconds: Optional[int] = None,
+    trace_context: Optional[Dict[str, Any]] = None,
+    lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     if _live_llm_calls_blocked_for_tests():
         message = (
@@ -6765,6 +6945,8 @@ def call_llm(
                 "request_payload_bytes": request_payload_bytes,
                 "request_payload_bytes_mode": request_payload_bytes_mode,
                 "transport": transport,
+                "trace_id": trace_id,
+                "parent_span_id": request_parent_span_id,
                 "retry_trace": [],
                 "structured_output": structured_output,
             },
@@ -6808,6 +6990,28 @@ def call_llm(
         int(timeout_seconds if timeout_seconds is not None else 180),
     )
     started_monotonic = time.monotonic()
+    base_trace_context = dict(trace_context or {})
+    trace_id = str(base_trace_context.get("trace_id") or "").strip() or _new_trace_id()
+    request_parent_span_id = str(base_trace_context.get("parent_span_id") or "").strip() or None
+
+    def _emit_lifecycle(status: str, **fields: Any) -> None:
+        if lifecycle_callback is None:
+            return
+        payload = {
+            "phase": base_trace_context.get("phase"),
+            "step_id": base_trace_context.get("step_id"),
+            "partition_id": base_trace_context.get("partition_id"),
+            "trace_id": trace_id,
+            "parent_span_id": request_parent_span_id,
+            "provider": provider,
+            "model_id": model_id,
+            "route": base_trace_context.get("route"),
+            "routing_policy": base_trace_context.get("routing_policy"),
+            "hop": base_trace_context.get("hop"),
+            "status": status,
+        }
+        payload.update(fields)
+        lifecycle_callback({k: v for k, v in payload.items() if v is not None})
 
     def _remaining_timeout_seconds() -> int:
         elapsed = time.monotonic() - started_monotonic
@@ -6820,6 +7024,13 @@ def call_llm(
         response_body = ""
         failure_type = "unknown"
         provider_error_reason = None
+        attempt_span_id = _new_span_id()
+        _emit_lifecycle(
+            "started",
+            span_id=attempt_span_id,
+            attempt=attempt,
+            request_payload_bytes=request_payload_bytes,
+        )
         try:
             response_json: Optional[Dict[str, Any]] = None
             if transport == "openai_compat_http":
@@ -6903,6 +7114,18 @@ def call_llm(
                     "response_summary": response_summary,
                 }
             )
+            _emit_lifecycle(
+                "completed",
+                span_id=attempt_span_id,
+                attempt=attempt,
+                latency_ms=int((time.monotonic() - started_monotonic) * 1000),
+                status_code=status_code,
+                finish_reason=response_summary.get("finish_reason"),
+                prompt_tokens=response_summary.get("prompt_tokens"),
+                completion_tokens=response_summary.get("completion_tokens"),
+                upstream_request_id=response_summary.get("response_id"),
+                request_payload_bytes=request_payload_bytes,
+            )
             return {
                 "ok": True,
                 "text": response_text,
@@ -6936,6 +7159,9 @@ def call_llm(
                         auth_mode_sequence if provider == "gemini" else None
                     ),
                     "transport": transport,
+                    "trace_id": trace_id,
+                    "span_id": attempt_span_id,
+                    "parent_span_id": request_parent_span_id,
                     "retry_trace": retry_trace,
                     "response_received": True,
                     "response_summary": response_summary,
@@ -6995,10 +7221,27 @@ def call_llm(
                     auth_mode_sequence if provider == "gemini" else None
                 ),
                 "transport": transport,
+                "trace_id": trace_id,
+                "span_id": attempt_span_id,
+                "parent_span_id": request_parent_span_id,
                 "retry_trace": retry_trace,
                 "response_received": False,
                 "structured_output": structured_output,
             }
+            _emit_lifecycle(
+                "failed",
+                span_id=attempt_span_id,
+                attempt=attempt,
+                latency_ms=int((time.monotonic() - started_monotonic) * 1000),
+                status_code=status_code,
+                failure_type=failure_type,
+                upstream_request_id=exception_info.get("request_id"),
+                request_payload_bytes=request_payload_bytes,
+                extra={
+                    "provider_error_reason": provider_error_reason,
+                    "exception_type": exception_info.get("exception_type"),
+                },
+            )
             if response_body:
                 logger.warning(
                     "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s: %s | body=%s",
@@ -10234,6 +10477,15 @@ def execute_step_for_partitions(
                 "- If evidence cannot prove line ranges, emit payload.items as [] for that artifact.\n"
                 f"{existing_preview}"
             )
+            strict_trace_context = (
+                ui.make_trace_context(
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                )
+                if ui is not None
+                else None
+            )
             result = call_llm(
                 provider=strict_provider,
                 model_id=strict_model_id,
@@ -10244,6 +10496,16 @@ def execute_step_for_partitions(
                 force_json_output=False,
                 response_format_override=response_format,
                 structured_output_override=_strict_structured_meta(response_meta),
+                trace_context={
+                    **(strict_trace_context or {}),
+                    "route": f"{strict_provider}/{strict_model_id}",
+                    "routing_policy": cfg.routing_policy,
+                },
+                lifecycle_callback=(
+                    (lambda payload: ui.llm_request_event(**payload))
+                    if ui is not None
+                    else None
+                ),
             )
             response_text_local = str(result.get("text") or "")
             request_meta_local = enrich_request_meta(
@@ -10697,6 +10959,22 @@ def execute_step_for_partitions(
                             in_toks = sum(len(req.user_content) // 4 for req in batch_requests)
                             out_toks = 1000  # Arbitrary estimate for batch output
                             cfg.ledger.accumulate(phase, in_toks, out_toks)
+                            if ui is not None:
+                                batch_trace = ui.make_trace_context(
+                                    phase=phase,
+                                    step_id=step_id,
+                                    partition_id=partition_id,
+                                )
+                                ui.spend_ledger_event(
+                                    phase=phase,
+                                    step_id=step_id,
+                                    partition_id=partition_id,
+                                    trace_id=batch_trace["trace_id"],
+                                    span_id=_new_span_id(),
+                                    parent_span_id=batch_trace.get("span_id"),
+                                    prompt_tokens=in_toks,
+                                    completion_tokens=out_toks,
+                                )
                             
                         job_row = {
                             "run_id": run_id,
@@ -10935,6 +11213,24 @@ def execute_step_for_partitions(
                         ))
                         if ui is not None else None
                     ),
+                    trace_context=(
+                        {
+                            **ui.make_trace_context(
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                            ),
+                            "route": f"{route_provider}/{route_model_id}",
+                            "routing_policy": cfg.routing_policy,
+                        }
+                        if ui is not None
+                        else None
+                    ),
+                    lifecycle_callback=(
+                        (lambda payload: ui.llm_request_event(**payload))
+                        if ui is not None
+                        else None
+                    ),
                 )
                 response_text_local = str(llm_result.get("text", ""))
                 request_meta_local = enrich_request_meta(
@@ -10947,6 +11243,29 @@ def execute_step_for_partitions(
                     model_id=route_model_id,
                 )
                 request_meta_local.setdefault("request_payload_bytes", payload_bytes)
+                if cfg.ledger:
+                    prompt_toks = int(
+                        request_meta_local.get("prompt_tokens")
+                        or request_meta_local.get("tokens_prompt")
+                        or ((len(effective_user_prompt) + len(prompt_text)) // 4)
+                    )
+                    completion_toks = int(
+                        request_meta_local.get("completion_tokens")
+                        or request_meta_local.get("tokens_completion")
+                        or (len(response_text_local) // 4)
+                    )
+                    cfg.ledger.accumulate(phase, prompt_toks, completion_toks)
+                    if ui is not None:
+                        ui.spend_ledger_event(
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            trace_id=str(request_meta_local.get("trace_id") or _new_trace_id()),
+                            span_id=_new_span_id(),
+                            parent_span_id=str(request_meta_local.get("span_id") or "") or None,
+                            prompt_tokens=prompt_toks,
+                            completion_tokens=completion_toks,
+                        )
                 return response_text_local, request_meta_local
 
             parse_retry_attempted = False
