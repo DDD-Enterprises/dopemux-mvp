@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "required": ["status", "design_contradictions", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "design_contradictions": {
+      "type": "object",
+      "required": ["schema", "items"],
+      "properties": {
+        "schema": {"type": "string", "enum": ["DESIGN_CONTRADICTIONS@v1"]},
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "path", "line_range", "summary", "status", "claim_ids", "evidence"],
+            "properties": {
+              "id": {"type": "string"},
+              "path": {"type": "string"},
+              "line_range": {"type": "array", "items": {"type": "integer"}},
+              "summary": {"type": "string"},
+              "status": {"type": "string"},
+              "claim_ids": {"type": "array", "items": {"type": "string"}},
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["path", "line_range", "excerpt"],
+                  "properties": {
+                    "path": {"type": "string"},
+                    "line_range": {"type": "array", "items": {"type": "integer"}},
+                    "excerpt": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}

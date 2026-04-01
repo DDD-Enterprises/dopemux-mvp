@@ -23,7 +23,7 @@ def _prompt_root() -> Path:
 
 
 def _schema_root() -> Path:
-    return _prompt_root() / "schemas"
+    return _prompt_root()
 
 
 def _render_prompt(step: FLIntStep, step_input: Dict[str, Any], prior_outputs: Dict[str, Any]) -> str:

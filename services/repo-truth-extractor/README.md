@@ -250,8 +250,64 @@ artifact does not skip the comparison, and vice versa.
 
 - v3 prompts: `services/repo-truth-extractor/prompts/v3/`
 - v4 promptset: `services/repo-truth-extractor/promptsets/v4/`
+- FL_INT standalone prompts: `services/repo-truth-extractor/prompts/phase_fl_int/`
 - external generated promptsets: pass via `--promptset-root`
 - legacy prompt archive: `services/repo-truth-extractor/archive/legacy_prompts/`
+
+## FL_INT Standalone Post-Processing
+
+`FL_INT` is a bounded v1 post-processing flow that runs after an existing completed extraction.
+It does **not** modify the default phase graph, upstream prompts, or upstream extraction artifacts.
+
+Entrypoint: `services/repo-truth-extractor/run_fl_int.py`
+
+### Scope
+
+- fixed step order: `F0 -> F1 -> F2 -> F4 -> L0 -> L1 -> L3 -> L4`
+- required upstream norm inputs: `D`, `C`, `R`
+- optional upstream norm input: `X`
+- explicit `--run-root` only; no implicit latest-run lookup
+
+### Basic usage
+
+```bash
+# Inspect the standalone post-pass without calling providers
+python services/repo-truth-extractor/run_fl_int.py \
+  --run-root /abs/path/to/completed/run \
+  --dry-run \
+  --pretty
+
+# Execute the standalone post-pass against an existing run
+python services/repo-truth-extractor/run_fl_int.py \
+  --run-root /abs/path/to/completed/run \
+  --routing-policy cost \
+  --pretty
+```
+
+### Output layout
+
+Default output root:
+
+```text
+<RUN_ROOT>/postprocess/fl_int_v1/
+```
+
+This directory contains:
+
+- `FL_INT_INPUT.json`
+- `DESIGN_CLAIMS_RAW.json`
+- `DESIGN_CLAIMS_CLASSIFIED.json`
+- `DESIGN_CONTRADICTIONS.json`
+- `CANONICAL_DESIGN.md`
+- `CANONICAL_DESIGN_META.json`
+- `FEATURE_CANDIDATES_RAW.json`
+- `FEATURE_CANDIDATES_NORMALIZED.json`
+- `FEATURE_MERGE_LOG.json`
+- `FEATURE_LEDGER_ROUTING.json`
+- `MASTER_FEATURE_LEDGER.json`
+- `FL_INT_MACHINE_SUMMARY.json`
+
+Reference: `docs/03-reference/extraction/fl-int-postprocess.md`
 
 ## Output Roots
 

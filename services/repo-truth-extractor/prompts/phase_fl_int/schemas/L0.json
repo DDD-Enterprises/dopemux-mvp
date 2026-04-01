@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "required": ["status", "feature_candidates_raw", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "feature_candidates_raw": {
+      "type": "object",
+      "required": ["schema", "items"],
+      "properties": {
+        "schema": {"type": "string", "enum": ["FEATURE_CANDIDATES_RAW@v1"]},
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "path",
+              "line_range",
+              "title",
+              "trigger",
+              "outcome",
+              "domain",
+              "plane",
+              "evidence_class",
+              "temporal_status",
+              "evidence"
+            ],
+            "properties": {
+              "id": {"type": "string"},
+              "path": {"type": "string"},
+              "line_range": {"type": "array", "items": {"type": "integer"}},
+              "title": {"type": "string"},
+              "trigger": {"type": "string"},
+              "outcome": {"type": "string"},
+              "domain": {"type": "string"},
+              "plane": {"type": "string"},
+              "evidence_class": {"type": "string"},
+              "temporal_status": {"type": "string"},
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["path", "line_range", "excerpt"],
+                  "properties": {
+                    "path": {"type": "string"},
+                    "line_range": {"type": "array", "items": {"type": "integer"}},
+                    "excerpt": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}
