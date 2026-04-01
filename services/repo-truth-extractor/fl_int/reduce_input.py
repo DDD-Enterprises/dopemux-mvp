@@ -10,7 +10,7 @@ F0_CAPS = {
     "max_total_chars": 100000,
     "max_chunks": 60,
     "max_chunk_chars": 4000,
-    "batch_target_chars": 30000,
+    "batch_target_chars": 20000,
 }
 
 L0_CAPS = {

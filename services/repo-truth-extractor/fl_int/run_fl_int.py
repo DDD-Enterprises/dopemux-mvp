@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -45,6 +47,100 @@ def _normalize_items_envelope(value: Any, schema_name: str) -> Optional[Dict[str
         return None
     normalized = dict(value)
     normalized.setdefault("schema", schema_name)
+    return normalized
+
+
+def _normalize_evidence_entry(
+    value: Any,
+    *,
+    fallback_path: str,
+    fallback_line_range: List[int],
+) -> Optional[Dict[str, Any]]:
+    if isinstance(value, str):
+        excerpt = value.strip()
+        if not excerpt:
+            return None
+        return {
+            "path": fallback_path,
+            "line_range": list(fallback_line_range),
+            "excerpt": excerpt,
+        }
+    if not isinstance(value, dict):
+        return None
+    normalized = dict(value)
+    path = str(normalized.get("path") or fallback_path or "unspecified").strip() or "unspecified"
+    line_range = normalized.get("line_range")
+    if not isinstance(line_range, list) or len(line_range) < 2:
+        line_range = list(fallback_line_range)
+    normalized["path"] = path
+    normalized["line_range"] = line_range
+    excerpt = normalized.get("excerpt")
+    if isinstance(excerpt, str):
+        normalized["excerpt"] = excerpt
+    elif isinstance(normalized.get("text"), str):
+        normalized["excerpt"] = str(normalized.get("text"))
+    else:
+        normalized["excerpt"] = ""
+    return normalized
+
+
+def _normalize_f0_item(row: Any) -> Any:
+    if not isinstance(row, dict):
+        return row
+    normalized = dict(row)
+    if not isinstance(normalized.get("claim_text"), str) or not str(normalized.get("claim_text") or "").strip():
+        claim = normalized.get("claim")
+        if isinstance(claim, str) and claim.strip():
+            normalized["claim_text"] = claim
+    if not isinstance(normalized.get("claim_text"), str) or not str(normalized.get("claim_text") or "").strip():
+        for alias in ("name", "title"):
+            value = normalized.get(alias)
+            if isinstance(value, str) and value.strip():
+                normalized["claim_text"] = value
+                break
+    if not isinstance(normalized.get("source_artifact"), str) or not str(normalized.get("source_artifact") or "").strip():
+        source = normalized.get("source")
+        if isinstance(source, str) and source.strip():
+            normalized["source_artifact"] = source
+    if not isinstance(normalized.get("source_artifact"), str) or not str(normalized.get("source_artifact") or "").strip():
+        normalized["source_artifact"] = "unspecified"
+    if not isinstance(normalized.get("plane"), str) or not str(normalized.get("plane") or "").strip():
+        normalized["plane"] = "unspecified"
+
+    fallback_path = str(normalized.get("path") or "unspecified").strip() or "unspecified"
+    line_range = normalized.get("line_range")
+    if not isinstance(line_range, list) or len(line_range) < 2:
+        line_range = [0, 0]
+    normalized["line_range"] = list(line_range)
+
+    evidence = normalized.get("evidence")
+    normalized_evidence: List[Dict[str, Any]] = []
+    if isinstance(evidence, str):
+        entry = _normalize_evidence_entry(
+            evidence,
+            fallback_path=fallback_path,
+            fallback_line_range=normalized["line_range"],
+        )
+        if entry is not None:
+            normalized_evidence.append(entry)
+    elif isinstance(evidence, list):
+        for item in evidence:
+            entry = _normalize_evidence_entry(
+                item,
+                fallback_path=fallback_path,
+                fallback_line_range=normalized["line_range"],
+            )
+            if entry is not None:
+                normalized_evidence.append(entry)
+    normalized["evidence"] = normalized_evidence
+    if not isinstance(normalized.get("claim_text"), str) or not str(normalized.get("claim_text") or "").strip():
+        first_excerpt = (
+            str(normalized_evidence[0].get("excerpt") or "").strip()
+            if normalized_evidence
+            else ""
+        )
+        if first_excerpt:
+            normalized["claim_text"] = first_excerpt
     return normalized
 
 
@@ -175,6 +271,9 @@ def normalize_step_payload(
                     break
         wrapped = _normalize_items_envelope(value, schema_name)
         if wrapped is not None:
+            if step_id == "F0":
+                wrapped = dict(wrapped)
+                wrapped["items"] = [_normalize_f0_item(row) for row in list(wrapped.get("items") or [])]
             normalized[field_name] = wrapped
         return normalized
 
@@ -266,6 +365,194 @@ def _step_input_payload(
 
 def _write_json(path: Path, payload: Dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _write_text(path: Path, text: str) -> None:
+    path.write_text(text, encoding="utf-8")
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _request_meta_summary(meta: Dict[str, Any]) -> Dict[str, Any]:
+    route_attempts = meta.get("route_attempts")
+    retry_trace = meta.get("retry_trace")
+    return {
+        "provider": meta.get("provider"),
+        "model_id": meta.get("model_id"),
+        "api_key_env_requested": meta.get("api_key_env_requested"),
+        "status_code": meta.get("status_code"),
+        "failure_type": meta.get("failure_type"),
+        "provider_error_reason": meta.get("provider_error_reason"),
+        "transport": meta.get("transport"),
+        "timeout_seconds": meta.get("timeout_seconds"),
+        "route_hop_index": meta.get("route_hop_index"),
+        "route_hop_total": meta.get("route_hop_total"),
+        "response_received": meta.get("response_received"),
+        "request_payload_bytes": meta.get("request_payload_bytes"),
+        "route_attempts": route_attempts if isinstance(route_attempts, list) else [],
+        "retry_trace": retry_trace if isinstance(retry_trace, list) else [],
+    }
+
+
+def _route_summary(route: Any) -> Dict[str, Any]:
+    if isinstance(route, (list, tuple)) and len(route) >= 3:
+        return {
+            "provider": route[0],
+            "model_id": route[1],
+            "api_key_env": route[2],
+        }
+    return {
+        "provider": None,
+        "model_id": None,
+        "api_key_env": None,
+    }
+
+
+def _trace_path(dirs: Dict[str, Path], batch_id: str) -> Path:
+    return dirs["raw"] / f"{batch_id}_TRACE.json"
+
+
+def _failure_path(dirs: Dict[str, Path], batch_id: str) -> Path:
+    return dirs["raw"] / f"{batch_id}_FAILURE.json"
+
+
+def _response_path(dirs: Dict[str, Path], batch_id: str) -> Path:
+    return dirs["raw"] / f"{batch_id}_RESPONSE.txt"
+
+
+def _append_stage(
+    trace: Dict[str, Any],
+    *,
+    stage: str,
+    started_monotonic: float,
+    extra: Optional[Dict[str, Any]] = None,
+) -> None:
+    timestamp = _now_iso()
+    history = list(trace.get("stage_history") or [])
+    history.append(
+        {
+            "stage": stage,
+            "at": timestamp,
+            **(extra or {}),
+        }
+    )
+    trace["stage"] = stage
+    trace["updated_at"] = timestamp
+    trace["elapsed_seconds"] = round(time.monotonic() - started_monotonic, 3)
+    trace["stage_history"] = history
+    if extra:
+        trace.update(extra)
+
+
+def _write_trace(path: Path, trace: Dict[str, Any]) -> None:
+    _write_json(path, trace)
+
+
+def _new_f0_trace(
+    *,
+    batch_id: str,
+    step: FLIntStep,
+    input_payload: Dict[str, Any],
+    output_root: Path,
+    step_input: Dict[str, Any],
+    rendered_prompt: str,
+    selected_chunk_count: int,
+) -> Dict[str, Any]:
+    return {
+        "schema_version": "F0_BATCH_TRACE_V1",
+        "batch_id": batch_id,
+        "step_id": step.step_id,
+        "run_id": input_payload["run_id"],
+        "run_root": input_payload["run_root"],
+        "output_root": str(output_root),
+        "started_at": _now_iso(),
+        "updated_at": _now_iso(),
+        "elapsed_seconds": 0.0,
+        "stage": "batch_start",
+        "stage_history": [],
+        "selected_route": _route_summary(None),
+        "input_json_bytes": len(json.dumps(step_input, indent=2, sort_keys=True).encode("utf-8")),
+        "rendered_prompt_chars": len(rendered_prompt),
+        "selected_chunk_count": selected_chunk_count,
+        "response_received": False,
+        "response_text_chars": 0,
+        "request_meta": {},
+    }
+
+
+def _write_failure_artifact(
+    *,
+    dirs: Dict[str, Path],
+    batch_id: str,
+    trace: Dict[str, Any],
+    request_meta: Dict[str, Any],
+    timeout_seconds: int,
+    terminal_stage: str,
+    route: Any,
+) -> str:
+    failure_payload = {
+        "schema_version": "F0_BATCH_FAILURE_V1",
+        "batch_id": batch_id,
+        "step_id": "F0",
+        "run_root": trace.get("run_root"),
+        "output_root": trace.get("output_root"),
+        "terminal_stage": terminal_stage,
+        "failure_type": request_meta.get("failure_type"),
+        "provider_error_reason": request_meta.get("provider_error_reason"),
+        "status_code": request_meta.get("status_code"),
+        "timeout_seconds": timeout_seconds,
+        "elapsed_seconds": trace.get("elapsed_seconds"),
+        "route": _route_summary(route),
+        "request_meta": _request_meta_summary(request_meta),
+    }
+    path = _failure_path(dirs, batch_id)
+    _write_json(path, failure_payload)
+    return str(path.relative_to(dirs["root"]))
+
+
+def _write_failed_machine_summary(
+    *,
+    dirs: Dict[str, Path],
+    input_payload: Dict[str, Any],
+    outputs: Dict[str, Dict[str, Any]],
+    written_files: Dict[str, List[str]],
+    reduction_written: List[str],
+    batch_counts: Dict[str, int],
+    selected_chars: Dict[str, int],
+    failed_step: str,
+    failed_batch: str,
+    failure_artifacts: List[str],
+) -> None:
+    payload = {
+        "status": "FAILED",
+        "run_id": input_payload["run_id"],
+        "run_root": input_payload["run_root"],
+        "output_root": str(dirs["root"]),
+        "steps": [step.step_id for step in FL_INT_STEPS],
+        "step_statuses": {
+            step_id: outputs[step_id].get("status", "UNKNOWN")
+            for step_id in sorted(outputs)
+        },
+        "written_files": written_files,
+        "reduction_artifacts": reduction_written,
+        "batch_counts": batch_counts,
+        "selected_chars": selected_chars,
+        "failed_step": failed_step,
+        "failed_batch": failed_batch,
+        "failure_artifacts": failure_artifacts,
+    }
+    dirs["machine_summary"].write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _truncate_response_text(text: str, limit: int = 20000) -> str:
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip() + "\n...[TRUNCATED]...\n"
 
 
 def _artifact_from_reduced_row(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -509,6 +796,7 @@ def run_fl_int(
     dry_run: bool,
     out_root: Optional[Path] = None,
     prompt_executor: Optional[PromptExecutor] = None,
+    f0_batch_timeout_seconds: int = 210,
 ) -> Dict[str, Any]:
     dirs = ensure_fl_int_dirs(run_root, out_root=out_root)
     input_payload = collect_input_bundle(run_root, out_root=out_root)
@@ -560,19 +848,146 @@ def run_fl_int(
         if step.step_id == "F0":
             selected_chunks = list(f0_reduction.get("selected_chunks") or [])
             batch_payloads: List[Dict[str, Any]] = []
+            schema = load_schema(_schema_root() / step.schema_file)
             for batch in f0_reduction.get("batches", []):
                 batch_id = str(batch["batch_id"])
                 batch_rows = _batch_rows_for_ids(selected_chunks, list(batch.get("selected_ids") or []))
                 step_input = _f0_batch_step_input(step, input_payload, batch_rows, batch_id)
                 _write_batch_input(_batch_input_path(dirs, batch_id), step_input)
-                payload = _execute_step_once(
+                rendered_prompt = _render_prompt(step, step_input, {})
+                trace = _new_f0_trace(
+                    batch_id=batch_id,
                     step=step,
+                    input_payload=input_payload,
+                    output_root=dirs["root"],
                     step_input=step_input,
-                    prior_outputs={},
-                    prompt_executor=prompt_executor,
+                    rendered_prompt=rendered_prompt,
+                    selected_chunk_count=len(batch_rows),
                 )
-                _write_json(_batch_result_path(dirs, batch_id), payload)
-                batch_payloads.append(payload)
+                trace_path = _trace_path(dirs, batch_id)
+                started_monotonic = time.monotonic()
+                _append_stage(trace, stage="batch_start", started_monotonic=started_monotonic)
+                _write_trace(trace_path, trace)
+
+                failure_artifacts: List[str] = []
+                response_text = ""
+                request_meta: Dict[str, Any] = {}
+                route: Any = None
+
+                def _write_failed_state(terminal_stage: str) -> None:
+                    nonlocal failure_artifacts
+                    if response_text:
+                        response_rel = str(_response_path(dirs, batch_id).relative_to(dirs["root"]))
+                        _write_text(_response_path(dirs, batch_id), _truncate_response_text(response_text))
+                        if response_rel not in failure_artifacts:
+                            failure_artifacts.append(response_rel)
+                    failure_rel = _write_failure_artifact(
+                        dirs=dirs,
+                        batch_id=batch_id,
+                        trace=trace,
+                        request_meta=request_meta,
+                        timeout_seconds=f0_batch_timeout_seconds,
+                        terminal_stage=terminal_stage,
+                        route=route,
+                    )
+                    if failure_rel not in failure_artifacts:
+                        failure_artifacts.append(failure_rel)
+                    _write_failed_machine_summary(
+                        dirs=dirs,
+                        input_payload=input_payload,
+                        outputs=outputs,
+                        written_files=written_files,
+                        reduction_written=reduction_written,
+                        batch_counts=batch_counts,
+                        selected_chars=selected_chars,
+                        failed_step=step.step_id,
+                        failed_batch=batch_id,
+                        failure_artifacts=failure_artifacts,
+                    )
+
+                def _enforce_timeout(terminal_stage: str) -> None:
+                    if trace.get("elapsed_seconds", 0.0) <= float(f0_batch_timeout_seconds):
+                        return
+                    request_meta.setdefault("failure_type", "timeout")
+                    request_meta.setdefault(
+                        "provider_error_reason",
+                        f"f0_batch_timeout:{f0_batch_timeout_seconds}s",
+                    )
+                    _append_stage(
+                        trace,
+                        stage=terminal_stage,
+                        started_monotonic=started_monotonic,
+                    )
+                    _write_trace(trace_path, trace)
+                    _write_failed_state(terminal_stage)
+                    raise RuntimeError(
+                        f"FL_INT step F0 batch {batch_id} exceeded timeout after {trace['elapsed_seconds']}s."
+                    )
+
+                def _observer(stage_name: str, payload: Optional[Dict[str, Any]] = None) -> None:
+                    payload = payload or {}
+                    next_route = payload.get("route")
+                    summary = payload.get("request_meta")
+                    extra = {
+                        "selected_route": _route_summary(next_route if next_route is not None else route),
+                        "response_received": bool(payload.get("response_received", trace.get("response_received", False))),
+                        "response_text_chars": int(payload.get("response_text_chars", trace.get("response_text_chars", 0))),
+                    }
+                    if isinstance(summary, dict) and summary:
+                        extra["request_meta"] = _request_meta_summary(summary)
+                    _append_stage(trace, stage=stage_name, started_monotonic=started_monotonic, extra=extra)
+                    _write_trace(trace_path, trace)
+
+                try:
+                    result = prompt_executor(
+                        step,
+                        rendered_prompt,
+                        schema,
+                        {"__fl_int_diag_observer__": _observer},
+                    )
+                    request_meta = (
+                        dict(result.get("request_meta") or {})
+                        if isinstance(result.get("request_meta"), dict)
+                        else {}
+                    )
+                    response_text = str(result.get("response_text") or "")
+                    route = result.get("route")
+                    trace["selected_route"] = _route_summary(route)
+                    trace["response_received"] = bool(request_meta.get("response_received") or response_text)
+                    trace["response_text_chars"] = len(response_text)
+                    trace["request_meta"] = _request_meta_summary(request_meta)
+                    _write_trace(trace_path, trace)
+
+                    _enforce_timeout("provider_call_timeout")
+
+                    payload = result.get("payload")
+                    if not isinstance(payload, dict):
+                        terminal_stage = str(trace.get("stage") or "provider_call_return")
+                        _write_failed_state(terminal_stage)
+                        failure_type = str(request_meta.get("failure_type") or "invalid_json")
+                        raise RuntimeError(
+                            f"FL_INT step {step.step_id} batch {batch_id} failed at "
+                            f"{terminal_stage} failure_type={failure_type}."
+                        )
+
+                    _append_stage(trace, stage="schema_validate_start", started_monotonic=started_monotonic)
+                    _write_trace(trace_path, trace)
+                    validate_payload_or_raise(payload, schema, label=step.step_id)
+                    _append_stage(trace, stage="schema_validate_return", started_monotonic=started_monotonic)
+                    _write_trace(trace_path, trace)
+
+                    _enforce_timeout("schema_validate_timeout")
+
+                    _append_stage(trace, stage="artifact_write_start", started_monotonic=started_monotonic)
+                    _write_trace(trace_path, trace)
+                    _write_json(_batch_result_path(dirs, batch_id), payload)
+                    _append_stage(trace, stage="artifact_write_success", started_monotonic=started_monotonic)
+                    _write_trace(trace_path, trace)
+                    batch_payloads.append(payload)
+                except Exception:
+                    if not failure_artifacts:
+                        _write_failed_state(str(trace.get("stage") or "batch_start"))
+                    raise
             merged_payload = merge_f0_batch_payloads(batch_payloads)
             validate_payload_or_raise(merged_payload, load_schema(_schema_root() / step.schema_file), label=step.step_id)
             outputs[step.step_id] = merged_payload
