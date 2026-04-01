@@ -10,19 +10,22 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
 
-
 def now_utc() -> datetime:
     """Return the current UTC timestamp."""
+
     return datetime.now(timezone.utc)
 
 
 class PacketState(str, Enum):
     """Primary lifecycle state for executable packets."""
 
-    PENDING = "PENDING"
+    READY = "READY"
+    PENDING = "READY"
     LEASED = "LEASED"
-    RUNNING = "RUNNING"
-    SUCCEEDED = "SUCCEEDED"
+    EXECUTING = "EXECUTING"
+    RUNNING = "EXECUTING"
+    PROOF_GENERATED = "PROOF_GENERATED"
+    SUCCEEDED = "PROOF_GENERATED"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
     ABANDONED = "ABANDONED"
@@ -38,10 +41,11 @@ class LeaseState(str, Enum):
 
 
 class ExecutionDisposition(str, Enum):
-    """Final disposition recorded by a release."""
+    """Final outcome of an execution attempt."""
 
     SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"
+    ABORTED = "ABORTED"
     CANCELLED = "CANCELLED"
     ABANDONED = "ABANDONED"
 
@@ -59,35 +63,6 @@ class ExecutionEventType(str, Enum):
     PACKET_REQUEUED = "PACKET_REQUEUED"
     PACKET_CANCELLED = "PACKET_CANCELLED"
     PACKET_ABANDONED = "PACKET_ABANDONED"
-
-
-class ExecutionDisposition(str, Enum):
-    """Final outcome of an execution attempt."""
-
-    SUCCEEDED = "SUCCEEDED"
-    FAILED = "FAILED"
-    ABORTED = "ABORTED"
-
-
-class ExecutionResult(BaseModel):
-    """Immutable record of an execution attempt."""
-
-    packet_id: str
-    lease_id: UUID
-    agent_id: str
-    disposition: ExecutionDisposition
-    result_summary: str
-    artifacts: Dict[str, Any] = Field(default_factory=dict)
-    started_at_utc: datetime
-    completed_at_utc: datetime
-
-
-class ExecutionDisposition(str, Enum):
-    """Final outcome of an execution attempt."""
-
-    SUCCEEDED = "SUCCEEDED"
-    FAILED = "FAILED"
-    ABORTED = "ABORTED"
 
 
 class ExecutionResult(BaseModel):
@@ -110,7 +85,7 @@ class ExecutionPacket(BaseModel):
     owner_id: str = Field(..., description="Primary author or operator")
     task_id: Optional[str] = Field(default=None, description="Optional logical task identifier")
     depends_on: List[str] = Field(default_factory=list, description="Prerequisite packet IDs")
-    state: PacketState = Field(default=PacketState.PENDING)
+    state: PacketState = Field(default=PacketState.READY)
     attempt_count: int = Field(default=0, ge=0)
     max_attempts: int = Field(default=3, ge=1)
     last_error: Optional[str] = Field(default=None)
@@ -135,13 +110,13 @@ class PacketLease(BaseModel):
     lease_id: UUID = Field(default_factory=uuid4, description="Unique lease identifier")
     packet_id: str = Field(...)
     agent_id: str = Field(...)
-    worker_instance_id: str = Field(...)
-    fencing_token: int = Field(..., ge=1)
-    issued_at_utc: datetime = Field(default_factory=now_utc)
+    leased_at_utc: datetime = Field(default_factory=now_utc)
     expires_at_utc: datetime = Field(...)
-    last_renewed_at_utc: datetime = Field(default_factory=now_utc)
-    ttl_seconds: int = Field(default=300, ge=1)
+    ttl_seconds: int = Field(default=300)
     state: LeaseState = Field(default=LeaseState.ACTIVE)
     result: Optional[ExecutionResult] = None
+    worker_instance_id: Optional[str] = Field(default=None)
+    fencing_token: int = Field(default=0, ge=0)
+    last_renewed_at_utc: datetime = Field(default_factory=now_utc)
 
     model_config = {"frozen": False}

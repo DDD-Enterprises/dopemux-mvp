@@ -174,7 +174,15 @@ def pm_transition_work_item(
 
     try:
         # Client implementations are responsible for enforcing idempotency
-        config.orchestrator_client.transition(task_id, new_status, reason, expected_version, idempotency_key=idempotency_key)
+        config.orchestrator_client.transition(
+            project_id="default",
+            workflow_id=task_id,
+            transition_name=new_status.value.lower(),
+            actor="dopemux",
+            idempotency_key=idempotency_key,
+            expected_version=expected_version,
+            reason=reason,
+        )
     except Exception as e:
         raise RuntimeError(f"Canonical write failed: {e}") from e
 

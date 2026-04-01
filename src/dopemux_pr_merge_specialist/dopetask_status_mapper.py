@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+
+from .dopetask_series_models import DopetaskSeriesResult, SeriesStatus
 
 # ---------------------------------------------------------------------------
 # Canonical value sets
@@ -78,8 +80,6 @@ POSTURE_BLOCKED_ACTIONS: dict[str, list[str]] = {
 # ---------------------------------------------------------------------------
 # Dataclasses (also imported by dopetask_bundle_loader and dopetask_adapter)
 # ---------------------------------------------------------------------------
-
-
 @dataclass
 class DopetaskTPIdentity:
     id: str
@@ -183,9 +183,28 @@ class DopetaskStatusMapper:
         """Return canonical status string; unknown values map to UNKNOWN."""
         return STATUS_MAP.get(status, "UNKNOWN")
 
+    def map_series_status(self, status: str) -> SeriesStatus:
+        try:
+            return SeriesStatus(status)
+        except ValueError:
+            return SeriesStatus.UNKNOWN
+
     def map_posture(self, posture: str) -> str:
         """Return canonical posture string; unknown values map to UNKNOWN."""
         return POSTURE_MAP.get(posture, "UNKNOWN")
+
+    def aggregate_series_governance(
+        self,
+        result: DopetaskSeriesResult,
+        posture: str,
+    ) -> list[str]:
+        """Return fail-closed allowed actions for a read-only series snapshot."""
+        mapped_posture = self.map_posture(posture)
+        allowed = list(POSTURE_ALLOWED_ACTIONS.get(mapped_posture, []))
+        if result.status != SeriesStatus.VALIDATED:
+            allowed = [action for action in allowed if action == "MISSION_SUMMARY"]
+        result.allowed_actions = allowed
+        return allowed
 
     def derive_posture_obj(self, posture_mode: str) -> DopetaskPosture:
         """Build DopetaskPosture from a canonical posture mode string."""
