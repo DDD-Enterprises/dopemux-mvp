@@ -24,7 +24,11 @@ def test_run_fl_int_writes_outputs_and_preserves_pm_plane(tmp_path: Path) -> Non
 
     summary = module.run_fl_int(run_root, dry_run=False, out_root=out_root, prompt_executor=fake_executor)
     assert summary["status"] == "OK"
-    assert seen_steps == ["F0", "F1", "F2", "F4", "L0", "L1", "L3", "L4"]
+    assert seen_steps[0] == "F0"
+    assert seen_steps.count("F0") == summary["batch_counts"]["F0"]
+    assert seen_steps.count("L0") == summary["batch_counts"]["L0"]
+    filtered_steps = [step for index, step in enumerate(seen_steps) if index == 0 or step != seen_steps[index - 1]]
+    assert filtered_steps == ["F0", "F1", "F2", "F4", "L0", "L1", "L3", "L4"]
 
     result_root = out_root
     assert (result_root / "FL_INT_MACHINE_SUMMARY.json").exists()
@@ -42,6 +46,10 @@ def test_run_fl_int_writes_outputs_and_preserves_pm_plane(tmp_path: Path) -> Non
     assert (result_root / "FEATURE_LEDGER_ROUTING.json").exists()
     assert (result_root / "MASTER_FEATURE_LEDGER.json").exists()
     assert not (result_root / "FEATURE_LEDGER_STATUS.json").exists()
+    assert (result_root / "F0_INPUT_REDUCTION.json").exists()
+    assert (result_root / "L0_INPUT_REDUCTION.json").exists()
+    assert (result_root / "raw" / "F0_BATCH_PLAN.json").exists()
+    assert (result_root / "raw" / "L0_BATCH_PLAN.json").exists()
 
     routing = json.loads((result_root / "FEATURE_LEDGER_ROUTING.json").read_text(encoding="utf-8"))
     buckets = {row["routing_bucket"] for row in routing["items"]}

@@ -33,6 +33,11 @@ def load_run_module():
     return importlib.import_module("fl_int.run_fl_int")
 
 
+def load_reduce_module():
+    ensure_service_root_on_path()
+    return importlib.import_module("fl_int.reduce_input")
+
+
 def write_json(path: Path, payload: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -132,6 +137,50 @@ def build_fl_int_run_root(tmp_path: Path, *, include_x: bool = True) -> Path:
         for child in list(x_norm.iterdir()):
             child.unlink()
         x_norm.rmdir()
+    return run_root
+
+
+def build_large_fl_int_run_root(tmp_path: Path) -> Path:
+    run_root = build_fl_int_run_root(tmp_path, include_x=True)
+    docs_norm = run_root / PHASE_DIR_NAMES["D"] / "norm"
+    repeated_status = "\n".join(f"{line_no:04d}: status report placeholder" for line_no in range(1, 161))
+    repeated_design = "\n".join(
+        [
+            "0001: # Architecture Overview",
+            "0002: The system design and integration workflow controls runtime behavior.",
+            "0003: Authority and policy govern the PM control plane and memory ledger.",
+            "0004: ## Governance",
+            "0005: PM governance and policy surfaces remain authoritative.",
+        ]
+        * 24
+    )
+    (docs_norm / "LONG_ARCHITECTURE.md").write_text(repeated_design + "\n", encoding="utf-8")
+    for index in range(1, 7):
+        (docs_norm / f"LONG_STATUS_{index:02d}.md").write_text(repeated_status + "\n", encoding="utf-8")
+    write_json(
+        docs_norm / "DESIGN_LEDGER.json",
+        {
+            "schema": "DESIGN_LEDGER@v1",
+            "items": [
+                _item(
+                    "ledger_pm",
+                    "docs/governance.md",
+                    [11, 14],
+                    title="PM governance",
+                    claim_text="PM governance policy controls orchestration and authority routing.",
+                    evidence=[{"path": "docs/governance.md", "line_range": [11, 14], "excerpt": "PM governance policy controls orchestration and authority routing."}],
+                ),
+                _item(
+                    "ledger_status",
+                    "docs/status.md",
+                    [3, 4],
+                    title="Status report",
+                    claim_text="Daily status report without design-bearing detail.",
+                    evidence=[{"path": "docs/status.md", "line_range": [3, 4], "excerpt": "Daily status report without design-bearing detail."}],
+                ),
+            ],
+        },
+    )
     return run_root
 
 

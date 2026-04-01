@@ -14,7 +14,7 @@ if str(SERVICE_ROOT) not in sys.path:
 
 import run_extraction_v5 as runner  # type: ignore[import-not-found]
 from fl_int.models import FLIntStep, ladder_for_step
-from fl_int.run_fl_int import run_fl_int as run_fl_int_pipeline
+from fl_int.run_fl_int import normalize_step_payload, run_fl_int as run_fl_int_pipeline
 from s_int.schema_validate import validate_payload
 
 
@@ -93,6 +93,7 @@ def _prompt_executor(cfg: runner.RunnerConfig):
                     meta["failure_type"] = "invalid_json"
                     escalation_trigger = "invalid_json"
                 else:
+                    payload = normalize_step_payload(step.step_id, payload, _prior_outputs)
                     schema_errors = validate_payload(payload, schema)
                     if schema_errors:
                         meta["failure_type"] = "schema_invalid"
@@ -132,6 +133,7 @@ def _prompt_executor(cfg: runner.RunnerConfig):
                 payload = json.loads(str(ladder_result.get("response_text") or ""))
             except Exception as exc:
                 raise RuntimeError(f"FL_INT step {step.step_id} returned invalid JSON.") from exc
+        payload = normalize_step_payload(step.step_id, payload, _prior_outputs)
         errors = validate_payload(payload, schema)
         if errors:
             raise RuntimeError(
