@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+from dataclasses import dataclass
 from importlib import import_module
 from typing import Any, Dict, List, Optional
 
@@ -16,6 +17,16 @@ from dopemux.pm.adapters.orchestrator import TaskOrchestratorAdapter
 from dopemux.tools.conport_client import ConPortClient
 from integrations.leantime_jsonrpc_client import LeantimeJSONRPCClient
 logger = logging.getLogger(__name__)
+
+_orchestrator = TaskOrchestratorAdapter()
+_conport = ConPortAdapter()
+
+
+@dataclass(frozen=True)
+class _LocalMCPConfig:
+    timeout: int = 30
+    retry_attempts: int = 3
+    health_check_interval: int = 300
 
 
 class PMReadProvenance(BaseModel):
@@ -101,8 +112,8 @@ def _supporting_sources(*sources: tuple[str, str, List[str]]) -> List[PMReadSupp
     ]
 
 
-def _mcp_config() -> _PMMCPConfig:
-    return _PMMCPConfig()
+def _mcp_config() -> _LocalMCPConfig:
+    return _LocalMCPConfig()
 
 
 def _conport_context_client() -> ConPortClient:

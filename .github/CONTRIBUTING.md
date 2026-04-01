@@ -8,8 +8,7 @@ Thanks for contributing to Dopemux.
 2. Install dependencies:
 
 ```bash
-python -m pip install --upgrade pip
-pip install -e ".[dev]"
+uv sync --frozen --extra dev
 pre-commit install --install-hooks
 ```
 
@@ -37,9 +36,11 @@ Run these locally before opening or updating a PR:
 
 ```bash
 python scripts/check_root_hygiene.py --all-files
-pytest tests/unit --maxfail=1 --disable-warnings --no-cov
+uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov
 ./test_installer_basic.sh
 ```
+
+The default PR gate is the fast `tests/unit` lane. Integration coverage and scoped coverage run on slower CI lanes and can be reproduced locally with `make ci-extended`.
 
 If you changed workflows, also run actionlint or equivalent workflow linting.
 

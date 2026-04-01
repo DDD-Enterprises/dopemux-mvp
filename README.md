@@ -140,9 +140,7 @@ See [Architecture Overview](docs/04-explanation/architecture/dopemux-architectur
 ### Installation
 
 ```bash
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .[dev]
+uv sync --frozen --extra dev
 pre-commit install --install-hooks
 ```
 
@@ -239,11 +237,16 @@ See [copilot-instructions.md](.github/copilot-instructions.md) for more.
 
 ## Testing
 
-- **Unit tests**: `pytest -q` (see `tests/unit/`)
-- **Contract tests**: `pytest tests/contracts/`
+- **Fast PR unit gate**: `uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov`
+- **Integration tests**: `uv sync --frozen --extra test --extra services && uv run --frozen pytest tests/integration --maxfail=1 --disable-warnings --no-cov`
+- **Contract tests**: `uv run --frozen pytest tests/contracts/`
 - **Smoke tests**: `python tools/quick_checks.py smoke`
-- **Coverage**: 80% minimum enforced by `pytest.ini`
+- **Installer smoke**: `./test_installer_basic.sh`
+- **Scoped coverage**: `./scripts/check_coverage.sh`
+- **Coverage**: scoped MCP coverage is enforced by `scripts/check_coverage.sh`
 - **Linting/Typecheck**: `pre-commit run --all-files` (includes ruff, black, isort, mypy)
+
+Pull requests are optimized for the fast unit gate; installer smoke, scoped coverage, and broader integration coverage run on slower CI lanes outside the default PR critical path.
 
 See [docs/03-reference/03-testing.md](docs/03-reference/03-testing.md) for full details.
 

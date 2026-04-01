@@ -16,7 +16,22 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Response
 from fastapi.middleware.cors import CORSMiddleware
 import json
-from mcp.server.fastmcp import FastMCP
+try:
+    from mcp.server.fastmcp import FastMCP
+except ImportError:  # pragma: no cover - optional MCP transport in slim test envs
+    class FastMCP:  # type: ignore[override]
+        """Minimal fallback used when the MCP server package is unavailable."""
+
+        def __init__(self, name: str):
+            self.name = name
+            self.tools: Dict[str, Dict[str, Any]] = {}
+
+        def tool(self, *, name: str, description: str):
+            def decorator(func):
+                self.tools[name] = {"description": description, "handler": func}
+                return func
+
+            return decorator
 
 # Add repo root to path
 repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,8 +50,15 @@ except Exception:
         return logging.getLogger(service_name)
 try:
     from .core.coordinator import create_plane_coordinator
-except ImportError:  # pragma: no cover - direct module loading in tests
-    from app.core.coordinator import create_plane_coordinator
+except Exception as relative_import_error:  # pragma: no cover - direct module loading in tests
+    try:
+        from app.core.coordinator import create_plane_coordinator
+    except Exception as absolute_import_error:  # pragma: no cover - slim test env fallback
+        async def create_plane_coordinator(*_args, **_kwargs):
+            raise RuntimeError(
+                "task-orchestrator coordinator is unavailable in this environment: "
+                f"{absolute_import_error or relative_import_error}"
+            )
 
 # Configure structured logging
 configure_logging("task-orchestrator")

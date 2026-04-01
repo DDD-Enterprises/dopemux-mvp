@@ -4,6 +4,9 @@ from pathlib import Path
 
 from dopemux_pr_merge_specialist import engine
 from dopemux_pr_merge_specialist.schema import (
+    BlockerType,
+    Finding,
+    FindingSeverity,
     MergeActionType,
     MergeDecision,
     PRState,
@@ -21,6 +24,16 @@ class DummyClient:
 
     def invalidate(self, prefix: str) -> None:
         return None
+
+    def merge_pr(
+        self,
+        pr_id: int,
+        *,
+        title: str,
+        method: str = "squash",
+        admin_bypass: bool = False,
+    ) -> bool:
+        return True
 
 
 def _policy() -> dict:
@@ -170,3 +183,66 @@ def test_truth_sources_include_validation_status():
         {"_meta": {"fingerprint": "abc"}},
     )
     assert sources[2].status == ValidationStatus.NOT_EXECUTED.value
+
+
+def test_decide_merge_action_returns_rebase_command_when_green():
+    pr = PullRequestState(
+        pr_id=42,
+        title="Ready PR",
+        author="tester",
+        state="OPEN",
+        base_ref="main",
+        head_ref="feature/ready",
+        ci_status="SUCCESS",
+        mergeable="MERGEABLE",
+        merge_state_status="CLEAN",
+        review_decision="APPROVED",
+        lifecycle_state=PRState.MERGE_READY,
+    )
+    report = ValidationReport(
+        status=ValidationStatus.PASSED,
+        required_for_merge_ready=True,
+        steps=[],
+        attempts=1,
+        remediation_applied=False,
+    )
+
+    result = engine.decide_merge_action(pr=pr, findings=[], validation_report=report)
+
+    assert result.action == MergeActionType.REBASE_MERGE
+    assert result.command == ["gh", "pr", "merge", "42", "--rebase", "--delete-branch"]
+
+
+def test_decide_merge_action_returns_auto_merge_command_for_pending_checks():
+    pr = PullRequestState(
+        pr_id=43,
+        title="Pending checks PR",
+        author="tester",
+        state="OPEN",
+        base_ref="main",
+        head_ref="feature/pending",
+        ci_status="PENDING",
+        mergeable="MERGEABLE",
+        merge_state_status="BLOCKED",
+        review_decision="APPROVED",
+        lifecycle_state=PRState.MERGE_BLOCKED,
+    )
+    report = ValidationReport(
+        status=ValidationStatus.PASSED,
+        required_for_merge_ready=True,
+        steps=[],
+        attempts=1,
+        remediation_applied=False,
+    )
+    findings = [
+        Finding(
+            kind=FindingSeverity.BLOCKER,
+            finding_type=BlockerType.REQUIRED_CHECK_PENDING.value,
+            message="Required checks pending",
+        )
+    ]
+
+    result = engine.decide_merge_action(pr=pr, findings=findings, validation_report=report)
+
+    assert result.action == MergeActionType.AUTO_MERGE_FALLBACK
+    assert result.command == ["gh", "pr", "merge", "43", "--auto", "--rebase", "--delete-branch"]

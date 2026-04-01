@@ -12,9 +12,20 @@ prelude: Database Test Results Red Phase (reference) for dopemux documentation a
 ---
 # Database Testing - RED Phase Results
 
+## Status Update (2026-03-31)
+
+This document records the historical RED-phase state only.
+
+Current repo truth:
+
+- test file path: `services/serena/intelligence/test_database.py`
+- pytest collection from repo root now succeeds
+- database tests still skip when local Postgres test initialization is unavailable
+- current validation authority: [capability-manifest.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/capability-manifest.md)
+
 **Date**: 2025-10-24
 **Status**: ✅ Test Suite Created | ⚠️ Import Issues Preventing Execution
-**Test File**: `services/serena/v2/intelligence/test_database.py` (600+ lines)
+**Test File**: `services/serena/intelligence/test_database.py` (historical RED-phase work item)
 
 ---
 

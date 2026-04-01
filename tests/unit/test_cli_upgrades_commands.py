@@ -238,7 +238,6 @@ def test_upgrades_run_forwards_promptset_root() -> None:
     assert "--promptset-root" in kwargs["args"]
     assert "." in kwargs["args"]
 
-
 def test_upgrades_run_rejects_openrouter_batch_provider_choice() -> None:
     runner = CliRunner()
     result = runner.invoke(
@@ -258,7 +257,6 @@ def test_upgrades_run_rejects_openrouter_batch_provider_choice() -> None:
 
     assert result.exit_code != 0
     assert "openrouter" in result.output
-
 
 def test_extractor_alias_warns_and_executes() -> None:
     runner = CliRunner()

@@ -1,5 +1,7 @@
 import pytest
 from src.dopemux.pm.writes import (
+    classify_pm_write,
+    is_workflow_significant_payload,
     pm_update_work_item,
     pm_transition_work_item,
     pm_log_progress,
@@ -211,4 +213,3 @@ def test_pm_log_progress_success_with_missing_mirror():
     assert mirror.system == "dope-memory"
     assert not mirror.success
     assert mirror.error == "Memory client missing"
-
