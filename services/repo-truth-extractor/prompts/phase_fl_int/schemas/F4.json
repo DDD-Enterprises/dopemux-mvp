@@ -1,0 +1,53 @@
+{
+  "type": "object",
+  "required": ["status", "canonical_design_markdown", "meta", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "canonical_design_markdown": {"type": "string"},
+    "meta": {
+      "type": "object",
+      "required": ["section_summaries", "contradictions", "statistics"],
+      "properties": {
+        "section_summaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["section_id", "title", "claim_count"],
+            "properties": {
+              "section_id": {"type": "string"},
+              "title": {"type": "string"},
+              "claim_count": {"type": "integer"}
+            }
+          }
+        },
+        "contradictions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["contradiction_id", "status"],
+            "properties": {
+              "contradiction_id": {"type": "string"},
+              "status": {"type": "string"}
+            }
+          }
+        },
+        "statistics": {
+          "type": "object",
+          "required": [
+            "repo_proven_current_count",
+            "historical_count",
+            "target_count",
+            "unknown_count"
+          ],
+          "properties": {
+            "repo_proven_current_count": {"type": "integer"},
+            "historical_count": {"type": "integer"},
+            "target_count": {"type": "integer"},
+            "unknown_count": {"type": "integer"}
+          }
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}
