@@ -26,18 +26,23 @@ class FLIntStep:
 
 
 STRUCTURE_LADDER: List[Route] = [
+    ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+    ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
     ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
 
 REASONED_PLAN_LADDER: List[Route] = [
+    ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
+    ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
 
 CHEAP_EVAL_LADDER: List[Route] = [
+    ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
     ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
 ]
