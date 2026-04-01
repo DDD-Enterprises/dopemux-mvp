@@ -27,5 +27,5 @@ def test_git_history_analyzer_extracts_usage_patterns(monkeypatch, tmp_path):
     assert analysis.total_commits == 2
     assert analysis.total_files_changed == 4
     assert analysis.common_directories
-    assert "serena-v2" in analysis.suggested_mcps
-    assert "conport" in analysis.suggested_mcps
+    assert "dopemux-serena" in analysis.suggested_mcps
+    assert "dopemux-conport" in analysis.suggested_mcps

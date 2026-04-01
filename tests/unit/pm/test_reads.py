@@ -1,4 +1,5 @@
 import pytest
+import dopemux.pm.reads as pm_reads
 from dopemux.pm.reads import (
     PMBlockersResult,
     PMDecisionContextResult,
@@ -63,6 +64,15 @@ class FakeLeantimeClient:
         return self.tickets_payload
 
 
+class FakeConPortDecisionClient:
+    def __init__(self, payload):
+        self.payload = payload
+
+    async def search_decisions(self, limit: int = 5):
+        assert limit == 5
+        return self.payload
+
+
 class FakeAsyncSearchClient:
     def __init__(self, payload, method_name):
         self.payload = payload
@@ -115,24 +125,24 @@ async def test_pm_get_project_context_routes_to_conport(monkeypatch):
 async def test_pm_get_priority_queue():
     result = await pm_get_priority_queue("proj-123")
     assert result.project_id == "proj-123"
-    assert result.canonical_backend == "leantime"
-    assert result.provenance.source == "leantime"
+    assert result.canonical_backend == "task-orchestrator"
+    assert result.provenance.source == "task-orchestrator"
     assert result.queue_items == [] # Stubbed to fail-closed empty list
 
 @pytest.mark.asyncio
 async def test_pm_get_blockers():
     result = await pm_get_blockers("proj-123")
     assert result.project_id == "proj-123"
-    assert result.canonical_backend == "leantime"
-    assert result.provenance.source == "leantime"
+    assert result.canonical_backend == "task-orchestrator"
+    assert result.provenance.source == "task-orchestrator"
     assert result.active_blockers == [] # Stubbed to fail-closed empty list
 
 @pytest.mark.asyncio
 async def test_pm_get_workflow_state():
     result = await pm_get_workflow_state("proj-123")
     assert result.project_id == "proj-123"
-    assert result.canonical_backend == "leantime"
-    assert result.provenance.source == "leantime"
+    assert result.canonical_backend == "task-orchestrator"
+    assert result.provenance.source == "task-orchestrator"
     assert result.state == {} # Stubbed to fail-closed empty dict
     assert result.allowed_transitions == []
 
@@ -170,8 +180,12 @@ async def test_pm_get_sprint_snapshot_fails_closed_for_non_numeric_project_id():
 
 
 @pytest.mark.asyncio
-async def test_pm_get_decision_context():
+async def test_pm_get_decision_context(monkeypatch):
+    fake_client = FakeConPortDecisionClient({"decisions": [{"id": "d-1"}]})
+    monkeypatch.setattr(pm_reads, "_conport", fake_client)
+
     result = await pm_get_decision_context("proj-123")
+
     assert result.project_id == "proj-123"
     assert result.canonical_backend == "conport"
     assert result.provenance.source == "conport"

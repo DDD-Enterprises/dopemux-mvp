@@ -22,7 +22,6 @@ from dopemux.pm.writes import (
     PMWriteConfig,
     pm_transition_work_item,
     pm_update_work_item,
-    pm_log_progress,
 )
 from dopemux.execution.models import ExecutionPacket, PacketState
 
@@ -181,9 +180,38 @@ class TaskDecomposer:
             task.last_sync_error = "No PM config available"
             return
 
-        # Synchronization is now handled directly in the CRUD methods via pm_* helpers.
-        # This method is maintained for future bulk-sync/recovery logic.
-        pass
+        status_map = {
+            TaskStatus.PENDING: PMTaskStatus.TODO,
+            TaskStatus.IN_PROGRESS: PMTaskStatus.IN_PROGRESS,
+            TaskStatus.COMPLETED: PMTaskStatus.DONE,
+        }
+        pm_task = self.pm_store.get(task.id)
+        expected_version = getattr(pm_task, "version", 1)
+
+        try:
+            if is_creation:
+                pm_update_work_item(
+                    config=self.pm_config,
+                    task_id=task.id,
+                    updates={"title": task.description, "description": task.description},
+                    idempotency_key=f"cli-create-meta-{task.id}",
+                )
+
+            if is_creation or is_transition:
+                pm_transition_work_item(
+                    config=self.pm_config,
+                    task_id=task.id,
+                    new_status=status_map[task.status],
+                    reason="cli_task_update",
+                    idempotency_key=f"cli-status-{task.id}-{task.status.value.lower()}",
+                    expected_version=expected_version,
+                )
+
+            task.sync_pending = False
+            task.last_sync_error = None
+        except Exception as e:
+            task.sync_pending = True
+            task.last_sync_error = str(e)
 
     # --------------------------------------------------------------------- #
     # CRUD operations
@@ -197,6 +225,11 @@ class TaskDecomposer:
         **extra: Any,
     ) -> str:
         """Create a task and register it with the PM Plane."""
+        if "duration" in extra:
+            estimated_duration = int(extra["duration"])
+        estimated_duration = max(1, int(estimated_duration))
+        priority = str(priority)
+
         task_id = content_hash_task_id("cli", None, description)
         
         # 1. Create locally
@@ -222,19 +255,8 @@ class TaskDecomposer:
         self._tasks[task_id] = record
         
         # 3. Synchronize with PM Plane (ConPort/Chronicle)
-        if self.pm_config:
-            try:
-                pm_log_progress(
-                    config=self.pm_config,
-                    task_id=task_id,
-                    progress_notes=f"CLI Task added: {description}",
-                    idempotency_key=f"cli-add-{task_id}"
-                )
-                record.sync_pending = False
-            except Exception as e:
-                record.sync_pending = True
-                record.last_sync_error = str(e)
-        
+        self._sync_to_pm_plane(record, is_creation=True)
+
         self._save()
         return task_id
 
@@ -245,25 +267,10 @@ class TaskDecomposer:
         if not task or not pm_task:
             return False
 
-        # Transition PM Plane
-        if self.pm_config:
-            try:
-                pm_transition_work_item(
-                    config=self.pm_config,
-                    task_id=task_id,
-                    new_status=PMTaskStatus.IN_PROGRESS,
-                    reason="Task started via CLI",
-                    idempotency_key=f"cli-start-{task_id}",
-                    expected_version=getattr(pm_task, "version", 1)
-                )
-                task.sync_pending = False
-            except Exception as e:
-                task.sync_pending = True
-                task.last_sync_error = str(e)
-
         task.status = TaskStatus.IN_PROGRESS
         task.progress = 0.01
         task.started_at = _now()
+        self._sync_to_pm_plane(task, is_transition=True)
         self._save()
         return True
 
@@ -274,27 +281,13 @@ class TaskDecomposer:
         if not task or not pm_task:
             return False
 
-        # Transition PM Plane
-        if self.pm_config:
-            try:
-                pm_transition_work_item(
-                    config=self.pm_config,
-                    task_id=task_id,
-                    new_status=PMTaskStatus.DONE,
-                    reason="Task completed via CLI",
-                    idempotency_key=f"cli-complete-{task_id}",
-                    expected_version=getattr(pm_task, "version", 1)
-                )
-                task.sync_pending = False
-            except Exception as e:
-                task.sync_pending = True
-                task.last_sync_error = str(e)
-
+        completion_ts = _now()
         task.status = TaskStatus.COMPLETED
         task.progress = 1.0
         if not task.started_at:
-            task.started_at = _now()
-        task.completed_at = _now()
+            task.started_at = completion_ts
+        task.completed_at = completion_ts
+        self._sync_to_pm_plane(task, is_transition=True)
         self._save()
         return True
 
@@ -305,14 +298,19 @@ class TaskDecomposer:
             return False
 
         task.progress = max(0.0, min(1.0, float(progress)))
+        status_changed = False
         if task.progress > 0.0 and task.progress < 1.0:
+            if task.status is not TaskStatus.IN_PROGRESS:
+                status_changed = True
             task.status = TaskStatus.IN_PROGRESS
             if not task.started_at:
                 task.started_at = _now()
         
         if task.progress >= 1.0:
             return self.complete_task(task_id)
-        
+
+        if status_changed:
+            self._sync_to_pm_plane(task, is_transition=True)
         self._save()
         return True
 
@@ -321,14 +319,51 @@ class TaskDecomposer:
         return [t.to_dict() for t in self._tasks.values()]
 
     def get_progress(self) -> Dict[str, Any]:
-        """Return task completion summary."""
-        total = len(self._tasks)
-        completed = sum(1 for t in self._tasks.values() if t.status == TaskStatus.COMPLETED)
-        return {
-            "total": total,
-            "completed": completed,
-            "percent": (completed / total * 100) if total > 0 else 0.0
+        """Return task rows plus a completion summary."""
+        tasks = [
+            {
+                "id": task.id,
+                "name": task.description,
+                "description": task.description,
+                "completed": task.status is TaskStatus.COMPLETED,
+                "in_progress": task.status is TaskStatus.IN_PROGRESS,
+                "progress": task.progress,
+                "priority": task.priority,
+                "estimated_duration": task.estimated_duration,
+            }
+            for task in self._tasks.values()
+        ]
+        summary = {
+            "total": len(tasks),
+            "completed": sum(
+                1 for task in self._tasks.values() if task.status is TaskStatus.COMPLETED
+            ),
+            "in_progress": sum(
+                1 for task in self._tasks.values() if task.status is TaskStatus.IN_PROGRESS
+            ),
+            "pending": sum(
+                1 for task in self._tasks.values() if task.status is TaskStatus.PENDING
+            ),
         }
+        return {"tasks": tasks, "summary": summary}
+
+    def backfill_to_pm_plane(self) -> int:
+        """Sync any locally queued tasks to the PM plane."""
+        if not self.pm_config:
+            return 0
+
+        success_count = 0
+        for task in self._tasks.values():
+            if not task.sync_pending:
+                continue
+            try:
+                self._sync_to_pm_plane(task, is_creation=True)
+            except Exception as e:
+                logger.error("Failed to backfill task %s: %s", task.id, e)
+                continue
+            if not task.sync_pending:
+                success_count += 1
+        return success_count
 
     def _load(self) -> None:
         """Load tasks from disk."""
@@ -354,31 +389,6 @@ class TaskDecomposer:
         except Exception as e:
             logger.error(f"Failed to save tasks: {e}")
 
-    def backfill_to_pm_plane(self) -> int:
-        """
-        Backfill all currently local tasks to the PM plane.
-        Useful when transitioning an existing workspace to the PM-plane architecture,
-        or recovering after being offline.
-        
-        Returns the number of tasks successfully synced.
-        """
-        if not self.pm_config:
-            return 0
-            
-        success_count = 0
-        for task in self._tasks.values():
-            if not task.sync_pending:
-                continue
-                
-            try:
-                # We do both a metadata update and a status transition to ensure fully synced
-                self._sync_to_pm_plane(task, is_creation=True)
-                if not task.sync_pending:
-                    success_count += 1
-            except Exception as e:
-                logger.error(f"Failed to backfill task {task.id}: {e}")
-                
-        if success_count > 0:
-            self._save()
-            
-        return success_count
+    def __iter__(self) -> Iterable[TaskRecord]:
+        """Allow iteration over task records."""
+        return iter(self._tasks.values())
