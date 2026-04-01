@@ -84,6 +84,22 @@ except ImportError:
     else:
         IntelligenceRouter = None
 try:
+    from lib.spend_ledger import SpendLedger
+except ImportError:
+    spend_ledger_path = RUNNER_SERVICE_DIR / "lib" / "spend_ledger.py"
+    if spend_ledger_path.exists():
+        spend_ledger_spec = importlib.util.spec_from_file_location(
+            "repo_truth_spend_ledger", spend_ledger_path
+        )
+        if spend_ledger_spec and spend_ledger_spec.loader:
+            spend_ledger_module = importlib.util.module_from_spec(spend_ledger_spec)
+            spend_ledger_spec.loader.exec_module(spend_ledger_module)
+            SpendLedger = spend_ledger_module.SpendLedger
+        else:
+            SpendLedger = None
+    else:
+        SpendLedger = None
+try:
     from lib.phase_contract_map import (
         CONTRACT_MAP_FILENAME as PHASE_CONTRACT_MAP_FILENAME,
         get_step_contract,
@@ -6277,6 +6293,10 @@ def resolve_api_key(
             )
             return "", api_key_env
         return key_value, api_key_env
+    if provider == "openrouter" and api_key_env == "OPENROUTER_API_KEY":
+        v5_override = os.getenv("V5_OPENROUTER_API_KEY", "")
+        if v5_override:
+            return v5_override, "V5_OPENROUTER_API_KEY"
     value = os.getenv(api_key_env, "")
     return value, api_key_env
 
@@ -15529,6 +15549,10 @@ def main() -> None:
         help="Extraction profile name (e.g., P09_INTEGRATION_SURFACE_V1). Filters phases and overrides budgets.",
     )
     args = parser.parse_args()
+    if not hasattr(args, "execute"):
+        # v5 runner currently models live execution as the inverse of --dry-run.
+        # Keep a concrete execute flag for downstream consent and batch gates.
+        args.execute = not bool(args.dry_run)
     # --promptset-root: wire into env var so prompt_root() picks it up
     if args.promptset_root:
         psr = Path(args.promptset_root).resolve()
@@ -15976,7 +16000,14 @@ def main() -> None:
     )
 
     if SpendLedger is not None:
-        cfg.ledger = SpendLedger(run_dir=dirs["root"], run_id=run_id, max_cost_usd=cfg.max_cost_usd)
+        cfg = replace(
+            cfg,
+            ledger=SpendLedger(
+                run_dir=dirs["root"],
+                run_id=run_id,
+                max_cost_usd=cfg.max_cost_usd,
+            ),
+        )
 
     # --profile: load extraction profile and apply phase filtering + budget overrides
     _active_profile = None
