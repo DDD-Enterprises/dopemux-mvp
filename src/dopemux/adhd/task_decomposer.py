@@ -148,7 +148,20 @@ class TaskDecomposer:
         except Exception:
             self.workspace = Path(tempfile.mkdtemp(prefix="dopemux-tasks-"))
 
-        self.tasks_file = self.workspace / ".dopemux_tasks.json"
+        self.dopemux_dir = self.workspace / ".dopemux"
+        self.tasks_dir = self.dopemux_dir / "tasks"
+        self.tasks_file = self.tasks_dir / "tasks.json"
+        
+        # Ensure directories exist
+        try:
+            self.tasks_dir.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            self.workspace = Path(tempfile.mkdtemp(prefix="dopemux-tasks-"))
+            self.dopemux_dir = self.workspace / ".dopemux"
+            self.tasks_dir = self.dopemux_dir / "tasks"
+            self.tasks_file = self.tasks_dir / "tasks.json"
+            self.tasks_dir.mkdir(parents=True, exist_ok=True)
+
         self._tasks: Dict[str, TaskRecord] = {}
         self.pm_store = InMemoryPMTaskStore() # Local session mirror
         
@@ -249,6 +262,7 @@ class TaskDecomposer:
                 task.last_sync_error = str(e)
 
         task.status = TaskStatus.IN_PROGRESS
+        task.progress = 0.01
         task.started_at = _now()
         self._save()
         return True
@@ -278,6 +292,8 @@ class TaskDecomposer:
 
         task.status = TaskStatus.COMPLETED
         task.progress = 1.0
+        if not task.started_at:
+            task.started_at = _now()
         task.completed_at = _now()
         self._save()
         return True
@@ -289,6 +305,11 @@ class TaskDecomposer:
             return False
 
         task.progress = max(0.0, min(1.0, float(progress)))
+        if task.progress > 0.0 and task.progress < 1.0:
+            task.status = TaskStatus.IN_PROGRESS
+            if not task.started_at:
+                task.started_at = _now()
+        
         if task.progress >= 1.0:
             return self.complete_task(task_id)
         
@@ -298,6 +319,16 @@ class TaskDecomposer:
     def list_tasks(self) -> List[Dict[str, Any]]:
         """Return all managed tasks."""
         return [t.to_dict() for t in self._tasks.values()]
+
+    def get_progress(self) -> Dict[str, Any]:
+        """Return task completion summary."""
+        total = len(self._tasks)
+        completed = sum(1 for t in self._tasks.values() if t.status == TaskStatus.COMPLETED)
+        return {
+            "total": total,
+            "completed": completed,
+            "percent": (completed / total * 100) if total > 0 else 0.0
+        }
 
     def _load(self) -> None:
         """Load tasks from disk."""

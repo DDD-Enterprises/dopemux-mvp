@@ -1,21 +1,10 @@
 from concurrent.futures import ThreadPoolExecutor
-
-import pytest
-
-from dopemux.execution.models import ExecutionPacket, PacketState
-from dopemux.execution.store import (
-    InMemoryExecutionStore,
-    InMemoryLeaseStore,
-    StaleLeaseError,
-)
-
-
+from uuid import UUID
 import threading
 import time
-from uuid import UUID
-from concurrent.futures import ThreadPoolExecutor
 
 import pytest
+
 from dopemux.execution.models import ExecutionPacket, PacketState, LeaseState
 from dopemux.execution.store import (
     InMemoryExecutionStore,
@@ -25,15 +14,18 @@ from dopemux.execution.store import (
 )
 
 @pytest.fixture
+def execution_store():
+    return InMemoryExecutionStore()
+
+@pytest.fixture
 def lease_store(execution_store):
     return InMemoryLeaseStore(execution_store)
 
 
 def test_atomic_checkout_contention(execution_store, lease_store):
-def test_atomic_checkout_contention(execution_store, lease_store):
     """
-    PROVE: Two agents try to lease the same packet at the same time.
-    One should succeed, and the other should fail.
+    PROVE: Multiple agents try to lease the same packet at the same time.
+    One should succeed, and the others should fail or get NotReady.
     """
     packet_id = "TP-RACE"
     execution_store.create_packet(ExecutionPacket(packet_id=packet_id, owner_id="test"))
@@ -44,11 +36,8 @@ def test_atomic_checkout_contention(execution_store, lease_store):
         try:
             lease = lease_store.checkout(packet_id, agent_id, ttl_seconds=60)
             results.append(("success", agent_id, lease))
-        except Exception as exc:  # pragma: no cover - assertion inspects aggregate results
+        except Exception as exc:
             results.append(("fail", agent_id, exc))
-
-        except Exception as e:
-            results.append(("fail", agent_id, e))
 
     # Using threads to simulate real concurrency
     with ThreadPoolExecutor(max_workers=10) as executor:
@@ -56,33 +45,9 @@ def test_atomic_checkout_contention(execution_store, lease_store):
             executor.submit(checkout_task, f"agent-{i}")
 
     successes = [r for r in results if r[0] == "success"]
+    # With locking in InMemoryLeaseStore, this MUST be exactly 1.
     assert len(successes) == 1, f"Expected 1 success, got {len(successes)}"
 
-
-def test_stale_holder_protection(execution_store, lease_store):
-    packet_id = "TP-STALE"
-    execution_store.create_packet(ExecutionPacket(packet_id=packet_id, owner_id="test"))
-
-    lease_a = lease_store.checkout(packet_id, "agent-a", ttl_seconds=-1)
-    lease_b = lease_store.checkout(packet_id, "agent-b", ttl_seconds=60)
-    assert lease_b.lease_id != lease_a.lease_id
-
-    with pytest.raises(StaleLeaseError):
-        lease_store.heartbeat(lease_a.lease_id)
-
-    with pytest.raises(StaleLeaseError):
-        lease_store.release(lease_a.lease_id, final_state=PacketState.PROOF_GENERATED)
-
-    packet = execution_store.get_packet(packet_id)
-    assert packet is not None
-    assert packet.state == PacketState.LEASED
-
-
-def test_task_decomposer_to_execution_packet():
-    from dopemux.adhd.task_decomposer import TaskRecord, TaskStatus
-    
-    # With locking in InMemoryLeaseStore, this MUST be exactly 1.
-    assert len(successes) == 1, f"Expected 1 success, got {len(successes)}: {[s[1] for s in successes]}"
 
 def test_stale_holder_protection(execution_store, lease_store):
     """
@@ -92,7 +57,7 @@ def test_stale_holder_protection(execution_store, lease_store):
     packet_id = "TP-STALE"
     execution_store.create_packet(ExecutionPacket(packet_id=packet_id, owner_id="test"))
 
-    # Agent A takes lease and it 'expires' (we simulate this by just setting TTL to -1)
+    # Agent A takes lease and it 'expires' (we simulate this by setting TTL to -1)
     lease_a = lease_store.checkout(packet_id, "agent-a", ttl_seconds=-1)
     
     # Agent B takes the new lease
@@ -110,7 +75,7 @@ def test_stale_holder_protection(execution_store, lease_store):
     # Verify packet state remained LEASED (from Agent B's checkout)
     packet = execution_store.get_packet(packet_id)
     assert packet.state == PacketState.LEASED
-    assert packet.state != PacketState.PROOF_GENERATED
+
 
 def test_task_decomposer_integration():
     """
@@ -128,11 +93,6 @@ def test_task_decomposer_integration():
     )
 
     packet = record.to_execution_packet(owner_id="user-1")
-
-        status=TaskStatus.PENDING
-    )
-
-    packet = record.to_execution_packet(owner_id="user-1")
     
     assert packet.packet_id == "task-123"
     assert packet.owner_id == "user-1"
@@ -141,9 +101,7 @@ def test_task_decomposer_integration():
     assert packet.metadata["priority"] == "high"
     assert packet.metadata["estimated_duration"] == 30
 
-    record.status = TaskStatus.COMPLETED
-    assert record.to_execution_packet(owner_id="user-1").state == PacketState.PROOF_GENERATED
-    # Test state mapping
+    # Test state mapping for completion
     record.status = TaskStatus.COMPLETED
     packet_done = record.to_execution_packet(owner_id="user-1")
     assert packet_done.state == PacketState.PROOF_GENERATED

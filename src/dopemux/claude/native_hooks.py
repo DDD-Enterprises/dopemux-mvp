@@ -344,3 +344,11 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def handle_event(event_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Legacy/Testing entry point wrapping NativeHookAdapter."""
+    adapter = NativeHookAdapter()
+    payload["hook_event_name"] = event_name
+    _, response = adapter.handle_event(payload)
+    return response

@@ -188,7 +188,7 @@ jobs:
 
       - name: ▶️ Run Pytest (full suite with coverage)
         run: |
-          pytest tests/ --maxfail=1 --disable-warnings \
+          pytest tests/ -n auto --maxfail=1 --disable-warnings \
             --cov=src/dopemux \
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml \
