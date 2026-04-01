@@ -259,6 +259,16 @@ def decide_merge_action(
             reason_code="auto_merge_pending_checks",
         )
 
+    # Even if no explicit pending_checks blockers were found in 'findings', 
+    # check the PR state for any pending checks before choosing direct rebase.
+    if pr.check_summary and pr.check_summary.pending > 0:
+        return MergeDecision(
+            action=MergeActionType.AUTO_MERGE_ENABLE,
+            command=[],
+            reason="Required or optional checks are pending; enabling auto-merge.",
+            reason_code="auto_merge_active_checks",
+        )
+
     return MergeDecision(
         action=MergeActionType.REBASE_MERGE,
         command=[],
@@ -297,10 +307,10 @@ def run_merge_with_fallback(
         success = client.merge_pr(
             pr_id, title=title, method="rebase", admin_bypass=False
         )
-    elif action == MergeActionType.AUTO_MERGE_FALLBACK.value:
+    elif action in (MergeActionType.AUTO_MERGE_ENABLE.value, MergeActionType.AUTO_MERGE_FALLBACK.value):
         # For auto-merge, we still use the 'gh pr merge --auto' command via shell for now
         # until client support is added, but REBASE is the preference.
-        command = ["gh", "pr", "merge", str(pr_id), "--auto", "--rebase", "--delete-branch"]
+        command = ["gh", "pr", "merge", str(pr_id), "--auto", "--rebase"]
         if repo:
             command.extend(["--repo", repo])
         result = execute_or_dry_run(
