@@ -276,6 +276,8 @@ class InMemoryLeaseStore(LeaseStore):
                 raise StaleLeaseError(lease_id, lease.packet_id)
 
             now = datetime.now(timezone.utc)
+            if not result_summary:
+                result_summary = "Completed successfully"
             lease.state = LeaseState.RELEASED
             lease.result = ExecutionResult(
                 packet_id=lease.packet_id,

@@ -185,6 +185,9 @@ class OpenAIBatchClient:
             if isinstance(error_row, dict):
                 error = str(error_row.get("message") or error_row.get("code") or "batch_error")
             results.append(BatchResult(custom_id=custom_id, output_text=output_text, error=error, meta=row))
+
+        if total_lines > 0 and (discarded_lines / total_lines) > 0.05:
+            raise RuntimeError(f"BatchCorruptionError: {discarded_lines}/{total_lines} results discarded (>5%)")
         return results
 
     def cancel(self, job_id: str) -> None:

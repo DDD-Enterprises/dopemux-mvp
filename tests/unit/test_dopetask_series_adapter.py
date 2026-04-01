@@ -7,7 +7,6 @@ import pytest
 
 from src.dopemux_pr_merge_specialist.dopetask_adapter import DopetaskAdapter
 from src.dopemux_pr_merge_specialist.dopetask_bundle_loader import DopetaskBundleLoader
-from src.dopemux_pr_merge_specialist.dopetask_series_models import SeriesStatus
 from src.dopemux_pr_merge_specialist.dopetask_status_mapper import DopetaskStatusMapper
 
 
@@ -18,35 +17,53 @@ def adapter(tmp_path: Path) -> DopetaskAdapter:
     return DopetaskAdapter(loader, mapper)
 
 
-def test_adapter_from_series_state_path(adapter: DopetaskAdapter, tmp_path: Path) -> None:
-    state_file = tmp_path / "state.json"
-    data = {
-        "series_id": "SERIES-123",
-        "project_id": "dopemux-mvp",
+def test_adapter_from_bundle_path(adapter: DopetaskAdapter, tmp_path: Path) -> None:
+    bundle_path = tmp_path / "TP-1_PROOF_BUNDLE.json"
+    bundle = {
+        "tp_id": "1",
+        "title": "Series adapter bundle",
         "status": "VALIDATED",
-        "packets": [{"tp_id": "TP-1", "status": "VALIDATED"}],
+        "posture": "GO_SUPERVISED_ONLY",
+        "summary": {
+            "result": "Validated under supervision",
+            "confidence": "HIGH",
+            "risk": "LOW",
+        },
+        "acceptance_checks": [],
+        "validation": {"outcome": "PASS", "gates": []},
+        "artifacts": [],
+        "manifest": {"generator": "test", "version": "1.0"},
     }
-    state_file.write_text(json.dumps(data), encoding="utf-8")
+    bundle_path.write_text(json.dumps(bundle), encoding="utf-8")
 
-    result = adapter.from_series_state_path(state_file, posture="GO_SUPERVISED_ONLY")
-    assert result.identity.series_id == "SERIES-123"
-    assert result.status == SeriesStatus.VALIDATED
-    assert "APPLY_FIX" in result.allowed_actions
+    result = adapter.from_bundle_path(bundle_path)
+    assert result.tp.id == "1"
+    assert result.tp.status == "VALIDATED"
+    assert result.posture.mode == "GO_SUPERVISED_ONLY"
+    assert result.integration.adapter_status == "READY"
+    assert "APPLY_FIX" in result.governance.allowed_actions
 
 
-def test_adapter_from_series_id(adapter: DopetaskAdapter, tmp_path: Path) -> None:
-    series_id = "SERIES-456"
-    series_dir = tmp_path / ".dopetask" / "series" / series_id
-    series_dir.mkdir(parents=True)
-    state_file = series_dir / "state.json"
-    data = {
-        "series_id": series_id,
-        "project_id": "dopemux-mvp",
+def test_adapter_from_tp_id(adapter: DopetaskAdapter, tmp_path: Path) -> None:
+    bundle_path = tmp_path / "TP-2_PROOF_BUNDLE.json"
+    bundle = {
+        "tp_id": "2",
+        "title": "Lookup by TP id",
         "status": "IN_PROGRESS",
-        "packets": [{"tp_id": "TP-1", "status": "IN_PROGRESS"}],
+        "posture": "HOLD",
+        "summary": {
+            "result": "Execution still running",
+            "confidence": "MEDIUM",
+            "risk": "MEDIUM",
+        },
+        "acceptance_checks": [],
+        "validation": {"outcome": "PENDING", "gates": []},
+        "artifacts": [],
+        "manifest": {"generator": "test", "version": "1.0"},
     }
-    state_file.write_text(json.dumps(data), encoding="utf-8")
+    bundle_path.write_text(json.dumps(bundle), encoding="utf-8")
 
-    result = adapter.from_series_id(series_id, repo_path=tmp_path)
-    assert result.identity.series_id == series_id
-    assert result.status == SeriesStatus.IN_PROGRESS
+    result = adapter.from_tp_id("2")
+    assert result.tp.id == "2"
+    assert result.tp.status == "IN_PROGRESS"
+    assert result.posture.mode == "HOLD"

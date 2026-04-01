@@ -9,19 +9,10 @@ Finish the `v5 repo-truth-extractor` recovery branch using ONLY the designated r
 3. DO NOT restart or reimplement the workstream from scratch
 4. DO NOT rebase again
 5. DO NOT pop or mutate `stash@{0}` unless explicitly told later
-<<<<<<< Updated upstream
-6. DO NOT make live provider calls or PAL live calls
-7. Treat current runtime code and passing tests as authority
-8. Fail closed if validation fails
-9. Execute packets in exact order, pausing for confirmation
 6. DO NOT make live provider calls or PAL live calls unless strictly necessary; OpenRouter models are permitted if needed.
 7. Treat current runtime code and passing tests as authority.
 8. Fail closed if validation fails.
 9. Execute packets in exact order, pausing for confirmation. If a step freezes, restart the step.
-<<<<<<< Updated upstream
->>>>>>> feature/workspace-hygiene-and-reliability
-=======
->>>>>>> Stashed changes
 10. Emit `proof/<TP_ID>/proof.json` upon completion of each packet.
 
 ## Execution Model

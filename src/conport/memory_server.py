@@ -13,16 +13,24 @@ import asyncio
 import json
 import logging
 import os
+import ssl
 import sys
+from contextlib import suppress
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence
+from urllib.parse import quote
+from uuid import UUID, uuid4
 
 import asyncpg
+import anyio
 import voyageai
 from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from pydantic import BaseModel
+from mcp.shared.message import ServerMessageMetadata, SessionMessage
+from pydantic import BaseModel, ValidationError
 from pymilvus import MilvusClient
 
 # Branding & Voice
@@ -44,6 +52,30 @@ logging.basicConfig(
 logger = logging.getLogger("conport.memory_server")
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+    """Parse a boolean environment variable deterministically."""
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return default
+
+    normalized = raw_value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+
+    raise ValueError(f"Invalid boolean value for {name}: {raw_value}")
+
+
+class PostgreSQLSSLMode(str, Enum):
+    """Supported PostgreSQL TLS modes."""
+
+    DISABLE = "disable"
+    REQUIRE = "require"
+    VERIFY_CA = "verify-ca"
+    VERIFY_FULL = "verify-full"
+
+
 class MemoryConfig:
     """Configuration for ConPort memory system."""
 
@@ -54,11 +86,96 @@ class MemoryConfig:
         )
         self.milvus_host = os.getenv("MILVUS_HOST", "localhost")
         self.milvus_port = int(os.getenv("MILVUS_PORT", "19530"))
+        self.milvus_uri = os.getenv("MILVUS_URI")
+        self.milvus_db_name = os.getenv("MILVUS_DB_NAME", "default")
+        self.milvus_user = os.getenv("MILVUS_USER", "")
+        self.milvus_password = os.getenv("MILVUS_PASSWORD", "")
+        self.milvus_token = os.getenv("MILVUS_TOKEN", "")
+        self.milvus_secure = _env_flag("MILVUS_SECURE", False)
+        self.milvus_server_name = os.getenv("MILVUS_TLS_SERVER_NAME")
+        self.milvus_ca_pem_path = os.getenv("MILVUS_TLS_CA_PEM_PATH")
+        self.milvus_server_pem_path = os.getenv("MILVUS_TLS_SERVER_PEM_PATH")
+        self.milvus_client_pem_path = os.getenv("MILVUS_TLS_CLIENT_PEM_PATH")
+        self.milvus_client_key_path = os.getenv("MILVUS_TLS_CLIENT_KEY_PATH")
+
+        ssl_mode = (
+            os.getenv("POSTGRES_SSL_MODE")
+            or os.getenv("DATABASE_SSLMODE")
+            or os.getenv("PGSSLMODE")
+            or PostgreSQLSSLMode.DISABLE.value
+        )
+        self.postgres_ssl_mode = PostgreSQLSSLMode(ssl_mode.strip().lower())
+        self.postgres_ssl_root_cert = os.getenv(
+            "POSTGRES_SSL_ROOT_CERT", os.getenv("PGSSLROOTCERT")
+        )
+        self.postgres_ssl_cert = os.getenv("POSTGRES_SSL_CERT", os.getenv("PGSSLCERT"))
+        self.postgres_ssl_key = os.getenv("POSTGRES_SSL_KEY", os.getenv("PGSSLKEY"))
         self.zep_api_url = os.getenv("ZEP_API_URL", "http://localhost:8000")
         self.voyage_api_key = os.getenv("VOYAGE_API_KEY")
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.embedding_model = os.getenv("EMBEDDING_MODEL", "voyage-code-3")
         self.embedding_dimension = int(os.getenv("EMBEDDING_DIMENSION", "1024"))
+        self.mcp_sse_heartbeat_seconds = int(os.getenv("MCP_SSE_HEARTBEAT_SECONDS", "30"))
+
+    def build_postgres_connect_kwargs(self) -> Dict[str, Any]:
+        """Build asyncpg TLS settings from deterministic env configuration."""
+        if self.postgres_ssl_mode == PostgreSQLSSLMode.DISABLE:
+            return {}
+
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+
+        if self.postgres_ssl_mode == PostgreSQLSSLMode.REQUIRE:
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+        else:
+            context.check_hostname = self.postgres_ssl_mode == PostgreSQLSSLMode.VERIFY_FULL
+            context.verify_mode = ssl.CERT_REQUIRED
+            context.load_default_certs()
+            if self.postgres_ssl_root_cert:
+                context.load_verify_locations(cafile=self.postgres_ssl_root_cert)
+
+        if self.postgres_ssl_cert:
+            context.load_cert_chain(
+                certfile=self.postgres_ssl_cert,
+                keyfile=self.postgres_ssl_key,
+            )
+
+        return {"ssl": context}
+
+    def build_milvus_client_kwargs(self) -> Dict[str, Any]:
+        """Build Milvus client parameters, including TLS settings when configured."""
+        secure = self.milvus_secure
+        uri = self.milvus_uri
+        if not uri:
+            scheme = "https" if secure else "http"
+            uri = f"{scheme}://{self.milvus_host}:{self.milvus_port}"
+        elif uri.startswith("https://"):
+            secure = True
+
+        kwargs: Dict[str, Any] = {
+            "uri": uri,
+            "db_name": self.milvus_db_name,
+            "timeout": 30,
+        }
+        if self.milvus_user:
+            kwargs["user"] = self.milvus_user
+        if self.milvus_password:
+            kwargs["password"] = self.milvus_password
+        if self.milvus_token:
+            kwargs["token"] = self.milvus_token
+        if secure:
+            kwargs["secure"] = True
+        if self.milvus_server_name:
+            kwargs["server_name"] = self.milvus_server_name
+        if self.milvus_ca_pem_path:
+            kwargs["ca_pem_path"] = self.milvus_ca_pem_path
+        if self.milvus_server_pem_path:
+            kwargs["server_pem_path"] = self.milvus_server_pem_path
+        if self.milvus_client_pem_path:
+            kwargs["client_pem_path"] = self.milvus_client_pem_path
+        if self.milvus_client_key_path:
+            kwargs["client_key_path"] = self.milvus_client_key_path
+        return kwargs
 
 
 class MemoryNode(BaseModel):
@@ -81,6 +198,233 @@ class MemoryEdge(BaseModel):
     metadata: Dict[str, Any] = {}
 
 
+@dataclass
+class McpSseSession:
+    """Per-client SSE transport state for MCP."""
+
+    session_id: UUID
+    read_stream_writer: anyio.abc.ObjectSendStream[SessionMessage | Exception]
+    read_stream: anyio.abc.ObjectReceiveStream[SessionMessage | Exception]
+    write_stream: anyio.abc.ObjectSendStream[SessionMessage]
+    write_stream_reader: anyio.abc.ObjectReceiveStream[SessionMessage]
+    event_queue: asyncio.Queue[Optional[Dict[str, str]]] = field(
+        default_factory=asyncio.Queue
+    )
+    closed: asyncio.Event = field(default_factory=asyncio.Event)
+    server_task: Optional[asyncio.Task] = None
+    message_task: Optional[asyncio.Task] = None
+    heartbeat_task: Optional[asyncio.Task] = None
+
+
+class AiohttpMcpSseTransport:
+    """Aiohttp SSE transport that mirrors the MCP GET/POST session contract."""
+
+    def __init__(
+        self,
+        server: Server,
+        *,
+        message_endpoint: str = "/messages",
+        heartbeat_seconds: int = 30,
+    ) -> None:
+        self.server = server
+        self.message_endpoint = message_endpoint
+        self.heartbeat_seconds = heartbeat_seconds
+        self.sessions: Dict[UUID, McpSseSession] = {}
+
+    async def handle_sse(self, request):
+        """Create a new SSE stream and run one MCP session for it."""
+        from aiohttp import web
+
+        response = web.StreamResponse(
+            status=200,
+            headers={
+                "Content-Type": "text/event-stream",
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "Access-Control-Allow-Origin": "*",
+            },
+        )
+        await response.prepare(request)
+
+        read_stream_writer, read_stream = anyio.create_memory_object_stream[
+            SessionMessage | Exception
+        ](0)
+        write_stream, write_stream_reader = anyio.create_memory_object_stream[
+            SessionMessage
+        ](0)
+
+        session = McpSseSession(
+            session_id=uuid4(),
+            read_stream_writer=read_stream_writer,
+            read_stream=read_stream,
+            write_stream=write_stream,
+            write_stream_reader=write_stream_reader,
+        )
+        self.sessions[session.session_id] = session
+
+        endpoint_data = (
+            f"{quote(self.message_endpoint)}?session_id={session.session_id.hex}"
+        )
+        await session.event_queue.put({"event": "endpoint", "data": endpoint_data})
+
+        session.server_task = asyncio.create_task(
+            self._run_server_session(session),
+            name=f"conport-mcp-sse-server-{session.session_id.hex}",
+        )
+        session.message_task = asyncio.create_task(
+            self._pump_server_messages(session),
+            name=f"conport-mcp-sse-pump-{session.session_id.hex}",
+        )
+        session.heartbeat_task = asyncio.create_task(
+            self._emit_heartbeats(session),
+            name=f"conport-mcp-sse-heartbeat-{session.session_id.hex}",
+        )
+
+        try:
+            while True:
+                event = await session.event_queue.get()
+                if event is None:
+                    break
+                await response.write(self._format_event(event))
+        except (ConnectionResetError, asyncio.CancelledError):
+            raise
+        finally:
+            await self.close_session(session.session_id)
+
+        return response
+
+    async def handle_post_message(self, request):
+        """Accept one JSON-RPC client message for an established SSE session."""
+        from aiohttp import web
+
+        content_type = request.headers.get("content-type", "")
+        if not content_type.lower().startswith("application/json"):
+            return web.Response(text="Invalid Content-Type header", status=400)
+
+        session_id_param = request.query.get("session_id")
+        if not session_id_param:
+            return web.Response(text="session_id is required", status=400)
+
+        try:
+            session_id = UUID(hex=session_id_param)
+        except ValueError:
+            return web.Response(text="Invalid session ID", status=400)
+
+        session = self.sessions.get(session_id)
+        if session is None or session.closed.is_set():
+            return web.Response(text="Could not find session", status=404)
+
+        body = await request.read()
+        try:
+            message = types.JSONRPCMessage.model_validate_json(body)
+        except ValidationError as err:
+            await session.read_stream_writer.send(err)
+            return web.Response(text="Could not parse message", status=400)
+
+        session_message = SessionMessage(
+            message=message,
+            metadata=ServerMessageMetadata(request_context=request),
+        )
+        await session.read_stream_writer.send(session_message)
+        return web.Response(text="Accepted", status=202)
+
+    async def close_session(self, session_id: UUID) -> None:
+        """Close all resources associated with one SSE session."""
+        session = self.sessions.pop(session_id, None)
+        if session is None or session.closed.is_set():
+            return
+
+        session.closed.set()
+        current_task = asyncio.current_task()
+
+        for task in (session.server_task, session.message_task, session.heartbeat_task):
+            if task is not None and task is not current_task and not task.done():
+                task.cancel()
+
+        for task in (session.server_task, session.message_task, session.heartbeat_task):
+            if task is not None and task is not current_task:
+                with suppress(asyncio.CancelledError, Exception):
+                    await task
+
+        for stream in (
+            session.read_stream_writer,
+            session.read_stream,
+            session.write_stream,
+            session.write_stream_reader,
+        ):
+            with suppress(Exception):
+                await stream.aclose()
+
+        with suppress(asyncio.QueueFull):
+            session.event_queue.put_nowait(None)
+
+    async def _run_server_session(self, session: McpSseSession) -> None:
+        try:
+            await self.server.run(
+                session.read_stream,
+                session.write_stream,
+                self.server.create_initialization_options(),
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            logger.error(
+                brand_log(
+                    f"MCP SSE session failed: {exc}",
+                    chip=StatusChip.BLOCKER,
+                )
+            )
+
+    async def _pump_server_messages(self, session: McpSseSession) -> None:
+        try:
+            async with session.write_stream_reader:
+                async for session_message in session.write_stream_reader:
+                    await session.event_queue.put(
+                        {
+                            "event": "message",
+                            "data": session_message.message.model_dump_json(
+                                by_alias=True, exclude_none=True
+                            ),
+                        }
+                    )
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            logger.error(
+                brand_log(
+                    f"Failed to emit MCP SSE message: {exc}",
+                    chip=StatusChip.BLOCKER,
+                )
+            )
+        finally:
+            await session.event_queue.put(None)
+
+    async def _emit_heartbeats(self, session: McpSseSession) -> None:
+        try:
+            while not session.closed.is_set():
+                await asyncio.sleep(self.heartbeat_seconds)
+                if session.closed.is_set():
+                    break
+                await session.event_queue.put({"comment": "heartbeat"})
+        except asyncio.CancelledError:
+            raise
+
+    @staticmethod
+    def _format_event(event: Dict[str, str]) -> bytes:
+        """Render one SSE event frame."""
+        if "comment" in event:
+            return f": {event['comment']}\n\n".encode("utf-8")
+
+        lines = []
+        event_name = event.get("event")
+        if event_name:
+            lines.append(f"event: {event_name}")
+        for data_line in event["data"].splitlines() or [""]:
+            lines.append(f"data: {data_line}")
+        lines.append("")
+        return ("\n".join(lines) + "\n").encode("utf-8")
+
+
 class MilvusManager:
     """Manages Milvus vector database operations."""
 
@@ -95,16 +439,15 @@ class MilvusManager:
     async def connect(self):
         """Connect to Milvus."""
         try:
-            # Create Milvus client with proper configuration
-            self.client = MilvusClient(
-                uri=f"http://{self.config.milvus_host}:{self.config.milvus_port}",
-                db_name="default",
-                timeout=30,
-            )
+            client_kwargs = self.config.build_milvus_client_kwargs()
+            self.client = MilvusClient(**client_kwargs)
             # Test connection
             collections = self.client.list_collections()
             logger.info(
-                brand_log(f"Connected to Milvus at {self.config.milvus_host}:{self.config.milvus_port}", chip=StatusChip.LIVE)
+                brand_log(
+                    f"Connected to Milvus at {client_kwargs['uri']}",
+                    chip=StatusChip.LIVE,
+                )
             )
             logger.info(brand_log(f"Existing collections: {collections}", chip=StatusChip.LIVE))
             await self._ensure_collections()
@@ -321,7 +664,10 @@ class PostgreSQLManager:
     async def connect(self):
         """Connect to PostgreSQL."""
         try:
-            self.pool = await asyncpg.create_pool(self.config.database_url)
+            self.pool = await asyncpg.create_pool(
+                self.config.database_url,
+                **self.config.build_postgres_connect_kwargs(),
+            )
             logger.info(brand_log("Connected to PostgreSQL", chip=StatusChip.LIVE))
         except Exception as e:
             logger.error(brand_log(f"Failed to connect to PostgreSQL: {e}", chip=StatusChip.BLOCKER))
@@ -506,6 +852,10 @@ class ConPortMemoryServer:
         self.milvus = MilvusManager(self.config)
         self.postgres = PostgreSQLManager(self.config)
         self.server = Server("conport-memory")
+        self.sse_transport = AiohttpMcpSseTransport(
+            self.server,
+            heartbeat_seconds=self.config.mcp_sse_heartbeat_seconds,
+        )
 
         # Register MCP tools
         self._register_tools()
@@ -904,35 +1254,12 @@ async def main():
             )
             cors.add(neighbors_route)
 
-            # Simplified SSE endpoint for MCP (work in progress)
-            async def sse_handler(request):
-                """Handle SSE connections for MCP protocol."""
-                from aiohttp.web import Response
-
-                response = Response(
-                    content_type="text/event-stream",
-                    headers={
-                        "Cache-Control": "no-cache",
-                        "Connection": "keep-alive",
-                        "Access-Control-Allow-Origin": "*",
-                    },
-                )
-                await response.prepare(request)
-                await response.write(
-                    b'data: {"type": "connection", "status": "ready", "message": "ConPort Memory SSE endpoint - under development"}\n\n'
-                )
-
-                # Keep connection alive
-                try:
-                    while True:
-                        await asyncio.sleep(60)
-                        await response.write(b'data: {"type": "heartbeat"}\n\n')
-                except Exception as e:
-                    logger.error(brand_log(f"Error: {e}", chip=StatusChip.BLOCKER))
-                return response
-
-            sse_route = app.router.add_get("/sse", sse_handler)
+            sse_route = app.router.add_get("/sse", server_instance.sse_transport.handle_sse)
             cors.add(sse_route)
+            message_route = app.router.add_post(
+                "/messages", server_instance.sse_transport.handle_post_message
+            )
+            cors.add(message_route)
 
             port = int(os.getenv("PORT", "3004"))
             logger.info(brand_log(f"Starting HTTP server on port {port}", chip=StatusChip.LIVE))

@@ -9,6 +9,8 @@ from pathlib import Path
 from .dopetask_archive_resolver import DopetaskArchiveResolver
 from .dopetask_bundle_loader import BundleSchemaError, DopetaskBundleLoader
 from .dopetask_compatibility_mode import DopetaskCompatibilityMode
+from .dopetask_series_loader import DopetaskSeriesLoader
+from .dopetask_series_models import DopetaskSeriesResult
 from .dopetask_status_mapper import (
     DopetaskAdapterResult,
     DopetaskGovernance,
@@ -45,6 +47,7 @@ class DopetaskAdapter:
         worktree: str = "",
         archive_resolver: DopetaskArchiveResolver | None = None,
         compat_mode: DopetaskCompatibilityMode | None = None,
+        series_loader: DopetaskSeriesLoader | None = None,
     ) -> None:
         self.loader = loader
         self.mapper = mapper
@@ -53,6 +56,7 @@ class DopetaskAdapter:
         self.worktree = worktree or str(Path.cwd())
         self._archive_resolver = archive_resolver or DopetaskArchiveResolver()
         self._compat_mode = compat_mode or DopetaskCompatibilityMode()
+        self._series_loader = series_loader or DopetaskSeriesLoader()
 
     # ------------------------------------------------------------------
     # Public entry points
@@ -129,6 +133,23 @@ class DopetaskAdapter:
             errors=errors,
             warnings=warnings,
         )
+
+    def from_series_state_path(self, state_path: Path, posture: str) -> DopetaskSeriesResult:
+        """Load and normalize a read-only series state file without execution."""
+        result = self._series_loader.load_file(Path(state_path))
+        result.allowed_actions = self.mapper.aggregate_series_governance(result, posture)
+        return result
+
+    def from_series_id(
+        self,
+        series_id: str,
+        repo_path: Path | None = None,
+        posture: str = "GO_SUPERVISED_ONLY",
+    ) -> DopetaskSeriesResult:
+        """Resolve a repo-local series state path and load it read-only."""
+        root = Path(repo_path) if repo_path is not None else Path(self.worktree)
+        state_path = root / ".dopetask" / "series" / series_id / "state.json"
+        return self.from_series_state_path(state_path, posture=posture)
 
     def emit_adapter_artifacts(
         self,

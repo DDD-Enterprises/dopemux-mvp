@@ -32,21 +32,21 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Import database module using project root
-from intelligence.database import (
-    SeranaIntelligenceDatabase,
+# Import database module using package-qualified paths so pytest collection works from repo root.
+from services.serena.intelligence.database import (
+    SerenaIntelligenceDatabase,
     DatabaseConfig,
     QueryPerformanceLevel,
     DatabaseMetrics,
     create_intelligence_database,
-    ASYNCPG_AVAILABLE
+    ASYNCPG_AVAILABLE,
 )
-from performance_monitor import PerformanceMonitor
-from adhd_features import CodeComplexityAnalyzer
+from services.serena.performance_monitor import PerformanceMonitor
 
 
 
 # ============================================================================
+# TEST FIXTURES
 # TEST FIXTURES
 # ============================================================================
 
@@ -82,9 +82,7 @@ async def database(db_config, performance_monitor):
     if not ASYNCPG_AVAILABLE:
         pytest.skip("asyncpg not available - install with: pip install asyncpg")
 
-    from serena.intelligence.database import SerenaIntelligenceDatabase
-
-    db = SeranaIntelligenceDatabase(db_config, performance_monitor)
+    db = SerenaIntelligenceDatabase(db_config, performance_monitor)
 
     # Try to initialize (may fail if database doesn't exist - that's okay for RED phase)
     try:
@@ -107,9 +105,7 @@ async def database(db_config, performance_monitor):
 @pytest.mark.asyncio
 async def test_database_initialization(db_config, performance_monitor):
     """Test 1: Verify database initializes with connection pool."""
-    from serena.intelligence.database import SeranaIntelligenceDatabase
-
-    db = SeranaIntelligenceDatabase(db_config, performance_monitor)
+    db = SerenaIntelligenceDatabase(db_config, performance_monitor)
 
     # Should start uninitialized
     assert not db._initialized
@@ -451,7 +447,7 @@ async def test_metrics_tracking(database):
 @pytest.mark.asyncio
 async def test_connection_error_handling():
     """Test 12: Validate graceful error handling."""
-    from serena.intelligence.database import SeranaIntelligenceDatabase, DatabaseConfig
+    from services.serena.intelligence.database import SerenaIntelligenceDatabase, DatabaseConfig
 
     # Bad config
     bad_config = DatabaseConfig(
@@ -462,7 +458,7 @@ async def test_connection_error_handling():
         password="fake_pass"
     )
 
-    db = SeranaIntelligenceDatabase(bad_config)
+    db = SerenaIntelligenceDatabase(bad_config)
 
     # Should fail gracefully
     success = await db.initialize()
