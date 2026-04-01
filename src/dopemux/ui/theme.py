@@ -163,6 +163,8 @@ def build_theme(name: str) -> Theme:
             "success.soft": "#66FF66",
             "error": "bold #FF00FF",
             "warning": "#FFFF00",
+            "gold": "#FFFF00",
+            "amber": "#FFCF78",
             "warning.soft": "#FFFF66",
             "info": "#66FFFF",
             "debug": "#FF66FF",
@@ -217,6 +219,8 @@ def build_theme(name: str) -> Theme:
             "success": "#7FFFD4",
             "error": "bold #FF69B4",
             "warning": "#FFFFE0",
+            "gold": "#FFFFE0",
+            "amber": "#FFCF78",
             "info": "#B2FFFF",
             "debug": "#FFB2FF",
             "hazard": "#FFFFE0",
@@ -273,6 +277,8 @@ class Glyphs:
     PENDING = "\uf017"  # nf-fa-clock_o
     BLOCKED = "\uf05e"  # nf-fa-ban
     SKIPPED = "\uf050"  # nf-fa-forward
+    FIRE = "\uf06d"  # nf-fa-fire
+    GOLD = "\uf091"  # nf-fa-trophy
 
     # ── Dev ──
     GIT = "\ue725"  # nf-dev-git_branch
@@ -305,6 +311,8 @@ class Glyphs:
         PENDING: "~",
         BLOCKED: "#",
         SKIPPED: "-",
+        FIRE: "^",
+        GOLD: "*",
         GIT: "Y",
         CODE: "<>",
         PACKAGE: "[]",
