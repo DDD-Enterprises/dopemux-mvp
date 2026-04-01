@@ -23,6 +23,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 🛡️ Verify Dopetask Pin (Contract)
+        run: |
+          if [ ! -f .dopetask-pin ]; then
+            echo "ERROR: .dopetask-pin missing in repo root!" >&2
+            exit 2
+          fi
+
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:

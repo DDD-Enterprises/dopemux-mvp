@@ -104,7 +104,11 @@ class SyncTaskOrchestratorAdapter:
 
     def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
         """Helper to make an HTTP request."""
-        response = self.client.request(method, f"{self.base_url}{path}", **kwargs)
+        m = method.lower()
+        if hasattr(self.client, m):
+            response = getattr(self.client, m)(f"{self.base_url}{path}", **kwargs)
+        else:
+            response = self.client.request(method, f"{self.base_url}{path}", **kwargs)
         return response
 
     def transition(

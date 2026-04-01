@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import shutil
+from argparse import Namespace
 from dopemux_pr_merge_specialist.github_api import GitHubClient, RemoteCheckLogEvidence
 from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
+from dopemux_pr_merge_specialist import closed_loop_engine
 from dopemux_pr_merge_specialist.plan_builder import build_plan_result, write_pr_state_artifact
 from dopemux_pr_merge_specialist.preflight import build_run_paths, pr_dir_for
 from dopemux_pr_merge_specialist.runtime import CommandResult
