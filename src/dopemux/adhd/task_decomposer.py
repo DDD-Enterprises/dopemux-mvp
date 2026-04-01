@@ -353,3 +353,32 @@ class TaskDecomposer:
             self.tasks_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         except Exception as e:
             logger.error(f"Failed to save tasks: {e}")
+
+    def backfill_to_pm_plane(self) -> int:
+        """
+        Backfill all currently local tasks to the PM plane.
+        Useful when transitioning an existing workspace to the PM-plane architecture,
+        or recovering after being offline.
+        
+        Returns the number of tasks successfully synced.
+        """
+        if not self.pm_config:
+            return 0
+            
+        success_count = 0
+        for task in self._tasks.values():
+            if not task.sync_pending:
+                continue
+                
+            try:
+                # We do both a metadata update and a status transition to ensure fully synced
+                self._sync_to_pm_plane(task, is_creation=True)
+                if not task.sync_pending:
+                    success_count += 1
+            except Exception as e:
+                logger.error(f"Failed to backfill task {task.id}: {e}")
+                
+        if success_count > 0:
+            self._save()
+            
+        return success_count
