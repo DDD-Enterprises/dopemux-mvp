@@ -96,6 +96,8 @@ python services/repo-truth-extractor/run_fl_int.py \
   [--out-root /abs/path/to/output] \
   [--dry-run] \
   [--routing-policy cost] \
+  [--fl-int-provider-timeout-seconds 180] \
+  [--fl-int-f0-batch-timeout-seconds 210] \
   [--pretty]
 ```
 
@@ -104,6 +106,8 @@ Notes:
 - `--run-root` is required.
 - `--out-root` defaults to `<RUN_ROOT>/postprocess/fl_int_v1/`.
 - `--dry-run` collects inputs and writes the machine summary without calling providers.
+- `--fl-int-provider-timeout-seconds` bounds standalone provider calls used by `FL_INT`.
+- `--fl-int-f0-batch-timeout-seconds` bounds one `F0` batch and forces fail-closed diagnostics if the batch never reaches a write boundary.
 - The flow does not use implicit latest-run discovery.
 
 ## Upstream inputs
@@ -154,6 +158,27 @@ Operational artifacts:
 - `FL_INT_SUMMARY.md`
 - `FL_INT_CHECKLIST.md`
 - `FL_INT_FAIL_CLOSED.md`
+- `raw/F0_BATCH_<NNN>_TRACE.json`
+- `raw/F0_BATCH_<NNN>_FAILURE.json` on fail-closed `F0` batch aborts
+- `raw/F0_BATCH_<NNN>_RESPONSE.txt` when provider output is returned but rejected during normalization or schema validation
+
+## F0 runtime remediation
+
+`F0` is the only step with per-batch runtime diagnostics in the standalone flow.
+
+Current runtime behavior:
+
+- `F0` writes a per-batch trace artifact before the provider call starts and updates it at each execution checkpoint.
+- `F0` persists batch result artifacts immediately after schema validation succeeds.
+- `F0` fails closed with a machine-readable failure artifact if the provider call, normalization, schema validation, or write path fails.
+- `F0` normalization is shape-defensive for common provider drift. It can unwrap top-level `DESIGN_CLAIMS_RAW` envelopes and coerce common row-level aliases such as `claim`, `name`, or `title` into `claim_text`, `source` into `source_artifact`, and string/list evidence into evidence objects without inventing semantic meaning.
+
+Required trace progression for a successful `F0` batch:
+
+- `provider_call_return`
+- `normalize_return`
+- `schema_validate_return`
+- `artifact_write_success`
 
 ## Artifact registration boundary
 

@@ -1139,6 +1139,8 @@ class RunnerConfig:
     router: Optional[Any] = None  # IntelligenceRouter instance
     max_cost_usd: Optional[float] = None
     ledger: Optional[Any] = None
+    fl_int_provider_timeout_seconds: int = 180
+    fl_int_f0_batch_timeout_seconds: int = 210
 
 
 @dataclass(frozen=True)
@@ -6328,9 +6330,10 @@ def _build_gemini_config_for_model(
     return config
 
 
-def get_gemini_client(api_key: str) -> Any:
+def get_gemini_client(api_key: str, timeout_seconds: Optional[int] = None) -> Any:
     try:
         from google import genai
+        from google.genai import types as genai_types
     except ImportError as exc:
         raise RuntimeError(
             "google-genai is required for Gemini SDK transport."
@@ -6338,7 +6341,12 @@ def get_gemini_client(api_key: str) -> Any:
     # Canonical key source is GEMINI_API_KEY. Clear GOOGLE_API_KEY to prevent
     # google-genai from preferring the legacy env var when both are present.
     os.environ.pop("GOOGLE_API_KEY", None)
-    return genai.Client(api_key=api_key)
+    kwargs: Dict[str, Any] = {"api_key": api_key}
+    if timeout_seconds is not None:
+        kwargs["http_options"] = genai_types.HttpOptions(
+            timeout=max(1000, int(timeout_seconds) * 1000)
+        )
+    return genai.Client(**kwargs)
 
 
 def get_openai_client(base_url: Optional[str], api_key: str) -> Any:
@@ -6499,7 +6507,7 @@ def classify_failure_type(
         return "payload"
     if status_code is not None and status_code >= 500:
         return "provider"
-    if "timeout" in joined or "connection" in joined or "network" in joined:
+    if "timeout" in joined or "timed out" in joined or "connection" in joined or "network" in joined:
         return "network"
     return "unknown"
 
@@ -6589,6 +6597,7 @@ def call_llm(
     response_format_override: Optional[Dict[str, Any]] = None,
     structured_output_override: Optional[Dict[str, Any]] = None,
     retry_callback: Optional[Callable] = None,
+    timeout_seconds: Optional[int] = None,
 ) -> Dict[str, Any]:
     if _live_llm_calls_blocked_for_tests():
         message = (
@@ -6774,6 +6783,15 @@ def call_llm(
     }
     retry_trace: List[Dict[str, Any]] = []
     total_retry_delay = 0.0
+    overall_timeout_seconds = max(
+        1,
+        int(timeout_seconds if timeout_seconds is not None else 180),
+    )
+    started_monotonic = time.monotonic()
+
+    def _remaining_timeout_seconds() -> int:
+        elapsed = time.monotonic() - started_monotonic
+        return max(1, int(overall_timeout_seconds - elapsed))
 
     attempt = 0
     while attempt < cfg.retry_max_attempts:
@@ -6794,14 +6812,21 @@ def call_llm(
                 )
                 sent_header_keys = sorted(list(headers.keys()))
                 response = _get_http_session().post(
-                    endpoint_url, headers=headers, data=body, timeout=180
+                    endpoint_url,
+                    headers=headers,
+                    data=body,
+                    timeout=_remaining_timeout_seconds(),
                 )
                 response.raise_for_status()
                 status_code = response.status_code
                 response_json = response.json()
                 response_text = response_json["choices"][0]["message"]["content"]
             elif provider == "gemini":
-                client = get_gemini_client(api_key)
+                gemini_timeout = max(10, _remaining_timeout_seconds())
+                client = get_gemini_client(
+                    api_key,
+                    timeout_seconds=gemini_timeout,
+                )
                 response = client.models.generate_content(
                     model=model_id,
                     contents=user_content,
@@ -6827,6 +6852,7 @@ def call_llm(
                 chat_kwargs: Dict[str, Any] = {
                     "model": model_id,
                     "messages": payload["messages"],
+                    "timeout": _remaining_timeout_seconds(),
                 }
                 if "temperature" in payload:
                     chat_kwargs["temperature"] = payload["temperature"]

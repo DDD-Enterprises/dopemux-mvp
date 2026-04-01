@@ -63,6 +63,8 @@ def _build_cfg(args: argparse.Namespace) -> runner.RunnerConfig:
         d0_max_files=None,
         d1_max_files=None,
         provider_denylist=(),
+        fl_int_provider_timeout_seconds=int(args.fl_int_provider_timeout_seconds),
+        fl_int_f0_batch_timeout_seconds=int(args.fl_int_f0_batch_timeout_seconds),
     )
 
 
@@ -70,9 +72,24 @@ def _prompt_executor(cfg: runner.RunnerConfig):
     def _execute(step: FLIntStep, rendered_prompt: str, schema: dict, _prior_outputs: dict) -> dict:
         step_cfg = replace(cfg, escalation_max_hops=max(0, int(step.max_hops) - 1))
         ladder = ladder_for_step(step)
+        observer = _prior_outputs.get("__fl_int_diag_observer__")
+        if not callable(observer):
+            observer = None
 
         def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
             provider, model_id, api_key_env = route
+            if observer is not None:
+                observer(
+                    "provider_call_start",
+                    {
+                        "route": route,
+                        "request_meta": {
+                            "provider": provider,
+                            "model_id": model_id,
+                            "api_key_env_requested": api_key_env,
+                        },
+                    },
+                )
             result = runner.call_llm(
                 provider=provider,
                 model_id=model_id,
@@ -80,13 +97,34 @@ def _prompt_executor(cfg: runner.RunnerConfig):
                 system_prompt="Return JSON only.",
                 user_content=rendered_prompt,
                 cfg=step_cfg,
+                timeout_seconds=step_cfg.fl_int_provider_timeout_seconds,
             )
             meta = dict(result.get("meta") or {})
             response_text = str(result.get("text") or "")
+            if observer is not None:
+                observer(
+                    "provider_call_return",
+                    {
+                        "route": route,
+                        "request_meta": meta,
+                        "response_received": bool(meta.get("response_received") or response_text),
+                        "response_text_chars": len(response_text),
+                    },
+                )
             payload = None
             schema_errors: List[str] = []
             escalation_trigger = str(meta.get("failure_type") or "").strip() or None
             if not escalation_trigger:
+                if observer is not None:
+                    observer(
+                        "normalize_start",
+                        {
+                            "route": route,
+                            "request_meta": meta,
+                            "response_received": bool(response_text),
+                            "response_text_chars": len(response_text),
+                        },
+                    )
                 try:
                     payload = json.loads(response_text)
                 except Exception:
@@ -94,6 +132,16 @@ def _prompt_executor(cfg: runner.RunnerConfig):
                     escalation_trigger = "invalid_json"
                 else:
                     payload = normalize_step_payload(step.step_id, payload, _prior_outputs)
+                    if observer is not None:
+                        observer(
+                            "normalize_return",
+                            {
+                                "route": route,
+                                "request_meta": meta,
+                                "response_received": bool(response_text),
+                                "response_text_chars": len(response_text),
+                            },
+                        )
                     schema_errors = validate_payload(payload, schema)
                     if schema_errors:
                         meta["failure_type"] = "schema_invalid"
@@ -123,25 +171,35 @@ def _prompt_executor(cfg: runner.RunnerConfig):
             ui=None,
         )
         payload = None
+        request_meta = (
+            dict(ladder_result.get("request_meta") or {})
+            if isinstance(ladder_result.get("request_meta"), dict)
+            else {}
+        )
+        response_text = str(ladder_result.get("response_text") or "")
+        route = ladder_result.get("route")
         artifacts = ladder_result.get("artifacts")
         if isinstance(artifacts, list) and artifacts:
             candidate = artifacts[0]
             if isinstance(candidate, dict):
                 payload = candidate
-        if payload is None:
+        if payload is None and response_text:
             try:
-                payload = json.loads(str(ladder_result.get("response_text") or ""))
-            except Exception as exc:
-                raise RuntimeError(f"FL_INT step {step.step_id} returned invalid JSON.") from exc
-        payload = normalize_step_payload(step.step_id, payload, _prior_outputs)
-        errors = validate_payload(payload, schema)
-        if errors:
-            raise RuntimeError(
-                f"FL_INT step {step.step_id} failed schema validation: {'; '.join(errors[:5])}"
-            )
+                payload = json.loads(response_text)
+            except Exception:
+                request_meta.setdefault("failure_type", "invalid_json")
+        if isinstance(payload, dict):
+            payload = normalize_step_payload(step.step_id, payload, _prior_outputs)
+            errors = validate_payload(payload, schema)
+            if errors:
+                request_meta["failure_type"] = "schema_invalid"
+                request_meta["schema_errors"] = list(errors)
+                payload = None
         return {
             "payload": payload,
-            "request_meta": dict(ladder_result.get("request_meta") or {}),
+            "request_meta": request_meta,
+            "response_text": response_text,
+            "route": route,
         }
 
     return _execute
@@ -153,6 +211,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--out-root", default="")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--routing-policy", default="cost")
+    parser.add_argument("--fl-int-provider-timeout-seconds", type=int, default=180)
+    parser.add_argument("--fl-int-f0-batch-timeout-seconds", type=int, default=210)
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args(argv)
 
@@ -165,6 +225,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             dry_run=bool(args.dry_run),
             out_root=out_root,
             prompt_executor=None if args.dry_run else _prompt_executor(cfg),
+            f0_batch_timeout_seconds=cfg.fl_int_f0_batch_timeout_seconds,
         )
     except Exception as exc:
         print(str(exc), file=sys.stderr)
