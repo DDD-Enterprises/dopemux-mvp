@@ -64,6 +64,7 @@ class ThreadDispositionType(str, Enum):
 
 class MergeActionType(str, Enum):
     REBASE_MERGE = "rebase_merge"
+    AUTO_MERGE_ENABLE = "auto_merge_enable"
     AUTO_MERGE_FALLBACK = "auto_merge_fallback"
     ADMIN_BYPASS_SQUASH = "admin_bypass_squash"
     BLOCKED = "blocked"
