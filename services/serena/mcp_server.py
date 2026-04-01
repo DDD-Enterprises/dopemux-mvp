@@ -397,13 +397,10 @@ class SerenaV2MCPServer:
 
         # Lazy-loaded components
         self.database: Optional[Any] = None
-        self.graph_operations: Optional[Any] = None
         self.lsp: Optional[Any] = None
         self.claude_context: Optional[Any] = None
         self.tree_sitter: Optional[Any] = None
         self.adhd_navigator: Optional[Any] = None
-        self.focus_manager: Optional[Any] = None
-        self.navigation_cache: Optional[Any] = None
         self.conport_client: Optional[Any] = None  # F001/F002: ConPort integration
 
         # Component state tracking
@@ -413,8 +410,6 @@ class SerenaV2MCPServer:
             "claude_context": False,
             "tree_sitter": False,
             "adhd_features": False,
-            "navigation_cache": False,
-            "file_watcher": False,
             "conport": False,  # F001/F002: ConPort connection tracking
         }
 
@@ -440,12 +435,8 @@ class SerenaV2MCPServer:
         2. Defer database, LSP, claude-context until first use
         3. Load on-demand when tools need them
         """
-        # Phase 1: Workspace detection (always required unless pre-pinned)
-        if self.workspace and self.workspace.exists():
-            self.workspace = self.workspace.resolve()
-            logger.info(f"✓ Workspace (preconfigured): {self.workspace}")
-        else:
-            self.workspace = self._detect_workspace()
+        # Phase 1: Workspace detection (always required)
+        self.workspace = self._detect_workspace()
 
         if self.workspace:
             logger.info(f"✓ Workspace: {self.workspace}")
@@ -652,53 +643,23 @@ class SerenaV2MCPServer:
             return False
 
     async def _init_database(self):
-        """Initialize PostgreSQL database connectivity for Serena intelligence."""
-        from .intelligence.database import create_intelligence_database
+        """Initialize PostgreSQL database + schema"""
+        from .intelligence import create_intelligence_database, setup_phase2_schema, SerenaGraphOperations
 
-        self.database = await create_intelligence_database()
-        await self._load_persisted_focus_mode()
-        logger.info("Database: PostgreSQL connected")
+        self.database = await create_intelligence_database(
+            workspace_id=str(self.workspace)
+        )
+        await setup_phase2_schema(self.database)
+        self.graph_operations = SerenaGraphOperations(self.database, self.performance_monitor)
+        logger.info("Database: PostgreSQL connected, schema ready, Graph operations enabled")
 
     async def _init_lsp(self):
-        """Initialize the EnhancedLSPWrapper for workspace-aware multi-language navigation."""
-        from .adhd_features import ADHDCodeNavigator
-        from .enhanced_lsp import EnhancedLSPWrapper, LSPConfig
-        from .focus_manager import FocusManager
-        from .navigation_cache import NavigationCache, NavigationCacheConfig
+        """Initialize SimpleLSPClient for Python"""
+        self.lsp = SimpleLSPClient(self.workspace)
 
-        if not self.workspace:
-            raise RuntimeError("Workspace must be initialized before LSP startup")
-
-        if self.navigation_cache is None:
-            self.navigation_cache = NavigationCache(
-                NavigationCacheConfig(
-                    redis_url="redis://localhost:6379",
-                    db_index=6,
-                    default_ttl=300,
-                    symbol_ttl=600,
-                    definition_ttl=1800,
-                )
-            )
-
-        if self.adhd_navigator is None:
-            self.adhd_navigator = ADHDCodeNavigator()
-
-        if self.focus_manager is None:
-            self.focus_manager = FocusManager()
-
-        self.lsp = EnhancedLSPWrapper(
-            config=LSPConfig(),
-            workspace_path=self.workspace,
-            cache=self.navigation_cache,
-            adhd_navigator=self.adhd_navigator,
-            focus_manager=self.focus_manager,
-        )
-
-        await asyncio.wait_for(self.lsp.initialize(), timeout=8.0)
-        await self._apply_focus_mode_to_runtime(self.current_focus_mode)
-
-        active_languages = sorted(self.lsp.lsp_servers.keys())
-        logger.info("LSP: EnhancedLSPWrapper ready for %s", ", ".join(active_languages) or "no languages")
+        # Start with 5s timeout to prevent blocking
+        await asyncio.wait_for(self.lsp.start(), timeout=5.0)
+        logger.info("LSP: pylsp connected and ready")
 
     async def _init_claude_context(self):
         """Initialize claude-context MCP integration"""
@@ -726,7 +687,7 @@ class SerenaV2MCPServer:
 
     async def _init_navigation_cache(self):
         """Initialize Redis navigation cache for 100x speedup"""
-        from .navigation_cache import NavigationCache, NavigationCacheConfig
+        from navigation_cache import NavigationCache, NavigationCacheConfig
 
         config = NavigationCacheConfig(
             redis_url="redis://localhost:6379",
@@ -742,7 +703,7 @@ class SerenaV2MCPServer:
 
     async def _init_file_watcher(self):
         """Initialize file watcher for auto-refresh on code changes"""
-        from .file_watcher import FileWatcherManager
+        from file_watcher import FileWatcherManager
 
         # Create watcher with reference to server instance
         self.file_watcher = FileWatcherManager(
@@ -756,172 +717,6 @@ class SerenaV2MCPServer:
             logger.info("File Watcher: Monitoring code changes, auto-refresh enabled")
         else:
             logger.warning("File Watcher: Failed to start, manual refresh required")
-
-    def _workspace_label(self) -> str:
-        """Return the current workspace as a stable string label."""
-        return str(self.workspace) if self.workspace else "uninitialized"
-
-    def _relative_or_absolute(self, path: Path) -> str:
-        """Render a path relative to workspace when possible."""
-        if self.workspace and path.exists():
-            try:
-                return str(path.relative_to(self.workspace))
-            except ValueError:
-                return str(path)
-        return str(path)
-
-    def _symbol_kind_name(self, kind: Any) -> str:
-        """Translate LSP SymbolKind integers into stable string labels."""
-        kind_map = {
-            2: "module",
-            5: "class",
-            6: "method",
-            7: "property",
-            11: "interface",
-            12: "function",
-            13: "variable",
-        }
-
-        if isinstance(kind, str):
-            return kind
-        return kind_map.get(kind, "symbol")
-
-    def _normalize_focus_mode(self, mode: str) -> str:
-        """Validate supported Serena focus modes."""
-        normalized = (mode or "").strip().lower()
-        valid_modes = {"focused", "scattered", "transitioning"}
-        if normalized not in valid_modes:
-            raise ValueError(f"Unsupported focus mode: {mode}")
-        return normalized
-
-    def _focus_mode_settings(self, mode: str) -> Dict[str, Any]:
-        """Map Serena focus modes onto persisted learning-profile settings."""
-        normalized = self._normalize_focus_mode(mode)
-        settings = {
-            "focused": {
-                "result_limit": 10,
-                "progressive_disclosure": True,
-                "focus_threshold": 0.7,
-                "runtime_mode": "medium",
-            },
-            "transitioning": {
-                "result_limit": 5,
-                "progressive_disclosure": True,
-                "focus_threshold": 0.55,
-                "runtime_mode": "light",
-            },
-            "scattered": {
-                "result_limit": 3,
-                "progressive_disclosure": True,
-                "focus_threshold": 0.4,
-                "runtime_mode": "deep",
-            },
-        }
-        return settings[normalized]
-
-    def _infer_focus_mode_from_profile_row(self, row: Dict[str, Any]) -> str:
-        """Infer Serena focus mode from persisted learning-profile settings."""
-        profile_tuple = (
-            int(row.get("optimal_result_limit", 10) or 10),
-            bool(row.get("progressive_disclosure_preference", True)),
-            round(float(row.get("focus_mode_trigger_threshold", 0.7) or 0.7), 2),
-        )
-
-        for mode in ("focused", "transitioning", "scattered"):
-            settings = self._focus_mode_settings(mode)
-            candidate_tuple = (
-                settings["result_limit"],
-                settings["progressive_disclosure"],
-                round(float(settings["focus_threshold"]), 2),
-            )
-            if profile_tuple == candidate_tuple:
-                return mode
-
-        if profile_tuple[0] <= 3:
-            return "scattered"
-        if profile_tuple[0] <= 5:
-            return "transitioning"
-        return "focused"
-
-    async def _apply_focus_mode_to_runtime(self, mode: str) -> None:
-        """Propagate Serena focus mode to any live focus manager."""
-        if not self.focus_manager:
-            return
-
-        focus_mode_map = {
-            "focused": "medium",
-            "transitioning": "light",
-            "scattered": "deep",
-        }
-        runtime_mode_name = focus_mode_map[self._normalize_focus_mode(mode)]
-
-        try:
-            from .focus_manager import FocusMode
-
-            await self.focus_manager.set_focus_mode(FocusMode(runtime_mode_name))
-        except Exception as exc:
-            logger.warning("Focus manager update failed for %s: %s", mode, exc)
-
-    async def _load_persisted_focus_mode(self) -> None:
-        """Load persisted focus-mode preferences from learning_profiles when available."""
-        if not self.database or not self.workspace:
-            return
-
-        try:
-            query = """
-            SELECT optimal_result_limit, progressive_disclosure_preference, focus_mode_trigger_threshold
-            FROM learning_profiles
-            WHERE user_session_id = $1 AND workspace_path = $2
-            ORDER BY updated_at DESC
-            LIMIT 1
-            """
-            results = await self.database.execute_query(
-                query,
-                ("default", self._workspace_label()),
-                complexity_filter=False,
-                max_results=1,
-            )
-            if results:
-                self.current_focus_mode = self._infer_focus_mode_from_profile_row(results[0])
-        except Exception as exc:
-            logger.debug("No persisted focus mode loaded: %s", exc)
-
-    async def _get_graph_operations(self) -> Optional[Any]:
-        """Create or return cached graph operations backed by the active database."""
-        database_available = await self._ensure_component("database")
-        if not database_available or not self.database:
-            return None
-
-        if self.graph_operations is None:
-            from .intelligence.graph_operations import SerenaGraphOperations
-
-            self.graph_operations = SerenaGraphOperations(self.database)
-
-        return self.graph_operations
-
-    def _coerce_lsp_locations(self, payload: Any) -> List[Dict[str, Any]]:
-        """Normalize LSP definition/reference payloads into a location list."""
-        if payload is None:
-            return []
-        if isinstance(payload, list):
-            return payload
-        if isinstance(payload, dict):
-            return [payload]
-        return []
-
-    def _iterate_source_files(self):
-        """Yield supported source files for degraded non-LSP scans."""
-        supported_suffixes = {".py", ".ts", ".tsx", ".js", ".jsx", ".rs"}
-        if not self.workspace:
-            return
-        for source_file in self.workspace.rglob("*"):
-            if not source_file.is_file():
-                continue
-            if source_file.suffix.lower() not in supported_suffixes:
-                continue
-            if ".venv" in str(source_file) or "__pycache__" in str(source_file):
-                continue
-            yield source_file
 
     def register_tools(self):
         """Register MCP tools with the server"""
@@ -1261,7 +1056,7 @@ class SerenaV2MCPServer:
                 ),
                 Tool(
                     name="find_relationships",
-                    description="Find code dependencies (Tier 3 advanced tool). Uses PostgreSQL graph relationships when available and falls back explicitly to regex scanning when the graph store is unavailable. ADHD-optimized: max 10 results, max depth 3.",
+                    description="Find code dependencies (Tier 3 advanced tool). Grep-based call/import detection with depth limiting (max 3 levels). ADHD-optimized: max 10 results.",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -1288,7 +1083,7 @@ class SerenaV2MCPServer:
                 ),
                 Tool(
                     name="get_navigation_patterns",
-                    description="Analyze persisted navigation patterns from PostgreSQL history (Tier 3 advanced tool). Returns concrete history summaries when available and explicit degraded metadata when history is unavailable. Multi-workspace: patterns across workspaces.",
+                    description="Analyze navigation patterns from history (Tier 3 advanced tool). Phase 2D: Returns placeholder. Phase 3: Full pattern learning. Multi-workspace: patterns across workspaces.",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -1312,7 +1107,7 @@ class SerenaV2MCPServer:
                 ),
                 Tool(
                     name="update_focus_mode",
-                    description="Set current focus state (Tier 3 advanced tool). Persists ADHD filtering preferences to learning_profiles when the intelligence database is available and reports degraded runtime-only mode otherwise.",
+                    description="Set current focus state (Tier 3 advanced tool). In-memory state, resets on restart. Phase 3: Database persistence.",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -1810,13 +1605,11 @@ class SerenaV2MCPServer:
                 "feature_1_detection": ["detect_untracked_work"],
                 "feature_1_actions": ["track_untracked_work", "snooze_untracked_work", "ignore_untracked_work"],
                 "feature_1_config": ["get_untracked_work_config", "update_untracked_work_config"],
-                "files": ["read_file", "list_dir"],
-                "total_available": 33,
-                "total_planned": 33,
+                "phase_2_deferred": ["semantic_search"],
+                "total_available": 20,
+                "total_planned": 21,
                 "feature_1_status": "complete (detection + actions + storage + config + reminders)",
-                "tier_3_mode": "database-backed with explicit fallback metadata",
-                "lsp_engine": "EnhancedLSPWrapper",
-                "runtime_surface": "implementation_candidate"
+                "tier_3_mode": "simplified (Phase 3 will add full database integration)"
             }
         }
 
@@ -1863,8 +1656,6 @@ class SerenaV2MCPServer:
             return json.dumps(result, indent=2)
 
         # Single workspace mode (backward compatible)
-        start_time = datetime.now()
-
         # Get dynamic max_results from ADHD Engine (F-NEW-1)
         max_results = await get_dynamic_max_results(user_id, max_results)
 
@@ -1881,63 +1672,40 @@ class SerenaV2MCPServer:
         lsp_available = await self._ensure_component("lsp")
 
         if lsp_available and self.lsp:
+            # Use LSP workspace symbols
             try:
-                raw_symbols = await self.lsp.list_workspace_symbols(query=query, max_results=max_results * 3)
-                symbols = []
+                symbols = await self.lsp.workspace_symbols(query)
 
+                # Filter by symbol_type if specified
+                if symbol_type:
+                    symbols = [s for s in symbols if s.get("kind") == symbol_type]
+
+                # Apply ADHD filtering: max 10 results
+                symbols = symbols[:max_results]
+
+                # Try to add complexity scores
                 tree_sitter_available = await self._ensure_component("tree_sitter")
-                for symbol in raw_symbols:
-                    kind_name = self._symbol_kind_name(symbol.get("kind"))
-                    if symbol_type and kind_name != symbol_type:
-                        continue
-
-                    location = symbol.get("location", {})
-                    uri = location.get("uri", "")
-                    range_start = location.get("range", {}).get("start", {})
-                    symbol_path = Path(uri.replace("file://", "")) if uri else None
-
-                    normalized_symbol = {
-                        "name": symbol.get("name"),
-                        "kind": kind_name,
-                        "language": symbol.get("_language"),
-                        "file": self._relative_or_absolute(symbol_path) if symbol_path else None,
-                        "line": range_start.get("line", 0) + 1,
-                        "column": range_start.get("character", 0) + 1,
-                        "complexity": None,
-                    }
-
-                    if tree_sitter_available and self.tree_sitter and symbol_path and symbol_path.exists():
+                if tree_sitter_available and self.tree_sitter:
+                    for symbol in symbols:
                         try:
                             complexity = await self.tree_sitter.analyze_complexity(
-                                str(symbol_path),
-                                symbol.get("name"),
+                                symbol.get("location", {}).get("uri", ""),
+                                symbol.get("name")
                             )
-                            normalized_symbol["complexity"] = complexity.get("score", 0.0)
-                        except (FileNotFoundError, RuntimeError) as exc:
-                            logger.debug("Complexity analysis skipped for %s: %s", symbol_path, exc)
+                            symbol["complexity"] = complexity.get("score", 0.0)
+                        except (FileNotFoundError, RuntimeError) as e:
+                            symbol["complexity"] = None
+                            logger.debug(f"Complexity analysis skipped: {e}")
                         except Exception:
+                            symbol["complexity"] = None
                             logger.exception("Unexpected complexity analysis error")
-
-                    symbols.append(normalized_symbol)
-                    if len(symbols) >= max_results:
-                        break
-
-                elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
                 result = {
                     "query": query,
                     "symbol_type_filter": symbol_type,
                     "found": len(symbols),
                     "max_results": max_results,
                     "adhd_filtered": True,
-                    "symbols": symbols,
-                    "source": "enhanced_lsp",
-                    "workspace": self._workspace_label(),
-                    "latency_ms": round(elapsed_ms, 2),
-                    "provenance": {
-                        "engine": "EnhancedLSPWrapper",
-                        "languages": sorted(self.lsp.lsp_servers.keys()),
-                        "degraded": False,
-                    },
+                    "symbols": symbols
                 }
 
                 # Cache result for future queries (symbol_ttl: 10 minutes)
@@ -1955,47 +1723,43 @@ class SerenaV2MCPServer:
                 logger.exception("Unexpected LSP symbol search error; falling back")
                 # Fall through to fallback mode
 
-        # Fallback: Simple file-based search using language-aware regex
+        # Fallback: Simple file-based search using glob
         logger.info("Using fallback symbol search (LSP unavailable)")
 
+        # Simple fallback: search Python files for class/def patterns
         import re
+        from pathlib import Path
 
         matches = []
-        pattern = re.compile(
-            rf"(class|def|function|const|let|var|struct|enum|trait|impl)\s+{re.escape(query)}\w*",
-            re.IGNORECASE,
-        )
+        pattern = re.compile(rf"(class|def)\s+{re.escape(query)}\w*\s*[\(\:]", re.IGNORECASE)
 
-        for source_file in self._iterate_source_files() or []:
-            if len(matches) >= max_results:
-                break
+        for py_file in self.workspace.rglob("*.py"):
+            if ".venv" in str(py_file) or "__pycache__" in str(py_file):
+                continue
 
             try:
-                content = source_file.read_text()
+                content = py_file.read_text()
                 for line_num, line in enumerate(content.splitlines(), 1):
-                    match = pattern.search(line)
-                    if match:
-                        kind = match.group(1).lower()
+                    if pattern.search(line):
                         matches.append({
                             "name": query,
-                            "kind": "class" if kind == "class" else "function" if kind in {"def", "function"} else "symbol",
-                            "file": self._relative_or_absolute(source_file),
+                            "kind": "class" if "class" in line else "function",
+                            "file": str(py_file.relative_to(self.workspace)),
                             "line": line_num,
                             "complexity": None,
-                            "language": source_file.suffix.lower().lstrip("."),
-                            "fallback_mode": True,
+                            "fallback_mode": True
                         })
 
                         if len(matches) >= max_results:
                             break
-            except (UnicodeDecodeError, OSError) as exc:
-                logger.debug("Skipping file (decode/fs error): %s - %s", source_file, exc)
+            except (UnicodeDecodeError, OSError) as e:
+                logger.debug(f"Skipping file (decode/fs error): {py_file} - {e}")
                 continue
             except Exception:
-                logger.exception("Unexpected symbol scan error in %s", source_file)
+                logger.exception(f"Unexpected symbol scan error in {py_file}")
                 continue
-
-        elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+            if len(matches) >= max_results:
+                break
 
         result = {
             "query": query,
@@ -2005,15 +1769,7 @@ class SerenaV2MCPServer:
             "adhd_filtered": True,
             "fallback_mode": True,
             "lsp_unavailable": not lsp_available,
-            "symbols": matches,
-            "source": "fallback_grep",
-            "workspace": self._workspace_label(),
-            "latency_ms": round(elapsed_ms, 2),
-            "provenance": {
-                "engine": "regex_scan",
-                "degraded": True,
-                "reason": self.initialization_errors.get("lsp", "lsp_unavailable"),
-            },
+            "symbols": matches
         }
 
         # Cache fallback results too (shorter TTL since less reliable)
@@ -2035,7 +1791,7 @@ class SerenaV2MCPServer:
         Navigate from usage to definition location
 
         Tier 1 Navigation Tool:
-        - Uses EnhancedLSPWrapper for workspace-aware multi-language goto definition
+        - Uses SimpleLSPClient (pylsp) for goto definition
         - Returns definition location with 7-line context
         - ADHD-optimized: Highlights definition line with >>>
         - Fallback: Grep-based search if LSP unavailable
@@ -2062,7 +1818,8 @@ class SerenaV2MCPServer:
                 "query": {"file": file_path, "line": line, "column": column}
             }, indent=2)
 
-        # Convert to 0-indexed position for LSP
+        # Convert to file URI and 0-indexed position
+        file_uri = f"file://{resolved_path}"
         lsp_line = line - 1  # LSP uses 0-indexed
         lsp_column = column - 1
 
@@ -2074,12 +1831,7 @@ class SerenaV2MCPServer:
 
         if lsp_available and self.lsp:
             try:
-                lsp_response = await self.lsp.find_definition(
-                    str(resolved_path),
-                    lsp_line,
-                    lsp_column,
-                )
-                locations = self._coerce_lsp_locations(lsp_response.result if lsp_response else None)
+                locations = await self.lsp.goto_definition(file_uri, lsp_line, lsp_column)
 
                 if locations:
                     # Take first definition (ADHD: avoid overwhelm from multiple defs)
@@ -2116,17 +1868,10 @@ class SerenaV2MCPServer:
                             "column": def_column,
                             "context": context
                         },
-                        "source": "enhanced_lsp",
-                        "workspace": self._workspace_label(),
-                        "provenance": {
-                            "engine": "EnhancedLSPWrapper",
-                            "language": lsp_response.language if lsp_response else None,
-                            "degraded": False,
-                        },
                         "performance": {
                             "latency_ms": round(elapsed_ms, 2),
-                            "mode": "enhanced_lsp",
-                            "cached": bool(lsp_response.cached) if lsp_response else False,
+                            "mode": "lsp",
+                            "cached": False
                         }
                     }
 
@@ -2187,13 +1932,6 @@ class SerenaV2MCPServer:
                                     "line": line_num,
                                     "column": 0,
                                     "context": context
-                                },
-                                "source": "fallback_grep",
-                                "workspace": self._workspace_label(),
-                                "provenance": {
-                                    "engine": "regex_scan",
-                                    "degraded": True,
-                                    "reason": self.initialization_errors.get("lsp", "lsp_unavailable"),
                                 },
                                 "performance": {
                                     "latency_ms": round(elapsed_ms, 2),
@@ -2348,7 +2086,7 @@ class SerenaV2MCPServer:
         Find all references/usages of symbol at position
 
         Tier 1 Navigation Tool:
-        - Uses EnhancedLSPWrapper for workspace-aware multi-language reference search
+        - Uses SimpleLSPClient (pylsp) for finding references
         - ADHD-aware: Dynamic result limits (3-40 based on attention state)
         - Returns each reference with 3-line context snippet
         - Fallback: Grep-based search if LSP unavailable
@@ -2395,7 +2133,8 @@ class SerenaV2MCPServer:
                 "error": f"File not found: {file_path}"
             }, indent=2)
 
-        # Convert to 0-indexed coordinates for LSP
+        # Convert to file URI and 0-indexed
+        file_uri = f"file://{resolved_path}"
         lsp_line = line - 1
         lsp_column = column - 1
 
@@ -2407,13 +2146,12 @@ class SerenaV2MCPServer:
 
         if lsp_available and self.lsp:
             try:
-                lsp_response = await self.lsp.find_references(
-                    str(resolved_path),
+                locations = await self.lsp.find_references(
+                    file_uri,
                     lsp_line,
                     lsp_column,
-                    include_declaration,
+                    include_declaration
                 )
-                locations = self._coerce_lsp_locations(lsp_response.result if lsp_response else None)
 
                 # Apply ADHD filtering
                 locations = locations[:max_results]
@@ -2451,17 +2189,9 @@ class SerenaV2MCPServer:
                     "max_results": max_results,
                     "adhd_filtered": len(locations) > max_results,
                     "references": references,
-                    "source": "enhanced_lsp",
-                    "workspace": self._workspace_label(),
-                    "provenance": {
-                        "engine": "EnhancedLSPWrapper",
-                        "language": lsp_response.language if lsp_response else None,
-                        "degraded": False,
-                    },
                     "performance": {
                         "latency_ms": round(elapsed_ms, 2),
-                        "mode": "enhanced_lsp",
-                        "cached": bool(lsp_response.cached) if lsp_response else False,
+                        "mode": "lsp"
                     }
                 }
 
@@ -2530,13 +2260,6 @@ class SerenaV2MCPServer:
                 "max_results": max_results,
                 "adhd_filtered": True,
                 "references": references,
-                "source": "fallback_grep",
-                "workspace": self._workspace_label(),
-                "provenance": {
-                    "engine": "regex_scan",
-                    "degraded": True,
-                    "reason": self.initialization_errors.get("lsp", "lsp_unavailable"),
-                },
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2),
                     "mode": "fallback_grep",
@@ -2984,18 +2707,17 @@ class SerenaV2MCPServer:
         workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
-        Find code dependencies via graph-backed traversal with explicit fallback
+        Find code dependencies via intelligent graph traversal
 
-        Tier 3 Advanced Tool:
-        - Uses PostgreSQL graph traversal when relationship data exists
-        - ADHD-optimized: max 10 results, max 3 depth levels
-        - Falls back explicitly to regex scanning when graph data is unavailable
+        Tier 3 Advanced Tool (Phase 2D):
+        - Queries the PostgreSQL intelligence graph
+        - ADHD-optimized: returns most relevant related elements based on cognitive load
         - Multi-workspace: Relationships across workspaces
 
         Args:
             symbol: Symbol to find relationships for
-            relationship_type: calls, imports, inherits, or all
-            depth: Maximum traversal depth (default: 2, max: 3)
+            relationship_type: Type of relationship to filter by
+            depth: Maximum traversal depth
             workspace_path: Optional single workspace path
             workspace_paths: Optional multiple workspace paths
 
@@ -3012,194 +2734,78 @@ class SerenaV2MCPServer:
             )
             return json.dumps(result, indent=2)
 
+        # Single workspace mode
         start_time = datetime.now()
-        depth = min(depth, 3)
-        max_results = 10
-        graph_operations = await self._get_graph_operations()
-
-        if graph_operations:
-            try:
-                from .intelligence.graph_operations import NavigationMode, RelationshipType
-
-                navigation_mode = (
-                    NavigationMode.FOCUS if self.current_focus_mode == "scattered" else NavigationMode.EXPLORE
-                )
-                relationship_filters = None
-                if relationship_type != "all":
-                    relationship_filters = [RelationshipType(relationship_type)]
-
-                root_elements = await graph_operations.find_elements_by_name(
-                    symbol,
-                    mode=navigation_mode,
-                )
-
-                if root_elements:
-                    queue = [(root, 0) for root in root_elements[:3]]
-                    visited_ids = {root.id for root in root_elements[:3]}
-                    seen_edges = set()
-                    relationships = []
-
-                    while queue and len(relationships) < max_results:
-                        current_element, current_depth = queue.pop(0)
-                        related_pairs = await graph_operations.get_related_elements(
-                            current_element.id,
-                            relationship_types=relationship_filters,
-                            direction="both",
-                            mode=navigation_mode,
-                        )
-
-                        for related_element, edge in related_pairs:
-                            edge_key = (
-                                min(edge.source_id, edge.target_id),
-                                max(edge.source_id, edge.target_id),
-                                edge.relationship_type,
-                            )
-                            if edge_key in seen_edges:
-                                continue
-                            seen_edges.add(edge_key)
-
-                            source_element = current_element if edge.source_id == current_element.id else related_element
-                            target_element = related_element if edge.target_id == related_element.id else current_element
-
-                            relationships.append(
-                                {
-                                    "relationship_type": edge.relationship_type,
-                                    "depth": current_depth + 1,
-                                    "source": {
-                                        "id": source_element.id,
-                                        "name": source_element.element_name,
-                                        "type": source_element.element_type,
-                                        "file": source_element.file_path,
-                                    },
-                                    "target": {
-                                        "id": target_element.id,
-                                        "name": target_element.element_name,
-                                        "type": target_element.element_type,
-                                        "file": target_element.file_path,
-                                        "complexity_score": target_element.complexity_score,
-                                    },
-                                    "strength": edge.strength,
-                                    "confidence": edge.confidence,
-                                    "cognitive_load": edge.cognitive_load,
-                                    "adhd_navigation_difficulty": edge.adhd_navigation_difficulty,
-                                    "adhd_recommended": edge.adhd_recommended,
-                                }
-                            )
-
-                            if current_depth + 1 < depth and related_element.id not in visited_ids:
-                                visited_ids.add(related_element.id)
-                                queue.append((related_element, current_depth + 1))
-
-                            if len(relationships) >= max_results:
-                                break
-
-                    if relationships:
-                        elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
-                        result = {
-                            "symbol": symbol,
-                            "relationship_type": relationship_type,
-                            "depth": depth,
-                            "found": len(relationships),
-                            "relationships": relationships,
-                            "roots": [
-                                {
-                                    "id": root.id,
-                                    "name": root.element_name,
-                                    "type": root.element_type,
-                                    "file": root.file_path,
-                                }
-                                for root in root_elements[:3]
-                            ],
-                            "source": "postgres_graph",
-                            "workspace": self._workspace_label(),
-                            "latency_ms": round(elapsed_ms, 2),
-                            "adhd": {
-                                "max_results": max_results,
-                                "max_depth": 3,
-                                "focus_mode": self.current_focus_mode,
-                            },
-                            "provenance": {
-                                "engine": "SerenaGraphOperations",
-                                "store": "code_elements/code_relationships",
-                                "degraded": False,
-                            },
-                        }
-                        logger.info(
-                            "find_relationships: %s (%s) → %s graph rels (%.1fms)",
-                            symbol,
-                            relationship_type,
-                            len(relationships),
-                            elapsed_ms,
-                        )
-                        return json.dumps(result, indent=2)
-            except Exception as exc:
-                logger.warning("Graph-backed relationship lookup failed for %s: %s", symbol, exc)
-
-        import re
+        
+        # Ensure database is available
+        if not await self._ensure_component("database"):
+            return json.dumps({
+                "error": "Intelligence database unavailable. Please ensure PostgreSQL is running."
+            })
+            
+        from intelligence import NavigationMode
 
         relationships = []
-        patterns = []
-        if relationship_type in ["calls", "all"]:
-            patterns.append(("calls", re.compile(rf"\b{re.escape(symbol)}\s*\(")))
-        if relationship_type in ["imports", "all"]:
-            patterns.append(("imports", re.compile(rf"(from .* import .*\b{re.escape(symbol)}\b|import .*\b{re.escape(symbol)}\b)")))
-        if relationship_type in ["inherits", "all"]:
-            patterns.append(("inherits", re.compile(rf"class \w+\([^)]*\b{re.escape(symbol)}\b")))
+        try:
+            # 1. Resolve symbol to element ID
+            search_results = await self.graph_operations.find_elements_by_name(symbol)
+            
+            if not search_results:
+                elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+                return json.dumps({
+                    "symbol": symbol,
+                    "found": 0,
+                    "relationships": [],
+                    "note": f"Symbol '{symbol}' not found in intelligence graph. Use sync_codebase_to_graph to populate.",
+                    "performance": {"latency_ms": round(elapsed_ms, 2)}
+                })
+                
+            # Use the most relevant matching element
+            element = search_results[0]
+            
+            # 2. Get relationships from graph (ADHD optimized by default)
+            related_elements = await self.graph_operations.get_related_elements(
+                element.id,
+                direction="outgoing" if relationship_type in ["calls", "all"] else "any",
+                mode=NavigationMode.EXPLORE,
+                max_results=10
+            )
+            
+            # 3. Format results
+            for rel_element, edge in related_elements:
+                relationships.append({
+                    "target": rel_element.element_name,
+                    "file": rel_element.file_path,
+                    "type": edge.relationship_type,
+                    "strength": edge.strength,
+                    "cognitive_load": edge.cognitive_load,
+                    "adhd_difficulty": edge.adhd_navigation_difficulty
+                })
 
-        for source_file in self._iterate_source_files() or []:
-            try:
-                content = source_file.read_text()
-                for line_num, line_text in enumerate(content.splitlines(), 1):
-                    for rel_type, pattern in patterns:
-                        if pattern.search(line_text):
-                            relationships.append(
-                                {
-                                    "relationship_type": rel_type,
-                                    "file": self._relative_or_absolute(source_file),
-                                    "line": line_num,
-                                    "context": line_text.strip()[:160],
-                                }
-                            )
-                            if len(relationships) >= max_results:
-                                break
-                    if len(relationships) >= max_results:
-                        break
-            except Exception as exc:
-                logger.debug("Skipping relationship fallback scan for %s: %s", source_file, exc)
-                continue
-            if len(relationships) >= max_results:
-                break
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
-        elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
-        result = {
-            "symbol": symbol,
-            "relationship_type": relationship_type,
-            "depth": depth,
-            "found": len(relationships),
-            "relationships": relationships,
-            "source": "fallback_grep",
-            "workspace": self._workspace_label(),
-            "latency_ms": round(elapsed_ms, 2),
-            "adhd": {
-                "max_results": max_results,
-                "max_depth": 3,
-                "focus_mode": self.current_focus_mode,
-            },
-            "provenance": {
-                "engine": "regex_scan",
-                "degraded": True,
-                "reason": self.initialization_errors.get("database", "graph_store_unavailable_or_empty"),
-            },
-        }
+            result = {
+                "symbol": symbol,
+                "element_id": element.id,
+                "file_path": element.file_path,
+                "relationship_type": relationship_type,
+                "depth": depth,
+                "found": len(relationships),
+                "max_results": 10,
+                "adhd_filtered": True,
+                "relationships": relationships,
+                "mode": "postgresql_graph",
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
+            }
 
-        logger.info(
-            "find_relationships: %s (%s) → %s fallback rels (%.1fms)",
-            symbol,
-            relationship_type,
-            len(relationships),
-            elapsed_ms,
-        )
-        return json.dumps(result, indent=2)
+            logger.info(f"find_relationships: {symbol} → {len(relationships)} rels ({elapsed_ms:.1f}ms)")
+            return json.dumps(result, indent=2)
+
+        except Exception as e:
+            logger.error(f"find_relationships failed: {e}")
+            return json.dumps({"error": str(e)})
 
     async def get_navigation_patterns_tool(
         self,
@@ -3208,11 +2814,11 @@ class SerenaV2MCPServer:
         workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
-        Analyze persisted navigation patterns from history
+        Analyze navigation patterns from history
 
-        Tier 3 Advanced Tool:
-        - Reads persisted navigation patterns from PostgreSQL history
-        - Returns explicit degraded metadata if history is unavailable
+        Tier 3 Advanced Tool (Phase 2D):
+        - Queries the PostgreSQL intelligence database for historical patterns
+        - Returns ADHD-optimized metrics and insights
         - Multi-workspace: Navigation patterns across workspaces
 
         Args:
@@ -3221,7 +2827,7 @@ class SerenaV2MCPServer:
             workspace_paths: Optional multiple workspace paths
 
         Returns:
-            JSON with persisted pattern analysis
+            JSON with pattern analysis
         """
         # Multi-workspace mode
         if workspace_paths or workspace_path:
@@ -3232,133 +2838,65 @@ class SerenaV2MCPServer:
             )
             return json.dumps(result, indent=2)
 
+        # Ensure database is available
+        if not await self._ensure_component("database"):
+            return json.dumps({
+                "error": "Intelligence database unavailable. Please ensure PostgreSQL is running."
+            })
+            
         start_time = datetime.now()
-        days_back = max(1, min(days_back, 90))
 
-        database_available = await self._ensure_component("database")
-        if database_available and self.database:
-            try:
-                summary_query = """
-                SELECT
-                    COUNT(*) AS total_sequences,
-                    COUNT(DISTINCT sequence_hash) AS unique_patterns,
-                    AVG(effectiveness_score) AS average_effectiveness,
-                    AVG(context_switches) AS average_context_switches,
-                    AVG(total_duration_ms) AS average_duration_ms,
-                    AVG(cognitive_fatigue_score) AS average_fatigue_score
-                FROM navigation_patterns
-                WHERE workspace_path = $1
-                  AND created_at >= NOW() - ($2::int * INTERVAL '1 day')
-                """
-                pattern_query = """
-                SELECT
+        try:
+            # Query recent navigation patterns
+            query = """
+                SELECT 
                     pattern_type,
-                    sequence_hash,
-                    COUNT(*) AS occurrences,
-                    MAX(pattern_frequency) AS max_frequency,
-                    AVG(effectiveness_score) AS average_effectiveness,
-                    AVG(total_duration_ms) AS average_duration_ms,
-                    AVG(cognitive_fatigue_score) AS average_fatigue_score,
-                    BOOL_OR(focus_mode_used) AS focus_mode_used,
-                    MAX(last_occurrence) AS last_occurrence
+                    COUNT(*) as frequency,
+                    AVG(effectiveness_score) as avg_effectiveness,
+                    AVG(complexity_progression) as avg_complexity,
+                    AVG(cognitive_fatigue_score) as avg_fatigue,
+                    MAX(last_occurrence) as last_seen
                 FROM navigation_patterns
-                WHERE workspace_path = $1
-                  AND created_at >= NOW() - ($2::int * INTERVAL '1 day')
-                GROUP BY pattern_type, sequence_hash
-                ORDER BY MAX(pattern_frequency) DESC, AVG(effectiveness_score) DESC
+                WHERE created_at >= NOW() - INTERVAL '1 day' * $1
+                GROUP BY pattern_type
+                ORDER BY frequency DESC, avg_effectiveness DESC
                 LIMIT 10
-                """
+            """
+            
+            pattern_results = await self.database.execute_query(query, (days_back,), complexity_filter=False)
+            
+            patterns = []
+            for row in pattern_results:
+                patterns.append({
+                    "type": row["pattern_type"],
+                    "frequency": row["frequency"],
+                    "effectiveness": round(row["avg_effectiveness"], 2) if row["avg_effectiveness"] else 0.0,
+                    "cognitive_fatigue": round(row["avg_fatigue"], 2) if row["avg_fatigue"] else 0.0,
+                    "last_seen": row["last_seen"].isoformat() if row["last_seen"] else None
+                })
+                
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
-                summary_rows = await self.database.execute_query(
-                    summary_query,
-                    (self._workspace_label(), days_back),
-                    complexity_filter=False,
-                    max_results=1,
-                )
-                pattern_rows = await self.database.execute_query(
-                    pattern_query,
-                    (self._workspace_label(), days_back),
-                    complexity_filter=False,
-                    max_results=10,
-                )
-
-                summary_row = summary_rows[0] if summary_rows else {}
-                patterns = [
-                    {
-                        "pattern_type": row.get("pattern_type"),
-                        "sequence_hash": row.get("sequence_hash"),
-                        "occurrences": row.get("occurrences", 0),
-                        "pattern_frequency": row.get("max_frequency", 0),
-                        "average_effectiveness": round(float(row.get("average_effectiveness") or 0.0), 3),
-                        "average_duration_ms": round(float(row.get("average_duration_ms") or 0.0), 1),
-                        "average_fatigue_score": round(float(row.get("average_fatigue_score") or 0.0), 3),
-                        "focus_mode_used": bool(row.get("focus_mode_used", False)),
-                        "last_occurrence": row.get("last_occurrence").isoformat() if row.get("last_occurrence") else None,
-                    }
-                    for row in pattern_rows
-                ]
-
-                elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
-                result = {
-                    "status": "ready" if patterns else "no_patterns_yet",
-                    "days_back": days_back,
-                    "workspace": self._workspace_label(),
-                    "summary": {
-                        "total_sequences": summary_row.get("total_sequences", 0),
-                        "unique_patterns": summary_row.get("unique_patterns", 0),
-                        "average_effectiveness": round(float(summary_row.get("average_effectiveness") or 0.0), 3),
-                        "average_context_switches": round(float(summary_row.get("average_context_switches") or 0.0), 2),
-                        "average_duration_ms": round(float(summary_row.get("average_duration_ms") or 0.0), 1),
-                        "average_fatigue_score": round(float(summary_row.get("average_fatigue_score") or 0.0), 3),
-                    },
-                    "patterns": patterns,
-                    "source": "postgres_history",
-                    "latency_ms": round(elapsed_ms, 2),
-                    "adhd": {
-                        "history_window_days": days_back,
-                        "max_patterns": 10,
-                        "focus_mode": self.current_focus_mode,
-                    },
-                    "provenance": {
-                        "engine": "navigation_patterns",
-                        "degraded": False,
-                    },
+            result = {
+                "status": "active",
+                "days_analyzed": days_back,
+                "patterns_found": len(patterns),
+                "patterns": patterns,
+                "insights": {
+                    "high_effectiveness": [p["type"] for p in patterns if p["effectiveness"] > 0.7],
+                    "fatigue_risks": [p["type"] for p in patterns if p["cognitive_fatigue"] > 0.6]
+                },
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
                 }
-                logger.info(
-                    "get_navigation_patterns: %s patterns from %s day window (%.1fms)",
-                    len(patterns),
-                    days_back,
-                    elapsed_ms,
-                )
-                return json.dumps(result, indent=2)
-            except Exception as exc:
-                logger.warning("Navigation pattern query failed: %s", exc)
+            }
 
-        elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
-        result = {
-            "status": "history_unavailable",
-            "days_back": days_back,
-            "workspace": self._workspace_label(),
-            "summary": {
-                "total_sequences": 0,
-                "unique_patterns": 0,
-                "average_effectiveness": 0.0,
-            },
-            "patterns": [],
-            "source": "history_unavailable",
-            "latency_ms": round(elapsed_ms, 2),
-            "adhd": {
-                "history_window_days": days_back,
-                "max_patterns": 10,
-                "focus_mode": self.current_focus_mode,
-            },
-            "provenance": {
-                "engine": "navigation_patterns",
-                "degraded": True,
-                "reason": self.initialization_errors.get("database", "navigation_history_not_available"),
-            },
-        }
-        return json.dumps(result, indent=2)
+            logger.info(f"get_navigation_patterns: found {len(patterns)} patterns ({elapsed_ms:.1f}ms)")
+            return json.dumps(result, indent=2)
+            
+        except Exception as e:
+            logger.error(f"get_navigation_patterns failed: {e}")
+            return json.dumps({"error": str(e)})
 
     async def update_focus_mode_tool(
         self,
@@ -3367,10 +2905,10 @@ class SerenaV2MCPServer:
         """
         Set current focus state for adaptive filtering
 
-        Tier 3 Advanced Tool:
-        - Updates runtime focus state
+        Tier 3 Advanced Tool (Phase 2D/3):
+        - Updates in-memory focus state
+        - Persists state to PostgreSQL intelligence database
         - Affects filter_by_focus tool behavior
-        - Persists mapped ADHD preferences to learning_profiles when available
 
         Args:
             mode: focused, scattered, or transitioning
@@ -3379,85 +2917,67 @@ class SerenaV2MCPServer:
             JSON with updated focus state
         """
         start_time = datetime.now()
-        normalized_mode = self._normalize_focus_mode(mode)
+        
+        # Update in-memory state
         old_mode = self.current_focus_mode
-        self.current_focus_mode = normalized_mode
-        settings = self._focus_mode_settings(normalized_mode)
+        self.current_focus_mode = mode
 
-        await self._apply_focus_mode_to_runtime(normalized_mode)
-
-        persisted = False
-        persistence_reason = None
-        database_available = await self._ensure_component("database")
-        if database_available and self.database and self.workspace:
+        # Get filtering thresholds
+        limits = {
+            "focused": 10,
+            "scattered": 3,
+            "transitioning": 5
+        }
+        
+        limit = limits.get(mode, 10)
+        complexity_pref = "complex" if mode == "focused" else "simple" if mode == "scattered" else "moderate"
+        
+        db_persisted = False
+        
+        # Persist to database if available
+        if await self._ensure_component("database"):
             try:
-                upsert_query = """
-                INSERT INTO learning_profiles (
-                    user_session_id,
-                    workspace_path,
-                    optimal_result_limit,
-                    progressive_disclosure_preference,
-                    focus_mode_trigger_threshold,
-                    last_session
-                ) VALUES ($1, $2, $3, $4, $5, NOW())
-                ON CONFLICT (user_session_id, workspace_path)
-                DO UPDATE SET
-                    optimal_result_limit = EXCLUDED.optimal_result_limit,
-                    progressive_disclosure_preference = EXCLUDED.progressive_disclosure_preference,
-                    focus_mode_trigger_threshold = EXCLUDED.focus_mode_trigger_threshold,
-                    last_session = NOW(),
-                    updated_at = NOW()
+                # Update or create learning profile for current workspace
+                query = """
+                    INSERT INTO learning_profiles (
+                        user_session_id, workspace_path, 
+                        preferred_complexity_level, optimal_result_limit
+                    ) VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (user_session_id, workspace_path) 
+                    DO UPDATE SET 
+                        preferred_complexity_level = EXCLUDED.preferred_complexity_level,
+                        optimal_result_limit = EXCLUDED.optimal_result_limit,
+                        updated_at = NOW()
                 """
-                await self.database.execute_query(
-                    upsert_query,
-                    (
-                        "default",
-                        self._workspace_label(),
-                        settings["result_limit"],
-                        settings["progressive_disclosure"],
-                        settings["focus_threshold"],
-                    ),
-                    complexity_filter=False,
-                )
-                persisted = True
-            except Exception as exc:
-                persistence_reason = str(exc)
-                logger.warning("Focus mode persistence failed: %s", exc)
-        else:
-            persistence_reason = self.initialization_errors.get("database", "database_unavailable")
+                # Using a default session ID for now, could be dynamic
+                session_id = "default_session"
+                await self.database.execute_query(query, (session_id, str(self.workspace), complexity_pref, limit), complexity_filter=False)
+                db_persisted = True
+                logger.info(f"Persisted focus mode '{mode}' to learning_profiles")
+            except Exception as e:
+                logger.error(f"Failed to persist focus mode: {e}")
 
         elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
         result = {
-            "mode": normalized_mode,
+            "mode": mode,
             "previous_mode": old_mode,
-            "workspace": self._workspace_label(),
-            "source": "learning_profiles" if persisted else "runtime_only",
-            "latency_ms": round(elapsed_ms, 2),
-            "adhd": {
-                "max_results": settings["result_limit"],
-                "progressive_disclosure": settings["progressive_disclosure"],
-                "focus_mode_trigger_threshold": settings["focus_threshold"],
-            },
+            "max_results": limit,
             "filtering_behavior": {
-                "focused": "Show up to 10 items with balanced complexity filtering",
-                "scattered": "Show top 3 items and aggressively reduce cognitive load",
-                "transitioning": "Show top 5 items with gentle progressive disclosure",
-            },
+                "focused": "Show up to 10 items - full cognitive capacity",
+                "scattered": "Show top 3 items - reduce overwhelm",
+                "transitioning": "Show top 5 items - moderate filtering"
+            }.get(mode, "Unknown mode"),
             "persistence": {
-                "persisted": persisted,
-                "store": "learning_profiles" if persisted else None,
-                "user_session_id": "default",
-                "workspace_path": self._workspace_label(),
-                "degraded": not persisted,
-                "reason": persistence_reason,
+                "saved_to_database": db_persisted,
+                "restart_behavior": "Will load from database on restart" if db_persisted else "Resets to 'focused' on restart",
             },
-            "provenance": {
-                "engine": "learning_profiles" if persisted else "runtime_state",
-                "degraded": not persisted,
-            },
+            "performance": {
+                "latency_ms": round(elapsed_ms, 2)
+            }
         }
 
-        logger.info("update_focus_mode: %s → %s (persisted=%s)", old_mode, normalized_mode, persisted)
+        logger.info(f"update_focus_mode: {old_mode} → {mode} ({elapsed_ms:.1f}ms)")
         return json.dumps(result, indent=2)
 
     async def detect_untracked_work_tool(
@@ -5880,7 +5400,7 @@ async def main():
     """Main entry point for Serena v2 MCP server"""
     logger.info("="*60)
     logger.info("SERENA V2 MCP SERVER - PHASE 2 + ENHANCED FEATURES")
-    logger.info("ADHD-optimized code intelligence (33 tools)")
+    logger.info("ADHD-optimized code intelligence (24 tools)")
     logger.info("Enhanced: Cache (100x faster), Unified Complexity, File Watcher")
     logger.info("="*60)
 
@@ -5896,7 +5416,7 @@ async def main():
     logger.info("="*60)
     logger.info("Server ready - awaiting tool calls")
     logger.info(f"Workspace: {server_instance.workspace}")
-    logger.info(f"Tools available: 33")
+    logger.info(f"Tools available: 24")
     logger.info(f"  - Health (1): get_workspace_status")
     logger.info(f"  - Navigation Tier 1 (4): find_symbol, goto_definition, get_context, find_references")
     logger.info(f"  - Enhanced Navigation (4): find_similar_code, predict_navigation_from_git, find_test_file, get_unified_complexity")
@@ -5909,7 +5429,7 @@ async def main():
     logger.info(f"  - Files (2): read_file, list_dir")
     logger.info(f"Lazy loading: database, lsp, claude_context, tree_sitter, adhd_features")
     logger.info(f"Feature 1: COMPLETE - Detection + Actions + Storage + Config + Reminders ✅")
-    logger.info(f"Tier 3: database-backed with explicit fallback metadata")
+    logger.info(f"Tier 3: Simplified implementations (Phase 3 will add full database)")
     logger.info("="*60)
 
     # Run server with stdio transport
