@@ -20,6 +20,7 @@ as defined by the MCP protocol.
 
 import asyncio
 import atexit
+import json
 import logging
 import os
 import sys
@@ -27,6 +28,7 @@ import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Optional
+import uuid
 
 from mcp.server import Server  # noqa: E402
 from mcp.server.models import InitializationOptions  # noqa: E402
@@ -73,6 +75,9 @@ from utils.env import env_override_enabled, get_env  # noqa: E402
 # Configure logging for server operations
 # Can be controlled via LOG_LEVEL environment variable (DEBUG, INFO, WARNING, ERROR)
 log_level = (get_env("LOG_LEVEL", "DEBUG") or "DEBUG").upper()
+TRACE_HEADER_NAME = "X-Dopemux-Trace-Id"
+PAL_COMPONENT_NAME = "pal_mcp_server"
+PAL_STRUCTURED_ACTIVITY_ENV = "PAL_STRUCTURED_ACTIVITY_LOGGING"
 
 # MCP Token Budget Enforcement (10K hard limit)
 MCP_MAX_TOKENS = 10000
@@ -164,6 +169,142 @@ def enforce_token_budget_on_tool_output(result: list, tool_name: str, max_tokens
 
     return modified_result
 
+
+def _structured_activity_logging_enabled() -> bool:
+    value = str(get_env(PAL_STRUCTURED_ACTIVITY_ENV, "1") or "1").strip().lower()
+    return value not in {"0", "false", "no", "off"}
+
+
+def _new_trace_id() -> str:
+    return uuid.uuid4().hex
+
+
+def _new_span_id() -> str:
+    return uuid.uuid4().hex[:16]
+
+
+def _trace_id_from_continuation(continuation_id: str) -> str:
+    return uuid.uuid5(uuid.NAMESPACE_URL, f"dopemux-pal:{continuation_id}").hex
+
+
+def _safe_json_value(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {
+            str(key): _safe_json_value(subvalue)
+            for key, subvalue in value.items()
+            if subvalue is not None
+        }
+    if isinstance(value, (list, tuple)):
+        return [_safe_json_value(item) for item in value if item is not None]
+    return str(value)
+
+
+def _extract_trace_id(arguments: dict[str, Any]) -> str:
+    metadata = arguments.get("metadata")
+    if isinstance(metadata, dict):
+        trace_id = str(metadata.get("trace_id") or "").strip()
+        if trace_id:
+            return trace_id
+    for key in ("trace_id", "_dopemux_trace_id"):
+        value = str(arguments.get(key) or "").strip()
+        if value:
+            return value
+    continuation_id = str(arguments.get("continuation_id") or "").strip()
+    if continuation_id:
+        return _trace_id_from_continuation(continuation_id)
+    return _new_trace_id()
+
+
+def _activity_jsonl_path() -> Path:
+    return Path(__file__).parent / "logs" / "mcp_activity.jsonl"
+
+
+def _append_activity_jsonl(payload: dict[str, Any]) -> None:
+    if not _structured_activity_logging_enabled():
+        return
+    target = _activity_jsonl_path()
+    target.parent.mkdir(exist_ok=True)
+    with target.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, ensure_ascii=True, sort_keys=True) + "\n")
+
+
+def _extract_tool_output_metadata(result: list[Any]) -> dict[str, Any]:
+    for item in result or []:
+        text = getattr(item, "text", None)
+        if not isinstance(text, str):
+            continue
+        try:
+            parsed = json.loads(text)
+        except Exception:
+            continue
+        if not isinstance(parsed, dict):
+            continue
+        metadata = parsed.get("metadata")
+        if isinstance(metadata, dict):
+            return metadata
+    return {}
+
+
+def _log_activity_event(
+    *,
+    event_type: str,
+    trace_id: str,
+    span_id: str,
+    parent_span_id: Optional[str] = None,
+    tool_name: Optional[str] = None,
+    status: Optional[str] = None,
+    continuation_id: Optional[str] = None,
+    model: Optional[str] = None,
+    provider: Optional[str] = None,
+    latency_ms: Optional[int] = None,
+    status_code: Optional[int] = None,
+    finish_reason: Optional[str] = None,
+    prompt_tokens: Optional[int] = None,
+    completion_tokens: Optional[int] = None,
+    reasoning_tokens: Optional[int] = None,
+    cached_tokens: Optional[int] = None,
+    upstream_request_id: Optional[str] = None,
+    upstream_generation_id: Optional[str] = None,
+    argument_keys: Optional[list[str]] = None,
+    extra: Optional[dict[str, Any]] = None,
+) -> None:
+    payload = {
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()) + "Z",
+        "component": PAL_COMPONENT_NAME,
+        "event_type": event_type,
+        "trace_id": trace_id,
+        "span_id": span_id,
+        "parent_span_id": parent_span_id,
+        "tool_name": tool_name,
+        "status": status,
+        "continuation_id": continuation_id,
+        "model": model,
+        "provider": provider,
+        "latency_ms": latency_ms,
+        "status_code": status_code,
+        "finish_reason": finish_reason,
+        "tokens_prompt": prompt_tokens,
+        "tokens_completion": completion_tokens,
+        "tokens_reasoning": reasoning_tokens,
+        "tokens_cached": cached_tokens,
+        "upstream_request_id": upstream_request_id,
+        "upstream_generation_id": upstream_generation_id,
+        "argument_keys": argument_keys,
+    }
+    if extra:
+        payload.update(_safe_json_value(extra))
+    sanitized = {key: value for key, value in payload.items() if value is not None}
+    try:
+        _append_activity_jsonl(sanitized)
+    except Exception:
+        logging.getLogger(__name__).debug("Failed to persist activity event", exc_info=True)
+
 # Create timezone-aware formatter
 
 
@@ -234,6 +375,7 @@ try:
 
     # Log setup info directly to root logger since logger isn't defined yet
     logging.info(f"Logging to: {log_dir / 'mcp_server.log'}")
+    logging.info(f"Structured activity logging to: {_activity_jsonl_path()}")
     logging.info(f"Process PID: {os.getpid()}")
 
 except Exception as e:
@@ -834,8 +976,20 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
         3. The CLI continues with codereview tool + continuation_id → full context preserved
         4. Multiple tools can collaborate using same thread ID
     """
+    trace_id = _extract_trace_id(arguments)
+    tool_call_span_id = _new_span_id()
+    argument_keys = sorted(str(key) for key in arguments.keys())
     logger.info(f"MCP tool call: {name}")
-    logger.debug(f"MCP tool arguments: {list(arguments.keys())}")
+    logger.debug(f"MCP tool arguments: {argument_keys}")
+    _log_activity_event(
+        event_type="tool_call_started",
+        trace_id=trace_id,
+        span_id=tool_call_span_id,
+        tool_name=name,
+        status="started",
+        continuation_id=str(arguments.get("continuation_id") or "").strip() or None,
+        argument_keys=argument_keys,
+    )
 
     # Log to activity file for monitoring
     try:
@@ -864,6 +1018,17 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
         logger.debug(f"[CONVERSATION_DEBUG] After thread reconstruction, arguments keys: {list(arguments.keys())}")
         if "_remaining_tokens" in arguments:
             logger.debug(f"[CONVERSATION_DEBUG] Remaining token budget: {arguments['_remaining_tokens']:,}")
+        _log_activity_event(
+            event_type="tool_context_resolved",
+            trace_id=trace_id,
+            span_id=_new_span_id(),
+            parent_span_id=tool_call_span_id,
+            tool_name=name,
+            status="continuation_resumed",
+            continuation_id=str(continuation_id),
+            argument_keys=sorted(str(key) for key in arguments.keys()),
+            extra={"remaining_tokens": arguments.get("_remaining_tokens")},
+        )
 
     # Route to AI-powered tools that require Gemini API calls
     if name in TOOLS:
@@ -895,7 +1060,56 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
         if not tool.requires_model():
             logger.debug(f"Tool {name} doesn't require model resolution - skipping model validation")
             # Execute tool directly without model context
-            return await tool.execute(arguments)
+            started_at = time.monotonic()
+            _log_activity_event(
+                event_type="tool_context_resolved",
+                trace_id=trace_id,
+                span_id=_new_span_id(),
+                parent_span_id=tool_call_span_id,
+                tool_name=name,
+                status="no_model_required",
+                continuation_id=str(arguments.get("continuation_id") or "").strip() or None,
+                argument_keys=sorted(str(key) for key in arguments.keys()),
+            )
+            try:
+                result = await tool.execute(arguments)
+            except Exception as exc:
+                _log_activity_event(
+                    event_type="tool_failed",
+                    trace_id=trace_id,
+                    span_id=_new_span_id(),
+                    parent_span_id=tool_call_span_id,
+                    tool_name=name,
+                    status="failed",
+                    continuation_id=str(arguments.get("continuation_id") or "").strip() or None,
+                    latency_ms=int((time.monotonic() - started_at) * 1000),
+                    argument_keys=sorted(str(key) for key in arguments.keys()),
+                    extra={
+                        "error_type": type(exc).__name__,
+                        "error_message_excerpt": str(exc)[:500],
+                    },
+                )
+                raise
+            tool_metadata = _extract_tool_output_metadata(result)
+            _log_activity_event(
+                event_type="tool_completed",
+                trace_id=trace_id,
+                span_id=_new_span_id(),
+                parent_span_id=tool_call_span_id,
+                tool_name=name,
+                status="completed",
+                continuation_id=str(arguments.get("continuation_id") or "").strip() or None,
+                latency_ms=int((time.monotonic() - started_at) * 1000),
+                finish_reason=str(tool_metadata.get("finish_reason") or "").strip() or None,
+                prompt_tokens=tool_metadata.get("input_tokens"),
+                completion_tokens=tool_metadata.get("output_tokens"),
+                reasoning_tokens=tool_metadata.get("reasoning_tokens"),
+                cached_tokens=tool_metadata.get("cached_tokens"),
+                upstream_request_id=str(tool_metadata.get("id") or tool_metadata.get("request_id") or "").strip() or None,
+                upstream_generation_id=str(tool_metadata.get("generation_id") or "").strip() or None,
+                argument_keys=sorted(str(key) for key in arguments.keys()),
+            )
+            return result
 
         # Handle auto mode at MCP boundary - resolve to specific model
         if model_name.lower() == "auto":
@@ -933,11 +1147,34 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
         model_context = ModelContext(model_name, model_option)
         arguments["_model_context"] = model_context
         arguments["_resolved_model_name"] = model_name
+        arguments["_dopemux_trace_id"] = trace_id
         logger.debug(
             f"Model context created for {model_name} with {model_context.capabilities.context_window} token capacity"
         )
         if model_option:
             logger.debug(f"Model option stored in context: '{model_option}'")
+        resolved_provider_name = getattr(provider, "get_provider_type", lambda: None)()
+        resolved_provider_value = (
+            getattr(resolved_provider_name, "value", None)
+            if resolved_provider_name is not None
+            else None
+        )
+        _log_activity_event(
+            event_type="tool_context_resolved",
+            trace_id=trace_id,
+            span_id=_new_span_id(),
+            parent_span_id=tool_call_span_id,
+            tool_name=name,
+            status="resolved",
+            continuation_id=str(arguments.get("continuation_id") or "").strip() or None,
+            model=model_name,
+            provider=resolved_provider_value,
+            argument_keys=sorted(str(key) for key in arguments.keys()),
+            extra={
+                "model_option": model_option,
+                "context_window": getattr(model_context.capabilities, "context_window", None),
+            },
+        )
 
         # EARLY FILE SIZE VALIDATION AT MCP BOUNDARY
         # Check file sizes before tool execution using resolved model
@@ -949,11 +1186,87 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
                 return [TextContent(type="text", text=ToolOutput(**file_size_check).model_dump_json())]
 
         # Execute tool with pre-resolved model context
-        result = await tool.execute(arguments)
+        provider_span_id = _new_span_id()
+        started_at = time.monotonic()
+        _log_activity_event(
+            event_type="provider_request_started",
+            trace_id=trace_id,
+            span_id=provider_span_id,
+            parent_span_id=tool_call_span_id,
+            tool_name=name,
+            status="started",
+            continuation_id=str(arguments.get("continuation_id") or "").strip() or None,
+            model=model_name,
+            provider=resolved_provider_value,
+            argument_keys=sorted(str(key) for key in arguments.keys()),
+        )
+        try:
+            result = await tool.execute(arguments)
+        except Exception as exc:
+            _log_activity_event(
+                event_type="tool_failed",
+                trace_id=trace_id,
+                span_id=_new_span_id(),
+                parent_span_id=tool_call_span_id,
+                tool_name=name,
+                status="failed",
+                continuation_id=str(arguments.get("continuation_id") or "").strip() or None,
+                model=model_name,
+                provider=resolved_provider_value,
+                latency_ms=int((time.monotonic() - started_at) * 1000),
+                argument_keys=sorted(str(key) for key in arguments.keys()),
+                extra={
+                    "error_type": type(exc).__name__,
+                    "error_message_excerpt": str(exc)[:500],
+                },
+            )
+            raise
         logger.info(f"Tool '{name}' execution completed")
 
         # Enforce MCP token budget at boundary (10K hard limit)
         result = enforce_token_budget_on_tool_output(result, name, max_tokens=SAFE_TOKEN_BUDGET)
+        tool_metadata = _extract_tool_output_metadata(result)
+        _log_activity_event(
+            event_type="provider_request_completed",
+            trace_id=trace_id,
+            span_id=provider_span_id,
+            parent_span_id=tool_call_span_id,
+            tool_name=name,
+            status="completed",
+            continuation_id=str(arguments.get("continuation_id") or "").strip() or None,
+            model=model_name,
+            provider=resolved_provider_value,
+            latency_ms=int((time.monotonic() - started_at) * 1000),
+            finish_reason=str(tool_metadata.get("finish_reason") or "").strip() or None,
+            prompt_tokens=tool_metadata.get("input_tokens"),
+            completion_tokens=tool_metadata.get("output_tokens"),
+            reasoning_tokens=tool_metadata.get("reasoning_tokens"),
+            cached_tokens=tool_metadata.get("cached_tokens"),
+            upstream_request_id=str(tool_metadata.get("id") or tool_metadata.get("request_id") or "").strip() or None,
+            upstream_generation_id=str(tool_metadata.get("generation_id") or "").strip() or None,
+            argument_keys=sorted(str(key) for key in arguments.keys()),
+        )
+        _log_activity_event(
+            event_type="tool_completed",
+            trace_id=trace_id,
+            span_id=_new_span_id(),
+            parent_span_id=tool_call_span_id,
+            tool_name=name,
+            status="completed",
+            continuation_id=str(arguments.get("continuation_id") or "").strip() or None,
+            model=model_name,
+            provider=resolved_provider_value,
+            latency_ms=int((time.monotonic() - started_at) * 1000),
+            finish_reason=str(tool_metadata.get("finish_reason") or "").strip() or None,
+            prompt_tokens=tool_metadata.get("input_tokens"),
+            completion_tokens=tool_metadata.get("output_tokens"),
+            reasoning_tokens=tool_metadata.get("reasoning_tokens"),
+            cached_tokens=tool_metadata.get("cached_tokens"),
+            upstream_request_id=str(tool_metadata.get("id") or tool_metadata.get("request_id") or "").strip() or None,
+            upstream_generation_id=str(tool_metadata.get("generation_id") or "").strip() or None,
+            argument_keys=sorted(str(key) for key in arguments.keys()),
+            extra={"token_budget_truncated": bool(tool_metadata.get("token_budget_truncated"))},
+        )
 
         # Log completion to activity file
         try:
@@ -965,6 +1278,15 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
 
     # Handle unknown tool requests gracefully
     else:
+        _log_activity_event(
+            event_type="tool_failed",
+            trace_id=trace_id,
+            span_id=_new_span_id(),
+            parent_span_id=tool_call_span_id,
+            tool_name=name,
+            status="unknown_tool",
+            argument_keys=argument_keys,
+        )
         return [TextContent(type="text", text=f"Unknown tool: {name}")]
 
 

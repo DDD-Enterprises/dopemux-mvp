@@ -69,6 +69,7 @@ def test_start_instance_basic(tmp_path):
         assert process_info.port == 4000
         assert process_info.master_key.startswith("sk-")
         assert process_info.db_enabled == False
+        assert process_info.structured_log_path.name == "litellm.events.jsonl"
         assert len(manager._processes) == 1
         assert "test" in manager._processes
 
@@ -188,6 +189,8 @@ def test_build_client_environment(tmp_path):
         assert "OPENAI_API_BASE" in env_vars
         assert "ANTHROPIC_API_KEY" in env_vars
         assert "DOPEMUX_LITELLM_MASTER_KEY" in env_vars
+        assert "DOPEMUX_LITELLM_TRACE_HEADER" in env_vars
+        assert "DOPEMUX_LITELLM_JSONL_LOG_PATH" in env_vars
         assert env_vars["OPENAI_API_BASE"] == "http://127.0.0.1:4000"
 
 
@@ -289,6 +292,76 @@ def test_config_preparation(tmp_path):
     config_content = yaml.safe_load(config_path.read_text())
     assert config_content["general_settings"]["master_key"] == "test-key-123"
     assert "database_url" not in config_content["general_settings"]
+    assert "dopemux.litellm_trace_logger.DopemuxLiteLLMTraceLogger" in config_content["litellm_settings"]["callbacks"]
+
+
+def test_prepare_config_preserves_existing_callbacks(tmp_path):
+    manager = LiteLLMManager(tmp_path)
+    instance_dir = tmp_path / ".dopemux" / "litellm" / "test"
+    instance_dir.mkdir(parents=True, exist_ok=True)
+
+    config_data = {
+        "model_list": [{"model_name": "test-model", "litellm_params": {"model": "test/provider-model"}}],
+        "litellm_settings": {"callbacks": ["existing.callback.Hook"]},
+    }
+
+    config_path = manager._prepare_config(
+        instance_dir=instance_dir,
+        config_data=config_data,
+        master_key="test-key-123",
+        db_enabled=False,
+        db_url=None,
+    )
+
+    config_content = yaml.safe_load(config_path.read_text())
+    callbacks = config_content["litellm_settings"]["callbacks"]
+    assert "existing.callback.Hook" in callbacks
+    assert "dopemux.litellm_trace_logger.DopemuxLiteLLMTraceLogger" in callbacks
+
+
+def test_launch_process_sets_structured_logging_env(tmp_path):
+    manager = LiteLLMManager(tmp_path)
+    instance_dir = tmp_path / ".dopemux" / "litellm" / "A"
+    instance_dir.mkdir(parents=True, exist_ok=True)
+    config_path = instance_dir / "litellm.config.yaml"
+    config_path.write_text(
+        yaml.safe_dump(
+            {
+                "model_list": [{"model_name": "test-model", "litellm_params": {"model": "test/provider-model"}}],
+                "router_settings": {"fallbacks": [{"test-model": ["backup-model"]}]},
+            },
+            sort_keys=False,
+        )
+    )
+    log_path = instance_dir / "litellm.log"
+
+    with patch("subprocess.Popen") as mock_popen:
+        mock_process = Mock()
+        mock_process.poll.return_value = None
+        mock_popen.return_value = mock_process
+
+        manager._launch_process(
+            config_path=config_path,
+            log_path=log_path,
+            port=4010,
+            master_key="sk-test",
+            db_enabled=False,
+            db_url=None,
+        )
+
+    _, kwargs = mock_popen.call_args
+    env = kwargs["env"]
+    assert env["DOPEMUX_LITELLM_STRUCTURED_LOGGING"] == "1"
+    assert env["DOPEMUX_LITELLM_JSONL_LOG_PATH"] == str(instance_dir / "litellm.events.jsonl")
+    assert env["DOPEMUX_LITELLM_INSTANCE_ID"] == "A"
+    assert str(tmp_path / "src") in env["PYTHONPATH"]
+    startup_rows = [
+        yaml.safe_load(line)
+        for line in (instance_dir / "litellm.events.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert startup_rows[0]["event_type"] == "proxy_startup"
+    assert startup_rows[0]["instance_id"] == "A"
 
 
 def test_get_health_status(tmp_path):

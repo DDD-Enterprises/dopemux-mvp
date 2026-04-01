@@ -2,8 +2,11 @@
 Tests for the main server functionality
 """
 
+import json
+
 import pytest
 
+import server
 from server import handle_call_tool
 
 
@@ -105,3 +108,53 @@ class TestServerTools:
         assert "## Server Information" in content
         assert "## Configuration" in content
         assert "Current Version" in content
+
+    @pytest.mark.asyncio
+    async def test_handle_call_tool_writes_structured_activity_events(self, monkeypatch, tmp_path):
+        class FakeTool:
+            name = "fake"
+
+            def requires_model(self):
+                return False
+
+            async def execute(self, arguments):
+                payload = {
+                    "status": "success",
+                    "content": "ok",
+                    "metadata": {
+                        "request_id": "req_123",
+                        "input_tokens": 11,
+                        "output_tokens": 7,
+                    },
+                }
+                return [server.TextContent(type="text", text=json.dumps(payload))]
+
+        activity_path = tmp_path / "mcp_activity.jsonl"
+        monkeypatch.setattr(server, "_activity_jsonl_path", lambda: activity_path)
+        monkeypatch.setitem(server.TOOLS, "fake", FakeTool())
+
+        result = await handle_call_tool(
+            "fake",
+            {"trace_id": "trace_abc", "prompt": "hello"},
+        )
+
+        assert len(result) == 1
+        rows = [
+            json.loads(line)
+            for line in activity_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        event_types = {row["event_type"] for row in rows}
+        assert "tool_call_started" in event_types
+        assert "tool_context_resolved" in event_types
+        assert "tool_completed" in event_types
+        for row in rows:
+            assert row["trace_id"] == "trace_abc"
+
+    def test_extract_trace_id_uses_continuation_id_when_not_provided(self):
+        trace_a = server._extract_trace_id({"continuation_id": "thread-42"})
+        trace_b = server._extract_trace_id({"continuation_id": "thread-42"})
+        trace_c = server._extract_trace_id({"continuation_id": "thread-43"})
+
+        assert trace_a == trace_b
+        assert trace_a != trace_c
