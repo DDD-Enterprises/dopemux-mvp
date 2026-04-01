@@ -43,6 +43,21 @@ This plane follows strict phases. Do not skip phases.
 - `docs/planes/pm/pm-plane-read-matrix.md`
 - `docs/planes/pm/pm-plane-write-surface-policy.md`
 
+## Current supervisor authority packet set
+
+- `docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md`
+
+## Current runtime-truth evidence companions
+
+- `docs/planes/pm/_evidence/PM-AUTH-01.outputs/`
+- `docs/planes/pm/_evidence/PM-AUTH-01.commands.txt`
+- `docs/planes/pm/_evidence/task-orchestrator-runtime-truth/`
+- `docs/planes/pm/_evidence/leantime-runtime-truth/`
+- `docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/`
+
 ## Active Follow-up Queue
 
 - `docs/planes/pm/task-orchestrator-leantime-followups.md`
