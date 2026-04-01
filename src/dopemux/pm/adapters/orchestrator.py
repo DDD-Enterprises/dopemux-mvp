@@ -91,3 +91,32 @@ class TaskOrchestratorAdapter:
             return response.status_code == 200
         except Exception:
             return False
+
+class SyncTaskOrchestratorAdapter:
+    """Synchronous adapter for communicating with the task-orchestrator HTTP API."""
+
+    def __init__(self, base_url: Optional[str] = None):
+        # Default to PORT_BASE+14 (3014)
+        self.base_url = (base_url or os.getenv("TASK_ORCHESTRATOR_URL", "http://localhost:3014")).rstrip("/")
+        self.client = httpx.Client(timeout=10.0)
+
+    def transition(self, task_id: str, new_status: Any, reason: str, expected_version: int, idempotency_key: str) -> Dict[str, Any]:
+        """Execute a workflow transition synchronously."""
+        payload = {
+            "task_id": task_id,
+            "new_status": new_status.value if hasattr(new_status, "value") else new_status,
+            "reason": reason,
+            "expected_version": expected_version,
+            "idempotency_key": idempotency_key
+        }
+        try:
+            response = self.client.post(f"{self.base_url}/api/workflow/transition", json=payload)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to execute transition on task-orchestrator: {e}")
+            raise
+
+    def close(self):
+        """Close the underlying HTTP client."""
+        self.client.close()

@@ -29,6 +29,44 @@ from dopemux.pm.writes import PMWriteConfig, pm_update_work_item, pm_transition_
 from dopemux.pm.mapping import TASKMASTER_TO_CANONICAL
 from dopemux.pm.adapters.orchestrator import SyncTaskOrchestratorAdapter
 
+class SyncBridgeAdapterClientStub:
+    """Base stub for synchronous bridge clients."""
+    def __init__(self, config: DopeconBridgeConfig):
+        self.config = config
+        self.client = httpx.Client(
+            base_url=config.base_url,
+            headers={"X-API-Token": config.token} if config.token else {},
+            timeout=config.timeout or 10.0
+        )
+
+class SyncLeantimeBridgeClient(SyncBridgeAdapterClientStub):
+    """Synchronous Leantime bridge client."""
+    def update_task(self, task_id: str, updates: Dict[str, Any], idempotency_key: str):
+        payload = {"updates": updates, "idempotency_key": idempotency_key}
+        resp = self.client.post(f"/pm/leantime/tasks/{task_id}", json=payload)
+        resp.raise_for_status()
+
+    def update_status(self, task_id: str, new_status: str, idempotency_key: str):
+        payload = {"status": new_status, "idempotency_key": idempotency_key}
+        resp = self.client.post(f"/pm/leantime/tasks/{task_id}/status", json=payload)
+        resp.raise_for_status()
+
+class SyncOrchestratorBridgeClient(SyncBridgeAdapterClientStub):
+    """Synchronous Orchestrator bridge client."""
+    def __init__(self, config: DopeconBridgeConfig, project_id: Optional[str] = None):
+        super().__init__(config)
+        self.project_id = project_id
+        self.task_orchestrator = SyncTaskOrchestratorAdapter()
+
+    def transition(self, task_id: str, new_status: PMTaskStatus, reason: str, expected_version: int, idempotency_key: str):
+        return self.task_orchestrator.transition(
+            task_id=task_id,
+            new_status=new_status,
+            reason=reason,
+            expected_version=expected_version,
+            idempotency_key=idempotency_key
+        )
+
 class SyncConportBridgeClient(SyncBridgeAdapterClientStub):
     def record_progress(self, task_id: str, progress_notes: str, is_decision: bool, idempotency_key: str):
         payload = {
