@@ -122,6 +122,16 @@ STRATEGY_LIBRARY = {
         risk_profile="LOW",
         verification_burden="STANDARD",
     ),
+    "AUTO_MERGE_FALLBACK": StrategyDefinition(
+        id="AUTO_MERGE_FALLBACK",
+        name="Auto-Merge Fallback",
+        category="STRUCTURAL",
+        description="Enable GitHub auto-merge to handle pending status checks safely.",
+        use_case="PRs that are structurally ready but awaiting final CI signals.",
+        anti_case="PRs with failing checks or unresolved conflicts.",
+        risk_profile="LOW",
+        verification_burden="STANDARD",
+    ),
 }
 
 
@@ -133,6 +143,7 @@ STRATEGY_PRIORITY_BOOSTS: Dict[str, float] = {
     "PATCH_ISOLATION_PLAN": 50.0,
     "REVERT_AND_REINTEGRATE": 40.0,
     "DIRECT_REBASE_MERGE": 30.0,
+    "AUTO_MERGE_FALLBACK": 25.0,
     "SPLIT_DECISION_REQUIRED": 20.0,
     "OURS_THEN_PORT_SELECTIVE": 10.0,
     "STAGED_SEQUENCE_MERGE": 5.0,
@@ -142,19 +153,20 @@ STRATEGY_PRIORITY_BOOSTS: Dict[str, float] = {
 }
 
 # Strategies safe for speculative rebase train (low risk, standard verification)
-TRAIN_ELIGIBLE_STRATEGIES = {"DIRECT_REBASE_MERGE", "PATCH_ISOLATION_PLAN"}
+TRAIN_ELIGIBLE_STRATEGIES = {"DIRECT_REBASE_MERGE", "PATCH_ISOLATION_PLAN", "AUTO_MERGE_FALLBACK"}
 
 # Execution order within the train (lower = executed first)
 STRATEGY_EXECUTION_ORDER: Dict[str, int] = {
     "DIRECT_REBASE_MERGE": 0,
-    "PATCH_ISOLATION_PLAN": 1,
-    "REVERT_AND_REINTEGRATE": 2,
-    "OURS_THEN_PORT_SELECTIVE": 3,
-    "SPLIT_DECISION_REQUIRED": 4,
-    "STAGED_SEQUENCE_MERGE": 5,
-    "INTERFACE_FIRST_RECONCILIATION": 6,
-    "THEIRS_THEN_REAPPLY_LOCAL_BEHAVIOR": 7,
-    "MIGRATION_FIRST_THEN_FEATURE_REPLAY": 8,
+    "AUTO_MERGE_FALLBACK": 1,
+    "PATCH_ISOLATION_PLAN": 2,
+    "REVERT_AND_REINTEGRATE": 3,
+    "OURS_THEN_PORT_SELECTIVE": 4,
+    "SPLIT_DECISION_REQUIRED": 5,
+    "STAGED_SEQUENCE_MERGE": 6,
+    "INTERFACE_FIRST_RECONCILIATION": 7,
+    "THEIRS_THEN_REAPPLY_LOCAL_BEHAVIOR": 8,
+    "MIGRATION_FIRST_THEN_FEATURE_REPLAY": 9,
 }
 
 
@@ -211,11 +223,17 @@ def select_strategy(result: PRResult, policy: Dict[str, Any]) -> StrategyAssignm
         )
 
     # MERGE_READY or QUEUED with green CI: direct rebase merge
-    if lifecycle in ("merge_ready", "queued_for_merge") and pr.ci_status == "SUCCESS":
+    if lifecycle in ("merge_ready", "queued_for_merge"):
+        if pr.ci_status == "SUCCESS":
+            return StrategyAssignment(
+                strategy_id="DIRECT_REBASE_MERGE",
+                rationale="Clean PR with green CI, eligible for direct rebase merge",
+                priority_boost=STRATEGY_PRIORITY_BOOSTS["DIRECT_REBASE_MERGE"],
+            )
         return StrategyAssignment(
-            strategy_id="DIRECT_REBASE_MERGE",
-            rationale="Clean PR with green CI, eligible for direct rebase merge",
-            priority_boost=STRATEGY_PRIORITY_BOOSTS["DIRECT_REBASE_MERGE"],
+            strategy_id="AUTO_MERGE_FALLBACK",
+            rationale="Structurally ready but awaiting CI signals; opting for auto-merge handoff",
+            priority_boost=STRATEGY_PRIORITY_BOOSTS["AUTO_MERGE_FALLBACK"],
         )
 
     # CI failures only: isolate the fix
