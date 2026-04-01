@@ -74,8 +74,10 @@ class ClosedLoopEngine:
             return "OURS_THEN_PORT_SELECTIVE"
 
         # Green and ready
-        if lifecycle in ("merge_ready", "queued_for_merge") and ci_status == "SUCCESS":
-            return "DIRECT_REBASE_MERGE"
+        if lifecycle in ("merge_ready", "queued_for_merge"):
+            if ci_status == "SUCCESS":
+                return "DIRECT_REBASE_MERGE"
+            return "AUTO_MERGE_FALLBACK"
 
         # CI failures
         if pr_class == "CI_ONLY":

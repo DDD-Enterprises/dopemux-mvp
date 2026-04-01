@@ -147,23 +147,27 @@ def lifecycle_for_findings(
     ]
     
     # If the only blockers are strictly "validation not yet executed", we are APPLY_READY.
-    # Required GitHub checks still pending should remain blocked until validation or queueing
-    # logic explicitly clears them.
+    # Required GitHub checks still pending should remain blocked (APPLY_BLOCKED)
+    # unless optimistic queueing logic in build_plan_result or queue_drain handles them.
     non_val_blockers = [
         b for b in blockers 
         if b.finding_type != "validation_not_executed"
     ]
 
     if non_val_blockers:
+        # If the ONLY non-validation blocker is REQUIRED_CHECK_PENDING, and local validation passed,
+        # we can consider it MERGE_READY (optimistic) or APPLIED (awaiting final signal).
+        # However, APPLY_BLOCKED is the safer 'wait' state.
         return PRState.APPLY_BLOCKED
         
     if _status_value(validation_status) == ValidationStatus.PASSED.value:
         return PRState.MERGE_READY
         
-    if _status_value(validation_status) == ValidationStatus.NOT_EXECUTED.value or blockers:
+    if _status_value(validation_status) == ValidationStatus.NOT_EXECUTED.value:
         return PRState.APPLY_READY
         
-    return PRState.MERGE_BLOCKED
+    # Validation failed locally
+    return PRState.APPLY_BLOCKED
 
 
 def has_conflicts(mergeable: str, merge_state_status: str) -> bool:
