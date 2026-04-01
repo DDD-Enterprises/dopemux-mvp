@@ -129,6 +129,12 @@ except ImportError:
         UNKNOWN_MODEL_POLICY = "baseline_v1_fallback"
         BASELINE_INPUT_COST_PER_1M_USD = 0.15
         BASELINE_OUTPUT_COST_PER_1M_USD = 0.60
+=======
+        else:
+            SpendLedger = None
+    else:
+        SpendLedger = None
+>>>>>>> 196cd7b0b (fix(repo-truth): restore v5 runtime startup and routing overrides)
 try:
     from lib.phase_contract_map import (
         CONTRACT_MAP_FILENAME as PHASE_CONTRACT_MAP_FILENAME,
