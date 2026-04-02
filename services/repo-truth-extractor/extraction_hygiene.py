@@ -5,7 +5,7 @@ TP-RTX-V5-PRE-RESTART-REPO-HYGIENE-0001
 
 Usage:
     python extraction_hygiene.py scan [--repo-root PATH] [--json] [--scan-mode actionable|full]
-    python extraction_hygiene.py apply [--repo-root PATH] [--dry-run | --apply]
+    python extraction_hygiene.py apply [--repo-root PATH] [--dry-run | --apply] [--bucket stale_resume_state|os_artifact|run_zip] [--limit N] [--json]
 
 Scan mode (default, read-only):
     Reports noisy paths, stale run-state artifacts, version/path mismatches,
@@ -159,11 +159,14 @@ class PlannedAction:
     source: Path
     dest: Optional[Path]
     reason: str
+    bucket: str
 
 
 @dataclass
 class ApplyPlan:
     dry_run: bool
+    bucket: Optional[str] = None
+    limit: Optional[int] = None
     planned_actions: List[PlannedAction] = field(default_factory=list)
     applied_actions: List[PlannedAction] = field(default_factory=list)
     canonical_sources_mutated: bool = False
@@ -623,15 +626,29 @@ def _increment_apply_summary(plan: ApplyPlan, key: str, amount: int = 1) -> None
     plan.summary[key] += amount
 
 
+_APPLY_BUCKET_REASONS: Dict[str, tuple[str, ...]] = {
+    "stale_resume_state": ("stale_failed_sidecar",),
+    "os_artifact": ("ds_store_in_extraction_tree",),
+    "run_zip": ("zip_in_run_dir",),
+}
+
+
 def run_apply(
     repo_root: Path = _REPO_ROOT_DEFAULT,
     dry_run: bool = True,
+    bucket: Optional[str] = None,
+    limit: Optional[int] = None,
 ) -> ApplyPlan:
     """
     Apply hygiene cleanup. dry_run=True (default) reports but makes no changes.
     dry_run=False moves stale artifacts to quarantine and writes a manifest.
     """
-    plan = ApplyPlan(dry_run=dry_run)
+    if bucket is not None and bucket not in _APPLY_BUCKET_REASONS:
+        raise ValueError(f"unsupported bucket: {bucket}")
+    if limit is not None and limit < 0:
+        raise ValueError("limit must be >= 0")
+
+    plan = ApplyPlan(dry_run=dry_run, bucket=bucket, limit=limit)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     quarantine_root = repo_root / "extraction/repo-truth-extractor/quarantine" / timestamp
 
@@ -709,7 +726,17 @@ def run_apply(
                 candidates.append((zf, "zip_in_run_dir"))
 
     # Build planned actions
-    for src, reason in candidates:
+    filtered_candidates = [
+        (src, reason)
+        for src, reason in candidates
+        if bucket is None or reason in _APPLY_BUCKET_REASONS[bucket]
+    ]
+    plan.summary["eligible_actions"] = len(filtered_candidates)
+
+    if limit is not None:
+        filtered_candidates = filtered_candidates[:limit]
+
+    for src, reason in filtered_candidates:
         rel = str(src.relative_to(repo_root))
         if _is_canonical_protected(rel):
             _increment_apply_summary(plan, "skipped_non_matching_policy")
@@ -720,8 +747,14 @@ def run_apply(
             source=src,
             dest=dest,
             reason=reason,
+            bucket=(
+                "stale_resume_state"
+                if reason == "stale_failed_sidecar"
+                else "os_artifact"
+                if reason == "ds_store_in_extraction_tree"
+                else "run_zip"
+            ),
         ))
-    plan.summary["eligible_actions"] = len(plan.planned_actions)
 
     if dry_run:
         return plan
@@ -746,6 +779,8 @@ def run_apply(
         manifest = {
             "timestamp": timestamp,
             "dry_run": False,
+            "bucket": plan.bucket,
+            "limit": plan.limit,
             "summary": plan.summary,
             "moved_items": moved_items,
         }
@@ -794,6 +829,19 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_false",
         help="Execute quarantine actions",
     )
+    apply_p.add_argument(
+        "--bucket",
+        choices=tuple(sorted(_APPLY_BUCKET_REASONS.keys())),
+        default=None,
+        help="Restrict apply to a single cleanup bucket.",
+    )
+    apply_p.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Maximum number of actions to plan or apply after bucket filtering.",
+    )
+    apply_p.add_argument("--json", action="store_true", help="Output apply results as JSON")
 
     return parser
 
@@ -821,7 +869,33 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 1 if result.errors else 0
 
     elif args.command == "apply":
-        plan = run_apply(repo_root=args.repo_root, dry_run=args.dry_run)
+        plan = run_apply(
+            repo_root=args.repo_root,
+            dry_run=args.dry_run,
+            bucket=args.bucket,
+            limit=args.limit,
+        )
+        payload = {
+            "dry_run": plan.dry_run,
+            "bucket": plan.bucket,
+            "limit": plan.limit,
+            "planned_actions": len(plan.planned_actions),
+            "applied_actions": len(plan.applied_actions),
+            "summary": plan.summary,
+            "actions": [
+                {
+                    "path": str(action.source),
+                    "dest": str(action.dest) if action.dest is not None else None,
+                    "reason": action.reason,
+                    "bucket": action.bucket,
+                }
+                for action in plan.planned_actions
+            ],
+            "manifest_path": str(plan.manifest_path) if plan.manifest_path else None,
+        }
+        if getattr(args, "json", False):
+            print(json.dumps(payload, indent=2))
+            return 0
         mode = "DRY-RUN" if plan.dry_run else "APPLY"
         print(f"\n[{mode}] Planned actions: {len(plan.planned_actions)}")
         print(f"[{mode}] Summary:")

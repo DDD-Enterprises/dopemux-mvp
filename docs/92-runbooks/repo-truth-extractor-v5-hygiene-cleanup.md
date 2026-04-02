@@ -64,6 +64,26 @@ Use this runbook to reduce stale extractor noise without deleting active runtime
 
 Large skip counts are not inherently a problem. They usually mean the safeguards are actively refusing artifacts that need review, do not meet policy, or do not have enough structure to quarantine safely.
 
+## Bounded apply procedure
+
+- Always run preview first with `--dry-run`.
+- Always constrain the first real apply by both:
+  - `--bucket`
+  - `--limit`
+- Never run an unbounded `apply --apply` on first execution against a live repo.
+- For stale resume cleanup, use a narrow command such as:
+  - `python services/repo-truth-extractor/extraction_hygiene.py apply --dry-run --bucket stale_resume_state --limit 20 --json`
+- Before any real apply, verify:
+  - `planned_actions` is at or below the intended limit
+  - skip buckets are populated and believable
+  - `blocked_promptset` protections are still being counted
+- After a bounded apply, verify:
+  - before/after stale resume deltas match the applied count
+  - blocked promptset counts remain unchanged
+  - no unrelated bucket moved
+
+If the preview counts or after-state deltas do not line up exactly, stop. Do not widen scope and do not “fix forward” by running more apply.
+
 ## Expected outcome
 
 - Default scan remains honest about total detected debris.
