@@ -162,3 +162,27 @@ class TestApplyModeQuarantine:
 
         assert failed.exists(), "ambiguous top-level FAILED marker should be preserved"
         assert plan.summary["skipped_ambiguous"] == 1
+
+    def test_bucket_limit_selects_only_stale_resume_state_actions(self, tmp_path):
+        """Bucket filtering and limit must bound apply without cross-bucket leakage."""
+        run_one = tmp_path / "extraction/repo-truth-extractor/v3/runs/old_run_1"
+        run_two = tmp_path / "extraction/repo-truth-extractor/v3/runs/old_run_2"
+        self._make_stale_failed(run_one, part="A_P0001")
+        self._make_success(run_one, part="A_P0001")
+        self._make_stale_failed(run_two, part="A_P0002")
+        self._make_success(run_two, part="A_P0002")
+        ds = tmp_path / "extraction/repo-truth-extractor/v3/runs/old_run_2/.DS_Store"
+        ds.write_bytes(b"\x00\x01")
+
+        plan = hyg.run_apply(
+            repo_root=tmp_path,
+            dry_run=True,
+            bucket="stale_resume_state",
+            limit=1,
+        )
+
+        assert plan.bucket == "stale_resume_state"
+        assert plan.limit == 1
+        assert plan.summary["eligible_actions"] == 2
+        assert len(plan.planned_actions) == 1
+        assert all(action.bucket == "stale_resume_state" for action in plan.planned_actions)
