@@ -9,7 +9,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import yaml
 
@@ -428,6 +428,25 @@ def _prompt_file_coverage_issues(repo_root: Path, promptset_payload: Dict[str, A
     return issues
 
 
+_ORDERED_LIST_LINE_RE = re.compile(r"^\s*(\d+)\.\s+")
+
+
+def _ordered_list_numbering_issues(section_body: str) -> List[str]:
+    previous: Optional[int] = None
+    issues: List[str] = []
+    for raw_line in str(section_body or "").splitlines():
+        match = _ORDERED_LIST_LINE_RE.match(raw_line)
+        if not match:
+            continue
+        current = int(match.group(1))
+        if previous is not None and current <= previous:
+            issues.append(
+                f"non_monotonic_numbering:{previous}->{current}"
+            )
+        previous = current
+    return issues
+
+
 def _audit_rows(
     repo_root: Path,
     promptset_payload: Dict[str, Any],
@@ -486,6 +505,11 @@ def _audit_rows(
                 min_chars = MIN_SECTION_BODY_CHARS.get(section_name, 80)
                 if len(body) < min_chars:
                     notes.append(f"lint:section_too_short:{section_name}")
+            extraction_body = sections.get("Extraction Procedure", "")
+            for numbering_issue in _ordered_list_numbering_issues(extraction_body):
+                notes.append(
+                    f"scan:extraction_procedure_{numbering_issue}"
+                )
 
             missing_registry: List[str] = []
             for artifact_name in declared_outputs:

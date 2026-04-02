@@ -219,7 +219,7 @@ S_PROMPTS_AUTO = "auto"
 S_PROMPTS_REGISTRY = "registry"
 S_PROMPTS_LEGACY = "legacy"
 S_PROMPTS_MODES = {S_PROMPTS_AUTO, S_PROMPTS_REGISTRY, S_PROMPTS_LEGACY}
-PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(7))
+PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(13))
 PHASE_S_BASE_STEP_SET = set(PHASE_S_BASE_STEPS)
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
@@ -307,6 +307,38 @@ PHASE_DIR_NAMES: Dict[str, str] = {
     "Z": "Z_handoff_freeze",
     "S": "S_synthesis",
 }
+PHASE_DISPLAY_NAMES: Dict[str, str] = {
+    "A": "Repo Plane",
+    "H": "Home Plane",
+    "D": "Docs Plane",
+    "C": "Code Plane",
+    "E": "Execution Plane",
+    "W": "Workflow Plane",
+    "B": "Boundary Plane",
+    "G": "Governance Plane",
+    "Q": "Quality Assurance",
+    "R": "Arbitration",
+    "X": "Feature Index",
+    "T": "Task Packets",
+    "Z": "Handoff Freeze",
+    "S": "Synthesis",
+}
+PHASE_PURPOSES: Dict[str, str] = {
+    "A": "Scan repository instruction, router, hook, compose, and provider-control surfaces.",
+    "H": "Scan operator home-level configs, providers, tmux flows, and local control-plane state.",
+    "D": "Extract documentation contracts, drift, recency, and canonical doc boundaries.",
+    "C": "Extract code entrypoints, schemas, runtime writers, and implementation truth surfaces.",
+    "E": "Map execution/bootstrap surfaces such as scripts, installers, docker, and ops entrypoints.",
+    "W": "Map workflows, automation surfaces, and execution orchestration paths.",
+    "B": "Extract boundary enforcement, contracts, and cross-plane isolation surfaces.",
+    "G": "Extract governance rules, hygiene controls, and policy enforcement surfaces.",
+    "Q": "Cross-check prior phases for contract failures, gaps, and extractor QA signals.",
+    "R": "Arbitrate normalized truth across required upstream phases and optional enrichments.",
+    "X": "Index repo feature surfaces directly from code, config, scripts, and docs.",
+    "T": "Derive task packets from arbitration and feature-index outputs.",
+    "Z": "Freeze final handoff package from arbitration, feature index, and task packets.",
+    "S": "Synthesize the final truth pack from arbitration outputs plus downstream rollups.",
+}
 LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
     "R2_synthesis": "R_arbitration",
 }
@@ -320,6 +352,38 @@ R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
 # Optional phases whose norm outputs enrich R arbitration when available.
 # B→R3/R8/R10  E→R0/R5/R8  G→R0/R6/R7  W→R5/R6  Q→R7/R8
 R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q", "X"]
+PHASE_REQUIRED_DEPENDENCIES: Dict[str, List[str]] = {
+    "A": [],
+    "H": [],
+    "D": [],
+    "C": [],
+    "E": [],
+    "W": [],
+    "B": [],
+    "G": [],
+    "Q": ["A", "H", "D", "C", "E", "W", "B", "G", "X"],
+    "R": list(R_REQUIRED_INPUT_PHASES),
+    "X": [],
+    "T": ["R", "X"],
+    "Z": ["R", "X", "T"],
+    "S": ["R"],
+}
+PHASE_OPTIONAL_DEPENDENCIES: Dict[str, List[str]] = {
+    "A": [],
+    "H": [],
+    "D": [],
+    "C": [],
+    "E": [],
+    "W": [],
+    "B": [],
+    "G": [],
+    "Q": [],
+    "R": list(R_OPTIONAL_INPUT_PHASES),
+    "X": [],
+    "T": [],
+    "Z": [],
+    "S": ["X", "T", "Z", "MANUAL"],
+}
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
@@ -887,7 +951,7 @@ def _validate_s_steps(selected: List[str]) -> None:
     unknown = [step_id for step_id in selected if step_id not in PHASE_S_BASE_STEP_SET]
     if unknown:
         raise RuntimeError(
-            "Phase S step selection only allows S0-S6. "
+            "Phase S step selection only allows S0-S12. "
             f"Unsupported steps: {', '.join(sorted(unknown, key=step_sort_key))}"
         )
 
@@ -1059,13 +1123,13 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "E": {"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E9"},
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
-    "G": {"G0", "G1", "G2", "G3", "G4", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9"},
-    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10"},
+    "G": {"G0", "G1", "G2", "G3", "G4", "G5", "G9"},
+    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9", "Q11"},
+    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11"},
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6"},
+    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12"},
     "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 
@@ -6639,7 +6703,274 @@ def summarize_llm_response(
         summary["completion_tokens"] = int(completion_tokens)
     if total_tokens is not None:
         summary["total_tokens"] = int(total_tokens)
+    usage = _normalized_usage_from_payload(
+        getattr(response_obj, "usage", None)
+        or getattr(response_obj, "usage_metadata", None)
+        or (response_json.get("usage") if isinstance(response_json, dict) else None)
+        or (
+            response_json.get("usage_metadata")
+            if isinstance(response_json, dict)
+            else None
+        )
+        or (
+            response_json.get("usageMetadata")
+            if isinstance(response_json, dict)
+            else None
+        )
+    )
+    if usage is not None:
+        summary["usage"] = usage
     return summary
+
+
+def _safe_token_int(value: Any) -> Optional[int]:
+    try:
+        if value is None:
+            return None
+        return max(0, int(value))
+    except Exception:
+        return None
+
+
+def _read_usage_field(payload: Any, *keys: str) -> Optional[int]:
+    for key in keys:
+        if isinstance(payload, dict) and key in payload:
+            value = _safe_token_int(payload.get(key))
+            if value is not None:
+                return value
+        attr = getattr(payload, key, None)
+        value = _safe_token_int(attr)
+        if value is not None:
+            return value
+    return None
+
+
+def _normalized_usage_from_payload(payload: Any) -> Optional[Dict[str, int]]:
+    if payload is None:
+        return None
+    input_tokens = _read_usage_field(
+        payload,
+        "input_tokens",
+        "prompt_tokens",
+        "prompt_token_count",
+        "promptTokenCount",
+        "inputTokenCount",
+        "input_token_count",
+    )
+    output_tokens = _read_usage_field(
+        payload,
+        "output_tokens",
+        "completion_tokens",
+        "candidates_token_count",
+        "candidatesTokenCount",
+        "outputTokenCount",
+        "output_token_count",
+    )
+    total_tokens = _read_usage_field(
+        payload,
+        "total_tokens",
+        "total_token_count",
+        "totalTokenCount",
+    )
+    if total_tokens is None and input_tokens is not None and output_tokens is not None:
+        total_tokens = input_tokens + output_tokens
+    if input_tokens is None and output_tokens is None and total_tokens is None:
+        return None
+    return {
+        "input_tokens": int(input_tokens or 0),
+        "output_tokens": int(output_tokens or 0),
+        "total_tokens": int(total_tokens or ((input_tokens or 0) + (output_tokens or 0))),
+    }
+
+
+def _estimate_text_tokens(*chunks: Any) -> int:
+    total_chars = sum(len(str(chunk or "")) for chunk in chunks)
+    return max(0, total_chars // 4)
+
+
+def _project_output_tokens(input_tokens: int, response_text: str = "") -> int:
+    if response_text:
+        return max(1, len(str(response_text)) // 4)
+    return max(1, int(input_tokens) // 10) if input_tokens > 0 else 1
+
+
+def _record_request_warning(
+    request_meta: Dict[str, Any],
+    *,
+    code: str,
+    message: str,
+    **fields: Any,
+) -> None:
+    warnings = request_meta.get("warnings")
+    if not isinstance(warnings, list):
+        warnings = []
+        request_meta["warnings"] = warnings
+    warnings.append(
+        {
+            "code": code,
+            "message": message,
+            **fields,
+        }
+    )
+
+
+def _record_truncation_salvage_warning(
+    request_meta: Dict[str, Any],
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    salvage_meta: Dict[str, Any],
+) -> None:
+    if not salvage_meta.get("truncation_salvage"):
+        return
+    message = (
+        "JSON truncation salvage succeeded with lossy repair "
+        f"(phase={phase} step={step_id} partition={partition_id} "
+        f"provider={provider} model={model_id})"
+    )
+    logger.warning(message)
+    _record_request_warning(
+        request_meta,
+        code="truncation_salvage_lossy",
+        message=message,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=provider,
+        model_id=model_id,
+        salvage_strategy=str(salvage_meta.get("salvage_strategy") or ""),
+        lossy=bool(salvage_meta.get("lossy", False)),
+    )
+
+
+def _pricing_preview(
+    cfg: RunnerConfig,
+    *,
+    provider: str,
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+) -> Optional[Dict[str, Any]]:
+    if not cfg.ledger:
+        return None
+    return cfg.ledger.price_usage(
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        provider=provider,
+        model_id=model_id,
+    )
+
+
+def _check_projected_cost_limit(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+    execution_mode: str,
+) -> None:
+    pricing = _pricing_preview(
+        cfg,
+        provider=provider,
+        model_id=model_id,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+    )
+    if pricing is None:
+        return
+    if cfg.ledger.check_limit(pricing["estimated_cost_usd"]):
+        return
+    raise RuntimeError(
+        "Projected cost cap exceeded before provider call "
+        f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
+        f"provider={provider} model={model_id} add_usd={pricing['estimated_cost_usd']:.4f} "
+        f"limit={cfg.max_cost_usd})"
+    )
+
+
+def _resolve_runtime_usage(
+    *,
+    response_summary: Optional[Dict[str, Any]] = None,
+    response_text: str = "",
+    fallback_input_tokens: int = 0,
+    fallback_output_tokens: Optional[int] = None,
+    payload: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    usage = None
+    if isinstance(response_summary, dict):
+        usage = _normalized_usage_from_payload(response_summary.get("usage"))
+    if usage is None and isinstance(payload, dict):
+        usage = _normalized_usage_from_payload(payload)
+    if usage is not None:
+        return {
+            **usage,
+            "usage_source": "provider_usage",
+        }
+    input_tokens = max(0, int(fallback_input_tokens or 0))
+    output_tokens = (
+        max(0, int(fallback_output_tokens))
+        if fallback_output_tokens is not None
+        else _project_output_tokens(input_tokens, response_text)
+    )
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": input_tokens + output_tokens,
+        "usage_source": "estimated_fallback",
+    }
+
+
+def _accumulate_runtime_spend(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    execution_mode: str,
+    response_summary: Optional[Dict[str, Any]] = None,
+    response_text: str = "",
+    fallback_input_tokens: int = 0,
+    fallback_output_tokens: Optional[int] = None,
+    payload: Optional[Dict[str, Any]] = None,
+) -> Optional[Dict[str, Any]]:
+    if not cfg.ledger:
+        return None
+    usage = _resolve_runtime_usage(
+        response_summary=response_summary,
+        response_text=response_text,
+        fallback_input_tokens=fallback_input_tokens,
+        fallback_output_tokens=fallback_output_tokens,
+        payload=payload,
+    )
+    pricing = cfg.ledger.accumulate(
+        phase,
+        int(usage["input_tokens"]),
+        int(usage["output_tokens"]),
+        provider=provider,
+        model_id=model_id,
+    )
+    combined = {
+        **usage,
+        **pricing,
+        "execution_mode": execution_mode,
+    }
+    if not cfg.ledger.check_limit():
+        raise RuntimeError(
+            "Runtime cost cap exceeded after provider response "
+            f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
+            f"provider={provider} model={model_id} total_usd={cfg.ledger.record.total_cost_usd:.4f} "
+            f"limit={cfg.max_cost_usd})"
+        )
+    return combined
 
 
 def capture_exception_metadata(exc: Exception) -> Dict[str, str]:
@@ -7979,7 +8310,11 @@ def try_repair_json_truncation(
     return repaired
 
 
-def parse_json_from_response(text: str) -> Optional[Any]:
+def parse_json_from_response(
+    text: str,
+    *,
+    metadata_out: Optional[Dict[str, Any]] = None,
+) -> Optional[Any]:
     if not text:
         return None
 
@@ -8021,16 +8356,20 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         except Exception:
             pass
 
-    # 4) prose-plus-object salvage (deterministic single-object only)
-    salvaged_object = extract_first_json_object(stripped)
-    if salvaged_object and salvaged_object not in seen_candidates:
-        try:
-            return json.loads(salvaged_object)
-        except json.JSONDecodeError as exc:
-            repair_candidates.append((salvaged_object, exc))
-            seen_candidates.add(salvaged_object)
-        except Exception:
-            pass
+    # 4) prose-plus-object salvage is opt-in so legacy shared callers remain fail-closed.
+    if metadata_out is not None:
+        salvaged_object = extract_first_json_object(stripped)
+        if salvaged_object and salvaged_object not in seen_candidates:
+            try:
+                metadata_out.setdefault("truncation_salvage", True)
+                metadata_out.setdefault("salvage_strategy", "single_object_extraction")
+                metadata_out.setdefault("lossy", salvaged_object != stripped)
+                return json.loads(salvaged_object)
+            except json.JSONDecodeError as exc:
+                repair_candidates.append((salvaged_object, exc))
+                seen_candidates.add(salvaged_object)
+            except Exception:
+                pass
 
     # 5) balanced repair parse (semantic EOF eligible only)
     for candidate, decode_error in repair_candidates:
@@ -8040,6 +8379,14 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         if not repaired:
             continue
         try:
+            if metadata_out is not None:
+                metadata_out.update(
+                    {
+                        "truncation_salvage": True,
+                        "salvage_strategy": "balanced_truncation_repair",
+                        "lossy": repaired != candidate,
+                    }
+                )
             return json.loads(repaired)
         except Exception:
             continue
@@ -10538,7 +10885,20 @@ def execute_step_for_partitions(
             ]
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
-            parsed = parse_json_from_response(response_text_local)
+            salvage_meta: Dict[str, Any] = {}
+            parsed = parse_json_from_response(
+                response_text_local,
+                metadata_out=salvage_meta,
+            )
+            _record_truncation_salvage_warning(
+                request_meta_local,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                provider=strict_provider,
+                model_id=strict_model_id,
+                salvage_meta=salvage_meta,
+            )
             artifacts_local = coerce_artifacts_from_response(
                 parsed=parsed,
                 raw_text=response_text_local,
@@ -10575,6 +10935,7 @@ def execute_step_for_partitions(
             sidefill_invocations = 0
             sidefill_filled_artifacts: List[str] = []
             sidefill_dropped_rows = 0
+            sidefill_conflicts: List[Dict[str, Any]] = []
             strict_route_attestations: List[Dict[str, Any]] = []
             if isinstance(request_meta_current.get("strict_route_attestations"), list):
                 strict_route_attestations.extend(
@@ -10607,6 +10968,47 @@ def execute_step_for_partitions(
                         "attempts": strict_route_attempts,
                     }
                 )
+
+            def _merge_with_conflict_tracking(
+                updates: List[Dict[str, Any]],
+            ) -> None:
+                nonlocal artifacts_current
+                merged_result = merge_artifacts_by_name(
+                    artifacts_current,
+                    updates,
+                    step_contract,
+                    return_conflicts=True,
+                )
+                artifacts_current, new_conflicts = merged_result
+                if not new_conflicts:
+                    return
+                sidefill_conflicts.extend(new_conflicts)
+                logger.warning(
+                    "SIDEFILL_CONFLICT phase=%s step=%s partition=%s conflicts=%s",
+                    phase,
+                    step_id,
+                    partition_id,
+                    len(new_conflicts),
+                )
+                for conflict in new_conflicts:
+                    _record_request_warning(
+                        request_meta_current,
+                        code="sidefill_scalar_conflict",
+                        message=(
+                            "Scalar sidefill conflict detected before deterministic "
+                            "last-write merge"
+                        ),
+                        phase=phase,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=str(request_meta_current.get("provider") or initial_provider),
+                        model_id=str(request_meta_current.get("model_id") or initial_model_id),
+                        artifact_name=str(conflict.get("artifact_name") or ""),
+                        item_id=str(conflict.get("item_id") or ""),
+                        field=str(conflict.get("field") or ""),
+                        existing_value=conflict.get("existing_value"),
+                        updated_value=conflict.get("updated_value"),
+                    )
 
             contract_ok, contract_reason, contract_context = (
                 artifacts_pass_contract_gate(artifacts_current, step_contract)
@@ -10667,11 +11069,7 @@ def execute_step_for_partitions(
                     )
                     sidefill_dropped_rows += int(dropped_count)
                     if sidefill_artifacts:
-                        artifacts_current = merge_artifacts_by_name(
-                            artifacts_current,
-                            sidefill_artifacts,
-                            step_contract,
-                        )
+                        _merge_with_conflict_tracking(sidefill_artifacts)
                         if any(
                             str(row.get("artifact_name") or "") == missing_artifact
                             for row in sidefill_artifacts
@@ -10730,11 +11128,7 @@ def execute_step_for_partitions(
                 )
                 strict_route_attestations.extend(strict_attest)
                 if repaired_artifacts:
-                    artifacts_current = merge_artifacts_by_name(
-                        artifacts_current,
-                        repaired_artifacts,
-                        step_contract,
-                    )
+                    _merge_with_conflict_tracking(repaired_artifacts)
                     artifacts_current, recanonical_norm = canonicalize_artifacts(
                         artifacts_current, step_contract
                     )
@@ -10776,11 +11170,7 @@ def execute_step_for_partitions(
                 )
                 strict_route_attestations.extend(strict_attest)
                 if repaired_artifacts:
-                    artifacts_current = merge_artifacts_by_name(
-                        artifacts_current,
-                        repaired_artifacts,
-                        step_contract,
-                    )
+                    _merge_with_conflict_tracking(repaired_artifacts)
                     artifacts_current, recanonical_norm = canonicalize_artifacts(
                         artifacts_current, step_contract
                     )
@@ -10814,15 +11204,13 @@ def execute_step_for_partitions(
                     else None
                 )
                 if fallback_artifact_name and isinstance(artifact_meta, dict):
-                    artifacts_current = merge_artifacts_by_name(
-                        artifacts_current,
+                    _merge_with_conflict_tracking(
                         [
                             {
                                 "artifact_name": fallback_artifact_name,
                                 "payload": empty_payload_for_artifact(artifact_meta),
                             }
-                        ],
-                        step_contract,
+                        ]
                     )
                     artifacts_current, recanonical_norm = canonicalize_artifacts(
                         artifacts_current, step_contract
@@ -10841,6 +11229,7 @@ def execute_step_for_partitions(
                     "sidefill_invocations": sidefill_invocations,
                     "sidefill_filled_artifacts": sorted(set(sidefill_filled_artifacts)),
                     "sidefill_dropped_rows": int(sidefill_dropped_rows),
+                    "sidefill_conflicts": sidefill_conflicts,
                     "schema_id_normalizations": schema_id_normalizations,
                     "final_contract_status": "pass" if contract_ok else "fail",
                     "schema_gate_passed": bool(contract_ok),
@@ -10922,6 +11311,16 @@ def execute_step_for_partitions(
                             },
                         )
                     ]
+                    projected_input_tokens = sum(
+                        _estimate_text_tokens(req.system_prompt, req.user_content)
+                        for req in batch_requests
+                    )
+                    projected_output_tokens = sum(
+                        _project_output_tokens(
+                            _estimate_text_tokens(req.system_prompt, req.user_content)
+                        )
+                        for req in batch_requests
+                    )
                     batch_request_rows.append(
                         {
                             "partition_id": partition_id,
@@ -10929,6 +11328,8 @@ def execute_step_for_partitions(
                             "model_id": batch_model_id,
                             "routing_policy": cfg.routing_policy,
                             "routing_tier": step_tier,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                         }
                     )
                     step_context = {
@@ -10946,14 +11347,21 @@ def execute_step_for_partitions(
                             details=f"partition={partition_id} requests=1",
                         )
                     try:
-                        if cfg.ledger and not cfg.ledger.check_limit():
-                            logger.error(f"❌ Hard cost ceiling (${cfg.max_cost_usd}) exceeded. Aborting batch submit.")
-                            sys.exit(1)
-                            
+                        _check_projected_cost_limit(
+                            cfg,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                            input_tokens=projected_input_tokens,
+                            output_tokens=projected_output_tokens,
+                            execution_mode="batch_submit",
+                        )
                         batch_job_id = batch_client.submit(
                             batch_requests, BatchRoute(*selected_route), step_context
                         )
-                        
+
                         if cfg.ledger:
                             # Estimate tokens for batch requests
                             in_toks = sum(len(req.user_content) // 4 for req in batch_requests)
@@ -10975,7 +11383,7 @@ def execute_step_for_partitions(
                                     prompt_tokens=in_toks,
                                     completion_tokens=out_toks,
                                 )
-                            
+
                         job_row = {
                             "run_id": run_id,
                             "phase_id": phase,
@@ -10987,6 +11395,8 @@ def execute_step_for_partitions(
                             "job_id": batch_job_id,
                             "state": "submitted",
                             "submitted_at_utc": now_iso(),
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                         }
                         batch_job_rows.append(job_row)
                     except Exception as exc:
@@ -11171,6 +11581,7 @@ def execute_step_for_partitions(
                             "job_id": batch_job_id,
                             "status": status,
                             "error": row.error,
+                            "meta": row.meta if isinstance(row.meta, dict) else {},
                         }
                     )
                     return str(row.output_text or ""), enrich_request_meta(
@@ -11242,6 +11653,27 @@ def execute_step_for_partitions(
                     provider=route_provider,
                     model_id=route_model_id,
                 )
+                if request_meta_local.get("response_received") or llm_result.get("ok"):
+                    spend_record = _accumulate_runtime_spend(
+                        cfg,
+                        phase=phase,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=route_provider,
+                        model_id=route_model_id,
+                        execution_mode="sync",
+                        response_summary=(
+                            request_meta_local.get("response_summary")
+                            if isinstance(request_meta_local.get("response_summary"), dict)
+                            else None
+                        ),
+                        response_text=response_text_local,
+                        fallback_input_tokens=_estimate_text_tokens(
+                            prompt_text, effective_user_prompt
+                        ),
+                    )
+                    if spend_record is not None:
+                        request_meta_local["spend_usage"] = spend_record
                 request_meta_local.setdefault("request_payload_bytes", payload_bytes)
                 if cfg.ledger:
                     prompt_toks = int(
@@ -11287,7 +11719,20 @@ def execute_step_for_partitions(
                     strict_error is not None
                     and _is_semantic_eof_eligible(strict_error, strict_candidate)
                 )
-                parsed = parse_json_from_response(response_text_local)
+                salvage_meta = {}
+                parsed = parse_json_from_response(
+                    response_text_local,
+                    metadata_out=salvage_meta,
+                )
+                _record_truncation_salvage_warning(
+                    request_meta_local,
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=route_provider,
+                    model_id=route_model_id,
+                    salvage_meta=salvage_meta,
+                )
                 artifacts_local = coerce_artifacts_from_response(
                     parsed=parsed,
                     raw_text=response_text_local,
@@ -12891,6 +13336,40 @@ def print_run_order(phases: List[str]) -> int:
     return 0
 
 
+def _phase_cost_profile(phase: str) -> Dict[str, Any]:
+    provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
+    return {
+        "provider": provider,
+        "model_id": model_id,
+        "model": f"{provider}/{model_id}" if provider and model_id else "",
+        "api_key_env": api_key_env,
+    }
+
+
+def print_phase_catalog(phases: Optional[List[str]] = None) -> int:
+    selected_phases = list(phases) if phases else list(PHASES)
+    payload = {
+        "generated_at": now_iso(),
+        "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "phase_count": len(selected_phases),
+        "phases": [
+            {
+                "code": phase,
+                "name": PHASE_DISPLAY_NAMES.get(phase, PHASE_DIR_NAMES.get(phase, phase)),
+                "phase_dir": PHASE_DIR_NAMES.get(phase, phase),
+                "purpose": PHASE_PURPOSES.get(phase, ""),
+                "dependencies": list(PHASE_REQUIRED_DEPENDENCIES.get(phase, [])),
+                "optional_dependencies": list(PHASE_OPTIONAL_DEPENDENCIES.get(phase, [])),
+                "prompt_count": len(get_phase_prompts(phase)),
+                "default_route": _phase_cost_profile(phase),
+            }
+            for phase in selected_phases
+        ],
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
 def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
     payload: Dict[str, Any] = {
         "generated_at": now_iso(),
@@ -14368,7 +14847,11 @@ def run_batch_watch(
                 )
             else:
                 response_text = str(result.output_text or "")
-                parsed = parse_json_from_response(response_text)
+                salvage_meta: Dict[str, Any] = {}
+                parsed = parse_json_from_response(
+                    response_text,
+                    metadata_out=salvage_meta,
+                )
                 artifacts = coerce_artifacts_from_response(
                     parsed=parsed,
                     raw_text=response_text,
@@ -14444,6 +14927,45 @@ def run_batch_watch(
                         provider=provider_id,
                         model_id=model_id,
                     )
+                    _record_truncation_salvage_warning(
+                        request_meta,
+                        phase=phase_id,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=provider_id,
+                        model_id=model_id,
+                        salvage_meta=salvage_meta,
+                    )
+                    spend_record = _accumulate_runtime_spend(
+                        cfg,
+                        phase=phase_id,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=provider_id,
+                        model_id=model_id,
+                        execution_mode="batch_watch",
+                        response_summary=(
+                            request_meta.get("response_summary")
+                            if isinstance(request_meta.get("response_summary"), dict)
+                            else None
+                        ),
+                        response_text=response_text,
+                        fallback_input_tokens=int(
+                            row.get("estimated_input_tokens", 0) or 0
+                        ),
+                        fallback_output_tokens=int(
+                            row.get("estimated_output_tokens", 0) or 0
+                        ),
+                        payload=(
+                            result.meta.get("response", {}).get("body", {}).get("usage")
+                            if isinstance(result.meta, dict)
+                            and isinstance(result.meta.get("response"), dict)
+                            and isinstance(result.meta.get("response", {}).get("body"), dict)
+                            else None
+                        ),
+                    )
+                    if spend_record is not None:
+                        request_meta["spend_usage"] = spend_record
                     write_json(
                         out_json,
                         {
@@ -15119,6 +15641,8 @@ def run_phase_R_async_submit(
                 router=cfg.router,
             )
             user_prompt = f"{prompt_prefix}{context}"
+            projected_input_tokens = _estimate_text_tokens(prompt_text, user_prompt)
+            projected_output_tokens = _project_output_tokens(projected_input_tokens)
 
             metadata_dict = {
                 "run_id": run_id,
@@ -15129,6 +15653,17 @@ def run_phase_R_async_submit(
             }
 
             try:
+                _check_projected_cost_limit(
+                    cfg,
+                    phase="R",
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider="openai",
+                    model_id=model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="async_submit",
+                )
                 response = client.responses.create(
                     model=model_id,
                     instructions=prompt_text,
@@ -15213,6 +15748,8 @@ def run_phase_R_async_submit(
                         "model_id": model_id,
                         "execution_mode": "async",
                         "external_job_id": external_job_id,
+                        "estimated_input_tokens": projected_input_tokens,
+                        "estimated_output_tokens": projected_output_tokens,
                     },
                 },
             )
@@ -15294,11 +15831,28 @@ def run_phase_R_finalize(
         partition_id = str(job.get("partition_id") or "")
         attempt = int(job.get("attempt") or 1)
         external_job_id = str(job.get("external_job_id") or "")
+        model_id = str(job.get("model_id") or "")
         if not (step_id and partition_id and external_job_id):
             logger.warning("Finalize R: malformed job row, skipping: %s", job)
             continue
 
         out_json = raw_dir / f"{step_id}__{partition_id}.json"
+        pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
+        pending_payload: Dict[str, Any] = {}
+        if pending_path.exists():
+            try:
+                loaded_pending = json.loads(pending_path.read_text(encoding="utf-8"))
+                if isinstance(loaded_pending, dict):
+                    pending_payload = loaded_pending
+            except Exception:
+                pending_payload = {}
+        pending_meta = (
+            pending_payload.get("request_meta")
+            if isinstance(pending_payload.get("request_meta"), dict)
+            else {}
+        )
+        if not model_id:
+            model_id = str(pending_meta.get("model_id") or "")
 
         # Idempotency: already finalized with non-pending output
         if out_json.exists():
@@ -15366,7 +15920,12 @@ def run_phase_R_finalize(
             event_store, run_id, external_job_id
         )
         response_text = _extract_openai_response_text(webhook_payload)
-        parsed = parse_json_from_response(response_text) if response_text else None
+        salvage_meta: Dict[str, Any] = {}
+        parsed = (
+            parse_json_from_response(response_text, metadata_out=salvage_meta)
+            if response_text
+            else None
+        )
         expected_artifacts = artifacts_by_step.get(step_id, ("R_ARBITRATION.json",))
         artifacts = coerce_artifacts_from_response(
             parsed, response_text or "", expected_artifacts
@@ -15382,15 +15941,58 @@ def run_phase_R_finalize(
                 "artifacts": artifacts,
                 "request_meta": {
                     "provider": "openai",
+                    "model_id": model_id,
                     "execution_mode": "async",
                     "external_job_id": external_job_id,
                     "attempt": attempt,
                 },
             },
         )
+        try:
+            persisted = json.loads(out_json.read_text(encoding="utf-8"))
+            request_meta = (
+                persisted.get("request_meta")
+                if isinstance(persisted.get("request_meta"), dict)
+                else {}
+            )
+            _record_truncation_salvage_warning(
+                request_meta,
+                phase="R",
+                step_id=step_id,
+                partition_id=partition_id,
+                provider="openai",
+                model_id=model_id,
+                salvage_meta=salvage_meta,
+            )
+            spend_record = _accumulate_runtime_spend(
+                cfg,
+                phase="R",
+                step_id=step_id,
+                partition_id=partition_id,
+                provider="openai",
+                model_id=model_id,
+                execution_mode="async_finalize",
+                response_text=response_text,
+                fallback_input_tokens=int(
+                    pending_meta.get("estimated_input_tokens", 0) or 0
+                ),
+                fallback_output_tokens=int(
+                    pending_meta.get("estimated_output_tokens", 0) or 0
+                ),
+                payload=(
+                    webhook_payload.get("data", {}).get("usage")
+                    if isinstance(webhook_payload.get("data"), dict)
+                    else None
+                ),
+            )
+            if spend_record is not None:
+                request_meta["spend_usage"] = spend_record
+            persisted["request_meta"] = request_meta
+            write_json(out_json, persisted)
+        except Exception:
+            pass
 
         # Remove pending placeholder
-        pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
         if pending_path.exists():
             try:
                 pending_path.unlink()
@@ -15425,6 +16027,11 @@ def run_phase_R(
 ) -> None:
     missing = _ensure_required_norm_artifact_groups(dirs)
     if missing:
+        logger.warning(
+            "PHASE_DEPENDENCY_DEGRADED phase=R requires=%s missing=%s",
+            ",".join(R_REQUIRED_INPUT_PHASES),
+            " | ".join(missing),
+        )
         raise RuntimeError(
             "Phase R requires normalized inputs from A/H/D/C. Missing norm artifacts: "
             + "; ".join(missing)
@@ -15536,6 +16143,17 @@ def run_phase_S(
         for path in sorted(r_norm.glob("*.json")) + sorted(r_norm.glob("*.md")):
             input_sources[path.resolve()] = "R"
     if not input_sources:
+        logger.warning(
+            "PHASE_DEPENDENCY_DEGRADED phase=S requires=R missing=%s",
+            r_norm,
+        )
+        upstream_missing = _ensure_required_norm_artifact_groups(dirs)
+        if upstream_missing:
+            logger.warning(
+                "PHASE_DEPENDENCY_CHAIN phase=S upstream=R requires=%s missing=%s",
+                ",".join(R_REQUIRED_INPUT_PHASES),
+                " | ".join(upstream_missing),
+            )
         raise RuntimeError(f"Phase S requires R norm outputs at {r_norm}")
 
     for phase in ["X", "T", "Z"]:
@@ -15604,11 +16222,30 @@ def main() -> None:
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     except (AttributeError, ValueError):
         pass
-    parser = argparse.ArgumentParser("Master Extraction Runner")
+    parser = argparse.ArgumentParser(
+        "Master Extraction Runner",
+        description=(
+            "Repo Truth Extractor v5 runtime. Use --dry-run for preview. "
+            f"Live execution requires explicit consent via {DPMX_LIVE_OK_ENV}=1."
+        ),
+        epilog=(
+            "Quick start: python services/repo-truth-extractor/run_extraction_v5.py "
+            "--phase A --dry-run --run-id local_preview. "
+            f"For live execution, rerun with --execute and {DPMX_LIVE_OK_ENV}=1."
+        ),
+    )
     parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
     parser.add_argument("--sync", action="store_true", help="Synchronize prompt source scopes with modern architecture.")
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help=(
+            "Explicitly permit live provider execution. Requires "
+            f"{DPMX_LIVE_OK_ENV}=1."
+        ),
+    )
     parser.add_argument("--max-files-docs", type=int, default=35)
     parser.add_argument(
         "--max-cost-usd",
@@ -15663,7 +16300,7 @@ def main() -> None:
         "--s-steps",
         type=str,
         default=None,
-        help="Comma-separated subset of Phase S base steps (S0-S6) to execute.",
+        help="Comma-separated subset of Phase S base steps (S0-S12) to execute.",
     )
     parser.add_argument("--disable-escalation", action="store_true")
     parser.add_argument("--escalation-max-hops", type=int, default=2)
@@ -15798,6 +16435,11 @@ def main() -> None:
     parser.add_argument("--jsonl-events", action="store_true")
     parser.add_argument("--pretty", action="store_true")
     parser.add_argument("--print-promptpack", action="store_true")
+    parser.add_argument(
+        "--list-phases",
+        action="store_true",
+        help="Print phase code, name, purpose, dependencies, and default route summary as JSON.",
+    )
     parser.add_argument("--print-run-order", action="store_true")
     parser.add_argument("--print-phase-routing", action="store_true")
     parser.add_argument("--tail-run-log", action="store_true")
@@ -15868,10 +16510,9 @@ def main() -> None:
         help="Extraction profile name (e.g., P09_INTEGRATION_SURFACE_V1). Filters phases and overrides budgets.",
     )
     args = parser.parse_args()
-    if not hasattr(args, "execute"):
-        # v5 runner currently models live execution as the inverse of --dry-run.
-        # Keep a concrete execute flag for downstream consent and batch gates.
-        args.execute = not bool(args.dry_run)
+    if args.execute:
+        args.dry_run = False
+    args.execute = bool(args.execute or not args.dry_run)
     # --promptset-root: wire into env var so prompt_root() picks it up
     if args.promptset_root:
         psr = Path(args.promptset_root).resolve()
@@ -15918,6 +16559,8 @@ def main() -> None:
                     f"--compare-steps {sorted(_ineligible)} are not eligible for comparison. "
                     f"Eligible steps: {sorted(COMPARISON_ELIGIBLE_STEPS)}"
                 )
+    if args.list_phases:
+        sys.exit(print_phase_catalog())
 
     # TP-WEBHOOKS-0002 validation
     if args.async_provider and not args.phase:
@@ -15941,6 +16584,7 @@ def main() -> None:
         or args.status
         or args.status_json
         or args.print_promptpack
+        or args.list_phases
         or args.print_run_order
         or args.print_phase_routing
         or args.tail_run_log
@@ -15952,7 +16596,7 @@ def main() -> None:
         parser.error(
             "--phase is required unless using --profile, --verify-phase-output, --print-config, "
             "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
-            "--status, --status-json, --print-promptpack, --print-run-order, "
+            "--status, --status-json, --print-promptpack, --list-phases, --print-run-order, "
             "--print-phase-routing, --tail-run-log, --show-provider-usage, "
             "--print-phase-prompts, or --gemini-list-models."
         )
@@ -16068,11 +16712,6 @@ def main() -> None:
 
             def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
                 provider, model_id, api_key_env = route
-                
-                # Pre-flight check against hard limit
-                if cfg.ledger and not cfg.ledger.check_limit():
-                    logger.error(f"❌ Hard cost ceiling (${cfg.max_cost_usd}) exceeded. Aborting.")
-                    sys.exit(1)
 
                 result = call_llm(
                     provider=provider,
@@ -16082,15 +16721,30 @@ def main() -> None:
                     user_content=rendered_prompt,
                     cfg=cfg,
                 )
-                
-                # Accumulate estimated spend
-                if cfg.ledger:
-                    in_toks = (len(rendered_prompt) + 20) // 4
-                    out_toks = len(str(result.get("text") or "")) // 4
-                    cfg.ledger.accumulate(step.phase, in_toks, out_toks)
-                
+
                 meta = dict(result.get("meta") or {})
                 response_text = str(result.get("text") or "")
+                if meta.get("response_received") or result.get("ok"):
+                    spend_record = _accumulate_runtime_spend(
+                        cfg,
+                        phase=step.phase,
+                        step_id=step.step_id,
+                        partition_id=step.step_id,
+                        provider=provider,
+                        model_id=model_id,
+                        execution_mode="s_int_sync",
+                        response_summary=(
+                            meta.get("response_summary")
+                            if isinstance(meta.get("response_summary"), dict)
+                            else None
+                        ),
+                        response_text=response_text,
+                        fallback_input_tokens=_estimate_text_tokens(
+                            "Return JSON only.", rendered_prompt
+                        ),
+                    )
+                    if spend_record is not None:
+                        meta["spend_usage"] = spend_record
                 payload = None
                 schema_errors: List[str] = []
                 escalation_trigger = str(meta.get("failure_type") or "").strip() or None
@@ -16477,6 +17131,20 @@ def main() -> None:
     if args.doctor:
         targets = phase_sequence if phase_sequence else PHASES
         sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg))
+
+    if args.execute and not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        live_operation_requested = bool(
+            args.async_provider
+            or args.finalize
+            or args.batch_watch
+            or args.batch_retrieve
+            or phase_sequence
+        )
+        if live_operation_requested:
+            parser.error(
+                "Live execution requires explicit consent. Use --dry-run for preview, "
+                f"or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
+            )
 
     # TP-WEBHOOKS-0002: async submit / finalize dispatch (Phase R only)
     if args.async_provider == "openai" and not args.finalize:

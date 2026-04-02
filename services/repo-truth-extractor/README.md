@@ -120,6 +120,11 @@ dopemux upgrades run \
   --promptset-root /abs/path/to/generated/promptset
 ```
 
+Direct runner note:
+
+- `python services/repo-truth-extractor/run_extraction_v5.py --list-phases` prints phase code, purpose, dependencies, and default route summary.
+- The raw v5 runner treats non-`--dry-run` execution as live; use `--execute` for clarity and set `DPMX_LIVE_OK=1` before any live run.
+
 > ⚠️ **Cost warning**: Each run invokes provider APIs and may incur significant charges.
 > A single accidental run cost $10 in March 2026. Never run without explicit authorization.
 > Validate using `pytest -q services/repo-truth-extractor/tests/` instead of direct execution.
