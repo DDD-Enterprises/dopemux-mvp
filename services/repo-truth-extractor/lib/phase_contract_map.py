@@ -66,11 +66,24 @@ def canonical_schema_id_for_artifact(artifact_name: str) -> str:
     return f"{canonical_schema_name_for_artifact(artifact_name)}@v1"
 
 
-def schema_aliases_for_artifact(artifact_name: str) -> List[str]:
+def schema_aliases_for_artifact(
+    artifact_name: str,
+    *,
+    kind: Optional[str] = None,
+) -> List[str]:
     canonical = canonical_schema_id_for_artifact(artifact_name)
     lowered = canonical.lower()
     uppered = canonical.upper()
     values = {canonical, lowered, uppered}
+    if str(kind or "").strip() == "json_item_list":
+        values.update(
+            {
+                "itemlist@v1",
+                "ITEMLIST@V1",
+                "json_item_list@v1",
+                "JSON_ITEM_LIST@V1",
+            }
+        )
     return sorted(values)
 
 
@@ -258,14 +271,15 @@ def _warn_on_lane_map_scope_mismatch(
         print(f"WARNING: model_map.yaml steps outside repo_truth_map JSON scope: {formatted}", file=sys.stderr)
 
 
-@lru_cache(maxsize=1)
-def compile_phase_contract_map() -> Dict[str, Any]:
+@lru_cache(maxsize=2)
+def _compile_phase_contract_map_cached(emit_warnings: bool) -> Dict[str, Any]:
     artifact_rules = _artifact_rules_by_key()
     lane_map = _model_map_by_key()
     prompt_paths = _prompt_path_by_step()
     scope_map = _repo_truth_scope_by_key()
     scoped_lane_map = {key: lane_map[key] for key in scope_map.keys() if key in lane_map}
-    _warn_on_lane_map_scope_mismatch(lane_map, scope_map)
+    if emit_warnings:
+        _warn_on_lane_map_scope_mismatch(lane_map, scope_map)
 
     steps_payload: Dict[str, Dict[str, Any]] = {}
     for (phase_code, step_id), scope in sorted(scope_map.items()):
@@ -279,6 +293,7 @@ def compile_phase_contract_map() -> Dict[str, Any]:
         artifacts_payload: Dict[str, Dict[str, Any]] = {}
         for artifact_name in expected_artifacts:
             artifact_rule = artifact_rules.get((phase_code, artifact_name), {})
+            artifact_kind = str(artifact_rule.get("kind") or "json_item_list")
             required_fields = [
                 str(value).strip()
                 for value in (artifact_rule.get("required_fields") or RUNNER_MINIMUM_REQUIRED_KEYS)
@@ -292,11 +307,14 @@ def compile_phase_contract_map() -> Dict[str, Any]:
                 "canonical_schema_name": canonical_schema_name_for_artifact(artifact_name),
                 "canonical_schema_id": canonical_schema_id_for_artifact(artifact_name),
                 "schema_version": "v1",
-                "schema_aliases": schema_aliases_for_artifact(artifact_name),
+                "schema_aliases": schema_aliases_for_artifact(
+                    artifact_name,
+                    kind=artifact_kind,
+                ),
                 "required_fields": required_fields,
                 "prompt_required_item_fields": prompt_required,
                 "merge_strategy": str(artifact_rule.get("merge_strategy") or "itemlist_by_id"),
-                "kind": str(artifact_rule.get("kind") or "json_item_list"),
+                "kind": artifact_kind,
                 "canonical_writer_step_id": str(artifact_rule.get("canonical_writer_step_id") or step_id),
                 "norm_artifact": bool(artifact_rule.get("norm_artifact", True)),
                 "allow_empty_array_fields": list(artifact_rule.get("allow_empty_array_fields") or []),
@@ -346,16 +364,24 @@ def compile_phase_contract_map() -> Dict[str, Any]:
     }
 
 
-def get_step_contract(phase: str, step_id: str) -> Optional[Dict[str, Any]]:
-    payload = compile_phase_contract_map()
+def compile_phase_contract_map(*, emit_warnings: bool = True) -> Dict[str, Any]:
+    return _compile_phase_contract_map_cached(bool(emit_warnings))
+
+
+def get_step_contract(
+    phase: str, step_id: str, *, emit_warnings: bool = False
+) -> Optional[Dict[str, Any]]:
+    payload = compile_phase_contract_map(emit_warnings=emit_warnings)
     steps = payload.get("steps") if isinstance(payload.get("steps"), dict) else {}
     key = f"{str(phase or '').strip().upper()}:{str(step_id or '').strip().upper()}"
     row = steps.get(key)
     return dict(row) if isinstance(row, dict) else None
 
 
-def write_phase_contract_map(run_root: Path, run_id: str) -> Path:
-    payload = dict(compile_phase_contract_map())
+def write_phase_contract_map(
+    run_root: Path, run_id: str, *, emit_warnings: bool = True
+) -> Path:
+    payload = dict(compile_phase_contract_map(emit_warnings=emit_warnings))
     payload["generated_at"] = now_iso()
     payload["run_id"] = run_id
     out_path = run_root / CONTRACT_MAP_FILENAME

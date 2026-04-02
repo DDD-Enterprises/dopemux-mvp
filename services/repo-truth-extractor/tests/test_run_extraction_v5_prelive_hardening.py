@@ -53,6 +53,17 @@ def _load_structured_contracts_module() -> types.ModuleType:
     return module
 
 
+def _load_phase_contract_map_module() -> types.ModuleType:
+    module_path = _repo_root() / "services" / "repo-truth-extractor" / "lib" / "phase_contract_map.py"
+    spec = importlib.util.spec_from_file_location("phase_contract_map_prelive", module_path)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def _make_cfg(runner: types.ModuleType):
     cfg = runner.RunnerConfig.__new__(runner.RunnerConfig)
     defaults = {
@@ -124,6 +135,197 @@ def test_parse_json_from_response_reports_lossy_truncation_salvage() -> None:
     assert parsed["ok"] is True
     assert meta["truncation_salvage"] is True
     assert meta["lossy"] is True
+
+
+def test_classify_request_failure_marks_batch_submit_as_pre_model_execution() -> None:
+    runner = _load_runner_module()
+    failure = runner.classify_request_failure(
+        {
+            "failure_type": "provider",
+            "provider_error_reason": "batch_submit_error:UnprocessableEntityError",
+            "execution_mode": "batch",
+            "batch_provider": "xai",
+            "batch_job_id": None,
+        }
+    )
+    assert failure["failure_class"] == "provider_batch_submission_failure"
+    assert failure["failure_stage"] == "pre_model_execution"
+
+
+def test_normalize_step_reports_pre_model_execution_blocker_not_missing_artifacts(
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "A_repo_control_plane"
+    raw_dir = phase_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    prompt_path = tmp_path / "PROMPT_A2_TEST.md"
+    prompt_path.write_text("Return OUT.json", encoding="utf-8")
+    partition_id = "A_P0001"
+    raw_payload = {
+        "phase": "A",
+        "step_id": "A2",
+        "partition_id": partition_id,
+        "generated_at": "2026-04-02T00:00:00+00:00",
+        "artifacts": [],
+        "request_meta": {
+            "failure_type": "provider",
+            "provider_error_reason": "batch_submit_error:UnprocessableEntityError",
+            "execution_mode": "batch",
+            "batch_provider": "xai",
+            "batch_job_id": None,
+        },
+    }
+    (raw_dir / f"A2__{partition_id}.json").write_text(
+        json.dumps(raw_payload), encoding="utf-8"
+    )
+    prompt = runner.PromptSpec(
+        step_id="A2",
+        prompt_path=prompt_path,
+        output_artifacts=("OUT.json",),
+    )
+
+    qa = runner.normalize_step(
+        "A",
+        prompt,
+        phase_dir,
+        [{"id": partition_id}],
+        step_exec_stats={"failed": 1},
+    )
+
+    assert qa["missing_expected_artifacts"] == []
+    assert qa["artifact_blocked_by_failure_stage"] == {
+        "pre_model_execution": ["OUT.json"]
+    }
+    assert qa["failure_stage_histogram"] == {"pre_model_execution": 1}
+    assert qa["parse_failures"] == [
+        {
+            "partition_id": partition_id,
+            "reason": "provider_batch_submission_failure",
+            "file": str(raw_dir / f"A2__{partition_id}.json"),
+        }
+    ]
+
+
+def test_coerce_artifacts_accepts_top_level_single_artifact_object() -> None:
+    runner = _load_runner_module()
+    parsed = {
+        "artifact_name": "REPO_MCP_SERVER_DEFS.json",
+        "payload": {"schema": "itemlist@v1", "items": []},
+        "unknowns": ["kept"],
+    }
+    artifacts = runner.coerce_artifacts_from_response(
+        parsed,
+        json.dumps(parsed),
+        ("REPO_MCP_SERVER_DEFS.json",),
+    )
+    assert artifacts == [
+        {
+            "artifact_name": "REPO_MCP_SERVER_DEFS.json",
+            "payload": {"schema": "itemlist@v1", "items": []},
+        }
+    ]
+
+
+def test_canonicalize_artifacts_normalizes_schema_alias_and_line_range() -> None:
+    contracts = _load_structured_contracts_module()
+    step_contract = {
+        "expected_artifacts": ["REPO_MCP_SERVER_DEFS.json"],
+        "artifact_order": ["REPO_MCP_SERVER_DEFS.json"],
+        "artifacts": {
+            "REPO_MCP_SERVER_DEFS.json": {
+                "canonical_schema_id": "REPO_MCP_SERVER_DEFS@v1",
+                "schema_aliases": [
+                    "itemlist@v1",
+                    "json_item_list@v1",
+                    "ItemList@REPO_MCP_SERVER_DEFS@v1",
+                ],
+                "required_fields": ["id", "path", "line_range"],
+                "prompt_required_item_fields": [],
+            }
+        },
+    }
+    artifacts = [
+        {
+            "artifact_name": "REPO_MCP_SERVER_DEFS.json",
+            "payload": {
+                "schema": "json_item_list@v1",
+                "items": [
+                    {
+                        "id": "mcp:1",
+                        "path": "config/profiles/adhd-default.yaml",
+                        "line_range": "8-25",
+                    }
+                ],
+            },
+        }
+    ]
+    normalized, schema_normalizations = contracts.canonicalize_artifacts(
+        artifacts,
+        step_contract,
+    )
+    assert schema_normalizations == [
+        {
+            "artifact_name": "REPO_MCP_SERVER_DEFS.json",
+            "from": "json_item_list@v1",
+            "to": "REPO_MCP_SERVER_DEFS@v1",
+        }
+    ]
+    payload = normalized[0]["payload"]
+    assert payload["schema"] == "REPO_MCP_SERVER_DEFS@v1"
+    assert payload["items"][0]["line_range"] == [8, 25]
+    ok, reason, _context = contracts.artifacts_pass_contract_gate(
+        normalized,
+        step_contract,
+    )
+    assert ok is True
+    assert reason is None
+
+
+def test_schema_aliases_for_json_item_list_include_observed_generic_aliases() -> None:
+    phase_contracts = _load_phase_contract_map_module()
+    aliases = phase_contracts.schema_aliases_for_artifact(
+        "REPO_MCP_SERVER_DEFS.json",
+        kind="json_item_list",
+    )
+    assert "itemlist@v1" in aliases
+    assert "json_item_list@v1" in aliases
+    assert "REPO_MCP_SERVER_DEFS@v1" in aliases
+
+
+def test_canonicalize_artifacts_keeps_unrelated_schema_ids_failing() -> None:
+    contracts = _load_structured_contracts_module()
+    step_contract = {
+        "expected_artifacts": ["OUT.json"],
+        "artifact_order": ["OUT.json"],
+        "artifacts": {
+            "OUT.json": {
+                "canonical_schema_id": "OUT@v1",
+                "schema_aliases": ["itemlist@v1"],
+                "required_fields": ["id", "path", "line_range"],
+                "prompt_required_item_fields": [],
+            }
+        },
+    }
+    normalized, _ = contracts.canonicalize_artifacts(
+        [
+            {
+                "artifact_name": "OUT.json",
+                "payload": {
+                    "schema": "totally_wrong@v7",
+                    "items": [{"id": "x", "path": "docs/a.md", "line_range": [1, 2]}],
+                },
+            }
+        ],
+        step_contract,
+    )
+    ok, reason, context = contracts.artifacts_pass_contract_gate(
+        normalized,
+        step_contract,
+    )
+    assert ok is False
+    assert reason == "contract_schema_id_mismatch"
+    assert context["constraint"] == "OUT@v1"
 
 
 def test_phase_catalog_includes_dependencies_and_default_route() -> None:

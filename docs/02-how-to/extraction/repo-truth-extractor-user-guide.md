@@ -37,7 +37,7 @@ dopemux upgrades ...
 - Runtime root:
   - `extraction/repo-truth-extractor/`
 - Phase runs:
-  - `extraction/repo-truth-extractor/v3/runs/<RUN_ID>/` for current v5 operations
+  - `extraction/repo-truth-extractor/v5/runs/<RUN_ID>/` for current v5 operations
 
 ## 2. Before you run
 
@@ -104,13 +104,14 @@ Expected behavior:
 
 ## 5. Routing policy and model ladder
 
-Default policy is `cost` and uses cheap-first ladder semantics.
-For v5 the default live policy is `balanced_openrouter`.
+Default top-level policy is `cost` and uses cheap-first ladder semantics.
+Step-level contract routes can still override that policy for strict or
+JSON-managed prompts.
 
 Primary controls:
 
 ```bash
---routing-policy {cost|balanced|quality}
+--routing-policy {cost|balanced|balanced_openrouter|balanced_grok_openrouter|quality|openrouter|gemini_primary|optimal}
 --disable-escalation
 --escalation-max-hops 2
 ```

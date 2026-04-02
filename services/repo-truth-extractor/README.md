@@ -95,11 +95,16 @@ Webhook notify mode for `--batch-watch` is controlled by:
 
 Entrypoint: `services/repo-truth-extractor/run_extraction_v5.py`
 
-Operational output root: `extraction/repo-truth-extractor/v3/runs/`
+Default runtime artifact root: `extraction/repo-truth-extractor/v5/`
 
-The v5 runner is the active execution engine, but it still writes run artifacts,
-doctor outputs, and telemetry under the `v3` extraction tree. Validation and
-monitoring should therefore inspect `extraction/repo-truth-extractor/v3/`.
+Observed runtime layout:
+
+- runs: `extraction/repo-truth-extractor/v5/runs/<RUN_ID>/`
+- doctor: `extraction/repo-truth-extractor/v5/doctor/`
+- latest run pointer: `extraction/repo-truth-extractor/v5/latest_run_id.txt`
+
+Use `--output-root /abs/path/to/sandbox` to redirect the same v5 layout into an
+isolated artifact tree for CI or controlled experiments.
 
 ### Basic usage
 
@@ -123,7 +128,83 @@ dopemux upgrades run \
 Direct runner note:
 
 - `python services/repo-truth-extractor/run_extraction_v5.py --list-phases` prints phase code, purpose, dependencies, and default route summary.
+- `python services/repo-truth-extractor/run_extraction_v5.py --print-routing-guide` prints routing-policy intent, cost tendency, and override caveats.
+- `python services/repo-truth-extractor/run_extraction_v5.py --print-prescan-guide` explains when prescan helps and when it is safe to skip.
 - The raw v5 runner treats non-`--dry-run` execution as live; use `--execute` for clarity and set `DPMX_LIVE_OK=1` before any live run.
+
+### First-live preset
+
+Use the staged preset for the first operator-controlled rollout:
+
+```bash
+python services/repo-truth-extractor/run_extraction_v5.py \
+  --preset first-live \
+  --dry-run \
+  --run-id first_live_probe
+```
+
+Behavior:
+
+- `--preset first-live` defaults to the initial stage: `A,H,D,C`
+- `--preset-stage post-review` runs `R,X,T,Z,S` after artifact review
+- live preset execution runs the validator first unless `--skip-pre-live-validator` is set
+- conservative defaults are applied only when you did not already override them:
+  - `--routing-policy cost`
+  - `--max-cost-usd 5.0`
+  - `--partition-workers 1`
+  - `--no-batch`
+  - `--batch-wait-timeout-seconds 1800`
+
+### Dry-run and budget preview
+
+Dry-run now writes phase input artifacts plus:
+
+- `inputs/COST_PREVIEW.json`
+- `inputs/DRY_RUN_CHECKLIST.json`
+
+These artifacts record resolved inputs, partition count, route preview, output
+paths, dependency expectations, prescan guidance, and a best-effort budget
+estimate with confidence labels.
+
+Example:
+
+```bash
+python services/repo-truth-extractor/run_extraction_v5.py \
+  --phase A \
+  --dry-run \
+  --print-cost-preview \
+  --run-id cost_probe \
+  --output-root /tmp/rte-v5-sandbox
+```
+
+Notes:
+
+- estimates are best-effort, not billing truth
+- step-level contract routes can override the top-level routing policy
+- comparison lane, retries, and unknown-model fallback pricing lower confidence
+
+### Prescan and batch wait guidance
+
+- Prescan is optional. It can help larger repos by reordering partition paths and adding context briefs.
+- It is safe to skip prescan for first dry-runs, small repos, and cheap validator probes.
+- Prescan has its own cost and should be treated as extra preflight work, not a free optimization.
+- The legacy `86400` batch wait default can leave abandoned waits behind; prefer `--batch-wait-timeout-seconds 1800` for interactive runs.
+
+### Offline-safe envelope
+
+When OpenRouter is unavailable or unauthorized, keep working in the offline-safe
+lanes instead of forcing live bounded runs. See:
+
+- `docs/92-runbooks/repo-truth-extractor-v5-offline-envelope.md`
+
+### Known weak inputs
+
+Repo Truth Extractor is strongest on text-first repos. Be cautious when the repo
+inventory is heavy in:
+
+- binary or image-like inputs such as PDFs and screenshots
+- Office formats such as DOCX and PPTX
+- Java, Rust, and Go codebases, which currently have weaker coverage than the primary Python/TypeScript/doc surfaces
 
 > ⚠️ **Cost warning**: Each run invokes provider APIs and may incur significant charges.
 > A single accidental run cost $10 in March 2026. Never run without explicit authorization.
@@ -320,7 +401,8 @@ Reference: `docs/03-reference/extraction/fl-int-postprocess.md`
 - v3 doctor: `extraction/repo-truth-extractor/v3/doctor/`
 - v4 runs: `extraction/repo-truth-extractor/v4/runs/`
 - v4 doctor: `extraction/repo-truth-extractor/v4/doctor/`
-- v5 runtime artifacts: `extraction/repo-truth-extractor/v3/runs/`
+- v5 runtime artifacts: `extraction/repo-truth-extractor/v5/runs/`
+- v5 doctor: `extraction/repo-truth-extractor/v5/doctor/`
 - v5 proofs: `extraction/repo-truth-extractor/v5/proofs/`
 
 Historical extraction outputs under old roots are preserved and read-only.
