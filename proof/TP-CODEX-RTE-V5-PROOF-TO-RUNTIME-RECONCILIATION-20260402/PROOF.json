@@ -1,0 +1,123 @@
+{
+  "packet_id": "TP-CODEX-RTE-V5-PROOF-TO-RUNTIME-RECONCILIATION-20260402",
+  "branch": "codex/rte-v5-resume-state-cleanup-apply-safety-20260402",
+  "base_commit": "196cd7b0b0c7ad16eec6ddef166ef43b8601ba13",
+  "root_cause_classification": "partial_commit_isolation_failure",
+  "tp7_claims": {
+    "scan_modes": [
+      "actionable",
+      "full"
+    ],
+    "resume_bucket_names": [
+      "stale_resume_state",
+      "orphaned_resume_state",
+      "blocked_promptset"
+    ],
+    "grouped_warnings": true,
+    "runbooks": [
+      "docs/92-runbooks/repo-truth-extractor-v5-hygiene-cleanup.md",
+      "docs/92-runbooks/repo-truth-extractor-v5-offline-envelope.md"
+    ]
+  },
+  "pre_reconciliation_runtime": {
+    "scan_modes": [],
+    "resume_bucket_names": [
+      "stale_failed",
+      "orphan_failed",
+      "blocked_promptset"
+    ],
+    "grouped_warnings": false,
+    "runbooks_present": false
+  },
+  "historical_lineage_found": {
+    "runtime_commit": "2c38e8a8c30c9c97669be3cb9e7202d695d16ec6",
+    "test_commit": "250c039ce25073445f25e565c2ea49f9ade3669a",
+    "docs_commit": "b5c4afcc05efce3841224015f2bc6dd608c87a97",
+    "branch_containing_lineage": "codex/rte-v5-branch-hygiene-and-commit-isolation-20260402"
+  },
+  "reconciliation_path": "A",
+  "restored_behavior": {
+    "scan_modes": [
+      "actionable",
+      "full"
+    ],
+    "resume_bucket_names": [
+      "stale_resume_state",
+      "orphaned_resume_state",
+      "blocked_promptset"
+    ],
+    "grouped_warnings": true,
+    "scan_json_fields": [
+      "scan_mode",
+      "warnings",
+      "errors",
+      "noise_paths",
+      "version_path_issues",
+      "resume_state_issues",
+      "authority_summary",
+      "noise_path_summary",
+      "resume_state_summary"
+    ]
+  },
+  "verification": [
+    {
+      "command": "pytest -q services/repo-truth-extractor/tests/test_hygiene_resume_state.py services/repo-truth-extractor/tests/test_hygiene_noise_detection.py services/repo-truth-extractor/tests/test_hygiene_nondestructive.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python services/repo-truth-extractor/extraction_hygiene.py scan --json",
+      "result": "PASS",
+      "notes": [
+        "scan_mode=actionable",
+        "warnings=4",
+        "noise_paths=2873",
+        "resume_state_issues=7372",
+        "resume_state_summary.by_issue_type.blocked_promptset=4",
+        "resume_state_summary.by_issue_type.stale_resume_state=7368"
+      ]
+    },
+    {
+      "command": "python services/repo-truth-extractor/extraction_hygiene.py scan --scan-mode full --json",
+      "result": "PASS",
+      "notes": [
+        "scan_mode=full",
+        "warnings=10245",
+        "noise_paths=2873",
+        "resume_state_issues=7372",
+        "resume_state_summary.by_issue_type.blocked_promptset=4",
+        "resume_state_summary.by_issue_type.stale_resume_state=7368"
+      ]
+    },
+    {
+      "command": "python services/repo-truth-extractor/extraction_hygiene.py scan",
+      "result": "PASS",
+      "notes": [
+        "default output grouped noise and resume-state counts"
+      ]
+    },
+    {
+      "command": "python services/repo-truth-extractor/extraction_hygiene.py scan --scan-mode full",
+      "result": "PASS",
+      "notes": [
+        "full output emitted per-path inventory"
+      ]
+    }
+  ],
+  "changed_files": [
+    "docs/05-audit-reports/repo-truth-extractor-tp7-proof-runtime-drift-2026-04-02.md",
+    "services/repo-truth-extractor/extraction_hygiene.py",
+    "services/repo-truth-extractor/tests/test_hygiene_resume_state.py",
+    "services/repo-truth-extractor/tests/test_hygiene_noise_detection.py",
+    "docs/92-runbooks/repo-truth-extractor-v5-hygiene-cleanup.md",
+    "docs/92-runbooks/repo-truth-extractor-v5-offline-envelope.md",
+    "docs/02-how-to/extraction/truth-run-command.md",
+    "proof/TP-CODEX-RTE-V5-PROOF-TO-RUNTIME-RECONCILIATION-20260402/PROOF.json",
+    "proof/TP-CODEX-RTE-V5-PROOF-TO-RUNTIME-RECONCILIATION-20260402/IMPLEMENTER_REPORT.md"
+  ],
+  "commit_ids": [
+    "02c7cd488",
+    "9bff28b58",
+    "4db80a91a",
+    "d0a5fb13c"
+  ]
+}
