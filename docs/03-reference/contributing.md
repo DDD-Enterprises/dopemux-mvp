@@ -62,6 +62,8 @@ docs/
 
 **Do NOT** create new top-level directories. If a doc doesn't fit, it goes in the closest Diataxis section.
 
+Machine routing authority for agents and automation lives in `config/docs_hygiene/llm_placement_guide.yaml`. Placement policy and relocations are enforced by `config/docs_hygiene/docs_placement_policy.yaml`.
+
 ## Frontmatter Requirements
 
 Every `.md` file must have YAML frontmatter:
@@ -96,10 +98,16 @@ When a doc is superseded:
 
 ## Validation
 
-Run the lint script after doc changes:
+Run the unified sweep after doc changes:
+
+```bash
+python3 scripts/docs_sweep.py --check
+```
+
+For the legacy shell lint summary, you can still run:
 
 ```bash
 scripts/lint-docs.sh
 ```
 
-This checks naming, placement, frontmatter, and size limits.
+This checks naming, frontmatter, duplicate suffixes, placement, schema validation, and root hygiene.
