@@ -51,22 +51,22 @@ It is an operator-support / cognitive-state service. It does not own PM truth, w
 ## 3. Non-Responsibilities
 
 - PM truth is not owned by ADHD Engine.
-  Evidence: `docs/03-reference/planes/PM_PLANE.md` and `src/dopemux/pm/writes.py` split PM authority across Leantime, task-orchestrator, ConPort, and dope-memory. ADHD Engine is not named as canonical PM authority there.
+  Evidence: `docs/03-reference/planes/pm-plane.md` and `src/dopemux/pm/writes.py` split PM authority across Leantime, task-orchestrator, ConPort, and dope-memory. ADHD Engine is not named as canonical PM authority there.
 
 - Workflow legality and workflow-significant PM transitions are not owned by ADHD Engine.
-  Evidence: `docs/03-reference/systems/task-orchestrator/SYSTEM_TaskOrchestrator.md` assigns workflow-significant API behavior and transition routing to task-orchestrator. `services/adhd_engine/core/task_orchestrator_client.py` treats task-orchestrator as the service that performs decomposition coordination, ConPort persistence, and Leantime sync.
+  Evidence: `docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md` assigns workflow-significant API behavior and transition routing to task-orchestrator. `services/adhd_engine/core/task_orchestrator_client.py` treats task-orchestrator as the service that performs decomposition coordination, ConPort persistence, and Leantime sync.
 
 - Chronicle authority is not owned by ADHD Engine.
-  Evidence: `docs/03-reference/systems/dope-memory/SYSTEM_DopeMemory.md` identifies dope-memory as the chronicle authority. ADHD Engine may emit events or project support data, but it is not the canonical chronicle ledger writer.
+  Evidence: `docs/03-reference/systems/dope-memory/system-dopememory.md` identifies dope-memory as the chronicle authority. ADHD Engine may emit events or project support data, but it is not the canonical chronicle ledger writer.
 
 - ConPort structured authority is not owned by ADHD Engine.
-  Evidence: `docs/03-reference/systems/conport/SYSTEM_ConPort.md` assigns structured decision, progress, context, and custom-data authority to ConPort. ADHD Engine writes through bridge/custom-data helpers and fallback adapters; that does not make it ConPort authority.
+  Evidence: `docs/03-reference/systems/conport/system-conport.md` assigns structured decision, progress, context, and custom-data authority to ConPort. ADHD Engine writes through bridge/custom-data helpers and fallback adapters; that does not make it ConPort authority.
 
 - Retrieval truth is not owned by ADHD Engine.
-  Evidence: `docs/03-reference/systems/dope-context/SYSTEM_DopeContext.md` assigns retrieval/index behavior to dope-context. ADHD Engine may consume context-like signals or save context-adjacent data, but it does not own code/docs retrieval truth.
+  Evidence: `docs/03-reference/systems/dope-context/system-dopecontext.md` assigns retrieval/index behavior to dope-context. ADHD Engine may consume context-like signals or save context-adjacent data, but it does not own code/docs retrieval truth.
 
 - Operator CLI control is not owned by ADHD Engine.
-  Evidence: `docs/03-reference/systems/dopemux/SYSTEM_Dopemux.md` identifies `dopemux` as the operator-facing control layer and CLI package.
+  Evidence: `docs/03-reference/systems/dopemux/system-dopemux.md` identifies `dopemux` as the operator-facing control layer and CLI package.
 
 - Bridge authority is not owned by ADHD Engine.
   Evidence: `services/dopecon-bridge/dopecon_bridge/routes.py` is the bridge runtime surface, and `TRUTH_GAPS.md` explicitly warns against treating bridge surfaces as canonical authority. ADHD Engine integrations call into bridge clients or bridge-side integrations; they do not own bridge routing or bridge truth.
@@ -199,10 +199,10 @@ Rule: ADHD Engine is authoritative for its running service state and recommendat
   Evidence: `services/adhd_engine/main.py` docstring says "6 API endpoints (/api/v1/*) + 2 utility endpoints", while `services/adhd_engine/api/routes.py` exposes many more routes, including WebSocket, trust/customization, hook, metrics, and state endpoints.
 
 - Port/config drift exists around adjacent callers.
-  Evidence: ADHD Engine runtime uses internal `8095` and host `3025` in `docker/compose.core.yml` and `services/registry.yaml`, while `docs/03-reference/systems/task-orchestrator/SYSTEM_TaskOrchestrator.md` cites `services/task-orchestrator/app/core/coordinator.py` checking ADHD health at `http://localhost:8080/health`.
+  Evidence: ADHD Engine runtime uses internal `8095` and host `3025` in `docker/compose.core.yml` and `services/registry.yaml`, while `docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md` cites `services/task-orchestrator/app/core/coordinator.py` checking ADHD health at `http://localhost:8080/health`.
 
 - ConPort URL default in ADHD Engine config conflicts with dedicated ConPort docs.
-  Evidence: `services/adhd_engine/config.py` defaults `conport_url` to `http://localhost:3010`, while `docs/03-reference/systems/conport/SYSTEM_ConPort.md` and compose/registry surfaces place ConPort HTTP on `3004` and dope-context on `3010`.
+  Evidence: `services/adhd_engine/config.py` defaults `conport_url` to `http://localhost:3010`, while `docs/03-reference/systems/conport/system-conport.md` and compose/registry surfaces place ConPort HTTP on `3004` and dope-context on `3010`.
 
 - Hook/state routes can be mistaken for authoritative durable storage.
   Evidence: `/state`, `/log-intent`, `/save-context`, `/record-progress`, and `/log-git-event` in `services/adhd_engine/api/routes.py` write to rolling in-memory buffers or best-effort downstream projections, not a proven canonical durable ADHD ledger.
