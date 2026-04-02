@@ -751,6 +751,7 @@ def _print_scan_report(result: ScanResult) -> None:
     print("\n" + "=" * 60)
     print("HYGIENE SCAN REPORT")
     print("=" * 60)
+    print(f"\n[SCAN MODE] {result.scan_mode}")
     if result.version_path_issues:
         print("\n[VERSION/PATH]")
         for f in result.version_path_issues:

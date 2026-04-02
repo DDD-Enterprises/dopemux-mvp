@@ -285,71 +285,6 @@ def build_config(args: argparse.Namespace) -> GateConfig:
     )
 
 
-def gather_step_route_metadata(runner: Any, config: GateConfig) -> Dict[str, Dict[str, Any]]:
-    route_meta: Dict[str, Dict[str, Any]] = {}
-    for phase in config.target_phases:
-        for prompt in runner.get_phase_prompts(phase):
-            ladder = runner._resolve_step_ladder_compat(  # type: ignore[attr-defined]
-                config.target_policy,
-                phase,
-                prompt.step_id,
-                tier_override=prompt.tier_override,
-            )
-            for index, (provider, model_id, api_key_env) in enumerate(ladder):
-                signature = f"{provider}:{model_id}:{api_key_env}"
-                entry = route_meta.setdefault(
-                    signature,
-                    {
-                        "route_signature": signature,
-                        "provider": provider,
-                        "model_id": model_id,
-                        "api_key_env": api_key_env,
-                        "active_route_required": False,
-                        "fallback_chain_present": False,
-                        "steps": [],
-                    },
-                )
-                entry["steps"].append(
-                    {
-                        "phase": phase,
-                        "step_id": prompt.step_id,
-                        "ladder_index": index,
-                        "ladder_size": len(ladder),
-                    }
-                )
-                if index == 0:
-                    entry["active_route_required"] = True
-                    if len(ladder) > 1:
-                        entry["fallback_chain_present"] = True
-    return route_meta
-
-
-def collect_required_api_key_envs(routes: Mapping[str, Mapping[str, Any]]) -> List[str]:
-    return sorted({str(route["api_key_env"]).strip() for route in routes.values()})
-
-
-def collect_active_api_key_envs(routes: Sequence[Mapping[str, Any]]) -> List[str]:
-    return sorted(
-        {
-            str(route.get("api_key_env") or "").strip()
-            for route in routes
-            if route.get("active_route_required")
-            and str(route.get("api_key_env") or "").strip()
-        }
-    )
-
-
-def collect_fallback_api_key_envs(routes: Sequence[Mapping[str, Any]]) -> List[str]:
-    return sorted(
-        {
-            str(route.get("api_key_env") or "").strip()
-            for route in routes
-            if not route.get("active_route_required")
-            and str(route.get("api_key_env") or "").strip()
-        }
-    )
-
-
 def expected_contract_map_target_keys(contract_module: Any, config: GateConfig) -> List[str]:
     payload = contract_module.compile_phase_contract_map()
     steps = payload.get("steps")
@@ -364,23 +299,24 @@ def expected_contract_map_target_keys(contract_module: Any, config: GateConfig) 
 
 
 def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[str, Any]:
-    routes = runner.collect_provider_routes(
+    readiness = runner.derive_route_readiness_summary(  # type: ignore[attr-defined]
         phases=list(config.target_phases),
         routing_policy=config.target_policy,
     )
-    route_meta = gather_step_route_metadata(runner, config)
     enriched_routes = []
-    for signature, route in sorted(routes.items()):
-        meta = route_meta.get(signature, {})
+    for row in readiness["routes"]:
         enriched_routes.append(
             {
-                "route_signature": signature,
-                "provider": route["provider"],
-                "model_id": route["model_id"],
-                "api_key_env": route["api_key_env"],
-                "active_route_required": bool(meta.get("active_route_required", False)),
-                "fallback_chain_present": bool(meta.get("fallback_chain_present", False)),
-                "steps": meta.get("steps", []),
+                "route_signature": row["route_signature"],
+                "provider": row["provider"],
+                "model_id": row["model_id"],
+                "api_key_env": row["api_key_env"],
+                "active_route_required": bool(row.get("required_active_route", False)),
+                "optional_fallback": bool(row.get("optional_fallback", False)),
+                "configured_not_required": bool(row.get("configured_not_required", False)),
+                "fallback_chain_present": bool(row.get("fallback_chain_present", False)),
+                "requirement_level": row.get("requirement_level"),
+                "steps": row.get("steps", []),
             }
         )
     contract_payload = contract_module.compile_phase_contract_map()
@@ -398,10 +334,20 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
         "promptset_sha256": sha256_file(PROMPTSET_PATH),
         "artifacts_sha256": sha256_file(ARTIFACTS_PATH),
         "model_map_sha256": sha256_file(MODEL_MAP_PATH),
+        "route_readiness_summary": readiness,
         "required_provider_routes": enriched_routes,
-        "required_api_key_envs": collect_active_api_key_envs(enriched_routes),
-        "fallback_api_key_envs": collect_fallback_api_key_envs(enriched_routes),
-        "all_route_api_key_envs": collect_required_api_key_envs(routes),
+        "required_api_key_envs": list(readiness["api_key_env_categories"]["required_active_route"]),
+        "fallback_api_key_envs": list(readiness["api_key_env_categories"]["optional_fallback"]),
+        "configured_not_required_api_key_envs": list(
+            readiness["api_key_env_categories"]["configured_not_required"]
+        ),
+        "all_route_api_key_envs": sorted(
+            {
+                str(row["api_key_env"]).strip()
+                for row in enriched_routes
+                if str(row.get("api_key_env") or "").strip()
+            }
+        ),
         "routing_fingerprint_sha256": normalized_sha(enriched_routes),
         "phase_contract_map_sha256": normalized_sha(
             contract_payload,
@@ -735,6 +681,9 @@ def evaluate_route_readiness(
         "missing_api_key_envs": missing_keys,
         "fallback_api_key_envs": scope.get("fallback_api_key_envs", []),
         "missing_fallback_api_key_envs": missing_fallback_keys,
+        "configured_not_required_api_key_envs": scope.get("configured_not_required_api_key_envs", []),
+        "api_key_env_categories": scope.get("route_readiness_summary", {}).get("api_key_env_categories", {}),
+        "provider_categories": scope.get("route_readiness_summary", {}).get("provider_categories", {}),
     }
     return results, blockers
 
