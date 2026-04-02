@@ -1,13 +1,13 @@
 ---
 id: IMPLEMENTATION
 title: Implementation
-type: explanation
+type: how-to
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-03'
 last_review: '2026-03-03'
 next_review: '2026-06-01'
-prelude: Implementation (explanation) for dopemux documentation and developer workflows.
+prelude: Implementation (how-to) for dopemux documentation and developer workflows.
 ---
 # Implementation Overview: Mobile-First tmux for Dopemux
 
