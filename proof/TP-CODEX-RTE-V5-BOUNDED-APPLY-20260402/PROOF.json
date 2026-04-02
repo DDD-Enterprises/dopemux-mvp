@@ -1,0 +1,54 @@
+{
+  "packet_id": "TP-CODEX-RTE-V5-BOUNDED-APPLY-20260402",
+  "timestamp": "2026-04-02T21:11:58Z",
+  "branch": "codex/rte-v5-prelive-stack-pr-20260402",
+  "code_commit": "500db9015",
+  "repo_root_under_mutation": "/Users/hue/code/dopemux-mvp",
+  "bounded_apply": {
+    "bucket": "stale_resume_state",
+    "limit": 20
+  },
+  "preview": {
+    "planned_actions": 20,
+    "summary": {
+      "eligible_actions": 4563,
+      "skipped_blocked_promptset": 3687,
+      "skipped_top_level_zip": 1,
+      "skipped_ambiguous": 0,
+      "skipped_non_matching_policy": 381
+    }
+  },
+  "apply": {
+    "applied_actions": 20,
+    "manifest_path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211158Z/ARCHIVE_MANIFEST.json"
+  },
+  "before_after": {
+    "resume_state_before": {
+      "blocked_promptset": 4,
+      "stale_resume_state": 7368,
+      "total_detected": 7372
+    },
+    "resume_state_after": {
+      "blocked_promptset": 4,
+      "stale_resume_state": 7348,
+      "total_detected": 7352
+    },
+    "noise_paths_before": 2873,
+    "noise_paths_after": 2873,
+    "warnings_before": 4,
+    "warnings_after": 4
+  },
+  "validations": {
+    "preview_planned_within_limit": true,
+    "preview_blocked_promptset_positive": true,
+    "preview_cross_bucket_leakage": false,
+    "delta_matches_applied_count": true,
+    "blocked_promptset_unchanged": true,
+    "noise_paths_unchanged": true,
+    "warnings_unchanged": true,
+    "preview_target_set_equals_apply_set": true,
+    "all_sources_removed": true,
+    "all_destinations_present": true
+  },
+  "overall_verdict": "PASS"
+}
