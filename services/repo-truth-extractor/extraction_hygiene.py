@@ -4,7 +4,7 @@ Pre-restart hygiene scanner and quarantine tool for the repo-truth extractor.
 TP-RTX-V5-PRE-RESTART-REPO-HYGIENE-0001
 
 Usage:
-    python extraction_hygiene.py scan [--repo-root PATH] [--json]
+    python extraction_hygiene.py scan [--repo-root PATH] [--json] [--scan-mode actionable|full]
     python extraction_hygiene.py apply [--repo-root PATH] [--dry-run | --apply]
 
 Scan mode (default, read-only):
@@ -18,6 +18,7 @@ Apply mode:
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import fnmatch
 import json
 import logging
@@ -28,7 +29,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
 # Policy paths
@@ -117,7 +118,7 @@ class VersionPathFinding:
 
 @dataclass
 class ResumeIssue:
-    issue_type: str  # "stale_failed" | "orphan_failed" | "blocked_promptset"
+    issue_type: str  # "stale_resume_state" | "orphaned_resume_state" | "blocked_promptset"
     path: Path
     severity: str  # "warn" | "error"
     message: str
@@ -132,12 +133,15 @@ class HygieneWarning:
 
 @dataclass
 class ScanResult:
+    scan_mode: str = "actionable"
     warnings: List[HygieneWarning] = field(default_factory=list)
     errors: List[HygieneWarning] = field(default_factory=list)
     noise_paths: List[ClassifyResult] = field(default_factory=list)
     version_path_issues: List[VersionPathFinding] = field(default_factory=list)
     resume_state_issues: List[ResumeIssue] = field(default_factory=list)
     authority_summary: dict = field(default_factory=dict)
+    noise_path_summary: Dict[str, Any] = field(default_factory=dict)
+    resume_state_summary: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -155,6 +159,40 @@ class ApplyPlan:
     applied_actions: List[PlannedAction] = field(default_factory=list)
     canonical_sources_mutated: bool = False
     manifest_path: Optional[Path] = None
+
+
+def _sample_paths(paths: List[str], limit: int = 3) -> List[str]:
+    return sorted(paths)[: max(1, int(limit))]
+
+
+def _summarize_noise_paths(items: List[ClassifyResult]) -> Dict[str, Any]:
+    counts: Counter[str] = Counter()
+    samples: Dict[str, List[str]] = {}
+    for item in items:
+        counts[item.category] += 1
+        samples.setdefault(item.category, [])
+        if len(samples[item.category]) < 3:
+            samples[item.category].append(item.path)
+    return {
+        "total_detected": len(items),
+        "by_category": dict(sorted(counts.items())),
+        "samples": {key: _sample_paths(value) for key, value in sorted(samples.items())},
+    }
+
+
+def _summarize_resume_issues(items: List[ResumeIssue]) -> Dict[str, Any]:
+    counts: Counter[str] = Counter()
+    samples: Dict[str, List[str]] = {}
+    for item in items:
+        counts[item.issue_type] += 1
+        samples.setdefault(item.issue_type, [])
+        if len(samples[item.issue_type]) < 3:
+            samples[item.issue_type].append(str(item.path))
+    return {
+        "total_detected": len(items),
+        "by_issue_type": dict(sorted(counts.items())),
+        "samples": {key: _sample_paths(value) for key, value in sorted(samples.items())},
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -366,7 +404,7 @@ def scan_resume_state(run_dirs: List[Path]) -> List[ResumeIssue]:
 
             if not success_path.exists():
                 issues.append(ResumeIssue(
-                    issue_type="orphan_failed",
+                    issue_type="orphaned_resume_state",
                     path=failed_file,
                     severity="warn",
                     message=f"HYGIENE_WARN: orphan FAILED sidecar with no corresponding success: {failed_file}",
@@ -375,7 +413,7 @@ def scan_resume_state(run_dirs: List[Path]) -> List[ResumeIssue]:
                 # Stale: failed file is older than success
                 if failed_file.stat().st_mtime < success_path.stat().st_mtime:
                     issues.append(ResumeIssue(
-                        issue_type="stale_failed",
+                        issue_type="stale_resume_state",
                         path=failed_file,
                         severity="warn",
                         message=f"HYGIENE_WARN: stale FAILED sidecar (older than success): {failed_file}",
@@ -394,9 +432,13 @@ _DEFAULT_RUNNER = Path("services/repo-truth-extractor/run_extraction_v5.py")
 def run_scan(
     repo_root: Path = _REPO_ROOT_DEFAULT,
     run_dirs: Optional[List[Path]] = None,
+    scan_mode: str = "actionable",
 ) -> ScanResult:
     """Read-only scan. Returns a ScanResult with all findings."""
-    result = ScanResult()
+    normalized_scan_mode = str(scan_mode or "actionable").strip().lower()
+    if normalized_scan_mode not in {"actionable", "full"}:
+        raise ValueError(f"Unsupported scan_mode={scan_mode!r}")
+    result = ScanResult(scan_mode=normalized_scan_mode)
     _log("HYGIENE_SCAN_START", f"repo_root={repo_root}")
 
     # --- noise-path detection: walk the tree and flag excluded paths ---
@@ -407,14 +449,29 @@ def run_scan(
             cr = classify_path(rel)
             if cr.is_excluded and cr.category in ("vendored_deps", "os_artifact"):
                 noise_found.append(cr)
-                result.warnings.append(HygieneWarning(
-                    path=p,
-                    message=f"HYGIENE_WARN: excluded path found: {rel} (category={cr.category})",
-                    category=cr.category,
-                ))
     except PermissionError:
         pass
     result.noise_paths = noise_found
+    result.noise_path_summary = _summarize_noise_paths(noise_found)
+    if normalized_scan_mode == "full":
+        for cr in noise_found:
+            result.warnings.append(HygieneWarning(
+                path=repo_root / cr.path,
+                message=f"HYGIENE_WARN: excluded path found: {cr.path} (category={cr.category})",
+                category=cr.category,
+            ))
+    else:
+        for category, count in sorted(result.noise_path_summary.get("by_category", {}).items()):
+            samples = result.noise_path_summary.get("samples", {}).get(category, [])
+            sample_suffix = f" sample={', '.join(samples)}" if samples else ""
+            result.warnings.append(HygieneWarning(
+                path=repo_root,
+                message=(
+                    f"HYGIENE_WARN: actionable scan suppressed {count} {category} path findings; "
+                    f"use --scan-mode full for per-path inventory.{sample_suffix}"
+                ),
+                category=f"{category}_summary",
+            ))
 
     # --- version/path check ---
     runner = repo_root / _DEFAULT_RUNNER
@@ -435,14 +492,28 @@ def run_scan(
         run_dirs = list(v3_runs.iterdir()) if v3_runs.is_dir() else []
     resume_issues = scan_resume_state(run_dirs)
     result.resume_state_issues = resume_issues
-    for issue in resume_issues:
-        if issue.severity == "error":
-            result.errors.append(HygieneWarning(
-                path=issue.path, message=issue.message, category=issue.issue_type
-            ))
-        else:
+    result.resume_state_summary = _summarize_resume_issues(resume_issues)
+    if normalized_scan_mode == "full":
+        for issue in resume_issues:
+            if issue.severity == "error":
+                result.errors.append(HygieneWarning(
+                    path=issue.path, message=issue.message, category=issue.issue_type
+                ))
+            else:
+                result.warnings.append(HygieneWarning(
+                    path=issue.path, message=issue.message, category=issue.issue_type
+                ))
+    else:
+        for issue_type, count in sorted(result.resume_state_summary.get("by_issue_type", {}).items()):
+            samples = result.resume_state_summary.get("samples", {}).get(issue_type, [])
+            sample_suffix = f" sample={', '.join(samples)}" if samples else ""
             result.warnings.append(HygieneWarning(
-                path=issue.path, message=issue.message, category=issue.issue_type
+                path=repo_root,
+                message=(
+                    f"HYGIENE_WARN: actionable scan grouped {count} {issue_type} findings; "
+                    f"use --scan-mode full for per-file inventory.{sample_suffix}"
+                ),
+                category=f"{issue_type}_summary",
             ))
 
     # --- authority classification summary ---
@@ -615,6 +686,12 @@ def _build_parser() -> argparse.ArgumentParser:
 
     scan_p = sub.add_parser("scan", help="Read-only preflight scan")
     scan_p.add_argument("--json", action="store_true", help="Output results as JSON")
+    scan_p.add_argument(
+        "--scan-mode",
+        choices=("actionable", "full"),
+        default="actionable",
+        help="actionable groups stale/noisy findings into summaries; full prints per-path inventory.",
+    )
 
     apply_p = sub.add_parser("apply", help="Quarantine stale artifacts")
     apply_p.add_argument(
@@ -638,15 +715,18 @@ def main(argv: Optional[list[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "scan":
-        result = run_scan(repo_root=args.repo_root)
+        result = run_scan(repo_root=args.repo_root, scan_mode=args.scan_mode)
         if getattr(args, "json", False):
             print(json.dumps({
+                "scan_mode": result.scan_mode,
                 "warnings": len(result.warnings),
                 "errors": len(result.errors),
                 "noise_paths": len(result.noise_paths),
                 "version_path_issues": len(result.version_path_issues),
                 "resume_state_issues": len(result.resume_state_issues),
                 "authority_summary": result.authority_summary,
+                "noise_path_summary": result.noise_path_summary,
+                "resume_state_summary": result.resume_state_summary,
             }, indent=2))
         else:
             _print_scan_report(result)
@@ -677,12 +757,20 @@ def _print_scan_report(result: ScanResult) -> None:
             print(f"  {f.severity.upper()}: {f.message}")
     if result.noise_paths:
         print(f"\n[NOISE PATHS] {len(result.noise_paths)} found")
-        for cr in result.noise_paths[:10]:
-            print(f"  {cr.category}: {cr.path}")
+        if result.scan_mode == "full":
+            for cr in result.noise_paths[:10]:
+                print(f"  {cr.category}: {cr.path}")
+        else:
+            for category, count in sorted(result.noise_path_summary.get("by_category", {}).items()):
+                print(f"  {category}: {count}")
     if result.resume_state_issues:
         print(f"\n[RESUME STATE] {len(result.resume_state_issues)} issues")
-        for issue in result.resume_state_issues[:10]:
-            print(f"  {issue.severity}: {issue.issue_type} — {issue.path}")
+        if result.scan_mode == "full":
+            for issue in result.resume_state_issues[:10]:
+                print(f"  {issue.severity}: {issue.issue_type} — {issue.path}")
+        else:
+            for issue_type, count in sorted(result.resume_state_summary.get("by_issue_type", {}).items()):
+                print(f"  {issue_type}: {count}")
     print(f"\n[AUTHORITY SUMMARY]")
     for tier, count in sorted(result.authority_summary.items()):
         print(f"  {tier}: {count}")
