@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 
@@ -317,6 +318,44 @@ def empty_payload_for_artifact(artifact_meta: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _normalize_line_range_value(value: Any) -> Any:
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple) and len(value) == 2 and all(
+        isinstance(part, int) for part in value
+    ):
+        return [int(value[0]), int(value[1])]
+    if not isinstance(value, str):
+        return value
+    match = re.fullmatch(r"\s*(\d+)\s*[-:]\s*(\d+)\s*", value)
+    if not match:
+        return value
+    start = int(match.group(1))
+    end = int(match.group(2))
+    if start <= 0 or end < start:
+        return value
+    return [start, end]
+
+
+def _normalize_evidence_line_ranges(payload_copy: Dict[str, Any]) -> None:
+    items = payload_copy.get("items")
+    if not isinstance(items, list):
+        return
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        item["line_range"] = _normalize_line_range_value(item.get("line_range"))
+        evidence_rows = item.get("evidence")
+        if not isinstance(evidence_rows, list):
+            continue
+        for evidence in evidence_rows:
+            if not isinstance(evidence, dict):
+                continue
+            evidence["line_range"] = _normalize_line_range_value(
+                evidence.get("line_range")
+            )
+
+
 def canonicalize_artifacts(
     artifacts: List[Dict[str, Any]],
     step_contract: Optional[Dict[str, Any]],
@@ -341,8 +380,19 @@ def canonicalize_artifacts(
             continue
         payload_copy = copy.deepcopy(payload)
         canonical_schema_id = str(artifact_meta.get("canonical_schema_id") or "")
+        schema_aliases = {
+            str(alias).strip().lower()
+            for alias in artifact_meta.get("schema_aliases") or []
+            if str(alias).strip()
+        }
+        if canonical_schema_id:
+            schema_aliases.add(canonical_schema_id.lower())
         observed_schema_id = str(payload_copy.get("schema") or "").strip()
-        if observed_schema_id and observed_schema_id != canonical_schema_id and observed_schema_id.lower() == canonical_schema_id.lower():
+        if (
+            observed_schema_id
+            and observed_schema_id != canonical_schema_id
+            and observed_schema_id.lower() in schema_aliases
+        ):
             schema_normalizations.append(
                 {
                     "artifact_name": artifact_name,
@@ -353,6 +403,7 @@ def canonicalize_artifacts(
             payload_copy["schema"] = canonical_schema_id
         elif not observed_schema_id and canonical_schema_id:
             payload_copy["schema"] = canonical_schema_id
+        _normalize_evidence_line_ranges(payload_copy)
         normalized.append({"artifact_name": artifact_name, "payload": payload_copy})
     normalized.sort(key=lambda row: order_index.get(str(row.get("artifact_name") or ""), 9999))
     return normalized, schema_normalizations

@@ -20,6 +20,7 @@ import subprocess
 import sys
 import threading
 import time
+import textwrap
 import importlib.util
 import random
 import uuid
@@ -85,7 +86,13 @@ except ImportError:
     else:
         IntelligenceRouter = None
 try:
-    from lib.spend_ledger import SpendLedger
+    from lib.spend_ledger import (
+        BASELINE_INPUT_COST_PER_1M_USD,
+        BASELINE_OUTPUT_COST_PER_1M_USD,
+        PRICING_VERSION,
+        UNKNOWN_MODEL_POLICY,
+        SpendLedger,
+    )
 except ImportError:
     spend_ledger_path = RUNNER_SERVICE_DIR / "lib" / "spend_ledger.py"
     if spend_ledger_path.exists():
@@ -96,10 +103,28 @@ except ImportError:
             spend_ledger_module = importlib.util.module_from_spec(spend_ledger_spec)
             spend_ledger_spec.loader.exec_module(spend_ledger_module)
             SpendLedger = spend_ledger_module.SpendLedger
+            PRICING_VERSION = getattr(spend_ledger_module, "PRICING_VERSION", "baseline_v1")
+            UNKNOWN_MODEL_POLICY = getattr(
+                spend_ledger_module, "UNKNOWN_MODEL_POLICY", "baseline_v1_fallback"
+            )
+            BASELINE_INPUT_COST_PER_1M_USD = float(
+                getattr(spend_ledger_module, "BASELINE_INPUT_COST_PER_1M_USD", 0.15)
+            )
+            BASELINE_OUTPUT_COST_PER_1M_USD = float(
+                getattr(spend_ledger_module, "BASELINE_OUTPUT_COST_PER_1M_USD", 0.60)
+            )
         else:
             SpendLedger = None
+            PRICING_VERSION = "baseline_v1"
+            UNKNOWN_MODEL_POLICY = "baseline_v1_fallback"
+            BASELINE_INPUT_COST_PER_1M_USD = 0.15
+            BASELINE_OUTPUT_COST_PER_1M_USD = 0.60
     else:
         SpendLedger = None
+        PRICING_VERSION = "baseline_v1"
+        UNKNOWN_MODEL_POLICY = "baseline_v1_fallback"
+        BASELINE_INPUT_COST_PER_1M_USD = 0.15
+        BASELINE_OUTPUT_COST_PER_1M_USD = 0.60
 try:
     from lib.phase_contract_map import (
         CONTRACT_MAP_FILENAME as PHASE_CONTRACT_MAP_FILENAME,
@@ -231,6 +256,7 @@ TELEMETRY_DIRNAME = "telemetry"
 RUN_DASHBOARD_FILENAME = "RUN_DASHBOARD.json"
 STEP_METRICS_FILENAME = "STEP_METRICS.json"
 FAILURE_INDEX_FILENAME = "FAILURE_INDEX.json"
+RETRY_COST_REPORT_FILENAME = "RETRY_COST_REPORT.json"
 TERMINAL_TIMELINE_FILENAME = "TERMINAL_TIMELINE.jsonl"
 PROMPTSET_BLOCKED_REASON = "PROMPTSET_INVALID"
 PROMPTSET_BLOCKED_EXIT_CODE = 2
@@ -347,6 +373,11 @@ V5_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v5")
 V5_RUNS_ROOT = V5_EXTRACTION_ROOT / "runs"
 V5_LATEST_RUN_FILE = V5_EXTRACTION_ROOT / "latest_run_id.txt"
 V5_DOCTOR_ROOT = V5_EXTRACTION_ROOT / "doctor"
+INTERACTIVE_SAFE_BATCH_WAIT_SECONDS = 1800
+FIRST_LIVE_PRESET_NAME = "first-live"
+FIRST_LIVE_PRESET_DEFAULT_CAP_USD = 5.0
+FIRST_LIVE_INITIAL_PHASES = ("A", "H", "D", "C")
+FIRST_LIVE_POST_REVIEW_PHASES = ("R", "X", "T", "Z", "S")
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
 # Optional phases whose norm outputs enrich R arbitration when available.
@@ -630,6 +661,109 @@ ACTIVE_ROUTING_LADDERS = {
     policy: {tier: list(routes) for tier, routes in tiers.items()}
     for policy, tiers in ROUTING_LADDERS.items()
 }
+ROUTING_POLICY_GUIDE: Dict[str, Dict[str, Any]] = {
+    "cost": {
+        "intent": "Minimize spend for exploratory or validation-first runs.",
+        "cost_tendency": "lowest",
+        "quality_tendency": "lower",
+        "best_use_cases": [
+            "first dry-runs",
+            "cheap route verification",
+            "small-budget operator probes",
+        ],
+        "known_caveats": [
+            "Quality-sensitive synthesis can still route upward via phase or step requirements.",
+            "Strict JSON-managed steps can ignore the top-level ladder and use contract primary routes.",
+        ],
+    },
+    "balanced": {
+        "intent": "Default middle ground between spend and output quality.",
+        "cost_tendency": "low_to_medium",
+        "quality_tendency": "medium",
+        "best_use_cases": [
+            "general repo truth runs",
+            "operators who want fewer premium surprises than quality mode",
+        ],
+        "known_caveats": [
+            "Not all phases stay mid-tier; step-level contracts may still choose stricter routes.",
+        ],
+    },
+    "balanced_openrouter": {
+        "intent": "Use OpenRouter-first pricing for mixed-cost runs where OpenRouter access is approved.",
+        "cost_tendency": "low_to_medium",
+        "quality_tendency": "medium",
+        "best_use_cases": [
+            "operators with OpenRouter credits",
+            "mixed provider experiments where OpenRouter is already sanctioned",
+        ],
+        "known_caveats": [
+            "Phase D live execution may require provider preflight because OpenRouter can be in the active route set.",
+            "Strict primary routes can still bypass the apparent policy name.",
+        ],
+    },
+    "balanced_grok_openrouter": {
+        "intent": "Bias toward xAI fast models for docs/code, with premium OpenRouter synthesis.",
+        "cost_tendency": "medium_to_high",
+        "quality_tendency": "high",
+        "best_use_cases": [
+            "comparative quality runs",
+            "operators explicitly opting into higher synthesis spend",
+        ],
+        "known_caveats": [
+            "Phase R/X/T/Z/S are premium-risk under this policy.",
+            "D0/D1 use stricter docs ladders than the broader phase default suggests.",
+        ],
+    },
+    "quality": {
+        "intent": "Prefer stronger quality routes than cost/balanced without the most premium ladders.",
+        "cost_tendency": "medium",
+        "quality_tendency": "high",
+        "best_use_cases": [
+            "operator-reviewed live runs with moderate budget headroom",
+        ],
+        "known_caveats": [
+            "QA and synthesis steps can still climb into more expensive models than inventory steps.",
+        ],
+    },
+    "openrouter": {
+        "intent": "Prefer OpenRouter-heavy ladders across most tiers.",
+        "cost_tendency": "medium_to_high",
+        "quality_tendency": "high",
+        "best_use_cases": [
+            "operators standardizing on OpenRouter for routing visibility",
+        ],
+        "known_caveats": [
+            "Premium OpenRouter synthesis ladders can materially raise spend.",
+            "Provider preflight matters more because more live paths depend on OpenRouter availability.",
+        ],
+    },
+    "gemini_primary": {
+        "intent": "Use Gemini-first on non-premium paths while keeping premium synthesis escape hatches.",
+        "cost_tendency": "low_to_medium",
+        "quality_tendency": "medium_to_high",
+        "best_use_cases": [
+            "operators preferring Gemini as the primary non-code lane",
+        ],
+        "known_caveats": [
+            "Premium synthesis phases still escalate away from Gemini.",
+            "Code-heavy phases do not stay Gemini-first.",
+        ],
+    },
+    "optimal": {
+        "intent": "Bias toward the strongest observed ladders for output quality, not cheapest spend.",
+        "cost_tendency": "highest",
+        "quality_tendency": "highest",
+        "best_use_cases": [
+            "after operator review",
+            "targeted premium runs where budget is already approved",
+        ],
+        "known_caveats": [
+            "Premium synthesis phases are expensive by design under this policy.",
+            "Fallback pricing may be approximate for some premium model IDs.",
+        ],
+    },
+}
+ACTIVE_OUTPUT_LAYOUT: Optional["OutputLayout"] = None
 DOCS_GOVERNANCE_PHASES: Set[str] = {"A", "H", "D", "W", "B", "G"}
 PREMIUM_SYNTHESIS_PHASES: Set[str] = {"R", "X", "T", "Z", "S", "M"}
 BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
@@ -1003,6 +1137,23 @@ TEXT_NAMES = {
     "package-lock.json",
 }
 
+UNSUPPORTED_INPUT_SUFFIX_LABELS: Dict[str, str] = {
+    ".pdf": "PDF documents",
+    ".png": "PNG images",
+    ".jpg": "JPEG images",
+    ".jpeg": "JPEG images",
+    ".gif": "GIF images",
+    ".svg": "SVG/vector assets",
+    ".docx": "DOCX documents",
+    ".pptx": "PPTX presentations",
+}
+
+WEAK_LANGUAGE_SUFFIX_LABELS: Dict[str, str] = {
+    ".go": "Go",
+    ".java": "Java",
+    ".rs": "Rust",
+}
+
 HOME_SAFE_ROOTS = [
     ".dopemux",
     ".config/dopemux",
@@ -1243,6 +1394,14 @@ class RunContext:
 
 
 @dataclass(frozen=True)
+class OutputLayout:
+    extraction_root: Path
+    runs_root: Path
+    latest_run_file: Path
+    doctor_root: Path
+
+
+@dataclass(frozen=True)
 class BatchWatchResult:
     exit_code: int
     next_phase: Optional[str] = None
@@ -1254,6 +1413,114 @@ class UiConfig:
     mode: str = "auto"  # auto|rich|plain
     quiet: bool = False
     jsonl_events: bool = False
+
+
+def _default_output_layout(repo_root: Path) -> OutputLayout:
+    extraction_root = (repo_root / V5_EXTRACTION_ROOT).resolve()
+    return OutputLayout(
+        extraction_root=extraction_root,
+        runs_root=(extraction_root / "runs").resolve(),
+        latest_run_file=(extraction_root / "latest_run_id.txt").resolve(),
+        doctor_root=(extraction_root / "doctor").resolve(),
+    )
+
+
+def configure_output_layout(repo_root: Path, output_root: Optional[str]) -> OutputLayout:
+    global ACTIVE_OUTPUT_LAYOUT
+    if output_root:
+        extraction_root = Path(output_root).expanduser().resolve()
+        ACTIVE_OUTPUT_LAYOUT = OutputLayout(
+            extraction_root=extraction_root,
+            runs_root=(extraction_root / "runs").resolve(),
+            latest_run_file=(extraction_root / "latest_run_id.txt").resolve(),
+            doctor_root=(extraction_root / "doctor").resolve(),
+        )
+    else:
+        ACTIVE_OUTPUT_LAYOUT = _default_output_layout(repo_root)
+    return ACTIVE_OUTPUT_LAYOUT
+
+
+def current_output_layout(repo_root: Path) -> OutputLayout:
+    return ACTIVE_OUTPUT_LAYOUT or _default_output_layout(repo_root)
+
+
+def current_extraction_root(repo_root: Path) -> Path:
+    return current_output_layout(repo_root).extraction_root
+
+
+def current_runs_root(repo_root: Path) -> Path:
+    return current_output_layout(repo_root).runs_root
+
+
+def current_doctor_root(repo_root: Path) -> Path:
+    return current_output_layout(repo_root).doctor_root
+
+
+class OperatorArgumentParser(argparse.ArgumentParser):
+    def format_help(self) -> str:
+        quick_reference = textwrap.dedent(
+            f"""
+            Operator Quick Reference
+              Common:
+                --preset {FIRST_LIVE_PRESET_NAME} --dry-run --run-id local_probe
+                --print-cost-preview --phase A --dry-run
+                --print-routing-guide
+              Advanced:
+                --routing-policy balanced_openrouter
+                --output-root /abs/path/to/sandboxed-artifacts
+              Diagnostics:
+                --list-phases
+                --print-config --phase A --dry-run
+                --preflight-providers --phase D
+              Recovery / Resume:
+                --resume --phase D --run-id <RUN_ID>
+                --status --run-id <RUN_ID>
+
+            Examples
+              Validator-first staged first live:
+                python services/repo-truth-extractor/run_extraction_v5.py --preset {FIRST_LIVE_PRESET_NAME} --dry-run --run-id first_live_probe
+              Explicit cost preview:
+                python services/repo-truth-extractor/run_extraction_v5.py --print-cost-preview --phase A --dry-run --run-id cost_probe
+              Isolated artifact root:
+                python services/repo-truth-extractor/run_extraction_v5.py --phase A --dry-run --output-root /tmp/rte-v5-sandbox
+            """
+        ).strip()
+        return quick_reference + "\n\n" + super().format_help()
+
+    def error(self, message: str) -> None:
+        detail = str(message or "")
+        guidance: List[str] = []
+        if "argument --routing-policy: invalid choice" in detail:
+            guidance.extend(
+                [
+                    f"Valid routing policies: {', '.join(sorted(ROUTING_LADDERS.keys()))}.",
+                    f"Example: --routing-policy {DEFAULT_ROUTING_POLICY}",
+                ]
+            )
+        elif "argument --phase: invalid choice" in detail:
+            guidance.extend(
+                [
+                    f"Valid phases: {', '.join(PHASES)} plus S_INT or ALL.",
+                    "Example: --phase A --dry-run",
+                ]
+            )
+        elif "DPMX_LIVE_OK" in detail or "explicit consent" in detail:
+            guidance.extend(
+                [
+                    "Use --dry-run first to inspect inputs, routes, and estimated cost.",
+                    f"Only rerun live with --execute and {DPMX_LIVE_OK_ENV}=1 after approval.",
+                ]
+            )
+        elif "--phase is required" in detail:
+            guidance.extend(
+                [
+                    "Use --phase <PHASE> for execution, or one of the introspection modes such as --list-phases, --print-config, or --print-cost-preview.",
+                    f"Example: --phase A --dry-run or --preset {FIRST_LIVE_PRESET_NAME} --dry-run",
+                ]
+            )
+        if guidance:
+            detail = detail.rstrip() + "\n\n" + "\n".join(guidance)
+        super().error(detail)
 
 
 class UI:
@@ -2334,7 +2601,7 @@ def _phase_input_stat(path: Path) -> Dict[str, Any]:
 
 def load_run_id(root: Path) -> Optional[str]:
     """Load latest run_id from file; return None if unavailable."""
-    id_file = root / V5_LATEST_RUN_FILE
+    id_file = current_output_layout(root).latest_run_file
     if not id_file.exists():
         return None
     run_id = id_file.read_text(encoding="utf-8").strip()
@@ -2346,7 +2613,7 @@ def load_run_id(root: Path) -> Optional[str]:
 def _validate_existing_run_dir(
     root: Path, run_id: str, allow_create_if_missing: bool = False
 ) -> None:
-    candidate = root / V5_RUNS_ROOT / run_id
+    candidate = current_runs_root(root) / run_id
     if not candidate.exists():
         if allow_create_if_missing:
             candidate.mkdir(parents=True, exist_ok=True)
@@ -2358,7 +2625,7 @@ def _validate_existing_run_dir(
 
 def _generate_run_id(root: Path) -> str:
     base = datetime.now(timezone.utc).strftime("run_%Y%m%dT%H%M%SZ")
-    runs_root = root / V5_RUNS_ROOT
+    runs_root = current_runs_root(root)
     runs_root.mkdir(parents=True, exist_ok=True)
 
     candidate = runs_root / base
@@ -2371,7 +2638,7 @@ def _generate_run_id(root: Path) -> str:
 
 
 def latest_run_id_path(root: Path) -> Path:
-    return root / V5_LATEST_RUN_FILE
+    return current_output_layout(root).latest_run_file
 
 
 def persist_latest_run_id(root: Path, run_id: str) -> None:
@@ -2397,7 +2664,7 @@ def resolve_run_context(
     else:
         latest = load_run_id(root)
         if latest:
-            latest_dir = root / V5_RUNS_ROOT / latest
+            latest_dir = current_runs_root(root) / latest
             if latest_dir.exists() and latest_dir.is_dir():
                 run_id = latest
                 run_id_source = "latest_run_id"
@@ -2426,7 +2693,7 @@ def resolve_run_context(
 
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     """Return dict of run paths and ensure required folders exist."""
-    base = root / V5_RUNS_ROOT / run_id
+    base = current_runs_root(root) / run_id
     if not base.exists():
         raise FileNotFoundError(f"Run directory {base} does not exist.")
     for legacy_name, canonical_name in LEGACY_PHASE_DIR_ALIASES.items():
@@ -2624,6 +2891,56 @@ def write_run_dashboard_snapshot(
         "payload": dict(payload),
     }
     write_json(target, snapshot)
+    return snapshot
+
+
+def write_retry_cost_report_snapshot(
+    run_root: Path,
+    phase: str,
+    step_id: str,
+    report: Dict[str, Any],
+) -> Dict[str, Any]:
+    target = _telemetry_path(run_root, RETRY_COST_REPORT_FILENAME)
+    with _TELEMETRY_SNAPSHOT_LOCK:
+        payload = _load_json_object(target)
+        steps = payload.get("steps")
+        if not isinstance(steps, dict):
+            steps = {}
+        steps[f"{phase}:{step_id}"] = dict(report)
+        total_retry_count = 0
+        total_extra_cost = 0.0
+        hot_partitions: List[Dict[str, Any]] = []
+        for key, value in steps.items():
+            if not isinstance(value, dict):
+                continue
+            total_retry_count += int(value.get("retry_count", 0) or 0)
+            total_extra_cost += float(value.get("estimated_extra_cost_usd", 0.0) or 0.0)
+            for row in value.get("abnormal_partitions", []) or []:
+                if isinstance(row, dict):
+                    hot_partitions.append(
+                        {
+                            "step": key,
+                            **row,
+                        }
+                    )
+        hot_partitions.sort(
+            key=lambda row: (
+                -float(row.get("estimated_retry_extra_cost_usd", 0.0) or 0.0),
+                str(row.get("partition_id") or ""),
+            )
+        )
+        snapshot = {
+            "generated_at": now_iso(),
+            "run_id": run_root.name,
+            "steps": dict(sorted(steps.items())),
+            "summary": {
+                "retry_count": total_retry_count,
+                "estimated_extra_cost_usd": round(total_extra_cost, 6),
+                "abnormal_partition_count": len(hot_partitions),
+            },
+            "abnormal_partitions": hot_partitions[:25],
+        }
+        write_json(target, snapshot)
     return snapshot
 
 
@@ -4282,6 +4599,7 @@ def write_run_manifest(
 ) -> Dict[str, Any]:
     prompt_report = promptset_fingerprint(phases)
     run_blocked = bool(prompt_report.get("blocked_promptset"))
+    layout = current_output_layout(root)
     routing_policy = str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY))
     disable_escalation = bool(getattr(args, "disable_escalation", False))
     escalation_max_hops = int(getattr(args, "escalation_max_hops", 2))
@@ -4296,9 +4614,16 @@ def write_run_manifest(
         "run_id": run_id,
         "generated_at": now_iso(),
         "repo_root": str(root.resolve()),
+        "artifact_root": str(layout.extraction_root.resolve()),
+        "run_root": str(dirs["root"].resolve()),
         "git_sha": get_git_sha(root),
         "cli": {
             "phase": args.phase if args.phase else args.verify_phase_output,
+            "preset": getattr(args, "preset", None),
+            "preset_stage": getattr(args, "preset_stage", None),
+            "skip_pre_live_validator": bool(
+                getattr(args, "skip_pre_live_validator", False)
+            ),
             "dry_run": args.dry_run,
             "resume": args.resume,
             "max_files_docs": args.max_files_docs,
@@ -4336,7 +4661,7 @@ def write_run_manifest(
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({layout.latest_run_file})",
                 "generated(new timestamp run id)",
             ],
             "no_write_latest": args.no_write_latest,
@@ -4354,9 +4679,13 @@ def write_run_manifest(
             "print_promptpack": args.print_promptpack,
             "print_run_order": bool(getattr(args, "print_run_order", False)),
             "print_phase_routing": bool(getattr(args, "print_phase_routing", False)),
+            "print_routing_guide": bool(getattr(args, "print_routing_guide", False)),
+            "print_prescan_guide": bool(getattr(args, "print_prescan_guide", False)),
+            "print_cost_preview": bool(getattr(args, "print_cost_preview", False)),
             "print_phase_prompts": getattr(args, "print_phase_prompts", None),
             "verify_phase_output": args.verify_phase_output,
             "print_config": args.print_config,
+            "output_root": getattr(args, "output_root", None),
             "dpmx_webhook_url": os.getenv(DPMX_WEBHOOK_URL_ENV, "").strip(),
             "dpmx_webhook_secret_set": bool(
                 os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip()
@@ -4369,6 +4698,12 @@ def write_run_manifest(
                 DPMX_WEBHOOK_AUTO_CONTINUE_ENV, ""
             ).strip(),
             "dpmx_live_ok": os.getenv(DPMX_LIVE_OK_ENV, "").strip(),
+        },
+        "output_layout": {
+            "artifact_root": str(layout.extraction_root.resolve()),
+            "runs_root": str(layout.runs_root.resolve()),
+            "latest_run_id_file": str(layout.latest_run_file.resolve()),
+            "doctor_root": str(layout.doctor_root.resolve()),
         },
         "prompt_hash_mode": PROMPT_HASH_MODE,
         "prompt_files": [row["path"] for row in prompt_report["prompt_hashes"]],
@@ -4866,7 +5201,9 @@ def _resume_blocked_payload(prompt_report: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _prompt_hash_report_for_phase(
-    phase: str, specs: List[PromptSpec]
+    phase: str,
+    specs: List[PromptSpec],
+    required_step_ids: Optional[Set[str]] = None,
 ) -> Dict[str, Any]:
     prompt_hashes: List[Dict[str, str]] = []
     prompt_missing: List[str] = []
@@ -4874,7 +5211,11 @@ def _prompt_hash_report_for_phase(
     prompt_hash_errors: List[str] = []
     prompt_failures: List[Dict[str, str]] = []
 
-    expected_steps = REQUIRED_PROMPT_STEP_IDS.get(phase, set())
+    expected_steps = (
+        set(required_step_ids)
+        if required_step_ids is not None
+        else REQUIRED_PROMPT_STEP_IDS.get(phase, set())
+    )
     observed_steps = {spec.step_id for spec in specs}
     for step_id in sorted(expected_steps - observed_steps):
         missing_pattern = _missing_prompt_glob(step_id)
@@ -5453,6 +5794,30 @@ def run_provider_preflight(
         if probe.get("status_code") != 200
         or is_auth_classified_failure(probe.get("failure_type"))
     ]
+    failure_summary: List[Dict[str, Any]] = []
+    for probe in failures:
+        provider = str(probe.get("provider") or "")
+        model_id = str(probe.get("model_id") or "")
+        remediation = None
+        if provider == "openrouter" and str(probe.get("failure_type") or "") == "auth_rejected":
+            remediation = (
+                "Current bounded first-live A/H/D/C routes still require this OpenRouter model "
+                "for strict JSON-managed steps. Fix the active OpenRouter credential path "
+                f"({probe.get('api_key_env_resolved') or probe.get('api_key_env_name')}) "
+                "or the bounded online route remains blocked."
+            )
+        failure_summary.append(
+            {
+                "provider": provider,
+                "model_id": model_id,
+                "api_key_env": probe.get("api_key_env_resolved")
+                or probe.get("api_key_env_name"),
+                "failure_type": probe.get("failure_type"),
+                "status_code": probe.get("status_code"),
+                "provider_signature": probe.get("provider_signature"),
+                "remediation": remediation,
+            }
+        )
     payload = {
         "generated_at": now_iso(),
         "run_id": run_id,
@@ -5460,11 +5825,12 @@ def run_provider_preflight(
         "routes": provider_routes,
         "probes": provider_probes,
         "failed_providers": [probe.get("provider") for probe in failures],
+        "failure_summary": failure_summary,
         "routing_policy": cfg.routing_policy,
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "batch_capability": batch_capability,
     }
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
     return (not failures), payload
@@ -5492,7 +5858,7 @@ def prepare_phase_provider_preflight(
         {str(provider) for provider in payload.get("failed_providers", []) if provider}
     )
     payload["denylisted_providers"] = list(denylisted)
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
     if not ok:
@@ -5741,7 +6107,7 @@ def run_doctor_full(
         },
     }
 
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "DOCTOR_FULL.json", payload)
     print(json.dumps(payload, indent=2))
@@ -6024,8 +6390,7 @@ def extract_artifacts_from_partition_payload(
             extracted.append(
                 {"artifact_name": artifact_name, "payload": candidate.get("payload")}
             )
-        if extracted:
-            return extracted
+        return extracted
 
     if isinstance(payload, dict):
         for artifact_name in expected_artifacts:
@@ -6040,6 +6405,78 @@ def extract_artifacts_from_partition_payload(
         extracted.append({"artifact_name": expected_artifacts[0], "payload": payload})
 
     return extracted
+
+
+def classify_request_failure(request_meta: Dict[str, Any]) -> Dict[str, Optional[str]]:
+    schema_gate_passed = bool(request_meta.get("schema_gate_passed", True))
+    schema_reason = str(request_meta.get("schema_gate_reason") or "").strip()
+    schema_context = (
+        request_meta.get("schema_gate_context")
+        if isinstance(request_meta.get("schema_gate_context"), dict)
+        else {}
+    )
+    failure_type = str(request_meta.get("failure_type") or "").strip()
+    provider_reason = str(request_meta.get("provider_error_reason") or "").strip()
+    execution_mode = str(request_meta.get("execution_mode") or "").strip().lower()
+
+    if not schema_gate_passed:
+        failure_class = schema_reason or "schema_gate_failure"
+        if schema_reason.startswith("missing_expected_artifacts:"):
+            failure_class = "missing_expected_artifacts"
+        elif schema_reason.startswith("schema_missing_key:"):
+            failure_class = "schema_missing_key"
+        return {
+            "failure_class": failure_class,
+            "reason": schema_reason or failure_type or "schema_gate_failure",
+            "artifact_name": str(schema_context.get("artifact_name") or "").strip() or None,
+            "item_key": (
+                schema_reason.split(":", 1)[1]
+                if schema_reason.startswith("schema_missing_key:")
+                else None
+            ),
+            "item_id": str(schema_context.get("item_id") or "").strip() or None,
+            "item_path": str(schema_context.get("item_path") or "").strip() or None,
+            "failure_stage": "post_model_output",
+        }
+
+    failure_class = failure_type or "unknown_failure"
+    failure_stage = "unknown"
+    if provider_reason.startswith("batch_submit_error:"):
+        failure_class = "provider_batch_submission_failure"
+        failure_stage = "pre_model_execution"
+    elif provider_reason.startswith("missing_api_key:") or failure_type in {
+        "auth_missing",
+        "api_key_missing_or_invalid",
+        "permission_denied",
+        "payload_unshrinkable",
+    }:
+        failure_stage = "pre_model_execution"
+    elif provider_reason.startswith("batch_timeout:"):
+        failure_class = "provider_batch_timeout"
+        failure_stage = "model_execution"
+    elif provider_reason == "batch_missing_result_for_partition":
+        failure_class = "provider_batch_result_missing"
+        failure_stage = "model_execution"
+    elif failure_type in {
+        "provider",
+        "network",
+        "timeout",
+        "rate_limit",
+        "quota_or_billing",
+    } or failure_type.startswith("auth_"):
+        failure_stage = "model_execution"
+    elif execution_mode == "batch_submit_only":
+        failure_stage = "pre_model_execution"
+
+    return {
+        "failure_class": failure_class,
+        "reason": provider_reason or failure_class,
+        "artifact_name": None,
+        "item_key": None,
+        "item_id": None,
+        "item_path": None,
+        "failure_stage": failure_stage,
+    }
 
 
 def normalize_step(
@@ -6066,6 +6503,8 @@ def normalize_step(
     raw_ok = 0
     raw_failed = 0
     unexpected_artifacts: Counter[str] = Counter()
+    failure_stage_histogram: Counter[str] = Counter()
+    artifact_blocked_by_failure_stage: Dict[str, List[str]] = {}
 
     for partition_id in partition_ids:
         raw_file = raw_dir / f"{step_id}__{partition_id}.json"
@@ -6086,14 +6525,26 @@ def normalize_step(
                 continue
 
             raw_ok += 1
+            request_meta = (
+                payload.get("request_meta")
+                if isinstance(payload.get("request_meta"), dict)
+                else {}
+            )
             artifacts = extract_artifacts_from_partition_payload(
                 payload, expected_artifacts
             )
             if not artifacts:
+                failure = classify_request_failure(request_meta)
+                failure_stage = str(failure.get("failure_stage") or "").strip()
+                if failure_stage:
+                    failure_stage_histogram[failure_stage] += 1
                 parse_failures.append(
                     {
                         "partition_id": partition_id,
-                        "reason": "missing_artifacts",
+                        "reason": (
+                            str(failure.get("failure_class") or "").strip()
+                            or "missing_artifacts"
+                        ),
                         "file": str(raw_file),
                     }
                 )
@@ -6126,6 +6577,17 @@ def normalize_step(
     for artifact_name in expected_artifacts:
         chunks = artifacts_by_name.get(artifact_name, [])
         if not chunks:
+            if (
+                raw_ok > 0
+                and not any(artifacts_by_name.values())
+                and len(failure_stage_histogram) == 1
+                and "post_model_output" not in failure_stage_histogram
+            ):
+                blocked_stage = next(iter(failure_stage_histogram.keys()))
+                artifact_blocked_by_failure_stage.setdefault(blocked_stage, []).append(
+                    artifact_name
+                )
+                continue
             missing_expected_artifacts.append(artifact_name)
             continue
 
@@ -6215,6 +6677,11 @@ def normalize_step(
         "recomputed_partitions": int((step_exec_stats or {}).get("recomputed", 0)),
         "dry_run_partitions": int((step_exec_stats or {}).get("dry_run", 0)),
         "execution_failed_partitions": int((step_exec_stats or {}).get("failed", 0)),
+        "failure_stage_histogram": dict(sorted(failure_stage_histogram.items())),
+        "artifact_blocked_by_failure_stage": {
+            stage: sorted(names)
+            for stage, names in sorted(artifact_blocked_by_failure_stage.items())
+        },
         "contract_lane": (step_exec_stats or {}).get("contract_lane"),
         "strict_schema_required": bool(
             (step_exec_stats or {}).get("strict_schema_required", False)
@@ -6792,6 +7259,16 @@ def _project_output_tokens(input_tokens: int, response_text: str = "") -> int:
     if response_text:
         return max(1, len(str(response_text)) // 4)
     return max(1, int(input_tokens) // 10) if input_tokens > 0 else 1
+
+
+def _project_preview_output_tokens(
+    input_tokens: int,
+    *,
+    step_contract: Optional[Dict[str, Any]] = None,
+) -> int:
+    if is_json_managed_step(step_contract):
+        return max(64, int(max(0, input_tokens) * 0.02))
+    return max(64, _project_output_tokens(input_tokens))
 
 
 def _record_request_warning(
@@ -8065,7 +8542,7 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         f"succeeded_modes={','.join(succeeded_modes) if succeeded_modes else '-'} "
         f"failed_modes={','.join(failed_modes) if failed_modes else '-'}"
     )
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     doctor_json = doctor_dir / "AUTH_DOCTOR.json"
     doctor_txt = doctor_dir / "AUTH_DOCTOR.txt"
@@ -8627,6 +9104,16 @@ def coerce_artifacts_from_response(
             )
         if artifacts:
             return artifacts
+
+    if isinstance(parsed, dict):
+        artifact_name = str(parsed.get("artifact_name", "")).strip()
+        if artifact_name in expected_set and "payload" in parsed:
+            return [
+                {
+                    "artifact_name": artifact_name,
+                    "payload": parsed.get("payload"),
+                }
+            ]
 
     if isinstance(parsed, dict):
         keyed_artifacts: List[Dict[str, Any]] = []
@@ -9915,11 +10402,14 @@ def execute_step_for_partitions(
     step_schema_id_normalizations = 0
     step_contract_status_hist: Counter[str] = Counter()
     step_failure_hist: Counter[str] = Counter()
+    step_failure_stage_hist: Counter[str] = Counter()
     step_first_failure_context: Optional[Dict[str, Any]] = None
     step_soft_gate_triggered = False
     step_soft_gate_n_total = 0
     step_soft_gate_fail_rate = 0.0
     step_soft_gate_failed_partitions = 0
+    step_retry_extra_cost_usd = 0.0
+    step_retry_hotspots: List[Dict[str, Any]] = []
     batch_request_rows: List[Dict[str, Any]] = []
     batch_job_rows: List[Dict[str, Any]] = []
     batch_result_rows: List[Dict[str, Any]] = []
@@ -9988,35 +10478,15 @@ def execute_step_for_partitions(
     def _failure_details_from_meta(
         request_meta: Dict[str, Any],
     ) -> Tuple[str, str, Optional[str], Optional[str], Optional[str], Optional[str]]:
-        schema_gate_passed = bool(request_meta.get("schema_gate_passed", True))
-        schema_reason = str(request_meta.get("schema_gate_reason") or "").strip()
-        schema_context = (
-            request_meta.get("schema_gate_context")
-            if isinstance(request_meta.get("schema_gate_context"), dict)
-            else {}
+        failure = classify_request_failure(request_meta)
+        return (
+            str(failure.get("failure_class") or "unknown_failure"),
+            str(failure.get("reason") or "unknown_failure"),
+            failure.get("artifact_name"),
+            failure.get("item_key"),
+            failure.get("item_id"),
+            failure.get("item_path"),
         )
-        route = (
-            f"{str(request_meta.get('provider') or '-').strip()}/"
-            f"{str(request_meta.get('model_id') or '-').strip()}"
-        )
-        if not schema_gate_passed:
-            failure_class = schema_reason or "schema_gate_failure"
-            if schema_reason.startswith("missing_expected_artifacts:"):
-                failure_class = "missing_expected_artifacts"
-            elif schema_reason.startswith("schema_missing_key:"):
-                failure_class = "schema_missing_key"
-            item_key = None
-            if schema_reason.startswith("schema_missing_key:"):
-                item_key = schema_reason.split(":", 1)[1]
-            artifact_name = str(schema_context.get("artifact_name") or "").strip() or None
-            item_id = str(schema_context.get("item_id") or "").strip() or None
-            item_path = str(schema_context.get("item_path") or "").strip() or None
-            reason = schema_reason or str(request_meta.get("failure_type") or "schema")
-            return failure_class, reason, artifact_name, item_key, item_id, item_path
-
-        failure_type = str(request_meta.get("failure_type") or "").strip() or "unknown_failure"
-        reason = str(request_meta.get("provider_error_reason") or "").strip() or failure_type
-        return failure_type, reason, None, None, None, None
 
     def _ui_record_result(result: PartitionExecResult) -> None:
         nonlocal ui_completed
@@ -10063,7 +10533,11 @@ def execute_step_for_partitions(
             sidefill=ui_sidefill,
             soft_gate=ui_soft_gate,
         )
-        if not result.success and not result.resume_skipped:
+        if (
+            not result.success
+            and not result.resume_skipped
+            and result.dry_run_delta == 0
+        ):
             (
                 failure_class,
                 failure_reason,
@@ -11259,6 +11733,12 @@ def execute_step_for_partitions(
                         "Do not include markdown, code fences, commentary, or explanations.\n"
                         "The response must start with { or [ and end with } or ].\n"
                     )
+                projected_input_tokens = _estimate_text_tokens(
+                    prompt_text, effective_user_prompt
+                )
+                projected_output_tokens = _project_output_tokens(
+                    projected_input_tokens
+                )
                 if cfg.batch_mode and not strict_contract_required:
                     batch_provider = (
                         cfg.batch_provider
@@ -11284,6 +11764,8 @@ def execute_step_for_partitions(
                             "execution_mode": "batch",
                             "batch_provider": batch_provider,
                             "batch_job_id": None,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                         }
                         return "", enrich_request_meta(
                             failed_meta,
@@ -11311,16 +11793,6 @@ def execute_step_for_partitions(
                             },
                         )
                     ]
-                    projected_input_tokens = sum(
-                        _estimate_text_tokens(req.system_prompt, req.user_content)
-                        for req in batch_requests
-                    )
-                    projected_output_tokens = sum(
-                        _project_output_tokens(
-                            _estimate_text_tokens(req.system_prompt, req.user_content)
-                        )
-                        for req in batch_requests
-                    )
                     batch_request_rows.append(
                         {
                             "partition_id": partition_id,
@@ -11408,6 +11880,8 @@ def execute_step_for_partitions(
                             "execution_mode": "batch",
                             "batch_provider": batch_provider,
                             "batch_job_id": None,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                             **capture_exception_metadata(exc),
                         }
                         return "", enrich_request_meta(
@@ -11444,6 +11918,8 @@ def execute_step_for_partitions(
                             "batch_job_id": batch_job_id,
                             "response_summary": {"batch_status": "submitted"},
                             "batch_pending": True,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                         }
                         return json.dumps(
                             submit_payload, ensure_ascii=True, sort_keys=True
@@ -11485,6 +11961,8 @@ def execute_step_for_partitions(
                                 "execution_mode": "batch",
                                 "batch_provider": batch_provider,
                                 "batch_job_id": batch_job_id,
+                                "estimated_input_tokens": projected_input_tokens,
+                                "estimated_output_tokens": projected_output_tokens,
                             }
                             return "", enrich_request_meta(
                                 failed_meta,
@@ -11542,6 +12020,8 @@ def execute_step_for_partitions(
                             "execution_mode": "batch",
                             "batch_provider": batch_provider,
                             "batch_job_id": batch_job_id,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                         }
                         return "", enrich_request_meta(
                             failed_meta,
@@ -11562,6 +12042,8 @@ def execute_step_for_partitions(
                         "batch_provider": batch_provider,
                         "batch_job_id": batch_job_id,
                         "response_summary": {"batch_status": status},
+                        "estimated_input_tokens": projected_input_tokens,
+                        "estimated_output_tokens": projected_output_tokens,
                     }
                     for job_row in batch_job_rows:
                         if (
@@ -11671,10 +12153,16 @@ def execute_step_for_partitions(
                         fallback_input_tokens=_estimate_text_tokens(
                             prompt_text, effective_user_prompt
                         ),
-                    )
+                )
                     if spend_record is not None:
                         request_meta_local["spend_usage"] = spend_record
                 request_meta_local.setdefault("request_payload_bytes", payload_bytes)
+                request_meta_local.setdefault(
+                    "estimated_input_tokens", projected_input_tokens
+                )
+                request_meta_local.setdefault(
+                    "estimated_output_tokens", projected_output_tokens
+                )
                 if cfg.ledger:
                     prompt_toks = int(
                         request_meta_local.get("prompt_tokens")
@@ -12286,17 +12774,45 @@ def execute_step_for_partitions(
             resume_skipped += 1
             continue
 
+        final_provider = str(result.request_meta.get("provider") or provider)
+        final_model = str(result.request_meta.get("model_id") or model_id)
         retry_trace = result.request_meta.get("retry_trace")
         if isinstance(retry_trace, list):
             step_retry_count += max(0, len(retry_trace) - 1)
+            retry_count = max(0, len(retry_trace) - 1)
+            if retry_count > 0:
+                estimated_input_tokens = int(
+                    result.request_meta.get("estimated_input_tokens", 0) or 0
+                )
+                retry_priced = _pricing_preview_record(
+                    cfg,
+                    final_provider,
+                    final_model,
+                    estimated_input_tokens * retry_count,
+                    0,
+                )
+                retry_extra_cost = float(
+                    retry_priced.get("estimated_cost_usd", 0.0) or 0.0
+                )
+                step_retry_extra_cost_usd += retry_extra_cost
+                if retry_count >= 2 or retry_extra_cost >= 0.01:
+                    step_retry_hotspots.append(
+                        {
+                            "partition_id": partition_id,
+                            "retry_count": retry_count,
+                            "route": f"{final_provider}/{final_model}",
+                            "estimated_retry_extra_cost_usd": round(
+                                retry_extra_cost, 6
+                            ),
+                            "pricing_source": retry_priced.get("pricing_source"),
+                        }
+                    )
         hop_total = int(result.request_meta.get("route_hop_total", 1) or 1)
         step_hop_distribution[str(hop_total)] += 1
         if hop_total > 1:
             step_escalated_partitions += 1
         execution_mode = str(result.request_meta.get("execution_mode") or "sync")
         step_execution_mode_counts[execution_mode] += 1
-        final_provider = str(result.request_meta.get("provider") or provider)
-        final_model = str(result.request_meta.get("model_id") or model_id)
         step_final_route_counts[f"{final_provider}/{final_model}"] += 1
         step_repair_invocations += int(
             result.request_meta.get("repair_invocations", 0) or 0
@@ -12326,7 +12842,8 @@ def execute_step_for_partitions(
         ).strip()
         if final_contract_status:
             step_contract_status_hist[final_contract_status] += 1
-        if not result.success:
+        if not result.success and result.dry_run_delta == 0:
+            failure_details = classify_request_failure(result.request_meta)
             (
                 failure_class,
                 failure_reason,
@@ -12336,10 +12853,14 @@ def execute_step_for_partitions(
                 item_path,
             ) = _failure_details_from_meta(result.request_meta)
             step_failure_hist[failure_class] += 1
+            failure_stage = str(failure_details.get("failure_stage") or "").strip()
+            if failure_stage:
+                step_failure_stage_hist[failure_stage] += 1
             if step_first_failure_context is None:
                 step_first_failure_context = {
                     "partition_id": partition_id,
                     "failure_class": failure_class,
+                    "failure_stage": failure_stage or None,
                     "reason": failure_reason,
                     "artifact_name": artifact_name,
                     "item_key": item_key,
@@ -12522,6 +13043,7 @@ def execute_step_for_partitions(
         "sidefill_filled_artifacts": sorted(step_sidefill_filled_artifacts.keys()),
         "schema_id_normalizations": step_schema_id_normalizations,
         "failure_histogram": failure_histogram,
+        "failure_stage_histogram": dict(sorted(step_failure_stage_hist.items())),
         "first_failure_context": (
             dict(step_first_failure_context)
             if isinstance(step_first_failure_context, dict)
@@ -12532,6 +13054,8 @@ def execute_step_for_partitions(
         "soft_gate_n_total": int(step_soft_gate_n_total),
         "soft_gate_fail_rate": float(step_soft_gate_fail_rate),
         "soft_gate_failed_partitions": int(step_soft_gate_failed_partitions),
+        "retry_extra_cost_estimate_usd": round(step_retry_extra_cost_usd, 6),
+        "retry_hotspot_count": len(step_retry_hotspots),
         "final_contract_status": (
             "pass"
             if step_contract_status_hist and not step_contract_status_hist.get("fail")
@@ -12550,6 +13074,22 @@ def execute_step_for_partitions(
         step_id=step_id,
         failure_histogram=failure_histogram,
         first_failure=step_first_failure_context,
+    )
+    write_retry_cost_report_snapshot(
+        phase_dir.parent,
+        phase=phase,
+        step_id=step_id,
+        report={
+            "retry_count": step_retry_count,
+            "estimated_extra_cost_usd": round(step_retry_extra_cost_usd, 6),
+            "abnormal_partitions": sorted(
+                step_retry_hotspots,
+                key=lambda row: (
+                    -float(row.get("estimated_retry_extra_cost_usd", 0.0) or 0.0),
+                    str(row.get("partition_id") or ""),
+                ),
+            ),
+        },
     )
 
     # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: run comparison lane if enabled
@@ -12654,7 +13194,11 @@ def _run_phase_inner(
         prompts = filtered_prompts
     if not prompts:
         raise RuntimeError(f"No prompts found for phase {phase} in {prompt_root()}/")
-    prompt_report = _prompt_hash_report_for_phase(phase, prompts)
+    prompt_report = _prompt_hash_report_for_phase(
+        phase,
+        prompts,
+        required_step_ids={spec.step_id for spec in prompts},
+    )
     if prompt_report["blocked_promptset"]:
         update_run_manifest_promptset_block(phase_dir.parent, phase, prompt_report)
         write_promptset_blocked_marker(phase, phase_dir, prompt_report)
@@ -12718,6 +13262,21 @@ def _run_phase_inner(
             "partitions": partitions,
         },
     )
+    cost_preview = build_phase_cost_preview(phase, cfg, prompts, partitions)
+    write_json(phase_dir / "inputs" / "COST_PREVIEW.json", cost_preview)
+    blindspots = _summarize_inventory_blindspots(inventory)
+    for warning in blindspots.get("warnings", []):
+        logger.warning("INPUT_COVERAGE_WARNING phase=%s %s", phase, warning)
+    if cfg.dry_run:
+        write_phase_dry_run_checklist(
+            phase_dir=phase_dir,
+            phase=phase,
+            cfg=cfg,
+            prompts=prompts,
+            inventory=inventory,
+            partitions=partitions,
+            cost_preview=cost_preview,
+        )
     inventory_path = phase_dir / "inputs" / "INVENTORY.json"
     partitions_path = phase_dir / "inputs" / "PARTITIONS.json"
     inventory_meta = _phase_input_stat(inventory_path)
@@ -13336,6 +13895,408 @@ def print_run_order(phases: List[str]) -> int:
     return 0
 
 
+def _pricing_preview_record(
+    cfg: RunnerConfig,
+    provider: str,
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+) -> Dict[str, Any]:
+    if getattr(cfg, "ledger", None) is not None:
+        return cfg.ledger.price_usage(
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            provider=provider,
+            model_id=model_id,
+        )
+    pricing_key = (
+        f"{str(provider).strip().lower()}/{str(model_id).strip().lower()}"
+        if provider and model_id
+        else "unknown"
+    )
+    estimated_cost_usd = (
+        (max(0, int(input_tokens)) / 1_000_000.0) * BASELINE_INPUT_COST_PER_1M_USD
+        + (max(0, int(output_tokens)) / 1_000_000.0) * BASELINE_OUTPUT_COST_PER_1M_USD
+    )
+    return {
+        "provider": str(provider or "").strip().lower(),
+        "model_id": str(model_id or "").strip(),
+        "pricing_key": pricing_key,
+        "pricing_source": f"unknown_model:{UNKNOWN_MODEL_POLICY}",
+        "pricing_version": PRICING_VERSION,
+        "unknown_model": True,
+        "input_cost_per_1m_usd": BASELINE_INPUT_COST_PER_1M_USD,
+        "output_cost_per_1m_usd": BASELINE_OUTPUT_COST_PER_1M_USD,
+        "input_tokens": max(0, int(input_tokens)),
+        "output_tokens": max(0, int(output_tokens)),
+        "estimated_cost_usd": estimated_cost_usd,
+    }
+
+
+def _summarize_inventory_blindspots(inventory: List[Dict[str, Any]]) -> Dict[str, Any]:
+    unsupported_counts: Counter[str] = Counter()
+    weak_language_counts: Counter[str] = Counter()
+    for item in inventory:
+        path_value = str(item.get("path") or "")
+        if not path_value:
+            continue
+        suffix = Path(path_value).suffix.lower()
+        if suffix in UNSUPPORTED_INPUT_SUFFIX_LABELS:
+            unsupported_counts[suffix] += 1
+        if suffix in WEAK_LANGUAGE_SUFFIX_LABELS:
+            weak_language_counts[suffix] += 1
+    warnings: List[str] = []
+    if unsupported_counts:
+        summary = ", ".join(
+            f"{suffix}={count}" for suffix, count in sorted(unsupported_counts.items())
+        )
+        warnings.append(
+            "Repo inventory includes inputs with weak or unsupported extraction coverage: "
+            f"{summary}."
+        )
+    if weak_language_counts:
+        summary = ", ".join(
+            f"{suffix}={count}" for suffix, count in sorted(weak_language_counts.items())
+        )
+        warnings.append(
+            "Language coverage is weaker for some inventory segments in this run: "
+            f"{summary}."
+        )
+    return {
+        "unsupported_inputs": [
+            {
+                "suffix": suffix,
+                "label": UNSUPPORTED_INPUT_SUFFIX_LABELS.get(suffix, suffix),
+                "count": count,
+            }
+            for suffix, count in sorted(unsupported_counts.items())
+        ],
+        "weak_language_inputs": [
+            {
+                "suffix": suffix,
+                "label": WEAK_LANGUAGE_SUFFIX_LABELS.get(suffix, suffix),
+                "count": count,
+            }
+            for suffix, count in sorted(weak_language_counts.items())
+        ],
+        "warnings": warnings,
+    }
+
+
+def _prescan_guidance_payload(phase: str, cfg: RunnerConfig) -> Dict[str, Any]:
+    helps = phase in CODE_HEAVY_PHASES or phase in DOCS_GOVERNANCE_PHASES
+    return {
+        "phase": phase,
+        "configured_prescan_dir": getattr(cfg, "prescan_dir", None),
+        "purpose": (
+            "Prescan can reorder partition paths and attach context briefs before prompt execution."
+        ),
+        "recommended_when": (
+            "Helpful for larger or noisier repos where better file ordering can reduce wasted context."
+            if helps
+            else "Optional; it can still add route hints, but it is not required for small validation probes."
+        ),
+        "safe_to_skip_when": (
+            "Safe to skip for first dry-runs, cheap validator probes, or small repos where manual review is already straightforward."
+        ),
+        "cost_impact": (
+            "Prescan adds its own scan/analysis work and can influence partitioning; treat it as extra preflight cost rather than a free optimization."
+        ),
+    }
+
+
+def _preview_partition_usage(
+    *,
+    phase: str,
+    step_id: str,
+    prompt_text: str,
+    output_artifacts: Tuple[str, ...],
+    provider: str,
+    model_id: str,
+    partition: Dict[str, Any],
+    cfg: RunnerConfig,
+    max_files: int,
+) -> Dict[str, int]:
+    output_instructions = build_output_envelope_instructions(output_artifacts)
+    context_brief = str(partition.get("context_brief") or "")
+    brief_section = f"\n{context_brief}\n" if context_brief else ""
+    prompt_prefix = (
+        "Extract from the files below.\n"
+        f"{output_instructions}\n"
+        f"{brief_section}"
+        "\nFILES:\n"
+    )
+    reserved_chars = len(prompt_prefix)
+    current_budget = max(cfg.max_chars - reserved_chars, 2048)
+    partition_paths = [str(path) for path in partition.get("paths", [])]
+    if phase == "D":
+        partition_paths, _ = _apply_file_cap(
+            step_id=step_id,
+            partition_id=str(partition.get("id") or ""),
+            files=partition_paths,
+            cfg=cfg,
+            root=REPO_ROOT,
+        )
+
+    payload_bytes = 0
+    user_prompt = ""
+    while True:
+        context, _context_stats = build_partition_context(
+            phase=phase,
+            partition_paths=partition_paths,
+            file_truncate_chars=cfg.file_truncate_chars,
+            home_scan_mode=cfg.home_scan_mode,
+            max_files=max_files,
+            max_chars=current_budget,
+            router=cfg.router,
+        )
+        user_prompt = f"{prompt_prefix}{context}"
+        payload = build_chat_payload(
+            provider,
+            model_id,
+            prompt_text,
+            user_prompt,
+            force_json_output=(provider == "gemini"),
+        )
+        payload_bytes = measure_payload_bytes_from_body(serialize_payload_body(payload))
+        if payload_bytes <= cfg.max_request_bytes or current_budget <= 1024:
+            break
+        next_budget = max(1024, int(current_budget * 0.7))
+        if next_budget == current_budget:
+            next_budget = current_budget - 1
+        current_budget = max(next_budget, 1024)
+
+    return {
+        "input_tokens": _estimate_text_tokens(prompt_text, user_prompt),
+        "payload_bytes": payload_bytes,
+    }
+
+
+def build_phase_cost_preview(
+    phase: str,
+    cfg: RunnerConfig,
+    prompts: Sequence[PromptSpec],
+    partitions: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    by_step: List[Dict[str, Any]] = []
+    by_model: Dict[str, Dict[str, Any]] = {}
+    warnings: List[str] = []
+    total_input_tokens = 0
+    total_output_tokens = 0
+    total_cost_usd = 0.0
+    unknown_model = False
+    route_override_steps: List[str] = []
+    input_estimation_mode = "runtime_prompt_projection_v1"
+    output_estimation_mode = "response_text_ratio_v1"
+    max_preview_payload_bytes = 0
+
+    for spec in prompts:
+        route = resolve_effective_step_route(
+            phase,
+            spec.step_id,
+            cfg,
+            tier_override=spec.tier_override,
+            step_contract=spec.contract,
+        )
+        reason = str(route.get("reason") or "")
+        if reason.startswith("contract_lane") or reason.startswith("env_"):
+            route_override_steps.append(spec.step_id)
+        prompt_text = safe_read(spec.prompt_path)
+        partition_input_tokens = 0
+        partition_output_tokens = 0
+        max_files = max_files_for_phase(phase, cfg)
+        for partition in partitions:
+            usage = _preview_partition_usage(
+                phase=phase,
+                step_id=spec.step_id,
+                prompt_text=prompt_text,
+                output_artifacts=spec.output_artifacts,
+                provider=str(route.get("provider") or ""),
+                model_id=str(route.get("model_id") or ""),
+                partition=partition,
+                cfg=cfg,
+                max_files=max_files,
+            )
+            input_tokens = max(128, int(usage.get("input_tokens", 0) or 0))
+            output_tokens = _project_preview_output_tokens(
+                input_tokens,
+                step_contract=spec.contract,
+            )
+            partition_input_tokens += input_tokens
+            partition_output_tokens += output_tokens
+            max_preview_payload_bytes = max(
+                max_preview_payload_bytes,
+                int(usage.get("payload_bytes", 0) or 0),
+            )
+        priced = _pricing_preview_record(
+            cfg,
+            str(route.get("provider") or ""),
+            str(route.get("model_id") or ""),
+            partition_input_tokens,
+            partition_output_tokens,
+        )
+        total_input_tokens += partition_input_tokens
+        total_output_tokens += partition_output_tokens
+        total_cost_usd += float(priced.get("estimated_cost_usd", 0.0) or 0.0)
+        unknown_model = bool(unknown_model or priced.get("unknown_model"))
+        by_step.append(
+            {
+                "step_id": spec.step_id,
+                "step_tier": route.get("step_tier"),
+                "routing_reason": reason,
+                "provider": route.get("provider"),
+                "model_id": route.get("model_id"),
+                "partition_count": len(partitions),
+                "estimated_input_tokens": partition_input_tokens,
+                "estimated_output_tokens": partition_output_tokens,
+                "estimated_cost_usd": round(
+                    float(priced.get("estimated_cost_usd", 0.0) or 0.0), 6
+                ),
+                "input_estimation_mode": input_estimation_mode,
+                "output_estimation_mode": (
+                    "json_managed_ratio_2pct_v1"
+                    if is_json_managed_step(spec.contract)
+                    else output_estimation_mode
+                ),
+                "pricing_source": priced.get("pricing_source"),
+            }
+        )
+        model_key = str(priced.get("pricing_key") or "unknown")
+        model_row = by_model.setdefault(
+            model_key,
+            {
+                "provider": priced.get("provider"),
+                "model_id": priced.get("model_id"),
+                "pricing_source": priced.get("pricing_source"),
+                "unknown_model": bool(priced.get("unknown_model")),
+                "estimated_input_tokens": 0,
+                "estimated_output_tokens": 0,
+                "estimated_cost_usd": 0.0,
+            },
+        )
+        model_row["estimated_input_tokens"] += partition_input_tokens
+        model_row["estimated_output_tokens"] += partition_output_tokens
+        model_row["estimated_cost_usd"] += float(
+            priced.get("estimated_cost_usd", 0.0) or 0.0
+        )
+
+    if route_override_steps:
+        warnings.append(
+            "Step-level routing overrides are active for this phase; top-level policy alone does not describe the full spend path."
+        )
+    if unknown_model:
+        warnings.append(
+            "At least one preview row is using fallback baseline pricing rather than a verified model-specific rate."
+        )
+    if any(is_json_managed_step(spec.contract) for spec in prompts):
+        warnings.append(
+            "JSON-managed steps use a compressed output-token preview heuristic; treat this preview as planning guidance, not ledger authority."
+        )
+    if getattr(cfg, "compare_mode", None):
+        warnings.append(
+            "Comparison lane is enabled and can add extra spend beyond the canonical route preview."
+        )
+    confidence = "medium"
+    if unknown_model or route_override_steps or not partitions:
+        confidence = "low"
+    if phase in PREMIUM_SYNTHESIS_PHASES:
+        warnings.append(
+            "This phase is premium-risk: synthesis routes can cost materially more than inventory phases."
+        )
+    return {
+        "generated_at": now_iso(),
+        "phase": phase,
+        "partition_count": len(partitions),
+        "step_count": len(prompts),
+        "pricing_version": PRICING_VERSION,
+        "routing_policy": cfg.routing_policy,
+        "confidence": confidence,
+        "route_override_steps": sorted(route_override_steps, key=step_sort_key),
+        "input_estimation_mode": input_estimation_mode,
+        "output_estimation_mode": output_estimation_mode,
+        "preview_authority": "heuristic_non_authoritative",
+        "ledger_authority": "runtime_provider_usage_when_available",
+        "max_preview_request_payload_bytes": max_preview_payload_bytes,
+        "estimated_input_tokens": total_input_tokens,
+        "estimated_output_tokens": total_output_tokens,
+        "estimated_cost_usd": round(total_cost_usd, 6),
+        "steps": sorted(by_step, key=lambda row: step_sort_key(str(row["step_id"]))),
+        "models": {
+            key: {
+                **value,
+                "estimated_cost_usd": round(
+                    float(value.get("estimated_cost_usd", 0.0) or 0.0), 6
+                ),
+            }
+            for key, value in sorted(by_model.items())
+        },
+        "warnings": warnings,
+    }
+
+
+def write_phase_dry_run_checklist(
+    *,
+    phase_dir: Path,
+    phase: str,
+    cfg: RunnerConfig,
+    prompts: Sequence[PromptSpec],
+    inventory: List[Dict[str, Any]],
+    partitions: List[Dict[str, Any]],
+    cost_preview: Dict[str, Any],
+) -> Dict[str, Any]:
+    blindspots = _summarize_inventory_blindspots(inventory)
+    payload = {
+        "generated_at": now_iso(),
+        "phase": phase,
+        "mode": "dry_run",
+        "run_root": str(phase_dir.parent.resolve()),
+        "phase_dir": str(phase_dir.resolve()),
+        "resolved_inputs": {
+            "inventory_count": len(inventory),
+            "inventory_file": str((phase_dir / "inputs" / "INVENTORY.json").resolve()),
+            "partitions_file": str((phase_dir / "inputs" / "PARTITIONS.json").resolve()),
+            "partition_count": len(partitions),
+            "sample_paths": [str(item.get("path")) for item in inventory[:10]],
+        },
+        "routing": {
+            "routing_policy": cfg.routing_policy,
+            "compare_mode": getattr(cfg, "compare_mode", None),
+            "steps": [
+                {
+                    "step_id": spec.step_id,
+                    "route": resolve_effective_step_route(
+                        phase,
+                        spec.step_id,
+                        cfg,
+                        tier_override=spec.tier_override,
+                        step_contract=spec.contract,
+                    ),
+                }
+                for spec in prompts
+            ],
+        },
+        "output_expectations": {
+            "run_root": str(phase_dir.parent.resolve()),
+            "phase_input_dir": str((phase_dir / "inputs").resolve()),
+            "phase_raw_dir": str((phase_dir / "raw").resolve()),
+            "phase_norm_dir": str((phase_dir / "norm").resolve()),
+            "phase_qa_dir": str((phase_dir / "qa").resolve()),
+        },
+        "estimated_cost": cost_preview,
+        "dependency_expectations": {
+            "required_phases": list(PHASE_REQUIRED_DEPENDENCIES.get(phase, [])),
+            "optional_phases": list(PHASE_OPTIONAL_DEPENDENCIES.get(phase, [])),
+        },
+        "prescan_guidance": _prescan_guidance_payload(phase, cfg),
+        "input_blindspots": blindspots,
+        "dependency_notes": [
+            "Dry-run stays non-live; it resolves inputs, partitions, routes, and artifact destinations without provider execution."
+        ],
+    }
+    write_json(phase_dir / "inputs" / "DRY_RUN_CHECKLIST.json", payload)
+    return payload
+
+
 def _phase_cost_profile(phase: str) -> Dict[str, Any]:
     provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
     return {
@@ -13344,6 +14305,36 @@ def _phase_cost_profile(phase: str) -> Dict[str, Any]:
         "model": f"{provider}/{model_id}" if provider and model_id else "",
         "api_key_env": api_key_env,
     }
+
+
+def print_routing_guide() -> int:
+    payload: Dict[str, Any] = {
+        "generated_at": now_iso(),
+        "routing_policy_version": ROUTING_POLICY_VERSION,
+        "guide": {},
+    }
+    for policy, guide in sorted(ROUTING_POLICY_GUIDE.items()):
+        premium_risk_phases = sorted(
+            phase for phase in PREMIUM_SYNTHESIS_PHASES if phase in PHASES
+        )
+        payload["guide"][policy] = {
+            **guide,
+            "premium_risk_phases": premium_risk_phases,
+            "override_warning": (
+                "Strict JSON-managed steps and other contract-driven routes can override the top-level policy."
+            ),
+        }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+def print_prescan_guide() -> int:
+    payload = {
+        "generated_at": now_iso(),
+        "guide": _prescan_guidance_payload("ALL", RunnerConfig.__new__(RunnerConfig)),
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
 
 
 def print_phase_catalog(phases: Optional[List[str]] = None) -> int:
@@ -13921,6 +14912,15 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
                 "sidefill_filled_artifacts": list(
                     row.get("sidefill_filled_artifacts", []) or []
                 ),
+                "failure_stage_histogram": dict(
+                    sorted(
+                        (
+                            row.get("failure_stage_histogram", {})
+                            if isinstance(row.get("failure_stage_histogram"), dict)
+                            else {}
+                        ).items()
+                    )
+                ),
                 "schema_id_normalizations": int(
                     row.get("schema_id_normalizations", 0) or 0
                 ),
@@ -13934,6 +14934,9 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
         "dry_run": 0,
         "blocked_promptset": 1 if blocked_promptset else 0,
         "prompt_does_not_declare_it": 0,
+        "pre_model_execution": 0,
+        "model_execution": 0,
+        "post_model_output": 0,
         "unknown": 0,
     }
     for step_id, artifacts in expected_outputs.items():
@@ -13962,6 +14965,12 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
             if isinstance(step_row, dict)
             else 0
         )
+        blocked_by_stage = (
+            step_row.get("artifact_blocked_by_failure_stage", {})
+            if isinstance(step_row, dict)
+            and isinstance(step_row.get("artifact_blocked_by_failure_stage"), dict)
+            else {}
+        )
 
         for artifact_name in artifacts:
             if not _expected_artifact_present(norm_dir, artifact_name):
@@ -13970,6 +14979,15 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
                     reason = "prompt_does_not_declare_it"
                 elif step_dry_run > 0:
                     reason = "dry_run"
+                elif any(
+                    artifact_name in artifact_list
+                    for artifact_list in blocked_by_stage.values()
+                    if isinstance(artifact_list, list)
+                ):
+                    for stage_name, artifact_list in blocked_by_stage.items():
+                        if artifact_name in artifact_list:
+                            reason = str(stage_name or "execution_failure")
+                            break
                 elif step_failed > 0:
                     reason = "failed"
                 elif step_skipped > 0:
@@ -14187,9 +15205,12 @@ def print_config(
     phases: List[str],
     run_context: RunContext,
 ) -> None:
+    layout = current_output_layout(root)
     config_payload = {
         "run_id": run_id,
-        "run_root": str(root.resolve()),
+        "repo_root": str(root.resolve()),
+        "artifact_root": str(layout.extraction_root.resolve()),
+        "run_root": str(dirs["root"].resolve()),
         "git_sha": get_git_sha(root),
         "runner_sha256": sha256_text(RUNNER_SCRIPT),
         "python_version": platform.python_version(),
@@ -14197,6 +15218,11 @@ def print_config(
         "phases": phases,
         "cli": {
             "phase_argument": args.phase,
+            "preset": getattr(args, "preset", None),
+            "preset_stage": getattr(args, "preset_stage", None),
+            "skip_pre_live_validator": bool(
+                getattr(args, "skip_pre_live_validator", False)
+            ),
             "verify_phase_output": args.verify_phase_output,
             "doctor": args.doctor,
             "doctor_auth": args.doctor_auth,
@@ -14209,13 +15235,16 @@ def print_config(
             "print_promptpack": args.print_promptpack,
             "print_run_order": args.print_run_order,
             "print_phase_routing": args.print_phase_routing,
+            "print_routing_guide": bool(getattr(args, "print_routing_guide", False)),
+            "print_prescan_guide": bool(getattr(args, "print_prescan_guide", False)),
+            "print_cost_preview": bool(getattr(args, "print_cost_preview", False)),
             "print_phase_prompts": args.print_phase_prompts,
             "print_config": args.print_config,
             "run_id_override": args.run_id,
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({layout.latest_run_file})",
                 "generated(new timestamp run id)",
             ],
             "dry_run": args.dry_run,
@@ -14269,6 +15298,14 @@ def print_config(
             "dpmx_live_ok": os.getenv(DPMX_LIVE_OK_ENV, ""),
             "debug_phase_inputs": args.debug_phase_inputs,
             "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
+            "output_root": getattr(args, "output_root", None),
+        },
+        "output_layout": {
+            "artifact_root": str(layout.extraction_root.resolve()),
+            "runs_root": str(layout.runs_root.resolve()),
+            "latest_run_id_file": str(layout.latest_run_file.resolve()),
+            "doctor_root": str(layout.doctor_root.resolve()),
+            "path_convention": "v5 runtime artifacts live under the active output layout root, not the legacy v3 path.",
         },
         "limits": {
             "max_files_docs": cfg.max_files_docs,
@@ -14337,7 +15374,7 @@ def update_proof_pack(
     }
     proof["finished_at"] = phase_finished_at
     proof["updated_at"] = now_iso()
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     auth_doctor = doctor_dir / "AUTH_DOCTOR.json"
     full_doctor = doctor_dir / "DOCTOR_FULL.json"
     routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
@@ -16214,6 +17251,109 @@ def run_sync_scopes() -> None:
         logger.error("Synchronization failed: %s", exc)
 
 
+def _argv_has_flag(argv: Sequence[str], *flags: str) -> bool:
+    return any(flag in argv for flag in flags)
+
+
+def first_live_phase_sequence(stage: str) -> List[str]:
+    normalized = str(stage or "initial").strip().lower() or "initial"
+    if normalized == "post-review":
+        return list(FIRST_LIVE_POST_REVIEW_PHASES)
+    if normalized == "full":
+        return list(FIRST_LIVE_INITIAL_PHASES + FIRST_LIVE_POST_REVIEW_PHASES)
+    return list(FIRST_LIVE_INITIAL_PHASES)
+
+
+def apply_first_live_preset(
+    args: argparse.Namespace,
+    raw_argv: Sequence[str],
+) -> Tuple[List[str], Dict[str, Any]]:
+    stage = str(getattr(args, "preset_stage", "initial") or "initial").strip().lower()
+    selected_phases = first_live_phase_sequence(stage)
+    applied_defaults: Dict[str, Any] = {}
+    notes = [
+        "Validator is step zero for live preset execution unless --skip-pre-live-validator is set.",
+        "The initial stage stops after A/H/D/C so operators can review artifacts before synthesis phases.",
+        "Strict step-level routes can still override the top-level policy preview for some prompts.",
+    ]
+    if not _argv_has_flag(raw_argv, "--phase"):
+        applied_defaults["phase_sequence"] = list(selected_phases)
+    if not _argv_has_flag(raw_argv, "--routing-policy"):
+        args.routing_policy = "cost"
+        applied_defaults["routing_policy"] = args.routing_policy
+    if not _argv_has_flag(raw_argv, "--max-cost-usd"):
+        args.max_cost_usd = FIRST_LIVE_PRESET_DEFAULT_CAP_USD
+        applied_defaults["max_cost_usd"] = args.max_cost_usd
+    if not _argv_has_flag(raw_argv, "--partition-workers"):
+        args.partition_workers = 1
+        applied_defaults["partition_workers"] = args.partition_workers
+    if not _argv_has_flag(raw_argv, "--batch-mode", "--no-batch"):
+        args.batch_mode = False
+        applied_defaults["batch_mode"] = args.batch_mode
+    if not _argv_has_flag(raw_argv, "--batch-wait-timeout-seconds"):
+        args.batch_wait_timeout_seconds = INTERACTIVE_SAFE_BATCH_WAIT_SECONDS
+        applied_defaults["batch_wait_timeout_seconds"] = (
+            args.batch_wait_timeout_seconds
+        )
+    preview = {
+        "preset": FIRST_LIVE_PRESET_NAME,
+        "stage": stage,
+        "selected_phases": list(selected_phases),
+        "full_recommended_sequence": list(FIRST_LIVE_INITIAL_PHASES)
+        + ["CHECKPOINT_REVIEW"]
+        + list(FIRST_LIVE_POST_REVIEW_PHASES),
+        "applied_defaults": applied_defaults,
+        "compare_mode": getattr(args, "compare_mode", None),
+        "output_root": getattr(args, "output_root", None),
+        "notes": notes,
+    }
+    return selected_phases, preview
+
+
+def print_preset_preview(preview: Dict[str, Any]) -> None:
+    print(
+        "FIRST_LIVE_PRESET " + json.dumps(preview, sort_keys=True),
+        file=sys.stderr,
+    )
+
+
+def run_pre_live_validator(
+    root: Path,
+    run_root: Optional[Path] = None,
+    *,
+    target_policy: Optional[str] = None,
+    target_phases: Optional[Sequence[str]] = None,
+    allow_online_preflight: bool = False,
+) -> Tuple[bool, Dict[str, Any]]:
+    validator_path = EXTRACTOR_SERVICE_DIR / "validate_pre_live_gate_v25.py"
+    args = [sys.executable, str(validator_path)]
+    if target_policy:
+        args.extend(["--target-policy", str(target_policy)])
+    if target_phases:
+        normalized_phases = [str(phase).strip().upper() for phase in target_phases if str(phase).strip()]
+        if normalized_phases:
+            args.extend(["--target-phases", *normalized_phases])
+    if allow_online_preflight:
+        args.append("--allow-online-preflight")
+    result = subprocess.run(
+        args,
+        cwd=str(root),
+        text=True,
+        capture_output=True,
+    )
+    payload = {
+        "generated_at": now_iso(),
+        "validator_path": str(validator_path.resolve()),
+        "exit_code": int(result.returncode),
+        "status": "pass" if result.returncode == 0 else "fail",
+        "stdout": result.stdout[-4000:],
+        "stderr": result.stderr[-4000:],
+    }
+    if run_root is not None:
+        write_json(run_root / "PRELIVE_VALIDATOR_RESULT.json", payload)
+    return result.returncode == 0, payload
+
+
 # --- Master Orchestrator ---
 
 
@@ -16222,7 +17362,7 @@ def main() -> None:
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     except (AttributeError, ValueError):
         pass
-    parser = argparse.ArgumentParser(
+    parser = OperatorArgumentParser(
         "Master Extraction Runner",
         description=(
             "Repo Truth Extractor v5 runtime. Use --dry-run for preview. "
@@ -16235,6 +17375,29 @@ def main() -> None:
         ),
     )
     parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
+    parser.add_argument(
+        "--preset",
+        choices=[FIRST_LIVE_PRESET_NAME],
+        default=None,
+        help="Apply a staged operator-safe rollout preset.",
+    )
+    parser.add_argument(
+        "--preset-stage",
+        choices=["initial", "post-review", "full"],
+        default="initial",
+        help="Preset stage to execute. 'initial' runs A/H/D/C, 'post-review' runs R/X/T/Z/S.",
+    )
+    parser.add_argument(
+        "--skip-pre-live-validator",
+        action="store_true",
+        help="Skip the validator-first gate for live preset execution.",
+    )
+    parser.add_argument(
+        "--output-root",
+        type=str,
+        default=None,
+        help="Override the v5 artifact root for this run (for isolated experiments or CI sandboxes).",
+    )
     parser.add_argument("--sync", action="store_true", help="Synchronize prompt source scopes with modern architecture.")
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
@@ -16333,7 +17496,15 @@ def main() -> None:
         default="auto",
     )
     parser.add_argument("--batch-poll-seconds", type=int, default=30)
-    parser.add_argument("--batch-wait-timeout-seconds", type=int, default=86400)
+    parser.add_argument(
+        "--batch-wait-timeout-seconds",
+        type=int,
+        default=86400,
+        help=(
+            "Batch polling timeout in seconds. 86400 is the legacy default and can leave long-running waits behind; "
+            f"{INTERACTIVE_SAFE_BATCH_WAIT_SECONDS} is the safer interactive value."
+        ),
+    )
     parser.add_argument("--batch-max-requests-per-job", type=int, default=2000)
     parser.add_argument(
         "--batch-retrieve",
@@ -16436,6 +17607,21 @@ def main() -> None:
     parser.add_argument("--pretty", action="store_true")
     parser.add_argument("--print-promptpack", action="store_true")
     parser.add_argument(
+        "--print-routing-guide",
+        action="store_true",
+        help="Print routing policy intent, cost tendency, and override caveats.",
+    )
+    parser.add_argument(
+        "--print-prescan-guide",
+        action="store_true",
+        help="Print prescan usage guidance, including when it helps and when it is safe to skip.",
+    )
+    parser.add_argument(
+        "--print-cost-preview",
+        action="store_true",
+        help="During dry-run, emit the per-phase cost preview derived from the resolved inventory and routes.",
+    )
+    parser.add_argument(
         "--list-phases",
         action="store_true",
         help="Print phase code, name, purpose, dependencies, and default route summary as JSON.",
@@ -16509,6 +17695,7 @@ def main() -> None:
         default=None,
         help="Extraction profile name (e.g., P09_INTEGRATION_SURFACE_V1). Filters phases and overrides budgets.",
     )
+    raw_argv = list(sys.argv[1:])
     args = parser.parse_args()
     if args.execute:
         args.dry_run = False
@@ -16532,6 +17719,10 @@ def main() -> None:
     args.batch_max_requests_per_job = max(1, int(args.batch_max_requests_per_job))
     if args.batch_submit_only:
         args.batch_mode = True
+    preset_phase_sequence: Optional[List[str]] = None
+    preset_preview: Optional[Dict[str, Any]] = None
+    if args.preset == FIRST_LIVE_PRESET_NAME:
+        preset_phase_sequence, preset_preview = apply_first_live_preset(args, raw_argv)
     
     router = None
     if args.prescan:
@@ -16559,6 +17750,10 @@ def main() -> None:
                     f"--compare-steps {sorted(_ineligible)} are not eligible for comparison. "
                     f"Eligible steps: {sorted(COMPARISON_ELIGIBLE_STEPS)}"
                 )
+    if args.print_routing_guide:
+        sys.exit(print_routing_guide())
+    if args.print_prescan_guide:
+        sys.exit(print_prescan_guide())
     if args.list_phases:
         sys.exit(print_phase_catalog())
 
@@ -16587,18 +17782,22 @@ def main() -> None:
         or args.list_phases
         or args.print_run_order
         or args.print_phase_routing
+        or args.print_routing_guide
+        or args.print_prescan_guide
         or args.tail_run_log
         or args.show_provider_usage
         or args.print_phase_prompts
         or args.promptgen_scan
         or args.gemini_list_models
+        or args.preset
     ):
         parser.error(
             "--phase is required unless using --profile, --verify-phase-output, --print-config, "
             "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
             "--status, --status-json, --print-promptpack, --list-phases, --print-run-order, "
-            "--print-phase-routing, --tail-run-log, --show-provider-usage, "
-            "--print-phase-prompts, or --gemini-list-models."
+            "--print-phase-routing, --print-routing-guide, --print-prescan-guide, "
+            "--tail-run-log, --show-provider-usage, --print-phase-prompts, "
+            "--gemini-list-models, or --preset."
         )
     if args.watch is not None and args.watch <= 0:
         parser.error("--watch must be > 0 when provided.")
@@ -16610,8 +17809,18 @@ def main() -> None:
         parser.error("--batch-watch requires a concrete phase, not ALL.")
     if args.batch_watch and args.batch_submit_only:
         parser.error("--batch-watch cannot be combined with --batch-submit-only.")
+    if args.print_cost_preview and not args.dry_run:
+        parser.error("--print-cost-preview requires --dry-run.")
+    if args.print_cost_preview and not (args.phase or args.preset):
+        parser.error("--print-cost-preview requires --phase or --preset.")
 
     root = Path.cwd()
+    configure_output_layout(root, args.output_root)
+    if args.batch_mode and args.execute and args.batch_wait_timeout_seconds >= 86400:
+        logger.warning(
+            "Batch wait timeout is using the 86400-second legacy default; this increases zombie-session risk. "
+            "Use --batch-wait-timeout-seconds 1800 for interactive runs."
+        )
     s_prompts_mode = (
         str(args.s_prompts or os.getenv(S_PROMPTS_MODE_ENV_VAR, "")).strip().lower()
         or S_PROMPTS_AUTO
@@ -16834,10 +18043,17 @@ def main() -> None:
         logger.error("Setup failed: %s", exc)
         sys.exit(1)
     phase_contract_map_path: Optional[Path] = None
-    try:
-        phase_contract_map_path = write_phase_contract_map(dirs["root"], run_id)
-    except Exception as exc:
-        logger.warning("Failed to write phase contract map: %s", exc)
+    contract_map_print_only_mode = bool(
+        args.print_config
+        or args.print_run_order
+        or args.print_phase_routing
+        or args.print_phase_prompts is not None
+    )
+    if not contract_map_print_only_mode:
+        try:
+            phase_contract_map_path = write_phase_contract_map(dirs["root"], run_id)
+        except Exception as exc:
+            logger.warning("Failed to write phase contract map: %s", exc)
 
     ui = UI(
         UiConfig(
@@ -17031,6 +18247,8 @@ def main() -> None:
                 args.file_truncate_chars = min(_truncate_chars)
 
     phase_sequence = resolve_phase_list(args.phase)
+    if not phase_sequence and preset_phase_sequence:
+        phase_sequence = list(preset_phase_sequence)
     # If profile specifies enabled_phases, filter the phase sequence
     if _active_profile:
         _enabled = _active_profile.get("phase_policy", {}).get("enabled_phases")
@@ -17044,6 +18262,9 @@ def main() -> None:
             # No explicit --phase, but profile has enabled_phases
             phase_sequence = [p for p in PHASES if p in _enabled]
             logger.info("Profile restricting to phases: %s", ", ".join(phase_sequence))
+    if preset_preview is not None:
+        preset_preview["selected_phases"] = list(phase_sequence)
+        print_preset_preview(preset_preview)
 
     prompt_report = write_run_manifest(
         root, dirs, run_id, args, run_context, phase_sequence or PHASES
@@ -17145,6 +18366,30 @@ def main() -> None:
                 "Live execution requires explicit consent. Use --dry-run for preview, "
                 f"or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
             )
+    if (
+        args.preset == FIRST_LIVE_PRESET_NAME
+        and args.execute
+        and phase_sequence
+        and not args.skip_pre_live_validator
+    ):
+        validator_ok, validator_payload = run_pre_live_validator(
+            root,
+            dirs["root"],
+            target_policy=args.routing_policy,
+            target_phases=phase_sequence,
+            allow_online_preflight=True,
+        )
+        if not validator_ok:
+            parser.error(
+                "Validator-first preset flow blocked live execution. "
+                "Run the validator, fix the reported pre-live issues, and retry. "
+                "Use --skip-pre-live-validator only if you have separately reviewed the gate output."
+            )
+        logger.info(
+            "PRELIVE_VALIDATOR_OK exit_code=%s validator=%s",
+            validator_payload.get("exit_code"),
+            validator_payload.get("validator_path"),
+        )
 
     # TP-WEBHOOKS-0002: async submit / finalize dispatch (Phase R only)
     if args.async_provider == "openai" and not args.finalize:
@@ -17225,7 +18470,7 @@ def main() -> None:
         if not ok:
             logger.error(
                 "Provider preflight failed before phase ALL. failed_providers=%s. See "
-                f"{(V5_DOCTOR_ROOT / 'PROVIDER_PREFLIGHT.json').as_posix()}",
+                f"{(current_doctor_root(root) / 'PROVIDER_PREFLIGHT.json').as_posix()}",
                 ",".join(payload.get("failed_providers", [])),
             )
             sys.exit(1)
@@ -17382,6 +18627,31 @@ def main() -> None:
     )
     if ui is not None:
         ui.status_table(final_status_payload, clear=False)
+    if args.print_cost_preview:
+        preview_payload: Dict[str, Any] = {
+            "generated_at": now_iso(),
+            "run_id": run_id,
+            "phases": {},
+            "summary": {
+                "estimated_cost_usd": 0.0,
+                "low_confidence_phases": [],
+            },
+        }
+        for phase in phases:
+            preview_path = dirs[phase] / "inputs" / "COST_PREVIEW.json"
+            if not preview_path.exists():
+                continue
+            preview = _load_json(preview_path)
+            preview_payload["phases"][phase] = preview
+            preview_payload["summary"]["estimated_cost_usd"] += float(
+                preview.get("estimated_cost_usd", 0.0) or 0.0
+            )
+            if str(preview.get("confidence") or "") == "low":
+                preview_payload["summary"]["low_confidence_phases"].append(phase)
+        preview_payload["summary"]["estimated_cost_usd"] = round(
+            float(preview_payload["summary"]["estimated_cost_usd"]), 6
+        )
+        print(json.dumps(preview_payload, indent=2, sort_keys=True))
 
 
 def run_batch_retrieval_and_integration(

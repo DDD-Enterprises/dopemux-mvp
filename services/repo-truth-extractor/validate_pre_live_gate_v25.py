@@ -133,6 +133,14 @@ class Blocker:
     details: Optional[Dict[str, Any]] = None
 
 
+@dataclass
+class Condition:
+    reason_code: str
+    layer: str
+    message: str
+    details: Optional[Dict[str, Any]] = None
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -320,6 +328,41 @@ def collect_required_api_key_envs(routes: Mapping[str, Mapping[str, Any]]) -> Li
     return sorted({str(route["api_key_env"]).strip() for route in routes.values()})
 
 
+def collect_active_api_key_envs(routes: Sequence[Mapping[str, Any]]) -> List[str]:
+    return sorted(
+        {
+            str(route.get("api_key_env") or "").strip()
+            for route in routes
+            if route.get("active_route_required")
+            and str(route.get("api_key_env") or "").strip()
+        }
+    )
+
+
+def collect_fallback_api_key_envs(routes: Sequence[Mapping[str, Any]]) -> List[str]:
+    return sorted(
+        {
+            str(route.get("api_key_env") or "").strip()
+            for route in routes
+            if not route.get("active_route_required")
+            and str(route.get("api_key_env") or "").strip()
+        }
+    )
+
+
+def expected_contract_map_target_keys(contract_module: Any, config: GateConfig) -> List[str]:
+    payload = contract_module.compile_phase_contract_map()
+    steps = payload.get("steps")
+    if not isinstance(steps, dict):
+        return []
+    target_phases = set(config.target_phases)
+    return sorted(
+        key
+        for key in steps.keys()
+        if str(key).split(":", 1)[0] in target_phases
+    )
+
+
 def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[str, Any]:
     routes = runner.collect_provider_routes(
         phases=list(config.target_phases),
@@ -356,7 +399,9 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
         "artifacts_sha256": sha256_file(ARTIFACTS_PATH),
         "model_map_sha256": sha256_file(MODEL_MAP_PATH),
         "required_provider_routes": enriched_routes,
-        "required_api_key_envs": collect_required_api_key_envs(routes),
+        "required_api_key_envs": collect_active_api_key_envs(enriched_routes),
+        "fallback_api_key_envs": collect_fallback_api_key_envs(enriched_routes),
+        "all_route_api_key_envs": collect_required_api_key_envs(routes),
         "routing_fingerprint_sha256": normalized_sha(enriched_routes),
         "phase_contract_map_sha256": normalized_sha(
             contract_payload,
@@ -613,16 +658,12 @@ def evaluate_contract_map(
     hash_one = normalized_sha(payload_one, volatile_keys=CONTRACT_MAP_VOLATILE_KEYS)
     hash_two = normalized_sha(payload_two, volatile_keys=CONTRACT_MAP_VOLATILE_KEYS)
 
-    expected_target_keys = []
-    observed_target_keys = []
+    expected_target_keys = expected_contract_map_target_keys(contract_module, config)
     map_steps = payload_one.get("steps", {})
-    for phase in config.target_phases:
-        for spec in runner.get_phase_prompts(phase):
-            if any(str(output).endswith(".json") for output in spec.output_artifacts):
-                expected_target_keys.append(f"{phase}:{spec.step_id}")
-    expected_target_keys = sorted(expected_target_keys)
     observed_target_keys = sorted(
-        key for key in map_steps.keys() if str(key).split(":")[0] in set(config.target_phases)
+        key
+        for key in map_steps.keys()
+        if str(key).split(":")[0] in set(config.target_phases)
     )
     if hash_one != hash_two or expected_target_keys != observed_target_keys:
         blockers.append(
@@ -660,6 +701,9 @@ def evaluate_route_readiness(
     present_providers = sorted({str(row["provider"]).strip().lower() for row in derived_routes})
     missing_direct = sorted(set(config.required_direct_providers) - set(present_providers))
     missing_keys = sorted([env_name for env_name in scope["required_api_key_envs"] if not os.environ.get(env_name)])
+    missing_fallback_keys = sorted(
+        [env_name for env_name in scope.get("fallback_api_key_envs", []) if not os.environ.get(env_name)]
+    )
     if missing_direct:
         blockers.append(
             Blocker(
@@ -689,6 +733,8 @@ def evaluate_route_readiness(
         "missing_required_direct_providers": missing_direct,
         "required_api_key_envs": scope["required_api_key_envs"],
         "missing_api_key_envs": missing_keys,
+        "fallback_api_key_envs": scope.get("fallback_api_key_envs", []),
+        "missing_fallback_api_key_envs": missing_fallback_keys,
     }
     return results, blockers
 
@@ -731,8 +777,9 @@ def normalize_pal_rows(rows: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
 def evaluate_pal_validation(
     config: GateConfig,
     scope: Dict[str, Any],
-) -> Tuple[Dict[str, Any], List[Blocker]]:
+) -> Tuple[Dict[str, Any], List[Blocker], List[Condition]]:
     blockers: List[Blocker] = []
+    conditions: List[Condition] = []
     routes = {
         row["route_signature"]: row
         for row in scope["required_provider_routes"]
@@ -746,6 +793,50 @@ def evaluate_pal_validation(
                 rows_in = [row for row in rows if isinstance(row, dict)]
         elif isinstance(payload, list):
             rows_in = [row for row in payload if isinstance(row, dict)]
+    if not rows_in:
+        output_rows: List[Dict[str, Any]] = []
+        for signature, route in sorted(routes.items()):
+            output_rows.append(
+                {
+                    "route_signature": signature,
+                    "provider": route["provider"],
+                    "source_type": "unavailable",
+                    "source_locator": "",
+                    "validation_timestamp": now_iso(),
+                    "auth_mode_repo": "bearer" if route["provider"] != "gemini" else "auto",
+                    "auth_mode_official": None,
+                    "transport_repo": None,
+                    "transport_official": None,
+                    "endpoint_repo": None,
+                    "endpoint_official": None,
+                    "model_id_repo": route["model_id"],
+                    "model_reference_mode": "unresolved",
+                    "model_reference_official": None,
+                    "active_route_required": bool(route["active_route_required"]),
+                    "fallback_chain_present": bool(route["fallback_chain_present"]),
+                    "compatibility_status": "pal_skipped",
+                    "mismatch_class": "",
+                    "notes": "PAL validation file was not provided.",
+                }
+            )
+        conditions.append(
+            Condition(
+                PAL_REQUIRED_UNAVAILABLE,
+                "pal_provider_validation",
+                "PAL validation was not provided for the selected routes. Runtime eligibility remains environment-based.",
+                {"pal_validation_file": None, "routes_count": len(output_rows)},
+            )
+        )
+        return (
+            {
+                "layer": "pal_provider_validation",
+                "status": "SKIPPED",
+                "routes": output_rows,
+            },
+            blockers,
+            conditions,
+        )
+
     normalized_rows = normalize_pal_rows(rows_in)
 
     output_rows: List[Dict[str, Any]] = []
@@ -773,12 +864,11 @@ def evaluate_pal_validation(
                 "mismatch_class": "PAL_REQUIRED_UNAVAILABLE",
                 "notes": "PAL validation file was not provided for this active route.",
             }
-            blockers.append(
-                Blocker(
+            conditions.append(
+                Condition(
                     PAL_REQUIRED_UNAVAILABLE,
                     "pal_provider_validation",
-                    "P0",
-                    f"PAL validation unavailable for active route {signature}",
+                    f"PAL validation unavailable for route {signature}",
                     row,
                 )
             )
@@ -850,31 +940,33 @@ def evaluate_pal_validation(
         "status": "FAIL" if blockers else "PASS",
         "routes": output_rows,
     }
-    return results, blockers
+    return results, blockers, conditions
 
 
 def evaluate_online_preflight(
     runner: Any,
     config: GateConfig,
-) -> Tuple[Dict[str, Any], List[Blocker]]:
+) -> Tuple[Dict[str, Any], List[Blocker], List[Condition]]:
     blockers: List[Blocker] = []
+    conditions: List[Condition] = []
     if not config.allow_online_preflight:
-        blocker = Blocker(
-            ONLINE_PREFLIGHT_FAILURE,
-            "online_provider_preflight",
-            "P0",
-            "Online provider preflight not executed. Re-run with --allow-online-preflight for a full gate.",
-            {"allow_online_preflight": False},
+        conditions.append(
+            Condition(
+                ONLINE_PREFLIGHT_FAILURE,
+                "online_provider_preflight",
+                "Online provider preflight was skipped. Runtime health for the selected live route was not exercised.",
+                {"allow_online_preflight": False},
+            )
         )
-        blockers.append(blocker)
         return (
             {
                 "layer": "online_provider_preflight",
-                "status": "FAIL",
+                "status": "SKIPPED",
                 "allow_online_preflight": False,
                 "payload": None,
             },
             blockers,
+            conditions,
         )
 
     cfg = runner.RunnerConfig(
@@ -944,6 +1036,7 @@ def evaluate_online_preflight(
             "payload": payload,
         },
         blockers,
+        conditions,
     )
 
 
@@ -1058,6 +1151,35 @@ def summarize_layers(layer_payloads: Mapping[str, Mapping[str, Any]]) -> Dict[st
     return {name: str(payload.get("status") or "UNKNOWN") for name, payload in layer_payloads.items()}
 
 
+def build_environment_summary(verdict_payload: Mapping[str, Any]) -> Optional[Dict[str, str]]:
+    verdict = str(verdict_payload.get("verdict") or "").strip().upper()
+    reason_codes = {
+        str(code).strip()
+        for code in verdict_payload.get("reason_codes", [])
+        if str(code).strip()
+    }
+    condition_codes = {
+        str(row.get("reason_code") or "").strip()
+        for row in verdict_payload.get("conditions", [])
+        if isinstance(row, dict) and str(row.get("reason_code") or "").strip()
+    }
+    environment_blocked_codes = {
+        REQUIRED_API_KEY_MISSING,
+        ONLINE_PREFLIGHT_FAILURE,
+        PAL_REQUIRED_UNAVAILABLE,
+    }
+    if not (reason_codes & environment_blocked_codes or condition_codes & environment_blocked_codes):
+        return None
+    return {
+        "tooling_status": verdict,
+        "live_online_status": "environment_blocked_or_unverified",
+        "message": (
+            "Repo and tooling checks can pass while live online readiness remains blocked "
+            "or unverified by current provider credentials, PAL evidence, or online preflight."
+        ),
+    }
+
+
 def render_summary(
     scope: Dict[str, Any],
     verdict: Dict[str, Any],
@@ -1084,6 +1206,24 @@ def render_summary(
     else:
         lines.append("- none")
     lines.append("")
+    lines.append("## Conditions")
+    if verdict.get("conditions"):
+        for row in verdict["conditions"]:
+            lines.append(f"- {row['reason_code']}: {row['message']}")
+    else:
+        lines.append("- none")
+    environment_summary = verdict.get("environment_summary")
+    lines.append("")
+    lines.append("## Environment Status")
+    if isinstance(environment_summary, dict):
+        lines.append(f"- Tooling status: {environment_summary.get('tooling_status')}")
+        lines.append(
+            f"- Live online status: {environment_summary.get('live_online_status')}"
+        )
+        lines.append(f"- Note: {environment_summary.get('message')}")
+    else:
+        lines.append("- none")
+    lines.append("")
     lines.append("## Evidence")
     lines.append(f"- Scope: {scope['target_runner_path']}")
     lines.append(f"- Output dir: {verdict['output_dir']}")
@@ -1100,6 +1240,7 @@ def run_gate(config: GateConfig) -> Dict[str, Any]:
 
     layer_payloads: Dict[str, Dict[str, Any]] = {}
     all_blockers: List[Blocker] = []
+    all_conditions: List[Condition] = []
     repo_wide_findings: List[Dict[str, Any]] = []
 
     import_cli, blockers = evaluate_import_cli_smoke(config)
@@ -1162,7 +1303,7 @@ def run_gate(config: GateConfig) -> Dict[str, Any]:
     }
     write_json(config.output_dir / "OFFLINE_GATE_RESULTS.json", offline_results)
 
-    pal_validation, blockers = evaluate_pal_validation(config, scope)
+    pal_validation, blockers, conditions = evaluate_pal_validation(config, scope)
     layer_payloads["pal_provider_validation"] = {
         "layer": pal_validation["layer"],
         "status": pal_validation["status"],
@@ -1170,11 +1311,13 @@ def run_gate(config: GateConfig) -> Dict[str, Any]:
     }
     write_json(config.output_dir / "PAL_VALIDATION.json", pal_validation)
     all_blockers.extend(blockers)
+    all_conditions.extend(conditions)
 
-    online_preflight, blockers = evaluate_online_preflight(runner, config)
+    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config)
     layer_payloads["online_provider_preflight"] = online_preflight
     write_json(config.output_dir / "ONLINE_PREFLIGHT_RESULTS.json", online_preflight)
     all_blockers.extend(blockers)
+    all_conditions.extend(conditions)
 
     smoke_results, blockers = evaluate_smoke_tests(config)
     layer_payloads["smoke_and_verify_evidence"] = smoke_results
@@ -1182,8 +1325,20 @@ def run_gate(config: GateConfig) -> Dict[str, Any]:
 
     active_blockers, waived = split_blockers_by_waiver(all_blockers, set(config.waiver_codes))
     reason_codes = sorted({row["reason_code"] for row in active_blockers})
-    verdict = "NO_GO"
-    if not active_blockers:
+    condition_payload = [
+        {
+            "reason_code": item.reason_code,
+            "layer": item.layer,
+            "message": item.message,
+            "details": item.details or {},
+        }
+        for item in all_conditions
+    ]
+    if active_blockers:
+        verdict = "NO_GO"
+    elif condition_payload:
+        verdict = "CONDITIONAL_GO"
+    else:
         verdict = "GO"
 
     verdict_payload = {
@@ -1192,11 +1347,13 @@ def run_gate(config: GateConfig) -> Dict[str, Any]:
         "output_dir": str(config.output_dir.resolve()),
         "reason_codes": reason_codes,
         "run_scoped_blockers": active_blockers,
+        "conditions": condition_payload,
         "repo_wide_findings": repo_wide_findings,
         "waivers": waived,
         "layers": summarize_layers(layer_payloads),
         "generated_at": now_iso(),
     }
+    verdict_payload["environment_summary"] = build_environment_summary(verdict_payload)
     write_json(config.output_dir / "VALIDATION_VERDICT.json", verdict_payload)
     summary = render_summary(scope, verdict_payload, layer_payloads)
     write_text(config.output_dir / "VALIDATION_SUMMARY.md", summary)
@@ -1214,7 +1371,7 @@ def main() -> int:
     config = build_config(args)
     result = run_gate(config)
     print(json.dumps(result["verdict"], indent=2, sort_keys=True))
-    return 0 if result["verdict"]["verdict"] == "GO" else 1
+    return 0 if result["verdict"]["verdict"] in {"GO", "CONDITIONAL_GO"} else 1
 
 
 if __name__ == "__main__":
