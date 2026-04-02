@@ -148,8 +148,9 @@ def test_classify_request_failure_marks_batch_submit_as_pre_model_execution() ->
             "batch_job_id": None,
         }
     )
-    assert failure["failure_class"] == "provider_batch_submission_failure"
+    assert failure["failure_class"] == "batch_submission_unprocessable"
     assert failure["failure_stage"] == "pre_model_execution"
+    assert "rerun with --no-batch" in str(failure["remediation_hint"])
 
 
 def test_normalize_step_reports_pre_model_execution_blocker_not_missing_artifacts(
@@ -201,10 +202,40 @@ def test_normalize_step_reports_pre_model_execution_blocker_not_missing_artifact
     assert qa["parse_failures"] == [
         {
             "partition_id": partition_id,
-            "reason": "provider_batch_submission_failure",
+            "reason": "batch_submission_unprocessable",
             "file": str(raw_dir / f"A2__{partition_id}.json"),
         }
     ]
+
+
+def test_classify_request_failure_distinguishes_batch_terminal_and_parse_failures() -> None:
+    runner = _load_runner_module()
+
+    provider_failure = runner.classify_request_failure(
+        {
+            "failure_type": "provider",
+            "provider_error_reason": "batch_terminal_state:failed",
+            "execution_mode": "batch_watch",
+        }
+    )
+    assert provider_failure["failure_class"] == "batch_provider_execution_failed"
+    assert provider_failure["failure_stage"] == "model_execution"
+    assert "Check provider auth/quota/status" in str(
+        provider_failure["remediation_hint"]
+    )
+
+    parse_failure = runner.classify_request_failure(
+        {
+            "failure_type": "parse",
+            "provider_error_reason": None,
+            "execution_mode": "batch_watch",
+        }
+    )
+    assert parse_failure["failure_class"] == "batch_output_parse_failed"
+    assert parse_failure["failure_stage"] == "post_model_output"
+    assert "Inspect parser/contract artifacts" in str(
+        parse_failure["remediation_hint"]
+    )
 
 
 def test_coerce_artifacts_accepts_top_level_single_artifact_object() -> None:

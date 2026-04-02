@@ -400,3 +400,52 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
     assert "A/H/D/C routes still require this OpenRouter model" in str(
         payload["failure_summary"][0]["remediation"]
     )
+
+
+def test_route_readiness_summary_distinguishes_required_fallback_and_configured() -> None:
+    runner = _load_runner_module()
+    summary = runner.derive_route_readiness_summary(["A", "H", "D", "C"], "cost")
+
+    assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert "XAI_API_KEY" in summary["api_key_env_categories"]["optional_fallback"]
+    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
+
+    openrouter_required = [
+        row
+        for row in summary["routes"]
+        if row["provider"] == "openrouter"
+        and row["model_id"] == "openai/gpt-5.3-codex"
+    ]
+    assert openrouter_required
+    assert openrouter_required[0]["requirement_level"] == "required_active_route"
+    assert openrouter_required[0]["configured_not_required"] is False
+
+
+def test_print_config_includes_route_readiness_summary() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--preset",
+            "first-live",
+            "--dry-run",
+            "--print-config",
+            "--run-id",
+            "tp6_print_config_test",
+            "--no-write-latest",
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    payload = json.loads(result.stdout)
+    summary = payload["route_readiness_summary"]
+
+    assert summary["target_policy"] == "cost"
+    assert summary["target_phases"] == ["A", "H", "D", "C"]
+    assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
+    assert payload["effective_model_routing"]["A"]["scope"] == "representative_phase_default_not_step_authoritative"

@@ -117,6 +117,8 @@ def test_route_readiness_only_requires_active_route_api_keys(tmp_path: Path, mon
                 "model_id": "grok-code-fast-1",
                 "api_key_env": "XAI_API_KEY",
                 "active_route_required": True,
+                "optional_fallback": False,
+                "configured_not_required": False,
                 "fallback_chain_present": True,
             },
             {
@@ -125,11 +127,26 @@ def test_route_readiness_only_requires_active_route_api_keys(tmp_path: Path, mon
                 "model_id": "openai/gpt-5-mini",
                 "api_key_env": "OPENROUTER_API_KEY",
                 "active_route_required": False,
+                "optional_fallback": True,
+                "configured_not_required": False,
                 "fallback_chain_present": False,
             },
         ],
         "required_api_key_envs": ["XAI_API_KEY"],
         "fallback_api_key_envs": ["OPENROUTER_API_KEY"],
+        "configured_not_required_api_key_envs": ["OPENAI_API_KEY"],
+        "route_readiness_summary": {
+            "api_key_env_categories": {
+                "required_active_route": ["XAI_API_KEY"],
+                "optional_fallback": ["OPENROUTER_API_KEY"],
+                "configured_not_required": ["OPENAI_API_KEY"],
+            },
+            "provider_categories": {
+                "required_active_route": ["xai"],
+                "optional_fallback": ["openrouter"],
+                "configured_not_required": ["openai"],
+            },
+        },
     }
     monkeypatch.setenv("XAI_API_KEY", "present")
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
@@ -137,6 +154,8 @@ def test_route_readiness_only_requires_active_route_api_keys(tmp_path: Path, mon
     assert payload["status"] == "PASS"
     assert payload["missing_api_key_envs"] == []
     assert payload["missing_fallback_api_key_envs"] == ["OPENROUTER_API_KEY"]
+    assert payload["configured_not_required_api_key_envs"] == ["OPENAI_API_KEY"]
+    assert payload["api_key_env_categories"]["required_active_route"] == ["XAI_API_KEY"]
     assert blockers == []
 
 
