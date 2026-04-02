@@ -50,6 +50,15 @@ def _log(tag: str, msg: str) -> None:
     log.info(f"{tag}: {msg}")
 
 
+_APPLY_SUMMARY_KEYS = (
+    "eligible_actions",
+    "skipped_blocked_promptset",
+    "skipped_top_level_zip",
+    "skipped_ambiguous",
+    "skipped_non_matching_policy",
+)
+
+
 # ---------------------------------------------------------------------------
 # Exclude patterns (mirrors PROMPTGEN_DEFAULT_EXCLUDE_GLOBS in v5 runner,
 # plus extraction-specific additions from hygiene_policy.yaml)
@@ -159,6 +168,7 @@ class ApplyPlan:
     applied_actions: List[PlannedAction] = field(default_factory=list)
     canonical_sources_mutated: bool = False
     manifest_path: Optional[Path] = None
+    summary: Dict[str, int] = field(default_factory=lambda: {key: 0 for key in _APPLY_SUMMARY_KEYS})
 
 
 def _sample_paths(paths: List[str], limit: int = 3) -> List[str]:
@@ -584,6 +594,35 @@ def _is_canonical_protected(rel_path: str) -> bool:
     return False
 
 
+def _run_has_blocked_promptset(run_dir: Path) -> bool:
+    """Return True when the run's RESUME_PROOF.json records blocked_promptset=true."""
+    proof_path = run_dir / "RESUME_PROOF.json"
+    if not proof_path.exists():
+        return False
+    try:
+        data = json.loads(proof_path.read_text())
+    except (json.JSONDecodeError, OSError):
+        return False
+    return bool(data.get("blocked_promptset"))
+
+
+def _candidate_run_dir(runs_root: Path, candidate: Path) -> Optional[Path]:
+    """Return the enclosing run directory for a candidate under runs_root."""
+    try:
+        rel_parts = candidate.relative_to(runs_root).parts
+    except ValueError:
+        return None
+    if not rel_parts:
+        return None
+    return runs_root / rel_parts[0]
+
+
+def _increment_apply_summary(plan: ApplyPlan, key: str, amount: int = 1) -> None:
+    if key not in plan.summary:
+        plan.summary[key] = 0
+    plan.summary[key] += amount
+
+
 def run_apply(
     repo_root: Path = _REPO_ROOT_DEFAULT,
     dry_run: bool = True,
@@ -603,30 +642,77 @@ def run_apply(
         runs_root = repo_root / f"extraction/repo-truth-extractor/{version}/runs"
         if not runs_root.is_dir():
             continue
+        blocked_run_cache: Dict[Path, bool] = {}
         for failed_file in runs_root.rglob("*.FAILED.*"):
             name = failed_file.name
             success_name = re.sub(r"\.FAILED\.[^.]+$", ".json", name)
             if not success_name or success_name == name:
+                _increment_apply_summary(plan, "skipped_ambiguous")
                 continue
             success_path = failed_file.parent / success_name
+            run_dir = _candidate_run_dir(runs_root, failed_file)
+            if run_dir is None or not run_dir.is_dir():
+                _increment_apply_summary(plan, "skipped_ambiguous")
+                continue
+            blocked = blocked_run_cache.setdefault(
+                run_dir,
+                _run_has_blocked_promptset(run_dir),
+            )
+            if blocked:
+                _increment_apply_summary(plan, "skipped_blocked_promptset")
+                continue
             if success_path.exists() and failed_file.stat().st_mtime < success_path.stat().st_mtime:
                 candidates.append((failed_file, "stale_failed_sidecar"))
+            else:
+                _increment_apply_summary(plan, "skipped_non_matching_policy")
 
     # 2. .DS_Store files in the extraction tree
+    blocked_run_cache: Dict[Path, bool] = {}
     for ds in (repo_root / "extraction").rglob(".DS_Store"):
-        candidates.append((ds, "ds_store_in_extraction_tree"))
+        for version in ("v3", "v4"):
+            runs_root = repo_root / f"extraction/repo-truth-extractor/{version}/runs"
+            run_dir = _candidate_run_dir(runs_root, ds)
+            if run_dir is not None:
+                blocked = blocked_run_cache.setdefault(
+                    run_dir,
+                    _run_has_blocked_promptset(run_dir),
+                )
+                if blocked:
+                    _increment_apply_summary(plan, "skipped_blocked_promptset")
+                    break
+        else:
+            candidates.append((ds, "ds_store_in_extraction_tree"))
+            continue
+        continue
 
     # 3. .zip files in extraction run directories (not source zips)
     for version in ("v3", "v4"):
         runs_root = repo_root / f"extraction/repo-truth-extractor/{version}/runs"
         if runs_root.is_dir():
+            blocked_run_cache: Dict[Path, bool] = {}
             for zf in runs_root.rglob("*.zip"):
+                rel_parts = zf.relative_to(runs_root).parts
+                if len(rel_parts) < 2:
+                    _increment_apply_summary(plan, "skipped_top_level_zip")
+                    continue
+                run_dir = _candidate_run_dir(runs_root, zf)
+                if run_dir is None or not run_dir.is_dir():
+                    _increment_apply_summary(plan, "skipped_ambiguous")
+                    continue
+                blocked = blocked_run_cache.setdefault(
+                    run_dir,
+                    _run_has_blocked_promptset(run_dir),
+                )
+                if blocked:
+                    _increment_apply_summary(plan, "skipped_blocked_promptset")
+                    continue
                 candidates.append((zf, "zip_in_run_dir"))
 
     # Build planned actions
     for src, reason in candidates:
         rel = str(src.relative_to(repo_root))
         if _is_canonical_protected(rel):
+            _increment_apply_summary(plan, "skipped_non_matching_policy")
             continue  # safety guard — should never happen, but explicit
         dest = quarantine_root / src.relative_to(repo_root)
         plan.planned_actions.append(PlannedAction(
@@ -635,6 +721,7 @@ def run_apply(
             dest=dest,
             reason=reason,
         ))
+    plan.summary["eligible_actions"] = len(plan.planned_actions)
 
     if dry_run:
         return plan
@@ -659,6 +746,7 @@ def run_apply(
         manifest = {
             "timestamp": timestamp,
             "dry_run": False,
+            "summary": plan.summary,
             "moved_items": moved_items,
         }
         manifest_path.write_text(json.dumps(manifest, indent=2))
@@ -736,6 +824,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         plan = run_apply(repo_root=args.repo_root, dry_run=args.dry_run)
         mode = "DRY-RUN" if plan.dry_run else "APPLY"
         print(f"\n[{mode}] Planned actions: {len(plan.planned_actions)}")
+        print(f"[{mode}] Summary:")
+        print(json.dumps(plan.summary, indent=2))
         for action in plan.planned_actions[:20]:
             print(f"  {action.action}: {action.source} ({action.reason})")
         if not plan.dry_run:
