@@ -1,0 +1,137 @@
+{
+  "dry_run": true,
+  "bucket": "stale_resume_state",
+  "limit": 20,
+  "planned_actions": 20,
+  "applied_actions": 0,
+  "summary": {
+    "eligible_actions": 4563,
+    "skipped_blocked_promptset": 3687,
+    "skipped_top_level_zip": 1,
+    "skipped_ambiguous": 0,
+    "skipped_non_matching_policy": 381
+  },
+  "actions": [
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A0__A_P0015.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A0__A_P0015.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A2__A_P0004.FAILED.json",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A2__A_P0004.FAILED.json",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A2__A_P0018.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A2__A_P0018.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A3__A_P0017.FAILED.json",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A3__A_P0017.FAILED.json",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A99__A_P0001.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A99__A_P0001.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A3__A_P0004.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A3__A_P0004.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A5__A_P0010.FAILED.json",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A5__A_P0010.FAILED.json",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A1__A_P0009.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A1__A_P0009.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A4__A_P0003.FAILED.json",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A4__A_P0003.FAILED.json",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A99__A_P0017.FAILED.json",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A99__A_P0017.FAILED.json",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A7__A_P0018.FAILED.json",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A7__A_P0018.FAILED.json",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A7__A_P0010.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A7__A_P0010.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A9__A_P0006.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A9__A_P0006.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A10__A_P0002.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A10__A_P0002.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A4__A_P0001.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A4__A_P0001.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A1__A_P0003.FAILED.json",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A1__A_P0003.FAILED.json",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A2__A_P0004.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A2__A_P0004.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A0__A_P0010.FAILED.json",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A0__A_P0010.FAILED.json",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A0__A_P0009.FAILED.txt",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A0__A_P0009.FAILED.txt",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A9__A_P0002.FAILED.json",
+      "dest": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/quarantine/20260402T211055Z/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A9__A_P0002.FAILED.json",
+      "reason": "stale_failed_sidecar",
+      "bucket": "stale_resume_state"
+    }
+  ],
+  "manifest_path": null
+}

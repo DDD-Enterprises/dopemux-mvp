@@ -1,0 +1,53 @@
+{
+  "scan_mode": "actionable",
+  "warnings": 4,
+  "errors": 0,
+  "noise_paths": 2873,
+  "version_path_issues": 0,
+  "resume_state_issues": 7352,
+  "authority_summary": {
+    "canonical": 37834,
+    "reference": 2946,
+    "status_audit": 896,
+    "roadmap_speculative": 2211,
+    "generated": 214911
+  },
+  "noise_path_summary": {
+    "total_detected": 2873,
+    "by_category": {
+      "os_artifact": 2870,
+      "vendored_deps": 3
+    },
+    "samples": {
+      "os_artifact": [
+        ".DS_Store",
+        "docs/.DS_Store",
+        "proof/.DS_Store"
+      ],
+      "vendored_deps": [
+        "vendor",
+        "vendor/dopetask",
+        "vendor/dopetask/README.md"
+      ]
+    }
+  },
+  "resume_state_summary": {
+    "total_detected": 7352,
+    "by_issue_type": {
+      "blocked_promptset": 4,
+      "stale_resume_state": 7348
+    },
+    "samples": {
+      "blocked_promptset": [
+        "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/throttle_demo_20260227_051427/RESUME_PROOF.json",
+        "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/v4_20260226_010843/RESUME_PROOF.json",
+        "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/v4_batch_20260226_0458/RESUME_PROOF.json"
+      ],
+      "stale_resume_state": [
+        "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A1__A_P0015.FAILED.txt",
+        "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A6__A_P0017.FAILED.json",
+        "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/real_proc_test_20260226_192237/A_repo_control_plane/raw/A7__A_P0004.FAILED.json"
+      ]
+    }
+  }
+}
