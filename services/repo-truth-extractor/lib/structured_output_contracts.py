@@ -535,12 +535,76 @@ def normalize_required_array_fields(
     return normalized, coercions
 
 
+def _is_scalar_conflict_candidate(value: Any) -> bool:
+    return value is None or isinstance(value, (str, int, float, bool))
+
+
+def _artifact_item_scalar_conflicts(
+    artifact_name: str,
+    existing_row: Dict[str, Any],
+    updated_row: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    existing_payload = (
+        existing_row.get("payload") if isinstance(existing_row.get("payload"), dict) else {}
+    )
+    updated_payload = (
+        updated_row.get("payload") if isinstance(updated_row.get("payload"), dict) else {}
+    )
+    existing_items = (
+        existing_payload.get("items") if isinstance(existing_payload.get("items"), list) else None
+    )
+    updated_items = (
+        updated_payload.get("items") if isinstance(updated_payload.get("items"), list) else None
+    )
+    if not isinstance(existing_items, list) or not isinstance(updated_items, list):
+        return []
+
+    existing_by_id = {
+        str(item.get("id") or ""): item
+        for item in existing_items
+        if isinstance(item, dict) and str(item.get("id") or "").strip()
+    }
+    updated_by_id = {
+        str(item.get("id") or ""): item
+        for item in updated_items
+        if isinstance(item, dict) and str(item.get("id") or "").strip()
+    }
+
+    conflicts: List[Dict[str, Any]] = []
+    for item_id in sorted(set(existing_by_id.keys()) & set(updated_by_id.keys())):
+        existing_item = existing_by_id[item_id]
+        updated_item = updated_by_id[item_id]
+        shared_fields = sorted(set(existing_item.keys()) & set(updated_item.keys()))
+        for field in shared_fields:
+            if field == "id":
+                continue
+            before = existing_item.get(field)
+            after = updated_item.get(field)
+            if not (_is_scalar_conflict_candidate(before) and _is_scalar_conflict_candidate(after)):
+                continue
+            if before == after:
+                continue
+            conflicts.append(
+                {
+                    "artifact_name": artifact_name,
+                    "item_id": item_id,
+                    "field": field,
+                    "existing_value": before,
+                    "updated_value": after,
+                }
+            )
+    return conflicts
+
+
 def merge_artifacts_by_name(
     artifacts: List[Dict[str, Any]],
     updates: List[Dict[str, Any]],
     step_contract: Optional[Dict[str, Any]],
-) -> List[Dict[str, Any]]:
+    *,
+    return_conflicts: bool = False,
+) -> Any:
     merged: Dict[str, Dict[str, Any]] = {}
+    conflicts: List[Dict[str, Any]] = []
     for row in artifacts:
         if not isinstance(row, dict):
             continue
@@ -554,13 +618,19 @@ def merge_artifacts_by_name(
         artifact_name = str(row.get("artifact_name") or "").strip()
         if not artifact_name:
             continue
+        if artifact_name in merged:
+            conflicts.extend(
+                _artifact_item_scalar_conflicts(artifact_name, merged[artifact_name], row)
+            )
         merged[artifact_name] = copy.deepcopy(row)
     if not isinstance(step_contract, dict):
-        return [merged[name] for name in sorted(merged.keys())]
+        rows = [merged[name] for name in sorted(merged.keys())]
+        return (rows, conflicts) if return_conflicts else rows
     order = artifact_order(step_contract)
     rows = [merged[name] for name in order if name in merged]
     extra = [merged[name] for name in sorted(merged.keys()) if name not in set(order)]
-    return rows + extra
+    merged_rows = rows + extra
+    return (merged_rows, conflicts) if return_conflicts else merged_rows
 
 
 def dump_response_format_json(response_format: Dict[str, Any]) -> str:
