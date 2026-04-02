@@ -4581,6 +4581,7 @@ def effective_model_routing_payload() -> Dict[str, Dict[str, str]]:
             "provider": provider,
             "model_id": model_id,
             "api_key_env": api_key_env,
+            "scope": "representative_phase_default_not_step_authoritative",
         }
     return payload
 
@@ -5666,25 +5667,151 @@ def collect_provider_routes(
     phases: List[str],
     routing_policy: str,
 ) -> Dict[str, Dict[str, str]]:
-    routes: Dict[str, Dict[str, str]] = {}
+    summary = derive_route_readiness_summary(phases, routing_policy)
+    return {
+        str(row["route_signature"]): {
+            "provider": str(row["provider"]),
+            "model_id": str(row["model_id"]),
+            "api_key_env": str(row["api_key_env"]),
+        }
+        for row in summary["routes"]
+    }
+
+
+def derive_route_readiness_summary(
+    phases: Sequence[str],
+    routing_policy: str,
+) -> Dict[str, Any]:
+    route_meta: Dict[str, Dict[str, Any]] = {}
+    configured_route_meta: Dict[str, Dict[str, str]] = {}
+    selected_policy = _normalize_routing_policy(routing_policy)
+    tiers = ACTIVE_ROUTING_LADDERS.get(selected_policy) or _clone_ladders(selected_policy)
+
     for phase in phases:
         for prompt in get_phase_prompts(phase):
-            ladder = _resolve_step_ladder_compat(
-                routing_policy,
+            step_id = str(prompt.step_id)
+            tier_override = prompt.tier_override
+            step_tier = resolve_effective_step_tier(
+                selected_policy,
                 phase,
-                prompt.step_id,
-                tier_override=prompt.tier_override,
+                step_id,
+                tier_override=tier_override,
             )
-            for provider, model_id, api_key_env in ladder:
-                key = f"{provider}:{model_id}:{api_key_env}"
-                if key in routes:
-                    continue
-                routes[key] = {
-                    "provider": provider,
-                    "model_id": model_id,
-                    "api_key_env": api_key_env,
-                }
-    return routes
+            configured_ladder = list(tiers.get(step_tier) or tiers.get("extract") or [])
+            for provider, model_id, api_key_env in configured_ladder:
+                signature = f"{provider}:{model_id}:{api_key_env}"
+                configured_route_meta.setdefault(
+                    signature,
+                    {
+                        "route_signature": signature,
+                        "provider": provider,
+                        "model_id": model_id,
+                        "api_key_env": api_key_env,
+                    },
+                )
+
+            ladder = _resolve_step_ladder_compat(
+                selected_policy,
+                phase,
+                step_id,
+                tier_override=tier_override,
+            )
+            for index, (provider, model_id, api_key_env) in enumerate(ladder):
+                signature = f"{provider}:{model_id}:{api_key_env}"
+                entry = route_meta.setdefault(
+                    signature,
+                    {
+                        "route_signature": signature,
+                        "provider": provider,
+                        "model_id": model_id,
+                        "api_key_env": api_key_env,
+                        "required_active_route": False,
+                        "optional_fallback": False,
+                        "configured_not_required": False,
+                        "fallback_chain_present": False,
+                        "steps": [],
+                    },
+                )
+                entry["steps"].append(
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "ladder_index": index,
+                        "ladder_size": len(ladder),
+                    }
+                )
+                if index == 0:
+                    entry["required_active_route"] = True
+                    if len(ladder) > 1:
+                        entry["fallback_chain_present"] = True
+                else:
+                    entry["optional_fallback"] = True
+
+    for signature, configured in configured_route_meta.items():
+        route_meta.setdefault(
+            signature,
+            {
+                "route_signature": signature,
+                "provider": configured["provider"],
+                "model_id": configured["model_id"],
+                "api_key_env": configured["api_key_env"],
+                "required_active_route": False,
+                "optional_fallback": False,
+                "configured_not_required": True,
+                "fallback_chain_present": False,
+                "steps": [],
+            },
+        )
+
+    routes: List[Dict[str, Any]] = []
+    for signature in sorted(route_meta):
+        entry = dict(route_meta[signature])
+        entry["configured_not_required"] = bool(
+            not entry["required_active_route"] and not entry["optional_fallback"]
+        )
+        if entry["required_active_route"]:
+            entry["requirement_level"] = "required_active_route"
+        elif entry["optional_fallback"]:
+            entry["requirement_level"] = "optional_fallback"
+        else:
+            entry["requirement_level"] = "configured_not_required"
+        routes.append(entry)
+
+    def _collect_envs(level: str) -> List[str]:
+        return sorted(
+            {
+                str(row["api_key_env"]).strip()
+                for row in routes
+                if str(row.get("requirement_level")) == level
+                and str(row.get("api_key_env")).strip()
+            }
+        )
+
+    def _collect_providers(level: str) -> List[str]:
+        return sorted(
+            {
+                str(row["provider"]).strip().lower()
+                for row in routes
+                if str(row.get("requirement_level")) == level
+                and str(row.get("provider")).strip()
+            }
+        )
+
+    return {
+        "target_policy": selected_policy,
+        "target_phases": [str(phase).upper() for phase in phases],
+        "routes": routes,
+        "provider_categories": {
+            "required_active_route": _collect_providers("required_active_route"),
+            "optional_fallback": _collect_providers("optional_fallback"),
+            "configured_not_required": _collect_providers("configured_not_required"),
+        },
+        "api_key_env_categories": {
+            "required_active_route": _collect_envs("required_active_route"),
+            "optional_fallback": _collect_envs("optional_fallback"),
+            "configured_not_required": _collect_envs("configured_not_required"),
+        },
+    }
 
 
 def run_provider_doctor_probe(
@@ -6418,6 +6545,49 @@ def classify_request_failure(request_meta: Dict[str, Any]) -> Dict[str, Optional
     failure_type = str(request_meta.get("failure_type") or "").strip()
     provider_reason = str(request_meta.get("provider_error_reason") or "").strip()
     execution_mode = str(request_meta.get("execution_mode") or "").strip().lower()
+    batch_execution = execution_mode in {"batch", "batch_watch", "batch_submit_only"}
+
+    def _remediation_hint(
+        failure_class: str,
+        failure_stage: str,
+    ) -> Optional[str]:
+        if failure_class == "batch_submission_unprocessable":
+            return (
+                "Provider rejected the batch payload before execution. Check auth/quota or "
+                "payload shape, then retry or rerun with --no-batch."
+            )
+        if failure_class == "batch_submit_rejected":
+            return (
+                "Batch submission was rejected before model execution. Check provider auth/quota "
+                "and consider rerunning with --no-batch for direct diagnostics."
+            )
+        if failure_class == "batch_provider_execution_timeout":
+            return (
+                "Batch did not finish within the watch window. Retry later or rerun with "
+                "--no-batch if immediate diagnosis is required."
+            )
+        if failure_class == "batch_result_missing":
+            return (
+                "Batch completed without this partition result. Retry later; if it repeats, "
+                "rerun with --no-batch to isolate provider behavior."
+            )
+        if failure_class == "batch_provider_execution_failed":
+            return (
+                "Batch reached provider execution and failed. Check provider auth/quota/status; "
+                "if the failure repeats, rerun with --no-batch."
+            )
+        if failure_class in {
+            "batch_output_parse_failed",
+            "missing_expected_artifacts",
+            "schema_missing_key",
+        }:
+            return (
+                "Provider execution produced output that failed parse or contract checks. "
+                "Inspect parser/contract artifacts or rerun with --no-batch."
+            )
+        if failure_stage == "pre_model_execution":
+            return "Fix the preflight blocker before retrying."
+        return None
 
     if not schema_gate_passed:
         failure_class = schema_reason or "schema_gate_failure"
@@ -6437,12 +6607,23 @@ def classify_request_failure(request_meta: Dict[str, Any]) -> Dict[str, Optional
             "item_id": str(schema_context.get("item_id") or "").strip() or None,
             "item_path": str(schema_context.get("item_path") or "").strip() or None,
             "failure_stage": "post_model_output",
+            "remediation_hint": _remediation_hint(
+                failure_class, "post_model_output"
+            ),
         }
 
     failure_class = failure_type or "unknown_failure"
     failure_stage = "unknown"
     if provider_reason.startswith("batch_submit_error:"):
-        failure_class = "provider_batch_submission_failure"
+        submit_error = provider_reason.split(":", 1)[1].strip().lower()
+        if submit_error in {
+            "unprocessableentityerror",
+            "badrequesterror",
+            "validationerror",
+        }:
+            failure_class = "batch_submission_unprocessable"
+        else:
+            failure_class = "batch_submit_rejected"
         failure_stage = "pre_model_execution"
     elif provider_reason.startswith("missing_api_key:") or failure_type in {
         "auth_missing",
@@ -6452,10 +6633,19 @@ def classify_request_failure(request_meta: Dict[str, Any]) -> Dict[str, Optional
     }:
         failure_stage = "pre_model_execution"
     elif provider_reason.startswith("batch_timeout:"):
-        failure_class = "provider_batch_timeout"
+        failure_class = "batch_provider_execution_timeout"
         failure_stage = "model_execution"
     elif provider_reason == "batch_missing_result_for_partition":
-        failure_class = "provider_batch_result_missing"
+        failure_class = "batch_result_missing"
+        failure_stage = "model_execution"
+    elif failure_type == "parse" and batch_execution:
+        failure_class = "batch_output_parse_failed"
+        failure_stage = "post_model_output"
+    elif provider_reason.startswith("batch_terminal_state:"):
+        failure_class = "batch_provider_execution_failed"
+        failure_stage = "model_execution"
+    elif batch_execution and provider_reason:
+        failure_class = "batch_provider_execution_failed"
         failure_stage = "model_execution"
     elif failure_type in {
         "provider",
@@ -6476,6 +6666,7 @@ def classify_request_failure(request_meta: Dict[str, Any]) -> Dict[str, Optional
         "item_id": None,
         "item_path": None,
         "failure_stage": failure_stage,
+        "remediation_hint": _remediation_hint(failure_class, failure_stage),
     }
 
 
@@ -12854,6 +13045,9 @@ def execute_step_for_partitions(
             ) = _failure_details_from_meta(result.request_meta)
             step_failure_hist[failure_class] += 1
             failure_stage = str(failure_details.get("failure_stage") or "").strip()
+            remediation_hint = str(
+                failure_details.get("remediation_hint") or ""
+            ).strip()
             if failure_stage:
                 step_failure_stage_hist[failure_stage] += 1
             if step_first_failure_context is None:
@@ -12867,6 +13061,7 @@ def execute_step_for_partitions(
                     "item_id": item_id,
                     "item_path": item_path,
                     "route": f"{final_provider}/{final_model}",
+                    "remediation_hint": remediation_hint or None,
                 }
 
         if result.auth_failure:
@@ -15206,6 +15401,10 @@ def print_config(
     run_context: RunContext,
 ) -> None:
     layout = current_output_layout(root)
+    route_readiness_summary = derive_route_readiness_summary(
+        phases,
+        cfg.routing_policy,
+    )
     config_payload = {
         "run_id": run_id,
         "repo_root": str(root.resolve()),
@@ -15318,6 +15517,7 @@ def print_config(
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "routing_ladders": routing_ladders_payload(),
         "effective_model_routing": effective_model_routing_payload(),
+        "route_readiness_summary": route_readiness_summary,
         "dpmx_env_routing": dpmx_env_routing_payload(validate=True),
         "webhook_settings": {
             "schema": DPMX_WEBHOOK_SCHEMA,
