@@ -138,6 +138,7 @@ To run the scan standalone:
 
 ```bash
 python services/repo-truth-extractor/extraction_hygiene.py scan
+python services/repo-truth-extractor/extraction_hygiene.py scan --scan-mode full
 ```
 
 ## Phase 2: Quarantine cleanup
