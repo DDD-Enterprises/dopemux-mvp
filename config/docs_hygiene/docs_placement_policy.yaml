@@ -15,24 +15,6 @@ canonical_roots:
   - 92-runbooks
   - 94-architecture
   - archive
-  - planes
-  - systems
-  - arbitration
-  - flight_deck
-  - governance
-  - learning
-  - pr_prep
-  - pr_template
-  - rollout
-  - spec
-  - ux
-  - mobile
-  - integrations
-  - packaging
-  - pr_merge
-  - policy
-  - releases
-  - skills
 
 quarantine_prefixes:
   - docs/04-explanation/history/sourceFiles/
@@ -44,6 +26,16 @@ filename_exemptions:
   - docs/05-audit-reports/root-relocated/rgoutput-2.md
   - QUICK_START.md
 
+duplicate_suffixes:
+  suffixes:
+    - "-2"
+    - "-3"
+  similarity_threshold: 0.95
+  archive_dir: docs/archive/deduped-suffixes
+  exclude_prefixes:
+    - docs/archive/
+    - docs/04-explanation/history/sourceFiles/
+
 keep_docs_root_files:
   - docs/00-MASTER-INDEX.md
   - docs/INDEX.md
@@ -52,6 +44,57 @@ unknown_top_level_fallback_dir: docs/archive/unclassified-top-level
 default_root_target_dir: docs/04-explanation/root-relocated
 
 relocation_rules:
+  - id: map-arbitration
+    from: docs/arbitration/
+    to: docs/03-reference/governance/arbitration/
+  - id: map-flight-deck
+    from: docs/flight_deck/
+    to: docs/03-reference/governance/flight-deck/
+  - id: map-governance
+    from: docs/governance/
+    to: docs/03-reference/governance/
+  - id: map-policy
+    from: docs/policy/
+    to: docs/03-reference/governance/policy/
+  - id: map-learning
+    from: docs/learning/
+    to: docs/03-reference/governance/learning/
+  - id: map-pr-merge
+    from: docs/pr_merge/
+    to: docs/03-reference/pr-pipeline/merge/
+  - id: map-pr-prep
+    from: docs/pr_prep/
+    to: docs/03-reference/pr-pipeline/prep/
+  - id: map-pr-template
+    from: docs/pr_template/
+    to: docs/03-reference/pr-pipeline/templates/
+  - id: map-systems
+    from: docs/systems/
+    to: docs/03-reference/systems/
+  - id: map-planes
+    from: docs/planes/
+    to: docs/03-reference/planes/
+  - id: map-skills
+    from: docs/skills/
+    to: docs/03-reference/skills/
+  - id: map-releases
+    from: docs/releases/
+    to: docs/03-reference/releases/
+  - id: map-rollout
+    from: docs/rollout/
+    to: docs/02-how-to/rollout/
+  - id: map-ux
+    from: docs/ux/
+    to: docs/03-reference/ux/
+  - id: map-mobile
+    from: docs/mobile/
+    to: docs/02-how-to/mobile/
+  - id: map-packaging
+    from: docs/packaging/
+    to: docs/02-how-to/packaging/
+  - id: map-integrations
+    from: docs/integrations/
+    to: docs/04-explanation/integrations/
   - id: map-spec
     from: docs/spec/
     to: docs/03-reference/spec/
@@ -89,6 +132,9 @@ relocation_rules:
   - id: map-explanation-archive
     from: docs/04-explanation/archive/
     to: docs/archive/
+  - id: map-explanation-history
+    from: docs/04-explanation/history/
+    to: docs/archive/history/
   - id: map-explanation-audit-reports
     from: docs/04-explanation/audit-reports/
     to: docs/05-audit-reports/

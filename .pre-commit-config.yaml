@@ -185,7 +185,15 @@ repos:
         exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
-      - id: docs-filename-hygiene
+      - id: docs-duplicate-detection
+        name: Enforce docs duplicate suffix hygiene (-2/-3)
+        entry: python3 scripts/check_docs_duplicates.py --check
+        language: system
+        files: ^docs/.*\.md$
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+        pass_filenames: true
+
+      - id: docs-filename-hygiene-audit
         name: Audit docs filename hygiene (kebab-case, full-tree legacy debt)
         entry: python3 scripts/check_docs_filename_hygiene.py --audit --all-files --audit-out /tmp/dopemux-precommit-full-tree-filename-audit.json
         language: system

@@ -65,6 +65,7 @@ Repo truth beats docs.
 - For this rewrite pass, the usable truth docs were `TRUTH_SYSTEMS.md`, `TRUTH_CANONICALS.md`, and `TRUTH_GAPS.md`.
 - `DOC_TRUST_MAP.md` and `DOCS_VS_REPO_DIFF.md` were named in the packet but not present in this checkout.
 - Older docs and README surfaces may drift from runtime reality. Escalate the drift instead of normalizing it away.
+- For documentation placement and routing work, use `config/docs_hygiene/docs_placement_policy.yaml` as the placement authority and `config/docs_hygiene/llm_placement_guide.yaml` as the machine-readable LLM routing guide.
 - Repo truth beats docs.
 
 ## 9. Known Dangers
