@@ -18,6 +18,23 @@ prelude: Repo Truth Extractor V5 Offline Envelope (runbook) for dopemux document
 - This does not mean the v5 repo/tooling path is unusable.
 - It means operators should keep working in offline-safe and non-OpenRouter lanes until valid OpenRouter auth is restored.
 
+## Environment-blocked summary
+
+- Offline-safe productive work is available now:
+  - CLI/help inspection
+  - dry-run route and cost inspection
+  - validator-first offline checks
+  - hygiene cleanup and stale-artifact pruning
+  - parser, contract, and batch-diagnostics hardening
+- Online bounded first-live work is still blocked in the current environment.
+- Required keys for bounded first-live `A/H/D/C` on this checkout remain:
+  - `GEMINI_API_KEY`
+  - `OPENROUTER_API_KEY`
+  - `XAI_API_KEY`
+- Observed environment blockers on April 2, 2026:
+  - `XAI_API_KEY` missing
+  - `OPENROUTER_API_KEY` present but rejected for the required OpenRouter models
+
 ## What you can still do safely
 
 - CLI/help and print-only inspection:
@@ -34,6 +51,7 @@ prelude: Repo Truth Extractor V5 Offline Envelope (runbook) for dopemux document
   - `python services/repo-truth-extractor/run_extraction_v5.py --preset first-live --dry-run --run-id <RUN_ID>`
 - Offline hygiene and parser/contract hardening:
   - `python services/repo-truth-extractor/extraction_hygiene.py scan`
+  - `python services/repo-truth-extractor/extraction_hygiene.py scan --scan-mode full`
   - `pytest -q services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py`
 
 ## What remains blocked or conditional
@@ -41,6 +59,11 @@ prelude: Repo Truth Extractor V5 Offline Envelope (runbook) for dopemux document
 - Bounded online first-live execution is still not truthfully `GO` when the active environment lacks valid OpenRouter auth for the required strict-route models.
 - Do not weaken route requirements or pretend Gemini/xAI alone satisfy the current strict bounded `A/H/D/C` route if the contract map still points those steps at OpenRouter.
 - Batch-path cleanup, dry-run trust cleanup, and parser/contract hardening can continue offline, but they do not convert environment auth failure into repo readiness.
+
+## Hygiene scan modes
+
+- `scan` or `scan --scan-mode actionable`: default operator mode. It keeps full detected counts but groups stale `.DS_Store` and resume-state debris into summary buckets.
+- `scan --scan-mode full`: forensic mode. It emits the same detections as per-path warnings for archaeology and cleanup planning.
 
 ## Operator interpretation
 
