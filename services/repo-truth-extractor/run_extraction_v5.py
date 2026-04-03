@@ -40,6 +40,8 @@ RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
 if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
+from output_safety import sanitize_payload_for_output, sanitize_text_for_output, sanitized_json_bytes, sanitized_json_text
+
 try:
     from lib.batch_clients import (
         BatchClient,
@@ -1552,7 +1554,7 @@ class UI:
             self._events_path = run_root / "events.jsonl"
 
     def _emit_event(self, payload: Dict[str, Any]) -> None:
-        row = dict(payload)
+        row = sanitize_payload_for_output(dict(payload))
         row.setdefault("ts", now_iso())
         row.setdefault("component", EXTRACTOR_COMPONENT_NAME)
         row.setdefault("event_type", str(row.get("type") or "event"))
@@ -2727,7 +2729,7 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=True, sort_keys=True) + "\n",
+        sanitized_json_text(payload, indent=2, ensure_ascii=True, sort_keys=True) + "\n",
         encoding="utf-8",
     )
 
@@ -2946,10 +2948,12 @@ def write_retry_cost_report_snapshot(
 
 def _write_json_with_sha256(path: Path, payload: Any) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
-    raw = (
-        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        + "\n"
-    ).encode("utf-8")
+    raw = sanitized_json_bytes(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ) + b"\n"
     path.write_bytes(raw)
     digest = sha256_bytes(raw)
     sidecar = path.with_suffix(".sha256")
@@ -6237,7 +6241,7 @@ def run_doctor_full(
     doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "DOCTOR_FULL.json", payload)
-    print(json.dumps(payload, indent=2))
+    print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
 
     has_missing = any(missing_steps.values())
     has_duplicates = bool(duplicates)
@@ -7080,10 +7084,10 @@ def routing_signature(
         "provider": provider,
         "step_id": step_id,
     }
-    encoded = json.dumps(
-        canonical, ensure_ascii=True, separators=(",", ":"), sort_keys=True
+    encoded = sanitized_json_bytes(
+        canonical, ensure_ascii=True, sort_keys=True, separators=(",", ":")
     )
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+    return hashlib.blake2b(encoded, digest_size=32).hexdigest()
 
 
 def build_auth_present_flags(
@@ -7737,9 +7741,8 @@ def extract_provider_error_reason(response_body: str) -> Optional[str]:
 
 
 def sanitize_error_text(text: str) -> str:
-    if not text:
-        return ""
-    return re.sub(r"([?&]key=)[^&\\s]+", r"\1REDACTED", text)
+    return sanitize_text_for_output(text)
+
 
 
 def is_retryable_exception(exc: Exception) -> bool:
@@ -8375,8 +8378,8 @@ def enrich_request_meta(
     endpoint_sig = json.dumps(
         endpoint_sig_src, ensure_ascii=True, separators=(",", ":"), sort_keys=True
     )
-    enriched["endpoint_transport_signature"] = hashlib.sha256(
-        endpoint_sig.encode("utf-8")
+    enriched["endpoint_transport_signature"] = hashlib.blake2b(
+        endpoint_sig.encode("utf-8"), digest_size=32
     ).hexdigest()
     enriched.setdefault("routing_tier", None)
     enriched.setdefault("routing_policy", None)
@@ -8776,7 +8779,7 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         ]
     )
     doctor_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(json.dumps(payload, indent=2))
+    print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
     return 0 if succeeded_modes else 1
 
 
@@ -14024,7 +14027,7 @@ def run_status_loop(
         payload = phase_status_snapshot(run_id, dirs, PHASES)
         try:
             if args.status_json:
-                print(json.dumps(payload, indent=2, ensure_ascii=True))
+                print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
             else:
                 status_ui.status_table(payload, clear=clear)
         except BrokenPipeError:
@@ -14064,7 +14067,7 @@ def print_promptpack(phases: List[str]) -> int:
             }
             for spec in specs
         ]
-    print(json.dumps(payload, indent=2))
+    print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
     return 0
 
 
@@ -14086,7 +14089,7 @@ def print_run_order(phases: List[str]) -> int:
             for phase in phases
         ],
     }
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -14519,7 +14522,7 @@ def print_routing_guide() -> int:
                 "Strict JSON-managed steps and other contract-driven routes can override the top-level policy."
             ),
         }
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -14528,7 +14531,7 @@ def print_prescan_guide() -> int:
         "generated_at": now_iso(),
         "guide": _prescan_guidance_payload("ALL", RunnerConfig.__new__(RunnerConfig)),
     }
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -14552,7 +14555,7 @@ def print_phase_catalog(phases: Optional[List[str]] = None) -> int:
             for phase in selected_phases
         ],
     }
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -14602,7 +14605,7 @@ def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
             )
         entries.sort(key=lambda row: step_sort_key(str(row.get("step_id", ""))))
         payload["phases"][phase] = entries
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -14626,7 +14629,7 @@ def print_phase_prompts(phases: List[str]) -> int:
             }
             for spec in specs
         ]
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -14767,7 +14770,7 @@ def show_provider_usage(
         "step_start_counts": dict(sorted(starts.items())),
         "step_done_route_counts": dict(sorted(routes.items())),
     }
-    print(json.dumps(payload, indent=2, ensure_ascii=True, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -14989,7 +14992,7 @@ def generate_coverage_report(
     proof["coverage_report"] = payload
     proof["updated_at"] = now_iso()
     write_json(proof_path, proof)
-    print(json.dumps(payload, indent=2))
+    print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
     return 0
 
 
@@ -15538,7 +15541,7 @@ def print_config(
             "max_requests_per_job": cfg.batch_max_requests_per_job,
         },
     }
-    print(json.dumps(config_payload, indent=2))
+    print(sanitized_json_text(config_payload, indent=2, sort_keys=False, ensure_ascii=True))
 
 
 def update_proof_pack(
@@ -18227,7 +18230,7 @@ def main() -> None:
         except Exception as exc:
             logger.error("S_INT failed: %s", exc)
             sys.exit(1)
-        print(json.dumps(summary, indent=2 if args.pretty else None, sort_keys=True))
+        print(sanitized_json_text(summary, indent=2 if args.pretty else None, sort_keys=True, ensure_ascii=True))
         sys.exit(0)
 
     try:
@@ -18530,7 +18533,7 @@ def main() -> None:
     if args.preflight_providers:
         targets = phase_sequence if phase_sequence else PHASES
         ok, payload = run_provider_preflight(root, run_id, cfg, targets)
-        print(json.dumps(payload, indent=2))
+        print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
         sys.exit(0 if ok else 1)
     if args.print_promptpack:
         targets = phase_sequence if phase_sequence else PHASES
@@ -18851,7 +18854,7 @@ def main() -> None:
         preview_payload["summary"]["estimated_cost_usd"] = round(
             float(preview_payload["summary"]["estimated_cost_usd"]), 6
         )
-        print(json.dumps(preview_payload, indent=2, sort_keys=True))
+        print(sanitized_json_text(preview_payload, indent=2, sort_keys=True, ensure_ascii=True))
 
 
 def run_batch_retrieval_and_integration(
