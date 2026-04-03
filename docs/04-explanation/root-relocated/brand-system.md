@@ -1,3 +1,14 @@
+---
+id: BRAND_SYSTEM
+title: Brand System
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-02'
+last_review: '2026-04-02'
+next_review: '2026-07-01'
+prelude: Brand System (explanation) for dopemux documentation and developer workflows.
+---
 # BRAND_SYSTEM
 
 ## 1. Purpose

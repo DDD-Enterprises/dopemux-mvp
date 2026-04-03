@@ -1,3 +1,14 @@
+---
+id: SYSTEM_ConPort
+title: System Conport
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-02'
+last_review: '2026-04-02'
+next_review: '2026-07-01'
+prelude: System Conport (reference) for dopemux documentation and developer workflows.
+---
 ### 1. Purpose
 
 ConPort is the active structured context service in this repository: the runtime under `docker/mcp-servers-source/conport/` persists workspace context, decision records, progress entries, and generic custom data in PostgreSQL, serves those records over HTTP and JSON-RPC from `enhanced_server.py`, and exposes an MCP-facing proxy surface from `server.py`. Its canonical authority slice is limited to the structured decision, progress, context, custom-data, and relationship-query surfaces that are actually implemented in that runtime. It is not global memory authority, it is not the PM authority for the full system, and it does not own chronicle history, workflow legality, or dope-context retrieval. Evidence: `repo-truth-pack/conport/EXECUTIVE_SUMMARY.md`, `repo-truth-pack/conport/DRIFT_REPORT.md`, `docker/mcp-servers-source/conport/enhanced_server.py`, `docker/mcp-servers-source/conport/schema.sql`, `docker/mcp-servers-source/conport/server.py`.
