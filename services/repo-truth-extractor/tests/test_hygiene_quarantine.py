@@ -149,6 +149,23 @@ class TestApplyModeQuarantine:
         assert all(action.source != archive for action in plan.applied_actions)
         assert plan.summary["skipped_top_level_zip"] == 1
 
+    def test_ds_store_in_blocked_promptset_run_is_not_quarantined(self, tmp_path):
+        """Blocked runs should preserve incidental DS_Store files for manual review."""
+        runs = tmp_path / "extraction/repo-truth-extractor/v3/runs/blocked_run"
+        runs.mkdir(parents=True, exist_ok=True)
+        ds = runs / ".DS_Store"
+        ds.write_bytes(b"\x00\x01")
+        (runs / "RESUME_PROOF.json").write_text(json.dumps({
+            "resume_status": "blocked",
+            "blocked_promptset": True,
+        }))
+
+        plan = hyg.run_apply(repo_root=tmp_path, dry_run=False)
+
+        assert ds.exists(), "blocked promptset run should preserve incidental DS_Store"
+        assert all(action.source != ds for action in plan.applied_actions)
+        assert plan.summary["skipped_blocked_promptset"] == 1
+
     def test_ambiguous_top_level_failed_marker_is_counted(self, tmp_path):
         """FAILED markers not nested in a run directory are counted as ambiguous and skipped."""
         runs_root = tmp_path / "extraction/repo-truth-extractor/v3/runs"
