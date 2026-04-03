@@ -1,3 +1,15 @@
+---
+id: SYSTEM_DopeconBridge
+title: System Dopeconbridge
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-02'
+last_review: '2026-04-02'
+next_review: '2026-07-01'
+prelude: System Dopeconbridge (reference) for dopemux documentation and developer
+  workflows.
+---
 # SYSTEM_DopeconBridge
 
 ## 1. Purpose

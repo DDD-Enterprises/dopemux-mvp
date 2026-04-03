@@ -1,3 +1,14 @@
+---
+id: SERVICE_CATALOG
+title: Service Catalog
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-02'
+last_review: '2026-04-02'
+next_review: '2026-07-01'
+prelude: Service Catalog (explanation) for dopemux documentation and developer workflows.
+---
 # SERVICE_CATALOG
 
 ## 1. Purpose

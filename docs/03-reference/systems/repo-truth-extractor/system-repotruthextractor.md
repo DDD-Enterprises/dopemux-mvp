@@ -1,3 +1,15 @@
+---
+id: SYSTEM_RepoTruthExtractor
+title: System Repotruthextractor
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-02'
+last_review: '2026-04-02'
+next_review: '2026-07-01'
+prelude: System Repotruthextractor (reference) for dopemux documentation and developer
+  workflows.
+---
 # SYSTEM_RepoTruthExtractor
 
 ## 1. Purpose

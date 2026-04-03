@@ -1,3 +1,14 @@
+---
+id: TRUTH_DATA_EVENTS
+title: Truth Data Events
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-02'
+last_review: '2026-04-02'
+next_review: '2026-07-01'
+prelude: Truth Data Events (reference) for dopemux documentation and developer workflows.
+---
 # TRUTH_DATA_EVENTS
 
 Method:
