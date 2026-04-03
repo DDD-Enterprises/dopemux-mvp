@@ -13,12 +13,14 @@ import sys
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from hashlib import sha256
+import hashlib
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlparse
 
 import yaml
+
+from output_safety import sanitize_text_for_output, sanitized_json_bytes, sanitized_json_text
 
 
 SERVICE_DIR = Path(__file__).resolve().parent
@@ -145,22 +147,19 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def sha256_bytes(content: bytes) -> str:
-    return sha256(content).hexdigest()
-
-
 def sha256_file(path: Path) -> str:
-    return sha256_bytes(path.read_bytes())
+    with path.open("rb") as handle:
+        return hashlib.file_digest(handle, "sha256").hexdigest()
 
 
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True) + "\n", encoding="utf-8")
 
 
 def write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    path.write_text(sanitize_text_for_output(text), encoding="utf-8")
 
 
 def read_yaml(path: Path) -> Dict[str, Any]:
@@ -186,8 +185,8 @@ def normalize_json_payload(payload: Any, volatile_keys: Optional[Set[str]] = Non
 
 def normalized_sha(payload: Any, volatile_keys: Optional[Set[str]] = None) -> str:
     normalized = normalize_json_payload(payload, volatile_keys)
-    raw = json.dumps(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
-    return sha256_bytes(raw)
+    raw = sanitized_json_bytes(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.blake2b(raw, digest_size=32).hexdigest()
 
 
 def run_command(args: Sequence[str], cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -1319,7 +1318,7 @@ def main() -> int:
     args = parser.parse_args()
     config = build_config(args)
     result = run_gate(config)
-    print(json.dumps(result["verdict"], indent=2, sort_keys=True))
+    print(sanitized_json_text(result["verdict"], indent=2, sort_keys=True, ensure_ascii=True))
     return 0 if result["verdict"]["verdict"] in {"GO", "CONDITIONAL_GO"} else 1
 
 
