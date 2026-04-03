@@ -9,7 +9,7 @@ import json
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 
 DEFAULT_AUDIT_PATH = "reports/docs-hygiene/sweep_audit.json"
