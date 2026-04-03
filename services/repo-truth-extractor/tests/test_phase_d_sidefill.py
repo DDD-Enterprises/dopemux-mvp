@@ -9,8 +9,8 @@ import pytest
 
 def _load_runner_module():
     root = Path(__file__).resolve().parents[3]
-    module_path = root / "services" / "repo-truth-extractor" / "run_extraction_v3.py"
-    spec = importlib.util.spec_from_file_location("run_extraction_v3", module_path)
+    module_path = root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
+    spec = importlib.util.spec_from_file_location("run_extraction_v5", module_path)
     assert spec is not None
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
