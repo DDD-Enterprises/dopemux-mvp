@@ -1,3 +1,14 @@
+---
+id: SYSTEM_DopeMemory
+title: System Dopememory
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-02'
+last_review: '2026-04-02'
+next_review: '2026-07-01'
+prelude: System Dopememory (reference) for dopemux documentation and developer workflows.
+---
 ### 1. Purpose
 
 dope-memory is the active chronicle service in this repository: it accepts manual and promoted activity inputs, writes curated chronological records into the canonical SQLite chronicle ledger, and serves chronicle-oriented tools over HTTP from `services/working-memory-assistant/dope_memory_main.py`. Its canonical authority slice is chronicle storage and chronicle-derived operations such as replay, recap, correction/supersession, reflections, and trajectory derived from that ledger. It is not the whole memory layer: it does not own PM truth, it does not own ConPort's structured decision/relationship memory, it does not own dope-context retrieval authority, and it does not make upstream event producers or the optional Postgres mirror authoritative. Evidence: `repo-truth-pack/dope-memory/DISCOVERY_NOTES.md`, `services/working-memory-assistant/dope_memory_main.py`, `services/working-memory-assistant/chronicle/store.py`, `services/working-memory-assistant/canonical_ledger.py`.

@@ -1,3 +1,14 @@
+---
+id: SYSTEM_Dopetask
+title: System Dopetask
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-02'
+last_review: '2026-04-02'
+next_review: '2026-07-01'
+prelude: System Dopetask (reference) for dopemux documentation and developer workflows.
+---
 ### 1. Purpose
 
 `dopetask` is an external task-execution CLI that this repository installs into a dedicated virtual environment and invokes through wrapper scripts. In this checkout, `dopemux` delegates all kernel execution to it: `dopemux` forwards kernel commands into `scripts/taskx`, which is only a compatibility shim for `scripts/dopetask`, which then execs the `dopetask` binary installed into the pinned virtual environment. `dopetask` does not own dopemux CLI orchestration, PM truth, memory truth, retrieval truth, MCP startup, or routing decisions.

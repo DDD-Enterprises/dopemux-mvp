@@ -1,3 +1,14 @@
+---
+id: SYSTEM_Dopemux
+title: System Dopemux
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-02'
+last_review: '2026-04-02'
+next_review: '2026-07-01'
+prelude: System Dopemux (reference) for dopemux documentation and developer workflows.
+---
 ### 1. Purpose
 
 `dopemux` is the repo’s operator-facing control layer and CLI package. Observed in `pyproject.toml` and `src/dopemux/cli.py`, it exposes the main `dopemux` command, launches local operator workflows, manages routing mode and MCP startup, delegates kernel lifecycle commands to the external `dopetask` runner, and routes operator actions and startup/configuration flows toward downstream systems such as task-orchestrator, dope-memory, ConPort, and dope-context. It does not own canonical PM state, canonical durable memory, structured retrieval truth, or a proven single agent runtime authority.
