@@ -17,7 +17,7 @@ import sys
 from dataclasses import asdict, dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional
 
 
 DEFAULT_POLICY_PATH = "config/docs_hygiene/docs_placement_policy.yaml"
