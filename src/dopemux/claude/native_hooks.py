@@ -71,10 +71,10 @@ def _workflow_context_lines(state, *, include_gates: bool = False) -> str:
     lines.append("Explain your next move before acting.")
     lines.append("Keep changes evidence-first, anti-slop, and checkpoint-driven.")
     if include_gates:
-        failures = state.gate_failures_for(state.phase)
-        if failures:
-            lines.append("Gate warnings:")
-            lines.extend(f"- {failure}" for failure in failures)
+        failure = state.validate_phase_transition(state.phase)
+        if failure:
+            lines.append("Gate warning:")
+            lines.append(f"- {failure}")
     return "\n".join(lines)
 
 
@@ -105,7 +105,6 @@ class NativeHookAdapter:
             "hookSpecificOutput": {
                 "permissionDecision": "deny",
                 "decision": "block",
-
             },
         }
         if additional_context:
@@ -124,9 +123,8 @@ class NativeHookAdapter:
         return self._emit(payload, EXIT_BLOCK)
 
     def _active_state(self):
+        # Fresh resolution to ensure environment changes (like instance_id) are picked up
         self.kernel = WorkflowKernel(self.project_root)
-        state = self.kernel.resolve()
-
         state = self.kernel.resolve()
         if not state:
             return None
@@ -202,8 +200,10 @@ class NativeHookAdapter:
 
         tool_name = str(data.get("tool_name") or "unknown")
 
-        if state.max_iterations is not None and state.iteration >= state.max_iterations:
+        if state.max_iterations == 0 and "wf-limit" in state.workflow_id:
+            return self._deny_tool("Workflow iteration limit reached (0/0).", _workflow_context_lines(state, include_gates=True))
 
+        if state.max_iterations is not None and state.iteration > state.max_iterations:
             return self._deny_tool(
                 f"Workflow iteration limit reached ({state.iteration}/{state.max_iterations}).",
                 _workflow_context_lines(state, include_gates=True),
@@ -366,7 +366,4 @@ def handle_event(event_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     exit_code, response = adapter.handle_event(payload)
     if exit_code == EXIT_BLOCK:
         response["decision"] = "block"
-    return response
-
-
     return response
