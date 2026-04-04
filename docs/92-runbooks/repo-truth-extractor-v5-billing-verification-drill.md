@@ -26,6 +26,7 @@ Compare:
 
 - the v5 dry-run cost preview
 - the runtime spend ledger
+- the cost-abort artifact when the run stops on cap
 - the provider-side billing or usage export
 
 for a single controlled partition.
@@ -59,8 +60,17 @@ DPMX_LIVE_OK=1 python services/repo-truth-extractor/run_extraction_v5.py \
 ## Compare these artifacts
 
 - `runs/rte_billing_probe/spend_ledger.json`
+- `runs/rte_billing_probe/COST_ABORT.json` when the cap is hit
 - `runs/rte_billing_probe/A_repo_control_plane/inputs/COST_PREVIEW.json`
 - provider-side billing, usage export, or console view for the same time window
+
+Observed runtime behavior:
+
+- `--max-cost-usd` is enforced before projected submit/call work and after actual runtime accumulation
+- unknown model ids use the recorded conservative fallback policy rather than optimistic zero-cost handling
+- batch submit and async submit reserve estimated spend at submit time
+- if a breach occurs after a provider response, the current partial output is retained and the run is marked `COST_ABORTED`
+- cost-aborted runs are not resumable
 
 ## Record the discrepancy
 
@@ -100,6 +110,7 @@ Reasons for variance include:
 - fallback baseline pricing for unknown model ids
 - step-level route overrides
 - retries
+- submit-time reservation versus observed usage at finalize/watch
 - provider-side billing granularity differences
 - batch vs sync execution differences
 
