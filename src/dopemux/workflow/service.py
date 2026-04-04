@@ -78,10 +78,14 @@ class WorkflowKernel:
             or cwd
         ).resolve()
 
-        family_root = active_workspace
         if os.environ.get("DOPEMUX_WORKSPACE_ROOT"):
-            return WorkspaceContext(family_root=active_workspace, active_workspace=active_workspace, instance_id=os.environ.get("DOPEMUX_INSTANCE_ID") or "A")
+            return WorkspaceContext(
+                family_root=active_workspace,
+                active_workspace=active_workspace,
+                instance_id=os.environ.get("DOPEMUX_INSTANCE_ID") or "A"
+            )
 
+        family_root = active_workspace
         env_main_repo = os.environ.get("DOPEMUX_MAIN_REPO")
         if env_main_repo:
             family_root = Path(env_main_repo).resolve()
@@ -98,7 +102,7 @@ class WorkflowKernel:
         return WorkspaceContext(
             family_root=family_root,
             active_workspace=active_workspace,
-            instance_id=instance_id or "A",
+            instance_id=instance_id,
         )
 
     @property
@@ -168,18 +172,13 @@ class WorkflowKernel:
                 setattr(state, k, v)
         return self.save(state)
 
-
     def resolve(self, workflow_id: Optional[str] = None) -> Optional[WorkflowState]:
         """Resolve a workflow by id or by current cwd ancestry and instance."""
         if workflow_id:
             path = self.state_path(workflow_id)
             if path.exists():
                 return self.load(workflow_id)
-
-            path = self.state_path(workflow_id)
-            if not path.exists():
-                return None
-            return self.load(workflow_id)
+            return None
 
         best: Optional[Tuple[int, str, WorkflowState]] = None
         current_path = self.cwd.resolve()
@@ -439,7 +438,6 @@ class WorkflowKernel:
         task_presence = {}
         if task:
             from .models import task_artifact_presence
-
             task_presence = task_artifact_presence(task)
         return {
             "workflow_id": state.workflow_id,

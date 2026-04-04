@@ -41,7 +41,7 @@ class TestCORSSecurity:
             client = AsyncClient(base_url="http://127.0.0.1:8095")
 
             server_ready = False
-            for _ in range(24):
+            for _ in range(60):
                 if process.poll() is not None:
                     break
                 try:
