@@ -258,6 +258,8 @@ TELEMETRY_DIRNAME = "telemetry"
 RUN_DASHBOARD_FILENAME = "RUN_DASHBOARD.json"
 STEP_METRICS_FILENAME = "STEP_METRICS.json"
 FAILURE_INDEX_FILENAME = "FAILURE_INDEX.json"
+COST_ABORT_FILENAME = "COST_ABORT.json"
+COST_ABORT_REASON = "MAX_COST_USD_EXCEEDED"
 RETRY_COST_REPORT_FILENAME = "RETRY_COST_REPORT.json"
 TERMINAL_TIMELINE_FILENAME = "TERMINAL_TIMELINE.jsonl"
 PROMPTSET_BLOCKED_REASON = "PROMPTSET_INVALID"
@@ -5832,6 +5834,23 @@ def run_provider_doctor_probe(
     endpoint_url = transport_endpoint_url(
         provider, model_id, cfg, api_key, effective_mode
     )
+    route_token = f"{provider}/{model_id}"
+    projected_input_tokens = _estimate_text_tokens(
+        "Return exactly OK.", "Return the single token OK."
+    )
+    projected_output_tokens = _project_output_tokens(projected_input_tokens)
+    _check_projected_cost_limit(
+        cfg,
+        phase="DOCTOR",
+        step_id="PROVIDER_PROBE",
+        partition_id=route_token,
+        provider=provider,
+        model_id=model_id,
+        input_tokens=projected_input_tokens,
+        output_tokens=projected_output_tokens,
+        execution_mode="doctor_probe",
+        route=route_token,
+    )
     result = call_llm(
         provider=provider,
         model_id=model_id,
@@ -5841,6 +5860,25 @@ def run_provider_doctor_probe(
         cfg=cfg,
     )
     meta = result.get("meta", {})
+    if meta.get("response_received") or result.get("ok"):
+        meta["spend_usage"] = _accumulate_runtime_spend(
+            cfg,
+            phase="DOCTOR",
+            step_id="PROVIDER_PROBE",
+            partition_id=route_token,
+            provider=provider,
+            model_id=model_id,
+            execution_mode="doctor_probe",
+            response_summary=(
+                meta.get("response_summary")
+                if isinstance(meta.get("response_summary"), dict)
+                else None
+            ),
+            response_text=str(result.get("text") or ""),
+            fallback_input_tokens=projected_input_tokens,
+            fallback_output_tokens=projected_output_tokens,
+            route=route_token,
+        )
     return {
         "provider": provider,
         "model_id": model_id,
@@ -7525,6 +7563,7 @@ def _pricing_preview(
     model_id: str,
     input_tokens: int,
     output_tokens: int,
+    route: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     if not cfg.ledger:
         return None
@@ -7533,7 +7572,187 @@ def _pricing_preview(
         output_tokens=output_tokens,
         provider=provider,
         model_id=model_id,
+        route=route,
     )
+
+
+class CostLimitExceededError(RuntimeError):
+    def __init__(self, message: str, details: Dict[str, Any]) -> None:
+        super().__init__(message)
+        self.details = dict(details)
+
+
+def _build_cost_abort_state(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    execution_mode: str,
+    breach_stage: str,
+    pricing: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    ledger_record = getattr(cfg, "ledger", None)
+    spend_record = getattr(ledger_record, "record", None)
+    payload = {
+        "status": "cost_aborted",
+        "reason": COST_ABORT_REASON,
+        "phase": phase,
+        "step_id": step_id,
+        "partition_id": partition_id,
+        "provider": str(provider or "").strip().lower(),
+        "model_id": str(model_id or "").strip(),
+        "execution_mode": str(execution_mode or "").strip() or "unknown",
+        "breach_stage": str(breach_stage or "").strip() or "unknown",
+        "total_cost_usd": (
+            float(getattr(spend_record, "total_cost_usd", 0.0))
+            if spend_record is not None
+            else 0.0
+        ),
+        "limit_usd": (
+            float(cfg.max_cost_usd) if cfg.max_cost_usd is not None else None
+        ),
+        "fallback_usage_count": int(
+            getattr(spend_record, "fallback_usage_count", 0) or 0
+        )
+        if spend_record is not None
+        else 0,
+        "partial_outputs_retained": True,
+        "resume_allowed": False,
+    }
+    if isinstance(pricing, dict):
+        payload["pricing_key"] = pricing.get("pricing_key")
+        payload["pricing_source"] = pricing.get("pricing_source")
+        payload["pricing_version"] = pricing.get("pricing_version")
+        payload["unknown_model"] = bool(pricing.get("unknown_model", False))
+        payload["projected_additional_cost_usd"] = pricing.get("estimated_cost_usd")
+        payload["input_tokens"] = pricing.get("input_tokens")
+        payload["output_tokens"] = pricing.get("output_tokens")
+    return payload
+
+
+def _raise_cost_limit_exceeded(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    execution_mode: str,
+    breach_stage: str,
+    pricing: Optional[Dict[str, Any]] = None,
+    message_prefix: str,
+) -> None:
+    abort_state = _build_cost_abort_state(
+        cfg,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=provider,
+        model_id=model_id,
+        execution_mode=execution_mode,
+        breach_stage=breach_stage,
+        pricing=pricing,
+    )
+    raise CostLimitExceededError(
+        (
+            f"{message_prefix} "
+            f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
+            f"provider={provider} model={model_id} total_usd={abort_state['total_cost_usd']:.4f} "
+            f"limit={abort_state['limit_usd']})"
+        ),
+        abort_state,
+    )
+
+
+def _persist_cost_abort(
+    *,
+    root: Path,
+    dirs: Dict[str, Path],
+    run_id: str,
+    phases: Iterable[str],
+    run_started_at: str,
+    exc: CostLimitExceededError,
+    ui: Optional["UI"] = None,
+    source: str = "cost_abort",
+) -> Dict[str, Any]:
+    cost_abort = {
+        **dict(exc.details),
+        "generated_at": now_iso(),
+        "run_id": run_id,
+        "run_started_at": run_started_at,
+        "active_phases": sorted({str(phase).upper() for phase in phases if str(phase).strip()}),
+    }
+    cost_abort_path = dirs["root"] / COST_ABORT_FILENAME
+    write_json(cost_abort_path, cost_abort)
+
+    manifest_path = dirs["root"] / "RUN_MANIFEST.json"
+    manifest = _load_json_object(manifest_path)
+    manifest["run_status"] = "COST_ABORTED"
+    manifest["phase_status"] = "cost_aborted"
+    manifest["blocked_reason"] = COST_ABORT_REASON
+    manifest["blocked_phase"] = cost_abort.get("phase")
+    manifest["resume_allowed"] = False
+    manifest["cost_abort"] = cost_abort
+    manifest["updated_at"] = now_iso()
+    write_json(manifest_path, manifest)
+
+    coverage_path = dirs["root"] / COVERAGE_ROLLUP_FILENAME
+    coverage = _load_json_object(coverage_path)
+    coverage["generated_at"] = now_iso()
+    coverage["run_id"] = run_id
+    coverage["run_status"] = "COST_ABORTED"
+    coverage["blocked_reason"] = COST_ABORT_REASON
+    coverage["resume_allowed"] = False
+    coverage["cost_abort"] = cost_abort
+    write_json(coverage_path, coverage)
+
+    resume_path = dirs["root"] / RESUME_PROOF_FILENAME
+    resume = _load_json_object(resume_path)
+    resume["generated_at"] = now_iso()
+    resume["run_id"] = run_id
+    resume["resume_status"] = "blocked"
+    resume["blocked_reason"] = COST_ABORT_REASON
+    resume["resume_allowed"] = False
+    resume["cost_abort"] = cost_abort
+    write_json(resume_path, resume)
+
+    proof_path = dirs["root"] / PROOF_PACK_FILENAME
+    proof = _load_json_object(proof_path)
+    linked_artifacts = (
+        dict(proof.get("linked_artifacts"))
+        if isinstance(proof.get("linked_artifacts"), dict)
+        else {}
+    )
+    linked_artifacts["cost_abort"] = str(cost_abort_path.resolve())
+    proof["run_id"] = run_id
+    proof["git_sha"] = proof.get("git_sha") or get_git_sha(root)
+    proof["runner_sha256"] = proof.get("runner_sha256") or sha256_text(RUNNER_SCRIPT)
+    proof["argv"] = proof.get("argv") or sys.argv
+    proof["python_version"] = proof.get("python_version") or platform.python_version()
+    proof["cwd"] = proof.get("cwd") or str(root.resolve())
+    proof["started_at"] = proof.get("started_at") or run_started_at
+    proof["finished_at"] = now_iso()
+    proof["updated_at"] = now_iso()
+    proof["run_status"] = "COST_ABORTED"
+    proof["blocked_reason"] = COST_ABORT_REASON
+    proof["resume_allowed"] = False
+    proof["cost_abort"] = cost_abort
+    proof["linked_artifacts"] = linked_artifacts
+    write_json(proof_path, proof)
+
+    dashboard_payload = phase_status_snapshot(run_id, dirs, PHASES)
+    dashboard_payload["run_status"] = "COST_ABORTED"
+    dashboard_payload["blocked_reason"] = COST_ABORT_REASON
+    dashboard_payload["resume_allowed"] = False
+    dashboard_payload["cost_abort"] = cost_abort
+    write_run_dashboard_snapshot(dirs["root"], dashboard_payload, source=source)
+    if ui is not None:
+        ui.run_dashboard_snapshot(dashboard_payload, source=source)
+    return cost_abort
 
 
 def _check_projected_cost_limit(
@@ -7547,6 +7766,7 @@ def _check_projected_cost_limit(
     input_tokens: int,
     output_tokens: int,
     execution_mode: str,
+    route: Optional[str] = None,
 ) -> None:
     pricing = _pricing_preview(
         cfg,
@@ -7554,16 +7774,23 @@ def _check_projected_cost_limit(
         model_id=model_id,
         input_tokens=input_tokens,
         output_tokens=output_tokens,
+        route=route,
     )
     if pricing is None:
         return
     if cfg.ledger.check_limit(pricing["estimated_cost_usd"]):
         return
-    raise RuntimeError(
-        "Projected cost cap exceeded before provider call "
-        f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
-        f"provider={provider} model={model_id} add_usd={pricing['estimated_cost_usd']:.4f} "
-        f"limit={cfg.max_cost_usd})"
+    _raise_cost_limit_exceeded(
+        cfg,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=provider,
+        model_id=model_id,
+        execution_mode=execution_mode,
+        breach_stage="pre_model_execution",
+        pricing=pricing,
+        message_prefix="Projected cost cap exceeded before provider call",
     )
 
 
@@ -7613,6 +7840,8 @@ def _accumulate_runtime_spend(
     fallback_input_tokens: int = 0,
     fallback_output_tokens: Optional[int] = None,
     payload: Optional[Dict[str, Any]] = None,
+    route: Optional[str] = None,
+    raise_on_limit: bool = True,
 ) -> Optional[Dict[str, Any]]:
     if not cfg.ledger:
         return None
@@ -7629,6 +7858,7 @@ def _accumulate_runtime_spend(
         int(usage["output_tokens"]),
         provider=provider,
         model_id=model_id,
+        route=route,
     )
     combined = {
         **usage,
@@ -7636,11 +7866,97 @@ def _accumulate_runtime_spend(
         "execution_mode": execution_mode,
     }
     if not cfg.ledger.check_limit():
-        raise RuntimeError(
-            "Runtime cost cap exceeded after provider response "
-            f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
-            f"provider={provider} model={model_id} total_usd={cfg.ledger.record.total_cost_usd:.4f} "
-            f"limit={cfg.max_cost_usd})"
+        cost_abort_state = _build_cost_abort_state(
+            cfg,
+            phase=phase,
+            step_id=step_id,
+            partition_id=partition_id,
+            provider=provider,
+            model_id=model_id,
+            execution_mode=execution_mode,
+            breach_stage="post_model_output",
+            pricing=pricing,
+        )
+        combined["cost_limit_exceeded"] = True
+        combined["cost_abort_state"] = cost_abort_state
+        if raise_on_limit:
+            raise CostLimitExceededError(
+                (
+                    "Runtime cost cap exceeded after provider response "
+                    f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
+                    f"provider={provider} model={model_id} total_usd={cost_abort_state['total_cost_usd']:.4f} "
+                    f"limit={cost_abort_state['limit_usd']})"
+                ),
+                cost_abort_state,
+            )
+    else:
+        combined["cost_limit_exceeded"] = False
+    return combined
+
+
+def _reserve_projected_spend(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+    execution_mode: str,
+    route: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    if not cfg.ledger:
+        return None
+    _check_projected_cost_limit(
+        cfg,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=provider,
+        model_id=model_id,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        execution_mode=execution_mode,
+        route=route,
+    )
+    reserved = cfg.ledger.accumulate(
+        phase,
+        input_tokens,
+        output_tokens,
+        provider=provider,
+        model_id=model_id,
+        route=route,
+    )
+    combined = {
+        **reserved,
+        "execution_mode": execution_mode,
+        "accounting_mode": "reserved_at_submit",
+        "cost_limit_exceeded": False,
+    }
+    if not cfg.ledger.check_limit():
+        cost_abort_state = _build_cost_abort_state(
+            cfg,
+            phase=phase,
+            step_id=step_id,
+            partition_id=partition_id,
+            provider=provider,
+            model_id=model_id,
+            execution_mode=execution_mode,
+            breach_stage="post_model_output",
+            pricing=reserved,
+        )
+        combined["cost_limit_exceeded"] = True
+        combined["cost_abort_state"] = cost_abort_state
+        raise CostLimitExceededError(
+            (
+                "Projected cost reservation exceeded limit after provider submit "
+                f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
+                f"provider={provider} model={model_id} total_usd={cost_abort_state['total_cost_usd']:.4f} "
+                f"limit={cost_abort_state['limit_usd']})"
+            ),
+            cost_abort_state,
         )
     return combined
 
@@ -8561,6 +8877,21 @@ def run_gemini_auth_probe(
     probe_path = raw_dir / f"AUTH_PROBE__gemini__{step_id}.json"
     system_prompt = "Return exactly OK."
     user_content = "Return the single token OK."
+    route_token = f"{provider}/{model_id}"
+    projected_input_tokens = _estimate_text_tokens(system_prompt, user_content)
+    projected_output_tokens = _project_output_tokens(projected_input_tokens)
+    _check_projected_cost_limit(
+        cfg,
+        phase=phase,
+        step_id=step_id,
+        partition_id="AUTH_PROBE",
+        provider=provider,
+        model_id=model_id,
+        input_tokens=projected_input_tokens,
+        output_tokens=projected_output_tokens,
+        execution_mode="auth_probe",
+        route=route_token,
+    )
     result = call_llm(
         provider=provider,
         model_id=model_id,
@@ -8578,6 +8909,25 @@ def run_gemini_auth_probe(
         provider=provider,
         model_id=model_id,
     )
+    if meta.get("response_received") or result.get("ok"):
+        meta["spend_usage"] = _accumulate_runtime_spend(
+            cfg,
+            phase=phase,
+            step_id=step_id,
+            partition_id="AUTH_PROBE",
+            provider=provider,
+            model_id=model_id,
+            execution_mode="auth_probe",
+            response_summary=(
+                meta.get("response_summary")
+                if isinstance(meta.get("response_summary"), dict)
+                else None
+            ),
+            response_text=str(result.get("text") or ""),
+            fallback_input_tokens=projected_input_tokens,
+            fallback_output_tokens=projected_output_tokens,
+            route=route_token,
+        )
     payload = {
         "run_id": run_id,
         "phase": phase,
@@ -8677,6 +9027,23 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
             if transport == "openai_compat_http"
             else sdk_auth_present_flags(provider, bool(api_key))
         )
+        route_token = f"{provider}/{model_id}"
+        projected_input_tokens = _estimate_text_tokens(
+            "Return exactly OK.", "Return the single token OK."
+        )
+        projected_output_tokens = _project_output_tokens(projected_input_tokens)
+        _check_projected_cost_limit(
+            probe_cfg,
+            phase="AUTH",
+            step_id="AUTH_DOCTOR",
+            partition_id=f"{provider}:{mode}",
+            provider=provider,
+            model_id=model_id,
+            input_tokens=projected_input_tokens,
+            output_tokens=projected_output_tokens,
+            execution_mode="auth_doctor",
+            route=route_token,
+        )
         result = call_llm(
             provider=provider,
             model_id=model_id,
@@ -8686,6 +9053,25 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
             cfg=probe_cfg,
         )
         meta = result.get("meta", {})
+        if meta.get("response_received") or result.get("ok"):
+            meta["spend_usage"] = _accumulate_runtime_spend(
+                probe_cfg,
+                phase="AUTH",
+                step_id="AUTH_DOCTOR",
+                partition_id=f"{provider}:{mode}",
+                provider=provider,
+                model_id=model_id,
+                execution_mode="auth_doctor",
+                response_summary=(
+                    meta.get("response_summary")
+                    if isinstance(meta.get("response_summary"), dict)
+                    else None
+                ),
+                response_text=str(result.get("text") or ""),
+                fallback_input_tokens=projected_input_tokens,
+                fallback_output_tokens=projected_output_tokens,
+                route=route_token,
+            )
         failure_type = meta.get("failure_type")
         checks.append(
             {
@@ -10174,7 +10560,7 @@ def run_comparison_lane(
 
     Reuses the same prompt_text and partition inputs as the canonical lane.
     Stores results under raw/comparison/{provider}__{model}/.
-    Never raises — failures are captured in result dicts.
+    Raises CostLimitExceededError when the comparison lane breaches the active run cap.
 
     Returns:
         List of per-partition result dicts with keys:
@@ -10231,17 +10617,37 @@ def run_comparison_lane(
         try:
             context_text, _ctx_meta = build_partition_context_fn(
                 phase=phase,
-                step_id=step_id,
-                partition=partition,
+                partition_paths=list(partition.get("paths") or []),
+                file_truncate_chars=cfg.file_truncate_chars,
+                home_scan_mode=cfg.home_scan_mode,
+                max_files=max_files_for_phase(phase, cfg),
+                max_chars=cfg.max_chars,
+                router=cfg.router,
             )
-            full_prompt = f"{prompt_text}\n\n{context_text}"
+            route_token = f"{compare_provider}/{compare_model}"
+            projected_input_tokens = _estimate_text_tokens(prompt_text, context_text)
+            projected_output_tokens = _project_output_tokens(projected_input_tokens)
+            _check_projected_cost_limit(
+                cfg,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                provider=compare_provider,
+                model_id=compare_model,
+                input_tokens=projected_input_tokens,
+                output_tokens=projected_output_tokens,
+                execution_mode="comparison",
+                route=route_token,
+            )
             started = time.time()
             llm_result = call_llm_fn(
                 provider=compare_provider,
                 model_id=compare_model,
-                api_key=None,
-                prompt=full_prompt,
-                partition_id=partition_id,
+                api_key_env=PROVIDER_API_KEY_ENV.get(compare_provider, ""),
+                system_prompt=prompt_text,
+                user_content=context_text,
+                cfg=cfg,
+                force_json_output=True,
             )
             elapsed_ms = int((time.time() - started) * 1000)
 
@@ -10259,7 +10665,6 @@ def run_comparison_lane(
                     parsed, raw_text, output_artifacts
                 )
             )
-
             request_meta = {
                 "lane": "comparison",
                 "authoritative": False,
@@ -10271,6 +10676,29 @@ def run_comparison_lane(
                 "repair_invocations": 0,
                 "repair_successes": 0,
             }
+            if llm_meta.get("response_received") or llm_result.get("ok"):
+                spend_record = _accumulate_runtime_spend(
+                    cfg,
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=compare_provider,
+                    model_id=compare_model,
+                    execution_mode="comparison",
+                    response_summary=(
+                        llm_meta.get("response_summary")
+                        if isinstance(llm_meta.get("response_summary"), dict)
+                        else None
+                    ),
+                    response_text=raw_text,
+                    fallback_input_tokens=projected_input_tokens,
+                    fallback_output_tokens=projected_output_tokens,
+                    route=route_token,
+                    raise_on_limit=False,
+                )
+                if spend_record is not None:
+                    request_meta["spend_usage"] = spend_record
+
             payload = {
                 "phase": phase,
                 "step_id": step_id,
@@ -10282,6 +10710,16 @@ def run_comparison_lane(
                 json.dumps(payload, indent=2, sort_keys=True, default=str),
                 encoding="utf-8",
             )
+            if isinstance(request_meta.get("spend_usage"), dict) and isinstance(
+                request_meta["spend_usage"].get("cost_abort_state"), dict
+            ):
+                raise CostLimitExceededError(
+                    (
+                        "Runtime cost cap exceeded during comparison lane "
+                        f"(phase={phase} step={step_id} partition={partition_id})"
+                    ),
+                    request_meta["spend_usage"]["cost_abort_state"],
+                )
             logger.info(
                 "COMPARE_EXEC_DONE phase=%s step=%s partition=%s provider=%s model=%s elapsed_ms=%s",
                 phase, step_id, partition_id, compare_provider, compare_model, elapsed_ms,
@@ -10298,6 +10736,8 @@ def run_comparison_lane(
                 "artifacts": artifacts,
                 "failure_reason": None,
             })
+        except CostLimitExceededError:
+            raise
         except Exception as exc:
             failure_reason = str(exc)
             logger.warning(
@@ -10608,7 +11048,14 @@ def execute_step_for_partitions(
     batch_job_rows: List[Dict[str, Any]] = []
     batch_result_rows: List[Dict[str, Any]] = []
     started_at = time.time()
-    workers = max(1, min(16, int(cfg.partition_workers)))
+    requested_workers = max(1, min(16, int(cfg.partition_workers)))
+    workers = requested_workers
+    if cfg.max_cost_usd is not None and not cfg.dry_run and requested_workers > 1:
+        logger.warning(
+            "Cost cap active; clamping partition_workers from %s to 1 for deterministic stop-on-breach.",
+            requested_workers,
+        )
+        workers = 1
     ui_completed = 0
     ui_ok = 0
     ui_failed = 0
@@ -11501,6 +11948,23 @@ def execute_step_for_partitions(
                 if ui is not None
                 else None
             )
+            strict_route = f"{strict_provider}/{strict_model_id}"
+            projected_input_tokens = _estimate_text_tokens(
+                prompt_text, strict_user_content
+            )
+            projected_output_tokens = _project_output_tokens(projected_input_tokens)
+            _check_projected_cost_limit(
+                cfg,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                provider=strict_provider,
+                model_id=strict_model_id,
+                input_tokens=projected_input_tokens,
+                output_tokens=projected_output_tokens,
+                execution_mode=f"strict_{stage}",
+                route=strict_route,
+            )
             result = call_llm(
                 provider=strict_provider,
                 model_id=strict_model_id,
@@ -11532,6 +11996,46 @@ def execute_step_for_partitions(
                 provider=strict_provider,
                 model_id=strict_model_id,
             )
+            if request_meta_local.get("response_received") or result.get("ok"):
+                spend_record = _accumulate_runtime_spend(
+                    cfg,
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=strict_provider,
+                    model_id=strict_model_id,
+                    execution_mode=f"strict_{stage}",
+                    response_summary=(
+                        request_meta_local.get("response_summary")
+                        if isinstance(request_meta_local.get("response_summary"), dict)
+                        else None
+                    ),
+                    response_text=response_text_local,
+                    fallback_input_tokens=projected_input_tokens,
+                    fallback_output_tokens=projected_output_tokens,
+                    route=strict_route,
+                    raise_on_limit=False,
+                )
+                if spend_record is not None:
+                    request_meta_local["spend_usage"] = spend_record
+                    if "cost_abort_state" in spend_record:
+                        request_meta_local["cost_abort_state"] = spend_record["cost_abort_state"]
+                    if ui is not None:
+                        strict_trace = strict_trace_context or ui.make_trace_context(
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                        )
+                        ui.spend_ledger_event(
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            trace_id=str(strict_trace.get("trace_id") or _new_trace_id()),
+                            span_id=_new_span_id(),
+                            parent_span_id=str(strict_trace.get("span_id") or "") or None,
+                            prompt_tokens=int(spend_record.get("input_tokens", 0) or 0),
+                            completion_tokens=int(spend_record.get("output_tokens", 0) or 0),
+                        )
             route_transport = transport_for_provider(strict_provider, cfg)
             strict_attestations = [
                 {
@@ -12023,32 +12527,39 @@ def execute_step_for_partitions(
                             input_tokens=projected_input_tokens,
                             output_tokens=projected_output_tokens,
                             execution_mode="batch_submit",
+                            route=f"{batch_provider}/{batch_model_id}",
                         )
                         batch_job_id = batch_client.submit(
                             batch_requests, BatchRoute(*selected_route), step_context
                         )
-
-                        if cfg.ledger:
-                            # Estimate tokens for batch requests
-                            in_toks = sum(len(req.user_content) // 4 for req in batch_requests)
-                            out_toks = 1000  # Arbitrary estimate for batch output
-                            cfg.ledger.accumulate(phase, in_toks, out_toks)
-                            if ui is not None:
-                                batch_trace = ui.make_trace_context(
-                                    phase=phase,
-                                    step_id=step_id,
-                                    partition_id=partition_id,
-                                )
-                                ui.spend_ledger_event(
-                                    phase=phase,
-                                    step_id=step_id,
-                                    partition_id=partition_id,
-                                    trace_id=batch_trace["trace_id"],
-                                    span_id=_new_span_id(),
-                                    parent_span_id=batch_trace.get("span_id"),
-                                    prompt_tokens=in_toks,
-                                    completion_tokens=out_toks,
-                                )
+                        reserved_spend = _reserve_projected_spend(
+                            cfg,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                            input_tokens=projected_input_tokens,
+                            output_tokens=projected_output_tokens,
+                            execution_mode="batch_submit",
+                            route=f"{batch_provider}/{batch_model_id}",
+                        )
+                        if reserved_spend is not None and ui is not None:
+                            batch_trace = ui.make_trace_context(
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                            )
+                            ui.spend_ledger_event(
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                                trace_id=batch_trace["trace_id"],
+                                span_id=_new_span_id(),
+                                parent_span_id=batch_trace.get("span_id"),
+                                prompt_tokens=int(reserved_spend.get("input_tokens", 0) or 0),
+                                completion_tokens=int(reserved_spend.get("output_tokens", 0) or 0),
+                            )
 
                         job_row = {
                             "run_id": run_id,
@@ -12063,8 +12574,17 @@ def execute_step_for_partitions(
                             "submitted_at_utc": now_iso(),
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
+                            "cost_accounted_at_submit": bool(reserved_spend is not None),
+                            "cost_accounting_mode": (
+                                str(reserved_spend.get("accounting_mode"))
+                                if isinstance(reserved_spend, dict)
+                                else None
+                            ),
+                            "reserved_spend_usage": reserved_spend,
                         }
                         batch_job_rows.append(job_row)
+                    except CostLimitExceededError:
+                        raise
                     except Exception as exc:
                         failed_meta = {
                             "provider": batch_provider,
@@ -12114,6 +12634,9 @@ def execute_step_for_partitions(
                             "batch_pending": True,
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
+                            "reserved_spend_usage": (
+                                reserved_spend if "reserved_spend" in locals() else None
+                            ),
                         }
                         return json.dumps(
                             submit_payload, ensure_ascii=True, sort_keys=True
@@ -12268,7 +12791,20 @@ def execute_step_for_partitions(
                         partition_id=partition_id,
                         provider=batch_provider,
                         model_id=batch_model_id,
-                    )
+                )
+                route_token = f"{route_provider}/{route_model_id}"
+                _check_projected_cost_limit(
+                    cfg,
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=route_provider,
+                    model_id=route_model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="sync",
+                    route=route_token,
+                )
                 llm_result = call_llm(
                     provider=route_provider,
                     model_id=route_model_id,
@@ -12347,9 +12883,25 @@ def execute_step_for_partitions(
                         fallback_input_tokens=_estimate_text_tokens(
                             prompt_text, effective_user_prompt
                         ),
+                        fallback_output_tokens=projected_output_tokens,
+                        route=route_token,
+                        raise_on_limit=False,
                 )
                     if spend_record is not None:
                         request_meta_local["spend_usage"] = spend_record
+                        if "cost_abort_state" in spend_record:
+                            request_meta_local["cost_abort_state"] = spend_record["cost_abort_state"]
+                        if ui is not None:
+                            ui.spend_ledger_event(
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                                trace_id=str(request_meta_local.get("trace_id") or _new_trace_id()),
+                                span_id=_new_span_id(),
+                                parent_span_id=str(request_meta_local.get("span_id") or "") or None,
+                                prompt_tokens=int(spend_record.get("input_tokens", 0) or 0),
+                                completion_tokens=int(spend_record.get("output_tokens", 0) or 0),
+                            )
                 request_meta_local.setdefault("request_payload_bytes", payload_bytes)
                 request_meta_local.setdefault(
                     "estimated_input_tokens", projected_input_tokens
@@ -12357,29 +12909,6 @@ def execute_step_for_partitions(
                 request_meta_local.setdefault(
                     "estimated_output_tokens", projected_output_tokens
                 )
-                if cfg.ledger:
-                    prompt_toks = int(
-                        request_meta_local.get("prompt_tokens")
-                        or request_meta_local.get("tokens_prompt")
-                        or ((len(effective_user_prompt) + len(prompt_text)) // 4)
-                    )
-                    completion_toks = int(
-                        request_meta_local.get("completion_tokens")
-                        or request_meta_local.get("tokens_completion")
-                        or (len(response_text_local) // 4)
-                    )
-                    cfg.ledger.accumulate(phase, prompt_toks, completion_toks)
-                    if ui is not None:
-                        ui.spend_ledger_event(
-                            phase=phase,
-                            step_id=step_id,
-                            partition_id=partition_id,
-                            trace_id=str(request_meta_local.get("trace_id") or _new_trace_id()),
-                            span_id=_new_span_id(),
-                            parent_span_id=str(request_meta_local.get("span_id") or "") or None,
-                            prompt_tokens=prompt_toks,
-                            completion_tokens=completion_toks,
-                        )
                 return response_text_local, request_meta_local
 
             parse_retry_attempted = False
@@ -13108,6 +13637,19 @@ def execute_step_for_partitions(
                 logger.error("%s", message)
             else:
                 logger.info("%s", message)
+        cost_abort_state = (
+            result.request_meta.get("cost_abort_state")
+            if isinstance(result.request_meta.get("cost_abort_state"), dict)
+            else None
+        )
+        if cost_abort_state is not None:
+            raise CostLimitExceededError(
+                (
+                    "Runtime cost cap exceeded after provider response "
+                    f"(phase={phase} step={step_id} partition={partition_id})"
+                ),
+                cost_abort_state,
+            )
 
         if result.success:
             valid_success, _validation_reason = validate_success_partition_output(
@@ -13341,6 +13883,8 @@ def execute_step_for_partitions(
                 compare_provider=str(getattr(cfg, "compare_provider", None) or "xai"),
                 compare_model=str(getattr(cfg, "compare_model", None) or "grok-4.20-beta"),
             )
+        except CostLimitExceededError:
+            raise
         except Exception as _cmp_exc:
             logger.warning(
                 "COMPARE_LANE_ERROR phase=%s step=%s error=%s (canonical result unaffected)",
@@ -15729,6 +16273,24 @@ def audit_phase_sample(
         artifact_repr = json.dumps(item, default=str)[:4000]
         user_content = f"Extraction artifact to audit:\n```json\n{artifact_repr}\n```"
         try:
+            phase_id = str(phase_dir.name or "").split("_", 1)[0].upper() or "UNKNOWN"
+            route_token = f"{judge_provider}/{judge_model}"
+            projected_input_tokens = _estimate_text_tokens(
+                _AUDIT_JUDGE_SYSTEM_PROMPT, user_content
+            )
+            projected_output_tokens = _project_output_tokens(projected_input_tokens)
+            _check_projected_cost_limit(
+                cfg,
+                phase=phase_id,
+                step_id="AUDIT",
+                partition_id=str(item.get("step_id", item.get("id", "unknown"))),
+                provider=judge_provider,
+                model_id=judge_model,
+                input_tokens=projected_input_tokens,
+                output_tokens=projected_output_tokens,
+                execution_mode="audit_judge",
+                route=route_token,
+            )
             llm_result = call_llm(
                 provider=judge_provider,
                 model_id=judge_model,
@@ -15738,6 +16300,25 @@ def audit_phase_sample(
                 cfg=cfg,
                 force_json_output=True,
             )
+            if llm_result.get("meta", {}).get("response_received") or llm_result.get("ok"):
+                _accumulate_runtime_spend(
+                    cfg,
+                    phase=phase_id,
+                    step_id="AUDIT",
+                    partition_id=str(item.get("step_id", item.get("id", "unknown"))),
+                    provider=judge_provider,
+                    model_id=judge_model,
+                    execution_mode="audit_judge",
+                    response_summary=(
+                        llm_result.get("meta", {}).get("response_summary")
+                        if isinstance(llm_result.get("meta", {}).get("response_summary"), dict)
+                        else None
+                    ),
+                    response_text=str(llm_result.get("content", llm_result.get("text", ""))),
+                    fallback_input_tokens=projected_input_tokens,
+                    fallback_output_tokens=projected_output_tokens,
+                    route=route_token,
+                )
             raw_text = llm_result.get("content", llm_result.get("text", "{}"))
             try:
                 scores = json.loads(raw_text) if isinstance(raw_text, str) else raw_text
@@ -15776,6 +16357,8 @@ def audit_phase_sample(
                     completeness_score,
                     composite,
                 )
+        except CostLimitExceededError:
+            raise
         except Exception as exc:
             logger.warning("audit_phase_sample: judge call failed for item: %s", exc)
             results.append({"item_id": "unknown", "error": str(exc)})
@@ -16176,36 +16759,83 @@ def run_batch_watch(
                         model_id=model_id,
                         salvage_meta=salvage_meta,
                     )
-                    spend_record = _accumulate_runtime_spend(
-                        cfg,
-                        phase=phase_id,
-                        step_id=step_id,
-                        partition_id=partition_id,
-                        provider=provider_id,
-                        model_id=model_id,
-                        execution_mode="batch_watch",
-                        response_summary=(
-                            request_meta.get("response_summary")
-                            if isinstance(request_meta.get("response_summary"), dict)
-                            else None
-                        ),
-                        response_text=response_text,
-                        fallback_input_tokens=int(
-                            row.get("estimated_input_tokens", 0) or 0
-                        ),
-                        fallback_output_tokens=int(
-                            row.get("estimated_output_tokens", 0) or 0
-                        ),
-                        payload=(
-                            result.meta.get("response", {}).get("body", {}).get("usage")
-                            if isinstance(result.meta, dict)
-                            and isinstance(result.meta.get("response"), dict)
-                            and isinstance(result.meta.get("response", {}).get("body"), dict)
-                            else None
-                        ),
-                    )
-                    if spend_record is not None:
-                        request_meta["spend_usage"] = spend_record
+                    route_token = f"{provider_id}/{model_id}"
+                    if bool(row.get("cost_accounted_at_submit", False)):
+                        request_meta["cost_accounted_at_submit"] = True
+                        request_meta["cost_accounting_mode"] = row.get("cost_accounting_mode")
+                        request_meta["reserved_spend_usage"] = row.get("reserved_spend_usage")
+                        request_meta["observed_spend_usage"] = _resolve_runtime_usage(
+                            response_summary=(
+                                request_meta.get("response_summary")
+                                if isinstance(request_meta.get("response_summary"), dict)
+                                else None
+                            ),
+                            response_text=response_text,
+                            fallback_input_tokens=int(
+                                row.get("estimated_input_tokens", 0) or 0
+                            ),
+                            fallback_output_tokens=int(
+                                row.get("estimated_output_tokens", 0) or 0
+                            ),
+                            payload=(
+                                result.meta.get("response", {}).get("body", {}).get("usage")
+                                if isinstance(result.meta, dict)
+                                and isinstance(result.meta.get("response"), dict)
+                                and isinstance(result.meta.get("response", {}).get("body"), dict)
+                                else None
+                            ),
+                        )
+                    else:
+                        spend_record = _accumulate_runtime_spend(
+                            cfg,
+                            phase=phase_id,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=provider_id,
+                            model_id=model_id,
+                            execution_mode="batch_watch",
+                            response_summary=(
+                                request_meta.get("response_summary")
+                                if isinstance(request_meta.get("response_summary"), dict)
+                                else None
+                            ),
+                            response_text=response_text,
+                            fallback_input_tokens=int(
+                                row.get("estimated_input_tokens", 0) or 0
+                            ),
+                            fallback_output_tokens=int(
+                                row.get("estimated_output_tokens", 0) or 0
+                            ),
+                            payload=(
+                                result.meta.get("response", {}).get("body", {}).get("usage")
+                                if isinstance(result.meta, dict)
+                                and isinstance(result.meta.get("response"), dict)
+                                and isinstance(result.meta.get("response", {}).get("body"), dict)
+                                else None
+                            ),
+                            route=route_token,
+                            raise_on_limit=False,
+                        )
+                        if spend_record is not None:
+                            request_meta["spend_usage"] = spend_record
+                            if "cost_abort_state" in spend_record:
+                                request_meta["cost_abort_state"] = spend_record["cost_abort_state"]
+                            if ui is not None:
+                                batch_trace = ui.make_trace_context(
+                                    phase=phase_id,
+                                    step_id=step_id,
+                                    partition_id=partition_id,
+                                )
+                                ui.spend_ledger_event(
+                                    phase=phase_id,
+                                    step_id=step_id,
+                                    partition_id=partition_id,
+                                    trace_id=batch_trace["trace_id"],
+                                    span_id=_new_span_id(),
+                                    parent_span_id=batch_trace.get("span_id"),
+                                    prompt_tokens=int(spend_record.get("input_tokens", 0) or 0),
+                                    completion_tokens=int(spend_record.get("output_tokens", 0) or 0),
+                                )
                     write_json(
                         out_json,
                         {
@@ -16217,6 +16847,14 @@ def run_batch_watch(
                             "request_meta": request_meta,
                         },
                     )
+                    if isinstance(request_meta.get("cost_abort_state"), dict):
+                        raise CostLimitExceededError(
+                            (
+                                "Runtime cost cap exceeded during batch watch "
+                                f"(phase={phase_id} step={step_id} partition={partition_id})"
+                            ),
+                            request_meta["cost_abort_state"],
+                        )
                     if out_failed.exists():
                         out_failed.unlink()
                     if out_failed_json.exists():
@@ -16903,6 +17541,7 @@ def run_phase_R_async_submit(
                     input_tokens=projected_input_tokens,
                     output_tokens=projected_output_tokens,
                     execution_mode="async_submit",
+                    route=f"openai/{model_id}",
                 )
                 response = client.responses.create(
                     model=model_id,
@@ -16917,6 +17556,20 @@ def run_phase_R_async_submit(
                     partition_id,
                     external_job_id,
                 )
+                reserved_spend = _reserve_projected_spend(
+                    cfg,
+                    phase="R",
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider="openai",
+                    model_id=model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="async_submit",
+                    route=f"openai/{model_id}",
+                )
+            except CostLimitExceededError:
+                raise
             except Exception as exc:
                 logger.error(
                     "Async R submit failed step=%s partition=%s error=%s",
@@ -16990,6 +17643,13 @@ def run_phase_R_async_submit(
                         "external_job_id": external_job_id,
                         "estimated_input_tokens": projected_input_tokens,
                         "estimated_output_tokens": projected_output_tokens,
+                        "cost_accounted_at_submit": bool(reserved_spend is not None),
+                        "cost_accounting_mode": (
+                            str(reserved_spend.get("accounting_mode"))
+                            if isinstance(reserved_spend, dict)
+                            else None
+                        ),
+                        "reserved_spend_usage": reserved_spend,
                     },
                 },
             )
@@ -17204,31 +17864,64 @@ def run_phase_R_finalize(
                 model_id=model_id,
                 salvage_meta=salvage_meta,
             )
-            spend_record = _accumulate_runtime_spend(
-                cfg,
-                phase="R",
-                step_id=step_id,
-                partition_id=partition_id,
-                provider="openai",
-                model_id=model_id,
-                execution_mode="async_finalize",
-                response_text=response_text,
-                fallback_input_tokens=int(
-                    pending_meta.get("estimated_input_tokens", 0) or 0
-                ),
-                fallback_output_tokens=int(
-                    pending_meta.get("estimated_output_tokens", 0) or 0
-                ),
-                payload=(
-                    webhook_payload.get("data", {}).get("usage")
-                    if isinstance(webhook_payload.get("data"), dict)
-                    else None
-                ),
-            )
-            if spend_record is not None:
-                request_meta["spend_usage"] = spend_record
+            if bool(pending_meta.get("cost_accounted_at_submit", False)):
+                request_meta["cost_accounted_at_submit"] = True
+                request_meta["cost_accounting_mode"] = pending_meta.get("cost_accounting_mode")
+                request_meta["reserved_spend_usage"] = pending_meta.get("reserved_spend_usage")
+                request_meta["observed_spend_usage"] = _resolve_runtime_usage(
+                    response_text=response_text,
+                    fallback_input_tokens=int(
+                        pending_meta.get("estimated_input_tokens", 0) or 0
+                    ),
+                    fallback_output_tokens=int(
+                        pending_meta.get("estimated_output_tokens", 0) or 0
+                    ),
+                    payload=(
+                        webhook_payload.get("data", {}).get("usage")
+                        if isinstance(webhook_payload.get("data"), dict)
+                        else None
+                    ),
+                )
+            else:
+                spend_record = _accumulate_runtime_spend(
+                    cfg,
+                    phase="R",
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider="openai",
+                    model_id=model_id,
+                    execution_mode="async_finalize",
+                    response_text=response_text,
+                    fallback_input_tokens=int(
+                        pending_meta.get("estimated_input_tokens", 0) or 0
+                    ),
+                    fallback_output_tokens=int(
+                        pending_meta.get("estimated_output_tokens", 0) or 0
+                    ),
+                    payload=(
+                        webhook_payload.get("data", {}).get("usage")
+                        if isinstance(webhook_payload.get("data"), dict)
+                        else None
+                    ),
+                    route=f"openai/{model_id}",
+                    raise_on_limit=False,
+                )
+                if spend_record is not None:
+                    request_meta["spend_usage"] = spend_record
+                    if "cost_abort_state" in spend_record:
+                        request_meta["cost_abort_state"] = spend_record["cost_abort_state"]
             persisted["request_meta"] = request_meta
             write_json(out_json, persisted)
+            if isinstance(request_meta.get("cost_abort_state"), dict):
+                raise CostLimitExceededError(
+                    (
+                        "Runtime cost cap exceeded during async finalize "
+                        f"(step={step_id} partition={partition_id})"
+                    ),
+                    request_meta["cost_abort_state"],
+                )
+        except CostLimitExceededError:
+            raise
         except Exception:
             pass
 
@@ -17914,6 +18607,15 @@ def main() -> None:
     if args.sync:
         run_sync_scopes()
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
+    if (
+        getattr(args, "max_cost_usd", None) is not None
+        and not args.dry_run
+        and args.partition_workers > 1
+    ):
+        logger.warning(
+            "Cost cap active; forcing --partition-workers=1 for deterministic stop-on-breach."
+        )
+        args.partition_workers = 1
     if args.pretty and args.ui == "auto":
         args.ui = "rich"
     args.escalation_max_hops = max(0, int(args.escalation_max_hops))
@@ -18124,6 +18826,25 @@ def main() -> None:
 
             def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
                 provider, model_id, api_key_env = route
+                route_token = f"{provider}/{model_id}"
+                projected_input_tokens = _estimate_text_tokens(
+                    "Return JSON only.", rendered_prompt
+                )
+                projected_output_tokens = _project_output_tokens(
+                    projected_input_tokens
+                )
+                _check_projected_cost_limit(
+                    cfg,
+                    phase=step.phase,
+                    step_id=step.step_id,
+                    partition_id=step.step_id,
+                    provider=provider,
+                    model_id=model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="s_int_sync",
+                    route=route_token,
+                )
 
                 result = call_llm(
                     provider=provider,
@@ -18154,6 +18875,8 @@ def main() -> None:
                         fallback_input_tokens=_estimate_text_tokens(
                             "Return JSON only.", rendered_prompt
                         ),
+                        fallback_output_tokens=projected_output_tokens,
+                        route=route_token,
                     )
                     if spend_record is not None:
                         meta["spend_usage"] = spend_record
@@ -18227,6 +18950,9 @@ def main() -> None:
                 dry_run=bool(args.dry_run),
                 prompt_executor=None if args.dry_run else _prompt_executor,
             )
+        except CostLimitExceededError as exc:
+            logger.error("S_INT cost cap exceeded: %s", exc)
+            sys.exit(1)
         except Exception as exc:
             logger.error("S_INT failed: %s", exc)
             sys.exit(1)
@@ -18600,6 +19326,19 @@ def main() -> None:
             n = run_phase_R_async_submit(run_id=run_id, dirs=dirs, cfg=cfg)
             logger.info("Async R submit complete: submitted=%s run_id=%s", n, run_id)
             sys.exit(0)
+        except CostLimitExceededError as exc:
+            logger.error("Async R submit cost-aborted: %s", exc)
+            _persist_cost_abort(
+                root=root,
+                dirs=dirs,
+                run_id=run_id,
+                phases=phase_sequence or ["R"],
+                run_started_at=run_started_at,
+                exc=exc,
+                ui=ui,
+                source="async_submit:cost_abort",
+            )
+            sys.exit(1)
         except Exception as exc:
             logger.error("Async R submit failed: %s", exc)
             sys.exit(1)
@@ -18609,6 +19348,19 @@ def main() -> None:
             n = run_phase_R_finalize(run_id=run_id, dirs=dirs, cfg=cfg)
             logger.info("Finalize R complete: finalized=%s run_id=%s", n, run_id)
             sys.exit(0)
+        except CostLimitExceededError as exc:
+            logger.error("Finalize R cost-aborted: %s", exc)
+            _persist_cost_abort(
+                root=root,
+                dirs=dirs,
+                run_id=run_id,
+                phases=phase_sequence or ["R"],
+                run_started_at=run_started_at,
+                exc=exc,
+                ui=ui,
+                source="async_finalize:cost_abort",
+            )
+            sys.exit(1)
         except Exception as exc:
             logger.error("Finalize R failed: %s", exc)
             sys.exit(1)
@@ -18617,14 +19369,28 @@ def main() -> None:
         if not phase_sequence or len(phase_sequence) != 1:
             parser.error("--batch-watch requires exactly one phase via --phase.")
         watch_phase = phase_sequence[0]
-        watch_result = run_batch_watch(
-            root=root,
-            run_id=run_id,
-            phase=watch_phase,
-            dirs=dirs,
-            cfg=cfg,
-            ui=ui,
-        )
+        try:
+            watch_result = run_batch_watch(
+                root=root,
+                run_id=run_id,
+                phase=watch_phase,
+                dirs=dirs,
+                cfg=cfg,
+                ui=ui,
+            )
+        except CostLimitExceededError as exc:
+            logger.error("Batch watch cost-aborted: %s", exc)
+            _persist_cost_abort(
+                root=root,
+                dirs=dirs,
+                run_id=run_id,
+                phases=phase_sequence or [watch_phase],
+                run_started_at=run_started_at,
+                exc=exc,
+                ui=ui,
+                source="batch_watch:cost_abort",
+            )
+            sys.exit(1)
         if watch_result.exit_code != 0:
             sys.exit(watch_result.exit_code)
         if watch_result.next_phase:
@@ -18729,6 +19495,19 @@ def main() -> None:
         try:
             phase_cfg = prepare_phase_provider_preflight(root, run_id, phase, cfg)
             run_phase(dirs, phase_cfg, ui=ui)
+        except CostLimitExceededError as exc:
+            logger.error("Phase %s cost-aborted: %s", phase, exc)
+            _persist_cost_abort(
+                root=root,
+                dirs=dirs,
+                run_id=run_id,
+                phases=phases,
+                run_started_at=run_started_at,
+                exc=exc,
+                ui=ui,
+                source=f"phase:{phase}:cost_abort",
+            )
+            sys.exit(1)
         except Exception as exc:
             logger.error("Phase %s failed: %s", phase, exc)
             failed_counts = gather_phase_counts(dirs[phase])

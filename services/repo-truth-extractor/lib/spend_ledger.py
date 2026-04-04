@@ -1,29 +1,58 @@
 import json
 import logging
+import threading
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Repo-local pricing authority is incomplete in this checkout. Until a canonical
-# config/pricing.yaml exists, keep a deterministic baseline registry and make
-# the fallback policy explicit in the ledger output instead of inventing rates.
+# Repo-local pricing authority is incomplete in this checkout. Keep the registry
+# explicit and deterministic, and make the fallback policy visible in the ledger
+# instead of inventing provider-billing truth.
 PRICING_VERSION = "baseline_v1"
 UNKNOWN_MODEL_POLICY = "baseline_v1_fallback"
 BASELINE_INPUT_COST_PER_1M_USD = 0.15
 BASELINE_OUTPUT_COST_PER_1M_USD = 0.60
 
-_KNOWN_MODEL_KEYS = {
-    "openai/gpt-5-nano",
-    "openai/gpt-5-mini",
-    "openai/gpt-5.2",
-    "gemini/gemini-2.5-flash",
-    "gemini/gemini-2.5-pro",
-    "xai/grok-code-fast-1",
-    "openrouter/openai/gpt-5-nano",
-    "openrouter/openai/gpt-5-mini",
+
+def _baseline_rate(pricing_source: str = "route_registry_baseline") -> Dict[str, Any]:
+    return {
+        "input_cost_per_1m_usd": BASELINE_INPUT_COST_PER_1M_USD,
+        "output_cost_per_1m_usd": BASELINE_OUTPUT_COST_PER_1M_USD,
+        "pricing_source": pricing_source,
+    }
+
+
+MODEL_COST_RATES: Dict[str, Dict[str, Any]] = {
+    "openai/gpt-5-nano": _baseline_rate(),
+    "openai/gpt-5-mini": _baseline_rate(),
+    "openai/gpt-5.2": _baseline_rate(),
+    "openai/gpt-5.3-codex": _baseline_rate(),
+    "openai/gpt-5.4": _baseline_rate(),
+    "gemini/gemini-2.5-flash": _baseline_rate(),
+    "gemini/gemini-2.5-pro": _baseline_rate(),
+    "gemini/gemini-3-flash-preview": _baseline_rate(),
+    "gemini/gemini-3.1-pro-preview": _baseline_rate(),
+    "xai/grok-code-fast-1": _baseline_rate(),
+    "xai/grok-4.20-beta": _baseline_rate(),
+    "xai/grok-4.20-beta-0309-reasoning": _baseline_rate(),
+    "openrouter/openai/gpt-5-nano": _baseline_rate(),
+    "openrouter/openai/gpt-5-mini": _baseline_rate(),
+    "openrouter/openai/gpt-5.2": _baseline_rate(),
+    "openrouter/openai/gpt-5.3-codex": _baseline_rate(),
+    "openrouter/openai/gpt-5.4": _baseline_rate(),
+    "openrouter/anthropic/claude-opus-4-6": _baseline_rate(),
 }
+
+
+@dataclass
+class ProviderSpend:
+    provider: str
+    usage_count: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    estimated_cost_usd: float = 0.0
 
 
 @dataclass
@@ -49,6 +78,7 @@ class PhaseSpend:
     output_tokens: int = 0
     estimated_cost_usd: float = 0.0
     models: Dict[str, ModelSpend] = field(default_factory=dict)
+    providers: Dict[str, ProviderSpend] = field(default_factory=dict)
 
 
 @dataclass
@@ -59,8 +89,10 @@ class SpendLedgerRecord:
     unknown_model_policy: str = UNKNOWN_MODEL_POLICY
     phases: Dict[str, PhaseSpend] = field(default_factory=dict)
     models: Dict[str, ModelSpend] = field(default_factory=dict)
+    providers: Dict[str, ProviderSpend] = field(default_factory=dict)
     total_cost_usd: float = 0.0
     unknown_model_events: int = 0
+    fallback_usage_count: int = 0
 
 
 def _safe_int(value: Any) -> int:
@@ -80,7 +112,14 @@ def _safe_float(value: Any) -> float:
 def _normalize_provider_model(
     provider: Optional[str],
     model_id: Optional[str],
+    route: Optional[str] = None,
 ) -> Tuple[str, str]:
+    route_token = str(route or "").strip()
+    if route_token and (not provider or not model_id):
+        if "/" in route_token:
+            route_provider, route_model_id = route_token.split("/", 1)
+            provider = provider or route_provider
+            model_id = model_id or route_model_id
     provider_token = str(provider or "").strip().lower()
     model_token = str(model_id or "").strip()
     if not provider_token and "/" in model_token:
@@ -111,35 +150,67 @@ def _pricing_candidates(provider: str, model_id: str) -> list[str]:
     return candidates
 
 
-def _resolve_pricing(provider: Optional[str], model_id: Optional[str]) -> Dict[str, Any]:
-    provider_token, model_token = _normalize_provider_model(provider, model_id)
-    lookup_key = ""
-    for candidate in _pricing_candidates(provider_token, model_token):
-        if candidate in _KNOWN_MODEL_KEYS:
-            lookup_key = candidate
-            break
-    if not lookup_key:
-        fallback_key = ""
-        if provider_token and model_token:
-            fallback_key = f"{provider_token}/{model_token}".lower()
-        elif model_token:
-            fallback_key = model_token.lower()
-        lookup_key = fallback_key or "unknown"
-    unknown_model = lookup_key not in _KNOWN_MODEL_KEYS
-    pricing_source = (
-        "known_route_baseline_registry"
-        if not unknown_model
-        else f"unknown_model:{UNKNOWN_MODEL_POLICY}"
+def _fallback_cost_rate() -> Dict[str, Any]:
+    max_input = max(
+        _safe_float(rate.get("input_cost_per_1m_usd"))
+        for rate in MODEL_COST_RATES.values()
+    )
+    max_output = max(
+        _safe_float(rate.get("output_cost_per_1m_usd"))
+        for rate in MODEL_COST_RATES.values()
+    )
+    return {
+        "input_cost_per_1m_usd": max_input,
+        "output_cost_per_1m_usd": max_output,
+        "pricing_source": f"unknown_model:{UNKNOWN_MODEL_POLICY}",
+    }
+
+
+def get_model_cost_rate(
+    provider: Optional[str] = None,
+    model_id: Optional[str] = None,
+    route: Optional[str] = None,
+) -> Dict[str, Any]:
+    provider_token, model_token = _normalize_provider_model(provider, model_id, route)
+    for index, candidate in enumerate(_pricing_candidates(provider_token, model_token)):
+        if candidate in MODEL_COST_RATES:
+            rate = MODEL_COST_RATES[candidate]
+            return {
+                "provider": provider_token,
+                "model_id": model_token,
+                "pricing_key": candidate,
+                "pricing_version": PRICING_VERSION,
+                "pricing_source": str(
+                    rate.get("pricing_source") or "route_registry_baseline"
+                ),
+                "match_type": "exact" if index == 0 else "fuzzy",
+                "unknown_model": False,
+                "input_cost_per_1m_usd": _safe_float(
+                    rate.get("input_cost_per_1m_usd", BASELINE_INPUT_COST_PER_1M_USD)
+                ),
+                "output_cost_per_1m_usd": _safe_float(
+                    rate.get(
+                        "output_cost_per_1m_usd", BASELINE_OUTPUT_COST_PER_1M_USD
+                    )
+                ),
+            }
+
+    fallback = _fallback_cost_rate()
+    fallback_key = (
+        f"{provider_token}/{model_token}".lower()
+        if provider_token and model_token
+        else (model_token.lower() if model_token else "unknown")
     )
     return {
         "provider": provider_token,
         "model_id": model_token,
-        "pricing_key": lookup_key,
-        "pricing_source": pricing_source,
+        "pricing_key": fallback_key,
         "pricing_version": PRICING_VERSION,
-        "unknown_model": unknown_model,
-        "input_cost_per_1m_usd": BASELINE_INPUT_COST_PER_1M_USD,
-        "output_cost_per_1m_usd": BASELINE_OUTPUT_COST_PER_1M_USD,
+        "pricing_source": str(fallback["pricing_source"]),
+        "match_type": "fallback",
+        "unknown_model": True,
+        "input_cost_per_1m_usd": _safe_float(fallback["input_cost_per_1m_usd"]),
+        "output_cost_per_1m_usd": _safe_float(fallback["output_cost_per_1m_usd"]),
     }
 
 
@@ -150,7 +221,17 @@ class SpendLedger:
             run_id=run_id,
             global_max_cost_usd=max_cost_usd,
         )
+        self._lock = threading.Lock()
         self._load()
+
+    def _provider_from_payload(self, provider_name: str, provider_data: Dict[str, Any]) -> ProviderSpend:
+        return ProviderSpend(
+            provider=provider_name,
+            usage_count=_safe_int(provider_data.get("usage_count", 0)),
+            input_tokens=_safe_int(provider_data.get("input_tokens", 0)),
+            output_tokens=_safe_int(provider_data.get("output_tokens", 0)),
+            estimated_cost_usd=_safe_float(provider_data.get("estimated_cost_usd", 0.0)),
+        )
 
     def _phase_from_payload(self, phase_name: str, phase_data: Dict[str, Any]) -> PhaseSpend:
         phase_spend = PhaseSpend(
@@ -190,6 +271,14 @@ class SpendLedger:
                         )
                     ),
                 )
+        providers = phase_data.get("providers")
+        if isinstance(providers, dict):
+            for provider_name, provider_data in providers.items():
+                if not isinstance(provider_data, dict):
+                    continue
+                phase_spend.providers[str(provider_name)] = self._provider_from_payload(
+                    str(provider_name), provider_data
+                )
         return phase_spend
 
     def _models_from_payload(self, payload: Dict[str, Any]) -> Dict[str, ModelSpend]:
@@ -223,6 +312,16 @@ class SpendLedger:
             )
         return loaded
 
+    def _providers_from_payload(self, payload: Dict[str, Any]) -> Dict[str, ProviderSpend]:
+        loaded: Dict[str, ProviderSpend] = {}
+        for provider_name, provider_data in payload.items():
+            if not isinstance(provider_data, dict):
+                continue
+            loaded[str(provider_name)] = self._provider_from_payload(
+                str(provider_name), provider_data
+            )
+        return loaded
+
     def _load(self) -> None:
         if not self.ledger_path.exists():
             return
@@ -238,6 +337,9 @@ class SpendLedger:
             self.record.unknown_model_events = _safe_int(
                 data.get("unknown_model_events", 0)
             )
+            self.record.fallback_usage_count = _safe_int(
+                data.get("fallback_usage_count", self.record.unknown_model_events)
+            )
             for phase_name, phase_data in data.get("phases", {}).items():
                 if not isinstance(phase_data, dict):
                     continue
@@ -247,6 +349,9 @@ class SpendLedger:
             models = data.get("models")
             if isinstance(models, dict):
                 self.record.models = self._models_from_payload(models)
+            providers = data.get("providers")
+            if isinstance(providers, dict):
+                self.record.providers = self._providers_from_payload(providers)
         except Exception as exc:
             logger.warning("Could not load existing spend ledger: %s", exc)
 
@@ -266,8 +371,9 @@ class SpendLedger:
         output_tokens: int,
         provider: Optional[str] = None,
         model_id: Optional[str] = None,
+        route: Optional[str] = None,
     ) -> Dict[str, Any]:
-        resolved = _resolve_pricing(provider, model_id)
+        resolved = get_model_cost_rate(provider=provider, model_id=model_id, route=route)
         input_tokens = _safe_int(input_tokens)
         output_tokens = _safe_int(output_tokens)
         estimated_cost_usd = (
@@ -288,63 +394,93 @@ class SpendLedger:
         output_tokens: int,
         provider: Optional[str] = None,
         model_id: Optional[str] = None,
+        route: Optional[str] = None,
     ) -> Dict[str, Any]:
-        priced = self.price_usage(
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            provider=provider,
-            model_id=model_id,
-        )
-        if phase not in self.record.phases:
-            self.record.phases[phase] = PhaseSpend(phase=phase)
-        phase_spend = self.record.phases[phase]
-        phase_spend.input_tokens += priced["input_tokens"]
-        phase_spend.output_tokens += priced["output_tokens"]
-        phase_spend.estimated_cost_usd += priced["estimated_cost_usd"]
-
-        model_key = str(priced["pricing_key"])
-        phase_model = phase_spend.models.get(model_key)
-        if phase_model is None:
-            phase_model = ModelSpend(
-                provider=str(priced["provider"]),
-                model_id=str(priced["model_id"]),
-                pricing_key=model_key,
-                pricing_source=str(priced["pricing_source"]),
-                pricing_version=str(priced["pricing_version"]),
-                unknown_model=bool(priced["unknown_model"]),
-                input_cost_per_1m_usd=_safe_float(priced["input_cost_per_1m_usd"]),
-                output_cost_per_1m_usd=_safe_float(priced["output_cost_per_1m_usd"]),
+        with self._lock:
+            priced = self.price_usage(
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                provider=provider,
+                model_id=model_id,
+                route=route,
             )
-            phase_spend.models[model_key] = phase_model
-        phase_model.usage_count += 1
-        phase_model.input_tokens += priced["input_tokens"]
-        phase_model.output_tokens += priced["output_tokens"]
-        phase_model.estimated_cost_usd += priced["estimated_cost_usd"]
+            if phase not in self.record.phases:
+                self.record.phases[phase] = PhaseSpend(phase=phase)
+            phase_spend = self.record.phases[phase]
+            phase_spend.input_tokens += priced["input_tokens"]
+            phase_spend.output_tokens += priced["output_tokens"]
+            phase_spend.estimated_cost_usd += priced["estimated_cost_usd"]
 
-        global_model = self.record.models.get(model_key)
-        if global_model is None:
-            global_model = ModelSpend(
-                provider=str(priced["provider"]),
-                model_id=str(priced["model_id"]),
-                pricing_key=model_key,
-                pricing_source=str(priced["pricing_source"]),
-                pricing_version=str(priced["pricing_version"]),
-                unknown_model=bool(priced["unknown_model"]),
-                input_cost_per_1m_usd=_safe_float(priced["input_cost_per_1m_usd"]),
-                output_cost_per_1m_usd=_safe_float(priced["output_cost_per_1m_usd"]),
-            )
-            self.record.models[model_key] = global_model
-        global_model.usage_count += 1
-        global_model.input_tokens += priced["input_tokens"]
-        global_model.output_tokens += priced["output_tokens"]
-        global_model.estimated_cost_usd += priced["estimated_cost_usd"]
+            model_key = str(priced["pricing_key"])
+            phase_model = phase_spend.models.get(model_key)
+            if phase_model is None:
+                phase_model = ModelSpend(
+                    provider=str(priced["provider"]),
+                    model_id=str(priced["model_id"]),
+                    pricing_key=model_key,
+                    pricing_source=str(priced["pricing_source"]),
+                    pricing_version=str(priced["pricing_version"]),
+                    unknown_model=bool(priced["unknown_model"]),
+                    input_cost_per_1m_usd=_safe_float(priced["input_cost_per_1m_usd"]),
+                    output_cost_per_1m_usd=_safe_float(priced["output_cost_per_1m_usd"]),
+                )
+                phase_spend.models[model_key] = phase_model
+            phase_model.usage_count += 1
+            phase_model.input_tokens += priced["input_tokens"]
+            phase_model.output_tokens += priced["output_tokens"]
+            phase_model.estimated_cost_usd += priced["estimated_cost_usd"]
 
-        if priced["unknown_model"]:
-            self.record.unknown_model_events += 1
+            provider_key = str(priced["provider"] or "unknown")
+            phase_provider = phase_spend.providers.get(provider_key)
+            if phase_provider is None:
+                phase_provider = ProviderSpend(provider=provider_key)
+                phase_spend.providers[provider_key] = phase_provider
+            phase_provider.usage_count += 1
+            phase_provider.input_tokens += priced["input_tokens"]
+            phase_provider.output_tokens += priced["output_tokens"]
+            phase_provider.estimated_cost_usd += priced["estimated_cost_usd"]
 
-        self.record.total_cost_usd += priced["estimated_cost_usd"]
-        self._save()
-        return priced
+            global_model = self.record.models.get(model_key)
+            if global_model is None:
+                global_model = ModelSpend(
+                    provider=str(priced["provider"]),
+                    model_id=str(priced["model_id"]),
+                    pricing_key=model_key,
+                    pricing_source=str(priced["pricing_source"]),
+                    pricing_version=str(priced["pricing_version"]),
+                    unknown_model=bool(priced["unknown_model"]),
+                    input_cost_per_1m_usd=_safe_float(priced["input_cost_per_1m_usd"]),
+                    output_cost_per_1m_usd=_safe_float(priced["output_cost_per_1m_usd"]),
+                )
+                self.record.models[model_key] = global_model
+            global_model.usage_count += 1
+            global_model.input_tokens += priced["input_tokens"]
+            global_model.output_tokens += priced["output_tokens"]
+            global_model.estimated_cost_usd += priced["estimated_cost_usd"]
+
+            global_provider = self.record.providers.get(provider_key)
+            if global_provider is None:
+                global_provider = ProviderSpend(provider=provider_key)
+                self.record.providers[provider_key] = global_provider
+            global_provider.usage_count += 1
+            global_provider.input_tokens += priced["input_tokens"]
+            global_provider.output_tokens += priced["output_tokens"]
+            global_provider.estimated_cost_usd += priced["estimated_cost_usd"]
+
+            if priced["unknown_model"]:
+                self.record.unknown_model_events += 1
+                self.record.fallback_usage_count += 1
+                logger.warning(
+                    "SpendLedger using unknown-model fallback pricing provider=%s model=%s pricing_key=%s policy=%s",
+                    priced["provider"] or "unknown",
+                    priced["model_id"] or "unknown",
+                    model_key,
+                    self.record.unknown_model_policy,
+                )
+
+            self.record.total_cost_usd += priced["estimated_cost_usd"]
+            self._save()
+            return priced
 
     def check_limit(self, additional_cost_usd: float = 0.0) -> bool:
         if self.record.global_max_cost_usd is None:
