@@ -183,6 +183,41 @@ Notes:
 - step-level contract routes can override the top-level routing policy
 - comparison lane, retries, and unknown-model fallback pricing lower confidence
 
+### Runtime cost enforcement
+
+`--max-cost-usd` is a runtime gate, not a display-only preview.
+
+- Every billable v5 lane now records spend in `runs/<RUN_ID>/spend_ledger.json`
+- The ledger persists:
+  - `total_cost_usd`
+  - per-phase totals
+  - per-model totals
+  - per-provider totals
+  - fallback usage counts for unknown-model pricing
+- Unknown or unmapped model ids use the conservative fallback policy recorded in the ledger as `baseline_v1_fallback`
+- Batch submit and async submit reserve projected spend at submit time to avoid later under-counting
+- Batch watch and async finalize record observed usage when available and do not double-count already-reserved submit work
+
+Ledger path:
+
+- `extraction/repo-truth-extractor/v5/runs/<RUN_ID>/spend_ledger.json`
+
+### Cost-abort semantics
+
+When a run breaches `--max-cost-usd`:
+
+- the current partition or job output is retained when it has already been written
+- no further billable calls are started after the breach is detected
+- the run writes `COST_ABORT.json` under the run root
+- `RUN_MANIFEST.json`, `COVERAGE_ROLLUP.json`, `RESUME_PROOF.json`, and `PROOF_PACK.json` are updated with `run_status = COST_ABORTED`
+- resume is blocked for that run: `resume_allowed = false`
+
+Abort artifact path:
+
+- `extraction/repo-truth-extractor/v5/runs/<RUN_ID>/COST_ABORT.json`
+
+The ledger remains an internal estimate based on repo-local pricing authority. It is intended to be conservative and auditable, not a provider-billing source of truth.
+
 ### Prescan and batch wait guidance
 
 - Prescan is optional. It can help larger repos by reordering partition paths and adding context briefs.
