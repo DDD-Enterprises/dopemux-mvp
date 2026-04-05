@@ -210,11 +210,13 @@ When a run breaches `--max-cost-usd`:
 - no further billable calls are started after the breach is detected
 - the run writes `COST_ABORT.json` under the run root
 - `RUN_MANIFEST.json`, `COVERAGE_ROLLUP.json`, `RESUME_PROOF.json`, and `PROOF_PACK.json` are updated with `run_status = COST_ABORTED`
-- resume is blocked for that run: `resume_allowed = false`
+- `If a run enters COST_ABORTED, resume is not allowed. Start a new run.`
 
 Abort artifact path:
 
 - `extraction/repo-truth-extractor/v5/runs/<RUN_ID>/COST_ABORT.json`
+
+`Batch cost accounting is conservative reservation accounting and not authoritative provider billing truth.`
 
 The ledger remains an internal estimate based on repo-local pricing authority. It is intended to be conservative and auditable, not a provider-billing source of truth.
 
