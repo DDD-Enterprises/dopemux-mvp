@@ -52,6 +52,38 @@ Use this runbook to reduce stale extractor noise without deleting active runtime
 6. Re-run the actionable scan to confirm the remaining signal is smaller and still truthful:
    - `python services/repo-truth-extractor/extraction_hygiene.py scan`
 
+## Interpreting preview output
+
+`apply --dry-run` and `apply --apply` now emit a summary block alongside the planned action count.
+
+- `eligible_actions` counts artifacts that match the current quarantine policy and would be moved.
+- `skipped_blocked_promptset` counts artifacts encountered inside run roots whose `RESUME_PROOF.json` records `blocked_promptset=true`. These skips are intentional because those runs preserve operator-relevant failure context.
+- `skipped_top_level_zip` counts `runs/*.zip` files that are not nested inside a run directory. These are skipped because the current policy only targets `.zip` artifacts clearly inside old run directories.
+- `skipped_ambiguous` counts malformed or structurally unclear candidates, such as artifacts discovered under `runs/` without a trustworthy enclosing run directory.
+- `skipped_non_matching_policy` counts inspected artifacts that do not satisfy the current quarantine policy, for example `*.FAILED.*` sidecars without a qualifying newer success artifact.
+
+Large skip counts are not inherently a problem. They usually mean the safeguards are actively refusing artifacts that need review, do not meet policy, or do not have enough structure to quarantine safely.
+
+## Bounded apply procedure
+
+- Always run preview first with `--dry-run`.
+- Always constrain the first real apply by both:
+  - `--bucket`
+  - `--limit`
+- Never run an unbounded `apply --apply` on first execution against a live repo.
+- For stale resume cleanup, use a narrow command such as:
+  - `python services/repo-truth-extractor/extraction_hygiene.py apply --dry-run --bucket stale_resume_state --limit 20 --json`
+- Before any real apply, verify:
+  - `planned_actions` is at or below the intended limit
+  - skip buckets are populated and believable
+  - `blocked_promptset` protections are still being counted
+- After a bounded apply, verify:
+  - before/after stale resume deltas match the applied count
+  - blocked promptset counts remain unchanged
+  - no unrelated bucket moved
+
+If the preview counts or after-state deltas do not line up exactly, stop. Do not widen scope and do not “fix forward” by running more apply.
+
 ## Expected outcome
 
 - Default scan remains honest about total detected debris.

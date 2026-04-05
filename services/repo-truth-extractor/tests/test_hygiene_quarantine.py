@@ -119,3 +119,87 @@ class TestApplyModeQuarantine:
         moved = list(quarantine.rglob("*.FAILED.json")) if quarantine.exists() else []
         assert moved, "file must be in quarantine"
         assert moved[0].read_text() == original_content, "quarantined file must retain original content"
+
+    def test_blocked_promptset_run_is_not_quarantined(self, tmp_path):
+        """Apply mode must preserve stale sidecars in runs marked blocked_promptset=true."""
+        runs = tmp_path / "extraction/repo-truth-extractor/v3/runs/blocked_run"
+        failed = self._make_stale_failed(runs)
+        self._make_success(runs)
+        (runs / "RESUME_PROOF.json").write_text(json.dumps({
+            "resume_status": "blocked",
+            "blocked_promptset": True,
+        }))
+
+        plan = hyg.run_apply(repo_root=tmp_path, dry_run=False)
+
+        assert failed.exists(), "blocked promptset run should be preserved for review"
+        assert not plan.applied_actions, "blocked promptset run should not produce quarantine actions"
+        assert plan.summary["skipped_blocked_promptset"] == 1
+
+    def test_top_level_runs_zip_is_not_quarantined(self, tmp_path):
+        """Top-level runs/*.zip is not inside a run directory and must not be auto-quarantined."""
+        runs_root = tmp_path / "extraction/repo-truth-extractor/v3/runs"
+        runs_root.mkdir(parents=True, exist_ok=True)
+        archive = runs_root / "fullrepo_20260304T024932Z.zip"
+        archive.write_bytes(b"zip-bytes")
+
+        plan = hyg.run_apply(repo_root=tmp_path, dry_run=False)
+
+        assert archive.exists(), "top-level runs zip should not be auto-quarantined"
+        assert all(action.source != archive for action in plan.applied_actions)
+        assert plan.summary["skipped_top_level_zip"] == 1
+
+    def test_ds_store_in_blocked_promptset_run_is_not_quarantined(self, tmp_path):
+        """Blocked runs should preserve incidental DS_Store files for manual review."""
+        runs = tmp_path / "extraction/repo-truth-extractor/v3/runs/blocked_run"
+        runs.mkdir(parents=True, exist_ok=True)
+        ds = runs / ".DS_Store"
+        ds.write_bytes(b"\x00\x01")
+        (runs / "RESUME_PROOF.json").write_text(json.dumps({
+            "resume_status": "blocked",
+            "blocked_promptset": True,
+        }))
+
+        plan = hyg.run_apply(repo_root=tmp_path, dry_run=False)
+
+        assert ds.exists(), "blocked promptset run should preserve incidental DS_Store"
+        assert all(action.source != ds for action in plan.applied_actions)
+        assert plan.summary["skipped_blocked_promptset"] == 1
+
+    def test_ambiguous_top_level_failed_marker_is_counted(self, tmp_path):
+        """FAILED markers not nested in a run directory are counted as ambiguous and skipped."""
+        runs_root = tmp_path / "extraction/repo-truth-extractor/v3/runs"
+        runs_root.mkdir(parents=True, exist_ok=True)
+        failed = runs_root / "A0__A_P0001.FAILED.json"
+        failed.write_text('{"failure_type": "schema"}')
+        success = runs_root / "A0__A_P0001.json"
+        success.write_text('{"surfaces": []}')
+
+        plan = hyg.run_apply(repo_root=tmp_path, dry_run=False)
+
+        assert failed.exists(), "ambiguous top-level FAILED marker should be preserved"
+        assert plan.summary["skipped_ambiguous"] == 1
+
+    def test_bucket_limit_selects_only_stale_resume_state_actions(self, tmp_path):
+        """Bucket filtering and limit must bound apply without cross-bucket leakage."""
+        run_one = tmp_path / "extraction/repo-truth-extractor/v3/runs/old_run_1"
+        run_two = tmp_path / "extraction/repo-truth-extractor/v3/runs/old_run_2"
+        self._make_stale_failed(run_one, part="A_P0001")
+        self._make_success(run_one, part="A_P0001")
+        self._make_stale_failed(run_two, part="A_P0002")
+        self._make_success(run_two, part="A_P0002")
+        ds = tmp_path / "extraction/repo-truth-extractor/v3/runs/old_run_2/.DS_Store"
+        ds.write_bytes(b"\x00\x01")
+
+        plan = hyg.run_apply(
+            repo_root=tmp_path,
+            dry_run=True,
+            bucket="stale_resume_state",
+            limit=1,
+        )
+
+        assert plan.bucket == "stale_resume_state"
+        assert plan.limit == 1
+        assert plan.summary["eligible_actions"] == 2
+        assert len(plan.planned_actions) == 1
+        assert all(action.bucket == "stale_resume_state" for action in plan.planned_actions)

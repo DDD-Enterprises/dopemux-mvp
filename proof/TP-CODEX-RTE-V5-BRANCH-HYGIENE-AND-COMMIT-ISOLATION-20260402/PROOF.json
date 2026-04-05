@@ -1,0 +1,175 @@
+{
+  "packet_id": "TP-CODEX-RTE-V5-BRANCH-HYGIENE-AND-COMMIT-ISOLATION-20260402",
+  "branch": "codex/rte-v5-branch-hygiene-and-commit-isolation-20260402",
+  "base_branch_at_inspection": "codex/rte-v5-hygiene-signal-and-batch-failure-cleanup-20260402",
+  "head_commit_at_inspection": "ca67492f9083bdb1eee8475015857338a5b83bc2",
+  "head_commit_after_tp8b_docs": "b5c4afcc0a9c35a6a87ab36a11a7d98f0a4e76bc",
+  "base_commit": "ca67492f9083bdb1eee8475015857338a5b83bc2",
+  "main_merge_base": "196cd7b0b0c7ad16eec6ddef166ef43b8601ba13",
+  "lineage_doc_path": "docs/05-audit-reports/repo-truth-extractor-v5-packet-lineage-2026-04-02.md",
+  "tp1_tp7_proof_dirs_present": true,
+  "pre_cleanup_dirty_state_summary": {
+    "tp_related_source": [
+      "services/repo-truth-extractor/extraction_hygiene.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_hygiene_noise_detection.py",
+      "services/repo-truth-extractor/tests/test_hygiene_resume_state.py",
+      "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py",
+      "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+    ],
+    "tp_related_docs": [
+      "docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md",
+      "docs/92-runbooks/repo-truth-extractor-v5-billing-verification-drill.md",
+      "docs/92-runbooks/repo-truth-extractor-v5-offline-envelope.md",
+      "docs/92-runbooks/repo-truth-extractor-v5-hygiene-cleanup.md"
+    ],
+    "generated_runtime_artifact_paths": [
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T000219Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T004046Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T010329Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T011103Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T011128Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T012434Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T015439Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T022443Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T022444Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T023618Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T030239Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T030758Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T030853Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T032850Z",
+      "reports/repo-truth-extractor/pre_live_gate_v25/tp6_bounded_offline",
+      "reports/repo-truth-extractor/pre_live_gate_v25/tp6_bounded_online",
+      "reports/repo-truth-extractor/pre_live_gate_v25/tp6_default_validator"
+    ],
+    "unrelated_pre_existing_changes": [
+      "MEMORY_AUTHORITY_RESOLUTION_OPTIONS.md",
+      "SYSTEM_Dopemux.md",
+      "SYSTEM_Dopetask.md"
+    ]
+  },
+  "packet_to_file_mapping": {
+    "TP1": {
+      "commits": [
+        "d92bf55ef43a30f06f5347b8e5392bb375dd26f8",
+        "76a7cd8a761d65c0e4a39badbdcfe9a454bd3922",
+        "a952ecb64c778db8e777258ff60b3b9c94d5c51b"
+      ],
+      "status": "committed"
+    },
+    "TP2": {
+      "files_normalized_into_commit": [
+        "docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md",
+        "docs/92-runbooks/repo-truth-extractor-v5-billing-verification-drill.md"
+      ],
+      "status": "normalized_in_tp8b_docs_commit"
+    },
+    "TP3": {
+      "files_still_overlapping_dirty_state": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+        "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+      ],
+      "status": "proof_present_commit_trace_incomplete"
+    },
+    "TP4": {
+      "files_still_overlapping_dirty_state": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py"
+      ],
+      "status": "proof_present_commit_trace_incomplete"
+    },
+    "TP5": {
+      "commits": [
+        "4f56b1e2cd863befbc8a66e129a5bdf5b74f2ede",
+        "ca67492f9083bdb1eee8475015857338a5b83bc2"
+      ],
+      "status": "committed"
+    },
+    "TP6": {
+      "files_normalized_into_commits": [
+        "docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+      ],
+      "report_dirs_present_on_disk_only": [
+        "reports/repo-truth-extractor/pre_live_gate_v25/tp6_default_validator",
+        "reports/repo-truth-extractor/pre_live_gate_v25/tp6_bounded_offline",
+        "reports/repo-truth-extractor/pre_live_gate_v25/tp6_bounded_online"
+      ],
+      "status": "normalized_in_tp8b_source_test_docs_commits"
+    },
+    "TP7": {
+      "files_normalized_into_commits": [
+        "docs/92-runbooks/repo-truth-extractor-v5-offline-envelope.md",
+        "docs/92-runbooks/repo-truth-extractor-v5-hygiene-cleanup.md",
+        "services/repo-truth-extractor/extraction_hygiene.py",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_hygiene_noise_detection.py",
+        "services/repo-truth-extractor/tests/test_hygiene_resume_state.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py"
+      ],
+      "status": "normalized_in_tp8b_source_test_docs_commits"
+    }
+  },
+  "proof_bundle_reconciliation_decisions": [
+    {
+      "path_class": "proof/TP-CODEX-RTE-V5-*",
+      "decision": "committed_and_referenced",
+      "notes": "Existing TP1-TP7 proof bundles remain the canonical packet-lineage artifacts already present in the repo."
+    },
+    {
+      "path_class": "reports/repo-truth-extractor/pre_live_gate_v25/*",
+      "decision": "referenced_but_excluded_from_source_commits",
+      "notes": "These are generated validator/runtime artifacts and should not be mixed into source commits."
+    },
+    {
+      "path_class": "docs/05-audit-reports/repo-truth-extractor-v5-packet-lineage-2026-04-02.md",
+      "decision": "committed",
+      "notes": "Committed in the TP8B docs commit to document lineage and dirty-state classification."
+    }
+  ],
+  "git_mutation_attempts": [
+    {
+      "command": "git restore --staged -- MEMORY_AUTHORITY_RESOLUTION_OPTIONS.md",
+      "result": "FAIL",
+      "error": "fatal: Unable to create '/Users/hue/code/dopemux-mvp/.git/index.lock': Operation not permitted"
+    },
+    {
+      "command": "git reset HEAD -- docs/92-runbooks/repo-truth-extractor-v5-billing-verification-drill.md",
+      "result": "FAIL",
+      "error": "fatal: Unable to create '/Users/hue/code/dopemux-mvp/.git/index.lock': Operation not permitted"
+    },
+    {
+      "command": "printf 'tp8-probe\\n' | git hash-object -w --stdin",
+      "result": "FAIL",
+      "error": "error: unable to create temporary file: Operation not permitted; fatal: Unable to add (null) to database"
+    }
+  ],
+  "commit_ids_created_in_tp8": [
+    "2c38e8a8c4d4ac0f409669dc55daa8e8f810bca8",
+    "250c039ce4a4dc8dcacb8df90766111c6ff9d6ff",
+    "b5c4afcc0a9c35a6a87ab36a11a7d98f0a4e76bc"
+  ],
+  "post_cleanup_dirty_state_summary": {
+    "status": "tp_related_runtime_tests_docs_committed_proof_commit_pending",
+    "remaining_dirty_tp_work": [
+      "TP8 proof bundle files only"
+    ],
+    "remaining_dirty_non_packet_work": [
+      "MEMORY_AUTHORITY_RESOLUTION_OPTIONS.md",
+      "SYSTEM_Dopemux.md",
+      "SYSTEM_Dopetask.md",
+      "docs/03-reference/systems/dope-memory/",
+      "reports/repo-truth-extractor/pre_live_gate_v25/*"
+    ]
+  },
+  "remaining_dirty_files_intentional_and_documented": true
+}

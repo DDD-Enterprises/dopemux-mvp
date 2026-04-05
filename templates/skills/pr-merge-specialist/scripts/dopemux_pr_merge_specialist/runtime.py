@@ -37,6 +37,89 @@ def contains_marker(text: str, markers: Sequence[str]) -> bool:
     return any(marker.lower() in lowered for marker in markers)
 
 
+def run_command(
+    cmd: Sequence[str],
+    *,
+    cwd: Optional[Path] = None,
+    env: Optional[Mapping[str, str]] = None,
+    timeout_seconds: int = 600,
+) -> CommandResult:
+    try:
+        completed = subprocess.run(
+            list(cmd),
+            cwd=str(cwd) if cwd else None,
+            env=None if env is None else {**os.environ, **env},
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=timeout_seconds,
+        )
+        return CommandResult(
+            list(cmd), completed.returncode, completed.stdout, completed.stderr, False
+        )
+    except subprocess.TimeoutExpired as exc:
+        return CommandResult(
+            list(cmd),
+            124,
+            exc.stdout or "",
+            (exc.stderr or "")
+            + f"\nCommand timed out after {timeout_seconds} seconds.",
+            True,
+        )
+
+
+def json_loads_or_empty(raw: str) -> Any:
+    if not raw.strip():
+        return {}
+    return json.loads(raw)
+
+
+def ensure_parent(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+
+def write_json(path: Path, payload: Any) -> None:
+    ensure_parent(path)
+    path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+
+
+def write_text(path: Path, text: str) -> None:
+    ensure_parent(path)
+    path.write_text(text, encoding="utf-8")
+
+
+def append_command_log(
+    path: Path, result: CommandResult, *, dry_run: bool = False
+) -> None:
+    ensure_parent(path)
+    mode = "a" if path.exists() else "w"
+    with path.open(mode, encoding="utf-8") as handle:
+        handle.write(f"$ {shell_join(result.command)}\n")
+        handle.write(f"exit={result.returncode}")
+        if dry_run:
+            handle.write(" (dry-run)")
+        if result.timed_out:
+            handle.write(" (timed-out)")
+        handle.write("\n")
+        if result.stdout:
+            handle.write("--- stdout ---\n")
+            handle.write(result.stdout.rstrip() + "\n")
+        if result.stderr:
+            handle.write("--- stderr ---\n")
+            handle.write(result.stderr.rstrip() + "\n")
+        handle.write("\n")
+
+
+def append_live_log(path: Path, *, level: str, scope: str, message: str) -> None:
+    ensure_parent(path)
+    normalized = " ".join(str(message).replace("\r", "\n").splitlines()).strip()
+    line = f"{utc_now()} [{str(level).upper()}] {scope}: {normalized}\n"
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(line)
+
+
 def dry_run_result(cmd: Sequence[str]) -> CommandResult:
     return CommandResult(list(cmd), 0, "", "")
 

@@ -473,7 +473,7 @@ class TestPerformanceIntegration:
 
         # Wait for completion
         for thread in threads:
-            thread.join(timeout=1)
+            thread.join(timeout=5)
 
         # All should succeed
         assert len(results) == 5

@@ -221,6 +221,23 @@ class GitHubClient:
             return None
         return f"{owner}/{repo}"
 
+    def resolve_repo_slug(self) -> str:
+        cached = self._cache_get("repo_slug")
+        if cached is not None:
+            return str(cached)
+        if self.repo:
+            self.cache["repo_slug"] = self.repo
+            return self.repo
+        result = self._run(
+            ["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]
+        )
+        if result.returncode == 0:
+            slug = result.stdout.strip()
+        else:
+            slug = self._resolve_repo_slug_from_git_remote() or ""
+        if not slug or "/" not in slug:
+            if result.returncode != 0:
+                raise RuntimeError(f"Unable to resolve repo slug: {result.stderr.strip()}")
             raise RuntimeError(f"Invalid repo slug response: {slug!r}")
         self.cache["repo_slug"] = slug
         return slug
@@ -641,6 +658,69 @@ class GitHubClient:
             "failed_required_checks": failed_required_checks,
             "failed_required_check_entries": failed_required_check_entries,
             "pending_required_checks": pending_required_checks,
+            "approval_required": approval_required,
+            "blocker_types": blockers,
+            "warning_types": warnings,
+        }
+
+    def fetch_remote_check_log_evidence(
+        self, check_entry: Dict[str, Any]
+    ) -> RemoteCheckLogEvidence:
+        check_name = str(check_entry.get("check_name") or "").strip()
+        details_url = str(check_entry.get("details_url") or "").strip()
+        if not details_url:
+            return RemoteCheckLogEvidence(
+                check_name=check_name,
+                details_url=details_url,
+                fetch_status="missing_details_url",
+                error="Required check did not include a details URL.",
+            )
+        cache_key = f"remote_check_log:{check_name}:{details_url}"
+        cached = self._cache_get(cache_key)
+        if cached is not None:
+            return cached
+        match = GITHUB_ACTIONS_DETAILS_URL_RE.match(details_url)
+        if not match:
+            evidence = RemoteCheckLogEvidence(
+                check_name=check_name,
+                details_url=details_url,
+                fetch_status="unsupported",
+                error="Details URL is not a GitHub Actions run or job URL.",
+            )
+            self.cache[cache_key] = evidence
+            return evidence
+
+        run_id = match.group("run_id")
+        job_id = match.group("job_id")
+        cmd = ["gh", "run", "view", run_id]
+        if job_id:
+            cmd.extend(["--job", job_id])
+        cmd.append("--log")
+        if self.repo:
+            cmd.extend(["--repo", self.repo])
+        result = self._run(cmd)
+        if result.returncode != 0:
+            evidence = RemoteCheckLogEvidence(
+                check_name=check_name,
+                details_url=details_url,
+                run_id=run_id,
+                job_id=job_id,
+                fetch_status="error",
+                error=result.stderr.strip() or "Unable to fetch GitHub Actions log.",
+            )
+            self.cache[cache_key] = evidence
+            return evidence
+        evidence = RemoteCheckLogEvidence(
+            check_name=check_name,
+            details_url=details_url,
+            run_id=run_id,
+            job_id=job_id,
+            log_text=result.stdout or "",
+            fetch_status="ok",
+        )
+        self.cache[cache_key] = evidence
+        return evidence
+
     def rate_limit_snapshot(self) -> Dict[str, Any]:
         result = self._run(["gh", "api", "rate_limit"])
         if result.returncode != 0:

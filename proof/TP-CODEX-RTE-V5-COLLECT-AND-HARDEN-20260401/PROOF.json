@@ -1,0 +1,145 @@
+{
+  "packet_id": "TP-CODEX-RTE-V5-COLLECT-AND-HARDEN-20260401",
+  "branch_name": "codex/rte-v5-collect-and-harden-20260401",
+  "consolidation_doc_path": "docs/05-audit-reports/repo-truth-extractor-v5-prelive-consolidated-2026-04-01.md",
+  "prompt_authority_decision_note_path": "docs/05-audit-reports/repo-truth-extractor-v5-prompt-authority-decision-2026-04-01.md",
+  "selected_collected_sources": [],
+  "rejected_sources": [
+    {
+      "source": "worktree:pr-merge-360",
+      "action": "inspect_only",
+      "reason": "same-count v4 promptset drift was not accepted as authority"
+    },
+    {
+      "source": "worktree:resolve-372",
+      "action": "inspect_only",
+      "reason": "same-count v4 promptset drift was not accepted as authority"
+    },
+    {
+      "source": "worktree:opus/v5-extractor-schema-expansion",
+      "action": "inspect_only",
+      "reason": "same-count v4 promptset drift was not accepted as authority"
+    },
+    {
+      "source": "branch:codex/v5-extractor-production-recovery",
+      "action": "reject_wholesale_import",
+      "reason": "contained mixed runtime and consent drift without canonical authority"
+    },
+    {
+      "source": "branch:feat/v5-prompt-refactor-and-system-cleanup",
+      "action": "reject_wholesale_import",
+      "reason": "prompt/config rewrite branch was not accepted without explicit approval"
+    },
+    {
+      "source": "branch:feat/v5-ready-cheap-models",
+      "action": "reject_wholesale_import",
+      "reason": "routing/config drift was treated as branch-local experiment"
+    }
+  ],
+  "stash_inspection_result": {
+    "source": "stash@{Thu Mar 26 15:55:12 2026} on codex/v5-extractor-production-recovery",
+    "opened": true,
+    "applied": false,
+    "summary": "contained relevant consent and batch-related ideas, but was not safe to auto-apply"
+  },
+  "changed_files": [
+    "docs/05-audit-reports/repo-truth-extractor-v5-prelive-consolidated-2026-04-01.md",
+    "docs/05-audit-reports/repo-truth-extractor-v5-prompt-authority-decision-2026-04-01.md",
+    "scripts/repo_truth_extractor_promptset_audit_v4.py",
+    "services/repo-truth-extractor/README.md",
+    "services/repo-truth-extractor/lib/spend_ledger.py",
+    "services/repo-truth-extractor/lib/structured_output_contracts.py",
+    "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_promptset_v4_lint.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py",
+    "proof/TP-CODEX-RTE-V5-COLLECT-AND-HARDEN-20260401/IMPLEMENTER_REPORT.md",
+    "proof/TP-CODEX-RTE-V5-COLLECT-AND-HARDEN-20260401/PROOF.json"
+  ],
+  "commit_ids": [
+    "d92bf55ef43a30f06f5347b8e5392bb375dd26f8",
+    "76a7cd8a761d65c0e4a39badbdcfe9a454bd3922",
+    "a952ecb64c778db8e777258ff60b3b9c94d5c51b"
+  ],
+  "tests_run": [
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/spend_ledger.py services/repo-truth-extractor/lib/structured_output_contracts.py scripts/repo_truth_extractor_promptset_audit_v4.py",
+      "status": "PASS"
+    },
+    {
+      "command": "pytest -q services/repo-truth-extractor/tests/test_promptset_v4_lint.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_v5_observability_improvements.py",
+      "status": "PASS"
+    },
+    {
+      "command": "pytest -q services/repo-truth-extractor/tests/",
+      "status": "FAIL",
+      "notes": "legacy run_extraction_v3-related failures remain outside this packet"
+    },
+    {
+      "command": "python services/repo-truth-extractor/extraction_hygiene.py scan",
+      "status": "PASS",
+      "notes": "warnings=10244 errors=0"
+    },
+    {
+      "command": "python services/repo-truth-extractor/run_extraction_v5.py --list-phases",
+      "status": "PASS",
+      "notes": "phase_count=14"
+    },
+    {
+      "command": "python services/repo-truth-extractor/run_extraction_v5.py --phase R --dry-run --run-id tp_collect_harden_r_dry",
+      "status": "FAIL",
+      "notes": "expected dependency failure path exercised; R now surfaces missing A/H/D/C prerequisites explicitly"
+    },
+    {
+      "command": "python services/repo-truth-extractor/run_extraction_v5.py --phase A --dry-run --print-config --run-id tp_collect_harden_a_cfg",
+      "status": "PASS"
+    }
+  ],
+  "validator_result": {
+    "command": "python services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+    "status": "FAIL",
+    "verdict": "NO_GO",
+    "output_dir": "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T000219Z",
+    "reason_codes": [
+      "CONTRACT_MAP_NONDETERMINISTIC",
+      "ONLINE_PREFLIGHT_FAILURE",
+      "PAL_REQUIRED_UNAVAILABLE",
+      "REQUIRED_API_KEY_MISSING"
+    ]
+  },
+  "runtime_spend_lanes_fully_mapped": true,
+  "runtime_spend_lane_notes": [
+    "sync request accumulation after provider response",
+    "S_INT prompt executor accumulation",
+    "batch submit projected cap gate",
+    "batch watch accumulation from provider usage or persisted estimates",
+    "async R submit projected cap gate",
+    "async R finalize accumulation from webhook usage or persisted estimates"
+  ],
+  "max_cost_live_enforcement_proven": true,
+  "max_cost_live_enforcement_notes": "proven through mocked execution-path tests and submit-time projection gates, not by live provider billing",
+  "unknown_model_pricing_policy_selected": "baseline_v1_fallback",
+  "sidefill_conflicts_surfaced": true,
+  "deferred_backlog": [
+    "first-live staged preset",
+    "routing-policy cost guide",
+    "cost preview per phase",
+    "retry-cost visibility",
+    "per-phase dry-run checklist",
+    "single-partition billing verification drill",
+    "v5/v3 output-path fix or compatibility cleanup",
+    "--output-root",
+    "invalid-argument recovery improvements",
+    "stratified help",
+    "prescan clarity",
+    "timeout/zombie-wait review",
+    "unsupported input warnings",
+    "prompt bloat audit",
+    "legacy-context leakage reduction",
+    "thin-phase skip heuristics",
+    "excerpt-length review",
+    "partition completeness review",
+    "protect Phase S from weak R",
+    "split run_extraction_v5.py"
+  ]
+}

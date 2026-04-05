@@ -1,0 +1,116 @@
+{
+  "packet_id": "TP-CODEX-RTE-PRELIVE-001",
+  "head_sha": "cc20f95ba8d24e61126a90f21bb1cd31c3d7aa14",
+  "billable_paths": [
+    {
+      "path": "run_provider_doctor_probe",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "run_gemini_auth_probe",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "run_auth_doctor",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "run_comparison_lane",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "strict_contract_call",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "sync_partition_execution",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "audit_phase_sample",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "batch_submit",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "batch_watch",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "phase_r_async_submit",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "phase_r_async_finalize",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "s_int_sync",
+      "status": "instrumented",
+      "file": "services/repo-truth-extractor/run_extraction_v5.py"
+    }
+  ],
+  "pricing_strategy": {
+    "mode": "model-aware route registry with baseline_v1 rates",
+    "ledger_writer": "services/repo-truth-extractor/lib/spend_ledger.py",
+    "runtime_enforcement": "services/repo-truth-extractor/run_extraction_v5.py"
+  },
+  "fallback_policy": {
+    "name": "baseline_v1_fallback",
+    "behavior": "unknown model ids use the max-known registry rate and increment fallback_usage_count"
+  },
+  "tests_run": [
+    {
+      "command": "pytest services/repo-truth-extractor/tests/ -v",
+      "result": "PASS",
+      "details": "505 passed in 18.35s"
+    },
+    {
+      "command": "pytest -k \"spend or cost or breach\" -v",
+      "result": "PASS",
+      "details": "6 passed, 5 skipped, 2063 deselected in 5.56s"
+    },
+    {
+      "command": "python services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "result": "FAIL",
+      "details": "NO_GO: REQUIRED_API_KEY_MISSING (XAI_API_KEY), PAL_REQUIRED_UNAVAILABLE, ONLINE_PREFLIGHT_FAILURE"
+    },
+    {
+      "command": "python services/repo-truth-extractor/extraction_hygiene.py scan",
+      "result": "PASS",
+      "details": "warnings=1 errors=0"
+    },
+    {
+      "command": "python scripts/repo_truth_extractor_promptset_audit_v4.py",
+      "result": "PASS",
+      "details": "status=PASS global_issues_count=0"
+    }
+  ],
+  "abort_behavior": {
+    "run_status": "COST_ABORTED",
+    "reason": "MAX_COST_USD_EXCEEDED",
+    "partial_outputs_retained": true,
+    "resume_allowed": false,
+    "artifacts": [
+      "COST_ABORT.json",
+      "RUN_MANIFEST.json",
+      "COVERAGE_ROLLUP.json",
+      "RESUME_PROOF.json",
+      "PROOF_PACK.json"
+    ]
+  },
+  "verdict": "LOCAL_PASS_WITH_ENVIRONMENT_NO_GO"
+}

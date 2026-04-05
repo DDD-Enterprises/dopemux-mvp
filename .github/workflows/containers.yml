@@ -38,6 +38,9 @@ jobs:
     env:
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
 
+    strategy:
+      matrix:
+        include:
           - service: dopemux-backend
             dockerfile: Dockerfile
             context: .

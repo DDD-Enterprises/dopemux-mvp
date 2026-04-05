@@ -25,13 +25,13 @@ def _load_module(filename: str, module_name: str):
 
 
 def test_execution_step_filter_accepts_single_matching_step() -> None:
-    runner = _load_module("run_extraction_v3.py", "run_extraction_v3_step_filter")
+    runner = _load_module("run_extraction_v5.py", "run_extraction_v3_step_filter")
     args = argparse.Namespace(phase="D", step="d1", s_steps=None)
     assert runner._get_execution_step_filter(args) == "D1"
 
 
 def test_execution_step_filter_rejects_invalid_execution_combinations() -> None:
-    runner = _load_module("run_extraction_v3.py", "run_extraction_v3_step_filter_invalid")
+    runner = _load_module("run_extraction_v5.py", "run_extraction_v3_step_filter_invalid")
 
     with pytest.raises(RuntimeError, match="does not support --phase ALL"):
         runner._get_execution_step_filter(argparse.Namespace(phase="ALL", step="D0", s_steps=None))
@@ -44,7 +44,7 @@ def test_execution_step_filter_rejects_invalid_execution_combinations() -> None:
 
 
 def test_run_phase_d_uses_selected_execution_step_filter(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    runner = _load_module("run_extraction_v3.py", "run_extraction_v3_run_phase_d")
+    runner = _load_module("run_extraction_v5.py", "run_extraction_v3_run_phase_d")
     captured = {}
 
     def fake_run_phase_inner(phase, dirs, cfg, collector, item_filter, **kwargs):  # type: ignore[no-untyped-def]

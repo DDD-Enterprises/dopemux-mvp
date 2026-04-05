@@ -122,3 +122,53 @@ def test_v4_promptset_lint_fails_on_missing_required_sections(tmp_path: Path) ->
     payload = module.run_audit(tmp_path, promptset_path, artifacts_path)
     assert payload["summary"]["status"] == "FAIL"
     assert payload["summary"]["lint_failures"] > 0
+
+
+def test_v4_promptset_lint_flags_non_monotonic_extraction_numbering(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    promptset_path = root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "promptset.yaml"
+    artifacts_path = root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "artifacts.yaml"
+    promptset = yaml.safe_load(promptset_path.read_text(encoding="utf-8"))
+    step = next(
+        row
+        for row in promptset["phases"]["R"]["steps"]
+        if row["step_id"] == "R0"
+    )
+
+    bad_prompt_rel = "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_BROKEN.md"
+    bad_prompt_abs = tmp_path / bad_prompt_rel
+    bad_prompt_abs.parent.mkdir(parents=True, exist_ok=True)
+    bad_prompt_abs.write_text(
+        (
+            "# PROMPT_R0\n\n"
+            "## Goal\n"
+            "A sufficiently long goal section for lint coverage.\n\n"
+            "## Inputs\n"
+            "- input one\n\n"
+            "## Outputs\n"
+            "- `CONTROL_PLANE_TRUTH_MAP.md`\n\n"
+            "## Schema\n"
+            "- `CONTROL_PLANE_TRUTH_MAP.md`\n\n"
+            "## Extraction Procedure\n"
+            "1. First.\n"
+            "2. Second.\n"
+            "2. Duplicate.\n\n"
+            "## Shared Rules\n"
+            "Refer to `PROMPTSET_RULES.md` for all shared enforcement rules.\n"
+        ),
+        encoding="utf-8",
+    )
+    step["prompt_file"] = bad_prompt_rel
+
+    mutated_promptset = tmp_path / "promptset.yaml"
+    mutated_promptset.write_text(
+        yaml.safe_dump(promptset, sort_keys=False),
+        encoding="utf-8",
+    )
+    payload = module.run_audit(tmp_path, mutated_promptset, artifacts_path)
+    r0_row = next(row for row in payload["rows"] if row["step_id"] == "R0")
+    assert any(
+        note.startswith("scan:extraction_procedure_non_monotonic_numbering")
+        for note in r0_row["notes"]
+    )

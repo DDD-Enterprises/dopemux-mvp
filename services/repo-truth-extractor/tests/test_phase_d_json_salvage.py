@@ -7,8 +7,8 @@ from pathlib import Path
 
 def _load_runner_module():
     root = Path(__file__).resolve().parents[3]
-    module_path = root / "services" / "repo-truth-extractor" / "run_extraction_v3.py"
-    spec = importlib.util.spec_from_file_location("run_extraction_v3", module_path)
+    module_path = root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
+    spec = importlib.util.spec_from_file_location("run_extraction_v5", module_path)
     assert spec is not None
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
@@ -20,11 +20,14 @@ runner = _load_runner_module()
 
 
 def test_extract_first_json_object_salvages_single_object_with_leading_and_trailing_text() -> None:
-    raw_text = 'Here is the result:\n{"artifacts":[{"artifact_name":"OUT.json","payload":{"ok":true}}]}\nthanks'
+    raw_text = "Here is the result:\n{\"artifacts\":[{\"artifact_name\":\"OUT.json\",\"payload\":{\"ok\":true}}]}" + "\nthanks"
     salvaged = runner.extract_first_json_object(raw_text)
-    assert salvaged == '{"artifacts":[{"artifact_name":"OUT.json","payload":{"ok":true}}]}'
-    parsed = runner.parse_json_from_response(raw_text)
-    assert parsed is None
+    assert salvaged == "{\"artifacts\":[{\"artifact_name\":\"OUT.json\",\"payload\":{\"ok\":true}}]}"
+    meta = {}
+    parsed = runner.parse_json_from_response(raw_text, metadata_out=meta)
+    assert parsed is not None
+    assert parsed["artifacts"][0]["artifact_name"] == "OUT.json"
+    assert meta.get("truncation_salvage") is True
 
 
 def test_extract_first_json_object_rejects_multiple_top_level_objects() -> None:

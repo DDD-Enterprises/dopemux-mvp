@@ -312,7 +312,7 @@ class TestT3PhaseASubcommandsRegression:
     def test_phase_contract_map_includes_allow_empty_array_fields_for_cli(self):
         """CLI_COMMAND_SURFACE.json entry in phase_contract_map has allow_empty_array_fields."""
         contract_map = _load_contract_map()
-        contract_map.compile_phase_contract_map.cache_clear()
+        if hasattr(contract_map.compile_phase_contract_map, "cache_clear"): contract_map.compile_phase_contract_map.cache_clear()
         compiled = contract_map.compile_phase_contract_map()
         steps = compiled.get("steps", {})
         # find any step with CLI_COMMAND_SURFACE.json in artifacts
@@ -367,7 +367,7 @@ class TestT4CrossPhaseRepoctrlQa:
     def test_phase_contract_map_includes_allow_empty_array_fields_for_repoctrl_qa(self):
         """REPOCTRL_QA.json entry in phase_contract_map has allow_empty_array_fields."""
         contract_map = _load_contract_map()
-        contract_map.compile_phase_contract_map.cache_clear()
+        if hasattr(contract_map.compile_phase_contract_map, "cache_clear"): contract_map.compile_phase_contract_map.cache_clear()
         compiled = contract_map.compile_phase_contract_map()
         steps = compiled.get("steps", {})
         for step_key, step_val in steps.items():
@@ -383,7 +383,7 @@ class TestT4CrossPhaseRepoctrlQa:
     def test_phase_contract_map_includes_allow_empty_array_fields_for_homectrl_qa(self):
         """HOMECTRL_QA.json entry in phase_contract_map has allow_empty_array_fields."""
         contract_map = _load_contract_map()
-        contract_map.compile_phase_contract_map.cache_clear()
+        if hasattr(contract_map.compile_phase_contract_map, "cache_clear"): contract_map.compile_phase_contract_map.cache_clear()
         compiled = contract_map.compile_phase_contract_map()
         steps = compiled.get("steps", {})
         for step_key, step_val in steps.items():

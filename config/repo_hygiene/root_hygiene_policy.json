@@ -57,6 +57,7 @@
   "allowed_root_files": [
     "SPECIMEN_LEDGER_REGEN_BIG.csv",
     ".implementer_state.json",
+    "CLAUDE_AUTOMATION_INSTRUCTIONS.md",
     "LICENSE",
     "API_SURFACE.json",
     "extract_code.py",
@@ -64,6 +65,9 @@
     ".dopetaskroot",
     "CLI_SURFACE.json",
     ".gitmodules",
+    "DOPE_MEMORY_INTEGRATION.md",
+    "rgOutput.md",
+    "AUDIT_INITIAL_FINDINGS.md",
     "DB_SURFACE.json",
     "extract_metadata.py",
     "MCP_SURFACE.json",
@@ -78,6 +82,7 @@
     "extract_data.py",
     "IDEMPOTENCY_RISK_LOCATIONS.json",
     "CONFIG_LOADERS.json",
+    "README_WEBHOOKS.md",
     "MANIFEST.in",
     ".gitignore",
     "MIGRATIONS.json",
@@ -93,86 +98,79 @@
     "SQLITE_DDL.json",
     "uv.lock",
     "patchit",
+    "DOPETASK_INTEGRATION_ANALYSIS.md",
+    "ITERATIVE_PR_SOLUTION.md",
     "test_mcp_tools.py",
     "comprehensive_pr_processor.py",
     "tmux-dopemux-orchestrator.yaml",
+    "DOCKER_SETUP.md",
     "DAO_SURFACE.json",
     "CONCURRENCY_RISK_LOCATIONS.json",
     "compose.yml",
     "compose.adhd-stack.yml",
+    "AG-master_plan.md",
     "install.sh",
     "CHANGELOG.md",
     "mcp-proxy-config.yaml",
     ".env.template",
+    "MONITORING-DESIGN-SPRINT-SUMMARY.md",
     "litellm.config",
     "dopemux.toml",
     "package.json",
     "POSTGRES_DDL.json",
     ".taskxroot",
     ".markdownlint.jsonc",
+    "COMPACT-DASHBOARD-COMPLETE.md",
     "Dockerfile",
     "mcp-proxy-config.json",
     "test_batch_integration.py",
     "working_pr_merger.py",
     "requirements*.txt",
+    "ORCHESTRATOR-INTEGRATION-COMPLETE.md",
     ".dopetask-pin",
+    "TASKX_INTEGRATION_ANALYSIS.md",
     "MODELS_INDEX.json",
     "model_map_v2_tp008.yaml",
     "Makefile",
     "dopemux.rb",
+    "ADHD-DASHBOARD-SESSION-SUMMARY.md",
     "run_all_multi_workspace_tests.sh",
+    "QUICK_START.md",
     "start-mcp-servers.sh",
     "mcp_server_health_report.sh",
+    "FINAL-COMPLETE-SESSION-SUMMARY.md",
     "SECRETS_RISK_LOCATIONS.json",
     ".repo_id",
     "package-lock.json",
     "test_installer_ubuntu.sh",
     "AUDIT_RESULTS.json",
+    "COMPLETE_PR_WORKFLOW.md",
     "extract_docs.py",
     "verify_dopecon_bridge.sh",
+    "EVIDENCE_BASED_VERIFICATION.md",
+    "GEMINI.md",
     ".tmux.conf",
     "AGENTS.md",
+    "PR_MERGER_SOLUTION.md",
     ".taskx-pin",
+    "INSTALL.md",
     ".claude.json.template",
     "inventory_audit.txt",
     ".backup_location",
     "mcp-proxy-config.copilot.yaml",
     "audit_prompts.py",
     "mcp-proxy-config*.yaml",
+    "CHECKLIST.md",
     ".dockerignore",
     ".python-version"
   ],
   "legacy_root_files": [
-    "ADHD-DASHBOARD-SESSION-SUMMARY.md",
-    "AG-master_plan.md",
     "ARCHITECTURE.md",
-    "AUDIT_INITIAL_FINDINGS.md",
     "BRAND_SYSTEM.md",
-    "CHECKLIST.md",
-    "CLAUDE_AUTOMATION_INSTRUCTIONS.md",
-    "COMPACT-DASHBOARD-COMPLETE.md",
-    "COMPLETE_PR_WORKFLOW.md",
-    "DOCKER_SETUP.md",
-    "DOPE_MEMORY_INTEGRATION.md",
-    "DOPETASK_INTEGRATION_ANALYSIS.md",
-    "EVIDENCE_BASED_VERIFICATION.md",
-    "FINAL-COMPLETE-SESSION-SUMMARY.md",
-    "GEMINI.md",
-    "INSTALL.md",
-    "ITERATIVE_PR_SOLUTION.md",
-    "MONITORING-DESIGN-SPRINT-SUMMARY.md",
-    "ORCHESTRATOR-INTEGRATION-COMPLETE.md",
     "PM_PLANE.md",
-    "PR_MERGER_SOLUTION.md",
     "PROJECT.md",
-    "QUICK_START.md",
-    "README_WEBHOOKS.md",
-    "rgOutput.md",
-    "SERVICE_CATALOG.md",
-    "SUPERVISOR_INSTRUCTIONS_CHATGPT.md",
-    "TASKX_INTEGRATION_ANALYSIS.md"
+    "SERVICE_CATALOG.md"
   ],
-  "legacy_root_policy": "temporary-migration-targets",
   "blocked_root_file_patterns": [
     "*_REPORT.md",
     "*_STATUS.md",
@@ -202,74 +200,6 @@
     "node_modules"
   ],
   "destination_hints": [
-    {
-      "patterns": [
-        "SYSTEM_DopeContext.md"
-      ],
-      "destination": "docs/03-reference/systems/dope-context/",
-      "purpose": "canonical dope-context system reference"
-    },
-    {
-      "patterns": [
-        "DOPE_MEMORY_INTEGRATION.md"
-      ],
-      "destination": "docs/04-explanation/integrations/",
-      "purpose": "integration explanation docs belong under Diataxis explanation"
-    },
-    {
-      "patterns": [
-        "DOPETASK_INTEGRATION_ANALYSIS.md",
-        "TASKX_INTEGRATION_ANALYSIS.md"
-      ],
-      "destination": "docs/03-reference/systems/dopetask/",
-      "purpose": "dopetask system integration references"
-    },
-    {
-      "patterns": [
-        "INSTALL.md",
-        "QUICK_START.md"
-      ],
-      "destination": "docs/01-tutorials/",
-      "purpose": "onboarding and setup tutorials"
-    },
-    {
-      "patterns": [
-        "GEMINI.md",
-        "CLAUDE_AUTOMATION_INSTRUCTIONS.md",
-        "SUPERVISOR_INSTRUCTIONS_CHATGPT.md"
-      ],
-      "destination": "docs/03-reference/instructions/",
-      "purpose": "agent and operator instruction references"
-    },
-    {
-      "patterns": [
-        "ARCHITECTURE.md"
-      ],
-      "destination": "docs/94-architecture/",
-      "purpose": "architecture authority docs belong in the architecture section"
-    },
-    {
-      "patterns": [
-        "PM_PLANE.md"
-      ],
-      "destination": "docs/03-reference/planes/pm/",
-      "purpose": "PM plane reference docs belong under canonical planes reference"
-    },
-    {
-      "patterns": [
-        "PROJECT.md",
-        "SERVICE_CATALOG.md"
-      ],
-      "destination": "docs/03-reference/",
-      "purpose": "project and catalog references belong inside numbered docs sections"
-    },
-    {
-      "patterns": [
-        "BRAND_SYSTEM.md"
-      ],
-      "destination": "docs/03-reference/ux/",
-      "purpose": "brand and UX reference docs belong under UX reference"
-    },
     {
       "patterns": [
         "*_REPORT.md",
