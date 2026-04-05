@@ -133,6 +133,28 @@ class Blocker:
     details: Optional[Dict[str, Any]] = None
 
 
+@dataclass
+class GateCondition:
+    reason_code: str
+    layer: str
+    message: str
+    details: Optional[Dict[str, Any]] = None
+
+
+CODE_BLOCKER = "CODE_BLOCKER"
+ARTIFACT_OR_STATE_BLOCKER = "ARTIFACT_OR_STATE_BLOCKER"
+ENVIRONMENT_BLOCKER = "ENVIRONMENT_BLOCKER"
+EXTERNAL_PROVIDER_BLOCKER = "EXTERNAL_PROVIDER_BLOCKER"
+FALSE_POSITIVE = "FALSE_POSITIVE"
+DEFERRED_NON_BLOCKING = "DEFERRED_NON_BLOCKING"
+
+GO_NOW = "GO_NOW"
+NO_GO_CODE = "NO_GO_CODE"
+NO_GO_ENV = "NO_GO_ENV"
+NO_GO_EXTERNAL = "NO_GO_EXTERNAL"
+NO_GO_ARTIFACT_STATE = "NO_GO_ARTIFACT_STATE"
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -659,8 +681,9 @@ def evaluate_route_readiness(
     derived_routes = scope["required_provider_routes"]
     present_providers = sorted({str(row["provider"]).strip().lower() for row in derived_routes})
     missing_direct = sorted(set(config.required_direct_providers) - set(present_providers))
+    bounded_target_scope = tuple(config.target_phases) != tuple(DEFAULT_TARGET_PHASES)
     missing_keys = sorted([env_name for env_name in scope["required_api_key_envs"] if not os.environ.get(env_name)])
-    if missing_direct:
+    if missing_direct and not bounded_target_scope:
         blockers.append(
             Blocker(
                 ROUTE_DERIVATION_FAILURE,
@@ -687,6 +710,7 @@ def evaluate_route_readiness(
         "present_providers": present_providers,
         "required_direct_providers": list(config.required_direct_providers),
         "missing_required_direct_providers": missing_direct,
+        "bounded_target_scope": bounded_target_scope,
         "required_api_key_envs": scope["required_api_key_envs"],
         "missing_api_key_envs": missing_keys,
     }
@@ -731,8 +755,9 @@ def normalize_pal_rows(rows: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
 def evaluate_pal_validation(
     config: GateConfig,
     scope: Dict[str, Any],
-) -> Tuple[Dict[str, Any], List[Blocker]]:
+) -> Tuple[Dict[str, Any], List[Blocker], List[GateCondition]]:
     blockers: List[Blocker] = []
+    conditions: List[GateCondition] = []
     routes = {
         row["route_signature"]: row
         for row in scope["required_provider_routes"]
@@ -773,11 +798,10 @@ def evaluate_pal_validation(
                 "mismatch_class": "PAL_REQUIRED_UNAVAILABLE",
                 "notes": "PAL validation file was not provided for this active route.",
             }
-            blockers.append(
-                Blocker(
+            conditions.append(
+                GateCondition(
                     PAL_REQUIRED_UNAVAILABLE,
                     "pal_provider_validation",
-                    "P0",
                     f"PAL validation unavailable for active route {signature}",
                     row,
                 )
@@ -847,34 +871,52 @@ def evaluate_pal_validation(
 
     results = {
         "layer": "pal_provider_validation",
-        "status": "FAIL" if blockers else "PASS",
+        "status": "FAIL" if blockers else ("WARN" if conditions else "PASS"),
         "routes": output_rows,
+        "conditions": [
+            {
+                "reason_code": condition.reason_code,
+                "layer": condition.layer,
+                "message": condition.message,
+                "details": condition.details or {},
+            }
+            for condition in conditions
+        ],
     }
-    return results, blockers
+    return results, blockers, conditions
 
 
 def evaluate_online_preflight(
     runner: Any,
     config: GateConfig,
-) -> Tuple[Dict[str, Any], List[Blocker]]:
+) -> Tuple[Dict[str, Any], List[Blocker], List[GateCondition]]:
     blockers: List[Blocker] = []
+    conditions: List[GateCondition] = []
     if not config.allow_online_preflight:
-        blocker = Blocker(
+        condition = GateCondition(
             ONLINE_PREFLIGHT_FAILURE,
             "online_provider_preflight",
-            "P0",
             "Online provider preflight not executed. Re-run with --allow-online-preflight for a full gate.",
             {"allow_online_preflight": False},
         )
-        blockers.append(blocker)
+        conditions.append(condition)
         return (
             {
                 "layer": "online_provider_preflight",
-                "status": "FAIL",
+                "status": "WARN",
                 "allow_online_preflight": False,
                 "payload": None,
+                "conditions": [
+                    {
+                        "reason_code": condition.reason_code,
+                        "layer": condition.layer,
+                        "message": condition.message,
+                        "details": condition.details or {},
+                    }
+                ],
             },
             blockers,
+            conditions,
         )
 
     cfg = runner.RunnerConfig(
@@ -927,23 +969,46 @@ def evaluate_online_preflight(
         list(config.target_phases),
     )
     if not ok:
-        blockers.append(
-            Blocker(
-                ONLINE_PREFLIGHT_FAILURE,
-                "online_provider_preflight",
-                "P0",
-                "Runner-native provider preflight failed",
-                payload,
+        probes = payload.get("probes", []) if isinstance(payload, dict) else []
+        if isinstance(probes, list):
+            for probe in probes:
+                if not isinstance(probe, dict):
+                    continue
+                status_code = probe.get("status_code")
+                failure_type = str(probe.get("failure_type") or "").strip()
+                if status_code == 200 and not failure_type:
+                    continue
+                provider = str(probe.get("provider") or "unknown").strip()
+                model_id = str(probe.get("model_id") or "unknown").strip()
+                blockers.append(
+                    Blocker(
+                        ONLINE_PREFLIGHT_FAILURE,
+                        "online_provider_preflight",
+                        "P0",
+                        f"Provider preflight failed for {provider}:{model_id}",
+                        probe,
+                    )
+                )
+        if not blockers:
+            blockers.append(
+                Blocker(
+                    ONLINE_PREFLIGHT_FAILURE,
+                    "online_provider_preflight",
+                    "P0",
+                    "Runner-native provider preflight failed",
+                    payload,
+                )
             )
-        )
     return (
         {
             "layer": "online_provider_preflight",
             "status": "PASS" if ok and not blockers else "FAIL",
             "allow_online_preflight": True,
             "payload": payload,
+            "conditions": [],
         },
         blockers,
+        conditions,
     )
 
 
@@ -1033,12 +1098,14 @@ def evaluate_smoke_tests(config: GateConfig) -> Tuple[Dict[str, Any], List[Block
     )
 
 
-def split_blockers_by_waiver(
+def split_findings_by_waiver(
     blockers: Sequence[Blocker],
+    conditions: Sequence[GateCondition],
     waiver_codes: Set[str],
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
     active: List[Dict[str, Any]] = []
     waived: List[Dict[str, Any]] = []
+    condition_rows: List[Dict[str, Any]] = []
     for blocker in blockers:
         payload = {
             "reason_code": blocker.reason_code,
@@ -1051,7 +1118,110 @@ def split_blockers_by_waiver(
             waived.append(payload)
         else:
             active.append(payload)
-    return active, waived
+    for condition in conditions:
+        condition_rows.append(
+            {
+                "reason_code": condition.reason_code,
+                "layer": condition.layer,
+                "message": condition.message,
+                "details": condition.details or {},
+            }
+        )
+    return active, waived, condition_rows
+
+
+def classify_blocker_bucket(blocker: Mapping[str, Any]) -> str:
+    reason_code = str(blocker.get("reason_code") or "").strip()
+    details = blocker.get("details") or {}
+    if reason_code == REQUIRED_API_KEY_MISSING:
+        return ENVIRONMENT_BLOCKER
+    if reason_code == PAL_REQUIRED_UNAVAILABLE:
+        return ARTIFACT_OR_STATE_BLOCKER
+    if reason_code == ONLINE_PREFLIGHT_FAILURE:
+        if isinstance(details, dict) and "failure_type" in details:
+            if not details.get("api_key_present", True):
+                return ENVIRONMENT_BLOCKER
+            if str(details.get("failure_type") or "").strip() == "auth_missing":
+                return ENVIRONMENT_BLOCKER
+            if str(details.get("failure_type") or "").strip() == "auth_rejected":
+                return EXTERNAL_PROVIDER_BLOCKER
+        probes = details.get("probes")
+        if isinstance(probes, list):
+            if any(not probe.get("api_key_present", True) for probe in probes if isinstance(probe, dict)):
+                return ENVIRONMENT_BLOCKER
+            if any(str(probe.get("failure_type") or "").strip() == "auth_missing" for probe in probes if isinstance(probe, dict)):
+                return ENVIRONMENT_BLOCKER
+            if any(
+                probe.get("api_key_present")
+                and str(probe.get("failure_type") or "").strip() == "auth_rejected"
+                for probe in probes
+                if isinstance(probe, dict)
+            ):
+                return EXTERNAL_PROVIDER_BLOCKER
+        if details.get("allow_online_preflight") is False:
+            return ARTIFACT_OR_STATE_BLOCKER
+        return EXTERNAL_PROVIDER_BLOCKER
+    if reason_code in {MISSING_SMOKE_EVIDENCE, ACTIVE_MODEL_REFERENCE_UNRESOLVED, PROVIDER_CONTRACT_MISMATCH}:
+        return ARTIFACT_OR_STATE_BLOCKER
+    if reason_code in {
+        IMPORT_OR_CLI_FAILURE,
+        TARGET_PROMPT_INTEGRITY_FAILURE,
+        TARGET_TRUTH_SPLIT_MISMATCH,
+        CONTRACT_MAP_NONDETERMINISTIC,
+        ROUTE_DERIVATION_FAILURE,
+        CRITICAL_TEST_FAILURE,
+        SMOKE_FAILURE,
+    }:
+        return CODE_BLOCKER
+    return CODE_BLOCKER
+
+
+def build_blocker_classification(
+    blockers: Sequence[Mapping[str, Any]],
+    repo_wide_findings: Sequence[Mapping[str, Any]],
+) -> Dict[str, List[Any]]:
+    classification = {
+        "code_blockers": [],
+        "artifact_or_state_blockers": [],
+        "environment_blockers": [],
+        "external_provider_blockers": [],
+        "false_positives": [],
+        "deferred_non_blocking": list(repo_wide_findings),
+    }
+    for blocker in blockers:
+        bucket = classify_blocker_bucket(blocker)
+        if bucket == CODE_BLOCKER:
+            classification["code_blockers"].append(blocker)
+        elif bucket == ARTIFACT_OR_STATE_BLOCKER:
+            classification["artifact_or_state_blockers"].append(blocker)
+        elif bucket == ENVIRONMENT_BLOCKER:
+            classification["environment_blockers"].append(blocker)
+        elif bucket == EXTERNAL_PROVIDER_BLOCKER:
+            classification["external_provider_blockers"].append(blocker)
+        elif bucket == FALSE_POSITIVE:
+            classification["false_positives"].append(blocker)
+        else:
+            classification["deferred_non_blocking"].append(blocker)
+    return classification
+
+
+def derive_operator_verdict(
+    blockers: Sequence[Mapping[str, Any]],
+    conditions: Sequence[Mapping[str, Any]],
+    repo_wide_findings: Sequence[Mapping[str, Any]],
+) -> Tuple[str, Dict[str, List[Any]]]:
+    classification = build_blocker_classification(blockers, repo_wide_findings)
+    if classification["code_blockers"]:
+        return NO_GO_CODE, classification
+    if classification["environment_blockers"]:
+        return NO_GO_ENV, classification
+    if classification["external_provider_blockers"]:
+        return NO_GO_EXTERNAL, classification
+    if classification["artifact_or_state_blockers"]:
+        return NO_GO_ARTIFACT_STATE, classification
+    if blockers:
+        return NO_GO_CODE, classification
+    return GO_NOW, classification
 
 
 def summarize_layers(layer_payloads: Mapping[str, Mapping[str, Any]]) -> Dict[str, str]:
@@ -1077,10 +1247,20 @@ def render_summary(
     for layer_name, payload in layer_payloads.items():
         lines.append(f"- {layer_name}: {payload.get('status')}")
     lines.append("")
+    lines.append("## Operator Verdict")
+    lines.append(f"- {verdict.get('operator_verdict', 'UNKNOWN')}")
+    lines.append("")
     lines.append("## Reason Codes")
     if verdict["reason_codes"]:
         for code in verdict["reason_codes"]:
             lines.append(f"- {code}")
+    else:
+        lines.append("- none")
+    lines.append("")
+    lines.append("## Conditions")
+    if verdict.get("conditions"):
+        for condition in verdict["conditions"]:
+            lines.append(f"- {condition['reason_code']}")
     else:
         lines.append("- none")
     lines.append("")
@@ -1162,36 +1342,53 @@ def run_gate(config: GateConfig) -> Dict[str, Any]:
     }
     write_json(config.output_dir / "OFFLINE_GATE_RESULTS.json", offline_results)
 
-    pal_validation, blockers = evaluate_pal_validation(config, scope)
+    all_conditions: List[GateCondition] = []
+
+    pal_validation, blockers, conditions = evaluate_pal_validation(config, scope)
     layer_payloads["pal_provider_validation"] = {
         "layer": pal_validation["layer"],
         "status": pal_validation["status"],
         "routes_count": len(pal_validation["routes"]),
+        "conditions": pal_validation.get("conditions", []),
     }
     write_json(config.output_dir / "PAL_VALIDATION.json", pal_validation)
     all_blockers.extend(blockers)
+    all_conditions.extend(conditions)
 
-    online_preflight, blockers = evaluate_online_preflight(runner, config)
+    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config)
     layer_payloads["online_provider_preflight"] = online_preflight
     write_json(config.output_dir / "ONLINE_PREFLIGHT_RESULTS.json", online_preflight)
     all_blockers.extend(blockers)
+    all_conditions.extend(conditions)
 
     smoke_results, blockers = evaluate_smoke_tests(config)
     layer_payloads["smoke_and_verify_evidence"] = smoke_results
     all_blockers.extend(blockers)
 
-    active_blockers, waived = split_blockers_by_waiver(all_blockers, set(config.waiver_codes))
+    active_blockers, waived, condition_rows = split_findings_by_waiver(
+        all_blockers,
+        all_conditions,
+        set(config.waiver_codes),
+    )
     reason_codes = sorted({row["reason_code"] for row in active_blockers})
     verdict = "NO_GO"
     if not active_blockers:
-        verdict = "GO"
+        verdict = "CONDITIONAL_GO" if condition_rows else "GO"
+    operator_verdict, blocker_classification = derive_operator_verdict(
+        active_blockers,
+        condition_rows,
+        repo_wide_findings,
+    )
 
     verdict_payload = {
         "verdict": verdict,
+        "operator_verdict": operator_verdict,
         "run_id": config.run_id,
         "output_dir": str(config.output_dir.resolve()),
         "reason_codes": reason_codes,
+        "conditions": condition_rows,
         "run_scoped_blockers": active_blockers,
+        "blocker_classification": blocker_classification,
         "repo_wide_findings": repo_wide_findings,
         "waivers": waived,
         "layers": summarize_layers(layer_payloads),
@@ -1214,7 +1411,7 @@ def main() -> int:
     config = build_config(args)
     result = run_gate(config)
     print(json.dumps(result["verdict"], indent=2, sort_keys=True))
-    return 0 if result["verdict"]["verdict"] == "GO" else 1
+    return 0 if result["verdict"]["verdict"] in {"GO", "CONDITIONAL_GO"} else 1
 
 
 if __name__ == "__main__":
