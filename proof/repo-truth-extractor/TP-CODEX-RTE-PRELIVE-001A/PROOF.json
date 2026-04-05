@@ -1,0 +1,18 @@
+{
+  "packet_id": "TP-CODEX-RTE-PRELIVE-001A",
+  "head_sha": "014f285d71e53ee0e6b17f8da61d7861c8d8f4e0",
+  "candidate_call_paths_total": 14,
+  "billable_paths_total": 12,
+  "instrumented_billable_paths_total": 12,
+  "non_billable_paths_total": 2,
+  "unknown_paths_total": 0,
+  "forced_breach_test_name": "test_forced_breach_blocks_all_later_batch_watch_calls",
+  "post_breach_call_count": 0,
+  "cost_abort_recovery_rule": "If a run enters `COST_ABORTED`, resume is not allowed. Start a new run.",
+  "batch_accounting_mode": "conservative_reservation_accounting",
+  "docs_updated": [
+    "services/repo-truth-extractor/README.md",
+    "docs/92-runbooks/repo-truth-extractor-v5-billing-verification-drill.md"
+  ],
+  "verdict": "PASS"
+}

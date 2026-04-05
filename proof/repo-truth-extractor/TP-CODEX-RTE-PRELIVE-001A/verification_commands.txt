@@ -1,0 +1,2 @@
+python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_spend_ledger.py
+pytest -q services/repo-truth-extractor/tests/test_spend_ledger.py -k forced_breach
