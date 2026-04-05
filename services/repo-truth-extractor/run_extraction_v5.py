@@ -2951,6 +2951,48 @@ def _load_json_object(path: Path) -> Dict[str, Any]:
     return parsed if isinstance(parsed, dict) else {}
 
 
+def compute_run_status(
+    *,
+    blocked_promptset: bool,
+    missing_required_artifacts_total: int,
+    phase_statuses: Optional[Dict[str, str]] = None,
+) -> str:
+    if blocked_promptset:
+        return "BLOCKED"
+    if missing_required_artifacts_total > 0:
+        return "BLOCKED"
+    if phase_statuses:
+        for status in phase_statuses.values():
+            if status == "FAIL":
+                return "BLOCKED"
+    return "OK"
+
+
+def update_run_manifest_status(
+    run_root: Path,
+    *,
+    blocked_promptset: bool,
+    missing_required_artifacts_total: int,
+    phase_statuses: Optional[Dict[str, str]] = None,
+) -> str:
+    manifest_path = run_root / "RUN_MANIFEST.json"
+    status = compute_run_status(
+        blocked_promptset=blocked_promptset,
+        missing_required_artifacts_total=missing_required_artifacts_total,
+        phase_statuses=phase_statuses,
+    )
+    if manifest_path.exists():
+        try:
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except Exception:
+            payload = {}
+        if isinstance(payload, dict):
+            payload["run_status"] = status
+            payload["updated_at"] = now_iso()
+            write_json(manifest_path, payload)
+    return status
+
+
 def _telemetry_path(run_root: Path, filename: str) -> Path:
     return run_root / TELEMETRY_DIRNAME / filename
 
@@ -9938,90 +9980,158 @@ def try_repair_json_truncation(
         return None
     return repaired
 
-
-def parse_json_from_response(
+def parse_json_from_response_with_provenance(
     text: str,
-    *,
-    metadata_out: Optional[Dict[str, Any]] = None,
-) -> Optional[Any]:
+) -> Tuple[Optional[Any], Dict[str, Any]]:
+    provenance = {
+        "repair_applied": False,
+        "repair_type": None,
+        "original_response_length": len(text) if text else 0,
+        "repaired_response_length": len(text) if text else 0,
+        "chars_lost": 0,
+        "chars_delta": 0,
+    }
     if not text:
-        return None
+        return None, provenance
 
     stripped = text.strip()
     if not stripped:
-        return None
-
-    repair_candidates: List[Tuple[str, json.JSONDecodeError]] = []
-    seen_candidates: Set[str] = set()
+        return None, provenance
 
     # 1) strict parse
     try:
-        return json.loads(stripped)
-    except json.JSONDecodeError as exc:
-        repair_candidates.append((stripped, exc))
-        seen_candidates.add(stripped)
+        return json.loads(stripped), provenance
+    except json.JSONDecodeError:
+        pass
     except Exception:
         pass
 
     # 2) defenced parse
     defenced = _strip_outer_json_fence(stripped)
-    if defenced and defenced not in seen_candidates:
+    if defenced and defenced != stripped:
         try:
-            return json.loads(defenced)
-        except json.JSONDecodeError as exc:
-            repair_candidates.append((defenced, exc))
-            seen_candidates.add(defenced)
+            parsed = json.loads(defenced)
+            provenance.update(
+                {
+                    "repair_applied": True,
+                    "repair_type": "strip_outer_json_fence",
+                    "repaired_response_length": len(defenced),
+                    "chars_delta": len(defenced) - len(stripped),
+                }
+            )
+            return parsed, provenance
         except Exception:
             pass
 
     # 3) first fenced block only
     fenced_block = _extract_first_fenced_json_block(stripped)
-    if fenced_block and fenced_block not in seen_candidates:
+    if fenced_block and fenced_block != stripped:
         try:
-            return json.loads(fenced_block)
-        except json.JSONDecodeError as exc:
-            repair_candidates.append((fenced_block, exc))
-            seen_candidates.add(fenced_block)
+            parsed = json.loads(fenced_block)
+            provenance.update(
+                {
+                    "repair_applied": True,
+                    "repair_type": "extract_first_fenced_json_block",
+                    "repaired_response_length": len(fenced_block),
+                    "chars_delta": len(fenced_block) - len(stripped),
+                }
+            )
+            return parsed, provenance
         except Exception:
             pass
 
-    # 4) prose-plus-object salvage is opt-in so legacy shared callers remain fail-closed.
-    if metadata_out is not None:
-        salvaged_object = extract_first_json_object(stripped)
-        if salvaged_object and salvaged_object not in seen_candidates:
-            try:
-                metadata_out.setdefault("truncation_salvage", True)
-                metadata_out.setdefault("salvage_strategy", "single_object_extraction")
-                metadata_out.setdefault("lossy", salvaged_object != stripped)
-                return json.loads(salvaged_object)
-            except json.JSONDecodeError as exc:
-                repair_candidates.append((salvaged_object, exc))
-                seen_candidates.add(salvaged_object)
-            except Exception:
-                pass
+    # 4) prose-plus-object salvage (deterministic single-object only)
+    salvaged_object = extract_first_json_object(stripped)
+    if salvaged_object and salvaged_object != stripped:
+        try:
+            parsed = json.loads(salvaged_object)
+            provenance.update(
+                {
+                    "repair_applied": True,
+                    "repair_type": "extract_first_json_object",
+                    "repaired_response_length": len(salvaged_object),
+                    "chars_delta": len(salvaged_object) - len(stripped),
+                }
+            )
+            return parsed, provenance
+        except Exception:
+            pass
 
     # 5) balanced repair parse (semantic EOF eligible only)
-    for candidate, decode_error in repair_candidates:
-        if not _is_semantic_eof_eligible(decode_error, candidate):
-            continue
-        repaired = try_repair_json_truncation(candidate, decode_error)
-        if not repaired:
-            continue
-        try:
-            if metadata_out is not None:
-                metadata_out.update(
-                    {
-                        "truncation_salvage": True,
-                        "salvage_strategy": "balanced_truncation_repair",
-                        "lossy": repaired != candidate,
-                    }
-                )
-            return json.loads(repaired)
-        except Exception:
-            continue
+    try:
+        json.loads(stripped)
+    except json.JSONDecodeError as exc:
+        if _is_semantic_eof_eligible(exc, stripped):
+            repaired = try_repair_json_truncation(stripped, exc)
+            if repaired:
+                try:
+                    parsed = json.loads(repaired)
+                    provenance.update(
+                        {
+                            "repair_applied": True,
+                            "repair_type": "try_repair_json_truncation",
+                            "repaired_response_length": len(repaired),
+                            "chars_delta": len(repaired) - len(stripped),
+                        }
+                    )
+                    return parsed, provenance
+                except Exception:
+                    pass
 
-    # 6) fail closed
-    return None
+    return None, provenance
+
+
+def finalize_response_parse_provenance(
+    provenance: Dict[str, Any],
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    contract_lane: str,
+    accepted: bool,
+) -> Dict[str, Any]:
+    finalized = dict(provenance)
+    finalized.update(
+        {
+            "phase": phase,
+            "step_id": step_id,
+            "partition_id": partition_id,
+            "provider": provider,
+            "model_id": model_id,
+            "contract_lane": contract_lane,
+            "accepted": accepted,
+        }
+    )
+    if not accepted:
+        finalized["final_disposition"] = "rejected"
+        finalized["degraded_acceptance"] = False
+    elif finalized["repair_applied"]:
+        finalized["final_disposition"] = "accepted_degraded"
+        finalized["degraded_acceptance"] = True
+    else:
+        finalized["final_disposition"] = "accepted_clean"
+        finalized["degraded_acceptance"] = False
+    return finalized
+
+
+def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
+    if not finalized.get("repair_applied"):
+        return
+    logger.warning(
+        "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
+        finalized["phase"],
+        finalized["step_id"],
+        finalized["partition_id"],
+        finalized["repair_type"],
+        finalized["chars_delta"],
+    )
+
+
+def parse_json_from_response(text: str) -> Optional[Any]:
+    parsed, _provenance = parse_json_from_response_with_provenance(text)
+    return parsed
 
 
 def _format_line_numbered_content(content: str, file_truncate_chars: int) -> str:
@@ -12629,20 +12739,21 @@ def execute_step_for_partitions(
             ]
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
-            salvage_meta: Dict[str, Any] = {}
-            parsed = parse_json_from_response(
-                response_text_local,
-                metadata_out=salvage_meta,
+            parsed, provenance = parse_json_from_response_with_provenance(
+                response_text_local
             )
-            _record_truncation_salvage_warning(
-                request_meta_local,
+            finalized_provenance = finalize_response_parse_provenance(
+                provenance,
                 phase=phase,
                 step_id=step_id,
                 partition_id=partition_id,
                 provider=strict_provider,
                 model_id=strict_model_id,
-                salvage_meta=salvage_meta,
+                contract_lane=contract_lane,
+                accepted=True,
             )
+            log_response_parse_repair(finalized_provenance)
+            request_meta_local["response_parse_provenance"] = finalized_provenance
             artifacts_local = coerce_artifacts_from_response(
                 parsed=parsed,
                 raw_text=response_text_local,
@@ -13502,20 +13613,21 @@ def execute_step_for_partitions(
                     strict_error is not None
                     and _is_semantic_eof_eligible(strict_error, strict_candidate)
                 )
-                salvage_meta = {}
-                parsed = parse_json_from_response(
-                    response_text_local,
-                    metadata_out=salvage_meta,
+                parsed, provenance = parse_json_from_response_with_provenance(
+                    response_text_local
                 )
-                _record_truncation_salvage_warning(
-                    request_meta_local,
+                finalized_provenance = finalize_response_parse_provenance(
+                    provenance,
                     phase=phase,
                     step_id=step_id,
                     partition_id=partition_id,
                     provider=route_provider,
                     model_id=route_model_id,
-                    salvage_meta=salvage_meta,
+                    contract_lane=contract_lane,
+                    accepted=True,
                 )
+                log_response_parse_repair(finalized_provenance)
+                request_meta_local["response_parse_provenance"] = finalized_provenance
                 artifacts_local = coerce_artifacts_from_response(
                     parsed=parsed,
                     raw_text=response_text_local,
@@ -15925,6 +16037,7 @@ def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
     repair_invocations = 0
     repair_successes = 0
     sidefill_invocations = 0
+    response_parse_repairs: List[Dict[str, Any]] = []
 
     if raw_dir.exists():
         for raw_json in sorted(raw_dir.glob("*.json")):
@@ -15974,6 +16087,9 @@ def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
                 sidefill_invocations += int(
                     request_meta.get("sidefill_invocations", 0) or 0
                 )
+                provenance = request_meta.get("response_parse_provenance")
+                if isinstance(provenance, dict) and provenance.get("repair_applied"):
+                    response_parse_repairs.append(provenance)
 
         for failed_json in sorted(raw_dir.glob("*.FAILED.json")):
             payload = _load_json(failed_json)
@@ -15986,6 +16102,10 @@ def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
 
     attempted_count = len(attempted) if attempted else len(partition_ids)
     total_partitions = len(partition_ids)
+    disposition_hist: Counter[str] = Counter()
+    for ev in response_parse_repairs:
+        disposition_hist[str(ev.get("final_disposition") or "unknown")] += 1
+
     return {
         "phase": phase,
         "partitions_total": total_partitions,
@@ -16005,6 +16125,11 @@ def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
             sorted(missing_expected_hist.items())
         ),
         "contract_lane_histogram": dict(sorted(contract_lane_hist.items())),
+        "response_parse_repairs": {
+            "events_total": len(response_parse_repairs),
+            "events": response_parse_repairs,
+            "final_disposition_histogram": dict(sorted(disposition_hist.items())),
+        },
     }
 
 
@@ -16131,8 +16256,19 @@ def _expected_artifact_present(norm_dir: Path, artifact_name: str) -> bool:
     return (norm_dir / artifact_name).is_file()
 
 
-def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]:
+def write_phase_coverage_manifest(
+    phase: str,
+    phase_dir: Path,
+    *,
+    selected_step_ids: Optional[Sequence[str]] = None,
+) -> Dict[str, Any]:
     prompts = get_phase_prompts(phase)
+    if selected_step_ids:
+        upper_selected = {
+            str(sid).strip().upper() for sid in selected_step_ids if str(sid).strip()
+        }
+        prompts = [p for p in prompts if p.step_id.upper() in upper_selected]
+
     expected_outputs = {spec.step_id: list(spec.output_artifacts) for spec in prompts}
     prompt_declared_outputs = sorted(
         {artifact for artifacts in expected_outputs.values() for artifact in artifacts}
@@ -16311,6 +16447,7 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
                 )
                 missing_reason_counts[reason] += 1
 
+    coverage = _coverage_for_phase(phase, phase_dir)
     payload = {
         "generated_at": now_iso(),
         "phase": phase,
@@ -16324,6 +16461,7 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
         "counts": counts,
         "missing_required_artifacts": missing_required,
         "missing_required_artifacts_by_reason": missing_reason_counts,
+        "response_parse_repairs": coverage.get("response_parse_repairs", {}),
         "contract_metrics": {
             "steps": contract_metrics_by_step,
             "lane_histogram": dict(sorted(contract_lane_hist.items())),
@@ -16382,6 +16520,9 @@ def write_coverage_rollup(
 
     phase_rollup: Dict[str, Any] = {}
     missing_total = 0
+    repair_total = 0
+    repair_events = []
+    disposition_hist = Counter()
     for phase in PHASES:
         coverage_path = dirs[phase] / "qa" / f"PHASE_{phase}_COVERAGE.json"
         if not coverage_path.exists():
@@ -16390,6 +16531,15 @@ def write_coverage_rollup(
         missing = payload.get("missing_required_artifacts")
         missing_count = len(missing) if isinstance(missing, list) else 0
         missing_total += missing_count
+
+        repairs = payload.get("response_parse_repairs", {})
+        repair_total += int(repairs.get("events_total", 0))
+        repair_events.extend(repairs.get("events", []))
+        hist = repairs.get("final_disposition_histogram", {})
+        if isinstance(hist, dict):
+            for k, v in hist.items():
+                disposition_hist[k] += int(v)
+
         phase_rollup[phase] = {
             "status": payload.get("status", "UNKNOWN"),
             "missing_required_artifacts_count": missing_count,
@@ -16397,6 +16547,7 @@ def write_coverage_rollup(
             "counts": payload.get("counts", {}),
             "contract_metrics": payload.get("contract_metrics", {}),
             "blocked_promptset": payload.get("blocked_promptset", {}),
+            "response_parse_repairs": repairs,
             "coverage_file": str(coverage_path.resolve()),
         }
 
@@ -16405,7 +16556,16 @@ def write_coverage_rollup(
         "run_id": run_id,
         "phases": phase_rollup,
         "missing_required_artifacts_total": missing_total,
-        "run_status": "BLOCKED" if blocked_promptset else "OK",
+        "response_parse_repairs": {
+            "events_total": repair_total,
+            "events": repair_events,
+            "final_disposition_histogram": dict(sorted(disposition_hist.items())),
+        },
+        "run_status": compute_run_status(
+            blocked_promptset=blocked_promptset,
+            missing_required_artifacts_total=missing_total,
+            phase_statuses={p: v["status"] for p, v in phase_rollup.items()},
+        ),
         "blocked_reason": PROMPTSET_BLOCKED_REASON if blocked_promptset else None,
         "blocked_promptset": blocked_promptset,
         "prompt_failures_count": int(
@@ -16414,6 +16574,12 @@ def write_coverage_rollup(
         "phases_executed_count": 0 if blocked_promptset else len(phase_rollup),
     }
     write_json(dirs["root"] / COVERAGE_ROLLUP_FILENAME, payload)
+    update_run_manifest_status(
+        dirs["root"],
+        blocked_promptset=blocked_promptset,
+        missing_required_artifacts_total=missing_total,
+        phase_statuses={p: v["status"] for p, v in phase_rollup.items()},
+    )
     write_strict_passthrough_attestations(dirs, run_id, list(phase_rollup.keys()))
     return payload
 
@@ -17587,8 +17753,11 @@ def _ensure_required_norm_artifact_groups(dirs: Dict[str, Path]) -> List[str]:
 def _selected_execution_step_ids_for_phase(
     cfg: RunnerConfig, phase: str
 ) -> Optional[List[str]]:
+    phase_upper = str(phase or "").upper()
+    if phase_upper == "S" and cfg.selected_s_steps:
+        return list(cfg.selected_s_steps)
     selected = str(cfg.selected_execution_step or "").strip().upper()
-    if not selected or selected[:1] != str(phase or "").upper():
+    if not selected or selected[:1] != phase_upper:
         return None
     return [selected]
 
@@ -19857,7 +20026,11 @@ def main() -> None:
     if args.coverage_report:
         targets = phase_sequence if phase_sequence else PHASES
         for phase in targets:
-            write_phase_coverage_manifest(phase, dirs[phase])
+            write_phase_coverage_manifest(
+                phase,
+                dirs[phase],
+                selected_step_ids=_selected_execution_step_ids_for_phase(cfg, phase),
+            )
         write_coverage_rollup(root, dirs, run_id)
         write_resume_proof(dirs, run_id, targets)
         sys.exit(generate_coverage_report(root, dirs, run_id, targets))
@@ -20145,7 +20318,11 @@ def main() -> None:
                 ui=ui,
                 source=f"phase:{phase}:fail",
             )
-            write_phase_coverage_manifest(phase, dirs[phase])
+            write_phase_coverage_manifest(
+                phase,
+                dirs[phase],
+                selected_step_ids=_selected_execution_step_ids_for_phase(cfg, phase),
+            )
             write_coverage_rollup(root, dirs, run_id)
             write_resume_proof(dirs, run_id, phases)
             sys.exit(1)
@@ -20196,7 +20373,11 @@ def main() -> None:
             ui=ui,
             source=f"phase:{phase}:{phase_status.lower()}",
         )
-        write_phase_coverage_manifest(phase, dirs[phase])
+        write_phase_coverage_manifest(
+            phase,
+            dirs[phase],
+            selected_step_ids=_selected_execution_step_ids_for_phase(cfg, phase),
+        )
         write_coverage_rollup(root, dirs, run_id)
         write_resume_proof(dirs, run_id, phases)
         update_proof_pack(
