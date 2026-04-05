@@ -14,9 +14,12 @@
     "conport": {
       "command": "docker",
       "args": [
+        "compose",
+        "-f",
+        "compose.yml",
         "exec",
-        "-i",
-        "mcp-conport",
+        "-T",
+        "conport",
         "python",
         "/app/conport_mcp_stdio.py"
       ],
@@ -57,16 +60,19 @@
       "args": [
         "mcp-proxy",
         "--transport",
-        "streamablehttp",
+        "sse",
         "http://127.0.0.1:3006/sse"
       ],
       "env": {},
       "type": "stdio"
     },
     "dope-context": {
-      "command": "bash",
+      "command": "uvx",
       "args": [
-        "services/dope-context/run_mcp.sh"
+        "mcp-proxy",
+        "--transport",
+        "streamablehttp",
+        "http://127.0.0.1:3010/mcp"
       ],
       "env": {},
       "type": "stdio"
@@ -98,8 +104,8 @@
       "args": [
         "mcp-proxy",
         "--transport",
-        "streamablehttp",
-        "http://127.0.0.1:3007/sse"
+        "sse",
+        "http://127.0.0.1:3011/sse"
       ],
       "env": {},
       "type": "stdio"
@@ -114,19 +120,12 @@
     "pal": {
       "command": "uvx",
       "args": [
-        "--from",
-        "git+https://github.com/BeehiveInnovations/pal-mcp-server.git",
-        "pal-mcp-server"
+        "mcp-proxy",
+        "--transport",
+        "sse",
+        "http://127.0.0.1:3003/sse"
       ],
-      "env": {
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
-        "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-        "XAI_API_KEY": "${XAI_API_KEY}",
-        "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
-        "DEFAULT_MODEL": "auto",
-        "PAL_DEFAULT_PROVIDER": "openrouter"
-      },
+      "env": {},
       "type": "stdio"
     },
     "playwright": {
@@ -136,14 +135,12 @@
       "type": "stdio"
     },
     "leantime-bridge": {
-      "command": "docker",
+      "command": "uvx",
       "args": [
-        "exec",
-        "-i",
-        "mcp-leantime-bridge",
-        "python",
-        "-m",
-        "leantime_bridge.http_server"
+        "mcp-proxy",
+        "--transport",
+        "sse",
+        "http://127.0.0.1:3015/sse"
       ],
       "env": {},
       "type": "stdio"
