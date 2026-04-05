@@ -2754,8 +2754,7 @@ def build_pre_live_validator_command(
     target_policy: str,
     target_phases: Sequence[str],
     allow_online_preflight: bool,
-    target_step: Optional[str] = None,    normalized_phases = [
-        str(phase).strip().upper() for phase in target_phases if str(phase).strip()
+    target_step: Optional[str] = None,    normalized_phases = [        str(phase).strip().upper() for phase in target_phases if str(phase).strip()
     ]
     if normalized_phases:
         cmd.extend(["--target-phases", *normalized_phases])
@@ -2832,8 +2831,7 @@ def enforce_pre_live_validator_for_execution(
         return {
             "verdict": "SKIPPED_NO_CONSENT",
             "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
-        }    )
-    proc = subprocess.run(
+        }    )    proc = subprocess.run(
         cmd,
         cwd=str(root),
         text=True,
