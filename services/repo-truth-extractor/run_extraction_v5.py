@@ -10782,6 +10782,43 @@ def classify_escalation_class(
     return "none"
 
 
+def classify_failure_from_request_meta(
+    request_meta: Dict[str, Any],
+) -> Tuple[str, str, Optional[str], Optional[str], Optional[str], Optional[str]]:
+    failure_type = str(request_meta.get("failure_type") or "").strip()
+    provider_reason = str(request_meta.get("provider_error_reason") or "").strip()
+    schema_gate_passed = bool(request_meta.get("schema_gate_passed", True))
+    schema_reason = str(request_meta.get("schema_gate_reason") or "").strip()
+    schema_context = (
+        request_meta.get("schema_gate_context")
+        if isinstance(request_meta.get("schema_gate_context"), dict)
+        else {}
+    )
+
+    # Preserve cap-abort truth even when schema-gate metadata is also present.
+    if failure_type == "cost_aborted":
+        return "cost_aborted", provider_reason or failure_type, None, None, None, None
+
+    if not schema_gate_passed:
+        failure_class = schema_reason or "schema_gate_failure"
+        if schema_reason.startswith("missing_expected_artifacts:"):
+            failure_class = "missing_expected_artifacts"
+        elif schema_reason.startswith("schema_missing_key:"):
+            failure_class = "schema_missing_key"
+        item_key = None
+        if schema_reason.startswith("schema_missing_key:"):
+            item_key = schema_reason.split(":", 1)[1]
+        artifact_name = str(schema_context.get("artifact_name") or "").strip() or None
+        item_id = str(schema_context.get("item_id") or "").strip() or None
+        item_path = str(schema_context.get("item_path") or "").strip() or None
+        reason = schema_reason or failure_type or "schema"
+        return failure_class, reason, artifact_name, item_key, item_id, item_path
+
+    resolved_failure_type = failure_type or "unknown_failure"
+    reason = provider_reason or resolved_failure_type
+    return resolved_failure_type, reason, None, None, None, None
+
+
 def is_break_glass_opus_route(route: Tuple[str, str, str]) -> bool:
     return tuple(route) == BALANCED_GROK_OPENROUTER_OPUS_ROUTE
 
@@ -11842,15 +11879,7 @@ def execute_step_for_partitions(
     def _failure_details_from_meta(
         request_meta: Dict[str, Any],
     ) -> Tuple[str, str, Optional[str], Optional[str], Optional[str], Optional[str]]:
-        failure = classify_request_failure(request_meta)
-        return (
-            str(failure.get("failure_class") or "unknown_failure"),
-            str(failure.get("reason") or "unknown_failure"),
-            failure.get("artifact_name"),
-            failure.get("item_key"),
-            failure.get("item_id"),
-            failure.get("item_path"),
-        )
+        return classify_failure_from_request_meta(request_meta)
 
     def _ui_record_result(result: PartitionExecResult) -> None:
         nonlocal ui_completed
