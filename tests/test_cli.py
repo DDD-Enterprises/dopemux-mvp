@@ -442,6 +442,27 @@ class TestCLI:
         assert "session-1" in result.output
         assert "session-2" in result.output
 
+    def test_restore_command_has_single_module_definition(self):
+        """Regression: restore should have one top-level definition matching the registered Click callback."""
+        from dopemux import cli as dopemux_cli
+
+        cli_source = Path(dopemux_cli.__file__).read_text(encoding="utf-8")
+        module_ast = ast.parse(cli_source)
+        restore_defs = [
+            node
+            for node in module_ast.body
+            if isinstance(node, ast.FunctionDef) and node.name == "restore"
+        ]
+
+        assert len(restore_defs) == 1
+
+        registered_restore = dopemux_cli.cli.commands["restore"]
+        restore_node = restore_defs[0]
+        expected_start_line = min(
+            [restore_node.lineno, *(decorator.lineno for decorator in restore_node.decorator_list)]
+        )
+        assert inspect.unwrap(registered_restore.callback).__code__.co_firstlineno == expected_start_line
+
     @patch("dopemux.cli.ConfigManager")
     @patch("dopemux.cli.AttentionMonitor")
     @patch("dopemux.cli.ContextManager")
