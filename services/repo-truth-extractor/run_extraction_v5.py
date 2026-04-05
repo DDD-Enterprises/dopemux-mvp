@@ -6316,7 +6316,6 @@ def derive_route_readiness_summary(
                     for step_id in raw_selected
                     if str(step_id).strip()
                 }
-                }
         for prompt in prompts:
             if selected_ids is not None and prompt.step_id not in selected_ids:
                 continue
@@ -10247,6 +10246,11 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     safe = _sanitize_provenance_for_logging(finalized)
     logger.warning(
         "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
+        _safe_log_value(safe.get("phase")),
+        _safe_log_value(safe.get("step_id")),
+        _safe_log_value(safe.get("partition_id")),
+        _safe_log_value(safe.get("repair_type")),
+        int(safe.get("chars_delta", 0) or 0),
     )
 
 
@@ -12897,7 +12901,6 @@ def execute_step_for_partitions(
             ]
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
-            parse_json_from_response(response_text_local)
             parsed, provenance = parse_json_from_response_with_provenance(
                 response_text_local
             )
@@ -13788,7 +13791,6 @@ def execute_step_for_partitions(
                     strict_error is not None
                     and _is_semantic_eof_eligible(strict_error, strict_candidate)
                 )
-                parse_json_from_response(response_text_local)
                 parsed, provenance = parse_json_from_response_with_provenance(
                     response_text_local
                 )
