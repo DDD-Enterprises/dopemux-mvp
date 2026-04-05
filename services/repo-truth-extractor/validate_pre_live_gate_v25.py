@@ -128,7 +128,6 @@ class GateConfig:
     waiver_codes: Tuple[str, ...] = ()
     required_direct_providers: Tuple[str, ...] = ()
 
-
 @dataclass
 class Blocker:
     reason_code: str
@@ -394,7 +393,6 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
             volatile_keys=CONTRACT_MAP_VOLATILE_KEYS,
         ),
     }
-    return scope
 
 
 def evaluate_import_cli_smoke(config: GateConfig) -> Tuple[Dict[str, Any], List[Blocker]]:
@@ -1202,8 +1200,7 @@ def render_summary(
 def run_gate(
     config: GateConfig,
     args: Optional[argparse.Namespace] = None,
-) -> Dict[str, Any]:
-    config.output_dir.mkdir(parents=True, exist_ok=True)
+) -> Dict[str, Any]:    config.output_dir.mkdir(parents=True, exist_ok=True)
     runner = load_module(RUNNER_PATH, "run_extraction_v5_pre_live_gate")
     contract_module = load_module(CONTRACT_MAP_PATH, "phase_contract_map_pre_live_gate")
 
@@ -1290,7 +1287,7 @@ def run_gate(
     all_blockers.extend(blockers)
     all_conditions.extend(conditions)
 
-    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config)
+    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config, args)
     layer_payloads["online_provider_preflight"] = online_preflight
     write_json(config.output_dir / "ONLINE_PREFLIGHT_RESULTS.json", online_preflight)
     all_blockers.extend(blockers)

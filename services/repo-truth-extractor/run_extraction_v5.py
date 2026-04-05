@@ -2754,8 +2754,7 @@ def build_pre_live_validator_command(
     target_policy: str,
     target_phases: Sequence[str],
     allow_online_preflight: bool,
-    target_step: Optional[str] = None,    normalized_phases = [        str(phase).strip().upper() for phase in target_phases if str(phase).strip()
-    ]
+    target_step: Optional[str] = None,    normalized_phases = [        str(phase).strip().upper() for phase in target_phases if str(phase).strip()    ]
     if normalized_phases:
         cmd.extend(["--target-phases", *normalized_phases])
     if allow_online_preflight:
@@ -2831,8 +2830,7 @@ def enforce_pre_live_validator_for_execution(
         return {
             "verdict": "SKIPPED_NO_CONSENT",
             "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
-        }    )    proc = subprocess.run(
-        cmd,
+        }    )    proc = subprocess.run(        cmd,
         cwd=str(root),
         text=True,
         capture_output=True,
@@ -2958,8 +2956,7 @@ def compute_run_status(
     cost_abort_triggered: bool = False,
 ) -> str:
     if cost_abort_triggered:
-        return "COST_ABORTED"    if blocked_promptset:
-        return "BLOCKED"
+        return "COST_ABORTED"    if blocked_promptset:        return "BLOCKED"
     if missing_required_artifacts_total > 0:
         return "BLOCKED"
     if phase_statuses:
@@ -2980,8 +2977,7 @@ def update_run_manifest_status(
         cost_abort_triggered = bool(
             _ACTIVE_SPEND_TRACKER is not None
             and _ACTIVE_SPEND_TRACKER.cost_abort_triggered
-        )    )
-    if manifest_path.exists():
+        )    )    if manifest_path.exists():
         try:
             payload = json.loads(manifest_path.read_text(encoding="utf-8"))
         except Exception:
@@ -3031,6 +3027,10 @@ def load_pricing_registry(path: Path = PRICING_CONFIG_PATH) -> Tuple[Dict[str, D
         }
     from lib.promptgen.hashing import sha256_text
     return registry, sha256_text(path.read_text(encoding="utf-8"))
+=======
+
+
+>>>>>>> 4d91d39bf (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
 def extract_usage_summary(provider: str, response_obj: Any, response_json: Optional[Dict[str, Any]]) -> Optional[Dict[str, int]]:
     if provider == "gemini":
         usage = getattr(response_obj, "usage_metadata", None)
@@ -3259,8 +3259,8 @@ def record_request_cost(
         return meta
     if meta.get("failure_type") == "cost_aborted":
         # Request was never sent due to existing cap breach; skip recording
-        return meta        response_summary = meta.get("response_summary")        usage = (
-            dict(response_summary.get("usage"))
+<<<<<<< HEAD
+        return meta        response_summary = meta.get("response_summary")        usage = (            dict(response_summary.get("usage"))
             if isinstance(response_summary, dict) and isinstance(response_summary.get("usage"), dict)
             else None
         )
@@ -16591,10 +16591,7 @@ def write_coverage_rollup(
             missing_required_artifacts_total=missing_total,
             phase_statuses={p: v["status"] for p, v in phase_rollup.items()},
 <<<<<<< HEAD
-            cost_abort_triggered=cost_abort_triggered,
-=======
->>>>>>> 8be6704f8 (feat(repo-truth-extractor): implement JSON repair provenance tracking and unify run status)
-        ),
+            cost_abort_triggered=cost_abort_triggered,        ),
         "blocked_reason": PROMPTSET_BLOCKED_REASON if blocked_promptset else None,
         "blocked_promptset": blocked_promptset,
         "prompt_failures_count": int(
