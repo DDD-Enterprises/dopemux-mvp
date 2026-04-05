@@ -70,7 +70,9 @@ Observed runtime behavior:
 - unknown model ids use the recorded conservative fallback policy rather than optimistic zero-cost handling
 - batch submit and async submit reserve estimated spend at submit time
 - if a breach occurs after a provider response, the current partial output is retained and the run is marked `COST_ABORTED`
-- cost-aborted runs are not resumable
+- `If a run enters COST_ABORTED, resume is not allowed. Start a new run.`
+
+`Batch cost accounting is conservative reservation accounting and not authoritative provider billing truth.`
 
 ## Record the discrepancy
 

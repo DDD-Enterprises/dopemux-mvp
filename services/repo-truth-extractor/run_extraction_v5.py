@@ -7594,6 +7594,7 @@ def _build_cost_abort_state(
     breach_stage: str,
     pricing: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
+    recovery_rule = "If a run enters `COST_ABORTED`, resume is not allowed. Start a new run."
     ledger_record = getattr(cfg, "ledger", None)
     spend_record = getattr(ledger_record, "record", None)
     payload = {
@@ -7621,6 +7622,7 @@ def _build_cost_abort_state(
         else 0,
         "partial_outputs_retained": True,
         "resume_allowed": False,
+        "cost_abort_recovery_rule": recovery_rule,
     }
     if isinstance(pricing, dict):
         payload["pricing_key"] = pricing.get("pricing_key")
