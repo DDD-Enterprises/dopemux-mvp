@@ -12,6 +12,7 @@ from .models import FL_INT_STEPS, FLIntStep
 from .reduce_input import merge_f0_batch_payloads, merge_l0_batch_payloads, reduce_f0_input, reduce_l0_input
 from .report_compiler import compile_fl_int_reports
 from s_int.schema_validate import load_schema, validate_payload_or_raise
+from output_safety import sanitize_text_for_output, sanitized_json_text
 
 
 PromptExecutor = Callable[[FLIntStep, str, Dict[str, Any], Dict[str, Any]], Dict[str, Any]]
@@ -364,11 +365,11 @@ def _step_input_payload(
 
 
 def _write_json(path: Path, payload: Dict[str, Any]) -> None:
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True) + "\n", encoding="utf-8")
 
 
 def _write_text(path: Path, text: str) -> None:
-    path.write_text(text, encoding="utf-8")
+    path.write_text(sanitize_text_for_output(text), encoding="utf-8")
 
 
 def _now_iso() -> str:
@@ -544,7 +545,7 @@ def _write_failed_machine_summary(
         "failure_artifacts": failure_artifacts,
     }
     dirs["machine_summary"].write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True) + "\n",
         encoding="utf-8",
     )
 
@@ -627,7 +628,7 @@ def _write_step_outputs(step: FLIntStep, payload: Dict[str, Any], run_root: Path
         written.append("DESIGN_CONTRADICTIONS.json")
     elif step.step_id == "F4":
         design_path = run_root / "CANONICAL_DESIGN.md"
-        design_path.write_text(str(payload["canonical_design_markdown"]).rstrip() + "\n", encoding="utf-8")
+        design_path.write_text(sanitize_text_for_output(str(payload["canonical_design_markdown"]).rstrip() + "\n"), encoding="utf-8")
         _write_json(run_root / "CANONICAL_DESIGN_META.json", _canonical_design_meta(payload))
         written.extend(["CANONICAL_DESIGN.md", "CANONICAL_DESIGN_META.json"])
     elif step.step_id == "L0":
@@ -825,7 +826,7 @@ def run_fl_int(
                 "L0": int(l0_reduction.get("total_selected_chars") or 0),
             },
         }
-        dirs["machine_summary"].write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        dirs["machine_summary"].write_text(sanitized_json_text(summary, indent=2, sort_keys=True, ensure_ascii=True) + "\n", encoding="utf-8")
         compile_fl_int_reports(dirs["root"], {})
         return summary
 
@@ -1051,6 +1052,6 @@ def run_fl_int(
         "batch_counts": batch_counts,
         "selected_chars": selected_chars,
     }
-    dirs["machine_summary"].write_text(json.dumps(machine_summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    dirs["machine_summary"].write_text(sanitized_json_text(machine_summary, indent=2, sort_keys=True, ensure_ascii=True) + "\n", encoding="utf-8")
     compile_fl_int_reports(dirs["root"], outputs)
     return machine_summary

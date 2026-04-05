@@ -54,7 +54,7 @@ def test_decide_merge_action_uses_auto_merge_enable_when_check_summary_is_pendin
 
     decision = decide_merge_action(pr=pr, findings=[], validation_report=validation)
 
-    assert decision.action == MergeActionType.AUTO_MERGE_ENABLE
+    assert decision.action == MergeActionType.AUTO_MERGE_FALLBACK
     assert decision.reason_code == "auto_merge_active_checks"
 
 

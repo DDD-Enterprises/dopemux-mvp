@@ -73,7 +73,7 @@ def _base_cfg(runner, **overrides):  # type: ignore[no-untyped-def]
 
 
 def test_parse_positive_optional_int_validates() -> None:
-    runner = _load_module("run_extraction_v3.py", "run_extraction_v3_d_caps_parse")
+    runner = _load_module("run_extraction_v5.py", "run_extraction_v3_d_caps_parse")
     assert runner._parse_positive_optional_int(None, "--d0-max-files") is None
     assert runner._parse_positive_optional_int("", "--d0-max-files") is None
     assert runner._parse_positive_optional_int("15", "--d0-max-files") == 15
@@ -89,7 +89,7 @@ def test_parse_positive_optional_int_validates() -> None:
 
 
 def test_apply_file_cap_is_deterministic_and_lexicographic(tmp_path: Path) -> None:
-    runner = _load_module("run_extraction_v3.py", "run_extraction_v3_d_caps_sort")
+    runner = _load_module("run_extraction_v5.py", "run_extraction_v3_d_caps_sort")
     cfg = _base_cfg(runner, d0_max_files=2, d1_max_files=3)
     paths = [
         str(tmp_path / "docs" / "z.md"),
@@ -107,7 +107,7 @@ def test_apply_file_cap_is_deterministic_and_lexicographic(tmp_path: Path) -> No
 
 
 def test_apply_file_cap_only_affects_d0_and_d1(tmp_path: Path) -> None:
-    runner = _load_module("run_extraction_v3.py", "run_extraction_v3_d_caps_scope")
+    runner = _load_module("run_extraction_v5.py", "run_extraction_v3_d_caps_scope")
     cfg = _base_cfg(runner, d0_max_files=1, d1_max_files=1)
     paths = [str(tmp_path / "docs" / "b.md"), str(tmp_path / "docs" / "a.md")]
 
@@ -124,7 +124,7 @@ def test_apply_file_cap_only_affects_d0_and_d1(tmp_path: Path) -> None:
 
 
 def test_pressure_cap_metadata_is_deterministic() -> None:
-    runner = _load_module("run_extraction_v3.py", "run_extraction_v3_d_caps_meta")
+    runner = _load_module("run_extraction_v5.py", "run_extraction_v3_d_caps_meta")
     payload = runner._pressure_cap_metadata(
         phase="D",
         step_id="D1",

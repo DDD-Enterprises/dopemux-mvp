@@ -2,19 +2,19 @@ from __future__ import annotations
 
 import json
 import shutil
+from argparse import Namespace
+from pathlib import Path
+from types import SimpleNamespace
+
+from dopemux_pr_merge_specialist import closed_loop_engine
+from dopemux_pr_merge_specialist import engine
 from dopemux_pr_merge_specialist.github_api import GitHubClient, RemoteCheckLogEvidence
 from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
 from dopemux_pr_merge_specialist.plan_builder import build_plan_result, write_pr_state_artifact
 from dopemux_pr_merge_specialist.preflight import build_run_paths, pr_dir_for
 from dopemux_pr_merge_specialist.runtime import CommandResult
 from dopemux_pr_merge_specialist.schema import BlockerType, Finding, FindingSeverity, MergeActionType, MergeDecision, PRResult, PRState, PullRequestState, ValidationReport, ValidationStatus, ValidationStepResult
-from dopemux_pr_merge_specialist.schema import MergeActionType, MergeDecision, PRResult, PRState, PullRequestState, ValidationReport, ValidationStatus, ValidationStepResult
 from dopemux_pr_merge_specialist import cli as pr_merge_cli
-from pathlib import Path
-from types import SimpleNamespace
-
-from dopemux_pr_merge_specialist import engine
-from dopemux_pr_merge_specialist.schema import ValidationReport, ValidationStatus
 
 
 class FakeGitHubClient:
@@ -82,6 +82,14 @@ class FakeGitHubClient:
 
     def find_global_fix_prs(self) -> list[dict]:
         return []
+
+    def fetch_remote_check_log_evidence(self, check_entry: dict) -> RemoteCheckLogEvidence:
+        return RemoteCheckLogEvidence(
+            check_name=str(check_entry.get("check_name") or ""),
+            details_url=str(check_entry.get("details_url") or ""),
+            fetch_status="unsupported",
+            error="not configured in FakeGitHubClient",
+        )
 
 
 def _make_result(
@@ -311,6 +319,96 @@ def test_queue_drain_hands_off_post_apply_passive_queued_result(
     assert merge_handoffs == [190]
 
 
+def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
+    monkeypatch, tmp_path: Path
+):
+    messages: list[tuple[str, str]] = []
+
+    monkeypatch.setattr(
+        queue_drain_module,
+        "run_merge_with_fallback",
+        lambda **_kwargs: MergeDecision(
+            action=MergeActionType.AUTO_MERGE_FALLBACK,
+            command=["gh", "pr", "merge", "190", "--auto"],
+            reason="pending checks",
+            reason_code="auto_merge_pending_checks",
+        ),
+    )
+    monkeypatch.setattr(queue_drain_module, "_refresh_client_state", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_load_pr_context",
+        lambda **_kwargs: (
+            {},
+            [],
+            PullRequestState(
+                pr_id=190,
+                title="Queued PR",
+                author="tester",
+                state="OPEN",
+                base_ref="main",
+                head_ref="feature/queued",
+                ci_status="PENDING",
+                mergeable="MERGEABLE",
+                merge_state_status="BLOCKED",
+                review_decision="",
+                labels=[],
+                is_draft=False,
+                active_unresolved_threads=0,
+                head_sha="headsha",
+                base_sha="basesha",
+            ),
+            {},
+        ),
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "build_plan_result",
+        lambda **_kwargs: _make_result(
+            pr_id=190,
+            lifecycle_state=PRState.QUEUED_FOR_MERGE.value,
+            ci_status="PENDING",
+            merge_decision=MergeDecision(
+                action=MergeActionType.AUTO_MERGE_FALLBACK,
+                command=["gh", "pr", "merge", "190", "--auto"],
+                reason="pending checks",
+                reason_code="auto_merge_pending_checks",
+            ),
+            artifacts={"operator_state": "queued_for_merge"},
+        ),
+    )
+    monkeypatch.setattr(queue_drain_module, "write_pr_state_artifact", lambda *_args, **_kwargs: None)
+
+    client = FakeGitHubClient(repo=None, repo_root=tmp_path, policy={})
+    prepared_result = _make_result(
+        pr_id=190,
+        lifecycle_state=PRState.QUEUED_FOR_MERGE.value,
+        ci_status="SUCCESS",
+        merge_decision=MergeDecision(
+            action=MergeActionType.REBASE_MERGE,
+            command=["gh", "pr", "merge", "190", "--rebase", "--delete-branch"],
+            reason="ready",
+            reason_code="rebase_merge_ready",
+        ),
+        artifacts={"operator_state": "queued_for_merge"},
+    )
+
+    result = queue_drain_module._merge_prepared_result(
+        args=Namespace(id=190, out_dir=str(tmp_path), repo=None, execute=True),
+        client=client,
+        repo_root=tmp_path,
+        policy={},
+        pr_root=tmp_path,
+        active_run_id="truthfulhandoff",
+        prepared_result=prepared_result,
+        progress_callback=lambda msg, level="INFO": messages.append((level, msg)),
+    )
+
+    assert result.lifecycle_state == PRState.QUEUED_FOR_MERGE.value
+    assert ("SUCCESS", "Auto-merge handoff successful") in messages
+    assert ("SUCCESS", "Merge successful") not in messages
+
+
 def test_queue_drain_orchestrates_phase_functions(monkeypatch, tmp_path: Path):
     monkeypatch.setattr(engine, "GitHubClient", FakeGitHubClient)
 
@@ -471,6 +569,32 @@ def test_cmd_flight_deck_routes_to_dashboard(monkeypatch):
     assert captured["strategy"] == "hybrid"
 
 
+def test_self_check_json_suppresses_preflight_banner(monkeypatch, capsys):
+    def fake_preflight(args):
+        assert getattr(args, "_suppress_output", False) is True
+        if not getattr(args, "_suppress_output", False):
+            print("Preflight artifacts: noisy")
+        return 0
+
+    monkeypatch.setattr(pr_merge_cli, "preflight", fake_preflight)
+
+    rc = pr_merge_cli._self_check(
+        Namespace(
+            json=True,
+            out_dir="proof/pr_merge",
+            repo=None,
+            policy=None,
+            allow_dirty=True,
+            run_id="selfcheck",
+        )
+    )
+
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert payload["checks"][-1] == {"name": "preflight", "status": "PASS"}
+
+
 def test_remediate_ci_failure_uses_prompt_only_gemini_command(monkeypatch, tmp_path: Path):
     captured: dict[str, object] = {}
 
@@ -527,6 +651,155 @@ def test_remediate_ci_failure_uses_prompt_only_gemini_command(monkeypatch, tmp_p
     assert any("non-zero exit code" in message for message in messages)
 
 
+def test_queue_drain_propagates_resolved_run_id_to_subcommands(
+    monkeypatch, tmp_path: Path
+):
+    initial_result = _make_result(
+        pr_id=191,
+        lifecycle_state=PRState.APPLY_BLOCKED.value,
+        ci_status="FAILURE",
+    )
+    seen_run_ids: list[str | None] = []
+
+    class FakeClosedLoopEngine:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def run_cycle(self, _case_id, _report):
+            return SimpleNamespace(next_tactic="APPLY_FIX")
+
+        def emit_trace_artifacts(self, _trace, _path):
+            return None
+
+    def fake_apply(args, **_kw):
+        seen_run_ids.append(getattr(args, "run_id", None))
+        return initial_result
+
+    monkeypatch.setattr(closed_loop_engine, "ClosedLoopEngine", FakeClosedLoopEngine)
+    monkeypatch.setattr(queue_drain_module, "GitHubClient", FakeGitHubClient)
+    monkeypatch.setattr(
+        queue_drain_module,
+        "load_effective_policy",
+        lambda *_args, **_kwargs: {},
+    )
+    monkeypatch.setattr(queue_drain_module, "_get_ops_engine", lambda _run_dir: object())
+    monkeypatch.setattr(
+        queue_drain_module,
+        "queue_scan_internal",
+        lambda *_args, **_kwargs: [initial_result],
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_handle_global_ci_blockers",
+        lambda *_args, **_kwargs: {},
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_ignite_speculative_train",
+        lambda *_args, **_kwargs: ([], []),
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "acquire_queue_lock",
+        lambda **_kwargs: (True, tmp_path / "queue.lock", None),
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "release_queue_lock",
+        lambda _lock_path: None,
+    )
+    monkeypatch.setattr(queue_drain_module, "pr_apply", fake_apply)
+    monkeypatch.setattr(
+        queue_drain_module, "_should_handoff_prepared_result", lambda *a, **kw: False
+    )
+
+    rc = queue_drain_module.queue_drain(
+        SimpleNamespace(
+            repo=None,
+            out_dir=str(tmp_path),
+            policy=None,
+            execute=True,
+            allow_dirty=True,
+            limit=20,
+            max_prs=1,
+            max_passes=1,
+            strategy="hybrid",
+            prioritize=[],
+            only=[],
+            run_id=None,
+        )
+    )
+
+    assert rc == 0
+    assert len(seen_run_ids) == 1
+    assert seen_run_ids[0]
+
+
+def test_query_checks_reports_exact_failed_required_check_names(tmp_path: Path):
+    client = GitHubClient(
+        repo="DDD-Enterprises/dopemux-mvp",
+        repo_root=tmp_path,
+        policy={"retry": {}, "timeouts": {}},
+    )
+    client.fetch_branch_protection = lambda _branch: {  # type: ignore[method-assign]
+        "approval_required": False,
+        "required_status_checks": ["🧪 Unit Tests", "identity-check"],
+    }
+    payload = {
+        "baseRefName": "main",
+        "reviewDecision": "",
+        "mergeable": "MERGEABLE",
+        "mergeStateStatus": "BLOCKED",
+        "statusCheckRollup": [
+            {"name": "🧪 Unit Tests", "status": "COMPLETED", "conclusion": "FAILURE"},
+            {"name": "identity-check", "status": "COMPLETED", "conclusion": "SUCCESS"},
+            {"name": "📚 Documentation Check", "status": "COMPLETED", "conclusion": "FAILURE"},
+        ],
+    }
+
+    result = client.query_checks(323, pr_payload=payload)
+
+    assert result["failed_required_checks"] == ["🧪 Unit Tests"]
+    assert result["pending_required_checks"] == []
+
+
+def test_reproduce_remote_required_check_failure_runs_mapped_command(monkeypatch, tmp_path: Path):
+    recorded_commands: list[list[str]] = []
+    messages: list[tuple[str, str]] = []
+
+    def fake_execute_or_dry_run(cmd, *, execute, cwd, commands_log, timeout_seconds=600):
+        recorded_commands.append(list(cmd))
+        return CommandResult(list(cmd), 1, "", "test failure")
+
+    monkeypatch.setattr(queue_drain_module, "execute_or_dry_run", fake_execute_or_dry_run)
+
+    check_name, report = queue_drain_module.reproduce_remote_required_check_failure(
+        worktree_path=tmp_path,
+        commands_log=tmp_path / "commands.txt",
+        policy={
+            "timeouts": {"subprocess_seconds": 30},
+            "remote_check_repro": {
+                "steps": [
+                    {
+                        "check_name": "🧪 Unit Tests",
+                        "command": ["pytest", "tests/", "--maxfail=1"],
+                        "scope": "repo",
+                    }
+                ]
+            },
+        },
+        check_payload={"failed_required_checks": ["🧪 Unit Tests"]},
+        log=lambda message, level="INFO": messages.append((message, level)),
+    )
+
+    assert check_name == "🧪 Unit Tests"
+    assert report is not None
+    assert report.status == ValidationStatus.FAILED
+    assert report.steps[0].name == "🧪 Unit Tests"
+    assert recorded_commands == [["pytest", "tests/", "--maxfail=1"]]
+    assert any("reproduced locally" in message for message, _level in messages)
+
+
 def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatch, tmp_path: Path):
     monkeypatch.setattr(
         queue_drain_module,
@@ -564,12 +837,130 @@ def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatc
         ),
     ]
 
-    queue_drain_module._handle_global_ci_blockers(
+    blocked_map = queue_drain_module._handle_global_ci_blockers(
         results,
         FakeGitHubClient(repo=None, repo_root=tmp_path, policy={}),
         tmp_path,
     )
 
+    # Creation failed (-1), so no PRs should be in the blocked map
+    assert blocked_map == {}
+
+
+def test_fetch_remote_check_log_evidence_parses_github_actions_job_url(tmp_path: Path):
+    client = GitHubClient(
+        repo="DDD-Enterprises/dopemux-mvp",
+        repo_root=tmp_path,
+        policy={"retry": {}, "timeouts": {}},
+    )
+    seen_commands: list[list[str]] = []
+
+    def fake_run(cmd):
+        seen_commands.append(list(cmd))
+        return CommandResult(list(cmd), 0, "pytest log output", "")
+
+    client._run = fake_run  # type: ignore[method-assign]
+    evidence = client.fetch_remote_check_log_evidence(
+        {
+            "check_name": "🧪 Unit Tests",
+            "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/23701466608/job/69045799064",
+        }
+    )
+
+    assert evidence.fetch_status == "ok"
+    assert evidence.run_id == "23701466608"
+    assert evidence.job_id == "69045799064"
+    assert evidence.log_text == "pytest log output"
+    assert seen_commands == [
+        [
+            "gh",
+            "run",
+            "view",
+            "23701466608",
+            "--job",
+            "69045799064",
+            "--log",
+            "--repo",
+            "DDD-Enterprises/dopemux-mvp",
+        ]
+    ]
+
+
+def test_fetch_remote_check_log_evidence_rejects_non_actions_url(tmp_path: Path):
+    client = GitHubClient(
+        repo="DDD-Enterprises/dopemux-mvp",
+        repo_root=tmp_path,
+        policy={"retry": {}, "timeouts": {}},
+    )
+
+    evidence = client.fetch_remote_check_log_evidence(
+        {
+            "check_name": "🔍 Docker Scout",
+            "details_url": "https://scout.docker.com/v/CVE-123",
+        }
+    )
+
+    assert evidence.fetch_status == "unsupported"
+    assert evidence.run_id is None
+    assert evidence.job_id is None
+
+
+def test_extract_remote_failure_signature_prefers_pytest_node_id():
+    signature = queue_drain_module._extract_remote_failure_signature(
+        """
+=========================== short test summary info ============================
+FAILED tests/test_cli.py::TestCLI::test_start_command_role_dry_run - UnboundLocalError: cannot access local variable 'project_path'
+        """.strip()
+    )
+
+    assert signature == (
+        "pytest_node",
+        "tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+        "pytest failure tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+    )
+
+
+def test_extract_remote_failure_signature_falls_back_to_exception_header():
+    signature = queue_drain_module._extract_remote_failure_signature(
+        """
+Traceback (most recent call last):
+E   AssertionError: template/runtime parity mismatch
+        """.strip()
+    )
+
+    assert signature == (
+        "exception_header",
+        "AssertionError: template/runtime parity mismatch",
+        "failure header AssertionError: template/runtime parity mismatch",
+    )
+
+
+def test_extract_remote_failure_signature_returns_none_for_ambiguous_log():
+    assert (
+        queue_drain_module._extract_remote_failure_signature(
+            "Build failed after 12.3s with no test summary available."
+        )
+        is None
+    )
+
+
+def test_queue_drain_progress_writes_live_log(tmp_path: Path):
+    live_log_path = tmp_path / "LIVE_LOG.txt"
+
+    cb = queue_drain_module._queue_drain_progress(
+        42,
+        live_log_path=live_log_path,
+    )
+    cb("Running validation suite...", "START")
+
+    lines = live_log_path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    assert lines[0].endswith("[START] pr:42: Running validation suite...")
+
+
+def test_create_global_fix_pr_logs_no_changes_outcome(monkeypatch, tmp_path: Path):
+    log_events: list[tuple[str, str, str]] = []
+    popen_env: dict[str, str] = {}
 
     def logger(level: str, scope: str, message: str) -> None:
         log_events.append((level, scope, message))
@@ -605,19 +996,6 @@ def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatc
             return SimpleNamespace(returncode=0, stdout="", stderr="")
         if command and command[0] == "pytest":
             return SimpleNamespace(returncode=0, stdout="", stderr="")
-            self.cmd = cmd
-            popen_env.update(env)
-            self.stdout = FakeStdout(["working\n"])
-            self.returncode = 0
-
-        def wait(self, timeout=None):
-            return 0
-
-    seen_commands: list[list[str]] = []
-
-    def fake_run(cmd, cwd=None, check=False, stderr=None, stdout=None, capture_output=False, text=False, timeout=None):
-        nonlocal focused_precheck_calls
-        command = list(cmd)
         if command[:3] == ["git", "status", "--porcelain"]:
             return SimpleNamespace(returncode=0, stdout="", stderr="")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
@@ -646,6 +1024,12 @@ def test_handle_global_ci_blockers_ignores_failed_global_fix_creation(monkeypatc
     assert any("Launching Gemini CLI agent for GLOBAL FIX" in message for message in messages)
     assert any("Gemini global-fix process exited with code 0" in message for message in messages)
     assert any("Global fix agent made no changes." in message for message in messages)
+    assert ["pytest", "tests/test_cli.py::TestCLI::test_start_command_role_dry_run", "-q"] in seen_commands
+    assert ["pytest", "tests/test_cli.py", "-q"] in seen_commands
+    assert popen_env["HOME"] != str(Path.home())
+    assert popen_env["XDG_CONFIG_HOME"].endswith("/.config")
+
+
 def test_create_global_fix_pr_skips_stale_remote_fingerprint_when_precheck_is_green(
     monkeypatch, tmp_path: Path
 ):
@@ -768,30 +1152,28 @@ def test_create_global_fix_pr_removes_stale_non_worktree_path(monkeypatch, tmp_p
     assert any("Removed stale global-fix path that was not an active git worktree" in message for message in messages)
 
 
-def test_create_global_fix_pr_aborts_if_no_changes_found(monkeypatch, tmp_path: Path):
+def test_create_global_fix_pr_aborts_when_post_verify_fails(monkeypatch, tmp_path: Path):
     log_events: list[tuple[str, str, str]] = []
 
     def logger(level: str, scope: str, message: str) -> None:
         log_events.append((level, scope, message))
 
+    class FakeStdout:
+        def __init__(self, lines: list[str]) -> None:
+            self._lines = iter(lines)
+
+        def readline(self) -> str:
+            return next(self._lines, "")
+
     class FakePopen:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, cmd, stdout, stderr, text, cwd, env, bufsize, universal_newlines):
+            self.stdout = FakeStdout(["working\n"])
             self.returncode = 0
-            self.stdout = SimpleNamespace(readline=lambda: "")
 
         def wait(self, timeout=None):
             return 0
 
-    def fake_run(
-        cmd,
-        cwd=None,
-        check=False,
-        stderr=None,
-        stdout=None,
-        capture_output=False,
-        text=False,
-        timeout=None,
-    ):
+    def fake_run(cmd, cwd=None, check=False, stderr=None, stdout=None, capture_output=False, text=False, timeout=None):
         command = list(cmd)
         if command[:3] == ["git", "status", "--porcelain"]:
             return SimpleNamespace(returncode=0, stdout=" M changed.py\n", stderr="")
@@ -847,6 +1229,8 @@ def test_isolated_gemini_home_env_copies_auth_without_settings(monkeypatch, tmp_
         assert (isolated_gemini / "google_accounts.json").read_text(encoding="utf-8") == '{"accounts":[]}'
         assert not (isolated_gemini / "settings.json").exists()
         assert env["XDG_CONFIG_HOME"] == str(isolated_home / ".config")
+
+
 def test_handle_global_ci_blockers_groups_remote_fingerprints(monkeypatch, tmp_path: Path):
     monkeypatch.setattr(
         queue_drain_module,
@@ -861,14 +1245,20 @@ def test_handle_global_ci_blockers_groups_remote_fingerprints(monkeypatch, tmp_p
         failed_step,
         client,
         repo_root,
-        logger,
-        verification_command,
-        targeted_nodeid,
+        logger=None,
+        verification_command=None,
+        targeted_nodeid=None,
     ):
         created.append((fingerprint, failed_step.command))
         assert verification_command == "pytest tests/ --maxfail=1"
         assert targeted_nodeid == "tests/test_cli.py::TestCLI::test_start_command_role_dry_run"
         return 777
+
+    monkeypatch.setattr(
+        queue_drain_module,
+        "_create_global_fix_pr",
+        fake_create_global_fix_pr,
+    )
 
     remote_details = {
         "blocker_types": ["required_check_failed"],
@@ -1418,6 +1808,79 @@ def test_closed_loop_engine_populates_strategy_in_trace():
     trace = engine.run_cycle("100", report)
     assert trace.next_tactic == "MERGE"
     assert trace.strategy_id == "DIRECT_REBASE_MERGE"
+
+
+def test_queue_drain_skips_no_progress_prs_in_subsequent_passes(
+    monkeypatch, tmp_path: Path
+):
+    """PRs that pass local validation but remain apply_blocked should not be reprocessed."""
+    apply_blocked_result = _make_result(
+        pr_id=200,
+        lifecycle_state=PRState.APPLY_BLOCKED.value,
+        ci_status="FAILURE",
+        validation_status=ValidationStatus.PASSED,
+    )
+
+    scan_call_count = [0]
+    apply_call_count = [0]
+
+    def fake_scan(*_args, **_kwargs):
+        scan_call_count[0] += 1
+        return [apply_blocked_result]
+
+    class FakeClosedLoopEngine:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def run_cycle(self, _case_id, _report):
+            return SimpleNamespace(next_tactic="APPLY_FIX")
+
+        def emit_trace_artifacts(self, _trace, _path):
+            return None
+
+    def fake_apply(_args, **_kw):
+        apply_call_count[0] += 1
+        return apply_blocked_result
+
+    monkeypatch.setattr(closed_loop_engine, "ClosedLoopEngine", FakeClosedLoopEngine)
+    monkeypatch.setattr(queue_drain_module, "GitHubClient", FakeGitHubClient)
+    monkeypatch.setattr(queue_drain_module, "load_effective_policy", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_get_ops_engine", lambda _: object())
+    monkeypatch.setattr(queue_drain_module, "queue_scan_internal", fake_scan)
+    monkeypatch.setattr(queue_drain_module, "_handle_global_ci_blockers", lambda *a, **kw: {})
+    monkeypatch.setattr(queue_drain_module, "_ignite_speculative_train", lambda *a, **kw: ([], []))
+    monkeypatch.setattr(queue_drain_module, "acquire_queue_lock", lambda **kw: (True, tmp_path / "q.lock", None))
+    monkeypatch.setattr(queue_drain_module, "release_queue_lock", lambda _: None)
+    monkeypatch.setattr(queue_drain_module, "pr_apply", fake_apply)
+    monkeypatch.setattr(queue_drain_module, "_should_handoff_prepared_result", lambda *a, **kw: False)
+
+    rc = queue_drain_module.queue_drain(
+        SimpleNamespace(
+            repo=None,
+            out_dir=str(tmp_path),
+            policy=None,
+            execute=True,
+            allow_dirty=True,
+            limit=20,
+            max_prs=0,
+            max_passes=3,
+            strategy="hybrid",
+            prioritize=[],
+            only=[],
+            run_id="noprogress",
+        )
+    )
+
+    assert rc == 0
+    # Scanned 2 passes (pass 1 processes, pass 2 finds nothing active), but applied only once
+    assert scan_call_count[0] == 2
+    assert apply_call_count[0] == 1
+
+
+def test_queue_drain_dry_run_processes_actionable_prs_in_all_passes(
+    monkeypatch, tmp_path: Path
+):
+    """In dry-run mode, actionable tactics should NOT be skipped in subsequent passes."""
     result = _make_result(
         pr_id=201,
         lifecycle_state=PRState.APPLY_BLOCKED.value,
@@ -1522,11 +1985,3 @@ def test_stale_fingerprint_cached_between_passes(monkeypatch, tmp_path: Path):
     # Pass 2
     queue_drain_module._handle_global_ci_blockers(results, client, tmp_path, seen_stale_fingerprints=seen_stale_fingerprints)
     assert call_count[0] == 1  # Should not be called again
-    assert scan_call_count[0] == 2  # pass 1 processes, pass 2 finds nothing
-    assert apply_calls == [190]
-    assert merge_calls == [190]
-    run_dir = tmp_path / "run_drainrun"
-    assert (run_dir / "QUEUE_REPORT.json").exists()
-    assert (run_dir / "BASE_REBASE_UPDATES.json").exists()
-    report = json.loads((run_dir / "QUEUE_REPORT.json").read_text(encoding="utf-8"))
-    assert report["processed"] == 1

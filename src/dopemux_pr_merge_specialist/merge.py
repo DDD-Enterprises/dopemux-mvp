@@ -246,16 +246,18 @@ def decide_merge_action(
         ):
             return MergeDecision(
                 action=MergeActionType.ADMIN_BYPASS_SQUASH,
-                command=[],
                 reason="Only missing approvals remain; opting for admin-bypass squash merge.",
+                command=["gh", "pr", "merge", str(pr.pr_id), "--squash", "--delete-branch"],
+
                 reason_code="admin_bypass_ready",
             )
 
     if pending_checks and not non_check_blockers:
         return MergeDecision(
-            action=MergeActionType.AUTO_MERGE_ENABLE,
-            command=[],
+            action=MergeActionType.AUTO_MERGE_FALLBACK,
             reason="All structural gates green; enabling auto-merge for pending checks.",
+            command=["gh", "pr", "merge", str(pr.pr_id), "--auto", "--rebase", "--delete-branch"],
+
             reason_code="auto_merge_pending_checks",
         )
 
@@ -263,16 +265,18 @@ def decide_merge_action(
     # check the PR state for any pending checks before choosing direct rebase.
     if pr.check_summary and pr.check_summary.pending > 0:
         return MergeDecision(
-            action=MergeActionType.AUTO_MERGE_ENABLE,
-            command=[],
+            action=MergeActionType.AUTO_MERGE_FALLBACK,
             reason="Required or optional checks are pending; enabling auto-merge.",
+            command=["gh", "pr", "merge", str(pr.pr_id), "--auto", "--rebase", "--delete-branch"],
+
             reason_code="auto_merge_active_checks",
         )
 
     return MergeDecision(
         action=MergeActionType.REBASE_MERGE,
-        command=[],
         reason="All gates are green; rebase merge selected by default.",
+        command=["gh", "pr", "merge", str(pr.pr_id), "--rebase", "--delete-branch"],
+
         reason_code="rebase_merge_ready",
     )
 
@@ -394,7 +398,7 @@ def run_merge_with_fallback(
                 reason=f"Fallback auto-merge failed: {fallback.stderr.strip()}",
                 reason_code="auto_merge_fallback_failed",
             )
-    elif action in (MergeActionType.AUTO_MERGE_ENABLE.value, MergeActionType.AUTO_MERGE_FALLBACK.value):
+    elif action in (MergeActionType.AUTO_MERGE_FALLBACK.value, MergeActionType.AUTO_MERGE_FALLBACK.value):
         # For auto-merge, we still use the 'gh pr merge --auto' command via shell for now
         # until client support is added, but REBASE is the preference.
         command = ["gh", "pr", "merge", str(pr_id), "--auto", "--rebase"]

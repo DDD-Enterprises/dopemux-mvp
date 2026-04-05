@@ -55,13 +55,13 @@ It is not the operator CLI control plane, not PM authority, not memory authority
   Evidence: it analyzes repository code and emits artifacts about it; it does not replace runtime code, configs, tests, or canonical domain services.
 
 - Repo Truth Extractor does not own operator CLI control.
-  Evidence: `docs/03-reference/systems/dopemux/SYSTEM_Dopemux.md` identifies `dopemux` as the operator-facing control layer. `src/dopemux/commands/extractor_commands.py` delegates to extractor runners or blocks direct execution, rather than making Repo Truth Extractor the CLI control plane itself.
+  Evidence: `docs/03-reference/systems/dopemux/system-dopemux.md` identifies `dopemux` as the operator-facing control layer. `src/dopemux/commands/extractor_commands.py` delegates to extractor runners or blocks direct execution, rather than making Repo Truth Extractor the CLI control plane itself.
 
 - Repo Truth Extractor does not own PM, memory, or retrieval authority.
   Evidence: PM, memory, and retrieval authorities are assigned in their respective system/plane docs. The extractor only emits analysis artifacts about those systems.
 
 - Repo Truth Extractor does not make extracted artifacts equal to live system truth.
-  Evidence: `docs/03-reference/governance/RULES.md` puts runtime code/config/tests above truth artifacts in the truth hierarchy.
+  Evidence: `docs/03-reference/governance/rules-2.md` puts runtime code/config/tests above truth artifacts in the truth hierarchy.
 
 ## 4. Key Surfaces
 

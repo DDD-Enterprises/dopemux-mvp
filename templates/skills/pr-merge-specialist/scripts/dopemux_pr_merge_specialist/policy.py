@@ -26,6 +26,20 @@ REQUIRED_TOP_LEVEL_KEYS = (
     "timeouts",
     "validation",
     "remote_check_repro",
+    "gates",
+    "thread_rules",
+    "check_rules",
+    "conflict_rules",
+    "safety",
+    "retry",
+    "merge",
+)
+VALID_VALIDATION_SCOPES = {
+    "repo",
+    "changed_files",
+    "docs_frontmatter_files",
+    "docs_validator_files",
+}
 
 DEFAULT_POLICY: Dict[str, Any] = {
     "version": POLICY_SCHEMA_VERSION,
@@ -52,6 +66,12 @@ DEFAULT_POLICY: Dict[str, Any] = {
                 "name": "docs-frontmatter-fix",
                 "command": ["python", "scripts/docs_frontmatter_guard.py", "--fix"],
                 "scope": "docs_frontmatter_files",
+                "run_in_dry_run": False,
+            },
+            {
+                "name": "docs-validator",
+                "command": ["python", "scripts/docs_validator.py"],
+                "scope": "docs_validator_files",
                 "run_in_dry_run": False,
             },
             {
@@ -99,6 +119,161 @@ DEFAULT_POLICY: Dict[str, Any] = {
             }
         ],
     },
+    "gates": {
+        "require_clean_worktree": True,
+        "allow_dirty_override": True,
+        "block_on_active_threads": True,
+        "block_on_pending_required_checks": True,
+        "block_on_missing_approvals": True,
+        "block_on_changes_requested": True,
+    },
+    "thread_rules": {
+        "auto_resolve_outdated": True,
+        "auto_resolve_resolution_signals": True,
+        "resolution_markers": [
+            "addressed",
+            "fixed",
+            "resolved",
+            "acknowledged",
+            "done in latest push",
+            "updated in latest push",
+            "landed in latest push",
+        ],
+        "objection_markers": [
+            "not fixed",
+            "still",
+            "needs changes",
+            "please address",
+            "didn't",
+            "fails",
+            "not resolved",
+        ],
+        "implementable_patterns": [
+            "```suggestion",
+            "change <code>",
+            "delete <code>",
+            "remove <code>",
+            "conflict marker",
+            "<<<<<<< head",
+        ],
+    },
+    "check_rules": {
+        "wait_for_healthy_pending": True,
+        "wait_seconds": 900,
+        "poll_seconds": 30,
+        "fail_closed_on_incomplete_data": True,
+    },
+    "conflict_rules": {
+        "strict": True,
+        "scan_changed_files_for_markers": True,
+        "allow_blanket_strategies": False,
+        "canonical_head_markers": [
+            "keep the current main version",
+            "keep the current version",
+            "keep the deterministic head side",
+            "keep the wrapper implementation already in head",
+        ],
+        "auto_recovery": {
+            "require_opt_in_label": True,
+            "opt_in_labels": ["conflict:mechanical"],
+            "blocked_labels": ["conflict:semantic"],
+            "max_conflict_files": 5,
+            "prefer_side": "theirs",
+            "safe_path_prefixes": ["docs/", "tests/"],
+            "safe_filenames": [
+                "package.json",
+                "package-lock.json",
+                "yarn.lock",
+                "pnpm-lock.yaml",
+                "poetry.lock",
+                "uv.lock",
+                "requirements.txt",
+                "requirements-dev.txt",
+                "requirements-test.txt",
+            ],
+        },
+    },
+    "safety": {
+        "negative_allowlist": [
+            "migrations",
+            "auth",
+            "permissions",
+            "deploy",
+            "infra",
+            "schema",
+            "contract",
+            "secrets",
+            "destructive",
+        ]
+    },
+    "retry": {
+        "max_attempts": 3,
+        "backoff_seconds": 2,
+        "max_backoff_seconds": 10,
+        "retryable_gh_errors": [
+            "rate limit",
+            "502",
+            "503",
+            "504",
+            "connection reset",
+            "timeout",
+            "temporary failure",
+        ],
+    },
+    "merge": {
+        "allow_auto_fallback_only_for": [
+            "merge_queue_required",
+        ],
+    },
+}
+
+
+def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    merged = deepcopy(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
+def _load_yaml(path: Path) -> Dict[str, Any]:
+    try:
+        payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        raise PolicyError(f"Invalid YAML in policy {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise PolicyError(f"Policy {path} must be a mapping at the top level.")
+    return payload
+
+
+def discover_policy_path(
+    repo_root: Path, explicit_path: Optional[str] = None
+) -> Tuple[Path, str]:
+    if explicit_path:
+        path = Path(explicit_path)
+        if not path.is_absolute():
+            path = repo_root / path
+        return path.resolve(), "explicit"
+    for candidate in REPO_POLICY_CANDIDATES:
+        path = repo_root / candidate
+        if path.exists():
+            return path.resolve(), "repo"
+    return BUNDLED_POLICY_PATH.resolve(), "bundled"
+
+
+def _validate_command_steps(steps: Iterable[Dict[str, Any]], *, section: str) -> None:
+    for index, step in enumerate(steps):
+        if not isinstance(step, dict):
+            raise PolicyError(f"{section}.steps[{index}] must be a mapping.")
+        if section == "remote_check_repro":
+            check_name = step.get("check_name")
+            if not isinstance(check_name, str) or not check_name.strip():
+                raise PolicyError(
+                    f"{section}.steps[{index}] must define a non-empty 'check_name'."
+                )
+        elif not step.get("name"):
             raise PolicyError(f"{section}.steps[{index}] is missing 'name'.")
         command = step.get("command")
         if (
@@ -115,6 +290,35 @@ DEFAULT_POLICY: Dict[str, Any] = {
                 f"{section}.steps[{index}] has invalid scope {scope!r}; "
                 f"expected one of {sorted(VALID_VALIDATION_SCOPES)}."
             )
+
+
+def validate_policy(policy: Dict[str, Any]) -> None:
+    missing = [key for key in REQUIRED_TOP_LEVEL_KEYS if key not in policy]
+    if missing:
+        raise PolicyError(
+            f"Policy is missing required top-level keys: {', '.join(missing)}"
+        )
+    version = policy.get("version")
+    if version != POLICY_SCHEMA_VERSION:
+        raise PolicyError(
+            f"Unsupported policy schema version {version!r}; expected {POLICY_SCHEMA_VERSION}."
+        )
+    platform = policy.get("platform")
+    if not isinstance(platform, dict):
+        raise PolicyError("platform must be a mapping.")
+    supported = platform.get("supported")
+    if not isinstance(supported, list) or not supported:
+        raise PolicyError("platform.supported must be a non-empty list.")
+    validation = policy.get("validation")
+    if not isinstance(validation, dict):
+        raise PolicyError("validation must be a mapping.")
+    _validate_command_steps(validation.get("steps", []), section="validation")
+    remote_check_repro = policy.get("remote_check_repro")
+    if not isinstance(remote_check_repro, dict):
+        raise PolicyError("remote_check_repro must be a mapping.")
+    _validate_command_steps(
+        remote_check_repro.get("steps", []), section="remote_check_repro"
+    )
     for section_name in (
         "gates",
         "thread_rules",

@@ -236,11 +236,83 @@ def _self_check(args: argparse.Namespace) -> int:
         )
         if preflight_rc != 0:
             results["ok"] = False
-    results["checks"].append(
-        {"name": "preflight", "status": "PASS" if preflight_rc == 0 else "FAIL"}
-    )
-    if preflight_rc != 0:
-        results["ok"] = False
+
+    if getattr(args, "json", False):
+        print(json.dumps(results, indent=2))
+    else:
+        for check in results["checks"]:
+            icon = "PASS" if check["status"] == "PASS" else "FAIL"
+            print(
+                f"  [{icon}] {check['name']}"
+                + (f" — {check.get('error', '')}" if check.get("error") else "")
+            )
+        print(f"\nSelf-check: {'OK' if results['ok'] else 'FAILED'}")
+
+    return 0 if results["ok"] else 1
+
+
+def _health(args: argparse.Namespace) -> int:
+    """Show current health metrics and scale-gate decision."""
+    from .ops_engine import FlightDeckOpsEngine
+
+    ops_dir = Path(args.out_dir) / "ops"
+    if not ops_dir.exists():
+        if getattr(args, "json", False):
+            print(
+                json.dumps(
+                    {
+                        "status": "NO_DATA",
+                        "note": "No ops directory found. Run queue-drain first.",
+                    }
+                )
+            )
+        else:
+            print(
+                "No ops data found. Run queue-drain first to generate health metrics."
+            )
+        return 0
+
+    ops = FlightDeckOpsEngine(ops_dir)
+    health = ops.compute_rolling_health()
+    compliance = ops.compute_signoff_compliance()
+    incidents = ops.compute_incident_trends()
+    drift = ops.detect_posture_drift()
+    combined = {**health, **compliance, **incidents}
+    gate = ops.generate_scale_gate_decision(combined)
+
+    report = {
+        "rolling_health": health,
+        "signoff_compliance": compliance,
+        "incident_trends": incidents,
+        "posture_drift": drift,
+        "scale_gate_decision": gate,
+    }
+
+    if getattr(args, "json", False):
+        print(json.dumps(report, indent=2))
+    else:
+        print(f"Rolling Health:      {health.get('status', 'UNKNOWN')}")
+        print(f"Signoff Compliance:  {compliance.get('status', 'UNKNOWN')}")
+        print(
+            f"Incident Trends:     {incidents.get('status', 'UNKNOWN')} (severity: {incidents.get('severity', 'N/A')})"
+        )
+        print(f"Posture Drift:       {drift.get('status', 'UNKNOWN')}")
+        print(f"Scale Gate Decision: {gate.get('decision', 'UNKNOWN')}")
+        if gate.get("rationale"):
+            for r in gate["rationale"]:
+                print(f"  - {r}")
+    return 0
+
+
+# Compatibility exports for existing callers/tests that import helpers from cli.
+_classify_pr = classify_pr
+_risk_score = risk_score
+_sort_states = sort_states
+_decide_thread_disposition = decide_thread_disposition
+_build_conflict_analysis = build_conflict_analysis
+_run_merge_with_fallback = run_merge_with_fallback
+_queue_scan = queue_scan
+_queue_drain = queue_drain
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -413,6 +485,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="💨 Smoke Test: Skip environment-dependent preflight checks.",
     )
+    self_check_parser.set_defaults(func=_self_check)
+
+    flight_deck_parser = sub.add_parser(
+        "flight-deck",
+        help="🚀 Grand Orchestration: Launch the interactive PR merge cockpit.",
     )
     add_common_arguments(flight_deck_parser)
     flight_deck_parser.add_argument(
@@ -492,14 +569,22 @@ def cmd_ops(args: argparse.Namespace) -> int:
     import json
     from pathlib import Path
 
-                print(f"   Version: {manifest.get('version', '1.0.0')}")
-                print(
-                    f"   Artifacts: {', '.join(manifest.get('artifacts', {}).keys())}"
-                )
+    ops_dir = Path("proof/pr_merge/flight_deck/ops")
 
-            return 0
-        except Exception as e:
-            print(f"⚠️ Error reading ops report: {e}")
+    print("📊 Flight Deck Operational Metrics")
+    print("=" * 50)
+
+    # Read metrics summary if available
+    metrics_summary_path = Path("proof/pr_merge/metrics/METRICS_SUMMARY.json")
+    if metrics_summary_path.exists():
+        try:
+            m_summary = json.loads(metrics_summary_path.read_text())
+            print(f"\n📊 Performance Summary:")
+            print(f"   Success Rate: {m_summary.get('success_rate', 0.0)*100:.1f}%")
+            print(f"   Avg Duration: {m_summary.get('avg_duration_ms', 0.0)/1000:.2f}s")
+            print(f"   Threads Resolved (Session): {m_summary.get('total_threads_resolved_session', 0)}")
+        except Exception:
+            pass
 
     # Fallback: Show basic Flight Deck info
     print("\n📈 Current Status: STANDBY")

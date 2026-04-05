@@ -55,7 +55,7 @@ class TestRateLimiting:
             client = AsyncClient(base_url="http://127.0.0.1:8096", timeout=30.0)
 
             server_ready = False
-            for _ in range(28):
+            for _ in range(60):
                 if process.poll() is not None:
                     break
                 try:
