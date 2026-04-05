@@ -16111,6 +16111,8 @@ def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
 
     if raw_dir.exists():
         for raw_json in sorted(raw_dir.glob("*.json")):
+            if raw_json.name.endswith(".FAILED.json"):
+                continue
             payload = _load_json(raw_json)
             partition_id = str(payload.get("partition_id") or "")
             if not partition_id:
@@ -16164,8 +16166,10 @@ def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
         for failed_json in sorted(raw_dir.glob("*.FAILED.json")):
             payload = _load_json(failed_json)
             failure_type = payload.get("failure_type") or "failed_sidecar"
-            failure_hist[str(failure_type)] += 1
             partition_id = str(payload.get("partition_id") or "")
+            if partition_id and partition_id in attempted:
+                continue
+            failure_hist[str(failure_type)] += 1
             if partition_id:
                 attempted.add(partition_id)
                 failed.add(partition_id)
