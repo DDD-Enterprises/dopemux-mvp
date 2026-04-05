@@ -347,8 +347,8 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
                 if str(row.get("api_key_env") or "").strip()
             }
         ),
-        "routing_fingerprint_sha256": normalized_sha(enriched_routes),
-        "phase_contract_map_sha256": normalized_sha(
+        "routing_fingerprint_hash": normalized_sha(enriched_routes),
+        "phase_contract_map_hash": normalized_sha(
             contract_payload,
             volatile_keys=CONTRACT_MAP_VOLATILE_KEYS,
         ),

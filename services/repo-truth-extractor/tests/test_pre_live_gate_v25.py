@@ -197,8 +197,8 @@ def test_run_gate_stays_offline_without_explicit_online_preflight(monkeypatch, t
             },
         ],
         "required_api_key_envs": ["GEMINI_API_KEY", "XAI_API_KEY"],
-        "routing_fingerprint_sha256": "routing",
-        "phase_contract_map_sha256": "contract",
+        "routing_fingerprint_hash": "routing",
+        "phase_contract_map_hash": "contract",
     }
 
     class FakeRunner:
@@ -310,8 +310,8 @@ def test_run_gate_returns_conditional_go_when_only_conditions_remain(monkeypatch
         "required_api_key_envs": [],
         "fallback_api_key_envs": [],
         "all_route_api_key_envs": [],
-        "routing_fingerprint_sha256": "routing",
-        "phase_contract_map_sha256": "contract",
+        "routing_fingerprint_hash": "routing",
+        "phase_contract_map_hash": "contract",
     }
 
     class FakeRunner:
