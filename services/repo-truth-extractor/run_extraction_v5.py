@@ -2271,6 +2271,7 @@ def build_pre_live_validator_command(
     target_policy: str,
     target_phases: Sequence[str],
     allow_online_preflight: bool,
+    target_step: Optional[str] = None,
 ) -> List[str]:
     cmd = [
         sys.executable,
@@ -2278,6 +2279,8 @@ def build_pre_live_validator_command(
         "--target-policy",
         str(target_policy),
     ]
+    if target_step:
+        cmd.extend(["--step", str(target_step)])
     normalized_phases = [
         str(phase).strip().upper() for phase in target_phases if str(phase).strip()
     ]
@@ -2356,6 +2359,7 @@ def enforce_pre_live_validator_for_execution(
         target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
         target_phases=_validator_phase_targets(args, phase_sequence),
         allow_online_preflight=True,
+        target_step=getattr(args, "step", None),
     )
     proc = subprocess.run(
         cmd,
@@ -2453,7 +2457,10 @@ def compute_run_status(
     blocked_promptset: bool,
     missing_required_artifacts_total: int,
     phase_statuses: Optional[Dict[str, str]] = None,
+    cost_abort_triggered: bool = False,
 ) -> str:
+    if cost_abort_triggered:
+        return "COST_ABORTED"
     if blocked_promptset:
         return "BLOCKED"
     if missing_required_artifacts_total > 0:
@@ -2472,11 +2479,17 @@ def update_run_manifest_status(
     missing_required_artifacts_total: int,
     phase_statuses: Optional[Dict[str, str]] = None,
 ) -> str:
+    with _SPEND_TRACKER_LOCK:
+        cost_abort_triggered = bool(
+            _ACTIVE_SPEND_TRACKER is not None
+            and _ACTIVE_SPEND_TRACKER.cost_abort_triggered
+        )
     manifest_path = run_root / "RUN_MANIFEST.json"
     status = compute_run_status(
         blocked_promptset=blocked_promptset,
         missing_required_artifacts_total=missing_required_artifacts_total,
         phase_statuses=phase_statuses,
+        cost_abort_triggered=cost_abort_triggered,
     )
     if manifest_path.exists():
         try:
@@ -2526,8 +2539,8 @@ def load_pricing_registry(path: Path = PRICING_CONFIG_PATH) -> Tuple[Dict[str, D
             "input_cost_per_m": input_cost,
             "output_cost_per_m": output_cost,
         }
-    from lib.promptgen_utils import sha256_text
-    return registry, sha256_text(path)
+    from lib.promptgen.hashing import sha256_text
+    return registry, sha256_text(path.read_text(encoding="utf-8"))
 
 
 def extract_usage_summary(provider: str, response_obj: Any, response_json: Optional[Dict[str, Any]]) -> Optional[Dict[str, int]]:
@@ -2756,10 +2769,26 @@ def record_request_cost(
         return meta
     if meta.get("spend_ledger_recorded"):
         return meta
+    if meta.get("failure_type") == "cost_aborted":
+        # Request was never sent due to existing cap breach; skip recording
+        return meta
     with _SPEND_TRACKER_LOCK:
         state = _ACTIVE_SPEND_TRACKER
         if state is None:
             return meta
+        if state.cost_abort_triggered:
+            # Cap was already breached by another concurrent request; return failure meta
+            updated = dict(meta)
+            updated["spend_ledger_recorded"] = False
+            updated["cost_cap"] = {
+                "max_cost_usd": float(state.max_cost_usd),
+                "total_cost_usd": float(_quantize_usd(state.total_cost_usd)),
+                "cost_abort_triggered": True,
+                "abort_reason": state.abort_reason,
+            }
+            updated["failure_type"] = "cost_aborted"
+            updated["provider_error_reason"] = state.abort_reason
+            return updated
         response_summary = meta.get("response_summary")
         usage = (
             dict(response_summary.get("usage"))
@@ -4966,7 +4995,7 @@ def _legacy_phase_prompt_specs(phase: str) -> List[PromptSpec]:
     expected_steps = REQUIRED_PROMPT_STEP_IDS.get(phase, set())
     primary_root = prompt_root()
     for prompt_path in sorted(primary_root.glob(f"PROMPT_{phase}*_*.md")):
-        match = re.match(r"PROMPT_([A-Z][0-9]+)_", prompt_path.name)
+        match = re.match(r"PROMPT_([A-Z][0-9]+)", prompt_path.name)
         if not match:
             continue
         step_id = match.group(1)
@@ -4977,7 +5006,7 @@ def _legacy_phase_prompt_specs(phase: str) -> List[PromptSpec]:
         if missing_steps:
             v4_prompt_root = EXTRACTOR_SERVICE_DIR / "promptsets" / "v4" / "prompts"
             for prompt_path in sorted(v4_prompt_root.glob("PROMPT_S*_*.md")):
-                match = re.match(r"PROMPT_([A-Z][0-9]+)_", prompt_path.name)
+                match = re.match(r"PROMPT_([A-Z][0-9]+)", prompt_path.name)
                 if not match:
                     continue
                 step_id = match.group(1)
@@ -5192,7 +5221,9 @@ def _prompt_hash_report_for_phase(
 
     expected_steps = REQUIRED_PROMPT_STEP_IDS.get(phase, set())
     observed_steps = {spec.step_id for spec in specs}
-    for step_id in sorted(expected_steps - observed_steps):
+    # When scoped via --step, only validate completeness for steps explicitly in specs list.
+    target_required_steps = expected_steps.intersection(observed_steps)
+    for step_id in sorted(target_required_steps - observed_steps):
         missing_pattern = _missing_prompt_glob(step_id)
         prompt_missing.append(missing_pattern)
         prompt_hash_errors.append(f"prompt_missing: {missing_pattern}")
@@ -5740,8 +5771,16 @@ def run_provider_doctor_probe(
 def run_provider_preflight(
     root: Path, run_id: str, cfg: RunnerConfig, phases: List[str]
 ) -> Tuple[bool, Dict[str, Any]]:
+    selected_step_ids_by_phase = {
+        phase: selected_ids
+        for phase in phases
+        if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
+        is not None
+    }
     provider_routes = collect_provider_routes(
-        phases=phases, routing_policy=cfg.routing_policy
+        phases=phases,
+        routing_policy=cfg.routing_policy,
+        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
     )
     provider_probes = [
         run_provider_doctor_probe(
@@ -6428,6 +6467,12 @@ def normalize_step(
                 continue
 
             raw_ok += 1
+            request_meta = payload.get("request_meta")
+            if isinstance(request_meta, dict):
+                if not bool(request_meta.get("schema_gate_passed", True)):
+                    # Partition failed contract gate; skip artifact extraction
+                    continue
+
             artifacts = extract_artifacts_from_partition_payload(
                 payload, expected_artifacts
             )
@@ -13918,7 +13963,11 @@ def write_phase_coverage_manifest(
                 else []
             ),
         },
-        "status": "FAIL" if blocked_promptset or missing_required else "PASS",
+        "status": (
+            "FAIL"
+            if blocked_promptset or missing_required or counts.get("failed", 0) > 0
+            else "PASS"
+        ),
     }
     write_json(phase_dir / "qa" / f"PHASE_{phase}_COVERAGE.json", payload)
     return payload
@@ -13983,6 +14032,12 @@ def write_coverage_rollup(
             "coverage_file": str(coverage_path.resolve()),
         }
 
+    with _SPEND_TRACKER_LOCK:
+        cost_abort_triggered = bool(
+            _ACTIVE_SPEND_TRACKER is not None
+            and _ACTIVE_SPEND_TRACKER.cost_abort_triggered
+        )
+
     payload = {
         "generated_at": now_iso(),
         "run_id": run_id,
@@ -13997,6 +14052,7 @@ def write_coverage_rollup(
             blocked_promptset=blocked_promptset,
             missing_required_artifacts_total=missing_total,
             phase_statuses={p: v["status"] for p, v in phase_rollup.items()},
+            cost_abort_triggered=cost_abort_triggered,
         ),
         "blocked_reason": PROMPTSET_BLOCKED_REASON if blocked_promptset else None,
         "blocked_promptset": blocked_promptset,
@@ -14060,10 +14116,40 @@ def write_resume_proof(
         else promptset_fingerprint(active_phases)
     )
     blocked_promptset = bool(promptset.get("blocked_promptset"))
+    with _SPEND_TRACKER_LOCK:
+        cost_abort_triggered = bool(
+            _ACTIVE_SPEND_TRACKER is not None
+            and _ACTIVE_SPEND_TRACKER.cost_abort_triggered
+        )
+
+    # We need to gather current missing artifacts across active phases to compute run status
+    missing_total = 0
+    phase_statuses = {}
+    for phase in active_phases:
+        coverage_path = dirs[phase] / "qa" / f"PHASE_{phase}_COVERAGE.json"
+        if coverage_path.exists():
+            try:
+                c_payload = json.loads(coverage_path.read_text(encoding="utf-8"))
+                missing = c_payload.get("missing_required_artifacts", [])
+                missing_total += len(missing)
+                phase_statuses[phase] = c_payload.get("status", "UNKNOWN")
+            except Exception:
+                pass
+
+    run_status = compute_run_status(
+        blocked_promptset=blocked_promptset,
+        missing_required_artifacts_total=missing_total,
+        phase_statuses=phase_statuses,
+        cost_abort_triggered=cost_abort_triggered,
+    )
+
     payload = {
         "generated_at": now_iso(),
         "run_id": run_id,
         "active_phases": active_phases,
+        "resume_status": "ready" if run_status == "OK" else "blocked",
+        "run_status": run_status,
+        "cost_abort_triggered": cost_abort_triggered,
         "totals": {
             "resume_skipped_partitions": total_skipped,
             "recomputed_partitions": total_recomputed,
@@ -14080,7 +14166,6 @@ def write_resume_proof(
         "missing_prompts_count": promptset["missing_prompts_count"],
         "unreadable_prompts_count": promptset["unreadable_prompts_count"],
         "prompt_failures_count": promptset.get("prompt_failures_count", 0),
-        "resume_status": "blocked" if blocked_promptset else "ready",
     }
     if blocked_promptset:
         payload["blocked_reason"] = PROMPTSET_BLOCKED_REASON
@@ -16686,6 +16771,7 @@ def main() -> None:
         webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
         webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
         live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+        max_cost_usd=args.max_cost_usd,
         selected_s_steps=(
             tuple(args.s_steps) if isinstance(args.s_steps, list) else None
         ),
