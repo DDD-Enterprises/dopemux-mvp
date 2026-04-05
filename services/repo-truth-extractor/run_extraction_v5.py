@@ -2741,6 +2741,136 @@ def write_json(path: Path, payload: Any) -> None:
     )
 
 
+def build_pre_live_validator_command(
+    *,
+    target_policy: str,
+    target_phases: Sequence[str],
+    allow_online_preflight: bool,
+) -> List[str]:
+    cmd = [
+        sys.executable,
+        str(RUNNER_SERVICE_DIR / "validate_pre_live_gate_v25.py"),
+        "--target-policy",
+        str(target_policy),
+    ]
+    normalized_phases = [
+        str(phase).strip().upper() for phase in target_phases if str(phase).strip()
+    ]
+    if normalized_phases:
+        cmd.extend(["--target-phases", *normalized_phases])
+    if allow_online_preflight:
+        cmd.append("--allow-online-preflight")
+    return cmd
+
+
+def _validator_phase_targets(
+    args: argparse.Namespace,
+    phase_sequence: Sequence[str],
+) -> List[str]:
+    if getattr(args, "async_provider", None):
+        return ["R"]
+    return [
+        str(phase).strip().upper()
+        for phase in phase_sequence
+        if str(phase).strip().upper() in set(PHASES)
+    ]
+
+
+def should_enforce_pre_live_validator(
+    args: argparse.Namespace,
+    phase_sequence: Sequence[str],
+) -> bool:
+    if bool(getattr(args, "dry_run", False)):
+        return False
+    if bool(getattr(args, "doctor", False)):
+        return False
+    if bool(getattr(args, "doctor_auth", False)):
+        return False
+    if bool(getattr(args, "preflight_providers", False)):
+        return False
+    if bool(getattr(args, "coverage_report", False)):
+        return False
+    if bool(getattr(args, "status", False)) or bool(getattr(args, "status_json", False)):
+        return False
+    if bool(getattr(args, "tail_run_log", False)):
+        return False
+    if bool(getattr(args, "show_provider_usage", False)):
+        return False
+    if bool(getattr(args, "print_config", False)):
+        return False
+    if bool(getattr(args, "print_run_order", False)):
+        return False
+    if bool(getattr(args, "print_phase_routing", False)):
+        return False
+    if getattr(args, "print_phase_prompts", None) is not None:
+        return False
+    if bool(getattr(args, "print_promptpack", False)):
+        return False
+    if bool(getattr(args, "promptgen_scan", False)):
+        return False
+    if bool(getattr(args, "gemini_list_models", False)):
+        return False
+    if getattr(args, "verify_phase_output", None):
+        return False
+    if bool(getattr(args, "batch_watch", False)):
+        return False
+    if bool(getattr(args, "batch_retrieve", False)):
+        return False
+    if bool(getattr(args, "finalize", False)):
+        return False
+    return bool(_validator_phase_targets(args, phase_sequence))
+
+
+def enforce_pre_live_validator_for_execution(
+    *,
+    root: Path,
+    args: argparse.Namespace,
+    phase_sequence: Sequence[str],
+) -> Dict[str, Any]:
+    cmd = build_pre_live_validator_command(
+        target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
+        target_phases=_validator_phase_targets(args, phase_sequence),
+        allow_online_preflight=True,
+    )
+    proc = subprocess.run(
+        cmd,
+        cwd=str(root),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    stdout = (proc.stdout or "").strip()
+    stderr = (proc.stderr or "").strip()
+    payload: Dict[str, Any] = {}
+    if stdout:
+        try:
+            payload = json.loads(stdout)
+        except Exception:
+            payload = {}
+    verdict = str(
+        payload.get("verdict") or ("GO" if proc.returncode == 0 else "NO_GO")
+    ).upper()
+    if proc.returncode != 0 or verdict == "NO_GO":
+        reason_codes = payload.get("reason_codes")
+        detail = (
+            ",".join(str(code) for code in reason_codes)
+            if isinstance(reason_codes, list) and reason_codes
+            else "none"
+        )
+        output_dir = str(payload.get("output_dir") or "").strip() or "<unknown>"
+        stderr_suffix = f" stderr={stderr}" if stderr else ""
+        raise RuntimeError(
+            "Pre-live validator blocked live execution: "
+            f"verdict={verdict} reason_codes={detail} output_dir={output_dir}.{stderr_suffix}"
+        )
+    return {
+        "command": cmd,
+        "returncode": int(proc.returncode),
+        "verdict": verdict,
+        "payload": payload,
+    }
+
+
 _JSONL_WRITE_LOCK: threading.Lock = threading.Lock()
 _TELEMETRY_SNAPSHOT_LOCK: threading.Lock = threading.Lock()
 _SPEND_TRACKER_LOCK: threading.Lock = threading.Lock()
@@ -5865,6 +5995,19 @@ def resolve_phase_list(phase_arg: Optional[str]) -> List[str]:
     return [phase_arg]
 
 
+def _load_extraction_profile(profile_name: Optional[str]) -> Optional[Dict[str, Any]]:
+    token = str(profile_name or "").strip()
+    if not token:
+        return None
+    profile_dir = Path(__file__).parent / "lib" / "promptgen" / "profiles"
+    filename = token if token.endswith(".json") else f"{token}.json"
+    profile_path = profile_dir / filename
+    if not profile_path.exists():
+        raise RuntimeError(f"Profile not found: {profile_name} (searched {profile_dir})")
+    with profile_path.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
 def collect_prompt_index() -> (
     Tuple[Dict[str, Dict[str, List[Path]]], Dict[str, List[str]]]
 ):
@@ -6071,7 +6214,19 @@ def derive_route_readiness_summary(
     tiers = ACTIVE_ROUTING_LADDERS.get(selected_policy) or _clone_ladders(selected_policy)
 
     for phase in phases:
-        for prompt in get_phase_prompts(phase):
+        prompts = get_phase_prompts(phase)
+        selected_ids = None
+        if isinstance(selected_step_ids_by_phase, dict):
+            raw_selected = selected_step_ids_by_phase.get(phase)
+            if raw_selected is not None:
+                selected_ids = {
+                    str(step_id).strip().upper()
+                    for step_id in raw_selected
+                    if str(step_id).strip()
+                }
+        for prompt in prompts:
+            if selected_ids is not None and prompt.step_id not in selected_ids:
+                continue
             step_id = str(prompt.step_id)
             tier_override = prompt.tier_override
             step_tier = resolve_effective_step_tier(
@@ -19188,6 +19343,28 @@ def main() -> None:
         logger.error("Phase D max-files setup failed: %s", exc)
         sys.exit(1)
     selected_execution_step: Optional[str] = None
+    try:
+        _active_profile = _load_extraction_profile(getattr(args, "profile", None))
+    except Exception as exc:
+        logger.error("%s", exc)
+        sys.exit(1)
+    phase_sequence = resolve_phase_list(args.phase)
+    if _active_profile:
+        _enabled = _active_profile.get("phase_policy", {}).get("enabled_phases")
+        if _enabled and phase_sequence:
+            phase_sequence = [p for p in phase_sequence if p in _enabled]
+        elif _enabled and not phase_sequence:
+            phase_sequence = [p for p in PHASES if p in _enabled]
+    if should_enforce_pre_live_validator(args, phase_sequence):
+        try:
+            enforce_pre_live_validator_for_execution(
+                root=Path.cwd(),
+                args=args,
+                phase_sequence=phase_sequence,
+            )
+        except Exception as exc:
+            logger.error("%s", exc)
+            sys.exit(1)
 
     if args.phase == "S_INT":
         from s_int.models import ladder_for_step
@@ -19553,19 +19730,7 @@ def main() -> None:
         )
 
     # --profile: load extraction profile and apply phase filtering + budget overrides
-    _active_profile = None
-    if getattr(args, "profile", None):
-        _profile_dir = Path(__file__).parent / "lib" / "promptgen" / "profiles"
-        _profile_name = args.profile
-        if not _profile_name.endswith(".json"):
-            _profile_name += ".json"
-        _profile_path = _profile_dir / _profile_name
-        if not _profile_path.exists():
-            logger.error("Profile not found: %s (searched %s)", args.profile, _profile_dir)
-            sys.exit(1)
-        import json as _json_profile
-        with open(_profile_path) as _pf:
-            _active_profile = _json_profile.load(_pf)
+    if _active_profile:
         logger.info(
             "Loaded profile: %s (v%s)",
             _active_profile.get("profile_id", args.profile),
