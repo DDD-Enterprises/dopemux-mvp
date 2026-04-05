@@ -6316,6 +6316,7 @@ def derive_route_readiness_summary(
                     for step_id in raw_selected
                     if str(step_id).strip()
                 }
+                }
         for prompt in prompts:
             if selected_ids is not None and prompt.step_id not in selected_ids:
                 continue
