@@ -3,16 +3,16 @@
 ## Target
 - **Phase**: A
 - **Step**: A2
-- **Routing Policy**: `balanced_xai`
-- **Run ID**: `tp_codex_rte_prelive_005_phase_a_step_a2`
+- **Routing Policy**: `balanced_grok_openrouter`
+- **Run ID**: `tp_codex_rte_prelive_005_phase_a_step_a2_v13`
 
 ## Exact Command
 ```bash
 DPMX_LIVE_OK=1 python services/repo-truth-extractor/run_extraction_v5.py \
   --phase A \
   --step A2 \
-  --routing-policy balanced_xai \
-  --run-id tp_codex_rte_prelive_005_phase_a_step_a2 \
+  --routing-policy balanced_grok_openrouter \
+  --run-id tp_codex_rte_prelive_005_phase_a_step_a2_v13 \
   --max-cost-usd 0.10
 ```
 

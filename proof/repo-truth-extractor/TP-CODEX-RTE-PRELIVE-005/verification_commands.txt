@@ -7,8 +7,8 @@ git status --short
 # ?? LIVE_LOG.txt
 # ?? reports/repo-truth-extractor/
 
-python services/repo-truth-extractor/validate_pre_live_gate_v25.py --target-policy balanced_xai --target-phases A --allow-online-preflight
-# Output: (OpenRouter 401, xAI 200, Verdict: NO_GO_EXTERNAL but GO_NOW for xAI policy)
+python services/repo-truth-extractor/validate_pre_live_gate_v25.py --target-policy balanced_grok_openrouter --target-phases A --step A2 --allow-online-preflight
+# Output: Target policy balanced_grok_openrouter, target_step A2, required_api_key_envs=[XAI_API_KEY], Verdict: GO_NOW
 
 python services/repo-truth-extractor/extraction_hygiene.py scan
 # Output: HYGIENE_SCAN_RESULT: warnings=10238 errors=0 noise_paths=2886 version_path_issues=0 resume_state_issues=7352
