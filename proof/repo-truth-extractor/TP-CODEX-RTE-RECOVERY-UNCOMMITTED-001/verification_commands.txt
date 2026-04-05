@@ -1,0 +1,84 @@
+TP-CODEX-RTE-RECOVERY-UNCOMMITTED-001 verification log
+
+Command: git status --short
+Output:
+ D docs/05-audit-reports/ADR-197-P0-STAGE1-STAGE2-IMPLEMENTATION-PR-PLAN-2026-02-06.md
+ D docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md
+ D docs/05-audit-reports/COMPLETE-AUDIT-SUMMARY-2025-10-16.md
+ D docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY.md
+ D docs/05-audit-reports/EXHAUSTIVE-AUDIT-PLAN.md
+ D docs/05-audit-reports/FINAL-AUDIT-REPORT-2025-10-16.md
+ D docs/05-audit-reports/FINAL-AUDIT-REPORT.md
+ D docs/05-audit-reports/OPTIMIZED-AUDIT-PLAN.md
+ D docs/05-audit-reports/PHASE-1-COMPLETE.md
+ D docs/05-audit-reports/PHASE-3-REMAINING-SERVICES-QUICK-SCAN.md
+ D docs/05-audit-reports/PHASE-4-DOCUMENTATION-VALIDATION-COMPLETE.md
+ D docs/05-audit-reports/PHASE-6-INTEGRATION-TESTS-ASSESSMENT.md
+ D docs/05-audit-reports/PLAN.md
+ D docs/05-audit-reports/ROADMAP-REMAINING-WORK.md
+ D docs/05-audit-reports/START-HERE-NEXT-SESSION.md
+ D docs/05-audit-reports/ULTIMATE-AUDIT-COMPLETION-2025-10-16.md
+ M services/repo-truth-extractor/run_extraction_v5.py
+ M services/repo-truth-extractor/tests/test_pre_live_gate_v25.py
+ M services/repo-truth-extractor/validate_pre_live_gate_v25.py
+ ?? .codex-tmp-doc-placement/
+ ?? .codex-worktrees/
+ ?? LIVE_LOG.txt
+ ?? LIVE_LOG_2.txt
+ ?? LIVE_LOG_3.txt
+ ?? LIVE_LOG_FINAL.txt
+ ?? config/pricing.yaml
+ ?? llm-plans/STABILIZE_PR384_EXTRACTOR_TESTS.md
+ ?? llm-plans/TP-GIT-CONSOLIDATION-0009-STABILIZATION.md
+ ?? reports/repo-truth-extractor/
+ ?? services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py
+ ?? services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py
+
+Command: git diff --name-only
+Output:
+docs/05-audit-reports/ADR-197-P0-STAGE1-STAGE2-IMPLEMENTATION-PR-PLAN-2026-02-06.md
+docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md
+docs/05-audit-reports/COMPLETE-AUDIT-SUMMARY-2025-10-16.md
+docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY.md
+docs/05-audit-reports/EXHAUSTIVE-AUDIT-PLAN.md
+docs/05-audit-reports/FINAL-AUDIT-REPORT-2025-10-16.md
+docs/05-audit-reports/FINAL-AUDIT-REPORT.md
+docs/05-audit-reports/OPTIMIZED-AUDIT-PLAN.md
+docs/05-audit-reports/PHASE-1-COMPLETE.md
+docs/05-audit-reports/PHASE-3-REMAINING-SERVICES-QUICK-SCAN.md
+docs/05-audit-reports/PHASE-4-DOCUMENTATION-VALIDATION-COMPLETE.md
+docs/05-audit-reports/PHASE-6-INTEGRATION-TESTS-ASSESSMENT.md
+docs/05-audit-reports/PLAN.md
+docs/05-audit-reports/ROADMAP-REMAINING-WORK.md
+docs/05-audit-reports/START-HERE-NEXT-SESSION.md
+docs/05-audit-reports/ULTIMATE-AUDIT-COMPLETION-2025-10-16.md
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_pre_live_gate_v25.py
+services/repo-truth-extractor/validate_pre_live_gate_v25.py
+
+Command: git diff --stat
+Output:
+ ...GE1-STAGE2-IMPLEMENTATION-PR-PLAN-2026-02-06.md | 274 ------
+ docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md  |  33 -
+ .../COMPLETE-AUDIT-SUMMARY-2025-10-16.md           | 373 ---------
+ docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY.md  |  17 -
+ docs/05-audit-reports/EXHAUSTIVE-AUDIT-PLAN.md     | 716 ----------------
+ .../FINAL-AUDIT-REPORT-2025-10-16.md               | 408 ---------
+ docs/05-audit-reports/FINAL-AUDIT-REPORT.md        | 450 ----------
+ docs/05-audit-reports/OPTIMIZED-AUDIT-PLAN.md      | 513 ------------
+ docs/05-audit-reports/PHASE-1-COMPLETE.md          | 316 -------
+ .../PHASE-3-REMAINING-SERVICES-QUICK-SCAN.md       | 151 ----
+ .../PHASE-4-DOCUMENTATION-VALIDATION-COMPLETE.md   | 156 ----
+ .../PHASE-6-INTEGRATION-TESTS-ASSESSMENT.md        |  76 --
+ docs/05-audit-reports/PLAN.md                      |  29 -
+ docs/05-audit-reports/ROADMAP-REMAINING-WORK.md    | 706 ----------------
+ docs/05-audit-reports/START-HERE-NEXT-SESSION.md   | 117 ---
+ .../ULTIMATE-AUDIT-COMPLETION-2025-10-16.md        | 333 --------
+ services/repo-truth-extractor/run_extraction_v5.py | 925 ++++++++++++++++++++-
+ .../tests/test_pre_live_gate_v25.py                | 180 +++-
+ .../validate_pre_live_gate_v25.py                  | 253 +++++-
+ 19 files changed, 1288 insertions(+), 4738 deletions(-)
+
+Command: git switch -c codex/rte-recovery-uncommitted-001
+Output:
+fatal: cannot lock ref 'refs/heads/codex/rte-recovery-uncommitted-001': sandbox denied write to .git refs
