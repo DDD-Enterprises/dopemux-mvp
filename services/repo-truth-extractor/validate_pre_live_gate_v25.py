@@ -332,17 +332,29 @@ def expected_contract_map_target_keys(contract_module: Any, config: GateConfig) 
     if not isinstance(steps, dict):
         return []
     target_phases = set(config.target_phases)
+    target_step = str(config.target_step or "").strip().upper()
     return sorted(
         key
         for key in steps.keys()
         if str(key).split(":", 1)[0] in target_phases
+        and (
+            not target_step
+            or str(key).split(":", 1)[1].strip().upper() == target_step
+        )
     )
 
 
 def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[str, Any]:
+    selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None
+    if config.target_step:
+        target_step = str(config.target_step).strip().upper()
+        target_phase = target_step[:1]
+        if target_phase in set(config.target_phases):
+            selected_step_ids_by_phase = {target_phase: [target_step]}
     readiness = runner.derive_route_readiness_summary(  # type: ignore[attr-defined]
         phases=list(config.target_phases),
         routing_policy=config.target_policy,
+        selected_step_ids_by_phase=selected_step_ids_by_phase,
     )
     enriched_routes = []
     for row in readiness["routes"]:
@@ -371,6 +383,7 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
         "target_step": config.target_step,
         "target_mode": config.target_mode,
         "target_runner_path": str(RUNNER_PATH.resolve()),
+        "target_contract_map_path": str(CONTRACT_MAP_PATH.resolve()),
         "target_runner_sha256": sha256_file(RUNNER_PATH),
         "promptset_sha256": sha256_file(PROMPTSET_PATH),
         "artifacts_sha256": sha256_file(ARTIFACTS_PATH),
@@ -395,7 +408,6 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
             volatile_keys=CONTRACT_MAP_VOLATILE_KEYS,
         ),
     }
-    return scope
 
 
 def evaluate_import_cli_smoke(config: GateConfig) -> Tuple[Dict[str, Any], List[Blocker]]:
@@ -775,6 +787,7 @@ def evaluate_pal_validation(
 def evaluate_online_preflight(
     runner: Any,
     config: GateConfig,
+    args: Optional[argparse.Namespace] = None,
 ) -> Tuple[Dict[str, Any], List[Blocker], List[Condition]]:
     blockers: List[Blocker] = []
     conditions: List[Condition] = []
@@ -1285,7 +1298,7 @@ def run_gate(
     all_blockers.extend(blockers)
     all_conditions.extend(conditions)
 
-    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config)
+    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config, args)
     layer_payloads["online_provider_preflight"] = online_preflight
     write_json(config.output_dir / "ONLINE_PREFLIGHT_RESULTS.json", online_preflight)
     all_blockers.extend(blockers)
@@ -1340,7 +1353,7 @@ def main() -> int:
     parser = build_arg_parser()
     args = parser.parse_args()
     config = build_config(args)
-    result = run_gate(config)
+    result = run_gate(config, args)
     print(sanitized_json_text(result["verdict"], indent=2, sort_keys=True, ensure_ascii=True))
     return 0 if result["verdict"]["verdict"] in {"GO", "CONDITIONAL_GO"} else 1
 
