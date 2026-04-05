@@ -2746,6 +2746,7 @@ def build_pre_live_validator_command(
     target_policy: str,
     target_phases: Sequence[str],
     allow_online_preflight: bool,
+    target_step: Optional[str] = None,
 ) -> List[str]:
     cmd = [
         sys.executable,
@@ -2753,6 +2754,8 @@ def build_pre_live_validator_command(
         "--target-policy",
         str(target_policy),
     ]
+    if target_step:
+        cmd.extend(["--step", str(target_step)])
     normalized_phases = [
         str(phase).strip().upper() for phase in target_phases if str(phase).strip()
     ]
@@ -2831,6 +2834,7 @@ def enforce_pre_live_validator_for_execution(
         target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
         target_phases=_validator_phase_targets(args, phase_sequence),
         allow_online_preflight=True,
+        target_step=getattr(args, "step", None),
     )
     proc = subprocess.run(
         cmd,
@@ -3038,6 +3042,11 @@ def load_pricing_registry(path: Path = PRICING_CONFIG_PATH) -> Tuple[Dict[str, D
             "input_cost_per_m": input_cost,
             "output_cost_per_m": output_cost,
         }
+<<<<<<< HEAD
+=======
+    from lib.promptgen.hashing import sha256_text
+    return registry, sha256_text(path.read_text(encoding="utf-8"))
+>>>>>>> 90694349d (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
 
 
 def extract_usage_summary(provider: str, response_obj: Any, response_json: Optional[Dict[str, Any]]) -> Optional[Dict[str, int]]:
@@ -3266,10 +3275,26 @@ def record_request_cost(
         return meta
     if meta.get("spend_ledger_recorded"):
         return meta
+    if meta.get("failure_type") == "cost_aborted":
+        # Request was never sent due to existing cap breach; skip recording
+        return meta
     with _SPEND_TRACKER_LOCK:
         state = _ACTIVE_SPEND_TRACKER
         if state is None:
             return meta
+        if state.cost_abort_triggered:
+            # Cap was already breached by another concurrent request; return failure meta
+            updated = dict(meta)
+            updated["spend_ledger_recorded"] = False
+            updated["cost_cap"] = {
+                "max_cost_usd": float(state.max_cost_usd),
+                "total_cost_usd": float(_quantize_usd(state.total_cost_usd)),
+                "cost_abort_triggered": True,
+                "abort_reason": state.abort_reason,
+            }
+            updated["failure_type"] = "cost_aborted"
+            updated["provider_error_reason"] = state.abort_reason
+            return updated
         response_summary = meta.get("response_summary")
         usage = (
             dict(response_summary.get("usage"))
@@ -6503,6 +6528,7 @@ def run_provider_preflight(
         if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
         is not None
     }
+<<<<<<< HEAD
     if selected_step_ids_by_phase:
         provider_routes = collect_provider_routes(
             phases=phases,
@@ -6514,6 +6540,13 @@ def run_provider_preflight(
             phases=phases,
             routing_policy=cfg.routing_policy,
         )
+=======
+    provider_routes = collect_provider_routes(
+        phases=phases,
+        routing_policy=cfg.routing_policy,
+        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+    )
+>>>>>>> 90694349d (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -16720,6 +16753,7 @@ def write_coverage_rollup(
             blocked_promptset=blocked_promptset,
             missing_required_artifacts_total=missing_total,
             phase_statuses={p: v["status"] for p, v in phase_rollup.items()},
+            cost_abort_triggered=cost_abort_triggered,
         ),
         "blocked_reason": PROMPTSET_BLOCKED_REASON if blocked_promptset else None,
         "blocked_promptset": blocked_promptset,
@@ -16800,8 +16834,13 @@ def write_resume_proof(
                 missing = c_payload.get("missing_required_artifacts", [])
                 missing_total += len(missing)
                 phase_statuses[phase] = c_payload.get("status", "UNKNOWN")
+<<<<<<< HEAD
             except Exception as e:
                 logger.debug("Failed to load coverage JSON for phase %s at %s: %s", phase, coverage_path, e, exc_info=True)
+=======
+            except Exception:
+                pass
+>>>>>>> 90694349d (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
 
     run_status = compute_run_status(
         blocked_promptset=blocked_promptset,
