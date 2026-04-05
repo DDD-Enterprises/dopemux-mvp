@@ -6964,6 +6964,13 @@ def summarize_llm_response(
         summary["candidate_count"] = candidate_count
     if finish_reason:
         summary["finish_reason"] = finish_reason
+    usage = extract_usage_summary(
+        provider=provider,
+        response_obj=response_obj,
+        response_json=response_json,
+    )
+    if usage is not None:
+        summary["usage"] = usage
     return summary
 
 
