@@ -3057,7 +3057,6 @@ def load_pricing_registry(path: Path = PRICING_CONFIG_PATH) -> Tuple[Dict[str, D
         }
     from lib.promptgen.hashing import sha256_text
     return registry, sha256_text(path.read_text(encoding="utf-8"))
-
 def extract_usage_summary(provider: str, response_obj: Any, response_json: Optional[Dict[str, Any]]) -> Optional[Dict[str, int]]:
     if provider == "gemini":
         usage = getattr(response_obj, "usage_metadata", None)
@@ -3286,8 +3285,7 @@ def record_request_cost(
         return meta
     if meta.get("failure_type") == "cost_aborted":
         # Request was never sent due to existing cap breach; skip recording
-        return meta        response_summary = meta.get("response_summary")
-        usage = (
+        return meta        response_summary = meta.get("response_summary")        usage = (
             dict(response_summary.get("usage"))
             if isinstance(response_summary, dict) and isinstance(response_summary.get("usage"), dict)
             else None
@@ -19562,14 +19560,11 @@ def main() -> None:
     args.batch_max_requests_per_job = max(1, int(args.batch_max_requests_per_job))
     if args.batch_submit_only:
         args.batch_mode = True
-<<<<<<< HEAD
     preset_phase_sequence: Optional[List[str]] = None
     preset_preview: Optional[Dict[str, Any]] = None
     if args.preset == FIRST_LIVE_PRESET_NAME:
         preset_phase_sequence, preset_preview = apply_first_live_preset(args, raw_argv)
-=======
->>>>>>> 2144d4e36 (fix(repo-truth-extractor): recover TP001 spend-cap logic from mixed runner)
-    if args.max_cost_usd is not None and args.max_cost_usd <= 0:
+<<<<<<< HEAD    if args.max_cost_usd is not None and args.max_cost_usd <= 0:
         parser.error("--max-cost-usd must be > 0 when provided.")
     
     router = None
