@@ -147,7 +147,6 @@ class Condition:
 
 
 GateCondition = Condition
-
 CODE_BLOCKER = "CODE_BLOCKER"
 ARTIFACT_OR_STATE_BLOCKER = "ARTIFACT_OR_STATE_BLOCKER"
 ENVIRONMENT_BLOCKER = "ENVIRONMENT_BLOCKER"
@@ -1317,9 +1316,9 @@ def run_gate(
         "run_id": config.run_id,
         "output_dir": str(config.output_dir.resolve()),
         "reason_codes": reason_codes,
+        "conditions": condition_rows,
         "run_scoped_blockers": active_blockers,
         "blocker_classification": blocker_classification,
-        "conditions": condition_rows,
         "repo_wide_findings": repo_wide_findings,
         "waivers": waived,
         "layers": summarize_layers(layer_payloads),
