@@ -6530,17 +6530,11 @@ def run_provider_preflight(
         if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
         is not None
     }
-    if selected_step_ids_by_phase:
-        provider_routes = collect_provider_routes(
-            phases=phases,
-            routing_policy=cfg.routing_policy,
-            selected_step_ids_by_phase=selected_step_ids_by_phase,
-        )
-    else:
-        provider_routes = collect_provider_routes(
-            phases=phases,
-            routing_policy=cfg.routing_policy,
-        )
+    provider_routes = collect_provider_routes(
+        phases=phases,
+        routing_policy=cfg.routing_policy,
+        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+    )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -16747,6 +16741,7 @@ def write_coverage_rollup(
             blocked_promptset=blocked_promptset,
             missing_required_artifacts_total=missing_total,
             phase_statuses={p: v["status"] for p, v in phase_rollup.items()},
+            cost_abort_triggered=cost_abort_triggered,
         ),
         "blocked_reason": PROMPTSET_BLOCKED_REASON if blocked_promptset else None,
         "blocked_promptset": blocked_promptset,

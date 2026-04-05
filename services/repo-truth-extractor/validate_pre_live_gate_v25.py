@@ -396,7 +396,6 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
             volatile_keys=CONTRACT_MAP_VOLATILE_KEYS,
         ),
     }
-    return scope
 
 
 def evaluate_import_cli_smoke(config: GateConfig) -> Tuple[Dict[str, Any], List[Blocker]]:
@@ -1286,7 +1285,7 @@ def run_gate(
     all_blockers.extend(blockers)
     all_conditions.extend(conditions)
 
-    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config)
+    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config, args)
     layer_payloads["online_provider_preflight"] = online_preflight
     write_json(config.output_dir / "ONLINE_PREFLIGHT_RESULTS.json", online_preflight)
     all_blockers.extend(blockers)
