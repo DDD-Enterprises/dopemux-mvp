@@ -139,27 +139,13 @@ class Blocker:
 
 
 @dataclass
-class Condition:
-    reason_code: str
+class Condition:    reason_code: str
     layer: str
     message: str
     details: Optional[Dict[str, Any]] = None
 
 
-GateCondition = Condition
-CODE_BLOCKER = "CODE_BLOCKER"
-ARTIFACT_OR_STATE_BLOCKER = "ARTIFACT_OR_STATE_BLOCKER"
-ENVIRONMENT_BLOCKER = "ENVIRONMENT_BLOCKER"
-EXTERNAL_PROVIDER_BLOCKER = "EXTERNAL_PROVIDER_BLOCKER"
-FALSE_POSITIVE = "FALSE_POSITIVE"
-DEFERRED_NON_BLOCKING = "DEFERRED_NON_BLOCKING"
-
-GO_NOW = "GO_NOW"
-NO_GO_CODE = "NO_GO_CODE"
-NO_GO_ENV = "NO_GO_ENV"
-NO_GO_EXTERNAL = "NO_GO_EXTERNAL"
-NO_GO_ARTIFACT_STATE = "NO_GO_ARTIFACT_STATE"
-def now_iso() -> str:
+GateCondition = Conditiondef now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
@@ -538,8 +524,7 @@ def evaluate_route_readiness(
     missing_keys = sorted([env_name for env_name in scope["required_api_key_envs"] if not os.environ.get(env_name)])
     missing_fallback_keys = sorted(
         [env_name for env_name in scope.get("fallback_api_key_envs", []) if not os.environ.get(env_name)]
-    )
-    if missing_direct and not bounded_target_scope:
+    )    if missing_direct and not bounded_target_scope:
         blockers.append(
             Blocker(
                 ROUTE_DERIVATION_FAILURE,
@@ -618,8 +603,7 @@ def evaluate_pal_validation(
     scope: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], List[Blocker], List[Condition]]:
     blockers: List[Blocker] = []
-    conditions: List[Condition] = []
-    routes = {
+    conditions: List[Condition] = []    routes = {
         row["route_signature"]: row
         for row in scope["required_provider_routes"]
     }
@@ -707,8 +691,7 @@ def evaluate_pal_validation(
                 Condition(
                     PAL_REQUIRED_UNAVAILABLE,
                     "pal_provider_validation",
-                    f"PAL validation unavailable for route {signature}",
-                    row,
+                    f"PAL validation unavailable for route {signature}",                    row,
                 )
             )
             output_rows.append(row)
@@ -799,8 +782,7 @@ def evaluate_online_preflight(
     blockers: List[Blocker] = []
     conditions: List[Condition] = []
     if not config.allow_online_preflight:
-        condition = Condition(
-            ONLINE_PREFLIGHT_FAILURE,
+        condition = Condition(            ONLINE_PREFLIGHT_FAILURE,
             "online_provider_preflight",
             "Online provider preflight not executed. Re-run with --allow-online-preflight for a full gate.",
             {"allow_online_preflight": False},
@@ -1208,8 +1190,7 @@ def render_summary(
         lines.append(
             f"- Live online status: {environment_summary.get('live_online_status')}"
         )
-        lines.append(f"- Note: {environment_summary.get('message')}")
-    else:
+        lines.append(f"- Note: {environment_summary.get('message')}")    else:
         lines.append("- none")
     lines.append("")
     lines.append("## Evidence")
@@ -1294,6 +1275,10 @@ def run_gate(
     }
     write_json(config.output_dir / "OFFLINE_GATE_RESULTS.json", offline_results)
 
+=======
+    all_conditions: List[GateCondition] = []
+
+>>>>>>> c660ab9df (fix(repo-truth-extractor): recover deferred tp002-owned changes)
     pal_validation, blockers, conditions = evaluate_pal_validation(config, scope)
     layer_payloads["pal_provider_validation"] = {
         "layer": pal_validation["layer"],
@@ -1360,9 +1345,9 @@ def main() -> int:
     parser = build_arg_parser()
     args = parser.parse_args()
     config = build_config(args)
+<<<<<<< HEAD
     result = run_gate(config, args)
-    print(sanitized_json_text(result["verdict"], indent=2, sort_keys=True, ensure_ascii=True))
-    return 0 if result["verdict"]["verdict"] in {"GO", "CONDITIONAL_GO"} else 1
+    print(sanitized_json_text(result["verdict"], indent=2, sort_keys=True, ensure_ascii=True))    return 0 if result["verdict"]["verdict"] in {"GO", "CONDITIONAL_GO"} else 1
 
 
 if __name__ == "__main__":
