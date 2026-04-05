@@ -3047,8 +3047,6 @@ def load_pricing_registry(path: Path = PRICING_CONFIG_PATH) -> Tuple[Dict[str, D
             "input_cost_per_m": input_cost,
             "output_cost_per_m": output_cost,
         }
-    from lib.promptgen.hashing import sha256_text
-    return registry, sha256_text(path.read_text(encoding="utf-8"))
 
 
 def extract_usage_summary(provider: str, response_obj: Any, response_json: Optional[Dict[str, Any]]) -> Optional[Dict[str, int]]:
@@ -3277,26 +3275,10 @@ def record_request_cost(
         return meta
     if meta.get("spend_ledger_recorded"):
         return meta
-    if meta.get("failure_type") == "cost_aborted":
-        # Request was never sent due to existing cap breach; skip recording
-        return meta
     with _SPEND_TRACKER_LOCK:
         state = _ACTIVE_SPEND_TRACKER
         if state is None:
             return meta
-        if state.cost_abort_triggered:
-            # Cap was already breached by another concurrent request; return failure meta
-            updated = dict(meta)
-            updated["spend_ledger_recorded"] = False
-            updated["cost_cap"] = {
-                "max_cost_usd": float(state.max_cost_usd),
-                "total_cost_usd": float(_quantize_usd(state.total_cost_usd)),
-                "cost_abort_triggered": True,
-                "abort_reason": state.abort_reason,
-            }
-            updated["failure_type"] = "cost_aborted"
-            updated["provider_error_reason"] = state.abort_reason
-            return updated
         response_summary = meta.get("response_summary")
         usage = (
             dict(response_summary.get("usage"))
