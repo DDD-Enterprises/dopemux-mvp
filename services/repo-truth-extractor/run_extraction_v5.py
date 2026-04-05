@@ -7,6 +7,7 @@ inventory -> partitioning -> per-partition raw outputs -> norm merge -> QA.
 import argparse
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import copy
+from decimal import Decimal, ROUND_HALF_UP
 import fnmatch
 import hashlib
 import hmac
@@ -34,6 +35,7 @@ from urllib import error as urllib_error
 from urllib import request as urllib_request
 
 import requests
+import yaml
 
 # Ensure local service modules are importable when loaded via importlib in tests.
 RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
@@ -262,10 +264,12 @@ COST_ABORT_FILENAME = "COST_ABORT.json"
 COST_ABORT_REASON = "MAX_COST_USD_EXCEEDED"
 RETRY_COST_REPORT_FILENAME = "RETRY_COST_REPORT.json"
 TERMINAL_TIMELINE_FILENAME = "TERMINAL_TIMELINE.jsonl"
+SPEND_LEDGER_FILENAME = "SPEND_LEDGER.json"
 PROMPTSET_BLOCKED_REASON = "PROMPTSET_INVALID"
 PROMPTSET_BLOCKED_EXIT_CODE = 2
 RUNNER_SCRIPT = Path(__file__).resolve()
 REPO_ROOT = RUNNER_SCRIPT.parents[2]
+PRICING_CONFIG_PATH = REPO_ROOT / "config" / "pricing.yaml"
 PROMPTGEN_SCANNER_VERSION = "GX0_SCANNER_V1"
 PROMPTGEN_INPUTS_FILENAME = "PROMPTGEN_INPUTS.json"
 PROMPTGEN_FINGERPRINT_FILENAME = "PROJECT_FINGERPRINT.json"
@@ -1361,6 +1365,7 @@ class RunnerConfig:
     webhook_required: bool = False
     webhook_auto_continue: bool = False
     live_ok: bool = False
+    max_cost_usd: Optional[float] = None
     selected_s_steps: Optional[Tuple[str, ...]] = None
     selected_execution_step: Optional[str] = None
     d0_max_files: Optional[int] = None
@@ -2738,6 +2743,24 @@ def write_json(path: Path, payload: Any) -> None:
 
 _JSONL_WRITE_LOCK: threading.Lock = threading.Lock()
 _TELEMETRY_SNAPSHOT_LOCK: threading.Lock = threading.Lock()
+_SPEND_TRACKER_LOCK: threading.Lock = threading.Lock()
+
+
+@dataclass
+class SpendTrackerState:
+    run_root: Path
+    run_id: str
+    max_cost_usd: Decimal
+    pricing_source: str
+    pricing_sha256: str
+    pricing_registry: Dict[str, Dict[str, Decimal]]
+    total_cost_usd: Decimal
+    cost_abort_triggered: bool
+    abort_reason: Optional[str]
+    entries: List[Dict[str, Any]]
+
+
+_ACTIVE_SPEND_TRACKER: Optional[SpendTrackerState] = None
 
 _HTTP_SESSION: Optional[requests.Session] = None
 _HTTP_SESSION_LOCK: threading.Lock = threading.Lock()
@@ -2800,6 +2823,337 @@ def _load_json_object(path: Path) -> Dict[str, Any]:
 
 def _telemetry_path(run_root: Path, filename: str) -> Path:
     return run_root / TELEMETRY_DIRNAME / filename
+
+
+def _quantize_usd(value: Decimal) -> Decimal:
+    return value.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+
+
+def _pricing_key(provider: str, model_id: str) -> str:
+    return f"{str(provider).strip().lower()}/{str(model_id).strip()}"
+
+
+def load_pricing_registry(path: Path = PRICING_CONFIG_PATH) -> Tuple[Dict[str, Dict[str, Decimal]], str]:
+    if not path.exists():
+        raise RuntimeError(f"Pricing config missing: {path}")
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"Pricing config must decode to an object: {path}")
+    models = payload.get("models")
+    if not isinstance(models, dict) or not models:
+        raise RuntimeError(f"Pricing config missing models map: {path}")
+    registry: Dict[str, Dict[str, Decimal]] = {}
+    for key, row in models.items():
+        if not isinstance(row, dict):
+            raise RuntimeError(f"Pricing entry must be an object for {key}")
+        try:
+            input_cost = Decimal(str(row["input_cost_per_m"]))
+            output_cost = Decimal(str(row["output_cost_per_m"]))
+        except Exception as exc:
+            raise RuntimeError(f"Invalid pricing entry for {key}") from exc
+        if input_cost < 0 or output_cost < 0:
+            raise RuntimeError(f"Negative pricing entry for {key}")
+        registry[str(key).strip().lower()] = {
+            "input_cost_per_m": input_cost,
+            "output_cost_per_m": output_cost,
+        }
+    from lib.promptgen_utils import sha256_text
+    return registry, sha256_text(path)
+
+
+def extract_usage_summary(provider: str, response_obj: Any, response_json: Optional[Dict[str, Any]]) -> Optional[Dict[str, int]]:
+    if provider == "gemini":
+        usage = getattr(response_obj, "usage_metadata", None)
+        if usage is None and isinstance(response_json, dict):
+            usage = response_json.get("usage_metadata")
+        prompt_tokens = getattr(usage, "prompt_token_count", None)
+        completion_tokens = getattr(usage, "candidates_token_count", None)
+        total_tokens = getattr(usage, "total_token_count", None)
+        if isinstance(usage, dict):
+            prompt_tokens = usage.get("prompt_token_count", prompt_tokens)
+            completion_tokens = usage.get("candidates_token_count", completion_tokens)
+            total_tokens = usage.get("total_token_count", total_tokens)
+    else:
+        usage = response_json.get("usage") if isinstance(response_json, dict) else getattr(response_obj, "usage", None)
+        prompt_tokens = getattr(usage, "prompt_tokens", None)
+        completion_tokens = getattr(usage, "completion_tokens", None)
+        total_tokens = getattr(usage, "total_tokens", None)
+        if isinstance(usage, dict):
+            prompt_tokens = usage.get("prompt_tokens", prompt_tokens)
+            completion_tokens = usage.get("completion_tokens", completion_tokens)
+            total_tokens = usage.get("total_tokens", total_tokens)
+
+    def _to_int(value: Any) -> Optional[int]:
+        try:
+            if value is None or value == "":
+                return None
+            return int(value)
+        except Exception:
+            return None
+
+    prompt_value = _to_int(prompt_tokens)
+    completion_value = _to_int(completion_tokens)
+    total_value = _to_int(total_tokens)
+    if prompt_value is None and completion_value is None and total_value is None:
+        return None
+    if total_value is None and prompt_value is not None and completion_value is not None:
+        total_value = prompt_value + completion_value
+    return {
+        "prompt_tokens": int(prompt_value or 0),
+        "completion_tokens": int(completion_value or 0),
+        "total_tokens": int(total_value or 0),
+    }
+
+
+def estimate_usage_cost_usd(
+    *,
+    provider: str,
+    model_id: str,
+    usage: Dict[str, int],
+    pricing_registry: Dict[str, Dict[str, Decimal]],
+) -> Decimal:
+    key = _pricing_key(provider, model_id)
+    pricing = pricing_registry.get(key)
+    if pricing is None:
+        raise RuntimeError(f"Missing pricing for route {key}")
+    prompt_tokens = int(usage.get("prompt_tokens", 0) or 0)
+    completion_tokens = int(usage.get("completion_tokens", 0) or 0)
+    input_cost = (Decimal(prompt_tokens) / Decimal(1_000_000)) * pricing["input_cost_per_m"]
+    output_cost = (Decimal(completion_tokens) / Decimal(1_000_000)) * pricing["output_cost_per_m"]
+    return _quantize_usd(input_cost + output_cost)
+
+
+def _write_spend_ledger_snapshot(state: SpendTrackerState) -> Dict[str, Any]:
+    totals_by_provider: Dict[str, Decimal] = {}
+    totals_by_model: Dict[str, Decimal] = {}
+    totals_by_phase: Dict[str, Decimal] = {}
+    totals_by_step: Dict[str, Decimal] = {}
+    for row in state.entries:
+        cost = Decimal(str(row.get("cost_usd", "0")))
+        provider = str(row.get("provider") or "")
+        model_id = str(row.get("model_id") or "")
+        phase = str(row.get("phase") or "")
+        step_id = str(row.get("step_id") or "")
+        if provider:
+            totals_by_provider[provider] = totals_by_provider.get(provider, Decimal("0")) + cost
+        if provider and model_id:
+            model_key = f"{provider}/{model_id}"
+            totals_by_model[model_key] = totals_by_model.get(model_key, Decimal("0")) + cost
+        if phase:
+            totals_by_phase[phase] = totals_by_phase.get(phase, Decimal("0")) + cost
+        if phase and step_id:
+            step_key = f"{phase}:{step_id}"
+            totals_by_step[step_key] = totals_by_step.get(step_key, Decimal("0")) + cost
+    payload = {
+        "generated_at": now_iso(),
+        "run_id": state.run_id,
+        "pricing_source": state.pricing_source,
+        "pricing_sha256": state.pricing_sha256,
+        "max_cost_usd": float(state.max_cost_usd),
+        "total_cost_usd": float(_quantize_usd(state.total_cost_usd)),
+        "cost_abort_triggered": state.cost_abort_triggered,
+        "abort_reason": state.abort_reason,
+        "entries_total": len(state.entries),
+        "totals_by_provider_usd": {key: float(_quantize_usd(value)) for key, value in sorted(totals_by_provider.items())},
+        "totals_by_model_usd": {key: float(_quantize_usd(value)) for key, value in sorted(totals_by_model.items())},
+        "totals_by_phase_usd": {key: float(_quantize_usd(value)) for key, value in sorted(totals_by_phase.items())},
+        "totals_by_step_usd": {key: float(_quantize_usd(value)) for key, value in sorted(totals_by_step.items())},
+        "entries": list(state.entries),
+    }
+    write_json(_telemetry_path(state.run_root, SPEND_LEDGER_FILENAME), payload)
+    return payload
+
+
+def reset_spend_tracker() -> None:
+    global _ACTIVE_SPEND_TRACKER
+    with _SPEND_TRACKER_LOCK:
+        _ACTIVE_SPEND_TRACKER = None
+
+
+def initialize_spend_tracker(
+    *,
+    run_root: Path,
+    run_id: str,
+    cfg: RunnerConfig,
+    phases: List[str],
+) -> Optional[Dict[str, Any]]:
+    global _ACTIVE_SPEND_TRACKER
+    if cfg.max_cost_usd is None:
+        reset_spend_tracker()
+        return None
+    if cfg.partition_workers != 1:
+        raise RuntimeError("--max-cost-usd requires --partition-workers 1 for deterministic enforcement.")
+    selected_step_ids_by_phase = {
+        phase: selected_ids
+        for phase in phases
+        if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase)) is not None
+    }
+    pricing_registry, pricing_sha = load_pricing_registry()
+    routes = collect_provider_routes(
+        phases=phases,
+        routing_policy=cfg.routing_policy,
+        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+    )
+    missing = sorted(
+        _pricing_key(route["provider"], route["model_id"])
+        for route in routes.values()
+        if _pricing_key(route["provider"], route["model_id"]) not in pricing_registry
+    )
+    if missing:
+        raise RuntimeError(
+            "Pricing config missing route coverage for active target: "
+            + ", ".join(missing)
+        )
+    state = SpendTrackerState(
+        run_root=run_root,
+        run_id=run_id,
+        max_cost_usd=_quantize_usd(Decimal(str(cfg.max_cost_usd))),
+        pricing_source=str(PRICING_CONFIG_PATH.resolve()),
+        pricing_sha256=pricing_sha,
+        pricing_registry=pricing_registry,
+        total_cost_usd=Decimal("0"),
+        cost_abort_triggered=False,
+        abort_reason=None,
+        entries=[],
+    )
+    with _SPEND_TRACKER_LOCK:
+        _ACTIVE_SPEND_TRACKER = state
+        return _write_spend_ledger_snapshot(state)
+
+
+def _cost_abort_failure_meta(
+    *,
+    provider: str,
+    model_id: str,
+    api_key_env: str,
+    base_url: str,
+    request_payload_bytes: int,
+    request_payload_bytes_mode: str,
+    sent_header_keys: List[str],
+    auth_flags: Dict[str, bool],
+    transport: str,
+    gemini_mode_requested: Optional[str],
+    gemini_mode_effective: Optional[str],
+    gemini_family: Optional[str],
+    auth_mode_sequence: Optional[List[str]],
+    structured_output: Dict[str, Any],
+) -> Dict[str, Any]:
+    with _SPEND_TRACKER_LOCK:
+        state = _ACTIVE_SPEND_TRACKER
+        reason = state.abort_reason if state is not None else "cost_cap_reached"
+    endpoint_url = f"{base_url}/chat/completions"
+    return {
+        "provider": provider,
+        "model_id": model_id,
+        "endpoint_base_url": base_url,
+        "endpoint_effective": endpoint_effective(endpoint_url),
+        **endpoint_fingerprint(endpoint_url),
+        "status_code": None,
+        "failure_type": "cost_aborted",
+        "request_payload_bytes": request_payload_bytes,
+        "request_payload_bytes_mode": request_payload_bytes_mode,
+        "sent_header_keys": sent_header_keys,
+        "auth_present_flags": auth_flags,
+        "gemini_auth_mode_requested": gemini_mode_requested,
+        "gemini_auth_mode_effective": gemini_mode_effective,
+        "provider_signature": provider_signature(
+            provider,
+            model_id,
+            endpoint_url,
+            gemini_mode_effective if provider == "gemini" else None,
+        ),
+        "provider_error_reason": reason or "cost_cap_reached",
+        "api_key_env_requested": api_key_env,
+        "api_key_env_resolved": api_key_env,
+        "gemini_endpoint_family": gemini_family,
+        "gemini_auth_attempt_sequence": auth_mode_sequence,
+        "transport": transport,
+        "retry_trace": [],
+        "response_received": False,
+        "structured_output": structured_output,
+    }
+
+
+def record_request_cost(
+    meta: Dict[str, Any],
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+) -> Dict[str, Any]:
+    if not isinstance(meta, dict):
+        return meta
+    if meta.get("spend_ledger_recorded"):
+        return meta
+    with _SPEND_TRACKER_LOCK:
+        state = _ACTIVE_SPEND_TRACKER
+        if state is None:
+            return meta
+        response_summary = meta.get("response_summary")
+        usage = (
+            dict(response_summary.get("usage"))
+            if isinstance(response_summary, dict) and isinstance(response_summary.get("usage"), dict)
+            else None
+        )
+        if usage is None:
+            state.cost_abort_triggered = True
+            state.abort_reason = "cost_cap_usage_unavailable"
+            _write_spend_ledger_snapshot(state)
+            updated = dict(meta)
+            updated["spend_ledger_recorded"] = False
+            updated["cost_cap"] = {
+                "max_cost_usd": float(state.max_cost_usd),
+                "total_cost_usd": float(_quantize_usd(state.total_cost_usd)),
+                "cost_abort_triggered": True,
+                "abort_reason": state.abort_reason,
+            }
+            updated["failure_type"] = "cost_aborted"
+            updated["provider_error_reason"] = state.abort_reason
+            return updated
+        cost_usd = estimate_usage_cost_usd(
+            provider=provider,
+            model_id=model_id,
+            usage=usage,
+            pricing_registry=state.pricing_registry,
+        )
+        state.total_cost_usd = _quantize_usd(state.total_cost_usd + cost_usd)
+        event = {
+            "sequence": len(state.entries) + 1,
+            "recorded_at": now_iso(),
+            "phase": phase,
+            "step_id": step_id,
+            "partition_id": partition_id,
+            "provider": provider,
+            "model_id": model_id,
+            "prompt_tokens": int(usage.get("prompt_tokens", 0) or 0),
+            "completion_tokens": int(usage.get("completion_tokens", 0) or 0),
+            "total_tokens": int(usage.get("total_tokens", 0) or 0),
+            "cost_usd": float(cost_usd),
+            "total_cost_usd_after_event": float(_quantize_usd(state.total_cost_usd)),
+        }
+        state.entries.append(event)
+        if state.total_cost_usd > state.max_cost_usd:
+            state.cost_abort_triggered = True
+            state.abort_reason = (
+                f"cost_cap_exceeded total_cost_usd={float(_quantize_usd(state.total_cost_usd))} "
+                f"max_cost_usd={float(state.max_cost_usd)}"
+            )
+        _write_spend_ledger_snapshot(state)
+        updated = dict(meta)
+        updated["spend_ledger_recorded"] = True
+        updated["cost_event"] = dict(event)
+        updated["cost_cap"] = {
+            "max_cost_usd": float(state.max_cost_usd),
+            "total_cost_usd": float(_quantize_usd(state.total_cost_usd)),
+            "cost_abort_triggered": state.cost_abort_triggered,
+            "abort_reason": state.abort_reason,
+        }
+        if state.cost_abort_triggered:
+            updated["failure_type"] = "cost_aborted"
+            updated["provider_error_reason"] = state.abort_reason
+        return updated
 
 
 def write_step_metrics_snapshot(
@@ -4666,6 +5020,7 @@ def write_run_manifest(
             "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
             "run_id_override": args.run_id,
             "run_id_source": run_context.source,
+            "max_cost_usd": args.max_cost_usd,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
                 f"implicit({layout.latest_run_file})",
@@ -4816,6 +5171,27 @@ def update_run_manifest_promptset_block(
     payload["blocked"] = _blocked_promptset_payload(prompt_report, at="phase_execution")
     payload["prompt_hash_mode"] = PROMPT_HASH_MODE
     payload["promptset_sha256"] = None
+    payload["updated_at"] = now_iso()
+    write_json(manifest_path, payload)
+
+
+def update_run_manifest_startup_failure(
+    run_root: Path,
+    *,
+    failure_reason: str,
+    failure_message: str,
+) -> None:
+    manifest_path = run_root / "RUN_MANIFEST.json"
+    payload: Dict[str, Any] = {}
+    if manifest_path.exists():
+        try:
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except Exception:
+            payload = {}
+    payload["run_status"] = "FAILED"
+    payload["phase_status"] = "startup_failed"
+    payload["failure_reason"] = str(failure_reason or "").strip() or "startup_failed"
+    payload["failure_message"] = str(failure_message or "").strip() or "Startup failed."
     payload["updated_at"] = now_iso()
     write_json(manifest_path, payload)
 
@@ -5672,6 +6048,7 @@ def get_required_artifact_status(
 def collect_provider_routes(
     phases: List[str],
     routing_policy: str,
+    selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
 ) -> Dict[str, Dict[str, str]]:
     summary = derive_route_readiness_summary(phases, routing_policy)
     return {
@@ -8272,6 +8649,37 @@ def call_llm(
             },
         }
 
+    with _SPEND_TRACKER_LOCK:
+        spend_aborted = bool(
+            _ACTIVE_SPEND_TRACKER is not None
+            and _ACTIVE_SPEND_TRACKER.cost_abort_triggered
+        )
+    if spend_aborted:
+        return {
+            "ok": False,
+            "text": "",
+            "meta": _cost_abort_failure_meta(
+                provider=provider,
+                model_id=model_id,
+                api_key_env=api_key_env,
+                base_url=base_url,
+                request_payload_bytes=request_payload_bytes,
+                request_payload_bytes_mode=request_payload_bytes_mode,
+                sent_header_keys=sent_header_keys,
+                auth_flags=auth_flags,
+                transport=transport,
+                gemini_mode_requested=gemini_mode_requested,
+                gemini_mode_effective=(
+                    effective_mode if provider == "gemini" else None
+                ),
+                gemini_family=gemini_family,
+                auth_mode_sequence=(
+                    auth_mode_sequence if provider == "gemini" else None
+                ),
+                structured_output=structured_output,
+            ),
+        }
+
     last_failure_meta: Dict[str, Any] = {
         "provider": provider,
         "model_id": model_id,
@@ -8708,7 +9116,14 @@ def enrich_request_meta(
     enriched.setdefault("execution_mode", "sync")
     enriched.setdefault("batch_provider", None)
     enriched.setdefault("batch_job_id", None)
-    return enriched
+    return record_request_cost(
+        enriched,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=str(enriched.get("provider") or provider),
+        model_id=str(enriched.get("model_id") or model_id),
+    )
 
 
 def call_llm_with_ladder(
@@ -18484,6 +18899,12 @@ def main() -> None:
     parser.add_argument("--debug-phase-inputs", action="store_true")
     parser.add_argument("--fail-fast-missing-inputs", action="store_true")
     parser.add_argument("--run-id", type=str)
+    parser.add_argument(
+        "--max-cost-usd",
+        type=float,
+        default=None,
+        help="Hard per-run live spend cap in USD. Requires pricing coverage and partition_workers=1.",
+    )
     parser.add_argument("--no-write-latest", action="store_true")
     parser.add_argument("--write-latest-even-on-dry-run", action="store_true")
     parser.add_argument(
@@ -18630,6 +19051,8 @@ def main() -> None:
     preset_preview: Optional[Dict[str, Any]] = None
     if args.preset == FIRST_LIVE_PRESET_NAME:
         preset_phase_sequence, preset_preview = apply_first_live_preset(args, raw_argv)
+    if args.max_cost_usd is not None and args.max_cost_usd <= 0:
+        parser.error("--max-cost-usd must be > 0 when provided.")
     
     router = None
     if args.prescan:
@@ -18815,8 +19238,8 @@ def main() -> None:
             ),
             webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
             webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
-            live_ok=bool(args.execute and _env_is_truthy(DPMX_LIVE_OK_ENV)),
-            max_cost_usd=getattr(args, "max_cost_usd", None),
+            live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+            max_cost_usd=args.max_cost_usd,
             selected_execution_step=selected_execution_step,
             d0_max_files=args.d0_max_files,
             d1_max_files=args.d1_max_files,
@@ -19470,6 +19893,24 @@ def main() -> None:
                 logger.warning("Prescan dir exists but router failed to load: %s", _prescan_path)
         else:
             logger.warning("Prescan dir not found: %s", _prescan_path)
+
+    reset_spend_tracker()
+    if cfg.max_cost_usd is not None:
+        try:
+            initialize_spend_tracker(
+                run_root=dirs["root"],
+                run_id=run_id,
+                cfg=cfg,
+                phases=phases,
+            )
+        except Exception as exc:
+            update_run_manifest_startup_failure(
+                dirs["root"],
+                failure_reason="cost_cap_setup_failed",
+                failure_message=str(exc),
+            )
+            logger.error("Cost cap setup failed: %s", exc)
+            sys.exit(1)
 
     runners = {
         "A": run_phase_A,
