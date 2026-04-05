@@ -1,0 +1,17 @@
+git status --short
+# Output:
+# D docs/05-audit-reports/...
+# D services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py
+# ?? .codex-tmp-doc-placement/
+# ?? .codex-worktrees/
+# ?? LIVE_LOG.txt
+# ?? reports/repo-truth-extractor/
+
+python services/repo-truth-extractor/validate_pre_live_gate_v25.py --target-policy balanced_xai --target-phases A --allow-online-preflight
+# Output: (OpenRouter 401, xAI 200, Verdict: NO_GO_EXTERNAL but GO_NOW for xAI policy)
+
+python services/repo-truth-extractor/extraction_hygiene.py scan
+# Output: HYGIENE_SCAN_RESULT: warnings=10238 errors=0 noise_paths=2886 version_path_issues=0 resume_state_issues=7352
+
+python scripts/repo_truth_extractor_promptset_audit_v4.py
+# Output: { "status": "PASS", "prompt_count": 127, ... }
