@@ -3055,11 +3055,8 @@ def load_pricing_registry(path: Path = PRICING_CONFIG_PATH) -> Tuple[Dict[str, D
             "input_cost_per_m": input_cost,
             "output_cost_per_m": output_cost,
         }
-<<<<<<< HEAD
-=======
     from lib.promptgen.hashing import sha256_text
     return registry, sha256_text(path.read_text(encoding="utf-8"))
->>>>>>> 4d91d39bf (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
 
 
 def extract_usage_summary(provider: str, response_obj: Any, response_json: Optional[Dict[str, Any]]) -> Optional[Dict[str, int]]:
@@ -16838,11 +16835,8 @@ def write_resume_proof(
                 missing = c_payload.get("missing_required_artifacts", [])
                 missing_total += len(missing)
                 phase_statuses[phase] = c_payload.get("status", "UNKNOWN")
-<<<<<<< HEAD
-=======
             except Exception:
                 pass
->>>>>>> 4d91d39bf (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
 
     run_status = compute_run_status(
         blocked_promptset=blocked_promptset,
@@ -16856,8 +16850,6 @@ def write_resume_proof(
         "run_id": run_id,
         "active_phases": active_phases,
         "resume_status": "ready" if run_status == "OK" else "blocked",
-<<<<<<< HEAD
-=======
         "run_status": run_status,
         "cost_abort_triggered": cost_abort_triggered,
         "totals": {
@@ -16865,7 +16857,6 @@ def write_resume_proof(
             "recomputed_partitions": total_recomputed,
         },
         "phases": per_phase,
->>>>>>> 4d91d39bf (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
         "prompt_hash_mode": promptset["prompt_hash_mode"],
         "promptset_sha256": promptset["promptset_sha256"],
         "prompt_hashes": promptset["prompt_hashes"],
