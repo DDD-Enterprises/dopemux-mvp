@@ -196,7 +196,7 @@ def test_retries_and_escalations_count_as_additional_model_usage(tmp_path: Path)
     assert phase_row.models["openai/gpt-5-mini"].usage_count == 2
 
 
-def test_batch_watch_cost_breach_stops_after_first_result(
+def test_forced_breach_blocks_all_later_batch_watch_calls(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -269,13 +269,18 @@ def test_batch_watch_cost_breach_stops_after_first_result(
         def __init__(self) -> None:
             self.polled: list[str] = []
             self.fetched: list[str] = []
+            self.post_breach_call_count = 0
 
         def poll(self, job_id: str) -> str:
             self.polled.append(job_id)
+            if job_id != "job-1":
+                self.post_breach_call_count += 1
             return "completed"
 
         def fetch_results(self, job_id: str):
             self.fetched.append(job_id)
+            if job_id != "job-1":
+                self.post_breach_call_count += 1
             if job_id == "job-1":
                 return [
                     runner.BatchResult(
@@ -336,4 +341,6 @@ def test_batch_watch_cost_breach_stops_after_first_result(
 
     assert (raw_dir / "A1__A_P0001.json").exists()
     assert not (raw_dir / "A1__A_P0002.json").exists()
+    assert fake_client.polled == ["job-1"]
     assert fake_client.fetched == ["job-1"]
+    assert fake_client.post_breach_call_count == 0
