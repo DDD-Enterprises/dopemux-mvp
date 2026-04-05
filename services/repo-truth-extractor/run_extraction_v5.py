@@ -2754,7 +2754,6 @@ def build_pre_live_validator_command(
     target_policy: str,
     target_phases: Sequence[str],
     allow_online_preflight: bool,
-    target_step: Optional[str] = None,
 ) -> List[str]:
     cmd = [
         sys.executable,
@@ -2762,8 +2761,6 @@ def build_pre_live_validator_command(
         "--target-policy",
         str(target_policy),
     ]
-    if target_step:
-        cmd.extend(["--step", str(target_step)])
     normalized_phases = [
         str(phase).strip().upper() for phase in target_phases if str(phase).strip()
     ]
@@ -2838,16 +2835,10 @@ def enforce_pre_live_validator_for_execution(
     args: argparse.Namespace,
     phase_sequence: Sequence[str],
 ) -> Dict[str, Any]:
-    if not _env_is_truthy(DPMX_LIVE_OK_ENV):
-        return {
-            "verdict": "SKIPPED_NO_CONSENT",
-            "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
-        }
     cmd = build_pre_live_validator_command(
         target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
         target_phases=_validator_phase_targets(args, phase_sequence),
         allow_online_preflight=True,
-        target_step=getattr(args, "step", None),
     )
     proc = subprocess.run(
         cmd,
