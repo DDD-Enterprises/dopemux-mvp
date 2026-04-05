@@ -10171,33 +10171,10 @@ def _sanitize_provenance_for_logging(finalized: Dict[str, Any]) -> Dict[str, Any
     """
     Return a copy of the provenance/finalized dict containing only fields that
     are explicitly considered safe for logging.
-
-    # Avoid logging raw numeric deltas derived from potentially tainted text;
-    # instead, log only the sign of the delta as a coarse summary.
-    delta = finalized.get("chars_delta", 0)
-    try:
-        delta_int = int(delta)
-    except Exception:
-        delta_int = 0
-    if delta_int > 0:
-        delta_sign = "positive"
-    elif delta_int < 0:
-        delta_sign = "negative"
-    else:
-        delta_sign = "zero"
-    # Coerce chars_delta to an int primitive to avoid ever logging tainted text.
-        "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta_sign=%s",
-    try:
-        chars_delta = int(chars_delta or 0)
-    except Exception:
-        chars_delta = 0
-        _safe_log_value(delta_sign),
-    entries (e.g. API keys, env-var names) to the provenance, they will be
-    filtered out before reaching any log sinks.
     """
     # Explicit allow-list of non-sensitive fields we expect in finalized
     allowed_keys = {
-        chars_delta,
+        "phase",
         "step_id",
         "partition_id",
         "provider",
@@ -12887,7 +12864,6 @@ def execute_step_for_partitions(
             ]
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
-            parse_json_from_response(response_text_local)
             parsed, provenance = parse_json_from_response_with_provenance(
                 response_text_local
             )
@@ -13778,7 +13754,6 @@ def execute_step_for_partitions(
                     strict_error is not None
                     and _is_semantic_eof_eligible(strict_error, strict_candidate)
                 )
-                parse_json_from_response(response_text_local)
                 parsed, provenance = parse_json_from_response_with_provenance(
                     response_text_local
                 )
@@ -16745,7 +16720,6 @@ def write_coverage_rollup(
             blocked_promptset=blocked_promptset,
             missing_required_artifacts_total=missing_total,
             phase_statuses={p: v["status"] for p, v in phase_rollup.items()},
-            cost_abort_triggered=cost_abort_triggered,
         ),
         "blocked_reason": PROMPTSET_BLOCKED_REASON if blocked_promptset else None,
         "blocked_promptset": blocked_promptset,
