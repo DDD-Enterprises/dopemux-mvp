@@ -2958,8 +2958,7 @@ def compute_run_status(
     cost_abort_triggered: bool = False,
 ) -> str:
     if cost_abort_triggered:
-        return "COST_ABORTED"
-    if blocked_promptset:
+        return "COST_ABORTED"    if blocked_promptset:
         return "BLOCKED"
     if missing_required_artifacts_total > 0:
         return "BLOCKED"
@@ -2981,14 +2980,7 @@ def update_run_manifest_status(
         cost_abort_triggered = bool(
             _ACTIVE_SPEND_TRACKER is not None
             and _ACTIVE_SPEND_TRACKER.cost_abort_triggered
-        )
-    manifest_path = run_root / "RUN_MANIFEST.json"
-    status = compute_run_status(
-        blocked_promptset=blocked_promptset,
-        missing_required_artifacts_total=missing_required_artifacts_total,
-        phase_statuses=phase_statuses,
-        cost_abort_triggered=cost_abort_triggered,
-    )
+        )    )
     if manifest_path.exists():
         try:
             payload = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -10008,120 +10000,7 @@ def parse_json_from_response_with_provenance(
 ) -> Tuple[Optional[Any], Dict[str, Any]]:
     # NOTE: Provenance is intentionally limited to non-sensitive metadata such as
     # lengths and boolean flags. Do NOT add raw model responses, API keys, env-var
-    # names, or any other secrets here, because provenance flows into logging.
-    provenance = {
-        "repair_applied": False,
-        "repair_type": None,
-        "original_response_length": len(text) if text else 0,
-        "repaired_response_length": len(text) if text else 0,
-        "chars_lost": 0,
-        "chars_delta": 0,
-    }
-    if not text:
-        return None, provenance
-
-    stripped = text.strip()
-    if not stripped:
-        return None, provenance
-
-    # 1) strict parse
-    try:
-        return json.loads(stripped), provenance
-    except json.JSONDecodeError:
-        pass
-    except Exception:
-        pass
-
-    # 2) defenced parse
-    defenced = _strip_outer_json_fence(stripped)
-    if defenced and defenced != stripped:
-        try:
-            parsed = json.loads(defenced)
-            provenance.update(
-                {
-                    "repair_applied": True,
-                    "repair_type": "strip_outer_json_fence",
-                    "repaired_response_length": len(defenced),
-                    "chars_delta": len(defenced) - len(stripped),
-                }
-            )
-            return parsed, provenance
-        except Exception:
-            pass
-
-    # 3) first fenced block only
-    fenced_block = _extract_first_fenced_json_block(stripped)
-    if fenced_block and fenced_block != stripped:
-        try:
-            parsed = json.loads(fenced_block)
-            provenance.update(
-                {
-                    "repair_applied": True,
-                    "repair_type": "extract_first_fenced_json_block",
-                    "repaired_response_length": len(fenced_block),
-                    "chars_delta": len(fenced_block) - len(stripped),
-                }
-            )
-            return parsed, provenance
-        except Exception:
-            pass
-
-    # 4) prose-plus-object salvage (deterministic single-object only)
-    salvaged_object = extract_first_json_object(stripped)
-    if salvaged_object and salvaged_object != stripped:
-        try:
-            parsed = json.loads(salvaged_object)
-            provenance.update(
-                {
-                    "repair_applied": True,
-                    "repair_type": "extract_first_json_object",
-                    "repaired_response_length": len(salvaged_object),
-                    "chars_delta": len(salvaged_object) - len(stripped),
-                }
-            )
-            return parsed, provenance
-        except Exception:
-            pass
-
-    # 5) balanced repair parse (semantic EOF eligible only)
-    try:
-        json.loads(stripped)
-    except json.JSONDecodeError as exc:
-        if _is_semantic_eof_eligible(exc, stripped):
-            repaired = try_repair_json_truncation(stripped, exc)
-            if repaired:
-                try:
-                    parsed = json.loads(repaired)
-                    provenance.update(
-                        {
-                            "repair_applied": True,
-                            "repair_type": "try_repair_json_truncation",
-                            "repaired_response_length": len(repaired),
-                            "chars_delta": len(repaired) - len(stripped),
-                        }
-                    )
-                    return parsed, provenance
-                except Exception:
-                    pass
-
-    return None, provenance
-
-
-def finalize_response_parse_provenance(
-    provenance: Dict[str, Any],
-    *,
-    phase: str,
-    step_id: str,
-    partition_id: str,
-    provider: str,
-    model_id: str,
-    contract_lane: str,
-    accepted: bool,
-) -> Dict[str, Any]:
-    # Only copy through and add non-sensitive identifiers / booleans here.
-    # Do NOT attach secrets such as API keys, env-var names, or raw response
-    # bodies, because this structure may be logged for debugging.
-    finalized = dict(provenance)
+    # names, or any other secrets here, because provenance flows into logging.    finalized = dict(provenance)
     finalized.update(
         {
             "phase": phase,
@@ -10218,8 +10097,7 @@ def parse_json_from_response(
         metadata_out.clear()
         metadata_out.update(provenance)
         metadata_out["truncation_salvage"] = bool(provenance.get("repair_applied"))
-        metadata_out["lossy"] = bool(provenance.get("repair_applied"))
-    return parsed
+        metadata_out["lossy"] = bool(provenance.get("repair_applied"))    return parsed
 
 
 def _format_line_numbered_content(content: str, file_truncate_chars: int) -> str:
@@ -16712,7 +16590,10 @@ def write_coverage_rollup(
             blocked_promptset=blocked_promptset,
             missing_required_artifacts_total=missing_total,
             phase_statuses={p: v["status"] for p, v in phase_rollup.items()},
+<<<<<<< HEAD
             cost_abort_triggered=cost_abort_triggered,
+=======
+>>>>>>> 8be6704f8 (feat(repo-truth-extractor): implement JSON repair provenance tracking and unify run status)
         ),
         "blocked_reason": PROMPTSET_BLOCKED_REASON if blocked_promptset else None,
         "blocked_promptset": blocked_promptset,
