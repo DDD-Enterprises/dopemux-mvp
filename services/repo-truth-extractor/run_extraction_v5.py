@@ -6538,17 +6538,11 @@ def run_provider_preflight(
         if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
         is not None
     }
-    if selected_step_ids_by_phase:
-        provider_routes = collect_provider_routes(
-            phases=phases,
-            routing_policy=cfg.routing_policy,
-            selected_step_ids_by_phase=selected_step_ids_by_phase,
-        )
-    else:
-        provider_routes = collect_provider_routes(
-            phases=phases,
-            routing_policy=cfg.routing_policy,
-        )
+    provider_routes = collect_provider_routes(
+        phases=phases,
+        routing_policy=cfg.routing_policy,
+        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+    )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
