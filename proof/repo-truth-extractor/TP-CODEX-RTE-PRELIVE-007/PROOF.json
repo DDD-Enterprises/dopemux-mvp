@@ -1,0 +1,72 @@
+{
+  "packet_id": "TP-CODEX-RTE-PRELIVE-007",
+  "branch": "codex/rte-prelive-007-artifact-truth-revalidation",
+  "code_under_test_sha": "d710e8cce5e3c6cc02366928f88eadfdb8246089",
+  "proof_bundle_sha": "",
+  "bounded_target": {
+    "phase": "A",
+    "step": "A2",
+    "routing_policy": "balanced_grok_openrouter"
+  },
+  "validator_verdict_before_run": "NO_GO",
+  "live_run_attempted": false,
+  "live_run_command": "",
+  "max_cost_usd": 0.1,
+  "live_run_outcome": "NOT_ATTEMPTED",
+  "raw_truth_check": {
+    "failure_index_consistent": false,
+    "raw_failures_consistent": false
+  },
+  "artifact_truth_check": {
+    "all_consistent": false,
+    "contradictions": [
+      "Current validator CLI rejects --step A2.",
+      "Current validator scope for phase A is not bounded to A2 and includes active OpenRouter routes outside A2.",
+      "Current validator authority therefore no longer matches the packet's bounded revalidation contract."
+    ]
+  },
+  "spend_truth_check": {
+    "ledger_written": false,
+    "cap_active": false,
+    "cap_enforced_as_expected": false,
+    "post_breach_calls_observed": null
+  },
+  "repair_truth_check": {
+    "repair_events_observed": 0,
+    "degraded_visibility_correct": false
+  },
+  "defects_found": [
+    "Pre-live validator contract drift: removed --step support and widened phase-A scope to include blocking OpenRouter routes outside A2."
+  ],
+  "defects_fixed": [],
+  "final_operator_verdict": "BLOCKED_BY_ENV",
+  "tests_run": [
+    "python services/repo-truth-extractor/validate_pre_live_gate_v25.py --help",
+    "env XAI_API_KEY='<masked>' python services/repo-truth-extractor/validate_pre_live_gate_v25.py --target-policy balanced_grok_openrouter --target-phases A --allow-online-preflight",
+    "python services/repo-truth-extractor/extraction_hygiene.py scan",
+    "python scripts/repo_truth_extractor_promptset_audit_v4.py"
+  ],
+  "test_results": {
+    "validator_help": "no --step support",
+    "validator_recheck": "NO_GO",
+    "hygiene_scan": "warnings=10242 errors=0",
+    "promptset_audit": "PASS"
+  },
+  "files_touched": [
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/PROOF.json",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/IMPLEMENTER_REPORT.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/bounded_validator_recheck.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/live_revalidation_plan.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/live_run_execution_record.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/artifact_truth_audit.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/spend_truth_audit.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/repair_truth_audit.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/final_operator_verdict.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/verification_commands.txt"
+  ],
+  "residual_risks": [
+    "TP007 did not produce a fresh live run, so the TP006 artifact-truth fix remains unvalidated on this checkout.",
+    "Branch creation failed due environment permissions, so the requested branch name is recorded but not active."
+  ],
+  "verdict": "FAIL"
+}
