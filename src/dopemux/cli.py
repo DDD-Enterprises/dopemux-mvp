@@ -2457,7 +2457,7 @@ def start(
                         "[text.dim]✅ Instance marked as stopped[/text.dim]"
                     )
 
-            ctx.invoke(save)
+            ctx.invoke(cli.commands["save"])
             attention_monitor.stop_monitoring()
 
 
@@ -2514,41 +2514,6 @@ def _trigger_dope_context_autoindex_startup(
             "error": str(exc),
             "endpoint": endpoint,
         }
-
-
-@cli.command()
-@click.option("--message", "-m", help="📜 Signal Note: Attach a descriptive message to the saved temporal coordinate.")
-@click.option("--force", "-f", is_flag=True, help="⚡ Force Extraction: Overwrite safety interlocks and capture state even if no changes are detected.")
-@click.pass_context
-def save(ctx, message: Optional[str], force: bool):
-    """
-    💾 Archive Context: Save current development mental model
-
-    Captures the active state of the flight-deck, including open artifacts, 
-    cursor coordinates, and cognitive decisions. Stores this snapshot in 
-    the ritual ledger for future temporal restoration.
-    """
-    project_path = Path.cwd()
-
-    if not (project_path / ".dopemux").exists():
-        console.logger.info(
-            "[error]No Dopemux project found in current directory[/error]"
-        )
-        sys.exit(1)
-
-    with branded_progress(console=console) as progress:
-        task = progress.add_task("Saving context...", total=None)
-
-        context_manager = ContextManager(project_path)
-        session_id = context_manager.save_context(message=message, force=force)
-
-        progress.update(task, description="Context saved!", completed=True)
-
-    console.logger.info(
-        f"[success]✅ Context saved (session: {session_id[:8]})[/success]"
-    )
-    if message:
-        console.logger.info(f"[text.dim]Note: {message}[/text.dim]")
 
 
 @cli.command()
