@@ -82,3 +82,39 @@ Output:
 Command: git switch -c codex/rte-recovery-uncommitted-001
 Output:
 fatal: cannot lock ref 'refs/heads/codex/rte-recovery-uncommitted-001': sandbox denied write to .git refs
+
+Command: pytest -q services/repo-truth-extractor/tests/ -k "spend or validator or repair or cost_cap or phase_execution_step_filter"
+Output:
+.................................                                        [100%]
+
+Command: git status --short
+Output:
+ D docs/05-audit-reports/ADR-197-P0-STAGE1-STAGE2-IMPLEMENTATION-PR-PLAN-2026-02-06.md
+ D docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md
+ D docs/05-audit-reports/COMPLETE-AUDIT-SUMMARY-2025-10-16.md
+ D docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY.md
+ D docs/05-audit-reports/EXHAUSTIVE-AUDIT-PLAN.md
+ D docs/05-audit-reports/FINAL-AUDIT-REPORT-2025-10-16.md
+ D docs/05-audit-reports/FINAL-AUDIT-REPORT.md
+ D docs/05-audit-reports/OPTIMIZED-AUDIT-PLAN.md
+ D docs/05-audit-reports/PHASE-1-COMPLETE.md
+ D docs/05-audit-reports/PHASE-3-REMAINING-SERVICES-QUICK-SCAN.md
+ D docs/05-audit-reports/PHASE-4-DOCUMENTATION-VALIDATION-COMPLETE.md
+ D docs/05-audit-reports/PHASE-6-INTEGRATION-TESTS-ASSESSMENT.md
+ D docs/05-audit-reports/PLAN.md
+ D docs/05-audit-reports/ROADMAP-REMAINING-WORK.md
+ D docs/05-audit-reports/START-HERE-NEXT-SESSION.md
+ D docs/05-audit-reports/ULTIMATE-AUDIT-COMPLETION-2025-10-16.md
+ M services/repo-truth-extractor/run_extraction_v5.py
+ ?? .codex-tmp-doc-placement/
+ ?? .codex-worktrees/
+ ?? LIVE_LOG.txt
+ ?? LIVE_LOG_2.txt
+ ?? LIVE_LOG_3.txt
+ ?? LIVE_LOG_FINAL.txt
+ ?? config/pricing.yaml
+ ?? llm-plans/STABILIZE_PR384_EXTRACTOR_TESTS.md
+ ?? llm-plans/TP-GIT-CONSOLIDATION-0009-STABILIZATION.md
+ ?? reports/repo-truth-extractor/
+ ?? services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py
+ ?? services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py
