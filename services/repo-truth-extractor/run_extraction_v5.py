@@ -2754,17 +2754,7 @@ def build_pre_live_validator_command(
     target_policy: str,
     target_phases: Sequence[str],
     allow_online_preflight: bool,
-    target_step: Optional[str] = None,
-) -> List[str]:
-    cmd = [
-        sys.executable,
-        str(RUNNER_SERVICE_DIR / "validate_pre_live_gate_v25.py"),
-        "--target-policy",
-        str(target_policy),
-    ]
-    if target_step:
-        cmd.extend(["--step", str(target_step)])
-    normalized_phases = [
+    target_step: Optional[str] = None,    normalized_phases = [
         str(phase).strip().upper() for phase in target_phases if str(phase).strip()
     ]
     if normalized_phases:
@@ -2842,13 +2832,7 @@ def enforce_pre_live_validator_for_execution(
         return {
             "verdict": "SKIPPED_NO_CONSENT",
             "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
-        }
-    cmd = build_pre_live_validator_command(
-        target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
-        target_phases=_validator_phase_targets(args, phase_sequence),
-        allow_online_preflight=True,
-        target_step=getattr(args, "step", None),
-    )
+        }    )
     proc = subprocess.run(
         cmd,
         cwd=str(root),
