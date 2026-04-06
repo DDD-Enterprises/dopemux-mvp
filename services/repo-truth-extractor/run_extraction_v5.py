@@ -6530,11 +6530,17 @@ def run_provider_preflight(
         if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
         is not None
     }
-    provider_routes = collect_provider_routes(
-        phases=phases,
-        routing_policy=cfg.routing_policy,
-        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
-    )
+    if selected_step_ids_by_phase:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+            selected_step_ids_by_phase=selected_step_ids_by_phase,
+        )
+    else:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+        )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -12885,6 +12891,7 @@ def execute_step_for_partitions(
             ]
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
+            parse_json_from_response(response_text_local)
             parsed, provenance = parse_json_from_response_with_provenance(
                 response_text_local
             )
@@ -13775,6 +13782,7 @@ def execute_step_for_partitions(
                     strict_error is not None
                     and _is_semantic_eof_eligible(strict_error, strict_candidate)
                 )
+                parse_json_from_response(response_text_local)
                 parsed, provenance = parse_json_from_response_with_provenance(
                     response_text_local
                 )
