@@ -20,10 +20,12 @@ from urllib.parse import urlparse
 
 import yaml
 
+SERVICE_DIR = Path(__file__).resolve().parent
+if str(SERVICE_DIR) not in sys.path:
+    sys.path.insert(0, str(SERVICE_DIR))
+
 from output_safety import sanitize_text_for_output, sanitized_json_bytes, sanitized_json_text
 
-
-SERVICE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SERVICE_DIR.parents[1]
 RUNNER_PATH = SERVICE_DIR / "run_extraction_v5.py"
 CONTRACT_MAP_PATH = SERVICE_DIR / "lib" / "phase_contract_map.py"
@@ -120,11 +122,11 @@ class GateConfig:
     target_mode: str
     target_profile: str
     target_phases: Tuple[str, ...]
-    target_step: Optional[str]
-    allow_online_preflight: bool
-    pal_validation_file: Optional[Path]
-    waiver_codes: Tuple[str, ...]
-    required_direct_providers: Tuple[str, ...]
+    target_step: Optional[str] = None
+    allow_online_preflight: bool = False
+    pal_validation_file: Optional[Path] = None
+    waiver_codes: Tuple[str, ...] = ()
+    required_direct_providers: Tuple[str, ...] = ()
 
 
 @dataclass
@@ -165,6 +167,26 @@ def now_iso() -> str:
 def sha256_file(path: Path) -> str:
     with path.open("rb") as handle:
         return hashlib.file_digest(handle, "sha256").hexdigest()
+
+
+def classify_truth_split_row(
+    *,
+    step_id: str,
+    runner_active: bool,
+    prompt_resolution_active: bool,
+    promptset_declared: bool,
+    model_map_declared: bool,
+    artifact_declarations_present: bool,
+) -> str:
+    if runner_active and not prompt_resolution_active:
+        return "STALE_RUNNER_REGISTRY"
+    if not prompt_resolution_active and promptset_declared:
+        return "STALE_PROMPTSET"
+    if prompt_resolution_active and not model_map_declared:
+        return "STALE_MODEL_MAP"
+    if prompt_resolution_active and not artifact_declarations_present:
+        return "STALE_ARTIFACT_MAP"
+    return "MATCH"
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -374,6 +396,7 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
             volatile_keys=CONTRACT_MAP_VOLATILE_KEYS,
         ),
     }
+    return scope
 
 
 def evaluate_import_cli_smoke(config: GateConfig) -> Tuple[Dict[str, Any], List[Blocker]]:
@@ -1176,7 +1199,10 @@ def render_summary(
     return "\n".join(lines) + "\n"
 
 
-def run_gate(config: GateConfig, args: argparse.Namespace) -> Dict[str, Any]:
+def run_gate(
+    config: GateConfig,
+    args: Optional[argparse.Namespace] = None,
+) -> Dict[str, Any]:
     config.output_dir.mkdir(parents=True, exist_ok=True)
     runner = load_module(RUNNER_PATH, "run_extraction_v5_pre_live_gate")
     contract_module = load_module(CONTRACT_MAP_PATH, "phase_contract_map_pre_live_gate")
@@ -1260,7 +1286,7 @@ def run_gate(config: GateConfig, args: argparse.Namespace) -> Dict[str, Any]:
     all_blockers.extend(blockers)
     all_conditions.extend(conditions)
 
-    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config, args)
+    online_preflight, blockers, conditions = evaluate_online_preflight(runner, config)
     layer_payloads["online_provider_preflight"] = online_preflight
     write_json(config.output_dir / "ONLINE_PREFLIGHT_RESULTS.json", online_preflight)
     all_blockers.extend(blockers)
