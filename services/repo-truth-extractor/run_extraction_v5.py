@@ -2830,6 +2830,11 @@ def enforce_pre_live_validator_for_execution(
     args: argparse.Namespace,
     phase_sequence: Sequence[str],
 ) -> Dict[str, Any]:
+    if not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        return {
+            "verdict": "SKIPPED_NO_CONSENT",
+            "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
+        }
     cmd = build_pre_live_validator_command(
         target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
         target_phases=_validator_phase_targets(args, phase_sequence),
@@ -6266,7 +6271,11 @@ def collect_provider_routes(
     routing_policy: str,
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
 ) -> Dict[str, Dict[str, str]]:
-    summary = derive_route_readiness_summary(phases, routing_policy)
+    summary = derive_route_readiness_summary(
+        phases,
+        routing_policy,
+        selected_step_ids_by_phase=selected_step_ids_by_phase,
+    )
     return {
         str(row["route_signature"]): {
             "provider": str(row["provider"]),
@@ -6274,12 +6283,14 @@ def collect_provider_routes(
             "api_key_env": str(row["api_key_env"]),
         }
         for row in summary["routes"]
+        if str(row.get("requirement_level")) != "configured_not_required"
     }
 
 
 def derive_route_readiness_summary(
     phases: Sequence[str],
     routing_policy: str,
+    selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
 ) -> Dict[str, Any]:
     route_meta: Dict[str, Dict[str, Any]] = {}
     configured_route_meta: Dict[str, Dict[str, str]] = {}
@@ -6519,11 +6530,17 @@ def run_provider_preflight(
         if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
         is not None
     }
-    provider_routes = collect_provider_routes(
-        phases=phases,
-        routing_policy=cfg.routing_policy,
-        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
-    )
+    if selected_step_ids_by_phase:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+            selected_step_ids_by_phase=selected_step_ids_by_phase,
+        )
+    else:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+        )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -10170,8 +10187,16 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     )
 
 
-def parse_json_from_response(text: str) -> Optional[Any]:
-    parsed, _provenance = parse_json_from_response_with_provenance(text)
+def parse_json_from_response(
+    text: str,
+    metadata_out: Optional[Dict[str, Any]] = None,
+) -> Optional[Any]:
+    parsed, provenance = parse_json_from_response_with_provenance(text)
+    if isinstance(metadata_out, dict):
+        metadata_out.clear()
+        metadata_out.update(provenance)
+        metadata_out["truncation_salvage"] = bool(provenance.get("repair_applied"))
+        metadata_out["lossy"] = bool(provenance.get("repair_applied"))
     return parsed
 
 
@@ -12809,6 +12834,7 @@ def execute_step_for_partitions(
             ]
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
+            parse_json_from_response(response_text_local)
             parsed, provenance = parse_json_from_response_with_provenance(
                 response_text_local
             )
@@ -13683,6 +13709,7 @@ def execute_step_for_partitions(
                     strict_error is not None
                     and _is_semantic_eof_eligible(strict_error, strict_candidate)
                 )
+                parse_json_from_response(response_text_local)
                 parsed, provenance = parse_json_from_response_with_provenance(
                     response_text_local
                 )
@@ -19161,12 +19188,6 @@ def main() -> None:
         ),
     )
     parser.add_argument("--max-files-docs", type=int, default=35)
-    parser.add_argument(
-        "--max-cost-usd",
-        type=float,
-        default=None,
-        help="Abort if projected run cost exceeds this USD limit.",
-    )
     parser.add_argument("--max-files-code", type=int, default=20)
     parser.add_argument("--max-chars", type=int, default=650000)
     parser.add_argument("--max-request-bytes", type=int, default=200000)
