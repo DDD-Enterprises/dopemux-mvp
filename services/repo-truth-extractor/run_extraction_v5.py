@@ -2838,6 +2838,11 @@ def enforce_pre_live_validator_for_execution(
     args: argparse.Namespace,
     phase_sequence: Sequence[str],
 ) -> Dict[str, Any]:
+    if not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        return {
+            "verdict": "SKIPPED_NO_CONSENT",
+            "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
+        }
     cmd = build_pre_live_validator_command(
         target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
         target_phases=_validator_phase_targets(args, phase_sequence),
@@ -6536,11 +6541,17 @@ def run_provider_preflight(
         if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
         is not None
     }
-    provider_routes = collect_provider_routes(
-        phases=phases,
-        routing_policy=cfg.routing_policy,
-        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
-    )
+    if selected_step_ids_by_phase:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+            selected_step_ids_by_phase=selected_step_ids_by_phase,
+        )
+    else:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+        )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
