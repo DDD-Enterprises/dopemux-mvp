@@ -2830,8 +2830,7 @@ def enforce_pre_live_validator_for_execution(
         return {
             "verdict": "SKIPPED_NO_CONSENT",
             "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
-        }    )    proc = subprocess.run(        cmd,
-        cwd=str(root),
+        }    )    proc = subprocess.run(        cmd,        cwd=str(root),
         text=True,
         capture_output=True,
         check=False,
@@ -3259,7 +3258,6 @@ def record_request_cost(
         return meta
     if meta.get("failure_type") == "cost_aborted":
         # Request was never sent due to existing cap breach; skip recording
-<<<<<<< HEAD
         return meta        response_summary = meta.get("response_summary")        usage = (            dict(response_summary.get("usage"))
             if isinstance(response_summary, dict) and isinstance(response_summary.get("usage"), dict)
             else None
@@ -6491,11 +6489,17 @@ def run_provider_preflight(
         if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
         is not None
     }
-    provider_routes = collect_provider_routes(
-        phases=phases,
-        routing_policy=cfg.routing_policy,
-        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
-    )
+    if selected_step_ids_by_phase:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+            selected_step_ids_by_phase=selected_step_ids_by_phase,
+        )
+    else:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+        )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -10097,8 +10101,8 @@ def parse_json_from_response(
         metadata_out.clear()
         metadata_out.update(provenance)
         metadata_out["truncation_salvage"] = bool(provenance.get("repair_applied"))
+<<<<<<< HEAD
         metadata_out["lossy"] = bool(provenance.get("repair_applied"))    return parsed
-
 
 def _format_line_numbered_content(content: str, file_truncate_chars: int) -> str:
     lines = content.splitlines()
@@ -12734,6 +12738,7 @@ def execute_step_for_partitions(
             ]
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
+            parse_json_from_response(response_text_local)
             parsed, provenance = parse_json_from_response_with_provenance(
                 response_text_local
             )
@@ -13624,6 +13629,7 @@ def execute_step_for_partitions(
                     strict_error is not None
                     and _is_semantic_eof_eligible(strict_error, strict_candidate)
                 )
+                parse_json_from_response(response_text_local)
                 parsed, provenance = parse_json_from_response_with_provenance(
                     response_text_local
                 )
