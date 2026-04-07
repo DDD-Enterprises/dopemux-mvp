@@ -364,3 +364,8 @@ extraction/repo-truth-extractor/
 
 .gemini/
 gha-creds-*.json
+
+# Codex worktrees and temporary placement
+.codex-worktrees/
+.codex-tmp-doc-placement/
+LIVE_LOG*.txt
