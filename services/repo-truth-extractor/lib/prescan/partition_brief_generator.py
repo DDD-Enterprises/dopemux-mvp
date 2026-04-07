@@ -38,49 +38,48 @@ class PartitionBriefGenerator:
         if not partition_files:
             return ""
 
-        lines: List[str] = []
-        file_set = set(partition_files)
-
-        # Header
         hub = self._find_hub(partition_files)
         hub_label = f" | Hub: {hub}" if hub else ""
-        lines.append("=== Partition Context ===")
-        lines.append(
+        header_lines = [
+            "=== Partition Context ===",
             f"Phase: {phase_key} | {len(partition_files)} files{hub_label}"
-        )
-        lines.append("")
+        ]
 
         # Dependency flow (compact)
         flow = self._build_dependency_flow(partition_files)
-        if flow:
-            lines.append("Dependency Flow:")
-            for line in flow:
-                lines.append(f"  {line}")
-            lines.append("")
-
-        # Key signatures (ranked by PageRank)
         sig_lines = self._build_ranked_signatures(partition_files)
-        if sig_lines:
-            lines.append("Key Signatures (by importance):")
-            lines.extend(sig_lines)
-            lines.append("")
 
         # API surfaces
         api_summary = self._build_api_summary(partition_files)
-        if api_summary:
-            lines.append("API Surfaces:")
-            for line in api_summary:
-                lines.append(f"  {line}")
 
-        brief = "\n".join(lines)
+        def compose(current_sig_lines: List[str]) -> str:
+            lines: List[str] = []
+            lines.extend(header_lines)
+            lines.append("")
+            if flow:
+                lines.append("Dependency Flow:")
+                for line in flow:
+                    lines.append(f"  {line}")
+                lines.append("")
+            if current_sig_lines:
+                lines.append("Key Signatures (by importance):")
+                lines.extend(current_sig_lines)
+                lines.append("")
+            if api_summary:
+                lines.append("API Surfaces:")
+                for line in api_summary:
+                    lines.append(f"  {line}")
+            return "\n".join(lines)
+
+        brief = compose(sig_lines)
 
         # Trim to budget
         tokens = estimate_tokens(brief)
         if tokens > self.token_budget:
-            # Truncate signatures section to fit
-            while tokens > self.token_budget and sig_lines:
-                sig_lines.pop()
-                brief = "\n".join(lines[:lines.index("Key Signatures (by importance):") + 1] + sig_lines + [""])
+            trimmed_sig_lines = list(sig_lines)
+            while tokens > self.token_budget and trimmed_sig_lines:
+                trimmed_sig_lines.pop()
+                brief = compose(trimmed_sig_lines)
                 tokens = estimate_tokens(brief)
 
         return brief

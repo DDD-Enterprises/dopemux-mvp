@@ -15,6 +15,7 @@ from .code_prescan import CodePrescan
 from .dependency_graph import DependencyGraph
 from .batch_planner import BatchPlanner
 from .cost_estimator import CostEstimator
+from .incremental_cache import IncrementalCodeCache
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,9 @@ class PrescanEngine:
         start_time = time.time()
         warnings = []
         errors = []
+        incremental_cache = IncrementalCodeCache(self.config)
+        changed_files: set[str] | None = None
+        cache_payload: dict[str, Any] | None = None
 
         try:
             # 1. Walk corpus
@@ -44,10 +48,18 @@ class PrescanEngine:
             # 2. Incremental logic: Filter unchanged files if requested
             if incremental:
                 changed_files = self._get_changed_files()
-                if changed_files is not None:
-                    # In a real incremental run, we'd load previous result and merge
-                    # For now, we'll just log which ones changed
+                if changed_files is None:
+                    warning = (
+                        "Incremental change detection unavailable; running explicit full recompute and regenerating cache."
+                    )
+                    warnings.append(warning)
+                    logger.warning(warning)
+                else:
                     logger.info(f"Incremental mode: {len(changed_files)} files changed since last run.")
+                    cache_payload, cache_warning = incremental_cache.load()
+                    if cache_warning:
+                        warnings.append(cache_warning)
+                        logger.warning(cache_warning)
             
             # 3. Classify files
             logger.info("Classifying files...")
@@ -73,6 +85,10 @@ class PrescanEngine:
             if self.config.enable_code_prescan:
                 logger.info("Running code intelligence (AST analysis)...")
                 for entry in entries:
+                    cached = incremental_cache.reusable_analysis(cache_payload, entry, changed_files)
+                    if cached is not None:
+                        code_intel.append(incremental_cache.apply_cached_metrics(entry, cached))
+                        continue
                     intel = self.code_prescan.analyze_file(entry, self.config.repo_root)
                     if intel:
                         code_intel.append(intel)
@@ -86,7 +102,7 @@ class PrescanEngine:
             manifest = [e.to_dict() for e in entries]
             
             # 6a. Cost Estimation (Only if explicitly requested, though we don't have a flag for it in config yet, let's assume we do it if batch_mode or explicitly requested, or we can just keep it fast. Let's wrap in a try block)
-            if hasattr(self.config, 'cost_estimate') and self.config.cost_estimate or True:
+            if self.config.cost_estimate:
                 logger.info("Estimating extraction costs...")
                 intelligence["cost_estimate"] = self.cost_estimator.estimate(entries)
             
@@ -184,6 +200,9 @@ class PrescanEngine:
             
             if self.config.enable_code_prescan:
                 graph_path.write_text(self.dep_graph.to_json() + "\n")
+
+            if self.config.enable_code_prescan:
+                incremental_cache.write(entries, code_intel, self._get_git_sha())
             
             duration = time.time() - start_time
             
@@ -221,7 +240,8 @@ class PrescanEngine:
     def _build_intelligence_base(self, entries: list[FileEntry], code_intel: list[dict] | None = None) -> dict[str, Any]:
         """Build the basic intelligence structure."""
         included = [e for e in entries if e.include and not e.is_ghost]
-        
+        ghosts = [e for e in entries if e.is_ghost]
+
         # Summary stats
         by_class = {}
         for e in entries:
@@ -247,11 +267,38 @@ class PrescanEngine:
                     "is_latest": e.is_latest_version
                 })
 
+        lifecycle_distribution: dict[str, int] = {}
+        for e in entries:
+            stage = e.lifecycle_stage or "unknown"
+            lifecycle_distribution[stage] = lifecycle_distribution.get(stage, 0) + 1
+
+        planned_features = {
+            "proposed_adrs": sorted(e.rel_path for e in included if e.is_proposed_adr),
+            "stub_files": sorted(e.rel_path for e in included if e.has_stub_methods),
+            "todo_files": sorted(e.rel_path for e in included if e.has_todo_markers),
+            "draft_docs": sorted(e.rel_path for e in included if e.is_draft_doc),
+        }
+        compression_potential_files = sum(
+            1 for e in included if e.version_chain_id and not e.is_latest_version
+        )
+        high_churn_files = sorted(
+            e.rel_path for e in included if e.churn_score >= 2.0
+        )
+        excluded_files = sum(1 for e in entries if not e.include and not e.is_ghost)
+
         # API surfaces summary
         api_surfaces = set()
         if code_intel:
             for ci in code_intel:
                 api_surfaces.update(ci.get("api_surfaces", []))
+
+        corpus_health_score = 100
+        if entries:
+            coverage_ratio = len(included) / len(entries)
+            corpus_health_score = int(round(coverage_ratio * 100))
+            corpus_health_score -= min(compression_potential_files * 5, 20)
+            corpus_health_score -= min(len(ghosts) * 2, 10)
+            corpus_health_score = max(0, min(100, corpus_health_score))
 
         intelligence = {
             "version": "2.0.0",
@@ -260,16 +307,33 @@ class PrescanEngine:
             "corpus_summary": {
                 "total_files_scanned": len(entries),
                 "included_files": len(included),
+                "excluded_files": excluded_files,
+                "ghost_files": len(ghosts),
                 "total_included_size_bytes": sum(e.size_bytes for e in included),
                 "by_authority_class": by_class,
-                "by_extension": by_ext
+                "by_extension": by_ext,
+                "corpus_health_score": corpus_health_score,
             },
+            "lifecycle_distribution": lifecycle_distribution,
             "duplicate_groups": dup_groups,
             "version_chains": chains,
+            "version_chain_count": len(chains),
+            "compression_potential_files": compression_potential_files,
+            "ghost_files": [
+                {
+                    "path": e.rel_path,
+                    "deleted_at_sha": e.deleted_at_sha,
+                    "deleted_date": e.deleted_date,
+                    "recovery_source": e.recovery_source,
+                }
+                for e in ghosts
+            ],
+            "planned_features": planned_features,
             "extraction_hints": {
                 "skip_duplicates": [e.rel_path for e in included if e.is_duplicate],
-                "compress_candidates": [] # Will be populated by passes
-            }
+                "high_churn_files": high_churn_files,
+                "compress_candidates": [],
+            },
         }
 
         if code_intel:

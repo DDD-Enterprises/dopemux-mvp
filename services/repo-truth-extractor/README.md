@@ -225,6 +225,10 @@ The ledger remains an internal estimate based on repo-local pricing authority. I
 - Prescan is optional. It can help larger repos by reordering partition paths and adding context briefs.
 - It is safe to skip prescan for first dry-runs, small repos, and cheap validator probes.
 - Prescan has its own cost and should be treated as extra preflight work, not a free optimization.
+- Incremental prescan now exists in the prescan runtime.
+- Current cache reuse is limited to per-file code analysis.
+- Reader-facing artifacts are still fully rebuilt deterministically on every successful prescan run.
+- If incremental cache state is missing, corrupt, or incompatible, prescan emits a warning, performs a full recompute, and regenerates the cache.
 - The legacy `86400` batch wait default can leave abandoned waits behind; prefer `--batch-wait-timeout-seconds 1800` for interactive runs.
 
 ### Offline-safe envelope
