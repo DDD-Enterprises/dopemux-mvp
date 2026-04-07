@@ -1,0 +1,35 @@
+Authoritative validator evidence:
+- reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260405T090026Z/VALIDATION_SUMMARY.md
+  - Verdict: CONDITIONAL_GO
+  - Target policy: balanced_grok_openrouter
+  - Target phases: A
+  - Run ID: pre_live_gate_v25_20260405T090026Z
+  - Operator Verdict: GO_NOW
+- reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260405T090026Z/VALIDATION_SCOPE.json
+  - "target_policy": "balanced_grok_openrouter"
+  - "target_step": "A2"
+  - "required_api_key_envs": ["XAI_API_KEY"]
+- reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260405T090026Z/ONLINE_PREFLIGHT_RESULTS.json
+  - "routing_policy": "balanced_grok_openrouter"
+  - xAI reasoning probe status_code: 200
+  - xAI non-reasoning probe status_code: 200
+
+Authoritative bounded-run evidence:
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/PROOF.json
+  - "routing_policy": "balanced_grok_openrouter"
+  - live_run_command uses --routing-policy balanced_grok_openrouter
+  - live_run_outcome: COST_ABORTED
+  - final_operator_verdict: READY_FOR_MERGE_PREP
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/live_run_execution_record.md
+  - Run ID: tp_codex_rte_prelive_005_phase_a_step_a2_v13
+  - Command uses --routing-policy balanced_grok_openrouter
+
+Superseded stale evidence before repair:
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/live_execution_plan.md
+  - Routing Policy: balanced_xai
+  - Run ID: tp_codex_rte_prelive_005_phase_a_step_a2
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/bounded_live_validator_recheck.md
+  - validate_pre_live_gate_v25.py --target-policy balanced_xai --target-phases A --allow-online-preflight
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/IMPLEMENTER_REPORT.md
+  - Policy: balanced_xai
+  - Run ID: tp_codex_rte_prelive_005_phase_a_step_a2

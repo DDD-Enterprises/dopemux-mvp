@@ -1,0 +1,11 @@
+git status --short
+rg -n "balanced_(grok_openrouter|xai)|tp_codex_rte_prelive_005_phase_a_step_a2_v13|READY_FOR_MERGE_PREP|COST_ABORTED" proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/PROOF.json proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/live_execution_plan.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/bounded_live_validator_recheck.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/IMPLEMENTER_REPORT.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/final_operator_verdict.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/live_run_execution_record.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/artifact_truth_audit.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/billing_reconciliation.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/verification_commands.txt
+sed -n '1,220p' proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/PROOF.json
+sed -n '1,220p' proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/live_execution_plan.md
+sed -n '1,220p' proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/bounded_live_validator_recheck.md
+sed -n '1,220p' proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/IMPLEMENTER_REPORT.md
+sed -n '1,140p' reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260405T090026Z/VALIDATION_SUMMARY.md
+sed -n '1,120p' reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260405T090026Z/VALIDATION_SCOPE.json
+sed -n '1,140p' reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260405T090026Z/ONLINE_PREFLIGHT_RESULTS.json
+rg -n "balanced_xai|balanced_grok_openrouter|tp_codex_rte_prelive_005_phase_a_step_a2(?!_v13)|tp_codex_rte_prelive_005_phase_a_step_a2_v13" proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005 --pcre2
+git diff -- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/live_execution_plan.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/bounded_live_validator_recheck.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/IMPLEMENTER_REPORT.md proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/verification_commands.txt proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/final_operator_verdict.md

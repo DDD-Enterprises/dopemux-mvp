@@ -2734,21 +2734,9 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
 
 
 def write_json(path: Path, payload: Any) -> None:
-    sanitized_payload = sanitize_payload_for_output(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
-
-    # The payload is recursively redacted before serialization; CodeQL cannot
-    # infer that key-based sanitizer boundary for this generic writer.
-    # codeql[py/clear-text-storage-sensitive-data]
     path.write_text(
-        json.dumps(
-            sanitized_payload,
-            indent=2,
-            ensure_ascii=True,
-            sort_keys=True,
-            default=str,
-        )
-        + "\n",
+        sanitized_json_text(payload, indent=2, ensure_ascii=True, sort_keys=True) + "\n",
         encoding="utf-8",
     )
 
@@ -8875,12 +8863,12 @@ def call_llm(
         )
 
     if not api_key:
-        # The message is intentionally static; CodeQL overtaints the missing-key
-        # control-flow branch even after credential-bearing fields are removed.
-        # codeql[py/clear-text-logging-sensitive-data]
-        logger.error("Missing API key for the configured provider request.")
+        logger.error("Missing API key env var: %s", api_key_env)
         if provider == "gemini":
-            logger.error("Gemini credentials are missing in canonical repo-root env configuration.")
+            logger.error(
+                "Gemini requires GEMINI_API_KEY in repo-root .env (canonical). "
+                "GOOGLE_API_KEY is deprecated for this runner."
+            )
         return {
             "ok": False,
             "text": "",
@@ -8900,9 +8888,8 @@ def call_llm(
                     provider, model_id, endpoint_url, None
                 ),
                 "provider_error_reason": "MISSING_API_KEY_ENV",
-                # Redacted to avoid exposing authentication-related environment identifiers
-                "api_key_env_requested": "***redacted***",
-                "api_key_env_resolved": "***redacted***",
+                "api_key_env_requested": api_key_env,
+                "api_key_env_resolved": resolved_api_key_env,
                 "gemini_endpoint_family": gemini_family,
                 "gemini_auth_attempt_sequence": (
                     auth_mode_sequence if provider == "gemini" else None
@@ -10190,11 +10177,12 @@ def finalize_response_parse_provenance(
 def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     if not finalized.get("repair_applied"):
         return
-    # This warning emits only a fixed summary string and a numeric delta.
-    # CodeQL still taints the branch through the repaired payload container.
-    # codeql[py/clear-text-logging-sensitive-data]
     logger.warning(
-        "RESPONSE_PARSE_REPAIRED: degraded JSON response repaired; inspect emitted artifacts for partition metadata. delta=%d",
+        "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
+        finalized["phase"],
+        finalized["step_id"],
+        finalized["partition_id"],
+        finalized["repair_type"],
         finalized["chars_delta"],
     )
 
@@ -16770,12 +16758,7 @@ def write_resume_proof(
                 missing_total += len(missing)
                 phase_statuses[phase] = c_payload.get("status", "UNKNOWN")
             except Exception:
-                logger.warning(
-                    "Failed to parse phase coverage payload for phase %s from %s",
-                    sanitize_text_for_output(str(phase)),
-                    sanitize_text_for_output(str(coverage_path)),
-                    exc_info=True,
-                )
+                pass
 
     run_status = compute_run_status(
         blocked_promptset=blocked_promptset,
