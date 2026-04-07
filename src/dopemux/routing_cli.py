@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 
 from dopemux.launchd_services import LaunchdServiceManager
+from dopemux.routing_config import RoutingConfigError
 
 logger = logging.getLogger(__name__)
 
@@ -266,6 +267,97 @@ def config():
         
     except Exception as e:
         logger.error(f"Failed to load routing config: {e}")
+        click.echo(f"❌ Error: {e}", err=True)
+        raise
+
+
+@routing.command()
+def doctor():
+    """Audit repo-owned routing alias contract drift in routing.yaml."""
+    try:
+        manager = LaunchdServiceManager.get_instance()
+        audit = manager.routing_config.audit_alias_contract()
+
+        click.echo("🩺 Routing Alias Contract Doctor")
+        click.echo("=" * 50)
+        click.echo(f"Config:   {audit['config_path']}")
+        click.echo(f"Template: {audit['template_path']}")
+
+        if not audit["stale"]:
+            click.echo("\n✅ Alias contract matches the repo-owned template.")
+            return
+
+        click.echo("\n❌ Stale routing alias contract detected.")
+
+        missing = audit["missing_aliases"]
+        if missing:
+            click.echo("\nMissing aliases:")
+            for alias, target in missing.items():
+                click.echo(f"  - {alias}: expected {target}")
+
+        mismatched = audit["mismatched_aliases"]
+        if mismatched:
+            click.echo("\nMismatched aliases:")
+            for alias, values in mismatched.items():
+                click.echo(
+                    f"  - {alias}: expected {values['expected']}, found {values['actual']}"
+                )
+
+        click.echo("\nNext steps:")
+        click.echo("  • Preview repair: dopemux routing repair-aliases")
+        click.echo("  • Apply repair: dopemux routing repair-aliases --apply")
+        click.echo("  • Inspect config: dopemux routing config")
+        raise SystemExit(1)
+    except RoutingConfigError as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise SystemExit(2)
+    except Exception as e:
+        logger.error(f"Failed to audit routing alias contract: {e}")
+        click.echo(f"❌ Error: {e}", err=True)
+        raise
+
+
+@routing.command("repair-aliases")
+@click.option(
+    "--apply",
+    is_flag=True,
+    help="Write the repo-owned alias contract into ~/.dopemux/routing.yaml.",
+)
+def repair_aliases(apply: bool):
+    """Preview or repair stale repo-owned alias mappings explicitly."""
+    try:
+        manager = LaunchdServiceManager.get_instance()
+        audit = manager.routing_config.audit_alias_contract()
+
+        click.echo("🔧 Routing Alias Contract Repair")
+        click.echo("=" * 50)
+
+        if not audit["stale"]:
+            click.echo("✅ No alias repair needed.")
+            return
+
+        click.echo("Planned alias updates:")
+        for alias, target in audit["missing_aliases"].items():
+            click.echo(f"  - add {alias}: {target}")
+        for alias, values in audit["mismatched_aliases"].items():
+            click.echo(
+                f"  - set {alias}: {values['actual']} -> {values['expected']}"
+            )
+
+        if not apply:
+            click.echo("\nDry run only. No files changed.")
+            click.echo("Run `dopemux routing repair-aliases --apply` to write the repair.")
+            return
+
+        result = manager.routing_config.repair_alias_contract()
+        click.echo("\n✅ Alias contract repaired.")
+        click.echo(f"Backup: {result['backup_path']}")
+        click.echo(f"Updated: {manager.routing_config.config_path}")
+    except RoutingConfigError as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise SystemExit(2)
+    except Exception as e:
+        logger.error(f"Failed to repair routing alias contract: {e}")
         click.echo(f"❌ Error: {e}", err=True)
         raise
 
