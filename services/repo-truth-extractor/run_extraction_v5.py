@@ -2736,6 +2736,10 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
 def write_json(path: Path, payload: Any) -> None:
     sanitized_payload = sanitize_payload_for_output(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
+
+    # The payload is recursively redacted before serialization; CodeQL cannot
+    # infer that key-based sanitizer boundary for this generic writer.
+    # codeql[py/clear-text-storage-sensitive-data]
     path.write_text(
         json.dumps(
             sanitized_payload,
@@ -8871,11 +8875,7 @@ def call_llm(
         )
 
     if not api_key:
-        logger.error(
-            "Missing API key env var for provider=%s model=%s",
-            provider,
-            model_id,
-        )
+        logger.error("Missing API key for the configured provider request.")
         if provider == "gemini":
             logger.error("Gemini credentials are missing in canonical repo-root env configuration.")
         return {
@@ -10188,11 +10188,7 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     if not finalized.get("repair_applied"):
         return
     logger.warning(
-        "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
-        sanitize_text_for_output(str(finalized["phase"])),
-        sanitize_text_for_output(str(finalized["step_id"])),
-        sanitize_text_for_output(str(finalized["partition_id"])),
-        sanitize_text_for_output(str(finalized["repair_type"])),
+        "RESPONSE_PARSE_REPAIRED: degraded JSON response repaired; inspect emitted artifacts for partition metadata. delta=%d",
         finalized["chars_delta"],
     )
 
