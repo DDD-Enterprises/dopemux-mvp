@@ -196,7 +196,7 @@ def test_incremental_no_change_reuses_warm_cache(tmp_path: Path, monkeypatch) ->
         "src/b.py": "IMPORT src.a\n\ndef beta():\n    return 2\n",
     }
     engine, _walker, code_prescan = _make_engine(tmp_path, files)
-    monkeypatch.setattr(engine, "_get_changed_files", lambda: set())
+    monkeypatch.setattr(engine, "_get_changed_files", set)
 
     first = engine.run()
     assert first.success
@@ -294,7 +294,7 @@ def test_incremental_config_fingerprint_mismatch_forces_explicit_full_recompute(
     _patch_code_report_builder(monkeypatch)
     files = {"src/a.py": "def alpha():\n    return 1\n"}
     engine, _walker, code_prescan = _make_engine(tmp_path, files, code_languages=["python"])
-    monkeypatch.setattr(engine, "_get_changed_files", lambda: set())
+    monkeypatch.setattr(engine, "_get_changed_files", set)
 
     assert engine.run().success
 
@@ -316,7 +316,7 @@ def test_incremental_analyzer_fingerprint_mismatch_forces_explicit_full_recomput
     _patch_code_report_builder(monkeypatch)
     files = {"src/a.py": "def alpha():\n    return 1\n"}
     engine, _walker, code_prescan = _make_engine(tmp_path, files)
-    monkeypatch.setattr(engine, "_get_changed_files", lambda: set())
+    monkeypatch.setattr(engine, "_get_changed_files", set)
 
     assert engine.run().success
     cache_file = _cache_path(engine.config.output_dir)
@@ -336,7 +336,7 @@ def test_incremental_missing_cache_warns_and_recomputes_fully(tmp_path: Path, mo
     _patch_code_report_builder(monkeypatch)
     files = {"src/a.py": "def alpha():\n    return 1\n"}
     engine, _walker, code_prescan = _make_engine(tmp_path, files)
-    monkeypatch.setattr(engine, "_get_changed_files", lambda: set())
+    monkeypatch.setattr(engine, "_get_changed_files", set)
 
     result = engine.run(incremental=True)
 
@@ -350,7 +350,7 @@ def test_incremental_corrupted_cache_warns_and_recomputes_fully(tmp_path: Path, 
     _patch_code_report_builder(monkeypatch)
     files = {"src/a.py": "def alpha():\n    return 1\n"}
     engine, _walker, code_prescan = _make_engine(tmp_path, files)
-    monkeypatch.setattr(engine, "_get_changed_files", lambda: set())
+    monkeypatch.setattr(engine, "_get_changed_files", set)
 
     cache_file = _cache_path(engine.config.output_dir)
     cache_file.parent.mkdir(parents=True, exist_ok=True)
