@@ -1,0 +1,133 @@
+{
+  "packet": {
+    "title": "Task-Orchestrator Workflow Idea Write-Path Serialization Fix",
+    "objective_status": "Met",
+    "root_cause": "task-orchestrator propagated a pathlib.PosixPath workspace_id from workspace detection into the bridge-backed custom-data JSON payload, causing POST /api/workflow/ideas to fail before network dispatch",
+    "layer_fixed": "task-orchestrator producer"
+  },
+  "commit_plan": {
+    "planned_slices": [
+      {
+        "slice": 1,
+        "objective": "Reproduce and trace the live write failure"
+      },
+      {
+        "slice": 2,
+        "objective": "Implement the narrowest serialization fix"
+      },
+      {
+        "slice": 3,
+        "objective": "Validate workflow idea creation and readback"
+      },
+      {
+        "slice": 4,
+        "objective": "Finalize review, precommit, proof, and PR state"
+      }
+    ],
+    "completed_slices": [
+      {
+        "slice": 1,
+        "status": "completed",
+        "summary": "Reproduced HTTP 503 from POST /api/workflow/ideas and traced the first non-serializable object to workflow_store workspace_id"
+      },
+      {
+        "slice": 2,
+        "status": "completed",
+        "summary": "Normalized workflow store workspace_id to string and added targeted store/route regression coverage",
+        "commit_sha": "4c41dbc268d8c50e7c7a44aa50c413a94f142cc6",
+        "verification": [
+          "pytest -q services/task-orchestrator/tests/test_workflow_write_serialization.py"
+        ]
+      },
+      {
+        "slice": 3,
+        "status": "completed",
+        "summary": "Validated empty-state read, idea create success, idea readback, and adjacent epics route through the in-process ASGI runtime with a Path workspace_id input path",
+        "verification": [
+          "GET /api/workflow/ideas before -> 200 {'count': 0, 'ideas': []}",
+          "POST /api/workflow/ideas after fix -> 201 with created idea payload",
+          "GET /api/workflow/ideas after -> 200 with created item",
+          "GET /api/workflow/epics -> 200 {'count': 0, 'epics': []}"
+        ]
+      },
+      {
+        "slice": 4,
+        "status": "completed",
+        "summary": "Ran codereview, precommit, and created draft PR with proof artifact",
+        "verification": [
+          "pytest -q services/dopecon-bridge/tests/test_leantime_route_contract.py -k 'custom_data_routes_proxy_to_conport or ddg_and_custom_data_routes_proxy_to_conport'",
+          "PAL codereview completed with no remaining medium-or-higher findings",
+          "PAL precommit returned validation_complete_ready_for_commit"
+        ]
+      }
+    ],
+    "replan_events": [
+      {
+        "reason": "The existing services/task-orchestrator/tests/test_workflow.py file is stale against current runtime behavior and could not serve as packet proof",
+        "action": "Added packet-specific regression coverage instead of widening repairs to unrelated stale tests"
+      }
+    ],
+    "skipped_or_abandoned_slices": [
+      {
+        "slice": "broad shared-client serializer fallback",
+        "status": "abandoned",
+        "rationale": "Challenge and code-path inspection showed the offending value originates in task-orchestrator-owned workspace_id, so widening bridge/shared-client normalization would expand authority and mask producer drift"
+      }
+    ],
+    "merged_slices": [],
+    "commit_shas": [
+      "4c41dbc268d8c50e7c7a44aa50c413a94f142cc6"
+    ]
+  },
+  "evidence_ledger": {
+    "files_inspected": [
+      "services/task-orchestrator/app/main.py",
+      "src/dopemux/workspace_detection.py",
+      "services/task-orchestrator/app/core/coordinator.py",
+      "services/task-orchestrator/app/services/workflow_service.py",
+      "services/task-orchestrator/app/services/workflow_store.py",
+      "services/shared/dopecon_bridge_client/client.py",
+      "services/dopecon-bridge/dopecon_bridge/routes.py",
+      "services/dopecon-bridge/dopecon_bridge/clients.py",
+      "services/task-orchestrator/tests/test_workflow.py",
+      "services/dopecon-bridge/tests/test_leantime_route_contract.py"
+    ],
+    "failing_post_before_fix": {
+      "route": "POST /api/workflow/ideas",
+      "status_code": 503,
+      "detail": "Failed to upsert custom_data workflow_ideas/<generated-id>: Object of type PosixPath is not JSON serializable"
+    },
+    "traceback_anchor": "services/task-orchestrator/app/services/workflow_store.py:upsert_custom_data via AsyncDopeconBridgeClient.save_custom_data json payload encoding",
+    "offending_payload_shape": {
+      "workspace_id_type": "PosixPath",
+      "payload_keys": [
+        "workspace_id",
+        "category",
+        "key",
+        "value"
+      ]
+    },
+    "provenance": "app.main.init_coordinator -> create_plane_coordinator(get_workspace_root()) -> PlaneCoordinator(workspace_id) -> WorkflowService(workspace_id) -> WorkflowStore.workspace_id"
+  },
+  "finalization": {
+    "codereview_status": "completed",
+    "precommit_status": "completed",
+    "evidence_ledger_completeness": "complete for the reproduced serialization seam",
+    "final_confidence": "VERIFIED",
+    "residual_risks": [
+      "This packet verifies the reproduced workflow idea serialization seam and adjacent read-path behavior in targeted runtime proof; it does not prove that other unrelated services never leak non-JSON-native path-like objects elsewhere in the repo",
+      "The broader legacy services/task-orchestrator/tests/test_workflow.py file remains stale and was not repaired because it is outside this packet scope"
+    ],
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/404",
+    "merge_readiness": "draft",
+    "worktree_cleanup_status": "pending_local_removal_after_artifact_commit"
+  },
+  "tool_chain_executed": [
+    "debug",
+    "challenge",
+    "planner",
+    "codereview",
+    "precommit",
+    "challenge"
+  ]
+}
