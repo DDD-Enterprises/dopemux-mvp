@@ -2734,9 +2734,17 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
 
 
 def write_json(path: Path, payload: Any) -> None:
+    sanitized_payload = sanitize_payload_for_output(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        sanitized_json_text(payload, indent=2, ensure_ascii=True, sort_keys=True) + "\n",
+        json.dumps(
+            sanitized_payload,
+            indent=2,
+            ensure_ascii=True,
+            sort_keys=True,
+            default=str,
+        )
+        + "\n",
         encoding="utf-8",
     )
 
@@ -3047,8 +3055,11 @@ def load_pricing_registry(path: Path = PRICING_CONFIG_PATH) -> Tuple[Dict[str, D
             "input_cost_per_m": input_cost,
             "output_cost_per_m": output_cost,
         }
+<<<<<<< HEAD
+=======
     from lib.promptgen.hashing import sha256_text
     return registry, sha256_text(path.read_text(encoding="utf-8"))
+>>>>>>> 4d91d39bf (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
 
 
 def extract_usage_summary(provider: str, response_obj: Any, response_json: Optional[Dict[str, Any]]) -> Optional[Dict[str, int]]:
@@ -8863,12 +8874,13 @@ def call_llm(
         )
 
     if not api_key:
-        logger.error("Missing API key env var: %s", api_key_env)
+        logger.error(
+            "Missing API key env var for provider=%s model=%s",
+            provider,
+            model_id,
+        )
         if provider == "gemini":
-            logger.error(
-                "Gemini requires GEMINI_API_KEY in repo-root .env (canonical). "
-                "GOOGLE_API_KEY is deprecated for this runner."
-            )
+            logger.error("Gemini credentials are missing in canonical repo-root env configuration.")
         return {
             "ok": False,
             "text": "",
@@ -8888,8 +8900,9 @@ def call_llm(
                     provider, model_id, endpoint_url, None
                 ),
                 "provider_error_reason": "MISSING_API_KEY_ENV",
-                "api_key_env_requested": api_key_env,
-                "api_key_env_resolved": resolved_api_key_env,
+                # Redacted to avoid exposing authentication-related environment identifiers
+                "api_key_env_requested": "***redacted***",
+                "api_key_env_resolved": "***redacted***",
                 "gemini_endpoint_family": gemini_family,
                 "gemini_auth_attempt_sequence": (
                     auth_mode_sequence if provider == "gemini" else None
@@ -10236,11 +10249,6 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     safe = _sanitize_provenance_for_logging(finalized)
     logger.warning(
         "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
-        _safe_log_value(safe.get("phase")),
-        _safe_log_value(safe.get("step_id")),
-        _safe_log_value(safe.get("partition_id")),
-        _safe_log_value(safe.get("repair_type")),
-        safe.get("chars_delta", 0),
     )
 
 
@@ -16830,8 +16838,11 @@ def write_resume_proof(
                 missing = c_payload.get("missing_required_artifacts", [])
                 missing_total += len(missing)
                 phase_statuses[phase] = c_payload.get("status", "UNKNOWN")
-            except Exception as e:
-                logger.debug("Failed to load coverage JSON for phase %s at %s: %s", phase, coverage_path, e, exc_info=True)
+<<<<<<< HEAD
+=======
+            except Exception:
+                pass
+>>>>>>> 4d91d39bf (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
 
     run_status = compute_run_status(
         blocked_promptset=blocked_promptset,
@@ -16845,6 +16856,8 @@ def write_resume_proof(
         "run_id": run_id,
         "active_phases": active_phases,
         "resume_status": "ready" if run_status == "OK" else "blocked",
+<<<<<<< HEAD
+=======
         "run_status": run_status,
         "cost_abort_triggered": cost_abort_triggered,
         "totals": {
@@ -16852,6 +16865,7 @@ def write_resume_proof(
             "recomputed_partitions": total_recomputed,
         },
         "phases": per_phase,
+>>>>>>> 4d91d39bf (fix(repo-truth-extractor): correct narrow post-tp004 live defects)
         "prompt_hash_mode": promptset["prompt_hash_mode"],
         "promptset_sha256": promptset["promptset_sha256"],
         "prompt_hashes": promptset["prompt_hashes"],
