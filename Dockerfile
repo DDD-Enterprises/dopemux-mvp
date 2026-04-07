@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 # Legacy compatibility image for the historical `dopemux-backend` tag.
 # Repo runtime truth currently routes this image to the canonical
 # task-orchestrator FastAPI surface.
 FROM python:3.11-slim AS builder
+=======
+# Multi-stage Dockerfile for Dopemux Python backend
+# Stage 1: Builder
+FROM dhi.io/python:3.11-slim-bookworm AS builder
+>>>>>>> fd7ba8ca4 (fix(security): update Docker base images and pin core dependencies to resolve Scout blockers)
 
 WORKDIR /app
 
@@ -27,7 +33,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir .
 
 # Stage 2: Runtime
-FROM python:3.11-slim
+FROM dhi.io/python:3.11-slim-bookworm
 
 WORKDIR /app
 
