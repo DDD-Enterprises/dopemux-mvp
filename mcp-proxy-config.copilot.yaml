@@ -3,9 +3,12 @@ mcpServers:
     type: stdio
     command: docker
     args:
+      - compose
+      - -f
+      - compose.yml
       - exec
-      - -i
-      - mcp-conport_main
+      - -T
+      - conport
       - python
       - /app/conport_mcp_stdio.py
     env:
@@ -37,14 +40,17 @@ mcpServers:
     args:
       - mcp-proxy
       - --transport
-      - streamablehttp
+      - sse
       - http://127.0.0.1:3006/sse
     env: {}
   dope-context:
     type: stdio
-    command: bash
+    command: uvx
     args:
-      - services/dope-context/run_mcp.sh
+      - mcp-proxy
+      - --transport
+      - streamablehttp
+      - http://127.0.0.1:3010/mcp
     env: {}
   mas-sequential-thinking:
     type: stdio
@@ -59,17 +65,11 @@ mcpServers:
     type: stdio
     command: uvx
     args:
-      - --from
-      - git+https://github.com/BeehiveInnovations/pal-mcp-server.git
-      - pal-mcp-server
-    env:
-      OPENAI_API_KEY: "${OPENAI_API_KEY}"
-      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
-      GEMINI_API_KEY: "${GEMINI_API_KEY}"
-      XAI_API_KEY: "${XAI_API_KEY}"
-      DISABLED_TOOLS: "refactor,testgen,secaudit,docgen,tracer"
-      DEFAULT_MODEL: "auto"
-      PAL_DEFAULT_PROVIDER: "openrouter"
+      - mcp-proxy
+      - --transport
+      - sse
+      - http://127.0.0.1:3003/sse
+    env: {}
   gpt-researcher:
     type: stdio
     command: python
@@ -84,9 +84,12 @@ mcpServers:
     type: stdio
     command: docker
     args:
+      - compose
+      - -f
+      - compose.yml
       - exec
-      - -i
-      - mcp-conport_main
+      - -T
+      - conport
       - python
       - /app/conport_mcp_stdio.py
     env:
@@ -97,8 +100,8 @@ mcpServers:
     args:
       - mcp-proxy
       - --transport
-      - streamablehttp
-      - http://127.0.0.1:3007/sse
+      - sse
+      - http://127.0.0.1:3011/sse
     env: {}
   task-orchestrator:
     type: stdio
@@ -108,12 +111,10 @@ mcpServers:
     env: {}
   leantime-bridge:
     type: stdio
-    command: docker
+    command: uvx
     args:
-      - exec
-      - -i
-      - mcp-leantime-bridge
-      - python
-      - -m
-      - leantime_bridge.http_server
+      - mcp-proxy
+      - --transport
+      - sse
+      - http://127.0.0.1:3015/sse
     env: {}

@@ -90,22 +90,21 @@ container_errors=0
 
 # Infrastructure
 check_container "dopemux-postgres-age" "PostgreSQL database for knowledge graph" || ((container_errors++))
-check_container "dopemux-redis-primary" "Redis cache for MCP servers" || ((container_errors++))
+check_container "redis-primary" "Redis cache for MCP servers" || ((container_errors++))
 check_container "mcp-qdrant" "Vector database for semantic search" || ((container_errors++))
 
 # Core MCP servers
 check_container "mcp-conport" "Knowledge graph and context management" || ((container_errors++))
-check_container "mcp-zen" "Multi-model reasoning and orchestration" || ((container_errors++))
 check_container "mcp-pal" "Official documentation and API references" || ((container_errors++))
-check_container "mcp-serena" "Code navigation and LSP functionality" || ((container_errors++))
+check_container "dopemux-mcp-serena" "Code navigation and LSP functionality" || ((container_errors++))
 check_container "mcp-dope-context" "Semantic code and document search" || ((container_errors++))
 
 # Additional MCP servers
 check_container "mcp-exa" "Neural web search" || echo "⚠️  mcp-exa container not running (optional)"
-check_container "mcp-gptr-mcp" "Deep research and report generation" || echo "⚠️  mcp-gptr-mcp container not running (optional)"
-check_container "mcp-leantime-bridge" "Project management integration" || echo "⚠️  mcp-leantime-bridge container not running (optional)"
-check_container "mcp-desktop-commander" "Desktop automation" || echo "⚠️  mcp-desktop-commander container not running (optional)"
-check_container "mcp-task-orchestrator" "Task orchestration and dependencies" || echo "⚠️  mcp-task-orchestrator container not running (optional)"
+check_container "dopemux-mcp-gptr-mcp" "Deep research and report generation" || echo "⚠️  dopemux-mcp-gptr-mcp container not running (optional)"
+check_container "dopemux-mcp-leantime-bridge" "Project management integration" || echo "⚠️  dopemux-mcp-leantime-bridge container not running (optional)"
+check_container "dopemux-mcp-desktop-commander" "Desktop automation" || echo "⚠️  dopemux-mcp-desktop-commander container not running (optional)"
+check_container "task-orchestrator" "Task orchestration and dependencies" || echo "⚠️  task-orchestrator container not running (optional)"
 check_container "mcp-clear-thought" "Structured reasoning frameworks" || echo "⚠️  mcp-clear-thought container not running (optional)"
 
 # Test MCP server endpoints
@@ -120,13 +119,6 @@ test_mcp_server "PAL apilookup" "http://localhost:3003/health" "Documentation AP
 test_mcp_server "Dope Context" "http://localhost:3010/health" "Semantic search API" || ((endpoint_errors++))
 
 # Servers with SSE endpoints (check if port is open)
-if nc -z localhost 3003 2>/dev/null; then
-    echo "✅ Zen MCP server responding on port 3003"
-else
-    echo "❌ Zen MCP server not responding on port 3003"
-    ((endpoint_errors++))
-fi
-
 if nc -z localhost 3006 2>/dev/null; then
     echo "✅ Serena MCP server responding on port 3006"
 else
@@ -135,10 +127,10 @@ else
 fi
 
 # Optional servers
-if nc -z localhost 3008 2>/dev/null; then
-    echo "✅ Exa MCP server responding on port 3008"
+if nc -z localhost 3011 2>/dev/null; then
+    echo "✅ Exa MCP server responding on port 3011"
 else
-    echo "⚠️  Exa MCP server not responding on port 3008 (optional)"
+    echo "⚠️  Exa MCP server not responding on port 3011 (optional)"
 fi
 
 if nc -z localhost 3009 2>/dev/null; then
@@ -157,8 +149,8 @@ fi
 echo ""
 echo "📊 Validation Summary:"
 echo "Environment variables: $((8 - env_errors))/8 required set"
-echo "Docker containers: $((5 - container_errors))/5 core containers running"
-echo "MCP endpoints: $((5 - endpoint_errors))/5 core endpoints responding"
+echo "Docker containers: $((4 - container_errors))/4 core containers running"
+echo "MCP endpoints: $((4 - endpoint_errors))/4 core endpoints responding"
 
 if [ $env_errors -eq 0 ] && [ $container_errors -eq 0 ] && [ $endpoint_errors -eq 0 ]; then
     echo ""
