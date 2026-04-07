@@ -303,7 +303,7 @@ def test_incremental_config_fingerprint_mismatch_forces_explicit_full_recompute(
         files,
         code_languages=["python", "typescript"],
     )
-    monkeypatch.setattr(second_engine, "_get_changed_files", lambda: set())
+    monkeypatch.setattr(second_engine, "_get_changed_files", set)
 
     result = second_engine.run(incremental=True)
 
