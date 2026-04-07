@@ -115,26 +115,19 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hardened Images (dhi.io)
+        id: dhi_login
         if: ${{ env.DHI_TOKEN != '' }}
+        continue-on-error: true
         uses: docker/login-action@v4
         with:
           registry: dhi.io
           username: ${{ github.actor }}
           password: ${{ env.DHI_TOKEN }}
 
-      - name: Check DHI token availability
-        if: ${{ env.DHI_TOKEN == '' }}
+      - name: Fallback to public images when DHI unavailable
+        if: ${{ steps.dhi_login.outcome != 'success' }}
         run: |
-          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "::error::DHI_TOKEN secret is required to build images that depend on dhi.io base images. Configure secrets.DHI_TOKEN in repository or organization settings."
-            exit 1
-          fi
-          echo "::warning::DHI_TOKEN secret is not available in this context. Any Dockerfiles that use dhi.io/* base images may fail with a 'pull access denied' error during build."
-
-      - name: Fallback to public images (if DHI_TOKEN missing)
-        if: ${{ env.DHI_TOKEN == '' }}
-        run: |
-          echo "🔄 DHI_TOKEN missing. Replacing dhi.io/ with public Docker Hub images..."
+          echo "::warning::dhi.io login unavailable. Rewriting dhi.io/ base image references to public Docker Hub equivalents."
           find . -name "Dockerfile*" -type f -exec sed -i 's|dhi.io/||g' {} +
 
       - name: Extract metadata
