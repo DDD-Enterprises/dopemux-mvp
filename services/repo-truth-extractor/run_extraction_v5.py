@@ -2734,9 +2734,17 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
 
 
 def write_json(path: Path, payload: Any) -> None:
+    sanitized_payload = sanitize_payload_for_output(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        sanitized_json_text(payload, indent=2, ensure_ascii=True, sort_keys=True) + "\n",
+        json.dumps(
+            sanitized_payload,
+            indent=2,
+            ensure_ascii=True,
+            sort_keys=True,
+            default=str,
+        )
+        + "\n",
         encoding="utf-8",
     )
 
@@ -8861,10 +8869,7 @@ def call_llm(
             model_id,
         )
         if provider == "gemini":
-            logger.error(
-                "Gemini requires GEMINI_API_KEY in repo-root .env (canonical). "
-                "GOOGLE_API_KEY is deprecated for this runner."
-            )
+            logger.error("Gemini credentials are missing in canonical repo-root env configuration.")
         return {
             "ok": False,
             "text": "",
@@ -10233,11 +10238,6 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     safe = _sanitize_provenance_for_logging(finalized)
     logger.warning(
         "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
-        _safe_log_value(safe.get("phase")),
-        _safe_log_value(safe.get("step_id")),
-        _safe_log_value(safe.get("partition_id")),
-        _safe_log_value(safe.get("repair_type")),
-        safe.get("chars_delta", 0),
     )
 
 
@@ -16827,8 +16827,6 @@ def write_resume_proof(
                 missing = c_payload.get("missing_required_artifacts", [])
                 missing_total += len(missing)
                 phase_statuses[phase] = c_payload.get("status", "UNKNOWN")
-            except Exception as e:
-                logger.debug("Failed to load coverage JSON for phase %s at %s: %s", phase, coverage_path, e, exc_info=True)
 
     run_status = compute_run_status(
         blocked_promptset=blocked_promptset,
