@@ -121,6 +121,47 @@ Run `python scripts/sync_brand_tokens.py` to verify all platforms match theme.py
 
 ### CLI Components (`src/dopemux/ui/theme.py`)
 
+### Startup Banner (`src/dopemux/ui/splash.py`)
+
+The Dopemux startup banner is a boxed operator-facing mark with a restrained drip accent. It must read as deterministic and legible first, styled second.
+
+**Palette mapping**
+
+| Element | Color |
+|---------|-------|
+| Frame | cyan |
+| Logo gradient | cyan → blue-cyan → violet |
+| `deterministic core` tag | magenta |
+| `memory mesh` tag | violet |
+| `operator` tag | cyan |
+
+**Canonical plain banner**
+
+```text
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ██████╗  ██████╗ ██████╗ ███████╗███╗   ███╗██╗   ██╗██╗  ██╗             ║
+║   ██╔══██╗██╔═══██╗██╔══██╗██╔════╝████╗ ████║██║   ██║╚██╗██╔╝             ║
+║   ██║  ██║██║   ██║██████╔╝█████╗  ██╔████╔██║██║   ██║ ╚███╔╝              ║
+║   ██║  ██║██║   ██║██╔═══╝ ██╔══╝  ██║╚██╔╝██║██║   ██║ ██╔██╗              ║
+║   ██████╔╝╚██████╔╝██║     ███████╗██║ ╚═╝ ██║╚██████╔╝██╔╝ ██╗             ║
+║   ╚═════╝  ╚═════╝ ╚═╝     ╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝             ║
+║        ║             ║                                ║                     ║
+║        '             '                                '                     ║
+║                                                                              ║
+║         [ deterministic core ]   [ memory mesh ]   [ operator ]            ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+**Usage rules**
+
+- Render Rich hex colors only outside `PLAIN` mode.
+- Preserve the exact frame width and line order.
+- Keep the drip effect to the two minimal interior lines; do not add extra distortion.
+- Do not emit raw ANSI escape sequences from the Python startup path; use Rich styling.
+- If operators need shell-native export examples, store those in docs, not inline in runtime code.
+
 #### `styled_table(title, *columns, compact=False, **kw)`
 
 Branded Rich Table. All CLI table output must use this.
