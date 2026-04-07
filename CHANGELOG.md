@@ -16,6 +16,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - The flight dashboard passes its active `Console` into the renderer so viewport sizing reflects the live terminal instance.
 - `flight-deck` now delegates to the authoritative `flight` dashboard path so autopilot, remediation, and merge execution share the same runtime.
 - The docs workflow now runs on pull requests and `main` pushes only, preventing PR-branch push runs from re-failing on unrelated legacy docs debt.
+- Active extractor docs now describe the validated bounded v5 lane, the current reliability contract, and the upgrade-design reality check for this branch.
 
 ### Fixed
 - Validation-only PRs are no longer shown as queued-for-merge before local verification is complete.
@@ -27,6 +28,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Queue planning no longer downgrades failing required GitHub checks to warnings after a local validation pass; those PRs remain `apply_blocked` until the remote required checks actually clear.
 - `queue-drain --max-prs` now stops the execute loop at the requested bound instead of continuing through additional PRs in the same pass.
 - Docs template assets now use `template-*` filenames so the `docs-prohibited-patterns` hook no longer blocks active PRs on legacy template path names.
+- Repo-truth extractor docs now reflect `config/pricing.yaml` as cost authority, explicit output sanitization at the JSON sink, redacted auth-missing logging, and non-silent coverage parse warnings.
 
 ## [0.1.0] - 2026-03-14
 ### Added

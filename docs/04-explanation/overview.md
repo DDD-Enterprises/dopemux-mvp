@@ -26,6 +26,7 @@ Explanation docs provide architecture and design context for why the system work
 - [Memory And Persistence Deep Dive](technical-deep-dives/memory-and-persistence-deep-dive.md)
 - [Workflow Kit Architecture](workflow-kit-architecture.md)
 - [PR Merge Queue Orchestration](pr-merge-queue-orchestration.md)
+- [V5 Extraction Pipeline Upgrade Design](architecture/v5-extraction-pipeline-upgrade-design.md)
 - [Workflow Kit Transfer RFC](../91-rfc/workflow-kit-pickle-mechanics-transfer.md)
 - [Supervisor Memory and PM Authority Reconciliation](../05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md)
 - [Task Orchestrator Runtime Truth Executive Summary](../planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md)
