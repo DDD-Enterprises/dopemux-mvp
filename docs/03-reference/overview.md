@@ -57,6 +57,9 @@ Detailed reference for Dopemux components.
 
 ### Extraction
 - **[FL INT Post-Processing](extraction/fl-int-postprocess.md)** - Standalone bounded v1 design-synthesis and feature-ledger post-pass
+- **[Extraction Pipeline Reliability](extraction/pipeline-reliability.md)** - Active v5 spend, artifact-truth, resume, and output-safety contract
+- **[Pipeline Phases](extraction/pipeline-phases.md)** - Phase map and step inventory
+- **[v5 UI Live Output](extraction/v5-ui-live-output.md)** - Terminal/status surfaces emitted by the active runner
 
 ---
 
