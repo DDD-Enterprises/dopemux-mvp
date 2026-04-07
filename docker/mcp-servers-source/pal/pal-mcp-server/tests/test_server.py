@@ -9,7 +9,6 @@ import pytest
 import server
 
 
-
 class TestServerTools:
     """Test server tool handling"""
 
