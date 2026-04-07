@@ -8,19 +8,19 @@ mcp_servers:
     supports_workspace: false  # Legacy service
 
   exa:
-    command: ["docker", "exec", "-i", "mcp-exa", "python", "server.py"]
-    port: 8003
+    command: ["uvx", "mcp-proxy", "--transport", "sse", "http://127.0.0.1:3011/sse"]
+    port: 3011
     supports_workspace: false  # Search service (global)
 
   pal:
-    command: ["docker", "exec", "-i", "mcp-pal", "python", "-m", "pal_mcp_server"]
-    port: 8004
+    command: ["uvx", "mcp-proxy", "--transport", "sse", "http://127.0.0.1:3003/sse"]
+    port: 3003
     supports_workspace: true   # Multi-workspace aware
     workspace_param: "workspace_path"  # Parameter name for workspace
 
   serena:
-    command: ["docker", "exec", "-i", "mcp-serena", "python", "server.py"]
-    port: 8005
+    command: ["uvx", "mcp-proxy", "--transport", "sse", "http://127.0.0.1:${SERENA_PORT:-3006}/sse"]
+    port: 3006
     supports_workspace: true   # Multi-workspace aware
     workspace_param: "workspace_path"  # Parameter name for workspace
 
@@ -37,14 +37,14 @@ mcp_servers:
     workspace_param: "workspace_id"
 
   conport:
-    command: ["docker", "exec", "-i", "mcp-conport", "python", "/app/conport_mcp_stdio.py"]
-    port: 3004
+    command: ["docker", "compose", "-f", "compose.yml", "exec", "-T", "conport", "python", "/app/conport_mcp_stdio.py"]
+    port: 3005
     supports_workspace: true
     workspace_param: "workspace_id"
 
   dope-context:
-    command: ["bash", "services/dope-context/run_mcp.sh"]
-    port: 3008
+    command: ["uvx", "mcp-proxy", "--transport", "streamablehttp", "http://127.0.0.1:3010/mcp"]
+    port: 3010
     supports_workspace: true
     workspace_param: "workspace_path"
 

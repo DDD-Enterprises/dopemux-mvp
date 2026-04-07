@@ -1,0 +1,15 @@
+git status --short
+
+python services/repo-truth-extractor/validate_pre_live_gate_v25.py --help
+# Result: current validator CLI does not accept --step
+
+env XAI_API_KEY='<masked>' python services/repo-truth-extractor/validate_pre_live_gate_v25.py --target-policy balanced_grok_openrouter --target-phases A --allow-online-preflight
+# Result: NO_GO
+# Output dir: reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260405T191013Z
+# Blocking routes: openrouter/openai/gpt-5.3-codex and openrouter/openai/gpt-5.4 returned 401
+
+python services/repo-truth-extractor/extraction_hygiene.py scan
+# Result: HYGIENE_SCAN_RESULT warnings=10242 errors=0 noise_paths=2890 version_path_issues=0 resume_state_issues=7352
+
+python scripts/repo_truth_extractor_promptset_audit_v4.py
+# Result: PASS prompt_count=130 global_issues_count=0 lint_failures=0

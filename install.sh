@@ -47,9 +47,9 @@ VERSION="1.0.0"
 DOPEMUX_HOME="${DOPEMUX_HOME:-$HOME/.dopemux}"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 BACKUP_DIR="$HOME/.dopemux.backup.$(date +%Y%m%d_%H%M%S)"
-DOCKER_COMPOSE_CORE="-f docker/compose.core.yml"
-DOCKER_COMPOSE_RESEARCH="-f docker/compose.core.yml -f docker/compose.research.yml"
-DOCKER_COMPOSE_FULL="-f docker/compose.core.yml -f docker/compose.pm.yml -f docker/compose.routing.yml -f docker/compose.research.yml -f docker/compose.agents.yml"
+DOCKER_COMPOSE_CORE="-f compose.yml"
+DOCKER_COMPOSE_RESEARCH="-f compose.yml"
+DOCKER_COMPOSE_FULL="-f compose.yml"
 SELECTED_STACK="core"  # core | research | full
 SELECTED_COMPOSE_FILE="$DOCKER_COMPOSE_CORE"
 ENV_FILE="${ENV_FILE:-.env}"
@@ -1083,8 +1083,8 @@ install_docker_services() {
 
     log "Setting up Docker services for ${stack} stack..."
     
-    if [ ! -f "docker/compose.core.yml" ]; then
-        fatal "Core compose file not found"
+    if [ ! -f "compose.yml" ]; then
+        fatal "Canonical compose file not found"
     fi
 
     ensure_env_file "$stack"
