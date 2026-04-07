@@ -7,7 +7,6 @@ import json
 import pytest
 
 import server
-from server import handle_call_tool
 
 
 class TestServerTools:
