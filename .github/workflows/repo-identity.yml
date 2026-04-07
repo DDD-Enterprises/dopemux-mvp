@@ -1,6 +1,10 @@
 name: Repo Identity Check
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   identity-check:
