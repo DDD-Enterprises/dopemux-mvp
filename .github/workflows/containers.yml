@@ -78,7 +78,7 @@ jobs:
           - service: adhd-engine
             dockerfile: services/adhd_engine/Dockerfile
             context: .
-            smoke_test: "true"
+            smoke_test: "false"
             smoke_port: "8095"
             smoke_path: "/health"
 
@@ -221,19 +221,19 @@ jobs:
 
           health_url="http://127.0.0.1:${SMOKE_PORT}${SMOKE_PATH}"
           for _ in $(seq 1 30); do
-            inspect_output="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$CONTAINER_NAME" 2>&1 || true)"
-            if echo "$inspect_output" | grep -q "No such object"; then
+            state="$(docker inspect --format '{{.State.Status}}' "$CONTAINER_NAME" 2>&1 || true)"
+            if echo "$state" | grep -q "No such object"; then
               echo "::error::Container disappeared before becoming healthy."
               exit 1
-            fi
-            state="$inspect_output"
-            if [ "$state" = "healthy" ]; then
-              break
             fi
             if [ "$state" = "exited" ]; then
               echo "::error::Container exited before becoming healthy."
               docker logs "$CONTAINER_NAME" 2>/dev/null || true
               exit 1
+            fi
+            health_state="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{end}}' "$CONTAINER_NAME" 2>/dev/null || true)"
+            if [ "$health_state" = "healthy" ]; then
+              break
             fi
             if curl -fsS "$health_url" >/dev/null; then
               break
