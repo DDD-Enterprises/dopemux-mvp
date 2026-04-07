@@ -58,9 +58,12 @@ Status: [LOGGED] Topology Complete
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
 - [Repo Truth Extractor CLI Runbook](02-how-to/extraction/run-v4-from-dopemux-cli.md) - canonical command namespace: `dopemux upgrades ...` (`extractor` is legacy alias)
 - [Repo Truth Extractor User Guide](02-how-to/extraction/repo-truth-extractor-user-guide.md)
+- [Repo Truth Extractor v5 First Live Run](02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md)
+- [Repo Truth Extractor Truth-Run Command](02-how-to/extraction/truth-run-command.md)
 - [Repo Truth Extractor Batch Quickstart](02-how-to/extraction/batch-quickstart.md)
 - [Repo Truth Extractor Reference](03-reference/extraction/pipeline-reliability.md)
 - [Repo Truth Extractor Phase Map](03-reference/extraction/pipeline-phases.md)
+- [Repo Truth Extractor v5 Upgrade Design](04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md)
 - [Dope-Context User Guide](02-how-to/dope-context/dope-context-user-guide.md)
 - [PR Merge Flight Dashboard](02-how-to/pr-merge-flight-dashboard.md) - Canonical operator quickstart for `dopemux pr-merge flight` and `dopemux-pr-merge flight`
 

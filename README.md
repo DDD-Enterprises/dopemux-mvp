@@ -28,6 +28,7 @@ Status: [LOGGED] Core Manifest Stable
 - [License](#license)
 - [FAQ & Troubleshooting](#faq--troubleshooting)
 - [Further Reading](#further-reading)
+- [Repo Truth Extractor v5](#repo-truth-extractor-v5)
 
 ---
 
@@ -126,6 +127,28 @@ All cross-service communication is event-driven (Redis PubSub), and shared schem
 > ![Architecture Diagram Placeholder](docs/04-explanation/architecture/dopemux-architecture-overview-3.md)
 
 See [Architecture Overview](docs/04-explanation/architecture/dopemux-architecture-overview-3.md) and [System Bible](docs/94-architecture/system-bible.md) for diagrams and details.
+
+---
+
+## Repo Truth Extractor v5
+
+The active bounded runtime lane validated on this branch is:
+
+- phase `A`
+- step `A2`
+- routing `balanced_grok_openrouter`
+
+Use these docs for the current extractor surface:
+
+- [Repo Truth Extractor v5 First Live Run](docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md)
+- [Truth-Run Command](docs/02-how-to/extraction/truth-run-command.md)
+- [Extraction Pipeline Reliability](docs/03-reference/extraction/pipeline-reliability.md)
+- [V5 Extraction Pipeline Upgrade Design](docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md)
+
+Current scope warning:
+
+- the bounded lane above is validated
+- broader extractor readiness outside that lane should not be inferred from it
 
 ---
 

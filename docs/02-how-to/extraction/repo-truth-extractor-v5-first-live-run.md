@@ -12,12 +12,33 @@ graph_metadata:
   impact: high
   relates_to:
   - services/repo-truth-extractor/run_extraction_v5.py
-last_review: '2026-04-01'
-next_review: '2026-07-01'
+last_review: '2026-04-06'
+next_review: '2026-07-06'
 ---
 # Repo Truth Extractor v5 First Live Run
 
 Use this flow when you want the safest operator path into live v5 execution.
+
+## What this guide reflects on the current branch
+
+This guide is aligned to the active v5 runner on this branch:
+
+- `config/pricing.yaml` is the cost authority
+- emitted JSON is sanitized at the write sink before it hits disk
+- auth-missing logging avoids echoing raw credential-bearing values
+- response-repair warnings sanitize phase, step, partition, and strategy fields
+- malformed per-phase coverage payloads now emit an explicit warning instead of
+  being silently ignored
+
+## Validated bounded lane
+
+The only live-validated bounded lane on this branch is:
+
+- phase: `A`
+- step: `A2`
+- routing policy: `balanced_grok_openrouter`
+
+Do not generalize that proof to all phases or all routing policies.
 
 ## 1. Validate first
 
@@ -29,6 +50,21 @@ python services/repo-truth-extractor/validate_pre_live_gate_v25.py
 
 The `--preset first-live` flow also runs this validator automatically for live
 execution unless `--skip-pre-live-validator` is set.
+
+Canonical validator command for the validated bounded lane:
+
+```bash
+python services/repo-truth-extractor/validate_pre_live_gate_v25.py \
+  --target-policy balanced_grok_openrouter \
+  --target-phases A \
+  --step A2 \
+  --allow-online-preflight
+```
+
+Current operator note:
+
+- the validated `A/A2` bounded lane requires `XAI_API_KEY`
+- `OPENROUTER_API_KEY` alone is not sufficient for that lane
 
 ## 2. Start with a staged dry-run
 
@@ -111,6 +147,11 @@ python services/repo-truth-extractor/run_extraction_v5.py \
 
 Default artifact root is `extraction/repo-truth-extractor/v5/`.
 
+Budget authority:
+
+- cost preview and spend enforcement derive from `config/pricing.yaml`
+- packet commands should not hardcode pricing assumptions
+
 ## 4. Review the checkpoint before synthesis
 
 After the initial stage, inspect:
@@ -157,6 +198,23 @@ python services/repo-truth-extractor/validate_pre_live_gate_v25.py \
   --allow-online-preflight
 ```
 
+Canonical bounded live command for the validated lane:
+
+```bash
+env XAI_API_KEY='<masked>' DPMX_LIVE_OK=1 python services/repo-truth-extractor/run_extraction_v5.py \
+  --phase A \
+  --step A2 \
+  --routing-policy balanced_grok_openrouter \
+  --run-id <RUN_ID> \
+  --max-cost-usd 0.10
+```
+
+Expected bounded behavior on this branch:
+
+- billable execution may begin and still terminate as `COST_ABORTED`
+- run-level artifacts must preserve `COST_ABORTED` truth
+- repair provenance should be counted once per logical failure
+
 ## 6. Continue after review
 
 Once `A/H/D/C` artifacts are reviewed, run the post-review stage:
@@ -188,3 +246,12 @@ Be cautious when repo inventory is heavy in:
 
 The runner now records these classes in the dry-run checklist when they are
 present in the resolved inventory.
+
+## 9. Operator safety notes
+
+- Audit `RUN_MANIFEST.json`, `RESUME_PROOF.json`, and `COVERAGE_ROLLUP.json`
+  against raw failure artifacts and `SPEND_LEDGER.json` during bounded live
+  validation.
+- Auth-missing metadata is intentionally redacted at the sink for the
+  credential-bearing env-name fields in that failure path.
+- Coverage rollup reads now warn on malformed phase coverage payloads.

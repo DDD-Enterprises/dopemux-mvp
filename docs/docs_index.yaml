@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-04-01'
+last_updated: '2026-04-06'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: QUICK_START.md
@@ -79,6 +79,7 @@ how_to:
   repo_truth_extractor_cli: docs/02-how-to/extraction/run-v4-from-dopemux-cli.md
   repo_truth_extractor_cli_canonical_entrypoint: docs/02-how-to/extraction/run-v4-from-dopemux-cli.md
   repo_truth_extractor_user_guide: docs/02-how-to/extraction/repo-truth-extractor-user-guide.md
+  repo_truth_extractor_v5_first_live_run: docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md
   repo_truth_extractor_batch_quickstart: docs/02-how-to/extraction/batch-quickstart.md
   repo_truth_extractor_truth_run: docs/02-how-to/extraction/truth-run-command.md
   doc_audit_prescan_how_to: docs/02-how-to/doc-audit-prescan.md
@@ -124,6 +125,7 @@ explanation:
   dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
   workflow_kit_architecture: docs/04-explanation/workflow-kit-architecture.md
   pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
+  repo_truth_extractor_v5_upgrade_design: docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
   pm_runtime_truth_task_orchestrator: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md

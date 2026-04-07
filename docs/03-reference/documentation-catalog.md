@@ -5,8 +5,8 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-19'
-last_review: '2026-03-19'
-next_review: '2026-06-19'
+last_review: '2026-04-06'
+next_review: '2026-07-06'
 prelude: Canonical catalog of active documentation indexes, policy files, and documentation automation entrypoints.
 ---
 # Documentation Catalog
@@ -21,6 +21,15 @@ prelude: Canonical catalog of active documentation indexes, policy files, and do
 - `docs/02-how-to/overview.md`
 - `docs/03-reference/overview.md`
 - `docs/04-explanation/overview.md`
+
+## Active repo-truth extractor documentation set
+
+- `docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md`
+- `docs/02-how-to/extraction/truth-run-command.md`
+- `docs/03-reference/extraction/pipeline-reliability.md`
+- `docs/03-reference/extraction/pipeline-phases.md`
+- `docs/03-reference/extraction/v5-ui-live-output.md`
+- `docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md`
 
 ## Documentation Automation
 
