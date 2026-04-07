@@ -163,6 +163,18 @@ def test_list_workflow_ideas_passes_filters():
     }
 
 
+def test_list_workflow_ideas_empty_state_returns_200():
+    module = _load_task_orchestrator_module()
+    workflow_service = _build_workflow_service()
+    workflow_service.list_ideas = AsyncMock(return_value=[])
+
+    with _build_client(module, workflow_service) as client:
+        response = client.get("/api/workflow/ideas")
+
+    assert response.status_code == 200
+    assert response.json() == {"count": 0, "ideas": []}
+
+
 def test_promote_workflow_idea_contract():
     module = _load_task_orchestrator_module()
     workflow_service = _build_workflow_service()
