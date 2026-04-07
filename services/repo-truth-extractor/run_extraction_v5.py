@@ -10174,16 +10174,30 @@ def finalize_response_parse_provenance(
     return finalized
 
 
+def _safe_log_value(value: Any, max_length: int = 128) -> str:
+    """
+    Sanitize a value for logging to avoid emitting potentially sensitive
+    data in full. Converts to string and truncates to a bounded length.
+    """
+    try:
+        text = str(value)
+    except Exception:
+        text = "<unprintable>"
+    if len(text) > max_length:
+        return text[: max_length - 3] + "..."
+    return text
+
+
 def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     if not finalized.get("repair_applied"):
         return
     logger.warning(
         "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
-        finalized["phase"],
-        finalized["step_id"],
-        finalized["partition_id"],
-        finalized["repair_type"],
-        finalized["chars_delta"],
+        _safe_log_value(finalized.get("phase")),
+        _safe_log_value(finalized.get("step_id")),
+        _safe_log_value(finalized.get("partition_id")),
+        _safe_log_value(finalized.get("repair_type")),
+        finalized.get("chars_delta", 0),
     )
 
 
