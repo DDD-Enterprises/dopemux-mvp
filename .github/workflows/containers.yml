@@ -44,6 +44,7 @@ jobs:
           - service: dopemux-backend
             dockerfile: Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Frontend
           # Removed - ui-dashboard deprecated
@@ -52,48 +53,62 @@ jobs:
           - service: conport
             dockerfile: docker/mcp-servers-source/conport/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- MCP: LiteLLM proxy
           - service: litellm
             dockerfile: docker/mcp-servers-source/litellm/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Cognitive: Task Orchestrator
           - service: task-orchestrator
             dockerfile: services/task-orchestrator/Dockerfile
             context: .
+            smoke_test: "true"
+            smoke_port: "8000"
+            smoke_path: "/health"
 
           # -- Cognitive: Claude Brain
           - service: claude-brain
             dockerfile: services/claude_brain/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Cognitive: ADHD Engine
           - service: adhd-engine
             dockerfile: services/adhd_engine/Dockerfile
             context: .
+            smoke_test: "true"
+            smoke_port: "8095"
+            smoke_path: "/health"
 
           # -- Coordination: DopeconBridge
           - service: dopecon-bridge
             dockerfile: services/dopecon-bridge/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Integration: Webhook Receiver
           - service: webhook-receiver
             dockerfile: services/webhook_receiver/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Memory: Dope Memory
           - service: dope-memory
             dockerfile: services/working-memory-assistant/Dockerfile.dope-memory
             context: .
+            smoke_test: "true"
+            smoke_port: "3020"
+            smoke_path: "/health"
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -101,7 +116,7 @@ jobs:
 
       - name: Log in to Docker Hardened Images (dhi.io)
         if: ${{ env.DHI_TOKEN != '' }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: dhi.io
           username: ${{ github.actor }}
@@ -124,7 +139,7 @@ jobs:
 
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.NAMESPACE }}/${{ matrix.service }}
           tags: |
@@ -136,22 +151,87 @@ jobs:
             type=ref,event=pr
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
-      - name: Build and push ${{ matrix.service }}
-        uses: docker/build-push-action@v6
+      - name: Build image reference
+        id: image_ref
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "value=${{ env.NAMESPACE }}/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${{ env.NAMESPACE }}/${{ matrix.service }}:sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve build tags
+        id: build_tags
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ matrix.smoke_test }}" = "true" ]; then
+            echo "value=${{ steps.image_ref.outputs.value }}" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "value<<EOF"
+              echo "${{ steps.meta.outputs.tags }}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and publish ${{ matrix.service }}
+        uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
-          # Push only on main branch; PRs build only (no push)
           push: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          load: ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }}
+          pull: true
+          tags: ${{ steps.build_tags.outputs.value }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Layer cache via GHA cache backend
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
-          provenance: true
-          sbom: true
+          provenance: ${{ github.event_name != 'pull_request' }}
+          sbom: ${{ github.event_name != 'pull_request' }}
+
+      - name: Inspect loaded image metadata
+        if: ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }}
+        run: docker image inspect "${{ steps.image_ref.outputs.value }}" >/dev/null
+
+      - name: Smoke test container startup
+        if: ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }}
+        env:
+          IMAGE_REF: ${{ steps.image_ref.outputs.value }}
+          CONTAINER_NAME: ci-${{ matrix.service }}
+          SMOKE_PORT: ${{ matrix.smoke_port }}
+          SMOKE_PATH: ${{ matrix.smoke_path }}
+        run: |
+          set -euo pipefail
+
+          cleanup() {
+            docker logs "$CONTAINER_NAME" 2>/dev/null || true
+            docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          docker run -d --rm \
+            --name "$CONTAINER_NAME" \
+            -p "${SMOKE_PORT}:${SMOKE_PORT}" \
+            "$IMAGE_REF"
+
+          health_url="http://127.0.0.1:${SMOKE_PORT}${SMOKE_PATH}"
+          for _ in $(seq 1 30); do
+            state="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$CONTAINER_NAME")"
+            if [ "$state" = "healthy" ]; then
+              break
+            fi
+            if [ "$state" = "exited" ]; then
+              echo "::error::Container exited before becoming healthy."
+              exit 1
+            fi
+            if curl -fsS "$health_url" >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+          curl -fsS "$health_url"
 
       - name: Build Summary
         if: always()
@@ -163,3 +243,4 @@ jobs:
           echo "| Image | \`${{ env.NAMESPACE }}/${{ matrix.service }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Tags | ${{ steps.meta.outputs.tags }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Pushed | ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke tested | ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }} |" >> $GITHUB_STEP_SUMMARY
