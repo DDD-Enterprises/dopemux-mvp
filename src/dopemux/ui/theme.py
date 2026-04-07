@@ -107,8 +107,6 @@ def build_theme(name: str) -> Theme:
             "success": "#94FADB",
             "error": "bold #FF8BD1",
             "warning": "#F5F26D",
-            "gold": "#F5F26D",
-            "amber": "#FFCF78",
             "info": "#7DFBF6",
             "debug": "#9B78FF",
             "hazard": "#F5F26D",
