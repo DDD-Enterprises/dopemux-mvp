@@ -47,6 +47,12 @@ class IncrementalCodeCache:
 
         return payload, None
 
+    def removed_entry_count(self, payload: dict[str, Any] | None, current_paths: set[str]) -> int:
+        if payload is None:
+            return 0
+        cached_paths = set(payload.get("files", {}).keys())
+        return len(cached_paths - current_paths)
+
     def write(self, entries: list[FileEntry], code_intel: list[dict[str, Any]], git_sha: str) -> None:
         intel_by_path = {item["rel_path"]: item for item in code_intel if item.get("rel_path")}
         files: dict[str, Any] = {}
