@@ -26,8 +26,7 @@ This guide is aligned to the active v5 runner on this branch:
 - `config/pricing.yaml` is the cost authority
 - emitted JSON is sanitized at the write sink before it hits disk
 - auth-missing logging avoids echoing raw credential-bearing values
-- response-repair warnings emit only a non-sensitive summary; inspect emitted
-  artifacts for per-partition repair metadata
+- response-repair warnings sanitize phase, step, partition, and strategy fields
 - malformed per-phase coverage payloads now emit an explicit warning instead of
   being silently ignored
 

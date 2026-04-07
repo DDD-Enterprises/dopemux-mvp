@@ -128,8 +128,7 @@ write sink:
 Operator-facing safety rules:
 
 - auth-missing logs do not echo raw credential-bearing values
-- response-repair warnings emit only a non-sensitive summary and keep
-  partition-specific repair metadata in artifacts rather than logs
+- response-repair warnings sanitize dynamic identifiers before logging
 - auth-missing metadata redacts credential-bearing env-name fields in that
   failure path
 

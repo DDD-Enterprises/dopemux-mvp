@@ -30,8 +30,7 @@ What is runtime-earned on this branch:
 - validator and live command coherence for that bounded lane
 - truthful `COST_ABORTED` propagation from raw failures into aggregate artifacts
 - repair-provenance rollups that count one logical repair event once
-- explicit output-safety at the JSON write sink, plus summary-only
-  response-repair logging with detailed metadata preserved in artifacts
+- explicit output-safety at JSON write and response-repair log sinks
 
 What remains broader design intent rather than universally re-proven:
 
