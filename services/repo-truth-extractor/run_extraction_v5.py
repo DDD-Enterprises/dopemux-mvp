@@ -8875,6 +8875,9 @@ def call_llm(
         )
 
     if not api_key:
+        # The message is intentionally static; CodeQL overtaints the missing-key
+        # control-flow branch even after credential-bearing fields are removed.
+        # codeql[py/clear-text-logging-sensitive-data]
         logger.error("Missing API key for the configured provider request.")
         if provider == "gemini":
             logger.error("Gemini credentials are missing in canonical repo-root env configuration.")
@@ -10187,6 +10190,9 @@ def finalize_response_parse_provenance(
 def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     if not finalized.get("repair_applied"):
         return
+    # This warning emits only a fixed summary string and a numeric delta.
+    # CodeQL still taints the branch through the repaired payload container.
+    # codeql[py/clear-text-logging-sensitive-data]
     logger.warning(
         "RESPONSE_PARSE_REPAIRED: degraded JSON response repaired; inspect emitted artifacts for partition metadata. delta=%d",
         finalized["chars_delta"],
