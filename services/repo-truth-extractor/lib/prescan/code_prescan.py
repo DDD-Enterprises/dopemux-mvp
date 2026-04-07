@@ -114,7 +114,7 @@ class CodePrescan:
 
         def traverse(node: Node, parent_name: Optional[str] = None):
             if node.type in types:
-                name = self._get_node_name(node)
+                name = self._infer_symbol_name(node)
                 
                 # Determine type
                 stype = "block"
@@ -147,8 +147,27 @@ class CodePrescan:
 
     def _get_node_name(self, node: Node) -> Optional[str]:
         for child in node.children:
-            if child.type in ("identifier", "name"):
+            if child.type in ("identifier", "name", "property_identifier", "type_identifier"):
                 return child.text.decode("utf-8", errors="replace") if child.text else None
+        return None
+
+    def _infer_symbol_name(self, node: Node) -> Optional[str]:
+        name = self._get_node_name(node)
+        if name:
+            return name
+
+        parent = getattr(node, "parent", None)
+        while parent is not None:
+            if parent.type == "variable_declarator":
+                inferred = self._get_node_name(parent)
+                if inferred:
+                    return inferred
+            if parent.type == "pair":
+                inferred = self._get_node_name(parent)
+                if inferred:
+                    return inferred
+            parent = getattr(parent, "parent", None)
+
         return None
 
     def _has_docstring(self, node: Node, lang: str) -> bool:
@@ -189,9 +208,26 @@ class CodePrescan:
                         if child.type == "dotted_name":
                             imports.add(child.text.decode("utf-8", errors="replace"))
                 elif node.type == "import_from_statement":
+                    module_ref: Optional[str] = None
+                    imported_names: List[str] = []
+                    seen_import_keyword = False
                     for child in node.children:
-                        if child.type == "dotted_name":
-                            imports.add(child.text.decode("utf-8", errors="replace"))
+                        if child.type == "import":
+                            seen_import_keyword = True
+                            continue
+                        if not seen_import_keyword:
+                            if child.type == "relative_import":
+                                module_ref = child.text.decode("utf-8", errors="replace")
+                            elif child.type == "dotted_name":
+                                module_ref = child.text.decode("utf-8", errors="replace")
+                        elif child.type == "dotted_name":
+                            imported_names.append(child.text.decode("utf-8", errors="replace"))
+                    if module_ref:
+                        if module_ref.startswith(".") and set(module_ref) == {"."}:
+                            for imported_name in imported_names:
+                                imports.add(f"{module_ref}{imported_name}")
+                        else:
+                            imports.add(module_ref)
                 for child in node.children:
                     traverse(child)
             traverse(root_node)
@@ -211,15 +247,47 @@ class CodePrescan:
 
     def _detect_api_surfaces(self, code: str, lang: str) -> List[str]:
         surfaces = []
+        lines = [line for line in code.splitlines() if not line.lstrip().startswith(("#", "//"))]
+        scan_text = "\n".join(lines)
         if lang == "py":
-            if "fastapi" in code: surfaces.append("fastapi")
-            if "flask" in code: surfaces.append("flask")
-            if "click" in code or "typer" in code: surfaces.append("cli")
-            if "mcp" in code: surfaces.append("mcp")
+            if (
+                re.search(r"(^|\n)\s*(from\s+fastapi\b|import\s+fastapi\b)", scan_text)
+                or re.search(r"(^|\n)\s*\w+\s*=\s*APIRouter\(", scan_text)
+                or re.search(r"(^|\n)\s*@\w+\.(get|post|put|delete|patch)\(", scan_text)
+            ):
+                surfaces.append("fastapi")
+            if (
+                re.search(r"(^|\n)\s*(from\s+flask\b|import\s+flask\b)", scan_text)
+                or re.search(r"(^|\n)\s*\w+\s*=\s*Flask\(", scan_text)
+                or re.search(r"(^|\n)\s*@\w+\.route\(", scan_text)
+            ):
+                surfaces.append("flask")
+            if (
+                re.search(r"(^|\n)\s*(from\s+click\b|import\s+click\b|from\s+typer\b|import\s+typer\b)", scan_text)
+                or re.search(r"(^|\n)\s*@(?:click\.)?(command|group)\(", scan_text)
+                or re.search(r"(^|\n)\s*@\w+\.command\(", scan_text)
+            ):
+                surfaces.append("cli")
+            if (
+                re.search(r"(^|\n)\s*(from\s+mcp(\.|\b)|import\s+mcp(\.|\b))", scan_text)
+                or re.search(r"(^|\n)\s*\w+\s*=\s*FastMCP\(", scan_text)
+                or re.search(r"(^|\n)\s*@(?:mcp_tool|tool)\(", scan_text)
+            ):
+                surfaces.append("mcp")
         elif lang in ("js", "ts", "tsx"):
-            if "express" in code: surfaces.append("express")
-            if "next" in code: surfaces.append("nextjs")
-            if "react" in code: surfaces.append("react")
+            if (
+                re.search(r"from\s+['\"]express['\"]", scan_text)
+                or re.search(r"require\(['\"]express['\"]\)", scan_text)
+                or re.search(r"(^|\n)\s*\w+\.(get|post|put|delete|patch)\(", scan_text)
+            ):
+                surfaces.append("express")
+            if re.search(r"from\s+['\"]next(/|\")", scan_text):
+                surfaces.append("nextjs")
+            if (
+                re.search(r"from\s+['\"]react['\"]", scan_text)
+                or re.search(r"require\(['\"]react['\"]\)", scan_text)
+            ):
+                surfaces.append("react")
         return surfaces
 
     # ── Extended methods (Part C) ──────────────────────────────────────────
@@ -256,14 +324,14 @@ class CodePrescan:
         def visit(node: Node, parent_name: Optional[str] = None):
             target_types = {
                 "py": ("function_definition", "class_definition"),
-                "js": ("function_declaration", "class_declaration"),
-                "ts": ("function_declaration", "class_declaration"),
-                "tsx": ("function_declaration", "class_declaration"),
+                "js": ("function_declaration", "class_declaration", "arrow_function"),
+                "ts": ("function_declaration", "class_declaration", "arrow_function"),
+                "tsx": ("function_declaration", "class_declaration", "arrow_function"),
             }
             types = target_types.get(lang, ())
 
             if node.type in types:
-                name = self._get_node_name(node)
+                name = self._infer_symbol_name(node)
                 kind = "class" if "class" in node.type else "function"
 
                 # Extract the first line (signature line)

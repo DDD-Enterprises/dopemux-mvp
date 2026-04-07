@@ -764,7 +764,14 @@ class GrokPassRunner:
             "",
         ]
 
-        # ... (Include logic for dedup, discover, feasibility results if present in pass_results)
-        # For brevity, I'm mirroring the core structure.
+        for pass_id in ("dedup", "discover", "feasibility"):
+            result = pass_results.get(pass_id)
+            if not result:
+                continue
+            lines.append(f"## Prior Pass: {pass_id}")
+            lines.append("```json")
+            lines.append(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
+            lines.append("```")
+            lines.append("")
 
         return "\n".join(lines)

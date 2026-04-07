@@ -71,8 +71,24 @@ class DependencyGraph:
             
         # 2. Relative resolution (Python)
         if import_str.startswith("."):
-            source_dir = Path(source_path).parent
-            # ... more complex relative resolution would go here
+            source_module = ".".join(Path(source_path).with_suffix("").parts)
+            source_parts = source_module.split(".")
+            import_parts = import_str.split(".")
+            level = 0
+            for part in import_parts:
+                if part == "":
+                    level += 1
+                else:
+                    break
+            suffix = [part for part in import_parts if part]
+            if level:
+                base_parts = source_parts[:-1]
+                if level > 1:
+                    base_parts = base_parts[: -(level - 1)]
+                candidate_parts = base_parts + suffix
+                candidate = ".".join(part for part in candidate_parts if part)
+                if candidate in module_to_path:
+                    return module_to_path[candidate]
             
         # 3. Path-based resolution (JS/TS)
         if import_str.startswith("./") or import_str.startswith("../"):

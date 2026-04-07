@@ -138,7 +138,7 @@ class CodeIntelligenceBuilder:
 
         return {
             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-            "repo_root": str(self.entries[0].rel_path).split("/")[0] if self.entries else "",
+            "repo_root": str(repo_root),
             "git_depth": git_depth,
             "summary": {
                 "total_code_files": total_code,
