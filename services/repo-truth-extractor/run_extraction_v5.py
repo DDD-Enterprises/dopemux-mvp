@@ -2734,9 +2734,17 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
 
 
 def write_json(path: Path, payload: Any) -> None:
+    sanitized_payload = sanitize_payload_for_output(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        sanitized_json_text(payload, indent=2, ensure_ascii=True, sort_keys=True) + "\n",
+        json.dumps(
+            sanitized_payload,
+            indent=2,
+            ensure_ascii=True,
+            sort_keys=True,
+            default=str,
+        )
+        + "\n",
         encoding="utf-8",
     )
 
@@ -8869,10 +8877,7 @@ def call_llm(
             model_id,
         )
         if provider == "gemini":
-            logger.error(
-                "Gemini requires GEMINI_API_KEY in repo-root .env (canonical). "
-                "GOOGLE_API_KEY is deprecated for this runner."
-            )
+            logger.error("Gemini credentials are missing in canonical repo-root env configuration.")
         return {
             "ok": False,
             "text": "",
@@ -10184,10 +10189,10 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
         return
     logger.warning(
         "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
-        finalized["phase"],
-        finalized["step_id"],
-        finalized["partition_id"],
-        finalized["repair_type"],
+        sanitize_text_for_output(str(finalized["phase"])),
+        sanitize_text_for_output(str(finalized["step_id"])),
+        sanitize_text_for_output(str(finalized["partition_id"])),
+        sanitize_text_for_output(str(finalized["repair_type"])),
         finalized["chars_delta"],
     )
 
@@ -16763,7 +16768,12 @@ def write_resume_proof(
                 missing_total += len(missing)
                 phase_statuses[phase] = c_payload.get("status", "UNKNOWN")
             except Exception:
-                pass
+                logger.warning(
+                    "Failed to parse phase coverage payload for phase %s from %s",
+                    sanitize_text_for_output(str(phase)),
+                    sanitize_text_for_output(str(coverage_path)),
+                    exc_info=True,
+                )
 
     run_status = compute_run_status(
         blocked_promptset=blocked_promptset,
