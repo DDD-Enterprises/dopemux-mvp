@@ -5,14 +5,12 @@ on:
     branches: [main]
     paths:
       - 'Dockerfile'
-      - 'Dockerfile.frontend'
       - 'services/**/Dockerfile*'
       - 'docker/**/Dockerfile*'
       - '.github/workflows/containers.yml'
   pull_request:
     paths:
       - 'Dockerfile'
-      - 'Dockerfile.frontend'
       - 'services/**/Dockerfile*'
       - 'docker/**/Dockerfile*'
       - '.github/workflows/containers.yml'
