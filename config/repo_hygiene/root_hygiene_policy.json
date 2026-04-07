@@ -161,10 +161,16 @@
     "audit_prompts.py",
     "mcp-proxy-config*.yaml",
     "CHECKLIST.md",
-".dockerignore",
+    ".dockerignore",
     ".python-version"
   ],
-  "legacy_root_files": [],
+  "legacy_root_files": [
+    "ARCHITECTURE.md",
+    "BRAND_SYSTEM.md",
+    "PM_PLANE.md",
+    "PROJECT.md",
+    "SERVICE_CATALOG.md"
+  ],
   "blocked_root_file_patterns": [
     "*_REPORT.md",
     "*_STATUS.md",

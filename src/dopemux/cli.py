@@ -131,16 +131,14 @@ if "-litellm" in sys.argv:
 
 
 ROLE_SERVER_SERVICE_MAP = {
-    "conport": "conport",
-    "serena": "serena",
-    "serena-lsp": "serena",
-    "zen": "zen",
-    "exa": "exa",
-    "gptr-mcp": "gptr-mcp",
+    "dopemux-conport": "dopemux-conport",
+    "dopemux-serena": "dopemux-serena",
+    "dopemux-zen": "dopemux-zen",
+    "dopemux-pal": "dopemux-pal",
     "dopemux-gpt-researcher": "dopemux-gpt-researcher",
-    "desktop-commander": "desktop-commander",
-    "leantime": "leantime-bridge",
-    "leantime-bridge": "leantime-bridge",
+    "dopemux-desktop-commander": "dopemux-desktop-commander",
+    "dopemux-leantime-bridge": "dopemux-leantime-bridge",
+    "dopemux-claude-context": "dopemux-claude-context",
 }
 
 ATTENTION_PROFILE_DEFAULTS = {
@@ -1685,20 +1683,21 @@ def start(
 
     try:
         dopemux_exists = Path.exists(project_path / ".dopemux")
-    except TypeError:
+    except (TypeError, AttributeError):
         dopemux_exists = False
 
     if not dopemux_exists:
         project_path_candidate = get_workspace_root()
-        if hasattr(project_path_candidate, "__truediv__"):
-            project_path = project_path_candidate
-        else:
-            project_path = Path(project_path_candidate)
+        if project_path_candidate:
+            if hasattr(project_path_candidate, "__truediv__"):
+                project_path = project_path_candidate
+            else:
+                project_path = Path(project_path_candidate)
 
-        try:
-            dopemux_exists = Path.exists(project_path / ".dopemux")
-        except TypeError:
-            dopemux_exists = False
+            try:
+                dopemux_exists = Path.exists(project_path / ".dopemux")
+            except (TypeError, AttributeError):
+                dopemux_exists = False
 
     if dry_run:
         console.logger.info(
@@ -1789,7 +1788,6 @@ def start(
         pass
 
         logger.error(f"Error: {e}")
-
     # Check if project is initialized
     if not dopemux_exists:
         console.print(
@@ -2517,7 +2515,7 @@ def _trigger_dope_context_autoindex_startup(
 
 
 from .commands.instances_commands import instances
-from .commands.personas_commands import personas
+cli.add_command(instances, "instances")
 
 @cli.group("native-hooks")
 def native_hooks():
@@ -2599,11 +2597,6 @@ def native_hooks_register(is_global: bool):
         console.print(f"[success]✓ Registered Dopemux native hooks in {settings_path}[/success]")
     else:
         console.print(f"[info]Dopemux native hooks already registered in {settings_path}[/info]")
-
-
-cli.add_command(instances, "instances")
-cli.add_command(personas, "personas")
-cli.add_command(native_hooks, "native-hooks")
 
 
 @cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
@@ -3120,6 +3113,7 @@ cli.add_command(memory)
 
 
 from .commands.trigger_group_commands import trigger_group
+from .commands.personas_commands import personas
 
 cli.add_command(trigger_group, "trigger")
 
@@ -3139,11 +3133,8 @@ from .commands.upgrades_commands import upgrades
 cli.add_command(upgrades)
 
 
-from .commands.extractor_commands import (
-    _run_extractor_runner,
-    _run_repscan_runner,
-    extractor,
-)
+from .commands.extractor_commands import extractor, _run_extractor_runner, _run_repscan_runner
+from .commands.extractor_validation import ValidationConfig, run_live_validation
 
 cli.add_command(extractor)
 
@@ -3720,9 +3711,166 @@ def _start_mcp_servers_with_progress(
         wizard.add_log("✅ MCP Servers Online")
 
 
-@cli.command()
-@click.option("--message", "-m", help="📜 Signal Note: Attach a descriptive message to the saved temporal coordinate.")
-@click.option("--force", "-f", is_flag=True, help="⚡ Force Extraction: Overwrite safety interlocks and capture state even if no changes are detected.")
+def _trigger_dope_context_autoindex_startup(
+    workspace_path: Path,
+    *,
+    force: bool = False,
+) -> Optional[dict]:
+    """
+    Trigger dope-context startup autoindex bootstrap for the current workspace.
+    """
+    enabled = os.getenv("DOPEMUX_AUTO_INDEX_ON_STARTUP", "1").lower() not in {"0", "false", "no"}
+    if not enabled:
+        return None
+
+    base_url = os.getenv("DOPE_CONTEXT_URL", "http://localhost:3010").rstrip("/")
+    endpoint = f"{base_url}/autoindex/bootstrap"
+    payload = {
+        "workspace_path": str(workspace_path.resolve()),
+        "force": force,
+        "wait_for_completion": False,
+        "debounce_seconds": float(os.getenv("DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS", "5.0")),
+        "periodic_interval": int(os.getenv("DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS", "600")),
+        "trigger": "dopemux_cli_startup",
+    }
+
+    try:
+        import requests
+
+        response = requests.post(endpoint, json=payload, timeout=5)
+        if response.status_code >= 400:
+            console.logger.info(
+                f"[yellow]⚠️  Autoindex bootstrap request failed ({response.status_code})[/yellow]"
+            )
+            return {
+                "status": "http_error",
+                "status_code": response.status_code,
+                "endpoint": endpoint,
+            }
+        result = response.json()
+        return result if isinstance(result, dict) else {"status": "unknown_response"}
+    except Exception as exc:
+        logger.warning("Failed to trigger dope-context autoindex bootstrap: %s", exc)
+        return {
+            "status": "request_failed",
+            "error": str(exc),
+            "endpoint": endpoint,
+        }
+
+
+def _activate_dangerous_mode():
+    """
+    Activate dangerous mode with proper security safeguards.
+
+    This temporarily overrides the default safe mode settings for the current
+    session only. Changes are not persisted to the .env file.
+
+    Security Features:
+    - Time-limited session (1 hour max)
+    - Explicit user confirmation required
+    - Clear warnings about risks
+    - Environment isolation
+    """
+    # Check if already in dangerous mode
+    if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
+        expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
+        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+
+        if time.time() < expires_timestamp:
+            console.logger.info("[yellow]⚠️  Dangerous mode already active[/yellow]")
+            remaining_minutes = int((expires_timestamp - time.time()) / 60)
+            console.logger.info(f"[dim]Expires in {remaining_minutes} minutes[/dim]")
+            return
+        else:
+            # Expired, clear old settings
+            _deactivate_dangerous_mode()
+
+    # Show serious warning
+    console.print(Panel(
+        "[red bold]⚠️  DANGER: This will disable ALL security restrictions![/red bold]\n\n"
+        "[yellow]This mode will:[/yellow]\n"
+        "• Skip all permission checks\n"
+        "• Disable role enforcement\n"
+        "• Bypass budget limits\n"
+        "• Allow unrestricted tool access\n\n"
+        "[red]Use ONLY in isolated, trusted environments![/red]\n"
+        "[yellow]Session will expire automatically in 1 hour.[/yellow]",
+        title="🚨 Security Warning",
+        border_style="red"
+    ))
+
+    # Require explicit confirmation
+    if not click.confirm("\nDo you understand the risks and want to proceed?", default=False):
+        console.logger.info("[green]Dangerous mode cancelled. Staying in safe mode.[/green]")
+        return
+
+    if not click.confirm("Are you in an isolated, trusted environment?", default=False):
+        console.logger.info("[green]Dangerous mode cancelled for security.[/green]")
+        return
+
+    # Set time-limited dangerous mode (1 hour)
+    expiry_time = time.time() + 3600  # 1 hour
+
+    os.environ["DOPEMUX_DANGEROUS_MODE"] = "true"
+    os.environ["DOPEMUX_DANGEROUS_EXPIRES"] = str(expiry_time)
+    os.environ["DOPEMUX_DANGEROUS_PID"] = str(os.getpid())  # Track process
+
+    # Set security bypass flags
+    os.environ["HOOKS_ENABLE_ADAPTIVE_SECURITY"] = "0"
+    os.environ["CLAUDE_CODE_SKIP_PERMISSIONS"] = "true"
+    os.environ["METAMCP_ROLE_ENFORCEMENT"] = "false"
+    os.environ["METAMCP_APPROVAL_REQUIRED"] = "false"
+    os.environ["METAMCP_BUDGET_ENFORCEMENT"] = "false"
+
+    # Traditional dangerous flags for compatibility
+    os.environ["CLAUDE_DANGEROUS"] = "true"
+    os.environ["SKIP_PERMISSIONS"] = "true"
+
+    # Log for audit trail (but not sensitive info)
+    expiry_str = datetime.fromtimestamp(expiry_time).strftime("%H:%M:%S")
+    console.logger.info(f"[red bold]⚠️  DANGEROUS MODE ACTIVE until {expiry_str}[/red bold]")
+
+
+def _deactivate_dangerous_mode():
+    """Deactivate dangerous mode and clean up environment."""
+    dangerous_vars = [
+        "DOPEMUX_DANGEROUS_MODE",
+        "DOPEMUX_DANGEROUS_EXPIRES",
+        "DOPEMUX_DANGEROUS_PID",
+        "HOOKS_ENABLE_ADAPTIVE_SECURITY",
+        "CLAUDE_CODE_SKIP_PERMISSIONS",
+        "METAMCP_ROLE_ENFORCEMENT",
+        "METAMCP_APPROVAL_REQUIRED",
+        "METAMCP_BUDGET_ENFORCEMENT",
+        "CLAUDE_DANGEROUS",
+        "SKIP_PERMISSIONS"
+    ]
+
+    for var in dangerous_vars:
+        os.environ.pop(var, None)
+
+    console.logger.info("[green]✅ Dangerous mode deactivated[/green]")
+
+
+def _check_dangerous_mode_expiry():
+    """Check if dangerous mode has expired and clean up if needed."""
+    if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
+        expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
+        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+
+        if time.time() >= expires_timestamp:
+            console.logger.info("[yellow]⏰ Dangerous mode expired, returning to safe mode[/yellow]")
+            _deactivate_dangerous_mode()
+            return True
+    return False
+
+
+@cli.command("backup")
+@click.option("--dest", help="Destination directory for tar backups (defaults to docker/mcp-servers/backups/volumes_<timestamp>)")
+@click.option("--pattern", help="Regex to filter volume names (default: ^(mcp_|dopemux_))")
+@click.option("--no-pull", is_flag=True, help="Do not pull alpine image if missing")
+@click.option("--schedule", type=click.Choice(["daily", "weekly"]), help="Print a cron entry to run backups on a schedule")
+@click.option("--apply", is_flag=True, help="Attempt to install the cron entry into your crontab")
 @click.pass_context
 def save(ctx, message: Optional[str], force: bool):
     """
@@ -4477,6 +4625,8 @@ _ROUTING_POLICY_CHOICES = [
     "balanced_grok_openrouter",
     "quality",
     "openrouter",
+    "gemini_primary",
+    "optimal",
 ]
 _LEGACY_DEFAULT_ROUTING_POLICY = "cost"
 _V5_DEFAULT_ROUTING_POLICY = "balanced_openrouter"
@@ -4544,11 +4694,25 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
 
 @upgrades.command("run")
 @_pipeline_version_options
-@click.option("--phase", default="ALL", show_default=True, help="📊 Target Phase: Phase code or ALL (default: ALL).")
-@click.option("--run-id", default=None, help="🆔 Ritual Session: Unique identifier for the extraction run.")
-@click.option("--dry-run/--execute", default=True, show_default=True, help="🔬 Ritual Preview: Preview the extraction without committing to disk (default: dry-run).")
-@click.option("--resume/--no-resume", default=True, show_default=True, help="⏯️  Resume Sequence: Resume a suspended ritual, skipping validated partitions.")
-@click.option("--partition-workers", type=int, default=1, show_default=True, help="⚡ Ritual Workers: Number of concurrent workers for partitioning (default: 1).")
+@click.option("--phase", default="ALL", show_default=True, help="Phase code or ALL")
+@click.option("--step", default=None, help="Single concrete step to execute within the selected phase.")
+@click.option("--s-steps", default=None, help="Comma-separated subset of Phase S steps.")
+@click.option("--run-id", default=None, help="Run ID")
+@click.option(
+    "--promptset-root",
+    type=click.Path(exists=True, file_okay=False),
+    default=None,
+    help="External generated promptset directory for v5 prompt resolution.",
+)
+@click.option("--dry-run/--execute", default=True, show_default=True)
+@click.option("--resume/--no-resume", default=True, show_default=True)
+@click.option("--partition-workers", type=int, default=1, show_default=True)
+@click.option(
+    "--max-partitions-per-step",
+    type=int,
+    default=None,
+    help="Cap the number of partitions executed for each step.",
+)
 @click.option(
     "--routing-policy",
     type=click.Choice(_ROUTING_POLICY_CHOICES),
@@ -4556,9 +4720,13 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     show_default=False,
     help="🧠 Cognitive Routing: LLM policy for extraction (default: model-map balanced).",
 )
-@click.option("--disable-escalation", is_flag=True, default=False, show_default=True, help="🛡️  Enforce Constraints: Disable automatic model escalation on failure.")
-@click.option("--escalation-max-hops", type=int, default=2, show_default=True, help="🚀 Scaling Threshold: Maximum model escalation hops (default: 2).")
-@click.option("--batch-mode", is_flag=True, default=False, show_default=True, help="⚡ Asynchronous Batch: Engage provider-level batching for high-volume extraction.")
+@click.option("--disable-escalation", is_flag=True, default=False, show_default=True)
+@click.option("--escalation-max-hops", type=int, default=2, show_default=True)
+@click.option("--batch-mode", is_flag=True, default=False, show_default=True)
+@click.option("--batch-submit-only", is_flag=True, default=False, show_default=True)
+@click.option("--batch-watch", is_flag=True, default=False, show_default=True)
+@click.option("--batch-retrieve", is_flag=True, default=False, show_default=True)
+@click.option("--batch-ids", multiple=True, help="Batch IDs to retrieve when using --batch-retrieve.")
 @click.option(
     "--batch-provider",
     type=click.Choice(["auto", "openai", "gemini", "xai"]),
@@ -4566,21 +4734,20 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     show_default=True,
     help="🧪 Batch Alchemist: Specific provider for asynchronous processing (default: auto).",
 )
-@click.option("--batch-poll-seconds", type=int, default=30, show_default=True, help="⏱️  Heartbeat Frequency: Polling interval for batch status updates (default: 30s).")
 @click.option(
-    "--batch-wait-timeout-seconds", type=int, default=86400, show_default=True, help="⏳ Ritual Timeout: Maximum wait time for batch completion (default: 24h)."
-)
-@click.option("--batch-max-requests-per-job", type=int, default=2000, show_default=True, help="📊 Payload Limit: Maximum requests per batch job (default: 2000).")
-@click.option(
-    "--ui",
-    type=click.Choice(["auto", "rich", "plain"]),
-    default="auto",
+    "--retrieve-provider",
+    type=click.Choice(["openai", "gemini", "xai"]),
+    default="openai",
     show_default=True,
-    help="🎭 HUD Aesthetic: User interface style for telemetry streaming (default: auto).",
 )
-@click.option("--pretty", is_flag=True, default=False, show_default=True, help="✨ Polish Output: Apply high-fidelity formatting to the telemetry stream.")
-@click.option("--quiet", is_flag=True, default=False, show_default=True, help="🔇 Silence HUD: Suppress telemetry output during the ritual.")
-@click.option("--jsonl-events", is_flag=True, default=False, show_default=True, help="📊 Emit Event Stream: Save ritual telemetry as JSONL for later analysis.")
+@click.option("--batch-poll-seconds", type=int, default=30, show_default=True)
+@click.option("--batch-wait-timeout-seconds", type=int, default=86400, show_default=True)
+@click.option("--batch-max-requests-per-job", type=int, default=2000, show_default=True)
+@click.option("--allow-multi-phase-live-batch", is_flag=True, default=False, show_default=True)
+@click.option("--ui", type=click.Choice(["auto", "rich", "plain"]), default="auto", show_default=True)
+@click.option("--pretty", is_flag=True, default=False, show_default=True)
+@click.option("--quiet", is_flag=True, default=False, show_default=True)
+@click.option("--jsonl-events", is_flag=True, default=False, show_default=True)
 @click.option(
     "--sync/--no-sync",
     default=True,
@@ -4593,18 +4760,28 @@ def extractor_run(
     pipeline_version: str,
     engine_version_legacy: Optional[str],
     phase: str,
+    step: Optional[str],
+    s_steps: Optional[str],
     run_id: Optional[str],
+    promptset_root: Optional[str],
     dry_run: bool,
     resume: bool,
     partition_workers: int,
+    max_partitions_per_step: Optional[int],
     routing_policy: Optional[str],
     disable_escalation: bool,
     escalation_max_hops: int,
     batch_mode: bool,
+    batch_submit_only: bool,
+    batch_watch: bool,
+    batch_retrieve: bool,
+    batch_ids: tuple[str, ...],
     batch_provider: str,
+    retrieve_provider: str,
     batch_poll_seconds: int,
     batch_wait_timeout_seconds: int,
     batch_max_requests_per_job: int,
+    allow_multi_phase_live_batch: bool,
     ui: str,
     pretty: bool,
     quiet: bool,
@@ -4628,27 +4805,42 @@ def extractor_run(
     args: List[str] = []
     if phase:
         args.extend(["--phase", phase])
+    if step:
+        args.extend(["--step", step])
+    if s_steps:
+        args.extend(["--s-steps", s_steps])
     if run_id:
         args.extend(["--run-id", run_id])
+    if promptset_root:
+        args.extend(["--promptset-root", promptset_root])
     if dry_run:
         args.append("--dry-run")
     if resume:
         args.append("--resume")
     args.extend(["--partition-workers", str(partition_workers)])
+    if max_partitions_per_step is not None:
+        args.extend(["--max-partitions-per-step", str(max(0, int(max_partitions_per_step)))])
     args.extend(["--routing-policy", effective_routing_policy])
     if disable_escalation:
         args.append("--disable-escalation")
     args.extend(["--escalation-max-hops", str(max(0, int(escalation_max_hops)))])
     if batch_mode:
         args.append("--batch-mode")
+    if batch_submit_only:
+        args.append("--batch-submit-only")
+    if batch_watch:
+        args.append("--batch-watch")
+    if batch_retrieve:
+        args.append("--batch-retrieve")
+    for batch_id in batch_ids:
+        args.extend(["--batch-ids", batch_id])
     args.extend(["--batch-provider", batch_provider])
+    args.extend(["--retrieve-provider", retrieve_provider])
     args.extend(["--batch-poll-seconds", str(max(1, int(batch_poll_seconds)))])
-    args.extend(
-        ["--batch-wait-timeout-seconds", str(max(60, int(batch_wait_timeout_seconds)))]
-    )
-    args.extend(
-        ["--batch-max-requests-per-job", str(max(1, int(batch_max_requests_per_job)))]
-    )
+    args.extend(["--batch-wait-timeout-seconds", str(max(60, int(batch_wait_timeout_seconds)))])
+    args.extend(["--batch-max-requests-per-job", str(max(1, int(batch_max_requests_per_job)))])
+    if allow_multi_phase_live_batch:
+        args.append("--allow-multi-phase-live-batch")
     args.extend(["--ui", ui])
     if pretty:
         args.append("--pretty")
@@ -4730,14 +4922,21 @@ def extractor_status(
 
 @upgrades.command("preflight")
 @_pipeline_version_options
-@click.option("--run-id", default=None, help="🆔 Ritual Session: Unique identifier for the preflight session.")
-@click.option("--auth-doctor", is_flag=True, help="🩺 Auth Apothecary: Also execute high-fidelity provider authentication diagnostics.")
+@click.option("--run-id", default=None, help="Run ID")
+@click.option(
+    "--promptset-root",
+    type=click.Path(exists=True, file_okay=False),
+    default=None,
+    help="External generated promptset directory for v5 prompt resolution.",
+)
+@click.option("--auth-doctor", is_flag=True, help="Also run auth diagnostics")
 @click.pass_context
 def extractor_preflight(
     ctx,
     pipeline_version: str,
     engine_version_legacy: Optional[str],
     run_id: Optional[str],
+    promptset_root: Optional[str],
     auth_doctor: bool,
 ):
     """
@@ -4752,12 +4951,140 @@ def extractor_preflight(
     args: List[str] = ["--preflight-providers"]
     if run_id:
         args.extend(["--run-id", run_id])
+    if promptset_root:
+        args.extend(["--promptset-root", promptset_root])
     _run_extractor_runner(pipeline_version=effective_version, args=args)
     if auth_doctor:
         auth_args = ["--doctor-auth"]
         if run_id:
             auth_args.extend(["--run-id", run_id])
+        if promptset_root:
+            auth_args.extend(["--promptset-root", promptset_root])
         _run_extractor_runner(pipeline_version=effective_version, args=auth_args)
+
+
+@upgrades.command("validate-live")
+@click.option(
+    "--promptset-root",
+    type=click.Path(exists=True, file_okay=False),
+    required=True,
+    help="External generated promptset directory to validate and use for paid stages.",
+)
+@click.option(
+    "--stage",
+    type=click.Choice(["preflight", "provider_probe", "batch_pilot", "phase_slice", "full_phased"]),
+    default="preflight",
+    show_default=True,
+    help="Validation stage to run. Paid stages include all earlier gates automatically.",
+)
+@click.option("--run-id", default=None, help="Validation run ID.")
+@click.option(
+    "--report-root",
+    type=click.Path(file_okay=False),
+    default="reports/repo-truth-extractor/validation",
+    show_default=True,
+    help="Directory where validation ledgers, logs, and reports are written.",
+)
+@click.option(
+    "--routing-policy",
+    type=click.Choice(_ROUTING_POLICY_CHOICES),
+    default=_V5_DEFAULT_ROUTING_POLICY,
+    show_default=True,
+    help="Routing policy used for v5 dry-runs, canary, and full execution.",
+)
+@click.option("--tp008-map", type=click.Path(exists=True, dir_okay=False), default=None, help="Optional canonical TP-008 mapping file.")
+@click.option(
+    "--pricing-manifest",
+    type=click.Path(exists=True, dir_okay=False),
+    default=None,
+    help="Required for paid slice/full stages. JSON file with route_call_upper_bounds for spend caps.",
+)
+@click.option("--provider", type=click.Choice(["openai", "gemini", "xai"]), default=None, help="Preferred provider for paid probe and batch stages.")
+@click.option("--ui", "ui_mode", type=click.Choice(["auto", "rich", "plain"]), default="auto", show_default=True)
+@click.option("--provider-probe-phase", type=click.Choice(["D", "C", "Q"]), default="D", show_default=True)
+@click.option("--provider-probe-step", default=None, help="Optional concrete step for the provider probe stage.")
+@click.option("--provider-probe-max-usd", type=float, default=0.10, show_default=True)
+@click.option("--provider-probe-max-minutes", type=float, default=5.0, show_default=True)
+@click.option("--batch-pilot-phase", type=click.Choice(["D", "C", "Q"]), default="D", show_default=True)
+@click.option("--batch-pilot-step", default=None, help="Optional concrete step for the batch pilot stage.")
+@click.option("--batch-pilot-max-usd", type=float, default=1.0, show_default=True)
+@click.option("--batch-pilot-max-minutes", type=float, default=15.0, show_default=True)
+@click.option("--phase-slice-docs-phase", type=click.Choice(["D"]), default="D", show_default=True)
+@click.option("--phase-slice-code-phase", type=click.Choice(["C", "Q"]), default="C", show_default=True)
+@click.option("--phase-slice-synth-phase", type=click.Choice(["R", "S"]), default="R", show_default=True)
+@click.option("--phase-slice-max-usd", type=float, default=5.0, show_default=True)
+@click.option("--phase-slice-max-minutes", type=float, default=45.0, show_default=True)
+@click.option("--full-max-usd", type=float, default=75.0, show_default=True)
+@click.option("--full-max-minutes", type=float, default=240.0, show_default=True)
+@click.pass_context
+def extractor_validate_live(
+    ctx,
+    promptset_root: str,
+    stage: str,
+    run_id: Optional[str],
+    report_root: str,
+    routing_policy: str,
+    tp008_map: Optional[str],
+    pricing_manifest: Optional[str],
+    provider: Optional[str],
+    ui_mode: str,
+    provider_probe_phase: str,
+    provider_probe_step: Optional[str],
+    provider_probe_max_usd: float,
+    provider_probe_max_minutes: float,
+    batch_pilot_phase: str,
+    batch_pilot_step: Optional[str],
+    batch_pilot_max_usd: float,
+    batch_pilot_max_minutes: float,
+    phase_slice_docs_phase: str,
+    phase_slice_code_phase: str,
+    phase_slice_synth_phase: str,
+    phase_slice_max_usd: float,
+    phase_slice_max_minutes: float,
+    full_max_usd: float,
+    full_max_minutes: float,
+):
+    """
+    Run the fail-closed v5 live validation workflow.
+
+    \b
+    Examples:
+      dopemux upgrades validate-live --promptset-root /tmp/promptset
+      dopemux upgrades validate-live --stage provider_probe --promptset-root /tmp/promptset
+      dopemux upgrades validate-live --stage phase_slice --promptset-root /tmp/promptset --pricing-manifest pricing.json
+      dopemux upgrades validate-live --stage full_phased --promptset-root /tmp/promptset --pricing-manifest pricing.json
+    """
+    payload = run_live_validation(
+        ValidationConfig(
+            promptset_root=Path(promptset_root),
+            stage=stage,
+            run_id=run_id,
+            report_root=Path(report_root),
+            ui_mode=ui_mode,
+            routing_policy=routing_policy,
+            provider_probe_phase=provider_probe_phase,
+            provider_probe_step=provider_probe_step,
+            provider_probe_max_usd=provider_probe_max_usd,
+            provider_probe_max_minutes=provider_probe_max_minutes,
+            batch_pilot_phase=batch_pilot_phase,
+            batch_pilot_step=batch_pilot_step,
+            batch_pilot_max_usd=batch_pilot_max_usd,
+            batch_pilot_max_minutes=batch_pilot_max_minutes,
+            canary_phases=(phase_slice_docs_phase, phase_slice_code_phase, phase_slice_synth_phase),
+            phase_slice_max_usd=phase_slice_max_usd,
+            phase_slice_max_minutes=phase_slice_max_minutes,
+            full_max_usd=full_max_usd,
+            full_max_minutes=full_max_minutes,
+            tp008_map=Path(tp008_map) if tp008_map else None,
+            pricing_manifest=Path(pricing_manifest) if pricing_manifest else None,
+            selected_provider=provider,
+        )
+    )
+    report_path = Path(report_root) / payload["run_id"] / "VALIDATION_REPORT.json"
+    console.logger.info(f"validation_report={report_path}")
+    if payload.get("status") != "pass":
+        blockers = payload.get("blockers") or ["Live validation failed."]
+        raise click.ClickException(f"{blockers[0]} See {report_path}.")
 
 
 @upgrades.group("promptset")

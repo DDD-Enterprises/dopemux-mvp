@@ -1,0 +1,281 @@
+services/task-orchestrator/automation_workflows.py:885:            if status in {"TODO", "IN_PROGRESS", "BLOCKED"}:
+Binary file services/task-orchestrator/task_orchestrator/__pycache__/app.cpython-313.pyc matches
+services/task-orchestrator/task_orchestrator/app.py:148:    4. Persist to ConPort (parent BLOCKED, subtasks TODO, DECOMPOSED_INTO links)
+services/task-orchestrator/app/core/sync.py:402:                    leantime_status = self._map_status_to_leantime(progress_data.get("status", "TODO"))
+services/task-orchestrator/app/core/sync.py:836:            "0": "TODO",
+services/task-orchestrator/app/core/sync.py:843:        return status_map.get(leantime_status, "TODO")
+services/task-orchestrator/app/core/sync.py:848:            "TODO": "0",
+services/task-orchestrator/app/core/sync.py:892:        logger.warning("Queued conflict %s for manual resolution (in-memory fallback)", conflict.id)
+Binary file services/task-orchestrator/app/core/__pycache__/sync.cpython-313.pyc matches
+Binary file services/task-orchestrator/app/adapters/__pycache__/schema_mapping.cpython-313.pyc matches
+Binary file services/task-orchestrator/app/adapters/__pycache__/conport_adapter.cpython-313.pyc matches
+services/task-orchestrator/app/adapters/conport_adapter.py:103:        ValueError: If required fields are missing
+services/task-orchestrator/app/adapters/conport_adapter.py:107:        raise ValueError(f"Invalid task: missing id or title (id={task.id}, title={task.title})")
+services/task-orchestrator/app/adapters/conport_adapter.py:111:        TaskStatus.PENDING: "TODO",
+services/task-orchestrator/app/adapters/conport_adapter.py:152:        "status": status_mapping.get(task.status, "TODO"),
+services/task-orchestrator/app/adapters/conport_adapter.py:185:    missing = [f for f in required_fields if f not in progress]
+services/task-orchestrator/app/adapters/conport_adapter.py:186:    if missing:
+services/task-orchestrator/app/adapters/conport_adapter.py:187:        raise ValueError(f"Invalid progress entry: missing fields {missing}")
+services/task-orchestrator/app/adapters/conport_adapter.py:191:        "TODO": TaskStatus.PENDING,
+services/task-orchestrator/app/adapters/conport_adapter.py:296:            logger.error(f"Invalid task: missing id or title (id={task.id}, title={getattr(task, 'title', None)})")
+services/task-orchestrator/app/adapters/conport_adapter.py:315:            logger.error(f"Invalid progress_data: missing required keys")
+services/task-orchestrator/app/adapters/conport_adapter.py:503:            status_filter: Filter by status ("TODO", "IN_PROGRESS", "DONE", "BLOCKED")
+services/task-orchestrator/app/adapters/conport_adapter.py:853:            status: New status (TODO, IN_PROGRESS, DONE, BLOCKED)
+services/task-orchestrator/app/adapters/schema_mapping.py:191:        Dict with decoded ADHD metadata (uses defaults for missing tags)
+services/task-orchestrator/app/adapters/schema_mapping.py:308:    TaskStatus.PENDING: "TODO",
+services/task-orchestrator/app/adapters/schema_mapping.py:318:    "TODO": TaskStatus.PENDING,
+services/task-orchestrator/app/adapters/schema_mapping.py:327:    return TASK_STATUS_TO_CONPORT_STATUS.get(status, "TODO")
+services/task-orchestrator/app/adapters/schema_mapping.py:547:        valid_statuses = ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"]
+services/task-orchestrator/app/adapters/schema_mapping.py:637:    Ready tasks: status=TODO, no dependencies (or all dependencies DONE)
+services/task-orchestrator/app/adapters/schema_mapping.py:643:        "status_filter": "TODO",
+services/task-orchestrator/app/adapters/schema_mapping.py:656:        "status_filter": "TODO",
+services/task-orchestrator/app/adapters/schema_mapping.py:676:        "status_filter": "TODO",
+Binary file services/task-orchestrator/app/services/__pycache__/enhanced_orchestrator.cpython-313.pyc matches
+services/task-orchestrator/intelligence/context_switch_recovery.py:136:        # Or manually trigger recovery
+Binary file services/task-orchestrator/intelligence/__pycache__/context_switch_recovery.cpython-313.pyc matches
+services/task-orchestrator/conport_mcp_client.py:85:            status: TODO, IN_PROGRESS, DONE, BLOCKED
+services/task-orchestrator/conport_mcp_client.py:181:            status_filter: Optional status filter (TODO, IN_PROGRESS, etc.)
+Binary file services/task-orchestrator/__pycache__/automation_workflows.cpython-313.pyc matches
+Binary file services/task-orchestrator/__pycache__/integration_bridge_connector.cpython-313.pyc matches
+Binary file services/task-orchestrator/__pycache__/task_decomposition_endpoint.cpython-313.pyc matches
+Binary file services/task-orchestrator/__pycache__/conport_mcp_client.cpython-313.pyc matches
+services/task-orchestrator/docs/pm-plane-architecture.md:75:- **Human Override**: Critical decisions flagged for manual review
+services/task-orchestrator/docs/tools-documentation.md:20:**Use Case**: Identify why tasks can't start due to missing dependencies
+services/task-orchestrator/docs/tools-documentation.md:167:**Output**: Validation report with missing dependencies
+services/task-orchestrator/docs/tools-documentation.md:168:**Use Case**: Prevent task failures due to missing services
+services/task-orchestrator/task_decomposition_endpoint.py:73:    4. Persist to ConPort (parent BLOCKED, subtasks TODO, DECOMPOSED_INTO links)
+services/task-orchestrator/task_decomposition_endpoint.py:212:                status="TODO",
+Binary file services/task-orchestrator/services/task-orchestrator/__pycache__/enhanced_orchestrator.cpython-313.pyc matches
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3361:                        "status": entry.get("status", "TODO"),
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3417:        tasks = await self.get_tasks(status_filter="TODO")
+services/task-orchestrator/integration_bridge_connector.py:70:        new_status: New status (TODO/IN_PROGRESS/DONE/BLOCKED)
+services/taskmaster/bridge_adapter.py:69:                status="TODO",
+services/taskmaster/bridge_adapter.py:170:                    "status": task.get("status", "TODO"),
+Binary file services/taskmaster/__pycache__/bridge_adapter.cpython-313.pyc matches
+src/dopemux/dope_brainz_router.py:325:                self.pid_path.unlink(missing_ok=True)
+src/dopemux/dope_brainz_router.py:347:                f"Upstream credential {self._provider_key_env_var} missing from environment"
+src/dopemux/ui/dashboard.py:41:                    # Use a default if break warning structure is missing
+src/dopemux/worktree_manager_enhanced.py:350:        cognitive load of remembering exact branch names.
+src/dopemux/worktree_manager_enhanced.py:418:        cognitive load of remembering exact branch names.
+src/dopemux/worktree_manager_enhanced.py:510:                    console.print(f"[yellow]  • Orphaned worktree: {wt.branch} (directory missing)[/yellow]")
+Binary file src/dopemux/embeddings/pipelines/__pycache__/document_pipeline.cpython-313.pyc matches
+src/dopemux/embeddings/pipelines/document_pipeline.py:181:                logger.warning(f"⚠️ Skipping document {i}: missing required 'id' field")
+src/dopemux/embeddings/pipelines/document_pipeline.py:185:                logger.warning(f"⚠️ Skipping document {i}: missing required 'content' field")
+src/dopemux/embeddings/storage/text_indices.py:78:            logger.warning(f"⚠️ Stop words for '{language}' not implemented, using English")
+Binary file src/dopemux/embeddings/storage/__pycache__/text_indices.cpython-313.pyc matches
+Binary file src/dopemux/embeddings/storage/__pycache__/hybrid_store.cpython-313.pyc matches
+src/dopemux/embeddings/storage/hybrid_store.py:257:        """Create configured vector index with graceful fallback when optional deps are missing."""
+src/dopemux/embeddings/storage/hybrid_store.py:269:        """Create configured lexical index with graceful fallback when optional deps are missing."""
+src/dopemux/profile_analytics.py:32:    trigger: str  # 'manual', 'auto', 'suggestion_accepted'
+src/dopemux/profile_analytics.py:42:    manual_switches: int
+src/dopemux/profile_analytics.py:86:            trigger: 'manual', 'auto', 'suggestion_accepted', 'suggestion_declined'
+src/dopemux/profile_analytics.py:204:                    "manual_switches": stats.manual_switches,
+src/dopemux/profile_analytics.py:238:        manual = sum(1 for s in switches if s.trigger == 'manual')
+src/dopemux/profile_analytics.py:273:            manual_switches=manual,
+src/dopemux/profile_analytics.py:290:            manual_switches=0,
+src/dopemux/profile_analytics.py:335:    table.add_row("Manual", f"{stats.manual_switches}", f"({stats.manual_switches / stats.total_switches * 100:.0f}%)")
+src/dopemux/profile_analytics.py:415:                "id": "manual_only_switching",
+Binary file src/dopemux/analysis/__pycache__/embedder.cpython-313.pyc matches
+src/dopemux/analysis/embedder.py:80:    resolution: str  # 'keep_primary', 'merge', 'manual_review'
+src/dopemux/analysis/embedder.py:723:            return "manual_review"  # Medium similarity, needs review
+src/dopemux/memory/capture_client.py:180:        raise CaptureError("Redactor class missing in WMA redactor module")
+Binary file src/dopemux/memory/__pycache__/capture_client.cpython-313.pyc matches
+src/dopemux/memory/adapters/copilot.py:27:    Return None when missing or invalid.
+Binary file src/dopemux/memory/adapters/__pycache__/copilot.cpython-313.pyc matches
+src/dopemux/update/rollback.py:183:    async def manual_rollback(self, backup_name: Optional[str] = None) -> bool:
+src/dopemux/update/rollback.py:185:        Perform manual rollback to a specific backup.
+Binary file src/dopemux/update/__pycache__/phases.cpython-313.pyc matches
+Binary file src/dopemux/update/__pycache__/rollback.cpython-313.pyc matches
+src/dopemux/update/phases.py:412:                    self.console.print("[yellow]You may need to resolve conflicts manually[/yellow]")
+src/dopemux/update/phases.py:635:            self.console.print("[dim]🔧 MCP configurations may need manual update[/dim]")
+src/dopemux/worktree_name_inferrer.py:7:ADHD Optimization: Smart defaults > manual naming decisions.
+src/dopemux/protection_interceptor.py:152:    options.add_row("3.", "[dim]🚪 Exit[/dim] - Clean up manually and restart")
+src/dopemux/protection_interceptor.py:176:        console.print("\n[dim]Exiting - please clean up changes manually[/dim]")
+src/dopemux/protection_interceptor.py:254:        console.print("[yellow]⚠️ Staying in main - please create worktree manually[/yellow]")
+src/dopemux/protection_interceptor.py:387:                console.print("[yellow]⚠️ Merge conflicts detected - please resolve manually[/yellow]")
+src/dopemux/protection_interceptor.py:486:                    console.print("[yellow]⚠️ Changes not fully migrated - check stash manually[/yellow]")
+Binary file src/dopemux/config/__pycache__/manager.cpython-313.pyc matches
+src/dopemux/config/manager.py:393:        # Repair legacy dope-context wrapper when referenced script is missing.
+src/dopemux/config/manager.py:396:            missing_wrapper = any(
+src/dopemux/config/manager.py:400:            if missing_wrapper:
+src/dopemux/health.py:139:            missing_files = [f for f in config_files if not f.exists()]
+src/dopemux/health.py:141:            if missing_files:
+src/dopemux/health.py:142:                details["missing_files"] = [str(f) for f in missing_files]
+src/dopemux/health.py:144:                message = f"Missing {len(missing_files)} config files"
+src/dopemux/worktree_templates.py:280:        missing = []
+src/dopemux/worktree_templates.py:290:                    missing.append(str(rel_path))
+src/dopemux/worktree_templates.py:298:            "missing": missing,
+Binary file src/dopemux/claude/__pycache__/launcher.cpython-313.pyc matches
+Binary file src/dopemux/claude/__pycache__/launcher.cpython-311.pyc matches
+Binary file src/dopemux/claude/__pycache__/configurator.cpython-311.pyc matches
+Binary file src/dopemux/claude/__pycache__/configurator.cpython-313.pyc matches
+src/dopemux/claude/launcher.py:467:        """Install missing MCP server dependencies."""
+src/dopemux/claude/launcher.py:527:                temp_file.unlink(missing_ok=True)
+src/dopemux/claude/configurator.py:226:- Pending tasks and TODOs
+src/dopemux/roles/catalog.py:53:    missing_required: List[str]
+src/dopemux/roles/catalog.py:54:    missing_optional: List[str]
+src/dopemux/roles/catalog.py:244:    missing_required = sorted(s for s in required if s not in available_servers)
+src/dopemux/roles/catalog.py:245:    missing_optional = sorted(s for s in optional if s not in available_servers)
+src/dopemux/roles/catalog.py:270:        missing_required=missing_required,
+src/dopemux/roles/catalog.py:271:        missing_optional=missing_optional,
+src/dopemux/roles/catalog.py:314:    # Provide gentle feedback if a role requires servers that are missing
+src/dopemux/roles/catalog.py:315:    if console and activation.missing_required:
+src/dopemux/roles/catalog.py:318:            f"{', '.join(activation.missing_required)}[/yellow]"
+src/dopemux/roles/catalog.py:320:    if console and activation.missing_optional:
+src/dopemux/roles/catalog.py:323:            f"{', '.join(activation.missing_optional)}[/dim]"
+Binary file src/dopemux/roles/__pycache__/catalog.cpython-313.pyc matches
+Binary file src/dopemux/roles/__pycache__/catalog.cpython-311.pyc matches
+src/dopemux/mcp/conport_mcp_tools.py:84:    source: str = "manual"
+src/dopemux/mcp/conport_mcp_tools.py:193:                          source: str = "manual", source_ref: str = None,
+src/dopemux/mcp/roles.py:35:    MANUAL = "manual"  # User-requested escalation
+src/dopemux/mcp/registry.py:81:            raise ValueError(f"Invalid MCP registry format in {self.path}: missing 'servers' mapping")
+src/dopemux/mcp/session_manager.py:58:    MANUAL = "manual"  # User-requested checkpoint
+src/dopemux/mcp/session_manager.py:890:                checkpoint_type=CheckpointType(checkpoint.get("type", "manual")),
+Binary file src/dopemux/mcp/__pycache__/session_manager.cpython-313.pyc matches
+Binary file src/dopemux/mcp/__pycache__/roles.cpython-313.pyc matches
+Binary file src/dopemux/mcp/__pycache__/registry.cpython-313.pyc matches
+Binary file src/dopemux/mcp/__pycache__/conport_mcp_tools.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/instance_manager.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/claude_config.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/adhd_error_messages.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/worktree_manager_enhanced.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/dope_brainz_router.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/worktree_name_inferrer.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/profile_detector.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/cli.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/litellm_proxy.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/agent_validator.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/worktree_diagnostics.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/auto_configurator.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/config_generator.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/profile_analytics.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/workspace_detection.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/worktree_templates.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/profile_commands.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/protection_interceptor.cpython-313.pyc matches
+Binary file src/dopemux/__pycache__/health.cpython-313.pyc matches
+src/dopemux/profile_commands.py:244:            trigger="manual",
+src/dopemux/profile_commands.py:453:        backup_path.unlink(missing_ok=True)
+src/dopemux/profile_commands.py:457:        backup_path.unlink(missing_ok=True)
+src/dopemux/claude_config.py:228:                            logger.info("Fixing missing matcher in UserPromptSubmit hook entry.")
+src/dopemux/claude_config.py:255:            ClaudeConfigError: If required MCP servers are missing from config
+src/dopemux/claude_config.py:259:        missing_servers = []
+src/dopemux/claude_config.py:267:                missing_servers.append(profile_mcp_name)
+src/dopemux/claude_config.py:271:                missing_servers.append(f"{profile_mcp_name} (maps to '{config_name}')")
+src/dopemux/claude_config.py:276:        if missing_servers:
+src/dopemux/claude_config.py:279:                "\n".join(f"  • {name}" for name in missing_servers) +
+src/dopemux/claude_config.py:389:            Dictionary with 'available' and 'missing' lists of MCP names
+src/dopemux/claude_config.py:394:            "missing": []
+src/dopemux/claude_config.py:401:                result["missing"].append(profile_mcp_name)
+src/dopemux/profile_detector.py:566:        lines.append(f"\n🤷 Low confidence, manual selection recommended")
+src/dopemux/cli.py:396:def _suggest_server_start(missing_servers: Iterable[str]) -> None:
+src/dopemux/cli.py:397:    """Suggest commands to start missing MCP services."""
+src/dopemux/cli.py:399:    services = sorted({ROLE_SERVER_SERVICE_MAP.get(name, name) for name in missing_servers})
+src/dopemux/cli.py:764:            missing_keys = [
+src/dopemux/cli.py:767:            if missing_keys:
+src/dopemux/cli.py:769:                    f"--altp requires: {', '.join('$' + k for k in missing_keys)}. "
+src/dopemux/cli.py:845:        remember_raw = os.getenv("DOPEMUX_LITELLM_REMEMBER_DB", "").strip().lower()
+src/dopemux/cli.py:846:        remember_db = remember_raw not in {"0", "false", "no"}
+src/dopemux/cli.py:852:        if not db_url and remember_db and db_url_path.exists():
+src/dopemux/cli.py:1017:                console.logger.info(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
+src/dopemux/cli.py:1086:        if remember_db:
+src/dopemux/cli.py:1170:        if role_activation and role_activation.missing_required:
+src/dopemux/cli.py:1171:            _suggest_server_start(role_activation.missing_required)
+src/dopemux/cli.py:1199:    if role_activation and role_activation.missing_required:
+src/dopemux/cli.py:1200:        _suggest_server_start(role_activation.missing_required)
+src/dopemux/cli.py:1201:    if role_activation and role_activation.missing_optional:
+src/dopemux/cli.py:1203:            f"[dim]Optional services currently offline: {', '.join(role_activation.missing_optional)}[/dim]"
+src/dopemux/cli.py:1682:        # Auto-configure MCP servers for current worktree (Phase 2: Zero manual steps)
+src/dopemux/cli.py:3700:        No need to remember which services to start manually.
+src/dopemux/cli.py:3708:            console.logger.info("[yellow]Falling back to manual startup...[/yellow]")
+src/dopemux/cli.py:3710:            # Fallback: manual startup
+src/dopemux/cli.py:3718:            subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose --profile manual up -d task-orchestrator"], check=True)
+src/dopemux/cli.py:4349:@click.option("--no-pull", is_flag=True, help="Do not pull alpine image if missing")
+src/dopemux/cli.py:4476:        console.logger.info("\nAdd this entry manually via 'crontab -e':\n")
+src/dopemux/cli.py:5029:        success = asyncio.run(manager.manual_rollback(backup_name))
+src/dopemux/cli.py:5364:                console.logger.info(f"   • [cyan]All manual switches[/cyan]: Try 'dopemux profile auto-enable' for suggestions")
+src/dopemux/cli.py:5597:    raise click.ClickException("profile copy is not implemented yet")
+src/dopemux/cli.py:5604:    raise click.ClickException("profile edit is not implemented yet")
+src/dopemux/cli.py:5611:    raise click.ClickException("profile delete is not implemented yet")
+src/dopemux/cli.py:5617:    raise click.ClickException("profile current is not implemented yet")
+src/dopemux/cli.py:5679:        # Auto-configure MCP servers for target worktree (Phase 2: Zero manual steps)
+src/dopemux/cli.py:5739:                click.echo("Falling back to manual instructions...\n")
+src/dopemux/cli.py:6491:            emit_event_bus=False,  # Don't emit to event bus for manual captures
+src/dopemux/cli.py:6896:        "event_type": "manual.note",
+src/dopemux/cli.py:6944:    source = "manual"
+Binary file src/dopemux/mobile/__pycache__/cli.cpython-313.pyc matches
+Binary file src/dopemux/mobile/__pycache__/cli.cpython-311.pyc matches
+src/dopemux/mobile/cli.py:44:        click.echo("⚠️  Mobile mode disabled in config; running in manual mode.")
+src/dopemux/worktree_diagnostics.py:157:            missing = status.get("missing", [])
+src/dopemux/worktree_diagnostics.py:166:            if missing and verbose:
+src/dopemux/worktree_diagnostics.py:168:                for file in missing[:5]:  # Show first 5
+src/dopemux/worktree_diagnostics.py:170:                if len(missing) > 5:
+src/dopemux/worktree_diagnostics.py:171:                    console.logger.info(f"    [dim]... and {len(missing) - 5} more[/dim]")
+src/dopemux/workspace_detection.py:16:- Zero manual configuration (auto-detection)
+src/dopemux/workspace_detection.py:71:            logger.debug("Skipping workspace persistence (missing path: %s)", workspace_path)
+src/dopemux/hooks/shell_hook_installer.py:183:        manual_removal_needed = []
+src/dopemux/hooks/shell_hook_installer.py:217:                        manual_removal_needed.append(str(config_path))
+src/dopemux/hooks/shell_hook_installer.py:226:        if manual_removal_needed:
+src/dopemux/hooks/shell_hook_installer.py:227:            message += f"\n\nManual cleanup may be needed for: {', '.join(manual_removal_needed)}"
+src/dopemux/hooks/claude_code_hooks.py:288:        Generate shell hook scripts for manual installation.
+src/dopemux/hooks/claude_code_hooks.py:395:    """Get shell hook scripts for manual installation."""
+Binary file src/dopemux/hooks/__pycache__/claude_code_hooks.cpython-313.pyc matches
+Binary file src/dopemux/hooks/__pycache__/shell_hook_installer.cpython-313.pyc matches
+src/dopemux/instance_manager.py:432:            self._cache_file.unlink(missing_ok=True)
+Binary file src/dopemux/tmux/__pycache__/cli.cpython-313.pyc matches
+Binary file src/dopemux/tmux/__pycache__/cli.cpython-311.pyc matches
+src/dopemux/tmux/cli.py:1417:                "clear; printf '🟢 Dope layout pane ready. Run dashboard manually when ready.\\n'",
+src/dopemux/tmux/cli.py:1773:    missing_required = sorted(s for s in required_servers if s not in available_servers)
+src/dopemux/tmux/cli.py:1774:    missing_optional = sorted(s for s in optional_servers if s not in available_servers)
+src/dopemux/tmux/cli.py:1776:    if missing_required:
+src/dopemux/tmux/cli.py:1777:        services_argument = ",".join(missing_required)
+src/dopemux/tmux/cli.py:1779:            f"⚠ Required MCP servers unavailable for role '{spec.label}': {', '.join(missing_required)}"
+src/dopemux/tmux/cli.py:1784:    if missing_optional:
+src/dopemux/tmux/cli.py:1786:            f"ℹ Optional MCP servers not running: {', '.join(missing_optional)}"
+src/dopemux/tmux/cli.py:1938:        remember_raw = os.getenv("DOPEMUX_LITELLM_REMEMBER_DB", "").strip().lower()
+src/dopemux/tmux/cli.py:1939:        remember_db = remember_raw not in {"0", "false", "no"}
+src/dopemux/tmux/cli.py:1945:        if not db_url and remember_db and db_url_path.exists():
+src/dopemux/tmux/cli.py:2093:                console.print(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
+src/dopemux/tmux/cli.py:2162:        if remember_db:
+src/dopemux/tmux/cli.py:2311:                    f"🎯 Orchestrator pane ready in {orchestrator_pane.pane_id} ({orchestrator_pane.session}:{orchestrator_pane.window}); launch manually when ready."
+src/dopemux/tmux/cli.py:2358:            click.echo(f"Session ready. Attach manually with: tmux attach -t {session}")
+src/dopemux/templates/init/.claude/PROJECT_INSTRUCTIONS.MD:38:If information is missing:
+src/dopemux/templates/init/.claude/PRIMER.md:135:* Unknown (missing evidence)
+src/dopemux/templates/init/.claude/PRIMER.md:190:If you cannot proceed due to missing evidence:
+src/dopemux/templates/init/.claude/claude.md:84:- If you must call an API manually, prefer the `openrouter/<provider>/<model>`
+src/dopemux/templates/init/.claude/claude.md:98:| Launch Happy manually   | `dopemux tmux happy --pane agent:primary`               |
+src/dopemux/templates/init/docs/task-packets/README.md:74:If any section is missing, the packet is invalid.
+src/dopemux/config_generator.py:92:        missing_mcps = []
+src/dopemux/config_generator.py:100:                missing_mcps.append(mcp_name)
+src/dopemux/config_generator.py:102:        if missing_mcps:
+src/dopemux/config_generator.py:105:                f"{', '.join(missing_mcps)}\n"
+src/dopemux/config_generator.py:107:                f"Fix: Update profile or add missing MCPs to Claude config"
+src/dopemux/config_generator.py:224:                    tmp_path.unlink(missing_ok=True)
+src/dopemux/config_generator.py:260:            Tuple of (all_valid, missing_mcps)
+src/dopemux/config_generator.py:262:            - missing_mcps: List of MCP names not found
+src/dopemux/config_generator.py:267:        missing = []
+src/dopemux/config_generator.py:271:                missing.append(mcp_name)
+src/dopemux/config_generator.py:273:        return len(missing) == 0, missing
+src/dopemux/config_generator.py:385:            valid, missing = generator.validate_profile_mcps(profile)
+src/dopemux/config_generator.py:387:                logger.info(f"❌ Missing MCPs: {', '.join(missing)}")
+src/dopemux/litellm_proxy.py:479:        LiteLLMProxyError: If synchronization fails or prerequisites are missing
+src/dopemux/litellm_proxy.py:881:        state_path.unlink(missing_ok=True)
+src/dopemux/extraction/hybrid_vector_store.py:651:            logger.warning("ScaNN index requested but not implemented; falling back to HNSW")
+Binary file src/dopemux/extraction/__pycache__/hybrid_vector_store.cpython-313.pyc matches
+Binary file src/dopemux/extraction/__pycache__/synthesizer.cpython-313.pyc matches
+src/dopemux/extraction/synthesizer.py:202:            'Documentation': ['doc', 'readme', 'guide', 'manual'],
+src/dopemux/auto_configurator.py:6:eliminating manual configuration steps and achieving ADHD-optimized workflow.
+src/dopemux/auto_configurator.py:9:- Zero manual steps (100% automation)
+src/dopemux/auto_configurator.py:238:            # Add --workspace_id if missing
+src/dopemux/adhd_error_messages.py:111:    "mcp_config_missing": ADHDErrorMessage(
+src/dopemux/adhd_error_messages.py:116:            "Or manually create it following Claude Code documentation",
+src/dopemux/adhd_error_messages.py:133:    "shell_integration_missing": ADHDErrorMessage(
+src/dopemux/adhd_error_messages.py:150:            "Try manual configuration as fallback: check docs/WORKTREE_MCP_SETUP.md"
+src/dopemux/adhd_error_messages.py:157:        why="Your worktree might be missing important project configuration",
+src/dopemux/adhd_error_messages.py:189:    "api_key_missing": ADHDErrorMessage(
+src/dopemux/agent_validator.py:38:    Attempt to fix missing frontmatter by adding a name field based on filename.
+src/dopemux/agent_validator.py:45:        logger.info(f"Fixing missing frontmatter for agent: {file_path}")
+src/dopemux/agent_validator.py:52:            # But if it failed validation, it might be missing 'name' or just broken syntax.
+src/dopemux/agent_validator.py:55:            # But the user's issue was "missing required name field".
+src/dopemux/agent_validator.py:69:    Scan .claude/agents in the workspace and fix any missing frontmatter.
+src/dopemux/adhd/context_manager.py:541:        # Analyze message for manual tags

@@ -41,42 +41,17 @@ This is a reconciliation step over upstream norm artifacts, not freeform analysi
 - Every claim section must include explicit evidence bullets (`path`, `line_range`, `excerpt`).
 
 ## Extraction Procedure
-1. Aggregate and deduplicate relevant items from upstream artifacts.
-2. Build claim statements only from evidence-backed facts.
-3. Map each claim to one or more evidence records.
-4. Emit required sections in the exact order.
-5. Keep unresolved items in `Gaps and Unknowns` with `UNKNOWN` labels.
+1. Load `REPO_LEANTIME_SURFACE.json`, `LEANTIME_INTEGRATION_SURFACE.json`, and EventBus/Service artifacts.
+2. Confirm **Integration Surfaces**: Identify exact API endpoints, database schemas, or symbols used for Leantime integration from Phase C.
+3. Map **Data & Event Flows**: Trace events from production points to Leantime handlers/consumers identified in `EVENT_CONSUMERS.json`.
+4. Verify **Runtime Contracts**: Extract environment variables and configuration keys (Phase A/H) required for the Leantime bridge.
+5. Identify **Gaps & Unknowns**: Flag any integration points declared in documentation (Phase D) but lacking implementation evidence (Phase C).
+6. Arbitration: Resolve conflicts by prioritizing direct Code evidence (Phase C) over Architectural Surface definitions (Phase A).
+7. Emit required sections in the exact order defined in the schema.
+8. Legacy Context is intent guidance only and is never evidence.
 
-## Evidence Rules
-- Each load-bearing statement must cite evidence in this structure:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- Evidence must reference repository files or upstream norm artifacts only.
-- No paraphrased quotes in evidence index.
-- Evidence paths remain repo-relative for portability.
-
-## Determinism Rules
-- Markdown output must not contain timestamps, run IDs, or non-deterministic counters.
-- Sort evidence entries by `(path, line_start, excerpt)` and claims by stable claim key.
-- Keep heading order fixed exactly as defined in the schema.
-- Use deterministic bullet ordering for repeated categories.
-
-## Anti-Fabrication Rules
-- Do not invent integration paths, APIs, or runtime behavior.
-- Do not promote inferred architecture claims to fact.
-- If an expected integration surface has no evidence, mark as `UNKNOWN`.
-- Never use `Legacy Context` as evidence.
-
-## Failure Modes
-- Missing upstream artifacts: emit report with `Scope` + `Gaps and Unknowns` + `Evidence Index`.
-- Conflicting artifact claims: include both with explicit conflict notes and evidence.
-- Partial evidence: keep claim as tentative with `status: needs_review`.
-- Markdown schema risk: prefer empty section placeholders over dropping required headings.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

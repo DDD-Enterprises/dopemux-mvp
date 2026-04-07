@@ -33,24 +33,11 @@ def tone_name(chip: StatusChip, tone: str | None = None) -> str:
     return tone or TONE_BY_CHIP.get(chip, "live")
 
 
-def voice_header(value: str = "ui") -> str:
-    """Return a voice header for a surface or legacy title string.
+def voice_header(surface: str = "ui") -> str:
+    """Return the configured voice header for a surface."""
+    return HEADERS.get(surface, HEADERS["ui"])
 
-    Backward compatibility:
-    - If `value` matches a known surface key in HEADERS, treat it as a surface
-      and return the configured header.
-    - Otherwise, treat `value` as a title and return a voice-safe header string.
-    """
-    # New behavior: surface-based headers
-    if value in HEADERS:
-        return HEADERS[value]
 
-    # Backward compatibility: legacy callers passing a title string
-    return validate_or_fallback(
-        value,
-        surface="ui",
-        fallback="Dopemux update",
-    )
 def _fallback_for(chip: StatusChip) -> str:
     if chip is StatusChip.AFTERCARE:
         return "Session logged. Protect the recovery block."
@@ -153,7 +140,7 @@ def aftercare_text(message: str | None = None) -> str:
 
 
 def break_copy(duration_minutes: int, *, urgent: bool = False) -> tuple[str, str, str]:
-    """Return branded title, notification body, and speech copy for break reminders."""
+    """Return deterministic break reminder copy."""
     if urgent:
         title = brand_title("Break needed now", chip=StatusChip.BLOCKER)
         body = brand_text(
@@ -163,7 +150,9 @@ def break_copy(duration_minutes: int, *, urgent: bool = False) -> tuple[str, str
         speech = validate_or_fallback(
             f"Break needed now. You have been working for {duration_minutes} minutes. Take a ten minute reset.",
             surface="ui",
-            fallback="Break needed now. Take a ten minute reset.",
+            fallback="Break needed now. You have been working for 90 minutes. Take a ten minute reset.".replace(
+                "90", str(duration_minutes)
+            ),
         )
         return title, body, speech
 
@@ -175,24 +164,31 @@ def break_copy(duration_minutes: int, *, urgent: bool = False) -> tuple[str, str
     speech = validate_or_fallback(
         f"Break check. You have been working for {duration_minutes} minutes. Take a five minute reset.",
         surface="ui",
-        fallback="Break check. Take a five minute reset.",
+        fallback=f"Break check. You have been working for {duration_minutes} minutes. Take a five minute reset.",
     )
     return title, body, speech
 
 
 def hyperfocus_copy(duration_minutes: int) -> tuple[str, str, str]:
-    """Return branded title, notification body, and speech copy for hyperfocus protection."""
+    """Return deterministic hyperfocus protection copy."""
     title = brand_title("Hyperfocus guard", chip=StatusChip.BLOCKER)
     body = brand_text(
         f"You've been running hot for {duration_minutes} minutes without a break. Step out for 15 minutes and reset.",
         chip=StatusChip.BLOCKER,
     )
     speech = validate_or_fallback(
-        f"Hyperfocus guard. You have been working for {duration_minutes} minutes without a break. Step out for fifteen minutes and reset.",
+        (
+            f"Hyperfocus guard. You have been working for {duration_minutes} minutes without a break. "
+            "Step out for fifteen minutes and reset."
+        ),
         surface="ui",
-        fallback="Hyperfocus guard. Step out for fifteen minutes and reset.",
+        fallback=(
+            f"Hyperfocus guard. You have been working for {duration_minutes} minutes without a break. "
+            "Step out for fifteen minutes and reset."
+        ),
     )
     return title, body, speech
+
 
 def brand_payload(
     message: str,

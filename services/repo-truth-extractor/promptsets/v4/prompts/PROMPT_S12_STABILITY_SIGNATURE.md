@@ -91,30 +91,5 @@ This step does not perform broad repository discovery. It computes a reproducibl
 5. If any required input is missing or normalization rules cannot be applied safely, emit `FAIL_CLOSED` instead of guessing.
 6. Legacy Context is intent guidance only and is never evidence.
 
-## Evidence Rules
-- Every load-bearing field must be supported by at least one evidence object with:
-  - `path`
-  - `line_range`
-  - `excerpt`
-- Evidence must point to supplied upstream artifacts or promptset/registry metadata used to define the canonical input set.
-- Do not cite synthetic or inferred sources.
-- If an input artifact is missing, cite the promptset/registry evidence for the expected artifact and mark the output `FAIL_CLOSED`.
-
-## Determinism Rules
-- Do not include `generated_at`, `timestamp`, `created_at`, `updated_at`, or `run_id`.
-- Hash algorithm is always `sha256`.
-- Sort object keys lexicographically before hashing.
-- Reorder lists only when a stable sort key exists; otherwise preserve canonical upstream order.
-- Output byte content must be reproducible for the same canonical inputs and configuration.
-
-## Anti-Fabrication Rules
-- Do not invent hashes, counts, or normalization decisions.
-- Do not claim an input artifact was included if it was not present in the supplied set.
-- Do not infer missing canonical content from filenames or neighboring steps.
-- If required inputs are incomplete, emit `FAIL_CLOSED` with explicit evidence-backed gaps.
-
-## Failure Modes
-- Missing required synthesis artifact: emit `FAIL_CLOSED` with evidence of the missing expected input.
-- Unstable list ordering with no stable key: preserve canonical order and record the rule in `normalization.notes`.
-- Non-JSON canonical source ambiguity: hash the normalized canonical text representation and cite the exact source artifact.
-- Conflicting canonical inputs: keep `FAIL_CLOSED` and document the contradiction with evidence.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

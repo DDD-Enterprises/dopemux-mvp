@@ -77,41 +77,5 @@ Build module-level and service-level dependency graphs using edges-as-items repr
 14. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps
 15. Emit exactly the declared outputs and no additional files
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-- Every edge MUST cite the source code location where the dependency is established.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(source, target, edge_type, id)` to ensure stable edge ordering.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent dependencies, import chains, or service relationships.
-- Do not infer service dependencies from naming conventions alone; require direct code/config evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-- Do not assume a service depends on another because they share a database without explicit evidence.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Circular dependencies: emit all cycle edges normally; downstream synthesis (S9) handles cycle detection.
-- Conditional imports: if an import is inside `if TYPE_CHECKING:` or try/except, emit with `status: conditional`.
-- External dependencies: only include edges to project-internal modules/services; skip stdlib and third-party.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

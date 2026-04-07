@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib
+import inspect
 import sys
 from pathlib import Path
 from typing import Any
@@ -23,15 +25,49 @@ except (ImportError, ModuleNotFoundError) as exc:
 async def test_execute_batch_uses_leases_for_monitoring(monkeypatch: pytest.MonkeyPatch):
     execution_store = InMemoryExecutionStore()
     lease_store = InMemoryLeaseStore(execution_store)
+    task_coordinator_module = inspect.getmodule(TaskCoordinator)
+    if task_coordinator_module is None:
+        task_coordinator_module = importlib.import_module(TaskCoordinator.__module__)
 
     monkeypatch.setattr(
-        "app.services.task_coordinator.get_execution_store",
+        task_coordinator_module,
+        "get_execution_store",
         lambda: execution_store,
     )
     monkeypatch.setattr(
-        "app.services.task_coordinator.get_lease_store",
+        task_coordinator_module,
+        "get_lease_store",
         lambda: lease_store,
     )
+    monkeypatch.setitem(
+        TaskCoordinator._execute_batch.__globals__,
+        "get_execution_store",
+        lambda: execution_store,
+    )
+    monkeypatch.setitem(
+        TaskCoordinator._execute_batch.__globals__,
+        "get_lease_store",
+        lambda: lease_store,
+    )
+    monkeypatch.setitem(
+        TaskCoordinator._monitor_execution.__globals__,
+        "get_lease_store",
+        lambda: lease_store,
+    )
+    task_coordinator_alias = sys.modules.get("task_coordinator")
+    if task_coordinator_alias is not None:
+        monkeypatch.setattr(
+            task_coordinator_alias,
+            "get_execution_store",
+            lambda: execution_store,
+            raising=False,
+        )
+        monkeypatch.setattr(
+            task_coordinator_alias,
+            "get_lease_store",
+            lambda: lease_store,
+            raising=False,
+        )
 
     coordinator = TaskCoordinator(workspace_id="/tmp/test-workspace")
 

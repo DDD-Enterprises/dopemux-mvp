@@ -1,112 +1,123 @@
 from pathlib import Path
 
+from dopemux.pm.models import PMTaskStatus
 from dopemux.workflow import (
-    WorkflowCheckpoint,
-    WorkflowCheckpointStatus,
     WorkflowPhase,
     WorkflowState,
-    WorkflowStatus,
     WorkflowTask,
-    parse_workflow_checkpoint,
-    validate_phase_entry,
 )
-from dopemux.workflow.models import utc_now_iso
 
 
-def _build_state(tmp_path: Path) -> WorkflowState:
-    task_dir = tmp_path / "tasks" / "task-001"
-    task_dir.mkdir(parents=True)
-    task = WorkflowTask(
-        task_id="task-001",
-        title="Ship workflow kit",
-        summary="Implement the next slice",
-        artifact_dir=str(task_dir),
-        verification_commands=["pytest -q"],
-    )
-    now = utc_now_iso()
-    return WorkflowState(
-        workflow_id="wf-001",
-        workspace_root=str(tmp_path),
-        instance_id="A",
-        mode="manager",
-        phase=WorkflowPhase.BRIEF,
-        current_task_id=task.task_id,
-        iteration=0,
-        max_iterations=0,
-        max_minutes=0,
+def test_workflow_state_round_trip_preserves_required_fields(tmp_path):
+    state = WorkflowState.new(
+        workflow_id="wf-main",
+        workspace_root=tmp_path,
+        instance_id="main",
+        mode="internal",
+        max_iterations=7,
+        max_minutes=30,
         completion_token="WORKFLOW_COMPLETE",
-        started_at=now,
-        updated_at=now,
-        status=WorkflowStatus.ACTIVE,
-        tasks=[task],
     )
 
+    payload = state.to_dict()
 
-def test_parse_workflow_checkpoint_extracts_verification_commands():
-    checkpoint = parse_workflow_checkpoint(
-        '<workflow-checkpoint phase="plan_review" status="approved" '
-        'task="task-001" summary="Plan approved" artifact="/tmp/plan-review.md" '
-        'verification="pytest -q;;ruff check src" />'
+    assert payload["workflow_id"] == "wf-main"
+    assert payload["workspace_root"] == str(tmp_path.resolve())
+    assert payload["instance_id"] == "main"
+    assert payload["mode"] == "internal"
+    assert payload["phase"] == "brief"
+    assert payload["current_task_id"] is None
+    assert payload["iteration"] == 0
+    assert payload["max_iterations"] == 7
+    assert payload["max_minutes"] == 30
+    assert payload["completion_token"] == "WORKFLOW_COMPLETE"
+    assert payload["status"] == "active"
+    assert payload["history"]
+
+    restored = WorkflowState.from_dict(payload)
+    assert restored.to_dict() == payload
+
+
+def test_phase_transition_requires_approved_review_checkpoints(tmp_path):
+    state = WorkflowState.new(
+        workflow_id="wf-gates",
+        workspace_root=tmp_path,
+        instance_id="main",
+        mode="internal",
+        max_iterations=10,
+        max_minutes=60,
+        completion_token="DONE",
     )
 
-    assert checkpoint is not None
-    assert checkpoint.phase == WorkflowPhase.PLAN_REVIEW
-    assert checkpoint.status == WorkflowCheckpointStatus.APPROVED
-    assert checkpoint.task_id == "task-001"
-    assert checkpoint.artifact_path == "/tmp/plan-review.md"
-    assert checkpoint.verification_commands == ["pytest -q", "ruff check src"]
-
-
-def test_validate_phase_entry_enforces_review_gates(tmp_path: Path):
-    state = _build_state(tmp_path)
-
-    assert "Plan phase requires an approved research review." in validate_phase_entry(
-        state, WorkflowPhase.PLAN
+    assert state.validate_phase_transition(WorkflowPhase.PLAN) == (
+        "Cannot enter plan without an approved research_review checkpoint."
     )
-    assert "Implementation requires an approved plan review." in validate_phase_entry(
-        state, WorkflowPhase.IMPLEMENT
+    assert state.validate_phase_transition(WorkflowPhase.IMPLEMENT) == (
+        "Cannot enter implement/refactor without an approved plan_review checkpoint."
     )
 
-    state.add_checkpoint(
-        WorkflowCheckpoint(
-            phase=WorkflowPhase.RESEARCH_REVIEW,
-            status=WorkflowCheckpointStatus.APPROVED,
-            task_id="task-001",
-            summary="Research approved",
-        )
+    state.record_checkpoint("research_review", True, message="research_review approved")
+    assert state.validate_phase_transition(WorkflowPhase.PLAN) is None
+
+    state.record_checkpoint("plan_review", True, message="plan_review approved")
+    assert state.validate_phase_transition(WorkflowPhase.IMPLEMENT) is None
+
+
+def test_complete_gate_requires_artifacts_and_completed_tasks(tmp_path):
+    state = WorkflowState.new(
+        workflow_id="wf-complete",
+        workspace_root=tmp_path,
+        instance_id="main",
+        mode="internal",
+        max_iterations=10,
+        max_minutes=60,
+        completion_token="DONE",
     )
-    assert validate_phase_entry(state, WorkflowPhase.PLAN) == []
+    state.record_checkpoint("plan_review", True, message="plan_review approved")
+    state.required_artifacts = ["reports/proof.json"]
+    state.tasks = [
+        WorkflowTask(task_id="task-1", title="Task 1", status=PMTaskStatus.TODO),
+    ]
 
-    state.add_checkpoint(
-        WorkflowCheckpoint(
-            phase=WorkflowPhase.PLAN_REVIEW,
-            status=WorkflowCheckpointStatus.APPROVED,
-            task_id="task-001",
-            summary="Plan approved",
-        )
+    assert state.validate_phase_transition(WorkflowPhase.COMPLETE) == (
+        "Cannot complete while workflow tasks are still incomplete."
     )
-    assert validate_phase_entry(state, WorkflowPhase.IMPLEMENT) == []
+
+    state.tasks[0].status = PMTaskStatus.DONE
+    assert state.validate_phase_transition(WorkflowPhase.COMPLETE) == (
+        "Cannot complete while required artifacts are missing."
+    )
+
+    artifact_path = tmp_path / "reports" / "proof.json"
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text("{}", encoding="utf-8")
+
+    assert state.validate_phase_transition(WorkflowPhase.COMPLETE) is None
 
 
-def test_complete_gate_requires_closed_tasks_artifacts_and_verification(tmp_path: Path):
-    state = _build_state(tmp_path)
-    task = state.current_task()
-    assert task is not None
+def test_can_stop_requires_phase_checkpoint_or_completion_token(tmp_path):
+    state = WorkflowState.new(
+        workflow_id="wf-stop",
+        workspace_root=tmp_path,
+        instance_id="main",
+        mode="internal",
+        max_iterations=10,
+        max_minutes=60,
+        completion_token="DONE",
+    )
+    assert state.can_stop() is False
 
-    failures = validate_phase_entry(state, WorkflowPhase.COMPLETE)
-    assert any("tasks remain open" in failure for failure in failures)
-    assert any("missing required artifacts" in failure for failure in failures)
-    assert any("have not passed" in failure for failure in failures)
+    state.record_checkpoint("brief", True, message="brief approved")
+    assert state.can_stop() is True
 
-    for filename in (
-        "research.md",
-        "research-review.md",
-        "plan.md",
-        "plan-review.md",
-    ):
-        (Path(task.artifact_dir) / filename).write_text("# artifact\n", encoding="utf-8")
-
-    task.status = "done"
-    task.metadata["verification_passed"] = True
-
-    assert validate_phase_entry(state, WorkflowPhase.COMPLETE) == []
+    state = WorkflowState.new(
+        workflow_id="wf-stop-token",
+        workspace_root=tmp_path,
+        instance_id="main",
+        mode="internal",
+        max_iterations=10,
+        max_minutes=60,
+        completion_token="DONE",
+    )
+    state.record_event("completion_notice", "Evidence bundle complete: DONE")
+    assert state.can_stop() is True

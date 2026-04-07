@@ -1,7 +1,12 @@
 import pytest
-from app.models.workflow import CreateIdeaRequest, UpdateIdeaRequest, PromoteIdeaRequest, CreateEpicRequest, UpdateEpicRequest, WorkflowIdea
+from app.models.workflow import (
+    CreateIdeaRequest,
+    UpdateIdeaRequest,
+    PromoteIdeaRequest,
+    CreateEpicRequest,
+    UpdateEpicRequest,
+)
 from app.services.workflow_service import WorkflowService, WorkflowConflictError, WorkflowUnavailableError
-
 class MockStore:
     def __init__(self):
         self.ideas = {}
@@ -29,7 +34,6 @@ class MockStore:
 
     async def save_idea(self, idea_data):
         self.ideas[idea_data["id"]] = idea_data
-        return True
 
     async def save_epic(self, epic_data):
         self.epics[epic_data["id"]] = epic_data

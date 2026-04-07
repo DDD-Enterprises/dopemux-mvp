@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "phase": "FL_INT",
+  "steps": {
+    "F0": {
+      "prompt_path": "F0_design_claims_raw.md",
+      "schema_path": "schemas/F0.json",
+      "outputs": ["DESIGN_CLAIMS_RAW.json"],
+      "ladder_name": "structure",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": ["D"],
+      "prior_step_ids": []
+    },
+    "F1": {
+      "prompt_path": "F1_design_claims_classified.md",
+      "schema_path": "schemas/F1.json",
+      "outputs": ["DESIGN_CLAIMS_CLASSIFIED.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": ["C", "R"],
+      "prior_step_ids": ["F0"]
+    },
+    "F2": {
+      "prompt_path": "F2_design_contradictions.md",
+      "schema_path": "schemas/F2.json",
+      "outputs": ["DESIGN_CONTRADICTIONS.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["F1"]
+    },
+    "F4": {
+      "prompt_path": "F4_canonical_design.md",
+      "schema_path": "schemas/F4.json",
+      "outputs": ["CANONICAL_DESIGN.md", "CANONICAL_DESIGN_META.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["F0", "F1", "F2"]
+    },
+    "L0": {
+      "prompt_path": "L0_feature_candidates_raw.md",
+      "schema_path": "schemas/L0.json",
+      "outputs": ["FEATURE_CANDIDATES_RAW.json"],
+      "ladder_name": "structure",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": ["D", "C", "X"],
+      "prior_step_ids": ["F1"]
+    },
+    "L1": {
+      "prompt_path": "L1_feature_candidates_normalized.md",
+      "schema_path": "schemas/L1.json",
+      "outputs": ["FEATURE_CANDIDATES_NORMALIZED.json", "FEATURE_MERGE_LOG.json"],
+      "ladder_name": "structure",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["L0"]
+    },
+    "L3": {
+      "prompt_path": "L3_feature_ledger_routing.md",
+      "schema_path": "schemas/L3.json",
+      "outputs": ["FEATURE_LEDGER_ROUTING.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "qa",
+      "max_hops": 2,
+      "input_phase_ids": [],
+      "prior_step_ids": ["F1", "L1"]
+    },
+    "L4": {
+      "prompt_path": "L4_master_feature_ledger.md",
+      "schema_path": "schemas/L4.json",
+      "outputs": ["MASTER_FEATURE_LEDGER.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["F2", "L3"]
+    }
+  }
+}

@@ -60,6 +60,8 @@ Day-to-day operational tasks and workflows.
 - **[Instance Slash Commands](instance-slash-commands.md)** - Command reference
 - **[PR Merge Flight Dashboard](pr-merge-flight-dashboard.md)** - Tactical PR queue management
 - **[Internal Workflow Kit](internal-workflow-kit.md)** - Run phase-gated manager and executor workflows
+- **[Repo Truth Extractor v5 First Live Run](extraction/repo-truth-extractor-v5-first-live-run.md)** - Bounded validator-first live execution path
+- **[Repo Truth Extractor Truth-Run Command](extraction/truth-run-command.md)** - One-command v5 hygiene + run orchestration
 
 ### ADHD Engine
 - **[Serena V2 Deployment](serena-v2-production-deployment.md#-quick-start---production-deployment)** - Deploy ADHD intelligence

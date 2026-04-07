@@ -1,35 +1,43 @@
-"""
-Canonical Execution Domain Models.
+"""Canonical execution domain models."""
 
-Implements TP-SIA-EXEC-0001: core data models and locking primitives for the
-Workflow / Execution Control Plane.
-"""
+from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
 
-class PacketState(str, Enum):
-    """Execution lifecycle state for a Task Packet."""
+def now_utc() -> datetime:
+    """Return the current UTC timestamp."""
 
-    READY = "READY"  # Available for lease
-    LEASED = "LEASED"  # Checked out by an agent
-    EXECUTING = "EXECUTING"  # Agent is actively processing (heartbeat active)
-    PROOF_GENERATED = "PROOF_GENERATED"  # Work complete, verification artifacts present
-    AUDITED = "AUDITED"  # Human or Supervisor has verified the proof
-    COMMITTED = "COMMITTED"  # Changes merged to target branch
+    return datetime.now(timezone.utc)
+
+
+class PacketState(str, Enum):
+    """Primary lifecycle state for executable packets."""
+
+    READY = "READY"
+    PENDING = "READY"
+    LEASED = "LEASED"
+    EXECUTING = "EXECUTING"
+    RUNNING = "EXECUTING"
+    PROOF_GENERATED = "PROOF_GENERATED"
+    SUCCEEDED = "PROOF_GENERATED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    ABANDONED = "ABANDONED"
 
 
 class LeaseState(str, Enum):
     """State of a packet lease."""
 
-    ACTIVE = "ACTIVE"  # Lease is within TTL
-    EXPIRED = "EXPIRED"  # Heartbeat missed; packet returned to READY
-    RELEASED = "RELEASED"  # Graceful handoff or completion
+    ACTIVE = "ACTIVE"
+    EXPIRED = "EXPIRED"
+    RELEASED = "RELEASED"
+    REVOKED = "REVOKED"
 
 
 class ExecutionDisposition(str, Enum):
@@ -38,6 +46,23 @@ class ExecutionDisposition(str, Enum):
     SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"
     ABORTED = "ABORTED"
+    CANCELLED = "CANCELLED"
+    ABANDONED = "ABANDONED"
+
+
+class ExecutionEventType(str, Enum):
+    """Structured event types for execution-plane transitions."""
+
+    PACKET_CREATED = "PACKET_CREATED"
+    LEASE_ACQUIRED = "LEASE_ACQUIRED"
+    LEASE_RENEWED = "LEASE_RENEWED"
+    LEASE_EXPIRED = "LEASE_EXPIRED"
+    LEASE_RELEASED = "LEASE_RELEASED"
+    LEASE_REVOKED = "LEASE_REVOKED"
+    RESULT_RECORDED = "RESULT_RECORDED"
+    PACKET_REQUEUED = "PACKET_REQUEUED"
+    PACKET_CANCELLED = "PACKET_CANCELLED"
+    PACKET_ABANDONED = "PACKET_ABANDONED"
 
 
 class ExecutionResult(BaseModel):
@@ -54,18 +79,27 @@ class ExecutionResult(BaseModel):
 
 
 class ExecutionPacket(BaseModel):
-    """Authoritative state container for an executable packet."""
+    """Authoritative state container for executable packets."""
 
-    packet_id: str = Field(..., description="Unique string (e.g., 'TP-SIA-EXEC-0001')")
-    owner_id: str = Field(..., description="Primary author/operator")
+    packet_id: str = Field(..., description="Unique packet identifier")
+    owner_id: str = Field(..., description="Primary author or operator")
+    task_id: Optional[str] = Field(default=None, description="Optional logical task identifier")
     depends_on: List[str] = Field(default_factory=list, description="Prerequisite packet IDs")
     state: PacketState = Field(default=PacketState.READY)
-    metadata: Dict[str, Any] = Field(
-        default_factory=dict, description="Branch names, initial commit SHAs, requirements"
-    )
-    proof_bundle: Dict[str, Any] = Field(
-        default_factory=dict, description="Links to logs, diffs, and test results"
-    )
+    attempt_count: int = Field(default=0, ge=0)
+    max_attempts: int = Field(default=3, ge=1)
+    last_error: Optional[str] = Field(default=None)
+    last_agent_id: Optional[str] = Field(default=None)
+    current_fencing_token: int = Field(default=0, ge=0)
+    priority: int = Field(default=0)
+    routing_hints: Dict[str, Any] = Field(default_factory=dict)
+    canonical_inputs: Dict[str, Any] = Field(default_factory=dict)
+    expected_outputs: Dict[str, Any] = Field(default_factory=dict)
+    proof_requirements: Dict[str, Any] = Field(default_factory=dict)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    proof_bundle: Dict[str, Any] = Field(default_factory=dict)
+    created_at_utc: datetime = Field(default_factory=now_utc)
+    updated_at_utc: datetime = Field(default_factory=now_utc)
 
     model_config = {"frozen": False}
 
@@ -73,13 +107,16 @@ class ExecutionPacket(BaseModel):
 class PacketLease(BaseModel):
     """Locking primitive for exclusive packet access."""
 
-    lease_id: UUID = Field(..., description="UUID4 unique lease identifier")
-    packet_id: str = Field(..., description="Targeted packet ID")
-    agent_id: str = Field(..., description="Identifier of the leasing entity (e.g., 'gemini-2.5-pro')")
-    leased_at_utc: datetime = Field(..., description="Timestamp of checkout")
-    expires_at_utc: datetime = Field(..., description="Hard deadline for next heartbeat")
-    ttl_seconds: int = Field(..., description="Original lease duration in seconds")
+    lease_id: UUID = Field(default_factory=uuid4, description="Unique lease identifier")
+    packet_id: str = Field(...)
+    agent_id: str = Field(...)
+    leased_at_utc: datetime = Field(default_factory=now_utc)
+    expires_at_utc: datetime = Field(...)
+    ttl_seconds: int = Field(default=300)
     state: LeaseState = Field(default=LeaseState.ACTIVE)
     result: Optional[ExecutionResult] = None
+    worker_instance_id: Optional[str] = Field(default=None)
+    fencing_token: int = Field(default=0, ge=0)
+    last_renewed_at_utc: datetime = Field(default_factory=now_utc)
 
     model_config = {"frozen": False}

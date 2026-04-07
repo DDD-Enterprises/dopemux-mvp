@@ -49,8 +49,10 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Completion Date | Outcome |
 | --- | --- | --- | --- | --- |
-| PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
+| TP-PM-ARCH-04A | PM Plane | Canonical PMTask Model + Store (Unit-only) | 2026-03-22 | Accepted |
+| TP-PM-ARCH-04B | PM Plane | Canonical pm.* Events + Adapters | 2026-03-22 | Accepted |
 | PACKET_024 | Infra | MCP Health Surface Hardening | 2026-01-26 | Accepted |
+| PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
 
 ────────────────────────────────────────────────────────────
 ⚪ Superseded Task Packets

@@ -20,56 +20,13 @@ Focus on concrete, machine-verifiable implementation facts.
 - `scripts/**`
 - `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
 - `installers/**`
 - `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
-- `installers/**`
-- `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.claude/**`
-- `.github/**`
-- `.taskx/**`
-- `config/**`
-- `scripts/**`
-- `docker/**`
 - `compose.yml`
 - `docker-compose*.yml`
 - `README.md`
@@ -105,54 +62,28 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the router partition as primary scan surface
-2. Extract router facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted router elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each ROUTER_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on the router partition.
+2. Scan `litellm.config`, `config/router/*.yaml`, and `src/dopemux/router/**/*.py` for routing tables and model definitions.
+3. Extract provider and model mappings:
+   - Identify `model_list`, `routers`, or explicit model-to-provider mappings.
+4. Identify routing triggers and logic:
+   - `trigger`: scan for `if`, `when`, `tag`, `filter`, or `metadata` rules used for route selection.
+   - `fallback_ladder`: identify `fallbacks`, `retry_models`, or sequential provider lists.
+5. Extract operational policies:
+   - `retry_policy`: scan for `retries`, `backoff`, or `retry_on` configuration.
+   - `rate_limit_policy`: scan for `rpm`, `tpm`, `rate_limit`, or `quota` keys.
+6. Identify named `profiles` (e.g., "fast-low-cost", "high-reasoning") and their associated model sets.
+7. Build relationship graph: trace connections between triggers, providers, and fallback models.
+8. For each ROUTER_SURFACE item, populate `id` (route:<stable_id>), required fields, and `evidence`.
+9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+10. Build deterministic IDs using stable content keys (path|symbol|name).
+11. Attach evidence to every non-derived field and every relationship edge.
+12. Normalize arrays by stable sort keys; deduplicate by ID.
+13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+14. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
-- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

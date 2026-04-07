@@ -9,6 +9,7 @@ from .models import S_INT_STEPS, SIntStep, ladder_for_step
 from .report_compiler import compile_s_int_reports
 from .s_int_paths import ensure_s_int_dirs
 from .schema_validate import load_schema, validate_payload_or_raise
+from output_safety import sanitized_json_text
 
 
 PromptExecutor = Callable[[SIntStep, str, Dict[str, Any], Dict[str, Any]], Dict[str, Any]]
@@ -51,7 +52,7 @@ def run_s_int(
             "run_id": run_id,
             "steps": [step.step_id for step in S_INT_STEPS],
         }
-        dirs["machine_summary"].write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        dirs["machine_summary"].write_text(sanitized_json_text(summary, indent=2, sort_keys=True, ensure_ascii=True) + "\n", encoding="utf-8")
         compile_s_int_reports(dirs["root"], {})
         return summary
 
@@ -69,7 +70,7 @@ def run_s_int(
         validate_payload_or_raise(payload, schema, label=step.step_id)
         outputs[step.step_id] = payload
         (dirs["root"] / f"{step.step_id}_{step.prompt_file.replace('.md', '.json').split('_', 1)[1]}").write_text(
-            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True) + "\n",
             encoding="utf-8",
         )
 
@@ -79,6 +80,6 @@ def run_s_int(
         "steps": sorted(outputs.keys()),
         "step_statuses": {step_id: outputs[step_id].get("status", "UNKNOWN") for step_id in sorted(outputs)},
     }
-    dirs["machine_summary"].write_text(json.dumps(machine_summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    dirs["machine_summary"].write_text(sanitized_json_text(machine_summary, indent=2, sort_keys=True, ensure_ascii=True) + "\n", encoding="utf-8")
     compile_s_int_reports(dirs["root"], outputs)
     return machine_summary

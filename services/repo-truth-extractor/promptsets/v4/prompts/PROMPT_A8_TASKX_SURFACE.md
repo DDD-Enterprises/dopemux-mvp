@@ -20,56 +20,13 @@ Focus on concrete, machine-verifiable implementation facts.
 - `scripts/**`
 - `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
 - `installers/**`
 - `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
-- `installers/**`
-- `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.claude/**`
-- `.github/**`
-- `.taskx/**`
-- `config/**`
-- `scripts/**`
-- `docker/**`
 - `compose.yml`
 - `docker-compose*.yml`
 - `README.md`
@@ -109,54 +66,26 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the TaskX partition as primary scan surface
-2. Extract TaskX facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted TaskX elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each TASKX_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on TaskX configuration and invocation surfaces.
+2. Scan `.taskx/`, `task-packets/`, and `config/taskx/*.yaml` for TaskX metadata and packet definitions.
+3. Identify TaskX invocations in scripts and workflows:
+   - Search for literal command strings: `taskx run`, `taskx-cli`, or `python -m taskx`.
+4. Extract concrete implementation facts:
+   - `packet_path`: locate where task packets (CSV, JSON, YAML) are stored or generated.
+   - `instruction_surfaces`: identify files or directories used for task-specific "custom instructions" or "prompts".
+   - `operator_surface`: identify "operator profiles" or "agent definitions" used during execution.
+5. Trace connections between task packets, the instructions they reference, and the operators invoked to process them.
+6. Build relationship graph: map the flow from a task trigger to the final packet output.
+7. For each TASKX_SURFACE item, populate `id` (taskx:<stable_id>), required fields, and `evidence`.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path|symbol|name).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID.
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
-- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

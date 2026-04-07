@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-03-19'
+last_updated: '2026-04-06'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: QUICK_START.md
@@ -26,31 +26,33 @@ systems:
     implementation: docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md
     enhancements: docs/03-reference/systems/dashboard/dashboard-enhancements.md
   dopecon-bridge:
-    readme: docs/systems/dopecon-bridge/readme-2.md
+    readme: docs/03-reference/systems/dopecon-bridge/readme.md
   multi-workspace:
-    readme: docs/systems/multi-workspace/readme-2.md
+    readme: docs/03-reference/systems/multi-workspace/readme.md
   production:
-    readme: docs/systems/production/readme-2.md
+    readme: docs/03-reference/systems/production/readme.md
 services:
   task-orchestrator:
     readme: docs/03-reference/services/task-orchestrator.md
     followups: docs/planes/pm/task-orchestrator-leantime-followups.md
+    runtime_truth: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
     docs_dir: services/task-orchestrator/docs/
   dopecon-bridge:
     readme: services/dopecon-bridge/README.md
+    runtime_truth: docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
     docs_dir: services/dopecon-bridge/
   adhd-engine:
     readme: services/adhd_engine/README.md
     docs_dir: services/adhd_engine/docs/
   orchestrator:
-    readme: docs/04-explanation/dopemux-orchestrator-final-spec-2.md
+    readme: docs/04-explanation/dopemux-orchestrator-final-spec.md
     docs_dir: src/dopemux/orchestrator/
     claudedocs_dir: docs/04-explanation/design-decisions/
   conport-kg-ui:
     readme: services/conport_kg_ui/README.md
     claudedocs_dir: services/conport_kg_ui/src/
 architecture:
-  overview: docs/04-explanation/architecture/dopemux-architecture-overview-2.md
+  overview: docs/04-explanation/architecture/dopemux-architecture-overview.md
   system_bible: docs/04-explanation/architecture/system-bible.md
   multi_instance: docs/04-explanation/architecture/multi-instance-implementation.md
   pipeline_readme: services/repo-truth-extractor/README.md
@@ -59,13 +61,15 @@ architecture:
   pm_plane_hub: docs/planes/pm/hub-2.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
+  pm_authority_reconciliation: docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md
+  pm_authority_enforcement: docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md
 how_to:
   directory: docs/02-how-to/
   deployment: docs/02-how-to/deployment-guide.md
   leantime_setup: docs/02-how-to/integrations/leantime-integration-guide.md
   mcp_service_discovery: docs/02-how-to/mcp-service-discovery-guide.md
   role_switching: docs/02-how-to/role-switching-quickstart.md
-  profile_usage: docs/02-how-to/profile-usage-2.md
+  profile_usage: docs/02-how-to/profile-usage.md
   multi_instance: docs/02-how-to/multi-instance-workflow.md
   orchestrator_dashboard: docs/02-how-to/orchestrator-dashboard.md
   internal_workflow_kit: docs/02-how-to/internal-workflow-kit.md
@@ -75,19 +79,20 @@ how_to:
   repo_truth_extractor_cli: docs/02-how-to/extraction/run-v4-from-dopemux-cli.md
   repo_truth_extractor_cli_canonical_entrypoint: docs/02-how-to/extraction/run-v4-from-dopemux-cli.md
   repo_truth_extractor_user_guide: docs/02-how-to/extraction/repo-truth-extractor-user-guide.md
+  repo_truth_extractor_v5_first_live_run: docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md
   repo_truth_extractor_batch_quickstart: docs/02-how-to/extraction/batch-quickstart.md
   repo_truth_extractor_truth_run: docs/02-how-to/extraction/truth-run-command.md
   doc_audit_prescan_how_to: docs/02-how-to/doc-audit-prescan.md
   extraction_wizard_how_to: docs/02-how-to/extraction-wizard.md
 tutorials:
   directory: docs/01-tutorials/
-  start_here: docs/01-tutorials/start-here-2.md
+  start_here: docs/01-tutorials/start-here.md
   profile_user_guide: docs/01-tutorials/profile-user-guide.md
   profile_migration_guide: docs/01-tutorials/profile-migration-guide.md
   extraction_quickstart: docs/01-tutorials/extraction-quickstart.md
 reference:
   directory: docs/03-reference/
-  profile_schema: docs/03-reference/configuration/profile-yaml-schema-2.md
+  profile_schema: docs/03-reference/configuration/profile-yaml-schema.md
   profile_developer_guide: docs/03-reference/profile-developer-guide.md
   features_index: docs/03-reference/features/features-index.md
   task_orchestrator_service: docs/03-reference/services/task-orchestrator.md
@@ -99,12 +104,15 @@ reference:
   pm_plane_write_matrix: docs/planes/pm/pm-plane-write-matrix.md
   pm_plane_read_matrix: docs/planes/pm/pm-plane-read-matrix.md
   pm_plane_write_surface_policy: docs/planes/pm/pm-plane-write-surface-policy.md
+  supervisor_pm_server_matrix: docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md
+  supervisor_pm_evidence_packet: docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md
   mcp_token_management_best_practices: docs/03-reference/best-practices/mcp-token-management.md
   memory_capture_cli: docs/03-reference/memory-capture-cli.md
   repo_truth_extractor_pipeline_phases: docs/03-reference/extraction/pipeline-phases.md
   repo_truth_extractor_pipeline_reliability: docs/03-reference/extraction/pipeline-reliability.md
   repo_truth_extractor_doctor_reprocess: docs/03-reference/extraction/doctor-reprocess.md
   repo_truth_extractor_prompt_contract: docs/03-reference/extraction/prompt-contract-v4.md
+  repo_truth_extractor_fl_int_postprocess: docs/03-reference/extraction/fl-int-postprocess.md
   repo_truth_extractor_v5_ui_live_output: docs/03-reference/extraction/v5-ui-live-output.md
   dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md
   dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
@@ -117,8 +125,17 @@ explanation:
   dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
   workflow_kit_architecture: docs/04-explanation/workflow-kit-architecture.md
   pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
+  repo_truth_extractor_v5_upgrade_design: docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
+  pm_runtime_truth_task_orchestrator: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
+  pm_runtime_truth_leantime: docs/planes/pm/_evidence/leantime-runtime-truth/executive-summary.md
+  pm_runtime_truth_dopecon_bridge: docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
+supervisor_packets:
+  pm_server_matrix: docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md
+  pm_evidence_packet: docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md
+  pm_authority_reconciliation: docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md
+  pm_authority_enforcement: docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md
 archive:
   completed_projects: docs/archive/completed-projects/
   session_notes: docs/archive/session-notes/

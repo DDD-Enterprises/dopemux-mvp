@@ -22,6 +22,13 @@ prelude: Readme (reference) for dopemux documentation and developer workflows.
 
 ---
 
+## Execution Plane
+
+### Execution Logic & Safety
+- **[Agent Leasing Contract](../planes/execution/agent-leasing-contract.md)** - Mandatory Rules of Engagement for all AI agents.
+
+---
+
 ## API Documentation
 
 Technical specifications for Dopemux APIs.
@@ -48,6 +55,12 @@ Detailed reference for Dopemux components.
 - **[Internal Workflow Kit Reference](internal-workflow-kit.md)** - Phases, state schema, checkpoint tokens, and role assets
 - **[CI Remediation Specialist Skill](ci-remediation-specialist.md)** - Runbook, invocation contract, and queue integration
 
+### Extraction
+- **[FL INT Post-Processing](extraction/fl-int-postprocess.md)** - Standalone bounded v1 design-synthesis and feature-ledger post-pass
+- **[Extraction Pipeline Reliability](extraction/pipeline-reliability.md)** - Active v5 spend, artifact-truth, resume, and output-safety contract
+- **[Pipeline Phases](extraction/pipeline-phases.md)** - Phase map and step inventory
+- **[v5 UI Live Output](extraction/v5-ui-live-output.md)** - Terminal/status surfaces emitted by the active runner
+
 ---
 
 ## Configuration
@@ -55,7 +68,7 @@ Detailed reference for Dopemux components.
 Configuration schemas and references.
 
 ### Configuration Files
-- **[Profile YAML Schema](configuration/profile-yaml-schema-2.md)** - Complete profile configuration reference
+- **[Profile YAML Schema](configuration/profile-yaml-schema.md)** - Complete profile configuration reference
 
 ### MCP Configuration
 - **[MCP Tools Overview](mcp-tools-overview.md)** - MCP tool configuration and usage
@@ -64,6 +77,7 @@ Configuration schemas and references.
 - **[Documentation Catalog](documentation-catalog.md)** - Canonical index/list surfaces and rules
 - **PR Docgen Sync Skill (Core Template)** - `templates/skills/pr-docgen-sync/`
 - **Gemini/Copilot/Claude Wrappers** - `templates/skills/pr-docgen-sync-*/`
+- **PR Merge Specialist Skill (Template)** - `templates/skills/pr-merge-specialist/`
 - **Skill Sync Script** - `scripts/skills/sync_repo_skills.py`
 - **Workflow Skill Pack** - `templates/skills/{brief-drafter,task-breakdown,code-researcher,research-reviewer,implementation-planner,plan-reviewer,code-implementer,quality-refactorer}/`
 
@@ -71,6 +85,9 @@ Configuration schemas and references.
 - **[PM Plane Write Matrix](../planes/pm/pm-plane-write-matrix.md)** - Canonical mutation writers, prechecks, mirrors, and forbidden paths
 - **[PM Plane Read Matrix](../planes/pm/pm-plane-read-matrix.md)** - Canonical read sources, normalization, and provenance expectations
 - **[PM Plane Write Surface Policy](../planes/pm/pm-plane-write-surface-policy.md)** - Tool classification and raw-surface exposure policy
+- **[Task Orchestrator Service Reference](services/task-orchestrator.md)** - Active runtime endpoints, defaults, persistence substrate, and known authority drift
+- **[Supervisor PM and Memory MCP Server Matrix](../05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md)** - Supervisor-facing matrix of PM, memory, retrieval, and adapter surfaces
+- **[Supervisor PM and Memory Evidence Packet](../05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md)** - Priority-ordered evidence packet for canonical roles, promotion rules, and storage boundaries
 
 ---
 
@@ -82,7 +99,7 @@ Feature specifications and capabilities.
 - **[Features Index](features/features-index.md)** - Complete feature catalog
 
 ### Feature Specifications
-- **[F001: Untracked Work Detection](f001-enhanced-untracked-work-system-2.md)** - Enhanced work tracking
+- **[F001: Untracked Work Detection](f001-enhanced-untracked-work-system.md)** - Enhanced work tracking
 - **[F001: Basic Untracked Work (Historical)](../archive/sessions/serena/v2/f001-usage-examples.md)** - Early implementation notes
 - **[F002: Multi-Session Support](f002-multi-session-support-2.md)** - Multiple session handling
 - **[PR Merge Flight Dashboard Reference](systems/dashboard/overview.md)** - Technical architecture for the PR merge TUI

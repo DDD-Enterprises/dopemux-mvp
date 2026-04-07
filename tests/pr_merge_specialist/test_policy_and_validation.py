@@ -8,7 +8,11 @@ from pathlib import Path
 import pytest
 
 from dopemux_pr_merge_specialist.github_api import GitHubClient
-from dopemux_pr_merge_specialist.policy import PolicyError, load_effective_policy, policy_artifact_payload
+from dopemux_pr_merge_specialist.policy import (
+    PolicyError,
+    load_effective_policy,
+    policy_artifact_payload,
+)
 from dopemux_pr_merge_specialist.runtime import CommandResult, append_live_log
 from dopemux_pr_merge_specialist.schema import ValidationStatus
 from dopemux_pr_merge_specialist.validation import run_validation
@@ -123,7 +127,6 @@ def test_module_entrypoint_works_without_pythonpath():
             "dopemux_pr_merge_specialist.cli",
             "self-check",
             "--json",
-            "--smoke",
             "--allow-dirty",
         ],
         cwd=REPO_ROOT,
@@ -196,7 +199,11 @@ def test_validation_scopes_commands_to_changed_pr_files(monkeypatch, tmp_path: P
         "validation": {
             "require_local_validation_for_merge_ready": True,
             "steps": [
-                {"name": "pre-commit", "command": ["pre-commit", "run"], "scope": "changed_files"},
+                {
+                    "name": "pre-commit",
+                    "command": ["pre-commit", "run"],
+                    "scope": "changed_files",
+                },
                 {
                     "name": "docs-frontmatter-fix",
                     "command": ["python", "scripts/docs_frontmatter_guard.py", "--fix"],
@@ -252,7 +259,9 @@ def test_validation_scopes_commands_to_changed_pr_files(monkeypatch, tmp_path: P
     ]
 
 
-def test_validation_skips_docs_steps_when_no_docs_changed(monkeypatch, tmp_path: Path):
+def test_validation_skips_docs_steps_when_no_docs_changed(
+    monkeypatch, tmp_path: Path
+):
     recorded_commands = []
 
     def fake_run_command(cmd, *, cwd=None, env=None, timeout_seconds=600):
@@ -282,7 +291,11 @@ def test_validation_skips_docs_steps_when_no_docs_changed(monkeypatch, tmp_path:
         "validation": {
             "require_local_validation_for_merge_ready": True,
             "steps": [
-                {"name": "pre-commit", "command": ["pre-commit", "run"], "scope": "changed_files"},
+                {
+                    "name": "pre-commit",
+                    "command": ["pre-commit", "run"],
+                    "scope": "changed_files",
+                },
                 {
                     "name": "docs-validator",
                     "command": ["python", "scripts/docs_validator.py"],

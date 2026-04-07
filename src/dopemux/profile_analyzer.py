@@ -276,29 +276,29 @@ class GitHistoryAnalyzer:
         mcps = set()
 
         # Always include core MCPs
-        mcps.add("serena-v2")
-        mcps.add("conport")
+        mcps.add("dopemux-serena")
+        mcps.add("dopemux-conport")
 
         for directory, _count in dir_patterns[:5]:  # Top 5 directories
             dir_lower = directory.lower()
 
             # Code-heavy work
             if any(word in dir_lower for word in ['src', 'lib', 'app', 'components']):
-                mcps.add("dope-context")
-                mcps.add("pal")
+                mcps.add("dopemux-claude-context")
+                mcps.add("dopemux-pal")
 
             # Documentation work
             if any(word in dir_lower for word in ['docs', 'documentation']):
-                mcps.add("pal")
+                mcps.add("dopemux-pal")
 
             # Testing work
             if any(word in dir_lower for word in ['test', 'tests', '__tests__']):
-                mcps.add("dope-context")
+                mcps.add("dopemux-claude-context")
 
             # Research/analysis
             if any(word in dir_lower for word in ['research', 'analysis', 'experiments']):
-                mcps.add("zen")
-                mcps.add("gpt-researcher")
+                mcps.add("dopemux-zen")
+                mcps.add("dopemux-gpt-researcher")
 
         return sorted(list(mcps))
 
@@ -315,7 +315,7 @@ class GitHistoryAnalyzer:
             avg_commits_per_day=0.0,
             suggested_energy_level="medium",
             suggested_session_duration=25,
-            suggested_mcps=["serena-v2", "conport", "dope-context"]
+            suggested_mcps=["dopemux-serena", "dopemux-conport", "dopemux-claude-context"]
         )
 
     def display_analysis(self, analysis: GitAnalysis) -> None:

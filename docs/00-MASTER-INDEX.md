@@ -3,8 +3,8 @@ id: 00-MASTER-INDEX
 title: 00 Master Index
 type: explanation
 owner: '@hu3mann'
-last_review: '2026-03-19'
-next_review: '2026-06-19'
+last_review: '2026-03-30'
+next_review: '2026-06-30'
 author: '@hu3mann'
 date: '2026-02-05'
 prelude: 00 Master Index (explanation) for dopemux documentation and developer workflows.
@@ -15,7 +15,7 @@ Status: [LOGGED] Topology Complete
 
 # Dopemux Documentation - Master Index
 
-**Quick Navigation:** [Getting Started](#getting-started) | [How-To Guides](#how-to) | [Systems](#systems) | [Architecture](#architecture) | [Research Progress](04-explanation/technical-deep-dives/research-leaderboard.md) | [Archive](#archive)
+**Quick Navigation:** [Getting Started](#getting-started) | [How-To Guides](#how-to) | [Systems](#systems-documentation) | [Architecture](#architecture--design) | [Research Progress](04-explanation/technical-deep-dives/research-leaderboard.md) | [Archive](#archive)
 
 ---
 
@@ -23,7 +23,7 @@ Status: [LOGGED] Topology Complete
 
 ### New to Dopemux?
 - **[Quick Start Guide](../QUICK_START.md)** - Get up and running in 5 minutes
-- **[Installation](01-tutorials/start-here-2.md)** - Comprehensive setup guide
+- **[Installation](01-tutorials/start-here.md)** - Comprehensive setup guide
 - **[README](../README.md)** - Project overview and features
 
 ---
@@ -58,10 +58,14 @@ Status: [LOGGED] Topology Complete
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
 - [Repo Truth Extractor CLI Runbook](02-how-to/extraction/run-v4-from-dopemux-cli.md) - canonical command namespace: `dopemux upgrades ...` (`extractor` is legacy alias)
 - [Repo Truth Extractor User Guide](02-how-to/extraction/repo-truth-extractor-user-guide.md)
+- [Repo Truth Extractor v5 First Live Run](02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md)
+- [Repo Truth Extractor Truth-Run Command](02-how-to/extraction/truth-run-command.md)
 - [Repo Truth Extractor Batch Quickstart](02-how-to/extraction/batch-quickstart.md)
 - [Repo Truth Extractor Reference](03-reference/extraction/pipeline-reliability.md)
 - [Repo Truth Extractor Phase Map](03-reference/extraction/pipeline-phases.md)
+- [Repo Truth Extractor v5 Upgrade Design](04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md)
 - [Dope-Context User Guide](02-how-to/dope-context/dope-context-user-guide.md)
+- [PR Merge Flight Dashboard](02-how-to/pr-merge-flight-dashboard.md) - Canonical operator quickstart for `dopemux pr-merge flight` and `dopemux-pr-merge flight`
 
 ---
 
@@ -87,24 +91,29 @@ Status: [LOGGED] Topology Complete
 - [Implementation Tracker](03-reference/systems/dashboard/dashboard-implementation-tracker.md)
 - [Enhancement Plans](03-reference/systems/dashboard/dashboard-enhancements.md)
 
+### Execution Plane System
+**Location:** `docs/planes/execution/`
+- **[Agent Leasing Contract](planes/execution/agent-leasing-contract.md)** - Authoritative "Rules of Engagement" for AI agent execution, heartbeats, and handoffs.
+
 ---
 
 ## Architecture & Design
 
 ### Core Architecture
-- [Architecture Overview](04-explanation/architecture/dopemux-architecture-overview-2.md) - Complete system architecture
+- [Architecture Overview](04-explanation/architecture/dopemux-architecture-overview.md) - Complete system architecture
 - [System Bible](04-explanation/architecture/system-bible.md) - Consolidated knowledge base
 - [Three-Layer Integration](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
 - [Multi-Instance Implementation](04-explanation/architecture/multi-instance-implementation.md)
 - [Canonical Compose Runtime](../compose.yml) - Single orchestration source for smoke + full-stack operations
+- [PR Merge Queue Orchestration](04-explanation/pr-merge-queue-orchestration.md) - Queue-state, validation, and remediation rationale for the PR merge specialist
 
 ### Architecture Decision Records (ADRs)
 **Location:** `90-adr/`
 - [ADR Index](90-adr/adr-index.md)
 - [ADR-207: Architecture 3.0](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
-- [ADR-203: Task Orchestrator](90-adr/adr-203-task-orchestrator-un-deprecation-2.md)
-- [ADR-202: Serena V2 Validation](90-adr/adr-202-serena-v2-production-validation-2.md)
-- [ADR-201: ConPort Security](90-adr/adr-201-conport-kg-security-hardening-2.md)
+- [ADR-203: Task Orchestrator](90-adr/adr-203-task-orchestrator-un-deprecation.md)
+- [ADR-202: Serena V2 Validation](90-adr/adr-202-serena-v2-production-validation.md)
+- [ADR-201: ConPort Security](90-adr/adr-201-conport-kg-security-hardening.md)
 - [ADR: PM Plane Authority Boundaries](90-adr/adr-pm-plane-authority-boundaries.md)
 - [ADR: ConPort Decision/Progress/Context Authority](90-adr/adr-conport-as-decision-progress-and-context-authority.md)
 - [ADR: dope-memory Chronicle Memory Authority](90-adr/adr-dope-memory-as-chronicle-memory-authority.md)
@@ -118,11 +127,20 @@ Status: [LOGGED] Topology Complete
 ### PM Plane Contracts
 **Location:** `planes/pm/`
 - [PM Plane Hub](planes/pm/hub-2.md)
+- [PM Plane Evidence Hub](planes/pm/readme-2.md)
 - [PM Plane Write Adjudication Model](planes/pm/pm-plane-write-adjudication-model.md)
 - [PM Plane Write Matrix](planes/pm/pm-plane-write-matrix.md)
 - [PM Plane Normalized Tool Surface](planes/pm/pm-plane-normalized-tool-surface.md)
 - [PM Plane Read Matrix](planes/pm/pm-plane-read-matrix.md)
 - [PM Plane Write Surface Policy](planes/pm/pm-plane-write-surface-policy.md)
+- [Supervisor PM and Memory MCP Server Matrix](05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md)
+- [Supervisor PM and Memory Evidence Packet](05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md)
+- [Supervisor Memory and PM Authority Reconciliation](05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md)
+- [Supervisor PM and Memory Authority Enforcement Packet](05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md)
+- Runtime-truth executive summaries:
+  - [Task Orchestrator](planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md)
+  - [Leantime](planes/pm/_evidence/leantime-runtime-truth/executive-summary.md)
+  - [dopecon-bridge](planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md)
 
 ---
 
@@ -130,7 +148,7 @@ Status: [LOGGED] Topology Complete
 
 ### Active Planning
 **Location:** `archive/development/planning/`
-- [Master Action Plan](archive/development/planning/action-plan-master-2.md)
+- [Master Action Plan](archive/development/planning/ACTION-PLAN-MASTER.md)
 - [DDDPG Kickoff](archive/development/planning/dddpg-kickoff.md)
 - [Layout Plans](archive/development/planning/dope-layout-modular-plan.md)
 
@@ -149,6 +167,8 @@ Status: [LOGGED] Topology Complete
   - `templates/skills/pr-docgen-sync-gemini/`
   - `templates/skills/pr-docgen-sync-copilot/`
   - `templates/skills/pr-docgen-sync-claude/`
+- PR Merge Specialist skill template:
+  - `templates/skills/pr-merge-specialist/`
 - Skill install/sync script: `scripts/skills/sync_repo_skills.py`
 
 ---
@@ -156,7 +176,7 @@ Status: [LOGGED] Topology Complete
 ## Reference
 
 ### Configuration
-- [Profile YAML Schema](03-reference/configuration/profile-yaml-schema-2.md)
+- [Profile YAML Schema](03-reference/configuration/profile-yaml-schema.md)
 - [MCP Tools Overview](03-reference/mcp-tools-overview.md)
 - [Task Orchestrator Service Reference](03-reference/services/task-orchestrator.md)
 - [Dope-Context Docs Contextual Embedding Contract](03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md)
@@ -166,8 +186,8 @@ Status: [LOGGED] Topology Complete
 
 ### Features
 - [Features Index](03-reference/features/features-index.md)
-- [Untracked Work Detection](03-reference/f001-enhanced-untracked-work-system-2.md)
-- [Multi-Session Support](03-reference/f002-multi-session-support-2.md)
+- [Untracked Work Detection](03-reference/f001-enhanced-untracked-work-system.md)
+- [Multi-Session Support](03-reference/f002-multi-session-support.md)
 
 ### Governance
 - [Authority Map](03-reference/governance/authority-map.md)
@@ -175,6 +195,7 @@ Status: [LOGGED] Topology Complete
 - Additional governance contracts are tracked in the active backlog and linked from the Authority Map.
 
 ### Technical Deep Dives
+- [Memory And Persistence Deep Dive](04-explanation/technical-deep-dives/memory-and-persistence-deep-dive.md)
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)
 - [ConPort Technical Deep Dive](04-explanation/technical-deep-dives/conport-technical-deep-dive.md)
 - [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md)
@@ -215,41 +236,49 @@ Outdated or superseded documentation kept for reference.
 
 ## Document Organization
 
-This documentation follows a hybrid approach:
+This documentation follows the [Diataxis](https://diataxis.fr/) framework:
 
-1. **Getting Started** (`01-tutorials/`) - Learning-oriented guides for newcomers
+1. **Tutorials** (`01-tutorials/`) - Learning-oriented guides for newcomers
 1. **How-To** (`02-how-to/`) - Problem-oriented step-by-step instructions
-1. **Reference** (`03-reference/`) - Technical specifications and API docs
+1. **Reference** (`03-reference/`) - Technical specifications, API docs, systems, and planes
+   - `03-reference/systems/` - Component-specific documentation hubs
+   - `03-reference/planes/` - Plane contracts and authority boundaries
 1. **Explanation** (`04-explanation/`) - Understanding-oriented architecture docs
-1. **Systems** (`systems/`) - Component-specific documentation hubs
 1. **Design** (`90-adr/`, `91-rfc/`) - Architecture decisions and proposals
-1. **Development** (`development/`, `implementation-plans/`) - Active development docs
-1. **Archive** (`archive/`) - Historical records and completed work
+1. **Runbooks** (`92-runbooks/`) - Operational runbooks
+1. **Archive** (`archive/`) - Historical records, completed work, and legacy docs
+   - `archive/development/planning/` - Historical planning docs
+   - `archive/implementation-plans/` - Historical implementation plans
 
 ---
 
 ## Contributing to Documentation
 
-When adding new documentation:
+See [docs/03-reference/contributing.md](03-reference/contributing.md) for the full documentation standards and contribution guide.
+
+Quick reference:
 
 1. **Choose the right location:**
-- Tutorials: Step-by-step learning paths
-- How-To: Solving specific problems
-- Reference: Technical specs, APIs, schemas
-- Explanation: Concepts, architecture, design rationale
-- Systems: Feature/component-specific docs
+   - Tutorials: Step-by-step learning paths
+   - How-To: Solving specific problems
+   - Reference: Technical specs, APIs, schemas, systems, planes
+   - Explanation: Concepts, architecture, design rationale
 
 1. **File naming:**
-- Use `kebab-case.md` for new files
-- Prefix ADRs: `ADR-NNN-title.md`
-- Prefix RFCs: `RFC-NNN-title.md`
+   - Use `kebab-case.md` for new files
+   - Prefix ADRs: `adr-NNN-title.md`
+   - Prefix RFCs: `rfc-NNN-title.md`
+   - Never create `-2`/`-3` suffix copies — use git for versioning
 
 1. **Update indexes:**
-- Add entry to this master index
-- Update relevant section README
-- Link from related documents
+   - Add entry to this master index
+   - Update relevant section README
+   - Link from related documents
+
+1. **Validate:**
+   - Run `bash scripts/lint-docs.sh` after doc changes
 
 ---
 
-**Last Updated:** 2026-03-11
+**Last Updated:** 2026-03-27
 **Maintainer:** Documentation reorganization complete

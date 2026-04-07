@@ -11,7 +11,7 @@ def test_profile_wizard_build_profile_from_git_analysis(tmp_path):
 
     profile = wizard._build_profile(
         name="custom-flow",
-        mcps=["serena-v2", "conport", "dope-context"],
+        mcps=["dopemux-serena", "dopemux-conport", "dopemux-claude-context"],
         session_duration=25,
         energy_level="medium",
         git_analysis=analysis,
@@ -36,7 +36,7 @@ def test_profile_wizard_save_profile_writes_yaml(tmp_path, monkeypatch):
     analysis = SimpleNamespace(common_branch_prefixes=[])
     profile = wizard._build_profile(
         name="saved-flow",
-        mcps=["serena-v2", "conport"],
+        mcps=["dopemux-serena", "dopemux-conport"],
         session_duration=20,
         energy_level="low",
         git_analysis=analysis,

@@ -37,12 +37,14 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, evidence`
 
 ## Extraction Procedure
-1. Load all relevant merged phase artifacts as synthesis inputs for eventbus wiring truth
-2. Synthesize EVENTBUS_WIRING_TRUTH: combine extracted facts into a coherent truth document organized by domain category
-3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
-4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
-5. Embed evidence citations as inline references throughout the document
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load Phase A, H, D, and C artifacts, focusing on `EVENTBUS_WIRING_TRUTH_SURFACES.json`.
+2. Map **Implementations**: Identify event bus adapters (e.g., local, redis, file-based) from Phase C.
+3. Trace **Producers**: Map event names to code locations where events are emitted.
+4. Trace **Consumers**: Map event names to handler functions or subscriber classes.
+5. Link **Dispatch Paths**: Connect producer calls to consumer execution via the identified adapter.
+6. Arbitration: If event names are computed dynamically, mark as `(computed)` and cite the calculation logic.
+7. Output Format: Produce a table: `Event | Producers (CODE) | Consumers (CODE) | Adapter (CODE)`.
+8. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.
@@ -50,41 +52,8 @@ Focus on concrete, machine-verifiable implementation facts.
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header
-- Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

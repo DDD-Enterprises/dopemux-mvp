@@ -97,7 +97,7 @@ class TestNoisyPathDetection:
         assert not result.is_excluded
 
     def test_scan_returns_warnings_for_noise_dirs(self, tmp_path):
-        """Integration: scan a tree with known junk dirs and expect WARN entries."""
+        """Integration: actionable scan summarizes known junk dirs without hiding counts."""
         # Build a minimal fake repo tree
         (tmp_path / "src/dopemux").mkdir(parents=True)
         (tmp_path / "src/dopemux/cli.py").write_text("# code")
@@ -108,7 +108,16 @@ class TestNoisyPathDetection:
 
         result = hyg.run_scan(repo_root=tmp_path)
 
-        warn_paths = [w.path for w in result.warnings]
-        assert any("node_modules" in str(p) for p in warn_paths), (
-            "node_modules should generate a HYGIENE_WARN"
+        assert result.noise_path_summary["by_category"]["vendored_deps"] >= 1
+        assert any(
+            warning.category == "vendored_deps_summary" for warning in result.warnings
         )
+
+    def test_full_scan_emits_per_path_noise_warnings(self, tmp_path):
+        (tmp_path / "node_modules/dep").mkdir(parents=True, exist_ok=True)
+        (tmp_path / "node_modules/dep/README.md").write_text("# dep")
+
+        result = hyg.run_scan(repo_root=tmp_path, scan_mode="full")
+
+        assert result.noise_path_summary["by_category"]["vendored_deps"] >= 1
+        assert any("node_modules" in str(warning.path) for warning in result.warnings)

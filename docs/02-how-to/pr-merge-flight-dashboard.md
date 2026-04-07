@@ -65,6 +65,17 @@ Important constraint:
 - remote fingerprint harvesting is GitHub Actions-only in the first pass; non-Actions check URLs and ambiguous log output do not trigger shared remediation
 - headless queue runs append real-time progress to `proof/pr_merge/<run-id>/LIVE_LOG.txt`; this is the canonical artifact to tail while `queue-drain` is still running
 
+Important constraint:
+
+- branches with failing required GitHub checks remain blocked even when local validation passes
+- auto-merge-enabled PRs are still treated as blocked if the required remote checks are red
+- bounded dry or execute runs respect `--max-prs`, so operator test runs can sample the queue without draining the whole backlog
+=======
+>>>>>>> codex/remote-required-check-repro
+=======
+If multiple PRs fail CI with the same error, the orchestrator identifies a stable failure fingerprint from the failing validation step and error output. Instead of fixing each PR individually, it invokes the `ci-remediation-specialist` against `main` and opens or reuses a single `global-ci-fix` PR. Other failing PRs wait on that shared fix path instead of duplicating remediation.
+>>>>>>> wt-collect-dopemux-pr321-20260330023335
+
 ### Optimistic Lifecycle
 The dashboard uses a state model that distinguishes local proof from GitHub lag:
 
@@ -102,7 +113,12 @@ After launching the dashboard:
 1. Confirm approval-only PRs appear as `🟣`.
 1. Confirm already queued auto-merge PRs appear as `🔵`.
 1. Confirm PRs with failing required GitHub checks remain blocked instead of flipping to queued-for-merge after a local pass.
+=======
+1. Confirm PRs with failing required GitHub checks remain blocked instead of flipping to queued-for-merge after a local pass.
+>>>>>>> codex/pr-merge-queue-unblockers
 1. Confirm Up/Down arrow navigation works in your terminal emulator, including Kitty.
+=======
+>>>>>>> wt-collect-dopemux-pr321-20260330023335
 
 ## ADHD Optimization
 

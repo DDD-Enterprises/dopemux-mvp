@@ -5,8 +5,8 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-19'
-last_review: '2026-03-19'
-next_review: '2026-06-19'
+last_review: '2026-04-06'
+next_review: '2026-07-06'
 prelude: Canonical catalog of active documentation indexes, policy files, and documentation automation entrypoints.
 ---
 # Documentation Catalog
@@ -21,6 +21,15 @@ prelude: Canonical catalog of active documentation indexes, policy files, and do
 - `docs/02-how-to/overview.md`
 - `docs/03-reference/overview.md`
 - `docs/04-explanation/overview.md`
+
+## Active repo-truth extractor documentation set
+
+- `docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md`
+- `docs/02-how-to/extraction/truth-run-command.md`
+- `docs/03-reference/extraction/pipeline-reliability.md`
+- `docs/03-reference/extraction/pipeline-phases.md`
+- `docs/03-reference/extraction/v5-ui-live-output.md`
+- `docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md`
 
 ## Documentation Automation
 
@@ -47,6 +56,13 @@ prelude: Canonical catalog of active documentation indexes, policy files, and do
 - `templates/skills/code-implementer/`
 - `templates/skills/quality-refactorer/`
 
+## Supervisor Authority Packet Set
+
+- `docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md`
+
 ## Required Validation Commands
 
 ```bash
@@ -62,6 +78,7 @@ Active docs are maintained in Diataxis-aligned folders under `docs/`.
 Active subsystem and plane hubs that should be reconciled when impacted:
 - `docs/planes/pm/hub-2.md`
 - `docs/planes/pm/readme-2.md`
+- `docs/planes/pm/_evidence/readme-3.md`
 
 Exclude these trees from mandatory active index reconciliation unless directly touched:
 - `docs/archive/**`

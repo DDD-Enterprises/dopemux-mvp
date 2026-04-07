@@ -22,66 +22,13 @@ Focus on concrete, machine-verifiable implementation facts.
 - `src/dopemux/hooks/**`
 - `src/dopemux/mcp/hooks.py`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
 - `installers/**`
 - `ops/**`
-- `scripts/**`
-- `tools/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/mcp/hooks.py`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `config/**`
-- `configs/**`
-- `docker/**`
-- `installers/**`
-- `ops/**`
-- `scripts/**`
-- `tools/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/mcp/hooks.py`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
-- `src/dopemux/hooks/**`
-- `src/dopemux/mcp/hooks.py`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
-- `src/dopemux/hooks/**`
-- `src/dopemux/mcp/hooks.py`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
-- `src/dopemux/hooks/**`
-- `src/dopemux/mcp/hooks.py`
 
-- `.claude/**`
-- `.github/**`
-- `.taskx/**`
-- `config/**`
-- `scripts/**`
-- `docker/**`
 - `compose.yml`
 - `docker-compose*.yml`
 - `README.md`
@@ -114,58 +61,79 @@ Focus on concrete, machine-verifiable implementation facts.
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `A99`
     - `id_rule`: `REPO_HOOKS_SURFACE:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_item_fields`: `id, hook_name, hook_type, trigger, handler_path, is_blocking, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
 
+### Item Schema
+```json
+{
+  "id": "REPO_HOOKS_SURFACE:<hash>",
+  "hook_name": "<human-readable hook identifier>",
+  "hook_type": "git_hook|claude_hook|github_action|fastapi_event|signal_handler|pre_commit|taskx_hook|launchd_trigger",
+  "trigger": "<event or condition that fires the hook>",
+  "handler_path": "<repo-relative path to handler script or function>",
+  "handler_symbol": "<function name or script entrypoint, or null for whole-file scripts>",
+  "command": "<literal command string executed, or null if code-based>",
+  "is_blocking": true,
+  "timeout_seconds": "<configured timeout, or null if none>",
+  "invoked_paths": ["<repo-relative paths called by this hook>"],
+  "path": "<repo-relative path to hook definition/registration>",
+  "line_range": [0, 0],
+  "status": "ok|needs_review|missing_evidence",
+  "evidence": [{"path": "", "line_range": [], "excerpt": ""}]
+}
+```
+
+### Hook Type Definitions
+- **git_hook**: Git hooks in `.githooks/` or `.git/hooks/` (pre-commit, pre-push, post-merge, etc.)
+- **claude_hook**: Claude Code hooks defined in `.claude/settings.json` under `hooks` key with trigger/glob/command
+- **github_action**: GitHub Actions workflows in `.github/workflows/` triggered by `on:` events
+- **fastapi_event**: FastAPI lifecycle events registered via `@app.on_event()` or `app.add_event_handler()`
+- **signal_handler**: OS signal handlers registered via `signal.signal()` or framework equivalents
+- **pre_commit**: Pre-commit framework hooks in `.pre-commit-config.yaml`
+- **taskx_hook**: TaskX/Dopemux hooks in `.taskx/` configuration or `src/dopemux/hooks/`
+- **launchd_trigger**: macOS launchd-triggered scripts defined in plist files
+
+### Worked Example
+```json
+{
+  "id": "REPO_HOOKS_SURFACE:c4a8e2f1",
+  "hook_name": "PrePush lint check",
+  "hook_type": "claude_hook",
+  "trigger": "PrePush",
+  "handler_path": ".claude/settings.json",
+  "handler_symbol": null,
+  "command": "scripts/lint-docs.sh",
+  "is_blocking": true,
+  "timeout_seconds": null,
+  "invoked_paths": ["scripts/lint-docs.sh"],
+  "path": ".claude/settings.json",
+  "line_range": [12, 18],
+  "status": "ok",
+  "evidence": [{"path": ".claude/settings.json", "line_range": [12, 18], "excerpt": "\"hooks\": {\"PrePush\": [{\"command\": \"scripts/lint-docs.sh\"}]}"}]
+}
+```
+
 ## Extraction Procedure
-1. Load upstream inventory and partitions; use the hooks partition as primary scan surface
-2. Extract hooks facts: scan relevant files for domain-specific patterns and structures
-3. Build relationship graph: trace connections between extracted hooks elements
-4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
-5. For each HOOKS_SURFACE item, populate `id`, required fields, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on the hooks partition.
+2. Scan `.githooks/`, `.github/workflows/`, and `.pre-commit-config.yaml` for external hook triggers.
+3. Scan `src/dopemux/hooks/**` and `src/dopemux/mcp/hooks.py` for internal hook registrations and decorators.
+4. For each hook identified, extract mandatory fields:
+   - `hook_type`: categorize as "git-hook", "pre-commit", "ci-pipeline", "task-hook", or "mcp-hook".
+   - `trigger`: identify the triggering event (e.g., `git commit`, `cron`, `workflow_dispatch`, `on_task_start`).
+   - `command`: extract the literal shell command string or python function name invoked.
+   - `invoked_paths`: list file patterns the hook watches or modifies (e.g., `*.py`, `docs/**`).
+5. Build relationship graph: link hooks to the files they monitor and the commands they execute.
+6. For each HOOKS_SURFACE item, populate `id` (hook:<type>:<name>), required fields, and `evidence`.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Build deterministic IDs using stable content keys (path|symbol|name).
 9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Normalize arrays by stable sort keys; deduplicate by ID.
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
-- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -51,7 +51,7 @@ class TestResumeStateHygiene:
 
         issues = hyg.scan_resume_state(run_dirs=[run_dir])
 
-        stale = [i for i in issues if i.issue_type == "stale_failed"]
+        stale = [i for i in issues if i.issue_type == "stale_resume_state"]
         assert len(stale) >= 1
         assert str(failed) in str(stale[0].path)
 
@@ -63,7 +63,7 @@ class TestResumeStateHygiene:
 
         issues = hyg.scan_resume_state(run_dirs=[run_dir])
 
-        orphans = [i for i in issues if i.issue_type == "orphan_failed"]
+        orphans = [i for i in issues if i.issue_type == "orphaned_resume_state"]
         assert len(orphans) >= 1
 
     def test_blocked_resume_proof_detected(self, tmp_path):
@@ -126,3 +126,21 @@ class TestResumeStateHygiene:
         assert hasattr(issue, "path")
         assert hasattr(issue, "severity")
         assert hasattr(issue, "message")
+
+    def test_actionable_scan_groups_resume_state_warnings(self, tmp_path):
+        run_dir = tmp_path / "extraction/repo-truth-extractor/v3/runs/bad_run"
+        raw = run_dir / "A_repo_control_plane" / "raw"
+        _write_failed(raw, "A0", "A_P0001")
+        _write_success(raw, "A0", "A_P0001")
+
+        result = hyg.run_scan(repo_root=tmp_path, run_dirs=[run_dir], scan_mode="actionable")
+
+        assert len(result.resume_state_issues) == 1
+        assert result.resume_state_summary["by_issue_type"]["stale_resume_state"] == 1
+        assert any(
+            warning.category == "stale_resume_state_summary"
+            for warning in result.warnings
+        )
+        assert not any(
+            warning.category == "stale_resume_state" for warning in result.warnings
+        )

@@ -14,38 +14,14 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - `ui-dashboard/**`
 - `ui-dashboard-backend/**`
 
-- `src/**`
-- `services/**`
-- `components/**`
-- `dashboard/**`
-- `plugins/**`
-- `ui-dashboard/**`
-- `ui-dashboard-backend/**`
-
-- `src/**`
-- `services/**`
-- `components/**`
-- `dashboard/**`
-- `plugins/**`
-- `ui-dashboard/**`
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
 
 - `services/agents/**`
 - `src/dopemux/hooks/**`
 - `src/dopemux/agent_orchestrator.py`
 
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
 
-- `services/agents/**`
-- `src/dopemux/hooks/**`
-- `src/dopemux/agent_orchestrator.py`
 
-- `src/**`
-- `services/**`
+
 - `docker/**`
 - `compose.yml`
 - `docker-compose*.yml`
@@ -84,29 +60,10 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - When relevant, use `services/registry.yaml` as canonical service list.
 
 ## Outputs
-- `SERVICE_ENTRYPOINTS.json`
-- `EVENTBUS_SURFACE.json`
-- `EVENT_PRODUCERS.json`
-- `EVENT_CONSUMERS.json`
-- `DOPE_MEMORY_CODE_SURFACE.json`
-- `DOPE_MEMORY_SCHEMAS.json`
-- `DOPE_MEMORY_DB_WRITES.json`
-- `TRINITY_ENFORCEMENT_SURFACE.json`
-- `REFUSAL_AND_GUARDRAILS_SURFACE.json`
-- `TASKX_INTEGRATION_SURFACE.json`
-- `WORKFLOW_RUNNER_SURFACE.json`
-- `LEANTIME_INTEGRATION_SURFACE.json`
-- `DETERMINISM_RISK_LOCATIONS.json`
-- `IDEMPOTENCY_RISK_LOCATIONS.json`
-- `CONCURRENCY_RISK_LOCATIONS.json`
 - `CODE_SURFACES_QA.json`
 - `SERVICE_CATALOG.json`
-- `AGENT_ORCHESTRATION_SURFACE.json`
-- `ADHD_ENGINE_SURFACE.json`
 - `PYTHON_API_SURFACE.json`
 - `SERVICE_ENDPOINT_SURFACE.json`
-- `MODULE_DEPENDENCY_GRAPH.json`
-- `SERVICE_DEPENDENCY_GRAPH.json`
 - `COGNITIVE_FEATURES_SURFACE.json`
 
 ## Schema
@@ -297,41 +254,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
 12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
-
-## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
-
-## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
-
-## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Missing C-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
-- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

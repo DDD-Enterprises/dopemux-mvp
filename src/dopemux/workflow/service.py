@@ -78,6 +78,13 @@ class WorkflowKernel:
             or cwd
         ).resolve()
 
+        if os.environ.get("DOPEMUX_WORKSPACE_ROOT"):
+            return WorkspaceContext(
+                family_root=active_workspace,
+                active_workspace=active_workspace,
+                instance_id=os.environ.get("DOPEMUX_INSTANCE_ID") or "A"
+            )
+
         family_root = active_workspace
         env_main_repo = os.environ.get("DOPEMUX_MAIN_REPO")
         if env_main_repo:
@@ -95,7 +102,7 @@ class WorkflowKernel:
         return WorkspaceContext(
             family_root=family_root,
             active_workspace=active_workspace,
-            instance_id=instance_id or "A",
+            instance_id=instance_id,
         )
 
     @property
@@ -154,13 +161,24 @@ class WorkflowKernel:
         payload = json.loads(self.state_path(workflow_id).read_text(encoding="utf-8"))
         return WorkflowState.from_dict(payload)
 
+    def create_or_resume(self, *, prompt: Optional[str] = None, force_new: bool = False, **kwargs) -> WorkflowState:
+        """Create a new workflow or resume the active one."""
+        existing = self.resolve(kwargs.get("workflow_id"))
+        if existing and existing.status == WorkflowStatus.ACTIVE and not force_new:
+            return existing
+        state = self.init_workflow(prompt=prompt, force_new=force_new)
+        for k, v in kwargs.items():
+            if hasattr(state, k):
+                setattr(state, k, v)
+        return self.save(state)
+
     def resolve(self, workflow_id: Optional[str] = None) -> Optional[WorkflowState]:
         """Resolve a workflow by id or by current cwd ancestry and instance."""
         if workflow_id:
             path = self.state_path(workflow_id)
-            if not path.exists():
-                return None
-            return self.load(workflow_id)
+            if path.exists():
+                return self.load(workflow_id)
+            return None
 
         best: Optional[Tuple[int, str, WorkflowState]] = None
         current_path = self.cwd.resolve()
@@ -178,7 +196,7 @@ class WorkflowKernel:
                 score += 15
 
             if state.instance_id == self.context.instance_id:
-                score += 20
+                score += 100
             if state.status == WorkflowStatus.ACTIVE:
                 score += 10
 
@@ -208,9 +226,9 @@ class WorkflowKernel:
         latest = max(candidates, key=lambda item: item.stat().st_mtime)
         return "task-packet", latest
 
-    def _create_local_brief(self, workflow_dir: Path, prompt: str) -> Path:
+    def _create_local_brief(self, workflow_dir: Path, prompt: Optional[str]) -> Path:
         brief_path = workflow_dir / "brief.md"
-        title = prompt.strip().splitlines()[0] if prompt.strip() else "Internal Workflow Brief"
+        title = ((prompt or "").strip()).splitlines()[0] if ((prompt or "").strip()) else "Internal Workflow Brief"
         content = "\n".join(
             [
                 "---",
@@ -224,7 +242,7 @@ class WorkflowKernel:
                 f"# {title}",
                 "",
                 "## Summary",
-                prompt.strip() or "Local workflow brief created because no task packet or external brief was detected.",
+                ((prompt or "").strip()) or "Local workflow brief created because no task packet or external brief was detected.",
                 "",
                 "## Source",
                 "- Origin: local workflow kit",
@@ -287,7 +305,7 @@ class WorkflowKernel:
     def init_workflow(
         self,
         *,
-        prompt: str,
+        prompt: Optional[str],
         mode: str = "manager",
         max_iterations: int = 0,
         max_minutes: int = 0,
@@ -311,7 +329,7 @@ class WorkflowKernel:
         task = self._create_initial_task(
             workflow_dir,
             title=title,
-            summary=prompt.strip() or f"Execute workflow for {title}",
+            summary=((prompt or "").strip()) or f"Execute workflow for {title}",
             authority=pm_probe["authority"],
             source_artifact=brief_path,
         )
@@ -420,7 +438,6 @@ class WorkflowKernel:
         task_presence = {}
         if task:
             from .models import task_artifact_presence
-
             task_presence = task_artifact_presence(task)
         return {
             "workflow_id": state.workflow_id,

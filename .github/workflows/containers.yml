@@ -39,10 +39,8 @@ jobs:
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
 
     strategy:
-      fail-fast: false
       matrix:
         include:
-          # -- Core backend
           - service: dopemux-backend
             dockerfile: Dockerfile
             context: .

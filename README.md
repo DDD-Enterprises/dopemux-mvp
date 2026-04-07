@@ -28,6 +28,7 @@ Status: [LOGGED] Core Manifest Stable
 - [License](#license)
 - [FAQ & Troubleshooting](#faq--troubleshooting)
 - [Further Reading](#further-reading)
+- [Repo Truth Extractor v5](#repo-truth-extractor-v5)
 
 ---
 
@@ -73,7 +74,7 @@ source ~/.zshrc && dopemux start
 dopemux truth
 ```
 
-See [INSTALL.md](INSTALL.md) and [docs/USER_JOURNEY.md](docs/04-explanation/root-relocated/user-journey.md) for detailed onboarding paths.
+See [INSTALL.md](INSTALL.md) and [docs/USER_JOURNEY.md](docs/USER_JOURNEY.md) for detailed onboarding paths.
 
 ---
 
@@ -129,6 +130,28 @@ See [Architecture Overview](docs/04-explanation/architecture/dopemux-architectur
 
 ---
 
+## Repo Truth Extractor v5
+
+The active bounded runtime lane validated on this branch is:
+
+- phase `A`
+- step `A2`
+- routing `balanced_grok_openrouter`
+
+Use these docs for the current extractor surface:
+
+- [Repo Truth Extractor v5 First Live Run](docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md)
+- [Truth-Run Command](docs/02-how-to/extraction/truth-run-command.md)
+- [Extraction Pipeline Reliability](docs/03-reference/extraction/pipeline-reliability.md)
+- [V5 Extraction Pipeline Upgrade Design](docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md)
+
+Current scope warning:
+
+- the bounded lane above is validated
+- broader extractor readiness outside that lane should not be inferred from it
+
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -140,9 +163,7 @@ See [Architecture Overview](docs/04-explanation/architecture/dopemux-architectur
 ### Installation
 
 ```bash
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .[dev]
+uv sync --frozen --extra dev
 pre-commit install --install-hooks
 ```
 
@@ -239,11 +260,16 @@ See [copilot-instructions.md](.github/copilot-instructions.md) for more.
 
 ## Testing
 
-- **Unit tests**: `pytest -q` (see `tests/unit/`)
-- **Contract tests**: `pytest tests/contracts/`
+- **Fast PR unit gate**: `uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov`
+- **Integration tests**: `uv sync --frozen --extra test --extra services && uv run --frozen pytest tests/integration --maxfail=1 --disable-warnings --no-cov`
+- **Contract tests**: `uv run --frozen pytest tests/contracts/`
 - **Smoke tests**: `python tools/quick_checks.py smoke`
-- **Coverage**: 80% minimum enforced by `pytest.ini`
+- **Installer smoke**: `./test_installer_basic.sh`
+- **Scoped coverage**: `./scripts/check_coverage.sh`
+- **Coverage**: scoped MCP coverage is enforced by `scripts/check_coverage.sh`
 - **Linting/Typecheck**: `pre-commit run --all-files` (includes ruff, black, isort, mypy)
+
+Pull requests are optimized for the fast unit gate; installer smoke, scoped coverage, and broader integration coverage run on slower CI lanes outside the default PR critical path.
 
 See [docs/03-reference/03-testing.md](docs/03-reference/03-testing.md) for full details.
 
@@ -977,7 +1003,7 @@ uvicorn main:app --port 8095 --reload
 - **[Master Index](./docs/00-MASTER-INDEX.md)** - Canonical active docs navigation
 - **[PR Merge Flight Dashboard](./docs/02-how-to/pr-merge-flight-dashboard.md)** - Operator quickstart for the recovered PR merge cockpit
 - **[PR Merge Queue Orchestration](./docs/04-explanation/pr-merge-queue-orchestration.md)** - Queue-state and remediation design rationale
-- **[PR Merge Usage Patterns](./docs/pr_merge/usage-patterns.md)** - Live command patterns, bounded execute runs, and required-check reproduction behavior
+- **[PR Merge Usage Patterns](docs/03-reference/pr-pipeline/merge/usage-patterns-moved-2.md)** - Live command patterns, bounded execute runs, and required-check reproduction behavior
 - **[ConPort Memory System](./docs/04-explanation/conport-technical-deep-dive.md)** - Knowledge graph and decision logging
 - **[Serena Code Intelligence](./docs/04-explanation/serena-v2-technical-deep-dive.md)** - LSP-based semantic navigation
 - **[System Architecture](./docs/94-architecture/system-bible.md)** - Two-plane architecture overview

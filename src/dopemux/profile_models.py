@@ -191,11 +191,11 @@ class Profile(BaseModel):
     @field_validator("mcps")
     @classmethod
     def validate_conport_required(cls, v: List[str]) -> List[str]:
-        """Validate that 'conport' is present in MCP list."""
-        if "conport" not in v:
+        """Validate that 'conport' (short or long) is present in MCP list."""
+        if "conport" not in v and "dopemux-conport" not in v:
             raise ValueError(
-                "Profile is invalid: 'conport' is required in all profiles (memory authority). "
-                "Fix: Add 'conport' to mcps array"
+                "Profile is invalid: 'dopemux-conport' is required in all profiles (memory authority). "
+                "Fix: Add 'dopemux-conport' to mcps array"
             )
         return v
 
@@ -217,7 +217,7 @@ class Profile(BaseModel):
                     "name": "developer",
                     "display_name": "Developer",
                     "description": "Code implementation and debugging",
-                    "mcps": ["conport", "serena-v2", "dope-context"],
+                    "mcps": ["dopemux-conport", "dopemux-serena", "dopemux-claude-context"],
                     "adhd_config": {
                         "energy_preference": "medium",
                         "attention_mode": "focused",
@@ -313,13 +313,13 @@ class ProfileCollection(BaseModel):
                             "name": "developer",
                             "display_name": "Developer",
                             "description": "Code implementation",
-                            "mcps": ["conport", "serena-v2"]
+                            "mcps": ["dopemux-conport", "dopemux-serena"]
                         },
                         {
                             "name": "researcher",
                             "display_name": "Researcher",
                             "description": "Deep research",
-                            "mcps": ["conport", "zen", "gpt-researcher"]
+                            "mcps": ["dopemux-conport", "dopemux-zen", "dopemux-gpt-researcher"]
                         }
                     ]
                 }
@@ -329,16 +329,24 @@ class ProfileCollection(BaseModel):
 
 # Valid MCP server names (reference for validation)
 VALID_MCP_SERVERS = [
-    "conport",          # Memory authority (REQUIRED)
-    "serena-v2",        # Code navigation and LSP
-    "zen",              # Multi-model reasoning
-    "pal",              # Code generation + API/SDK documentation (apilookup)
-    "gpt-researcher",   # Deep web research
-    "dope-context",     # Hybrid code search
-    "desktop-commander", # Desktop automation and control
-    "magic-mcp",        # UI component generation
-    "playwright",       # Browser automation and testing
-    "tavily",           # Web search API
-    "mas-sequential-thinking",  # Multi-agent sequential thinking
-    "sequential_thinking",  # Deprecated, use zen
+    # Canonical prefixed names (Claude settings.json)
+    "dopemux-conport",
+    "dopemux-serena",
+    "dopemux-zen",
+    "dopemux-pal",
+    "dopemux-gpt-researcher",
+    "dopemux-claude-context",
+    "dopemux-desktop-commander",
+    "dopemux-leantime-bridge",
+    # Profile-friendly short names
+    "conport",
+    "serena",
+    "serena-v2",
+    "zen",
+    "pal",
+    "gpt-researcher",
+    "claude-context",
+    "desktop-commander",
+    "leantime-bridge",
+    "dope-context",
 ]

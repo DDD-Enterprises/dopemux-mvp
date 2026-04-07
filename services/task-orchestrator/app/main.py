@@ -16,6 +16,22 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Response
 from fastapi.middleware.cors import CORSMiddleware
 import json
+try:
+    from mcp.server.fastmcp import FastMCP
+except ImportError:  # pragma: no cover - optional MCP transport in slim test envs
+    class FastMCP:  # type: ignore[override]
+        """Minimal fallback used when the MCP server package is unavailable."""
+
+        def __init__(self, name: str):
+            self.name = name
+            self.tools: Dict[str, Dict[str, Any]] = {}
+
+        def tool(self, *, name: str, description: str):
+            def decorator(func):
+                self.tools[name] = {"description": description, "handler": func}
+                return func
+
+            return decorator
 
 # Add repo root to path
 repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,14 +50,43 @@ except Exception:
         return logging.getLogger(service_name)
 try:
     from .core.coordinator import create_plane_coordinator
-except ImportError:  # pragma: no cover - direct module loading in tests
-    from app.core.coordinator import create_plane_coordinator
+except Exception as relative_import_error:  # pragma: no cover - direct module loading in tests
+    try:
+        from app.core.coordinator import create_plane_coordinator
+    except Exception as absolute_import_error:  # pragma: no cover - slim test env fallback
+        async def create_plane_coordinator(*_args, **_kwargs):
+            raise RuntimeError(
+                "task-orchestrator coordinator is unavailable in this environment: "
+                f"{absolute_import_error or relative_import_error}"
+            )
 
 # Configure structured logging
 configure_logging("task-orchestrator")
 logger = logging.getLogger(__name__)
 SERVICE_NAME = os.getenv("SERVICE_NAME", "task-orchestrator")
 HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
+
+# Initialize MCP server
+mcp = FastMCP("Task-Orchestrator")
+
+# Register MCP tools
+try:
+    from task_orchestrator.mcp import MCP_TOOLS, handle_tool_call
+    for tool_def in MCP_TOOLS:
+        @mcp.tool(name=tool_def["name"], description=tool_def["description"])
+        async def mcp_tool_wrapper(tool_name=tool_def["name"], **kwargs):
+            return await handle_tool_call(tool_name, kwargs)
+except ImportError:
+    # Fallback for direct module loading in tests or different structure
+    try:
+        from .mcp import MCP_TOOLS, handle_tool_call
+        for tool_def in MCP_TOOLS:
+            @mcp.tool(name=tool_def["name"], description=tool_def["description"])
+            async def mcp_tool_wrapper(tool_name=tool_def["name"], **kwargs):
+                return await handle_tool_call(tool_name, kwargs)
+    except ImportError:
+        logger = logging.getLogger(__name__)
+        logger.warning("MCP tools could not be loaded - server will be empty")
 
 # Import shared models from local models
 try:

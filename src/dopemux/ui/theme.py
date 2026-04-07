@@ -4,9 +4,10 @@ This module defines the neon mint palette, Rich Theme object, glyph constants,
 status chips, and helper factories that every dopemux CLI command must use.
 
 Usage:
+from rich.console import Console
     from dopemux.ui.theme import DOPEMUX_THEME, Glyphs, StatusChip, styled_table, styled_panel
-    from dopemux.console import console  # already themed
 
+    console = Console(theme=DOPEMUX_THEME)
     console.print(f"{Glyphs.SUCCESS} All checks passed", style="success")
     console.print(StatusChip.LIVE.render("Pipeline running"))
 """
@@ -26,18 +27,20 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
+
 def get_active_theme_name() -> str:
-    """Return the name of the active theme from environment, config, or default."""
+    """Return the name of the active theme from environment or default.
+
+    This function is intentionally kept free of config imports and heavy logic
+    to avoid import-time cycles. Higher-level code (CLI/config) should
+    initialize and propagate the theme as needed.
+    """
     env_theme = os.environ.get("DOPEMUX_THEME")
     if env_theme:
         return env_theme.lower()
-    
-    try:
-        from dopemux.config.manager import ConfigManager
-        config = ConfigManager().load_config()
-        return config.theme.lower()
-    except Exception:
-        return "pastel-neon-dreams"
+
+    # Fallback default theme when no environment override is set.
+    return "pastel-neon-dreams"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Dynamic Color Palette (Legacy / Compatibility)
@@ -161,7 +164,7 @@ def build_theme(name: str) -> Theme:
             "error": "bold #FF00FF",
             "warning": "#FFFF00",
             "gold": "#FFFF00",
-            "amber": "#FFFF66",
+            "amber": "#FFCF78",
             "warning.soft": "#FFFF66",
             "info": "#66FFFF",
             "debug": "#FF66FF",
@@ -274,6 +277,8 @@ class Glyphs:
     PENDING = "\uf017"  # nf-fa-clock_o
     BLOCKED = "\uf05e"  # nf-fa-ban
     SKIPPED = "\uf050"  # nf-fa-forward
+    FIRE = "\uf06d"  # nf-fa-fire
+    GOLD = "\uf091"  # nf-fa-trophy
 
     # ── Dev ──
     GIT = "\ue725"  # nf-dev-git_branch
@@ -306,6 +311,8 @@ class Glyphs:
         PENDING: "~",
         BLOCKED: "#",
         SKIPPED: "-",
+        FIRE: "^",
+        GOLD: "*",
         GIT: "Y",
         CODE: "<>",
         PACKAGE: "[]",
@@ -463,15 +470,16 @@ def styled_table(
         compact = True
     box_style = SIMPLE if compact else ROUNDED
     show_title = title if mode != RenderMode.COMPACT else None
-    table = Table(
-        title=show_title,
-        box=box_style,
-        title_style="table.header",
-        border_style="table.border",
-        header_style="table.header",
-        padding=(0, 1) if not compact else (0, 0),
-        **table_kwargs,
-    )
+    
+    # Set defaults in table_kwargs if not provided
+    table_kwargs.setdefault("title", show_title)
+    table_kwargs.setdefault("box", box_style)
+    table_kwargs.setdefault("title_style", "table.header")
+    table_kwargs.setdefault("border_style", "table.border")
+    table_kwargs.setdefault("header_style", "table.header")
+    table_kwargs.setdefault("padding", (0, 1) if not compact else (0, 0))
+    
+    table = Table(**table_kwargs)
     if mode == RenderMode.AUDIT:
         table.add_column("Timestamp", style="text.dim", no_wrap=True)
     for col in columns:
@@ -530,14 +538,12 @@ def styled_panel(
         # Strip Rich markup for audit log line
         header = f"[{ts}] {plain_title}: "
         return Text.from_markup(f"{header}{content}" if isinstance(content, str) else header)
-    return Panel(
-        content,
-        title=f"[panel.title]{title}[/panel.title]" if title else None,
-        border_style=border_style,
-        box=ROUNDED,
-        padding=(1, 2),
-        **kwargs,
-    )
+    kwargs.setdefault("title", f"[panel.title]{title}[/panel.title]" if title else None)
+    kwargs.setdefault("border_style", border_style)
+    kwargs.setdefault("box", ROUNDED)
+    kwargs.setdefault("padding", (1, 2))
+    
+    return Panel(content, **kwargs)
 
 
 def error_panel(problem: str, why: str, fix: str, title: str = "Error") -> Panel:
@@ -558,3 +564,30 @@ def error_panel(problem: str, why: str, fix: str, title: str = "Error") -> Panel
         f"[text.dim]Fix:[/text.dim] [mint]{fix}[/mint]"
     )
     return styled_panel(body, title=f"{Glyphs.ERROR} {title}", border_style="error")
+
+
+def styled_gauge(
+    value: float,
+    width: int = 10,
+    complete_style: str = "bar.complete",
+    remaining_style: str = "bar.remaining",
+) -> str:
+    """Create a branded progress gauge with dopemux styling.
+
+    Args:
+        value: Float between 0.0 and 1.0.
+        width: Total width in characters.
+        complete_style: Rich style for the completed portion.
+        remaining_style: Rich style for the remaining portion.
+
+    Returns:
+        Rich markup string for the gauge (e.g., "[mint]████[/][grey]░░░░░░[/]").
+    """
+    safe_value = max(0.0, min(1.0, value))
+    filled_len = int(safe_value * width)
+    remaining_len = width - filled_len
+
+    filled = "█" * filled_len
+    remaining = "░" * remaining_len
+
+    return f"[{complete_style}]{filled}[/][{remaining_style}]{remaining}[/]"

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 import sys
 from types import SimpleNamespace
@@ -156,5 +155,4 @@ def test_main_skips_validator_for_dry_run(monkeypatch: pytest.MonkeyPatch) -> No
 
     assert excinfo.value.code == 1
     assert called["value"] is False
-
 

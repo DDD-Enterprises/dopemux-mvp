@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 
@@ -167,7 +168,8 @@ def resolve_stage_route(
             {
                 "provider": provider,
                 "model_id": str(route["model_id"]),
-                "api_key_env": str(route["api_key_env"]),
+                # Deliberately omit api_key_env to avoid exposing authentication-related
+                # environment identifiers in any logged or serialized strict-route metadata.
                 "transport": transport,
                 "strict_json_schema": bool(route.get("strict_json_schema", False)),
                 "strict_passthrough_verified": bool(route.get("strict_passthrough_verified", False)),
@@ -317,6 +319,44 @@ def empty_payload_for_artifact(artifact_meta: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _normalize_line_range_value(value: Any) -> Any:
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple) and len(value) == 2 and all(
+        isinstance(part, int) for part in value
+    ):
+        return [int(value[0]), int(value[1])]
+    if not isinstance(value, str):
+        return value
+    match = re.fullmatch(r"\s*(\d+)\s*[-:]\s*(\d+)\s*", value)
+    if not match:
+        return value
+    start = int(match.group(1))
+    end = int(match.group(2))
+    if start <= 0 or end < start:
+        return value
+    return [start, end]
+
+
+def _normalize_evidence_line_ranges(payload_copy: Dict[str, Any]) -> None:
+    items = payload_copy.get("items")
+    if not isinstance(items, list):
+        return
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        item["line_range"] = _normalize_line_range_value(item.get("line_range"))
+        evidence_rows = item.get("evidence")
+        if not isinstance(evidence_rows, list):
+            continue
+        for evidence in evidence_rows:
+            if not isinstance(evidence, dict):
+                continue
+            evidence["line_range"] = _normalize_line_range_value(
+                evidence.get("line_range")
+            )
+
+
 def canonicalize_artifacts(
     artifacts: List[Dict[str, Any]],
     step_contract: Optional[Dict[str, Any]],
@@ -341,8 +381,19 @@ def canonicalize_artifacts(
             continue
         payload_copy = copy.deepcopy(payload)
         canonical_schema_id = str(artifact_meta.get("canonical_schema_id") or "")
+        schema_aliases = {
+            str(alias).strip().lower()
+            for alias in artifact_meta.get("schema_aliases") or []
+            if str(alias).strip()
+        }
+        if canonical_schema_id:
+            schema_aliases.add(canonical_schema_id.lower())
         observed_schema_id = str(payload_copy.get("schema") or "").strip()
-        if observed_schema_id and observed_schema_id != canonical_schema_id and observed_schema_id.lower() == canonical_schema_id.lower():
+        if (
+            observed_schema_id
+            and observed_schema_id != canonical_schema_id
+            and observed_schema_id.lower() in schema_aliases
+        ):
             schema_normalizations.append(
                 {
                     "artifact_name": artifact_name,
@@ -353,6 +404,7 @@ def canonicalize_artifacts(
             payload_copy["schema"] = canonical_schema_id
         elif not observed_schema_id and canonical_schema_id:
             payload_copy["schema"] = canonical_schema_id
+        _normalize_evidence_line_ranges(payload_copy)
         normalized.append({"artifact_name": artifact_name, "payload": payload_copy})
     normalized.sort(key=lambda row: order_index.get(str(row.get("artifact_name") or ""), 9999))
     return normalized, schema_normalizations
@@ -535,12 +587,76 @@ def normalize_required_array_fields(
     return normalized, coercions
 
 
+def _is_scalar_conflict_candidate(value: Any) -> bool:
+    return value is None or isinstance(value, (str, int, float, bool))
+
+
+def _artifact_item_scalar_conflicts(
+    artifact_name: str,
+    existing_row: Dict[str, Any],
+    updated_row: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    existing_payload = (
+        existing_row.get("payload") if isinstance(existing_row.get("payload"), dict) else {}
+    )
+    updated_payload = (
+        updated_row.get("payload") if isinstance(updated_row.get("payload"), dict) else {}
+    )
+    existing_items = (
+        existing_payload.get("items") if isinstance(existing_payload.get("items"), list) else None
+    )
+    updated_items = (
+        updated_payload.get("items") if isinstance(updated_payload.get("items"), list) else None
+    )
+    if not isinstance(existing_items, list) or not isinstance(updated_items, list):
+        return []
+
+    existing_by_id = {
+        str(item.get("id") or ""): item
+        for item in existing_items
+        if isinstance(item, dict) and str(item.get("id") or "").strip()
+    }
+    updated_by_id = {
+        str(item.get("id") or ""): item
+        for item in updated_items
+        if isinstance(item, dict) and str(item.get("id") or "").strip()
+    }
+
+    conflicts: List[Dict[str, Any]] = []
+    for item_id in sorted(set(existing_by_id.keys()) & set(updated_by_id.keys())):
+        existing_item = existing_by_id[item_id]
+        updated_item = updated_by_id[item_id]
+        shared_fields = sorted(set(existing_item.keys()) & set(updated_item.keys()))
+        for field in shared_fields:
+            if field == "id":
+                continue
+            before = existing_item.get(field)
+            after = updated_item.get(field)
+            if not (_is_scalar_conflict_candidate(before) and _is_scalar_conflict_candidate(after)):
+                continue
+            if before == after:
+                continue
+            conflicts.append(
+                {
+                    "artifact_name": artifact_name,
+                    "item_id": item_id,
+                    "field": field,
+                    "existing_value": before,
+                    "updated_value": after,
+                }
+            )
+    return conflicts
+
+
 def merge_artifacts_by_name(
     artifacts: List[Dict[str, Any]],
     updates: List[Dict[str, Any]],
     step_contract: Optional[Dict[str, Any]],
-) -> List[Dict[str, Any]]:
+    *,
+    return_conflicts: bool = False,
+) -> Any:
     merged: Dict[str, Dict[str, Any]] = {}
+    conflicts: List[Dict[str, Any]] = []
     for row in artifacts:
         if not isinstance(row, dict):
             continue
@@ -554,13 +670,19 @@ def merge_artifacts_by_name(
         artifact_name = str(row.get("artifact_name") or "").strip()
         if not artifact_name:
             continue
+        if artifact_name in merged:
+            conflicts.extend(
+                _artifact_item_scalar_conflicts(artifact_name, merged[artifact_name], row)
+            )
         merged[artifact_name] = copy.deepcopy(row)
     if not isinstance(step_contract, dict):
-        return [merged[name] for name in sorted(merged.keys())]
+        rows = [merged[name] for name in sorted(merged.keys())]
+        return (rows, conflicts) if return_conflicts else rows
     order = artifact_order(step_contract)
     rows = [merged[name] for name in order if name in merged]
     extra = [merged[name] for name in sorted(merged.keys()) if name not in set(order)]
-    return rows + extra
+    merged_rows = rows + extra
+    return (merged_rows, conflicts) if return_conflicts else merged_rows
 
 
 def dump_response_format_json(response_format: Dict[str, Any]) -> str:

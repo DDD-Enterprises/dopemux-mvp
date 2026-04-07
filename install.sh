@@ -291,7 +291,7 @@ choose_install_stack() {
         show_stack_summary "$SELECTED_STACK"
         return 0
     fi
-    
+
     if [ "$AUTO_CONFIRM" = true ]; then
         log "Auto mode using ${SELECTED_STACK} stack"
         show_stack_summary "$SELECTED_STACK"
@@ -502,7 +502,7 @@ ensure_env_file() {
 check_system_resources() {
     local stack="${1:-$SELECTED_STACK}"
     log "Validating system resources..."
-    
+
     if [ "$INSTALLER_TEST_MODE" = "1" ]; then
         return 0
     fi
@@ -533,7 +533,7 @@ check_system_resources() {
     if [ "$cpu_cores" -lt 4 ]; then
         warning "Low CPU core count: ${cpu_cores} (Recommended: 4+)"
     fi
-    
+
     success "Resource validation complete"
 }
 
@@ -542,9 +542,9 @@ wait_for_containers() {
     local stack="${1:-$SELECTED_STACK}"
     local compose_file
     compose_file=$(compose_file_for_stack "$stack")
-    
+
     log "Waiting for services to be healthy..."
-    
+
     local timeout=120
     local start_time=$(date +%s)
     local ready=false
@@ -558,7 +558,7 @@ wait_for_containers() {
             ready=true
             break
         fi
-        
+
         # Fallback for services without healthchecks
         if [ "$running_containers" -eq "$total_containers" ] && [ "$total_containers" -gt 0 ] && [ "$healthy_containers" -eq 0 ]; then
              # Give them a bit more time if no healthchecks are defined
@@ -570,7 +570,7 @@ wait_for_containers() {
         printf "."
         sleep 5
     done
-    
+
     echo
     if [ "$ready" = true ]; then
         success "All services are ready!"
@@ -1049,7 +1049,7 @@ create_directory_structure() {
 
 install_dopemux_core() {
     log "Installing Dopemux core..."
-    
+
     if [ "$INSTALLER_TEST_MODE" = "1" ]; then
         warning "[test-mode] Skipping Python package install"
     else
@@ -1057,7 +1057,7 @@ install_dopemux_core() {
         if [ -f "pyproject.toml" ]; then
             log "Creating virtual environment at $DOPEMUX_HOME/venv..."
             python3 -m venv "$DOPEMUX_HOME/venv" || fatal "Failed to create virtual environment"
-            
+
             log "Installing package into virtual environment..."
             "$DOPEMUX_HOME/venv/bin/pip" install -e . || fatal "Failed to install Python package"
             success "Python package installed"
@@ -1065,7 +1065,7 @@ install_dopemux_core() {
             warning "pyproject.toml not found, skipping Python package install"
         fi
     fi
-    
+
     # Copy configuration files
     if [ -d "config" ]; then
         cp -r config/* "$DOPEMUX_HOME/config/" 2>/dev/null || true
@@ -1214,12 +1214,12 @@ verify_installation() {
     else
         warning "Python package not importable"
     fi
-    
+
     # Check 3: Docker services
     local docker_ok=false
     local compose_args
     compose_args=$(compose_file_for_stack "$stack")
-    
+
     local profile_arg=""
     [ "$stack" = "full" ] && profile_arg="--profile full"
 

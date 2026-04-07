@@ -1,7 +1,9 @@
+from __future__ import annotations
+
+import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-import sys
 
 import pytest
 

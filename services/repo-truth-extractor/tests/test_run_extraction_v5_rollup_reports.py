@@ -51,13 +51,21 @@ def test_telemetry_snapshot_writers_are_deterministic(tmp_path: Path) -> None:
         phase="C",
         step_id="C8",
         failure_histogram={"provider": 2},
-        first_failure={"partition_id": "C_P0009", "failure_class": "provider"},
+        first_failure={
+            "partition_id": "C_P0009",
+            "failure_class": "provider",
+            "remediation_hint": "Check provider auth/quota/status.",
+        },
     )
     failure_index = json.loads(
         (tmp_path / "telemetry" / "FAILURE_INDEX.json").read_text(encoding="utf-8")
     )
     assert list(failure_index["steps"].keys()) == ["C:C8", "D:D1"]
     assert failure_index["global_failure_histogram"]["schema_missing_key"] == 3
+    assert (
+        failure_index["steps"]["C:C8"]["first_failure"]["remediation_hint"]
+        == "Check provider auth/quota/status."
+    )
 
     dashboard = runner.write_run_dashboard_snapshot(
         tmp_path,

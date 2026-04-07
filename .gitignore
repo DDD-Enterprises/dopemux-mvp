@@ -361,3 +361,6 @@ extraction/doctor/
 extraction/repo-truth-extractor/
 **/corpus_manifest.json
 **/audit_payload.md
+
+.gemini/
+gha-creds-*.json

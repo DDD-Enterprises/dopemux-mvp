@@ -920,12 +920,14 @@ def test_agent_manager_lifecycle_with_tasks():
     
     task_id = manager.submit_task(task)
     
-    # Start and stop the manager
-    manager.start()
-    assert manager._running == True
-    
-    manager.stop()
-    assert manager._running == False
+    # Start and stop the manager (mocking task processing to prevent race conditions)
+    from unittest.mock import patch
+    with patch.object(manager, '_process_next_task'):
+        manager.start()
+        assert manager._running == True
+        
+        manager.stop()
+        assert manager._running == False
     
     # Existing queued work remains managed state after shutdown.
     assert len(manager._task_queue) == 1

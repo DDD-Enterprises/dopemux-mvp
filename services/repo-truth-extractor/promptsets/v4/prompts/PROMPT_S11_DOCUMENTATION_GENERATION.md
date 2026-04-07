@@ -62,28 +62,5 @@ Consolidate all S0–S10 synthesis outputs into a final documentation generation
 7. Validate that every load-bearing claim has a source citation
 8. Emit exactly the declared output and no additional files
 
-## Evidence Rules
-- Every section must begin with a source citation: `SOURCE: <artifact_filename>`
-- Every load-bearing claim within a section must be traceable to the cited source artifact.
-- The provenance appendix must be complete: every referenced artifact must appear.
-- Do not include claims that cannot be traced to any upstream artifact.
-
-## Determinism Rules
-- Do not include `generated_at`, `timestamp`, `created_at`, `updated_at`, or `run_id`.
-- Use fixed section ordering as specified in the schema (Sections 1–10).
-- Use consistent terminology from upstream artifacts; do not introduce synonyms.
-- Keep headings, citation styles, and formatting deterministic across runs.
-
-## Anti-Fabrication Rules
-- Do not invent architectural claims, decisions, or analysis not present in upstream artifacts.
-- Do not scan the repository directly — all information must come from declared inputs.
-- Do not add editorial commentary, recommendations, or opinions beyond what upstream synthesis provides.
-- If an upstream artifact is empty or missing, state the gap explicitly rather than fabricating content.
-- Do not introduce references to artifacts outside this step's supplied input set.
-
-## Failure Modes
-- Missing required S-phase artifacts: emit section header with `⚠️ Source not available` note and continue with remaining sections.
-- All artifacts missing: emit a minimal document with the provenance table listing all expected artifacts as `NOT_AVAILABLE`.
-- Conflicting information across synthesis artifacts: cite both sources and note the conflict explicitly.
-- Upstream synthesis was partial: propagate partial status with `[PARTIAL]` annotation and evidence of what is covered vs. missing.
-- Exceeds reasonable document length: summarize verbose sections and note `[SUMMARIZED: see <artifact> for full detail]`.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

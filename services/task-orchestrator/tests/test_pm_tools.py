@@ -5,6 +5,7 @@ from app.main import app
 client = TestClient(app)
 
 def test_pm_update_work_item_emits_metric(monkeypatch):
+    import src.dopemux.pm.writes
     from src.dopemux.pm.writes import CanonicalReceipt
     
     def mock_pm_transition_work_item(*args, **kwargs):

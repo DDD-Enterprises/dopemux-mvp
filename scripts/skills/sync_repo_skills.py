@@ -18,6 +18,16 @@ FAMILIES: Dict[str, List[str]] = {
         "pr-docgen-sync-copilot",
         "pr-docgen-sync-claude",
     ],
+    "workflow-kit": [
+        "brief-drafter",
+        "task-breakdown",
+        "code-researcher",
+        "research-reviewer",
+        "implementation-planner",
+        "plan-reviewer",
+        "code-implementer",
+        "quality-refactorer",
+    ],
 }
 
 

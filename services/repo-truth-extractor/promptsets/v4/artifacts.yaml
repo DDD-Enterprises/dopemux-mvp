@@ -329,28 +329,6 @@ artifacts:
   - line_range
   - id
 - phase: C
-  artifact_name: DOPE_MEMORY_DB_WRITES.json
-  canonical_writer_step_id: C9
-  kind: json_item_list
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: itemlist_by_id
-  required_fields:
-  - path
-  - line_range
-  - id
-- phase: C
-  artifact_name: DOPE_MEMORY_SCHEMAS.json
-  canonical_writer_step_id: C9
-  kind: json_item_list
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: itemlist_by_id
-  required_fields:
-  - path
-  - line_range
-  - id
-- phase: C
   artifact_name: EVENTBUS_SURFACE.json
   canonical_writer_step_id: C9
   kind: json_item_list
@@ -909,6 +887,17 @@ artifacts:
   - path
   - line_range
   - id
+- phase: G
+  artifact_name: AUTH_FLOW_SURFACE.json
+  canonical_writer_step_id: G5
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
 - phase: H
   artifact_name: HOMECTRL_NORM_MANIFEST.json
   canonical_writer_step_id: H9
@@ -1110,6 +1099,14 @@ artifacts:
   - path
   - line_range
   - id
+- phase: Q
+  artifact_name: QA_ARTIFACT_COLLISION_REPORT.json
+  canonical_writer_step_id: Q11
+  kind: json_item_list
+  norm_artifact: false
+  allow_timestamp_keys: true
+  merge_strategy: itemlist_by_id
+  required_fields: []
 - phase: R
   artifact_name: CONFLICT_LEDGER.md
   canonical_writer_step_id: R7
@@ -1215,6 +1212,14 @@ artifacts:
 - phase: R
   artifact_name: TWO_PLANE_ARCHITECTURE_TRUTH.md
   canonical_writer_step_id: R10
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: R
+  artifact_name: SECURITY_RISK_SYNTHESIS.md
+  canonical_writer_step_id: R11
   kind: markdown
   norm_artifact: true
   allow_timestamp_keys: false
@@ -1733,38 +1738,6 @@ artifacts:
   merge_strategy: markdown_concat
   required_fields: []
 - phase: S
-  artifact_name: CONFLICT_LEDGER.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: CONTROL_PLANE_TRUTH_MAP.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: EVENTBUS_WIRING_TRUTH.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
   artifact_name: MCP_TO_HOOKS_MIGRATION_OPUS.md
   canonical_writer_step_id: S1
   kind: markdown
@@ -1807,46 +1780,6 @@ artifacts:
 - phase: S
   artifact_name: S3_ARCH_PROOF_HOOKS.md
   canonical_writer_step_id: S3
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: RISK_REGISTER_TOP20.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: TASKX_INTEGRATION_TRUTH.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
-  canonical_writer_step_id: S0
-  kind: markdown
-  norm_artifact: true
-  allow_timestamp_keys: false
-  merge_strategy: markdown_concat
-  required_fields: []
-- phase: S
-  artifact_name: WORKFLOWS_TRUTH_GRAPH.md
-  canonical_writer_step_id: S0
   kind: markdown
   norm_artifact: true
   allow_timestamp_keys: false
@@ -2093,3 +2026,88 @@ artifacts:
   allow_timestamp_keys: false
   merge_strategy: itemlist_by_id
   required_fields: []
+- phase: F
+  artifact_name: DESIGN_CLAIMS_RAW.json
+  canonical_writer_step_id: F0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: F
+  artifact_name: DESIGN_CLAIMS_CLASSIFIED.json
+  canonical_writer_step_id: F1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: F
+  artifact_name: DESIGN_CONTRADICTIONS.json
+  canonical_writer_step_id: F2
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: F
+  artifact_name: CANONICAL_DESIGN.md
+  canonical_writer_step_id: F4
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: L
+  artifact_name: FEATURE_CANDIDATES_RAW.json
+  canonical_writer_step_id: L0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: L
+  artifact_name: FEATURE_CANDIDATES_NORMALIZED.json
+  canonical_writer_step_id: L1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: L
+  artifact_name: FEATURE_MERGE_LOG.json
+  canonical_writer_step_id: L1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: L
+  artifact_name: FEATURE_LEDGER_ROUTING.json
+  canonical_writer_step_id: L3
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range

@@ -315,7 +315,7 @@ def _merge_prepared_result(
     )
     result = replace(result, merge_decision=executed_decision)
     write_pr_state_artifact(pr_dir, result)
-    if _state_value(executed_decision.action) == MergeActionType.AUTO_MERGE_FALLBACK.value:
+    if _state_value(executed_decision.action) in (MergeActionType.AUTO_MERGE_FALLBACK.value, MergeActionType.AUTO_MERGE_ENABLE.value):
         log("Auto-merge handoff successful", "SUCCESS")
     else:
         log("Merge successful", "SUCCESS")
@@ -457,36 +457,30 @@ def remediate_ci_failure(worktree_path: Path, validation_report: ValidationRepor
     failed_steps = [s for s in validation_report.steps if s.status == "failed"]
     if not failed_steps:
         return False
-
-    step_names = ", ".join(f"'{s.name}'" for s in failed_steps)
-    log(f"Engaging agentic remediation for {len(failed_steps)} failing step(s): {step_names}...")
-
-    # Build a section for each failing step so Gemini sees all failures at once
-    failure_sections = []
-    for s in failed_steps:
-        error_output = (s.stderr or s.stdout or "No output available")[-4000:]
-        failure_sections.append(
-            f"### Step: {s.name}\nCommand: {s.command}\n```\n{error_output}\n```"
-        )
-    all_failures = "\n\n".join(failure_sections)
-
-    primary_command = failed_steps[0].command
-
+        
+    step = failed_steps[0]
+    log(f"Engaging agentic remediation for step '{step.name}'...")
+    
+    error_output = (step.stderr or step.stdout or "No output available")[-6000:]
+    
     prompt = f"""
-You are an expert developer fixing CI failures in the dopemux-mvp workspace.
-There are {len(failed_steps)} failing step(s) that must ALL pass before this PR can merge.
+You are an expert developer fixing a CI failure in the dopemux-mvp workspace.
+The following command failed in this worktree: {step.command}
 
-{all_failures}
+Output/Error:
+```
+{error_output}
+```
 
-Please diagnose and FIX ALL failures above. You are running in YOLO mode with full tool access.
+Please diagnose the issue and FIX IT. You are running in YOLO mode with full tool access. 
 
 CRITICAL: You MUST follow the ci-remediation-specialist runbook:
-1. REPRODUCE each failure locally by running its command.
+1. REPRODUCE the failure locally first by running the command `{step.command}`.
 2. USE AUTO-FIXERS if applicable (e.g., ruff check --fix).
-3. APPLY minimal surgical fixes.
-4. VERIFY that ALL commands pass before finishing.
+3. APPLY a minimal surgical fix if reproduction succeeds.
+4. VERIFY that your fix makes `{step.command}` pass.
 
-Fix all root causes. The PR cannot merge until every listed step passes.
+Identify the root cause, modify the necessary files, and ensure the command passes.
 """
     
     log(f"Launching Gemini CLI agent in YOLO mode (worktree: {worktree_path.name})...")
@@ -1944,7 +1938,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                         if merge_result.lifecycle_state == PRState.MERGED.value or (
                             merge_result.merge_decision
                             and _state_value(merge_result.merge_decision.action)
-                            == MergeActionType.AUTO_MERGE_FALLBACK.value
+                            in (MergeActionType.AUTO_MERGE_FALLBACK.value, MergeActionType.AUTO_MERGE_ENABLE.value)
                         ):
                             if merge_result.lifecycle_state == PRState.MERGED.value:
                                 merged_ids.add(pr_id)
@@ -1982,7 +1976,7 @@ def queue_drain(args: argparse.Namespace) -> int:
                             if merge_result.lifecycle_state == PRState.MERGED.value or (
                                 merge_result.merge_decision
                                 and _state_value(merge_result.merge_decision.action)
-                                == MergeActionType.AUTO_MERGE_FALLBACK.value
+                                in (MergeActionType.AUTO_MERGE_FALLBACK.value, MergeActionType.AUTO_MERGE_ENABLE.value)
                             ):
                                 if merge_result.lifecycle_state == PRState.MERGED.value:
                                     merged_ids.add(pr_id)

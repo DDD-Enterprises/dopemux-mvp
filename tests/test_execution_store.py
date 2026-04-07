@@ -1,3 +1,9 @@
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+from threading import Barrier, Thread
+from typing import List
+
 import pytest
 
 from dopemux.execution.models import (
@@ -79,13 +85,11 @@ def test_release_packet(execution_store, lease_store):
     packet = ExecutionPacket(packet_id="TP-1", owner_id="user1")
     execution_store.create_packet(packet)
     lease = lease_store.checkout("TP-1", "agent-1", ttl_seconds=60)
-
+    
     released_lease = lease_store.release(
-        lease.lease_id,
+        lease.lease_id, 
         final_state=PacketState.PROOF_GENERATED,
-        disposition=ExecutionDisposition.SUCCEEDED,
-        result_summary="Completed successfully",
-        artifacts={"test": "data"},
+        artifacts={"test": "data"}
     )
 
     assert execution_store.get_packet("TP-1").state == PacketState.PROOF_GENERATED

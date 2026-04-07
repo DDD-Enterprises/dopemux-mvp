@@ -61,7 +61,7 @@ def test_truth_split_prefers_specific_classification() -> None:
     )
 
 
-def test_pal_validation_missing_for_active_route_is_condition(tmp_path: Path) -> None:
+def test_pal_validation_is_conditional_when_missing_for_active_route(tmp_path: Path) -> None:
     gate = _load_gate_module()
     config = gate.GateConfig(
         repo_root=Path("/tmp/repo"),
@@ -89,9 +89,74 @@ def test_pal_validation_missing_for_active_route_is_condition(tmp_path: Path) ->
         ]
     }
     payload, blockers, conditions = gate.evaluate_pal_validation(config, scope)
-    assert payload["status"] == "WARN"
+    assert payload["status"] == "SKIPPED"
     assert blockers == []
-    assert [condition.reason_code for condition in conditions] == [gate.PAL_REQUIRED_UNAVAILABLE]
+    assert any(condition.reason_code == gate.PAL_REQUIRED_UNAVAILABLE for condition in conditions)
+
+
+def test_route_readiness_only_requires_active_route_api_keys(tmp_path: Path, monkeypatch) -> None:
+    gate = _load_gate_module()
+    config = gate.GateConfig(
+        repo_root=Path("/tmp/repo"),
+        output_dir=tmp_path,
+        run_id="test_gate",
+        target_policy="cost",
+        target_mode="direct",
+        target_profile="P00_GENERIC",
+        target_phases=("A",),
+        allow_online_preflight=False,
+        pal_validation_file=None,
+        waiver_codes=(),
+        required_direct_providers=(),
+    )
+    scope = {
+        "required_provider_routes": [
+            {
+                "route_signature": "xai:grok-code-fast-1:XAI_API_KEY",
+                "provider": "xai",
+                "model_id": "grok-code-fast-1",
+                "api_key_env": "XAI_API_KEY",
+                "active_route_required": True,
+                "optional_fallback": False,
+                "configured_not_required": False,
+                "fallback_chain_present": True,
+            },
+            {
+                "route_signature": "openrouter:openai/gpt-5-mini:OPENROUTER_API_KEY",
+                "provider": "openrouter",
+                "model_id": "openai/gpt-5-mini",
+                "api_key_env": "OPENROUTER_API_KEY",
+                "active_route_required": False,
+                "optional_fallback": True,
+                "configured_not_required": False,
+                "fallback_chain_present": False,
+            },
+        ],
+        "required_api_key_envs": ["XAI_API_KEY"],
+        "fallback_api_key_envs": ["OPENROUTER_API_KEY"],
+        "configured_not_required_api_key_envs": ["OPENAI_API_KEY"],
+        "route_readiness_summary": {
+            "api_key_env_categories": {
+                "required_active_route": ["XAI_API_KEY"],
+                "optional_fallback": ["OPENROUTER_API_KEY"],
+                "configured_not_required": ["OPENAI_API_KEY"],
+            },
+            "provider_categories": {
+                "required_active_route": ["xai"],
+                "optional_fallback": ["openrouter"],
+                "configured_not_required": ["openai"],
+            },
+        },
+    }
+    monkeypatch.setenv("XAI_API_KEY", "present")
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    payload, blockers = gate.evaluate_route_readiness(None, config, scope)
+    assert payload["status"] == "PASS"
+    assert payload["missing_api_key_envs"] == []
+    assert payload["missing_fallback_api_key_envs"] == ["OPENROUTER_API_KEY"]
+    assert payload["configured_not_required_api_key_envs"] == ["OPENAI_API_KEY"]
+    assert payload["api_key_env_categories"]["required_active_route"] == ["XAI_API_KEY"]
+    assert blockers == []
 
 
 def test_run_gate_stays_offline_without_explicit_online_preflight(monkeypatch, tmp_path: Path) -> None:
@@ -132,8 +197,8 @@ def test_run_gate_stays_offline_without_explicit_online_preflight(monkeypatch, t
             },
         ],
         "required_api_key_envs": ["GEMINI_API_KEY", "XAI_API_KEY"],
-        "routing_fingerprint_sha256": "routing",
-        "phase_contract_map_sha256": "contract",
+        "routing_fingerprint_hash": "routing",
+        "phase_contract_map_hash": "contract",
     }
 
     class FakeRunner:
@@ -181,10 +246,23 @@ def test_run_gate_stays_offline_without_explicit_online_preflight(monkeypatch, t
                         "notes": "",
                     }
                 ],
-                "conditions": [],
             },
             [],
+            [gate.Condition(gate.PAL_REQUIRED_UNAVAILABLE, "pal_provider_validation", "PAL skipped")],
+        ),
+    )
+    monkeypatch.setattr(
+        gate,
+        "evaluate_online_preflight",
+        lambda runner, config: (
+            {
+                "layer": "online_provider_preflight",
+                "status": "SKIPPED",
+                "allow_online_preflight": False,
+                "payload": None,
+            },
             [],
+            [gate.Condition(gate.ONLINE_PREFLIGHT_FAILURE, "online_provider_preflight", "preflight skipped")],
         ),
     )
     monkeypatch.setattr(gate, "evaluate_smoke_tests", lambda config: ({"status": "FAIL"}, [gate.Blocker(gate.MISSING_SMOKE_EVIDENCE, "smoke_and_verify_evidence", "P0", "missing smoke")]))
@@ -205,98 +283,13 @@ def test_run_gate_stays_offline_without_explicit_online_preflight(monkeypatch, t
     result = gate.run_gate(config)
     assert result["verdict"]["verdict"] == "NO_GO"
     assert gate.ONLINE_PREFLIGHT_FAILURE not in result["verdict"]["reason_codes"]
-    assert gate.ONLINE_PREFLIGHT_FAILURE in {
-        row["reason_code"] for row in result["verdict"]["conditions"]
-    }
+    assert gate.PAL_REQUIRED_UNAVAILABLE not in result["verdict"]["reason_codes"]
     verdict_path = tmp_path / "VALIDATION_VERDICT.json"
     payload = json.loads(verdict_path.read_text(encoding="utf-8"))
     assert payload["verdict"] == "NO_GO"
 
 
-def test_bounded_route_readiness_does_not_fail_on_global_provider_expectation() -> None:
-    gate = _load_gate_module()
-    config = gate.GateConfig(
-        repo_root=Path("/tmp/repo"),
-        output_dir=Path("/tmp/out"),
-        run_id="bounded_scope",
-        target_policy="balanced_openrouter",
-        target_mode="direct",
-        target_profile="P00_GENERIC",
-        target_phases=("A",),
-        allow_online_preflight=True,
-        pal_validation_file=None,
-        waiver_codes=(),
-        required_direct_providers=("gemini", "xai"),
-    )
-    scope = {
-        "required_provider_routes": [
-            {
-                "route_signature": "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY",
-                "provider": "openrouter",
-                "model_id": "openai/gpt-5.3-codex",
-                "api_key_env": "OPENROUTER_API_KEY",
-                "active_route_required": True,
-                "fallback_chain_present": True,
-            },
-            {
-                "route_signature": "xai:grok-4.20-beta-0309-reasoning:XAI_API_KEY",
-                "provider": "xai",
-                "model_id": "grok-4.20-beta-0309-reasoning",
-                "api_key_env": "XAI_API_KEY",
-                "active_route_required": True,
-                "fallback_chain_present": True,
-            },
-        ],
-        "required_api_key_envs": [],
-    }
-
-    payload, blockers = gate.evaluate_route_readiness(runner=None, config=config, scope=scope)
-
-    assert payload["bounded_target_scope"] is True
-    assert payload["missing_required_direct_providers"] == ["gemini"]
-    assert blockers == []
-
-
-def test_operator_verdict_prefers_environment_before_external() -> None:
-    gate = _load_gate_module()
-    blockers = [
-        {
-            "reason_code": gate.REQUIRED_API_KEY_MISSING,
-            "layer": "route_derived_readiness",
-            "severity": "P0",
-            "message": "missing env",
-            "details": {"missing_api_key_envs": ["XAI_API_KEY"]},
-        },
-        {
-            "reason_code": gate.ONLINE_PREFLIGHT_FAILURE,
-            "layer": "online_provider_preflight",
-            "severity": "P0",
-            "message": "preflight failed",
-            "details": {
-                "probes": [
-                    {
-                        "provider": "openrouter",
-                        "api_key_present": True,
-                        "failure_type": "auth_rejected",
-                        "status_code": 401,
-                    }
-                ]
-            },
-        },
-    ]
-
-    operator_verdict, classification = gate.derive_operator_verdict(
-        blockers,
-        conditions=[],
-        repo_wide_findings=[],
-    )
-
-    assert operator_verdict == gate.NO_GO_ENV
-    assert len(classification["environment_blockers"]) == 1
-    assert len(classification["external_provider_blockers"]) == 1
-
-
-def test_run_gate_returns_conditional_go_when_only_conditions(monkeypatch, tmp_path: Path) -> None:
+def test_run_gate_returns_conditional_go_when_only_conditions_remain(monkeypatch, tmp_path: Path) -> None:
     gate = _load_gate_module()
 
     fake_scope = {
@@ -304,7 +297,7 @@ def test_run_gate_returns_conditional_go_when_only_conditions(monkeypatch, tmp_p
         "git_sha": "abc123",
         "validator_host": "host",
         "validator_python": "3.11.0",
-        "target_policy": "balanced_openrouter",
+        "target_policy": "cost",
         "target_mode": "direct",
         "target_profile": "P00_GENERIC",
         "target_phases": ["A"],
@@ -315,8 +308,10 @@ def test_run_gate_returns_conditional_go_when_only_conditions(monkeypatch, tmp_p
         "model_map_sha256": "modelmap",
         "required_provider_routes": [],
         "required_api_key_envs": [],
-        "routing_fingerprint_sha256": "routing",
-        "phase_contract_map_sha256": "contract",
+        "fallback_api_key_envs": [],
+        "all_route_api_key_envs": [],
+        "routing_fingerprint_hash": "routing",
+        "phase_contract_map_hash": "contract",
     }
 
     class FakeRunner:
@@ -338,18 +333,18 @@ def test_run_gate_returns_conditional_go_when_only_conditions(monkeypatch, tmp_p
         gate,
         "evaluate_pal_validation",
         lambda config, scope: (
-            {"layer": "pal_provider_validation", "status": "WARN", "routes": [], "conditions": [{"reason_code": gate.PAL_REQUIRED_UNAVAILABLE, "layer": "pal_provider_validation", "message": "missing pal", "details": {}}]},
+            {"layer": "pal_provider_validation", "status": "SKIPPED", "routes": []},
             [],
-            [gate.GateCondition(gate.PAL_REQUIRED_UNAVAILABLE, "pal_provider_validation", "missing pal", {})],
+            [gate.Condition(gate.PAL_REQUIRED_UNAVAILABLE, "pal_provider_validation", "PAL skipped")],
         ),
     )
     monkeypatch.setattr(
         gate,
         "evaluate_online_preflight",
         lambda runner, config: (
-            {"layer": "online_provider_preflight", "status": "WARN", "allow_online_preflight": False, "payload": None, "conditions": [{"reason_code": gate.ONLINE_PREFLIGHT_FAILURE, "layer": "online_provider_preflight", "message": "skipped", "details": {"allow_online_preflight": False}}]},
+            {"layer": "online_provider_preflight", "status": "SKIPPED", "allow_online_preflight": False, "payload": None},
             [],
-            [gate.GateCondition(gate.ONLINE_PREFLIGHT_FAILURE, "online_provider_preflight", "skipped", {"allow_online_preflight": False})],
+            [gate.Condition(gate.ONLINE_PREFLIGHT_FAILURE, "online_provider_preflight", "preflight skipped")],
         ),
     )
     monkeypatch.setattr(gate, "evaluate_smoke_tests", lambda config: ({"status": "PASS"}, []))
@@ -358,20 +353,27 @@ def test_run_gate_returns_conditional_go_when_only_conditions(monkeypatch, tmp_p
         repo_root=Path("/tmp/repo"),
         output_dir=tmp_path,
         run_id="conditional_gate",
-        target_policy="balanced_openrouter",
+        target_policy="cost",
         target_mode="direct",
         target_profile="P00_GENERIC",
         target_phases=("A",),
         allow_online_preflight=False,
         pal_validation_file=None,
         waiver_codes=(),
-        required_direct_providers=("gemini", "xai"),
+        required_direct_providers=(),
     )
     result = gate.run_gate(config)
-
     assert result["verdict"]["verdict"] == "CONDITIONAL_GO"
-    assert result["verdict"]["operator_verdict"] == gate.GO_NOW
-    assert {row["reason_code"] for row in result["verdict"]["conditions"]} == {
+    assert result["verdict"]["reason_codes"] == []
+    assert sorted(row["reason_code"] for row in result["verdict"]["conditions"]) == [
         gate.ONLINE_PREFLIGHT_FAILURE,
         gate.PAL_REQUIRED_UNAVAILABLE,
+    ]
+    assert result["verdict"]["environment_summary"] == {
+        "tooling_status": "CONDITIONAL_GO",
+        "live_online_status": "environment_blocked_or_unverified",
+        "message": (
+            "Repo and tooling checks can pass while live online readiness remains blocked "
+            "or unverified by current provider credentials, PAL evidence, or online preflight."
+        ),
     }

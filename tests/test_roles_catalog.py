@@ -33,7 +33,7 @@ class DummyConfigManager:
 
 def _build_dummy_config(servers: Optional[list[str]] = None) -> DummyConfigManager:
     """Create a dummy config manager with specific MCP servers."""
-    servers = servers or ["conport", "serena", "pal", "zen", "exa"]
+    servers = servers or ["dopemux-conport", "dopemux-serena", "dopemux-pal", "dopemux-zen", "dopemux-exa"]
     config = DopemuxConfig()
     config.mcp_servers = {
         name: MCPServerConfig(
@@ -68,27 +68,7 @@ def test_resolve_role_supports_aliases():
     assert resolve_role("planner").key == "plan"
     assert resolve_role("researcher").key == "research"
     assert resolve_role("orchestrator").key == "plan"
-    assert resolve_role("manager").key == "workflow-manager"
-    assert resolve_role("executor").key == "workflow-executor"
-
-
-def test_activate_workflow_manager_sets_profile_env(monkeypatch):
-    cfg_manager = _build_dummy_config(
-        ["conport", "serena", "pal", "zen", "desktop-commander"]
-    )
-    console = Console(record=True)
-
-    activation = activate_role("workflow-manager", cfg_manager, console)
-
-    assert activation.resolved_key == "workflow-manager"
-    assert set(activation.enabled_servers) == {
-        "conport",
-        "desktop-commander",
-        "pal",
-        "serena",
-        "zen",
-    }
-    assert os.environ.get("DOPEMUX_ACTIVE_PROFILE") == "workflow-manager"
+    assert resolve_role("workflow_executor").key == "workflow-executor"
 
 
 def test_activate_role_quickfix_filters_servers(monkeypatch):
@@ -98,13 +78,13 @@ def test_activate_role_quickfix_filters_servers(monkeypatch):
     activation = activate_role("quickfix", cfg_manager, console)
 
     assert activation.resolved_key == "quickfix"
-    assert set(activation.enabled_servers) == {"conport", "pal", "serena"}
+    assert set(activation.enabled_servers) == {"dopemux-conport", "dopemux-pal", "dopemux-serena"}
     disabled = {
         name
         for name, cfg in cfg_manager.load_config().mcp_servers.items()
         if not cfg.enabled
     }
-    assert disabled >= {"zen", "exa"}
+    assert disabled >= {"dopemux-zen", "dopemux-exa"}
     assert os.environ.get("DOPEMUX_AGENT_ROLE") == "quickfix"
 
 

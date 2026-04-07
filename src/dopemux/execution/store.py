@@ -1,10 +1,8 @@
-"""
-Execution store and lease management implementation.
+"""Execution store and lease management implementation."""
 
-Implements TP-SIA-EXEC-0001: core data models and locking primitives for the
-Workflow / Execution Control Plane.
-"""
+from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
 from threading import Lock
@@ -24,11 +22,9 @@ from .models import (
 class ExecutionError(Exception):
     """Base class for execution-related errors."""
 
-    pass
-
 
 class PacketNotFoundError(ExecutionError):
-    """Raised when a packet_id does not exist."""
+    """Raised when a packet does not exist."""
 
     def __init__(self, packet_id: str) -> None:
         self.packet_id = packet_id
@@ -36,16 +32,32 @@ class PacketNotFoundError(ExecutionError):
 
 
 class PacketNotReadyError(ExecutionError):
-    """Raised when attempting to checkout a packet that is not in READY state."""
+    """Raised when a packet is not in a state that allows checkout."""
 
     def __init__(self, packet_id: str, state: PacketState) -> None:
         self.packet_id = packet_id
         self.state = state
-        super().__init__(f"Packet {packet_id} is not READY (current state: {state})")
+        super().__init__(f"Packet {packet_id} is not ready (current state: {state})")
+
+
+class PacketNotClaimableError(ExecutionError):
+    """Raised when a packet exists but cannot be claimed."""
+
+    def __init__(self, packet_id: str, reason: str) -> None:
+        self.packet_id = packet_id
+        self.reason = reason
+        super().__init__(f"Packet {packet_id} is not claimable: {reason}")
+
+
+class NoClaimablePacketError(ExecutionError):
+    """Raised when queue-based checkout finds no eligible packet."""
+
+    def __init__(self) -> None:
+        super().__init__("No claimable packet available")
 
 
 class LeaseNotFoundError(ExecutionError):
-    """Raised when a lease_id does not exist."""
+    """Raised when a lease does not exist."""
 
     def __init__(self, lease_id: UUID) -> None:
         self.lease_id = lease_id
@@ -53,7 +65,7 @@ class LeaseNotFoundError(ExecutionError):
 
 
 class LeaseExpiredError(ExecutionError):
-    """Raised when an operation is attempted on an expired lease."""
+    """Raised when an expired lease is used."""
 
     def __init__(self, lease_id: UUID) -> None:
         self.lease_id = lease_id
@@ -72,7 +84,7 @@ class StaleLeaseError(ExecutionError):
 
 
 class ExecutionStore(ABC):
-    """Abstract base class for ExecutionPacket persistence."""
+    """Abstract base class for packet, result, and event persistence."""
 
     @abstractmethod
     def create_packet(self, packet: ExecutionPacket) -> ExecutionPacket:
@@ -96,7 +108,7 @@ class ExecutionStore(ABC):
 
 
 class LeaseStore(ABC):
-    """Abstract base class for PacketLease management."""
+    """Abstract base class for packet lease management."""
 
     @abstractmethod
     def checkout(self, packet_id: str, agent_id: str, ttl_seconds: int) -> PacketLease:
@@ -141,7 +153,7 @@ class LeaseStore(ABC):
 
 
 class InMemoryExecutionStore(ExecutionStore):
-    """In-memory implementation of ExecutionStore."""
+    """Thread-safe in-memory implementation of ExecutionStore."""
 
     def __init__(self) -> None:
         self._packets: Dict[str, ExecutionPacket] = {}
@@ -150,9 +162,9 @@ class InMemoryExecutionStore(ExecutionStore):
     def create_packet(self, packet: ExecutionPacket) -> ExecutionPacket:
         with self._lock:
             if packet.packet_id in self._packets:
-                return self._packets[packet.packet_id].model_copy()
+                return self._packets[packet.packet_id]
             self._packets[packet.packet_id] = packet.model_copy()
-            return self._packets[packet.packet_id].model_copy()
+            return self._packets[packet.packet_id]
 
     def get_packet(self, packet_id: str) -> Optional[ExecutionPacket]:
         with self._lock:
@@ -161,18 +173,23 @@ class InMemoryExecutionStore(ExecutionStore):
 
     def list_ready_packets(self) -> List[ExecutionPacket]:
         with self._lock:
-            return [p.model_copy() for p in self._packets.values() if p.state == PacketState.READY]
+            return [
+                p.model_copy()
+                for p in self._packets.values()
+                if p.state == PacketState.READY
+            ]
 
     def update_packet_state(self, packet_id: str, state: PacketState) -> ExecutionPacket:
         with self._lock:
             if packet_id not in self._packets:
                 raise PacketNotFoundError(packet_id)
             self._packets[packet_id].state = state
+            self._packets[packet_id].updated_at_utc = datetime.now(timezone.utc)
             return self._packets[packet_id].model_copy()
 
 
 class InMemoryLeaseStore(LeaseStore):
-    """In-memory implementation of LeaseStore."""
+    """Thread-safe in-memory implementation of LeaseStore."""
 
     def __init__(self, execution_store: ExecutionStore) -> None:
         self._execution_store = execution_store
@@ -199,6 +216,7 @@ class InMemoryLeaseStore(LeaseStore):
                 if lease.expires_at_utc > now:
                     raise PacketNotReadyError(packet_id, packet.state)
 
+                # Auto-expire the old lease
                 lease.state = LeaseState.EXPIRED
                 del self._packet_to_lease[packet_id]
 
@@ -258,6 +276,8 @@ class InMemoryLeaseStore(LeaseStore):
                 raise StaleLeaseError(lease_id, lease.packet_id)
 
             now = datetime.now(timezone.utc)
+            if not result_summary:
+                result_summary = "Completed successfully"
             lease.state = LeaseState.RELEASED
             lease.result = ExecutionResult(
                 packet_id=lease.packet_id,

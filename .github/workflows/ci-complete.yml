@@ -33,6 +33,15 @@ jobs:
           pip install pre-commit
           pre-commit install --install-hooks
 
+      - name: 📌 Verify dopetask pin contract
+        run: |
+          if [[ ! -f .dopetask-pin ]]; then
+            echo "ERROR: .dopetask-pin is missing (required by arch contract)" >&2
+            exit 1
+          fi
+          echo "Found .dopetask-pin: $(cat .dopetask-pin)"
+
+
       - name: 🧹 Enforce repo root hygiene
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -156,64 +165,99 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: 📦 Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e .[all]
+      - name: ⚡ Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
 
-      - name: 📦 Setup dopeTask venv from pip
-        run: |
-          if [ ! -d .dopetask_venv ]; then
-            python -m venv .dopetask_venv
-          fi
-          .dopetask_venv/bin/pip install --upgrade pip
-          .dopetask_venv/bin/pip install --upgrade dopetask==0.2.0
+      - name: 📦 Sync fast unit test environment
+        run: uv sync --frozen --extra test --extra services
 
-      - name: ✅ Verify dopeTask wiring
-        run: |
-          test -f .dopetask-pin
-          test -f .dopetaskroot
-          test -d .dopetask_venv
-          test -x scripts/dopetask
-          .dopetask_venv/bin/dopetask --version | grep -q "0.2.0"
+      - name: ▶️ Run fast unit gate
+        run: uv run --frozen pytest tests/unit -n auto --maxfail=1 --disable-warnings --no-cov
 
-      - name: 🧪 Installer Smoke Tests (core + full stacks)
+  installer-smoke:
+    name: "🧪 Installer Smoke"
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🧪 Run installer smoke tests
         run: |
           chmod +x test_installer_basic.sh
           ./test_installer_basic.sh
 
-      - name: 🧠 dopeTask doctor
-        run: |
-          scripts/dopetask doctor --timestamp-mode deterministic || echo "⚠️ dopeTask doctor failed (ignoring upstream packaging issue)"
+  scoped-coverage:
+    name: "📊 Scoped Coverage"
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
 
-      - name: ▶️ Run Pytest (full suite with coverage)
-        run: |
-          pytest tests/ --maxfail=1 --disable-warnings \
-            --cov=src/dopemux \
-            --cov-report=term-missing \
-            --cov-report=xml:coverage.xml \
-            --cov-report=html:htmlcov
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
 
-      - name: 📊 Scoped Coverage (New/Active Modules)
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: ⚡ Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: 📦 Sync scoped coverage environment
+        run: uv sync --frozen --extra test
+
+      - name: ▶️ Run scoped coverage checks
         run: |
           chmod +x scripts/check_coverage.sh
           ./scripts/check_coverage.sh
 
-      - name: 📈 Upload coverage artifact
-        if: success()
-        uses: actions/upload-artifact@v5
+  integration:
+    name: "🔗 Integration Tests"
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
         with:
-          name: unit-test-coverage
-          path: |
-            coverage.xml
-            htmlcov
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: ⚡ Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: 📦 Sync integration environment
+        run: uv sync --frozen --extra test --extra services
+
+      - name: ▶️ Run integration lane
+        run: uv run --frozen pytest tests/integration -n auto --maxfail=1 --disable-warnings --no-cov
 
   # Final summary for ADHD-friendly overview
   ci-summary:
     name: "📊 CI Pipeline Summary"
     runs-on: ubuntu-latest
-    needs: [code-quality, security, docs, tests]
+    needs: [code-quality, security, docs, tests, installer-smoke, scoped-coverage, integration]
     if: always()
+
+
 
     steps:
       - name: 🎉 ADHD-Optimized Results Summary
@@ -246,9 +290,34 @@ jobs:
 
           # Tests Status
           if [ "${{ needs.tests.result }}" == "success" ]; then
-            echo "✅ **Unit Tests:** Passing - Core workflow stable!" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Unit Tests:** Passing - Fast PR gate is healthy." >> $GITHUB_STEP_SUMMARY
           else
             echo "🧪 **Unit Tests:** Failing - Fix regressions before merge" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Advisory lanes
+          if [ "${{ needs.installer-smoke.result }}" == "success" ]; then
+            echo "✅ **Installer Smoke:** Passing on slower lane." >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.installer-smoke.result }}" == "skipped" ]; then
+            echo "⏭️ **Installer Smoke:** Skipped on the PR fast path." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🧪 **Installer Smoke:** Needs attention on slower lane." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.scoped-coverage.result }}" == "success" ]; then
+            echo "✅ **Scoped Coverage:** Passing on slower lane." >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.scoped-coverage.result }}" == "skipped" ]; then
+            echo "⏭️ **Scoped Coverage:** Skipped on the PR fast path." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "📊 **Scoped Coverage:** Needs attention on slower lane." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.integration.result }}" == "success" ]; then
+            echo "✅ **Integration Tests:** Passing on slower lane." >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.integration.result }}" == "skipped" ]; then
+            echo "⏭️ **Integration Tests:** Skipped on the PR fast path." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🔗 **Integration Tests:** Needs attention on slower lane." >> $GITHUB_STEP_SUMMARY
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -259,7 +328,7 @@ jobs:
             echo "**🎉 Excellent work!** All checks passed. Ready to merge when you are!" >> $GITHUB_STEP_SUMMARY
             echo "_Take a well-deserved break - you've earned it._" >> $GITHUB_STEP_SUMMARY
           else
-            echo "**📋 Focus areas:** Address the items above one at a time." >> $GITHUB_STEP_SUMMARY
+            echo "**📋 Focus areas:** Fix required checks first, then address any slower-lane issues." >> $GITHUB_STEP_SUMMARY
             echo "**⏰ Tip:** Use 25-minute Pomodoro sessions for fixes." >> $GITHUB_STEP_SUMMARY
             echo "**🤝 Need help?** Ask in the PR discussion!" >> $GITHUB_STEP_SUMMARY
           fi

@@ -3,44 +3,32 @@ id: task-orchestrator
 title: Task Orchestrator
 type: reference
 owner: '@hu3mann'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
-author: '@hu3mann'
-date: '2026-02-08'
-prelude: Task Orchestrator (reference) for dopemux documentation and developer workflows.
+last_review: '2026-04-01'
+next_review: '2026-06-30'
+author: '@codex'
+date: '2026-04-01'
+prelude: Active Task Orchestrator runtime reference grounded in the current FastAPI service, PM-plane routers, config defaults, and observed persistence boundaries.
 ---
 # Task Orchestrator
 
-## Runtime Role
+## Runtime role
 
-`task-orchestrator` provides coordination APIs and ADR-197 workflow runtime for
-idea and epic lifecycle management.
+`task-orchestrator` is the intended workflow authority for the PM plane.
 
-Primary runtime module:
+The active runtime entrypoint in this checkout is:
+
 - `services/task-orchestrator/app/main.py`
 
-Workflow business logic:
-- `services/task-orchestrator/app/services/workflow_service.py`
+That FastAPI app currently combines:
 
-Persistence adapter:
-- `services/task-orchestrator/app/services/workflow_store.py`
+- idea and epic workflow lifecycle endpoints
+- project-scoped workflow read surfaces
+- normalized PM write helpers
+- coordination, health, info, and metrics surfaces
 
-## Implemented Workflow Scope (ADR-197)
+## Active HTTP surfaces
 
-Implemented now:
-- Stage-1 Idea lifecycle: create, list, update.
-- Stage-2 Epic lifecycle: create, list, update.
-- Idea promotion to epic (idempotent promote endpoint).
-- Optional Leantime project sync during promote with degraded fallback.
-- ConPort custom-data persistence for ideas and epics.
-
-Not implemented yet in this service runtime:
-- Stage-3 task decomposition lifecycle from ADR-197.
-- Stage-4 execution loop and automated completion handoff.
-
-## HTTP API Contracts
-
-### Workflow Endpoints
+### Workflow entity lifecycle
 
 - `POST /api/workflow/ideas`
 - `GET /api/workflow/ideas`
@@ -50,7 +38,20 @@ Not implemented yet in this service runtime:
 - `GET /api/workflow/epics`
 - `PATCH /api/workflow/epics/{epic_id}`
 
-### Coordination Endpoints (existing)
+### Project workflow reads and transition surface
+
+- `GET /api/projects/{project_id}/workflow/queue`
+- `GET /api/projects/{project_id}/workflow/blockers`
+- `GET /api/projects/{project_id}/workflow/state`
+- `POST /api/projects/{project_id}/workflow/transition`
+
+### Normalized PM write helpers
+
+- `POST /api/pm/work-items/{task_id}/update`
+- `POST /api/pm/work-items/{task_id}/transition`
+- `POST /api/pm/work-items/{task_id}/progress`
+
+### Coordination and service discovery
 
 - `POST /api/coordination/operations`
 - `GET /api/coordination/health`
@@ -58,64 +59,56 @@ Not implemented yet in this service runtime:
 - `POST /api/coordination/events`
 - `GET /api/coordination/conflicts`
 - `POST /api/coordination/conflicts/{conflict_id}/resolve`
-
-### Health and Service Discovery
-
+- `GET /api/coordination/status`
+- `POST /api/coordination/test`
 - `GET /health`
 - `GET /info`
 - `GET /metrics`
 
-## Workflow Error Mapping
+## Runtime defaults
 
-Workflow endpoints use stable error contracts:
-- `404` for `WorkflowNotFoundError`
-- `409` for `WorkflowConflictError`
-- `503` for `WorkflowUnavailableError`
-- `400` for validation/value errors
-- `500` for unexpected failures
+- Config module: `services/task-orchestrator/task_orchestrator/config.py`
+- Default port: `PORT_BASE + 14`
+- With default `PORT_BASE=3000`, the observed default resolves to `3014`
+- The `/info` route also reports `3014` as the default fallback port when `PORT` is unset
 
-## Persistence Model
+## Persistence boundary
 
-Workflow data is stored via DopeconBridge custom-data records:
-- Category `workflow_ideas`
-- Category `workflow_epics`
+Workflow entity persistence is currently routed through:
 
-Each record stores serialized workflow entities keyed by id:
-- idea id format: `idea_<uuidhex>`
-- epic id format: `epic_<uuidhex>`
+- `services/task-orchestrator/app/services/workflow_store.py`
 
-## Environment Flags
+Observed storage categories:
 
-Workflow runtime toggles:
-- `DOPMUX_WORKFLOW_ENABLE` (default `true`)
-- `DOPMUX_WORKFLOW_DEFAULT_IDEA_LIMIT` (default `50`)
-- `DOPMUX_WORKFLOW_DEFAULT_EPIC_LIMIT` (default `50`)
-- `DOPMUX_WORKFLOW_PROMOTION_SYNC_LEANTIME` (default `true`)
+- `workflow_ideas`
+- `workflow_epics`
+- `workflow_audit`
 
-Bridge settings:
-- `DOPECON_BRIDGE_URL` (default `http://localhost:3016`)
-- `DOPECON_BRIDGE_TOKEN` (optional)
-- `DOPECON_BRIDGE_SOURCE_PLANE` (default `cognitive_plane`)
+Observed persistence substrate:
 
-## Compatibility Notes
+- `WorkflowStore` reads and writes those records through DopeconBridge `custom_data`
 
-- Workflow contracts are additive and preserve existing coordination APIs.
-- Idea promotion is idempotent: repeated promote returns existing epic.
-- Leantime sync failure does not fail promotion; warning is returned in payload.
-- Progress synchronization can be submitted via `POST /api/coordination/operations` using operation `update_progress` (best-effort live sync with local ledger fallback in docs tooling).
+This is runtime fact, not intended authority expansion. It means current workflow authority depends on a bridge-mediated persistence path that remains remediation debt.
 
-## Runtime Defaults
+## Current fail-closed and degraded behaviors
 
-- Canonical compose service: `task-orchestrator` in `compose.yml`.
-- Default host port: `8000` (override with `TASK_ORCHESTRATOR_PORT`).
-- Smoke profile startup: `scripts/smoke_up.sh`.
-- Full stack startup: `docker compose -f compose.yml up -d task-orchestrator`.
+- Project-scoped workflow transition currently returns an explicit unavailable receipt rather than executing a canonical transition path
+- Tests verify that direct status mutation is blocked and that audit persistence failure aborts promotion
+- PM write helpers record canonical and mirror outcomes into coordinator metrics when the coordinator is initialized
 
-## Leantime / Task-Orchestrator Follow-up Tickets (2026-03-11)
+## Known drift to keep explicit
 
-- `PM-TO-001`: Standardize task-orchestrator health + readiness probe expectations between `/health` and workflow endpoints.
-- `PM-TO-002`: Add automated verification that Leantime promotion warnings are surfaced in CLI output and docs examples.
-- `PM-TO-003`: Add integration test coverage for idea/epic lifecycle with canonical port `8000` and `TASK_ORCHESTRATOR_PORT` override.
-- `PM-TO-004`: Add ops runbook step for rogue non-canonical task-orchestrator container cleanup (`scripts/start.sh` behavior).
-- `PM-TO-005`: Roll out PR docgen sync skill family and canonical index reconciliation automation.
-- `PM-TO-006`: Validate live `update_progress` ticket sync behavior in task-orchestrator + Leantime environments.
+- Architectural target: Task Orchestrator is the workflow authority
+- Runtime drift: primary workflow persistence still depends on dopecon-bridge `custom_data`
+- Runtime drift: `/api/projects/{project_id}/workflow/transition` is present but not yet bound to canonical transition execution
+- Runtime drift: adjacent PM read envelopes elsewhere in the repo still contain stale backend labels; do not infer authority from those envelopes alone
+
+## Evidence companions
+
+- `docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md`
+- `docs/planes/pm/_evidence/task-orchestrator-runtime-truth/architecture-and-intended-uses.md`
+- `docs/planes/pm/_evidence/task-orchestrator-runtime-truth/transport-and-runbook.md`
+- `docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md`
+- `docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md`

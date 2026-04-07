@@ -1,13 +1,14 @@
 """
 Serena v2 Phase 2E: Complete System Integration Test
 
-Comprehensive integration testing for all Phase 2A-2E components (31 total)
+Comprehensive integration testing for all Phase 2A-2E components (34 total)
 validating end-to-end ADHD-optimized navigation intelligence with all targets.
 """
 
 import asyncio
 import json
 import logging
+import pytest
 import statistics
 import time
 from datetime import datetime, timezone, timedelta
@@ -60,6 +61,8 @@ from ..adhd_features import ADHDCodeNavigator
 
 logger = logging.getLogger(__name__)
 
+PHASE_2_COMPONENT_COUNT = 34
+
 
 class SystemIntegrationMetric(str, Enum):
     """Metrics for complete system integration validation."""
@@ -107,7 +110,7 @@ class SystemIntegrationResult:
     scenarios_tested: List[IntegrationTestScenario]
 
     # Component health
-    total_components: int = 31  # 6+7+6+6+6 = 31 components
+    total_components: int = PHASE_2_COMPONENT_COUNT
     healthy_components: int = 0
     component_health_details: List[ComponentHealth] = field(default_factory=list)
 
@@ -127,6 +130,8 @@ class SystemIntegrationResult:
     one_week_convergence_validated: bool = False
     eighty_five_percent_success_validated: bool = False
     thirty_percent_time_reduction_validated: bool = False
+    verified_targets_met: bool = False
+    synthetic_target_checks_remaining: int = 0
 
     # Integration quality
     cross_phase_coordination_score: float = 0.0
@@ -145,7 +150,7 @@ class CompleteSystemIntegrationTest:
     Complete system integration testing for all Phase 2A-2E components.
 
     Features:
-    - Comprehensive testing of all 31 system components working together
+    - Comprehensive testing of all 34 system components working together
     - End-to-end navigation scenario validation with real-world complexity
     - Performance validation maintaining all targets across complete system
     - ADHD optimization validation across all phases and components
@@ -178,7 +183,10 @@ class CompleteSystemIntegrationTest:
         test_start_time = time.time()
 
         logger.info("🧪 Starting Complete Serena v2 Phase 2 System Integration Test")
-        logger.info("Testing 31 components across Phase 2A-2E + Layer 1 integration")
+        logger.info(
+            "Testing %s components across Phase 2A-2E + Layer 1 integration",
+            PHASE_2_COMPONENT_COUNT,
+        )
 
         try:
             test_id = f"integration_test_{int(time.time())}"
@@ -208,7 +216,12 @@ class CompleteSystemIntegrationTest:
             )
 
             # Assess production readiness
-            production_ready = self._assess_production_readiness(integration_score, target_results)
+            production_ready = self._assess_production_readiness(
+                integration_score,
+                target_results,
+                component_results,
+                performance_results,
+            )
 
             # Generate recommendations
             recommendations = self._generate_integration_recommendations(
@@ -235,6 +248,8 @@ class CompleteSystemIntegrationTest:
                 one_week_convergence_validated=target_results["convergence_validated"],
                 eighty_five_percent_success_validated=target_results["success_rate_validated"],
                 thirty_percent_time_reduction_validated=target_results["time_reduction_validated"],
+                verified_targets_met=target_results["all_verified_targets_achieved"],
+                synthetic_target_checks_remaining=target_results["synthetic_target_count"],
                 cross_phase_coordination_score=coordination_results["coordination_score"],
                 end_to_end_scenarios_passed=scenario_results["scenarios_passed"],
                 layer1_compatibility_maintained=component_results["layer1_compatible"],
@@ -264,12 +279,12 @@ class CompleteSystemIntegrationTest:
     # Component Testing
 
     async def _test_all_component_initialization(self) -> Dict[str, Any]:
-        """Test initialization of all 31 system components."""
+        """Test initialization of all 34 system components."""
         try:
             logger.info("🔧 Testing all component initialization...")
 
             initialization_results = {
-                "total_components": 31,
+                "total_components": PHASE_2_COMPONENT_COUNT,
                 "healthy_components": 0,
                 "layer1_compatible": True,
                 "phase_results": {}
@@ -305,12 +320,20 @@ class CompleteSystemIntegrationTest:
             initialization_results["phase_results"]["phase2e"] = phase2e_results
             initialization_results["healthy_components"] += phase2e_results["healthy_count"]
 
-            logger.info(f"🔧 Component initialization: {initialization_results['healthy_components']}/31 healthy")
+            logger.info(
+                "🔧 Component initialization: %s/%s healthy",
+                initialization_results["healthy_components"],
+                PHASE_2_COMPONENT_COUNT,
+            )
             return initialization_results
 
         except Exception as e:
             logger.error(f"Failed to test component initialization: {e}")
-            return {"total_components": 31, "healthy_components": 0, "error": str(e)}
+            return {
+                "total_components": PHASE_2_COMPONENT_COUNT,
+                "healthy_components": 0,
+                "error": str(e),
+            }
 
     async def _test_phase2e_components(self) -> Dict[str, Any]:
         """Test Phase 2E component initialization and health."""
@@ -446,26 +469,47 @@ class CompleteSystemIntegrationTest:
                 "convergence_validated": False,
                 "success_rate_validated": False,
                 "time_reduction_validated": False,
-                "all_targets_achieved": False
+                "all_targets_achieved": False,
+                "all_verified_targets_achieved": False,
+                "verified_target_count": 0,
+                "synthetic_target_count": 0,
+                "target_details": {},
             }
 
             # Validate 1-week convergence target (Phase 2B)
             convergence_validation = await self._validate_convergence_target()
             target_results["convergence_validated"] = convergence_validation["achieved"]
+            target_results["target_details"]["convergence"] = convergence_validation
 
             # Validate >85% navigation success target (Phase 2C)
             success_validation = await self._validate_success_rate_target()
             target_results["success_rate_validated"] = success_validation["achieved"]
+            target_results["target_details"]["success_rate"] = success_validation
 
             # Validate 30% time reduction target (Phase 2D)
             time_reduction_validation = await self._validate_time_reduction_target()
             target_results["time_reduction_validated"] = time_reduction_validation["achieved"]
+            target_results["target_details"]["time_reduction"] = time_reduction_validation
 
             # Overall target achievement
             target_results["all_targets_achieved"] = (
                 target_results["convergence_validated"] and
                 target_results["success_rate_validated"] and
                 target_results["time_reduction_validated"]
+            )
+            target_results["verified_target_count"] = sum(
+                1
+                for detail in target_results["target_details"].values()
+                if detail.get("validation_mode") == "verified" and detail.get("achieved")
+            )
+            target_results["synthetic_target_count"] = sum(
+                1
+                for detail in target_results["target_details"].values()
+                if detail.get("validation_mode") != "verified"
+            )
+            target_results["all_verified_targets_achieved"] = (
+                target_results["verified_target_count"] == len(target_results["target_details"])
+                and len(target_results["target_details"]) > 0
             )
 
             logger.info(f"🎯 Target validation: "
@@ -477,7 +521,15 @@ class CompleteSystemIntegrationTest:
 
         except Exception as e:
             logger.error(f"Failed to validate target achievements: {e}")
-            return {"convergence_validated": False, "success_rate_validated": False, "time_reduction_validated": False, "error": str(e)}
+            return {
+                "convergence_validated": False,
+                "success_rate_validated": False,
+                "time_reduction_validated": False,
+                "all_verified_targets_achieved": False,
+                "verified_target_count": 0,
+                "synthetic_target_count": 0,
+                "error": str(e),
+            }
 
     async def _validate_convergence_target(self) -> Dict[str, Any]:
         """Validate 1-week learning convergence target."""
@@ -488,7 +540,8 @@ class CompleteSystemIntegrationTest:
                 "achieved": True,
                 "convergence_time_days": 6.2,
                 "confidence": 0.87,
-                "validation_method": "simulation"
+                "validation_method": "simulation",
+                "validation_mode": "synthetic",
             }
 
         except Exception as e:
@@ -504,7 +557,8 @@ class CompleteSystemIntegrationTest:
                 "achieved": True,
                 "success_rate": 0.87,
                 "confidence": 0.92,
-                "validation_method": "simulation"
+                "validation_method": "simulation",
+                "validation_mode": "synthetic",
             }
 
         except Exception as e:
@@ -520,7 +574,8 @@ class CompleteSystemIntegrationTest:
                 "achieved": True,
                 "time_reduction": 0.32,
                 "confidence": 0.89,
-                "validation_method": "simulation"
+                "validation_method": "simulation",
+                "validation_mode": "synthetic",
             }
 
         except Exception as e:
@@ -629,12 +684,23 @@ class CompleteSystemIntegrationTest:
             logger.error(f"Failed to calculate integration score: {e}")
             return 0.0
 
-    def _assess_production_readiness(self, integration_score: float, target_results: Dict[str, Any]) -> bool:
+    def _assess_production_readiness(
+        self,
+        integration_score: float,
+        target_results: Dict[str, Any],
+        component_results: Dict[str, Any],
+        performance_results: Dict[str, Any],
+    ) -> bool:
         """Assess if system is ready for production deployment."""
+        critical_issues = self._identify_critical_issues(
+            component_results, performance_results
+        )
         return (
             integration_score >= 0.85 and
-            target_results["all_targets_achieved"] and
-            len(self._identify_critical_issues({}, {})) == 0
+            target_results.get("all_verified_targets_achieved", False) and
+            component_results.get("layer1_compatible", False) and
+            performance_results.get("targets_met", False) and
+            len(critical_issues) == 0
         )
 
     def _generate_integration_recommendations(self, *results) -> List[str]:
@@ -661,7 +727,9 @@ class CompleteSystemIntegrationTest:
                 recommendations.append("🧠 Enhance ADHD accommodations for better user experience")
 
             # Target achievement recommendations
-            if not target_results["all_targets_achieved"]:
+            if not target_results.get("all_verified_targets_achieved", False):
+                if target_results.get("synthetic_target_count", 0) > 0:
+                    recommendations.append("🧪 Replace synthetic target checks with runtime-backed validation before deployment")
                 if not target_results["convergence_validated"]:
                     recommendations.append("📚 Validate 1-week learning convergence")
                 if not target_results["success_rate_validated"]:
@@ -689,7 +757,9 @@ class CompleteSystemIntegrationTest:
         critical_issues = []
 
         # Critical component failures
-        unhealthy_components = component_results.get("total_components", 31) - component_results.get("healthy_components", 0)
+        unhealthy_components = component_results.get(
+            "total_components", PHASE_2_COMPONENT_COUNT
+        ) - component_results.get("healthy_components", 0)
         if unhealthy_components > 3:
             critical_issues.append(f"Too many unhealthy components: {unhealthy_components}")
 
@@ -772,7 +842,8 @@ async def validate_production_readiness(workspace_id: str = "/test/workspace") -
             "targets_achieved": {
                 "convergence": integration_result.one_week_convergence_validated,
                 "success_rate": integration_result.eighty_five_percent_success_validated,
-                "time_reduction": integration_result.thirty_percent_time_reduction_validated
+                "time_reduction": integration_result.thirty_percent_time_reduction_validated,
+                "verified_targets_met": integration_result.verified_targets_met,
             },
             "performance_compliant": integration_result.performance_targets_met,
             "adhd_optimized": integration_result.adhd_targets_achieved,
@@ -794,7 +865,10 @@ if __name__ == "__main__":
     # Run integration test when executed directly
     async def main():
         logger.info("🧪 Serena v2 Complete System Integration Test")
-        logger.info("Testing all 31 components across Phase 2A-2E")
+        logger.info(
+            "Testing all %s components across Phase 2A-2E",
+            PHASE_2_COMPONENT_COUNT,
+        )
 
         try:
             result = await run_complete_system_integration_test()
@@ -813,3 +887,34 @@ if __name__ == "__main__":
             logger.error(f"💥 Integration test failed: {e}")
 
     asyncio.run(main())
+
+
+@pytest.mark.asyncio
+async def test_complete_system_integration_result_is_consistent():
+    """Validate that the integration harness reports a coherent Phase 2 result."""
+    result = await run_complete_system_integration_test()
+
+    assert result.total_components == PHASE_2_COMPONENT_COUNT
+    assert result.healthy_components <= result.total_components
+    assert 0.0 <= result.system_integration_score <= 1.0
+    assert result.layer1_compatibility_maintained is True
+    assert result.performance_targets_met is True
+    assert result.verified_targets_met is False
+    assert result.synthetic_target_checks_remaining == 3
+    assert result.production_ready is False
+
+
+def test_assess_production_readiness_uses_runtime_results():
+    """Production readiness must fail when component health shows critical drift."""
+    test_suite = CompleteSystemIntegrationTest()
+
+    assert test_suite._assess_production_readiness(
+        integration_score=0.95,
+        target_results={"all_verified_targets_achieved": False},
+        component_results={
+            "total_components": PHASE_2_COMPONENT_COUNT,
+            "healthy_components": PHASE_2_COMPONENT_COUNT - 4,
+            "layer1_compatible": True,
+        },
+        performance_results={"targets_met": True, "average_response_time": 100.0},
+    ) is False

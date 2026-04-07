@@ -31,6 +31,7 @@ from dopemux.pm.adapters.orchestrator import SyncTaskOrchestratorAdapter
 
 logger = logging.getLogger(__name__)
 
+
 class SyncBridgeAdapterClientStub:
     """Uses a synchronous HTTPX client to implement proxy clients for PMWriteConfig.
     This guarantees block execution and explicit fail-closed exceptions.

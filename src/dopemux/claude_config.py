@@ -28,26 +28,22 @@ MCP_NAME_MAPPING = {
     # Profile name -> Claude config name (with dopemux- prefix)
     "serena-v2": "dopemux-serena",
     "serena": "dopemux-serena",
-    "tavily": "dopemux-exa",  # Exa is what's actually in the config
-    "exa": "dopemux-exa",
-    "dope-context": "dopemux-claude-context",  # Canonicalize legacy key to claude-context
-    "dope-context-legacy": "dopemux-dope-context",
-    "mas-sequential-thinking": "dopemux-mas-sequential-thinking",
+    "dopemux-serena": "dopemux-serena",
     # Direct mappings (prefixed)
     "conport": "dopemux-conport",
+    "dopemux-conport": "dopemux-conport",
     "zen": "dopemux-zen",
+    "dopemux-zen": "dopemux-zen",
     "pal": "dopemux-pal",
+    "dopemux-pal": "dopemux-pal",
     "gpt-researcher": "dopemux-gpt-researcher",
-    "gpt-researcher-legacy": "gpt-researcher",  # Old name fallback
+    "dopemux-gpt-researcher": "dopemux-gpt-researcher",
     "claude-context": "dopemux-claude-context",
+    "dopemux-claude-context": "dopemux-claude-context",
     "desktop-commander": "dopemux-desktop-commander",
-    "morphllm-fast-apply": "dopemux-morphllm-fast-apply",
-    "morph-llm": "dopemux-morphllm-fast-apply",
-    "magic-mcp": "magic-mcp",
-    "playwright": "playwright",
-    "sequential_thinking": "dopemux-mas-sequential-thinking",
-    # Legacy unprefixed names (for backwards compatibility)
+    "dopemux-desktop-commander": "dopemux-desktop-commander",
     "leantime-bridge": "dopemux-leantime-bridge",
+    "dopemux-leantime-bridge": "dopemux-leantime-bridge",
 }
 
 
@@ -224,15 +220,71 @@ class ClaudeConfig:
                 del config["hooks"]
             return config
 
-        # 2. Fix UserPromptSubmit schema if present
+        # 2. Fix and migrate hook schema if present
         if "hooks" in config and isinstance(config["hooks"], dict):
-            if "UserPromptSubmit" in config["hooks"]:
-                ups = config["hooks"]["UserPromptSubmit"]
-                if isinstance(ups, list):
-                    for entry in ups:
-                        if isinstance(entry, dict) and "hooks" in entry and "matcher" not in entry:
-                            logger.info("Fixing missing matcher in UserPromptSubmit hook entry.")
-                            entry["matcher"] = ".*"
+            # Canonical events recognized by Claude Code
+            canonical_events = {
+                "SessionStart", "UserPromptSubmit", "PreToolUse", "PermissionRequest",
+                "PostToolUse", "PostToolUseFailure", "Stop", "SubagentStop",
+                "PreCompact", "SessionEnd"
+            }
+            # Also include common legacy variants
+            legacy_mapping = {
+                "Start": "SessionStart",
+                "Stop": "SessionEnd",  # Migrating generic Stop to SessionEnd
+            }
+
+            if "command" not in config["hooks"]:
+                config["hooks"]["command"] = []
+
+            # Identify top-level keys that should be in the command array
+            keys_to_migrate = []
+            for key in list(config["hooks"].keys()):
+                if key == "command":
+                    continue
+                
+                # Check if it's a known event or legacy variant
+                event_name = legacy_mapping.get(key, key)
+                if event_name in canonical_events or key in {"Start", "Stop", "PreToolUse", "PostToolUse", "UserPromptSubmit"}:
+                    keys_to_migrate.append(key)
+
+            # Perform migration
+            for key in keys_to_migrate:
+                logger.info(f"Migrating legacy hook key '{key}' to command array.")
+                entries = config["hooks"][key]
+                if not isinstance(entries, list):
+                    entries = [entries]
+
+                for entry in entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    
+                    # Convert old style {hooks: [...]} or {command: "..."} to new style
+                    cmd = None
+                    if "command" in entry:
+                        cmd = entry["command"]
+                    elif "hooks" in entry and isinstance(entry["hooks"], list):
+                        # Handle the {hooks: [{type: "command", command: "..."}]} structure
+                        for h in entry["hooks"]:
+                            if h.get("type") == "command" and "command" in h:
+                                cmd = h["command"]
+                                break
+                    
+                    if cmd:
+                        event_name = legacy_mapping.get(key, key)
+                        # Add to command array if not already present
+                        already_exists = any(
+                            h.get("command") == cmd and event_name in h.get("events", [])
+                            for h in config["hooks"]["command"]
+                        )
+                        if not already_exists:
+                            config["hooks"]["command"].append({
+                                "events": [event_name],
+                                "command": cmd
+                            })
+                
+                # Remove the legacy top-level key
+                del config["hooks"][key]
 
         return config
 

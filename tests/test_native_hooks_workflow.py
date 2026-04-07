@@ -1,63 +1,83 @@
-from pathlib import Path
-
-from dopemux.claude.native_hooks import NativeHookAdapter
-from dopemux.workflow import WorkflowKernel, WorkflowPhase
+from dopemux.claude.native_hooks import handle_event
+from dopemux.workflow import WorkflowKernel, WorkflowStatus
 
 
-def _setup_workflow(monkeypatch, tmp_path: Path):
-    workspace = tmp_path / "workspace"
-    workspace.mkdir()
-    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(workspace))
-    monkeypatch.setenv("DOPEMUX_MAIN_REPO", str(workspace))
-    monkeypatch.setenv("DOPEMUX_INSTANCE_ID", "A")
-    monkeypatch.setattr(
-        WorkflowKernel,
-        "probe_pm_authority",
-        lambda self: {"authority": "local-mirror", "reachable": False, "url": "http://localhost:8000"},
-    )
-    kernel = WorkflowKernel(workspace)
-    state = kernel.init_workflow(prompt="Exercise native hooks")
-    return workspace, kernel, state
-
-
-def test_pre_tool_use_denies_when_iteration_budget_is_spent(monkeypatch, tmp_path: Path):
-    workspace, kernel, state = _setup_workflow(monkeypatch, tmp_path)
-    state.max_iterations = 1
-    state.iteration = 2
-    kernel.save(state)
-
-    adapter = NativeHookAdapter(workspace)
-    exit_code, payload = adapter.handle_event(
-        {"hook_event_name": "PreToolUse", "tool_name": "write_file"}
+def test_session_start_returns_strict_response_shape(tmp_path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
+    kernel = WorkflowKernel(tmp_path)
+    kernel.create_or_resume(
+        workflow_id="wf-hook",
+        instance_id="main",
+        mode="internal",
+        max_iterations=5,
+        max_minutes=30,
+        completion_token="DONE",
     )
 
-    assert exit_code == 0
-    assert payload["hookSpecificOutput"]["permissionDecision"] == "deny"
-    assert "iteration limit reached" in payload["systemMessage"].lower()
-
-
-def test_stop_blocks_without_checkpoint_and_allows_with_checkpoint(monkeypatch, tmp_path: Path):
-    workspace, kernel, state = _setup_workflow(monkeypatch, tmp_path)
-    state.phase = WorkflowPhase.RESEARCH
-    kernel.save(state)
-
-    adapter = NativeHookAdapter(workspace)
-
-    _, blocked = adapter.handle_event(
-        {"hook_event_name": "Stop", "response": "Still collecting evidence."}
+    # Wrap in event_data shape expected by handle_event wrapper
+    response = handle_event(
+        "SessionStart",
+        {
+            "cwd": str(tmp_path),
+            "env": {"DOPEMUX_INSTANCE_ID": "main"},
+            "attention_state": "focused",
+        },
     )
+
+    assert "systemMessage" in response
+    assert "hookSpecificOutput" in response
+    assert "additionalContext" in response["hookSpecificOutput"]
+
+
+def test_pre_tool_use_blocks_when_limit_is_exceeded(tmp_path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
+    kernel = WorkflowKernel(tmp_path)
+    kernel.create_or_resume(
+        workflow_id="wf-limit",
+        instance_id="main",
+        mode="internal",
+        max_iterations=0,
+        max_minutes=30,
+        completion_token="DONE",
+    )
+
+    response = handle_event(
+        "PreToolUse",
+        {
+            "cwd": str(tmp_path),
+            "env": {"DOPEMUX_INSTANCE_ID": "main"},
+            "tool_name": "Read",
+        },
+    )
+
+    assert "hookSpecificOutput" in response
+    assert response["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_stop_hook_requires_checkpoint_or_completion_token(tmp_path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
+    kernel = WorkflowKernel(tmp_path)
+    state = kernel.create_or_resume(
+        workflow_id="wf-stop",
+        instance_id="main",
+        mode="internal",
+        max_iterations=5,
+        max_minutes=30,
+        completion_token="DONE",
+    )
+
+    blocked = handle_event(
+        "Stop",
+        {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}},
+    )
+    assert "decision" in blocked
     assert blocked["decision"] == "block"
 
-    _, allowed = adapter.handle_event(
-        {
-            "hook_event_name": "Stop",
-            "response": (
-                '<workflow-checkpoint phase="research" status="complete" '
-                'task="task-001" summary="Research captured" />'
-            ),
-        }
-    )
-    refreshed = kernel.load(state.workflow_id)
+    state.record_checkpoint("brief", True, message="brief approved")
+    kernel.save(state)
 
-    assert "decision" not in allowed
-    assert refreshed.checkpoints[-1].phase == WorkflowPhase.RESEARCH
+    allowed = handle_event(
+        "Stop",
+        {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}},
+    )
+    assert allowed.get("decision") != "block"

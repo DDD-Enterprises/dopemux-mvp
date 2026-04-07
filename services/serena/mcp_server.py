@@ -644,13 +644,14 @@ class SerenaV2MCPServer:
 
     async def _init_database(self):
         """Initialize PostgreSQL database + schema"""
-        from .intelligence import create_intelligence_database, setup_phase2_schema
+        from .intelligence import create_intelligence_database, setup_phase2_schema, SerenaGraphOperations
 
         self.database = await create_intelligence_database(
             workspace_id=str(self.workspace)
         )
         await setup_phase2_schema(self.database)
-        logger.info("Database: PostgreSQL connected, schema ready")
+        self.graph_operations = SerenaGraphOperations(self.database, self.performance_monitor)
+        logger.info("Database: PostgreSQL connected, schema ready, Graph operations enabled")
 
     async def _init_lsp(self):
         """Initialize SimpleLSPClient for Python"""
@@ -2706,18 +2707,17 @@ class SerenaV2MCPServer:
         workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
-        Find code dependencies via grep-based detection
+        Find code dependencies via intelligent graph traversal
 
-        Tier 3 Advanced Tool (Phase 2D Simplified):
-        - Searches for function calls, imports, inheritance
-        - ADHD-optimized: max 10 results, max 3 depth levels
-        - Phase 3: Will upgrade to PostgreSQL graph operations
+        Tier 3 Advanced Tool (Phase 2D):
+        - Queries the PostgreSQL intelligence graph
+        - ADHD-optimized: returns most relevant related elements based on cognitive load
         - Multi-workspace: Relationships across workspaces
 
         Args:
             symbol: Symbol to find relationships for
-            relationship_type: calls, imports, inherits, or all
-            depth: Maximum traversal depth (default: 2, max: 3)
+            relationship_type: Type of relationship to filter by
+            depth: Maximum traversal depth
             workspace_path: Optional single workspace path
             workspace_paths: Optional multiple workspace paths
 
@@ -2734,77 +2734,78 @@ class SerenaV2MCPServer:
             )
             return json.dumps(result, indent=2)
 
-        # Single workspace mode (backward compatible)
+        # Single workspace mode
         start_time = datetime.now()
-
-        # Enforce ADHD depth limit
-        depth = min(depth, 3)
-
-        import re
+        
+        # Ensure database is available
+        if not await self._ensure_component("database"):
+            return json.dumps({
+                "error": "Intelligence database unavailable. Please ensure PostgreSQL is running."
+            })
+            
+        from intelligence import NavigationMode
 
         relationships = []
+        try:
+            # 1. Resolve symbol to element ID
+            search_results = await self.graph_operations.find_elements_by_name(symbol)
+            
+            if not search_results:
+                elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+                return json.dumps({
+                    "symbol": symbol,
+                    "found": 0,
+                    "relationships": [],
+                    "note": f"Symbol '{symbol}' not found in intelligence graph. Use sync_codebase_to_graph to populate.",
+                    "performance": {"latency_ms": round(elapsed_ms, 2)}
+                })
+                
+            # Use the most relevant matching element
+            element = search_results[0]
+            
+            # 2. Get relationships from graph (ADHD optimized by default)
+            related_elements = await self.graph_operations.get_related_elements(
+                element.id,
+                direction="outgoing" if relationship_type in ["calls", "all"] else "any",
+                mode=NavigationMode.EXPLORE,
+                max_results=10
+            )
+            
+            # 3. Format results
+            for rel_element, edge in related_elements:
+                relationships.append({
+                    "target": rel_element.element_name,
+                    "file": rel_element.file_path,
+                    "type": edge.relationship_type,
+                    "strength": edge.strength,
+                    "cognitive_load": edge.cognitive_load,
+                    "adhd_difficulty": edge.adhd_navigation_difficulty
+                })
 
-        # Pattern matching based on relationship type
-        patterns = []
-        if relationship_type in ["calls", "all"]:
-            # Find function calls: symbol(...)
-            patterns.append(("calls", re.compile(rf"\b{re.escape(symbol)}\s*\(")))
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
-        if relationship_type in ["imports", "all"]:
-            # Find imports: from X import symbol, import symbol
-            patterns.append(("imports", re.compile(rf"(from .* import .*\b{re.escape(symbol)}\b|import .*\b{re.escape(symbol)}\b)")))
-
-        if relationship_type in ["inherits", "all"]:
-            # Find class inheritance: class X(symbol)
-            patterns.append(("inherits", re.compile(rf"class \w+\([^)]*\b{re.escape(symbol)}\b")))
-
-        # Search workspace
-        for py_file in self.workspace.rglob("*.py"):
-            if ".venv" in str(py_file) or "__pycache__" in str(py_file):
-                continue
-
-            try:
-                content = py_file.read_text()
-                for line_num, line_text in enumerate(content.splitlines(), 1):
-                    for rel_type, pattern in patterns:
-                        if pattern.search(line_text):
-                            relationships.append({
-                                "type": rel_type,
-                                "file": str(py_file.relative_to(self.workspace)),
-                                "line": line_num,
-                                "context": line_text.strip()[:100]  # First 100 chars
-                            })
-
-                            if len(relationships) >= 10:  # ADHD limit
-                                break
-
-                    if len(relationships) >= 10:
-                        break
-            except Exception as e:
-                logger.debug("Skipping relationship scan for %s: %s", py_file, e)
-                continue
-            if len(relationships) >= 10:
-                break
-
-        elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
-
-        result = {
-            "symbol": symbol,
-            "relationship_type": relationship_type,
-            "depth": depth,
-            "found": len(relationships),
-            "max_results": 10,
-            "adhd_filtered": True,
-            "relationships": relationships,
-            "mode": "simplified_grep",
-            "upgrade_note": "Phase 3 will add PostgreSQL graph for multi-level traversal",
-            "performance": {
-                "latency_ms": round(elapsed_ms, 2)
+            result = {
+                "symbol": symbol,
+                "element_id": element.id,
+                "file_path": element.file_path,
+                "relationship_type": relationship_type,
+                "depth": depth,
+                "found": len(relationships),
+                "max_results": 10,
+                "adhd_filtered": True,
+                "relationships": relationships,
+                "mode": "postgresql_graph",
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
             }
-        }
 
-        logger.info(f"find_relationships: {symbol} ({relationship_type}) → {len(relationships)} rels ({elapsed_ms:.1f}ms)")
-        return json.dumps(result, indent=2)
+            logger.info(f"find_relationships: {symbol} → {len(relationships)} rels ({elapsed_ms:.1f}ms)")
+            return json.dumps(result, indent=2)
+
+        except Exception as e:
+            logger.error(f"find_relationships failed: {e}")
+            return json.dumps({"error": str(e)})
 
     async def get_navigation_patterns_tool(
         self,
@@ -2815,9 +2816,9 @@ class SerenaV2MCPServer:
         """
         Analyze navigation patterns from history
 
-        Tier 3 Advanced Tool (Phase 2D Placeholder):
-        - Phase 2D: Returns placeholder message
-        - Phase 3: Full pattern recognition with database
+        Tier 3 Advanced Tool (Phase 2D):
+        - Queries the PostgreSQL intelligence database for historical patterns
+        - Returns ADHD-optimized metrics and insights
         - Multi-workspace: Navigation patterns across workspaces
 
         Args:
@@ -2826,7 +2827,7 @@ class SerenaV2MCPServer:
             workspace_paths: Optional multiple workspace paths
 
         Returns:
-            JSON with pattern analysis (placeholder in Phase 2D)
+            JSON with pattern analysis
         """
         # Multi-workspace mode
         if workspace_paths or workspace_path:
@@ -2837,27 +2838,65 @@ class SerenaV2MCPServer:
             )
             return json.dumps(result, indent=2)
 
-        # Single workspace mode (backward compatible)
-        result = {
-            "status": "learning_phase",
-            "message": "Pattern learning requires navigation history database",
-            "recommendation": "Use suggest_next_step for immediate navigation help",
-            "current_capabilities": {
-                "heuristic_suggestions": "Available via suggest_next_step tool",
-                "test_source_patterns": "Detects test/source file relationships",
-                "import_following": "Suggests imported modules"
-            },
-            "phase_3_features": {
-                "adaptive_learning": "Learns from your navigation sequences",
-                "personalized_patterns": "Recognizes your coding style",
-                "effectiveness_tracking": "Measures which patterns help you",
-                "context_switching": "Optimizes for interruptions"
-            },
-            "upgrade_timeline": "Phase 3: Full adaptive learning with PostgreSQL persistence"
-        }
+        # Ensure database is available
+        if not await self._ensure_component("database"):
+            return json.dumps({
+                "error": "Intelligence database unavailable. Please ensure PostgreSQL is running."
+            })
+            
+        start_time = datetime.now()
 
-        logger.info(f"get_navigation_patterns: placeholder (days_back={days_back})")
-        return json.dumps(result, indent=2)
+        try:
+            # Query recent navigation patterns
+            query = """
+                SELECT 
+                    pattern_type,
+                    COUNT(*) as frequency,
+                    AVG(effectiveness_score) as avg_effectiveness,
+                    AVG(complexity_progression) as avg_complexity,
+                    AVG(cognitive_fatigue_score) as avg_fatigue,
+                    MAX(last_occurrence) as last_seen
+                FROM navigation_patterns
+                WHERE created_at >= NOW() - INTERVAL '1 day' * $1
+                GROUP BY pattern_type
+                ORDER BY frequency DESC, avg_effectiveness DESC
+                LIMIT 10
+            """
+            
+            pattern_results = await self.database.execute_query(query, (days_back,), complexity_filter=False)
+            
+            patterns = []
+            for row in pattern_results:
+                patterns.append({
+                    "type": row["pattern_type"],
+                    "frequency": row["frequency"],
+                    "effectiveness": round(row["avg_effectiveness"], 2) if row["avg_effectiveness"] else 0.0,
+                    "cognitive_fatigue": round(row["avg_fatigue"], 2) if row["avg_fatigue"] else 0.0,
+                    "last_seen": row["last_seen"].isoformat() if row["last_seen"] else None
+                })
+                
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
+            result = {
+                "status": "active",
+                "days_analyzed": days_back,
+                "patterns_found": len(patterns),
+                "patterns": patterns,
+                "insights": {
+                    "high_effectiveness": [p["type"] for p in patterns if p["effectiveness"] > 0.7],
+                    "fatigue_risks": [p["type"] for p in patterns if p["cognitive_fatigue"] > 0.6]
+                },
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
+            }
+
+            logger.info(f"get_navigation_patterns: found {len(patterns)} patterns ({elapsed_ms:.1f}ms)")
+            return json.dumps(result, indent=2)
+            
+        except Exception as e:
+            logger.error(f"get_navigation_patterns failed: {e}")
+            return json.dumps({"error": str(e)})
 
     async def update_focus_mode_tool(
         self,
@@ -2866,10 +2905,10 @@ class SerenaV2MCPServer:
         """
         Set current focus state for adaptive filtering
 
-        Tier 3 Advanced Tool (Phase 2D In-Memory):
+        Tier 3 Advanced Tool (Phase 2D/3):
         - Updates in-memory focus state
+        - Persists state to PostgreSQL intelligence database
         - Affects filter_by_focus tool behavior
-        - Phase 3: Will persist to database
 
         Args:
             mode: focused, scattered, or transitioning
@@ -2877,6 +2916,8 @@ class SerenaV2MCPServer:
         Returns:
             JSON with updated focus state
         """
+        start_time = datetime.now()
+        
         # Update in-memory state
         old_mode = self.current_focus_mode
         self.current_focus_mode = mode
@@ -2887,24 +2928,56 @@ class SerenaV2MCPServer:
             "scattered": 3,
             "transitioning": 5
         }
+        
+        limit = limits.get(mode, 10)
+        complexity_pref = "complex" if mode == "focused" else "simple" if mode == "scattered" else "moderate"
+        
+        db_persisted = False
+        
+        # Persist to database if available
+        if await self._ensure_component("database"):
+            try:
+                # Update or create learning profile for current workspace
+                query = """
+                    INSERT INTO learning_profiles (
+                        user_session_id, workspace_path, 
+                        preferred_complexity_level, optimal_result_limit
+                    ) VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (user_session_id, workspace_path) 
+                    DO UPDATE SET 
+                        preferred_complexity_level = EXCLUDED.preferred_complexity_level,
+                        optimal_result_limit = EXCLUDED.optimal_result_limit,
+                        updated_at = NOW()
+                """
+                # Using a default session ID for now, could be dynamic
+                session_id = "default_session"
+                await self.database.execute_query(query, (session_id, str(self.workspace), complexity_pref, limit), complexity_filter=False)
+                db_persisted = True
+                logger.info(f"Persisted focus mode '{mode}' to learning_profiles")
+            except Exception as e:
+                logger.error(f"Failed to persist focus mode: {e}")
+
+        elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
         result = {
             "mode": mode,
             "previous_mode": old_mode,
-            "max_results": limits.get(mode, 10),
+            "max_results": limit,
             "filtering_behavior": {
                 "focused": "Show up to 10 items - full cognitive capacity",
                 "scattered": "Show top 3 items - reduce overwhelm",
                 "transitioning": "Show top 5 items - moderate filtering"
             }.get(mode, "Unknown mode"),
             "persistence": {
-                "saved_to_database": False,
-                "restart_behavior": "Resets to 'focused' on server restart",
-                "upgrade_note": "Phase 3 will persist across sessions"
+                "saved_to_database": db_persisted,
+                "restart_behavior": "Will load from database on restart" if db_persisted else "Resets to 'focused' on restart",
+            },
+            "performance": {
+                "latency_ms": round(elapsed_ms, 2)
             }
         }
 
-        logger.info(f"update_focus_mode: {old_mode} → {mode}")
+        logger.info(f"update_focus_mode: {old_mode} → {mode} ({elapsed_ms:.1f}ms)")
         return json.dumps(result, indent=2)
 
     async def detect_untracked_work_tool(

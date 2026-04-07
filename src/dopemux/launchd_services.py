@@ -192,6 +192,9 @@ LOG_FILE="$LOG_DIR/litellm_$(date +%Y%m%d_%H%M%S).log"
 echo "🚀 Starting LiteLLM on port $LITELLM_PORT..."
 echo "📝 Logging to: $LOG_FILE"
 
+export LITELLM_DISABLE_DB="true"
+export LITELLM_DISABLE_SPEND_LOGGING="true"
+
 # Start LiteLLM directly (no docker)
 exec "{litellm_bin}" --config "{home_dir}/.dopemux/litellm/litellm.config.yaml" \\
     --port "$LITELLM_PORT" \\
@@ -282,12 +285,6 @@ exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
 
     def _generate_ccr_config(self) -> None:
         """Generate CCR configuration from routing config."""
-        # CCR reads from ~/.claude-code-router/config.json (not ~/.dopemux/ccr/)
-        ccr_home = Path.home() / ".claude-code-router"
-        ccr_home.mkdir(parents=True, exist_ok=True)
-        config_path = ccr_home / "config.json"
-
-        # Read actual key values from routing.env (CCR is a Node.js app, no shell expansion)
         env_vars = self._read_routing_env()
         litellm_port = env_vars.get("DOPEMUX_LITELLM_PORT", "4000")
         litellm_key = env_vars.get("DOPEMUX_LITELLM_MASTER_KEY", "")
@@ -303,6 +300,7 @@ exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
             json.dump(ccr_config, f, indent=2)
 
         logger.info(f"Generated CCR config: {config_path}")
+
 
     def _generate_litellm_plist(self) -> None:
         """Generate launchd plist for LiteLLM service."""

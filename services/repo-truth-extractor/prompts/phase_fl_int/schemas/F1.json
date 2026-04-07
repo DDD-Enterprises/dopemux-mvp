@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "required": ["status", "design_claims_classified", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "design_claims_classified": {
+      "type": "object",
+      "required": ["schema", "items"],
+      "properties": {
+        "schema": {"type": "string", "enum": ["DESIGN_CLAIMS_CLASSIFIED@v1"]},
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "path",
+              "line_range",
+              "claim_text",
+              "plane",
+              "evidence_class",
+              "temporal_status",
+              "confidence",
+              "implementation_completeness",
+              "evidence"
+            ],
+            "properties": {
+              "id": {"type": "string"},
+              "path": {"type": "string"},
+              "line_range": {"type": "array", "items": {"type": "integer"}},
+              "claim_text": {"type": "string"},
+              "plane": {"type": "string"},
+              "evidence_class": {"type": "string"},
+              "temporal_status": {"type": "string"},
+              "confidence": {"type": "string"},
+              "implementation_completeness": {"type": "string"},
+              "contradiction_ids": {"type": "array", "items": {"type": "string"}},
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["path", "line_range", "excerpt"],
+                  "properties": {
+                    "path": {"type": "string"},
+                    "line_range": {"type": "array", "items": {"type": "integer"}},
+                    "excerpt": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}

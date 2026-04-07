@@ -21,8 +21,10 @@ import subprocess
 import sys
 import threading
 import time
+import textwrap
 import importlib.util
 import random
+import uuid
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
@@ -39,6 +41,8 @@ import yaml
 RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
 if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
+
+from output_safety import sanitize_payload_for_output, sanitize_text_for_output, sanitized_json_bytes, sanitized_json_text
 
 try:
     from lib.batch_clients import (
@@ -85,6 +89,46 @@ except ImportError:
             IntelligenceRouter = None
     else:
         IntelligenceRouter = None
+try:
+    from lib.spend_ledger import (
+        BASELINE_INPUT_COST_PER_1M_USD,
+        BASELINE_OUTPUT_COST_PER_1M_USD,
+        PRICING_VERSION,
+        UNKNOWN_MODEL_POLICY,
+        SpendLedger,
+    )
+except ImportError:
+    spend_ledger_path = RUNNER_SERVICE_DIR / "lib" / "spend_ledger.py"
+    if spend_ledger_path.exists():
+        spend_ledger_spec = importlib.util.spec_from_file_location(
+            "repo_truth_spend_ledger", spend_ledger_path
+        )
+        if spend_ledger_spec and spend_ledger_spec.loader:
+            spend_ledger_module = importlib.util.module_from_spec(spend_ledger_spec)
+            spend_ledger_spec.loader.exec_module(spend_ledger_module)
+            SpendLedger = spend_ledger_module.SpendLedger
+            PRICING_VERSION = getattr(spend_ledger_module, "PRICING_VERSION", "baseline_v1")
+            UNKNOWN_MODEL_POLICY = getattr(
+                spend_ledger_module, "UNKNOWN_MODEL_POLICY", "baseline_v1_fallback"
+            )
+            BASELINE_INPUT_COST_PER_1M_USD = float(
+                getattr(spend_ledger_module, "BASELINE_INPUT_COST_PER_1M_USD", 0.15)
+            )
+            BASELINE_OUTPUT_COST_PER_1M_USD = float(
+                getattr(spend_ledger_module, "BASELINE_OUTPUT_COST_PER_1M_USD", 0.60)
+            )
+        else:
+            SpendLedger = None
+            PRICING_VERSION = "baseline_v1"
+            UNKNOWN_MODEL_POLICY = "baseline_v1_fallback"
+            BASELINE_INPUT_COST_PER_1M_USD = 0.15
+            BASELINE_OUTPUT_COST_PER_1M_USD = 0.60
+    else:
+        SpendLedger = None
+        PRICING_VERSION = "baseline_v1"
+        UNKNOWN_MODEL_POLICY = "baseline_v1_fallback"
+        BASELINE_INPUT_COST_PER_1M_USD = 0.15
+        BASELINE_OUTPUT_COST_PER_1M_USD = 0.60
 try:
     from lib.phase_contract_map import (
         CONTRACT_MAP_FILENAME as PHASE_CONTRACT_MAP_FILENAME,
@@ -204,7 +248,7 @@ S_PROMPTS_AUTO = "auto"
 S_PROMPTS_REGISTRY = "registry"
 S_PROMPTS_LEGACY = "legacy"
 S_PROMPTS_MODES = {S_PROMPTS_AUTO, S_PROMPTS_REGISTRY, S_PROMPTS_LEGACY}
-PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(7))
+PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(13))
 PHASE_S_BASE_STEP_SET = set(PHASE_S_BASE_STEPS)
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
@@ -216,6 +260,9 @@ TELEMETRY_DIRNAME = "telemetry"
 RUN_DASHBOARD_FILENAME = "RUN_DASHBOARD.json"
 STEP_METRICS_FILENAME = "STEP_METRICS.json"
 FAILURE_INDEX_FILENAME = "FAILURE_INDEX.json"
+COST_ABORT_FILENAME = "COST_ABORT.json"
+COST_ABORT_REASON = "MAX_COST_USD_EXCEEDED"
+RETRY_COST_REPORT_FILENAME = "RETRY_COST_REPORT.json"
 TERMINAL_TIMELINE_FILENAME = "TERMINAL_TIMELINE.jsonl"
 SPEND_LEDGER_FILENAME = "SPEND_LEDGER.json"
 PROMPTSET_BLOCKED_REASON = "PROMPTSET_INVALID"
@@ -294,6 +341,38 @@ PHASE_DIR_NAMES: Dict[str, str] = {
     "Z": "Z_handoff_freeze",
     "S": "S_synthesis",
 }
+PHASE_DISPLAY_NAMES: Dict[str, str] = {
+    "A": "Repo Plane",
+    "H": "Home Plane",
+    "D": "Docs Plane",
+    "C": "Code Plane",
+    "E": "Execution Plane",
+    "W": "Workflow Plane",
+    "B": "Boundary Plane",
+    "G": "Governance Plane",
+    "Q": "Quality Assurance",
+    "R": "Arbitration",
+    "X": "Feature Index",
+    "T": "Task Packets",
+    "Z": "Handoff Freeze",
+    "S": "Synthesis",
+}
+PHASE_PURPOSES: Dict[str, str] = {
+    "A": "Scan repository instruction, router, hook, compose, and provider-control surfaces.",
+    "H": "Scan operator home-level configs, providers, tmux flows, and local control-plane state.",
+    "D": "Extract documentation contracts, drift, recency, and canonical doc boundaries.",
+    "C": "Extract code entrypoints, schemas, runtime writers, and implementation truth surfaces.",
+    "E": "Map execution/bootstrap surfaces such as scripts, installers, docker, and ops entrypoints.",
+    "W": "Map workflows, automation surfaces, and execution orchestration paths.",
+    "B": "Extract boundary enforcement, contracts, and cross-plane isolation surfaces.",
+    "G": "Extract governance rules, hygiene controls, and policy enforcement surfaces.",
+    "Q": "Cross-check prior phases for contract failures, gaps, and extractor QA signals.",
+    "R": "Arbitrate normalized truth across required upstream phases and optional enrichments.",
+    "X": "Index repo feature surfaces directly from code, config, scripts, and docs.",
+    "T": "Derive task packets from arbitration and feature-index outputs.",
+    "Z": "Freeze final handoff package from arbitration, feature index, and task packets.",
+    "S": "Synthesize the final truth pack from arbitration outputs plus downstream rollups.",
+}
 LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
     "R2_synthesis": "R_arbitration",
 }
@@ -302,11 +381,48 @@ V5_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v5")
 V5_RUNS_ROOT = V5_EXTRACTION_ROOT / "runs"
 V5_LATEST_RUN_FILE = V5_EXTRACTION_ROOT / "latest_run_id.txt"
 V5_DOCTOR_ROOT = V5_EXTRACTION_ROOT / "doctor"
+INTERACTIVE_SAFE_BATCH_WAIT_SECONDS = 1800
+FIRST_LIVE_PRESET_NAME = "first-live"
+FIRST_LIVE_PRESET_DEFAULT_CAP_USD = 5.0
+FIRST_LIVE_INITIAL_PHASES = ("A", "H", "D", "C")
+FIRST_LIVE_POST_REVIEW_PHASES = ("R", "X", "T", "Z", "S")
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
 # Optional phases whose norm outputs enrich R arbitration when available.
 # B→R3/R8/R10  E→R0/R5/R8  G→R0/R6/R7  W→R5/R6  Q→R7/R8
 R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q", "X"]
+PHASE_REQUIRED_DEPENDENCIES: Dict[str, List[str]] = {
+    "A": [],
+    "H": [],
+    "D": [],
+    "C": [],
+    "E": [],
+    "W": [],
+    "B": [],
+    "G": [],
+    "Q": ["A", "H", "D", "C", "E", "W", "B", "G", "X"],
+    "R": list(R_REQUIRED_INPUT_PHASES),
+    "X": [],
+    "T": ["R", "X"],
+    "Z": ["R", "X", "T"],
+    "S": ["R"],
+}
+PHASE_OPTIONAL_DEPENDENCIES: Dict[str, List[str]] = {
+    "A": [],
+    "H": [],
+    "D": [],
+    "C": [],
+    "E": [],
+    "W": [],
+    "B": [],
+    "G": [],
+    "Q": [],
+    "R": list(R_OPTIONAL_INPUT_PHASES),
+    "X": [],
+    "T": [],
+    "Z": [],
+    "S": ["X", "T", "Z", "MANUAL"],
+}
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
@@ -553,6 +669,109 @@ ACTIVE_ROUTING_LADDERS = {
     policy: {tier: list(routes) for tier, routes in tiers.items()}
     for policy, tiers in ROUTING_LADDERS.items()
 }
+ROUTING_POLICY_GUIDE: Dict[str, Dict[str, Any]] = {
+    "cost": {
+        "intent": "Minimize spend for exploratory or validation-first runs.",
+        "cost_tendency": "lowest",
+        "quality_tendency": "lower",
+        "best_use_cases": [
+            "first dry-runs",
+            "cheap route verification",
+            "small-budget operator probes",
+        ],
+        "known_caveats": [
+            "Quality-sensitive synthesis can still route upward via phase or step requirements.",
+            "Strict JSON-managed steps can ignore the top-level ladder and use contract primary routes.",
+        ],
+    },
+    "balanced": {
+        "intent": "Default middle ground between spend and output quality.",
+        "cost_tendency": "low_to_medium",
+        "quality_tendency": "medium",
+        "best_use_cases": [
+            "general repo truth runs",
+            "operators who want fewer premium surprises than quality mode",
+        ],
+        "known_caveats": [
+            "Not all phases stay mid-tier; step-level contracts may still choose stricter routes.",
+        ],
+    },
+    "balanced_openrouter": {
+        "intent": "Use OpenRouter-first pricing for mixed-cost runs where OpenRouter access is approved.",
+        "cost_tendency": "low_to_medium",
+        "quality_tendency": "medium",
+        "best_use_cases": [
+            "operators with OpenRouter credits",
+            "mixed provider experiments where OpenRouter is already sanctioned",
+        ],
+        "known_caveats": [
+            "Phase D live execution may require provider preflight because OpenRouter can be in the active route set.",
+            "Strict primary routes can still bypass the apparent policy name.",
+        ],
+    },
+    "balanced_grok_openrouter": {
+        "intent": "Bias toward xAI fast models for docs/code, with premium OpenRouter synthesis.",
+        "cost_tendency": "medium_to_high",
+        "quality_tendency": "high",
+        "best_use_cases": [
+            "comparative quality runs",
+            "operators explicitly opting into higher synthesis spend",
+        ],
+        "known_caveats": [
+            "Phase R/X/T/Z/S are premium-risk under this policy.",
+            "D0/D1 use stricter docs ladders than the broader phase default suggests.",
+        ],
+    },
+    "quality": {
+        "intent": "Prefer stronger quality routes than cost/balanced without the most premium ladders.",
+        "cost_tendency": "medium",
+        "quality_tendency": "high",
+        "best_use_cases": [
+            "operator-reviewed live runs with moderate budget headroom",
+        ],
+        "known_caveats": [
+            "QA and synthesis steps can still climb into more expensive models than inventory steps.",
+        ],
+    },
+    "openrouter": {
+        "intent": "Prefer OpenRouter-heavy ladders across most tiers.",
+        "cost_tendency": "medium_to_high",
+        "quality_tendency": "high",
+        "best_use_cases": [
+            "operators standardizing on OpenRouter for routing visibility",
+        ],
+        "known_caveats": [
+            "Premium OpenRouter synthesis ladders can materially raise spend.",
+            "Provider preflight matters more because more live paths depend on OpenRouter availability.",
+        ],
+    },
+    "gemini_primary": {
+        "intent": "Use Gemini-first on non-premium paths while keeping premium synthesis escape hatches.",
+        "cost_tendency": "low_to_medium",
+        "quality_tendency": "medium_to_high",
+        "best_use_cases": [
+            "operators preferring Gemini as the primary non-code lane",
+        ],
+        "known_caveats": [
+            "Premium synthesis phases still escalate away from Gemini.",
+            "Code-heavy phases do not stay Gemini-first.",
+        ],
+    },
+    "optimal": {
+        "intent": "Bias toward the strongest observed ladders for output quality, not cheapest spend.",
+        "cost_tendency": "highest",
+        "quality_tendency": "highest",
+        "best_use_cases": [
+            "after operator review",
+            "targeted premium runs where budget is already approved",
+        ],
+        "known_caveats": [
+            "Premium synthesis phases are expensive by design under this policy.",
+            "Fallback pricing may be approximate for some premium model IDs.",
+        ],
+    },
+}
+ACTIVE_OUTPUT_LAYOUT: Optional["OutputLayout"] = None
 DOCS_GOVERNANCE_PHASES: Set[str] = {"A", "H", "D", "W", "B", "G"}
 PREMIUM_SYNTHESIS_PHASES: Set[str] = {"R", "X", "T", "Z", "S", "M"}
 BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
@@ -787,7 +1006,6 @@ def prompt_root() -> Path:
     if v4_path.exists():
         return v4_path
     return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
-    return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
 
 
 _ACTIVE_S_PROMPTS_MODE = S_PROMPTS_AUTO
@@ -875,7 +1093,7 @@ def _validate_s_steps(selected: List[str]) -> None:
     unknown = [step_id for step_id in selected if step_id not in PHASE_S_BASE_STEP_SET]
     if unknown:
         raise RuntimeError(
-            "Phase S step selection only allows S0-S6. "
+            "Phase S step selection only allows S0-S12. "
             f"Unsupported steps: {', '.join(sorted(unknown, key=step_sort_key))}"
         )
 
@@ -925,6 +1143,23 @@ TEXT_NAMES = {
     ".gitignore",
     "package.json",
     "package-lock.json",
+}
+
+UNSUPPORTED_INPUT_SUFFIX_LABELS: Dict[str, str] = {
+    ".pdf": "PDF documents",
+    ".png": "PNG images",
+    ".jpg": "JPEG images",
+    ".jpeg": "JPEG images",
+    ".gif": "GIF images",
+    ".svg": "SVG/vector assets",
+    ".docx": "DOCX documents",
+    ".pptx": "PPTX presentations",
+}
+
+WEAK_LANGUAGE_SUFFIX_LABELS: Dict[str, str] = {
+    ".go": "Go",
+    ".java": "Java",
+    ".rs": "Rust",
 }
 
 HOME_SAFE_ROOTS = [
@@ -1047,13 +1282,13 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "E": {"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E9"},
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
-    "G": {"G0", "G1", "G2", "G3", "G4", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9"},
-    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10"},
+    "G": {"G0", "G1", "G2", "G3", "G4", "G5", "G9"},
+    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9", "Q11"},
+    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11"},
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6"},
+    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12"},
     "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 
@@ -1143,6 +1378,10 @@ class RunnerConfig:
     compare_steps: Optional[Tuple[str, ...]] = None
     prescan_dir: Optional[str] = None  # Path to prescan output for intelligence routing
     router: Optional[Any] = None  # IntelligenceRouter instance
+    max_cost_usd: Optional[float] = None
+    ledger: Optional[Any] = None
+    fl_int_provider_timeout_seconds: int = 180
+    fl_int_f0_batch_timeout_seconds: int = 210
 
 
 @dataclass(frozen=True)
@@ -1164,6 +1403,14 @@ class RunContext:
 
 
 @dataclass(frozen=True)
+class OutputLayout:
+    extraction_root: Path
+    runs_root: Path
+    latest_run_file: Path
+    doctor_root: Path
+
+
+@dataclass(frozen=True)
 class BatchWatchResult:
     exit_code: int
     next_phase: Optional[str] = None
@@ -1175,6 +1422,114 @@ class UiConfig:
     mode: str = "auto"  # auto|rich|plain
     quiet: bool = False
     jsonl_events: bool = False
+
+
+def _default_output_layout(repo_root: Path) -> OutputLayout:
+    extraction_root = (repo_root / V5_EXTRACTION_ROOT).resolve()
+    return OutputLayout(
+        extraction_root=extraction_root,
+        runs_root=(extraction_root / "runs").resolve(),
+        latest_run_file=(extraction_root / "latest_run_id.txt").resolve(),
+        doctor_root=(extraction_root / "doctor").resolve(),
+    )
+
+
+def configure_output_layout(repo_root: Path, output_root: Optional[str]) -> OutputLayout:
+    global ACTIVE_OUTPUT_LAYOUT
+    if output_root:
+        extraction_root = Path(output_root).expanduser().resolve()
+        ACTIVE_OUTPUT_LAYOUT = OutputLayout(
+            extraction_root=extraction_root,
+            runs_root=(extraction_root / "runs").resolve(),
+            latest_run_file=(extraction_root / "latest_run_id.txt").resolve(),
+            doctor_root=(extraction_root / "doctor").resolve(),
+        )
+    else:
+        ACTIVE_OUTPUT_LAYOUT = _default_output_layout(repo_root)
+    return ACTIVE_OUTPUT_LAYOUT
+
+
+def current_output_layout(repo_root: Path) -> OutputLayout:
+    return ACTIVE_OUTPUT_LAYOUT or _default_output_layout(repo_root)
+
+
+def current_extraction_root(repo_root: Path) -> Path:
+    return current_output_layout(repo_root).extraction_root
+
+
+def current_runs_root(repo_root: Path) -> Path:
+    return current_output_layout(repo_root).runs_root
+
+
+def current_doctor_root(repo_root: Path) -> Path:
+    return current_output_layout(repo_root).doctor_root
+
+
+class OperatorArgumentParser(argparse.ArgumentParser):
+    def format_help(self) -> str:
+        quick_reference = textwrap.dedent(
+            f"""
+            Operator Quick Reference
+              Common:
+                --preset {FIRST_LIVE_PRESET_NAME} --dry-run --run-id local_probe
+                --print-cost-preview --phase A --dry-run
+                --print-routing-guide
+              Advanced:
+                --routing-policy balanced_openrouter
+                --output-root /abs/path/to/sandboxed-artifacts
+              Diagnostics:
+                --list-phases
+                --print-config --phase A --dry-run
+                --preflight-providers --phase D
+              Recovery / Resume:
+                --resume --phase D --run-id <RUN_ID>
+                --status --run-id <RUN_ID>
+
+            Examples
+              Validator-first staged first live:
+                python services/repo-truth-extractor/run_extraction_v5.py --preset {FIRST_LIVE_PRESET_NAME} --dry-run --run-id first_live_probe
+              Explicit cost preview:
+                python services/repo-truth-extractor/run_extraction_v5.py --print-cost-preview --phase A --dry-run --run-id cost_probe
+              Isolated artifact root:
+                python services/repo-truth-extractor/run_extraction_v5.py --phase A --dry-run --output-root /tmp/rte-v5-sandbox
+            """
+        ).strip()
+        return quick_reference + "\n\n" + super().format_help()
+
+    def error(self, message: str) -> None:
+        detail = str(message or "")
+        guidance: List[str] = []
+        if "argument --routing-policy: invalid choice" in detail:
+            guidance.extend(
+                [
+                    f"Valid routing policies: {', '.join(sorted(ROUTING_LADDERS.keys()))}.",
+                    f"Example: --routing-policy {DEFAULT_ROUTING_POLICY}",
+                ]
+            )
+        elif "argument --phase: invalid choice" in detail:
+            guidance.extend(
+                [
+                    f"Valid phases: {', '.join(PHASES)} plus S_INT or ALL.",
+                    "Example: --phase A --dry-run",
+                ]
+            )
+        elif "DPMX_LIVE_OK" in detail or "explicit consent" in detail:
+            guidance.extend(
+                [
+                    "Use --dry-run first to inspect inputs, routes, and estimated cost.",
+                    f"Only rerun live with --execute and {DPMX_LIVE_OK_ENV}=1 after approval.",
+                ]
+            )
+        elif "--phase is required" in detail:
+            guidance.extend(
+                [
+                    "Use --phase <PHASE> for execution, or one of the introspection modes such as --list-phases, --print-config, or --print-cost-preview.",
+                    f"Example: --phase A --dry-run or --preset {FIRST_LIVE_PRESET_NAME} --dry-run",
+                ]
+            )
+        if guidance:
+            detail = detail.rstrip() + "\n\n" + "\n".join(guidance)
+        super().error(detail)
 
 
 class UI:
@@ -1206,8 +1561,10 @@ class UI:
             self._events_path = run_root / "events.jsonl"
 
     def _emit_event(self, payload: Dict[str, Any]) -> None:
-        row = dict(payload)
+        row = sanitize_payload_for_output(dict(payload))
         row.setdefault("ts", now_iso())
+        row.setdefault("component", EXTRACTOR_COMPONENT_NAME)
+        row.setdefault("event_type", str(row.get("type") or "event"))
         row.setdefault("run_id", self.run_id)
         row.setdefault("run_root", str(self.run_root.resolve()))
         try:
@@ -1217,6 +1574,124 @@ class UI:
         except Exception:
             # UI event persistence must never alter execution flow.
             return
+
+    def make_trace_context(
+        self,
+        *,
+        phase: str,
+        step_id: str,
+        partition_id: Optional[str] = None,
+        parent_trace_id: Optional[str] = None,
+        parent_span_id: Optional[str] = None,
+    ) -> Dict[str, str]:
+        trace_id = str(parent_trace_id or "").strip() or _new_trace_id()
+        context = {
+            "trace_id": trace_id,
+            "span_id": _new_span_id(),
+        }
+        if parent_span_id:
+            context["parent_span_id"] = str(parent_span_id)
+        context["phase"] = phase
+        context["step_id"] = step_id
+        if partition_id:
+            context["partition_id"] = partition_id
+        return context
+
+    def llm_request_event(
+        self,
+        *,
+        phase: str,
+        step_id: str,
+        status: str,
+        trace_id: str,
+        span_id: str,
+        parent_span_id: Optional[str] = None,
+        partition_id: Optional[str] = None,
+        provider: Optional[str] = None,
+        model_id: Optional[str] = None,
+        route: Optional[str] = None,
+        routing_policy: Optional[str] = None,
+        attempt: Optional[int] = None,
+        hop: Optional[int] = None,
+        latency_ms: Optional[int] = None,
+        status_code: Optional[int] = None,
+        failure_type: Optional[str] = None,
+        finish_reason: Optional[str] = None,
+        request_payload_bytes: Optional[int] = None,
+        prompt_tokens: Optional[int] = None,
+        completion_tokens: Optional[int] = None,
+        reasoning_tokens: Optional[int] = None,
+        cached_tokens: Optional[int] = None,
+        estimated_cost_usd: Optional[float] = None,
+        actual_cost_usd: Optional[float] = None,
+        upstream_request_id: Optional[str] = None,
+        upstream_generation_id: Optional[str] = None,
+        batch_id: Optional[str] = None,
+        extra: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        payload: Dict[str, Any] = {
+            "type": f"llm_request_{status}",
+            "event_type": f"llm_request_{status}",
+            "phase": phase,
+            "step": step_id,
+            "partition_id": partition_id,
+            "trace_id": trace_id,
+            "span_id": span_id,
+            "parent_span_id": parent_span_id,
+            "provider": provider,
+            "model_id": model_id,
+            "route": route,
+            "routing_policy": routing_policy,
+            "attempt": attempt,
+            "hop": hop,
+            "latency_ms": latency_ms,
+            "status": status,
+            "status_code": status_code,
+            "failure_type": failure_type,
+            "finish_reason": finish_reason,
+            "request_payload_bytes": request_payload_bytes,
+            "tokens_prompt": prompt_tokens,
+            "tokens_completion": completion_tokens,
+            "tokens_reasoning": reasoning_tokens,
+            "tokens_cached": cached_tokens,
+            "estimated_cost_usd": estimated_cost_usd,
+            "actual_cost_usd": actual_cost_usd,
+            "upstream_request_id": upstream_request_id,
+            "upstream_generation_id": upstream_generation_id,
+            "batch_id": batch_id,
+        }
+        if extra:
+            payload.update(_clean_event_value(extra))
+        self._emit_event({k: v for k, v in payload.items() if v is not None})
+
+    def spend_ledger_event(
+        self,
+        *,
+        phase: str,
+        trace_id: str,
+        span_id: str,
+        parent_span_id: Optional[str] = None,
+        prompt_tokens: int,
+        completion_tokens: int,
+        estimated_cost_usd: Optional[float] = None,
+        partition_id: Optional[str] = None,
+        step_id: Optional[str] = None,
+    ) -> None:
+        self._emit_event(
+            {
+                "type": "spend_ledger_accumulate",
+                "event_type": "spend_ledger_accumulate",
+                "phase": phase,
+                "step": step_id,
+                "partition_id": partition_id,
+                "trace_id": trace_id,
+                "span_id": span_id,
+                "parent_span_id": parent_span_id,
+                "tokens_prompt": int(prompt_tokens),
+                "tokens_completion": int(completion_tokens),
+                "estimated_cost_usd": estimated_cost_usd,
+            }
+        )
 
     def _print_plain(self, line: str) -> None:
         print(line, flush=True)
@@ -2135,7 +2610,7 @@ def _phase_input_stat(path: Path) -> Dict[str, Any]:
 
 def load_run_id(root: Path) -> Optional[str]:
     """Load latest run_id from file; return None if unavailable."""
-    id_file = root / V5_LATEST_RUN_FILE
+    id_file = current_output_layout(root).latest_run_file
     if not id_file.exists():
         return None
     run_id = id_file.read_text(encoding="utf-8").strip()
@@ -2147,7 +2622,7 @@ def load_run_id(root: Path) -> Optional[str]:
 def _validate_existing_run_dir(
     root: Path, run_id: str, allow_create_if_missing: bool = False
 ) -> None:
-    candidate = root / V5_RUNS_ROOT / run_id
+    candidate = current_runs_root(root) / run_id
     if not candidate.exists():
         if allow_create_if_missing:
             candidate.mkdir(parents=True, exist_ok=True)
@@ -2159,7 +2634,7 @@ def _validate_existing_run_dir(
 
 def _generate_run_id(root: Path) -> str:
     base = datetime.now(timezone.utc).strftime("run_%Y%m%dT%H%M%SZ")
-    runs_root = root / V5_RUNS_ROOT
+    runs_root = current_runs_root(root)
     runs_root.mkdir(parents=True, exist_ok=True)
 
     candidate = runs_root / base
@@ -2172,7 +2647,7 @@ def _generate_run_id(root: Path) -> str:
 
 
 def latest_run_id_path(root: Path) -> Path:
-    return root / V5_LATEST_RUN_FILE
+    return current_output_layout(root).latest_run_file
 
 
 def persist_latest_run_id(root: Path, run_id: str) -> None:
@@ -2198,7 +2673,7 @@ def resolve_run_context(
     else:
         latest = load_run_id(root)
         if latest:
-            latest_dir = root / V5_RUNS_ROOT / latest
+            latest_dir = current_runs_root(root) / latest
             if latest_dir.exists() and latest_dir.is_dir():
                 run_id = latest
                 run_id_source = "latest_run_id"
@@ -2227,7 +2702,7 @@ def resolve_run_context(
 
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     """Return dict of run paths and ensure required folders exist."""
-    base = root / V5_RUNS_ROOT / run_id
+    base = current_runs_root(root) / run_id
     if not base.exists():
         raise FileNotFoundError(f"Run directory {base} does not exist.")
     for legacy_name, canonical_name in LEGACY_PHASE_DIR_ALIASES.items():
@@ -2259,9 +2734,21 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
 
 
 def write_json(path: Path, payload: Any) -> None:
+    sanitized_payload = sanitize_payload_for_output(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
+
+    # The payload is recursively redacted before serialization; CodeQL cannot
+    # infer that key-based sanitizer boundary for this generic writer.
+    # codeql[py/clear-text-storage-sensitive-data]
     path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=True, sort_keys=True) + "\n",
+        json.dumps(
+            sanitized_payload,
+            indent=2,
+            ensure_ascii=True,
+            sort_keys=True,
+            default=str,
+        )
+        + "\n",
         encoding="utf-8",
     )
 
@@ -2355,6 +2842,11 @@ def enforce_pre_live_validator_for_execution(
     args: argparse.Namespace,
     phase_sequence: Sequence[str],
 ) -> Dict[str, Any]:
+    if not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        return {
+            "verdict": "SKIPPED_NO_CONSENT",
+            "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
+        }
     cmd = build_pre_live_validator_command(
         target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
         target_phases=_validator_phase_targets(args, phase_sequence),
@@ -2423,6 +2915,34 @@ _ACTIVE_SPEND_TRACKER: Optional[SpendTrackerState] = None
 
 _HTTP_SESSION: Optional[requests.Session] = None
 _HTTP_SESSION_LOCK: threading.Lock = threading.Lock()
+TRACE_HEADER_NAME = "X-Dopemux-Trace-Id"
+EXTRACTOR_COMPONENT_NAME = "repo_truth_extractor"
+
+
+def _new_trace_id() -> str:
+    return uuid.uuid4().hex
+
+
+def _new_span_id() -> str:
+    return uuid.uuid4().hex[:16]
+
+
+def _clean_event_value(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {
+            str(key): _clean_event_value(subvalue)
+            for key, subvalue in value.items()
+            if subvalue is not None
+        }
+    if isinstance(value, (list, tuple)):
+        return [_clean_event_value(item) for item in value if item is not None]
+    return str(value)
 
 
 def _get_http_session() -> requests.Session:
@@ -2950,12 +3470,64 @@ def write_run_dashboard_snapshot(
     return snapshot
 
 
+def write_retry_cost_report_snapshot(
+    run_root: Path,
+    phase: str,
+    step_id: str,
+    report: Dict[str, Any],
+) -> Dict[str, Any]:
+    target = _telemetry_path(run_root, RETRY_COST_REPORT_FILENAME)
+    with _TELEMETRY_SNAPSHOT_LOCK:
+        payload = _load_json_object(target)
+        steps = payload.get("steps")
+        if not isinstance(steps, dict):
+            steps = {}
+        steps[f"{phase}:{step_id}"] = dict(report)
+        total_retry_count = 0
+        total_extra_cost = 0.0
+        hot_partitions: List[Dict[str, Any]] = []
+        for key, value in steps.items():
+            if not isinstance(value, dict):
+                continue
+            total_retry_count += int(value.get("retry_count", 0) or 0)
+            total_extra_cost += float(value.get("estimated_extra_cost_usd", 0.0) or 0.0)
+            for row in value.get("abnormal_partitions", []) or []:
+                if isinstance(row, dict):
+                    hot_partitions.append(
+                        {
+                            "step": key,
+                            **row,
+                        }
+                    )
+        hot_partitions.sort(
+            key=lambda row: (
+                -float(row.get("estimated_retry_extra_cost_usd", 0.0) or 0.0),
+                str(row.get("partition_id") or ""),
+            )
+        )
+        snapshot = {
+            "generated_at": now_iso(),
+            "run_id": run_root.name,
+            "steps": dict(sorted(steps.items())),
+            "summary": {
+                "retry_count": total_retry_count,
+                "estimated_extra_cost_usd": round(total_extra_cost, 6),
+                "abnormal_partition_count": len(hot_partitions),
+            },
+            "abnormal_partitions": hot_partitions[:25],
+        }
+        write_json(target, snapshot)
+    return snapshot
+
+
 def _write_json_with_sha256(path: Path, payload: Any) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
-    raw = (
-        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        + "\n"
-    ).encode("utf-8")
+    raw = sanitized_json_bytes(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ) + b"\n"
     path.write_bytes(raw)
     digest = sha256_bytes(raw)
     sidecar = path.with_suffix(".sha256")
@@ -4587,6 +5159,7 @@ def effective_model_routing_payload() -> Dict[str, Dict[str, str]]:
             "provider": provider,
             "model_id": model_id,
             "api_key_env": api_key_env,
+            "scope": "representative_phase_default_not_step_authoritative",
         }
     return payload
 
@@ -4605,6 +5178,7 @@ def write_run_manifest(
 ) -> Dict[str, Any]:
     prompt_report = promptset_fingerprint(phases)
     run_blocked = bool(prompt_report.get("blocked_promptset"))
+    layout = current_output_layout(root)
     routing_policy = str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY))
     disable_escalation = bool(getattr(args, "disable_escalation", False))
     escalation_max_hops = int(getattr(args, "escalation_max_hops", 2))
@@ -4619,9 +5193,16 @@ def write_run_manifest(
         "run_id": run_id,
         "generated_at": now_iso(),
         "repo_root": str(root.resolve()),
+        "artifact_root": str(layout.extraction_root.resolve()),
+        "run_root": str(dirs["root"].resolve()),
         "git_sha": get_git_sha(root),
         "cli": {
             "phase": args.phase if args.phase else args.verify_phase_output,
+            "preset": getattr(args, "preset", None),
+            "preset_stage": getattr(args, "preset_stage", None),
+            "skip_pre_live_validator": bool(
+                getattr(args, "skip_pre_live_validator", False)
+            ),
             "dry_run": args.dry_run,
             "resume": args.resume,
             "max_files_docs": args.max_files_docs,
@@ -4660,7 +5241,7 @@ def write_run_manifest(
             "max_cost_usd": args.max_cost_usd,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({layout.latest_run_file})",
                 "generated(new timestamp run id)",
             ],
             "no_write_latest": args.no_write_latest,
@@ -4678,9 +5259,13 @@ def write_run_manifest(
             "print_promptpack": args.print_promptpack,
             "print_run_order": bool(getattr(args, "print_run_order", False)),
             "print_phase_routing": bool(getattr(args, "print_phase_routing", False)),
+            "print_routing_guide": bool(getattr(args, "print_routing_guide", False)),
+            "print_prescan_guide": bool(getattr(args, "print_prescan_guide", False)),
+            "print_cost_preview": bool(getattr(args, "print_cost_preview", False)),
             "print_phase_prompts": getattr(args, "print_phase_prompts", None),
             "verify_phase_output": args.verify_phase_output,
             "print_config": args.print_config,
+            "output_root": getattr(args, "output_root", None),
             "dpmx_webhook_url": os.getenv(DPMX_WEBHOOK_URL_ENV, "").strip(),
             "dpmx_webhook_secret_set": bool(
                 os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip()
@@ -4693,6 +5278,12 @@ def write_run_manifest(
                 DPMX_WEBHOOK_AUTO_CONTINUE_ENV, ""
             ).strip(),
             "dpmx_live_ok": os.getenv(DPMX_LIVE_OK_ENV, "").strip(),
+        },
+        "output_layout": {
+            "artifact_root": str(layout.extraction_root.resolve()),
+            "runs_root": str(layout.runs_root.resolve()),
+            "latest_run_id_file": str(layout.latest_run_file.resolve()),
+            "doctor_root": str(layout.doctor_root.resolve()),
         },
         "prompt_hash_mode": PROMPT_HASH_MODE,
         "prompt_files": [row["path"] for row in prompt_report["prompt_hashes"]],
@@ -5211,7 +5802,9 @@ def _resume_blocked_payload(prompt_report: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _prompt_hash_report_for_phase(
-    phase: str, specs: List[PromptSpec]
+    phase: str,
+    specs: List[PromptSpec],
+    required_step_ids: Optional[Set[str]] = None,
 ) -> Dict[str, Any]:
     prompt_hashes: List[Dict[str, str]] = []
     prompt_missing: List[str] = []
@@ -5219,7 +5812,11 @@ def _prompt_hash_report_for_phase(
     prompt_hash_errors: List[str] = []
     prompt_failures: List[Dict[str, str]] = []
 
-    expected_steps = REQUIRED_PROMPT_STEP_IDS.get(phase, set())
+    expected_steps = (
+        set(required_step_ids)
+        if required_step_ids is not None
+        else REQUIRED_PROMPT_STEP_IDS.get(phase, set())
+    )
     observed_steps = {spec.step_id for spec in specs}
     # When scoped via --step, only validate completeness for steps explicitly in specs list.
     target_required_steps = expected_steps.intersection(observed_steps)
@@ -5686,7 +6283,32 @@ def collect_provider_routes(
     routing_policy: str,
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
 ) -> Dict[str, Dict[str, str]]:
-    routes: Dict[str, Dict[str, str]] = {}
+    summary = derive_route_readiness_summary(
+        phases,
+        routing_policy,
+        selected_step_ids_by_phase=selected_step_ids_by_phase,
+    )
+    return {
+        str(row["route_signature"]): {
+            "provider": str(row["provider"]),
+            "model_id": str(row["model_id"]),
+            "api_key_env": str(row["api_key_env"]),
+        }
+        for row in summary["routes"]
+        if str(row.get("requirement_level")) != "configured_not_required"
+    }
+
+
+def derive_route_readiness_summary(
+    phases: Sequence[str],
+    routing_policy: str,
+    selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
+) -> Dict[str, Any]:
+    route_meta: Dict[str, Dict[str, Any]] = {}
+    configured_route_meta: Dict[str, Dict[str, str]] = {}
+    selected_policy = _normalize_routing_policy(routing_policy)
+    tiers = ACTIVE_ROUTING_LADDERS.get(selected_policy) or _clone_ladders(selected_policy)
+
     for phase in phases:
         prompts = get_phase_prompts(phase)
         selected_ids = None
@@ -5701,22 +6323,129 @@ def collect_provider_routes(
         for prompt in prompts:
             if selected_ids is not None and prompt.step_id not in selected_ids:
                 continue
-            ladder = _resolve_step_ladder_compat(
-                routing_policy,
+            step_id = str(prompt.step_id)
+            tier_override = prompt.tier_override
+            step_tier = resolve_effective_step_tier(
+                selected_policy,
                 phase,
-                prompt.step_id,
-                tier_override=prompt.tier_override,
+                step_id,
+                tier_override=tier_override,
             )
-            for provider, model_id, api_key_env in ladder:
-                key = f"{provider}:{model_id}:{api_key_env}"
-                if key in routes:
-                    continue
-                routes[key] = {
-                    "provider": provider,
-                    "model_id": model_id,
-                    "api_key_env": api_key_env,
-                }
-    return routes
+            configured_ladder = list(tiers.get(step_tier) or tiers.get("extract") or [])
+            for provider, model_id, api_key_env in configured_ladder:
+                signature = f"{provider}:{model_id}:{api_key_env}"
+                configured_route_meta.setdefault(
+                    signature,
+                    {
+                        "route_signature": signature,
+                        "provider": provider,
+                        "model_id": model_id,
+                        "api_key_env": api_key_env,
+                    },
+                )
+
+            ladder = _resolve_step_ladder_compat(
+                selected_policy,
+                phase,
+                step_id,
+                tier_override=tier_override,
+            )
+            for index, (provider, model_id, api_key_env) in enumerate(ladder):
+                signature = f"{provider}:{model_id}:{api_key_env}"
+                entry = route_meta.setdefault(
+                    signature,
+                    {
+                        "route_signature": signature,
+                        "provider": provider,
+                        "model_id": model_id,
+                        "api_key_env": api_key_env,
+                        "required_active_route": False,
+                        "optional_fallback": False,
+                        "configured_not_required": False,
+                        "fallback_chain_present": False,
+                        "steps": [],
+                    },
+                )
+                entry["steps"].append(
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "ladder_index": index,
+                        "ladder_size": len(ladder),
+                    }
+                )
+                if index == 0:
+                    entry["required_active_route"] = True
+                    if len(ladder) > 1:
+                        entry["fallback_chain_present"] = True
+                else:
+                    entry["optional_fallback"] = True
+
+    for signature, configured in configured_route_meta.items():
+        route_meta.setdefault(
+            signature,
+            {
+                "route_signature": signature,
+                "provider": configured["provider"],
+                "model_id": configured["model_id"],
+                "api_key_env": configured["api_key_env"],
+                "required_active_route": False,
+                "optional_fallback": False,
+                "configured_not_required": True,
+                "fallback_chain_present": False,
+                "steps": [],
+            },
+        )
+
+    routes: List[Dict[str, Any]] = []
+    for signature in sorted(route_meta):
+        entry = dict(route_meta[signature])
+        entry["configured_not_required"] = bool(
+            not entry["required_active_route"] and not entry["optional_fallback"]
+        )
+        if entry["required_active_route"]:
+            entry["requirement_level"] = "required_active_route"
+        elif entry["optional_fallback"]:
+            entry["requirement_level"] = "optional_fallback"
+        else:
+            entry["requirement_level"] = "configured_not_required"
+        routes.append(entry)
+
+    def _collect_envs(level: str) -> List[str]:
+        return sorted(
+            {
+                str(row["api_key_env"]).strip()
+                for row in routes
+                if str(row.get("requirement_level")) == level
+                and str(row.get("api_key_env")).strip()
+            }
+        )
+
+    def _collect_providers(level: str) -> List[str]:
+        return sorted(
+            {
+                str(row["provider"]).strip().lower()
+                for row in routes
+                if str(row.get("requirement_level")) == level
+                and str(row.get("provider")).strip()
+            }
+        )
+
+    return {
+        "target_policy": selected_policy,
+        "target_phases": [str(phase).upper() for phase in phases],
+        "routes": routes,
+        "provider_categories": {
+            "required_active_route": _collect_providers("required_active_route"),
+            "optional_fallback": _collect_providers("optional_fallback"),
+            "configured_not_required": _collect_providers("configured_not_required"),
+        },
+        "api_key_env_categories": {
+            "required_active_route": _collect_envs("required_active_route"),
+            "optional_fallback": _collect_envs("optional_fallback"),
+            "configured_not_required": _collect_envs("configured_not_required"),
+        },
+    }
 
 
 def run_provider_doctor_probe(
@@ -5733,6 +6462,23 @@ def run_provider_doctor_probe(
     endpoint_url = transport_endpoint_url(
         provider, model_id, cfg, api_key, effective_mode
     )
+    route_token = f"{provider}/{model_id}"
+    projected_input_tokens = _estimate_text_tokens(
+        "Return exactly OK.", "Return the single token OK."
+    )
+    projected_output_tokens = _project_output_tokens(projected_input_tokens)
+    _check_projected_cost_limit(
+        cfg,
+        phase="DOCTOR",
+        step_id="PROVIDER_PROBE",
+        partition_id=route_token,
+        provider=provider,
+        model_id=model_id,
+        input_tokens=projected_input_tokens,
+        output_tokens=projected_output_tokens,
+        execution_mode="doctor_probe",
+        route=route_token,
+    )
     result = call_llm(
         provider=provider,
         model_id=model_id,
@@ -5742,6 +6488,25 @@ def run_provider_doctor_probe(
         cfg=cfg,
     )
     meta = result.get("meta", {})
+    if meta.get("response_received") or result.get("ok"):
+        meta["spend_usage"] = _accumulate_runtime_spend(
+            cfg,
+            phase="DOCTOR",
+            step_id="PROVIDER_PROBE",
+            partition_id=route_token,
+            provider=provider,
+            model_id=model_id,
+            execution_mode="doctor_probe",
+            response_summary=(
+                meta.get("response_summary")
+                if isinstance(meta.get("response_summary"), dict)
+                else None
+            ),
+            response_text=str(result.get("text") or ""),
+            fallback_input_tokens=projected_input_tokens,
+            fallback_output_tokens=projected_output_tokens,
+            route=route_token,
+        )
     return {
         "provider": provider,
         "model_id": model_id,
@@ -5777,11 +6542,17 @@ def run_provider_preflight(
         if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
         is not None
     }
-    provider_routes = collect_provider_routes(
-        phases=phases,
-        routing_policy=cfg.routing_policy,
-        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
-    )
+    if selected_step_ids_by_phase:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+            selected_step_ids_by_phase=selected_step_ids_by_phase,
+        )
+    else:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+        )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -5834,6 +6605,30 @@ def run_provider_preflight(
         if probe.get("status_code") != 200
         or is_auth_classified_failure(probe.get("failure_type"))
     ]
+    failure_summary: List[Dict[str, Any]] = []
+    for probe in failures:
+        provider = str(probe.get("provider") or "")
+        model_id = str(probe.get("model_id") or "")
+        remediation = None
+        if provider == "openrouter" and str(probe.get("failure_type") or "") == "auth_rejected":
+            remediation = (
+                "Current bounded first-live A/H/D/C routes still require this OpenRouter model "
+                "for strict JSON-managed steps. Fix the active OpenRouter credential path "
+                f"({probe.get('api_key_env_resolved') or probe.get('api_key_env_name')}) "
+                "or the bounded online route remains blocked."
+            )
+        failure_summary.append(
+            {
+                "provider": provider,
+                "model_id": model_id,
+                "api_key_env": probe.get("api_key_env_resolved")
+                or probe.get("api_key_env_name"),
+                "failure_type": probe.get("failure_type"),
+                "status_code": probe.get("status_code"),
+                "provider_signature": probe.get("provider_signature"),
+                "remediation": remediation,
+            }
+        )
     payload = {
         "generated_at": now_iso(),
         "run_id": run_id,
@@ -5841,11 +6636,12 @@ def run_provider_preflight(
         "routes": provider_routes,
         "probes": provider_probes,
         "failed_providers": [probe.get("provider") for probe in failures],
+        "failure_summary": failure_summary,
         "routing_policy": cfg.routing_policy,
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "batch_capability": batch_capability,
     }
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
     return (not failures), payload
@@ -5873,7 +6669,7 @@ def prepare_phase_provider_preflight(
         {str(provider) for provider in payload.get("failed_providers", []) if provider}
     )
     payload["denylisted_providers"] = list(denylisted)
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
     if not ok:
@@ -6122,10 +6918,10 @@ def run_doctor_full(
         },
     }
 
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "DOCTOR_FULL.json", payload)
-    print(json.dumps(payload, indent=2))
+    print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
 
     has_missing = any(missing_steps.values())
     has_duplicates = bool(duplicates)
@@ -6405,8 +7201,7 @@ def extract_artifacts_from_partition_payload(
             extracted.append(
                 {"artifact_name": artifact_name, "payload": candidate.get("payload")}
             )
-        if extracted:
-            return extracted
+        return extracted
 
     if isinstance(payload, dict):
         for artifact_name in expected_artifacts:
@@ -6421,6 +7216,142 @@ def extract_artifacts_from_partition_payload(
         extracted.append({"artifact_name": expected_artifacts[0], "payload": payload})
 
     return extracted
+
+
+def classify_request_failure(request_meta: Dict[str, Any]) -> Dict[str, Optional[str]]:
+    schema_gate_passed = bool(request_meta.get("schema_gate_passed", True))
+    schema_reason = str(request_meta.get("schema_gate_reason") or "").strip()
+    schema_context = (
+        request_meta.get("schema_gate_context")
+        if isinstance(request_meta.get("schema_gate_context"), dict)
+        else {}
+    )
+    failure_type = str(request_meta.get("failure_type") or "").strip()
+    provider_reason = str(request_meta.get("provider_error_reason") or "").strip()
+    execution_mode = str(request_meta.get("execution_mode") or "").strip().lower()
+    batch_execution = execution_mode in {"batch", "batch_watch", "batch_submit_only"}
+
+    def _remediation_hint(
+        failure_class: str,
+        failure_stage: str,
+    ) -> Optional[str]:
+        if failure_class == "batch_submission_unprocessable":
+            return (
+                "Provider rejected the batch payload before execution. Check auth/quota or "
+                "payload shape, then retry or rerun with --no-batch."
+            )
+        if failure_class == "batch_submit_rejected":
+            return (
+                "Batch submission was rejected before model execution. Check provider auth/quota "
+                "and consider rerunning with --no-batch for direct diagnostics."
+            )
+        if failure_class == "batch_provider_execution_timeout":
+            return (
+                "Batch did not finish within the watch window. Retry later or rerun with "
+                "--no-batch if immediate diagnosis is required."
+            )
+        if failure_class == "batch_result_missing":
+            return (
+                "Batch completed without this partition result. Retry later; if it repeats, "
+                "rerun with --no-batch to isolate provider behavior."
+            )
+        if failure_class == "batch_provider_execution_failed":
+            return (
+                "Batch reached provider execution and failed. Check provider auth/quota/status; "
+                "if the failure repeats, rerun with --no-batch."
+            )
+        if failure_class in {
+            "batch_output_parse_failed",
+            "missing_expected_artifacts",
+            "schema_missing_key",
+        }:
+            return (
+                "Provider execution produced output that failed parse or contract checks. "
+                "Inspect parser/contract artifacts or rerun with --no-batch."
+            )
+        if failure_stage == "pre_model_execution":
+            return "Fix the preflight blocker before retrying."
+        return None
+
+    if not schema_gate_passed:
+        failure_class = schema_reason or "schema_gate_failure"
+        if schema_reason.startswith("missing_expected_artifacts:"):
+            failure_class = "missing_expected_artifacts"
+        elif schema_reason.startswith("schema_missing_key:"):
+            failure_class = "schema_missing_key"
+        return {
+            "failure_class": failure_class,
+            "reason": schema_reason or failure_type or "schema_gate_failure",
+            "artifact_name": str(schema_context.get("artifact_name") or "").strip() or None,
+            "item_key": (
+                schema_reason.split(":", 1)[1]
+                if schema_reason.startswith("schema_missing_key:")
+                else None
+            ),
+            "item_id": str(schema_context.get("item_id") or "").strip() or None,
+            "item_path": str(schema_context.get("item_path") or "").strip() or None,
+            "failure_stage": "post_model_output",
+            "remediation_hint": _remediation_hint(
+                failure_class, "post_model_output"
+            ),
+        }
+
+    failure_class = failure_type or "unknown_failure"
+    failure_stage = "unknown"
+    if provider_reason.startswith("batch_submit_error:"):
+        submit_error = provider_reason.split(":", 1)[1].strip().lower()
+        if submit_error in {
+            "unprocessableentityerror",
+            "badrequesterror",
+            "validationerror",
+        }:
+            failure_class = "batch_submission_unprocessable"
+        else:
+            failure_class = "batch_submit_rejected"
+        failure_stage = "pre_model_execution"
+    elif provider_reason.startswith("missing_api_key:") or failure_type in {
+        "auth_missing",
+        "api_key_missing_or_invalid",
+        "permission_denied",
+        "payload_unshrinkable",
+    }:
+        failure_stage = "pre_model_execution"
+    elif provider_reason.startswith("batch_timeout:"):
+        failure_class = "batch_provider_execution_timeout"
+        failure_stage = "model_execution"
+    elif provider_reason == "batch_missing_result_for_partition":
+        failure_class = "batch_result_missing"
+        failure_stage = "model_execution"
+    elif failure_type == "parse" and batch_execution:
+        failure_class = "batch_output_parse_failed"
+        failure_stage = "post_model_output"
+    elif provider_reason.startswith("batch_terminal_state:"):
+        failure_class = "batch_provider_execution_failed"
+        failure_stage = "model_execution"
+    elif batch_execution and provider_reason:
+        failure_class = "batch_provider_execution_failed"
+        failure_stage = "model_execution"
+    elif failure_type in {
+        "provider",
+        "network",
+        "timeout",
+        "rate_limit",
+        "quota_or_billing",
+    } or failure_type.startswith("auth_"):
+        failure_stage = "model_execution"
+    elif execution_mode == "batch_submit_only":
+        failure_stage = "pre_model_execution"
+
+    return {
+        "failure_class": failure_class,
+        "reason": provider_reason or failure_class,
+        "artifact_name": None,
+        "item_key": None,
+        "item_id": None,
+        "item_path": None,
+        "failure_stage": failure_stage,
+        "remediation_hint": _remediation_hint(failure_class, failure_stage),
+    }
 
 
 def normalize_step(
@@ -6447,6 +7378,8 @@ def normalize_step(
     raw_ok = 0
     raw_failed = 0
     unexpected_artifacts: Counter[str] = Counter()
+    failure_stage_histogram: Counter[str] = Counter()
+    artifact_blocked_by_failure_stage: Dict[str, List[str]] = {}
 
     for partition_id in partition_ids:
         raw_file = raw_dir / f"{step_id}__{partition_id}.json"
@@ -6467,20 +7400,28 @@ def normalize_step(
                 continue
 
             raw_ok += 1
-            request_meta = payload.get("request_meta")
-            if isinstance(request_meta, dict):
-                if not bool(request_meta.get("schema_gate_passed", True)):
-                    # Partition failed contract gate; skip artifact extraction
-                    continue
-
+            request_meta = (
+                payload.get("request_meta")
+                if isinstance(payload.get("request_meta"), dict)
+                else {}
+            )
+            if not bool(request_meta.get("schema_gate_passed", True)):
+                continue
             artifacts = extract_artifacts_from_partition_payload(
                 payload, expected_artifacts
             )
             if not artifacts:
+                failure = classify_request_failure(request_meta)
+                failure_stage = str(failure.get("failure_stage") or "").strip()
+                if failure_stage:
+                    failure_stage_histogram[failure_stage] += 1
                 parse_failures.append(
                     {
                         "partition_id": partition_id,
-                        "reason": "missing_artifacts",
+                        "reason": (
+                            str(failure.get("failure_class") or "").strip()
+                            or "missing_artifacts"
+                        ),
                         "file": str(raw_file),
                     }
                 )
@@ -6513,6 +7454,17 @@ def normalize_step(
     for artifact_name in expected_artifacts:
         chunks = artifacts_by_name.get(artifact_name, [])
         if not chunks:
+            if (
+                raw_ok > 0
+                and not any(artifacts_by_name.values())
+                and len(failure_stage_histogram) == 1
+                and "post_model_output" not in failure_stage_histogram
+            ):
+                blocked_stage = next(iter(failure_stage_histogram.keys()))
+                artifact_blocked_by_failure_stage.setdefault(blocked_stage, []).append(
+                    artifact_name
+                )
+                continue
             missing_expected_artifacts.append(artifact_name)
             continue
 
@@ -6602,6 +7554,11 @@ def normalize_step(
         "recomputed_partitions": int((step_exec_stats or {}).get("recomputed", 0)),
         "dry_run_partitions": int((step_exec_stats or {}).get("dry_run", 0)),
         "execution_failed_partitions": int((step_exec_stats or {}).get("failed", 0)),
+        "failure_stage_histogram": dict(sorted(failure_stage_histogram.items())),
+        "artifact_blocked_by_failure_stage": {
+            stage: sorted(names)
+            for stage, names in sorted(artifact_blocked_by_failure_stage.items())
+        },
         "contract_lane": (step_exec_stats or {}).get("contract_lane"),
         "strict_schema_required": bool(
             (step_exec_stats or {}).get("strict_schema_required", False)
@@ -6809,10 +7766,10 @@ def routing_signature(
         "provider": provider,
         "step_id": step_id,
     }
-    encoded = json.dumps(
-        canonical, ensure_ascii=True, separators=(",", ":"), sort_keys=True
+    encoded = sanitized_json_bytes(
+        canonical, ensure_ascii=True, sort_keys=True, separators=(",", ":")
     )
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+    return hashlib.blake2b(encoded, digest_size=32).hexdigest()
 
 
 def build_auth_present_flags(
@@ -6893,6 +7850,10 @@ def resolve_api_key(
             )
             return "", api_key_env
         return key_value, api_key_env
+    if provider == "openrouter" and api_key_env == "OPENROUTER_API_KEY":
+        v5_override = os.getenv("V5_OPENROUTER_API_KEY", "")
+        if v5_override:
+            return v5_override, "V5_OPENROUTER_API_KEY"
     value = os.getenv(api_key_env, "")
     return value, api_key_env
 
@@ -6946,9 +7907,10 @@ def _build_gemini_config_for_model(
     return config
 
 
-def get_gemini_client(api_key: str) -> Any:
+def get_gemini_client(api_key: str, timeout_seconds: Optional[int] = None) -> Any:
     try:
         from google import genai
+        from google.genai import types as genai_types
     except ImportError as exc:
         raise RuntimeError(
             "google-genai is required for Gemini SDK transport."
@@ -6956,7 +7918,12 @@ def get_gemini_client(api_key: str) -> Any:
     # Canonical key source is GEMINI_API_KEY. Clear GOOGLE_API_KEY to prevent
     # google-genai from preferring the legacy env var when both are present.
     os.environ.pop("GOOGLE_API_KEY", None)
-    return genai.Client(api_key=api_key)
+    kwargs: Dict[str, Any] = {"api_key": api_key}
+    if timeout_seconds is not None:
+        kwargs["http_options"] = genai_types.HttpOptions(
+            timeout=max(1000, int(timeout_seconds) * 1000)
+        )
+    return genai.Client(**kwargs)
 
 
 def get_openai_client(base_url: Optional[str], api_key: str) -> Any:
@@ -7030,18 +7997,39 @@ def summarize_llm_response(
     summary: Dict[str, Any] = {"text_length": len(response_text)}
     finish_reason = None
     candidate_count: Optional[int] = None
+    response_id: Optional[str] = None
+    prompt_tokens: Optional[int] = None
+    completion_tokens: Optional[int] = None
+    total_tokens: Optional[int] = None
 
     if provider == "gemini":
         candidates = getattr(response_obj, "candidates", None) or []
         candidate_count = len(candidates)
         if candidates:
             finish_reason = getattr(candidates[0], "finish_reason", None)
+        usage_metadata = getattr(response_obj, "usage_metadata", None)
+        if usage_metadata is not None:
+            prompt_tokens = getattr(usage_metadata, "prompt_token_count", None)
+            completion_tokens = getattr(usage_metadata, "candidates_token_count", None)
+            total_tokens = getattr(usage_metadata, "total_token_count", None)
     else:
         choices = None
         if isinstance(response_json, dict):
             choices = response_json.get("choices")
+            response_id = str(response_json.get("id") or "") or None
+            usage = response_json.get("usage")
+            if isinstance(usage, dict):
+                prompt_tokens = usage.get("prompt_tokens")
+                completion_tokens = usage.get("completion_tokens")
+                total_tokens = usage.get("total_tokens")
         else:
             choices = getattr(response_obj, "choices", None)
+            response_id = str(getattr(response_obj, "id", "") or "") or None
+            usage = getattr(response_obj, "usage", None)
+            if usage is not None:
+                prompt_tokens = getattr(usage, "prompt_tokens", None)
+                completion_tokens = getattr(usage, "completion_tokens", None)
+                total_tokens = getattr(usage, "total_tokens", None)
         if isinstance(choices, list):
             candidate_count = len(choices)
             if choices:
@@ -7051,14 +8039,572 @@ def summarize_llm_response(
         summary["candidate_count"] = candidate_count
     if finish_reason:
         summary["finish_reason"] = finish_reason
-    usage = extract_usage_summary(
-        provider=provider,
-        response_obj=response_obj,
-        response_json=response_json,
+    if response_id:
+        summary["response_id"] = response_id
+    if prompt_tokens is not None:
+        summary["prompt_tokens"] = int(prompt_tokens)
+    if completion_tokens is not None:
+        summary["completion_tokens"] = int(completion_tokens)
+    if total_tokens is not None:
+        summary["total_tokens"] = int(total_tokens)
+    usage = _normalized_usage_from_payload(
+        getattr(response_obj, "usage", None)
+        or getattr(response_obj, "usage_metadata", None)
+        or (response_json.get("usage") if isinstance(response_json, dict) else None)
+        or (
+            response_json.get("usage_metadata")
+            if isinstance(response_json, dict)
+            else None
+        )
+        or (
+            response_json.get("usageMetadata")
+            if isinstance(response_json, dict)
+            else None
+        )
     )
     if usage is not None:
         summary["usage"] = usage
     return summary
+
+
+def _safe_token_int(value: Any) -> Optional[int]:
+    try:
+        if value is None:
+            return None
+        return max(0, int(value))
+    except Exception:
+        return None
+
+
+def _read_usage_field(payload: Any, *keys: str) -> Optional[int]:
+    for key in keys:
+        if isinstance(payload, dict) and key in payload:
+            value = _safe_token_int(payload.get(key))
+            if value is not None:
+                return value
+        attr = getattr(payload, key, None)
+        value = _safe_token_int(attr)
+        if value is not None:
+            return value
+    return None
+
+
+def _normalized_usage_from_payload(payload: Any) -> Optional[Dict[str, int]]:
+    if payload is None:
+        return None
+    input_tokens = _read_usage_field(
+        payload,
+        "input_tokens",
+        "prompt_tokens",
+        "prompt_token_count",
+        "promptTokenCount",
+        "inputTokenCount",
+        "input_token_count",
+    )
+    output_tokens = _read_usage_field(
+        payload,
+        "output_tokens",
+        "completion_tokens",
+        "candidates_token_count",
+        "candidatesTokenCount",
+        "outputTokenCount",
+        "output_token_count",
+    )
+    total_tokens = _read_usage_field(
+        payload,
+        "total_tokens",
+        "total_token_count",
+        "totalTokenCount",
+    )
+    if total_tokens is None and input_tokens is not None and output_tokens is not None:
+        total_tokens = input_tokens + output_tokens
+    if input_tokens is None and output_tokens is None and total_tokens is None:
+        return None
+    return {
+        "input_tokens": int(input_tokens or 0),
+        "output_tokens": int(output_tokens or 0),
+        "total_tokens": int(total_tokens or ((input_tokens or 0) + (output_tokens or 0))),
+    }
+
+
+def _estimate_text_tokens(*chunks: Any) -> int:
+    total_chars = sum(len(str(chunk or "")) for chunk in chunks)
+    return max(0, total_chars // 4)
+
+
+def _project_output_tokens(input_tokens: int, response_text: str = "") -> int:
+    if response_text:
+        return max(1, len(str(response_text)) // 4)
+    return max(1, int(input_tokens) // 10) if input_tokens > 0 else 1
+
+
+def _project_preview_output_tokens(
+    input_tokens: int,
+    *,
+    step_contract: Optional[Dict[str, Any]] = None,
+) -> int:
+    if is_json_managed_step(step_contract):
+        return max(64, int(max(0, input_tokens) * 0.02))
+    return max(64, _project_output_tokens(input_tokens))
+
+
+def _record_request_warning(
+    request_meta: Dict[str, Any],
+    *,
+    code: str,
+    message: str,
+    **fields: Any,
+) -> None:
+    warnings = request_meta.get("warnings")
+    if not isinstance(warnings, list):
+        warnings = []
+        request_meta["warnings"] = warnings
+    warnings.append(
+        {
+            "code": code,
+            "message": message,
+            **fields,
+        }
+    )
+
+
+def _record_truncation_salvage_warning(
+    request_meta: Dict[str, Any],
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    salvage_meta: Dict[str, Any],
+) -> None:
+    if not salvage_meta.get("truncation_salvage"):
+        return
+    message = (
+        "JSON truncation salvage succeeded with lossy repair "
+        f"(phase={phase} step={step_id} partition={partition_id} "
+        f"provider={provider} model={model_id})"
+    )
+    logger.warning(message)
+    _record_request_warning(
+        request_meta,
+        code="truncation_salvage_lossy",
+        message=message,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=provider,
+        model_id=model_id,
+        salvage_strategy=str(salvage_meta.get("salvage_strategy") or ""),
+        lossy=bool(salvage_meta.get("lossy", False)),
+    )
+
+
+def _pricing_preview(
+    cfg: RunnerConfig,
+    *,
+    provider: str,
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+    route: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    if not cfg.ledger:
+        return None
+    return cfg.ledger.price_usage(
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        provider=provider,
+        model_id=model_id,
+        route=route,
+    )
+
+
+class CostLimitExceededError(RuntimeError):
+    def __init__(self, message: str, details: Dict[str, Any]) -> None:
+        super().__init__(message)
+        self.details = dict(details)
+
+
+def _build_cost_abort_state(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    execution_mode: str,
+    breach_stage: str,
+    pricing: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    recovery_rule = "If a run enters `COST_ABORTED`, resume is not allowed. Start a new run."
+    ledger_record = getattr(cfg, "ledger", None)
+    spend_record = getattr(ledger_record, "record", None)
+    payload = {
+        "status": "cost_aborted",
+        "reason": COST_ABORT_REASON,
+        "phase": phase,
+        "step_id": step_id,
+        "partition_id": partition_id,
+        "provider": str(provider or "").strip().lower(),
+        "model_id": str(model_id or "").strip(),
+        "execution_mode": str(execution_mode or "").strip() or "unknown",
+        "breach_stage": str(breach_stage or "").strip() or "unknown",
+        "total_cost_usd": (
+            float(getattr(spend_record, "total_cost_usd", 0.0))
+            if spend_record is not None
+            else 0.0
+        ),
+        "limit_usd": (
+            float(cfg.max_cost_usd) if cfg.max_cost_usd is not None else None
+        ),
+        "fallback_usage_count": int(
+            getattr(spend_record, "fallback_usage_count", 0) or 0
+        )
+        if spend_record is not None
+        else 0,
+        "partial_outputs_retained": True,
+        "resume_allowed": False,
+        "cost_abort_recovery_rule": recovery_rule,
+    }
+    if isinstance(pricing, dict):
+        payload["pricing_key"] = pricing.get("pricing_key")
+        payload["pricing_source"] = pricing.get("pricing_source")
+        payload["pricing_version"] = pricing.get("pricing_version")
+        payload["unknown_model"] = bool(pricing.get("unknown_model", False))
+        payload["projected_additional_cost_usd"] = pricing.get("estimated_cost_usd")
+        payload["input_tokens"] = pricing.get("input_tokens")
+        payload["output_tokens"] = pricing.get("output_tokens")
+    return payload
+
+
+def _raise_cost_limit_exceeded(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    execution_mode: str,
+    breach_stage: str,
+    pricing: Optional[Dict[str, Any]] = None,
+    message_prefix: str,
+) -> None:
+    abort_state = _build_cost_abort_state(
+        cfg,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=provider,
+        model_id=model_id,
+        execution_mode=execution_mode,
+        breach_stage=breach_stage,
+        pricing=pricing,
+    )
+    raise CostLimitExceededError(
+        (
+            f"{message_prefix} "
+            f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
+            f"provider={provider} model={model_id} total_usd={abort_state['total_cost_usd']:.4f} "
+            f"limit={abort_state['limit_usd']})"
+        ),
+        abort_state,
+    )
+
+
+def _persist_cost_abort(
+    *,
+    root: Path,
+    dirs: Dict[str, Path],
+    run_id: str,
+    phases: Iterable[str],
+    run_started_at: str,
+    exc: CostLimitExceededError,
+    ui: Optional["UI"] = None,
+    source: str = "cost_abort",
+) -> Dict[str, Any]:
+    cost_abort = {
+        **dict(exc.details),
+        "generated_at": now_iso(),
+        "run_id": run_id,
+        "run_started_at": run_started_at,
+        "active_phases": sorted({str(phase).upper() for phase in phases if str(phase).strip()}),
+    }
+    cost_abort_path = dirs["root"] / COST_ABORT_FILENAME
+    write_json(cost_abort_path, cost_abort)
+
+    manifest_path = dirs["root"] / "RUN_MANIFEST.json"
+    manifest = _load_json_object(manifest_path)
+    manifest["run_status"] = "COST_ABORTED"
+    manifest["phase_status"] = "cost_aborted"
+    manifest["blocked_reason"] = COST_ABORT_REASON
+    manifest["blocked_phase"] = cost_abort.get("phase")
+    manifest["resume_allowed"] = False
+    manifest["cost_abort"] = cost_abort
+    manifest["updated_at"] = now_iso()
+    write_json(manifest_path, manifest)
+
+    coverage_path = dirs["root"] / COVERAGE_ROLLUP_FILENAME
+    coverage = _load_json_object(coverage_path)
+    coverage["generated_at"] = now_iso()
+    coverage["run_id"] = run_id
+    coverage["run_status"] = "COST_ABORTED"
+    coverage["blocked_reason"] = COST_ABORT_REASON
+    coverage["resume_allowed"] = False
+    coverage["cost_abort"] = cost_abort
+    write_json(coverage_path, coverage)
+
+    resume_path = dirs["root"] / RESUME_PROOF_FILENAME
+    resume = _load_json_object(resume_path)
+    resume["generated_at"] = now_iso()
+    resume["run_id"] = run_id
+    resume["resume_status"] = "blocked"
+    resume["blocked_reason"] = COST_ABORT_REASON
+    resume["resume_allowed"] = False
+    resume["cost_abort"] = cost_abort
+    write_json(resume_path, resume)
+
+    proof_path = dirs["root"] / PROOF_PACK_FILENAME
+    proof = _load_json_object(proof_path)
+    linked_artifacts = (
+        dict(proof.get("linked_artifacts"))
+        if isinstance(proof.get("linked_artifacts"), dict)
+        else {}
+    )
+    linked_artifacts["cost_abort"] = str(cost_abort_path.resolve())
+    proof["run_id"] = run_id
+    proof["git_sha"] = proof.get("git_sha") or get_git_sha(root)
+    proof["runner_sha256"] = proof.get("runner_sha256") or sha256_text(RUNNER_SCRIPT)
+    proof["argv"] = proof.get("argv") or sys.argv
+    proof["python_version"] = proof.get("python_version") or platform.python_version()
+    proof["cwd"] = proof.get("cwd") or str(root.resolve())
+    proof["started_at"] = proof.get("started_at") or run_started_at
+    proof["finished_at"] = now_iso()
+    proof["updated_at"] = now_iso()
+    proof["run_status"] = "COST_ABORTED"
+    proof["blocked_reason"] = COST_ABORT_REASON
+    proof["resume_allowed"] = False
+    proof["cost_abort"] = cost_abort
+    proof["linked_artifacts"] = linked_artifacts
+    write_json(proof_path, proof)
+
+    dashboard_payload = phase_status_snapshot(run_id, dirs, PHASES)
+    dashboard_payload["run_status"] = "COST_ABORTED"
+    dashboard_payload["blocked_reason"] = COST_ABORT_REASON
+    dashboard_payload["resume_allowed"] = False
+    dashboard_payload["cost_abort"] = cost_abort
+    write_run_dashboard_snapshot(dirs["root"], dashboard_payload, source=source)
+    if ui is not None:
+        ui.run_dashboard_snapshot(dashboard_payload, source=source)
+    return cost_abort
+
+
+def _check_projected_cost_limit(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+    execution_mode: str,
+    route: Optional[str] = None,
+) -> None:
+    pricing = _pricing_preview(
+        cfg,
+        provider=provider,
+        model_id=model_id,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        route=route,
+    )
+    if pricing is None:
+        return
+    if cfg.ledger.check_limit(pricing["estimated_cost_usd"]):
+        return
+    _raise_cost_limit_exceeded(
+        cfg,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=provider,
+        model_id=model_id,
+        execution_mode=execution_mode,
+        breach_stage="pre_model_execution",
+        pricing=pricing,
+        message_prefix="Projected cost cap exceeded before provider call",
+    )
+
+
+def _resolve_runtime_usage(
+    *,
+    response_summary: Optional[Dict[str, Any]] = None,
+    response_text: str = "",
+    fallback_input_tokens: int = 0,
+    fallback_output_tokens: Optional[int] = None,
+    payload: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    usage = None
+    if isinstance(response_summary, dict):
+        usage = _normalized_usage_from_payload(response_summary.get("usage"))
+    if usage is None and isinstance(payload, dict):
+        usage = _normalized_usage_from_payload(payload)
+    if usage is not None:
+        return {
+            **usage,
+            "usage_source": "provider_usage",
+        }
+    input_tokens = max(0, int(fallback_input_tokens or 0))
+    output_tokens = (
+        max(0, int(fallback_output_tokens))
+        if fallback_output_tokens is not None
+        else _project_output_tokens(input_tokens, response_text)
+    )
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": input_tokens + output_tokens,
+        "usage_source": "estimated_fallback",
+    }
+
+
+def _accumulate_runtime_spend(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    execution_mode: str,
+    response_summary: Optional[Dict[str, Any]] = None,
+    response_text: str = "",
+    fallback_input_tokens: int = 0,
+    fallback_output_tokens: Optional[int] = None,
+    payload: Optional[Dict[str, Any]] = None,
+    route: Optional[str] = None,
+    raise_on_limit: bool = True,
+) -> Optional[Dict[str, Any]]:
+    if not cfg.ledger:
+        return None
+    usage = _resolve_runtime_usage(
+        response_summary=response_summary,
+        response_text=response_text,
+        fallback_input_tokens=fallback_input_tokens,
+        fallback_output_tokens=fallback_output_tokens,
+        payload=payload,
+    )
+    pricing = cfg.ledger.accumulate(
+        phase,
+        int(usage["input_tokens"]),
+        int(usage["output_tokens"]),
+        provider=provider,
+        model_id=model_id,
+        route=route,
+    )
+    combined = {
+        **usage,
+        **pricing,
+        "execution_mode": execution_mode,
+    }
+    if not cfg.ledger.check_limit():
+        cost_abort_state = _build_cost_abort_state(
+            cfg,
+            phase=phase,
+            step_id=step_id,
+            partition_id=partition_id,
+            provider=provider,
+            model_id=model_id,
+            execution_mode=execution_mode,
+            breach_stage="post_model_output",
+            pricing=pricing,
+        )
+        combined["cost_limit_exceeded"] = True
+        combined["cost_abort_state"] = cost_abort_state
+        if raise_on_limit:
+            raise CostLimitExceededError(
+                (
+                    "Runtime cost cap exceeded after provider response "
+                    f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
+                    f"provider={provider} model={model_id} total_usd={cost_abort_state['total_cost_usd']:.4f} "
+                    f"limit={cost_abort_state['limit_usd']})"
+                ),
+                cost_abort_state,
+            )
+    else:
+        combined["cost_limit_exceeded"] = False
+    return combined
+
+
+def _reserve_projected_spend(
+    cfg: RunnerConfig,
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+    execution_mode: str,
+    route: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    if not cfg.ledger:
+        return None
+    _check_projected_cost_limit(
+        cfg,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=provider,
+        model_id=model_id,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        execution_mode=execution_mode,
+        route=route,
+    )
+    reserved = cfg.ledger.accumulate(
+        phase,
+        input_tokens,
+        output_tokens,
+        provider=provider,
+        model_id=model_id,
+        route=route,
+    )
+    combined = {
+        **reserved,
+        "execution_mode": execution_mode,
+        "accounting_mode": "reserved_at_submit",
+        "cost_limit_exceeded": False,
+    }
+    if not cfg.ledger.check_limit():
+        cost_abort_state = _build_cost_abort_state(
+            cfg,
+            phase=phase,
+            step_id=step_id,
+            partition_id=partition_id,
+            provider=provider,
+            model_id=model_id,
+            execution_mode=execution_mode,
+            breach_stage="post_model_output",
+            pricing=reserved,
+        )
+        combined["cost_limit_exceeded"] = True
+        combined["cost_abort_state"] = cost_abort_state
+        raise CostLimitExceededError(
+            (
+                "Projected cost reservation exceeded limit after provider submit "
+                f"(phase={phase} step={step_id} partition={partition_id} mode={execution_mode} "
+                f"provider={provider} model={model_id} total_usd={cost_abort_state['total_cost_usd']:.4f} "
+                f"limit={cost_abort_state['limit_usd']})"
+            ),
+            cost_abort_state,
+        )
+    return combined
 
 
 def capture_exception_metadata(exc: Exception) -> Dict[str, str]:
@@ -7124,7 +8670,7 @@ def classify_failure_type(
         return "payload"
     if status_code is not None and status_code >= 500:
         return "provider"
-    if "timeout" in joined or "connection" in joined or "network" in joined:
+    if "timeout" in joined or "timed out" in joined or "connection" in joined or "network" in joined:
         return "network"
     return "unknown"
 
@@ -7157,9 +8703,8 @@ def extract_provider_error_reason(response_body: str) -> Optional[str]:
 
 
 def sanitize_error_text(text: str) -> str:
-    if not text:
-        return ""
-    return re.sub(r"([?&]key=)[^&\\s]+", r"\1REDACTED", text)
+    return sanitize_text_for_output(text)
+
 
 
 def is_retryable_exception(exc: Exception) -> bool:
@@ -7214,6 +8759,9 @@ def call_llm(
     response_format_override: Optional[Dict[str, Any]] = None,
     structured_output_override: Optional[Dict[str, Any]] = None,
     retry_callback: Optional[Callable] = None,
+    timeout_seconds: Optional[int] = None,
+    trace_context: Optional[Dict[str, Any]] = None,
+    lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     if _live_llm_calls_blocked_for_tests():
         message = (
@@ -7327,12 +8875,12 @@ def call_llm(
         )
 
     if not api_key:
-        logger.error("Missing API key env var: %s", api_key_env)
+        # The message is intentionally static; CodeQL overtaints the missing-key
+        # control-flow branch even after credential-bearing fields are removed.
+        # codeql[py/clear-text-logging-sensitive-data]
+        logger.error("Missing API key for the configured provider request.")
         if provider == "gemini":
-            logger.error(
-                "Gemini requires GEMINI_API_KEY in repo-root .env (canonical). "
-                "GOOGLE_API_KEY is deprecated for this runner."
-            )
+            logger.error("Gemini credentials are missing in canonical repo-root env configuration.")
         return {
             "ok": False,
             "text": "",
@@ -7352,8 +8900,9 @@ def call_llm(
                     provider, model_id, endpoint_url, None
                 ),
                 "provider_error_reason": "MISSING_API_KEY_ENV",
-                "api_key_env_requested": api_key_env,
-                "api_key_env_resolved": resolved_api_key_env,
+                # Redacted to avoid exposing authentication-related environment identifiers
+                "api_key_env_requested": "***redacted***",
+                "api_key_env_resolved": "***redacted***",
                 "gemini_endpoint_family": gemini_family,
                 "gemini_auth_attempt_sequence": (
                     auth_mode_sequence if provider == "gemini" else None
@@ -7361,6 +8910,8 @@ def call_llm(
                 "request_payload_bytes": request_payload_bytes,
                 "request_payload_bytes_mode": request_payload_bytes_mode,
                 "transport": transport,
+                "trace_id": trace_id,
+                "parent_span_id": request_parent_span_id,
                 "retry_trace": [],
                 "structured_output": structured_output,
             },
@@ -7430,6 +8981,37 @@ def call_llm(
     }
     retry_trace: List[Dict[str, Any]] = []
     total_retry_delay = 0.0
+    overall_timeout_seconds = max(
+        1,
+        int(timeout_seconds if timeout_seconds is not None else 180),
+    )
+    started_monotonic = time.monotonic()
+    base_trace_context = dict(trace_context or {})
+    trace_id = str(base_trace_context.get("trace_id") or "").strip() or _new_trace_id()
+    request_parent_span_id = str(base_trace_context.get("parent_span_id") or "").strip() or None
+
+    def _emit_lifecycle(status: str, **fields: Any) -> None:
+        if lifecycle_callback is None:
+            return
+        payload = {
+            "phase": base_trace_context.get("phase"),
+            "step_id": base_trace_context.get("step_id"),
+            "partition_id": base_trace_context.get("partition_id"),
+            "trace_id": trace_id,
+            "parent_span_id": request_parent_span_id,
+            "provider": provider,
+            "model_id": model_id,
+            "route": base_trace_context.get("route"),
+            "routing_policy": base_trace_context.get("routing_policy"),
+            "hop": base_trace_context.get("hop"),
+            "status": status,
+        }
+        payload.update(fields)
+        lifecycle_callback({k: v for k, v in payload.items() if v is not None})
+
+    def _remaining_timeout_seconds() -> int:
+        elapsed = time.monotonic() - started_monotonic
+        return max(1, int(overall_timeout_seconds - elapsed))
 
     attempt = 0
     while attempt < cfg.retry_max_attempts:
@@ -7438,6 +9020,13 @@ def call_llm(
         response_body = ""
         failure_type = "unknown"
         provider_error_reason = None
+        attempt_span_id = _new_span_id()
+        _emit_lifecycle(
+            "started",
+            span_id=attempt_span_id,
+            attempt=attempt,
+            request_payload_bytes=request_payload_bytes,
+        )
         try:
             response_json: Optional[Dict[str, Any]] = None
             if transport == "openai_compat_http":
@@ -7450,14 +9039,21 @@ def call_llm(
                 )
                 sent_header_keys = sorted(list(headers.keys()))
                 response = _get_http_session().post(
-                    endpoint_url, headers=headers, data=body, timeout=180
+                    endpoint_url,
+                    headers=headers,
+                    data=body,
+                    timeout=_remaining_timeout_seconds(),
                 )
                 response.raise_for_status()
                 status_code = response.status_code
                 response_json = response.json()
                 response_text = response_json["choices"][0]["message"]["content"]
             elif provider == "gemini":
-                client = get_gemini_client(api_key)
+                gemini_timeout = max(10, _remaining_timeout_seconds())
+                client = get_gemini_client(
+                    api_key,
+                    timeout_seconds=gemini_timeout,
+                )
                 response = client.models.generate_content(
                     model=model_id,
                     contents=user_content,
@@ -7483,6 +9079,7 @@ def call_llm(
                 chat_kwargs: Dict[str, Any] = {
                     "model": model_id,
                     "messages": payload["messages"],
+                    "timeout": _remaining_timeout_seconds(),
                 }
                 if "temperature" in payload:
                     chat_kwargs["temperature"] = payload["temperature"]
@@ -7512,6 +9109,18 @@ def call_llm(
                     "response_received": True,
                     "response_summary": response_summary,
                 }
+            )
+            _emit_lifecycle(
+                "completed",
+                span_id=attempt_span_id,
+                attempt=attempt,
+                latency_ms=int((time.monotonic() - started_monotonic) * 1000),
+                status_code=status_code,
+                finish_reason=response_summary.get("finish_reason"),
+                prompt_tokens=response_summary.get("prompt_tokens"),
+                completion_tokens=response_summary.get("completion_tokens"),
+                upstream_request_id=response_summary.get("response_id"),
+                request_payload_bytes=request_payload_bytes,
             )
             return {
                 "ok": True,
@@ -7546,6 +9155,9 @@ def call_llm(
                         auth_mode_sequence if provider == "gemini" else None
                     ),
                     "transport": transport,
+                    "trace_id": trace_id,
+                    "span_id": attempt_span_id,
+                    "parent_span_id": request_parent_span_id,
                     "retry_trace": retry_trace,
                     "response_received": True,
                     "response_summary": response_summary,
@@ -7605,10 +9217,27 @@ def call_llm(
                     auth_mode_sequence if provider == "gemini" else None
                 ),
                 "transport": transport,
+                "trace_id": trace_id,
+                "span_id": attempt_span_id,
+                "parent_span_id": request_parent_span_id,
                 "retry_trace": retry_trace,
                 "response_received": False,
                 "structured_output": structured_output,
             }
+            _emit_lifecycle(
+                "failed",
+                span_id=attempt_span_id,
+                attempt=attempt,
+                latency_ms=int((time.monotonic() - started_monotonic) * 1000),
+                status_code=status_code,
+                failure_type=failure_type,
+                upstream_request_id=exception_info.get("request_id"),
+                request_payload_bytes=request_payload_bytes,
+                extra={
+                    "provider_error_reason": provider_error_reason,
+                    "exception_type": exception_info.get("exception_type"),
+                },
+            )
             if response_body:
                 logger.warning(
                     "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s: %s | body=%s",
@@ -7743,8 +9372,8 @@ def enrich_request_meta(
     endpoint_sig = json.dumps(
         endpoint_sig_src, ensure_ascii=True, separators=(",", ":"), sort_keys=True
     )
-    enriched["endpoint_transport_signature"] = hashlib.sha256(
-        endpoint_sig.encode("utf-8")
+    enriched["endpoint_transport_signature"] = hashlib.blake2b(
+        endpoint_sig.encode("utf-8"), digest_size=32
     ).hexdigest()
     enriched.setdefault("routing_tier", None)
     enriched.setdefault("routing_policy", None)
@@ -7933,6 +9562,21 @@ def run_gemini_auth_probe(
     probe_path = raw_dir / f"AUTH_PROBE__gemini__{step_id}.json"
     system_prompt = "Return exactly OK."
     user_content = "Return the single token OK."
+    route_token = f"{provider}/{model_id}"
+    projected_input_tokens = _estimate_text_tokens(system_prompt, user_content)
+    projected_output_tokens = _project_output_tokens(projected_input_tokens)
+    _check_projected_cost_limit(
+        cfg,
+        phase=phase,
+        step_id=step_id,
+        partition_id="AUTH_PROBE",
+        provider=provider,
+        model_id=model_id,
+        input_tokens=projected_input_tokens,
+        output_tokens=projected_output_tokens,
+        execution_mode="auth_probe",
+        route=route_token,
+    )
     result = call_llm(
         provider=provider,
         model_id=model_id,
@@ -7950,6 +9594,25 @@ def run_gemini_auth_probe(
         provider=provider,
         model_id=model_id,
     )
+    if meta.get("response_received") or result.get("ok"):
+        meta["spend_usage"] = _accumulate_runtime_spend(
+            cfg,
+            phase=phase,
+            step_id=step_id,
+            partition_id="AUTH_PROBE",
+            provider=provider,
+            model_id=model_id,
+            execution_mode="auth_probe",
+            response_summary=(
+                meta.get("response_summary")
+                if isinstance(meta.get("response_summary"), dict)
+                else None
+            ),
+            response_text=str(result.get("text") or ""),
+            fallback_input_tokens=projected_input_tokens,
+            fallback_output_tokens=projected_output_tokens,
+            route=route_token,
+        )
     payload = {
         "run_id": run_id,
         "phase": phase,
@@ -8049,6 +9712,23 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
             if transport == "openai_compat_http"
             else sdk_auth_present_flags(provider, bool(api_key))
         )
+        route_token = f"{provider}/{model_id}"
+        projected_input_tokens = _estimate_text_tokens(
+            "Return exactly OK.", "Return the single token OK."
+        )
+        projected_output_tokens = _project_output_tokens(projected_input_tokens)
+        _check_projected_cost_limit(
+            probe_cfg,
+            phase="AUTH",
+            step_id="AUTH_DOCTOR",
+            partition_id=f"{provider}:{mode}",
+            provider=provider,
+            model_id=model_id,
+            input_tokens=projected_input_tokens,
+            output_tokens=projected_output_tokens,
+            execution_mode="auth_doctor",
+            route=route_token,
+        )
         result = call_llm(
             provider=provider,
             model_id=model_id,
@@ -8058,6 +9738,25 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
             cfg=probe_cfg,
         )
         meta = result.get("meta", {})
+        if meta.get("response_received") or result.get("ok"):
+            meta["spend_usage"] = _accumulate_runtime_spend(
+                probe_cfg,
+                phase="AUTH",
+                step_id="AUTH_DOCTOR",
+                partition_id=f"{provider}:{mode}",
+                provider=provider,
+                model_id=model_id,
+                execution_mode="auth_doctor",
+                response_summary=(
+                    meta.get("response_summary")
+                    if isinstance(meta.get("response_summary"), dict)
+                    else None
+                ),
+                response_text=str(result.get("text") or ""),
+                fallback_input_tokens=projected_input_tokens,
+                fallback_output_tokens=projected_output_tokens,
+                route=route_token,
+            )
         failure_type = meta.get("failure_type")
         checks.append(
             {
@@ -8108,7 +9807,7 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         f"succeeded_modes={','.join(succeeded_modes) if succeeded_modes else '-'} "
         f"failed_modes={','.join(failed_modes) if failed_modes else '-'}"
     )
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     doctor_json = doctor_dir / "AUTH_DOCTOR.json"
     doctor_txt = doctor_dir / "AUTH_DOCTOR.txt"
@@ -8151,7 +9850,7 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         ]
     )
     doctor_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(json.dumps(payload, indent=2))
+    print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
     return 0 if succeeded_modes else 1
 
 
@@ -8352,7 +10051,6 @@ def try_repair_json_truncation(
         return None
     return repaired
 
-
 def parse_json_from_response_with_provenance(
     text: str,
 ) -> Tuple[Optional[Any], Dict[str, Any]]:
@@ -8492,18 +10190,25 @@ def finalize_response_parse_provenance(
 def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     if not finalized.get("repair_applied"):
         return
+    # This warning emits only a fixed summary string and a numeric delta.
+    # CodeQL still taints the branch through the repaired payload container.
+    # codeql[py/clear-text-logging-sensitive-data]
     logger.warning(
-        "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
-        finalized["phase"],
-        finalized["step_id"],
-        finalized["partition_id"],
-        finalized["repair_type"],
+        "RESPONSE_PARSE_REPAIRED: degraded JSON response repaired; inspect emitted artifacts for partition metadata. delta=%d",
         finalized["chars_delta"],
     )
 
 
-def parse_json_from_response(text: str) -> Optional[Any]:
-    parsed, _provenance = parse_json_from_response_with_provenance(text)
+def parse_json_from_response(
+    text: str,
+    metadata_out: Optional[Dict[str, Any]] = None,
+) -> Optional[Any]:
+    parsed, provenance = parse_json_from_response_with_provenance(text)
+    if isinstance(metadata_out, dict):
+        metadata_out.clear()
+        metadata_out.update(provenance)
+        metadata_out["truncation_salvage"] = bool(provenance.get("repair_applied"))
+        metadata_out["lossy"] = bool(provenance.get("repair_applied"))
     return parsed
 
 
@@ -8739,6 +10444,16 @@ def coerce_artifacts_from_response(
             )
         if artifacts:
             return artifacts
+
+    if isinstance(parsed, dict):
+        artifact_name = str(parsed.get("artifact_name", "")).strip()
+        if artifact_name in expected_set and "payload" in parsed:
+            return [
+                {
+                    "artifact_name": artifact_name,
+                    "payload": parsed.get("payload"),
+                }
+            ]
 
     if isinstance(parsed, dict):
         keyed_artifacts: List[Dict[str, Any]] = []
@@ -9102,6 +10817,43 @@ def classify_escalation_class(
         return "provider_transport"
 
     return "none"
+
+
+def classify_failure_from_request_meta(
+    request_meta: Dict[str, Any],
+) -> Tuple[str, str, Optional[str], Optional[str], Optional[str], Optional[str]]:
+    failure_type = str(request_meta.get("failure_type") or "").strip()
+    provider_reason = str(request_meta.get("provider_error_reason") or "").strip()
+    schema_gate_passed = bool(request_meta.get("schema_gate_passed", True))
+    schema_reason = str(request_meta.get("schema_gate_reason") or "").strip()
+    schema_context = (
+        request_meta.get("schema_gate_context")
+        if isinstance(request_meta.get("schema_gate_context"), dict)
+        else {}
+    )
+
+    # Preserve cap-abort truth even when schema-gate metadata is also present.
+    if failure_type == "cost_aborted":
+        return "cost_aborted", provider_reason or failure_type, None, None, None, None
+
+    if not schema_gate_passed:
+        failure_class = schema_reason or "schema_gate_failure"
+        if schema_reason.startswith("missing_expected_artifacts:"):
+            failure_class = "missing_expected_artifacts"
+        elif schema_reason.startswith("schema_missing_key:"):
+            failure_class = "schema_missing_key"
+        item_key = None
+        if schema_reason.startswith("schema_missing_key:"):
+            item_key = schema_reason.split(":", 1)[1]
+        artifact_name = str(schema_context.get("artifact_name") or "").strip() or None
+        item_id = str(schema_context.get("item_id") or "").strip() or None
+        item_path = str(schema_context.get("item_path") or "").strip() or None
+        reason = schema_reason or failure_type or "schema"
+        return failure_class, reason, artifact_name, item_key, item_id, item_path
+
+    resolved_failure_type = failure_type or "unknown_failure"
+    reason = provider_reason or resolved_failure_type
+    return resolved_failure_type, reason, None, None, None, None
 
 
 def is_break_glass_opus_route(route: Tuple[str, str, str]) -> bool:
@@ -9605,7 +11357,7 @@ def run_comparison_lane(
 
     Reuses the same prompt_text and partition inputs as the canonical lane.
     Stores results under raw/comparison/{provider}__{model}/.
-    Never raises — failures are captured in result dicts.
+    Raises CostLimitExceededError when the comparison lane breaches the active run cap.
 
     Returns:
         List of per-partition result dicts with keys:
@@ -9662,17 +11414,37 @@ def run_comparison_lane(
         try:
             context_text, _ctx_meta = build_partition_context_fn(
                 phase=phase,
-                step_id=step_id,
-                partition=partition,
+                partition_paths=list(partition.get("paths") or []),
+                file_truncate_chars=cfg.file_truncate_chars,
+                home_scan_mode=cfg.home_scan_mode,
+                max_files=max_files_for_phase(phase, cfg),
+                max_chars=cfg.max_chars,
+                router=cfg.router,
             )
-            full_prompt = f"{prompt_text}\n\n{context_text}"
+            route_token = f"{compare_provider}/{compare_model}"
+            projected_input_tokens = _estimate_text_tokens(prompt_text, context_text)
+            projected_output_tokens = _project_output_tokens(projected_input_tokens)
+            _check_projected_cost_limit(
+                cfg,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                provider=compare_provider,
+                model_id=compare_model,
+                input_tokens=projected_input_tokens,
+                output_tokens=projected_output_tokens,
+                execution_mode="comparison",
+                route=route_token,
+            )
             started = time.time()
             llm_result = call_llm_fn(
                 provider=compare_provider,
                 model_id=compare_model,
-                api_key=None,
-                prompt=full_prompt,
-                partition_id=partition_id,
+                api_key_env=PROVIDER_API_KEY_ENV.get(compare_provider, ""),
+                system_prompt=prompt_text,
+                user_content=context_text,
+                cfg=cfg,
+                force_json_output=True,
             )
             elapsed_ms = int((time.time() - started) * 1000)
 
@@ -9690,7 +11462,6 @@ def run_comparison_lane(
                     parsed, raw_text, output_artifacts
                 )
             )
-
             request_meta = {
                 "lane": "comparison",
                 "authoritative": False,
@@ -9702,6 +11473,29 @@ def run_comparison_lane(
                 "repair_invocations": 0,
                 "repair_successes": 0,
             }
+            if llm_meta.get("response_received") or llm_result.get("ok"):
+                spend_record = _accumulate_runtime_spend(
+                    cfg,
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=compare_provider,
+                    model_id=compare_model,
+                    execution_mode="comparison",
+                    response_summary=(
+                        llm_meta.get("response_summary")
+                        if isinstance(llm_meta.get("response_summary"), dict)
+                        else None
+                    ),
+                    response_text=raw_text,
+                    fallback_input_tokens=projected_input_tokens,
+                    fallback_output_tokens=projected_output_tokens,
+                    route=route_token,
+                    raise_on_limit=False,
+                )
+                if spend_record is not None:
+                    request_meta["spend_usage"] = spend_record
+
             payload = {
                 "phase": phase,
                 "step_id": step_id,
@@ -9713,6 +11507,16 @@ def run_comparison_lane(
                 json.dumps(payload, indent=2, sort_keys=True, default=str),
                 encoding="utf-8",
             )
+            if isinstance(request_meta.get("spend_usage"), dict) and isinstance(
+                request_meta["spend_usage"].get("cost_abort_state"), dict
+            ):
+                raise CostLimitExceededError(
+                    (
+                        "Runtime cost cap exceeded during comparison lane "
+                        f"(phase={phase} step={step_id} partition={partition_id})"
+                    ),
+                    request_meta["spend_usage"]["cost_abort_state"],
+                )
             logger.info(
                 "COMPARE_EXEC_DONE phase=%s step=%s partition=%s provider=%s model=%s elapsed_ms=%s",
                 phase, step_id, partition_id, compare_provider, compare_model, elapsed_ms,
@@ -9729,6 +11533,8 @@ def run_comparison_lane(
                 "artifacts": artifacts,
                 "failure_reason": None,
             })
+        except CostLimitExceededError:
+            raise
         except Exception as exc:
             failure_reason = str(exc)
             logger.warning(
@@ -10027,16 +11833,26 @@ def execute_step_for_partitions(
     step_schema_id_normalizations = 0
     step_contract_status_hist: Counter[str] = Counter()
     step_failure_hist: Counter[str] = Counter()
+    step_failure_stage_hist: Counter[str] = Counter()
     step_first_failure_context: Optional[Dict[str, Any]] = None
     step_soft_gate_triggered = False
     step_soft_gate_n_total = 0
     step_soft_gate_fail_rate = 0.0
     step_soft_gate_failed_partitions = 0
+    step_retry_extra_cost_usd = 0.0
+    step_retry_hotspots: List[Dict[str, Any]] = []
     batch_request_rows: List[Dict[str, Any]] = []
     batch_job_rows: List[Dict[str, Any]] = []
     batch_result_rows: List[Dict[str, Any]] = []
     started_at = time.time()
-    workers = max(1, min(16, int(cfg.partition_workers)))
+    requested_workers = max(1, min(16, int(cfg.partition_workers)))
+    workers = requested_workers
+    if cfg.max_cost_usd is not None and not cfg.dry_run and requested_workers > 1:
+        logger.warning(
+            "Cost cap active; clamping partition_workers from %s to 1 for deterministic stop-on-breach.",
+            requested_workers,
+        )
+        workers = 1
     ui_completed = 0
     ui_ok = 0
     ui_failed = 0
@@ -10100,35 +11916,7 @@ def execute_step_for_partitions(
     def _failure_details_from_meta(
         request_meta: Dict[str, Any],
     ) -> Tuple[str, str, Optional[str], Optional[str], Optional[str], Optional[str]]:
-        schema_gate_passed = bool(request_meta.get("schema_gate_passed", True))
-        schema_reason = str(request_meta.get("schema_gate_reason") or "").strip()
-        schema_context = (
-            request_meta.get("schema_gate_context")
-            if isinstance(request_meta.get("schema_gate_context"), dict)
-            else {}
-        )
-        route = (
-            f"{str(request_meta.get('provider') or '-').strip()}/"
-            f"{str(request_meta.get('model_id') or '-').strip()}"
-        )
-        if not schema_gate_passed:
-            failure_class = schema_reason or "schema_gate_failure"
-            if schema_reason.startswith("missing_expected_artifacts:"):
-                failure_class = "missing_expected_artifacts"
-            elif schema_reason.startswith("schema_missing_key:"):
-                failure_class = "schema_missing_key"
-            item_key = None
-            if schema_reason.startswith("schema_missing_key:"):
-                item_key = schema_reason.split(":", 1)[1]
-            artifact_name = str(schema_context.get("artifact_name") or "").strip() or None
-            item_id = str(schema_context.get("item_id") or "").strip() or None
-            item_path = str(schema_context.get("item_path") or "").strip() or None
-            reason = schema_reason or str(request_meta.get("failure_type") or "schema")
-            return failure_class, reason, artifact_name, item_key, item_id, item_path
-
-        failure_type = str(request_meta.get("failure_type") or "").strip() or "unknown_failure"
-        reason = str(request_meta.get("provider_error_reason") or "").strip() or failure_type
-        return failure_type, reason, None, None, None, None
+        return classify_failure_from_request_meta(request_meta)
 
     def _ui_record_result(result: PartitionExecResult) -> None:
         nonlocal ui_completed
@@ -10175,7 +11963,11 @@ def execute_step_for_partitions(
             sidefill=ui_sidefill,
             soft_gate=ui_soft_gate,
         )
-        if not result.success and not result.resume_skipped:
+        if (
+            not result.success
+            and not result.resume_skipped
+            and result.dry_run_delta == 0
+        ):
             (
                 failure_class,
                 failure_reason,
@@ -10936,6 +12728,32 @@ def execute_step_for_partitions(
                 "- If evidence cannot prove line ranges, emit payload.items as [] for that artifact.\n"
                 f"{existing_preview}"
             )
+            strict_trace_context = (
+                ui.make_trace_context(
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                )
+                if ui is not None
+                else None
+            )
+            strict_route = f"{strict_provider}/{strict_model_id}"
+            projected_input_tokens = _estimate_text_tokens(
+                prompt_text, strict_user_content
+            )
+            projected_output_tokens = _project_output_tokens(projected_input_tokens)
+            _check_projected_cost_limit(
+                cfg,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                provider=strict_provider,
+                model_id=strict_model_id,
+                input_tokens=projected_input_tokens,
+                output_tokens=projected_output_tokens,
+                execution_mode=f"strict_{stage}",
+                route=strict_route,
+            )
             result = call_llm(
                 provider=strict_provider,
                 model_id=strict_model_id,
@@ -10946,6 +12764,16 @@ def execute_step_for_partitions(
                 force_json_output=False,
                 response_format_override=response_format,
                 structured_output_override=_strict_structured_meta(response_meta),
+                trace_context={
+                    **(strict_trace_context or {}),
+                    "route": f"{strict_provider}/{strict_model_id}",
+                    "routing_policy": cfg.routing_policy,
+                },
+                lifecycle_callback=(
+                    (lambda payload: ui.llm_request_event(**payload))
+                    if ui is not None
+                    else None
+                ),
             )
             response_text_local = str(result.get("text") or "")
             request_meta_local = enrich_request_meta(
@@ -10957,6 +12785,46 @@ def execute_step_for_partitions(
                 provider=strict_provider,
                 model_id=strict_model_id,
             )
+            if request_meta_local.get("response_received") or result.get("ok"):
+                spend_record = _accumulate_runtime_spend(
+                    cfg,
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=strict_provider,
+                    model_id=strict_model_id,
+                    execution_mode=f"strict_{stage}",
+                    response_summary=(
+                        request_meta_local.get("response_summary")
+                        if isinstance(request_meta_local.get("response_summary"), dict)
+                        else None
+                    ),
+                    response_text=response_text_local,
+                    fallback_input_tokens=projected_input_tokens,
+                    fallback_output_tokens=projected_output_tokens,
+                    route=strict_route,
+                    raise_on_limit=False,
+                )
+                if spend_record is not None:
+                    request_meta_local["spend_usage"] = spend_record
+                    if "cost_abort_state" in spend_record:
+                        request_meta_local["cost_abort_state"] = spend_record["cost_abort_state"]
+                    if ui is not None:
+                        strict_trace = strict_trace_context or ui.make_trace_context(
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                        )
+                        ui.spend_ledger_event(
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            trace_id=str(strict_trace.get("trace_id") or _new_trace_id()),
+                            span_id=_new_span_id(),
+                            parent_span_id=str(strict_trace.get("span_id") or "") or None,
+                            prompt_tokens=int(spend_record.get("input_tokens", 0) or 0),
+                            completion_tokens=int(spend_record.get("output_tokens", 0) or 0),
+                        )
             route_transport = transport_for_provider(strict_provider, cfg)
             strict_attestations = [
                 {
@@ -10978,6 +12846,7 @@ def execute_step_for_partitions(
             ]
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
+            parse_json_from_response(response_text_local)
             parsed, provenance = parse_json_from_response_with_provenance(
                 response_text_local
             )
@@ -11029,6 +12898,7 @@ def execute_step_for_partitions(
             sidefill_invocations = 0
             sidefill_filled_artifacts: List[str] = []
             sidefill_dropped_rows = 0
+            sidefill_conflicts: List[Dict[str, Any]] = []
             strict_route_attestations: List[Dict[str, Any]] = []
             if isinstance(request_meta_current.get("strict_route_attestations"), list):
                 strict_route_attestations.extend(
@@ -11061,6 +12931,47 @@ def execute_step_for_partitions(
                         "attempts": strict_route_attempts,
                     }
                 )
+
+            def _merge_with_conflict_tracking(
+                updates: List[Dict[str, Any]],
+            ) -> None:
+                nonlocal artifacts_current
+                merged_result = merge_artifacts_by_name(
+                    artifacts_current,
+                    updates,
+                    step_contract,
+                    return_conflicts=True,
+                )
+                artifacts_current, new_conflicts = merged_result
+                if not new_conflicts:
+                    return
+                sidefill_conflicts.extend(new_conflicts)
+                logger.warning(
+                    "SIDEFILL_CONFLICT phase=%s step=%s partition=%s conflicts=%s",
+                    phase,
+                    step_id,
+                    partition_id,
+                    len(new_conflicts),
+                )
+                for conflict in new_conflicts:
+                    _record_request_warning(
+                        request_meta_current,
+                        code="sidefill_scalar_conflict",
+                        message=(
+                            "Scalar sidefill conflict detected before deterministic "
+                            "last-write merge"
+                        ),
+                        phase=phase,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=str(request_meta_current.get("provider") or initial_provider),
+                        model_id=str(request_meta_current.get("model_id") or initial_model_id),
+                        artifact_name=str(conflict.get("artifact_name") or ""),
+                        item_id=str(conflict.get("item_id") or ""),
+                        field=str(conflict.get("field") or ""),
+                        existing_value=conflict.get("existing_value"),
+                        updated_value=conflict.get("updated_value"),
+                    )
 
             contract_ok, contract_reason, contract_context = (
                 artifacts_pass_contract_gate(artifacts_current, step_contract)
@@ -11121,11 +13032,7 @@ def execute_step_for_partitions(
                     )
                     sidefill_dropped_rows += int(dropped_count)
                     if sidefill_artifacts:
-                        artifacts_current = merge_artifacts_by_name(
-                            artifacts_current,
-                            sidefill_artifacts,
-                            step_contract,
-                        )
+                        _merge_with_conflict_tracking(sidefill_artifacts)
                         if any(
                             str(row.get("artifact_name") or "") == missing_artifact
                             for row in sidefill_artifacts
@@ -11184,11 +13091,7 @@ def execute_step_for_partitions(
                 )
                 strict_route_attestations.extend(strict_attest)
                 if repaired_artifacts:
-                    artifacts_current = merge_artifacts_by_name(
-                        artifacts_current,
-                        repaired_artifacts,
-                        step_contract,
-                    )
+                    _merge_with_conflict_tracking(repaired_artifacts)
                     artifacts_current, recanonical_norm = canonicalize_artifacts(
                         artifacts_current, step_contract
                     )
@@ -11230,11 +13133,7 @@ def execute_step_for_partitions(
                 )
                 strict_route_attestations.extend(strict_attest)
                 if repaired_artifacts:
-                    artifacts_current = merge_artifacts_by_name(
-                        artifacts_current,
-                        repaired_artifacts,
-                        step_contract,
-                    )
+                    _merge_with_conflict_tracking(repaired_artifacts)
                     artifacts_current, recanonical_norm = canonicalize_artifacts(
                         artifacts_current, step_contract
                     )
@@ -11268,15 +13167,13 @@ def execute_step_for_partitions(
                     else None
                 )
                 if fallback_artifact_name and isinstance(artifact_meta, dict):
-                    artifacts_current = merge_artifacts_by_name(
-                        artifacts_current,
+                    _merge_with_conflict_tracking(
                         [
                             {
                                 "artifact_name": fallback_artifact_name,
                                 "payload": empty_payload_for_artifact(artifact_meta),
                             }
-                        ],
-                        step_contract,
+                        ]
                     )
                     artifacts_current, recanonical_norm = canonicalize_artifacts(
                         artifacts_current, step_contract
@@ -11295,6 +13192,7 @@ def execute_step_for_partitions(
                     "sidefill_invocations": sidefill_invocations,
                     "sidefill_filled_artifacts": sorted(set(sidefill_filled_artifacts)),
                     "sidefill_dropped_rows": int(sidefill_dropped_rows),
+                    "sidefill_conflicts": sidefill_conflicts,
                     "schema_id_normalizations": schema_id_normalizations,
                     "final_contract_status": "pass" if contract_ok else "fail",
                     "schema_gate_passed": bool(contract_ok),
@@ -11324,6 +13222,12 @@ def execute_step_for_partitions(
                         "Do not include markdown, code fences, commentary, or explanations.\n"
                         "The response must start with { or [ and end with } or ].\n"
                     )
+                projected_input_tokens = _estimate_text_tokens(
+                    prompt_text, effective_user_prompt
+                )
+                projected_output_tokens = _project_output_tokens(
+                    projected_input_tokens
+                )
                 if cfg.batch_mode and not strict_contract_required:
                     batch_provider = (
                         cfg.batch_provider
@@ -11349,6 +13253,8 @@ def execute_step_for_partitions(
                             "execution_mode": "batch",
                             "batch_provider": batch_provider,
                             "batch_job_id": None,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                         }
                         return "", enrich_request_meta(
                             failed_meta,
@@ -11383,6 +13289,8 @@ def execute_step_for_partitions(
                             "model_id": batch_model_id,
                             "routing_policy": cfg.routing_policy,
                             "routing_tier": step_tier,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                         }
                     )
                     step_context = {
@@ -11400,9 +13308,50 @@ def execute_step_for_partitions(
                             details=f"partition={partition_id} requests=1",
                         )
                     try:
+                        _check_projected_cost_limit(
+                            cfg,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                            input_tokens=projected_input_tokens,
+                            output_tokens=projected_output_tokens,
+                            execution_mode="batch_submit",
+                            route=f"{batch_provider}/{batch_model_id}",
+                        )
                         batch_job_id = batch_client.submit(
                             batch_requests, BatchRoute(*selected_route), step_context
                         )
+                        reserved_spend = _reserve_projected_spend(
+                            cfg,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                            input_tokens=projected_input_tokens,
+                            output_tokens=projected_output_tokens,
+                            execution_mode="batch_submit",
+                            route=f"{batch_provider}/{batch_model_id}",
+                        )
+                        if reserved_spend is not None and ui is not None:
+                            batch_trace = ui.make_trace_context(
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                            )
+                            ui.spend_ledger_event(
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                                trace_id=batch_trace["trace_id"],
+                                span_id=_new_span_id(),
+                                parent_span_id=batch_trace.get("span_id"),
+                                prompt_tokens=int(reserved_spend.get("input_tokens", 0) or 0),
+                                completion_tokens=int(reserved_spend.get("output_tokens", 0) or 0),
+                            )
+
                         job_row = {
                             "run_id": run_id,
                             "phase_id": phase,
@@ -11414,8 +13363,19 @@ def execute_step_for_partitions(
                             "job_id": batch_job_id,
                             "state": "submitted",
                             "submitted_at_utc": now_iso(),
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
+                            "cost_accounted_at_submit": bool(reserved_spend is not None),
+                            "cost_accounting_mode": (
+                                str(reserved_spend.get("accounting_mode"))
+                                if isinstance(reserved_spend, dict)
+                                else None
+                            ),
+                            "reserved_spend_usage": reserved_spend,
                         }
                         batch_job_rows.append(job_row)
+                    except CostLimitExceededError:
+                        raise
                     except Exception as exc:
                         failed_meta = {
                             "provider": batch_provider,
@@ -11425,6 +13385,8 @@ def execute_step_for_partitions(
                             "execution_mode": "batch",
                             "batch_provider": batch_provider,
                             "batch_job_id": None,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                             **capture_exception_metadata(exc),
                         }
                         return "", enrich_request_meta(
@@ -11461,6 +13423,11 @@ def execute_step_for_partitions(
                             "batch_job_id": batch_job_id,
                             "response_summary": {"batch_status": "submitted"},
                             "batch_pending": True,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
+                            "reserved_spend_usage": (
+                                reserved_spend if "reserved_spend" in locals() else None
+                            ),
                         }
                         return json.dumps(
                             submit_payload, ensure_ascii=True, sort_keys=True
@@ -11502,6 +13469,8 @@ def execute_step_for_partitions(
                                 "execution_mode": "batch",
                                 "batch_provider": batch_provider,
                                 "batch_job_id": batch_job_id,
+                                "estimated_input_tokens": projected_input_tokens,
+                                "estimated_output_tokens": projected_output_tokens,
                             }
                             return "", enrich_request_meta(
                                 failed_meta,
@@ -11559,6 +13528,8 @@ def execute_step_for_partitions(
                             "execution_mode": "batch",
                             "batch_provider": batch_provider,
                             "batch_job_id": batch_job_id,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
                         }
                         return "", enrich_request_meta(
                             failed_meta,
@@ -11579,6 +13550,8 @@ def execute_step_for_partitions(
                         "batch_provider": batch_provider,
                         "batch_job_id": batch_job_id,
                         "response_summary": {"batch_status": status},
+                        "estimated_input_tokens": projected_input_tokens,
+                        "estimated_output_tokens": projected_output_tokens,
                     }
                     for job_row in batch_job_rows:
                         if (
@@ -11598,6 +13571,7 @@ def execute_step_for_partitions(
                             "job_id": batch_job_id,
                             "status": status,
                             "error": row.error,
+                            "meta": row.meta if isinstance(row.meta, dict) else {},
                         }
                     )
                     return str(row.output_text or ""), enrich_request_meta(
@@ -11608,7 +13582,20 @@ def execute_step_for_partitions(
                         partition_id=partition_id,
                         provider=batch_provider,
                         model_id=batch_model_id,
-                    )
+                )
+                route_token = f"{route_provider}/{route_model_id}"
+                _check_projected_cost_limit(
+                    cfg,
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=route_provider,
+                    model_id=route_model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="sync",
+                    route=route_token,
+                )
                 llm_result = call_llm(
                     provider=route_provider,
                     model_id=route_model_id,
@@ -11640,6 +13627,24 @@ def execute_step_for_partitions(
                         ))
                         if ui is not None else None
                     ),
+                    trace_context=(
+                        {
+                            **ui.make_trace_context(
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                            ),
+                            "route": f"{route_provider}/{route_model_id}",
+                            "routing_policy": cfg.routing_policy,
+                        }
+                        if ui is not None
+                        else None
+                    ),
+                    lifecycle_callback=(
+                        (lambda payload: ui.llm_request_event(**payload))
+                        if ui is not None
+                        else None
+                    ),
                 )
                 response_text_local = str(llm_result.get("text", ""))
                 request_meta_local = enrich_request_meta(
@@ -11651,7 +13656,50 @@ def execute_step_for_partitions(
                     provider=route_provider,
                     model_id=route_model_id,
                 )
+                if request_meta_local.get("response_received") or llm_result.get("ok"):
+                    spend_record = _accumulate_runtime_spend(
+                        cfg,
+                        phase=phase,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=route_provider,
+                        model_id=route_model_id,
+                        execution_mode="sync",
+                        response_summary=(
+                            request_meta_local.get("response_summary")
+                            if isinstance(request_meta_local.get("response_summary"), dict)
+                            else None
+                        ),
+                        response_text=response_text_local,
+                        fallback_input_tokens=_estimate_text_tokens(
+                            prompt_text, effective_user_prompt
+                        ),
+                        fallback_output_tokens=projected_output_tokens,
+                        route=route_token,
+                        raise_on_limit=False,
+                )
+                    if spend_record is not None:
+                        request_meta_local["spend_usage"] = spend_record
+                        if "cost_abort_state" in spend_record:
+                            request_meta_local["cost_abort_state"] = spend_record["cost_abort_state"]
+                        if ui is not None:
+                            ui.spend_ledger_event(
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                                trace_id=str(request_meta_local.get("trace_id") or _new_trace_id()),
+                                span_id=_new_span_id(),
+                                parent_span_id=str(request_meta_local.get("span_id") or "") or None,
+                                prompt_tokens=int(spend_record.get("input_tokens", 0) or 0),
+                                completion_tokens=int(spend_record.get("output_tokens", 0) or 0),
+                            )
                 request_meta_local.setdefault("request_payload_bytes", payload_bytes)
+                request_meta_local.setdefault(
+                    "estimated_input_tokens", projected_input_tokens
+                )
+                request_meta_local.setdefault(
+                    "estimated_output_tokens", projected_output_tokens
+                )
                 return response_text_local, request_meta_local
 
             parse_retry_attempted = False
@@ -11673,6 +13721,7 @@ def execute_step_for_partitions(
                     strict_error is not None
                     and _is_semantic_eof_eligible(strict_error, strict_candidate)
                 )
+                parse_json_from_response(response_text_local)
                 parsed, provenance = parse_json_from_response_with_provenance(
                     response_text_local
                 )
@@ -12241,17 +14290,45 @@ def execute_step_for_partitions(
             resume_skipped += 1
             continue
 
+        final_provider = str(result.request_meta.get("provider") or provider)
+        final_model = str(result.request_meta.get("model_id") or model_id)
         retry_trace = result.request_meta.get("retry_trace")
         if isinstance(retry_trace, list):
             step_retry_count += max(0, len(retry_trace) - 1)
+            retry_count = max(0, len(retry_trace) - 1)
+            if retry_count > 0:
+                estimated_input_tokens = int(
+                    result.request_meta.get("estimated_input_tokens", 0) or 0
+                )
+                retry_priced = _pricing_preview_record(
+                    cfg,
+                    final_provider,
+                    final_model,
+                    estimated_input_tokens * retry_count,
+                    0,
+                )
+                retry_extra_cost = float(
+                    retry_priced.get("estimated_cost_usd", 0.0) or 0.0
+                )
+                step_retry_extra_cost_usd += retry_extra_cost
+                if retry_count >= 2 or retry_extra_cost >= 0.01:
+                    step_retry_hotspots.append(
+                        {
+                            "partition_id": partition_id,
+                            "retry_count": retry_count,
+                            "route": f"{final_provider}/{final_model}",
+                            "estimated_retry_extra_cost_usd": round(
+                                retry_extra_cost, 6
+                            ),
+                            "pricing_source": retry_priced.get("pricing_source"),
+                        }
+                    )
         hop_total = int(result.request_meta.get("route_hop_total", 1) or 1)
         step_hop_distribution[str(hop_total)] += 1
         if hop_total > 1:
             step_escalated_partitions += 1
         execution_mode = str(result.request_meta.get("execution_mode") or "sync")
         step_execution_mode_counts[execution_mode] += 1
-        final_provider = str(result.request_meta.get("provider") or provider)
-        final_model = str(result.request_meta.get("model_id") or model_id)
         step_final_route_counts[f"{final_provider}/{final_model}"] += 1
         step_repair_invocations += int(
             result.request_meta.get("repair_invocations", 0) or 0
@@ -12281,7 +14358,8 @@ def execute_step_for_partitions(
         ).strip()
         if final_contract_status:
             step_contract_status_hist[final_contract_status] += 1
-        if not result.success:
+        if not result.success and result.dry_run_delta == 0:
+            failure_details = classify_request_failure(result.request_meta)
             (
                 failure_class,
                 failure_reason,
@@ -12291,16 +14369,24 @@ def execute_step_for_partitions(
                 item_path,
             ) = _failure_details_from_meta(result.request_meta)
             step_failure_hist[failure_class] += 1
+            failure_stage = str(failure_details.get("failure_stage") or "").strip()
+            remediation_hint = str(
+                failure_details.get("remediation_hint") or ""
+            ).strip()
+            if failure_stage:
+                step_failure_stage_hist[failure_stage] += 1
             if step_first_failure_context is None:
                 step_first_failure_context = {
                     "partition_id": partition_id,
                     "failure_class": failure_class,
+                    "failure_stage": failure_stage or None,
                     "reason": failure_reason,
                     "artifact_name": artifact_name,
                     "item_key": item_key,
                     "item_id": item_id,
                     "item_path": item_path,
                     "route": f"{final_provider}/{final_model}",
+                    "remediation_hint": remediation_hint or None,
                 }
 
         if result.auth_failure:
@@ -12344,6 +14430,19 @@ def execute_step_for_partitions(
                 logger.error("%s", message)
             else:
                 logger.info("%s", message)
+        cost_abort_state = (
+            result.request_meta.get("cost_abort_state")
+            if isinstance(result.request_meta.get("cost_abort_state"), dict)
+            else None
+        )
+        if cost_abort_state is not None:
+            raise CostLimitExceededError(
+                (
+                    "Runtime cost cap exceeded after provider response "
+                    f"(phase={phase} step={step_id} partition={partition_id})"
+                ),
+                cost_abort_state,
+            )
 
         if result.success:
             valid_success, _validation_reason = validate_success_partition_output(
@@ -12477,6 +14576,7 @@ def execute_step_for_partitions(
         "sidefill_filled_artifacts": sorted(step_sidefill_filled_artifacts.keys()),
         "schema_id_normalizations": step_schema_id_normalizations,
         "failure_histogram": failure_histogram,
+        "failure_stage_histogram": dict(sorted(step_failure_stage_hist.items())),
         "first_failure_context": (
             dict(step_first_failure_context)
             if isinstance(step_first_failure_context, dict)
@@ -12487,6 +14587,8 @@ def execute_step_for_partitions(
         "soft_gate_n_total": int(step_soft_gate_n_total),
         "soft_gate_fail_rate": float(step_soft_gate_fail_rate),
         "soft_gate_failed_partitions": int(step_soft_gate_failed_partitions),
+        "retry_extra_cost_estimate_usd": round(step_retry_extra_cost_usd, 6),
+        "retry_hotspot_count": len(step_retry_hotspots),
         "final_contract_status": (
             "pass"
             if step_contract_status_hist and not step_contract_status_hist.get("fail")
@@ -12505,6 +14607,22 @@ def execute_step_for_partitions(
         step_id=step_id,
         failure_histogram=failure_histogram,
         first_failure=step_first_failure_context,
+    )
+    write_retry_cost_report_snapshot(
+        phase_dir.parent,
+        phase=phase,
+        step_id=step_id,
+        report={
+            "retry_count": step_retry_count,
+            "estimated_extra_cost_usd": round(step_retry_extra_cost_usd, 6),
+            "abnormal_partitions": sorted(
+                step_retry_hotspots,
+                key=lambda row: (
+                    -float(row.get("estimated_retry_extra_cost_usd", 0.0) or 0.0),
+                    str(row.get("partition_id") or ""),
+                ),
+            ),
+        },
     )
 
     # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: run comparison lane if enabled
@@ -12558,6 +14676,8 @@ def execute_step_for_partitions(
                 compare_provider=str(getattr(cfg, "compare_provider", None) or "xai"),
                 compare_model=str(getattr(cfg, "compare_model", None) or "grok-4.20-beta"),
             )
+        except CostLimitExceededError:
+            raise
         except Exception as _cmp_exc:
             logger.warning(
                 "COMPARE_LANE_ERROR phase=%s step=%s error=%s (canonical result unaffected)",
@@ -12609,7 +14729,11 @@ def _run_phase_inner(
         prompts = filtered_prompts
     if not prompts:
         raise RuntimeError(f"No prompts found for phase {phase} in {prompt_root()}/")
-    prompt_report = _prompt_hash_report_for_phase(phase, prompts)
+    prompt_report = _prompt_hash_report_for_phase(
+        phase,
+        prompts,
+        required_step_ids={spec.step_id for spec in prompts},
+    )
     if prompt_report["blocked_promptset"]:
         update_run_manifest_promptset_block(phase_dir.parent, phase, prompt_report)
         write_promptset_blocked_marker(phase, phase_dir, prompt_report)
@@ -12673,6 +14797,21 @@ def _run_phase_inner(
             "partitions": partitions,
         },
     )
+    cost_preview = build_phase_cost_preview(phase, cfg, prompts, partitions)
+    write_json(phase_dir / "inputs" / "COST_PREVIEW.json", cost_preview)
+    blindspots = _summarize_inventory_blindspots(inventory)
+    for warning in blindspots.get("warnings", []):
+        logger.warning("INPUT_COVERAGE_WARNING phase=%s %s", phase, warning)
+    if cfg.dry_run:
+        write_phase_dry_run_checklist(
+            phase_dir=phase_dir,
+            phase=phase,
+            cfg=cfg,
+            prompts=prompts,
+            inventory=inventory,
+            partitions=partitions,
+            cost_preview=cost_preview,
+        )
     inventory_path = phase_dir / "inputs" / "INVENTORY.json"
     partitions_path = phase_dir / "inputs" / "PARTITIONS.json"
     inventory_meta = _phase_input_stat(inventory_path)
@@ -13225,7 +15364,7 @@ def run_status_loop(
         payload = phase_status_snapshot(run_id, dirs, PHASES)
         try:
             if args.status_json:
-                print(json.dumps(payload, indent=2, ensure_ascii=True))
+                print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
             else:
                 status_ui.status_table(payload, clear=clear)
         except BrokenPipeError:
@@ -13265,7 +15404,7 @@ def print_promptpack(phases: List[str]) -> int:
             }
             for spec in specs
         ]
-    print(json.dumps(payload, indent=2))
+    print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
     return 0
 
 
@@ -13287,7 +15426,473 @@ def print_run_order(phases: List[str]) -> int:
             for phase in phases
         ],
     }
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
+    return 0
+
+
+def _pricing_preview_record(
+    cfg: RunnerConfig,
+    provider: str,
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+) -> Dict[str, Any]:
+    if getattr(cfg, "ledger", None) is not None:
+        return cfg.ledger.price_usage(
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            provider=provider,
+            model_id=model_id,
+        )
+    pricing_key = (
+        f"{str(provider).strip().lower()}/{str(model_id).strip().lower()}"
+        if provider and model_id
+        else "unknown"
+    )
+    estimated_cost_usd = (
+        (max(0, int(input_tokens)) / 1_000_000.0) * BASELINE_INPUT_COST_PER_1M_USD
+        + (max(0, int(output_tokens)) / 1_000_000.0) * BASELINE_OUTPUT_COST_PER_1M_USD
+    )
+    return {
+        "provider": str(provider or "").strip().lower(),
+        "model_id": str(model_id or "").strip(),
+        "pricing_key": pricing_key,
+        "pricing_source": f"unknown_model:{UNKNOWN_MODEL_POLICY}",
+        "pricing_version": PRICING_VERSION,
+        "unknown_model": True,
+        "input_cost_per_1m_usd": BASELINE_INPUT_COST_PER_1M_USD,
+        "output_cost_per_1m_usd": BASELINE_OUTPUT_COST_PER_1M_USD,
+        "input_tokens": max(0, int(input_tokens)),
+        "output_tokens": max(0, int(output_tokens)),
+        "estimated_cost_usd": estimated_cost_usd,
+    }
+
+
+def _summarize_inventory_blindspots(inventory: List[Dict[str, Any]]) -> Dict[str, Any]:
+    unsupported_counts: Counter[str] = Counter()
+    weak_language_counts: Counter[str] = Counter()
+    for item in inventory:
+        path_value = str(item.get("path") or "")
+        if not path_value:
+            continue
+        suffix = Path(path_value).suffix.lower()
+        if suffix in UNSUPPORTED_INPUT_SUFFIX_LABELS:
+            unsupported_counts[suffix] += 1
+        if suffix in WEAK_LANGUAGE_SUFFIX_LABELS:
+            weak_language_counts[suffix] += 1
+    warnings: List[str] = []
+    if unsupported_counts:
+        summary = ", ".join(
+            f"{suffix}={count}" for suffix, count in sorted(unsupported_counts.items())
+        )
+        warnings.append(
+            "Repo inventory includes inputs with weak or unsupported extraction coverage: "
+            f"{summary}."
+        )
+    if weak_language_counts:
+        summary = ", ".join(
+            f"{suffix}={count}" for suffix, count in sorted(weak_language_counts.items())
+        )
+        warnings.append(
+            "Language coverage is weaker for some inventory segments in this run: "
+            f"{summary}."
+        )
+    return {
+        "unsupported_inputs": [
+            {
+                "suffix": suffix,
+                "label": UNSUPPORTED_INPUT_SUFFIX_LABELS.get(suffix, suffix),
+                "count": count,
+            }
+            for suffix, count in sorted(unsupported_counts.items())
+        ],
+        "weak_language_inputs": [
+            {
+                "suffix": suffix,
+                "label": WEAK_LANGUAGE_SUFFIX_LABELS.get(suffix, suffix),
+                "count": count,
+            }
+            for suffix, count in sorted(weak_language_counts.items())
+        ],
+        "warnings": warnings,
+    }
+
+
+def _prescan_guidance_payload(phase: str, cfg: RunnerConfig) -> Dict[str, Any]:
+    helps = phase in CODE_HEAVY_PHASES or phase in DOCS_GOVERNANCE_PHASES
+    return {
+        "phase": phase,
+        "configured_prescan_dir": getattr(cfg, "prescan_dir", None),
+        "purpose": (
+            "Prescan can reorder partition paths and attach context briefs before prompt execution."
+        ),
+        "recommended_when": (
+            "Helpful for larger or noisier repos where better file ordering can reduce wasted context."
+            if helps
+            else "Optional; it can still add route hints, but it is not required for small validation probes."
+        ),
+        "safe_to_skip_when": (
+            "Safe to skip for first dry-runs, cheap validator probes, or small repos where manual review is already straightforward."
+        ),
+        "cost_impact": (
+            "Prescan adds its own scan/analysis work and can influence partitioning; treat it as extra preflight cost rather than a free optimization."
+        ),
+    }
+
+
+def _preview_partition_usage(
+    *,
+    phase: str,
+    step_id: str,
+    prompt_text: str,
+    output_artifacts: Tuple[str, ...],
+    provider: str,
+    model_id: str,
+    partition: Dict[str, Any],
+    cfg: RunnerConfig,
+    max_files: int,
+) -> Dict[str, int]:
+    output_instructions = build_output_envelope_instructions(output_artifacts)
+    context_brief = str(partition.get("context_brief") or "")
+    brief_section = f"\n{context_brief}\n" if context_brief else ""
+    prompt_prefix = (
+        "Extract from the files below.\n"
+        f"{output_instructions}\n"
+        f"{brief_section}"
+        "\nFILES:\n"
+    )
+    reserved_chars = len(prompt_prefix)
+    current_budget = max(cfg.max_chars - reserved_chars, 2048)
+    partition_paths = [str(path) for path in partition.get("paths", [])]
+    if phase == "D":
+        partition_paths, _ = _apply_file_cap(
+            step_id=step_id,
+            partition_id=str(partition.get("id") or ""),
+            files=partition_paths,
+            cfg=cfg,
+            root=REPO_ROOT,
+        )
+
+    payload_bytes = 0
+    user_prompt = ""
+    while True:
+        context, _context_stats = build_partition_context(
+            phase=phase,
+            partition_paths=partition_paths,
+            file_truncate_chars=cfg.file_truncate_chars,
+            home_scan_mode=cfg.home_scan_mode,
+            max_files=max_files,
+            max_chars=current_budget,
+            router=cfg.router,
+        )
+        user_prompt = f"{prompt_prefix}{context}"
+        payload = build_chat_payload(
+            provider,
+            model_id,
+            prompt_text,
+            user_prompt,
+            force_json_output=(provider == "gemini"),
+        )
+        payload_bytes = measure_payload_bytes_from_body(serialize_payload_body(payload))
+        if payload_bytes <= cfg.max_request_bytes or current_budget <= 1024:
+            break
+        next_budget = max(1024, int(current_budget * 0.7))
+        if next_budget == current_budget:
+            next_budget = current_budget - 1
+        current_budget = max(next_budget, 1024)
+
+    return {
+        "input_tokens": _estimate_text_tokens(prompt_text, user_prompt),
+        "payload_bytes": payload_bytes,
+    }
+
+
+def build_phase_cost_preview(
+    phase: str,
+    cfg: RunnerConfig,
+    prompts: Sequence[PromptSpec],
+    partitions: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    by_step: List[Dict[str, Any]] = []
+    by_model: Dict[str, Dict[str, Any]] = {}
+    warnings: List[str] = []
+    total_input_tokens = 0
+    total_output_tokens = 0
+    total_cost_usd = 0.0
+    unknown_model = False
+    route_override_steps: List[str] = []
+    input_estimation_mode = "runtime_prompt_projection_v1"
+    output_estimation_mode = "response_text_ratio_v1"
+    max_preview_payload_bytes = 0
+
+    for spec in prompts:
+        route = resolve_effective_step_route(
+            phase,
+            spec.step_id,
+            cfg,
+            tier_override=spec.tier_override,
+            step_contract=spec.contract,
+        )
+        reason = str(route.get("reason") or "")
+        if reason.startswith("contract_lane") or reason.startswith("env_"):
+            route_override_steps.append(spec.step_id)
+        prompt_text = safe_read(spec.prompt_path)
+        partition_input_tokens = 0
+        partition_output_tokens = 0
+        max_files = max_files_for_phase(phase, cfg)
+        for partition in partitions:
+            usage = _preview_partition_usage(
+                phase=phase,
+                step_id=spec.step_id,
+                prompt_text=prompt_text,
+                output_artifacts=spec.output_artifacts,
+                provider=str(route.get("provider") or ""),
+                model_id=str(route.get("model_id") or ""),
+                partition=partition,
+                cfg=cfg,
+                max_files=max_files,
+            )
+            input_tokens = max(128, int(usage.get("input_tokens", 0) or 0))
+            output_tokens = _project_preview_output_tokens(
+                input_tokens,
+                step_contract=spec.contract,
+            )
+            partition_input_tokens += input_tokens
+            partition_output_tokens += output_tokens
+            max_preview_payload_bytes = max(
+                max_preview_payload_bytes,
+                int(usage.get("payload_bytes", 0) or 0),
+            )
+        priced = _pricing_preview_record(
+            cfg,
+            str(route.get("provider") or ""),
+            str(route.get("model_id") or ""),
+            partition_input_tokens,
+            partition_output_tokens,
+        )
+        total_input_tokens += partition_input_tokens
+        total_output_tokens += partition_output_tokens
+        total_cost_usd += float(priced.get("estimated_cost_usd", 0.0) or 0.0)
+        unknown_model = bool(unknown_model or priced.get("unknown_model"))
+        by_step.append(
+            {
+                "step_id": spec.step_id,
+                "step_tier": route.get("step_tier"),
+                "routing_reason": reason,
+                "provider": route.get("provider"),
+                "model_id": route.get("model_id"),
+                "partition_count": len(partitions),
+                "estimated_input_tokens": partition_input_tokens,
+                "estimated_output_tokens": partition_output_tokens,
+                "estimated_cost_usd": round(
+                    float(priced.get("estimated_cost_usd", 0.0) or 0.0), 6
+                ),
+                "input_estimation_mode": input_estimation_mode,
+                "output_estimation_mode": (
+                    "json_managed_ratio_2pct_v1"
+                    if is_json_managed_step(spec.contract)
+                    else output_estimation_mode
+                ),
+                "pricing_source": priced.get("pricing_source"),
+            }
+        )
+        model_key = str(priced.get("pricing_key") or "unknown")
+        model_row = by_model.setdefault(
+            model_key,
+            {
+                "provider": priced.get("provider"),
+                "model_id": priced.get("model_id"),
+                "pricing_source": priced.get("pricing_source"),
+                "unknown_model": bool(priced.get("unknown_model")),
+                "estimated_input_tokens": 0,
+                "estimated_output_tokens": 0,
+                "estimated_cost_usd": 0.0,
+            },
+        )
+        model_row["estimated_input_tokens"] += partition_input_tokens
+        model_row["estimated_output_tokens"] += partition_output_tokens
+        model_row["estimated_cost_usd"] += float(
+            priced.get("estimated_cost_usd", 0.0) or 0.0
+        )
+
+    if route_override_steps:
+        warnings.append(
+            "Step-level routing overrides are active for this phase; top-level policy alone does not describe the full spend path."
+        )
+    if unknown_model:
+        warnings.append(
+            "At least one preview row is using fallback baseline pricing rather than a verified model-specific rate."
+        )
+    if any(is_json_managed_step(spec.contract) for spec in prompts):
+        warnings.append(
+            "JSON-managed steps use a compressed output-token preview heuristic; treat this preview as planning guidance, not ledger authority."
+        )
+    if getattr(cfg, "compare_mode", None):
+        warnings.append(
+            "Comparison lane is enabled and can add extra spend beyond the canonical route preview."
+        )
+    confidence = "medium"
+    if unknown_model or route_override_steps or not partitions:
+        confidence = "low"
+    if phase in PREMIUM_SYNTHESIS_PHASES:
+        warnings.append(
+            "This phase is premium-risk: synthesis routes can cost materially more than inventory phases."
+        )
+    return {
+        "generated_at": now_iso(),
+        "phase": phase,
+        "partition_count": len(partitions),
+        "step_count": len(prompts),
+        "pricing_version": PRICING_VERSION,
+        "routing_policy": cfg.routing_policy,
+        "confidence": confidence,
+        "route_override_steps": sorted(route_override_steps, key=step_sort_key),
+        "input_estimation_mode": input_estimation_mode,
+        "output_estimation_mode": output_estimation_mode,
+        "preview_authority": "heuristic_non_authoritative",
+        "ledger_authority": "runtime_provider_usage_when_available",
+        "max_preview_request_payload_bytes": max_preview_payload_bytes,
+        "estimated_input_tokens": total_input_tokens,
+        "estimated_output_tokens": total_output_tokens,
+        "estimated_cost_usd": round(total_cost_usd, 6),
+        "steps": sorted(by_step, key=lambda row: step_sort_key(str(row["step_id"]))),
+        "models": {
+            key: {
+                **value,
+                "estimated_cost_usd": round(
+                    float(value.get("estimated_cost_usd", 0.0) or 0.0), 6
+                ),
+            }
+            for key, value in sorted(by_model.items())
+        },
+        "warnings": warnings,
+    }
+
+
+def write_phase_dry_run_checklist(
+    *,
+    phase_dir: Path,
+    phase: str,
+    cfg: RunnerConfig,
+    prompts: Sequence[PromptSpec],
+    inventory: List[Dict[str, Any]],
+    partitions: List[Dict[str, Any]],
+    cost_preview: Dict[str, Any],
+) -> Dict[str, Any]:
+    blindspots = _summarize_inventory_blindspots(inventory)
+    payload = {
+        "generated_at": now_iso(),
+        "phase": phase,
+        "mode": "dry_run",
+        "run_root": str(phase_dir.parent.resolve()),
+        "phase_dir": str(phase_dir.resolve()),
+        "resolved_inputs": {
+            "inventory_count": len(inventory),
+            "inventory_file": str((phase_dir / "inputs" / "INVENTORY.json").resolve()),
+            "partitions_file": str((phase_dir / "inputs" / "PARTITIONS.json").resolve()),
+            "partition_count": len(partitions),
+            "sample_paths": [str(item.get("path")) for item in inventory[:10]],
+        },
+        "routing": {
+            "routing_policy": cfg.routing_policy,
+            "compare_mode": getattr(cfg, "compare_mode", None),
+            "steps": [
+                {
+                    "step_id": spec.step_id,
+                    "route": resolve_effective_step_route(
+                        phase,
+                        spec.step_id,
+                        cfg,
+                        tier_override=spec.tier_override,
+                        step_contract=spec.contract,
+                    ),
+                }
+                for spec in prompts
+            ],
+        },
+        "output_expectations": {
+            "run_root": str(phase_dir.parent.resolve()),
+            "phase_input_dir": str((phase_dir / "inputs").resolve()),
+            "phase_raw_dir": str((phase_dir / "raw").resolve()),
+            "phase_norm_dir": str((phase_dir / "norm").resolve()),
+            "phase_qa_dir": str((phase_dir / "qa").resolve()),
+        },
+        "estimated_cost": cost_preview,
+        "dependency_expectations": {
+            "required_phases": list(PHASE_REQUIRED_DEPENDENCIES.get(phase, [])),
+            "optional_phases": list(PHASE_OPTIONAL_DEPENDENCIES.get(phase, [])),
+        },
+        "prescan_guidance": _prescan_guidance_payload(phase, cfg),
+        "input_blindspots": blindspots,
+        "dependency_notes": [
+            "Dry-run stays non-live; it resolves inputs, partitions, routes, and artifact destinations without provider execution."
+        ],
+    }
+    write_json(phase_dir / "inputs" / "DRY_RUN_CHECKLIST.json", payload)
+    return payload
+
+
+def _phase_cost_profile(phase: str) -> Dict[str, Any]:
+    provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
+    return {
+        "provider": provider,
+        "model_id": model_id,
+        "model": f"{provider}/{model_id}" if provider and model_id else "",
+        "api_key_env": api_key_env,
+    }
+
+
+def print_routing_guide() -> int:
+    payload: Dict[str, Any] = {
+        "generated_at": now_iso(),
+        "routing_policy_version": ROUTING_POLICY_VERSION,
+        "guide": {},
+    }
+    for policy, guide in sorted(ROUTING_POLICY_GUIDE.items()):
+        premium_risk_phases = sorted(
+            phase for phase in PREMIUM_SYNTHESIS_PHASES if phase in PHASES
+        )
+        payload["guide"][policy] = {
+            **guide,
+            "premium_risk_phases": premium_risk_phases,
+            "override_warning": (
+                "Strict JSON-managed steps and other contract-driven routes can override the top-level policy."
+            ),
+        }
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
+    return 0
+
+
+def print_prescan_guide() -> int:
+    payload = {
+        "generated_at": now_iso(),
+        "guide": _prescan_guidance_payload("ALL", RunnerConfig.__new__(RunnerConfig)),
+    }
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
+    return 0
+
+
+def print_phase_catalog(phases: Optional[List[str]] = None) -> int:
+    selected_phases = list(phases) if phases else list(PHASES)
+    payload = {
+        "generated_at": now_iso(),
+        "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "phase_count": len(selected_phases),
+        "phases": [
+            {
+                "code": phase,
+                "name": PHASE_DISPLAY_NAMES.get(phase, PHASE_DIR_NAMES.get(phase, phase)),
+                "phase_dir": PHASE_DIR_NAMES.get(phase, phase),
+                "purpose": PHASE_PURPOSES.get(phase, ""),
+                "dependencies": list(PHASE_REQUIRED_DEPENDENCIES.get(phase, [])),
+                "optional_dependencies": list(PHASE_OPTIONAL_DEPENDENCIES.get(phase, [])),
+                "prompt_count": len(get_phase_prompts(phase)),
+                "default_route": _phase_cost_profile(phase),
+            }
+            for phase in selected_phases
+        ],
+    }
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -13337,7 +15942,7 @@ def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
             )
         entries.sort(key=lambda row: step_sort_key(str(row.get("step_id", ""))))
         payload["phases"][phase] = entries
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -13361,7 +15966,7 @@ def print_phase_prompts(phases: List[str]) -> int:
             }
             for spec in specs
         ]
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -13502,7 +16107,7 @@ def show_provider_usage(
         "step_start_counts": dict(sorted(starts.items())),
         "step_done_route_counts": dict(sorted(routes.items())),
     }
-    print(json.dumps(payload, indent=2, ensure_ascii=True, sort_keys=True))
+    print(sanitized_json_text(payload, indent=2, sort_keys=True, ensure_ascii=True))
     return 0
 
 
@@ -13545,6 +16150,8 @@ def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
 
     if raw_dir.exists():
         for raw_json in sorted(raw_dir.glob("*.json")):
+            if raw_json.name.endswith(".FAILED.json"):
+                continue
             payload = _load_json(raw_json)
             partition_id = str(payload.get("partition_id") or "")
             if not partition_id:
@@ -13598,8 +16205,10 @@ def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
         for failed_json in sorted(raw_dir.glob("*.FAILED.json")):
             payload = _load_json(failed_json)
             failure_type = payload.get("failure_type") or "failed_sidecar"
-            failure_hist[str(failure_type)] += 1
             partition_id = str(payload.get("partition_id") or "")
+            if partition_id and partition_id in attempted:
+                continue
+            failure_hist[str(failure_type)] += 1
             if partition_id:
                 attempted.add(partition_id)
                 failed.add(partition_id)
@@ -13737,7 +16346,7 @@ def generate_coverage_report(
     proof["coverage_report"] = payload
     proof["updated_at"] = now_iso()
     write_json(proof_path, proof)
-    print(json.dumps(payload, indent=2))
+    print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
     return 0
 
 
@@ -13866,6 +16475,15 @@ def write_phase_coverage_manifest(
                 "sidefill_filled_artifacts": list(
                     row.get("sidefill_filled_artifacts", []) or []
                 ),
+                "failure_stage_histogram": dict(
+                    sorted(
+                        (
+                            row.get("failure_stage_histogram", {})
+                            if isinstance(row.get("failure_stage_histogram"), dict)
+                            else {}
+                        ).items()
+                    )
+                ),
                 "schema_id_normalizations": int(
                     row.get("schema_id_normalizations", 0) or 0
                 ),
@@ -13879,6 +16497,9 @@ def write_phase_coverage_manifest(
         "dry_run": 0,
         "blocked_promptset": 1 if blocked_promptset else 0,
         "prompt_does_not_declare_it": 0,
+        "pre_model_execution": 0,
+        "model_execution": 0,
+        "post_model_output": 0,
         "unknown": 0,
     }
     for step_id, artifacts in expected_outputs.items():
@@ -13907,6 +16528,12 @@ def write_phase_coverage_manifest(
             if isinstance(step_row, dict)
             else 0
         )
+        blocked_by_stage = (
+            step_row.get("artifact_blocked_by_failure_stage", {})
+            if isinstance(step_row, dict)
+            and isinstance(step_row.get("artifact_blocked_by_failure_stage"), dict)
+            else {}
+        )
 
         for artifact_name in artifacts:
             if not _expected_artifact_present(norm_dir, artifact_name):
@@ -13915,6 +16542,15 @@ def write_phase_coverage_manifest(
                     reason = "prompt_does_not_declare_it"
                 elif step_dry_run > 0:
                     reason = "dry_run"
+                elif any(
+                    artifact_name in artifact_list
+                    for artifact_list in blocked_by_stage.values()
+                    if isinstance(artifact_list, list)
+                ):
+                    for stage_name, artifact_list in blocked_by_stage.items():
+                        if artifact_name in artifact_list:
+                            reason = str(stage_name or "execution_failure")
+                            break
                 elif step_failed > 0:
                     reason = "failed"
                 elif step_skipped > 0:
@@ -14134,7 +16770,12 @@ def write_resume_proof(
                 missing_total += len(missing)
                 phase_statuses[phase] = c_payload.get("status", "UNKNOWN")
             except Exception:
-                pass
+                logger.warning(
+                    "Failed to parse phase coverage payload for phase %s from %s",
+                    sanitize_text_for_output(str(phase)),
+                    sanitize_text_for_output(str(coverage_path)),
+                    exc_info=True,
+                )
 
     run_status = compute_run_status(
         blocked_promptset=blocked_promptset,
@@ -14202,9 +16843,16 @@ def print_config(
     phases: List[str],
     run_context: RunContext,
 ) -> None:
+    layout = current_output_layout(root)
+    route_readiness_summary = derive_route_readiness_summary(
+        phases,
+        cfg.routing_policy,
+    )
     config_payload = {
         "run_id": run_id,
-        "run_root": str(root.resolve()),
+        "repo_root": str(root.resolve()),
+        "artifact_root": str(layout.extraction_root.resolve()),
+        "run_root": str(dirs["root"].resolve()),
         "git_sha": get_git_sha(root),
         "runner_sha256": sha256_text(RUNNER_SCRIPT),
         "python_version": platform.python_version(),
@@ -14212,6 +16860,11 @@ def print_config(
         "phases": phases,
         "cli": {
             "phase_argument": args.phase,
+            "preset": getattr(args, "preset", None),
+            "preset_stage": getattr(args, "preset_stage", None),
+            "skip_pre_live_validator": bool(
+                getattr(args, "skip_pre_live_validator", False)
+            ),
             "verify_phase_output": args.verify_phase_output,
             "doctor": args.doctor,
             "doctor_auth": args.doctor_auth,
@@ -14224,13 +16877,16 @@ def print_config(
             "print_promptpack": args.print_promptpack,
             "print_run_order": args.print_run_order,
             "print_phase_routing": args.print_phase_routing,
+            "print_routing_guide": bool(getattr(args, "print_routing_guide", False)),
+            "print_prescan_guide": bool(getattr(args, "print_prescan_guide", False)),
+            "print_cost_preview": bool(getattr(args, "print_cost_preview", False)),
             "print_phase_prompts": args.print_phase_prompts,
             "print_config": args.print_config,
             "run_id_override": args.run_id,
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
                 "explicit(--run-id)",
-                f"implicit({V5_LATEST_RUN_FILE.as_posix()})",
+                f"implicit({layout.latest_run_file})",
                 "generated(new timestamp run id)",
             ],
             "dry_run": args.dry_run,
@@ -14284,6 +16940,14 @@ def print_config(
             "dpmx_live_ok": os.getenv(DPMX_LIVE_OK_ENV, ""),
             "debug_phase_inputs": args.debug_phase_inputs,
             "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
+            "output_root": getattr(args, "output_root", None),
+        },
+        "output_layout": {
+            "artifact_root": str(layout.extraction_root.resolve()),
+            "runs_root": str(layout.runs_root.resolve()),
+            "latest_run_id_file": str(layout.latest_run_file.resolve()),
+            "doctor_root": str(layout.doctor_root.resolve()),
+            "path_convention": "v5 runtime artifacts live under the active output layout root, not the legacy v3 path.",
         },
         "limits": {
             "max_files_docs": cfg.max_files_docs,
@@ -14296,6 +16960,7 @@ def print_config(
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "routing_ladders": routing_ladders_payload(),
         "effective_model_routing": effective_model_routing_payload(),
+        "route_readiness_summary": route_readiness_summary,
         "dpmx_env_routing": dpmx_env_routing_payload(validate=True),
         "webhook_settings": {
             "schema": DPMX_WEBHOOK_SCHEMA,
@@ -14316,7 +16981,7 @@ def print_config(
             "max_requests_per_job": cfg.batch_max_requests_per_job,
         },
     }
-    print(json.dumps(config_payload, indent=2))
+    print(sanitized_json_text(config_payload, indent=2, sort_keys=False, ensure_ascii=True))
 
 
 def update_proof_pack(
@@ -14352,7 +17017,7 @@ def update_proof_pack(
     }
     proof["finished_at"] = phase_finished_at
     proof["updated_at"] = now_iso()
-    doctor_dir = root / V5_DOCTOR_ROOT
+    doctor_dir = current_doctor_root(root)
     auth_doctor = doctor_dir / "AUTH_DOCTOR.json"
     full_doctor = doctor_dir / "DOCTOR_FULL.json"
     routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
@@ -14456,6 +17121,26 @@ Return ONLY valid JSON matching exactly:
 """
 
 
+def _deterministic_phase_sample(
+    phase_outputs: "List[Dict[str, Any]]", n_sample: int
+) -> "List[Dict[str, Any]]":
+    """Deterministically select a subset of phase_outputs for auditing.
+
+    Uses hash-based selection for reproducible audit sampling across runs.
+    """
+    if not phase_outputs or n_sample <= 0:
+        return []
+
+    # Hash each item deterministically for selection
+    indexed = [(i, hashlib.sha256(json.dumps(item, sort_keys=True, default=str).encode()).hexdigest())
+               for i, item in enumerate(phase_outputs)]
+    # Sort by hash for deterministic selection
+    sorted_indexed = sorted(indexed, key=lambda x: x[1])
+    # Select the first n_sample items
+    selected_indices = [idx for idx, _ in sorted_indexed[:n_sample]]
+    return [phase_outputs[idx] for idx in sorted(selected_indices)]
+
+
 def audit_phase_sample(
     phase_dir: "Path",
     phase_outputs: "List[Dict[str, Any]]",
@@ -14475,7 +17160,7 @@ def audit_phase_sample(
         return {"sampled": 0, "skipped": True}
 
     n_sample = min(max(1, int(len(phase_outputs) * sample_rate)), 5)
-    sample = random.sample(phase_outputs, min(n_sample, len(phase_outputs)))
+    sample = _deterministic_phase_sample(phase_outputs, n_sample)
 
     results: List[Dict[str, Any]] = []
     escalation_needed: List[str] = []
@@ -14484,6 +17169,24 @@ def audit_phase_sample(
         artifact_repr = json.dumps(item, default=str)[:4000]
         user_content = f"Extraction artifact to audit:\n```json\n{artifact_repr}\n```"
         try:
+            phase_id = str(phase_dir.name or "").split("_", 1)[0].upper() or "UNKNOWN"
+            route_token = f"{judge_provider}/{judge_model}"
+            projected_input_tokens = _estimate_text_tokens(
+                _AUDIT_JUDGE_SYSTEM_PROMPT, user_content
+            )
+            projected_output_tokens = _project_output_tokens(projected_input_tokens)
+            _check_projected_cost_limit(
+                cfg,
+                phase=phase_id,
+                step_id="AUDIT",
+                partition_id=str(item.get("step_id", item.get("id", "unknown"))),
+                provider=judge_provider,
+                model_id=judge_model,
+                input_tokens=projected_input_tokens,
+                output_tokens=projected_output_tokens,
+                execution_mode="audit_judge",
+                route=route_token,
+            )
             llm_result = call_llm(
                 provider=judge_provider,
                 model_id=judge_model,
@@ -14493,6 +17196,25 @@ def audit_phase_sample(
                 cfg=cfg,
                 force_json_output=True,
             )
+            if llm_result.get("meta", {}).get("response_received") or llm_result.get("ok"):
+                _accumulate_runtime_spend(
+                    cfg,
+                    phase=phase_id,
+                    step_id="AUDIT",
+                    partition_id=str(item.get("step_id", item.get("id", "unknown"))),
+                    provider=judge_provider,
+                    model_id=judge_model,
+                    execution_mode="audit_judge",
+                    response_summary=(
+                        llm_result.get("meta", {}).get("response_summary")
+                        if isinstance(llm_result.get("meta", {}).get("response_summary"), dict)
+                        else None
+                    ),
+                    response_text=str(llm_result.get("content", llm_result.get("text", ""))),
+                    fallback_input_tokens=projected_input_tokens,
+                    fallback_output_tokens=projected_output_tokens,
+                    route=route_token,
+                )
             raw_text = llm_result.get("content", llm_result.get("text", "{}"))
             try:
                 scores = json.loads(raw_text) if isinstance(raw_text, str) else raw_text
@@ -14531,6 +17253,8 @@ def audit_phase_sample(
                     completeness_score,
                     composite,
                 )
+        except CostLimitExceededError:
+            raise
         except Exception as exc:
             logger.warning("audit_phase_sample: judge call failed for item: %s", exc)
             results.append({"item_id": "unknown", "error": str(exc)})
@@ -14842,7 +17566,11 @@ def run_batch_watch(
                 )
             else:
                 response_text = str(result.output_text or "")
-                parsed = parse_json_from_response(response_text)
+                salvage_meta: Dict[str, Any] = {}
+                parsed = parse_json_from_response(
+                    response_text,
+                    metadata_out=salvage_meta,
+                )
                 artifacts = coerce_artifacts_from_response(
                     parsed=parsed,
                     raw_text=response_text,
@@ -14918,6 +17646,92 @@ def run_batch_watch(
                         provider=provider_id,
                         model_id=model_id,
                     )
+                    _record_truncation_salvage_warning(
+                        request_meta,
+                        phase=phase_id,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=provider_id,
+                        model_id=model_id,
+                        salvage_meta=salvage_meta,
+                    )
+                    route_token = f"{provider_id}/{model_id}"
+                    if bool(row.get("cost_accounted_at_submit", False)):
+                        request_meta["cost_accounted_at_submit"] = True
+                        request_meta["cost_accounting_mode"] = row.get("cost_accounting_mode")
+                        request_meta["reserved_spend_usage"] = row.get("reserved_spend_usage")
+                        request_meta["observed_spend_usage"] = _resolve_runtime_usage(
+                            response_summary=(
+                                request_meta.get("response_summary")
+                                if isinstance(request_meta.get("response_summary"), dict)
+                                else None
+                            ),
+                            response_text=response_text,
+                            fallback_input_tokens=int(
+                                row.get("estimated_input_tokens", 0) or 0
+                            ),
+                            fallback_output_tokens=int(
+                                row.get("estimated_output_tokens", 0) or 0
+                            ),
+                            payload=(
+                                result.meta.get("response", {}).get("body", {}).get("usage")
+                                if isinstance(result.meta, dict)
+                                and isinstance(result.meta.get("response"), dict)
+                                and isinstance(result.meta.get("response", {}).get("body"), dict)
+                                else None
+                            ),
+                        )
+                    else:
+                        spend_record = _accumulate_runtime_spend(
+                            cfg,
+                            phase=phase_id,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=provider_id,
+                            model_id=model_id,
+                            execution_mode="batch_watch",
+                            response_summary=(
+                                request_meta.get("response_summary")
+                                if isinstance(request_meta.get("response_summary"), dict)
+                                else None
+                            ),
+                            response_text=response_text,
+                            fallback_input_tokens=int(
+                                row.get("estimated_input_tokens", 0) or 0
+                            ),
+                            fallback_output_tokens=int(
+                                row.get("estimated_output_tokens", 0) or 0
+                            ),
+                            payload=(
+                                result.meta.get("response", {}).get("body", {}).get("usage")
+                                if isinstance(result.meta, dict)
+                                and isinstance(result.meta.get("response"), dict)
+                                and isinstance(result.meta.get("response", {}).get("body"), dict)
+                                else None
+                            ),
+                            route=route_token,
+                            raise_on_limit=False,
+                        )
+                        if spend_record is not None:
+                            request_meta["spend_usage"] = spend_record
+                            if "cost_abort_state" in spend_record:
+                                request_meta["cost_abort_state"] = spend_record["cost_abort_state"]
+                            if ui is not None:
+                                batch_trace = ui.make_trace_context(
+                                    phase=phase_id,
+                                    step_id=step_id,
+                                    partition_id=partition_id,
+                                )
+                                ui.spend_ledger_event(
+                                    phase=phase_id,
+                                    step_id=step_id,
+                                    partition_id=partition_id,
+                                    trace_id=batch_trace["trace_id"],
+                                    span_id=_new_span_id(),
+                                    parent_span_id=batch_trace.get("span_id"),
+                                    prompt_tokens=int(spend_record.get("input_tokens", 0) or 0),
+                                    completion_tokens=int(spend_record.get("output_tokens", 0) or 0),
+                                )
                     write_json(
                         out_json,
                         {
@@ -14929,6 +17743,14 @@ def run_batch_watch(
                             "request_meta": request_meta,
                         },
                     )
+                    if isinstance(request_meta.get("cost_abort_state"), dict):
+                        raise CostLimitExceededError(
+                            (
+                                "Runtime cost cap exceeded during batch watch "
+                                f"(phase={phase_id} step={step_id} partition={partition_id})"
+                            ),
+                            request_meta["cost_abort_state"],
+                        )
                     if out_failed.exists():
                         out_failed.unlink()
                     if out_failed_json.exists():
@@ -15596,6 +18418,8 @@ def run_phase_R_async_submit(
                 router=cfg.router,
             )
             user_prompt = f"{prompt_prefix}{context}"
+            projected_input_tokens = _estimate_text_tokens(prompt_text, user_prompt)
+            projected_output_tokens = _project_output_tokens(projected_input_tokens)
 
             metadata_dict = {
                 "run_id": run_id,
@@ -15606,6 +18430,18 @@ def run_phase_R_async_submit(
             }
 
             try:
+                _check_projected_cost_limit(
+                    cfg,
+                    phase="R",
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider="openai",
+                    model_id=model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="async_submit",
+                    route=f"openai/{model_id}",
+                )
                 response = client.responses.create(
                     model=model_id,
                     instructions=prompt_text,
@@ -15619,6 +18455,20 @@ def run_phase_R_async_submit(
                     partition_id,
                     external_job_id,
                 )
+                reserved_spend = _reserve_projected_spend(
+                    cfg,
+                    phase="R",
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider="openai",
+                    model_id=model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="async_submit",
+                    route=f"openai/{model_id}",
+                )
+            except CostLimitExceededError:
+                raise
             except Exception as exc:
                 logger.error(
                     "Async R submit failed step=%s partition=%s error=%s",
@@ -15690,6 +18540,15 @@ def run_phase_R_async_submit(
                         "model_id": model_id,
                         "execution_mode": "async",
                         "external_job_id": external_job_id,
+                        "estimated_input_tokens": projected_input_tokens,
+                        "estimated_output_tokens": projected_output_tokens,
+                        "cost_accounted_at_submit": bool(reserved_spend is not None),
+                        "cost_accounting_mode": (
+                            str(reserved_spend.get("accounting_mode"))
+                            if isinstance(reserved_spend, dict)
+                            else None
+                        ),
+                        "reserved_spend_usage": reserved_spend,
                     },
                 },
             )
@@ -15771,11 +18630,28 @@ def run_phase_R_finalize(
         partition_id = str(job.get("partition_id") or "")
         attempt = int(job.get("attempt") or 1)
         external_job_id = str(job.get("external_job_id") or "")
+        model_id = str(job.get("model_id") or "")
         if not (step_id and partition_id and external_job_id):
             logger.warning("Finalize R: malformed job row, skipping: %s", job)
             continue
 
         out_json = raw_dir / f"{step_id}__{partition_id}.json"
+        pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
+        pending_payload: Dict[str, Any] = {}
+        if pending_path.exists():
+            try:
+                loaded_pending = json.loads(pending_path.read_text(encoding="utf-8"))
+                if isinstance(loaded_pending, dict):
+                    pending_payload = loaded_pending
+            except Exception:
+                pending_payload = {}
+        pending_meta = (
+            pending_payload.get("request_meta")
+            if isinstance(pending_payload.get("request_meta"), dict)
+            else {}
+        )
+        if not model_id:
+            model_id = str(pending_meta.get("model_id") or "")
 
         # Idempotency: already finalized with non-pending output
         if out_json.exists():
@@ -15843,7 +18719,12 @@ def run_phase_R_finalize(
             event_store, run_id, external_job_id
         )
         response_text = _extract_openai_response_text(webhook_payload)
-        parsed = parse_json_from_response(response_text) if response_text else None
+        salvage_meta: Dict[str, Any] = {}
+        parsed = (
+            parse_json_from_response(response_text, metadata_out=salvage_meta)
+            if response_text
+            else None
+        )
         expected_artifacts = artifacts_by_step.get(step_id, ("R_ARBITRATION.json",))
         artifacts = coerce_artifacts_from_response(
             parsed, response_text or "", expected_artifacts
@@ -15859,15 +18740,91 @@ def run_phase_R_finalize(
                 "artifacts": artifacts,
                 "request_meta": {
                     "provider": "openai",
+                    "model_id": model_id,
                     "execution_mode": "async",
                     "external_job_id": external_job_id,
                     "attempt": attempt,
                 },
             },
         )
+        try:
+            persisted = json.loads(out_json.read_text(encoding="utf-8"))
+            request_meta = (
+                persisted.get("request_meta")
+                if isinstance(persisted.get("request_meta"), dict)
+                else {}
+            )
+            _record_truncation_salvage_warning(
+                request_meta,
+                phase="R",
+                step_id=step_id,
+                partition_id=partition_id,
+                provider="openai",
+                model_id=model_id,
+                salvage_meta=salvage_meta,
+            )
+            if bool(pending_meta.get("cost_accounted_at_submit", False)):
+                request_meta["cost_accounted_at_submit"] = True
+                request_meta["cost_accounting_mode"] = pending_meta.get("cost_accounting_mode")
+                request_meta["reserved_spend_usage"] = pending_meta.get("reserved_spend_usage")
+                request_meta["observed_spend_usage"] = _resolve_runtime_usage(
+                    response_text=response_text,
+                    fallback_input_tokens=int(
+                        pending_meta.get("estimated_input_tokens", 0) or 0
+                    ),
+                    fallback_output_tokens=int(
+                        pending_meta.get("estimated_output_tokens", 0) or 0
+                    ),
+                    payload=(
+                        webhook_payload.get("data", {}).get("usage")
+                        if isinstance(webhook_payload.get("data"), dict)
+                        else None
+                    ),
+                )
+            else:
+                spend_record = _accumulate_runtime_spend(
+                    cfg,
+                    phase="R",
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider="openai",
+                    model_id=model_id,
+                    execution_mode="async_finalize",
+                    response_text=response_text,
+                    fallback_input_tokens=int(
+                        pending_meta.get("estimated_input_tokens", 0) or 0
+                    ),
+                    fallback_output_tokens=int(
+                        pending_meta.get("estimated_output_tokens", 0) or 0
+                    ),
+                    payload=(
+                        webhook_payload.get("data", {}).get("usage")
+                        if isinstance(webhook_payload.get("data"), dict)
+                        else None
+                    ),
+                    route=f"openai/{model_id}",
+                    raise_on_limit=False,
+                )
+                if spend_record is not None:
+                    request_meta["spend_usage"] = spend_record
+                    if "cost_abort_state" in spend_record:
+                        request_meta["cost_abort_state"] = spend_record["cost_abort_state"]
+            persisted["request_meta"] = request_meta
+            write_json(out_json, persisted)
+            if isinstance(request_meta.get("cost_abort_state"), dict):
+                raise CostLimitExceededError(
+                    (
+                        "Runtime cost cap exceeded during async finalize "
+                        f"(step={step_id} partition={partition_id})"
+                    ),
+                    request_meta["cost_abort_state"],
+                )
+        except CostLimitExceededError:
+            raise
+        except Exception:
+            pass
 
         # Remove pending placeholder
-        pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
         if pending_path.exists():
             try:
                 pending_path.unlink()
@@ -15902,6 +18859,11 @@ def run_phase_R(
 ) -> None:
     missing = _ensure_required_norm_artifact_groups(dirs)
     if missing:
+        logger.warning(
+            "PHASE_DEPENDENCY_DEGRADED phase=R requires=%s missing=%s",
+            ",".join(R_REQUIRED_INPUT_PHASES),
+            " | ".join(missing),
+        )
         raise RuntimeError(
             "Phase R requires normalized inputs from A/H/D/C. Missing norm artifacts: "
             + "; ".join(missing)
@@ -16013,6 +18975,17 @@ def run_phase_S(
         for path in sorted(r_norm.glob("*.json")) + sorted(r_norm.glob("*.md")):
             input_sources[path.resolve()] = "R"
     if not input_sources:
+        logger.warning(
+            "PHASE_DEPENDENCY_DEGRADED phase=S requires=R missing=%s",
+            r_norm,
+        )
+        upstream_missing = _ensure_required_norm_artifact_groups(dirs)
+        if upstream_missing:
+            logger.warning(
+                "PHASE_DEPENDENCY_CHAIN phase=S upstream=R requires=%s missing=%s",
+                ",".join(R_REQUIRED_INPUT_PHASES),
+                " | ".join(upstream_missing),
+            )
         raise RuntimeError(f"Phase S requires R norm outputs at {r_norm}")
 
     for phase in ["X", "T", "Z"]:
@@ -16073,6 +19046,109 @@ def run_sync_scopes() -> None:
         logger.error("Synchronization failed: %s", exc)
 
 
+def _argv_has_flag(argv: Sequence[str], *flags: str) -> bool:
+    return any(flag in argv for flag in flags)
+
+
+def first_live_phase_sequence(stage: str) -> List[str]:
+    normalized = str(stage or "initial").strip().lower() or "initial"
+    if normalized == "post-review":
+        return list(FIRST_LIVE_POST_REVIEW_PHASES)
+    if normalized == "full":
+        return list(FIRST_LIVE_INITIAL_PHASES + FIRST_LIVE_POST_REVIEW_PHASES)
+    return list(FIRST_LIVE_INITIAL_PHASES)
+
+
+def apply_first_live_preset(
+    args: argparse.Namespace,
+    raw_argv: Sequence[str],
+) -> Tuple[List[str], Dict[str, Any]]:
+    stage = str(getattr(args, "preset_stage", "initial") or "initial").strip().lower()
+    selected_phases = first_live_phase_sequence(stage)
+    applied_defaults: Dict[str, Any] = {}
+    notes = [
+        "Validator is step zero for live preset execution unless --skip-pre-live-validator is set.",
+        "The initial stage stops after A/H/D/C so operators can review artifacts before synthesis phases.",
+        "Strict step-level routes can still override the top-level policy preview for some prompts.",
+    ]
+    if not _argv_has_flag(raw_argv, "--phase"):
+        applied_defaults["phase_sequence"] = list(selected_phases)
+    if not _argv_has_flag(raw_argv, "--routing-policy"):
+        args.routing_policy = "cost"
+        applied_defaults["routing_policy"] = args.routing_policy
+    if not _argv_has_flag(raw_argv, "--max-cost-usd"):
+        args.max_cost_usd = FIRST_LIVE_PRESET_DEFAULT_CAP_USD
+        applied_defaults["max_cost_usd"] = args.max_cost_usd
+    if not _argv_has_flag(raw_argv, "--partition-workers"):
+        args.partition_workers = 1
+        applied_defaults["partition_workers"] = args.partition_workers
+    if not _argv_has_flag(raw_argv, "--batch-mode", "--no-batch"):
+        args.batch_mode = False
+        applied_defaults["batch_mode"] = args.batch_mode
+    if not _argv_has_flag(raw_argv, "--batch-wait-timeout-seconds"):
+        args.batch_wait_timeout_seconds = INTERACTIVE_SAFE_BATCH_WAIT_SECONDS
+        applied_defaults["batch_wait_timeout_seconds"] = (
+            args.batch_wait_timeout_seconds
+        )
+    preview = {
+        "preset": FIRST_LIVE_PRESET_NAME,
+        "stage": stage,
+        "selected_phases": list(selected_phases),
+        "full_recommended_sequence": list(FIRST_LIVE_INITIAL_PHASES)
+        + ["CHECKPOINT_REVIEW"]
+        + list(FIRST_LIVE_POST_REVIEW_PHASES),
+        "applied_defaults": applied_defaults,
+        "compare_mode": getattr(args, "compare_mode", None),
+        "output_root": getattr(args, "output_root", None),
+        "notes": notes,
+    }
+    return selected_phases, preview
+
+
+def print_preset_preview(preview: Dict[str, Any]) -> None:
+    print(
+        "FIRST_LIVE_PRESET " + json.dumps(preview, sort_keys=True),
+        file=sys.stderr,
+    )
+
+
+def run_pre_live_validator(
+    root: Path,
+    run_root: Optional[Path] = None,
+    *,
+    target_policy: Optional[str] = None,
+    target_phases: Optional[Sequence[str]] = None,
+    allow_online_preflight: bool = False,
+) -> Tuple[bool, Dict[str, Any]]:
+    validator_path = EXTRACTOR_SERVICE_DIR / "validate_pre_live_gate_v25.py"
+    args = [sys.executable, str(validator_path)]
+    if target_policy:
+        args.extend(["--target-policy", str(target_policy)])
+    if target_phases:
+        normalized_phases = [str(phase).strip().upper() for phase in target_phases if str(phase).strip()]
+        if normalized_phases:
+            args.extend(["--target-phases", *normalized_phases])
+    if allow_online_preflight:
+        args.append("--allow-online-preflight")
+    result = subprocess.run(
+        args,
+        cwd=str(root),
+        text=True,
+        capture_output=True,
+    )
+    payload = {
+        "generated_at": now_iso(),
+        "validator_path": str(validator_path.resolve()),
+        "exit_code": int(result.returncode),
+        "status": "pass" if result.returncode == 0 else "fail",
+        "stdout": result.stdout[-4000:],
+        "stderr": result.stderr[-4000:],
+    }
+    if run_root is not None:
+        write_json(run_root / "PRELIVE_VALIDATOR_RESULT.json", payload)
+    return result.returncode == 0, payload
+
+
 # --- Master Orchestrator ---
 
 
@@ -16081,11 +19157,53 @@ def main() -> None:
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     except (AttributeError, ValueError):
         pass
-    parser = argparse.ArgumentParser("Master Extraction Runner")
+    parser = OperatorArgumentParser(
+        "Master Extraction Runner",
+        description=(
+            "Repo Truth Extractor v5 runtime. Use --dry-run for preview. "
+            f"Live execution requires explicit consent via {DPMX_LIVE_OK_ENV}=1."
+        ),
+        epilog=(
+            "Quick start: python services/repo-truth-extractor/run_extraction_v5.py "
+            "--phase A --dry-run --run-id local_preview. "
+            f"For live execution, rerun with --execute and {DPMX_LIVE_OK_ENV}=1."
+        ),
+    )
     parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
+    parser.add_argument(
+        "--preset",
+        choices=[FIRST_LIVE_PRESET_NAME],
+        default=None,
+        help="Apply a staged operator-safe rollout preset.",
+    )
+    parser.add_argument(
+        "--preset-stage",
+        choices=["initial", "post-review", "full"],
+        default="initial",
+        help="Preset stage to execute. 'initial' runs A/H/D/C, 'post-review' runs R/X/T/Z/S.",
+    )
+    parser.add_argument(
+        "--skip-pre-live-validator",
+        action="store_true",
+        help="Skip the validator-first gate for live preset execution.",
+    )
+    parser.add_argument(
+        "--output-root",
+        type=str,
+        default=None,
+        help="Override the v5 artifact root for this run (for isolated experiments or CI sandboxes).",
+    )
     parser.add_argument("--sync", action="store_true", help="Synchronize prompt source scopes with modern architecture.")
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help=(
+            "Explicitly permit live provider execution. Requires "
+            f"{DPMX_LIVE_OK_ENV}=1."
+        ),
+    )
     parser.add_argument("--max-files-docs", type=int, default=35)
     parser.add_argument("--max-files-code", type=int, default=20)
     parser.add_argument("--max-chars", type=int, default=650000)
@@ -16134,11 +19252,23 @@ def main() -> None:
         "--s-steps",
         type=str,
         default=None,
-        help="Comma-separated subset of Phase S base steps (S0-S6) to execute.",
+        help="Comma-separated subset of Phase S base steps (S0-S12) to execute.",
     )
     parser.add_argument("--disable-escalation", action="store_true")
     parser.add_argument("--escalation-max-hops", type=int, default=2)
-    parser.add_argument("--batch-mode", action="store_true")
+    parser.add_argument(
+        "--batch-mode",
+        dest="batch_mode",
+        action="store_true",
+        default=True,
+        help="Use Batch API for LLM calls (default: True).",
+    )
+    parser.add_argument(
+        "--no-batch",
+        dest="batch_mode",
+        action="store_false",
+        help="Disable Batch API and use synchronous calls.",
+    )
     parser.add_argument(
         "--batch-submit-only",
         action="store_true",
@@ -16155,7 +19285,15 @@ def main() -> None:
         default="auto",
     )
     parser.add_argument("--batch-poll-seconds", type=int, default=30)
-    parser.add_argument("--batch-wait-timeout-seconds", type=int, default=86400)
+    parser.add_argument(
+        "--batch-wait-timeout-seconds",
+        type=int,
+        default=86400,
+        help=(
+            "Batch polling timeout in seconds. 86400 is the legacy default and can leave long-running waits behind; "
+            f"{INTERACTIVE_SAFE_BATCH_WAIT_SECONDS} is the safer interactive value."
+        ),
+    )
     parser.add_argument("--batch-max-requests-per-job", type=int, default=2000)
     parser.add_argument(
         "--batch-retrieve",
@@ -16263,6 +19401,26 @@ def main() -> None:
     parser.add_argument("--jsonl-events", action="store_true")
     parser.add_argument("--pretty", action="store_true")
     parser.add_argument("--print-promptpack", action="store_true")
+    parser.add_argument(
+        "--print-routing-guide",
+        action="store_true",
+        help="Print routing policy intent, cost tendency, and override caveats.",
+    )
+    parser.add_argument(
+        "--print-prescan-guide",
+        action="store_true",
+        help="Print prescan usage guidance, including when it helps and when it is safe to skip.",
+    )
+    parser.add_argument(
+        "--print-cost-preview",
+        action="store_true",
+        help="During dry-run, emit the per-phase cost preview derived from the resolved inventory and routes.",
+    )
+    parser.add_argument(
+        "--list-phases",
+        action="store_true",
+        help="Print phase code, name, purpose, dependencies, and default route summary as JSON.",
+    )
     parser.add_argument("--print-run-order", action="store_true")
     parser.add_argument("--print-phase-routing", action="store_true")
     parser.add_argument("--tail-run-log", action="store_true")
@@ -16332,7 +19490,11 @@ def main() -> None:
         default=None,
         help="Extraction profile name (e.g., P09_INTEGRATION_SURFACE_V1). Filters phases and overrides budgets.",
     )
+    raw_argv = list(sys.argv[1:])
     args = parser.parse_args()
+    if args.execute:
+        args.dry_run = False
+    args.execute = bool(args.execute or not args.dry_run)
     # --promptset-root: wire into env var so prompt_root() picks it up
     if args.promptset_root:
         psr = Path(args.promptset_root).resolve()
@@ -16344,6 +19506,15 @@ def main() -> None:
     if args.sync:
         run_sync_scopes()
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
+    if (
+        getattr(args, "max_cost_usd", None) is not None
+        and not args.dry_run
+        and args.partition_workers > 1
+    ):
+        logger.warning(
+            "Cost cap active; forcing --partition-workers=1 for deterministic stop-on-breach."
+        )
+        args.partition_workers = 1
     if args.pretty and args.ui == "auto":
         args.ui = "rich"
     args.escalation_max_hops = max(0, int(args.escalation_max_hops))
@@ -16352,6 +19523,10 @@ def main() -> None:
     args.batch_max_requests_per_job = max(1, int(args.batch_max_requests_per_job))
     if args.batch_submit_only:
         args.batch_mode = True
+    preset_phase_sequence: Optional[List[str]] = None
+    preset_preview: Optional[Dict[str, Any]] = None
+    if args.preset == FIRST_LIVE_PRESET_NAME:
+        preset_phase_sequence, preset_preview = apply_first_live_preset(args, raw_argv)
     if args.max_cost_usd is not None and args.max_cost_usd <= 0:
         parser.error("--max-cost-usd must be > 0 when provided.")
     
@@ -16381,6 +19556,12 @@ def main() -> None:
                     f"--compare-steps {sorted(_ineligible)} are not eligible for comparison. "
                     f"Eligible steps: {sorted(COMPARISON_ELIGIBLE_STEPS)}"
                 )
+    if args.print_routing_guide:
+        sys.exit(print_routing_guide())
+    if args.print_prescan_guide:
+        sys.exit(print_prescan_guide())
+    if args.list_phases:
+        sys.exit(print_phase_catalog())
 
     # TP-WEBHOOKS-0002 validation
     if args.async_provider and not args.phase:
@@ -16404,20 +19585,25 @@ def main() -> None:
         or args.status
         or args.status_json
         or args.print_promptpack
+        or args.list_phases
         or args.print_run_order
         or args.print_phase_routing
+        or args.print_routing_guide
+        or args.print_prescan_guide
         or args.tail_run_log
         or args.show_provider_usage
         or args.print_phase_prompts
         or args.promptgen_scan
         or args.gemini_list_models
+        or args.preset
     ):
         parser.error(
             "--phase is required unless using --profile, --verify-phase-output, --print-config, "
             "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
-            "--status, --status-json, --print-promptpack, --print-run-order, "
-            "--print-phase-routing, --tail-run-log, --show-provider-usage, "
-            "--print-phase-prompts, or --gemini-list-models."
+            "--status, --status-json, --print-promptpack, --list-phases, --print-run-order, "
+            "--print-phase-routing, --print-routing-guide, --print-prescan-guide, "
+            "--tail-run-log, --show-provider-usage, --print-phase-prompts, "
+            "--gemini-list-models, or --preset."
         )
     if args.watch is not None and args.watch <= 0:
         parser.error("--watch must be > 0 when provided.")
@@ -16429,8 +19615,18 @@ def main() -> None:
         parser.error("--batch-watch requires a concrete phase, not ALL.")
     if args.batch_watch and args.batch_submit_only:
         parser.error("--batch-watch cannot be combined with --batch-submit-only.")
+    if args.print_cost_preview and not args.dry_run:
+        parser.error("--print-cost-preview requires --dry-run.")
+    if args.print_cost_preview and not (args.phase or args.preset):
+        parser.error("--print-cost-preview requires --phase or --preset.")
 
     root = Path.cwd()
+    configure_output_layout(root, args.output_root)
+    if args.batch_mode and args.execute and args.batch_wait_timeout_seconds >= 86400:
+        logger.warning(
+            "Batch wait timeout is using the 86400-second legacy default; this increases zombie-session risk. "
+            "Use --batch-wait-timeout-seconds 1800 for interactive runs."
+        )
     s_prompts_mode = (
         str(args.s_prompts or os.getenv(S_PROMPTS_MODE_ENV_VAR, "")).strip().lower()
         or S_PROMPTS_AUTO
@@ -16553,6 +19749,26 @@ def main() -> None:
 
             def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
                 provider, model_id, api_key_env = route
+                route_token = f"{provider}/{model_id}"
+                projected_input_tokens = _estimate_text_tokens(
+                    "Return JSON only.", rendered_prompt
+                )
+                projected_output_tokens = _project_output_tokens(
+                    projected_input_tokens
+                )
+                _check_projected_cost_limit(
+                    cfg,
+                    phase=step.phase,
+                    step_id=step.step_id,
+                    partition_id=step.step_id,
+                    provider=provider,
+                    model_id=model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="s_int_sync",
+                    route=route_token,
+                )
+
                 result = call_llm(
                     provider=provider,
                     model_id=model_id,
@@ -16561,8 +19777,32 @@ def main() -> None:
                     user_content=rendered_prompt,
                     cfg=cfg,
                 )
+
                 meta = dict(result.get("meta") or {})
                 response_text = str(result.get("text") or "")
+                if meta.get("response_received") or result.get("ok"):
+                    spend_record = _accumulate_runtime_spend(
+                        cfg,
+                        phase=step.phase,
+                        step_id=step.step_id,
+                        partition_id=step.step_id,
+                        provider=provider,
+                        model_id=model_id,
+                        execution_mode="s_int_sync",
+                        response_summary=(
+                            meta.get("response_summary")
+                            if isinstance(meta.get("response_summary"), dict)
+                            else None
+                        ),
+                        response_text=response_text,
+                        fallback_input_tokens=_estimate_text_tokens(
+                            "Return JSON only.", rendered_prompt
+                        ),
+                        fallback_output_tokens=projected_output_tokens,
+                        route=route_token,
+                    )
+                    if spend_record is not None:
+                        meta["spend_usage"] = spend_record
                 payload = None
                 schema_errors: List[str] = []
                 escalation_trigger = str(meta.get("failure_type") or "").strip() or None
@@ -16633,10 +19873,13 @@ def main() -> None:
                 dry_run=bool(args.dry_run),
                 prompt_executor=None if args.dry_run else _prompt_executor,
             )
+        except CostLimitExceededError as exc:
+            logger.error("S_INT cost cap exceeded: %s", exc)
+            sys.exit(1)
         except Exception as exc:
             logger.error("S_INT failed: %s", exc)
             sys.exit(1)
-        print(json.dumps(summary, indent=2 if args.pretty else None, sort_keys=True))
+        print(sanitized_json_text(summary, indent=2 if args.pretty else None, sort_keys=True, ensure_ascii=True))
         sys.exit(0)
 
     try:
@@ -16652,10 +19895,17 @@ def main() -> None:
         logger.error("Setup failed: %s", exc)
         sys.exit(1)
     phase_contract_map_path: Optional[Path] = None
-    try:
-        phase_contract_map_path = write_phase_contract_map(dirs["root"], run_id)
-    except Exception as exc:
-        logger.warning("Failed to write phase contract map: %s", exc)
+    contract_map_print_only_mode = bool(
+        args.print_config
+        or args.print_run_order
+        or args.print_phase_routing
+        or args.print_phase_prompts is not None
+    )
+    if not contract_map_print_only_mode:
+        try:
+            phase_contract_map_path = write_phase_contract_map(dirs["root"], run_id)
+        except Exception as exc:
+            logger.warning("Failed to write phase contract map: %s", exc)
 
     ui = UI(
         UiConfig(
@@ -16790,6 +20040,16 @@ def main() -> None:
         router=router,
     )
 
+    if SpendLedger is not None:
+        cfg = replace(
+            cfg,
+            ledger=SpendLedger(
+                run_dir=dirs["root"],
+                run_id=run_id,
+                max_cost_usd=cfg.max_cost_usd,
+            ),
+        )
+
     # --profile: load extraction profile and apply phase filtering + budget overrides
     if _active_profile:
         logger.info(
@@ -16827,6 +20087,8 @@ def main() -> None:
                 args.file_truncate_chars = min(_truncate_chars)
 
     phase_sequence = resolve_phase_list(args.phase)
+    if not phase_sequence and preset_phase_sequence:
+        phase_sequence = list(preset_phase_sequence)
     # If profile specifies enabled_phases, filter the phase sequence
     if _active_profile:
         _enabled = _active_profile.get("phase_policy", {}).get("enabled_phases")
@@ -16840,6 +20102,9 @@ def main() -> None:
             # No explicit --phase, but profile has enabled_phases
             phase_sequence = [p for p in PHASES if p in _enabled]
             logger.info("Profile restricting to phases: %s", ", ".join(phase_sequence))
+    if preset_preview is not None:
+        preset_preview["selected_phases"] = list(phase_sequence)
+        print_preset_preview(preset_preview)
 
     prompt_report = write_run_manifest(
         root, dirs, run_id, args, run_context, phase_sequence or PHASES
@@ -16905,7 +20170,7 @@ def main() -> None:
     if args.preflight_providers:
         targets = phase_sequence if phase_sequence else PHASES
         ok, payload = run_provider_preflight(root, run_id, cfg, targets)
-        print(json.dumps(payload, indent=2))
+        print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
         sys.exit(0 if ok else 1)
     if args.print_promptpack:
         targets = phase_sequence if phase_sequence else PHASES
@@ -16932,12 +20197,63 @@ def main() -> None:
         targets = phase_sequence if phase_sequence else PHASES
         sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg))
 
+    if args.execute and not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        live_operation_requested = bool(
+            args.async_provider
+            or args.finalize
+            or args.batch_watch
+            or args.batch_retrieve
+            or phase_sequence
+        )
+        if live_operation_requested:
+            parser.error(
+                "Live execution requires explicit consent. Use --dry-run for preview, "
+                f"or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
+            )
+    if (
+        args.preset == FIRST_LIVE_PRESET_NAME
+        and args.execute
+        and phase_sequence
+        and not args.skip_pre_live_validator
+    ):
+        validator_ok, validator_payload = run_pre_live_validator(
+            root,
+            dirs["root"],
+            target_policy=args.routing_policy,
+            target_phases=phase_sequence,
+            allow_online_preflight=True,
+        )
+        if not validator_ok:
+            parser.error(
+                "Validator-first preset flow blocked live execution. "
+                "Run the validator, fix the reported pre-live issues, and retry. "
+                "Use --skip-pre-live-validator only if you have separately reviewed the gate output."
+            )
+        logger.info(
+            "PRELIVE_VALIDATOR_OK exit_code=%s validator=%s",
+            validator_payload.get("exit_code"),
+            validator_payload.get("validator_path"),
+        )
+
     # TP-WEBHOOKS-0002: async submit / finalize dispatch (Phase R only)
     if args.async_provider == "openai" and not args.finalize:
         try:
             n = run_phase_R_async_submit(run_id=run_id, dirs=dirs, cfg=cfg)
             logger.info("Async R submit complete: submitted=%s run_id=%s", n, run_id)
             sys.exit(0)
+        except CostLimitExceededError as exc:
+            logger.error("Async R submit cost-aborted: %s", exc)
+            _persist_cost_abort(
+                root=root,
+                dirs=dirs,
+                run_id=run_id,
+                phases=phase_sequence or ["R"],
+                run_started_at=run_started_at,
+                exc=exc,
+                ui=ui,
+                source="async_submit:cost_abort",
+            )
+            sys.exit(1)
         except Exception as exc:
             logger.error("Async R submit failed: %s", exc)
             sys.exit(1)
@@ -16947,6 +20263,19 @@ def main() -> None:
             n = run_phase_R_finalize(run_id=run_id, dirs=dirs, cfg=cfg)
             logger.info("Finalize R complete: finalized=%s run_id=%s", n, run_id)
             sys.exit(0)
+        except CostLimitExceededError as exc:
+            logger.error("Finalize R cost-aborted: %s", exc)
+            _persist_cost_abort(
+                root=root,
+                dirs=dirs,
+                run_id=run_id,
+                phases=phase_sequence or ["R"],
+                run_started_at=run_started_at,
+                exc=exc,
+                ui=ui,
+                source="async_finalize:cost_abort",
+            )
+            sys.exit(1)
         except Exception as exc:
             logger.error("Finalize R failed: %s", exc)
             sys.exit(1)
@@ -16955,14 +20284,28 @@ def main() -> None:
         if not phase_sequence or len(phase_sequence) != 1:
             parser.error("--batch-watch requires exactly one phase via --phase.")
         watch_phase = phase_sequence[0]
-        watch_result = run_batch_watch(
-            root=root,
-            run_id=run_id,
-            phase=watch_phase,
-            dirs=dirs,
-            cfg=cfg,
-            ui=ui,
-        )
+        try:
+            watch_result = run_batch_watch(
+                root=root,
+                run_id=run_id,
+                phase=watch_phase,
+                dirs=dirs,
+                cfg=cfg,
+                ui=ui,
+            )
+        except CostLimitExceededError as exc:
+            logger.error("Batch watch cost-aborted: %s", exc)
+            _persist_cost_abort(
+                root=root,
+                dirs=dirs,
+                run_id=run_id,
+                phases=phase_sequence or [watch_phase],
+                run_started_at=run_started_at,
+                exc=exc,
+                ui=ui,
+                source="batch_watch:cost_abort",
+            )
+            sys.exit(1)
         if watch_result.exit_code != 0:
             sys.exit(watch_result.exit_code)
         if watch_result.next_phase:
@@ -17011,7 +20354,7 @@ def main() -> None:
         if not ok:
             logger.error(
                 "Provider preflight failed before phase ALL. failed_providers=%s. See "
-                f"{(V5_DOCTOR_ROOT / 'PROVIDER_PREFLIGHT.json').as_posix()}",
+                f"{(current_doctor_root(root) / 'PROVIDER_PREFLIGHT.json').as_posix()}",
                 ",".join(payload.get("failed_providers", [])),
             )
             sys.exit(1)
@@ -17024,6 +20367,18 @@ def main() -> None:
             _ACTIVE_INTELLIGENCE_ROUTER = IntelligenceRouter.from_dir(_prescan_path)
             if _ACTIVE_INTELLIGENCE_ROUTER:
                 logger.info("Loaded intelligence router from %s", _prescan_path)
+                
+                if cfg.max_cost_usd is not None:
+                    cost_info = _ACTIVE_INTELLIGENCE_ROUTER.intel.get("cost_estimate", {})
+                    net_estimates = cost_info.get("net_estimates", {})
+                    est_total = net_estimates.get("total_cost_usd", 0)
+                    if est_total > cfg.max_cost_usd:
+                        logger.error(
+                            "❌ Projected run cost ($%.2f) exceeds --max-cost-usd limit ($%.2f). Aborting.",
+                            est_total,
+                            cfg.max_cost_usd,
+                        )
+                        sys.exit(1)
             else:
                 logger.warning("Prescan dir exists but router failed to load: %s", _prescan_path)
         else:
@@ -17073,6 +20428,19 @@ def main() -> None:
         try:
             phase_cfg = prepare_phase_provider_preflight(root, run_id, phase, cfg)
             run_phase(dirs, phase_cfg, ui=ui)
+        except CostLimitExceededError as exc:
+            logger.error("Phase %s cost-aborted: %s", phase, exc)
+            _persist_cost_abort(
+                root=root,
+                dirs=dirs,
+                run_id=run_id,
+                phases=phases,
+                run_started_at=run_started_at,
+                exc=exc,
+                ui=ui,
+                source=f"phase:{phase}:cost_abort",
+            )
+            sys.exit(1)
         except Exception as exc:
             logger.error("Phase %s failed: %s", phase, exc)
             failed_counts = gather_phase_counts(dirs[phase])
@@ -17182,6 +20550,31 @@ def main() -> None:
     )
     if ui is not None:
         ui.status_table(final_status_payload, clear=False)
+    if args.print_cost_preview:
+        preview_payload: Dict[str, Any] = {
+            "generated_at": now_iso(),
+            "run_id": run_id,
+            "phases": {},
+            "summary": {
+                "estimated_cost_usd": 0.0,
+                "low_confidence_phases": [],
+            },
+        }
+        for phase in phases:
+            preview_path = dirs[phase] / "inputs" / "COST_PREVIEW.json"
+            if not preview_path.exists():
+                continue
+            preview = _load_json(preview_path)
+            preview_payload["phases"][phase] = preview
+            preview_payload["summary"]["estimated_cost_usd"] += float(
+                preview.get("estimated_cost_usd", 0.0) or 0.0
+            )
+            if str(preview.get("confidence") or "") == "low":
+                preview_payload["summary"]["low_confidence_phases"].append(phase)
+        preview_payload["summary"]["estimated_cost_usd"] = round(
+            float(preview_payload["summary"]["estimated_cost_usd"]), 6
+        )
+        print(sanitized_json_text(preview_payload, indent=2, sort_keys=True, ensure_ascii=True))
 
 
 def run_batch_retrieval_and_integration(

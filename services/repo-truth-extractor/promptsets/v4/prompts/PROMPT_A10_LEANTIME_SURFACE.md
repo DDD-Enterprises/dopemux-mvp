@@ -21,53 +21,17 @@ Capture only implementation facts that are directly evidenced in source and conf
 - `tools/**`
 
 - `services/leantime-bridge/**`
-- `config/**`
 - `compose.yml`
 - `docker-compose*.yml`
 - `src/dopemux/**`
 - `.claude.json`
 - `README.md`
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `configs/**`
-- `docker/**`
 - `installers/**`
 - `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `.dopemux/**`
-- `.github/**`
-- `.githooks/**`
-- `.taskx/**`
-- `mcp-proxy-config.copilot.yaml`
-- `compose/**`
-- `configs/**`
-- `docker/**`
-- `installers/**`
-- `ops/**`
-- `scripts/**`
-- `tools/**`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
-- `.vibe/**`
-- `.claude/**`
-- `mcp-proxy-config.copilot.yaml`
 
 - Upstream normalized artifacts available to this step:
   - `REPOCTRL_INVENTORY.json`
@@ -103,43 +67,25 @@ Capture only implementation facts that are directly evidenced in source and conf
   - CLI command entrypoints that enable Leantime integration
 
 ## Extraction Procedure
-1. Enumerate Leantime-related files and symbols from in-scope paths.
-2. Extract concrete control-plane facts (ports, env vars, command wiring, enable flags).
-3. Build deterministic IDs from stable `(path, symbol/name, key)`.
-4. Attach evidence to every non-derived field and integration relation.
-5. Normalize with stable sorting and deterministic deduplication.
-6. Emit exactly the declared output file.
+1. Load upstream `REPOCTRL_INVENTORY.json` and `REPOCTRL_PARTITIONS.json`; focus on Leantime integration surfaces.
+2. Scan `services/leantime-bridge/**`, `compose.yml`, and `config/leantime/*.yaml` for service and network facts:
+   - `leantime_service`: identify container name, image, and explicit `ports` (e.g., 80, 443, 8061).
+   - `mcp_transport`: scan for "leantime" tools in `mcp-proxy-config.yaml` or `src/dopemux/mcp/leantime.py`.
+   - `endpoint_urls`: identify literal Leantime API or webhook URLs (e.g., `LEANTIME_API_URL`).
+3. Extract environment variable contracts: search for `LEANTIME_API_KEY`, `LEANTIME_DB_*`, `LEANTIME_URL`, or `LEANTIME_TOKEN`.
+4. Identify CLI and workflow integration points:
+   - Search for literal commands: `dopemux leantime sync`, `taskx --leantime`, or `leantime-bridge import`.
+5. Build relationship graph: link the Leantime bridge service to the core Dopemux router, MCP proxy, and TaskX surfaces.
+6. For each REPO_LEANTIME_SURFACE item, populate `id` (stable-hash of path|name), required fields, and `evidence`.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path|symbol|name).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID.
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
-## Evidence Rules
-- Every load-bearing value must include at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative.
-- `excerpt` must be exact and <= 200 chars.
-- If evidence is missing, keep field as `UNKNOWN` with `missing_evidence_reason`.
-
-## Determinism Rules
-- Norm output MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort items by `(path, line_start, id)` when available, otherwise by `id`.
-- Deduplicate by `id`; merge evidence by unique `(path,line_range,excerpt)`.
-- For scalar conflicts choose non-empty value, else lexicographically smallest stable value.
-
-## Anti-Fabrication Rules
-- Do not invent Leantime endpoints, credentials, commands, or bridge behavior.
-- Do not infer configuration support from filenames alone; require direct text/code evidence.
-- Do not copy QA metadata into norm output.
-- Keep unresolved values as `UNKNOWN`; never substitute guesses.
-
-## Failure Modes
-- Missing files: emit valid empty `ItemList` and include `missing_inputs` notes in items.
-- Ambiguous or conflicting config: emit candidates with `status: needs_review` and evidence.
-- Partial scan: emit partial output with explicit `coverage_notes` and evidence gaps.
-- Parse failures: keep deterministic partial output and capture `parse_error` in item notes.
+## Shared Rules
+Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

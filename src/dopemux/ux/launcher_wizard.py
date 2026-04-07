@@ -10,44 +10,40 @@ import subprocess
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 import readchar
 from rich.align import Align
 from rich.console import Console, Group
 from rich.layout import Layout
 from rich.live import Live
+from rich.panel import Panel
 from rich.spinner import Spinner
 from rich.style import Style
+from rich.table import Table
 from rich.text import Text
 
 from ..claude.instruction_manager import InstructionManager
 from ..roles.catalog import ROLE_CATALOG, RoleSpec
-from ..ui.theme import (
-    Glyphs,
-    INK_BLACK,
-    SERUM_MINT,
-    StatusChip,
-    styled_panel,
-    styled_table,
-)
-from ..ui.voice import VoiceEngine, VoiceMode
+from ..ui.theme import SERUM_MINT, GREMLIN_PINK, RITUAL_CYAN
 
 console = Console()
-VOICE = VoiceEngine(mode=VoiceMode.UI_STRICT, is_scattered=True)
+
+# --- UI Constants ---
+ERROR_RED = "#ff5555"
+SUCCESS_GREEN = "#50fa7b"
+WARNING_YELLOW = "#f1fa8c"
 
 DOPEMUX_HEADER_TEXT = Text.from_markup(
     f"""
-[magenta]
-  {Glyphs.BRAND_MARK}
+[bold {GREMLIN_PINK}]
   ,-----.                        ,-----.
   |  .--. | ,--.--. ,---.  ,---. |  .--. | ,---.  ,---. ,--.--.
   |  '--' | |  .--'| .-. || .-. :|  '--' |(  .-' | .-. ||  .--'
   |  | --'  |  |   ' '-' '' '-' '|  | --' .-'  `)' '-' '|  |
   `--'      `--'    `---'  `---' `--'      `----'  `---' `--'
 [/]
-[subheading]Dopamine-driven multiplexing for superintelligent agents.[/subheading]
-[text.dim]{StatusChip.LIVE.render("Pick a role. Boot clean. Keep the next step visible.")}[/text.dim]
+[dim {SERUM_MINT}]Dopamine-driven multiplexing for superintelligent agents.[/]
 """,
     justify="center",
 )
@@ -59,10 +55,10 @@ class LauncherState(Enum):
 
 
 class BootStepStatus(Enum):
-    PENDING = ("[text.dim]●[/text.dim]", "text.dim")
-    LOADING = (Spinner("dots", style="spinner"), "warning")
-    SUCCESS = ("[success]✓[/success]", "success")
-    FAILURE = ("[error]✗[/error]", "error")
+    PENDING = (f"[dim]●[/]", "grey62")
+    LOADING = (Spinner("dots", style=f"bold {WARNING_YELLOW}"), WARNING_YELLOW)
+    SUCCESS = (f"[bold {SUCCESS_GREEN}]✓[/]", SUCCESS_GREEN)
+    FAILURE = (f"[bold {ERROR_RED}]✗[/]", ERROR_RED)
 
     def __init__(self, icon, style):
         self.icon = icon
@@ -94,7 +90,7 @@ class LauncherWizard:
             BootStep("Starting Activity Monitor"),
         ]
         self._boot_log_messages: List[Text] = [
-            Text.from_markup(StatusChip.LIVE.render("Cockpit initializing."))
+            Text("DOPEMUX COCKPIT INITIALIZING...", style=f"bold {RITUAL_CYAN}")
         ]
         self.live = Live(
             self._generate_layout(),
@@ -125,10 +121,7 @@ class LauncherWizard:
                     )
                     all_roles.append((persona_key, spec))
         except Exception as e:
-            self.add_log(
-                StatusChip.EDGE.render(f"Dynamic persona scan slipped: {e}"),
-                style="warning",
-            )
+            self.add_log(f"Warning: Could not load dynamic personas: {e}", style=WARNING_YELLOW)
             
         return all_roles
 
@@ -148,18 +141,14 @@ class LauncherWizard:
         
         return layout
 
-    def _build_role_selection_panel(self) -> Any:
+    def _build_role_selection_panel(self) -> Panel:
         """Builds the renderable for the role selection screen."""
-        table = styled_table(
-            "Role Deck",
-            ("Key", {"no_wrap": True, "style": "magenta", "width": 20}),
-            ("Label", {"no_wrap": True, "style": "subheading"}),
-            ("Description", {"style": "text.dim"}),
-            box=None,
-            expand=True,
-            show_header=False,
-            padding=(0, 1),
+        table = Table(
+            box=None, expand=True, show_header=False, padding=(0, 1)
         )
+        table.add_column("Key", no_wrap=True, style=f"bold {GREMLIN_PINK}", width=20)
+        table.add_column("Label", no_wrap=True, style=f"bold {SERUM_MINT}")
+        table.add_column("Description", style="dim")
 
         # Handle scrolling
         max_rows = 15
@@ -171,7 +160,7 @@ class LauncherWizard:
 
         for i in range(start_idx, end_idx):
             key, role = self.roles[i]
-            style = Style(bgcolor=SERUM_MINT, color=INK_BLACK) if i == self.selected_index else Style()
+            style = Style(bgcolor=SERUM_MINT, color="black") if i == self.selected_index else Style()
             selector = "▶ " if i == self.selected_index else "  "
             table.add_row(
                 f"{selector}{key}",
@@ -180,14 +169,14 @@ class LauncherWizard:
                 style=style,
             )
 
-        return styled_panel(
+        return Panel(
             table,
-            title=StatusChip.LIVE.render("Select agent role"),
-            border_style="info",
+            title="[bold]SELECT AGENT ROLE[/]",
+            border_style=RITUAL_CYAN,
             expand=True,
         )
 
-    def _build_boot_sequence_panel(self) -> Any:
+    def _build_boot_sequence_panel(self) -> Panel:
         """Builds the renderable for the boot sequence screen."""
         boot_layout = Layout()
         boot_layout.split_row(
@@ -196,45 +185,40 @@ class LauncherWizard:
         )
         
         role_key, role_spec = self.roles[self.selected_index]
-        title = StatusChip.LIVE.render(f"Booting {role_spec.label} ({role_key})")
-        return styled_panel(boot_layout, title=title, border_style="info")
+        title = f"[bold]BOOTING: [italic {SERUM_MINT}]{role_spec.label}[/italic] ([dim]{role_key}[/dim])[/]"
+        return Panel(boot_layout, title=title, border_style=RITUAL_CYAN)
 
-    def _build_boot_steps_table(self) -> Any:
+    def _build_boot_steps_table(self) -> Table:
         """Creates the table showing the status of each boot step."""
-        table = styled_table(
-            "Boot Steps",
-            ("Icon", {"width": 3}),
-            "Step",
-            box=None,
-            expand=True,
-            show_header=False,
-            padding=(0, 1),
-        )
+        table = Table(box=None, expand=True, show_header=False)
+        table.add_column("Icon", width=3)
+        table.add_column("Step")
 
         for step in self.boot_steps:
             renderable = step.status.icon
             table.add_row(renderable, Text(step.name, style=step.status.style))
         return table
 
-    def _build_boot_log_panel(self) -> Any:
+    def _build_boot_log_panel(self) -> Panel:
         """Creates the panel for displaying real-time log messages."""
         # Display the last 15 log messages to prevent overflow
         log_text = Text("\n").join(self._boot_log_messages[-15:])
-        return styled_panel(
+        return Panel(
             Align.bottom(log_text),
-            title=StatusChip.LOGGED.render("Boot log"),
-            border_style="panel.border",
+            title="[dim]Logs[/]",
+            border_style="grey50",
             expand=True,
         )
 
     def _build_footer(self) -> Text:
         """Builds the footer with instructions."""
         if self.state == LauncherState.ROLE_SELECTION:
-            return Text.from_markup(
-                "[text.dim]Use ↑/↓ to navigate, Enter to select, Ctrl+C to quit[/text.dim]",
+            return Text(
+                "Use ↑/↓ to navigate, Enter to select, Ctrl+C to quit",
+                style="dim",
                 justify="center",
             )
-        return Text.from_markup(StatusChip.LOGGED.render("Boot sequence in progress..."), justify="center")
+        return Text("Boot sequence in progress...", style="dim", justify="center")
 
     def _refresh_live_view(self):
         """Updates the Live display with the new layout."""
@@ -275,26 +259,22 @@ class LauncherWizard:
                 step.status = status
                 step.message = message
                 if status != BootStepStatus.LOADING:
-                    chip = StatusChip.LOGGED if status == BootStepStatus.SUCCESS else StatusChip.BLOCKER
-                    self.add_log(chip.render(f"{step_name}: {status.name.capitalize()}"), style=status.style)
+                    self.add_log(f"[{status.style}]{step_name}: {status.name.capitalize()}[/]")
                 break
         self._refresh_live_view()
 
-    def add_log(self, message: str, style: str = "text.dim"):
+    def add_log(self, message: str, style: str = "dim"):
         """Adds a message to the boot log view."""
-        self._boot_log_messages.append(
-            Text.from_markup(f"[text.dim][{time.strftime('%H:%M:%S')}][/text.dim] {message}")
-        )
+        self._boot_log_messages.append(Text(f"[{time.strftime('%H:%M:%S')}] {message}", style=style))
         if self.state == LauncherState.BOOT_SEQUENCE:
             self._refresh_live_view()
 
     def finish(self, success: bool = True, final_message: str = "Setup complete."):
         """Stops the Live display with a final message."""
         if success:
-            success_message = final_message if final_message != "Setup complete." else VOICE.get_aftercare()
-            footer_text = Text.from_markup(StatusChip.AFTERCARE.render(success_message), justify="center")
+            footer_text = Text(final_message, style=f"bold {SUCCESS_GREEN}", justify="center")
         else:
-            footer_text = Text.from_markup(StatusChip.BLOCKER.render(final_message), justify="center")
+            footer_text = Text(final_message, style=f"bold {ERROR_RED}", justify="center")
         
         self.live.update(self._generate_layout(), refresh=True)
         time.sleep(1.5) # Allow user to see the final state
@@ -317,8 +297,8 @@ def start_wizard() -> Optional[Tuple[str, LauncherWizard]]:
     try:
         import readchar
     except ImportError:
-        console.print(StatusChip.BLOCKER.render("Missing dependency: readchar"))
-        console.print(StatusChip.LIVE.render("Fix: pip install readchar"))
+        console.print("[error]Missing dependency: 'readchar'[/error]")
+        console.print("[info]Fix: pip install readchar[/info]")
         return None, None
         
     wizard = LauncherWizard(console)
@@ -329,10 +309,11 @@ def start_wizard() -> Optional[Tuple[str, LauncherWizard]]:
             return role_key, wizard
         else:
             wizard.live.stop()
-            console.print(StatusChip.EDGE.render("Role selection cancelled."))
+            console.print("[dim]Role selection cancelled.[/]")
             return None, None
     except Exception as e:
         if wizard.live.is_started:
             wizard.live.stop()
-        console.print(StatusChip.BLOCKER.render(f"Unexpected launcher error: {e}"))
+        console.print(f"[bold red]An unexpected error occurred: {e}[/]")
         return None, None
+

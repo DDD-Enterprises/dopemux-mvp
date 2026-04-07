@@ -1,9 +1,10 @@
 # Changelog
 
-All notable changes to the PR Merge Specialist will be documented in this file.
+All notable changes to Dopemux (including the PR Merge Specialist) will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- Consolidated V5 extraction engine and validation toolchain (PR #313).
 - Run ID propagation across `queue-drain` and `flight` to ensure consistent artifact grouping.
 - Persistent `RUN_SUMMARY.md` writing at the end of `queue-drain` execution.
 - Git case-insensitivity warning in `preflight` for macOS environments.
@@ -15,6 +16,7 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 - The flight dashboard passes its active `Console` into the renderer so viewport sizing reflects the live terminal instance.
 - `flight-deck` now delegates to the authoritative `flight` dashboard path so autopilot, remediation, and merge execution share the same runtime.
 - The docs workflow now runs on pull requests and `main` pushes only, preventing PR-branch push runs from re-failing on unrelated legacy docs debt.
+- Active extractor docs now describe the validated bounded v5 lane, the current reliability contract, and the upgrade-design reality check for this branch.
 
 ### Fixed
 - Validation-only PRs are no longer shown as queued-for-merge before local verification is complete.
@@ -25,11 +27,8 @@ All notable changes to the PR Merge Specialist will be documented in this file.
 - Dashboard autopilot no longer treats monitor tactic `S` as queue navigation and no longer resets to the top PR after every reassessment.
 - Queue planning no longer downgrades failing required GitHub checks to warnings after a local validation pass; those PRs remain `apply_blocked` until the remote required checks actually clear.
 - `queue-drain --max-prs` now stops the execute loop at the requested bound instead of continuing through additional PRs in the same pass.
-- `queue-drain` now performs merge handoff for post-apply `queued_for_merge` results instead of leaving rebased auto-merge PRs open with no `gh pr merge` execution step.
-- Skill template parity is restored for the mirrored `cli.py`, `policy.py`, `runtime.py`, and `validation.py` modules so the full unit suite agrees with the runtime PR Merge specialist implementation.
-- The top-level CLI help regression test now matches the current DØPEMÜX branding copy already emitted by `dopemux --help`, preventing rebased queue PRs from failing on a stale expectation.
-- The `dopemux init` already-initialized CLI regression test now uses the current `Path.exists` call pattern, preventing rebased queue PRs from failing on a broken mock instead of runtime behavior.
 - Docs template assets now use `template-*` filenames so the `docs-prohibited-patterns` hook no longer blocks active PRs on legacy template path names.
+- Repo-truth extractor docs now reflect `config/pricing.yaml` as cost authority, explicit output sanitization at the JSON sink, redacted auth-missing logging, and non-silent coverage parse warnings.
 
 ## [0.1.0] - 2026-03-14
 ### Added

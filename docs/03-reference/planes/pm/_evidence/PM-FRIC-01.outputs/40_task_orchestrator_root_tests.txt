@@ -1,0 +1,6 @@
+services/task-orchestrator/test_conport_http_integration.py
+services/task-orchestrator/test_conport_sync.py
+services/task-orchestrator/test_coordination_integration.py
+services/task-orchestrator/test_eventbus_subscription.py
+services/task-orchestrator/test_integration_bridge_events.py
+services/task-orchestrator/test_phase1_parallel.py

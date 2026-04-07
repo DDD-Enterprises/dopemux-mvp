@@ -1,0 +1,155 @@
+{
+  "packet_id": "TP-CODEX-RTE-V5-OFFLINE-HARDENING-AND-TRUST-CLEANUP-20260402",
+  "branch": "codex/rte-v5-online-readiness-and-cost-trust-20260402",
+  "base_commit": "b9d1fcac9623aa57a3f1dd3ea0b57fcd3c83f145",
+  "implementation_commit_ids": [
+    "4f56b1e2cd863befbc8a66e129a5bdf5b74f2ede"
+  ],
+  "changed_files": [
+    "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md",
+    "docs/92-runbooks/repo-truth-extractor-v5-offline-envelope.md",
+    "services/repo-truth-extractor/README.md",
+    "services/repo-truth-extractor/lib/phase_contract_map.py",
+    "services/repo-truth-extractor/lib/structured_output_contracts.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py",
+    "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+  ],
+  "inspection_report": {
+    "batch_path_misclassification": {
+      "diagnosis": "Batch submit exceptions were already recorded as provider failures in request_meta, but downstream normalization and rollup logic still interpreted empty raw artifact payloads as missing_expected_artifacts.",
+      "affected_scope": "Any batch lane that fails before model output exists can collapse into artifact-absence noise; xAI batch submit was the evidenced live case.",
+      "fix": "Added explicit request-failure classification and failure-stage tracking. normalize_step now records pre-model execution blockers separately and avoids labeling artifact absence as missing_expected_artifacts when the step never produced model output."
+    },
+    "help_warning": {
+      "diagnosis": "The contract-map mismatch warning was reachable through import/print-only paths because step-contract resolution compiled the phase contract map with warnings enabled, and print-config wrote the map before exiting.",
+      "fix": "Made phase-contract-map warnings opt-in, defaulted get_step_contract to silent mode, and skipped phase-contract-map writes for print-only CLI paths."
+    },
+    "dry_run_noise": {
+      "diagnosis": "Dry-run partitions intentionally return success=false with dry_run_delta=1, but UI and step-failure summaries still treated them as failures and surfaced unknown_failure noise.",
+      "fix": "Suppressed dry-run failure spotlights and excluded dry-run partitions from step failure histograms while preserving dry-run accounting."
+    },
+    "offline_safe_work": {
+      "confirmed_lanes": [
+        "--help",
+        "--print-config",
+        "--print-routing-guide",
+        "--print-prescan-guide",
+        "dry-run",
+        "cost preview",
+        "validate_pre_live_gate_v25.py",
+        "extraction_hygiene.py scan",
+        "targeted parser/contract tests"
+      ]
+    }
+  },
+  "outcomes": {
+    "batch_path_fix": {
+      "status": "implemented",
+      "evidence": [
+        "classify_request_failure marks batch_submit_error:* as provider_batch_submission_failure with failure_stage=pre_model_execution",
+        "normalize_step emits artifact_blocked_by_failure_stage instead of missing_expected_artifacts for pre-model batch submit failures"
+      ]
+    },
+    "parser_contract_review": {
+      "status": "bounded_hardening_kept_narrow",
+      "evidence": [
+        "Existing narrow TP4-era alias and line_range normalization remained in place",
+        "No broader parser acceptance was added without new repo evidence"
+      ]
+    },
+    "print_only_warning_cleanup": {
+      "status": "implemented",
+      "evidence": [
+        "run_extraction_v5.py --help produced empty stderr during TP5 validation",
+        "run_extraction_v5.py --preset first-live --dry-run --print-config no longer emitted the model_map/repo_truth_map scope warning"
+      ]
+    },
+    "dry_run_noise_cleanup": {
+      "status": "implemented",
+      "evidence": [
+        "dry-run probe no longer emitted STEP_FAILURE spotlight lines",
+        "dry-run probe no longer emitted STEP_TOP_FAILURES unknown_failure noise"
+      ]
+    },
+    "offline_envelope": {
+      "status": "documented",
+      "runbook": "docs/92-runbooks/repo-truth-extractor-v5-offline-envelope.md"
+    },
+    "environment_summary": {
+      "status": "implemented",
+      "evidence": "validate_pre_live_gate_v25.py now emits environment_summary in VALIDATION_VERDICT.json and VALIDATION_SUMMARY.md when live-online readiness remains blocked or unverified by environment/provider evidence."
+    }
+  },
+  "validation_performed": [
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/phase_contract_map.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python services/repo-truth-extractor/run_extraction_v5.py --help",
+      "status": "PASS",
+      "details": "stderr was empty; the contract-scope warning no longer prints before help."
+    },
+    {
+      "command": "python services/repo-truth-extractor/run_extraction_v5.py --preset first-live --dry-run --print-config --run-id tp5_probe",
+      "status": "PASS",
+      "details": "print-config still prints FIRST_LIVE_PRESET preview and RUN_LOG_ENABLED, but no longer emits the model_map.yaml/repo_truth_map scope warning."
+    },
+    {
+      "command": "python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id tp5_noise_probe --output-root /tmp/rte-v5-tp5-noise",
+      "status": "PASS",
+      "details": "Dry-run completed without STEP_FAILURE spotlight lines or STEP_TOP_FAILURES unknown_failure noise."
+    },
+    {
+      "command": "python services/repo-truth-extractor/extraction_hygiene.py scan",
+      "status": "PASS_WITH_WARNINGS",
+      "details": "warnings=10245 errors=0; pre-existing repo hygiene noise remains, dominated by noise_paths and stale resume-state artifacts."
+    },
+    {
+      "command": "pytest -q services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "status": "NO_GO",
+      "artifact": "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T023618Z/VALIDATION_VERDICT.json",
+      "details": "Route-derived readiness failed in the current environment because REQUIRED_API_KEY_MISSING reported XAI_API_KEY missing. environment_summary now marks live online status as environment_blocked_or_unverified."
+    },
+    {
+      "command": "python services/repo-truth-extractor/validate_pre_live_gate_v25.py --target-policy cost --target-phases A H D C",
+      "status": "NO_GO",
+      "artifact": "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260402T023618Z/VALIDATION_VERDICT.json",
+      "details": "Current validator result still reports REQUIRED_API_KEY_MISSING for XAI_API_KEY in this environment, plus conditional PAL/online-preflight gaps."
+    }
+  ],
+  "validator_state_after_cleanup": {
+    "default_validator_verdict": "NO_GO",
+    "targeted_cost_validator_verdict": "NO_GO",
+    "environment_summary": {
+      "tooling_status": "NO_GO",
+      "live_online_status": "environment_blocked_or_unverified"
+    }
+  },
+  "offline_safe_execution_envelope": {
+    "doc_path": "docs/92-runbooks/repo-truth-extractor-v5-offline-envelope.md",
+    "supported": [
+      "CLI help and print-only inspection",
+      "validator and route/trust checks",
+      "dry-run and cost preview",
+      "hygiene scan",
+      "targeted parser/contract and trust-surface tests"
+    ],
+    "not_supported": [
+      "pretending bounded online is GO without valid OpenRouter auth",
+      "weakening strict route requirements to bypass current contract map"
+    ]
+  },
+  "deferred_backlog": [
+    "Resolve current validator/readiness drift: first-live print-config still resolves strict A/H/C routes to OpenRouter while the current validator run on this machine reported XAI_API_KEY missing in route_derived_readiness.",
+    "OpenRouter credential remediation remains environment work and was not attempted in TP5.",
+    "Broader hygiene debt remains pre-existing: extraction_hygiene.py scan still reports 10245 warnings and 7372 stale resume-state issues."
+  ]
+}

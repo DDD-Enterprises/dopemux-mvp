@@ -31,11 +31,11 @@ This document tracks the immediate follow-up ticket set for PM-plane execution a
   - CLI output behavior is validated in tests.
 
 ### PM-TO-003 - Canonical port/runtime verification
-- Scope: Validate lifecycle examples and tests against canonical task-orchestrator port `8000` and `TASK_ORCHESTRATOR_PORT` override.
-- Why: Prevent stale `3014` assumptions after compose consolidation.
+- Scope: Validate lifecycle examples, bridge wiring, and tests against the observed task-orchestrator runtime default `3014` plus explicit `PORT` override behavior.
+- Why: Prevent stale `8000` assumptions from drifting across docs, bridge config, and supervisor tooling.
 - Acceptance criteria:
-  - Port references are normalized in active docs.
-  - CI coverage asserts both default and override behavior.
+  - Active docs distinguish between task-orchestrator runtime default `3014` and any bridge/container assumptions still pointing at `8000`.
+  - Validation covers both default and override behavior.
 
 ### PM-TO-004 - Rogue container remediation runbook
 - Scope: Document and verify non-canonical task-orchestrator cleanup behavior in `scripts/start.sh`.
@@ -96,3 +96,13 @@ This document tracks the immediate follow-up ticket set for PM-plane execution a
 - Pending remediation: `docs/02-how-to/installation-legacy.md` type=`explanation` expected_prefixes=`docs/04-explanation/,docs/planes/,docs/03-reference/instructions/,docs/instructions/,docs/00-MASTER-INDEX.md,docs/INDEX.md,docs/03-reference/documentation-catalog.md,docs/03-reference/overview.md,docs/01-tutorials/overview.md,docs/02-how-to/overview.md`
 - Pending remediation: `docs/02-how-to/operations/adhd-engine-rollout.md` type=`explanation` expected_prefixes=`docs/04-explanation/,docs/planes/,docs/03-reference/instructions/,docs/instructions/,docs/00-MASTER-INDEX.md,docs/INDEX.md,docs/03-reference/documentation-catalog.md,docs/03-reference/overview.md,docs/01-tutorials/overview.md,docs/02-how-to/overview.md`
 - Additional misplacements not listed inline: `157`
+
+## Progress Sync Log
+- Timestamp: `2026-04-01T00:00:00Z`
+- Baseline: `main...HEAD`
+- Mode: `ledger-only`
+- Ticket `PM-TO-003`: `reopened` reason=`2026-04-01 authority evidence closure confirmed current task-orchestrator config default is 3014 while bridge config still defaults TASK_ORCHESTRATOR_URL to port 8000`
+- Ticket `PM-TO-005`: `linked` artifact=`docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md`
+- Ticket `PM-TO-005`: `linked` artifact=`docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md`
+- Ticket `PM-TO-005`: `linked` artifact=`docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md`
+- Ticket `PM-TO-005`: `linked` artifact=`docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md`

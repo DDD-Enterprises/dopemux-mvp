@@ -5,8 +5,8 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-17'
-last_review: '2026-03-17'
-next_review: '2026-06-15'
+last_review: '2026-04-06'
+next_review: '2026-07-06'
 prelude: V5 Extraction Pipeline Upgrade Design (explanation) for dopemux documentation
   and developer workflows.
 ---
@@ -15,6 +15,29 @@ prelude: V5 Extraction Pipeline Upgrade Design (explanation) for dopemux documen
 **Status**: COMPLETED
 **Date**: 2026-03-18
 **Scope**: Prescan CLI integration, code-focused prescan, AST-enhanced intelligence, intelligent input bundling, pipeline integration points
+
+## 0. Current branch reality check
+
+This design document predates the bounded runtime validation packets. The
+current branch has additionally proven one narrow live lane:
+
+- phase `A`
+- step `A2`
+- routing `balanced_grok_openrouter`
+
+What is runtime-earned on this branch:
+
+- validator and live command coherence for that bounded lane
+- truthful `COST_ABORTED` propagation from raw failures into aggregate artifacts
+- repair-provenance rollups that count one logical repair event once
+- explicit output-safety at the JSON write sink, plus summary-only
+  response-repair logging with detailed metadata preserved in artifacts
+
+What remains broader design intent rather than universally re-proven:
+
+- every other policy lane
+- every other phase/step combination
+- universal extractor behavior outside the bounded lane
 
 ---
 

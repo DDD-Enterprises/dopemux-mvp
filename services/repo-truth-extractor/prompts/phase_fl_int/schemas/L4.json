@@ -1,0 +1,104 @@
+{
+  "type": "object",
+  "required": ["status", "master_feature_ledger", "missing_evidence"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "UNKNOWN"]},
+    "master_feature_ledger": {
+      "type": "object",
+      "required": [
+        "canonical_items",
+        "historical_appendix",
+        "uncertain_appendix",
+        "excluded_non_features",
+        "contradictions",
+        "statistics"
+      ],
+      "properties": {
+        "canonical_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["feature_id", "title", "plane", "domain"],
+            "properties": {
+              "feature_id": {"type": "string"},
+              "title": {"type": "string"},
+              "plane": {"type": "string"},
+              "domain": {"type": "string"}
+            }
+          }
+        },
+        "historical_appendix": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["feature_id", "title", "plane", "domain"],
+            "properties": {
+              "feature_id": {"type": "string"},
+              "title": {"type": "string"},
+              "plane": {"type": "string"},
+              "domain": {"type": "string"}
+            }
+          }
+        },
+        "uncertain_appendix": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["feature_id", "title", "plane", "domain"],
+            "properties": {
+              "feature_id": {"type": "string"},
+              "title": {"type": "string"},
+              "plane": {"type": "string"},
+              "domain": {"type": "string"}
+            }
+          }
+        },
+        "excluded_non_features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["feature_id", "title", "plane", "domain"],
+            "properties": {
+              "feature_id": {"type": "string"},
+              "title": {"type": "string"},
+              "plane": {"type": "string"},
+              "domain": {"type": "string"}
+            }
+          }
+        },
+        "contradictions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["contradiction_id", "status"],
+            "properties": {
+              "contradiction_id": {"type": "string"},
+              "status": {"type": "string"}
+            }
+          }
+        },
+        "statistics": {
+          "type": "object",
+          "required": ["canonical_count", "historical_count", "uncertain_count", "excluded_count", "by_plane"],
+          "properties": {
+            "canonical_count": {"type": "integer"},
+            "historical_count": {"type": "integer"},
+            "uncertain_count": {"type": "integer"},
+            "excluded_count": {"type": "integer"},
+            "by_plane": {
+              "type": "object",
+              "required": ["pm", "cognitive", "control", "unknown"],
+              "properties": {
+                "pm": {"type": "integer"},
+                "cognitive": {"type": "integer"},
+                "control": {"type": "integer"},
+                "unknown": {"type": "integer"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "missing_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}
