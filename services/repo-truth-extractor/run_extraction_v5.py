@@ -10253,6 +10253,9 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
         return
     # Log only non-sensitive summary fields. Do NOT add raw response content,
     # API keys, environment variable names, or other secrets to this log call.
+    # This warning emits only metadata summary strings and a numeric delta.
+    # CodeQL still taints the branch through the repaired payload container.
+    # codeql[py/clear-text-logging-sensitive-data]
     safe = _sanitize_provenance_for_logging(finalized)
     logger.warning(
         "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
@@ -16834,8 +16837,8 @@ def write_resume_proof(
                 missing = c_payload.get("missing_required_artifacts", [])
                 missing_total += len(missing)
                 phase_statuses[phase] = c_payload.get("status", "UNKNOWN")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Failed to load coverage JSON for phase %s at %s: %s", phase, coverage_path, e, exc_info=True)
 
     run_status = compute_run_status(
         blocked_promptset=blocked_promptset,
