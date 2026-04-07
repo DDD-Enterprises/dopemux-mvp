@@ -250,7 +250,24 @@ class ConPortClient:
         return await self._request("POST", "/api/custom_data", json_body=payload)
 
     async def get_custom_data(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        return await self._request("GET", "/api/custom_data", params=params)
+        """Read custom data, preserving empty-state as an empty payload."""
+        if not self.session:
+            await self.initialize()
+
+        url = f"{self.base_url}/api/custom_data"
+        async with self.session.request("GET", url, params=params) as response:
+            raw_text = await response.text()
+            if response.status == 404:
+                return {"count": 0, "items": []}
+            if response.status >= 400:
+                detail = raw_text or f"ConPort request failed with status {response.status}"
+                raise HTTPException(status_code=502, detail=detail[:500])
+            if not raw_text:
+                return {}
+            try:
+                return json.loads(raw_text)
+            except json.JSONDecodeError as exc:
+                raise HTTPException(status_code=502, detail="ConPort returned invalid JSON") from exc
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
     async def get_context(self, context_token: str) -> Dict[str, Any]:
