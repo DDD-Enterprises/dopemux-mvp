@@ -1,0 +1,170 @@
+{
+  "packet": {
+    "name": "bridge-custom-data-read-contract",
+    "title": "Dopecon-Bridge Custom-Data Read Contract Reconciliation for Task-Orchestrator Workflow Records",
+    "objective": "Differentiate empty custom-data state from real bridge/downstream failure for bridge-backed workflow record reads without expanding bridge authority."
+  },
+  "commit_plan": {
+    "planned_slices": [
+      {
+        "slice": 1,
+        "objective": "Reproduce and trace the failing read path"
+      },
+      {
+        "slice": 2,
+        "objective": "Implement the narrowest fix at the proven layer"
+      },
+      {
+        "slice": 3,
+        "objective": "Validate workflow ideas behavior through the bridge-backed read path"
+      },
+      {
+        "slice": 4,
+        "objective": "Close review, precommit, proof, and PR artifacts"
+      }
+    ],
+    "completed_slices": [
+      {
+        "slice": 1,
+        "status": "completed",
+        "result": "Traced GET /api/workflow/ideas -> WorkflowService.list_ideas -> WorkflowStore.get_custom_data -> AsyncDopeconBridgeClient.get_custom_data -> bridge /kg/custom_data -> ConPort /api/custom_data. Confirmed task-orchestrator and WorkflowStore only propagate upstream errors.",
+        "commit_sha": null,
+        "verification": [
+          "Inspected services/task-orchestrator/app/main.py",
+          "Inspected services/task-orchestrator/app/services/workflow_service.py",
+          "Inspected services/task-orchestrator/app/services/workflow_store.py",
+          "Inspected services/shared/dopecon_bridge_client/client.py",
+          "Inspected services/dopecon-bridge/dopecon_bridge/routes.py",
+          "Inspected services/dopecon-bridge/dopecon_bridge/clients.py"
+        ]
+      },
+      {
+        "slice": 2,
+        "status": "completed",
+        "result": "Normalized only upstream 404 from ConPort custom-data reads inside bridge ConPortClient.get_custom_data; left non-404 failures unchanged.",
+        "commit_sha": "c3b69ea34d55b817f9ea7f933b56d6f003c470ed",
+        "verification": [
+          "services/dopecon-bridge/tests/test_conport_custom_data_client.py",
+          "services/dopecon-bridge/tests/test_leantime_route_contract.py",
+          "tests/shared/test_dopecon_bridge_client.py"
+        ]
+      },
+      {
+        "slice": 3,
+        "status": "completed_with_limits",
+        "result": "Validated workflow ideas empty-state semantics through targeted bridge route, WorkflowStore, and workflow API tests. Live integrated stack endpoints were not available in this session.",
+        "commit_sha": "c3b69ea34d55b817f9ea7f933b56d6f003c470ed",
+        "verification": [
+          "tests/unit/test_task_orchestrator_workflow_api.py",
+          "tests/unit/test_task_orchestrator_workflow_store.py",
+          "localhost:3014 probe failed to connect",
+          "localhost:3016/kg/custom_data probe returned generic 404",
+          "localhost:8000/api/custom_data probe returned generic 404"
+        ]
+      },
+      {
+        "slice": 4,
+        "status": "completed_with_limits",
+        "result": "Completed internal PAL codereview and precommit, pushed branch, and opened draft PR. Proof artifact created with known residual live-validation gap.",
+        "commit_sha": null,
+        "verification": [
+          "PAL codereview internal run reported 0 issues",
+          "PAL precommit internal run reported commit-ready validation",
+          "Draft PR opened at https://github.com/DDD-Enterprises/dopemux-mvp/pull/403"
+        ]
+      }
+    ],
+    "replan_events": [
+      {
+        "event": "Validation reroute",
+        "reason": "Repo root tests/conftest.py imports unrelated missing module integrations.leantime_jsonrpc_client, so shared/unit tests were run with PYTHONPATH and --noconftest to isolate packet scope."
+      },
+      {
+        "event": "Harness correction",
+        "reason": "Replaced unavailable aiohttp_server fixture with an explicit aiohttp test server in the new bridge client regression test."
+      }
+    ],
+    "skipped_abandoned_merged_slices": [
+      {
+        "slice": 3,
+        "status": "partially_skipped",
+        "rationale": "No live integrated task-orchestrator/bridge stack exposing the target runtime was available during this session, so verification used direct route/client and unit-level exercise instead of a live end-to-end HTTP stack."
+      }
+    ]
+  },
+  "evidence_ledger": {
+    "files_inspected": [
+      "services/task-orchestrator/app/main.py",
+      "services/task-orchestrator/app/services/workflow_service.py",
+      "services/task-orchestrator/app/services/workflow_store.py",
+      "services/shared/dopecon_bridge_client/client.py",
+      "services/dopecon-bridge/dopecon_bridge/routes.py",
+      "services/dopecon-bridge/dopecon_bridge/clients.py",
+      "services/dopecon-bridge/tests/test_leantime_route_contract.py",
+      "tests/shared/test_dopecon_bridge_client.py",
+      "tests/unit/test_task_orchestrator_workflow_api.py"
+    ],
+    "route_requests_and_responses": [
+      {
+        "request": "curl -i http://localhost:3014/api/workflow/ideas",
+        "response": "curl: (7) Failed to connect to localhost port 3014"
+      },
+      {
+        "request": "curl -i http://localhost:3016/kg/custom_data?workspace_id=/Users/hue/code/dopemux-mvp-worktrees/bridge-custom-data-read-contract&category=workflow_ideas&limit=5",
+        "response": "HTTP/1.1 404 Not Found {\"detail\":\"Not Found\"}"
+      },
+      {
+        "request": "curl -i http://localhost:8000/api/custom_data?workspace_id=/Users/hue/code/dopemux-mvp-worktrees/bridge-custom-data-read-contract&category=workflow_ideas&limit=5",
+        "response": "HTTP/1.1 404 Not Found {\"detail\":\"Not Found\"}"
+      }
+    ],
+    "tests_run": [
+      {
+        "command": "pytest -q --confcutdir=/Users/hue/code/dopemux-mvp-worktrees/bridge-custom-data-read-contract/services/dopecon-bridge/tests /Users/hue/code/dopemux-mvp-worktrees/bridge-custom-data-read-contract/services/dopecon-bridge/tests/test_conport_custom_data_client.py /Users/hue/code/dopemux-mvp-worktrees/bridge-custom-data-read-contract/services/dopecon-bridge/tests/test_leantime_route_contract.py",
+        "result": "passed",
+        "notes": "14 tests passed"
+      },
+      {
+        "command": "PYTHONPATH=/Users/hue/code/dopemux-mvp-worktrees/bridge-custom-data-read-contract pytest -q --noconftest /Users/hue/code/dopemux-mvp-worktrees/bridge-custom-data-read-contract/tests/shared/test_dopecon_bridge_client.py /Users/hue/code/dopemux-mvp-worktrees/bridge-custom-data-read-contract/tests/unit/test_task_orchestrator_workflow_api.py /Users/hue/code/dopemux-mvp-worktrees/bridge-custom-data-read-contract/tests/unit/test_task_orchestrator_workflow_store.py",
+        "result": "passed",
+        "notes": "11 tests passed; 2 pre-existing Pydantic warnings"
+      }
+    ],
+    "diffs_reviewed": [
+      "git diff -- services/dopecon-bridge/dopecon_bridge/clients.py",
+      "git diff -- services/dopecon-bridge/tests/test_conport_custom_data_client.py",
+      "git diff -- services/dopecon-bridge/tests/test_leantime_route_contract.py",
+      "git diff -- tests/shared/test_dopecon_bridge_client.py",
+      "git diff -- tests/unit/test_task_orchestrator_workflow_api.py",
+      "git diff -- tests/unit/test_task_orchestrator_workflow_store.py"
+    ],
+    "codereview_result": {
+      "status": "completed",
+      "type": "PAL internal codereview",
+      "issues_found": 0
+    },
+    "precommit_verdict": {
+      "status": "completed",
+      "type": "PAL internal precommit",
+      "issues_found": 0
+    },
+    "commit_shas": [
+      "c3b69ea34d55b817f9ea7f933b56d6f003c470ed"
+    ],
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/403",
+    "proof_file_path": "proof/bridge-custom-data-read-contract.proof.json"
+  },
+  "finalization": {
+    "codereview_status": "complete_internal_clean",
+    "precommit_status": "complete_internal_clean",
+    "evidence_ledger_completeness": "complete_with_live_stack_gap",
+    "final_confidence": "HIGH",
+    "residual_risks": [
+      "Integrated live stack behavior was not exercised because the target task-orchestrator and bridge runtimes were not available on localhost in this session.",
+      "Bridge now treats every upstream 404 from /api/custom_data as empty-state; if ConPort later uses 404 for a different custom-data read failure mode on the same endpoint, this adapter mapping may need tightening."
+    ],
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/403",
+    "merge_readiness": "not_ready_due_to_missing_live_integrated_validation",
+    "worktree_cleanup_status": "pending_until_session_close"
+  }
+}
