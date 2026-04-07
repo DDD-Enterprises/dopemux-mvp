@@ -1,0 +1,16 @@
+Changed bundle files:
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/live_execution_plan.md
+  - Replaced `balanced_xai` with `balanced_grok_openrouter`.
+  - Replaced run id `tp_codex_rte_prelive_005_phase_a_step_a2` with `tp_codex_rte_prelive_005_phase_a_step_a2_v13`.
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/bounded_live_validator_recheck.md
+  - Replaced the stale broad-policy validator command with the step-scoped A2 recheck under `balanced_grok_openrouter`.
+  - Rewrote the OpenRouter note to match the step-scoped validator evidence.
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/IMPLEMENTER_REPORT.md
+  - Replaced stale `balanced_xai` and old run id references.
+  - Marked the bounded-run task checklist complete to match the bundled execution record and final verdict.
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/verification_commands.txt
+  - Replaced the stale validator command and summary with the authoritative A2 step-scoped recheck.
+- proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/final_operator_verdict.md
+  - Added the authoritative routing policy to the verdict narrative.
+
+No runtime code changed. `PROOF.json` was already authoritative and was not edited.

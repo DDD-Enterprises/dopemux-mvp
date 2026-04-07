@@ -1,0 +1,31 @@
+{
+  "packet_id": "TP-CODEX-RTE-PRELIVE-005A-PROOF-POLICY-COHERENCE",
+  "source_packet_id": "TP-CODEX-RTE-PRELIVE-005",
+  "source_bundle_path": "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005",
+  "authoritative_run_id": "tp_codex_rte_prelive_005_phase_a_step_a2_v13",
+  "authoritative_routing_policy": "balanced_grok_openrouter",
+  "mismatch_classification": "documentation-only drift",
+  "runtime_code_changed": false,
+  "authoritative_sources": [
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/PROOF.json",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/live_run_execution_record.md",
+    "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260405T090026Z/VALIDATION_SCOPE.json",
+    "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260405T090026Z/ONLINE_PREFLIGHT_RESULTS.json"
+  ],
+  "corrected_bundle_files": [
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/live_execution_plan.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/bounded_live_validator_recheck.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/IMPLEMENTER_REPORT.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/verification_commands.txt",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/final_operator_verdict.md"
+  ],
+  "packaged_outputs": [
+    "RUN_MANIFEST.json",
+    "commands.txt",
+    "artifact-diff-summary.txt",
+    "coherence-verdict.md",
+    "proof-fixed.json",
+    "raw-outputs.txt",
+    "CHECKSUMS.txt"
+  ]
+}

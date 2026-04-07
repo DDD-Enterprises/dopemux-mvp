@@ -1,0 +1,65 @@
+{
+  "packet_id": "TP-CODEX-RTE-PRELIVE-005",
+  "branch": "codex/rte-prelive-005-bounded-live-reattempt",
+  "code_under_test_sha": "5d87d829815e00e96d2cdf85d762ff5e7b01de3d",
+  "proof_bundle_sha": "",
+  "bounded_target": {
+    "phase": "A",
+    "step": "A2",
+    "routing_policy": "balanced_grok_openrouter"
+  },
+  "validator_verdict_before_run": "GO_NOW",
+  "live_run_attempted": true,
+  "live_run_command": "DPMX_LIVE_OK=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --routing-policy balanced_grok_openrouter --run-id tp_codex_rte_prelive_005_phase_a_step_a2_v13 --max-cost-usd 0.10",
+  "max_cost_usd": 0.1,
+  "live_run_outcome": "COST_ABORTED",
+  "artifact_truth_check": {
+    "all_consistent": true,
+    "contradictions": []
+  },
+  "spend_truth_check": {
+    "ledger_written": true,
+    "cap_active": true,
+    "cap_enforced_as_expected": true,
+    "post_breach_calls_observed": 0
+  },
+  "repair_truth_check": {
+    "repair_events_observed": 0,
+    "degraded_visibility_correct": true
+  },
+  "billing_reconciliation": {
+    "attempted": true,
+    "variance_classification": "EXPECTED"
+  },
+  "defects_found": [
+    "max_cost_usd missing from main RunnerConfig call",
+    "validator probing all providers despite --step filter",
+    "prompt hash report validating all phase prompts despite --step filter",
+    "legacy phase prompt specs regex failing for single-digit step IDs",
+    "record_request_cost overwriting abort reason for already-aborted requests",
+    "write_resume_proof reporting ready status for blocked runs",
+    "write_coverage_rollup reporting OK status for cost-aborted runs"
+  ],
+  "defects_fixed": [
+    "Added max_cost_usd to RunnerConfig initialization",
+    "Narrowed validator preflight to selected step",
+    "Implemented required-step intersection in hash report",
+    "Fixed step ID regex in legacy prompt specs",
+    "Added aborted-request guard to record_request_cost",
+    "Unified resume_status logic with compute_run_status",
+    "Unified rollup status logic with compute_run_status"
+  ],
+  "final_operator_verdict": "READY_FOR_MERGE_PREP",
+  "tests_run": [
+    "pytest services/repo-truth-extractor/tests/"
+  ],
+  "test_results": {
+    "regression_tests": "PASSED"
+  },
+  "files_touched": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+  ],
+  "residual_risks": [],
+  "verdict": "PASS"
+}
