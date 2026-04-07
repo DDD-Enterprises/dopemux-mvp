@@ -10194,18 +10194,54 @@ def _safe_log_value(value: Any, max_length: int = 128) -> str:
     return text
 
 
+def _sanitize_provenance_for_logging(finalized: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Return a copy of the provenance/finalized dict containing only fields that
+    are explicitly considered safe for logging.
+
+    This is a defensive layer: even if future code mistakenly adds sensitive
+    entries (e.g. API keys, env-var names) to the provenance, they will be
+    filtered out before reaching any log sinks.
+    """
+    # Explicit allow-list of non-sensitive fields we expect in finalized
+    allowed_keys = {
+        "phase",
+        "step_id",
+        "partition_id",
+        "provider",
+        "model_id",
+        "contract_lane",
+        "accepted",
+        "final_disposition",
+        "degraded_acceptance",
+        "repair_applied",
+        "repair_type",
+        "original_response_length",
+        "repaired_response_length",
+        "chars_lost",
+        "chars_delta",
+    }
+
+    safe: Dict[str, Any] = {}
+    for key in allowed_keys:
+        if key in finalized:
+            safe[key] = finalized[key]
+    return safe
+
+
 def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     if not finalized.get("repair_applied"):
         return
     # Log only non-sensitive summary fields. Do NOT add raw response content,
     # API keys, environment variable names, or other secrets to this log call.
+    safe = _sanitize_provenance_for_logging(finalized)
     logger.warning(
         "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
-        _safe_log_value(finalized.get("phase")),
-        _safe_log_value(finalized.get("step_id")),
-        _safe_log_value(finalized.get("partition_id")),
-        _safe_log_value(finalized.get("repair_type")),
-        finalized.get("chars_delta", 0),
+        _safe_log_value(safe.get("phase")),
+        _safe_log_value(safe.get("step_id")),
+        _safe_log_value(safe.get("partition_id")),
+        _safe_log_value(safe.get("repair_type")),
+        safe.get("chars_delta", 0),
     )
 
 
