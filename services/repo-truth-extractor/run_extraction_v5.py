@@ -10041,6 +10041,9 @@ def try_repair_json_truncation(
 def parse_json_from_response_with_provenance(
     text: str,
 ) -> Tuple[Optional[Any], Dict[str, Any]]:
+    # NOTE: Provenance is intentionally limited to non-sensitive metadata such as
+    # lengths and boolean flags. Do NOT add raw model responses, API keys, env-var
+    # names, or any other secrets here, because provenance flows into logging.
     provenance = {
         "repair_applied": False,
         "repair_type": None,
@@ -10150,6 +10153,9 @@ def finalize_response_parse_provenance(
     contract_lane: str,
     accepted: bool,
 ) -> Dict[str, Any]:
+    # Only copy through and add non-sensitive identifiers / booleans here.
+    # Do NOT attach secrets such as API keys, env-var names, or raw response
+    # bodies, because this structure may be logged for debugging.
     finalized = dict(provenance)
     finalized.update(
         {
@@ -10191,6 +10197,8 @@ def _safe_log_value(value: Any, max_length: int = 128) -> str:
 def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
     if not finalized.get("repair_applied"):
         return
+    # Log only non-sensitive summary fields. Do NOT add raw response content,
+    # API keys, environment variable names, or other secrets to this log call.
     logger.warning(
         "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta=%d",
         _safe_log_value(finalized.get("phase")),
