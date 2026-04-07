@@ -13,6 +13,8 @@ PRESCAN_INTELLIGENCE_SCHEMA: Dict[str, Any] = {
             "properties": {
                 "total_files_scanned": {"type": "integer"},
                 "included_files": {"type": "integer"},
+                "excluded_files": {"type": "integer"},
+                "ghost_files": {"type": "integer"},
                 "total_included_size_bytes": {"type": "integer"},
                 "by_authority_class": {
                     "type": "object",
@@ -21,8 +23,13 @@ PRESCAN_INTELLIGENCE_SCHEMA: Dict[str, Any] = {
                 "by_extension": {
                     "type": "object",
                     "additionalProperties": {"type": "integer"}
-                }
+                },
+                "corpus_health_score": {"type": "integer"},
             }
+        },
+        "lifecycle_distribution": {
+            "type": "object",
+            "additionalProperties": {"type": "integer"}
         },
         "duplicate_groups": {
             "type": "object",
@@ -45,6 +52,42 @@ PRESCAN_INTELLIGENCE_SCHEMA: Dict[str, Any] = {
                 }
             }
         },
+        "version_chain_count": {"type": "integer"},
+        "compression_potential_files": {"type": "integer"},
+        "ghost_files": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string"},
+                    "deleted_at_sha": {"type": ["string", "null"]},
+                    "deleted_date": {"type": ["string", "null"]},
+                    "recovery_source": {"type": "string"}
+                },
+                "required": ["path", "recovery_source"]
+            }
+        },
+        "planned_features": {
+            "type": "object",
+            "properties": {
+                "proposed_adrs": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "stub_files": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "todo_files": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "draft_docs": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                }
+            }
+        },
         "extraction_hints": {
             "type": "object",
             "properties": {
@@ -52,15 +95,24 @@ PRESCAN_INTELLIGENCE_SCHEMA: Dict[str, Any] = {
                     "type": "array",
                     "items": {"type": "string"}
                 },
+                "high_churn_files": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
                 "compress_candidates": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "chain_id": {"type": "string"},
-                            "send_summary_instead": {"type": "boolean"},
-                            "summary_hint": {"type": "string"}
-                        }
+                        "oneOf": [
+                            {"type": "string"},
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "chain_id": {"type": "string"},
+                                    "send_summary_instead": {"type": "boolean"},
+                                    "summary_hint": {"type": "string"}
+                                }
+                            }
+                        ]
                     }
                 }
             }

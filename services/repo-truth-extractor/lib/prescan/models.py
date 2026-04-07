@@ -81,6 +81,7 @@ class PrescanConfig:
     api_key_env: str = "XAI_API_KEY"
     temperature: float = 0.1
     max_response_tokens: int = 200000
+    cost_estimate: bool = True
     litellm_proxy_url: str = "http://localhost:4000"
     verbose: bool = False
     force: bool = False
