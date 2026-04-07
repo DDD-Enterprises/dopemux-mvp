@@ -46,7 +46,6 @@ def test_code_prescan_emits_dotted_relative_python_imports(tmp_path: Path) -> No
 
 
 def test_dependency_graph_uses_emitted_relative_python_imports(tmp_path: Path) -> None:
-    config = _make_config(tmp_path)
     graph = DependencyGraph()
     manifest = [
         {"rel_path": "pkg/mod.py"},
