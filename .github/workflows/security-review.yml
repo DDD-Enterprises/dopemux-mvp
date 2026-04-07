@@ -10,13 +10,15 @@ on:
     types: [opened, synchronize, reopened]
   push:
     branches: [main]
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   security-review:
     name: "🤖 Claude Code Security Analysis"
     runs-on: ubuntu-latest
     timeout-minutes: 25  # ADHD-optimized: 25-minute chunks
-    if: github.repository == 'DDD-Enterprises/dopemux-mvp' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.repository == 'DDD-Enterprises/dopemux-mvp' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
