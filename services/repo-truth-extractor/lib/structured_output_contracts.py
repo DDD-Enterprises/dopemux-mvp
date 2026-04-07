@@ -168,7 +168,8 @@ def resolve_stage_route(
             {
                 "provider": provider,
                 "model_id": str(route["model_id"]),
-                "api_key_env": str(route["api_key_env"]),
+                # Deliberately omit api_key_env to avoid exposing authentication-related
+                # environment identifiers in any logged or serialized strict-route metadata.
                 "transport": transport,
                 "strict_json_schema": bool(route.get("strict_json_schema", False)),
                 "strict_passthrough_verified": bool(route.get("strict_passthrough_verified", False)),
