@@ -10199,13 +10199,26 @@ def _sanitize_provenance_for_logging(finalized: Dict[str, Any]) -> Dict[str, Any
     Return a copy of the provenance/finalized dict containing only fields that
     are explicitly considered safe for logging.
 
+    # Avoid logging raw numeric deltas derived from potentially tainted text;
+    # instead, log only the sign of the delta as a coarse summary.
+    delta = finalized.get("chars_delta", 0)
+    try:
+        delta_int = int(delta)
+    except Exception:
+        delta_int = 0
+    if delta_int > 0:
+        delta_sign = "positive"
+    elif delta_int < 0:
+        delta_sign = "negative"
+    else:
+        delta_sign = "zero"
     # Coerce chars_delta to an int primitive to avoid ever logging tainted text.
-    chars_delta = finalized.get("chars_delta", 0)
+        "RESPONSE_PARSE_REPAIRED: phase=%s step=%s partition=%s strategy=%s delta_sign=%s",
     try:
         chars_delta = int(chars_delta or 0)
     except Exception:
         chars_delta = 0
-    This is a defensive layer: even if future code mistakenly adds sensitive
+        _safe_log_value(delta_sign),
     entries (e.g. API keys, env-var names) to the provenance, they will be
     filtered out before reaching any log sinks.
     """
