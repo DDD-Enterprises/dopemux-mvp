@@ -266,3 +266,26 @@ def test_ddg_and_custom_data_routes_proxy_to_conport(runtime_client, monkeypatch
     assert ddg_response.json()["items"] == [{"id": "dec_1"}]
     assert custom_response.status_code == 200
     assert custom_response.json()["data"] == [{"key": "foo", "value": {"bar": 1}}]
+
+
+def test_custom_data_route_normalizes_upstream_empty_state(runtime_client, monkeypatch):
+    monkeypatch.setattr(
+        bridge_routes.conport_client,
+        "get_custom_data",
+        AsyncMock(return_value={"count": 0, "items": []}),
+    )
+
+    bridge_main.app.dependency_overrides[bridge_routes.get_current_user] = lambda: {"username": "admin"}
+    response = runtime_client.get(
+        "/kg/custom_data",
+        params={"workspace_id": "/workspace", "category": "workflow_ideas", "limit": 5},
+    )
+    bridge_main.app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "success": True,
+        "count": 0,
+        "data": [],
+        "source": "conport",
+    }
