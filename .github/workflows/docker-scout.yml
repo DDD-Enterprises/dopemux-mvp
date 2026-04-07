@@ -94,10 +94,16 @@ jobs:
         with:
           registry: dhi.io
           username: ${{ github.actor }}
-          password: ${{ env.DHI_TOKEN }}
+      - name: Fail when DHI_TOKEN is unavailable on non-PR runs
+        if: ${{ env.DHI_TOKEN == '' && github.event_name != 'pull_request' }}
+        run: |
+          echo "::error::DHI_TOKEN secret is required for Docker Scout on non-pull_request runs. Refusing to rewrite dhi.io image references."
+          exit 1
 
-      - name: Fallback to public images when DHI login unavailable
-        if: ${{ steps.dhi_login.outcome != 'success' }}
+      - name: Fallback to public images when DHI_TOKEN is unavailable
+        if: ${{ env.DHI_TOKEN == '' && github.event_name == 'pull_request' }}
+        run: |
+          echo "::warning::DHI_TOKEN secret is not available for pull_request. Rewriting dhi.io image references to their public equivalents for this Scout build."
         run: |
           echo "::warning::dhi.io login unavailable. Rewriting dhi.io/ base image references to public Docker Hub equivalents."
           find . -name "Dockerfile*" -type f -exec sed -i 's|dhi.io/||g' {} +
