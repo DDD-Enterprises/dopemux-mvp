@@ -8855,7 +8855,11 @@ def call_llm(
         )
 
     if not api_key:
-        logger.error("Missing API key env var: %s", api_key_env)
+        logger.error(
+            "Missing API key env var for provider=%s model=%s",
+            provider,
+            model_id,
+        )
         if provider == "gemini":
             logger.error(
                 "Gemini requires GEMINI_API_KEY in repo-root .env (canonical). "
@@ -8880,8 +8884,9 @@ def call_llm(
                     provider, model_id, endpoint_url, None
                 ),
                 "provider_error_reason": "MISSING_API_KEY_ENV",
-                "api_key_env_requested": api_key_env,
-                "api_key_env_resolved": resolved_api_key_env,
+                # Redacted to avoid exposing authentication-related environment identifiers
+                "api_key_env_requested": "***redacted***",
+                "api_key_env_resolved": "***redacted***",
                 "gemini_endpoint_family": gemini_family,
                 "gemini_auth_attempt_sequence": (
                     auth_mode_sequence if provider == "gemini" else None
