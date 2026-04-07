@@ -140,6 +140,7 @@ jobs:
           command: compare
           image: ${{ steps.image.outputs.ref }}
           to-env: production
+          organization: ${{ secrets.DOCKER_SCOUT_HUB_USER }}
           ignore-unchanged: true
           only-severities: critical,high
           github-token: ${{ secrets.GITHUB_TOKEN }}
