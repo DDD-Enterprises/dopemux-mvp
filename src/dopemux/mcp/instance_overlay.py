@@ -82,7 +82,22 @@ class InstanceOverlayManager:
         lines = [
             f"# Generated for instance: {self.instance_id}",
             f"COMPOSE_PROJECT_NAME={self.get_compose_project_name()}",
+            "COMPOSE_FILE=compose.yml",
             f"DOPEMUX_INSTANCE_ID={self.instance_id}",
+            f"CONPORT_CONTAINER_NAME={'mcp-conport' if not self.instance_id or self.instance_id == 'A' else f'mcp-conport_{self.instance_id}'}",
+            f"SERENA_CONTAINER_NAME={'dopemux-mcp-serena' if not self.instance_id or self.instance_id == 'A' else f'dopemux-mcp-serena_{self.instance_id}'}",
+            f"CONPORT_HTTP_PORT={get_p('ConPort')}",
+            f"CONPORT_MCP_PORT={get_p('ConPort') + 1}",
+            f"CONPORT_INFO_PORT={get_p('ConPort') + 1000}",
+            f"SERENA_PORT={get_p('Serena')}",
+            f"SERENA_HTTP_PORT={get_p('Serena') + 1000}",
+            f"DOPE_CONTEXT_PORT={get_p('Dope-Context')}",
+            f"DOPE_MEMORY_PORT={get_p('Dope-Memory')}",
+            f"PAL_PORT={self.base_port + 3}",
+            f"EXA_PORT={self.base_port + 11}",
+            f"DESKTOP_COMMANDER_PORT={self.base_port + 12}",
+            f"LEANTIME_BRIDGE_PORT={self.base_port + 15}",
+            f"GPT_RESEARCHER_PORT={self.base_port + 9}",
             f"DOPEMUX_CONPORT_PORT={get_p('ConPort')}",
             f"DOPEMUX_SERENA_PORT={get_p('Serena')}",
             f"DOPEMUX_CONTEXT_PORT={get_p('Dope-Context')}",
@@ -100,9 +115,22 @@ class InstanceOverlayManager:
         # Helper to generate service override only if port exists
         services = []
         if "ConPort" in self.port_map:
-            services.append(f"  conport:\n    ports:\n      - \"{self.port_map['ConPort']}:3004\"")
+            services.append(
+                "  conport:\n"
+                f"    container_name: {'mcp-conport' if not self.instance_id or self.instance_id == 'A' else f'mcp-conport_{self.instance_id}'}\n"
+                "    ports:\n"
+                f"      - \"{self.port_map['ConPort']}:3004\"\n"
+                f"      - \"{self.port_map['ConPort'] + 1}:3005\"\n"
+                f"      - \"{self.port_map['ConPort'] + 1000}:4004\""
+            )
         if "Serena" in self.port_map:
-            services.append(f"  serena:\n    ports:\n      - \"{self.port_map['Serena']}:3006\"")
+            services.append(
+                "  serena:\n"
+                f"    container_name: {'dopemux-mcp-serena' if not self.instance_id or self.instance_id == 'A' else f'dopemux-mcp-serena_{self.instance_id}'}\n"
+                "    ports:\n"
+                f"      - \"{self.port_map['Serena']}:3006\"\n"
+                f"      - \"{self.port_map['Serena'] + 1000}:4006\""
+            )
         if "Dope-Context" in self.port_map:
             services.append(f"  dope-context:\n    ports:\n      - \"{self.port_map['Dope-Context']}:3010\"")
         if "Dope-Memory" in self.port_map:

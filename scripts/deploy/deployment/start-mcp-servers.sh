@@ -66,16 +66,16 @@ echo "🐳 Starting Docker-based MCP servers..."
 
 # Start core infrastructure first
 echo "🏗️ Starting infrastructure services..."
-docker compose -p dopemux -f "$PROJECT_ROOT/compose.yml" up -d dopemux-postgres-age dopemux-redis-primary dopemux-redis-events mcp-qdrant
+docker compose -p dopemux -f "$PROJECT_ROOT/compose.yml" up -d postgres redis-primary redis-events mcp-qdrant
 
 # Wait for infrastructure
 check_container_health "dopemux-postgres-age"
-check_container_health "dopemux-redis-primary"
+check_container_health "redis-primary"
 check_container_health "mcp-qdrant"
 
 # Start MCP servers
 echo "🔧 Starting MCP servers..."
-docker compose -p dopemux -f "$PROJECT_ROOT/compose.yml" up -d mcp-conport mcp-zen mcp-pal mcp-serena mcp-dope-context mcp-exa mcp-gptr-mcp mcp-leantime-bridge mcp-desktop-commander mcp-task-orchestrator mcp-clear-thought
+docker compose -p dopemux -f "$PROJECT_ROOT/compose.yml" up -d conport pal serena dope-context exa gptr-mcp leantime-bridge desktop-commander task-orchestrator
 
 # Wait for MCP servers to be ready
 echo "🏥 Checking MCP server health..."
@@ -84,13 +84,10 @@ echo "🏥 Checking MCP server health..."
 check_container_health "mcp-conport"
 check_port_health "localhost" "3004" "ConPort"
 
-check_container_health "mcp-zen"
-check_port_health "localhost" "3003" "Zen"
-
 check_container_health "mcp-pal"
 check_port_health "localhost" "3003" "PAL apilookup"
 
-check_container_health "mcp-serena"
+check_container_health "${SERENA_CONTAINER_NAME:-dopemux-mcp-serena}"
 # Serena doesn't have a health endpoint, just check if port is open
 
 check_container_health "mcp-dope-context"
@@ -98,22 +95,19 @@ check_port_health "localhost" "3010" "Dope Context"
 
 # Additional servers (may not be critical)
 check_container_health "mcp-exa" || echo "⚠️ Exa MCP container not healthy, but continuing..."
-check_port_health "localhost" "3008" "Exa" || echo "⚠️ Exa MCP not responding, but continuing..."
+check_port_health "localhost" "3011" "Exa" || echo "⚠️ Exa MCP not responding, but continuing..."
 
-check_container_health "mcp-gptr-mcp" || echo "⚠️ GPT Researcher container not healthy, but continuing..."
+check_container_health "dopemux-mcp-gptr-mcp" || echo "⚠️ GPT Researcher container not healthy, but continuing..."
 check_port_health "localhost" "3009" "GPT Researcher" || echo "⚠️ GPT Researcher not responding, but continuing..."
 
-check_container_health "mcp-leantime-bridge" || echo "⚠️ Leantime Bridge container not healthy, but continuing..."
+check_container_health "dopemux-mcp-leantime-bridge" || echo "⚠️ Leantime Bridge container not healthy, but continuing..."
 check_port_health "localhost" "3015" "Leantime Bridge" || echo "⚠️ Leantime Bridge not responding, but continuing..."
 
-check_container_health "mcp-desktop-commander" || echo "⚠️ Desktop Commander container not healthy, but continuing..."
+check_container_health "dopemux-mcp-desktop-commander" || echo "⚠️ Desktop Commander container not healthy, but continuing..."
 check_port_health "localhost" "3012" "Desktop Commander" || echo "⚠️ Desktop Commander not responding, but continuing..."
 
-check_container_health "mcp-task-orchestrator" || echo "⚠️ Task Orchestrator container not healthy, but continuing..."
+check_container_health "task-orchestrator" || echo "⚠️ Task Orchestrator container not healthy, but continuing..."
 # Task Orchestrator may restart, so don't check port
-
-check_container_health "mcp-clear-thought" || echo "⚠️ Clear Thought container not healthy, but continuing..."
-check_port_health "localhost" "3013" "Clear Thought" || echo "⚠️ Clear Thought not responding, but continuing..."
 
 echo ""
 echo "🎉 MCP Server startup complete!"
