@@ -204,9 +204,16 @@ jobs:
           }
           trap cleanup EXIT
 
+          extra_env_args=()
+          if [ "${{ matrix.service }}" = "adhd-engine" ]; then
+            # The service already supports degraded startup for local/test workflows.
+            extra_env_args+=( -e ADHD_ENGINE_ALLOW_DEGRADED_STARTUP=1 )
+          fi
+
           docker run -d --rm \
             --name "$CONTAINER_NAME" \
             -p "${SMOKE_PORT}:${SMOKE_PORT}" \
+            "${extra_env_args[@]}" \
             "$IMAGE_REF"
 
           health_url="http://127.0.0.1:${SMOKE_PORT}${SMOKE_PATH}"

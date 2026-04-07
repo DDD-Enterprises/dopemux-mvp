@@ -41,6 +41,7 @@ jobs:
     env:
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
       DOCKER_SCOUT_ORGANIZATION: ${{ vars.DOCKER_SCOUT_ORGANIZATION }}
+      DOCKER_SCOUT_COMPARE_ENABLED: ${{ vars.DOCKER_SCOUT_COMPARE_ENABLED }}
 
     strategy:
       fail-fast: false
@@ -115,14 +116,17 @@ jobs:
             echo "ref=${{ env.NAMESPACE }}/${{ matrix.service }}:sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Detect Docker Scout compare capability
+      - name: Detect Docker Scout environment capability
         id: scout_compare
         run: |
-          if [ -n "${DOCKER_SCOUT_ORGANIZATION}" ]; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::DOCKER_SCOUT_ORGANIZATION is unset. Skipping Docker Scout environment comparison."
+          if [ -z "${DOCKER_SCOUT_ORGANIZATION}" ]; then
+            echo "::warning::DOCKER_SCOUT_ORGANIZATION is unset. Falling back to Docker Scout CVE scanning."
             echo "enabled=false" >> "$GITHUB_OUTPUT"
+          elif [ "${DOCKER_SCOUT_COMPARE_ENABLED}" != "true" ]; then
+            echo "::warning::DOCKER_SCOUT_COMPARE_ENABLED is not true. Falling back to Docker Scout CVE scanning until the organization is enrolled and the production environment is populated."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build image for Scout analysis
