@@ -198,8 +198,12 @@ jobs:
         run: |
           set -euo pipefail
 
+          container_started=false
+
           cleanup() {
-            docker logs "$CONTAINER_NAME" 2>/dev/null || true
+            if [ "$container_started" = true ]; then
+              docker logs "$CONTAINER_NAME" 2>/dev/null || true
+            fi
             docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
           }
           trap cleanup EXIT
@@ -210,20 +214,27 @@ jobs:
             extra_env_args+=( -e ADHD_ENGINE_ALLOW_DEGRADED_STARTUP=1 )
           fi
 
-          docker run -d --rm \
+          docker run -d \
             --name "$CONTAINER_NAME" \
             -p "${SMOKE_PORT}:${SMOKE_PORT}" \
             "${extra_env_args[@]}" \
             "$IMAGE_REF"
+          container_started=true
 
           health_url="http://127.0.0.1:${SMOKE_PORT}${SMOKE_PATH}"
           for _ in $(seq 1 30); do
-            state="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$CONTAINER_NAME")"
+            inspect_output="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$CONTAINER_NAME" 2>&1 || true)"
+            if echo "$inspect_output" | grep -q "No such object"; then
+              echo "::error::Container disappeared before becoming healthy."
+              exit 1
+            fi
+            state="$inspect_output"
             if [ "$state" = "healthy" ]; then
               break
             fi
             if [ "$state" = "exited" ]; then
               echo "::error::Container exited before becoming healthy."
+              docker logs "$CONTAINER_NAME" 2>/dev/null || true
               exit 1
             fi
             if curl -fsS "$health_url" >/dev/null; then
