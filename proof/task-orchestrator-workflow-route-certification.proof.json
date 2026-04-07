@@ -1,0 +1,206 @@
+{
+  "packet": {
+    "title": "Task-Orchestrator Full Workflow Route Live Certification",
+    "objective_status": "Met"
+  },
+  "commit_plan": {
+    "planned_slices": [
+      {
+        "slice": 1,
+        "objective": "Run live certification for workflow ideas routes"
+      },
+      {
+        "slice": 2,
+        "objective": "Run live certification for workflow epics routes"
+      },
+      {
+        "slice": 3,
+        "objective": "Run live certification for project workflow read routes"
+      },
+      {
+        "slice": 4,
+        "objective": "Apply the narrowest in-scope fix if certification exposes one concrete runtime defect"
+      },
+      {
+        "slice": 5,
+        "objective": "Finalize review, precommit, proof, and PR state"
+      }
+    ],
+    "completed_slices": [
+      {
+        "slice": 1,
+        "status": "completed",
+        "summary": "Certified workflow ideas routes for empty-state, create, readback, update, and representative 404 failure",
+        "verification": [
+          "GET /api/workflow/ideas -> 200 empty",
+          "POST /api/workflow/ideas -> 201",
+          "GET /api/workflow/ideas after create -> 200 with created item",
+          "PATCH /api/workflow/ideas/{idea_id} -> 200",
+          "PATCH /api/workflow/ideas/idea_missing -> 404"
+        ]
+      },
+      {
+        "slice": 2,
+        "status": "completed",
+        "summary": "Certified workflow epics routes for empty-state, create, readback, update, and representative 404 failure",
+        "verification": [
+          "GET /api/workflow/epics -> 200 empty",
+          "POST /api/workflow/epics -> 201",
+          "GET /api/workflow/epics after create -> 200 with created item",
+          "PATCH /api/workflow/epics/{epic_id} -> 200",
+          "PATCH /api/workflow/epics/epic_missing -> 404"
+        ]
+      },
+      {
+        "slice": 3,
+        "status": "completed",
+        "summary": "Initial certification exposed project workflow read routes as degraded because they returned framework 404 despite existing handlers",
+        "verification": [
+          "GET /api/projects/123/workflow/state -> 404 before fix",
+          "GET /api/projects/123/workflow/queue -> 404 before fix",
+          "GET /api/projects/123/workflow/blockers -> 404 before fix",
+          "FastAPI route table lacked /api/projects/{project_id}/workflow/* routes before fix"
+        ]
+      },
+      {
+        "slice": 4,
+        "status": "completed",
+        "summary": "Mounted the existing project workflow router in app.main and added a route-family certification test",
+        "commit_sha": "78beb2901899d8e5c3e2bb388450f2c58485bdf0",
+        "verification": [
+          "FastAPI route table now includes /api/projects/{project_id}/workflow/{queue,blockers,state,transition}",
+          "pytest -q services/task-orchestrator/tests/test_workflow_route_certification.py"
+        ]
+      },
+      {
+        "slice": 5,
+        "status": "completed",
+        "summary": "Completed manual review, local precommit validation, draft PR creation, and proof capture",
+        "verification": [
+          "pytest -q services/task-orchestrator/tests/test_workflow_write_serialization.py",
+          "pytest -q services/task-orchestrator/tests/test_health_route.py",
+          "pytest -q services/dopecon-bridge/tests/test_leantime_route_contract.py -k 'custom_data_routes_proxy_to_conport or ddg_and_custom_data_routes_proxy_to_conport'"
+        ]
+      }
+    ],
+    "replan_events": [
+      {
+        "reason": "Initial worktree was created from local main, but this packet needed to sit on top of the workflow serialization fix branch for accurate certification",
+        "action": "Recreated the dedicated worktree from tp/workflow-idea-write-serialization-fix before certification continued"
+      },
+      {
+        "reason": "Formal PAL MCP chain was unavailable because PAL tool calls failed with transport-closed errors in this session",
+        "action": "Completed equivalent local inspection, review, and precommit validation with explicit evidence capture instead of blocking the packet on the broken side channel"
+      }
+    ],
+    "skipped_or_abandoned_slices": [
+      {
+        "slice": "broader workflow service/store refactor",
+        "status": "abandoned",
+        "rationale": "Certification exposed a runtime mount defect, and mounting the existing router restored the missing authority slice without changing storage, PM boundaries, or workflow persistence semantics"
+      }
+    ],
+    "merged_slices": [],
+    "commit_shas": [
+      "78beb2901899d8e5c3e2bb388450f2c58485bdf0"
+    ]
+  },
+  "evidence_ledger": {
+    "files_inspected": [
+      "services/task-orchestrator/app/main.py",
+      "services/task-orchestrator/app/api/project_workflow.py",
+      "services/task-orchestrator/app/services/workflow_service.py",
+      "services/task-orchestrator/app/services/workflow_store.py",
+      "services/task-orchestrator/tests/test_workflow_write_serialization.py",
+      "services/task-orchestrator/tests/test_health_route.py",
+      "services/dopecon-bridge/tests/test_leantime_route_contract.py"
+    ],
+    "live_route_requests_and_responses": {
+      "workflow_ideas": [
+        "GET /api/workflow/ideas -> 200 {'count': 0, 'ideas': []}",
+        "POST /api/workflow/ideas -> 201 with created idea payload",
+        "GET /api/workflow/ideas -> 200 with created item",
+        "PATCH /api/workflow/ideas/{idea_id} -> 200 with updated status/title",
+        "PATCH /api/workflow/ideas/idea_missing -> 404 {'detail': 'idea not found: idea_missing'}"
+      ],
+      "workflow_epics": [
+        "GET /api/workflow/epics -> 200 {'count': 0, 'epics': []}",
+        "POST /api/workflow/epics -> 201 with created epic payload",
+        "GET /api/workflow/epics -> 200 with created item",
+        "PATCH /api/workflow/epics/{epic_id} -> 200 with updated status/priority",
+        "PATCH /api/workflow/epics/epic_missing -> 404 {'detail': 'epic not found: epic_missing'}"
+      ],
+      "project_workflow_reads_after_fix": [
+        "GET /api/projects/123/workflow/state -> 200 with idea/epic status snapshot",
+        "GET /api/projects/123/workflow/queue -> 200 with ready epic in queue_items",
+        "GET /api/projects/123/workflow/blockers -> 200 with empty blocker set",
+        "GET /api/projects/unknown/workflow/state -> 404 {'detail': 'project not found'}"
+      ]
+    },
+    "payloads_used": {
+      "idea_create": {
+        "title": "Idea A",
+        "description": "Desc A",
+        "tags": [
+          "x"
+        ]
+      },
+      "idea_patch": {
+        "title": "Idea A2",
+        "status": "under-review"
+      },
+      "epic_create": {
+        "title": "Epic A",
+        "description": "Epic Desc",
+        "business_value": "Value",
+        "priority": "high",
+        "status": "planned"
+      },
+      "epic_patch": {
+        "status": "ready",
+        "priority": "critical"
+      }
+    },
+    "route_table_observation": {
+      "before_fix": [
+        "/api/workflow/ideas",
+        "/api/workflow/ideas/{idea_id}",
+        "/api/workflow/ideas/{idea_id}/promote",
+        "/api/workflow/epics",
+        "/api/workflow/epics/{epic_id}"
+      ],
+      "after_fix": [
+        "/api/projects/{project_id}/workflow/queue",
+        "/api/projects/{project_id}/workflow/blockers",
+        "/api/projects/{project_id}/workflow/state",
+        "/api/projects/{project_id}/workflow/transition",
+        "/api/workflow/ideas",
+        "/api/workflow/ideas/{idea_id}",
+        "/api/workflow/ideas/{idea_id}/promote",
+        "/api/workflow/epics",
+        "/api/workflow/epics/{epic_id}"
+      ]
+    }
+  },
+  "finalization": {
+    "codereview_status": "completed locally; PAL codereview tool unavailable due transport-closed MCP errors",
+    "precommit_status": "completed locally; targeted regression tests and route proof passed",
+    "evidence_ledger_completeness": "complete for the certified workflow route family and the single in-scope mount defect",
+    "final_confidence": "VERIFIED",
+    "residual_risks": [
+      "PAL MCP tools were unavailable, so the requested externalized review/precommit chain could not be executed through PAL in this session",
+      "The certification harness injects an in-memory workflow service and sets project_workflow._workflow_service_instance explicitly for deterministic proof; production runtime still depends on configured bridge-backed persistence and environment wiring"
+    ],
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/406",
+    "merge_readiness": "draft",
+    "worktree_cleanup_status": "pending_local_removal_after_artifact_commit"
+  },
+  "tool_chain_executed": [
+    "local-debug",
+    "local-challenge",
+    "local-planner",
+    "local-codereview",
+    "local-precommit",
+    "local-challenge"
+  ]
+}
