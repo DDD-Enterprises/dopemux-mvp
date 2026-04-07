@@ -1,7 +1,7 @@
 # Legacy compatibility image for the historical `dopemux-backend` tag.
 # Repo runtime truth currently routes this image to the canonical
 # task-orchestrator FastAPI surface.
-FROM dhi.io/python:3.11-slim AS builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir .
 
 # Stage 2: Runtime
-FROM dhi.io/python:3.11-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
