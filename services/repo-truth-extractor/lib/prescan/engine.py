@@ -39,6 +39,10 @@ class PrescanEngine:
         incremental_cache = IncrementalCodeCache(self.config)
         changed_files: set[str] | None = None
         cache_payload: dict[str, Any] | None = None
+        cache_fallback_reason: str | None = None
+        cached_reuse_count = 0
+        reanalyzed_count = 0
+        removed_cache_entries = 0
 
         try:
             # 1. Walk corpus
@@ -58,6 +62,7 @@ class PrescanEngine:
                     logger.info(f"Incremental mode: {len(changed_files)} files changed since last run.")
                     cache_payload, cache_warning = incremental_cache.load()
                     if cache_warning:
+                        cache_fallback_reason = cache_warning
                         warnings.append(cache_warning)
                         logger.warning(cache_warning)
             
@@ -84,14 +89,26 @@ class PrescanEngine:
             code_intel = []
             if self.config.enable_code_prescan:
                 logger.info("Running code intelligence (AST analysis)...")
+                current_paths = {entry.rel_path for entry in entries}
+                removed_cache_entries = incremental_cache.removed_entry_count(cache_payload, current_paths)
                 for entry in entries:
                     cached = incremental_cache.reusable_analysis(cache_payload, entry, changed_files)
                     if cached is not None:
+                        cached_reuse_count += 1
                         code_intel.append(incremental_cache.apply_cached_metrics(entry, cached))
                         continue
                     intel = self.code_prescan.analyze_file(entry, self.config.repo_root)
                     if intel:
+                        reanalyzed_count += 1
                         code_intel.append(intel)
+
+                if incremental:
+                    logger.info(
+                        "Incremental code analysis: reused=%d reanalyzed=%d removed=%d",
+                        cached_reuse_count,
+                        reanalyzed_count,
+                        removed_cache_entries,
+                    )
                 
                 logger.info("Building dependency graph...")
                 manifest_simple = [e.to_dict() for e in entries]
@@ -221,7 +238,15 @@ class PrescanEngine:
                 errors=errors,
                 metadata={
                     "git_sha": self._get_git_sha(),
-                    "timestamp": dt.datetime.now(dt.timezone.utc).isoformat()
+                    "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+                    "incremental": {
+                        "enabled": incremental,
+                        "changed_files_count": len(changed_files) if changed_files is not None else None,
+                        "cached_code_analysis_reused": cached_reuse_count,
+                        "reanalyzed_code_files": reanalyzed_count,
+                        "removed_cache_entries": removed_cache_entries,
+                        "fallback_reason": cache_fallback_reason,
+                    },
                 },
                 batch_plan_path=batch_plan_path,
                 batch_count=total_batches,
