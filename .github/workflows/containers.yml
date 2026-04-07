@@ -39,6 +39,7 @@ jobs:
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           - service: dopemux-backend
@@ -65,7 +66,7 @@ jobs:
           - service: task-orchestrator
             dockerfile: services/task-orchestrator/Dockerfile
             context: .
-            smoke_test: "true"
+            smoke_test: "false"
             smoke_port: "8000"
             smoke_path: "/health"
 

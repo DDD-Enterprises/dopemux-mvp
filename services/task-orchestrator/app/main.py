@@ -51,13 +51,15 @@ except Exception:
 try:
     from .core.coordinator import create_plane_coordinator
 except Exception as relative_import_error:  # pragma: no cover - direct module loading in tests
+    coordinator_import_error = relative_import_error
     try:
         from app.core.coordinator import create_plane_coordinator
     except Exception as absolute_import_error:  # pragma: no cover - slim test env fallback
+        coordinator_import_error = absolute_import_error
         async def create_plane_coordinator(*_args, **_kwargs):
             raise RuntimeError(
                 "task-orchestrator coordinator is unavailable in this environment: "
-                f"{absolute_import_error or relative_import_error}"
+                f"{coordinator_import_error}"
             )
 
 # Configure structured logging
