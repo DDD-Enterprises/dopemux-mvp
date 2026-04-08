@@ -96,10 +96,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ env.DHI_TOKEN }}
 
-      - name: Fallback to public images when DHI login unavailable
-        if: ${{ steps.dhi_login.outcome != 'success' }}
+      - name: Fail when DHI login unavailable on non-PR runs
+        if: ${{ steps.dhi_login.outcome != 'success' && github.event_name != 'pull_request' }}
         run: |
-          echo "::warning::dhi.io login unavailable (outcome: ${{ steps.dhi_login.outcome }}). Rewriting dhi.io/ base image references to public Docker Hub equivalents."
+          echo "::error::DHI login unavailable (outcome: ${{ steps.dhi_login.outcome }}). Refusing to rewrite dhi.io image references on non-pull_request runs — Scout results must reflect the same hardened images that are built and published."
+          exit 1
+
+      - name: Fallback to public images when DHI login unavailable (PR only)
+        if: ${{ steps.dhi_login.outcome != 'success' && github.event_name == 'pull_request' }}
+        run: |
+          echo "::warning::DHI login unavailable (outcome: ${{ steps.dhi_login.outcome }}). Rewriting dhi.io/ base image references to public Docker Hub equivalents for this PR Scout build."
           find . -name "Dockerfile*" -type f -exec sed -i 's|dhi.io/||g' {} +
 
       - name: Set up Docker Buildx
