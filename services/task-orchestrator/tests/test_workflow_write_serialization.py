@@ -2,9 +2,13 @@ import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import httpx
 import pytest
+
+
+_UNSET: Any = object()  # sentinel for detecting absent attributes
 
 
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
@@ -54,6 +58,8 @@ async def test_post_workflow_ideas_succeeds_when_service_workspace_id_is_path():
     service = WorkflowService(workspace_id=Path("/tmp/workflow-route"))
     probe = RecordingBridgeClient()
     service.store._client = probe
+
+    prior_coordinator = getattr(app.state, "coordinator", _UNSET)
     app.state.coordinator = SimpleNamespace(workflow_service=service)
 
     try:
@@ -71,5 +77,11 @@ async def test_post_workflow_ideas_succeeds_when_service_workspace_id_is_path():
         assert len(probe.calls) == 1
         assert probe.calls[0]["workspace_id"] == "/tmp/workflow-route"
     finally:
-        del app.state.coordinator
+        if prior_coordinator is _UNSET:
+            try:
+                del app.state.coordinator
+            except AttributeError:
+                pass
+        else:
+            app.state.coordinator = prior_coordinator
         await service.close()

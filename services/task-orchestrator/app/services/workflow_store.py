@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 # Ensure repo-root imports work in isolated service runtime.
 def _find_repo_root():
@@ -47,7 +47,7 @@ class WorkflowStore:
 
     def __init__(
         self,
-        workspace_id: str,
+        workspace_id: Union["os.PathLike[str]", str],
         *,
         bridge_url: Optional[str] = None,
         bridge_token: Optional[str] = None,
@@ -66,7 +66,9 @@ class WorkflowStore:
 
     @staticmethod
     def _normalize_workspace_id(workspace_id: object) -> str:
-        normalized = str(workspace_id)
+        if workspace_id is None:
+            raise WorkflowStoreError("workspace_id is required")
+        normalized = str(workspace_id).strip()
         if not normalized:
             raise WorkflowStoreError("workspace_id is required")
         return normalized
