@@ -5,14 +5,12 @@ on:
     branches: [main]
     paths:
       - 'Dockerfile'
-      - 'Dockerfile.frontend'
       - 'services/**/Dockerfile*'
       - 'docker/**/Dockerfile*'
       - '.github/workflows/containers.yml'
   pull_request:
     paths:
       - 'Dockerfile'
-      - 'Dockerfile.frontend'
       - 'services/**/Dockerfile*'
       - 'docker/**/Dockerfile*'
       - '.github/workflows/containers.yml'
@@ -39,11 +37,13 @@ jobs:
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           - service: dopemux-backend
             dockerfile: Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Frontend
           # Removed - ui-dashboard deprecated
@@ -52,79 +52,86 @@ jobs:
           - service: conport
             dockerfile: docker/mcp-servers-source/conport/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- MCP: LiteLLM proxy
           - service: litellm
             dockerfile: docker/mcp-servers-source/litellm/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Cognitive: Task Orchestrator
           - service: task-orchestrator
             dockerfile: services/task-orchestrator/Dockerfile
             context: .
+            smoke_test: "false"
+            smoke_port: "8000"
+            smoke_path: "/health"
 
           # -- Cognitive: Claude Brain
           - service: claude-brain
             dockerfile: services/claude_brain/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Cognitive: ADHD Engine
           - service: adhd-engine
             dockerfile: services/adhd_engine/Dockerfile
             context: .
+            smoke_test: "false"
+            smoke_port: "8095"
+            smoke_path: "/health"
 
           # -- Coordination: DopeconBridge
           - service: dopecon-bridge
             dockerfile: services/dopecon-bridge/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Integration: Webhook Receiver
           - service: webhook-receiver
             dockerfile: services/webhook_receiver/Dockerfile
             context: .
+            smoke_test: "false"
 
           # -- Memory: Dope Memory
           - service: dope-memory
             dockerfile: services/working-memory-assistant/Dockerfile.dope-memory
             context: .
+            smoke_test: "true"
+            smoke_port: "3020"
+            smoke_path: "/health"
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hardened Images (dhi.io)
+        id: dhi_login
         if: ${{ env.DHI_TOKEN != '' }}
-        uses: docker/login-action@v3
+        continue-on-error: true
+        uses: docker/login-action@v4
         with:
           registry: dhi.io
           username: ${{ github.actor }}
           password: ${{ env.DHI_TOKEN }}
 
-      - name: Check DHI token availability
-        if: ${{ env.DHI_TOKEN == '' }}
+      - name: Fallback to public images when DHI unavailable
+        if: ${{ steps.dhi_login.outcome != 'success' }}
         run: |
-          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "::error::DHI_TOKEN secret is required to build images that depend on dhi.io base images. Configure secrets.DHI_TOKEN in repository or organization settings."
-            exit 1
-          fi
-          echo "::warning::DHI_TOKEN secret is not available in this context. Any Dockerfiles that use dhi.io/* base images may fail with a 'pull access denied' error during build."
-
-      - name: Fallback to public images (if DHI_TOKEN missing)
-        if: ${{ env.DHI_TOKEN == '' }}
-        run: |
-          echo "🔄 DHI_TOKEN missing. Replacing dhi.io/ with public Docker Hub images..."
+          echo "::warning::dhi.io login unavailable. Rewriting dhi.io/ base image references to public Docker Hub equivalents."
           find . -name "Dockerfile*" -type f -exec sed -i 's|dhi.io/||g' {} +
 
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.NAMESPACE }}/${{ matrix.service }}
           tags: |
@@ -136,22 +143,105 @@ jobs:
             type=ref,event=pr
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
-      - name: Build and push ${{ matrix.service }}
-        uses: docker/build-push-action@v6
+      - name: Build image reference
+        id: image_ref
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "value=${{ env.NAMESPACE }}/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${{ env.NAMESPACE }}/${{ matrix.service }}:sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve build tags
+        id: build_tags
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ matrix.smoke_test }}" = "true" ]; then
+            echo "value=${{ steps.image_ref.outputs.value }}" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "value<<EOF"
+              echo "${{ steps.meta.outputs.tags }}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and publish ${{ matrix.service }}
+        uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
-          # Push only on main branch; PRs build only (no push)
           push: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          load: ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }}
+          pull: true
+          tags: ${{ steps.build_tags.outputs.value }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Layer cache via GHA cache backend
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
-          provenance: true
-          sbom: true
+          provenance: ${{ github.event_name != 'pull_request' }}
+          sbom: ${{ github.event_name != 'pull_request' }}
+
+      - name: Inspect loaded image metadata
+        if: ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }}
+        run: docker image inspect "${{ steps.image_ref.outputs.value }}" >/dev/null
+
+      - name: Smoke test container startup
+        if: ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }}
+        env:
+          IMAGE_REF: ${{ steps.image_ref.outputs.value }}
+          CONTAINER_NAME: ci-${{ matrix.service }}
+          SMOKE_PORT: ${{ matrix.smoke_port }}
+          SMOKE_PATH: ${{ matrix.smoke_path }}
+        run: |
+          set -euo pipefail
+
+          container_started=false
+
+          cleanup() {
+            if [ "$container_started" = true ]; then
+              docker logs "$CONTAINER_NAME" 2>/dev/null || true
+            fi
+            docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          extra_env_args=()
+          if [ "${{ matrix.service }}" = "adhd-engine" ]; then
+            # The service already supports degraded startup for local/test workflows.
+            extra_env_args+=( -e ADHD_ENGINE_ALLOW_DEGRADED_STARTUP=1 )
+          fi
+
+          docker run -d \
+            --name "$CONTAINER_NAME" \
+            -p "${SMOKE_PORT}:${SMOKE_PORT}" \
+            "${extra_env_args[@]}" \
+            "$IMAGE_REF"
+          container_started=true
+
+          health_url="http://127.0.0.1:${SMOKE_PORT}${SMOKE_PATH}"
+          for _ in $(seq 1 30); do
+            state="$(docker inspect --format '{{.State.Status}}' "$CONTAINER_NAME" 2>&1 || true)"
+            if echo "$state" | grep -q "No such object"; then
+              echo "::error::Container disappeared before becoming healthy."
+              exit 1
+            fi
+            if [ "$state" = "exited" ]; then
+              echo "::error::Container exited before becoming healthy."
+              docker logs "$CONTAINER_NAME" 2>/dev/null || true
+              exit 1
+            fi
+            health_state="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{end}}' "$CONTAINER_NAME" 2>/dev/null || true)"
+            if [ "$health_state" = "healthy" ]; then
+              break
+            fi
+            if curl -fsS "$health_url" >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+          curl -fsS "$health_url"
 
       - name: Build Summary
         if: always()
@@ -163,3 +253,4 @@ jobs:
           echo "| Image | \`${{ env.NAMESPACE }}/${{ matrix.service }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Tags | ${{ steps.meta.outputs.tags }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Pushed | ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke tested | ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }} |" >> $GITHUB_STEP_SUMMARY

@@ -1,37 +1,36 @@
-name: 🔍 Docker Scout (Vulnerability Analysis)
-
-# Scans built GHCR images for CVEs, compares PR vs main, and surfaces
-# base image recommendations.
-# Docs: https://docs.docker.com/scout/integrations/ci/gha/
+name: Docker Scout
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'Dockerfile'
-      - 'Dockerfile.frontend'
-      - 'services/**/Dockerfile*'
-      - 'docker/**/Dockerfile*'
   pull_request:
     paths:
-      - 'Dockerfile'
-      - 'Dockerfile.frontend'
-      - 'services/**/Dockerfile*'
-      - 'docker/**/Dockerfile*'
+      - "Dockerfile"
+      - "services/**/Dockerfile*"
+      - "docker/**/Dockerfile*"
+      - ".github/workflows/docker-scout.yml"
+      - ".github/workflows/containers.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "Dockerfile"
+      - "services/**/Dockerfile*"
+      - "docker/**/Dockerfile*"
+      - ".github/workflows/docker-scout.yml"
+      - ".github/workflows/containers.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  REGISTRY: ghcr.io
-  NAMESPACE: ghcr.io/ddd-enterprises/dopemux-mvp
+  REGISTRY: docker.io
+  NAMESPACE: docker.io/${{ vars.DOCKER_SCOUT_HUB_NAMESPACE }}
 
 jobs:
   scout:
-    name: "🔍 Scout — ${{ matrix.service }}"
+    name: Scout ${{ matrix.service }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     permissions:
       contents: read
@@ -39,99 +38,167 @@ jobs:
       pull-requests: write
       security-events: write
 
+    env:
+      DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
+      DOCKER_SCOUT_ORGANIZATION: ${{ vars.DOCKER_SCOUT_ORGANIZATION }}
+      DOCKER_SCOUT_COMPARE_ENABLED: ${{ vars.DOCKER_SCOUT_COMPARE_ENABLED }}
+
     strategy:
       fail-fast: false
       matrix:
         include:
           - service: dopemux-backend
-          - service: dopemux-frontend
+            dockerfile: Dockerfile
+            context: .
           - service: conport
+            dockerfile: docker/mcp-servers-source/conport/Dockerfile
+            context: .
+          - service: litellm
+            dockerfile: docker/mcp-servers-source/litellm/Dockerfile
+            context: .
           - service: task-orchestrator
+            dockerfile: services/task-orchestrator/Dockerfile
+            context: .
+          - service: claude-brain
+            dockerfile: services/claude_brain/Dockerfile
+            context: .
+          - service: adhd-engine
+            dockerfile: services/adhd_engine/Dockerfile
+            context: .
           - service: dopecon-bridge
+            dockerfile: services/dopecon-bridge/Dockerfile
+            context: .
+          - service: webhook-receiver
+            dockerfile: services/webhook_receiver/Dockerfile
+            context: .
+          - service: dope-memory
+            dockerfile: services/working-memory-assistant/Dockerfile.dope-memory
+            context: .
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-      - name: 🔑 Log in to GHCR
-        uses: docker/login-action@v3
+      - name: Authenticate to Docker Hub
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🔑 Log in to Docker Hub (required for Scout API)
-        uses: docker/login-action@v3
-        with:
           username: ${{ secrets.DOCKER_SCOUT_HUB_USER }}
           password: ${{ secrets.DOCKER_SCOUT_HUB_PASSWORD }}
 
-      # Compute the image ref we want to scan. On a PR we use the head SHA
-      # (short); on a main push we use 'latest'.
-      - name: 🏷️ Compute image ref
-        id: ref
+      - name: Authenticate to Docker Hardened Images
+        id: dhi_login
+        if: ${{ env.DHI_TOKEN != '' }}
+        continue-on-error: true
+        uses: docker/login-action@v4
+        with:
+          registry: dhi.io
+          username: ${{ github.actor }}
+          password: ${{ env.DHI_TOKEN }}
+
+      - name: Fail when DHI login unavailable on non-PR runs
+        if: ${{ steps.dhi_login.outcome != 'success' && github.event_name != 'pull_request' }}
         run: |
+          echo "::error::DHI login unavailable (outcome: ${{ steps.dhi_login.outcome }}). Refusing to rewrite dhi.io image references on non-pull_request runs — Scout results must reflect the same hardened images that are built and published."
+          exit 1
+
+      - name: Fallback to public images when DHI login unavailable (PR only)
+        if: ${{ steps.dhi_login.outcome != 'success' && github.event_name == 'pull_request' }}
+        run: |
+          echo "::warning::DHI login unavailable (outcome: ${{ steps.dhi_login.outcome }}). Rewriting dhi.io/ base image references to public Docker Hub equivalents for this PR Scout build."
+          find . -name "Dockerfile*" -type f -exec sed -i 's|dhi.io/||g' {} +
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Compute image reference
+        id: image
+        run: |
+          SHORT_SHA="$(echo "${GITHUB_SHA}" | cut -c1-7)"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            SHORT_SHA=$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
-            echo "image=${{ env.NAMESPACE }}/${{ matrix.service }}:${SHORT_SHA}" >> "$GITHUB_OUTPUT"
-            echo "to=${{ env.NAMESPACE }}/${{ matrix.service }}:latest" >> "$GITHUB_OUTPUT"
+            SHORT_SHA="$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)"
+            echo "ref=${{ env.NAMESPACE }}/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           else
-            echo "image=${{ env.NAMESPACE }}/${{ matrix.service }}:latest" >> "$GITHUB_OUTPUT"
-            echo "to=" >> "$GITHUB_OUTPUT"
+            echo "ref=${{ env.NAMESPACE }}/${{ matrix.service }}:sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           fi
 
-      # ── CVE Report ─────────────────────────────────────────────────────────
-      - name: 🔍 Scout CVE Report
-        id: scout-cves
-        uses: docker/scout-action@v1
-        with:
-          command: cves
-          image: ${{ steps.ref.outputs.image }}
-          # Fail CI on CRITICAL vulnerabilities
-          exit-code: true
-          exit-on: critical
-          summary: true
-          sarif-file: scout-${{ matrix.service }}.sarif
+      - name: Detect Docker Scout environment capability
+        id: scout_compare
+        run: |
+          if [ -z "${DOCKER_SCOUT_ORGANIZATION}" ]; then
+            echo "::warning::DOCKER_SCOUT_ORGANIZATION is unset. Falling back to Docker Scout CVE scanning."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          elif [ "${DOCKER_SCOUT_COMPARE_ENABLED}" != "true" ]; then
+            echo "::warning::DOCKER_SCOUT_COMPARE_ENABLED is not true. Falling back to Docker Scout CVE scanning until the organization is enrolled and the production environment is populated."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
 
-      # ── PR Comparison: PR image vs main `latest` ────────────────────────────
-      - name: 📊 Scout Compare (PR vs main)
-        if: github.event_name == 'pull_request'
+      - name: Build image for Scout analysis
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          load: ${{ github.event_name == 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.image.outputs.ref }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.event.pull_request.head.sha || github.sha }}
+          cache-from: type=gha,scope=scout-${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=scout-${{ matrix.service }}
+
+      - name: Record production environment
+        if: ${{ github.event_name != 'pull_request' && steps.scout_compare.outputs.enabled == 'true' }}
+        env:
+          DOCKER_SCOUT_HUB_USER: ${{ secrets.DOCKER_SCOUT_HUB_USER }}
+          DOCKER_SCOUT_HUB_PASSWORD: ${{ secrets.DOCKER_SCOUT_HUB_PASSWORD }}
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+        run: |
+          docker run --rm \
+            -e DOCKER_SCOUT_HUB_USER \
+            -e DOCKER_SCOUT_HUB_PASSWORD \
+            docker/scout-cli environment \
+            --org "${DOCKER_SCOUT_ORGANIZATION}" \
+            production \
+            "${IMAGE_REF}" \
+            --platform linux/amd64
+
+      - name: Docker Scout compare against production
+        if: ${{ github.event_name == 'pull_request' && steps.scout_compare.outputs.enabled == 'true' }}
         uses: docker/scout-action@v1
         with:
           command: compare
-          image: ${{ steps.ref.outputs.image }}
-          to: ${{ steps.ref.outputs.to }}
-          # Post results as a PR comment (requires pull-requests: write)
+          image: ${{ steps.image.outputs.ref }}
+          to-env: production
+          organization: ${{ env.DOCKER_SCOUT_ORGANIZATION }}
+          ignore-unchanged: true
+          only-severities: critical,high
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          summary: true
-          exit-code: false
 
-      # ── Base Image Recommendations ──────────────────────────────────────────
-      - name: 💡 Scout Recommendations
+      - name: Docker Scout CVEs on pull requests
+        if: ${{ github.event_name == 'pull_request' && steps.scout_compare.outputs.enabled != 'true' }}
         uses: docker/scout-action@v1
         with:
-          command: recommendations
-          image: ${{ steps.ref.outputs.image }}
+          command: cves
+          image: ${{ steps.image.outputs.ref }}
+          only-severities: critical,high
           summary: true
-          exit-code: false
 
-      # ── Upload SARIF → GitHub Security tab ─────────────────────────────────
-      - name: 📤 Upload SARIF
-        if: always()
+      - name: Docker Scout CVEs
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ steps.image.outputs.ref }}
+          only-severities: critical,high
+          exit-code: true
+          summary: true
+          sarif-file: scout-${{ matrix.service }}.sarif
+
+      - name: Upload Scout SARIF
+        if: ${{ always() && github.event_name != 'pull_request' }}
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: scout-${{ matrix.service }}.sarif
           category: docker-scout-${{ matrix.service }}
-
-      - name: 📊 Step Summary
-        if: always()
-        run: |
-          echo "## 🔍 Scout — ${{ matrix.service }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Scanned | \`${{ steps.ref.outputs.image }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| CVE report | Uploaded to Security tab |" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "| Comparison | vs \`${{ steps.ref.outputs.to }}\` posted as PR comment |" >> $GITHUB_STEP_SUMMARY
-          fi

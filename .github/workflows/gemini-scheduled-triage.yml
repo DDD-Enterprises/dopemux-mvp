@@ -85,10 +85,23 @@ jobs:
           ISSUE_COUNT="$(echo "${ISSUES}" | jq 'length')"
           echo "✅ Found ${ISSUE_COUNT} issue(s) to triage! 🎯"
 
+      - name: 'Detect Gemini credentials'
+        id: 'detect_gemini_credentials'
+        env:
+          GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
+          GOOGLE_API_KEY: '${{ secrets.GOOGLE_API_KEY }}'
+          GCP_WIF_PROVIDER: '${{ vars.GCP_WIF_PROVIDER }}'
+        run: |-
+          if [[ -n "${GEMINI_API_KEY}" || -n "${GOOGLE_API_KEY}" || -n "${GCP_WIF_PROVIDER}" ]]; then
+            echo 'available=true' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'available=false' >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: 'Run Gemini Issue Analysis'
         id: 'gemini_issue_analysis'
         if: |-
-          steps.find_issues.outputs.issues_to_triage != '[]' && (secrets.GEMINI_API_KEY != '' || secrets.GOOGLE_API_KEY != '' || vars.GCP_WIF_PROVIDER != '')
+          steps.find_issues.outputs.issues_to_triage != '[]' && steps.detect_gemini_credentials.outputs.available == 'true'
         uses: 'google-github-actions/run-gemini-cli@v0' # ratchet:exclude
         env:
           GITHUB_TOKEN: '' # Do not pass any auth token here since this runs on untrusted inputs
