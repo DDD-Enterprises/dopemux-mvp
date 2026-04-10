@@ -339,7 +339,7 @@ def expected_contract_map_target_keys(contract_module: Any, config: GateConfig) 
         if str(key).split(":", 1)[0] in target_phases
         and (
             not target_step
-            or str(key).split(":", 1)[1].strip().upper() == target_step
+            or (":" in str(key) and str(key).split(":", 1)[1].strip().upper() == target_step)
         )
     )
 
