@@ -71,6 +71,13 @@ class WorkflowStore:
         normalized = str(workspace_id).strip()
         if not normalized:
             raise WorkflowStoreError("workspace_id is required")
+    @staticmethod
+    def _normalize_workspace_id(workspace_id: object) -> str:
+        if workspace_id is None:
+            raise WorkflowStoreError("workspace_id is required")
+        normalized = str(workspace_id)
+        if not normalized or normalized == "None":
+            raise WorkflowStoreError("workspace_id is required")
         return normalized
 
     async def close(self) -> None:
