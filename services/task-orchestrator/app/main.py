@@ -9,8 +9,17 @@ import os
 import sys
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
-from dopemux.workspace_detection import get_workspace_root
 from contextlib import asynccontextmanager
+
+# Add repo root to path before importing shared dopemux modules.
+repo_root = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
+src_path = os.path.join(repo_root, "src")
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
+
+from dopemux.workspace_detection import get_workspace_root
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Response
@@ -33,10 +42,6 @@ except ImportError:  # pragma: no cover - optional MCP transport in slim test en
 
             return decorator
 
-# Add repo root to path
-repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, os.path.join(repo_root, "src"))
-
 try:
     from dopemux.logging import configure_logging, RequestIDMiddleware
 except Exception:
@@ -48,6 +53,7 @@ except Exception:
             format="%(asctime)s %(levelname)s %(name)s %(message)s",
         )
         return logging.getLogger(service_name)
+coordinator_import_error = None
 try:
     from .core.coordinator import create_plane_coordinator
 except Exception as relative_import_error:  # pragma: no cover - direct module loading in tests
@@ -145,6 +151,11 @@ except ImportError:  # pragma: no cover - direct module loading in tests
         WorkflowUnavailableError,
     )
 
+try:
+    from .api.project_workflow import router as project_workflow_router
+except ImportError:  # pragma: no cover - direct module loading in tests
+    from app.api.project_workflow import router as project_workflow_router
+
 logger = logging.getLogger(__name__)
 
 # ============================================================================
@@ -191,6 +202,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+app.include_router(project_workflow_router)
 
 # CORS middleware for web integration
 app.add_middleware(

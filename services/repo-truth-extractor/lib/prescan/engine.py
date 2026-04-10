@@ -16,6 +16,12 @@ from .dependency_graph import DependencyGraph
 from .batch_planner import BatchPlanner
 from .cost_estimator import CostEstimator
 from .incremental_cache import IncrementalCodeCache
+from .provider_catalog import (
+    build_provider_model_catalog,
+    build_prescan_routing_plan,
+    write_provider_catalog,
+    write_routing_plan,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -177,16 +183,33 @@ class PrescanEngine:
                     json.dumps(plan_data, indent=2, sort_keys=True) + "\n"
                 )
 
-            # 7. Grok passes (optional)
+            # 7. Build provider routing plan for grok passes
+            routing_plan = None
+            routing_plan_path = None
+            if passes:
+                try:
+                    logger.info("Building provider model catalog for routing...")
+                    catalog = build_provider_model_catalog(self.config)
+                    catalog_path = write_provider_catalog(self.config.output_dir, catalog)
+                    logger.info(f"Provider catalog saved: {catalog_path}")
+
+                    routing_plan = build_prescan_routing_plan(self.config, catalog, passes)
+                    routing_plan_path = write_routing_plan(self.config.output_dir, routing_plan)
+                    logger.info(f"Routing plan saved: {routing_plan_path}")
+                except Exception as e:
+                    logger.warning(f"Provider routing failed (using defaults): {e}")
+                    routing_plan = None
+
+            # 7a. Grok passes (optional)
             grok_results = {}
             if passes:
                 logger.info(f"Running Grok passes: {', '.join(passes)}...")
                 if self.config.batch_mode and batch_plans:
                     grok_results = self.grok_runner.run_passes_batched(
-                        passes, intelligence, manifest, batch_plans
+                        passes, intelligence, manifest, batch_plans, routing_plan=routing_plan
                     )
                 else:
-                    grok_results = self.grok_runner.run_passes(passes, intelligence, manifest)
+                    grok_results = self.grok_runner.run_passes(passes, intelligence, manifest, routing_plan=routing_plan)
                 intelligence["grok_passes"] = grok_results
 
             # 7b. Archaeology report (deep mode only)
