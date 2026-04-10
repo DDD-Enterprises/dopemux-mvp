@@ -6489,13 +6489,62 @@ def derive_route_readiness_summary(
                 continue
             step_id = str(prompt.step_id)
             tier_override = prompt.tier_override
-            step_tier = resolve_effective_step_tier(
-                selected_policy,
-                phase,
-                step_id,
-                tier_override=tier_override,
+            benchmark_owned_route, _, _ = _resolve_benchmark_owned_stage_route(
+                phase=phase,
+                step_id=step_id,
+                cfg=RunnerConfig(
+                    dry_run=True,
+                    max_files_docs=35,
+                    max_files_code=20,
+                    max_chars=650000,
+                    max_request_bytes=200000,
+                    file_truncate_chars=70000,
+                    home_scan_mode="safe",
+                    resume=False,
+                    fail_fast_auth=True,
+                    gemini_auth_mode="auto",
+                    gemini_transport="sdk",
+                    openai_transport="openai_sdk",
+                    xai_transport="openai_sdk",
+                    retry_policy="default",
+                    retry_max_attempts=1,
+                    retry_base_seconds=0.0,
+                    retry_max_seconds=0.0,
+                    phase_auth_fail_threshold=1,
+                    partition_workers=1,
+                    debug_phase_inputs=False,
+                    fail_fast_missing_inputs=False,
+                    routing_policy=selected_policy,
+                    batch_mode=False,
+                    live_ok=False,
+                ),
+                stage="primary",
+                step_contract=prompt.contract,
+                strict_required=is_strict_contract_step(prompt.contract),
             )
-            configured_ladder = list(tiers.get(step_tier) or tiers.get("extract") or [])
+            if benchmark_owned_route is not None:
+                configured_ladder = [
+                    (
+                        str(benchmark_owned_route["provider"]),
+                        str(benchmark_owned_route["model_id"]),
+                        str(benchmark_owned_route["api_key_env"]),
+                    )
+                ]
+                ladder = configured_ladder
+            else:
+                step_tier = resolve_effective_step_tier(
+                    selected_policy,
+                    phase,
+                    step_id,
+                    tier_override=tier_override,
+                )
+                configured_ladder = list(tiers.get(step_tier) or tiers.get("extract") or [])
+                ladder = _resolve_step_ladder_compat(
+                    selected_policy,
+                    phase,
+                    step_id,
+                    tier_override=tier_override,
+                )
             for provider, model_id, api_key_env in configured_ladder:
                 signature = f"{provider}:{model_id}:{api_key_env}"
                 configured_route_meta.setdefault(
@@ -6508,12 +6557,6 @@ def derive_route_readiness_summary(
                     },
                 )
 
-            ladder = _resolve_step_ladder_compat(
-                selected_policy,
-                phase,
-                step_id,
-                tier_override=tier_override,
-            )
             for index, (provider, model_id, api_key_env) in enumerate(ladder):
                 signature = f"{provider}:{model_id}:{api_key_env}"
                 entry = route_meta.setdefault(
@@ -6706,11 +6749,17 @@ def run_provider_preflight(
         if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
         is not None
     }
-    provider_routes = collect_provider_routes(
-        phases=phases,
-        routing_policy=cfg.routing_policy,
-        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
-    )
+    if selected_step_ids_by_phase:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+            selected_step_ids_by_phase=selected_step_ids_by_phase,
+        )
+    else:
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+        )
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -9024,6 +9073,11 @@ def call_llm(
     )
     sent_header_keys: List[str] = []
     auth_flags = sdk_auth_present_flags(provider, bool(api_key))
+    base_trace_context = dict(trace_context or {})
+    trace_id = str(base_trace_context.get("trace_id") or "").strip() or _new_trace_id()
+    request_parent_span_id = (
+        str(base_trace_context.get("parent_span_id") or "").strip() or None
+    )
     if transport == "openai_compat_http":
         endpoint_url = make_url(provider, base_url, cfg, api_key, effective_mode)
         headers = make_headers(provider, api_key, cfg, effective_mode)
@@ -9145,9 +9199,6 @@ def call_llm(
         int(timeout_seconds if timeout_seconds is not None else 180),
     )
     started_monotonic = time.monotonic()
-    base_trace_context = dict(trace_context or {})
-    trace_id = str(base_trace_context.get("trace_id") or "").strip() or _new_trace_id()
-    request_parent_span_id = str(base_trace_context.get("parent_span_id") or "").strip() or None
 
     def _emit_lifecycle(status: str, **fields: Any) -> None:
         if lifecycle_callback is None:
