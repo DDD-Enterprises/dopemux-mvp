@@ -234,6 +234,9 @@ class AttemptExecutor:
             case = self.repo.fetch_benchmark_case(assignment.case_id)
             if case is None:
                 raise RuntimeError(f"missing benchmark case {assignment.case_id}")
+            route_record = self.repo.fetch_route(assignment.candidate.route_id)
+            if route_record is None:
+                raise RuntimeError(f"missing route record {assignment.candidate.route_id}")
             executor = _executor_for_case(case)
             validator = _validator_for_case(case)
             case_attempt_id = synthetic_id(
@@ -249,8 +252,12 @@ class AttemptExecutor:
                 "live_execution": assignment.live_execution,
                 "routing_override_model": assignment.routing_override_model,
                 "route_id": assignment.candidate.route_id,
+                "surface_id": assignment.candidate.surface_id,
                 "surface_class": assignment.candidate.surface_class,
                 "provider_name": assignment.candidate.provider_name,
+                "model_key": assignment.candidate.model_key,
+                "provider_model_id": assignment.candidate.provider_model_id,
+                "route_pin": str(route_record.get("route_pin") or ""),
             }
             execution = executor.execute(
                 execution_case,
