@@ -255,6 +255,7 @@ class GrokPassRunner:
         intelligence: dict,
         manifest: list[dict],
         batch_plans: dict,  # {pass_id: BatchPlan}
+        routing_plan: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Run passes with token-aware batching.
 
@@ -434,6 +435,7 @@ class GrokPassRunner:
         passes: list[str],
         intelligence: dict,
         manifest: list[dict],
+        routing_plan: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Run selected Grok passes sequentially, each building on the previous.
