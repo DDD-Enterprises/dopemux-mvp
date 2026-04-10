@@ -167,6 +167,7 @@ try:
         resolve_stage_route,
         route_entries_for_stage,
         route_for_contract,
+        strict_capability_reason,
         sidefill_enabled as resolve_contract_sidefill_enabled,
     )
 except ModuleNotFoundError:
@@ -208,6 +209,7 @@ except ModuleNotFoundError:
     resolve_stage_route = structured_contracts_module.resolve_stage_route
     route_entries_for_stage = structured_contracts_module.route_entries_for_stage
     route_for_contract = structured_contracts_module.route_for_contract
+    strict_capability_reason = structured_contracts_module.strict_capability_reason
     resolve_contract_sidefill_enabled = structured_contracts_module.sidefill_enabled
 try:
     from rich.console import Console
@@ -1252,6 +1254,7 @@ DPMX_MODEL_INVENTORY_ENV = "DPMX_MODEL_INVENTORY"
 DPMX_MODEL_EXTRACT_ENV = "DPMX_MODEL_EXTRACT"
 DPMX_MODEL_SYNTHESIS_ENV = "DPMX_MODEL_SYNTHESIS"
 DPMX_MODEL_QA_ENV = "DPMX_MODEL_QA"
+DPMX_BENCHMARK_ROUTE_OWNERSHIP_ENV = "DPMX_BENCHMARK_ROUTE_OWNERSHIP"
 DPMX_WEBHOOK_URL_ENV = "DPMX_WEBHOOK_URL"
 DPMX_WEBHOOK_SECRET_ENV = "DPMX_WEBHOOK_SECRET"
 DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV = "DPMX_WEBHOOK_TIMEOUT_SECONDS"
@@ -1268,6 +1271,7 @@ STEP_TYPE_MODEL_ENV_VARS: Dict[str, str] = {
     "synthesis": DPMX_MODEL_SYNTHESIS_ENV,
     "qa": DPMX_MODEL_QA_ENV,
 }
+BENCHMARK_ROUTE_OWNERSHIP_MODE = "strict_extraction_lane_owned_v1"
 PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "openai": "OPENAI_API_KEY",
     "gemini": "GEMINI_API_KEY",
@@ -4430,6 +4434,141 @@ def dpmx_env_routing_payload(validate: bool = False) -> Dict[str, Any]:
     return payload
 
 
+def benchmark_route_ownership_payload(validate: bool = False) -> Dict[str, Any]:
+    raw = os.getenv(DPMX_BENCHMARK_ROUTE_OWNERSHIP_ENV, "").strip()
+    if not raw:
+        return {"enabled": False}
+    try:
+        payload = json.loads(raw)
+    except Exception as exc:
+        if validate:
+            raise RuntimeError(
+                f"{DPMX_BENCHMARK_ROUTE_OWNERSHIP_ENV} must be valid JSON: {exc}"
+            ) from exc
+        return {"enabled": True, "malformed": True, "raw": raw[:2000]}
+    if not isinstance(payload, dict):
+        if validate:
+            raise RuntimeError(
+                f"{DPMX_BENCHMARK_ROUTE_OWNERSHIP_ENV} must decode to an object."
+            )
+        return {"enabled": True, "malformed": True}
+    normalized: Dict[str, Any] = {
+        "enabled": bool(payload.get("enabled", True)),
+        "mode": str(payload.get("mode") or ""),
+        "scope": str(payload.get("scope") or ""),
+        "target_phase": str(payload.get("target_phase") or ""),
+        "benchmark_case_id": str(payload.get("benchmark_case_id") or ""),
+        "route_id": str(payload.get("route_id") or ""),
+        "surface_id": str(payload.get("surface_id") or ""),
+        "surface_class": str(payload.get("surface_class") or ""),
+        "provider_name": str(payload.get("provider_name") or ""),
+        "model_key": str(payload.get("model_key") or ""),
+        "provider_model_id": str(payload.get("provider_model_id") or ""),
+        "route_pin": str(payload.get("route_pin") or ""),
+        "api_key_env": str(payload.get("api_key_env") or ""),
+        "strict_json_schema": bool(payload.get("strict_json_schema", False)),
+        "strict_passthrough_verified": bool(
+            payload.get("strict_passthrough_verified", False)
+        ),
+    }
+    if validate and normalized["enabled"]:
+        provider = normalized["provider_name"].strip().lower()
+        if provider not in PROVIDER_API_KEY_ENV:
+            allowed = ",".join(sorted(PROVIDER_API_KEY_ENV.keys()))
+            raise RuntimeError(
+                f"{DPMX_BENCHMARK_ROUTE_OWNERSHIP_ENV} provider_name must be one of {allowed}. "
+                f"Got: {normalized['provider_name']}"
+            )
+        if not normalized["provider_model_id"].strip():
+            raise RuntimeError(
+                f"{DPMX_BENCHMARK_ROUTE_OWNERSHIP_ENV} provider_model_id is required."
+            )
+        if not normalized["api_key_env"].strip():
+            normalized["api_key_env"] = PROVIDER_API_KEY_ENV[provider]
+    return normalized
+
+
+def _benchmark_route_ownership_enabled() -> bool:
+    payload = benchmark_route_ownership_payload(validate=False)
+    return bool(payload.get("enabled"))
+
+
+def _resolve_benchmark_owned_stage_route(
+    *,
+    phase: str,
+    step_id: str,
+    cfg: RunnerConfig,
+    step_contract: Optional[Dict[str, Any]],
+    stage: str,
+    strict_required: bool,
+) -> Tuple[Optional[Dict[str, Any]], List[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    payload = benchmark_route_ownership_payload(validate=True)
+    if not bool(payload.get("enabled")):
+        return None, [], None
+    if str(payload.get("mode") or "") != BENCHMARK_ROUTE_OWNERSHIP_MODE:
+        return None, [], None
+    if str(payload.get("target_phase") or "").strip().upper() != str(phase).strip().upper():
+        return None, [], None
+    if str(payload.get("scope") or "").strip() != "phase_a_json_managed":
+        return None, [], None
+    if str(phase).strip().upper() != "A":
+        return None, [], None
+    if not is_json_managed_step(step_contract):
+        return None, [], None
+
+    route = {
+        "provider": str(payload["provider_name"]).strip().lower(),
+        "model_id": str(payload["provider_model_id"]).strip(),
+        "api_key_env": str(payload["api_key_env"]).strip(),
+        "strict_json_schema": bool(payload.get("strict_json_schema", False)),
+        "strict_passthrough_verified": bool(
+            payload.get("strict_passthrough_verified", False)
+        ),
+    }
+    transport = transport_for_provider(str(route["provider"]), cfg)
+    reason = strict_capability_reason(route, transport)
+    attempts = [
+        {
+            "provider": str(route["provider"]),
+            "model_id": str(route["model_id"]),
+            "transport": transport,
+            "strict_json_schema": bool(route.get("strict_json_schema", False)),
+            "strict_passthrough_verified": bool(
+                route.get("strict_passthrough_verified", False)
+            ),
+            "strict_capable": reason is None,
+            "reason": reason,
+            "ownership_mode": BENCHMARK_ROUTE_OWNERSHIP_MODE,
+            "ownership_source": "benchmark_route_ownership_env",
+            "stage": stage,
+            "phase": phase,
+            "step_id": step_id,
+        }
+    ]
+    if strict_required and reason is not None:
+        raise RuntimeError(
+            "benchmark route ownership selected a non-strict-capable route for a strict step: "
+            f"{phase}:{step_id} stage={stage} provider={route['provider']} model={route['model_id']} reason={reason}"
+        )
+    return (
+        route,
+        attempts,
+        {
+            "mode": BENCHMARK_ROUTE_OWNERSHIP_MODE,
+            "source": "benchmark_route_ownership_env",
+            "stage": stage,
+            "phase": phase,
+            "step_id": step_id,
+            "scope": str(payload.get("scope") or ""),
+            "route_id": str(payload.get("route_id") or ""),
+            "surface_class": str(payload.get("surface_class") or ""),
+            "provider_name": str(payload.get("provider_name") or ""),
+            "provider_model_id": str(payload.get("provider_model_id") or ""),
+            "route_pin": str(payload.get("route_pin") or ""),
+        },
+    )
+
+
 def choose_model_for_step(
     phase: str,
     step_id: str,
@@ -4466,6 +4605,33 @@ def resolve_effective_step_route(
     )
     if is_json_managed_step(contract):
         strict_required = is_strict_contract_step(contract)
+        benchmark_owned_route, benchmark_attempts, benchmark_meta = (
+            _resolve_benchmark_owned_stage_route(
+                phase=phase,
+                step_id=step_id,
+                cfg=cfg,
+                step_contract=contract,
+                stage="primary",
+                strict_required=strict_required,
+            )
+        )
+        if benchmark_owned_route is not None:
+            provider = str(benchmark_owned_route["provider"])
+            model_id = str(benchmark_owned_route["model_id"])
+            api_key_env = str(benchmark_owned_route["api_key_env"])
+            return {
+                "step_tier": step_tier,
+                "step_type": step_type,
+                "ladder": [(provider, model_id, api_key_env)],
+                "provider": provider,
+                "model_id": model_id,
+                "api_key_env": api_key_env,
+                "reason": "benchmark_route_ownership_primary",
+                "contract_lane": resolve_contract_lane(contract),
+                "strict_required": strict_required,
+                "strict_route_attempts": benchmark_attempts,
+                "route_ownership": benchmark_meta,
+            }
         primary_routes = route_entries_for_stage(contract, "primary")
         if not primary_routes:
             raise RuntimeError(
@@ -5317,6 +5483,7 @@ def write_run_manifest(
             "max_requests_per_job": batch_max_requests_per_job,
         },
         "effective_model_routing": effective_model_routing_payload(),
+        "benchmark_route_ownership": benchmark_route_ownership_payload(validate=False),
     }
     if run_blocked:
         manifest["blocked_reason"] = PROMPTSET_BLOCKED_REASON
@@ -6068,6 +6235,7 @@ def write_run_routing_fingerprint(
             "max_requests_per_job": cfg.batch_max_requests_per_job,
         },
         "effective_model_routing": effective_model_routing_payload(),
+        "benchmark_route_ownership": benchmark_route_ownership_payload(validate=False),
         "phases": phase_entries,
     }
     write_json(run_root / "RUN_ROUTING_FINGERPRINT.json", payload)
@@ -12721,14 +12889,28 @@ def execute_step_for_partitions(
         ]:
             if not json_managed_step or not isinstance(step_contract, dict):
                 return [], {}, "", [], []
-            selected_route, strict_attempts = resolve_stage_route(
+            (
+                selected_route,
+                strict_attempts,
+                ownership_meta,
+            ) = _resolve_benchmark_owned_stage_route(
+                phase=phase,
+                step_id=step_id,
+                cfg=cfg,
                 step_contract=step_contract,
                 stage=stage,
-                transport_for_provider=lambda provider: transport_for_provider(
-                    provider, cfg
-                ),
                 strict_required=True,
             )
+            if selected_route is None:
+                selected_route, strict_attempts = resolve_stage_route(
+                    step_contract=step_contract,
+                    stage=stage,
+                    transport_for_provider=lambda provider: transport_for_provider(
+                        provider, cfg
+                    ),
+                    strict_required=True,
+                )
+                ownership_meta = None
             if selected_route is None:
                 failed_meta = {
                     "failure_type": "strict_route_unavailable",
@@ -12891,6 +13073,16 @@ def execute_step_for_partitions(
                     ),
                     "strict_capable": True,
                     "attempts": strict_attempts,
+                    "ownership_mode": (
+                        str(ownership_meta.get("mode") or "")
+                        if isinstance(ownership_meta, dict)
+                        else ""
+                    ),
+                    "ownership_source": (
+                        str(ownership_meta.get("source") or "")
+                        if isinstance(ownership_meta, dict)
+                        else ""
+                    ),
                 }
             ]
             request_meta_local["strict_route_attempts"] = strict_attempts
@@ -14234,14 +14426,27 @@ def execute_step_for_partitions(
                     action="strict_fallback_route_resolution",
                     fallback_route=None,
                 )
-            soft_gate_route, soft_gate_attempts = resolve_stage_route(
+            (
+                soft_gate_route,
+                soft_gate_attempts,
+                _soft_gate_ownership_meta,
+            ) = _resolve_benchmark_owned_stage_route(
+                phase=phase,
+                step_id=step_id,
+                cfg=cfg,
                 step_contract=step_contract,
                 stage="repair",
-                transport_for_provider=lambda provider: transport_for_provider(
-                    provider, cfg
-                ),
                 strict_required=True,
             )
+            if soft_gate_route is None:
+                soft_gate_route, soft_gate_attempts = resolve_stage_route(
+                    step_contract=step_contract,
+                    stage="repair",
+                    transport_for_provider=lambda provider: transport_for_provider(
+                        provider, cfg
+                    ),
+                    strict_required=True,
+                )
             if soft_gate_route is not None:
                 step_soft_gate_triggered = True
                 ui_soft_gate = max(ui_soft_gate, 1)
@@ -17020,6 +17225,7 @@ def print_config(
         "effective_model_routing": effective_model_routing_payload(),
         "route_readiness_summary": route_readiness_summary,
         "dpmx_env_routing": dpmx_env_routing_payload(validate=True),
+        "benchmark_route_ownership": benchmark_route_ownership_payload(validate=False),
         "webhook_settings": {
             "schema": DPMX_WEBHOOK_SCHEMA,
             "event": DPMX_WEBHOOK_EVENT,

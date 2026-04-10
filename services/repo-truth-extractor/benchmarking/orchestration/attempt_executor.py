@@ -258,6 +258,9 @@ class AttemptExecutor:
                 "model_key": assignment.candidate.model_key,
                 "provider_model_id": assignment.candidate.provider_model_id,
                 "route_pin": str(route_record.get("route_pin") or ""),
+                "api_key_env": str(route_record.get("api_key_ref") or ""),
+                "benchmark_route_ownership_mode": str(assignment.benchmark_route_ownership_mode or ""),
+                "benchmark_route_ownership_scope": str(assignment.benchmark_route_ownership_scope or ""),
             }
             execution = executor.execute(
                 execution_case,
