@@ -1,0 +1,114 @@
+{
+  "packet": {
+    "name": "bridge-workflow-ideas-empty-state-fix",
+    "title": "Dopecon-Bridge Workflow Ideas Empty-State Contract Fix",
+    "objective": "Fix bridge-backed workflow ideas reads so missing workflow custom-data is treated as empty-state while real downstream failures still surface as failure, without expanding bridge authority."
+  },
+  "commit_plan": {
+    "planned_slices": [
+      {
+        "slice": 1,
+        "objective": "Reproduce and trace the live empty-state failure path"
+      },
+      {
+        "slice": 2,
+        "objective": "Implement the narrowest empty-state normalization fix"
+      },
+      {
+        "slice": 3,
+        "objective": "Rerun live container-path proof"
+      },
+      {
+        "slice": 4,
+        "objective": "Close review, precommit, and proof artifacts"
+      }
+    ],
+    "completed_slices": [
+      {
+        "slice": 1,
+        "status": "completed",
+        "result": "Traced GET /api/workflow/ideas through WorkflowService.list_ideas -> WorkflowStore.get_custom_data -> AsyncDopeconBridgeClient.get_custom_data -> bridge /kg/custom_data -> bridge ConPortClient.get_custom_data. Confirmed task-orchestrator and workflow store only propagate upstream errors.",
+        "commit_sha": null,
+        "verification": [
+          "Inspected services/task-orchestrator/app/main.py",
+          "Inspected services/task-orchestrator/app/services/workflow_service.py",
+          "Inspected services/task-orchestrator/app/services/workflow_store.py",
+          "Inspected services/shared/dopecon_bridge_client/client.py",
+          "Inspected services/dopecon-bridge/dopecon_bridge/routes.py",
+          "Inspected services/dopecon-bridge/dopecon_bridge/clients.py",
+          "Inspected prior live proof in .codex-worktrees/task-orchestrator-container-router-parity/proof/proof.json"
+        ]
+      },
+      {
+        "slice": 2,
+        "status": "completed",
+        "result": "Patched bridge ConPortClient.get_custom_data to normalize upstream /api/custom_data 404 into empty-state payload {count: 0, items: []} while preserving non-404 failures as HTTP 502.",
+        "commit_sha": null,
+        "verification": [
+          "services/dopecon-bridge/tests/test_conport_custom_data_client.py",
+          "services/dopecon-bridge/tests/test_leantime_route_contract.py",
+          "tests/shared/test_dopecon_bridge_client.py",
+          "tests/unit/test_task_orchestrator_workflow_api.py",
+          "tests/unit/test_task_orchestrator_workflow_store.py"
+        ]
+      },
+      {
+        "slice": 3,
+        "status": "completed_with_blocker",
+        "result": "Ran the patched bridge live from this worktree and verified authenticated GET /kg/custom_data returns 200 empty-state for workflow_ideas. Full /api/workflow/ideas parity rerun remained blocked because task-orchestrator app.main on main fails during startup with NameError before the route can serve.",
+        "commit_sha": null,
+        "verification": [
+          "Prior recorded live failure proof from .codex-worktrees/task-orchestrator-container-router-parity/proof/proof.json",
+          "Patched bridge container on localhost:3017 returned 200 with {\"success\":true,\"count\":0,\"data\":[],\"source\":\"conport\"} for authenticated GET /kg/custom_data?category=workflow_ideas",
+          "Task-orchestrator app.main container on localhost:3014 exited during startup with NameError: absolute_import_error"
+        ]
+      },
+      {
+        "slice": 4,
+        "status": "completed_with_limits",
+        "result": "Completed internal PAL codereview and precommit; proof artifact written. Git branch/worktree finalization steps remain blocked by sandboxed .git writes.",
+        "commit_sha": null,
+        "verification": [
+          "PAL codereview internal run reported 0 issues",
+          "PAL precommit internal run reported commit-ready validation",
+          "Final challenge confirmed remaining gap is live integrated rerun, not a code-local defect"
+        ]
+      }
+    ],
+    "replan_events": [
+      {
+        "event": "Authority correction",
+        "reason": "Prior live parity proof in .codex-worktrees/task-orchestrator-container-router-parity/proof/proof.json established the residual blocker was bridge 404 on /kg/custom_data reads, so the fix layer was corrected from shared bridge client speculation to bridge ConPort client normalization."
+      },
+      {
+        "event": "Worktree block",
+        "reason": "Requested git worktree creation off main initially failed because sandboxed writes to .git refs were denied in the first session; a dedicated worktree was created once full git permissions were available."
+      },
+      {
+        "event": "Live rerun split",
+        "reason": "Bridge runtime was rerun successfully from the packet worktree, but task-orchestrator app.main startup on main is currently blocked by an unrelated NameError outside this packet scope, preventing a fresh end-to-end /api/workflow/ideas rerun."
+      }
+    ],
+    "skipped_abandoned_merged_slices": [
+      {
+        "slice": 3,
+        "status": "partially_blocked",
+        "rationale": "The bridge side of the live path was rerun successfully. The full /api/workflow/ideas path could not be rerun because task-orchestrator app.main currently fails during startup on this main baseline before serving traffic."
+      }
+    ]
+  },
+  "finalization": {
+    "codereview_status": "complete_internal_clean",
+    "precommit_status": "complete_internal_clean",
+    "evidence_ledger_completeness": "complete_with_live_rerun_gap",
+    "final_confidence": "HIGH",
+    "residual_risks": [
+      "Live integrated container-path validation for GET /api/workflow/ideas is still not rerun successfully in this session because task-orchestrator app.main currently fails startup on main with NameError: absolute_import_error.",
+      "The packet fix is proven live only at the bridge custom-data boundary in this session; the full task-orchestrator route remains blocked by separate startup drift.",
+      "Bridge custom-data reads now treat upstream 404 as empty-state on this endpoint; if the downstream custom-data service later uses 404 for a non-empty-state read failure on the same endpoint, the adapter contract would need tightening."
+    ],
+    "pr_url": null,
+    "merge_readiness": "not_ready_due_to_task_orchestrator_startup_blocking_full_live_rerun",
+    "worktree_cleanup_status": "pending_until_git_finalization"
+  }
+}

@@ -101,6 +101,21 @@ def test_error_response_raises_bridge_error() -> None:
     client.close()
 
 
+def test_bridge_client_preserves_unrelated_404_as_error() -> None:
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(404, text="missing stream")
+
+    client = DopeconBridgeClient(
+        base_url="http://bridge",
+        transport=httpx.MockTransport(handler),
+    )
+
+    with pytest.raises(DopeconBridgeError, match="404"):
+        client.get_stream_info("missing")
+
+    client.close()
+
+
 def test_save_and_get_custom_data() -> None:
     """Saving custom data should set headers and return success."""
 
