@@ -1,0 +1,32 @@
+{
+  "packet_id": "TP-CODEX-RTE-MAIN-PR-001",
+  "branch": "codex/rte-main-pr-001",
+  "source_branch": "codex/rte-merge-exec-001",
+  "target_branch": "main",
+  "replay_commit_count": 8,
+  "files_changed": [
+    "proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/IMPLEMENTER_REPORT.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/PROOF.json",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/bounded_target_replay_readiness.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/final_replay_exec_verdict.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/replay_branch_creation.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/replay_branch_validation.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/replay_conflict_resolution.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/replayed_commit_log.md",
+    "proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/verification_commands.txt",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+  ],
+  "bounded_target": {
+    "phase": "A",
+    "step": "A2",
+    "routing_policy": "balanced_grok_openrouter"
+  },
+  "validator_result": "CONDITIONAL_GO",
+  "operator_verdict": "GO_NOW",
+  "pal_required": true,
+  "bounded_repair_commit": "c7250ecaf",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/413",
+  "final_pr_packet_verdict": "PR_OPENED",
+  "verdict": "PASS"
+}
