@@ -1,0 +1,27 @@
+git status --short
+[no output]
+
+git branch --show-current
+codex/rte-merge-exec-001
+
+git diff --stat main...codex/rte-merge-exec-001
+11 files changed
+runtime files:
+- services/repo-truth-extractor/run_extraction_v5.py
+- services/repo-truth-extractor/validate_pre_live_gate_v25.py
+
+git log --oneline main..codex/rte-merge-exec-001
+3749d3b2a docs(proof): record replay validation readiness assessment and final verdict
+18b8a1b31 docs(proof): record replay branch creation and required commit replay log
+c7250ecaf fix(repo-truth-extractor): restore selected-step validator replay integrity
+1052feba2 fix(repo-truth-extractor): correct narrow post-tp004 live defects
+52d651b01 feat(repo-truth-extractor): implement JSON repair provenance tracking and unify run status
+ff29dd457 fix(repo-truth-extractor): recover TP003 bounded execution logic from mixed runner
+de544c137 fix(repo-truth-extractor): recover TP001 spend-cap logic from mixed runner
+d4fc167d7 fix(repo-truth-extractor): recover deferred tp002-owned changes
+
+git status --short
+[no output before proof staging]
+
+git diff --stat
+[no runtime diff generated in this packet]
