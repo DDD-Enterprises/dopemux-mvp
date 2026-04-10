@@ -18,7 +18,7 @@ from benchmarking.orchestration.attempt_executor import AttemptExecutor
 from benchmarking.reporting.pipeline import BenchmarkReportingPipeline
 from benchmarking.rollups.pipeline import BenchmarkScoringPipeline
 from benchmarking.storage.hashing import stable_json_dumps
-from benchmarking.storage.paths import benchmark_paths
+from benchmarking.storage.paths import benchmark_paths, run_paths
 from benchmarking.storage.sqlite_repo import BenchmarkCatalogRepo
 from benchmarking.synthesis.governance_pipeline import GovernanceSynthesisPipeline
 
@@ -74,6 +74,22 @@ def _decision_rows(candidate_details: list[dict[str, Any]]) -> list[dict[str, An
             }
         )
     return rows
+
+
+def _load_admissibility_gate(root: Path | None, benchmark_run_id: str) -> dict[str, Any]:
+    artifact_path = run_paths(benchmark_run_id, root).recommendations_dir / "ROUTE_IDENTITY_ADMISSIBILITY.json"
+    if not artifact_path.exists():
+        raise RuntimeError(
+            "campaign admission requires a route identity admissibility artifact. "
+            f"Missing: {artifact_path}"
+        )
+    payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    if str(payload.get("status")) != "admissible":
+        raise RuntimeError(
+            "campaign admission blocked by route identity admissibility gate: "
+            f"{payload.get('admissibility_blocker_codes', [])}"
+        )
+    return payload
 
 
 def _policy_recommendations(candidate_details: list[dict[str, Any]]) -> list[str]:
@@ -152,11 +168,18 @@ def _post_run_decision_memo(
     )
 
 
-def run_campaign(root: Path | None = None, proof_dir: Path | None = None) -> dict[str, Any]:
+def run_campaign(
+    root: Path | None = None,
+    proof_dir: Path | None = None,
+    admissibility_run_id: str | None = None,
+) -> dict[str, Any]:
     repo = BenchmarkCatalogRepo.from_root(root)
     plan = build_r1_campaign_plan(repo)
     manifest = build_campaign_manifest(plan)
     preflight = _preflight_output()
+    if not admissibility_run_id:
+        raise RuntimeError("campaign admission requires --admissibility-run-id")
+    admissibility_gate = _load_admissibility_gate(root, admissibility_run_id)
 
     executor = AttemptExecutor(root)
     scoring = BenchmarkScoringPipeline(root)
@@ -216,6 +239,8 @@ def run_campaign(root: Path | None = None, proof_dir: Path | None = None) -> dic
         "sample_candidate_detail": reporting_payload["candidate_details"][0] if reporting_payload["candidate_details"] else {},
         "sample_portfolio_summary": reporting_payload["portfolio_summary"],
         "policy_recommendations": _policy_recommendations(reporting_payload["candidate_details"]),
+        "admissibility_run_id": admissibility_run_id,
+        "admissibility_gate": admissibility_gate,
     }
 
     if proof_dir is not None:
@@ -268,8 +293,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the bounded R1 benchmark campaign.")
     parser.add_argument("--benchmark-root", type=Path, default=None)
     parser.add_argument("--proof-dir", type=Path, default=None)
+    parser.add_argument("--admissibility-run-id", default=None)
     args = parser.parse_args(argv)
-    payload = run_campaign(root=args.benchmark_root, proof_dir=args.proof_dir)
+    payload = run_campaign(
+        root=args.benchmark_root,
+        proof_dir=args.proof_dir,
+        admissibility_run_id=args.admissibility_run_id,
+    )
     print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
     return 0
 

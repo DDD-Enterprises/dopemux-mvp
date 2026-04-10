@@ -27,8 +27,12 @@ class ExtractionV5Adapter(ExecutorAdapter):
                 "live_execution": bool(campaign.get("live_execution", False)),
                 "routing_override_model": str(campaign.get("routing_override_model") or ""),
                 "route_id": str(campaign.get("route_id") or ""),
+                "surface_id": str(campaign.get("surface_id") or ""),
                 "surface_class": str(campaign.get("surface_class") or ""),
                 "provider_name": str(campaign.get("provider_name") or ""),
+                "model_key": str(campaign.get("model_key") or ""),
+                "provider_model_id": str(campaign.get("provider_model_id") or ""),
+                "route_pin": str(campaign.get("route_pin") or ""),
             }
         return {
             "run_id": "benchmark_v5_case",
@@ -38,8 +42,12 @@ class ExtractionV5Adapter(ExecutorAdapter):
             "live_execution": False,
             "routing_override_model": "",
             "route_id": "",
+            "surface_id": "",
             "surface_class": "openrouter_routed",
             "provider_name": "openrouter",
+            "model_key": "",
+            "provider_model_id": "",
+            "route_pin": "",
         }
 
     @staticmethod
@@ -176,14 +184,27 @@ class ExtractionV5Adapter(ExecutorAdapter):
                 "A0__A_P0001.json": raw_payload,
                 "STEP_METRICS.json": step_metrics,
                 "RUN_DASHBOARD.json": run_dashboard,
+                "RUN_ROUTING_FINGERPRINT.json": routing_fingerprint,
                 "FAILURE_INDEX.json": failure_index,
             },
             route_trace={
+                "declared_route_id": str(config["route_id"]),
                 "surface_class": str(config["surface_class"]),
                 "execution_mode": "live_execute" if live_execution else "dry_run",
                 "phase": phase,
                 "logical_route_id": str(config["route_id"]),
                 "provider_name": str(config["provider_name"]),
+                "selected_route_identity": {
+                    "declared_route_id": str(config["route_id"]),
+                    "surface_id": str(config["surface_id"]),
+                    "surface_class": str(config["surface_class"]),
+                    "provider_name": str(config["provider_name"]),
+                    "model_key": str(config["model_key"]),
+                    "provider_model_id": str(config["provider_model_id"]),
+                    "route_pin": str(config["route_pin"]),
+                    "routing_override_model": routing_override_model,
+                    "phase": phase,
+                },
                 "route_hops": route_hops or [effective_route],
                 "step_route_counts": step_route_counts,
                 "routing_fingerprint_path": str(run_root / "RUN_ROUTING_FINGERPRINT.json"),
