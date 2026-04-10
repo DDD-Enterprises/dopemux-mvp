@@ -6,8 +6,6 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[3]
 SERVICE_ROOT = ROOT / "services" / "repo-truth-extractor"
 if str(SERVICE_ROOT) not in sys.path:
