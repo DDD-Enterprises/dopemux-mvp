@@ -11,7 +11,7 @@ from .models import PrescanConfig
 
 try:
     from ..spend_ledger import get_model_cost_rate
-except Exception:  # pragma: no cover - fallback only when imported out of tree
+except ImportError:  # pragma: no cover - fallback only when imported out of tree
     get_model_cost_rate = None
 
 SANCTIONED_PROVIDERS = ("openai", "gemini", "xai", "openrouter")
