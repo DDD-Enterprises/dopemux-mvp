@@ -408,6 +408,7 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
             volatile_keys=CONTRACT_MAP_VOLATILE_KEYS,
         ),
     }
+    return scope
 
 
 def evaluate_import_cli_smoke(config: GateConfig) -> Tuple[Dict[str, Any], List[Blocker]]:
@@ -487,10 +488,15 @@ def evaluate_contract_map(
 
     expected_target_keys = expected_contract_map_target_keys(contract_module, config)
     map_steps = payload_one.get("steps", {})
+    target_step = str(config.target_step or "").strip().upper()
     observed_target_keys = sorted(
         key
         for key in map_steps.keys()
         if str(key).split(":")[0] in set(config.target_phases)
+        and (
+            not target_step
+            or str(key).split(":", 1)[1].strip().upper() == target_step
+        )
     )
     if hash_one != hash_two or expected_target_keys != observed_target_keys:
         blockers.append(
