@@ -56,30 +56,36 @@
       },
       {
         "slice": 3,
-        "summary": "Started a patched bridge on localhost:3017 and a patched task-orchestrator on localhost:3014 from this stacked branch; reran the blocked route successfully and confirmed forced downstream failure still returns 503.",
+        "summary": "Started a patched bridge on localhost:3017 and a patched task-orchestrator on localhost:3014; reran the blocked route successfully, completed the broader live sanity matrix, and confirmed forced downstream failure still returns 503.",
         "verification": [
           "GET http://127.0.0.1:3017/kg/custom_data?workspace_id=/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix&category=workflow_ideas&limit=5 -> 200 {\"success\":true,\"count\":0,\"data\":[],\"source\":\"conport\"}",
           "GET http://127.0.0.1:3014/api/workflow/ideas -> 200 {\"count\":0,\"ideas\":[]}",
+          "POST http://127.0.0.1:3014/api/workflow/ideas -> 201 with created idea payload",
           "GET http://127.0.0.1:3014/api/workflow/epics -> 200 {\"count\":0,\"epics\":[]}",
+          "GET http://127.0.0.1:3014/info -> 200",
+          "GET http://127.0.0.1:3014/api/projects/1/workflow/state -> 200",
+          "GET http://127.0.0.1:3014/api/projects/1/workflow/queue -> 200",
+          "GET http://127.0.0.1:3014/api/projects/1/workflow/blockers -> 200",
           "GET http://127.0.0.1:3014/health -> 200",
           "GET http://127.0.0.1:3018/api/workflow/ideas with DOPECON_BRIDGE_URL=http://127.0.0.1:1 -> 503 {\"detail\":\"Failed to fetch custom_data workflow_ideas: All connection attempts failed\"}"
         ]
       },
       {
         "slice": 4,
-        "summary": "Completed codereview, precommit, pushed the startup-fix branch, opened a stacked draft PR, and recorded the proof artifact.",
+        "summary": "Completed codereview, precommit, merged PRs #402 and #404 into main, rebased the startup-fix branch directly onto updated origin/main, and refreshed the proof artifact for the direct ship branch.",
         "verification": [
           "PAL codereview completed with no material issues",
           "PAL precommit completed with no material issues",
-          "Branch pushed to origin/tp/task-orchestrator-startup-blocker-fix",
-          "Draft PR opened at https://github.com/DDD-Enterprises/dopemux-mvp/pull/410"
+          "PR #402 merged into main as 6f0fe7a877d026b42a9c4ce5d01dd43dab5aa753",
+          "PR #404 merged into main as 0b4da2e99e9195cd8cb3aa305d99607d08ef27ab",
+          "tp/task-orchestrator-startup-blocker-fix rebased onto origin/main without carrying #409's intermediate branch dependency"
         ]
       }
     ],
     "replan_events": [
       {
-        "reason": "The requested live rerun depends on the already-patched bridge empty-state contract, which is not present on main.",
-        "decision": "Abandoned the initial main-based worktree and recreated tp/task-orchestrator-startup-blocker-fix from tp/bridge-workflow-ideas-empty-state-fix so the live route could be rerun against the correct bridge contract."
+        "reason": "The initial live rerun used the bridge-fix branch because the startup packet was created before the current branch graph audit and ship-order correction.",
+        "decision": "After merging PRs #402 and #404 and re-checking main, rebased tp/task-orchestrator-startup-blocker-fix directly onto updated origin/main because merged PR #403 already provided the necessary bridge empty-state code and PR #409 was no longer needed as an open parent."
       },
       {
         "reason": "The first startup reproduction exposed a second bootstrap defect beyond import order.",
@@ -88,13 +94,14 @@
     ],
     "skipped_abandoned_merged_slices": [
       {
-        "slice": "initial-main-worktree-attempt",
-        "status": "abandoned",
-        "rationale": "It could not satisfy the packet's integrated rerun requirement because main did not contain the bridge empty-state fix."
+        "slice": "intermediate-branch-parent-pr-409",
+        "status": "merged_into_top_branch_plan",
+        "rationale": "After the branch audit, PR #409 was treated as intermediate scaffolding rather than the ship vehicle; the final startup branch now sits directly on main and relies on already-merged PR #403 for the bridge contract."
       }
     ],
     "commit_shas": [
-      "d03e0b8d11ff4292e31c9869de28f862b73f5188"
+      "4751dbe334b92fd6af1f83517b9e3c3825c6c693",
+      "e78211e26fbe719303ae1fcf33e88514c0f16f77"
     ],
     "per_slice_verification": {
       "slice_1": "startup failure reproduced and exact bootstrap seam identified",
@@ -110,7 +117,7 @@
       "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/services/task-orchestrator/tests/test_health_route.py",
       "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/services/task-orchestrator/tests/test_decompose_route.py",
       "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/tests/unit/test_task_orchestrator_workflow_api.py",
-      "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/proof/bridge-workflow-ideas-empty-state-fix.proof.json"
+      "/Users/hue/code/dopemux-mvp/.git/FETCH_HEAD"
     ],
     "startup_command_before": "cd /Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/services/task-orchestrator && python - <<'PY' ... from app.main import create_plane_coordinator, get_workspace_root ... PY",
     "startup_traceback_before": "ModuleNotFoundError: No module named 'dopemux' at services/task-orchestrator/app/main.py:12",
@@ -130,8 +137,28 @@
         "response": "200 {\"count\":0,\"ideas\":[]}"
       },
       {
+        "request": "POST http://127.0.0.1:3014/api/workflow/ideas",
+        "response": "201 with idea_id idea_1c04baaf6a304ab1bae68633b33ebecc"
+      },
+      {
         "request": "GET http://127.0.0.1:3014/api/workflow/epics",
         "response": "200 {\"count\":0,\"epics\":[]}"
+      },
+      {
+        "request": "GET http://127.0.0.1:3014/info",
+        "response": "200 info payload"
+      },
+      {
+        "request": "GET http://127.0.0.1:3014/api/projects/1/workflow/state",
+        "response": "200 workflow state payload"
+      },
+      {
+        "request": "GET http://127.0.0.1:3014/api/projects/1/workflow/queue",
+        "response": "200 workflow queue payload"
+      },
+      {
+        "request": "GET http://127.0.0.1:3014/api/projects/1/workflow/blockers",
+        "response": "200 workflow blockers payload"
       },
       {
         "request": "GET http://127.0.0.1:3014/health",
@@ -143,9 +170,8 @@
       }
     ],
     "tests_run": [
-      "pytest -q --noconftest tests/unit/test_task_orchestrator_startup.py",
-      "pytest -q services/task-orchestrator/tests/test_health_route.py services/task-orchestrator/tests/test_decompose_route.py",
-      "pytest -q tests/unit/test_task_orchestrator_workflow_api.py"
+      "pytest -q --noconftest tests/unit/test_task_orchestrator_startup.py tests/unit/test_task_orchestrator_workflow_api.py",
+      "pytest -q services/task-orchestrator/tests/test_health_route.py tests/test_decompose_route.py"
     ],
     "diffs_reviewed": [
       "git diff -- services/task-orchestrator/app/main.py",
@@ -166,7 +192,7 @@
       "The repo-root parent walk is layout-sensitive, but it matches the current authoritative repository structure and was verified live in this packet."
     ],
     "PR_URL": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/410",
-    "merge_readiness": "ready for stacked review on top of PR #409",
+    "merge_readiness": "ready to retarget to main and merge as the direct top branch after PRs #402 and #404",
     "worktree_cleanup_status": "deferred to preserve local proof/artifact access for this session"
   }
 }
