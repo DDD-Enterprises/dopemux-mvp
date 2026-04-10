@@ -44,7 +44,7 @@ def main():
         "--output-dir",
         type=str,
         required=True,
-        help="Directory to write prescan artifacts (default: extraction/prescan_output)",
+        help="Directory to write prescan artifacts",
     )
 
     # Passes
