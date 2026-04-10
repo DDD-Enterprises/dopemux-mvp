@@ -43,7 +43,7 @@
         "slice": 2,
         "status": "completed",
         "result": "Patched bridge ConPortClient.get_custom_data to normalize upstream /api/custom_data 404 into empty-state payload {count: 0, items: []} while preserving non-404 failures as HTTP 502.",
-        "commit_sha": null,
+        "commit_sha": "5d3411340c48d2b298248c969767e15b8b76977b",
         "verification": [
           "services/dopecon-bridge/tests/test_conport_custom_data_client.py",
           "services/dopecon-bridge/tests/test_leantime_route_contract.py",
@@ -66,12 +66,13 @@
       {
         "slice": 4,
         "status": "completed_with_limits",
-        "result": "Completed internal PAL codereview and precommit; proof artifact written. Git branch/worktree finalization steps remain blocked by sandboxed .git writes.",
+        "result": "Completed internal PAL codereview and precommit; proof artifact written; branch pushed and draft PR opened. Worktree cleanup remains pending because the packet is not VERIFIED.",
         "commit_sha": null,
         "verification": [
           "PAL codereview internal run reported 0 issues",
           "PAL precommit internal run reported commit-ready validation",
-          "Final challenge confirmed remaining gap is live integrated rerun, not a code-local defect"
+          "Final challenge confirmed remaining gap is live integrated rerun, not a code-local defect",
+          "Draft PR opened at https://github.com/DDD-Enterprises/dopemux-mvp/pull/409"
         ]
       }
     ],
@@ -107,7 +108,7 @@
       "The packet fix is proven live only at the bridge custom-data boundary in this session; the full task-orchestrator route remains blocked by separate startup drift.",
       "Bridge custom-data reads now treat upstream 404 as empty-state on this endpoint; if the downstream custom-data service later uses 404 for a non-empty-state read failure on the same endpoint, the adapter contract would need tightening."
     ],
-    "pr_url": null,
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/409",
     "merge_readiness": "not_ready_due_to_task_orchestrator_startup_blocking_full_live_rerun",
     "worktree_cleanup_status": "pending_until_git_finalization"
   }
