@@ -25,3 +25,9 @@ This packet prepares and opens a reviewer-safe PR from the clean replay candidat
 ## Branching Note
 
 Local creation of `refs/heads/codex/rte-main-pr-001` was blocked by a ref-lock permission denial in this environment. Packet preparation therefore used the clean replay source branch as the local working state and is intended to publish the reviewed PR branch as remote `codex/rte-main-pr-001` via refspec.
+
+## PR Outcome
+
+- remote branch published: `codex/rte-main-pr-001`
+- PR opened: `#413`
+- PR URL: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/413`
