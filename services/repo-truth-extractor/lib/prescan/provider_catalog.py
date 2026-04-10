@@ -94,7 +94,9 @@ def _pricing(provider: str, model_id: str) -> dict[str, Any]:
         output_1m = 40.0
         authority = "fallback_default"
     else:
-        input_1m, output_1m = get_model_cost_rate(model_id, provider=provider)
+        rate = get_model_cost_rate(provider=provider, model_id=model_id)
+        input_1m = rate.get("input_cost_per_1m_usd", 10.0)
+        output_1m = rate.get("output_cost_per_1m_usd", 40.0)
         authority = "shared_spend_ledger_registry"
     return {
         "input_1m_usd": float(input_1m),
