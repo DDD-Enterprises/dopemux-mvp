@@ -47,16 +47,14 @@ class WorkflowStore:
 
     def __init__(
         self,
-        workspace_id: Union["os.PathLike[str]", str],
+        workspace_id: Union[str, "os.PathLike[str]"],
         *,
         bridge_url: Optional[str] = None,
         bridge_token: Optional[str] = None,
         source_plane: Optional[str] = None,
         timeout: float = 10.0,
     ) -> None:
-    def __init__(
-        self,
-        workspace_id: Any,
+        self.workspace_id = self._normalize_workspace_id(workspace_id)
         self._client = AsyncDopeconBridgeClient(
             config=DopeconBridgeConfig(
                 base_url=bridge_url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016"),
@@ -67,18 +65,11 @@ class WorkflowStore:
         )
 
     @staticmethod
-    def _normalize_workspace_id(workspace_id: object) -> str:
+    def _normalize_workspace_id(workspace_id: "Union[str, os.PathLike[str]]") -> str:
         if workspace_id is None:
             raise WorkflowStoreError("workspace_id is required")
         normalized = str(workspace_id).strip()
         if not normalized:
-            raise WorkflowStoreError("workspace_id is required")
-    @staticmethod
-    def _normalize_workspace_id(workspace_id: object) -> str:
-        if workspace_id is None:
-            raise WorkflowStoreError("workspace_id is required")
-        normalized = str(workspace_id)
-        if not normalized or normalized == "None":
             raise WorkflowStoreError("workspace_id is required")
         return normalized
 

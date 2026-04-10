@@ -7,13 +7,21 @@ import httpx
 import pytest
 
 
-SERVICE_ROOT = Path(__file__).resolve().parents[1]
-if str(SERVICE_ROOT) not in sys.path:
-    sys.path.insert(0, str(SERVICE_ROOT))
+SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestrator"
+SERVICE_ROOT_STR = str(SERVICE_ROOT)
+if SERVICE_ROOT_STR in sys.path:
+    sys.path.remove(SERVICE_ROOT_STR)
+sys.path.insert(0, SERVICE_ROOT_STR)
 
-from app.main import app
-from app.api import project_workflow
-from app.services.workflow_service import WorkflowService
+# Prevent cross-test module collisions from other services that also expose
+# a top-level `app.py` module on sys.path.
+for _module_name in list(sys.modules):
+    if _module_name == "app" or _module_name.startswith("app."):
+        sys.modules.pop(_module_name, None)
+
+from app.main import app  # noqa: E402
+from app.api import project_workflow  # noqa: E402
+from app.services.workflow_service import WorkflowService  # noqa: E402
 
 
 class MemoryBridgeClient:
