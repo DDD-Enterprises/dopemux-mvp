@@ -37,6 +37,8 @@ class CampaignAssignment:
     repo_root: Path
     routing_override_model: str | None = None
     operator_note: str = ""
+    benchmark_route_ownership_mode: str | None = None
+    benchmark_route_ownership_scope: str | None = None
 
 
 @dataclass(frozen=True)

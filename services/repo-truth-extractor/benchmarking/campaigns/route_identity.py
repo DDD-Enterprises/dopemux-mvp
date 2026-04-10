@@ -115,6 +115,9 @@ def build_route_identity_record(
     routing_fingerprint_path = attempt_root / "outputs" / "RUN_ROUTING_FINGERPRINT.json"
     if not routing_fingerprint_path.exists():
         routing_fingerprint_path = Path(str(route_trace.get("routing_fingerprint_path") or ""))
+    routing_log_path = attempt_root / "outputs" / "ROUTING_LOG.json"
+    if not routing_log_path.exists():
+        routing_log_path = Path(str(route_trace.get("routing_log_path") or ""))
     failure_index_path = attempt_root / "outputs" / "FAILURE_INDEX.json"
     if not failure_index_path.exists():
         failure_index_path = Path(str(route_trace.get("run_root") or "")) / "telemetry" / "FAILURE_INDEX.json"
@@ -141,12 +144,26 @@ def build_route_identity_record(
         "representative_phase_route",
         routing_fingerprint.get("effective_model_routing", {}).get("A"),
     )
+    selected_route_identity.setdefault(
+        "benchmark_route_ownership",
+        routing_fingerprint.get("benchmark_route_ownership", {}),
+    )
+    selected_route_identity.setdefault(
+        "route_ownership_mode",
+        str(route_trace.get("route_ownership_mode") or ""),
+    )
+    selected_route_identity.setdefault(
+        "route_ownership_source",
+        str(route_trace.get("route_ownership_source") or ""),
+    )
 
     source_refs = [
         _source_ref(route_trace_path, attempt_root),
         _source_ref(step_metrics_path, attempt_root),
         _source_ref(routing_fingerprint_path, attempt_root),
     ]
+    if routing_log_path.exists():
+        source_refs.append(_source_ref(routing_log_path, attempt_root))
     if failure_index_path.exists():
         source_refs.append(_source_ref(failure_index_path, attempt_root))
 

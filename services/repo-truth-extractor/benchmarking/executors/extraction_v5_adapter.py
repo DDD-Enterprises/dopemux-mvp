@@ -33,6 +33,9 @@ class ExtractionV5Adapter(ExecutorAdapter):
                 "model_key": str(campaign.get("model_key") or ""),
                 "provider_model_id": str(campaign.get("provider_model_id") or ""),
                 "route_pin": str(campaign.get("route_pin") or ""),
+                "api_key_env": str(campaign.get("api_key_env") or ""),
+                "benchmark_route_ownership_mode": str(campaign.get("benchmark_route_ownership_mode") or ""),
+                "benchmark_route_ownership_scope": str(campaign.get("benchmark_route_ownership_scope") or ""),
             }
         return {
             "run_id": "benchmark_v5_case",
@@ -48,6 +51,9 @@ class ExtractionV5Adapter(ExecutorAdapter):
             "model_key": "",
             "provider_model_id": "",
             "route_pin": "",
+            "api_key_env": "",
+            "benchmark_route_ownership_mode": "",
+            "benchmark_route_ownership_scope": "",
         }
 
     @staticmethod
@@ -69,6 +75,8 @@ class ExtractionV5Adapter(ExecutorAdapter):
         repo_root = Path(config["repo_root"])
         live_execution = bool(config["live_execution"])
         routing_override_model = str(config["routing_override_model"])
+        benchmark_route_ownership_mode = str(config["benchmark_route_ownership_mode"])
+        benchmark_route_ownership_scope = str(config["benchmark_route_ownership_scope"])
         command = [
             sys.executable,
             str(SCRIPT),
@@ -85,6 +93,29 @@ class ExtractionV5Adapter(ExecutorAdapter):
             "1",
         ]
         env = dict(os.environ)
+        if benchmark_route_ownership_mode:
+            env["DPMX_BENCHMARK_ROUTE_OWNERSHIP"] = json.dumps(
+                {
+                    "enabled": True,
+                    "mode": benchmark_route_ownership_mode,
+                    "scope": benchmark_route_ownership_scope or "phase_a_json_managed",
+                    "target_phase": phase,
+                    "benchmark_case_id": str(case["case_id"]),
+                    "route_id": str(config["route_id"]),
+                    "surface_id": str(config["surface_id"]),
+                    "surface_class": str(config["surface_class"]),
+                    "provider_name": str(config["provider_name"]),
+                    "model_key": str(config["model_key"]),
+                    "provider_model_id": str(config["provider_model_id"]),
+                    "route_pin": str(config["route_pin"]),
+                    "api_key_env": str(config["api_key_env"]),
+                    "strict_json_schema": True,
+                    "strict_passthrough_verified": str(config["provider_name"]).strip().lower() != "openrouter"
+                    or str(config["provider_model_id"]).strip().startswith("openai/"),
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
         if live_execution:
             command.append("--execute")
             env["DPMX_LIVE_OK"] = "1"
@@ -117,6 +148,7 @@ class ExtractionV5Adapter(ExecutorAdapter):
         step_metrics = self._load_json_if_present(run_root / "telemetry" / "STEP_METRICS.json")
         run_dashboard = self._load_json_if_present(run_root / "telemetry" / "RUN_DASHBOARD.json")
         failure_index = self._load_json_if_present(run_root / "telemetry" / "FAILURE_INDEX.json")
+        routing_log = self._load_json_if_present(phase_root / "ROUTING_LOG.json")
         qa_payload = self._load_json_if_present(phase_root / "qa" / "A0_QA.json")
         qa_merge_payload = self._load_json_if_present(phase_root / "qa" / "A99_QA.json")
         raw_payload = self._load_json_if_present(phase_root / "raw" / "A0__A_P0001.json")
@@ -186,6 +218,7 @@ class ExtractionV5Adapter(ExecutorAdapter):
                 "RUN_DASHBOARD.json": run_dashboard,
                 "RUN_ROUTING_FINGERPRINT.json": routing_fingerprint,
                 "FAILURE_INDEX.json": failure_index,
+                "ROUTING_LOG.json": routing_log,
             },
             route_trace={
                 "declared_route_id": str(config["route_id"]),
@@ -203,11 +236,16 @@ class ExtractionV5Adapter(ExecutorAdapter):
                     "provider_model_id": str(config["provider_model_id"]),
                     "route_pin": str(config["route_pin"]),
                     "routing_override_model": routing_override_model,
+                    "benchmark_route_ownership_mode": benchmark_route_ownership_mode,
+                    "benchmark_route_ownership_scope": benchmark_route_ownership_scope,
                     "phase": phase,
                 },
                 "route_hops": route_hops or [effective_route],
                 "step_route_counts": step_route_counts,
                 "routing_fingerprint_path": str(run_root / "RUN_ROUTING_FINGERPRINT.json"),
+                "routing_log_path": str(phase_root / "ROUTING_LOG.json"),
+                "route_ownership_mode": benchmark_route_ownership_mode,
+                "route_ownership_source": "benchmark_route_ownership_env" if benchmark_route_ownership_mode else "",
                 "run_root": str(run_root),
             },
             task_eval={
@@ -233,6 +271,7 @@ class ExtractionV5Adapter(ExecutorAdapter):
                 "qa_path": str(phase_root / "qa" / "A0_QA.json"),
                 "qa_merge_path": str(phase_root / "qa" / "A99_QA.json"),
                 "routing_fingerprint_path": str(run_root / "RUN_ROUTING_FINGERPRINT.json"),
+                "routing_log_path": str(phase_root / "ROUTING_LOG.json"),
                 "phase_root": str(phase_root),
             },
             repair_invocations=int(qa_payload.get("repair_invocations", 0)),
