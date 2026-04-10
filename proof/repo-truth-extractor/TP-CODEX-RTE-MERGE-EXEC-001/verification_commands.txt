@@ -1,0 +1,48 @@
+git merge-base --is-ancestor f9c29499a2a1179b2dd77d81528492f47fcd55c9 main && echo BASE_OK
+BASE_OK
+
+git status --short
+[no output]
+
+git branch --show-current
+codex/rte-merge-exec-001
+
+git log --oneline --decorate --graph --max-count=40
+* c7250ecaf (HEAD -> codex/rte-merge-exec-001) fix(repo-truth-extractor): restore selected-step validator replay integrity
+* 1052feba2 fix(repo-truth-extractor): correct narrow post-tp004 live defects
+* 52d651b01 feat(repo-truth-extractor): implement JSON repair provenance tracking and unify run status
+* ff29dd457 fix(repo-truth-extractor): recover TP003 bounded execution logic from mixed runner
+* de544c137 fix(repo-truth-extractor): recover TP001 spend-cap logic from mixed runner
+* d4fc167d7 fix(repo-truth-extractor): recover deferred tp002-owned changes
+* e4bf2d148 (origin/main, origin/HEAD, main) fix(cli): move ALL_PASSES to module level, clarify --passes help text
+
+python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/validate_pre_live_gate_v25.py
+[exit 0]
+
+pytest -q services/repo-truth-extractor/tests/ -k "cost_cap or validator or phase_execution_step_filter or validator_repair_provenance"
+.............................                                            [100%]
+
+env XAI_API_KEY="$XAI_API_KEY" python services/repo-truth-extractor/validate_pre_live_gate_v25.py --target-policy balanced_grok_openrouter --target-phases A --step A2 --allow-online-preflight
+First attempt:
+- warning: model_map.yaml steps outside repo_truth_map JSON scope
+- HTTP 200 preflight calls to x.ai succeeded
+- failed before verdict due replay defect:
+  - `TypeError: 'NoneType' object is not subscriptable`
+  - cause: `derive_scope()` lost `return scope`
+
+Second attempt after bounded replay repair:
+- warning: model_map.yaml steps outside repo_truth_map JSON scope
+- HTTP 200 preflight calls to x.ai succeeded
+- verdict JSON:
+  - `verdict`: `CONDITIONAL_GO`
+  - `operator_verdict`: `GO_NOW`
+  - `reason_codes`: `[]`
+  - `contract_map_determinism`: `PASS`
+  - `online_provider_preflight`: `PASS`
+  - `critical_tests`: `PASS`
+  - only condition: `PAL_REQUIRED_UNAVAILABLE`
+
+git diff --stat main...HEAD
+ services/repo-truth-extractor/run_extraction_v5.py | 32 +++++++---------------
+ .../validate_pre_live_gate_v25.py                  | 26 +++++++++++++++---
+ 2 files changed, 32 insertions(+), 26 deletions(-)
