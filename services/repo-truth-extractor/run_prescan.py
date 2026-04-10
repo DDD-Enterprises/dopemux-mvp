@@ -18,6 +18,10 @@ import logging
 import sys
 from pathlib import Path
 
+SERVICE_DIR = Path(__file__).resolve().parent
+if str(SERVICE_DIR) not in sys.path:
+    sys.path.insert(0, str(SERVICE_DIR))
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -145,7 +149,10 @@ def main():
     try:
         from lib.prescan import PrescanEngine, PrescanConfig
     except ImportError:
-        logger.error("Failed to import prescan library. Ensure you're in the repo-truth-extractor directory.")
+        logger.error(
+            "Failed to import prescan library from %s.",
+            SERVICE_DIR,
+        )
         sys.exit(1)
 
     # Build config
