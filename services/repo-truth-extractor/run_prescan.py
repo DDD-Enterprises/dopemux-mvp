@@ -56,7 +56,10 @@ def main() -> int:
         "--passes",
         type=str,
         default="dedup,discover,feasibility,optimize",
-        help="Comma-separated grok passes to run (default: all)",
+        help=(
+            "Comma-separated grok passes to run (default: all). "
+            "Use 'none' to skip all passes, or 'all' to run every pass."
+        ),
     )
 
     # Enrichment
@@ -178,8 +181,15 @@ def main() -> int:
         verbose=args.verbose,
     )
 
-    # Parse passes
-    passes = [p.strip() for p in args.passes.split(",") if p.strip()] if args.passes else []
+    # Parse passes — special-case 'none' and 'all' before CSV split
+    _ALL_PASSES = ["dedup", "discover", "feasibility", "optimize"]
+    _passes_raw = (args.passes or "").strip().lower()
+    if _passes_raw in ("none", ""):
+        passes: list[str] = []
+    elif _passes_raw == "all":
+        passes = list(_ALL_PASSES)
+    else:
+        passes = [p.strip() for p in args.passes.split(",") if p.strip()]
 
     # Dry run: skip expensive operations
     if args.dry_run:
