@@ -3,7 +3,10 @@ id: prescan-pipeline-ref
 title: Prescan Pipeline Reference
 type: reference
 owner: extraction-platform
+author: '@hu3mann'
 date: 2026-04-07
+last_review: 2026-04-09
+next_review: 2026-07-08
 status: stable
 prelude: Complete reference for the prescan library architecture, configuration, intelligence schema, and integration with v5 extractor
 ---
