@@ -1,0 +1,7 @@
+{
+  "policy_id": "freshness_policy_v1",
+  "policy_version": "1.0",
+  "max_age_hours": 24.0,
+  "unknowns_blocker": "unresolved_benchmark_unknowns",
+  "stale_blocker": "stale_evidence"
+}

@@ -1,0 +1,16 @@
+{
+  "policy_id": "control_anchor_policy_v1",
+  "policy_version": "1.0",
+  "comparison_fields": [
+    "case_id",
+    "surface_class",
+    "runtime_version",
+    "contract_snapshot_id",
+    "validator_suite_id",
+    "retry_policy_id"
+  ],
+  "required_when_surface_classes": [
+    "direct_provider_api",
+    "openrouter_routed"
+  ]
+}
