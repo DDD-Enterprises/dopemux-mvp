@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 from typing import Any
 
+from ..campaigns.selection import CampaignAssignment, CampaignCandidate
 from ..executors.base import ExecutorAdapter
 from ..executors.extraction_v5_adapter import ExtractionV5Adapter
 from ..executors.fl_int_adapter import FLIntAdapter
@@ -87,6 +89,18 @@ class AttemptExecutionReport:
     sample_executor_links: dict[str, Any]
 
 
+def _step_route_signature(route_trace: dict[str, Any]) -> str:
+    payload = route_trace.get("step_route_counts")
+    if not isinstance(payload, dict):
+        return ""
+    normalized = {
+        str(step): [str(item) for item in value]
+        for step, value in sorted(payload.items())
+        if isinstance(value, list)
+    }
+    return json.dumps(normalized, sort_keys=True, separators=(",", ":"))
+
+
 class AttemptExecutor:
     def __init__(self, root: Path | None = None) -> None:
         self.root = root
@@ -106,14 +120,67 @@ class AttemptExecutor:
         if required_records_missing:
             seed_registry(self.repo)
 
-    def execute_starter_set(self, case_ids: list[str]) -> AttemptExecutionReport:
+    def _insert_attempt_artifacts(
+        self,
+        attempt: BenchmarkCaseAttempt,
+        execution: Any,
+        validation: Any,
+    ) -> None:
+        written = self.writer.write_attempt_bundle(
+            attempt=attempt,
+            route_trace=execution.route_trace,
+            validator_results=validation.details_payload,
+            task_eval=execution.task_eval,
+            control_delta={"status": "not_implemented_in_m2"},
+            executor_links=execution.executor_links,
+            output_payloads=execution.outputs,
+        )
+        validator_result = ValidatorResult(
+            validator_result_id=synthetic_id("validator", attempt.case_attempt_id),
+            case_attempt_id=attempt.case_attempt_id,
+            validator_suite_id=validation.validator_suite_id,
+            validator_name=validation.wrapper_name,
+            passed=validation.passed,
+            strength_class=validation.strength_class,
+            failure_reason=validation.failure_reason,
+            details_ref="VALIDATOR_RESULTS.json",
+            content_hash=hash_json(validation.details_payload),
+            source_ref="m2_attempt_executor",
+        )
+        self.repo.insert_evidence_bundle(written.bundle)
+        self.repo.insert_benchmark_case_attempt(attempt)
+        self.repo.insert_validator_result(validator_result)
+        self.repo.insert_control_delta(
+            ControlDelta(
+                control_delta_id=synthetic_id("control_delta", attempt.case_attempt_id),
+                candidate_attempt_id=attempt.case_attempt_id,
+                anchor_attempt_id=attempt.case_attempt_id,
+                metric_name="not_implemented_in_m2",
+                candidate_value=0.0,
+                anchor_value=0.0,
+                delta_value=0.0,
+                delta_state="not_computed",
+                content_hash=hash_json({"case_attempt_id": attempt.case_attempt_id}),
+                source_ref="m2_attempt_executor",
+            )
+        )
+
+    def execute_assignments(
+        self,
+        *,
+        assignments: list[CampaignAssignment],
+        case_set_id: str,
+        run_type: str,
+        trigger_ref: str,
+        benchmark_run_prefix: str,
+    ) -> AttemptExecutionReport:
         self._ensure_registry()
-        benchmark_run_id = synthetic_run_id("m2_exec")
+        benchmark_run_id = synthetic_run_id(benchmark_run_prefix)
         run = BenchmarkRun(
             benchmark_run_id=benchmark_run_id,
-            run_type="benchmark_execution_smoke",
+            run_type=run_type,
             trigger_type="manual",
-            trigger_ref="TP-RTE-BENCH-M2",
+            trigger_ref=trigger_ref,
             git_commit="workspace",
             runtime_version="v5",
             contract_snapshot_ids=[],
@@ -125,12 +192,16 @@ class AttemptExecutor:
         )
         self.repo.insert_benchmark_run(run)
 
-        case_set = self.repo.fetch_benchmark_case_set("benchmark_registry_starter_v1")
-        assert case_set is not None
-        contract_snapshot = self.repo.fetch_contract_snapshot(
-            self.repo.fetch_benchmark_case(case_ids[0])["contract_snapshot_id"]  # type: ignore[index]
-        )
-        assert contract_snapshot is not None
+        case_set = self.repo.fetch_benchmark_case_set(case_set_id)
+        if case_set is None:
+            raise RuntimeError(f"missing benchmark case set {case_set_id}")
+        first_case = self.repo.fetch_benchmark_case(assignments[0].case_id)
+        if first_case is None:
+            raise RuntimeError(f"missing benchmark case {assignments[0].case_id}")
+        contract_snapshot = self.repo.fetch_contract_snapshot(str(first_case["contract_snapshot_id"]))
+        if contract_snapshot is None:
+            raise RuntimeError(f"missing contract snapshot for case {assignments[0].case_id}")
+        case_ids = sorted({assignment.case_id for assignment in assignments})
         self.writer.write_run_layout(
             benchmark_run=run,
             case_set_id=case_set["case_set_id"],
@@ -157,33 +228,49 @@ class AttemptExecutor:
         first_validator_payload: dict[str, Any] | None = None
         first_route_trace: dict[str, Any] | None = None
         first_executor_links: dict[str, Any] | None = None
+        live_route_signatures: dict[str, dict[str, str]] = {}
 
-        for index, case_id in enumerate(case_ids, start=1):
-            case = self.repo.fetch_benchmark_case(case_id)
+        for index, assignment in enumerate(assignments, start=1):
+            case = self.repo.fetch_benchmark_case(assignment.case_id)
             if case is None:
-                raise RuntimeError(f"missing benchmark case {case_id}")
-            surface_class = str((case.get("surface_scope") or ["local_or_open_weight"])[0])
-            route_context = _attempt_route_context(surface_class)
+                raise RuntimeError(f"missing benchmark case {assignment.case_id}")
             executor = _executor_for_case(case)
             validator = _validator_for_case(case)
-            execution = executor.execute(case, benchmark_paths(self.root).root / "work" / case_id)
+            case_attempt_id = synthetic_id(
+                "bca",
+                f"{benchmark_run_id}_{assignment.case_id}_{assignment.candidate.route_id}",
+            )
+            execution_case = dict(case)
+            execution_case["campaign_execution"] = {
+                "run_id": f"{benchmark_run_id}_{assignment.case_id}_{assignment.candidate.route_id}",
+                "phase": assignment.phase,
+                "output_root": str(benchmark_paths(self.root).root / "work" / benchmark_run_id / assignment.case_id / assignment.candidate.route_id),
+                "repo_root": str(assignment.repo_root),
+                "live_execution": assignment.live_execution,
+                "routing_override_model": assignment.routing_override_model,
+                "route_id": assignment.candidate.route_id,
+                "surface_class": assignment.candidate.surface_class,
+                "provider_name": assignment.candidate.provider_name,
+            }
+            execution = executor.execute(
+                execution_case,
+                benchmark_paths(self.root).root / "work" / benchmark_run_id / assignment.case_id / assignment.candidate.route_id,
+            )
             validation = validator.validate(execution, case)
-            if not validation.passed:
-                raise RuntimeError(f"structural validation failed for {case_id}: {validation.failure_reason}")
 
             attempt = BenchmarkCaseAttempt(
-                case_attempt_id=synthetic_id("bca", f"{benchmark_run_id}_{case_id}"),
+                case_attempt_id=case_attempt_id,
                 benchmark_run_id=benchmark_run_id,
-                case_id=case_id,
+                case_id=assignment.case_id,
                 case_version=int(case["case_version"]),
                 case_set_id=str(case_set["case_set_id"]),
-                archetype_id=str(case["archetype_id"]),
+                archetype_id=assignment.archetype_id,
                 phase_or_step_family=str(case["phase_or_step_family"]),
-                surface_class=surface_class,
-                surface_id=route_context["surface_id"],
-                profile_id=route_context["profile_id"],
-                route_id=route_context["route_id"],
-                control_anchor_group_id=route_context["control_anchor_group_id"],
+                surface_class=assignment.candidate.surface_class,
+                surface_id=assignment.candidate.surface_id,
+                profile_id=assignment.profile_id,
+                route_id=assignment.candidate.route_id,
+                control_anchor_group_id=assignment.control_anchor_group_id,
                 runtime_version="v5",
                 contract_version=str(contract_snapshot["contract_version"]),
                 contract_snapshot_id=str(contract_snapshot["contract_snapshot_id"]),
@@ -210,50 +297,29 @@ class AttemptExecutor:
                 output_artifact_ref=execution.output_artifact_ref,
                 golden_eval_ref="TASK_EVAL.json",
                 control_delta_ref="CONTROL_DELTA.json",
-                evidence_bundle_id=synthetic_id("bundle", f"{benchmark_run_id}_{case_id}"),
+                evidence_bundle_id=synthetic_id(
+                    "bundle",
+                    f"{benchmark_run_id}_{assignment.case_id}_{assignment.candidate.route_id}",
+                ),
                 timestamp_utc=utc_now_iso(),
                 source_ref="m2_attempt_executor",
+                notes=[assignment.operator_note] if assignment.operator_note else [],
             )
-            written = self.writer.write_attempt_bundle(
-                attempt=attempt,
-                route_trace=execution.route_trace,
-                validator_results=validation.details_payload,
-                task_eval=execution.task_eval,
-                control_delta={"status": "not_implemented_in_m2"},
-                executor_links=execution.executor_links,
-                output_payloads=execution.outputs,
-            )
-            validator_result = ValidatorResult(
-                validator_result_id=synthetic_id("validator", attempt.case_attempt_id),
-                case_attempt_id=attempt.case_attempt_id,
-                validator_suite_id=validation.validator_suite_id,
-                validator_name=validation.wrapper_name,
-                passed=validation.passed,
-                strength_class=validation.strength_class,
-                failure_reason=validation.failure_reason,
-                details_ref="VALIDATOR_RESULTS.json",
-                content_hash=hash_json(validation.details_payload),
-                source_ref="m2_attempt_executor",
-            )
-            self.repo.insert_evidence_bundle(written.bundle)
-            self.repo.insert_benchmark_case_attempt(attempt)
-            self.repo.insert_validator_result(validator_result)
-            self.repo.insert_control_delta(
-                ControlDelta(
-                    control_delta_id=synthetic_id("control_delta", attempt.case_attempt_id),
-                    candidate_attempt_id=attempt.case_attempt_id,
-                    anchor_attempt_id=attempt.case_attempt_id,
-                    metric_name="not_implemented_in_m2",
-                    candidate_value=0.0,
-                    anchor_value=0.0,
-                    delta_value=0.0,
-                    delta_state="not_computed",
-                    content_hash=hash_json({"case_attempt_id": attempt.case_attempt_id}),
-                    source_ref="m2_attempt_executor",
-                )
-            )
+            self._insert_attempt_artifacts(attempt, execution, validation)
+            if assignment.live_execution:
+                signature = _step_route_signature(execution.route_trace)
+                if signature:
+                    prior_routes = live_route_signatures.setdefault(assignment.case_id, {})
+                    for prior_route_id, prior_signature in prior_routes.items():
+                        if prior_route_id != assignment.candidate.route_id and prior_signature == signature:
+                            raise RuntimeError(
+                                "campaign route collapse detected: "
+                                f"{assignment.case_id} route {assignment.candidate.route_id} shares the same effective "
+                                f"step routing signature as {prior_route_id}; stop the campaign and revise route selection."
+                            )
+                    prior_routes[assignment.candidate.route_id] = signature
             case_attempt_ids.append(attempt.case_attempt_id)
-            bundle_ids.append(written.bundle.bundle_id)
+            bundle_ids.append(attempt.evidence_bundle_id)
             if first_attempt_payload is None:
                 first_attempt_payload = self.repo.fetch_attempt(attempt.case_attempt_id)
                 first_validator_payload = validation.details_payload
@@ -269,4 +335,45 @@ class AttemptExecutor:
             sample_validator_results=first_validator_payload or {},
             sample_route_trace=first_route_trace or {},
             sample_executor_links=first_executor_links or {},
+        )
+
+    def execute_starter_set(self, case_ids: list[str]) -> AttemptExecutionReport:
+        self._ensure_registry()
+        assignments: list[CampaignAssignment] = []
+        fixture_repo = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "golden_repo_min"
+        for case_id in case_ids:
+            case = self.repo.fetch_benchmark_case(case_id)
+            if case is None:
+                raise RuntimeError(f"missing benchmark case {case_id}")
+            surface_class = str((case.get("surface_scope") or ["local_or_open_weight"])[0])
+            route_context = _attempt_route_context(surface_class)
+            assignments.append(
+                CampaignAssignment(
+                    candidate=CampaignCandidate(
+                        route_id=route_context["route_id"],
+                        cohort="smoke",
+                        surface_id=route_context["surface_id"],
+                        surface_class=surface_class,
+                        provider_name=route_context["surface_id"].replace("surface_", "").replace("_api_v1", "").replace("_fixture_v1", ""),
+                        model_key=route_context["route_id"],
+                        provider_model_id=route_context["route_id"],
+                        admission_reason="Synthetic smoke coverage.",
+                        policy_note="Synthetic smoke route.",
+                    ),
+                    case_id=case_id,
+                    archetype_id=str(case["archetype_id"]),
+                    profile_id=route_context["profile_id"],
+                    control_anchor_group_id=route_context["control_anchor_group_id"],
+                    live_execution=False,
+                    phase="A" if str(case.get("executor_kind")) == "runtime_v5_adapter" else str(case.get("phase_or_step_family") or "synthetic"),
+                    repo_root=fixture_repo,
+                    routing_override_model=None,
+                )
+            )
+        return self.execute_assignments(
+            assignments=assignments,
+            case_set_id="benchmark_registry_starter_v1",
+            run_type="benchmark_execution_smoke",
+            trigger_ref="TP-RTE-BENCH-M2",
+            benchmark_run_prefix="m2_exec",
         )

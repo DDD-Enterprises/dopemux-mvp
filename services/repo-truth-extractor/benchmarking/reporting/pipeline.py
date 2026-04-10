@@ -47,6 +47,14 @@ class BenchmarkReportingPipeline:
             governance_packets[str(payload["recommendation_id"])] = payload
         return portfolio_view, profile_fit_rows, archetype_rollups, governance_packets
 
+    def _case_set_rollups(self, benchmark_run_id: str) -> dict[str, dict[str, Any]]:
+        run = run_paths(benchmark_run_id, self.root)
+        payloads: dict[str, dict[str, Any]] = {}
+        for path in sorted(run.rollups_dir.glob("CASESET_ROLLUP__*.json")):
+            payload = _load_json(path)
+            payloads[str(payload["case_set_id"])] = payload
+        return payloads
+
     def build_reports(self, benchmark_run_id: str, prior_run_id: str | None = None) -> dict[str, Any]:
         current_run = self.repo.fetch_benchmark_run(benchmark_run_id)
         if current_run is None:
@@ -62,7 +70,7 @@ class BenchmarkReportingPipeline:
             if rec is not None
         }
         portfolio_view, profile_fit_rows, archetype_rollups, governance_packets = self._run_artifacts(benchmark_run_id)
-        case_set_rollup = _load_json(run_paths(benchmark_run_id, self.root).rollups_dir / "CASESET_ROLLUP__benchmark_registry_starter_v1.json")
+        case_set_rollups = self._case_set_rollups(benchmark_run_id)
 
         prior_recommendations: list[dict[str, Any]] = []
         prior_histories: dict[str, dict[str, Any]] = {}
@@ -93,6 +101,9 @@ class BenchmarkReportingPipeline:
                 raise RuntimeError(f"missing case for attempt {attempt['case_attempt_id']}")
             control_deltas = self.repo.list_control_deltas(candidate_attempt_id=str(attempt["case_attempt_id"]))
             governance_history = build_governance_history(recommendation, current_recommendations + prior_recommendations, all_decisions)
+            case_set_rollup = case_set_rollups.get(str(attempt["case_set_id"]))
+            if case_set_rollup is None:
+                raise RuntimeError(f"missing case set rollup for {attempt['case_set_id']}")
             candidate_detail = build_candidate_detail(
                 recommendation=recommendation,
                 governance_packet=packet,
