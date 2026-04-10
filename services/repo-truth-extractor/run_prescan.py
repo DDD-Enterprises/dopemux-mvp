@@ -29,6 +29,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Canonical ordered pass list — used both as the CLI default and for '--passes all'
+ALL_PASSES = ["dedup", "discover", "feasibility", "optimize"]
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(
@@ -55,10 +58,11 @@ def main() -> int:
     parser.add_argument(
         "--passes",
         type=str,
-        default="dedup,discover,feasibility,optimize",
+        default=",".join(ALL_PASSES),
         help=(
-            "Comma-separated grok passes to run (default: all). "
-            "Use 'none' to skip all passes, or 'all' to run every pass."
+            "Comma-separated grok passes to run. "
+            "Use 'none' to skip all passes, or 'all' to run every pass. "
+            f"Default: {','.join(ALL_PASSES)}"
         ),
     )
 
@@ -182,12 +186,11 @@ def main() -> int:
     )
 
     # Parse passes — special-case 'none' and 'all' before CSV split
-    _ALL_PASSES = ["dedup", "discover", "feasibility", "optimize"]
     _passes_raw = (args.passes or "").strip().lower()
     if _passes_raw in ("none", ""):
         passes: list[str] = []
     elif _passes_raw == "all":
-        passes = list(_ALL_PASSES)
+        passes = list(ALL_PASSES)
     else:
         passes = [p.strip() for p in args.passes.split(",") if p.strip()]
 
