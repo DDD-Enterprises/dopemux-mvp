@@ -137,6 +137,7 @@ try:
         WorkflowNotFoundError,
         WorkflowUnavailableError,
     )
+    from .api.project_workflow import router as project_workflow_router
 except ImportError:  # pragma: no cover - direct module loading in tests
     from app.models.workflow import (
         CreateIdeaRequest,
@@ -150,6 +151,7 @@ except ImportError:  # pragma: no cover - direct module loading in tests
         WorkflowNotFoundError,
         WorkflowUnavailableError,
     )
+    from app.api.project_workflow import router as project_workflow_router
 
 try:
     from .api.project_workflow import router as project_workflow_router
@@ -216,6 +218,8 @@ app.add_middleware(
 # Request ID middleware
 if RequestIDMiddleware is not None:
     app.add_middleware(RequestIDMiddleware)
+
+app.include_router(project_workflow_router)
 
 # ============================================================================
 # WebSocket Connection Manager

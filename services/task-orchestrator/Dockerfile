@@ -38,5 +38,9 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
+<<<<<<< HEAD
 # Run the canonical task orchestrator runtime
+=======
+# Run the canonical HTTP runtime surface.
+>>>>>>> f03e263bd (fix(task-orchestrator): restore canonical workflow route surface)
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

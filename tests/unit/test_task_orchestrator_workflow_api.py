@@ -268,3 +268,35 @@ def test_workflow_value_error_maps_to_400():
 
     assert response.status_code == 400
     assert response.json()["detail"] == "bad filter"
+
+
+def test_task_orchestrator_info_surface_is_available():
+    module = _load_task_orchestrator_module()
+    workflow_service = _build_workflow_service()
+
+    with _build_client(module, workflow_service) as client:
+        response = client.get("/info")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["name"] == "task-orchestrator"
+
+
+def test_project_workflow_state_route_is_mounted():
+    module = _load_task_orchestrator_module()
+    workflow_service = _build_workflow_service()
+    from app.api import project_workflow
+
+    project_workflow._workflow_service_instance = workflow_service
+
+    with _build_client(module, workflow_service) as client:
+        response = client.get("/api/projects/1/workflow/state")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["project_id"] == "1"
+    assert payload["legality_result"] == "available"
+    assert payload["state"]["ideas"]["new"]["count"] == 1
+    assert payload["state"]["epics"]["planned"]["count"] == 1
+    assert workflow_service.list_ideas.await_args.kwargs == {"limit": 1000}
+    assert workflow_service.list_epics.await_args.kwargs == {"limit": 1000}
