@@ -346,6 +346,6 @@ python run_prescan.py --repo-root . --no-git
 
 ## See Also
 
-- [How to Run Prescan](../02-how-to/extraction/run-prescan.md) — Quick start guide
+- [How to Run Prescan](../../02-how-to/extraction/run-prescan.md) — Quick start guide
 - [Extraction Pipeline](./pipeline-phases.md) — Pre-extraction to post-processing
-- [IntelligenceRouter](./intelligence-router.md) — Prescan output integration
+- [Pipeline Phases](./pipeline-phases.md) — Prescan output integration
