@@ -1,0 +1,28 @@
+{
+  "policy_id": "recommendation_policy_v1",
+  "policy_version": "1.0",
+  "regression_floor": -0.05,
+  "min_sample_size_for_recommended": 1,
+  "quarantine_blockers": [
+    "contract_gate_failure"
+  ],
+  "stale_states": [
+    "stale"
+  ],
+  "disputed_states": [
+    "disputed"
+  ],
+  "experimental_only_blockers": [
+    "local_open_weight_promotion_forbidden"
+  ],
+  "ineligible_blockers": [
+    "governance_posture_unresolved",
+    "missing_comparable_control_anchor",
+    "regression_delta_below_policy_floor",
+    "surface_policy_exclusion"
+  ],
+  "review_only_blockers": [
+    "insufficient_sample_size",
+    "phase_s_stricter_review_requirement"
+  ]
+}

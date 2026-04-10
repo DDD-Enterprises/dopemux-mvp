@@ -1,0 +1,114 @@
+{
+  "policy_id": "archetype_scoring_policy_pack_v1",
+  "policy_version": "1.0",
+  "policies": [
+    {
+      "policy_id": "routing_classification_v1",
+      "policy_version": "1.0",
+      "archetype_id": "prescan_routing_assessment",
+      "dimensions": [
+        "surface_explicitness",
+        "route_trace_completeness",
+        "inventory_capture"
+      ],
+      "weights": {
+        "inventory_capture": 0.3,
+        "route_trace_completeness": 0.35,
+        "surface_explicitness": 0.35
+      },
+      "threshold": 0.7,
+      "caveats": []
+    },
+    {
+      "policy_id": "strict_evidence_extraction_v1",
+      "policy_version": "1.0",
+      "archetype_id": "strict_evidence_extraction",
+      "dimensions": [
+        "contract_separation",
+        "artifact_completeness",
+        "validator_alignment"
+      ],
+      "weights": {
+        "artifact_completeness": 0.35,
+        "contract_separation": 0.35,
+        "validator_alignment": 0.3
+      },
+      "threshold": 0.8,
+      "caveats": []
+    },
+    {
+      "policy_id": "repair_and_merge_qa_v1",
+      "policy_version": "1.0",
+      "archetype_id": "repair_merge_normalization",
+      "dimensions": [
+        "registry_resolution",
+        "repair_discipline",
+        "contract_caveat_handling"
+      ],
+      "weights": {
+        "contract_caveat_handling": 0.3,
+        "registry_resolution": 0.4,
+        "repair_discipline": 0.3
+      },
+      "threshold": 0.65,
+      "caveats": [
+        "phase_s_policy_sensitive"
+      ]
+    },
+    {
+      "policy_id": "cross_source_adjudication_v1",
+      "policy_version": "1.0",
+      "archetype_id": "adjudication_governance",
+      "dimensions": [
+        "conflict_visibility",
+        "ruling_consistency",
+        "evidence_traceability"
+      ],
+      "weights": {
+        "conflict_visibility": 0.3,
+        "evidence_traceability": 0.35,
+        "ruling_consistency": 0.35
+      },
+      "threshold": 0.7,
+      "caveats": [
+        "phase_s_policy_sensitive"
+      ]
+    },
+    {
+      "policy_id": "output_shaping_packaging_v1",
+      "policy_version": "1.0",
+      "archetype_id": "output_shaping_contract",
+      "dimensions": [
+        "machine_summary",
+        "artifact_packaging",
+        "schema_discipline"
+      ],
+      "weights": {
+        "artifact_packaging": 0.3,
+        "machine_summary": 0.35,
+        "schema_discipline": 0.35
+      },
+      "threshold": 0.75,
+      "caveats": []
+    },
+    {
+      "policy_id": "tool_aware_repo_reasoning_v1",
+      "policy_version": "1.0",
+      "archetype_id": "tool_aware_repo_reasoning",
+      "dimensions": [
+        "tool_awareness",
+        "repo_reasoning_trace",
+        "phase_caveat_capture"
+      ],
+      "weights": {
+        "phase_caveat_capture": 0.3,
+        "repo_reasoning_trace": 0.4,
+        "tool_awareness": 0.3
+      },
+      "threshold": 0.7,
+      "caveats": [
+        "phase_s_policy_sensitive"
+      ]
+    }
+  ]
+}
