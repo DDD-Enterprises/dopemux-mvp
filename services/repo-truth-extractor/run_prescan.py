@@ -30,7 +30,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Flight-Deck: Execute a pre-extraction intelligence audit.",
         epilog="For more info, see docs/02-how-to/extraction/run-prescan.md",
@@ -228,6 +228,9 @@ def main():
         for error in result.errors:
             logger.error(f"   {error}")
         return 1
+
+
+    return 0
 
 
 if __name__ == "__main__":
