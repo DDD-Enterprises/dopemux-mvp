@@ -3,7 +3,10 @@ id: run-prescan-howto
 title: How to Run Prescan
 type: how-to
 owner: extraction-platform
+author: '@hu3mann'
 date: 2026-04-07
+last_review: 2026-04-09
+next_review: 2026-07-08
 status: stable
 prelude: Step-by-step guide to running prescan intelligence gathering on your codebase before extraction
 ---
