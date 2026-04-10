@@ -239,7 +239,7 @@ Generates optimal extraction strategy with cost/quality tradeoff.
 | `code_graph.json` | Dependency relationships | JSON |
 | `prescan_provider_model_catalog.json` | Available LLM providers | JSON |
 | `prescan_routing_plan.json` | Model assignments per pass | JSON |
-| `prescan_batch_plan.json` | Token-aware partitions | JSON |
+| `batch_plan.json` | Token-aware partitions | JSON |
 
 ## Integration with v5 Extractor
 
