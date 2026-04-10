@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 # Ensure repo-root imports work in isolated service runtime.
 def _find_repo_root():
@@ -47,14 +47,14 @@ class WorkflowStore:
 
     def __init__(
         self,
-        workspace_id: str,
+        workspace_id: Union["os.PathLike[str]", str],
         *,
         bridge_url: Optional[str] = None,
         bridge_token: Optional[str] = None,
         source_plane: Optional[str] = None,
         timeout: float = 10.0,
     ) -> None:
-        self.workspace_id = workspace_id
+        self.workspace_id = self._normalize_workspace_id(workspace_id)
         self._client = AsyncDopeconBridgeClient(
             config=DopeconBridgeConfig(
                 base_url=bridge_url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016"),
@@ -63,6 +63,15 @@ class WorkflowStore:
                 source_plane=source_plane or os.getenv("DOPECON_BRIDGE_SOURCE_PLANE", "cognitive_plane"),
             )
         )
+
+    @staticmethod
+    def _normalize_workspace_id(workspace_id: object) -> str:
+        if workspace_id is None:
+            raise WorkflowStoreError("workspace_id is required")
+        normalized = str(workspace_id).strip()
+        if not normalized:
+            raise WorkflowStoreError("workspace_id is required")
+        return normalized
 
     async def close(self) -> None:
         """Close underlying async client."""
@@ -218,4 +227,3 @@ class WorkflowStore:
         if "updated_at" not in payload and row.get("timestamp"):
             payload["updated_at"] = row.get("timestamp")
         return payload
-
