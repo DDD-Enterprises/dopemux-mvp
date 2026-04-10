@@ -1,3 +1,7 @@
-from .pm_tools import router as pm_tools_router
+"""Task Orchestrator API package.
 
-__all__ = ["pm_tools_router"]
+Avoid importing route modules at package import time so runtime surfaces can
+load only the routers they actually need.
+"""
+
+__all__ = []

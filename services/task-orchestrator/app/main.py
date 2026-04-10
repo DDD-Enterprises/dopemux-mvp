@@ -145,6 +145,11 @@ except ImportError:  # pragma: no cover - direct module loading in tests
         WorkflowUnavailableError,
     )
 
+try:
+    from .api.project_workflow import router as project_workflow_router
+except ImportError:  # pragma: no cover - direct module loading in tests
+    from app.api.project_workflow import router as project_workflow_router
+
 logger = logging.getLogger(__name__)
 
 # ============================================================================
@@ -191,6 +196,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+app.include_router(project_workflow_router)
 
 # CORS middleware for web integration
 app.add_middleware(

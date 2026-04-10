@@ -27,3 +27,12 @@ def test_decompose_route_missing():
         response = client.post("/api/decompose", json={})
         # This confirms it's not currently implemented in app.main
         assert response.status_code == 404
+
+
+def test_project_workflow_state_route_available():
+    """Verify the canonical runtime mounts the project workflow state route."""
+    with TestClient(app) as client:
+        response = client.get("/api/projects/1/workflow/state")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["project_id"] == "1"

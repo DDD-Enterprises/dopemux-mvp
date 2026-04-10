@@ -1,0 +1,197 @@
+{
+  "packet": {
+    "title": "Task-Orchestrator Container Runtime and Project Workflow Router Parity Fix",
+    "branch": "tp/task-orchestrator-container-router-parity",
+    "worktree": "/Users/hue/code/dopemux-mvp/.codex-worktrees/task-orchestrator-container-router-parity",
+    "objective_status": "Partially met",
+    "runtime_authority_status": "Fixed",
+    "project_workflow_router_status": "Mounted",
+    "container_parity_status": "Passed for startup, /health, /info, /api/projects/1/workflow/state, and MCP stdio; blocked for live workflow-ideas empty-state by downstream bridge drift"
+  },
+  "commit_plan": {
+    "planned_slices": [
+      {
+        "name": "Slice 1",
+        "objective": "Fix container runtime authority",
+        "status": "completed"
+      },
+      {
+        "name": "Slice 2",
+        "objective": "Mount the project workflow router in the active runtime",
+        "status": "completed"
+      },
+      {
+        "name": "Slice 3",
+        "objective": "Run container parity validation end-to-end",
+        "status": "completed"
+      },
+      {
+        "name": "Slice 4",
+        "objective": "Final hardening and evidence closure",
+        "status": "in_progress"
+      }
+    ],
+    "completed_slices": [
+      {
+        "name": "Slice 1",
+        "summary": "Dockerfile now starts `uvicorn app.main:app` instead of the legacy hard-fail module."
+      },
+      {
+        "name": "Slice 2",
+        "summary": "The canonical FastAPI runtime mounts the project workflow router and no longer imports unrelated routers at package import time."
+      },
+      {
+        "name": "Slice 3",
+        "summary": "Dedicated-worktree container builds and serves `/health`, `/info`, and `/api/projects/1/workflow/state`; in-image `mcp_stdio` resolves `app.main`."
+      }
+    ],
+    "replan_events": [
+      {
+        "reason": "Fresh container rebuild exposed import-time package side effects beyond the initial Dockerfile/router seams.",
+        "action": "Added minimal adjacent bootstrap fixes in `app/api/__init__.py` and `src/dopemux/pm/__init__.py` to remove unrelated startup dependencies from this runtime path."
+      }
+    ],
+    "skipped_abandoned_merged": [
+      {
+        "name": "Live workflow-ideas empty-state closure",
+        "status": "skipped",
+        "rationale": "Current `dopecon-bridge` runtime returns `404` on `/kg/custom_data` reads; bridge authority changes are out of scope for this packet."
+      }
+    ],
+    "commit_shas": [
+      {
+        "sha": "4047d786e07dd75cf470e8f1102b2d62eef4b6d0",
+        "message": "fix(task-orchestrator): restore container runtime parity"
+      }
+    ],
+    "per_slice_verification": [
+      {
+        "slice": "Slice 1",
+        "verification": [
+          "Docker inspect for the rebuilt container shows command `[\"uvicorn\",\"app.main:app\",\"--host\",\"0.0.0.0\",\"--port\",\"8000\"]`.",
+          "Container startup logs show `app.main` lifespan initialization and `Uvicorn running on http://0.0.0.0:8000`."
+        ]
+      },
+      {
+        "slice": "Slice 2",
+        "verification": [
+          "`pytest services/task-orchestrator/tests/test_health_route.py` passed with the new project workflow route test.",
+          "`GET /api/projects/1/workflow/state` returns `200` from the rebuilt container."
+        ]
+      },
+      {
+        "slice": "Slice 3",
+        "verification": [
+          "`GET /health` -> `200`.",
+          "`GET /info` -> `200`.",
+          "`GET /api/projects/1/workflow/state` -> `200`.",
+          "Inside the image, `python -c 'from app.main import mcp as app_mcp; import mcp_stdio; ...'` prints `True` and `Task-Orchestrator`.",
+          "Forced downstream failure variant returns `503` for `GET /api/workflow/ideas`."
+        ]
+      }
+    ]
+  },
+  "evidence_ledger": {
+    "files_inspected": [
+      "services/task-orchestrator/Dockerfile",
+      "services/task-orchestrator/app/main.py",
+      "services/task-orchestrator/app/api/project_workflow.py",
+      "services/task-orchestrator/app/api/__init__.py",
+      "services/task-orchestrator/mcp_stdio.py",
+      "services/task-orchestrator/task_orchestrator/app.py",
+      "services/task-orchestrator/tests/test_health_route.py",
+      "src/dopemux/pm/__init__.py",
+      "compose.yml",
+      "docker/compose.core.yml",
+      "services/registry.yaml",
+      "tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_CANONICALS.md",
+      "tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_GAPS.md",
+      "tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_SYSTEMS.md"
+    ],
+    "startup_target_before": "[\"uvicorn\",\"task_orchestrator.app:app\",\"--host\",\"0.0.0.0\",\"--port\",\"8000\"]",
+    "startup_target_after": "[\"uvicorn\",\"app.main:app\",\"--host\",\"0.0.0.0\",\"--port\",\"8000\"]",
+    "router_mount_status_before": "Project workflow router defined in `app/api/project_workflow.py` but not mounted in `app.main`; `/api/projects/1/workflow/state` returned 404 from the worktree runtime.",
+    "router_mount_status_after": "Project workflow router imported and mounted in `app.main`; `/api/projects/1/workflow/state` returns 200 from the rebuilt container.",
+    "build_command": "docker build -f services/task-orchestrator/Dockerfile -t codex-task-orchestrator-parity-wt:20260407 .",
+    "run_commands": [
+      "docker run -d --name codex-task-orchestrator-parity-wt-live --network dopemux-network -p 18082:8000 -e LEANTIME_URL=http://leantime:80 -e LEANTIME_TOKEN=<redacted> -e REDIS_URL=redis://redis-primary:6379 -e WORKSPACE_ID=/Users/hue/code/dopemux-mvp/.codex-worktrees/task-orchestrator-container-router-parity -e CONPORT_URL=http://conport:3005 -e DOPECON_BRIDGE_URL=http://dopecon-bridge:3016 -e DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane -e TASK_ORCHESTRATOR_API_KEY=dev-key-456 -e DOPECON_BRIDGE_REDIS_URL=redis://redis-primary:6379 -e PORT=8000 codex-task-orchestrator-parity-wt:20260407",
+      "docker run -d --name codex-task-orchestrator-parity-wt-fail --network dopemux-network -p 18083:8000 -e LEANTIME_URL=http://leantime:80 -e LEANTIME_TOKEN=<redacted> -e REDIS_URL=redis://redis-primary:6379 -e WORKSPACE_ID=/Users/hue/code/dopemux-mvp/.codex-worktrees/task-orchestrator-container-router-parity -e CONPORT_URL=http://conport:3005 -e DOPECON_BRIDGE_URL=http://127.0.0.1:1 -e DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane -e TASK_ORCHESTRATOR_API_KEY=dev-key-456 -e DOPECON_BRIDGE_REDIS_URL=redis://redis-primary:6379 -e PORT=8000 codex-task-orchestrator-parity-wt:20260407"
+    ],
+    "route_responses": {
+      "/health": {
+        "status": 200,
+        "body": {
+          "service": "task-orchestrator",
+          "status": "ok"
+        }
+      },
+      "/info": {
+        "status": 200,
+        "body": {
+          "name": "task-orchestrator",
+          "mcp.connection.url": "http://localhost:8000/sse"
+        }
+      },
+      "/api/projects/1/workflow/state": {
+        "status": 200,
+        "body": {
+          "project_id": "1",
+          "legality_result": "unavailable",
+          "state": {}
+        }
+      },
+      "/api/workflow/ideas.live": {
+        "status": 503,
+        "body": {
+          "detail": "DopeconBridge error (404): {\"detail\":\"Not Found\"}"
+        }
+      },
+      "/api/workflow/ideas.forced_failure": {
+        "status": 503,
+        "body": {
+          "detail": "Failed to fetch custom_data workflow_ideas: All connection attempts failed"
+        }
+      }
+    },
+    "container_logs_summary": [
+      "Rebuilt live container logs show canonical `app.main` startup and successful lifespan initialization.",
+      "Live container logs show `/api/projects/1/workflow/state` served with 200 after a downstream bridge 404 was converted into the route's empty workflow-state fallback.",
+      "Live container logs show `/api/workflow/ideas` still fails because `dopecon-bridge` returns 404 on `/kg/custom_data` reads.",
+      "Forced-failure container starts successfully; downstream connection failure still produces 503 for `/api/workflow/ideas`."
+    ],
+    "mcp_stdio_validation": {
+      "command": "docker exec codex-task-orchestrator-parity-wt-live python -c 'from app.main import mcp as app_mcp; import mcp_stdio; print(mcp_stdio.mcp is app_mcp); print(getattr(app_mcp, \"name\", None))'",
+      "result": [
+        "True",
+        "Task-Orchestrator"
+      ]
+    },
+    "tests_run": [
+      "pytest services/task-orchestrator/tests/test_health_route.py"
+    ],
+    "codereview_result": {
+      "status": "complete",
+      "summary": "No medium-or-higher severity findings in the scoped parity diff.",
+      "tool": "mcp__pal__codereview",
+      "continuation_id": "f0192d72-ef1c-45f3-869f-f492703b79a7"
+    },
+    "precommit_result": {
+      "status": "ready_for_commit",
+      "summary": "No medium-or-higher severity blockers in the scoped diff; residual risk limited to out-of-scope bridge drift.",
+      "tool": "mcp__pal__precommit",
+      "continuation_id": "23f31893-ef04-4e58-b9cb-f1700223736e"
+    }
+  },
+  "finalization": {
+    "codereview_status": "complete",
+    "precommit_status": "complete",
+    "evidence_ledger_completeness": "complete for in-scope runtime/router parity and explicit about out-of-scope bridge drift",
+    "final_confidence": "HIGH",
+    "residual_risks": [
+      "Live bridge-backed workflow-ideas empty-state remains blocked by `dopecon-bridge` returning 404 on `/kg/custom_data`; that drift is outside this packet's allowed bridge-authority changes."
+    ],
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/402",
+    "merge_readiness": "draft_only_until downstream workflow-ideas dependency drift is triaged separately",
+    "worktree_cleanup_status": "pending"
+  }
+}
