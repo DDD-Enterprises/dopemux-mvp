@@ -47,10 +47,19 @@ class BenchmarkScoringPipeline:
             "executor_links": _load_json(bundle_root / "EXECUTOR_LINKS.json"),
         }
 
-    def _anchor_attempt(self, attempt: dict[str, Any], prior_run_id: str | None) -> dict[str, Any] | None:
-        if prior_run_id is None:
+    def _anchor_attempt(
+        self,
+        attempt: dict[str, Any],
+        prior_run_id: str | None,
+        current_candidates: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any] | None:
+        candidates: list[dict[str, Any]] = []
+        if prior_run_id is not None:
+            candidates = self.repo.list_attempts(prior_run_id)
+        elif current_candidates is not None:
+            candidates = list(current_candidates)
+        if not candidates:
             return None
-        candidates = self.repo.list_attempts(prior_run_id)
         anchor_group = self.repo.fetch_control_anchor_group(str(attempt["control_anchor_group_id"]))
         allowed_routes = set(anchor_group.get("route_ids", [])) if anchor_group is not None else set()
         for candidate in reversed(candidates):
@@ -75,9 +84,12 @@ class BenchmarkScoringPipeline:
         if run is None:
             raise RuntimeError(f"missing benchmark run {benchmark_run_id}")
         attempts = self.repo.list_attempts(benchmark_run_id)
-        case_set = self.repo.fetch_benchmark_case_set("benchmark_registry_starter_v1")
+        case_set_ids = sorted({str(item["case_set_id"]) for item in attempts})
+        if len(case_set_ids) != 1:
+            raise RuntimeError(f"expected exactly one case set per scored run, got {case_set_ids}")
+        case_set = self.repo.fetch_benchmark_case_set(case_set_ids[0])
         if case_set is None:
-            raise RuntimeError("missing benchmark_registry_starter_v1 case set")
+            raise RuntimeError(f"missing benchmark case set {case_set_ids[0]}")
 
         scored_attempts: list[dict[str, Any]] = []
         sample_control_delta: dict[str, Any] | None = None
@@ -124,7 +136,7 @@ class BenchmarkScoringPipeline:
             assert scored_payload is not None
             scored_attempts.append(scored_payload)
 
-            anchor_attempt = self._anchor_attempt(scored_payload, prior_run_id)
+            anchor_attempt = self._anchor_attempt(scored_payload, prior_run_id, current_candidates=scored_attempts)
             if anchor_attempt is None:
                 continue
             delta_outcome = compute_control_deltas(scored_payload, anchor_attempt)
