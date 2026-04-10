@@ -96,7 +96,7 @@ class TestClassifyPrescanRoute:
         assert classify_prescan_route("openai", "gpt-5.4") == "premium_planning"
         assert classify_prescan_route("openai", "gpt-5.3-codex") == "premium_planning"
         assert classify_prescan_route("openai", "gpt-5.2") == "premium_planning"
-        assert classify_prescan_route("openai", "claude-opus-4-6") == "premium_planning"
+        assert classify_prescan_route("openrouter", "claude-opus-4-6") == "premium_planning"
         assert classify_prescan_route("gemini", "gemini-2.5-pro") == "premium_planning"
 
     def test_cheap_model_returns_cheap_structured(self) -> None:
