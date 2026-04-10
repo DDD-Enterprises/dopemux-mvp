@@ -1,0 +1,115 @@
+{
+  "packet_id": "TP-CODEX-RTE-MERGE-EXEC-001",
+  "branch": "codex/rte-merge-exec-001",
+  "base_branch": "main",
+  "base_commit": "e4bf2d148886cee0883c2afda5bdfd0a9591f840",
+  "replay_branch_created": true,
+  "required_commits_replayed": [
+    {
+      "source_sha": "c660ab9df36719e1a90acb1f23c53ea4215d45a9",
+      "replay_sha": "d4fc167d79e96b22f78109bd4e91f33ca3edf2af",
+      "result": "conflict_resolved"
+    },
+    {
+      "source_sha": "2144d4e369f097569f791c2407b2d87361b864f1",
+      "replay_sha": "de544c1379b2b259b9aab97bff0f7172e4f28366",
+      "result": "conflict_resolved"
+    },
+    {
+      "source_sha": "e14690d0d65a8a31fa6c0a6eeeec52d6b1e9cbed",
+      "replay_sha": "ff29dd457c78f2f63e51e3882a6310e4a7df5633",
+      "result": "conflict_resolved"
+    },
+    {
+      "source_sha": "0db7b85288bb90e540dc8659b53ab4d066c179f0",
+      "replay_sha": null,
+      "result": "empty_already_preserved"
+    },
+    {
+      "source_sha": "91868d873ac7e8e4b02eae31092677aa2ce1ef3d",
+      "replay_sha": "52d651b01033b889680f888c2bdb278e3297e77f",
+      "result": "conflict_resolved"
+    },
+    {
+      "source_sha": "6bc14c7bdb294efa8dace328f55c4ea378f1d1ac",
+      "replay_sha": "1052feba2d77d7ad14f008819ad073dfa61d9084",
+      "result": "conflict_resolved"
+    },
+    {
+      "source_sha": "d88a1bcc4994b4c6e6ecbc3a1cbe3dc1c70d50de",
+      "replay_sha": null,
+      "result": "empty_already_preserved"
+    },
+    {
+      "source_sha": "9317a169ddaed13cf120674049112304b28cb832",
+      "replay_sha": null,
+      "result": "empty_already_preserved"
+    }
+  ],
+  "recreated_from_proof": [
+    {
+      "replay_sha": "c7250ecaf5dd069dc324b5f538a9285dd03853d8",
+      "subject": "fix(repo-truth-extractor): restore selected-step validator replay integrity",
+      "reason": "restore missing return scope and selected-step observed contract-map filtering after replay conflict resolution"
+    }
+  ],
+  "replay_conflicts": [
+    {
+      "source_sha": "c660ab9df36719e1a90acb1f23c53ea4215d45a9",
+      "files": [
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+      ]
+    },
+    {
+      "source_sha": "2144d4e369f097569f791c2407b2d87361b864f1",
+      "files": [
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ]
+    },
+    {
+      "source_sha": "e14690d0d65a8a31fa6c0a6eeeec52d6b1e9cbed",
+      "files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py"
+      ]
+    },
+    {
+      "source_sha": "91868d873ac7e8e4b02eae31092677aa2ce1ef3d",
+      "files": [
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ]
+    },
+    {
+      "source_sha": "6bc14c7bdb294efa8dace328f55c4ea378f1d1ac",
+      "files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+      ]
+    }
+  ],
+  "validation_commands_run": [
+    "git status --short",
+    "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+    "pytest -q services/repo-truth-extractor/tests/ -k \"cost_cap or validator or phase_execution_step_filter or validator_repair_provenance\"",
+    "env XAI_API_KEY=\"$XAI_API_KEY\" python services/repo-truth-extractor/validate_pre_live_gate_v25.py --target-policy balanced_grok_openrouter --target-phases A --step A2 --allow-online-preflight",
+    "git diff --stat main...HEAD"
+  ],
+  "bounded_target": {
+    "phase": "A",
+    "step": "A2",
+    "routing_policy": "balanced_grok_openrouter"
+  },
+  "bounded_target_replay_ready": true,
+  "missing_dependencies": [],
+  "excluded_commits_confirmed_unnecessary": [
+    "0db7b85288bb90e540dc8659b53ab4d066c179f0",
+    "d88a1bcc4994b4c6e6ecbc3a1cbe3dc1c70d50de",
+    "9317a169ddaed13cf120674049112304b28cb832"
+  ],
+  "final_replay_exec_verdict": "READY_FOR_MAIN_PR",
+  "residual_risks": [
+    "validator readiness is CONDITIONAL_GO because PAL validation file was not provided",
+    "branch required one bounded replay-repair commit beyond the original source slice"
+  ],
+  "verdict": "PASS"
+}
