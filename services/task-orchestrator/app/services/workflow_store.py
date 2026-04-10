@@ -54,7 +54,9 @@ class WorkflowStore:
         source_plane: Optional[str] = None,
         timeout: float = 10.0,
     ) -> None:
-        self.workspace_id = self._normalize_workspace_id(workspace_id)
+    def __init__(
+        self,
+        workspace_id: Any,
         self._client = AsyncDopeconBridgeClient(
             config=DopeconBridgeConfig(
                 base_url=bridge_url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016"),
