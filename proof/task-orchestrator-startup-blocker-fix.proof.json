@@ -1,0 +1,172 @@
+{
+  "packet": {
+    "title": "Task-Orchestrator Startup Blocker Fix for Live Workflow Route Rerun",
+    "objective_status": "Met",
+    "root_cause": "app.main prepended the wrong repo path too late for shared dopemux imports and also closed over except-local import errors, allowing startup to fail before or during coordinator fallback.",
+    "layer_fixed": "app.main startup",
+    "tool_chain_executed": [
+      "debug",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit_plan": {
+    "planned_slices": [
+      {
+        "slice": 1,
+        "objective": "Reproduce and trace the startup failure.",
+        "status": "completed"
+      },
+      {
+        "slice": 2,
+        "objective": "Implement the narrowest startup fix.",
+        "status": "completed"
+      },
+      {
+        "slice": 3,
+        "objective": "Rerun the previously blocked live route path.",
+        "status": "completed"
+      },
+      {
+        "slice": 4,
+        "objective": "Final hardening and proof closure.",
+        "status": "completed"
+      }
+    ],
+    "completed_slices": [
+      {
+        "slice": 1,
+        "summary": "Reproduced startup failure from services/task-orchestrator with ModuleNotFoundError on dopemux.workspace_detection before service boot; confirmed latent exception-scope risk on absolute_import_error in app.main fallback.",
+        "verification": [
+          "python import from /Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/services/task-orchestrator failed before patch with ModuleNotFoundError: No module named 'dopemux'",
+          "Inspected app.main bootstrap and fallback code to identify incorrect repo-root path and except-variable closure"
+        ]
+      },
+      {
+        "slice": 2,
+        "summary": "Moved repo_root/src insertion ahead of shared dopemux imports, corrected repo-root derivation to the actual repository root, and bound coordinator import failures in stable outer scope; added standalone startup regression tests without root conftest path injection.",
+        "verification": [
+          "pytest -q --noconftest tests/unit/test_task_orchestrator_startup.py -> passed",
+          "pytest -q services/task-orchestrator/tests/test_health_route.py services/task-orchestrator/tests/test_decompose_route.py -> passed",
+          "pytest -q tests/unit/test_task_orchestrator_workflow_api.py -> passed with two pre-existing Pydantic warnings"
+        ]
+      },
+      {
+        "slice": 3,
+        "summary": "Started a patched bridge on localhost:3017 and a patched task-orchestrator on localhost:3014 from this stacked branch; reran the blocked route successfully and confirmed forced downstream failure still returns 503.",
+        "verification": [
+          "GET http://127.0.0.1:3017/kg/custom_data?workspace_id=/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix&category=workflow_ideas&limit=5 -> 200 {\"success\":true,\"count\":0,\"data\":[],\"source\":\"conport\"}",
+          "GET http://127.0.0.1:3014/api/workflow/ideas -> 200 {\"count\":0,\"ideas\":[]}",
+          "GET http://127.0.0.1:3014/api/workflow/epics -> 200 {\"count\":0,\"epics\":[]}",
+          "GET http://127.0.0.1:3014/health -> 200",
+          "GET http://127.0.0.1:3018/api/workflow/ideas with DOPECON_BRIDGE_URL=http://127.0.0.1:1 -> 503 {\"detail\":\"Failed to fetch custom_data workflow_ideas: All connection attempts failed\"}"
+        ]
+      },
+      {
+        "slice": 4,
+        "summary": "Completed codereview, precommit, pushed the startup-fix branch, opened a stacked draft PR, and recorded the proof artifact.",
+        "verification": [
+          "PAL codereview completed with no material issues",
+          "PAL precommit completed with no material issues",
+          "Branch pushed to origin/tp/task-orchestrator-startup-blocker-fix",
+          "Draft PR opened at https://github.com/DDD-Enterprises/dopemux-mvp/pull/410"
+        ]
+      }
+    ],
+    "replan_events": [
+      {
+        "reason": "The requested live rerun depends on the already-patched bridge empty-state contract, which is not present on main.",
+        "decision": "Abandoned the initial main-based worktree and recreated tp/task-orchestrator-startup-blocker-fix from tp/bridge-workflow-ideas-empty-state-fix so the live route could be rerun against the correct bridge contract."
+      },
+      {
+        "reason": "The first startup reproduction exposed a second bootstrap defect beyond import order.",
+        "decision": "Expanded the narrow fix inside app.main to include correct repo-root derivation as well as import ordering and exception binding, without touching workflow or bridge business logic."
+      }
+    ],
+    "skipped_abandoned_merged_slices": [
+      {
+        "slice": "initial-main-worktree-attempt",
+        "status": "abandoned",
+        "rationale": "It could not satisfy the packet's integrated rerun requirement because main did not contain the bridge empty-state fix."
+      }
+    ],
+    "commit_shas": [
+      "d03e0b8d11ff4292e31c9869de28f862b73f5188"
+    ],
+    "per_slice_verification": {
+      "slice_1": "startup failure reproduced and exact bootstrap seam identified",
+      "slice_2": "startup tests and route contract tests passed",
+      "slice_3": "live localhost rerun passed for empty-state and forced failure semantics",
+      "slice_4": "review, precommit, branch push, and PR creation completed"
+    }
+  },
+  "evidence_ledger": {
+    "files_inspected": [
+      "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/services/task-orchestrator/app/main.py",
+      "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/tests/unit/test_task_orchestrator_startup.py",
+      "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/services/task-orchestrator/tests/test_health_route.py",
+      "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/services/task-orchestrator/tests/test_decompose_route.py",
+      "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/tests/unit/test_task_orchestrator_workflow_api.py",
+      "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/proof/bridge-workflow-ideas-empty-state-fix.proof.json"
+    ],
+    "startup_command_before": "cd /Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/services/task-orchestrator && python - <<'PY' ... from app.main import create_plane_coordinator, get_workspace_root ... PY",
+    "startup_traceback_before": "ModuleNotFoundError: No module named 'dopemux' at services/task-orchestrator/app/main.py:12",
+    "startup_command_after": "cd /Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/services/task-orchestrator && python - <<'PY' ... from app.main import create_plane_coordinator, get_workspace_root ... PY",
+    "startup_result_after": "startup-ok",
+    "live_requests_responses": [
+      {
+        "request": "POST http://127.0.0.1:3017/auth/token",
+        "response": "200 with bearer token for admin/password"
+      },
+      {
+        "request": "GET http://127.0.0.1:3017/kg/custom_data?workspace_id=/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix&category=workflow_ideas&limit=5",
+        "response": "200 {\"success\":true,\"count\":0,\"data\":[],\"source\":\"conport\"}"
+      },
+      {
+        "request": "GET http://127.0.0.1:3014/api/workflow/ideas",
+        "response": "200 {\"count\":0,\"ideas\":[]}"
+      },
+      {
+        "request": "GET http://127.0.0.1:3014/api/workflow/epics",
+        "response": "200 {\"count\":0,\"epics\":[]}"
+      },
+      {
+        "request": "GET http://127.0.0.1:3014/health",
+        "response": "200 health payload"
+      },
+      {
+        "request": "GET http://127.0.0.1:3018/api/workflow/ideas with DOPECON_BRIDGE_URL=http://127.0.0.1:1",
+        "response": "503 {\"detail\":\"Failed to fetch custom_data workflow_ideas: All connection attempts failed\"}"
+      }
+    ],
+    "tests_run": [
+      "pytest -q --noconftest tests/unit/test_task_orchestrator_startup.py",
+      "pytest -q services/task-orchestrator/tests/test_health_route.py services/task-orchestrator/tests/test_decompose_route.py",
+      "pytest -q tests/unit/test_task_orchestrator_workflow_api.py"
+    ],
+    "diffs_reviewed": [
+      "git diff -- services/task-orchestrator/app/main.py",
+      "git diff --no-index -- /dev/null tests/unit/test_task_orchestrator_startup.py"
+    ],
+    "codereview_result": "completed; no material issues",
+    "precommit_verdict": "completed; no material issues",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/410",
+    "proof_artifact_path": "/Users/hue/code/dopemux-mvp-worktrees/task-orchestrator-startup-blocker-fix/proof/task-orchestrator-startup-blocker-fix.proof.json"
+  },
+  "finalization": {
+    "codereview_status": "clean",
+    "precommit_status": "clean",
+    "evidence_ledger_completeness": "complete",
+    "final_confidence": "VERIFIED",
+    "residual_risks": [
+      "app.main still does not run correctly as a raw script via `python app/main.py` because package-relative imports require canonical module-path startup; this packet verified the canonical `uvicorn app.main:app` surface instead.",
+      "The repo-root parent walk is layout-sensitive, but it matches the current authoritative repository structure and was verified live in this packet."
+    ],
+    "PR_URL": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/410",
+    "merge_readiness": "ready for stacked review on top of PR #409",
+    "worktree_cleanup_status": "deferred to preserve local proof/artifact access for this session"
+  }
+}
