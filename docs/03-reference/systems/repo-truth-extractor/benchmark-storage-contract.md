@@ -246,6 +246,21 @@ PRICE-001 reporting artifacts introduced for benchmark pricing coverage:
 - `pricing_gap_list.json`
 - `pricing_source_audit.json`
 
+PROFILE-SYNTH-001 adds a downstream review-first synthesis layer:
+
+1. Profile synthesis consumes `direct_model`, `runtime_route`, pricing, and governance/admissibility evidence without flattening them into one score.
+2. Synthesis outputs are advisory artifacts only. They must not auto-apply routing or profile changes.
+3. Pricing uncertainty remains explicit in proposal classes. Unknown or stale pricing blocks cost-optimized proposals; caveated pricing remains caveated in output artifacts.
+4. Blocked runtime-route lanes must remain blocked in synthesis outputs instead of being optimized around.
+
+PROFILE-SYNTH-001 proof and proposal artifact names:
+
+- `PROFILE_SYNTHESIS_SUMMARY.json`
+- `PROFILE_PROPOSAL__*.json`
+- `ROUTING_DIFF_PROPOSAL__*.json`
+- `BLOCKED_LANES.json`
+- `PROFILE_REVIEW_PACKET__*.json`
+
 M3 adds the measurement and aggregation spine on top of persisted M2 attempts:
 
 - contract gate finalization from persisted validator results
