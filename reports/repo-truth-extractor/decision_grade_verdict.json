@@ -1,0 +1,69 @@
+{
+  "audit_id": "TP-RTE-BENCH-AUDIT-001",
+  "audit_date": "2026-04-11",
+  "truth_grade_today": "YES",
+  "live_grade_today": "LANE_SPECIFIC_ONLY",
+  "cost_profile_design_ready": "PARTIAL",
+  "dynamic_profile_update_ready": "NO",
+  "phase_s_contract_parity": "NO",
+  "overall_restart_readiness_for_R1": "NO",
+  "top_blockers": [
+    {
+      "blocker_id": "live_owned_lane_provider_readiness",
+      "severity": "critical",
+      "status": "open",
+      "summary": "R1D failed closed before admitting any live attempts.",
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-R1D/20260411T051526Z/provider_readiness_report.json",
+        "proof/benchmarking/TP-RTE-BENCH-R1D/20260411T051526Z/live_admissibility_result.json"
+      ]
+    },
+    {
+      "blocker_id": "pricing_truth_incomplete_for_cost_design",
+      "severity": "high",
+      "status": "open",
+      "summary": "Unknown and stale xAI pricing still blocks clean cross-universe cost-profile design.",
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-PRICE-001/20260411T033247Z/pricing_coverage_report.json"
+      ]
+    },
+    {
+      "blocker_id": "profile_updates_review_only",
+      "severity": "high",
+      "status": "open",
+      "summary": "Profile synthesis is advisory-only and all routing diff proposals are blocked in the latest proof.",
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-PROFILE-SYNTH-001/20260411T040331Z/PROFILE_SYNTHESIS_SUMMARY.json"
+      ]
+    },
+    {
+      "blocker_id": "phase_s_not_at_core_contract_parity",
+      "severity": "medium",
+      "status": "open",
+      "summary": "Phase S has fail-closed registry and prompt controls but lacks the deeper route/admissibility/live contract surfaces of the core runtime-route lane.",
+      "evidence_refs": [
+        "services/repo-truth-extractor/benchmarking/executors/phase_s_adapter.py",
+        "services/repo-truth-extractor/benchmarking/validators/phase_s_validator_wrapper.py",
+        "services/repo-truth-extractor/tests/test_phase_s_prompt_registry.py"
+      ]
+    }
+  ],
+  "supporting_findings": [
+    {
+      "finding_id": "bounded_route_ownership_is_proven",
+      "status": "confirmed",
+      "summary": "R1C proved benchmark-mode dry-run distinctness and admissibility for the owned strict-extraction lane.",
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-R1C/benchmarking-20260410-001/bounded_admissibility_result.json"
+      ]
+    },
+    {
+      "finding_id": "feedback_loop_exists_in_reviewable_form",
+      "status": "confirmed",
+      "summary": "PROFILE-SYNTH-001 created a reviewable advisory feedback loop without auto-apply.",
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-PROFILE-SYNTH-001/20260411T040331Z/PROFILE_SYNTHESIS_SUMMARY.json"
+      ]
+    }
+  ]
+}
