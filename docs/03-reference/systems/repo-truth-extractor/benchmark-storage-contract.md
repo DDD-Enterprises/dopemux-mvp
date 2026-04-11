@@ -261,6 +261,18 @@ PROFILE-SYNTH-001 proof and proposal artifact names:
 - `BLOCKED_LANES.json`
 - `PROFILE_REVIEW_PACKET__*.json`
 
+OPS-READINESS-001 extends live readiness evidence without changing route/profile truth logic:
+
+1. Provider probes must emit machine-readable readiness blockers, not just HTTP status and free-text failure types.
+2. Readiness blockers must distinguish at least environment/auth failures, quota-billing failures, and ambiguous provider failures.
+3. Owned-lane live readiness artifacts may recommend rerun-worthiness after operational fixes, but they must not mark runtime-route truth as passed without admitted live attempts.
+
+OPS-READINESS-001 readiness artifact expectations:
+
+- `provider_readiness_report.json` includes blocker codes, blocker classes, remediation classes, and rerun-worthiness.
+- `spend_and_failure_summary.json` preserves provider readiness blocker classification per failed route.
+- `R1D_DECISION_MEMO.md` remains a decision memo, not a source of canonical machine-readable readiness truth.
+
 M3 adds the measurement and aggregation spine on top of persisted M2 attempts:
 
 - contract gate finalization from persisted validator results
