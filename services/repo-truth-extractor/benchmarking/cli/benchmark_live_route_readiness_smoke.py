@@ -180,7 +180,7 @@ def _provider_readiness(repo: BenchmarkCatalogRepo, assignments: list[CampaignAs
                 api_key_env=str(route_record.get("api_key_ref") or ""),
                 cfg=cfg,
             )
-            ready = int(probe.get("status_code") or 0) == 200 and not probe.get("failure_type")
+            ready = bool(probe.get("ready"))
             rows.append(
                 {
                     "route_id": assignment.candidate.route_id,
@@ -203,12 +203,34 @@ def _provider_readiness(repo: BenchmarkCatalogRepo, assignments: list[CampaignAs
     ready_route_ids = [row["route_id"] for row in rows if row["ready"]]
     control_rows = [row for row in rows if row["cohort"] == "control"]
     premium_rows = [row for row in rows if row["cohort"] == "premium"]
+    blocker_rows = [
+        {
+            "route_id": row["route_id"],
+            "provider_name": row["provider_name"],
+            "provider_model_id": row["provider_model_id"],
+            "blocker_code": str((row["provider_probe"].get("readiness_blocker") or {}).get("blocker_code") or ""),
+            "blocker_class": str((row["provider_probe"].get("readiness_blocker") or {}).get("blocker_class") or ""),
+            "remediation_class": str((row["provider_probe"].get("readiness_blocker") or {}).get("remediation_class") or ""),
+            "rerun_worthiness": str((row["provider_probe"].get("readiness_blocker") or {}).get("rerun_worthiness") or ""),
+        }
+        for row in rows
+        if not row["ready"]
+    ]
+    rerun_worthiness = (
+        "worth_rerunning_after_fixes"
+        if blocker_rows
+        and all(str(row["rerun_worthiness"]).startswith("rerun_after_") for row in blocker_rows)
+        else ("ready_now" if rows and not blocker_rows else "not_until_root_caused")
+    )
     return {
         "status": "ready" if rows and all(row["ready"] for row in rows) else "blocked",
         "routes": rows,
         "ready_route_ids": ready_route_ids,
         "required_control_pair_ready": len(control_rows) == 2 and all(row["ready"] for row in control_rows),
         "premium_candidate_ready": all(row["ready"] for row in premium_rows) if premium_rows else False,
+        "blocker_rows": blocker_rows,
+        "blocker_codes": sorted({row["blocker_code"] for row in blocker_rows if row["blocker_code"]}),
+        "rerun_worthiness": rerun_worthiness,
     }
 
 
@@ -277,7 +299,7 @@ def _decision_memo(
     ready_routes = ", ".join(readiness.get("ready_route_ids", [])) or "none"
     attempted_routes = ", ".join(live_attempted_route_ids) or "none"
     failures = [
-        f"{row['route_id']}:{row['provider_probe'].get('failure_type') or row['provider_probe'].get('status_code')}"
+        f"{row['route_id']}:{(row['provider_probe'].get('readiness_blocker') or {}).get('blocker_code') or row['provider_probe'].get('failure_type') or row['provider_probe'].get('status_code')}"
         for row in readiness.get("routes", [])
         if not row.get("ready")
     ]
@@ -305,7 +327,7 @@ def _decision_memo(
             "",
             "7. If no, what exact blocker still prevents restart?",
             (
-                "- OpenRouter-owned control/candidate routes were not live-ready, so the owned strict extraction lane lacks enough live evidence for a truthful control-pair restart."
+                "- Owned-lane provider readiness is blocked; see provider blocker codes and remediation classes in provider_readiness_report.json."
                 if not restart_truthful
                 else "- none"
             ),
@@ -396,6 +418,7 @@ def run_smoke(root: Path | None = None, proof_dir: Path | None = None) -> dict[s
                     "failure_type": row["provider_probe"].get("failure_type"),
                     "status_code": row["provider_probe"].get("status_code"),
                     "provider_error_reason": row["provider_probe"].get("provider_error_reason"),
+                    "readiness_blocker": row["provider_probe"].get("readiness_blocker"),
                 }
                 for row in readiness["routes"]
                 if not row["ready"]
