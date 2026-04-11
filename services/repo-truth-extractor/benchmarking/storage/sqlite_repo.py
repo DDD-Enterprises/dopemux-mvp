@@ -72,14 +72,15 @@ class BenchmarkCatalogRepo:
         self._execute(
             """
             INSERT OR REPLACE INTO model(
-              model_key, display_name, family, source_registry_ref, registry_class,
+              model_key, display_name, family, candidate_type, source_registry_ref, registry_class,
               lifecycle_status, content_hash, record_json
-            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record.model_key,
                 record.display_name,
                 record.family,
+                record.candidate_type.value,
                 record.source_registry_ref,
                 record.registry_class,
                 record.lifecycle_status,
@@ -93,14 +94,15 @@ class BenchmarkCatalogRepo:
         self._execute(
             """
             INSERT OR REPLACE INTO route(
-              route_id, surface_id, model_key, provider_model_id, api_key_ref, route_pin,
+              route_id, surface_id, model_key, candidate_type, provider_model_id, api_key_ref, route_pin,
               strict_json_schema_declared, strict_passthrough_verified, route_hash, content_hash, record_json
-            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record.route_id,
                 record.surface_id,
                 record.model_key,
+                record.candidate_type.value,
                 record.provider_model_id,
                 record.api_key_ref,
                 record.route_pin,
@@ -189,11 +191,12 @@ class BenchmarkCatalogRepo:
         payload = record.to_dict()
         self._execute(
             """
-            INSERT OR REPLACE INTO profile(profile_id, is_production_profile, content_hash, record_json)
-            VALUES(?, ?, ?, ?)
+            INSERT OR REPLACE INTO profile(profile_id, candidate_type, is_production_profile, content_hash, record_json)
+            VALUES(?, ?, ?, ?, ?)
             """,
             (
                 record.profile_id,
+                record.candidate_type.value,
                 int(record.is_production_profile),
                 record.content_hash,
                 stable_json_dumps(payload),
@@ -222,17 +225,26 @@ class BenchmarkCatalogRepo:
         self._execute(
             """
             INSERT OR REPLACE INTO benchmark_case(
-              case_id, case_version, archetype_id, phase_or_step_family, validator_suite_id,
-              contract_snapshot_id, content_hash, record_json
-            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+              case_id, case_version, benchmark_mode, candidate_type, execution_family,
+              archetype_id, phase_or_step_family, validator_suite_id, contract_snapshot_id,
+              route_distinctness_required, pricing_relevant, governance_relevant,
+              governance_blockers_apply_directly, content_hash, record_json
+            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record.case_id,
                 record.case_version,
+                record.benchmark_mode.value,
+                record.candidate_type.value,
+                record.execution_family.value,
                 record.archetype_id,
                 record.phase_or_step_family,
                 record.validator_suite_id,
                 record.contract_snapshot_id,
+                int(record.route_distinctness_required),
+                int(record.pricing_relevant),
+                int(record.governance_relevant),
+                int(record.governance_blockers_apply_directly),
                 record.content_hash,
                 stable_json_dumps(payload),
             ),
@@ -309,14 +321,17 @@ class BenchmarkCatalogRepo:
         self._execute(
             """
             INSERT OR REPLACE INTO benchmark_case_attempt(
-              case_attempt_id, benchmark_run_id, case_id, case_version, case_set_id, archetype_id,
-              phase_or_step_family, surface_class, surface_id, profile_id, route_id,
-              control_anchor_group_id, runtime_version, contract_version, contract_snapshot_id,
-              schema_id, strict_schema_expected, validator_suite_id, attempt_number, retry_policy_id,
-              temperature_or_equivalent, max_tokens_or_budget, tool_mode, batch_mode, contract_gate_pass,
-              contract_gate_strength, contract_fail_reason, validator_pass, task_success_score,
-              output_artifact_ref, golden_eval_ref, control_delta_ref, evidence_bundle_id, timestamp_utc, record_json
-            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              case_attempt_id, benchmark_run_id, case_id, case_version, case_set_id, benchmark_mode,
+              candidate_type, execution_family, archetype_id, phase_or_step_family, surface_class,
+              surface_id, profile_id, route_id, control_anchor_group_id, runtime_version,
+              contract_version, contract_snapshot_id, schema_id, strict_schema_expected,
+              validator_suite_id, attempt_number, retry_policy_id, temperature_or_equivalent,
+              max_tokens_or_budget, tool_mode, batch_mode, route_distinctness_required,
+              pricing_relevant, governance_relevant, governance_blockers_apply_directly,
+              contract_gate_pass, contract_gate_strength, contract_fail_reason, validator_pass,
+              task_success_score, output_artifact_ref, golden_eval_ref, control_delta_ref,
+              evidence_bundle_id, timestamp_utc, record_json
+            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record.case_attempt_id,
@@ -324,6 +339,9 @@ class BenchmarkCatalogRepo:
                 record.case_id,
                 record.case_version,
                 record.case_set_id,
+                record.benchmark_mode.value,
+                record.candidate_type.value,
+                record.execution_family.value,
                 record.archetype_id,
                 record.phase_or_step_family,
                 record.surface_class.value,
@@ -343,6 +361,10 @@ class BenchmarkCatalogRepo:
                 record.max_tokens_or_budget,
                 record.tool_mode,
                 record.batch_mode,
+                int(record.route_distinctness_required),
+                int(record.pricing_relevant),
+                int(record.governance_relevant),
+                int(record.governance_blockers_apply_directly),
                 int(record.contract_gate_pass),
                 record.contract_gate_strength.value,
                 record.contract_fail_reason,
@@ -408,12 +430,14 @@ class BenchmarkCatalogRepo:
         self._execute(
             """
             INSERT OR REPLACE INTO promotion_recommendation(
-              recommendation_id, route_id, surface_id, archetype_id, profile_id,
+              recommendation_id, benchmark_mode, candidate_type, route_id, surface_id, archetype_id, profile_id,
               recommendation_state, requires_review, content_hash, record_json
-            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record.recommendation_id,
+                record.benchmark_mode.value,
+                record.candidate_type.value,
                 record.route_id,
                 record.surface_id,
                 record.archetype_id,

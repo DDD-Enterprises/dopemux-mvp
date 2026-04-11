@@ -5,7 +5,7 @@ from pathlib import Path
 
 from ..models.ids import utc_now_iso
 from .paths import benchmark_paths
-from .sqlite_schema import DDL_STATEMENTS, EXPECTED_TABLES, SCHEMA_USER_VERSION, SCHEMA_VERSION
+from .sqlite_schema import DDL_STATEMENTS, EXPECTED_TABLES, REQUIRED_COLUMNS, SCHEMA_USER_VERSION, SCHEMA_VERSION
 
 
 def connect_catalog(db_path: Path) -> sqlite3.Connection:
@@ -15,6 +15,16 @@ def connect_catalog(db_path: Path) -> sqlite3.Connection:
     return conn
 
 
+def _ensure_required_columns(conn: sqlite3.Connection) -> None:
+    for table_name, column_specs in REQUIRED_COLUMNS.items():
+        rows = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+        existing = {str(row["name"]) for row in rows}
+        for column_name, column_sql in column_specs:
+            if column_name in existing:
+                continue
+            conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_sql}")
+
+
 def bootstrap_catalog(root: Path | None = None) -> Path:
     paths = benchmark_paths(root)
     paths.index_dir.mkdir(parents=True, exist_ok=True)
@@ -22,6 +32,7 @@ def bootstrap_catalog(root: Path | None = None) -> Path:
     with connect_catalog(paths.catalog_db) as conn:
         for statement in DDL_STATEMENTS:
             conn.executescript(statement)
+        _ensure_required_columns(conn)
         conn.execute(f"PRAGMA user_version = {SCHEMA_USER_VERSION}")
         conn.execute(
             "INSERT OR IGNORE INTO schema_migrations(version, applied_at_utc) VALUES(?, ?)",
@@ -51,4 +62,3 @@ def verify_catalog(db_path: Path) -> None:
     missing = EXPECTED_TABLES - actual
     if missing:
         raise RuntimeError(f"benchmark catalog missing tables: {sorted(missing)}")
-

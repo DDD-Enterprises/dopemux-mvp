@@ -33,7 +33,7 @@ class CaseSetManifest(BenchmarkModel):
     benchmark_run_id: str
     case_set_id: str
     case_ids: list[str]
-    control_anchor_group_id: str
+    control_anchor_group_id: str | None
     created_at_utc: str = field(default_factory=utc_now_iso)
 
 
@@ -42,8 +42,11 @@ class AttemptSummaryManifest(BenchmarkModel):
     benchmark_run_id: str
     case_set_id: str
     case_attempt_id: str
-    route_id: str
-    profile_id: str
+    benchmark_mode: str
+    candidate_type: str
+    execution_family: str
+    route_id: str | None
+    profile_id: str | None
     surface_class: str
     contract_gate_pass: bool
     validator_pass: bool
@@ -78,4 +81,3 @@ class SmokeLinkageReport(BenchmarkModel):
     sample_attempt: dict[str, Any]
     evidence_manifest: dict[str, Any]
     created_at_utc: str = field(default_factory=utc_now_iso)
-

@@ -22,6 +22,8 @@ def build_portfolio_summary(
     return {
         "benchmark_run_id": benchmark_run_id,
         "view_type": "portfolio_summary",
+        "benchmark_modes": portfolio_view.get("benchmark_modes", []),
+        "lane_isolation_preserved": bool(portfolio_view.get("lane_isolation_preserved", True)),
         "matrix_preserved": True,
         "recommendation_state_counts": dict(sorted(state_counts.items())),
         "profile_state_matrix": {key: dict(sorted(value.items())) for key, value in sorted(profile_matrix.items())},
@@ -29,6 +31,11 @@ def build_portfolio_summary(
         "claims": [
             evidence_claim(
                 statement="Portfolio summary preserves a matrix structure and does not create a universal leaderboard.",
+                evidence_class=EvidenceClass.GOVERNANCE_DERIVED.value,
+                refs=["PORTFOLIO_VIEW"],
+            ),
+            evidence_claim(
+                statement="Portfolio summary is runtime-route scoped and must not collapse direct_model evidence into route-profile truth.",
                 evidence_class=EvidenceClass.GOVERNANCE_DERIVED.value,
                 refs=["PORTFOLIO_VIEW"],
             ),

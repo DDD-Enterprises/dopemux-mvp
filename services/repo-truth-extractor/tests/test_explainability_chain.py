@@ -26,3 +26,5 @@ def test_explainability_chain_resolves_to_rollup_delta_attempt_and_bundle(tmp_pa
     assert "BENCHMARK_DERIVED" in evidence_classes
     assert "GOVERNANCE_DERIVED" in evidence_classes
     assert "METADATA_ONLY" in evidence_classes
+    assert detail["benchmark_mode"] == "runtime_route"
+    assert any("lane" in str(item["statement"]).lower() for item in claims)

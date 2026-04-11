@@ -124,6 +124,9 @@ class EvidenceBundleWriter:
                 benchmark_run_id=attempt.benchmark_run_id,
                 case_set_id=attempt.case_set_id,
                 case_attempt_id=attempt.case_attempt_id,
+                benchmark_mode=attempt.benchmark_mode.value,
+                candidate_type=attempt.candidate_type.value,
+                execution_family=attempt.execution_family.value,
                 route_id=attempt.route_id,
                 profile_id=attempt.profile_id,
                 surface_class=attempt.surface_class.value,
@@ -202,4 +205,3 @@ class EvidenceBundleWriter:
             manifest_payload=manifest_payload,
             attempt_dir=paths.attempt_root,
         )
-

@@ -18,6 +18,9 @@ def test_reporting_views_render_and_preserve_matrix_structure(tmp_path: Path) ->
     profile = payload["sample_profile_summary"]
     assert portfolio["view_type"] == "portfolio_summary"
     assert portfolio["matrix_preserved"] is True
+    assert portfolio["benchmark_modes"] == ["runtime_route"]
+    assert portfolio["lane_isolation_preserved"] is True
     assert "recommended_for_review" in portfolio["recommendation_state_counts"]
     assert profile["profile_id"]
+    assert profile["benchmark_modes"] == ["runtime_route"]
     assert (proof_dir / "sample_portfolio_summary.json").exists()

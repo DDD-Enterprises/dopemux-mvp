@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from ..models.entities import BenchmarkCaseAttempt
+from ..models.enums import BenchmarkMode
 from ..rollups.archetype_rollups import build_archetype_rollups
 from ..rollups.case_set_rollups import build_case_set_rollup
 from ..rollups.portfolio_view import build_portfolio_view
@@ -84,6 +85,12 @@ class BenchmarkScoringPipeline:
         if run is None:
             raise RuntimeError(f"missing benchmark run {benchmark_run_id}")
         attempts = self.repo.list_attempts(benchmark_run_id)
+        attempt_modes = sorted({str(item.get("benchmark_mode") or BenchmarkMode.RUNTIME_ROUTE.value) for item in attempts})
+        if any(mode != BenchmarkMode.RUNTIME_ROUTE.value for mode in attempt_modes):
+            raise RuntimeError(
+                "BenchmarkScoringPipeline is runtime_route-only; mixed or non-runtime lanes must be processed separately: "
+                f"{attempt_modes}"
+            )
         case_set_ids = sorted({str(item["case_set_id"]) for item in attempts})
         if len(case_set_ids) != 1:
             raise RuntimeError(f"expected exactly one case set per scored run, got {case_set_ids}")

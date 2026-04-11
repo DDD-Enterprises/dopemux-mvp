@@ -19,6 +19,9 @@ def build_profile_summaries(
             {
                 "benchmark_run_id": benchmark_run_id,
                 "profile_id": profile_id,
+                "benchmark_modes": row.get("benchmark_modes", []),
+                "candidate_types": row.get("candidate_types", []),
+                "lane_isolation_preserved": row.get("lane_isolation_preserved", True),
                 "allowed_surfaces": row.get("allowed_surfaces", []),
                 "recommendation_state_counts": row.get("recommendation_state_counts", {}),
                 "recommendation_ids": row.get("recommendation_ids", []),
@@ -34,6 +37,11 @@ def build_profile_summaries(
                     evidence_claim(
                         statement=f"Profile {profile_id} contract pass rate is {row.get('contract_pass_rate')}.",
                         evidence_class=EvidenceClass.BENCHMARK_DERIVED.value,
+                        refs=[f"PROFILE_FIT__{profile_id}"],
+                    ),
+                    evidence_claim(
+                        statement=f"Profile {profile_id} remains a downstream consumer of runtime_route evidence rather than a raw execution lane.",
+                        evidence_class=EvidenceClass.GOVERNANCE_DERIVED.value,
                         refs=[f"PROFILE_FIT__{profile_id}"],
                     ),
                 ],

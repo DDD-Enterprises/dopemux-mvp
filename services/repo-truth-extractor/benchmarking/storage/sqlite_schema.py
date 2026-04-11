@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 
-SCHEMA_VERSION = "benchmark_catalog_v1"
-SCHEMA_USER_VERSION = 1
+SCHEMA_VERSION = "benchmark_catalog_v2"
+SCHEMA_USER_VERSION = 2
 
 
 DDL_STATEMENTS: list[str] = [
@@ -36,6 +36,7 @@ DDL_STATEMENTS: list[str] = [
       model_key TEXT PRIMARY KEY,
       display_name TEXT NOT NULL,
       family TEXT NOT NULL,
+      candidate_type TEXT NOT NULL,
       source_registry_ref TEXT NOT NULL,
       registry_class TEXT NOT NULL,
       lifecycle_status TEXT NOT NULL,
@@ -48,6 +49,7 @@ DDL_STATEMENTS: list[str] = [
       route_id TEXT PRIMARY KEY,
       surface_id TEXT NOT NULL,
       model_key TEXT NOT NULL,
+      candidate_type TEXT NOT NULL,
       provider_model_id TEXT NOT NULL,
       api_key_ref TEXT NOT NULL,
       route_pin TEXT NOT NULL,
@@ -103,6 +105,7 @@ DDL_STATEMENTS: list[str] = [
     """
     CREATE TABLE IF NOT EXISTS profile (
       profile_id TEXT PRIMARY KEY,
+      candidate_type TEXT NOT NULL,
       is_production_profile INTEGER NOT NULL,
       content_hash TEXT NOT NULL,
       record_json TEXT NOT NULL
@@ -121,10 +124,17 @@ DDL_STATEMENTS: list[str] = [
     CREATE TABLE IF NOT EXISTS benchmark_case (
       case_id TEXT PRIMARY KEY,
       case_version INTEGER NOT NULL,
+      benchmark_mode TEXT NOT NULL,
+      candidate_type TEXT NOT NULL,
+      execution_family TEXT NOT NULL,
       archetype_id TEXT NOT NULL,
       phase_or_step_family TEXT NOT NULL,
       validator_suite_id TEXT NOT NULL,
       contract_snapshot_id TEXT NOT NULL,
+      route_distinctness_required INTEGER NOT NULL,
+      pricing_relevant INTEGER NOT NULL,
+      governance_relevant INTEGER NOT NULL,
+      governance_blockers_apply_directly INTEGER NOT NULL,
       content_hash TEXT NOT NULL,
       record_json TEXT NOT NULL,
       FOREIGN KEY(archetype_id) REFERENCES archetype(archetype_id),
@@ -138,7 +148,7 @@ DDL_STATEMENTS: list[str] = [
       case_set_version INTEGER NOT NULL,
       archetype_id TEXT NOT NULL,
       benchmark_stage TEXT NOT NULL,
-      control_anchor_group_id TEXT NOT NULL,
+      control_anchor_group_id TEXT,
       schedule_class TEXT NOT NULL,
       content_hash TEXT NOT NULL,
       record_json TEXT NOT NULL,
@@ -181,13 +191,16 @@ DDL_STATEMENTS: list[str] = [
       case_id TEXT NOT NULL,
       case_version INTEGER NOT NULL,
       case_set_id TEXT NOT NULL,
+      benchmark_mode TEXT NOT NULL,
+      candidate_type TEXT NOT NULL,
+      execution_family TEXT NOT NULL,
       archetype_id TEXT NOT NULL,
       phase_or_step_family TEXT NOT NULL,
       surface_class TEXT NOT NULL,
       surface_id TEXT NOT NULL,
-      profile_id TEXT NOT NULL,
-      route_id TEXT NOT NULL,
-      control_anchor_group_id TEXT NOT NULL,
+      profile_id TEXT,
+      route_id TEXT,
+      control_anchor_group_id TEXT,
       runtime_version TEXT NOT NULL,
       contract_version TEXT NOT NULL,
       contract_snapshot_id TEXT NOT NULL,
@@ -200,6 +213,10 @@ DDL_STATEMENTS: list[str] = [
       max_tokens_or_budget INTEGER NOT NULL,
       tool_mode TEXT NOT NULL,
       batch_mode TEXT NOT NULL,
+      route_distinctness_required INTEGER NOT NULL,
+      pricing_relevant INTEGER NOT NULL,
+      governance_relevant INTEGER NOT NULL,
+      governance_blockers_apply_directly INTEGER NOT NULL,
       contract_gate_pass INTEGER NOT NULL,
       contract_gate_strength TEXT NOT NULL,
       contract_fail_reason TEXT,
@@ -259,6 +276,8 @@ DDL_STATEMENTS: list[str] = [
     """
     CREATE TABLE IF NOT EXISTS promotion_recommendation (
       recommendation_id TEXT PRIMARY KEY,
+      benchmark_mode TEXT NOT NULL,
+      candidate_type TEXT NOT NULL,
       route_id TEXT NOT NULL,
       surface_id TEXT NOT NULL,
       archetype_id TEXT NOT NULL,
@@ -317,3 +336,37 @@ EXPECTED_TABLES = {
     "governance_decision",
 }
 
+
+REQUIRED_COLUMNS: dict[str, list[tuple[str, str]]] = {
+    "model": [
+        ("candidate_type", "TEXT NOT NULL DEFAULT 'model_candidate'"),
+    ],
+    "route": [
+        ("candidate_type", "TEXT NOT NULL DEFAULT 'route_candidate'"),
+    ],
+    "profile": [
+        ("candidate_type", "TEXT NOT NULL DEFAULT 'profile_candidate'"),
+    ],
+    "benchmark_case": [
+        ("benchmark_mode", "TEXT NOT NULL DEFAULT 'runtime_route'"),
+        ("candidate_type", "TEXT NOT NULL DEFAULT 'route_candidate'"),
+        ("execution_family", "TEXT NOT NULL DEFAULT 'runtime_integrated_execution'"),
+        ("route_distinctness_required", "INTEGER NOT NULL DEFAULT 0"),
+        ("pricing_relevant", "INTEGER NOT NULL DEFAULT 0"),
+        ("governance_relevant", "INTEGER NOT NULL DEFAULT 1"),
+        ("governance_blockers_apply_directly", "INTEGER NOT NULL DEFAULT 1"),
+    ],
+    "benchmark_case_attempt": [
+        ("benchmark_mode", "TEXT NOT NULL DEFAULT 'runtime_route'"),
+        ("candidate_type", "TEXT NOT NULL DEFAULT 'route_candidate'"),
+        ("execution_family", "TEXT NOT NULL DEFAULT 'runtime_integrated_execution'"),
+        ("route_distinctness_required", "INTEGER NOT NULL DEFAULT 0"),
+        ("pricing_relevant", "INTEGER NOT NULL DEFAULT 0"),
+        ("governance_relevant", "INTEGER NOT NULL DEFAULT 1"),
+        ("governance_blockers_apply_directly", "INTEGER NOT NULL DEFAULT 1"),
+    ],
+    "promotion_recommendation": [
+        ("benchmark_mode", "TEXT NOT NULL DEFAULT 'runtime_route'"),
+        ("candidate_type", "TEXT NOT NULL DEFAULT 'route_candidate'"),
+    ],
+}

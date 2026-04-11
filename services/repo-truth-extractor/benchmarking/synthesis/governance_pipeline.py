@@ -6,6 +6,7 @@ from typing import Any
 
 from ..governance.decision_log import GovernanceDecisionLog
 from ..models.entities import PromotionRecommendation
+from ..models.enums import BenchmarkMode
 from ..models.ids import synthetic_id
 from ..reporting.governance_reports import GovernanceReportWriter
 from ..storage.hashing import hash_json
@@ -42,6 +43,12 @@ class GovernanceSynthesisPipeline:
             raise RuntimeError(f"missing benchmark run {benchmark_run_id}")
 
         attempts = self.repo.list_attempts(benchmark_run_id)
+        attempt_modes = sorted({str(item.get("benchmark_mode") or BenchmarkMode.RUNTIME_ROUTE.value) for item in attempts})
+        if any(mode != BenchmarkMode.RUNTIME_ROUTE.value for mode in attempt_modes):
+            raise RuntimeError(
+                "GovernanceSynthesisPipeline is runtime_route-only; mixed or non-runtime lanes must be synthesized separately: "
+                f"{attempt_modes}"
+            )
         recommendations: list[dict[str, Any]] = []
         packets: list[dict[str, Any]] = []
         decisions: list[dict[str, Any]] = []
@@ -77,6 +84,8 @@ class GovernanceSynthesisPipeline:
             recommendation = PromotionRecommendation(
                 recommendation_id=synthetic_id("recommendation", f"{benchmark_run_id}_{attempt['case_attempt_id']}"),
                 benchmark_run_id=benchmark_run_id,
+                benchmark_mode=str(attempt["benchmark_mode"]),
+                candidate_type=str(attempt["candidate_type"]),
                 route_id=str(attempt["route_id"]),
                 surface_id=str(attempt["surface_id"]),
                 archetype_id=str(attempt["archetype_id"]),

@@ -37,3 +37,11 @@ def test_bootstrap_is_idempotent_and_records_schema_version(tmp_path: Path) -> N
     assert schema_version == SCHEMA_VERSION
     assert migration_rows == 1
 
+
+def test_bootstrap_adds_lane_split_columns(tmp_path: Path) -> None:
+    db_path = bootstrap_catalog(tmp_path)
+    with sqlite3.connect(str(db_path)) as conn:
+        benchmark_case_columns = {row[1] for row in conn.execute("PRAGMA table_info(benchmark_case)").fetchall()}
+        attempt_columns = {row[1] for row in conn.execute("PRAGMA table_info(benchmark_case_attempt)").fetchall()}
+    assert {"benchmark_mode", "candidate_type", "execution_family"}.issubset(benchmark_case_columns)
+    assert {"benchmark_mode", "candidate_type", "execution_family"}.issubset(attempt_columns)

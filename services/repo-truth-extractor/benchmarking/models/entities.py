@@ -6,10 +6,13 @@ from pathlib import Path
 from typing import Any
 
 from .enums import (
+    BenchmarkMode,
     BundleType,
+    CandidateType,
     ContractGateStrength,
     DecisionOutcome,
     DecisionType,
+    ExecutionFamily,
     RecommendationState,
     SurfaceClass,
 )
@@ -28,6 +31,12 @@ def _normalize(value: Any) -> Any:
     if isinstance(value, (list, tuple)):
         return [_normalize(item) for item in value]
     return value
+
+
+def _require_payload_keys(payload: dict[str, Any], required_keys: list[str], *, label: str) -> None:
+    missing = [key for key in required_keys if key not in payload]
+    if missing:
+        raise ValueError(f"{label} missing required keys: {', '.join(sorted(missing))}")
 
 
 @dataclass(frozen=True)
@@ -66,10 +75,14 @@ class ModelRecord(VersionedRecord):
     model_key: str = ""
     display_name: str = ""
     family: str = ""
+    candidate_type: CandidateType = CandidateType.MODEL_CANDIDATE
     source_registry_ref: str = ""
     registry_class: str = ""
     lifecycle_status: str = ""
     content_hash: str = ""
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "candidate_type", CandidateType.coerce(self.candidate_type))
 
 
 @dataclass(frozen=True)
@@ -77,6 +90,7 @@ class RouteRecord(VersionedRecord):
     route_id: str = ""
     surface_id: str = ""
     model_key: str = ""
+    candidate_type: CandidateType = CandidateType.ROUTE_CANDIDATE
     provider_model_id: str = ""
     api_key_ref: str = ""
     route_pin: str = ""
@@ -84,6 +98,9 @@ class RouteRecord(VersionedRecord):
     strict_passthrough_verified: bool = False
     route_hash: str = ""
     content_hash: str = ""
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "candidate_type", CandidateType.coerce(self.candidate_type))
 
 
 @dataclass(frozen=True)
@@ -138,11 +155,15 @@ class Archetype(VersionedRecord):
 @dataclass(frozen=True)
 class Profile(VersionedRecord):
     profile_id: str = ""
+    candidate_type: CandidateType = CandidateType.PROFILE_CANDIDATE
     allowed_surfaces: list[str] = field(default_factory=list)
     allowed_archetypes: list[str] = field(default_factory=list)
     policy_bounds: dict[str, Any] = field(default_factory=dict)
     is_production_profile: bool = False
     content_hash: str = ""
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "candidate_type", CandidateType.coerce(self.candidate_type))
 
 
 @dataclass(frozen=True)
@@ -159,6 +180,9 @@ class RetryPolicy(VersionedRecord):
 class BenchmarkCase(VersionedRecord):
     case_id: str = ""
     case_version: int = 1
+    benchmark_mode: BenchmarkMode = BenchmarkMode.RUNTIME_ROUTE
+    candidate_type: CandidateType = CandidateType.ROUTE_CANDIDATE
+    execution_family: ExecutionFamily = ExecutionFamily.RUNTIME_INTEGRATED_EXECUTION
     archetype_id: str = ""
     phase_or_step_family: str = ""
     title: str = ""
@@ -170,8 +194,26 @@ class BenchmarkCase(VersionedRecord):
     golden_evaluator_id: str = ""
     input_bundle_id: str = ""
     contract_snapshot_id: str = ""
+    route_distinctness_required: bool = False
+    pricing_relevant: bool = False
+    governance_relevant: bool = True
+    governance_blockers_apply_directly: bool = True
     case_tags: list[str] = field(default_factory=list)
     content_hash: str = ""
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "benchmark_mode", BenchmarkMode.coerce(self.benchmark_mode))
+        object.__setattr__(self, "candidate_type", CandidateType.coerce(self.candidate_type))
+        object.__setattr__(self, "execution_family", ExecutionFamily.coerce(self.execution_family))
+        if self.benchmark_mode == BenchmarkMode.RUNTIME_ROUTE and self.candidate_type != CandidateType.ROUTE_CANDIDATE:
+            raise ValueError("runtime_route benchmark cases must use route_candidate")
+        if self.benchmark_mode == BenchmarkMode.DIRECT_MODEL and self.candidate_type != CandidateType.MODEL_CANDIDATE:
+            raise ValueError("direct_model benchmark cases must use model_candidate")
+        if self.benchmark_mode == BenchmarkMode.PROFILE_SYNTHESIS_INPUT:
+            if self.candidate_type != CandidateType.PROFILE_CANDIDATE:
+                raise ValueError("profile_synthesis_input benchmark cases must use profile_candidate")
+            if self.execution_family != ExecutionFamily.DOWNSTREAM_SYNTHESIS:
+                raise ValueError("profile_synthesis_input benchmark cases must use downstream_synthesis execution_family")
 
 
 @dataclass(frozen=True)
@@ -182,7 +224,7 @@ class BenchmarkCaseSet(VersionedRecord):
     benchmark_stage: str = ""
     title: str = ""
     case_ids: list[str] = field(default_factory=list)
-    control_anchor_group_id: str = ""
+    control_anchor_group_id: str | None = None
     schedule_class: str = ""
     content_hash: str = ""
 
@@ -209,13 +251,16 @@ class BenchmarkCaseAttempt(VersionedRecord):
     case_id: str = ""
     case_version: int = 1
     case_set_id: str = ""
+    benchmark_mode: BenchmarkMode = BenchmarkMode.RUNTIME_ROUTE
+    candidate_type: CandidateType = CandidateType.ROUTE_CANDIDATE
+    execution_family: ExecutionFamily = ExecutionFamily.RUNTIME_INTEGRATED_EXECUTION
     archetype_id: str = ""
     phase_or_step_family: str = ""
     surface_class: SurfaceClass = SurfaceClass.DIRECT_PROVIDER_API
     surface_id: str = ""
-    profile_id: str = ""
-    route_id: str = ""
-    control_anchor_group_id: str = ""
+    profile_id: str | None = None
+    route_id: str | None = None
+    control_anchor_group_id: str | None = None
     runtime_version: str = ""
     contract_version: str = ""
     contract_snapshot_id: str = ""
@@ -228,6 +273,12 @@ class BenchmarkCaseAttempt(VersionedRecord):
     max_tokens_or_budget: int = 0
     tool_mode: str = ""
     batch_mode: str = ""
+    route_distinctness_required: bool = False
+    pricing_relevant: bool = False
+    governance_relevant: bool = True
+    governance_blockers_apply_directly: bool = True
+    direct_model_attempt: dict[str, Any] | None = None
+    runtime_route_attempt: dict[str, Any] | None = None
     contract_gate_pass: bool = False
     contract_gate_strength: ContractGateStrength = ContractGateStrength.STRONG
     contract_fail_reason: str | None = None
@@ -250,12 +301,59 @@ class BenchmarkCaseAttempt(VersionedRecord):
     timestamp_utc: str = field(default_factory=utc_now_iso)
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "benchmark_mode", BenchmarkMode.coerce(self.benchmark_mode))
+        object.__setattr__(self, "candidate_type", CandidateType.coerce(self.candidate_type))
+        object.__setattr__(self, "execution_family", ExecutionFamily.coerce(self.execution_family))
         object.__setattr__(self, "surface_class", SurfaceClass.coerce(self.surface_class))
         object.__setattr__(
             self,
             "contract_gate_strength",
             ContractGateStrength.coerce(self.contract_gate_strength),
         )
+        if self.benchmark_mode == BenchmarkMode.PROFILE_SYNTHESIS_INPUT:
+            raise ValueError("profile_synthesis_input is downstream-only and must not be stored as a benchmark_case_attempt")
+        if self.benchmark_mode == BenchmarkMode.RUNTIME_ROUTE:
+            if self.candidate_type != CandidateType.ROUTE_CANDIDATE:
+                raise ValueError("runtime_route attempts must use route_candidate")
+            if not isinstance(self.runtime_route_attempt, dict):
+                raise ValueError("runtime_route attempts must provide runtime_route_attempt payload")
+            _require_payload_keys(
+                self.runtime_route_attempt,
+                [
+                    "declared_route_id",
+                    "selected_route_id",
+                    "selected_route_identity",
+                    "effective_route_signature",
+                    "effective_route_signature_hash",
+                    "admissibility_status",
+                    "route_telemetry_refs",
+                ],
+                label="runtime_route_attempt",
+            )
+            if self.direct_model_attempt is not None:
+                raise ValueError("runtime_route attempts cannot also carry direct_model_attempt payloads")
+        if self.benchmark_mode == BenchmarkMode.DIRECT_MODEL:
+            if self.candidate_type != CandidateType.MODEL_CANDIDATE:
+                raise ValueError("direct_model attempts must use model_candidate")
+            if not isinstance(self.direct_model_attempt, dict):
+                raise ValueError("direct_model attempts must provide direct_model_attempt payload")
+            _require_payload_keys(
+                self.direct_model_attempt,
+                [
+                    "declared_provider_name",
+                    "declared_model_key",
+                    "selected_provider_name",
+                    "selected_model_key",
+                    "direct_request_ref",
+                    "direct_response_ref",
+                    "pricing_metrics",
+                    "latency_metrics",
+                    "validator_results_ref",
+                ],
+                label="direct_model_attempt",
+            )
+            if self.runtime_route_attempt is not None:
+                raise ValueError("direct_model attempts cannot also carry runtime_route_attempt payloads")
 
 
 @dataclass(frozen=True)
@@ -303,6 +401,8 @@ class EvidenceBundle(VersionedRecord):
 class PromotionRecommendation(VersionedRecord):
     recommendation_id: str = ""
     benchmark_run_id: str = ""
+    benchmark_mode: BenchmarkMode = BenchmarkMode.RUNTIME_ROUTE
+    candidate_type: CandidateType = CandidateType.ROUTE_CANDIDATE
     route_id: str = ""
     surface_id: str = ""
     archetype_id: str = ""
@@ -322,11 +422,32 @@ class PromotionRecommendation(VersionedRecord):
     content_hash: str = ""
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "benchmark_mode", BenchmarkMode.coerce(self.benchmark_mode))
+        object.__setattr__(self, "candidate_type", CandidateType.coerce(self.candidate_type))
         object.__setattr__(
             self,
             "recommendation_state",
             RecommendationState.coerce(self.recommendation_state),
         )
+
+
+@dataclass(frozen=True)
+class ProfileSynthesisInput(BenchmarkModel):
+    synthesis_input_id: str = ""
+    benchmark_mode: BenchmarkMode = BenchmarkMode.PROFILE_SYNTHESIS_INPUT
+    candidate_type: CandidateType = CandidateType.PROFILE_CANDIDATE
+    execution_family: ExecutionFamily = ExecutionFamily.DOWNSTREAM_SYNTHESIS
+    profile_id: str = ""
+    source_attempt_ids: list[str] = field(default_factory=list)
+    source_rollup_ids: list[str] = field(default_factory=list)
+    pricing_source_refs: list[str] = field(default_factory=list)
+    governance_source_refs: list[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "benchmark_mode", BenchmarkMode.coerce(self.benchmark_mode))
+        object.__setattr__(self, "candidate_type", CandidateType.coerce(self.candidate_type))
+        object.__setattr__(self, "execution_family", ExecutionFamily.coerce(self.execution_family))
 
 
 @dataclass(frozen=True)

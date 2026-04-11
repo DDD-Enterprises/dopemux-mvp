@@ -21,6 +21,7 @@ from ..models.entities import (
     ValidatorResult,
     ValidatorSuite,
 )
+from ..models.lane_contracts import build_runtime_route_attempt_payload
 from ..models.ids import synthetic_id, synthetic_run_id, utc_now_iso
 from ..storage.hashing import hash_json
 
@@ -118,6 +119,9 @@ def synthetic_fixture_records(git_commit: str) -> dict[str, object]:
     benchmark_case = BenchmarkCase(
         case_id="strict_extract_conflicting_evidence_v1",
         case_version=1,
+        benchmark_mode="runtime_route",
+        candidate_type="route_candidate",
+        execution_family="runtime_integrated_execution",
         archetype_id=archetype.archetype_id,
         phase_or_step_family="D_C_G_X",
         prompt_inventory_refs=["promptsets/v4/promptset.yaml"],
@@ -127,6 +131,10 @@ def synthetic_fixture_records(git_commit: str) -> dict[str, object]:
         golden_evaluator_id="task_eval_smoke_v1",
         input_bundle_id="input_bundle_smoke_v1",
         contract_snapshot_id=contract_snapshot.contract_snapshot_id,
+        route_distinctness_required=True,
+        pricing_relevant=True,
+        governance_relevant=True,
+        governance_blockers_apply_directly=True,
         content_hash=hash_json({"case_id": "strict_extract_conflicting_evidence_v1"}),
     )
     case_set = BenchmarkCaseSet(
@@ -158,6 +166,9 @@ def synthetic_fixture_records(git_commit: str) -> dict[str, object]:
         case_id=benchmark_case.case_id,
         case_version=benchmark_case.case_version,
         case_set_id=case_set.case_set_id,
+        benchmark_mode=benchmark_case.benchmark_mode,
+        candidate_type=benchmark_case.candidate_type,
+        execution_family=benchmark_case.execution_family,
         archetype_id=archetype.archetype_id,
         phase_or_step_family=benchmark_case.phase_or_step_family,
         surface_class=surface.surface_class,
@@ -177,6 +188,29 @@ def synthetic_fixture_records(git_commit: str) -> dict[str, object]:
         max_tokens_or_budget=4096,
         tool_mode="disabled",
         batch_mode="sync",
+        route_distinctness_required=benchmark_case.route_distinctness_required,
+        pricing_relevant=benchmark_case.pricing_relevant,
+        governance_relevant=benchmark_case.governance_relevant,
+        governance_blockers_apply_directly=benchmark_case.governance_blockers_apply_directly,
+        runtime_route_attempt=build_runtime_route_attempt_payload(
+            declared_route_id=route.route_id,
+            route_trace={
+                "logical_route_id": route.route_id,
+                "selected_route_identity": {
+                    "declared_route_id": route.route_id,
+                    "surface_id": surface.surface_id,
+                    "surface_class": surface.surface_class.value,
+                    "provider_name": surface.provider_name,
+                    "model_key": model.model_key,
+                    "provider_model_id": route.provider_model_id,
+                    "route_pin": route.route_pin,
+                },
+                "step_route_counts": {"A:A0": [route.route_id]},
+                "route_hops": [route.route_id],
+            },
+            route_telemetry_refs=["ROUTE_TRACE.json", "outputs/STEP_METRICS.json"],
+            admissibility_status="not_evaluated",
+        ),
         contract_gate_pass=True,
         contract_gate_strength="strong",
         contract_fail_reason=None,
@@ -227,6 +261,8 @@ def synthetic_fixture_records(git_commit: str) -> dict[str, object]:
     )
     recommendation = PromotionRecommendation(
         recommendation_id=synthetic_id("recommendation", attempt.case_attempt_id),
+        benchmark_mode="runtime_route",
+        candidate_type="route_candidate",
         route_id=route.route_id,
         surface_id=surface.surface_id,
         archetype_id=archetype.archetype_id,

@@ -8,6 +8,8 @@ from ..models.enums import EvidenceClass
 def candidate_key(recommendation: dict[str, Any]) -> str:
     return "__".join(
         [
+            str(recommendation.get("benchmark_mode") or "runtime_route"),
+            str(recommendation.get("candidate_type") or "route_candidate"),
             str(recommendation.get("route_id")),
             str(recommendation.get("surface_id")),
             str(recommendation.get("archetype_id")),
@@ -111,6 +113,11 @@ def build_explanation_chain(
             statement=f"Surface identity {recommendation['surface_id']} is metadata only and does not prove suitability.",
             evidence_class=EvidenceClass.METADATA_ONLY.value,
             refs=[recommendation["surface_id"]],
+        ),
+        evidence_claim(
+            statement=f"Benchmark lane {attempt.get('benchmark_mode')} remains distinct from direct_model evidence and downstream profile synthesis inputs.",
+            evidence_class=EvidenceClass.BENCHMARK_DERIVED.value,
+            refs=[attempt["case_attempt_id"]],
         ),
         evidence_claim(
             statement=f"Governance packet blocker count is {len(governance_packet.get('failed_gates', []))}.",
