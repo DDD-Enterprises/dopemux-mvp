@@ -230,6 +230,22 @@ Direct-model proof and comparison artifact names introduced by DMB-001:
 - `DIRECT_MODEL_SUMMARY__<MODEL>.json`
 - `DIRECT_MODEL_FAILURES.json`
 
+PRICE-001 upgrades the pricing authority from a sparse rate map to an explicit truth layer:
+
+1. `config/pricing.yaml` is now `RTE_PRICING_V2` and remains the benchmark pricing catalog authority.
+2. Catalog entries preserve `pricing_source_type`, `pricing_source_ref`, `pricing_confidence`, `pricing_status`, `surface_scope`, and currency alongside the legacy `input_cost_per_m` and `output_cost_per_m` compatibility fields.
+3. Unknown or stale pricing remains explicit. Entries with no verified token price keep null rate fields and are excluded from rate-registry loading rather than silently coerced.
+4. Aggregator pricing and first-party provider pricing remain distinct in both storage and reporting.
+5. Spend reporting must distinguish measured spend, catalog-derived expected spend, partial estimate, and unknown spend.
+
+PRICE-001 reporting artifacts introduced for benchmark pricing coverage:
+
+- `pricing_coverage_report.json`
+- `priced_candidate_matrix.json`
+- `sample_spend_truth.json`
+- `pricing_gap_list.json`
+- `pricing_source_audit.json`
+
 M3 adds the measurement and aggregation spine on top of persisted M2 attempts:
 
 - contract gate finalization from persisted validator results

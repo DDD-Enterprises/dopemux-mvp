@@ -26,6 +26,11 @@ class SpendEstimate:
     model_id: str
     pricing_key: str
     pricing_source: str
+    pricing_source_type: str
+    pricing_status: str
+    pricing_confidence: str
+    pricing_currency: str
+    surface_scope: str
     pricing_version: str
     pricing_match_type: str
     unknown_model: bool
@@ -42,6 +47,11 @@ class SpendEstimate:
             "model_id": self.model_id,
             "pricing_key": self.pricing_key,
             "pricing_source": self.pricing_source,
+            "pricing_source_type": self.pricing_source_type,
+            "pricing_status": self.pricing_status,
+            "pricing_confidence": self.pricing_confidence,
+            "pricing_currency": self.pricing_currency,
+            "surface_scope": self.surface_scope,
             "pricing_version": self.pricing_version,
             "pricing_match_type": self.pricing_match_type,
             "unknown_model": self.unknown_model,
@@ -83,10 +93,19 @@ class SpendGuard:
             model_id=str(rate.get("model_id") or model_id),
             pricing_key=str(rate.get("pricing_key") or f"{provider}/{model_id}"),
             pricing_source=str(rate.get("pricing_source") or "unknown"),
+            pricing_source_type=str(rate.get("pricing_source_type") or "unknown"),
+            pricing_status=str(rate.get("pricing_status") or "UNPRICED_UNKNOWN"),
+            pricing_confidence=str(rate.get("pricing_confidence") or "UNKNOWN"),
+            pricing_currency=str(rate.get("pricing_currency") or "USD"),
+            surface_scope=str(rate.get("surface_scope") or "unknown"),
             pricing_version=str(rate.get("pricing_version") or "unknown"),
             pricing_match_type=str(rate.get("match_type") or "unknown"),
             unknown_model=unknown_model,
-            spend_truth_class="partial_estimate" if unknown_model else "catalog_expected",
+            spend_truth_class=(
+                "partial_estimate"
+                if unknown_model or str(rate.get("pricing_status") or "") != "PRICED_CONFIRMED"
+                else "catalog_expected"
+            ),
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             estimated_cost_usd=estimated_cost_usd,
