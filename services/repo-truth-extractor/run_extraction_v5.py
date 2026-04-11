@@ -3048,6 +3048,8 @@ def load_pricing_registry(path: Path = PRICING_CONFIG_PATH) -> Tuple[Dict[str, D
     for key, row in models.items():
         if not isinstance(row, dict):
             raise RuntimeError(f"Pricing entry must be an object for {key}")
+        if row.get("input_cost_per_m") is None or row.get("output_cost_per_m") is None:
+            continue
         try:
             input_cost = Decimal(str(row["input_cost_per_m"]))
             output_cost = Decimal(str(row["output_cost_per_m"]))
