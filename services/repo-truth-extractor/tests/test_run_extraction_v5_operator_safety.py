@@ -449,3 +449,118 @@ def test_print_config_includes_route_readiness_summary() -> None:
     assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
     assert payload["effective_model_routing"]["A"]["scope"] == "representative_phase_default_not_step_authoritative"
+
+
+def test_classify_provider_readiness_blocker_distinguishes_env_auth_and_quota() -> None:
+    runner = _load_runner_module()
+
+    missing = runner.classify_provider_readiness_blocker(
+        provider="openrouter",
+        model_id="openai/gpt-5.4",
+        api_key_env="OPENROUTER_API_KEY",
+        api_key_present=False,
+        status_code=None,
+        failure_type="auth_missing",
+        provider_error_reason=None,
+    )
+    auth = runner.classify_provider_readiness_blocker(
+        provider="openrouter",
+        model_id="openai/gpt-5.4",
+        api_key_env="OPENROUTER_API_KEY",
+        api_key_present=True,
+        status_code=401,
+        failure_type="auth_rejected",
+        provider_error_reason="user not found",
+    )
+    quota = runner.classify_provider_readiness_blocker(
+        provider="openai",
+        model_id="gpt-5.4",
+        api_key_env="OPENAI_API_KEY",
+        api_key_present=True,
+        status_code=429,
+        failure_type="quota_or_billing",
+        provider_error_reason="insufficient_quota",
+    )
+
+    assert missing["blocker_code"] == "API_KEY_MISSING"
+    assert missing["rerun_worthiness"] == "rerun_after_env_fix"
+    assert auth["blocker_code"] == "PROVIDER_AUTH_REJECTED"
+    assert auth["remediation_class"] == "fix_provider_credentials_or_permissions"
+    assert quota["blocker_code"] == "QUOTA_OR_BILLING_BLOCK"
+    assert quota["rerun_worthiness"] == "rerun_after_billing_fix"
+
+
+def test_run_provider_preflight_emits_machine_readable_readiness_blockers(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+
+    monkeypatch.setattr(
+        runner,
+        "collect_provider_routes",
+        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+            "openrouter:openai/gpt-5.4:OPENROUTER_API_KEY": {
+                "provider": "openrouter",
+                "model_id": "openai/gpt-5.4",
+                "api_key_env": "OPENROUTER_API_KEY",
+            },
+            "openai:gpt-5.4:OPENAI_API_KEY": {
+                "provider": "openai",
+                "model_id": "gpt-5.4",
+                "api_key_env": "OPENAI_API_KEY",
+            },
+        },
+    )
+
+    def _fake_probe(provider, model_id, api_key_env, cfg):  # type: ignore[no-untyped-def]
+        if provider == "openrouter":
+            return {
+                "provider": provider,
+                "model_id": model_id,
+                "api_key_env_name": api_key_env,
+                "api_key_env_resolved": api_key_env,
+                "status_code": 401,
+                "failure_type": "auth_rejected",
+                "provider_signature": f"{provider}:{model_id}",
+                "ready": False,
+                "readiness_blocker": {
+                    "ready": False,
+                    "blocker_code": "PROVIDER_AUTH_REJECTED",
+                    "blocker_class": "auth",
+                    "remediation_class": "fix_provider_credentials_or_permissions",
+                    "rerun_worthiness": "rerun_after_auth_fix",
+                    "human_summary": "blocked",
+                },
+            }
+        return {
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env_name": api_key_env,
+            "api_key_env_resolved": api_key_env,
+            "status_code": 429,
+            "failure_type": "quota_or_billing",
+            "provider_signature": f"{provider}:{model_id}",
+            "ready": False,
+            "readiness_blocker": {
+                "ready": False,
+                "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+                "blocker_class": "quota_billing",
+                "remediation_class": "restore_quota_or_billing",
+                "rerun_worthiness": "rerun_after_billing_fix",
+                "human_summary": "blocked",
+            },
+        }
+
+    monkeypatch.setattr(runner, "run_provider_doctor_probe", _fake_probe)
+
+    ok, payload = runner.run_provider_preflight(tmp_path, "ops_readiness_probe", cfg, ["A"])
+
+    assert ok is False
+    assert payload["status"] == "FAIL"
+    assert payload["failed_blocker_codes"] == ["PROVIDER_AUTH_REJECTED", "QUOTA_OR_BILLING_BLOCK"]
+    assert payload["rerun_worthiness"] == "worth_rerunning_after_fixes"
+    assert payload["failure_summary"][0]["readiness_blocker"]["blocker_code"] in {
+        "PROVIDER_AUTH_REJECTED",
+        "QUOTA_OR_BILLING_BLOCK",
+    }
