@@ -20,6 +20,9 @@ def build_candidate_detail(
     return {
         "recommendation_id": recommendation["recommendation_id"],
         "case_id": attempt["case_id"],
+        "benchmark_mode": attempt["benchmark_mode"],
+        "candidate_type": attempt["candidate_type"],
+        "execution_family": attempt["execution_family"],
         "route_id": recommendation["route_id"],
         "surface_id": recommendation["surface_id"],
         "surface_class": attempt["surface_class"],
@@ -39,6 +42,7 @@ def build_candidate_detail(
         "evidence_bundle_ref": bundle["bundle_id"],
         "latest_governance_decision": latest_governance_decision,
         "unresolved_unknowns": attempt.get("unknowns_open", []),
+        "lane_boundary_note": "runtime_route evidence is distinct from direct_model evidence and profile_synthesis_input is downstream-only",
         "phase_caveat": "phase_s_policy_sensitive" if case.get("validator_suite_id") == "validators_phase_s_advisory_v1" else None,
         "explanation_chain": build_explanation_chain(
             recommendation=recommendation,

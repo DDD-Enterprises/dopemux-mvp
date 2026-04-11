@@ -12,7 +12,9 @@ from ..executors.fl_int_adapter import FLIntAdapter
 from ..executors.phase_s_adapter import PhaseSAdapter
 from ..executors.prescan_adapter import PrescanAdapter
 from ..models.entities import BenchmarkCaseAttempt, BenchmarkRun, ControlDelta, ValidatorResult
+from ..models.enums import BenchmarkMode
 from ..models.ids import synthetic_id, synthetic_run_id, utc_now_iso
+from ..models.lane_contracts import build_runtime_route_attempt_payload
 from ..registry.registry_loader import seed_registry
 from ..storage.bundle_writer import EvidenceBundleWriter
 from ..storage.hashing import hash_json
@@ -234,6 +236,11 @@ class AttemptExecutor:
             case = self.repo.fetch_benchmark_case(assignment.case_id)
             if case is None:
                 raise RuntimeError(f"missing benchmark case {assignment.case_id}")
+            if str(case.get("benchmark_mode") or BenchmarkMode.RUNTIME_ROUTE.value) != BenchmarkMode.RUNTIME_ROUTE.value:
+                raise RuntimeError(
+                    f"AttemptExecutor only supports runtime_route cases; {assignment.case_id} is "
+                    f"{case.get('benchmark_mode')}"
+                )
             route_record = self.repo.fetch_route(assignment.candidate.route_id)
             if route_record is None:
                 raise RuntimeError(f"missing route record {assignment.candidate.route_id}")
@@ -267,6 +274,23 @@ class AttemptExecutor:
                 benchmark_paths(self.root).root / "work" / benchmark_run_id / assignment.case_id / assignment.candidate.route_id,
             )
             validation = validator.validate(execution, case)
+            runtime_route_attempt = build_runtime_route_attempt_payload(
+                declared_route_id=assignment.candidate.route_id,
+                route_trace=execution.route_trace,
+                route_telemetry_refs=[
+                    "ROUTE_TRACE.json",
+                    *(
+                        ref
+                        for ref in (
+                            "outputs/STEP_METRICS.json" if "STEP_METRICS.json" in execution.outputs else "",
+                            "outputs/RUN_ROUTING_FINGERPRINT.json" if "RUN_ROUTING_FINGERPRINT.json" in execution.outputs else "",
+                            "outputs/ROUTING_LOG.json" if "ROUTING_LOG.json" in execution.outputs else "",
+                        )
+                        if ref
+                    ),
+                ],
+                admissibility_status="not_evaluated",
+            )
 
             attempt = BenchmarkCaseAttempt(
                 case_attempt_id=case_attempt_id,
@@ -274,6 +298,9 @@ class AttemptExecutor:
                 case_id=assignment.case_id,
                 case_version=int(case["case_version"]),
                 case_set_id=str(case_set["case_set_id"]),
+                benchmark_mode=str(case["benchmark_mode"]),
+                candidate_type=str(case["candidate_type"]),
+                execution_family=str(case["execution_family"]),
                 archetype_id=assignment.archetype_id,
                 phase_or_step_family=str(case["phase_or_step_family"]),
                 surface_class=assignment.candidate.surface_class,
@@ -293,6 +320,11 @@ class AttemptExecutor:
                 max_tokens_or_budget=4096,
                 tool_mode="disabled",
                 batch_mode="sync",
+                route_distinctness_required=bool(case.get("route_distinctness_required", False)),
+                pricing_relevant=bool(case.get("pricing_relevant", False)),
+                governance_relevant=bool(case.get("governance_relevant", True)),
+                governance_blockers_apply_directly=bool(case.get("governance_blockers_apply_directly", True)),
+                runtime_route_attempt=runtime_route_attempt,
                 contract_gate_pass=execution.contract_gate_pass,
                 contract_gate_strength=execution.contract_gate_strength,
                 contract_fail_reason=execution.contract_fail_reason,

@@ -22,6 +22,24 @@ class SurfaceClass(StrEnum):
     LOCAL_OR_OPEN_WEIGHT = "local_or_open_weight"
 
 
+class BenchmarkMode(StrEnum):
+    DIRECT_MODEL = "direct_model"
+    RUNTIME_ROUTE = "runtime_route"
+    PROFILE_SYNTHESIS_INPUT = "profile_synthesis_input"
+
+
+class CandidateType(StrEnum):
+    MODEL_CANDIDATE = "model_candidate"
+    ROUTE_CANDIDATE = "route_candidate"
+    PROFILE_CANDIDATE = "profile_candidate"
+
+
+class ExecutionFamily(StrEnum):
+    DIRECT_API_EXECUTION = "direct_api_execution"
+    RUNTIME_INTEGRATED_EXECUTION = "runtime_integrated_execution"
+    DOWNSTREAM_SYNTHESIS = "downstream_synthesis"
+
+
 class EvidenceClass(StrEnum):
     METADATA_ONLY = "METADATA_ONLY"
     MIXED_EVIDENCE = "MIXED_EVIDENCE"

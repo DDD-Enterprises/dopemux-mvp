@@ -21,6 +21,9 @@ def test_attempt_execution_smoke_persists_attempts_and_bundle_linkage(tmp_path: 
     assert report["db_row_counts"]["validator_result"] == 6
     assert report["db_row_counts"]["evidence_bundle"] == 6
     assert report["sample_attempt"]["validator_pass"] is True
+    assert report["sample_attempt"]["benchmark_mode"] == "runtime_route"
+    assert report["sample_attempt"]["candidate_type"] == "route_candidate"
+    assert report["sample_attempt"]["runtime_route_attempt"]["effective_route_signature_hash"]
     assert report["sample_route_trace"]["execution_mode"]
     assert (proof_dir / "sample_validator_results.json").exists()
 

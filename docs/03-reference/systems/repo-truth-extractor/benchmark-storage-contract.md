@@ -54,6 +54,18 @@ M1 extends the same catalog with frozen registry truth for:
 - `benchmark_case`
 - `benchmark_case_set`
 
+SPLIT-001 formalizes benchmark lane separation in the control plane:
+
+- `runtime_route`: executable runtime-under-test evidence
+- `direct_model`: executable direct provider/model evidence without route truth claims
+- `profile_synthesis_input`: downstream synthesis input that references upstream evidence and is not stored as a raw attempt
+
+Candidate typing is explicit and not inferred from naming:
+
+- `route_candidate`
+- `model_candidate`
+- `profile_candidate`
+
 Registry capture rules:
 
 1. Snapshots are built from real repo-truth files, not invented payloads.
@@ -62,7 +74,9 @@ Registry capture rules:
 4. `validator_suite` may carry weaker-contract caveat notes for `phase_s` and schema-driven notes for FL_INT.
 5. Control anchors remain separate from candidate routes; anchor groups do not collapse the two.
 6. Case definitions link to one archetype, one validator suite, one contract snapshot, and declared surface scope.
-7. Case-set definitions link to fixed case ids and one control-anchor group.
+7. Case definitions now declare `benchmark_mode`, `candidate_type`, `execution_family`, route-distinctness relevance, pricing relevance, and governance relevance explicitly.
+8. `profile_synthesis_input` remains downstream-only and must reference upstream attempt or rollup ids rather than masquerading as a raw execution row.
+9. Case-set definitions link to fixed case ids and one control-anchor group when the lane requires route-control comparison.
 
 Real repo-truth sources used by M1 include:
 
@@ -190,6 +204,32 @@ And they write real execution-linked artifacts for:
 
 M2 remains fail-closed on structural validation failures and still does not add scoring formulas, rollups, profile synthesis, or recommendation logic.
 
+SPLIT-001 keeps the existing runtime-route execution spine intact while making the lane boundary explicit:
+
+1. `benchmark_case` and `benchmark_case_attempt` declare `benchmark_mode`, `candidate_type`, and `execution_family`.
+2. Runtime-route attempts carry explicit `runtime_route_attempt` payloads with declared route identity, selected route identity, effective route signature, signature hash, admissibility status, and telemetry refs.
+3. Direct-model attempts are a separate structural shape with declared and selected provider/model identity plus pricing and latency refs.
+4. `profile_synthesis_input` is represented as downstream referenced input and is not a `benchmark_case_attempt`.
+5. Scoring, governance synthesis, and operator reporting are runtime-route scoped and fail closed rather than mixing direct-model evidence into route/profile truth.
+
+DMB-001 adds the first bounded executable `direct_model` lane on top of the split:
+
+1. Fixed MVP candidates may be preflighted and executed directly against provider adapters without routing through runtime-route semantics.
+2. Direct-model attempts remain `model_candidate` rows with `direct_api_execution`; they do not populate route identity, admissibility, or profile truth claims.
+3. Retry policy is bounded to one transport/provider retry only; semantic or validator failures remain benchmark failures.
+4. Spend guard semantics remain explicit: measured spend, catalog-derived expected spend, partial estimate, and unknown spend are not flattened into one truth field.
+5. Direct-model reporting artifacts are lane-specific and must preserve the disclaimer that they support admission, schema survivability, latency, and spend comparison only.
+
+Direct-model proof and comparison artifact names introduced by DMB-001:
+
+- `DIRECT_MODEL_CAMPAIGN_MANIFEST.json`
+- `DIRECT_MODEL_MATRIX.json`
+- `DIRECT_MODEL_RETRY_POLICY.json`
+- `DIRECT_MODEL_SPEND_GUARD.json`
+- `DIRECT_MODEL_COMPARISON.json`
+- `DIRECT_MODEL_SUMMARY__<MODEL>.json`
+- `DIRECT_MODEL_FAILURES.json`
+
 M3 adds the measurement and aggregation spine on top of persisted M2 attempts:
 
 - contract gate finalization from persisted validator results
@@ -276,6 +316,7 @@ M5 reporting rules:
 5. Portfolio summaries remain matrix-like and do not become winner-take-all rankings.
 6. `phase_s` caveats must remain visible in candidate detail views where relevant.
 7. Governance history is reconstructed from append-only decisions plus run-scoped recommendation rows; recommendation history is not yet a first-class persisted table.
+8. Reporting must preserve benchmark lane boundaries explicitly; runtime-route summaries cannot be used as a synonym for direct-model evidence, and profile synthesis remains downstream-only.
 
 Derived M5 reporting artifact names:
 

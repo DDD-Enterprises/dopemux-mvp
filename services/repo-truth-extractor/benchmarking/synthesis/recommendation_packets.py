@@ -20,6 +20,8 @@ def build_governance_packet(
     return {
         "recommendation_id": recommendation["recommendation_id"],
         "benchmark_run_id": recommendation["benchmark_run_id"],
+        "benchmark_mode": recommendation["benchmark_mode"],
+        "candidate_type": recommendation["candidate_type"],
         "route_id": recommendation["route_id"],
         "surface_id": recommendation["surface_id"],
         "archetype_id": recommendation["archetype_id"],
@@ -40,6 +42,9 @@ def build_governance_packet(
             "case_id": attempt["case_id"],
             "case_version": attempt["case_version"],
             "case_title": case.get("title"),
+            "benchmark_mode": attempt["benchmark_mode"],
+            "candidate_type": attempt["candidate_type"],
+            "execution_family": attempt["execution_family"],
             "surface_class": attempt["surface_class"],
             "profile_id": attempt["profile_id"],
             "validator_suite_id": attempt["validator_suite_id"],

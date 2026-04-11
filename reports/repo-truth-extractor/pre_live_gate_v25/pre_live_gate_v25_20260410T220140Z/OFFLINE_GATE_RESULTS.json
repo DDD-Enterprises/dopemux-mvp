@@ -1,0 +1,600 @@
+{
+  "contract_map_determinism": {
+    "expected_target_keys": [
+      "A:A0",
+      "A:A1",
+      "A:A10",
+      "A:A11",
+      "A:A12",
+      "A:A13",
+      "A:A2",
+      "A:A3",
+      "A:A4",
+      "A:A5",
+      "A:A6",
+      "A:A7",
+      "A:A8",
+      "A:A9",
+      "A:A99"
+    ],
+    "hash_one": "25d6848ff0c5aaeb4f8700546a8341f68b2acea740f886cd3dc4eeab14de85c7",
+    "hash_two": "25d6848ff0c5aaeb4f8700546a8341f68b2acea740f886cd3dc4eeab14de85c7",
+    "layer": "contract_map_determinism",
+    "observed_target_keys": [
+      "A:A0",
+      "A:A1",
+      "A:A10",
+      "A:A11",
+      "A:A12",
+      "A:A13",
+      "A:A2",
+      "A:A3",
+      "A:A4",
+      "A:A5",
+      "A:A6",
+      "A:A7",
+      "A:A8",
+      "A:A9",
+      "A:A99"
+    ],
+    "status": "PASS"
+  },
+  "critical_tests": {
+    "layer": "critical_tests",
+    "paths": [
+      "services/repo-truth-extractor/tests/test_live_llm_guard.py",
+      "services/repo-truth-extractor/tests/test_phase_d_contract_map.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_soft_gate_logging.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py"
+    ],
+    "returncode": 0,
+    "status": "PASS",
+    "stderr": "",
+    "stdout": "============================= test session starts ==============================\nplatform darwin -- Python 3.11.13, pytest-8.4.2, pluggy-1.6.0\nrootdir: /Users/hue/code/dopemux-mvp\nconfigfile: pytest.ini\nplugins: mock-3.15.1, langsmith-0.4.30, anyio-4.11.0, hypothesis-6.138.1, cov-6.2.1, asyncio-1.3.0, libtmux-0.46.2, locust-2.42.2\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function\ncollected 15 items\n\nservices/repo-truth-extractor/tests/test_live_llm_guard.py ......        [ 40%]\nservices/repo-truth-extractor/tests/test_phase_d_contract_map.py .....   [ 73%]\nservices/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py . [ 80%]\n                                                                         [ 80%]\nservices/repo-truth-extractor/tests/test_run_extraction_v5_soft_gate_logging.py . [ 86%]\n.                                                                        [ 93%]\nservices/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py . [100%]\n\n============================== 15 passed in 2.26s ==============================\n"
+  },
+  "import_cli_smoke": {
+    "cli_help_ok": true,
+    "compile_ok": true,
+    "layer": "import_cli_smoke",
+    "status": "PASS"
+  },
+  "route_derived_readiness": {
+    "api_key_env_categories": {
+      "configured_not_required": [
+        "GEMINI_API_KEY",
+        "OPENAI_API_KEY",
+        "XAI_API_KEY"
+      ],
+      "optional_fallback": [
+        "XAI_API_KEY"
+      ],
+      "required_active_route": [
+        "OPENROUTER_API_KEY",
+        "XAI_API_KEY"
+      ]
+    },
+    "bounded_target_scope": true,
+    "configured_not_required_api_key_envs": [
+      "GEMINI_API_KEY",
+      "OPENAI_API_KEY",
+      "XAI_API_KEY"
+    ],
+    "derived_routes": [
+      {
+        "active_route_required": false,
+        "api_key_env": "GEMINI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "gemini-3-flash-preview",
+        "optional_fallback": false,
+        "provider": "gemini",
+        "requirement_level": "configured_not_required",
+        "route_signature": "gemini:gemini-3-flash-preview:GEMINI_API_KEY",
+        "steps": []
+      },
+      {
+        "active_route_required": false,
+        "api_key_env": "OPENAI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "gpt-5-mini",
+        "optional_fallback": false,
+        "provider": "openai",
+        "requirement_level": "configured_not_required",
+        "route_signature": "openai:gpt-5-mini:OPENAI_API_KEY",
+        "steps": []
+      },
+      {
+        "active_route_required": false,
+        "api_key_env": "OPENAI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "gpt-5-nano",
+        "optional_fallback": false,
+        "provider": "openai",
+        "requirement_level": "configured_not_required",
+        "route_signature": "openai:gpt-5-nano:OPENAI_API_KEY",
+        "steps": []
+      },
+      {
+        "active_route_required": false,
+        "api_key_env": "OPENAI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "gpt-5.2",
+        "optional_fallback": false,
+        "provider": "openai",
+        "requirement_level": "configured_not_required",
+        "route_signature": "openai:gpt-5.2:OPENAI_API_KEY",
+        "steps": []
+      },
+      {
+        "active_route_required": true,
+        "api_key_env": "OPENROUTER_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "openai/gpt-5.3-codex",
+        "optional_fallback": false,
+        "provider": "openrouter",
+        "requirement_level": "required_active_route",
+        "route_signature": "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A0"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A1"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A11"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A12"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A13"
+          }
+        ]
+      },
+      {
+        "active_route_required": true,
+        "api_key_env": "OPENROUTER_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": false,
+        "model_id": "openai/gpt-5.4",
+        "optional_fallback": true,
+        "provider": "openrouter",
+        "requirement_level": "required_active_route",
+        "route_signature": "openrouter:openai/gpt-5.4:OPENROUTER_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A0"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A1"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A11"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A12"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A13"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 1,
+            "phase": "A",
+            "step_id": "A99"
+          }
+        ]
+      },
+      {
+        "active_route_required": false,
+        "api_key_env": "XAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": false,
+        "model_id": "grok-4.20-beta-0309-non-reasoning",
+        "optional_fallback": true,
+        "provider": "xai",
+        "requirement_level": "optional_fallback",
+        "route_signature": "xai:grok-4.20-beta-0309-non-reasoning:XAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A2"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A3"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A4"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A5"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A6"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A7"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A8"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A9"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A10"
+          }
+        ]
+      },
+      {
+        "active_route_required": true,
+        "api_key_env": "XAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "grok-4.20-beta-0309-reasoning",
+        "optional_fallback": false,
+        "provider": "xai",
+        "requirement_level": "required_active_route",
+        "route_signature": "xai:grok-4.20-beta-0309-reasoning:XAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A2"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A3"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A4"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A5"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A6"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A7"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A8"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A9"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A10"
+          }
+        ]
+      },
+      {
+        "active_route_required": false,
+        "api_key_env": "XAI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "grok-code-fast-1",
+        "optional_fallback": false,
+        "provider": "xai",
+        "requirement_level": "configured_not_required",
+        "route_signature": "xai:grok-code-fast-1:XAI_API_KEY",
+        "steps": []
+      }
+    ],
+    "fallback_api_key_envs": [
+      "XAI_API_KEY"
+    ],
+    "layer": "route_derived_readiness",
+    "missing_api_key_envs": [],
+    "missing_fallback_api_key_envs": [],
+    "missing_required_direct_providers": [],
+    "present_providers": [
+      "gemini",
+      "openai",
+      "openrouter",
+      "xai"
+    ],
+    "provider_categories": {
+      "configured_not_required": [
+        "gemini",
+        "openai",
+        "xai"
+      ],
+      "optional_fallback": [
+        "xai"
+      ],
+      "required_active_route": [
+        "openrouter",
+        "xai"
+      ]
+    },
+    "required_api_key_envs": [
+      "OPENROUTER_API_KEY",
+      "XAI_API_KEY"
+    ],
+    "required_direct_providers": [],
+    "status": "PASS"
+  },
+  "target_prompt_integrity": {
+    "layer": "target_prompt_integrity",
+    "phase_prompt_views": {
+      "A": {
+        "blocked_promptset": false,
+        "missing_prompts_count": 0,
+        "phase": "A",
+        "prompt_failures": [],
+        "prompt_failures_count": 0,
+        "prompt_hash_errors": [],
+        "prompt_hash_mode": "strict",
+        "prompt_hashes": [
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+            "prompt_id": "A0",
+            "sha256": "53a3cee4d1fb9703646e255923eae93981c6a69095fec886f1bf5f0772dfbf25"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A10_LEANTIME_SURFACE.md",
+            "prompt_id": "A10",
+            "sha256": "815b4df682b167f366fe05b0c2417cd2d5110a36723857cf62fc71d2c3625db8"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A11_EDITOR_INTEGRATION_SURFACES.md",
+            "prompt_id": "A11",
+            "sha256": "8ce772f7bf33c8cf9f4fc9a1340781f1690ade7092b96a9cb4c8abd62a983c88"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A12_CLI_COMMAND_SURFACE.md",
+            "prompt_id": "A12",
+            "sha256": "6a0a4499ab0b1de2e853020bae2692254afefbdf03f5ccb0a5b5bb33de65f3e1"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A13_HOOK_CONTRACT_SURFACE.md",
+            "prompt_id": "A13",
+            "sha256": "deb184fc6779d963e6016a1dfe0c81435022f4bcdab0b2c5866d1dd8dbbc4ca3"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md",
+            "prompt_id": "A1",
+            "sha256": "fa771ebfd985b3344eef6a5cacb78dfbcdd97edd18c3474860f045420dbbb1d5"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md",
+            "prompt_id": "A2",
+            "sha256": "8fe64d84b1c13f50b0b310e319e0259bb9127faa11f1813812d22ea71997b1c3"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md",
+            "prompt_id": "A3",
+            "sha256": "ffdd5f3dd4400a9b9fb489fb95a27d12657a635c1694896e05e64d59c57b07cf"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
+            "prompt_id": "A4",
+            "sha256": "d0b43469d66572f6ddc634abf864247c8c008650ef045b6623997df653441ec3"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
+            "prompt_id": "A5",
+            "sha256": "c7c9da8c24d65a0e112c79e9587550d5f0ddd7a5a5fa5eed0e735bc47bc0e293"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+            "prompt_id": "A6",
+            "sha256": "ac2b56bf389cdbccf99c9234a4ed43177f820212dc987590ca725ace51132f42"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md",
+            "prompt_id": "A7",
+            "sha256": "382261117b8a3b46c624cc08e422d5ad54a676782cf6608e2c71da9b409dcf97"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md",
+            "prompt_id": "A8",
+            "sha256": "331462b1dd4ad1efae7762f1a8a53605abc6f5d55955e863958d823bd4e71289"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md",
+            "prompt_id": "A99",
+            "sha256": "344904fdce94494a9558032544b307d943e320a0f753396efe262857301f18e8"
+          },
+          {
+            "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+            "prompt_id": "A9",
+            "sha256": "c430e8186df14f97fb0e4393f0c44aae72d0853b2556ae3725f105dd24286d55"
+          }
+        ],
+        "prompt_missing": [],
+        "prompt_unreadable": [],
+        "promptset_sha256": "bfcbda552151e726ef4242381a8f04b9e2a1d8ee81ba9f776684ff7705360c69",
+        "unreadable_prompts_count": 0
+      }
+    },
+    "promptset_fingerprint": {
+      "blocked_promptset": false,
+      "details": {
+        "A": {
+          "blocked_promptset": false,
+          "missing_prompts_count": 0,
+          "phase": "A",
+          "prompt_failures": [],
+          "prompt_failures_count": 0,
+          "prompt_hash_errors": [],
+          "prompt_hash_mode": "strict",
+          "prompt_hashes": [
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+              "prompt_id": "A0",
+              "sha256": "53a3cee4d1fb9703646e255923eae93981c6a69095fec886f1bf5f0772dfbf25"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A10_LEANTIME_SURFACE.md",
+              "prompt_id": "A10",
+              "sha256": "815b4df682b167f366fe05b0c2417cd2d5110a36723857cf62fc71d2c3625db8"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A11_EDITOR_INTEGRATION_SURFACES.md",
+              "prompt_id": "A11",
+              "sha256": "8ce772f7bf33c8cf9f4fc9a1340781f1690ade7092b96a9cb4c8abd62a983c88"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A12_CLI_COMMAND_SURFACE.md",
+              "prompt_id": "A12",
+              "sha256": "6a0a4499ab0b1de2e853020bae2692254afefbdf03f5ccb0a5b5bb33de65f3e1"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A13_HOOK_CONTRACT_SURFACE.md",
+              "prompt_id": "A13",
+              "sha256": "deb184fc6779d963e6016a1dfe0c81435022f4bcdab0b2c5866d1dd8dbbc4ca3"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md",
+              "prompt_id": "A1",
+              "sha256": "fa771ebfd985b3344eef6a5cacb78dfbcdd97edd18c3474860f045420dbbb1d5"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md",
+              "prompt_id": "A2",
+              "sha256": "8fe64d84b1c13f50b0b310e319e0259bb9127faa11f1813812d22ea71997b1c3"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md",
+              "prompt_id": "A3",
+              "sha256": "ffdd5f3dd4400a9b9fb489fb95a27d12657a635c1694896e05e64d59c57b07cf"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
+              "prompt_id": "A4",
+              "sha256": "d0b43469d66572f6ddc634abf864247c8c008650ef045b6623997df653441ec3"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
+              "prompt_id": "A5",
+              "sha256": "c7c9da8c24d65a0e112c79e9587550d5f0ddd7a5a5fa5eed0e735bc47bc0e293"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+              "prompt_id": "A6",
+              "sha256": "ac2b56bf389cdbccf99c9234a4ed43177f820212dc987590ca725ace51132f42"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md",
+              "prompt_id": "A7",
+              "sha256": "382261117b8a3b46c624cc08e422d5ad54a676782cf6608e2c71da9b409dcf97"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md",
+              "prompt_id": "A8",
+              "sha256": "331462b1dd4ad1efae7762f1a8a53605abc6f5d55955e863958d823bd4e71289"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md",
+              "prompt_id": "A99",
+              "sha256": "344904fdce94494a9558032544b307d943e320a0f753396efe262857301f18e8"
+            },
+            {
+              "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+              "prompt_id": "A9",
+              "sha256": "c430e8186df14f97fb0e4393f0c44aae72d0853b2556ae3725f105dd24286d55"
+            }
+          ],
+          "prompt_missing": [],
+          "prompt_unreadable": [],
+          "promptset_sha256": "bfcbda552151e726ef4242381a8f04b9e2a1d8ee81ba9f776684ff7705360c69",
+          "unreadable_prompts_count": 0
+        }
+      }
+    },
+    "status": "PASS"
+  },
+  "truth_split_audit": {
+    "repo_wide_mismatch_count": 0,
+    "target_phase_mismatch_count": 0
+  }
+}

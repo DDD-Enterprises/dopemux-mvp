@@ -29,4 +29,7 @@ def test_case_registry_seed_persists_and_loads_cases(tmp_path: Path) -> None:
     assert strict_case["contract_snapshot_id"] == bundle.contract_snapshot.contract_snapshot_id
     assert strict_case["validator_suite_id"] == "validators_runtime_strict_json_v1"
     assert strict_case["surface_scope"] == ["openrouter_routed"]
-
+    assert strict_case["benchmark_mode"] == "runtime_route"
+    assert strict_case["candidate_type"] == "route_candidate"
+    assert strict_case["execution_family"] == "runtime_integrated_execution"
+    assert strict_case["route_distinctness_required"] is True

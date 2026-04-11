@@ -54,8 +54,11 @@ def test_bundle_writer_creates_expected_tree_and_hashes(tmp_path: Path) -> None:
     assert attempt_paths_obj.evidence_manifest_path.exists()
 
     evidence_manifest = json.loads(attempt_paths_obj.evidence_manifest_path.read_text(encoding="utf-8"))
+    attempt_summary = json.loads(attempt_paths_obj.attempt_summary_path.read_text(encoding="utf-8"))
     assert evidence_manifest["bundle_id"] == attempt.evidence_bundle_id
     assert evidence_manifest["artifact_hashes"] == written.artifact_hashes
+    assert attempt_summary["benchmark_mode"] == "runtime_route"
+    assert attempt_summary["candidate_type"] == "route_candidate"
     assert all(len(value) == 64 for value in written.artifact_hashes.values())
 
 
@@ -101,4 +104,3 @@ def test_bundle_writer_refuses_non_deterministic_overwrite(tmp_path: Path) -> No
         assert "immutable benchmark artifact" in str(exc)
     else:
         raise AssertionError("expected immutable overwrite refusal")
-
