@@ -6716,6 +6716,15 @@ def run_provider_doctor_probe(
             fallback_output_tokens=projected_output_tokens,
             route=route_token,
         )
+    readiness_blocker = classify_provider_readiness_blocker(
+        provider=provider,
+        model_id=model_id,
+        api_key_env=resolved_api_key_env or api_key_env,
+        api_key_present=bool(api_key),
+        status_code=meta.get("status_code"),
+        failure_type=meta.get("failure_type"),
+        provider_error_reason=meta.get("provider_error_reason"),
+    )
     return {
         "provider": provider,
         "model_id": model_id,
@@ -6739,6 +6748,8 @@ def run_provider_doctor_probe(
             meta.get("gemini_auth_mode_effective") if provider == "gemini" else None
         ),
         "gemini_auth_attempt_sequence": auth_sequence if provider == "gemini" else None,
+        "ready": bool(readiness_blocker["ready"]),
+        "readiness_blocker": readiness_blocker,
     }
 
 
@@ -6811,8 +6822,7 @@ def run_provider_preflight(
     failures = [
         probe
         for probe in provider_probes
-        if probe.get("status_code") != 200
-        or is_auth_classified_failure(probe.get("failure_type"))
+        if not bool(probe.get("ready"))
     ]
     failure_summary: List[Dict[str, Any]] = []
     for probe in failures:
@@ -6835,9 +6845,27 @@ def run_provider_preflight(
                 "failure_type": probe.get("failure_type"),
                 "status_code": probe.get("status_code"),
                 "provider_signature": probe.get("provider_signature"),
+                "readiness_blocker": probe.get("readiness_blocker"),
                 "remediation": remediation,
             }
         )
+    blocker_codes = sorted(
+        {
+            str(blocker.get("blocker_code"))
+            for probe in failures
+            if isinstance((blocker := probe.get("readiness_blocker")), dict)
+            and str(blocker.get("blocker_code"))
+        }
+    )
+    rerun_worthiness = (
+        "worth_rerunning_after_fixes"
+        if failures
+        and all(
+            str((probe.get("readiness_blocker") or {}).get("rerun_worthiness", "")).startswith("rerun_after_")
+            for probe in failures
+        )
+        else ("ready_now" if not failures else "not_until_root_caused")
+    )
     payload = {
         "generated_at": now_iso(),
         "run_id": run_id,
@@ -6845,7 +6873,9 @@ def run_provider_preflight(
         "routes": provider_routes,
         "probes": provider_probes,
         "failed_providers": [probe.get("provider") for probe in failures],
+        "failed_blocker_codes": blocker_codes,
         "failure_summary": failure_summary,
+        "rerun_worthiness": rerun_worthiness,
         "routing_policy": cfg.routing_policy,
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "batch_capability": batch_capability,
@@ -8882,6 +8912,85 @@ def classify_failure_type(
     if "timeout" in joined or "timed out" in joined or "connection" in joined or "network" in joined:
         return "network"
     return "unknown"
+
+
+def classify_provider_readiness_blocker(
+    *,
+    provider: str,
+    model_id: str,
+    api_key_env: str,
+    api_key_present: bool,
+    status_code: Optional[int],
+    failure_type: Optional[str],
+    provider_error_reason: Optional[str],
+) -> Dict[str, Any]:
+    normalized_failure = str(failure_type or "").strip()
+    normalized_reason = str(provider_error_reason or "").strip().lower()
+    blocker_code = "READY"
+    blocker_class = "ready"
+    remediation_class = "none"
+    rerun_worthiness = "ready_now"
+    human_summary = "Provider route is live-ready."
+
+    if not api_key_present or normalized_failure == "auth_missing":
+        blocker_code = "API_KEY_MISSING"
+        blocker_class = "env"
+        remediation_class = "set_or_export_api_key"
+        rerun_worthiness = "rerun_after_env_fix"
+        human_summary = (
+            f"Required API key env `{api_key_env}` is missing for provider `{provider}` model `{model_id}`."
+        )
+    elif normalized_failure == "auth_expired":
+        blocker_code = "API_KEY_EXPIRED"
+        blocker_class = "auth"
+        remediation_class = "rotate_provider_credentials"
+        rerun_worthiness = "rerun_after_auth_fix"
+        human_summary = f"Provider credential appears expired for `{provider}` model `{model_id}`."
+    elif normalized_failure in {"api_key_missing_or_invalid", "auth_rejected", "permission_denied"}:
+        blocker_code = "PROVIDER_AUTH_REJECTED"
+        blocker_class = "auth"
+        remediation_class = "fix_provider_credentials_or_permissions"
+        rerun_worthiness = "rerun_after_auth_fix"
+        human_summary = f"Provider rejected the configured credential for `{provider}` model `{model_id}`."
+    elif (
+        normalized_failure == "quota_or_billing"
+        or status_code == 402
+        or "billing" in normalized_reason
+        or "insufficient_quota" in normalized_reason
+        or "insufficient_credits" in normalized_reason
+    ):
+        blocker_code = "QUOTA_OR_BILLING_BLOCK"
+        blocker_class = "quota_billing"
+        remediation_class = "restore_quota_or_billing"
+        rerun_worthiness = "rerun_after_billing_fix"
+        human_summary = f"Provider quota or billing is blocking live readiness for `{provider}` model `{model_id}`."
+    elif normalized_failure == "rate_limit":
+        blocker_code = "RATE_LIMITED"
+        blocker_class = "capacity"
+        remediation_class = "retry_after_capacity_window"
+        rerun_worthiness = "rerun_after_backoff"
+        human_summary = f"Provider rate limiting is blocking live readiness for `{provider}` model `{model_id}`."
+    elif normalized_failure == "network":
+        blocker_code = "NETWORK_OR_TRANSPORT_BLOCK"
+        blocker_class = "network"
+        remediation_class = "stabilize_network_or_transport"
+        rerun_worthiness = "rerun_after_transport_fix"
+        human_summary = f"Network or transport failure blocked live readiness for `{provider}` model `{model_id}`."
+    elif normalized_failure in {"payload", "provider", "unknown"}:
+        blocker_code = "AMBIGUOUS_PROVIDER_BLOCK"
+        blocker_class = "ambiguous"
+        remediation_class = "inspect_provider_response"
+        rerun_worthiness = "not_until_root_caused"
+        human_summary = f"Provider readiness failed ambiguously for `{provider}` model `{model_id}`."
+
+    return {
+        "ready": blocker_code == "READY",
+        "blocker_code": blocker_code,
+        "blocker_class": blocker_class,
+        "remediation_class": remediation_class,
+        "rerun_worthiness": rerun_worthiness,
+        "human_summary": human_summary,
+    }
 
 
 def extract_provider_error_reason(response_body: str) -> Optional[str]:
