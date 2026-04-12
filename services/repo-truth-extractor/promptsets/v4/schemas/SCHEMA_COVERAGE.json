@@ -1,0 +1,20 @@
+{
+  "schema": "PROMPT_SCHEMA_COVERAGE@v1",
+  "schema_directory": "services/repo-truth-extractor/promptsets/v4/schemas",
+  "tracked_prompt_count": 6,
+  "tracked_prompt_step_ids": ["C18", "C19", "C20", "C21", "G6", "G7"],
+  "schema_file_count": 6,
+  "schema_files": [
+    "C18_OBSERVABILITY_SURFACE.schema.json",
+    "C19_ERROR_HANDLING_PATTERNS.schema.json",
+    "C20_STATE_MANAGEMENT_SURFACE.schema.json",
+    "C21_PERFORMANCE_SURFACE.schema.json",
+    "G6_DEPENDENCY_HEALTH_SURFACE.schema.json",
+    "G7_TECHNICAL_DEBT_REGISTER.schema.json"
+  ],
+  "coverage_basis": "initial_packet_03_tranche",
+  "coverage_notes": [
+    "Directory did not exist before this packet.",
+    "This manifest measures the initial schema rollout only; runner hookup remains a separate concern."
+  ]
+}
