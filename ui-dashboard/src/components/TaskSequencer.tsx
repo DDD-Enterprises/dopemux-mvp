@@ -132,9 +132,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const resetTasks = () => {
-    const resetTasksState = INITIAL_TASKS.map((task) => ({ ...task }));
-    setTasks(resetTasksState);
-    setCurrentTaskId(resetTasksState[0].id);
+    const freshTasks = INITIAL_TASKS.map((task) => ({ ...task }));
+    setTasks(freshTasks);
+    setCurrentTaskId(freshTasks[0].id);
     setTaskTimer(0);
     setIsTimerRunning(false);
   };
