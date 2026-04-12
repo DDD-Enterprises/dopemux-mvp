@@ -1,10 +1,11 @@
 """
-Leantime JSON-RPC DopeconBridge for Dopemux
+Leantime JSON-RPC Integration Bridge for Dopemux
 
 This module provides a bridge between Dopemux and Leantime through JSON-RPC 2.0 API.
 Handles project management, task tracking, and ADHD-optimized workflows.
 """
 
+import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime
@@ -14,12 +15,8 @@ from typing import Any, Dict, List, Optional
 from core.config import Config
 from core.exceptions import DopemuxIntegrationError
 from core.monitoring import MetricsCollector
-try:
-    from src.utils.adhd_optimizations import ADHDTaskOptimizer
-    from src.utils.security import SecureTokenManager
-except ModuleNotFoundError:
-    from utils.adhd_optimizations import ADHDTaskOptimizer
-    from utils.security import SecureTokenManager
+from utils.adhd_optimizations import ADHDTaskOptimizer
+from utils.security import SecureTokenManager
 
 from .leantime_jsonrpc_client import LeantimeJSONRPCClient, create_leantime_client
 
@@ -342,13 +339,20 @@ class LeantimeBridge:
         Returns:
             Task details or None if not found
         """
-        if not self.api_client:
-            raise DopemuxIntegrationError("Not connected to Leantime")
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "leantime.rpc.tickets.getTicket",
+                    "arguments": {"ticketId": task_id},
+                },
+            }
+        )
 
-        response = await self.api_client.get_ticket(task_id)
-
-        if response.success and response.data:
-            task_data = response.data
+        if response.get("result", {}).get("content"):
+            task_data = json.loads(response["result"]["content"][0]["text"])
 
             return LeantimeTask(
                 id=task_data.get("id"),
@@ -374,29 +378,33 @@ class LeantimeBridge:
         Returns:
             Created task with ID or None if failed
         """
-        if not self.api_client:
-            raise DopemuxIntegrationError("Not connected to Leantime")
-
         # Apply ADHD optimizations before creation
         optimized_task = await self.adhd_optimizer.optimize_task(task)
 
-        response = await self.api_client.create_ticket(
-            headline=optimized_task.headline,
-            description=optimized_task.description,
-            project_id=optimized_task.project_id,
-            status=optimized_task.status.value,
-            priority=optimized_task.priority.value,
-            storypoints=optimized_task.story_points,
-            editorId=optimized_task.user_id,
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "leantime.rpc.tickets.addTicket",
+                    "arguments": {
+                        "headline": optimized_task.headline,
+                        "description": optimized_task.description,
+                        "projectId": optimized_task.project_id,
+                        "status": optimized_task.status.value,
+                        "priority": optimized_task.priority.value,
+                        "storypoints": optimized_task.story_points,
+                        "editorId": optimized_task.user_id,
+                    },
+                },
+            }
         )
 
-        if response.success and response.data:
-            result_data = response.data
-            if isinstance(result_data, dict) and result_data.get("success"):
+        if response.get("result", {}).get("content"):
+            result_data = json.loads(response["result"]["content"][0]["text"])
+            if result_data.get("success"):
                 optimized_task.id = result_data.get("ticketId")
-                return optimized_task
-            elif isinstance(result_data, int):  # Direct ticket ID returned
-                optimized_task.id = result_data
                 return optimized_task
 
         return None
@@ -411,22 +419,33 @@ class LeantimeBridge:
         Returns:
             True if update successful, False otherwise
         """
-        if not self.api_client:
-            raise DopemuxIntegrationError("Not connected to Leantime")
-
         if not task.id:
             raise ValueError("Task ID required for update")
 
-        response = await self.api_client.update_ticket(
-            ticket_id=task.id,
-            headline=task.headline,
-            description=task.description,
-            status=task.status.value,
-            priority=task.priority.value,
-            storypoints=task.story_points,
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "leantime.rpc.tickets.updateTicket",
+                    "arguments": {
+                        "ticketId": task.id,
+                        "headline": task.headline,
+                        "description": task.description,
+                        "status": task.status.value,
+                        "priority": task.priority.value,
+                        "storypoints": task.story_points,
+                    },
+                },
+            }
         )
 
-        return response.success
+        if response.get("result", {}).get("content"):
+            result_data = json.loads(response["result"]["content"][0]["text"])
+            return result_data.get("success", False)
+
+        return False
 
     async def delete_task(self, task_id: int) -> bool:
         """
@@ -438,12 +457,23 @@ class LeantimeBridge:
         Returns:
             True if deletion successful, False otherwise
         """
-        if not self.api_client:
-            raise DopemuxIntegrationError("Not connected to Leantime")
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "leantime.rpc.tickets.deleteTicket",
+                    "arguments": {"ticketId": task_id},
+                },
+            }
+        )
 
-        response = await self.api_client.delete_ticket(task_id)
+        if response.get("result", {}).get("content"):
+            result_data = json.loads(response["result"]["content"][0]["text"])
+            return result_data.get("success", False)
 
-        return response.success
+        return False
 
     # ADHD-Specific Methods
 
@@ -572,7 +602,6 @@ class LeantimeBridge:
             }
 
 
-            logger.error(f"Error: {e}")
 # Factory function for easy instantiation
 def create_leantime_bridge(config: Config) -> LeantimeBridge:
     """

@@ -1,5 +1,5 @@
 """
-Task-Master AI MCP DopeconBridge for Dopemux
+Task-Master AI MCP Integration Bridge for Dopemux
 
 This module provides integration with Claude-Task-Master AI for intelligent
 task decomposition, complexity analysis, and AI-powered project management.
@@ -136,17 +136,7 @@ class TaskMasterMCPClient:
         task_master_dir = Path(self.task_master_path)
         task_master_dir.mkdir(exist_ok=True)
 
-        # Create tasks directory
-        tasks_dir = task_master_dir / "tasks"
-        tasks_dir.mkdir(exist_ok=True)
-
-        # Create empty tasks.json if it doesn't exist
-        tasks_file = tasks_dir / "tasks.json"
-        if not tasks_file.exists():
-            with open(tasks_file, "w") as f:
-                json.dump({"tasks": [], "metadata": {}}, f, indent=2)
-
-        # Create config.json (after tasks so tests inspect latest dump)
+        # Create config.json
         config_file = task_master_dir / "config.json"
         if not config_file.exists():
             config_data = {
@@ -171,6 +161,16 @@ class TaskMasterMCPClient:
 
             with open(config_file, "w") as f:
                 json.dump(config_data, f, indent=2)
+
+        # Create tasks directory
+        tasks_dir = task_master_dir / "tasks"
+        tasks_dir.mkdir(exist_ok=True)
+
+        # Create empty tasks.json if it doesn't exist
+        tasks_file = tasks_dir / "tasks.json"
+        if not tasks_file.exists():
+            with open(tasks_file, "w") as f:
+                json.dump({"tasks": [], "metadata": {}}, f, indent=2)
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -222,10 +222,7 @@ class TaskMasterMCPClient:
                 },
             }
 
-            response = await self._send_mcp_request(
-                init_request,
-                allow_disconnected=True,
-            )
+            response = await self._send_mcp_request(init_request)
 
             if response.get("result"):
                 self._connected = True
@@ -246,20 +243,12 @@ class TaskMasterMCPClient:
         """Gracefully disconnect from Task-Master MCP server."""
         if self._process:
             try:
-                # Send shutdown notification (no response expected)
+                # Send shutdown notification
                 shutdown_request = {
                     "jsonrpc": "2.0",
                     "method": "notifications/shutdown",
                 }
-                try:
-                    request_json = json.dumps(shutdown_request) + "\n"
-                    self._process.stdin.write(request_json)
-                    self._process.stdin.flush()
-                except Exception as exc:
-                    logger.debug(
-                        "Task-Master shutdown notification skipped due to stream error: %s",
-                        exc,
-                    )
+                await self._send_mcp_request(shutdown_request)
 
                 # Terminate process
                 self._process.terminate()
@@ -280,11 +269,7 @@ class TaskMasterMCPClient:
         self._request_id += 1
         return self._request_id
 
-    async def _send_mcp_request(
-        self,
-        request: Dict[str, Any],
-        allow_disconnected: bool = False,
-    ) -> Dict[str, Any]:
+    async def _send_mcp_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """
         Send MCP request to Task-Master server.
 
@@ -294,9 +279,7 @@ class TaskMasterMCPClient:
         Returns:
             MCP response
         """
-        if not self._process:
-            raise DopemuxIntegrationError("Not connected to Task-Master")
-        if not self._connected and not allow_disconnected:
+        if not self._process or not self._connected:
             raise DopemuxIntegrationError("Not connected to Task-Master")
 
         try:
@@ -371,57 +354,50 @@ class TaskMasterMCPClient:
                 }
             )
 
-            content = response.get("result", {}).get("content")
-            if not content:
-                raise AIServiceError("Failed to parse PRD: empty response from Task-Master")
+            if response.get("result", {}).get("content"):
+                result_data = json.loads(response["result"]["content"][0]["text"])
 
-            text_payload = content[0].get("text") if isinstance(content[0], dict) else None
-            if not text_payload:
-                raise AIServiceError("Failed to parse PRD: malformed Task-Master payload")
+                # Parse tasks from result
+                tasks = []
+                for task_data in result_data.get("tasks", []):
+                    task = TaskMasterTask(
+                        id=task_data.get("id", ""),
+                        title=task_data.get("title", ""),
+                        description=task_data.get("description", ""),
+                        status=task_data.get("status", "pending"),
+                        priority=task_data.get("priority", 1),
+                        complexity_score=task_data.get("complexity"),
+                        estimated_hours=task_data.get("estimatedHours"),
+                        dependencies=task_data.get("dependencies", []),
+                        tags=task_data.get("tags", []),
+                        ai_analysis=task_data.get("aiAnalysis"),
+                    )
 
-            result_data = json.loads(text_payload)
+                    # Parse subtasks recursively
+                    if task_data.get("subtasks"):
+                        task.subtasks = self._parse_subtasks(task_data["subtasks"])
 
-            # Parse tasks from result
-            tasks = []
-            for task_data in result_data.get("tasks", []):
-                task = TaskMasterTask(
-                    id=task_data.get("id", ""),
-                    title=task_data.get("title", ""),
-                    description=task_data.get("description", ""),
-                    status=task_data.get("status", "pending"),
-                    priority=task_data.get("priority", 1),
-                    complexity_score=task_data.get("complexity"),
-                    estimated_hours=task_data.get("estimatedHours"),
-                    dependencies=task_data.get("dependencies", []),
-                    tags=task_data.get("tags", []),
-                    ai_analysis=task_data.get("aiAnalysis"),
+                    tasks.append(task)
+
+                return PRDAnalysis(
+                    project_name=project_name,
+                    version=result_data.get("version", "1.0"),
+                    requirements=result_data.get("requirements", []),
+                    tasks=tasks,
+                    complexity_summary=result_data.get("complexitySummary", {}),
+                    estimated_timeline=result_data.get("estimatedTimeline"),
+                    key_dependencies=result_data.get("keyDependencies", []),
+                    risk_factors=result_data.get("riskFactors", []),
                 )
 
-                # Parse subtasks recursively
-                if task_data.get("subtasks"):
-                    task.subtasks = self._parse_subtasks(task_data["subtasks"])
-
-                tasks.append(task)
-
-            return PRDAnalysis(
-                project_name=project_name,
-                version=result_data.get("version", "1.0"),
-                requirements=result_data.get("requirements", []),
-                tasks=tasks,
-                complexity_summary=result_data.get("complexitySummary", {}),
-                estimated_timeline=result_data.get("estimatedTimeline"),
-                key_dependencies=result_data.get("keyDependencies", []),
-                risk_factors=result_data.get("riskFactors", []),
-            )
-
-        except Exception as exc:
-            raise AIServiceError(f"Failed to parse PRD: {exc}") from exc
         finally:
             # Clean up temporary file
             try:
                 os.unlink(temp_file_path)
-            except Exception as exc:
-                logger.debug("Failed to remove temporary PRD file %s: %s", temp_file_path, exc)
+            except Exception:
+                pass
+
+        raise AIServiceError("Failed to parse PRD")
 
     def _parse_subtasks(self, subtasks_data: List[Dict]) -> List[TaskMasterTask]:
         """Parse subtasks recursively."""
@@ -712,7 +688,6 @@ class TaskMasterMCPClient:
                 "error": str(e),
             }
 
-            logger.error(f"Error: {e}")
     def get_available_providers(self) -> List[str]:
         """Get list of available AI providers with valid API keys."""
         available = []
