@@ -8,6 +8,8 @@ import sys
 import types
 from pathlib import Path
 
+import pytest
+
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[3]
@@ -449,6 +451,62 @@ def test_print_config_includes_route_readiness_summary() -> None:
     assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
     assert payload["effective_model_routing"]["A"]["scope"] == "representative_phase_default_not_step_authoritative"
+
+
+def test_print_config_reports_batch_mode_disabled_by_default() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--phase",
+            "A",
+            "--dry-run",
+            "--print-config",
+            "--run-id",
+            "tp6_batch_default_probe",
+            "--no-write-latest",
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    payload = json.loads(result.stdout)
+    assert payload["cli"]["batch_mode"] is False
+
+
+def test_run_phase_s_blocks_on_empty_r_outputs(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    root = tmp_path / "run"
+    dirs = {"root": root}
+    for phase in runner.PHASES:
+        phase_dir = root / runner.PHASE_DIR_NAMES[phase]
+        dirs[phase] = phase_dir
+        (phase_dir / "norm").mkdir(parents=True, exist_ok=True)
+        (phase_dir / "inputs").mkdir(parents=True, exist_ok=True)
+    (dirs["R"] / "norm" / "R0_CONTROL_PLANE_TRUTH_MAP.md").write_text("", encoding="utf-8")
+    monkeypatch.setattr(runner, "_run_phase_inner", lambda *args, **kwargs: None)
+    with pytest.raises(RuntimeError, match="minimum-quality R outputs"):
+        runner.run_phase_S(dirs, _make_cfg(runner))
+
+
+def test_run_phase_s_blocks_on_invalid_r_json(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    root = tmp_path / "run"
+    dirs = {"root": root}
+    for phase in runner.PHASES:
+        phase_dir = root / runner.PHASE_DIR_NAMES[phase]
+        dirs[phase] = phase_dir
+        (phase_dir / "norm").mkdir(parents=True, exist_ok=True)
+        (phase_dir / "inputs").mkdir(parents=True, exist_ok=True)
+    (dirs["R"] / "norm" / "R_ARBITRATION.json").write_text("{not-json", encoding="utf-8")
+    monkeypatch.setattr(runner, "_run_phase_inner", lambda *args, **kwargs: None)
+    with pytest.raises(RuntimeError, match="minimum-quality R outputs"):
+        runner.run_phase_S(dirs, _make_cfg(runner))
 
 
 def test_classify_provider_readiness_blocker_distinguishes_env_auth_and_quota() -> None:

@@ -388,6 +388,7 @@ FIRST_LIVE_PRESET_NAME = "first-live"
 FIRST_LIVE_PRESET_DEFAULT_CAP_USD = 5.0
 FIRST_LIVE_INITIAL_PHASES = ("A", "H", "D", "C")
 FIRST_LIVE_POST_REVIEW_PHASES = ("R", "X", "T", "Z", "S")
+PARSE_FAILURE_ABORT_THRESHOLD = 0.05
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
 # Optional phases whose norm outputs enrich R arbitration when available.
@@ -7779,6 +7780,12 @@ def normalize_step(
         "partitions_total": len(partition_ids),
         "raw_ok": raw_ok,
         "raw_failed": raw_failed,
+        "parse_failure_threshold": PARSE_FAILURE_ABORT_THRESHOLD,
+        "parse_failure_rate": (
+            float(raw_failed) / float(raw_ok + raw_failed)
+            if (raw_ok + raw_failed) > 0
+            else 0.0
+        ),
         "expected_artifacts": list(expected_artifacts),
         "written_files": written_files,
         "missing_expected_artifacts": missing_expected_artifacts,
@@ -7842,6 +7849,13 @@ def normalize_step(
     }
 
     write_json(qa_dir / f"{step_id}_QA.json", qa_payload)
+    parse_failure_rate = float(qa_payload["parse_failure_rate"])
+    if (raw_ok + raw_failed) > 0 and parse_failure_rate > PARSE_FAILURE_ABORT_THRESHOLD:
+        raise RuntimeError(
+            "Parse failure threshold exceeded for "
+            f"{phase}/{step_id}: raw_failed={raw_failed} raw_total={raw_ok + raw_failed} "
+            f"failure_rate={parse_failure_rate:.4f} threshold={PARSE_FAILURE_ABORT_THRESHOLD:.4f}."
+        )
     return qa_payload
 
 
@@ -19400,10 +19414,29 @@ def run_phase_S(
     if r_norm.exists():
         for path in sorted(r_norm.glob("*.json")) + sorted(r_norm.glob("*.md")):
             input_sources[path.resolve()] = "R"
+    r_quality_issues: List[str] = []
     if not input_sources:
+        r_quality_issues.append(f"missing_norm_outputs:{r_norm}")
+    else:
+        non_empty_outputs = 0
+        for path in sorted(input_sources.keys(), key=str):
+            content = safe_read(path)
+            if not content.strip():
+                r_quality_issues.append(f"empty_output:{path.name}")
+                continue
+            if path.suffix.lower() == ".json":
+                try:
+                    json.loads(content)
+                except json.JSONDecodeError:
+                    r_quality_issues.append(f"invalid_json:{path.name}")
+                    continue
+            non_empty_outputs += 1
+        if non_empty_outputs == 0:
+            r_quality_issues.append("no_nonempty_r_outputs")
+    if r_quality_issues:
         logger.warning(
-            "PHASE_DEPENDENCY_DEGRADED phase=S requires=R missing=%s",
-            r_norm,
+            "PHASE_DEPENDENCY_DEGRADED phase=S requires=R issues=%s",
+            " | ".join(r_quality_issues),
         )
         upstream_missing = _ensure_required_norm_artifact_groups(dirs)
         if upstream_missing:
@@ -19412,7 +19445,10 @@ def run_phase_S(
                 ",".join(R_REQUIRED_INPUT_PHASES),
                 " | ".join(upstream_missing),
             )
-        raise RuntimeError(f"Phase S requires R norm outputs at {r_norm}")
+        raise RuntimeError(
+            "Phase S requires minimum-quality R outputs: "
+            + " | ".join(r_quality_issues)
+        )
 
     for phase in ["X", "T", "Z"]:
         norm_dir = dirs[phase] / "norm"
@@ -19686,8 +19722,8 @@ def main() -> None:
         "--batch-mode",
         dest="batch_mode",
         action="store_true",
-        default=True,
-        help="Use Batch API for LLM calls (default: True).",
+        default=False,
+        help="Use Batch API for LLM calls (default: False).",
     )
     parser.add_argument(
         "--no-batch",
