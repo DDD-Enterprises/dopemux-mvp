@@ -107,6 +107,28 @@ def test_apply_first_live_preset_applies_conservative_defaults() -> None:
     assert preview["full_recommended_sequence"][4] == "CHECKPOINT_REVIEW"
 
 
+def test_apply_staged_safe_preset_enables_batch_defaults() -> None:
+    runner = _load_runner_module()
+    args = argparse.Namespace(
+        preset_stage="initial",
+        routing_policy="balanced_openrouter",
+        max_cost_usd=None,
+        partition_workers=8,
+        batch_mode=False,
+        batch_wait_timeout_seconds=86400,
+        compare_mode=None,
+        output_root=None,
+    )
+    phases, preview = runner.apply_staged_safe_preset(args, [])
+    assert phases == ["A", "H", "D", "C"]
+    assert args.routing_policy == "cost"
+    assert args.max_cost_usd == runner.STAGED_SAFE_PRESET_DEFAULT_CAP_USD
+    assert args.partition_workers == 1
+    assert args.batch_mode is True
+    assert args.batch_wait_timeout_seconds == runner.INTERACTIVE_SAFE_BATCH_WAIT_SECONDS
+    assert preview["preset"] == runner.STAGED_SAFE_PRESET_NAME
+
+
 def test_help_output_omits_contract_scope_warning() -> None:
     result = subprocess.run(
         [sys.executable, str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"), "--help"],
@@ -473,6 +495,47 @@ def test_print_config_reports_batch_mode_disabled_by_default() -> None:
     )
     payload = json.loads(result.stdout)
     assert payload["cli"]["batch_mode"] is False
+
+
+def test_staged_safe_print_config_writes_confidence_ramp_artifacts(
+    tmp_path: Path,
+) -> None:
+    output_root = tmp_path / "artifact-root"
+    run_id = "tp6_staged_safe_artifact_probe"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--preset",
+            "staged-safe",
+            "--dry-run",
+            "--print-config",
+            "--run-id",
+            run_id,
+            "--no-write-latest",
+            "--output-root",
+            str(output_root),
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    payload = json.loads(result.stdout)
+    run_root = output_root / "runs" / run_id
+    batch_pilot = json.loads((run_root / "BATCH_PILOT.json").read_text(encoding="utf-8"))
+    phase_slice = json.loads((run_root / "PHASE_SLICE.json").read_text(encoding="utf-8"))
+    breaker_state = json.loads((run_root / "BREAKER_STATE.json").read_text(encoding="utf-8"))
+    gate_decision = json.loads((run_root / "PHASE_GATE_DECISION.json").read_text(encoding="utf-8"))
+
+    assert payload["cli"]["preset"] == "staged-safe"
+    assert payload["cli"]["batch_mode"] is True
+    assert batch_pilot["preset"] == "staged-safe"
+    assert batch_pilot["batch_mode"] is True
+    assert phase_slice["selected_phases"] == ["A", "H", "D", "C"]
+    assert breaker_state["preset"] == "staged-safe"
+    assert gate_decision["preset"] == "staged-safe"
+    assert gate_decision["decision"] == "PREVIEW_ONLY"
 
 
 def test_run_phase_s_blocks_on_empty_r_outputs(

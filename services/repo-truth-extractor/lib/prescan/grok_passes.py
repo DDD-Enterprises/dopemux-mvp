@@ -220,6 +220,81 @@ class BatchResponseValidator:
         "optimize": {"skip_list"},
     }
 
+    _LIST_ITEM_REQUIRED_FIELDS = {
+        "dedup": {
+            "duplicate_assessments": {
+                "group_id",
+                "confirmed_duplicate",
+                "canonical_path",
+                "superseded_paths",
+                "confidence",
+                "reasoning",
+            },
+            "version_chain_summaries": {
+                "chain_id",
+                "base_topic",
+                "evolution_narrative",
+                "latest_path",
+                "superseded_paths",
+                "key_changes",
+            },
+            "divergent_pairs": {"paths", "reason"},
+        },
+        "discover": {
+            "hidden_features": {
+                "path",
+                "feature_name",
+                "description",
+                "confidence",
+                "extraction_phase",
+            },
+            "drift_signals": {"path", "claim", "drift_type", "severity"},
+            "ghost_assessments": {"path", "worth_restoring", "reason"},
+            "rediscovery_candidates": {"path", "insight"},
+        },
+        "feasibility": {
+            "planned_features": {
+                "path",
+                "feature_name",
+                "status",
+                "foundation_score",
+                "effort",
+                "risk",
+                "dependencies",
+                "quick_win",
+                "reasoning",
+            },
+            "implementation_blockers": {"feature", "blocker"},
+        },
+        "optimize": {
+            "compress_chains": {
+                "chain_id",
+                "send_summary_instead",
+                "summary_hint",
+            },
+            "phase_routing_overrides": {
+                "path",
+                "recommended_phase",
+                "reason",
+            },
+            "model_routing_hints": {
+                "partition_pattern",
+                "recommended_model",
+                "reason",
+            },
+        },
+    }
+
+    _DICT_REQUIRED_FIELDS = {
+        "optimize": {
+            "estimated_savings": {
+                "files_skipped",
+                "files_compressed",
+                "estimated_token_reduction_pct",
+            }
+        }
+    }
+
     def validate(self, pass_id: str, response: str) -> tuple[bool, dict | None, str]:
         """Parse JSON, check required keys. Returns (valid, data, error)."""
         try:
@@ -236,12 +311,56 @@ class BatchResponseValidator:
             else:
                 return False, None, f"JSON parse error: {e}"
 
+        if not isinstance(data, dict):
+            return False, None, "Top-level response must be a JSON object"
+
         required = self._REQUIRED_KEYS.get(pass_id, set())
         missing = required - set(data.keys())
         if missing:
             return False, data, f"Missing required keys: {missing}"
 
+        nested_error = self._validate_nested_shape(pass_id, data)
+        if nested_error:
+            return False, data, nested_error
+
         return True, data, ""
+
+    def _validate_nested_shape(self, pass_id: str, data: dict[str, Any]) -> str:
+        for field_name, required_fields in self._LIST_ITEM_REQUIRED_FIELDS.get(
+            pass_id, {}
+        ).items():
+            if field_name not in data:
+                continue
+            value = data.get(field_name)
+            if not isinstance(value, list):
+                return f"{field_name} must be a list"
+            for idx, item in enumerate(value):
+                if not isinstance(item, dict):
+                    return f"{field_name}[{idx}] must be an object"
+                missing = sorted(required_fields - set(item.keys()))
+                if missing:
+                    return (
+                        f"{field_name}[{idx}] missing required fields: {missing}"
+                    )
+
+        for field_name, required_fields in self._DICT_REQUIRED_FIELDS.get(
+            pass_id, {}
+        ).items():
+            if field_name not in data:
+                continue
+            value = data.get(field_name)
+            if not isinstance(value, dict):
+                return f"{field_name} must be an object"
+            missing = sorted(required_fields - set(value.keys()))
+            if missing:
+                return f"{field_name} missing required fields: {missing}"
+
+        if pass_id == "optimize" and "skip_list" in data and not isinstance(
+            data.get("skip_list"), list
+        ):
+            return "skip_list must be a list"
+
+        return ""
 
 
 class GrokPassRunner:

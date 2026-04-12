@@ -385,7 +385,9 @@ V5_LATEST_RUN_FILE = V5_EXTRACTION_ROOT / "latest_run_id.txt"
 V5_DOCTOR_ROOT = V5_EXTRACTION_ROOT / "doctor"
 INTERACTIVE_SAFE_BATCH_WAIT_SECONDS = 1800
 FIRST_LIVE_PRESET_NAME = "first-live"
+STAGED_SAFE_PRESET_NAME = "staged-safe"
 FIRST_LIVE_PRESET_DEFAULT_CAP_USD = 5.0
+STAGED_SAFE_PRESET_DEFAULT_CAP_USD = 2.5
 FIRST_LIVE_INITIAL_PHASES = ("A", "H", "D", "C")
 FIRST_LIVE_POST_REVIEW_PHASES = ("R", "X", "T", "Z", "S")
 PARSE_FAILURE_ABORT_THRESHOLD = 0.05
@@ -19567,6 +19569,52 @@ def apply_first_live_preset(
     return selected_phases, preview
 
 
+def apply_staged_safe_preset(
+    args: argparse.Namespace,
+    raw_argv: Sequence[str],
+) -> Tuple[List[str], Dict[str, Any]]:
+    stage = str(getattr(args, "preset_stage", "initial") or "initial").strip().lower()
+    selected_phases = first_live_phase_sequence(stage)
+    applied_defaults: Dict[str, Any] = {}
+    notes = [
+        "Validator remains step zero unless --skip-pre-live-validator is set.",
+        "Staged-safe uses the same phase ladder as first-live but defaults batch execution on for bounded rollout rehearsals.",
+        "The initial stage remains A/H/D/C so operators can stop before synthesis phases.",
+    ]
+    if not _argv_has_flag(raw_argv, "--phase"):
+        applied_defaults["phase_sequence"] = list(selected_phases)
+    if not _argv_has_flag(raw_argv, "--routing-policy"):
+        args.routing_policy = "cost"
+        applied_defaults["routing_policy"] = args.routing_policy
+    if not _argv_has_flag(raw_argv, "--max-cost-usd"):
+        args.max_cost_usd = STAGED_SAFE_PRESET_DEFAULT_CAP_USD
+        applied_defaults["max_cost_usd"] = args.max_cost_usd
+    if not _argv_has_flag(raw_argv, "--partition-workers"):
+        args.partition_workers = 1
+        applied_defaults["partition_workers"] = args.partition_workers
+    if not _argv_has_flag(raw_argv, "--batch-mode", "--no-batch"):
+        args.batch_mode = True
+        applied_defaults["batch_mode"] = args.batch_mode
+    if not _argv_has_flag(raw_argv, "--batch-wait-timeout-seconds"):
+        args.batch_wait_timeout_seconds = INTERACTIVE_SAFE_BATCH_WAIT_SECONDS
+        applied_defaults["batch_wait_timeout_seconds"] = (
+            args.batch_wait_timeout_seconds
+        )
+    preview = {
+        "preset": STAGED_SAFE_PRESET_NAME,
+        "stage": stage,
+        "selected_phases": list(selected_phases),
+        "full_recommended_sequence": list(FIRST_LIVE_INITIAL_PHASES)
+        + ["CHECKPOINT_REVIEW"]
+        + list(FIRST_LIVE_POST_REVIEW_PHASES),
+        "applied_defaults": applied_defaults,
+        "compare_mode": getattr(args, "compare_mode", None),
+        "output_root": getattr(args, "output_root", None),
+        "notes": notes,
+    }
+    return selected_phases, preview
+
+
 def print_preset_preview(preview: Dict[str, Any]) -> None:
     print(
         "FIRST_LIVE_PRESET " + json.dumps(preview, sort_keys=True),
@@ -19611,6 +19659,103 @@ def run_pre_live_validator(
     return result.returncode == 0, payload
 
 
+def write_confidence_ramp_artifacts(
+    run_root: Path,
+    *,
+    args: argparse.Namespace,
+    cfg: RunnerConfig,
+    phase_sequence: Sequence[str],
+    validator_payload: Optional[Dict[str, Any]] = None,
+    provider_preflight_payload: Optional[Dict[str, Any]] = None,
+) -> None:
+    preset_name = str(getattr(args, "preset", "") or "").strip()
+    route_readiness = derive_route_readiness_summary(
+        list(phase_sequence) if phase_sequence else [],
+        cfg.routing_policy,
+    )
+    batch_pilot = {
+        "generated_at": now_iso(),
+        "preset": preset_name or None,
+        "routing_policy": cfg.routing_policy,
+        "phase_sequence": list(phase_sequence),
+        "batch_mode": bool(cfg.batch_mode),
+        "batch_provider": cfg.batch_provider,
+        "batch_wait_timeout_seconds": cfg.batch_wait_timeout_seconds,
+        "batch_max_requests_per_job": cfg.batch_max_requests_per_job,
+        "route_readiness_summary": route_readiness,
+        "provider_preflight_status": (
+            provider_preflight_payload.get("status")
+            if isinstance(provider_preflight_payload, dict)
+            else "PENDING"
+        ),
+    }
+    write_json(run_root / "BATCH_PILOT.json", batch_pilot)
+
+    phase_slice = {
+        "generated_at": now_iso(),
+        "preset": preset_name or None,
+        "preset_stage": getattr(args, "preset_stage", None),
+        "selected_phases": list(phase_sequence),
+        "initial_phases": list(FIRST_LIVE_INITIAL_PHASES),
+        "post_review_phases": list(FIRST_LIVE_POST_REVIEW_PHASES),
+        "phase_count": len(list(phase_sequence)),
+    }
+    write_json(run_root / "PHASE_SLICE.json", phase_slice)
+
+    blockers: List[str] = []
+    validator_status = "PENDING"
+    if isinstance(validator_payload, dict):
+        validator_status = str(validator_payload.get("status") or "UNKNOWN").upper()
+        if validator_status != "PASS":
+            blockers.append(f"validator:{validator_status.lower()}")
+    elif bool(getattr(args, "execute", False)) and preset_name:
+        blockers.append("validator:pending")
+
+    provider_status = "PENDING"
+    if isinstance(provider_preflight_payload, dict):
+        provider_status = str(provider_preflight_payload.get("status") or "UNKNOWN").upper()
+        if provider_status != "PASS":
+            blockers.append(f"provider_preflight:{provider_status.lower()}")
+
+    if bool(cfg.batch_mode) and isinstance(provider_preflight_payload, dict):
+        batch_capability = provider_preflight_payload.get("batch_capability")
+        if isinstance(batch_capability, dict) and str(
+            batch_capability.get("status") or ""
+        ).upper() == "FAIL":
+            blockers.append("batch_capability:fail")
+
+    if bool(getattr(args, "execute", False)) and not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        blockers.append(f"live_guard:{DPMX_LIVE_OK_ENV.lower()}_missing")
+
+    breaker_state = {
+        "generated_at": now_iso(),
+        "preset": preset_name or None,
+        "validator_status": validator_status,
+        "provider_preflight_status": provider_status,
+        "live_ok_required": bool(getattr(args, "execute", False)),
+        "live_ok_present": _env_is_truthy(DPMX_LIVE_OK_ENV),
+        "blockers": blockers,
+        "blocker_count": len(blockers),
+    }
+    write_json(run_root / "BREAKER_STATE.json", breaker_state)
+
+    decision = "READY"
+    if blockers:
+        decision = "BLOCKED"
+    elif bool(getattr(args, "dry_run", False)):
+        decision = "PREVIEW_ONLY"
+    gate_payload = {
+        "generated_at": now_iso(),
+        "preset": preset_name or None,
+        "decision": decision,
+        "phase_sequence": list(phase_sequence),
+        "reasons": blockers,
+        "validator_status": validator_status,
+        "provider_preflight_status": provider_status,
+    }
+    write_json(run_root / "PHASE_GATE_DECISION.json", gate_payload)
+
+
 # --- Master Orchestrator ---
 
 
@@ -19634,7 +19779,7 @@ def main() -> None:
     parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
     parser.add_argument(
         "--preset",
-        choices=[FIRST_LIVE_PRESET_NAME],
+        choices=[FIRST_LIVE_PRESET_NAME, STAGED_SAFE_PRESET_NAME],
         default=None,
         help="Apply a staged operator-safe rollout preset.",
     )
@@ -19989,6 +20134,10 @@ def main() -> None:
     preset_preview: Optional[Dict[str, Any]] = None
     if args.preset == FIRST_LIVE_PRESET_NAME:
         preset_phase_sequence, preset_preview = apply_first_live_preset(args, raw_argv)
+    elif args.preset == STAGED_SAFE_PRESET_NAME:
+        preset_phase_sequence, preset_preview = apply_staged_safe_preset(
+            args, raw_argv
+        )
     if args.max_cost_usd is not None and args.max_cost_usd <= 0:
         parser.error("--max-cost-usd must be > 0 when provided.")
     
@@ -20577,6 +20726,13 @@ def main() -> None:
     if phase_sequence:
         write_run_routing_fingerprint(dirs["root"], run_id, cfg, phase_sequence)
     run_started_at = now_iso()
+    if args.preset:
+        write_confidence_ramp_artifacts(
+            dirs["root"],
+            args=args,
+            cfg=cfg,
+            phase_sequence=phase_sequence or preset_phase_sequence or [],
+        )
     if args.print_config:
         print_config(args, root, run_id, dirs, cfg, phase_sequence, run_context)
         sys.exit(0)
@@ -20632,6 +20788,14 @@ def main() -> None:
     if args.preflight_providers:
         targets = phase_sequence if phase_sequence else PHASES
         ok, payload = run_provider_preflight(root, run_id, cfg, targets)
+        if args.preset:
+            write_confidence_ramp_artifacts(
+                dirs["root"],
+                args=args,
+                cfg=cfg,
+                phase_sequence=targets,
+                provider_preflight_payload=payload,
+            )
         print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
         sys.exit(0 if ok else 1)
     if args.print_promptpack:
@@ -20673,7 +20837,7 @@ def main() -> None:
                 f"or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
             )
     if (
-        args.preset == FIRST_LIVE_PRESET_NAME
+        args.preset in {FIRST_LIVE_PRESET_NAME, STAGED_SAFE_PRESET_NAME}
         and args.execute
         and phase_sequence
         and not args.skip_pre_live_validator
@@ -20684,6 +20848,13 @@ def main() -> None:
             target_policy=args.routing_policy,
             target_phases=phase_sequence,
             allow_online_preflight=True,
+        )
+        write_confidence_ramp_artifacts(
+            dirs["root"],
+            args=args,
+            cfg=cfg,
+            phase_sequence=phase_sequence,
+            validator_payload=validator_payload,
         )
         if not validator_ok:
             parser.error(
