@@ -7,7 +7,12 @@ const componentsDir = path.resolve(__dirname, '..');
 
 test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Tooltip', () => {
   const filePath = path.join(componentsDir, 'CognitiveLoadGauge.tsx');
-  if (!fs.existsSync(filePath)) return;
+  if (!fs.existsSync(filePath)) {
+    throw new Error(
+      `Accessibility test cannot run because required component is missing: ${filePath}. ` +
+        'Restore CognitiveLoadGauge.tsx or update this test if the component was intentionally removed.',
+    );
+  }
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="Cognitive Load Percentage"');
   expect(content).toContain('aria-valuetext');
@@ -17,7 +22,12 @@ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Toolti
 
 test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', () => {
   const filePath = path.join(componentsDir, 'PredictionPanel.tsx');
-  if (!fs.existsSync(filePath)) return;
+  if (!fs.existsSync(filePath)) {
+    throw new Error(
+      `Accessibility test cannot run because required component is missing: ${filePath}. ` +
+        'Restore PredictionPanel.tsx or update this test if the component was intentionally removed.',
+    );
+  }
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
   expect(content).toContain('aria-valuetext');
@@ -29,7 +39,12 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
   const filePath = path.join(componentsDir, 'TeamDashboard.tsx');
-  if (!fs.existsSync(filePath)) return;
+  if (!fs.existsSync(filePath)) {
+    throw new Error(
+      `Accessibility test cannot run because required component is missing: ${filePath}. ` +
+        'Restore TeamDashboard.tsx or update this test if the component was intentionally removed.',
+    );
+  }
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
@@ -79,7 +94,7 @@ test('Components have aria-hidden="true" on decorative icons', () => {
   const files = ['CognitiveLoadGauge.tsx', 'PredictionPanel.tsx', 'TeamDashboard.tsx', 'TaskSequencer.tsx'];
   files.forEach(file => {
     const filePath = path.join(componentsDir, file);
-    if (!fs.existsSync(filePath)) return;
+    expect(fs.existsSync(filePath), `Expected component file to exist: ${file}`).toBe(true);
     const content = fs.readFileSync(filePath, 'utf8');
     expect(content).toContain('aria-hidden="true"');
   });

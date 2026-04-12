@@ -132,8 +132,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const resetTasks = () => {
-    setTasks(INITIAL_TASKS);
-    setCurrentTaskId(INITIAL_TASKS[0].id);
+    const resetTasksState = INITIAL_TASKS.map((task) => ({ ...task }));
+    setTasks(resetTasksState);
+    setCurrentTaskId(resetTasksState[0].id);
     setTaskTimer(0);
     setIsTimerRunning(false);
   };
@@ -199,10 +200,21 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
-        <Tooltip title={getDurationAriaLabel(totalRemainingMinutes)} arrow>
+        <Tooltip
+          title={
+            totalRemainingMinutes === 0
+              ? 'Task sequence complete'
+              : getDurationAriaLabel(totalRemainingMinutes)
+          }
+          arrow
+        >
           <Box
             role="status"
-            aria-label={getDurationAriaLabel(totalRemainingMinutes)}
+            aria-label={
+              totalRemainingMinutes === 0
+                ? 'Task sequence complete'
+                : getDurationAriaLabel(totalRemainingMinutes)
+            }
             tabIndex={0}
             sx={{
               ml: 'auto',
