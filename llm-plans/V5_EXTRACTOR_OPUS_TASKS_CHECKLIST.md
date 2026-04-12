@@ -24,6 +24,12 @@ Reconciled reality through Packet 04:
 - Packet 03 created the six missing prompts and the initial measurable `promptsets/v4/schemas/` rollout.
 - Packet 04 documented FL_INT ladder truth and BM-LIVE posture, while leaving operator-governed promotion decisions explicitly unresolved.
 
+Deferred-lane authority:
+
+- Packet 07 parks `FL-POST-V1` and `FL-PIPELINE` outside the active remediation lane.
+- Use `docs/03-reference/task-packets/rte-07-post-v1-deferred-register.md` for rationale and re-entry criteria.
+- Do not treat those deferred items as near-term checklist work unless Packet 07 re-entry conditions are explicitly met.
+
 ---
 
 ## Phase A — Safety Gates (Must Complete Before Live Run)
