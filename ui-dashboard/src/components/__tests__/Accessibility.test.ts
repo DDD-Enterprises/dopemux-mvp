@@ -8,10 +8,7 @@ const componentsDir = path.resolve(__dirname, '..');
 test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Tooltip', () => {
   const filePath = path.join(componentsDir, 'CognitiveLoadGauge.tsx');
   if (!fs.existsSync(filePath)) {
-    throw new Error(
-      `Accessibility test cannot run because required component is missing: ${filePath}. ` +
-        'Restore CognitiveLoadGauge.tsx or update this test if the component was intentionally removed.',
-    );
+    throw new Error(`Required component missing for accessibility test: ${filePath}`);
   }
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="Cognitive Load Percentage"');
@@ -23,10 +20,7 @@ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Toolti
 test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', () => {
   const filePath = path.join(componentsDir, 'PredictionPanel.tsx');
   if (!fs.existsSync(filePath)) {
-    throw new Error(
-      `Accessibility test cannot run because required component is missing: ${filePath}. ` +
-        'Restore PredictionPanel.tsx or update this test if the component was intentionally removed.',
-    );
+    throw new Error(`Required component missing for accessibility test: ${filePath}`);
   }
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
@@ -40,10 +34,7 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
   const filePath = path.join(componentsDir, 'TeamDashboard.tsx');
   if (!fs.existsSync(filePath)) {
-    throw new Error(
-      `Accessibility test cannot run because required component is missing: ${filePath}. ` +
-        'Restore TeamDashboard.tsx or update this test if the component was intentionally removed.',
-    );
+    throw new Error(`Required component missing for accessibility test: ${filePath}`);
   }
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
@@ -80,13 +71,13 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   // Total remaining duration
   expect(content).toContain('role="status"');
-  expect(content).toContain('aria-label={getDurationAriaLabel(totalRemainingMinutes)}');
+  expect(content).toMatch(/aria-label=\{\s*totalRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*getDurationAriaLabel\(totalRemainingMinutes\)\s*\}/);
   expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
   expect(content).toContain('aria-label="Real-time task synchronization active"');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
   // Total remaining duration display and completed-state accessibility
   expect(content).toContain('role="status"');
-  expect(content).toContain('aria-label={getDurationAriaLabel(totalRemainingMinutes)}');
+  expect(content).toMatch(/aria-label=\{\s*totalRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*getDurationAriaLabel\(totalRemainingMinutes\)\s*\}/);
   expect(content).toContain('aria-label="Ritual Complete: All tasks finished"');
 });
 
@@ -110,9 +101,9 @@ test('TaskSequencer.tsx has accessible timer with pluralization', () => {
 test('TaskSequencer.tsx displays total remaining duration with accessibility', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('const totalRemainingMinutes = useMemo(() =>');
-  expect(content).toContain('aria-label={getDurationAriaLabel(totalRemainingMinutes)}');
+  expect(content).toMatch(/aria-label=\{\s*totalRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*getDurationAriaLabel\(totalRemainingMinutes\)\s*\}/);
   expect(content).toContain('tabIndex={0}');
-  expect(content).toMatch(/<Tooltip[^>]*title=\{getDurationAriaLabel\(totalRemainingMinutes\)\}/);
+  expect(content).toMatch(/<Tooltip\s+title=\{\s*totalRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*getDurationAriaLabel\(totalRemainingMinutes\)\s*\}\s+arrow\s*>/);
 });
 
 test('App.tsx has accessible header chips and skip link', () => {
@@ -123,4 +114,5 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('<Tooltip title="AI-generated recommendation based on current load" arrow>');
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toMatch(/<Tooltip title="AI-generated recommendation based on current load" arrow>[\s\S]*tabIndex=\{0\}/);
+  expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
 });
