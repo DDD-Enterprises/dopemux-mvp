@@ -81,7 +81,9 @@ def test_classifier_categorizes_files(tmp_path: Path) -> None:
     classifier = Classifier(config)
 
     entries = [
-        FileEntry(rel_path="app.py", size_bytes=100, extension=".py"),
+    png_entry = next((e for e in entries if e.rel_path == "image.png"), None)
+    assert png_entry is not None
+    assert png_entry.authority_class == "noise"
         FileEntry(rel_path="docs/README.md", size_bytes=50, extension=".md"),
         FileEntry(rel_path="image.png", size_bytes=50000, extension=".png"),
     ]
