@@ -310,6 +310,10 @@ phases:
     - C15
     - C16
     - C17
+    - C18
+    - C19
+    - C20
+    - C21
     steps:
     - step_id: C0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md
@@ -431,6 +435,30 @@ phases:
       - code_surfaces
       outputs:
       - COGNITIVE_FEATURES_SURFACE.json
+    - step_id: C18
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C18_OBSERVABILITY_SURFACE.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - OBSERVABILITY_SURFACE.json
+    - step_id: C19
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C19_ERROR_HANDLING_PATTERNS.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - ERROR_HANDLING_PATTERNS.json
+    - step_id: C20
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C20_STATE_MANAGEMENT_SURFACE.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - STATE_MANAGEMENT_SURFACE.json
+    - step_id: C21
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C21_PERFORMANCE_SURFACE.md
+      coverage_targets:
+      - code_surfaces
+      outputs:
+      - PERFORMANCE_SURFACE.json
   E:
     required_steps:
     - E0
@@ -595,6 +623,8 @@ phases:
     - G3
     - G4
     - G5
+    - G6
+    - G7
     - G9
     steps:
     - step_id: G0
@@ -634,6 +664,18 @@ phases:
       - phase_scope
       outputs:
       - AUTH_FLOW_SURFACE.json
+    - step_id: G6
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G6_DEPENDENCY_HEALTH_SURFACE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DEPENDENCY_HEALTH_SURFACE.json
+    - step_id: G7
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G7_TECHNICAL_DEBT_REGISTER.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TECHNICAL_DEBT_REGISTER.json
     - step_id: G9
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md
       coverage_targets:
