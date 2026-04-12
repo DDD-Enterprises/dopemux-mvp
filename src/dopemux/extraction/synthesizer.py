@@ -6,11 +6,6 @@ optimized for ADHD-friendly consumption and strategic decision making.
 """
 
 import json
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Set, Tuple
 from dataclasses import dataclass
@@ -85,7 +80,7 @@ class DocumentSynthesizer:
         self.processing_start = time.time()
 
         try:
-            logger.info("🧠 Starting document synthesis...")
+            print("🧠 Starting document synthesis...")
 
             # Step 1: Filter and prepare entities
             self._prepare_entities(extraction_results)
@@ -118,7 +113,7 @@ class DocumentSynthesizer:
             confidence_stats = self._calculate_confidence_stats()
 
             processing_time = time.time() - self.processing_start
-            logger.info(f"✅ Synthesis complete! ({processing_time:.2f}s)")
+            print(f"✅ Synthesis complete! ({processing_time:.2f}s)")
 
             return SynthesisResult(
                 config=self.config,
@@ -136,7 +131,7 @@ class DocumentSynthesizer:
 
         except Exception as e:
             processing_time = time.time() - self.processing_start if self.processing_start else 0
-            logger.error(f"❌ Synthesis failed: {e}")
+            print(f"❌ Synthesis failed: {e}")
 
             return SynthesisResult(
                 config=self.config,
@@ -169,7 +164,7 @@ class DocumentSynthesizer:
                         }
                         self.high_confidence_entities.append(enhanced_entity)
 
-        logger.info(f"📊 Prepared {len(self.high_confidence_entities)} high-confidence entities")
+        print(f"📊 Prepared {len(self.high_confidence_entities)} high-confidence entities")
 
     def _calculate_synthesis_score(self, entity: Dict[str, Any]) -> float:
         """Calculate synthesis importance score for entity."""
@@ -230,7 +225,7 @@ class DocumentSynthesizer:
                 sorted_entities = sorted(entities, key=lambda e: e.get('synthesis_score', 0), reverse=True)
                 sorted_clusters[topic] = sorted_entities
 
-        logger.info(f"🏷️ Generated {len(sorted_clusters)} topic clusters")
+        print(f"🏷️ Generated {len(sorted_clusters)} topic clusters")
         return dict(sorted_clusters)
 
     def _build_knowledge_graph(self) -> Dict[str, Any]:
@@ -298,7 +293,7 @@ class DocumentSynthesizer:
                 relationship_count += 1
 
         graph['metadata']['relationship_count'] = relationship_count
-        logger.info(f"🕸️ Built knowledge graph with {len(graph['nodes'])} nodes and {relationship_count} edges")
+        print(f"🕸️ Built knowledge graph with {len(graph['nodes'])} nodes and {relationship_count} edges")
 
         return graph
 

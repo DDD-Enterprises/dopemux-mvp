@@ -136,19 +136,16 @@ class BasePipeline(ABC):
         self.current_stage = stage
 
         if self.config.enable_progress_tracking:
-            logger.info(f"🔄 Executing stage: {stage.value}")
+            print(f"🔄 Executing stage: {stage.value}")
 
         try:
             # Execute stage function
             result = await stage_func(*args, **kwargs)
-            processed_items, failed_items = self._extract_stage_counts(stage, result)
 
             # Create success result
             stage_result = PipelineResult(
                 success=True,
                 stage=stage,
-                processed_items=processed_items,
-                failed_items=failed_items,
                 duration_seconds=(datetime.now() - stage_start).total_seconds(),
                 metadata={"result": result}
             )
@@ -156,7 +153,7 @@ class BasePipeline(ABC):
             self.results.append(stage_result)
 
             if self.config.enable_progress_tracking:
-                logger.info(f"✅ Stage {stage.value} completed in {stage_result.duration_seconds:.1f}s")
+                print(f"✅ Stage {stage.value} completed in {stage_result.duration_seconds:.1f}s")
 
             return stage_result
 
@@ -166,7 +163,7 @@ class BasePipeline(ABC):
                 success=False,
                 stage=stage,
                 duration_seconds=(datetime.now() - stage_start).total_seconds(),
-                errors=[f"error: {e}"]
+                errors=[str(e)]
             )
 
             self.results.append(stage_result)
@@ -182,63 +179,11 @@ class BasePipeline(ABC):
             logger.error(f"❌ Stage {stage.value} failed: {e}")
 
             if self.config.gentle_error_messages:
-                logger.info(f"💙 Stage {stage.value} had some trouble - that's okay, continuing...")
+                print(f"💙 Stage {stage.value} had some trouble - that's okay, continuing...")
             else:
-                logger.error(f"❌ Stage {stage.value} failed: {e}")
+                print(f"❌ Stage {stage.value} failed: {e}")
 
             return stage_result
-
-    @staticmethod
-    def _coerce_count(value: Any) -> Optional[int]:
-        """Convert a stage metadata value to a non-negative integer count."""
-        if isinstance(value, bool):
-            return int(value)
-        if isinstance(value, int):
-            return max(0, value)
-        if isinstance(value, float):
-            return max(0, int(value))
-        return None
-
-    def _extract_stage_counts(self, stage: PipelineStage, result: Any) -> tuple[int, int]:
-        """Infer processed/failed counts from stage payload metadata."""
-        if not isinstance(result, dict):
-            return 0, 0
-
-        processed_keys = [
-            "processed_count",
-            "stored_count",
-            "results_count",
-            "final_results_count",
-            "documents_count",
-            "documents_synced",
-            "integrations_synced",
-            "enhanced_count",
-            "healthy_integrations",
-            "new_documents",
-            "updated_documents",
-        ]
-        failed_keys = [
-            "failed_count",
-            "documents_failed",
-            "sync_conflicts",
-            "failed_integrations",
-            "errors_count",
-        ]
-
-        processed_values = [self._coerce_count(result.get(key)) for key in processed_keys]
-        failed_values = [self._coerce_count(result.get(key)) for key in failed_keys]
-
-        processed_candidates = [value for value in processed_values if value is not None]
-        failed_candidates = [value for value in failed_values if value is not None]
-
-        processed = max(processed_candidates) if processed_candidates else 0
-        failed = max(failed_candidates) if failed_candidates else 0
-
-        # Validation stages with boolean success still represent one completed checkpoint.
-        if stage == PipelineStage.VALIDATION and processed == 0 and result:
-            processed = 1
-
-        return processed, failed
 
     def register_stage_handler(self, stage: PipelineStage, handler: Callable):
         """Register a handler for a specific pipeline stage."""
@@ -267,18 +212,10 @@ class BasePipeline(ABC):
                 stage, func = stage_def
                 args, kwargs = (), {}
             elif len(stage_def) == 3:
-                stage, func, raw_args = stage_def
-                if isinstance(raw_args, tuple):
-                    args = raw_args
-                else:
-                    args = (raw_args,)
+                stage, func, args = stage_def
                 kwargs = {}
             else:
-                stage, func, raw_args, kwargs = stage_def
-                if isinstance(raw_args, tuple):
-                    args = raw_args
-                else:
-                    args = (raw_args,)
+                stage, func, args, kwargs = stage_def
 
             result = await self.execute_stage(stage, func, *args, **kwargs)
             stage_results.append(result)
@@ -330,22 +267,22 @@ class BasePipeline(ABC):
         """Display ADHD-friendly pipeline summary."""
         summary = self.get_pipeline_summary()
 
-        logger.info(f"🏗️ Pipeline Summary: {self.pipeline_id}")
-        logger.info("=" * 50)
-        logger.info(f"⏱️ Duration: {summary['total_duration_seconds']:.1f}s")
-        logger.info(f"📊 Stages: {summary['successful_stages']}/{summary['stages_executed']} successful")
-        logger.error(f"📦 Items: {summary['total_processed_items']} processed, {summary['total_failed_items']} failed")
+        print(f"🏗️ Pipeline Summary: {self.pipeline_id}")
+        print("=" * 50)
+        print(f"⏱️ Duration: {summary['total_duration_seconds']:.1f}s")
+        print(f"📊 Stages: {summary['successful_stages']}/{summary['stages_executed']} successful")
+        print(f"📦 Items: {summary['total_processed_items']} processed, {summary['total_failed_items']} failed")
 
         if summary['overall_success']:
-            logger.info("✅ Overall Status: SUCCESS")
+            print("✅ Overall Status: SUCCESS")
         else:
-            logger.error("❌ Overall Status: FAILED")
+            print("❌ Overall Status: FAILED")
             if summary['errors']:
-                logger.error("🚨 Errors:")
+                print("🚨 Errors:")
                 for error in summary['errors'][:3]:  # Show max 3 errors
-                    logger.error(f"   • {error}")
+                    print(f"   • {error}")
                 if len(summary['errors']) > 3:
-                    logger.error(f"   ... and {len(summary['errors']) - 3} more")
+                    print(f"   ... and {len(summary['errors']) - 3} more")
 
     async def retry_failed_stages(self, max_retries: int = 3) -> List[PipelineResult]:
         """
@@ -365,7 +302,7 @@ class BasePipeline(ABC):
             return retry_results
 
         if self.config.enable_progress_tracking:
-            logger.error(f"🔄 Retrying {len(failed_results)} failed stages...")
+            print(f"🔄 Retrying {len(failed_results)} failed stages...")
 
         for failed_result in failed_results:
             stage = failed_result.stage
@@ -377,14 +314,14 @@ class BasePipeline(ABC):
 
             for attempt in range(max_retries):
                 if self.config.enable_progress_tracking:
-                    logger.info(f"🔄 Retry {attempt + 1}/{max_retries} for stage {stage.value}")
+                    print(f"🔄 Retry {attempt + 1}/{max_retries} for stage {stage.value}")
 
                 retry_result = await self.execute_stage(stage, handler)
                 retry_results.append(retry_result)
 
                 if retry_result.success:
                     if self.config.enable_progress_tracking:
-                        logger.info(f"✅ Stage {stage.value} succeeded on retry {attempt + 1}")
+                        print(f"✅ Stage {stage.value} succeeded on retry {attempt + 1}")
                     break
             else:
                 logger.error(f"❌ Stage {stage.value} failed after {max_retries} retries")
