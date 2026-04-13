@@ -1,19 +1,15 @@
 ---
-id: rfc-0015
-title: UX Phase Tracker & Preset Layouts for Workflow States
-type: rfc
-status: draft
-author: @hu3mann
-created: 2025-09-21
-last_review: 2025-09-21
-sunset: 2025-10-21
-feature_id: feat-docs-governance
-tags: [ux, workflow, layout, productivity, rails]
-links:
-  related_adrs: []
-  related_rfc: []
+id: docs__91-rfc__rfc-0015-ux-phase-tracker-preset-layouts
+title: Docs  91 Rfc  Rfc 0015 Ux Phase Tracker Preset Layouts
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  91 Rfc  Rfc 0015 Ux Phase Tracker Preset Layouts (explanation) for
+  dopemux documentation and developer workflows.
 ---
-
 ## Problem
 
 Developers often lose track of which phase of the workflow they're in (brainstorm, defining, designing, implementing, shipping).

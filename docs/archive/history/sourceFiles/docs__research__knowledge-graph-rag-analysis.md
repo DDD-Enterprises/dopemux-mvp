@@ -1,3 +1,15 @@
+---
+id: docs__research__knowledge-graph-rag-analysis
+title: Docs  Research  Knowledge Graph Rag Analysis
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Research  Knowledge Graph Rag Analysis (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Knowledge Graph RAG Analysis for Code-Centric Context Retrieval
 
 ## Executive Summary

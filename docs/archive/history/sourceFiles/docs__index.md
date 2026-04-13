@@ -1,3 +1,14 @@
+---
+id: docs__index
+title: Docs  Index
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Index (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Documentation
 
 🧠 **Complete documentation for the ADHD-optimized development platform**

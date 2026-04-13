@@ -1,3 +1,15 @@
+---
+id: docs__analysis__04-integration-requirements
+title: Docs  Analysis  04 Integration Requirements
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Analysis  04 Integration Requirements (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Integration Requirements - Cross-Client Support & Concurrency
 
 ## Overview

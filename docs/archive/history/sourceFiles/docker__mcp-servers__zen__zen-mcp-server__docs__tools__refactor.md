@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__tools__refactor
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Tools  Refactor
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Tools  Refactor (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Refactor Tool - Intelligent Code Refactoring
 
 **Comprehensive refactoring analysis with top-down decomposition strategy through workflow-driven investigation**

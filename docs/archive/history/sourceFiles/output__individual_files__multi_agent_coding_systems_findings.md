@@ -1,3 +1,15 @@
+---
+id: output__individual_files__multi_agent_coding_systems_findings
+title: Output  Individual Files  Multi Agent Coding Systems Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Multi Agent Coding Systems Findings (explanation)
+  for dopemux documentation and developer workflows.
+---
 As a meticulous Research Analyst, I am ready to analyze the document. However, I cannot directly access local file paths like the one you provided (`/Users/hue/code/dmpx/research/findings/multi-agent-coding-systems.md`) due to security and privacy restrictions.
 
 Please paste the full content of the research document into our chat, and I will promptly extract its core components into the structured format you've requested.

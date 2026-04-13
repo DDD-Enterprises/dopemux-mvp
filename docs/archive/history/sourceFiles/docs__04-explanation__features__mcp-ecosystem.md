@@ -1,3 +1,15 @@
+---
+id: docs__04-explanation__features__mcp-ecosystem
+title: Docs  04 Explanation  Features  Mcp Ecosystem
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  04 Explanation  Features  Mcp Ecosystem (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 🔌 MCP Server Ecosystem Hub
 
 Central hub for understanding Dopemux's Model Context Protocol (MCP) integration, orchestration, and server ecosystem.

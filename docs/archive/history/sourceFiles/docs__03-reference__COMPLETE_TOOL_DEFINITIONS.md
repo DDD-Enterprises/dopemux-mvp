@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__COMPLETE_TOOL_DEFINITIONS
+title: Docs  03 Reference  Complete Tool Definitions
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  03 Reference  Complete Tool Definitions (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Complete MCP Tool Definitions - Full Schema Specifications
 
 ## 📋 Overview

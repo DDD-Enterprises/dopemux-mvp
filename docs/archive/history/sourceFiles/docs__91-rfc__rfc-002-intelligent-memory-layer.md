@@ -1,3 +1,15 @@
+---
+id: docs__91-rfc__rfc-002-intelligent-memory-layer
+title: Docs  91 Rfc  Rfc 002 Intelligent Memory Layer
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  91 Rfc  Rfc 002 Intelligent Memory Layer (explanation) for dopemux
+  documentation and developer workflows.
+---
 # RFC-002: Intelligent Memory Layer for Implicit Context Preservation
 
 **Status**: Draft

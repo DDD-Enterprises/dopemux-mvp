@@ -1,3 +1,14 @@
+---
+id: NEXT_SESSION_PLAN
+title: Next Session Plan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Next Session Plan (explanation) for dopemux documentation and developer workflows.
+---
 # 📋 Next Session Plan: DocuXtractor Embedding Pipeline Testing & Optimization
 
 ## 🎯 **Session Goals**

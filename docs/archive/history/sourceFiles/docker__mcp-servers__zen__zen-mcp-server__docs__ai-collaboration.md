@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__ai-collaboration
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Ai Collaboration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Ai Collaboration (explanation)
+  for dopemux documentation and developer workflows.
+---
 # AI-to-AI Conversation Threading
 
 This server enables **true AI collaboration** between Claude and multiple AI models (Gemini, O3), where they can coordinate and question each other's approaches for enhanced problem-solving and analysis.

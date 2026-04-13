@@ -1,14 +1,15 @@
 ---
-id: adr-0047
-title: Adopt UX Phase Tracker & Preset Layouts
-type: adr
-status: proposed
-date: 2025-09-21
-author: @hu3mann
-derived_from: rfc-0015
-tags: [ux, workflow, layout]
+id: docs__90-adr__ADR-0047-2025-09-21-adopt-ux-phase-tracker-preset-layouts
+title: Docs  90 Adr  Adr 0047 2025 09 21 Adopt Ux Phase Tracker Preset Layouts
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  Adr 0047 2025 09 21 Adopt Ux Phase Tracker Preset Layouts (explanation)
+  for dopemux documentation and developer workflows.
 ---
-
 ## Context & Problem Statement
 
 Developers sometimes lose track of which phase of the workflow they are in (Brainstorm/Discover, Define, Develop, Deliver). Without explicit structure, things can overlap incorrectly, documentation can get ahead of decisions, and the transitions between phases are fuzzy. We've discussed Double-Diamond style rails and various layouts/tools, but there's no formal decision yet.

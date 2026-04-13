@@ -1,3 +1,15 @@
+---
+id: output__individual_files__Uberslicer___from_v0_1_findings
+title: Output  Individual Files  Uberslicer   From V0 1 Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Uberslicer   From V0 1 Findings (explanation) for
+  dopemux documentation and developer workflows.
+---
 Of course. As an expert Principal Engineer, I will analyze the document and provide the requested technical blueprint.
 
 However, I cannot directly access local file paths like the one you provided (`/Users/hue/code/dmpx/research/findings/Uberslicer - from v0-1.md`) for security and privacy reasons.

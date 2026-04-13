@@ -1,3 +1,15 @@
+---
+id: docs__LEANTIME_TROUBLESHOOTING
+title: Docs  Leantime Troubleshooting
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Leantime Troubleshooting (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Leantime Integration Troubleshooting Guide
 
 ## 🔧 Critical Nginx Port Fix

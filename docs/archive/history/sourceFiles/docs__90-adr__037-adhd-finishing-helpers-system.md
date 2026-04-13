@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__037-adhd-finishing-helpers-system
+title: Docs  90 Adr  037 Adhd Finishing Helpers System
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  037 Adhd Finishing Helpers System (explanation) for dopemux
+  documentation and developer workflows.
+---
 # ADR-037: ADHD Finishing Helpers System
 
 **Status**: Accepted

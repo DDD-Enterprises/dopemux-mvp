@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__101-adhd-centered-design
+title: Docs  90 Adr  101 Adhd Centered Design
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  101 Adhd Centered Design (explanation) for dopemux documentation
+  and developer workflows.
+---
 # ADR-101: ADHD-Centered Design Philosophy
 
 **Status**: Accepted

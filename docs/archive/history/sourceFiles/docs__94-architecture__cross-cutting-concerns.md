@@ -1,3 +1,15 @@
+---
+id: docs__94-architecture__cross-cutting-concerns
+title: Docs  94 Architecture  Cross Cutting Concerns
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  94 Architecture  Cross Cutting Concerns (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Cross-Cutting Concerns (arc42 Section 8)
 
 ## TODO

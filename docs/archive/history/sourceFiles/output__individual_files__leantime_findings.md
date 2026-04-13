@@ -1,3 +1,15 @@
+---
+id: output__individual_files__leantime_findings
+title: Output  Individual Files  Leantime Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Leantime Findings (explanation) for dopemux documentation
+  and developer workflows.
+---
 Based on the document at `/Users/hue/code/dmpx/research/findings/leantime.md`, here is the extracted information:
 
 ### 1. Core Business Goals & User Problems

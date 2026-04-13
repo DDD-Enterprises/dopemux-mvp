@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__tools__tracer
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Tools  Tracer
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Tools  Tracer (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Tracer Tool - Static Code Analysis Prompt Generator
 
 **Creates detailed analysis prompts for call-flow mapping and dependency tracing**

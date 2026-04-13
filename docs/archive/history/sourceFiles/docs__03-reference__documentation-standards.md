@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__documentation-standards
+title: Docs  03 Reference  Documentation Standards
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  03 Reference  Documentation Standards (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Documentation Standards: RFC/ADR/arc42 Reference Guide
 
 *Complete guide for writing, reviewing, and maintaining architectural documentation in Dopemux*

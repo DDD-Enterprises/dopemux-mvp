@@ -1,3 +1,15 @@
+---
+id: docs__04-explanation__architecture__metamcp-context-lean-toolsets
+title: Docs  04 Explanation  Architecture  Metamcp Context Lean Toolsets
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  04 Explanation  Architecture  Metamcp Context Lean Toolsets (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Arc42 Mini-Architecture: MetaMCP Context-lean MCP Toolsets
 
 *Arc42-based architectural documentation for the MetaMCP role-aware tool brokering system*

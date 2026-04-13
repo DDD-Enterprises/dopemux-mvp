@@ -1,3 +1,15 @@
+---
+id: docs__architecture__intelligent-memory__intelligent-memory-architecture
+title: Docs  Architecture  Intelligent Memory  Intelligent Memory Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Architecture  Intelligent Memory  Intelligent Memory Architecture (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Intelligent Memory Layer - Complete System Architecture
 
 **Version**: 1.0

@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__rag__role-policy-schema
+title: Docs  03 Reference  Rag  Role Policy Schema
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  03 Reference  Rag  Role Policy Schema (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Role Policy Schema Reference
 
 ## Overview

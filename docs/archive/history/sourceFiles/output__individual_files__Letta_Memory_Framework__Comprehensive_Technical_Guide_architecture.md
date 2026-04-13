@@ -1,3 +1,16 @@
+---
+id: output__individual_files__Letta_Memory_Framework__Comprehensive_Technical_Guide_architecture
+title: Output  Individual Files  Letta Memory Framework  Comprehensive Technical Guide
+  Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Letta Memory Framework  Comprehensive Technical
+  Guide Architecture (explanation) for dopemux documentation and developer workflows.
+---
 As a Principal Engineer, I am ready to analyze the document.
 
 However, I cannot directly access local file paths like `/Users/hue/code/dmpx/research/architecture/Letta Memory Framework- Comprehensive Technical Guide.md` due to security and privacy protocols.

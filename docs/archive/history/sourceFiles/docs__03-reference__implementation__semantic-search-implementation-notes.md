@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__implementation__semantic-search-implementation-notes
+title: Docs  03 Reference  Implementation  Semantic Search Implementation Notes
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  03 Reference  Implementation  Semantic Search Implementation Notes
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Semantic Search Implementation Notes
 
 ## Claude-Context Configuration (exclude /docs)

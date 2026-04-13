@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__DOPEMUX_LIFE_AUTOMATION_FEATURES
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Life Automation
+  Features
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Life Automation
+  Features (explanation) for dopemux documentation and developer workflows.
+---
 # DOPEMUX Life Automation Features
 ## Beyond Development: Personal and Business Automation
 

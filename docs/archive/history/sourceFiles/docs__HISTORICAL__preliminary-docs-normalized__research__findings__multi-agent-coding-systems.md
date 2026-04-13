@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__multi-agent-coding-systems
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Multi Agent
+  Coding Systems
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Multi
+  Agent Coding Systems (explanation) for dopemux documentation and developer workflows.
+---
 # Multi-agent coding systems architecture research report
 
 This comprehensive research examines Claude-based coding tools, multi-agent frameworks, RAG integration, memory systems, and production implementations to inform the design of an enhanced Claude Code component. The findings reveal sophisticated patterns across **7 major areas** with actionable insights for building production-grade multi-agent coding systems.

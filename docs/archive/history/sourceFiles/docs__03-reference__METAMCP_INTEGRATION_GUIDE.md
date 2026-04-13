@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__METAMCP_INTEGRATION_GUIDE
+title: Docs  03 Reference  Metamcp Integration Guide
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  03 Reference  Metamcp Integration Guide (explanation) for dopemux documentation
+  and developer workflows.
+---
 # MetaMCP Integration Guide for Dopemux
 
 ## 🎯 Overview

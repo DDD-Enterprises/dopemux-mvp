@@ -1,15 +1,24 @@
 ---
 id: runbook-current-session
-title: Runbook — Current Session Tracker
+title: "Runbook \u2014 Current Session Tracker"
 type: runbook
-owner: @hu3mann
+owner: '@hu3mann'
 last_review: 2025-09-24
 next_review: 2025-09-26
-tags: [adhd, daily-tracking, session-management, active]
-related: [runbook-bootstrap-task-management, runbook-activation-plan]
+tags:
+- adhd
+- daily-tracking
+- session-management
+- active
+related:
+- runbook-bootstrap-task-management
+- runbook-activation-plan
 session_date: 2025-09-24
+author: '@hu3mann'
+date: '2026-04-13'
+prelude: "Runbook \u2014 Current Session Tracker (explanation) for dopemux documentation\
+  \ and developer workflows."
 ---
-
 # Current Session Tracker - 2025-09-24
 
 ## Session Overview

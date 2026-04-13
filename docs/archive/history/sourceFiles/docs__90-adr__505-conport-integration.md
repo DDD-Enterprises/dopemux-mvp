@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__505-conport-integration
+title: Docs  90 Adr  505 Conport Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  505 Conport Integration (explanation) for dopemux documentation
+  and developer workflows.
+---
 # ADR-505: ConPort Integration
 
 **Status**: Accepted

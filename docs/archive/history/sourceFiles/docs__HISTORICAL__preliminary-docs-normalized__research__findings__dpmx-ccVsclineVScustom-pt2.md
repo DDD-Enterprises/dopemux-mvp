@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__dpmx-ccVsclineVScustom-pt2
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dpmx Ccvsclinevscustom
+  Pt2
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dpmx Ccvsclinevscustom
+  Pt2 (explanation) for dopemux documentation and developer workflows.
+---
 I'll conduct comprehensive research on the software development orchestration approaches you've outlined, examining each option's architecture, integration capabilities, and how they'd fit into the broader Dopemux platform.## Context & Goal
 
 You need to architect Dopemux's software development orchestration platform with a comprehensive understanding of available approaches, their trade-offs, and how they integrate with the broader Dopemux memory architecture. The goal is to select and design an approach that supports hobby projects through enterprise-scale software development with Python, Node/TS, and cloud deployments on AWS/GCloud, while potentially leveraging consumer Claude/OpenAI plans to reduce API costs.

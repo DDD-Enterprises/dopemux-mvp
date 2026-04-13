@@ -1,3 +1,15 @@
+---
+id: docs__02-how-to__rag__integrate-conport-memory
+title: Docs  02 How To  Rag  Integrate Conport Memory
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  02 How To  Rag  Integrate Conport Memory (explanation) for dopemux
+  documentation and developer workflows.
+---
 # ConPort Memory Integration Guide
 
 ## Overview

@@ -1,3 +1,15 @@
+---
+id: docs__implementation__memory-intelligence__implementation-roadmap
+title: Docs  Implementation  Memory Intelligence  Implementation Roadmap
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Implementation  Memory Intelligence  Implementation Roadmap (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Intelligent Memory Layer - Implementation Roadmap
 
 **Timeline**: 4 Weeks

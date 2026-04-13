@@ -1,3 +1,17 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__architecture__DOPEMUX_ARCHITECTURE_v2_CORRECTED
+title: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Dopemux
+  Architecture V2 Corrected
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Dopemux
+  Architecture V2 Corrected (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Dopemux Platform Architecture v2.0 (Corrected)
 ## Claude-flow Based Implementation with Custom Agent System
 

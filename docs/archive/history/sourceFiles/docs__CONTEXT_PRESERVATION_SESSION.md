@@ -1,3 +1,15 @@
+---
+id: docs__CONTEXT_PRESERVATION_SESSION
+title: Docs  Context Preservation Session
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Context Preservation Session (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Dopemux MCP Server Context Preservation
 *Session Date: 2025-09-21*
 *Time: ~20:45-01:15 GMT*

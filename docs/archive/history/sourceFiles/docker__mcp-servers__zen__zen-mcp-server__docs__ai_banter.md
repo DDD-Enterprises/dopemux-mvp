@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__ai_banter
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Ai Banter
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Ai Banter (explanation) for
+  dopemux documentation and developer workflows.
+---
 # The Code Comedy Hour
 
 Just when I thought it was a routine test, Claude and it's _thought-partner_ would go off-script with unexpectedly quirky behavior - the smaller the model, 

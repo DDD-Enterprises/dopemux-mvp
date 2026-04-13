@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__adr-008-event-driven-capture
+title: Docs  90 Adr  Adr 008 Event Driven Capture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  Adr 008 Event Driven Capture (explanation) for dopemux documentation
+  and developer workflows.
+---
 # ADR-008: Event-Driven Asynchronous Capture Architecture
 
 **Status**: Proposed

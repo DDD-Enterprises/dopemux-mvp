@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__architecture__dopemuxMVP
+title: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Dopemuxmvp
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Dopemuxmvp
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Building dopemux MVP: a comprehensive orchestration platform analysis
 
 The landscape of software development orchestration tools presents both significant opportunities and implementation challenges for building dopemux MVP. After analyzing eight key technology areas, clear patterns emerge for creating a robust platform that coordinates multiple AI agents while maintaining practical development workflows.

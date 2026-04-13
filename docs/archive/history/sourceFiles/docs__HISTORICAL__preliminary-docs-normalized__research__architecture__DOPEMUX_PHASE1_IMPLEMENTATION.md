@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__architecture__DOPEMUX_PHASE1_IMPLEMENTATION
+title: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Dopemux
+  Phase1 Implementation
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Dopemux
+  Phase1 Implementation (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Phase 1 Implementation Guide
 ## Claude-flow + Leantime + Task-Master in Tmux
 

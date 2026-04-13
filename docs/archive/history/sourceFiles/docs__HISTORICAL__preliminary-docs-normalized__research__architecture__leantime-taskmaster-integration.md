@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__architecture__leantime-taskmaster-integration
+title: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Leantime
+  Taskmaster Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Leantime
+  Taskmaster Integration (explanation) for dopemux documentation and developer workflows.
+---
 # Integration design for Leantime and Claude-Task-Master
 
 ## Executive Overview

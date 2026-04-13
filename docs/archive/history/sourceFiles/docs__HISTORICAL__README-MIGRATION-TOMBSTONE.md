@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__README-MIGRATION-TOMBSTONE
+title: Docs  Historical  Readme Migration Tombstone
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Readme Migration Tombstone (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 📚 Historical Documentation Migration
 
 This directory contains **272 historical documentation files** that have been **systematically migrated** to the new Diátaxis framework structure.

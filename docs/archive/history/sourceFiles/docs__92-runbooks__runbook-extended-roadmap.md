@@ -1,14 +1,23 @@
 ---
 id: runbook-extended-roadmap
-title: Runbook — Extended Dopemux Activation Roadmap
+title: "Runbook \u2014 Extended Dopemux Activation Roadmap"
 type: runbook
-owner: @hu3mann
+owner: '@hu3mann'
 last_review: 2025-09-24
 next_review: 2025-12-24
-tags: [adhd, roadmap, execution, detailed-planning]
-related: [runbook-activation-plan, runbook-project-analysis-backup]
+tags:
+- adhd
+- roadmap
+- execution
+- detailed-planning
+related:
+- runbook-activation-plan
+- runbook-project-analysis-backup
+author: '@hu3mann'
+date: '2026-04-13'
+prelude: "Runbook \u2014 Extended Dopemux Activation Roadmap (explanation) for dopemux\
+  \ documentation and developer workflows."
 ---
-
 # Extended Dopemux Integration Activation Roadmap
 
 ## Planning Session Details

@@ -1,3 +1,15 @@
+---
+id: docs__adr__ADR-006-keep-letta-agent-tier-memory
+title: Docs  Adr  Adr 006 Keep Letta Agent Tier Memory
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Adr  Adr 006 Keep Letta Agent Tier Memory (explanation) for dopemux
+  documentation and developer workflows.
+---
 # ADR-006: Keep Letta for Agent-Tier Memory
 
 **Status**: Accepted

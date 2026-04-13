@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__CLAUDE
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Claude
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Claude (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Claude Development Guide for Zen MCP Server
 
 This file contains essential commands and workflows for developing and maintaining the Zen MCP Server when working with Claude. Use these instructions to efficiently run quality checks, manage the server, check logs, and run tests.

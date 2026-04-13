@@ -1,3 +1,15 @@
+---
+id: docs__02-how-to__rag__setup-rag-pipeline
+title: Docs  02 How To  Rag  Setup Rag Pipeline
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  02 How To  Rag  Setup Rag Pipeline (explanation) for dopemux documentation
+  and developer workflows.
+---
 # RAG Pipeline Setup Guide
 
 ## Overview

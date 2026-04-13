@@ -1,3 +1,15 @@
+---
+id: output__individual_files__claudesquad_claudeflowintegration_architecture
+title: Output  Individual Files  Claudesquad Claudeflowintegration Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Claudesquad Claudeflowintegration Architecture
+  (explanation) for dopemux documentation and developer workflows.
+---
 As a Principal Engineer, I am ready to analyze the document.
 
 However, I cannot directly access local file paths like the one you provided (`/Users/hue/code/dmpx/research/architecture/claudesquad-claudeflowintegration.md`).

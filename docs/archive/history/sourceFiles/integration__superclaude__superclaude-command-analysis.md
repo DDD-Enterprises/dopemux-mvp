@@ -1,3 +1,15 @@
+---
+id: integration__superclaude__superclaude-command-analysis
+title: Integration  Superclaude  Superclaude Command Analysis
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Integration  Superclaude  Superclaude Command Analysis (explanation) for
+  dopemux documentation and developer workflows.
+---
 # SuperClaude Command Analysis & Dopemux Integration
 
 ## SuperClaude Command Architecture Deep Dive

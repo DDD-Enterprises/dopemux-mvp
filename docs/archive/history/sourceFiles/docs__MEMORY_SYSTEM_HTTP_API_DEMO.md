@@ -1,3 +1,15 @@
+---
+id: docs__MEMORY_SYSTEM_HTTP_API_DEMO
+title: Docs  Memory System Http Api Demo
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Memory System Http Api Demo (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Dopemux Memory System - HTTP API Demo & Usage Guide
 
 **Date**: September 22, 2025

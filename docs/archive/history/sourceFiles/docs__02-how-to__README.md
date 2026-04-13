@@ -1,3 +1,15 @@
+---
+id: docs__02-how-to__README
+title: Docs  02 How To  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  02 How To  Readme (explanation) for dopemux documentation and developer
+  workflows.
+---
 # How-To Guides - Problem-Oriented Documentation
 
 These guides solve **specific problems** you might encounter while using Dopemux. They assume you understand the basics and focus on practical solutions.

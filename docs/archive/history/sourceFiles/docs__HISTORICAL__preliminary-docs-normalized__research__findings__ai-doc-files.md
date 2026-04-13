@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__ai-doc-files
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Ai Doc Files
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Ai Doc
+  Files (explanation) for dopemux documentation and developer workflows.
+---
 # AI documentation files for software development workflows
 
 ## The architecture of AI-assisted development

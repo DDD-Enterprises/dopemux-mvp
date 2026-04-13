@@ -1,3 +1,15 @@
+---
+id: docs__UNIFIED_MEMORY_IMPLEMENTATION
+title: Docs  Unified Memory Implementation
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Unified Memory Implementation (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Dopemux Unified Memory Graph - Implementation Complete
 
 **Date**: September 22, 2025

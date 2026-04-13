@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__integrations__dopemux-integration
+title: Docs  Historical  Preliminary Docs Normalized  Research  Integrations  Dopemux
+  Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Integrations  Dopemux
+  Integration (explanation) for dopemux documentation and developer workflows.
+---
 ## Context & Goal
 
     Design clarification for dopemux integration strategy, addressing IPC/wrapper architecture benefits, language choice (Python vs Node.js), claude-flow/Claude Code interaction patterns, and practical implementation of context management and workflow orchestration.

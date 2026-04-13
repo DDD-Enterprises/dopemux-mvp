@@ -1,3 +1,15 @@
+---
+id: docs__LEANTIME_POST_SETUP
+title: Docs  Leantime Post Setup
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Leantime Post Setup (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Leantime Post-Setup Tasks
 
 ## 🎯 After completing the web installation, follow these steps:

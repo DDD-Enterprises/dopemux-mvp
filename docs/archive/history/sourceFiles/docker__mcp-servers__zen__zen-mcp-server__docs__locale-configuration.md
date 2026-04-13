@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__locale-configuration
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Locale Configuration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Locale Configuration (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Locale Configuration for Zen MCP Server
 
 This guide explains how to configure and use the localization feature to customize the language of responses from MCP tools.

@@ -1,3 +1,15 @@
+---
+id: CCDOCS__ADR-009-session-management-persistence
+title: Ccdocs  Adr 009 Session Management Persistence
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Ccdocs  Adr 009 Session Management Persistence (explanation) for dopemux
+  documentation and developer workflows.
+---
 # ADR-009: Session Management and Persistence Strategy
 
 ## Status

@@ -1,3 +1,15 @@
+---
+id: integration__superclaude__dopemux-superclaude-analysis
+title: Integration  Superclaude  Dopemux Superclaude Analysis
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Integration  Superclaude  Dopemux Superclaude Analysis (explanation) for
+  dopemux documentation and developer workflows.
+---
 # Dopemux-SuperClaude Integration Analysis
 
 ## SuperClaude Architecture Overview

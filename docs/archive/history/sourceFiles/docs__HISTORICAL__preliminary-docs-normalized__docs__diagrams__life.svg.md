@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__diagrams__life.svg
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Diagrams  Life.Svg
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Diagrams  Life.Svg (explanation)
+  for dopemux documentation and developer workflows.
+---
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">

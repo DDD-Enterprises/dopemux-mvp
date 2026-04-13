@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__DOPEMUX_DESIGN_COMPARISON_ANALYSIS
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Design Comparison
+  Analysis
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Design Comparison
+  Analysis (explanation) for dopemux documentation and developer workflows.
+---
 # DOPEMUX Design Comparison Analysis
 ## Original vs. Research-Validated Design Documents
 

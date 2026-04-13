@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_MCD_docs
+title: Output  Individual Files  Dopemux Mcd Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Mcd Docs (explanation) for dopemux documentation
+  and developer workflows.
+---
 Based on the document `DOPEMUX_MCD.md`, here is the extracted information in the required structured format.
 
 ### 1. Core Business Goals & User Problems

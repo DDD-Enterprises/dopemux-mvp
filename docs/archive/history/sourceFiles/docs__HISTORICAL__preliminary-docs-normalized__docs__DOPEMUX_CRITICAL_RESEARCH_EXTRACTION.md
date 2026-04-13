@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__DOPEMUX_CRITICAL_RESEARCH_EXTRACTION
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Critical Research
+  Extraction
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Critical Research
+  Extraction (explanation) for dopemux documentation and developer workflows.
+---
 # DOPEMUX Critical Research Extraction
 ## Complete Line-by-Line Analysis of 3 Essential Research Files
 

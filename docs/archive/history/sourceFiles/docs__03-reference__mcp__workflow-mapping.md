@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__mcp__workflow-mapping
+title: Docs  03 Reference  Mcp  Workflow Mapping
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  03 Reference  Mcp  Workflow Mapping (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Complete MCP Tool Inventory & Workflow Mapping
 
 **Date**: January 18, 2025

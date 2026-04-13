@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__README-MULTI-INSTANCE
+title: Docker  Mcp Servers  Readme Multi Instance
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Readme Multi Instance (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Dopemux MCP Servers - Multi-Instance Guide
 
 Run multiple isolated Dopemux instances without conflicts. Each instance gets its own ports, networks, volumes, and containers.

@@ -1,3 +1,15 @@
+---
+id: docs__04-explanation__architecture__rag-search-architecture
+title: Docs  04 Explanation  Architecture  Rag Search Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  04 Explanation  Architecture  Rag Search Architecture (explanation)
+  for dopemux documentation and developer workflows.
+---
 # RAG & Search Architecture Guide
 
 ## Executive Summary

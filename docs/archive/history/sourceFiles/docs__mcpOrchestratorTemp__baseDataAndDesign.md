@@ -1,3 +1,15 @@
+---
+id: docs__mcpOrchestratorTemp__baseDataAndDesign
+title: Docs  Mcporchestratortemp  Basedataanddesign
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Mcporchestratortemp  Basedataanddesign (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Dopemux MetaMCP Orchestration: Complete Architecture & Integration
 
 **Version**: 3.0

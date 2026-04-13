@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__DOPEMUX_TECHNICAL_ARCHITECTURE_v3
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Technical Architecture
+  V3
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Technical Architecture
+  V3 (explanation) for dopemux documentation and developer workflows.
+---
 # DOPEMUX Technical Architecture v3.0
 ## Research-Validated Multi-Agent Development Platform
 

@@ -1,3 +1,15 @@
+---
+id: docs__decisions__adr-017-mcp-proxy-integration
+title: Docs  Decisions  Adr 017 Mcp Proxy Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Decisions  Adr 017 Mcp Proxy Integration (explanation) for dopemux
+  documentation and developer workflows.
+---
 # ADR-017: MCP Proxy Integration for Docker Container Connectivity
 
 ## Status

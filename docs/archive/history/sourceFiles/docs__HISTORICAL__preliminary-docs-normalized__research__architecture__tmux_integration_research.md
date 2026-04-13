@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__architecture__tmux_integration_research
+title: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Tmux
+  Integration Research
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Tmux
+  Integration Research (explanation) for dopemux documentation and developer workflows.
+---
 # Comprehensive tmux capabilities and best practices for dopemux CLI UI development
 
 ## Building a powerful, modular, and beautiful CLI UI for software development orchestration

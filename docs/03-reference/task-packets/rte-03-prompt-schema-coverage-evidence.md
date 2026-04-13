@@ -1,3 +1,15 @@
+---
+id: rte-03-prompt-schema-coverage-evidence
+title: Rte 03 Prompt Schema Coverage Evidence
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Rte 03 Prompt Schema Coverage Evidence (reference) for dopemux documentation
+  and developer workflows.
+---
 # RTE-03 Prompt and Schema Coverage Evidence
 
 - Worktree/clone: `/tmp/dopemux-rte-03-prompt-schema-coverage`
