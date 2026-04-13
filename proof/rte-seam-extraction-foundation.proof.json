@@ -1,0 +1,174 @@
+{
+  "packet": "rte-seam-extraction-foundation",
+  "title": "RTE seam extraction and deterministic modularization",
+  "status": "stabilization_complete_pending_slice_2",
+  "commit_plan": [
+    {
+      "slice": 1,
+      "name": "Establish regression wall",
+      "status": "completed"
+    },
+    {
+      "slice": "1a",
+      "name": "Stabilize exposed extractor failures before seam extraction",
+      "status": "completed"
+    },
+    {
+      "slice": 2,
+      "name": "Extract static config seam",
+      "status": "pending"
+    },
+    {
+      "slice": 3,
+      "name": "Extract phase enum and dependency map",
+      "status": "pending"
+    },
+    {
+      "slice": 4,
+      "name": "Extract manifest/proof seam",
+      "status": "pending"
+    },
+    {
+      "slice": 5,
+      "name": "Extract LLM interface seam",
+      "status": "pending"
+    },
+    {
+      "slice": 6,
+      "name": "Extract one independent phase and one dependent phase",
+      "status": "pending"
+    },
+    {
+      "slice": 7,
+      "name": "Add iR_l integration proof",
+      "status": "pending"
+    },
+    {
+      "slice": 8,
+      "name": "Command authority cleanup",
+      "status": "pending"
+    }
+  ],
+  "completed_slices": [
+    {
+      "slice": 1,
+      "name": "Establish regression wall",
+      "summary": [
+        "Added extractor-specific pytest import bootstrap via services/repo-truth-extractor/tests/conftest.py.",
+        "Added extractor-smoke as a blocking CI lane and extractor-full as an advisory CI lane in .github/workflows/ci-complete.yml.",
+        "Added a narrow .gitignore exception so proof/rte-seam-extraction-foundation.proof.json is trackable under proof/."
+      ]
+    },
+    {
+      "slice": "1a",
+      "name": "Stabilize exposed extractor failures before seam extraction",
+      "summary": [
+        "Aligned Phase S registry validation and benchmark execution with the checked-in SP registry contract.",
+        "Moved comparison-lane response normalization onto the same parse/coerce pipeline used by canonical execution.",
+        "Made profile-synthesis smoke deterministic by materializing fixture-backed benchmark inputs instead of discovering repo-level proof runs.",
+        "Updated stale operator-safety assertions to match current route-readiness runtime truth for the first-live preset and cost routing."
+      ]
+    }
+  ],
+  "replan_events": [
+    {
+      "event": "stabilization_tranche_inserted",
+      "reason": "Full extractor activation surfaced comparison-lane normalization drift, Phase S/SP registry drift, and benchmark smoke dependence on repo-level proof directories.",
+      "inserted_before_slice": 2,
+      "result": "Slice 2 seam extraction deferred until extractor smoke and full-suite stabilization gates passed."
+    }
+  ],
+  "skipped_or_abandoned_slices": [
+    {
+      "slice": 2,
+      "name": "Extract static config seam",
+      "status": "not_started",
+      "rationale": "Packet stops after stabilization tranche. Seam extraction resumes only after the completed stabilization gate."
+    }
+  ],
+  "commit_shas": [
+    {
+      "sha": "838014d8ba20f1b72aef8f8b7d08fb5d1cd8546e",
+      "role": "base_head",
+      "created_in_this_packet": false
+    }
+  ],
+  "slice_verification": [
+    {
+      "label": "focused_regression_wall",
+      "command": "python3 -m pytest -q services/repo-truth-extractor/tests/test_run_extraction_v4_core.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 42,
+      "fail_count": 0
+    },
+    {
+      "label": "phase_sp_stabilization",
+      "command": "python3 -m pytest -q services/repo-truth-extractor/tests/test_executor_adapters.py services/repo-truth-extractor/tests/test_case_registry.py services/repo-truth-extractor/tests/test_snapshot_capture.py services/repo-truth-extractor/tests/test_phase_s_posttail_prompts.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 6,
+      "fail_count": 0
+    },
+    {
+      "label": "comparison_lane_parity",
+      "command": "python3 -m pytest -q services/repo-truth-extractor/tests/test_comparison_lane.py --maxfail=2 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 8,
+      "fail_count": 0
+    },
+    {
+      "label": "benchmark_and_reporting_smoke",
+      "command": "python3 -m pytest -q services/repo-truth-extractor/tests/test_case_set_registry.py services/repo-truth-extractor/tests/test_campaign_selection.py services/repo-truth-extractor/tests/test_governance_decision_log.py services/repo-truth-extractor/tests/test_direct_model_runner.py services/repo-truth-extractor/tests/test_attempt_execution_smoke.py services/repo-truth-extractor/tests/test_profile_synth.py services/repo-truth-extractor/tests/test_rollups.py services/repo-truth-extractor/tests/test_reporting_views.py services/repo-truth-extractor/tests/test_governance_history_views.py services/repo-truth-extractor/tests/test_governance_packets.py services/repo-truth-extractor/tests/test_hardening_smoke.py services/repo-truth-extractor/tests/test_change_summaries.py services/repo-truth-extractor/tests/test_explainability_chain.py --maxfail=2 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 17,
+      "fail_count": 0
+    },
+    {
+      "label": "operator_safety_alignment",
+      "command": "python3 -m pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 20,
+      "fail_count": 0
+    },
+    {
+      "label": "full_extractor_suite",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests -n auto --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 692,
+      "fail_count": 0
+    },
+    {
+      "label": "python_compile_checks",
+      "command": "python3 -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/benchmarking/executors/phase_s_adapter.py services/repo-truth-extractor/benchmarking/registry/registry_loader.py services/repo-truth-extractor/benchmarking/synthesis/profile_synth.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "status": "passed",
+      "files_checked": 5
+    },
+    {
+      "label": "dependency_sync",
+      "command": "UV_CACHE_DIR=.uv-cache uv sync --frozen --extra test --extra services",
+      "status": "passed"
+    }
+  ],
+  "codereview": {
+    "status": "completed_no_blocking_findings",
+    "evidence": [
+      "Reviewed the localized diff for CI, registry, comparison-lane normalization, profile-synth fixture materialization, and operator-safety test alignment.",
+      "Ran git diff --check on the touched files with no findings."
+    ]
+  },
+  "precommit": {
+    "status": "passed",
+    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files .github/workflows/ci-complete.yml .gitignore services/repo-truth-extractor/benchmarking/executors/phase_s_adapter.py services/repo-truth-extractor/benchmarking/registry/registry_loader.py services/repo-truth-extractor/benchmarking/synthesis/profile_synth.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/conftest.py services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/direct_model/RUN_MANIFEST.json services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/direct_model/DIRECT_MODEL_COMPARISON.json services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/direct_model/DIRECT_MODEL_CAMPAIGN_MANIFEST.json services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/pricing/RUN_MANIFEST.json services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/pricing/pricing_coverage_report.json proof/rte-seam-extraction-foundation.proof.json"
+  },
+  "evidence_ledger_completeness": "complete",
+  "pr": {
+    "url": null,
+    "status": "not_opened"
+  },
+  "merge_readiness": "local_stabilization_complete_not_ready_for_merge_without_commit_and_pr",
+  "worktree": {
+    "path": "/Users/hue/code/dopemux-mvp",
+    "branch": "packet/rte-07-post-v1-deferred",
+    "cleanup_status": "not_applicable_in_current_sandbox",
+    "branch_request_status": "requested packet branch was not created in this writable checkout because sandboxed git ref writes were blocked"
+  }
+}

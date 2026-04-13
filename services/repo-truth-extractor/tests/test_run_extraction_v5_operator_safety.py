@@ -428,10 +428,10 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
 
 def test_route_readiness_summary_distinguishes_required_fallback_and_configured() -> None:
     runner = _load_runner_module()
-    summary = runner.derive_route_readiness_summary(["A", "H", "D", "C"], "cost")
+    summary = runner.derive_route_readiness_summary(["A", "H", "D"], "cost")
 
     assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert "GEMINI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "XAI_API_KEY" in summary["api_key_env_categories"]["optional_fallback"]
     assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
 
@@ -471,7 +471,8 @@ def test_print_config_includes_route_readiness_summary() -> None:
     assert summary["target_phases"] == ["A", "H", "D", "C"]
     assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
+    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert summary["api_key_env_categories"]["configured_not_required"] == []
     assert payload["effective_model_routing"]["A"]["scope"] == "representative_phase_default_not_step_authoritative"
 
 

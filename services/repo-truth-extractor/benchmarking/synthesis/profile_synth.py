@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,13 @@ from .proposal_models import SynthesisProposal
 from .review_packets import build_review_packet
 from .routing_diff import build_routing_diff_proposals
 
+SERVICE_ROOT = Path(__file__).resolve().parents[2]
+PROFILE_SYNTH_FIXTURE_ROOT = (
+    SERVICE_ROOT / "tests" / "fixtures" / "benchmarking" / "profile_synth"
+)
+PROFILE_SYNTH_DIRECT_MODEL_FIXTURE_DIR = PROFILE_SYNTH_FIXTURE_ROOT / "direct_model"
+PROFILE_SYNTH_PRICING_FIXTURE_DIR = PROFILE_SYNTH_FIXTURE_ROOT / "pricing"
+
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -27,8 +35,32 @@ def _latest_dir(base: Path) -> Path:
     return candidates[-1]
 
 
-def _load_direct_model_inputs(repo_root: Path, run_dir: Path | None = None) -> tuple[Path, dict[str, Any], dict[str, Any]]:
-    run_dir = run_dir or _latest_dir(repo_root / "proof" / "benchmarking" / "TP-RTE-BENCH-DMB-001")
+def _materialize_profile_synth_fixture_run(
+    source_dir: Path,
+    *,
+    benchmark_root: Path | None,
+    packet_id: str,
+) -> Path:
+    if benchmark_root is None:
+        return source_dir
+    run_dir = benchmark_root / "proof" / "benchmarking" / packet_id / "fixture_run"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    for fixture_file in sorted(source_dir.glob("*.json")):
+        shutil.copy2(fixture_file, run_dir / fixture_file.name)
+    return run_dir
+
+
+def _load_direct_model_inputs(
+    repo_root: Path,
+    benchmark_root: Path | None = None,
+    run_dir: Path | None = None,
+) -> tuple[Path, dict[str, Any], dict[str, Any]]:
+    del repo_root
+    run_dir = run_dir or _materialize_profile_synth_fixture_run(
+        PROFILE_SYNTH_DIRECT_MODEL_FIXTURE_DIR,
+        benchmark_root=benchmark_root,
+        packet_id="TP-RTE-BENCH-DMB-001",
+    )
     return (
         run_dir,
         _load_json(run_dir / "RUN_MANIFEST.json"),
@@ -36,8 +68,17 @@ def _load_direct_model_inputs(repo_root: Path, run_dir: Path | None = None) -> t
     )
 
 
-def _load_pricing_inputs(repo_root: Path, run_dir: Path | None = None) -> tuple[Path, dict[str, Any], dict[str, Any]]:
-    run_dir = run_dir or _latest_dir(repo_root / "proof" / "benchmarking" / "TP-RTE-BENCH-PRICE-001")
+def _load_pricing_inputs(
+    repo_root: Path,
+    benchmark_root: Path | None = None,
+    run_dir: Path | None = None,
+) -> tuple[Path, dict[str, Any], dict[str, Any]]:
+    del repo_root
+    run_dir = run_dir or _materialize_profile_synth_fixture_run(
+        PROFILE_SYNTH_PRICING_FIXTURE_DIR,
+        benchmark_root=benchmark_root,
+        packet_id="TP-RTE-BENCH-PRICE-001",
+    )
     return (
         run_dir,
         _load_json(run_dir / "RUN_MANIFEST.json"),
@@ -246,8 +287,16 @@ def synthesize_profile_proposals(
     direct_model_run_dir: Path | None = None,
     pricing_run_dir: Path | None = None,
 ) -> dict[str, Any]:
-    direct_dir, direct_manifest, direct_comparison = _load_direct_model_inputs(repo_root, direct_model_run_dir)
-    pricing_dir, pricing_manifest, pricing_report = _load_pricing_inputs(repo_root, pricing_run_dir)
+    direct_dir, direct_manifest, direct_comparison = _load_direct_model_inputs(
+        repo_root,
+        benchmark_root=benchmark_root,
+        run_dir=direct_model_run_dir,
+    )
+    pricing_dir, pricing_manifest, pricing_report = _load_pricing_inputs(
+        repo_root,
+        benchmark_root=benchmark_root,
+        run_dir=pricing_run_dir,
+    )
 
     governance_payload = run_governance_smoke(root=benchmark_root, proof_dir=None)
     route_payload = run_route_separation_smoke(

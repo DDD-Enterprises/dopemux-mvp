@@ -1,0 +1,5 @@
+{
+  "benchmark_run_id": "fixture_direct_model_run",
+  "no_route_profile_truth_claimed": true,
+  "source": "deterministic_profile_synth_fixture"
+}

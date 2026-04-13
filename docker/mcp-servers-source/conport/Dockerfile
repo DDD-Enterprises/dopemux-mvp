@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies from centralized manifest
-RUN uv uv pip install --system --no-cache --system --no-cache .[services]
+RUN uv pip install --system --no-cache .[services]
 
 # Copy shared monitoring module (relative to root build context)
 RUN mkdir -p /app/shared/monitoring
