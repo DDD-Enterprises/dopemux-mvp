@@ -395,11 +395,10 @@ class TestTavilyAdapter:
         adapter = TavilySearchAdapter(api_key="test_key")
 
         domains = adapter._get_domains_for_result_types([SearchResultType.CODE_EXAMPLE])
-        assert 'github.com' in domains
-        assert 'codepen.io' in domains
+        assert {"github.com", "codepen.io"}.issubset(set(domains))
 
         domains = adapter._get_domains_for_result_types([SearchResultType.STACK_OVERFLOW])
-        assert 'stackoverflow.com' in domains
+        assert set(domains) == {"stackoverflow.com", "stackexchange.com"}
 
 
 class TestPerplexityAdapter:

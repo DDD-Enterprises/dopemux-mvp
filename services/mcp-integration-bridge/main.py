@@ -1671,7 +1671,7 @@ async def get_project_dashboard(project_id: str):
         return dashboard
 
     except Exception:
-        logger.exception("❌ Dashboard generation failed")
+        logger.error("Dashboard generation failed")
         raise HTTPException(status_code=500, detail="Dashboard generation failed")
 
 

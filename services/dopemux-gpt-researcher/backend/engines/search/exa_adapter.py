@@ -25,6 +25,14 @@ from .base_adapter import (
 logger = logging.getLogger(__name__)
 
 
+def _hostname(url: str) -> str:
+    return (urlparse(url).hostname or "").lower().rstrip(".")
+
+
+def _host_matches(hostname: str, *domains: str) -> bool:
+    return any(hostname == domain or hostname.endswith(f".{domain}") for domain in domains)
+
+
 class ExaSearchAdapter(BaseSearchAdapter):
     """
     Exa search engine adapter for semantic technical search
@@ -348,21 +356,21 @@ class ExaSearchAdapter(BaseSearchAdapter):
     def _classify_result_type(self, url: str, content: str, title: str) -> SearchResultType:
         """Classify result type based on URL patterns and content"""
 
-        domain = urlparse(url).netloc.lower()
+        domain = _hostname(url)
         path = urlparse(url).path.lower()
 
         # Check domain patterns
-        if 'docs.' in domain or 'documentation' in path:
+        if domain.startswith('docs.') or 'documentation' in path:
             return SearchResultType.DOCUMENTATION
-        elif 'api.' in domain or '/api/' in path or 'reference' in path:
+        elif domain.startswith('api.') or '/api/' in path or 'reference' in path:
             return SearchResultType.API_REFERENCE
-        elif 'github.com' in domain:
+        elif _host_matches(domain, 'github.com'):
             return SearchResultType.GITHUB_ISSUE if '/issues/' in path else SearchResultType.CODE_EXAMPLE
-        elif 'stackoverflow.com' in domain:
+        elif _host_matches(domain, 'stackoverflow.com'):
             return SearchResultType.STACK_OVERFLOW
-        elif any(word in domain for word in ['tutorial', 'learn', 'course']):
+        elif domain.startswith('tutorial.') or domain.startswith('learn.') or domain.startswith('course.'):
             return SearchResultType.TUTORIAL
-        elif any(word in domain for word in ['blog', 'medium', 'dev.to']):
+        elif domain.startswith('blog.') or _host_matches(domain, 'medium.com', 'dev.to', 'hashnode.com'):
             return SearchResultType.BLOG_POST
 
         # Check content patterns
@@ -380,19 +388,19 @@ class ExaSearchAdapter(BaseSearchAdapter):
     def _assess_source_quality(self, url: str) -> SourceQuality:
         """Assess source quality based on domain reputation"""
 
-        domain = urlparse(url).netloc.lower()
+        domain = _hostname(url)
 
         # Check against quality domain lists
         for quality, domains in self.quality_domains.items():
-            if any(quality_domain in domain for quality_domain in domains):
+            if any(_host_matches(domain, quality_domain) for quality_domain in domains):
                 return quality
 
         # Additional heuristics
         if domain.endswith('.edu') or domain.endswith('.gov'):
             return SourceQuality.EXCELLENT
-        elif 'docs.' in domain or 'developer.' in domain:
+        elif domain.startswith('docs.') or domain.startswith('developer.'):
             return SourceQuality.EXCELLENT
-        elif 'github.com' in domain:
+        elif _host_matches(domain, 'github.com'):
             return SourceQuality.GOOD
 
         return SourceQuality.MODERATE

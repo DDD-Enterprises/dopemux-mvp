@@ -916,7 +916,7 @@ class EffectivenessTracker:
         }
 
         pattern_string = json.dumps(pattern_data, sort_keys=True)
-        return hashlib.md5(pattern_string.encode()).hexdigest()[:12]
+        return hashlib.sha256(pattern_string.encode()).hexdigest()[:12]
 
     async def _process_feedback_buffer(self) -> None:
         """Process accumulated feedback."""

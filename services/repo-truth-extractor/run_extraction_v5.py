@@ -9275,10 +9275,7 @@ def call_llm(
         )
 
     if not api_key:
-        logger.error(
-            "Missing API key env var for provider=%s",
-            provider,
-        )
+        logger.error("Missing API key env var")
         if provider == "gemini":
             logger.error("Gemini credentials are missing in canonical repo-root env configuration.")
         return {
