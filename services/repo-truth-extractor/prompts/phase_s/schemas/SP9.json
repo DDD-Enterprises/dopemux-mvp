@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status", "reasons", "checklist"],
+  "properties": {
+    "status": {"type": "string", "enum": ["PASS", "FAIL", "NEEDS_REVIEW", "FAIL_CLOSED"]},
+    "reasons": {"type": "array", "items": {"type": "string"}},
+    "checklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "required", "ok"],
+        "properties": {
+          "id": {"type": "string"},
+          "required": {"type": "boolean"},
+          "ok": {"type": "boolean"},
+          "note": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status", "artifacts"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "FAIL_CLOSED"]},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["artifact_name", "source_phase", "source_step"],
+        "properties": {
+          "artifact_name": {"type": "string"},
+          "source_phase": {"type": "string"},
+          "source_step": {"type": "string"},
+          "path": {"type": "string"},
+          "content_hash": {"type": "string"}
+        }
+      }
+    }
+  }
+}
