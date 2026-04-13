@@ -1026,12 +1026,18 @@ _VALID_PROMPT_TIERS = {"bulk", "extract", "synthesis", "qa"}
 
 def set_active_s_prompts_mode(mode: Optional[str]) -> None:
     global _ACTIVE_S_PROMPTS_MODE
-    normalized = str(mode or "").strip().lower() or S_PROMPTS_AUTO
+    normalized = str(mode or "").strip().lower() or S_PROMPTS_LEGACY
     if normalized not in S_PROMPTS_MODES:
         allowed = ", ".join(sorted(S_PROMPTS_MODES))
         raise RuntimeError(
             f"Unsupported S prompts mode {mode!r}. Expected one of: {allowed}"
         )
+    if normalized != S_PROMPTS_LEGACY:
+        logger.warning(
+            "Ignoring S prompts mode=%s; phase S always uses legacy prompts. Use phase SP for registry-backed pipeline prompts.",
+            normalized,
+        )
+        normalized = S_PROMPTS_LEGACY
     _ACTIVE_S_PROMPTS_MODE = normalized
 
 
@@ -1041,12 +1047,19 @@ def get_active_s_prompts_mode() -> str:
         return active
     env_mode = str(os.getenv(S_PROMPTS_MODE_ENV_VAR, "")).strip().lower()
     if not env_mode:
-        return S_PROMPTS_AUTO
+        return S_PROMPTS_LEGACY
     if env_mode not in S_PROMPTS_MODES:
         allowed = ", ".join(sorted(S_PROMPTS_MODES))
         raise RuntimeError(
             f"{S_PROMPTS_MODE_ENV_VAR} must be one of {allowed}. Got: {env_mode}"
         )
+    if env_mode != S_PROMPTS_LEGACY:
+        logger.warning(
+            "Ignoring %s=%s; phase S always uses legacy prompts. Use phase SP for registry-backed pipeline prompts.",
+            S_PROMPTS_MODE_ENV_VAR,
+            env_mode,
+        )
+        return S_PROMPTS_LEGACY
     return env_mode
 
 
@@ -5399,7 +5412,7 @@ def write_run_manifest(
             "gemini_transport": args.gemini_transport,
             "openai_transport": args.openai_transport,
             "xai_transport": args.xai_transport,
-            "s_prompts": getattr(args, "s_prompts", S_PROMPTS_AUTO),
+            "s_prompts": getattr(args, "s_prompts", S_PROMPTS_LEGACY),
             "retry_policy": args.retry_policy,
             "retry_max_attempts": args.retry_max_attempts,
             "retry_base_seconds": args.retry_base_seconds,
@@ -5883,7 +5896,7 @@ def _load_phase_s_registry() -> Dict[str, Dict[str, str]]:
 
 
 def _resolve_phase_s_prompts(mode: str) -> List[PromptSpec]:
-    normalized_mode = str(mode or S_PROMPTS_AUTO).strip().lower() or S_PROMPTS_AUTO
+    normalized_mode = str(mode or S_PROMPTS_LEGACY).strip().lower() or S_PROMPTS_LEGACY
     if normalized_mode not in S_PROMPTS_MODES:
         allowed = ", ".join(sorted(S_PROMPTS_MODES))
         raise RuntimeError(
@@ -5940,6 +5953,13 @@ def _resolve_phase_sp_prompts() -> List[PromptSpec]:
     specs: List[PromptSpec] = []
     for step_id in sorted(steps_data.keys(), key=step_sort_key):
         entry = steps_data[step_id]
+        tier_override = str(
+            entry.get("routing_tier", entry.get("tier", "synthesis"))
+        ).strip().lower() or "synthesis"
+        if tier_override not in _VALID_PROMPT_TIERS:
+            raise RuntimeError(
+                f"Phase SP registry step {step_id} routing_tier must be one of {sorted(_VALID_PROMPT_TIERS)}."
+            )
         prompt_path = (base / entry["prompt_path"]).resolve()
         prompt_text = safe_read(prompt_path)
         output_artifacts = extract_output_artifacts(prompt_text, step_id)
@@ -5950,7 +5970,7 @@ def _resolve_phase_sp_prompts() -> List[PromptSpec]:
                 step_id=step_id,
                 prompt_path=prompt_path,
                 output_artifacts=tuple(output_artifacts),
-                tier_override=entry.get("tier", "synthesis"),
+                tier_override=tier_override,
                 source="registry",
                 contract=_step_contract_for("SP", step_id),
             )
@@ -19950,7 +19970,7 @@ def main() -> None:
         "--s-prompts",
         choices=sorted(S_PROMPTS_MODES),
         default=None,
-        help="Phase S prompt resolver mode: auto, registry, or legacy.",
+        help="Compatibility flag retained for older invocations. Phase S now always uses legacy prompts; use phase SP for registry-backed pipeline prompts.",
     )
     parser.add_argument(
         "--s-steps",
@@ -20337,7 +20357,7 @@ def main() -> None:
         )
     s_prompts_mode = (
         str(args.s_prompts or os.getenv(S_PROMPTS_MODE_ENV_VAR, "")).strip().lower()
-        or S_PROMPTS_AUTO
+        or S_PROMPTS_LEGACY
     )
     try:
         set_active_s_prompts_mode(s_prompts_mode)
