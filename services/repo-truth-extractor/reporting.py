@@ -646,7 +646,7 @@ def write_resume_proof(
         coverage_path = dirs[phase] / "qa" / f"PHASE_{phase}_COVERAGE.json"
         if coverage_path.exists():
             try:
-                coverage_payload = json.loads(coverage_path.read_text(encoding="utf-8"))
+                coverage_payload = deps.load_json(coverage_path)
                 missing = coverage_payload.get("missing_required_artifacts", [])
                 missing_total += len(missing)
                 phase_statuses[phase] = coverage_payload.get("status", "UNKNOWN")
