@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "FAIL_CLOSED"]},
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key"],
+        "properties": {
+          "key": {"type": "string"},
+          "values": {"type": "array"}
+        }
+      }
+    },
+    "output": {}
+  }
+}
