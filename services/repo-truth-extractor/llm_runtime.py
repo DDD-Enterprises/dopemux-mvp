@@ -137,8 +137,14 @@ def call_llm(
     lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     if deps.live_llm_calls_blocked_for_tests():
-        message = "Live LLM call blocked in test context."
-        logger.error(message)
+        message = (
+            f"Live LLM call blocked in test context provider={provider} model={model_id}. "
+            f"Set {deps.live_llm_tests_env}=1 to override."
+        )
+        logger.error(
+            "Live LLM call blocked in test context. Set %s=1 to override.",
+            deps.live_llm_tests_env,
+        )
         raise RuntimeError(message)
     base_url = deps.llm_base_url(provider, cfg)
     transport = deps.transport_for_provider(provider, cfg)
@@ -609,7 +615,7 @@ def call_llm(
                     failure_type,
                     provider_error_reason,
                     exception_info.get("exception_type"),
-                    True,
+                    "REDACTED",
                 )
             else:
                 logger.warning(
@@ -634,8 +640,9 @@ def call_llm(
                 mode_index += 1
                 effective_mode = auth_mode_sequence[mode_index]
                 logger.warning(
-                    "Gemini openai_compat auth pivot after auth failure: next_mode=%s",
+                    "Gemini openai_compat auth pivot after auth failure: next_mode=%s endpoint=%s",
                     effective_mode,
+                    deps.endpoint_effective(endpoint_url),
                 )
                 continue
 
