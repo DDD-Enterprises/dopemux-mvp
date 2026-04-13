@@ -5,62 +5,69 @@
 
 ## Directory Organization
 
-This module directory implements a **plane-aligned architecture** that respects the Two-Plane Architecture boundaries and authority matrix.
+This module directory implements a **simplified architecture** with SuperClaude integration.
 
-### Project Management Plane (`pm-plane/`)
+**Architecture Version**: 2.0 (Simplified with SuperClaude)
+**Decision Reference**: #132, #133, #134 (Simplified), #142-144 (SuperClaude Integration)
 
-Modules for project management and task coordination systems:
-
-- `task-master.md` - PRD parsing and AI-driven task decomposition commands
-- `task-orchestrator.md` - Dependency analysis with 37 specialized orchestration tools
-- `leantime.md` - Status synchronization and team dashboard integration
+### SuperClaude Integration
+- `superclaude-integration.md` - SuperClaude 4.1.5 integration with Dopemux MCPs (COMPLETE)
+- `custom-commands.md` - /dx: custom command specifications (planned)
 
 ### Cognitive Plane (`cognitive-plane/`)
+Modules for code intelligence and knowledge management:
+- `serena-lsp.md` - Serena v2 LSP with ADHD accommodations (max 10 results, 3-level depth, complexity scoring)
+- `conport-memory.md` - ConPort PostgreSQL AGE for decisions, progress, knowledge graph
 
-Modules for developer support and code intelligence:
-
-- `serena-lsp.md` - LSP operations with ADHD accommodations (max 10 results, 3-level depth)
-- `conport-memory.md` - Graph operations for decision logging and context preservation
+### PM Plane (`pm-plane/`) - Deprecated Components
+**Note**: Per Decision #132-134, simplified to ConPort + SuperClaude
+- `task-master.md` - ⚠️ DEPRECATED - See Migration Notes section
+- `task-orchestrator.md` - ⚠️ DEPRECATED - Use ConPort progress_entry instead
+- `leantime.md` - 🚧 IN DEVELOPMENT (feature branch)
 
 ### Coordination (`coordination/`)
-
-Modules for cross-plane communication and integration patterns:
-
-- `dopecon-bridge.md` - Event routing patterns and cross-plane coordination (PORT_BASE+16)
-- `authority-matrix.md` - Clear reference for system authority boundaries
+Modules for integration patterns and authority boundaries:
+- `integration-bridge.md` - Event routing and system coordination
+- `authority-matrix.md` - Authority boundaries (updated for simplified architecture)
 
 ### Shared (`shared/`)
+Cross-cutting concerns and common patterns:
+- `sprint.md` - Sprint management with ConPort integration
+- `event-patterns.md` - Event-driven architecture patterns
+- `adhd-patterns.md` - ADHD accommodations and SuperClaude session workflows
+- `superclaude-workflows.md` - ConPort + Serena + SuperClaude integration patterns (NEW)
 
-Modules for cross-cutting concerns and common patterns:
+## Loading Strategy (Simplified Architecture)
 
-- `sprint.md` - mem4sprint framework with entity templates and workflows
-- `event-patterns.md` - Event schemas and async handling patterns
-- `adhd-patterns.md` - ADHD accommodations and attention state management
-
-## Loading Strategy
+**Session Start** (Always load):
+- `shared/superclaude-workflows.md` - Primary workflow integration
+- `cognitive-plane/conport-memory.md` - Knowledge graph and decisions
+- Reference MCP docs via @ imports (conditional loading)
 
 **PLAN Mode** (Strategic):
+- `shared/sprint.md` - Sprint planning
+- `cognitive-plane/conport-memory.md` - Decision logging
+- Zen MCP for consensus and planning
 
-- Load: pm-plane/task-master.md + shared/sprint.md + cognitive-plane/conport-memory.md
-- Token budget: ~4000 tokens
+**ACT Mode** (Implementation):
+- `cognitive-plane/serena-lsp.md` - Code navigation
+- `cognitive-plane/conport-memory.md` - Progress tracking
+- SuperClaude commands (/sc:implement, /sc:fix, etc.)
 
-**ACT Mode** (Execution):
+**RESEARCH Mode**:
+- Exa + GPT-Researcher for investigation
+- Zen thinkdeep for analysis
+- ConPort for logging findings
 
-- Load: cognitive-plane/serena-lsp.md + cognitive-plane/conport-memory.md + python.md
-- Token budget: ~2500 tokens
+## Authority Enforcement (Simplified)
 
-## Authority Enforcement
-
-Each module respects the authority matrix:
-
-- **Leantime**: Status updates only (never task decomposition)
-- **Task-Master**: PRD parsing only (never status changes)
-- **ConPort**: Decisions and patterns only (never task hierarchy)
-- **Serena**: Code navigation only (never project management)
-
-## Cross-Plane Communication
-
-All cross-plane communication MUST route through the DopeconBridge. No direct tool calls between planes are permitted.
+**Simplified Architecture Authorities** (Decision #132-134):
+- **ConPort**: Task storage, decision logging, progress tracking, knowledge graph (PRIMARY)
+- **SuperClaude**: Command coordination, PRD parsing (/sc:workflow + Zen planner), agent orchestration
+- **Serena**: Code navigation, LSP operations, semantic analysis
+- **Zen**: Multi-model reasoning, planning, debugging, code review
+- **Python ADHD Engine**: Energy tracking, break monitoring, task routing (queries ConPort)
+- **Leantime**: 🚧 Status updates (in development - feature branch)
 
 ## ADHD Optimizations
 
