@@ -659,3 +659,22 @@ def test_comparison_resume_does_not_invalidate_canonical(
     assert comp_decision["action"] == "SKIP", (
         f"comparison must SKIP when valid artifact exists; got {comp_decision['action']!r}"
     )
+
+
+def test_comparison_resume_rejects_invalid_artifact_shape(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    artifact_path = tmp_path / "A9__A_P0001.json"
+    artifact_path.write_text(json.dumps({"ok": True}), encoding="utf-8")
+
+    decision = runner.compute_comparison_resume_decision(
+        comparison_artifact_path=artifact_path,
+        step_id="A9",
+        partition_id="A_P0001",
+        provider="xai",
+        model="grok-4.20-beta",
+    )
+
+    assert decision == {
+        "action": "RERUN",
+        "reason": "invalid_comparison_artifact_shape",
+    }

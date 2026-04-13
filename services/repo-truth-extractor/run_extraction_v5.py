@@ -14125,10 +14125,7 @@ def _run_phase_inner(
         provider = str(first_route["provider"])
         model_id = str(first_route["model_id"])
     else:
-    else:
         provider, model_id, _ = MODEL_ROUTING.get(
-            phase, ("openai", "gpt-5-mini", "OPENAI_API_KEY")
-        )
             phase, ("openai", "gpt-5-mini", "OPENAI_API_KEY")
         )
     ui_flags = (
