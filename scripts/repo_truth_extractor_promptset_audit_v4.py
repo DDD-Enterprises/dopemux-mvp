@@ -54,7 +54,13 @@ class PromptAuditRow:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Audit Repo Truth Extractor v4 prompts")
+    parser = argparse.ArgumentParser(description="Audit Repo Truth Extractor prompts")
+    parser.add_argument(
+        "--population",
+        choices=["v4", "phase_s", "phase_s_int", "phase_fl_int", "prescan", "all"],
+        default="v4",
+        help="Which prompt population to audit (default: v4)",
+    )
     parser.add_argument(
         "--repo-root",
         type=Path,
@@ -650,6 +656,200 @@ def _report_markdown(summary: Dict[str, Any], rows: Sequence[PromptAuditRow]) ->
     return "\n".join(lines) + "\n"
 
 
+def _audit_phase_s(repo_root: Path) -> Dict[str, Any]:
+    """Audit SP (Synthesis Phase) population."""
+    try:
+        import sys
+        rte_path = str(repo_root / "services" / "repo-truth-extractor")
+        if rte_path not in sys.path:
+            sys.path.insert(0, rte_path)
+        from sp.models import SP_STEPS_BY_ID
+    except (ImportError, ModuleNotFoundError) as e:
+        return {"population": "phase_s", "status": "fail", "errors": [f"Cannot import sp.models: {e}"]}
+
+    errors = []
+    prompts_dir = repo_root / "services" / "repo-truth-extractor" / "prompts" / "phase_s"
+    schemas_dir = prompts_dir / "schemas"
+    config_dir = prompts_dir / "config"
+
+    # Check prompt files
+    for step_id, step in SP_STEPS_BY_ID.items():
+        prompt_path = prompts_dir / step.prompt_file
+        if not prompt_path.exists():
+            errors.append(f"SP{step_id}: prompt file missing: {step.prompt_file}")
+        else:
+            # Check template variables
+            text = prompt_path.read_text(encoding="utf-8")
+            for var in step.template_vars:
+                placeholder = "{{" + var + "}}"
+                if placeholder not in text:
+                    errors.append(f"SP{step_id}: missing {{{{VAR}}}}: {var}")
+
+    # Check schema files for steps that have them
+    for step_id, step in SP_STEPS_BY_ID.items():
+        if step.schema_path:
+            schema_path = schemas_dir / f"{step_id}.json"
+            if not schema_path.exists():
+                errors.append(f"SP{step_id}: schema file missing: {schema_path.name}")
+            else:
+                try:
+                    json.loads(schema_path.read_text(encoding="utf-8"))
+                except json.JSONDecodeError as e:
+                    errors.append(f"SP{step_id}: schema JSON invalid: {e}")
+
+    # Check config files
+    for config_file in ["dedupe_sort_rules.json", "contract_rules.json", "promotion_rules.json"]:
+        cfg_path = config_dir / config_file
+        if not cfg_path.exists():
+            errors.append(f"Config missing: {config_file}")
+        else:
+            try:
+                json.loads(cfg_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError as e:
+                errors.append(f"Config {config_file} JSON invalid: {e}")
+
+    return {
+        "population": "phase_s",
+        "status": "pass" if not errors else "fail",
+        "prompt_count": len(SP_STEPS_BY_ID),
+        "schema_count": sum(1 for s in SP_STEPS_BY_ID.values() if s.schema_path),
+        "config_count": 3,
+        "errors": errors,
+    }
+
+
+def _audit_phase_s_int(repo_root: Path) -> Dict[str, Any]:
+    """Audit S_INT (S16-S20) population."""
+    errors = []
+    prompts_dir = repo_root / "services" / "repo-truth-extractor" / "prompts" / "phase_s_int"
+    schemas_dir = prompts_dir / "schemas"
+
+    # Check for 5 renamed prompt files
+    for stem in ["S16", "S17", "S18", "S19", "S20"]:
+        files = list(prompts_dir.glob(f"PROMPT_{stem}_*.md"))
+        if not files:
+            errors.append(f"{stem}: no PROMPT_{stem}_*.md file found")
+        elif len(files) > 1:
+            errors.append(f"{stem}: multiple matching files found")
+        else:
+            text = files[0].read_text(encoding="utf-8")
+            for var in ["S_INT_INPUT_JSON", "PRIOR_OUTPUTS_JSON"]:
+                if "{{" + var + "}}" not in text:
+                    errors.append(f"{stem}: missing {{{{VAR}}}}: {var}")
+
+    # Check schema files
+    for stem in ["S16", "S17", "S18", "S19", "S20"]:
+        schema_path = schemas_dir / f"{stem}.json"
+        if not schema_path.exists():
+            errors.append(f"{stem}: schema file missing")
+        else:
+            try:
+                json.loads(schema_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError as e:
+                errors.append(f"{stem}: schema JSON invalid: {e}")
+
+    return {
+        "population": "phase_s_int",
+        "status": "pass" if not errors else "fail",
+        "prompt_count": 5,
+        "schema_count": 5,
+        "errors": errors,
+    }
+
+
+def _audit_phase_fl_int(repo_root: Path) -> Dict[str, Any]:
+    """Audit FL_INT (F0-F4, L0-L4) population."""
+    errors = []
+    prompts_dir = repo_root / "services" / "repo-truth-extractor" / "prompts" / "phase_fl_int"
+    registry_path = prompts_dir / "registry.json"
+
+    # Check registry
+    if not registry_path.exists():
+        return {
+            "population": "phase_fl_int",
+            "status": "fail",
+            "prompt_count": 0,
+            "schema_count": 0,
+            "errors": ["registry.json missing"],
+        }
+
+    try:
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        return {
+            "population": "phase_fl_int",
+            "status": "fail",
+            "prompt_count": 0,
+            "schema_count": 0,
+            "errors": [f"registry.json JSON invalid: {e}"],
+        }
+
+    # Check prompt files match registry
+    steps = registry.get("steps", {})
+    for step_id, step_data in steps.items():
+        prompt_path_str = step_data.get("prompt_path", "")
+        if not prompt_path_str.startswith("PROMPT_"):
+            errors.append(f"{step_id}: prompt_path missing PROMPT_ prefix: {prompt_path_str}")
+
+        full_path = prompts_dir / prompt_path_str
+        if not full_path.exists():
+            errors.append(f"{step_id}: prompt file not found: {prompt_path_str}")
+
+    # Count schema files
+    schemas_dir = prompts_dir / "schemas"
+    schema_count = 0
+    if schemas_dir.exists():
+        schema_count = len(list(schemas_dir.glob("*.json")))
+
+    return {
+        "population": "phase_fl_int",
+        "status": "pass" if not errors else "fail",
+        "prompt_count": len(steps),
+        "schema_count": schema_count,
+        "errors": errors,
+    }
+
+
+def _audit_prescan(repo_root: Path) -> Dict[str, Any]:
+    """Audit prescan population."""
+    errors = []
+    grok_file = repo_root / "services" / "repo-truth-extractor" / "lib" / "prescan" / "grok_passes.py"
+
+    if not grok_file.exists():
+        return {
+            "population": "prescan",
+            "status": "fail",
+            "prompt_count": 0,
+            "errors": ["grok_passes.py not found"],
+        }
+
+    # Parse file to find prompt constants
+    text = grok_file.read_text(encoding="utf-8")
+    prompt_names = ["DEDUP", "DISCOVER", "FEASIBILITY", "OPTIMIZE"]
+
+    for prompt_name in prompt_names:
+        var_name = f"_{prompt_name}_SYSTEM_PROMPT"
+        if var_name not in text:
+            errors.append(f"{prompt_name.lower()}: constant {var_name} not found")
+        else:
+            # Quick check for non-empty value
+            start = text.find(f"{var_name} = ")
+            if start > 0:
+                end = text.find("\n\n", start)
+                if end < start:
+                    end = start + 200
+                chunk = text[start : end]
+                if len(chunk) < 100:
+                    errors.append(f"{prompt_name.lower()}: prompt appears empty or too short")
+
+    return {
+        "population": "prescan",
+        "status": "pass" if not errors else "fail",
+        "prompt_count": 4,
+        "errors": errors,
+    }
+
+
 def run_audit(
     repo_root: Path,
     promptset_path: Path,
@@ -685,41 +885,109 @@ def run_audit(
     }
 
 
+def _audit_population(population: str, repo_root: Path) -> Dict[str, Any]:
+    """Dispatch to appropriate audit function."""
+    if population == "v4":
+        promptset_path = repo_root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "promptset.yaml"
+        artifacts_path = repo_root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "artifacts.yaml"
+        model_map_path = repo_root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "model_map.yaml"
+        result = run_audit(repo_root, promptset_path, artifacts_path, model_map_path)
+        # Normalize v4 result to match other populations
+        return {
+            "population": "v4",
+            "status": "pass" if result["summary"]["status"] == "PASS" else "fail",
+            "prompt_count": result["summary"]["prompt_count"],
+            "schema_count": 0,
+            "errors": result["summary"]["global_issues"],
+            "full_result": result,  # Keep for detailed output
+        }
+    elif population == "phase_s":
+        return _audit_phase_s(repo_root)
+    elif population == "phase_s_int":
+        return _audit_phase_s_int(repo_root)
+    elif population == "phase_fl_int":
+        return _audit_phase_fl_int(repo_root)
+    elif population == "prescan":
+        return _audit_prescan(repo_root)
+    else:
+        return {"population": population, "status": "fail", "errors": ["Unknown population"]}
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
-    promptset_path = (repo_root / args.promptset).resolve()
-    artifacts_path = (repo_root / args.artifacts).resolve()
-    model_map_path = (repo_root / args.model_map).resolve()
 
-    payload = run_audit(repo_root, promptset_path, artifacts_path, model_map_path)
-    print(json.dumps(payload["summary"], indent=2, sort_keys=True))
+    if args.population == "all":
+        results = {}
+        for pop in ["v4", "phase_s", "phase_s_int", "phase_fl_int", "prescan"]:
+            results[pop] = _audit_population(pop, repo_root)
 
-    if args.json_out:
-        args.json_out.parent.mkdir(parents=True, exist_ok=True)
-        args.json_out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        print("\n" + "=" * 60)
+        print("PROMPTSET AUDIT - ALL POPULATIONS")
+        print("=" * 60)
+        all_pass = True
+        for pop, result in results.items():
+            status = "✓ PASS" if result.get("status") == "pass" else "✗ FAIL"
+            print(f"{pop:20s} {status}")
+            if result.get("errors"):
+                all_pass = False
+                for err in result.get("errors", [])[:3]:
+                    print(f"  → {err}")
 
-    if args.report_out:
-        rows = [
-            PromptAuditRow(
-                phase=str(row["phase"]),
-                step_id=str(row["step_id"]),
-                prompt_file=str(row["prompt_file"]),
-                outputs=tuple(row["outputs"]),
-                rating=str(row["rating"]),
-                missing_sections=tuple(row["missing_sections"]),
-                missing_outputs_in_registry=tuple(row["missing_outputs_in_registry"]),
-                notes=tuple(row["notes"]),
-            )
-            for row in payload["rows"]
-        ]
-        md = _report_markdown(payload["summary"], rows)
-        args.report_out.parent.mkdir(parents=True, exist_ok=True)
-        args.report_out.write_text(md, encoding="utf-8")
+        if args.strict:
+            print("\nDetailed Results:")
+            for pop, result in results.items():
+                if result.get("errors"):
+                    print(f"\n{pop.upper()}:")
+                    for err in result.get("errors", []):
+                        print(f"  ✗ {err}")
 
-    if args.strict and payload["summary"]["status"] != "PASS":
-        return 1
-    return 0
+        print("=" * 60)
+        return 0 if all_pass else 1
+    else:
+        result = _audit_population(args.population, repo_root)
+
+        if args.population == "v4":
+            # V4 has special summary format
+            full = result.get("full_result", {})
+            print(json.dumps(full.get("summary", result), indent=2, sort_keys=True))
+            if args.json_out:
+                args.json_out.parent.mkdir(parents=True, exist_ok=True)
+                args.json_out.write_text(json.dumps(full, indent=2, sort_keys=True), encoding="utf-8")
+            if args.report_out and full.get("rows"):
+                rows = [
+                    PromptAuditRow(
+                        phase=str(row["phase"]),
+                        step_id=str(row["step_id"]),
+                        prompt_file=str(row["prompt_file"]),
+                        outputs=tuple(row["outputs"]),
+                        rating=str(row["rating"]),
+                        missing_sections=tuple(row["missing_sections"]),
+                        missing_outputs_in_registry=tuple(row["missing_outputs_in_registry"]),
+                        notes=tuple(row["notes"]),
+                    )
+                    for row in full["rows"]
+                ]
+                md = _report_markdown(full["summary"], rows)
+                args.report_out.parent.mkdir(parents=True, exist_ok=True)
+                args.report_out.write_text(md, encoding="utf-8")
+            if args.strict and result["status"] != "pass":
+                return 1
+        else:
+            # Other populations use simpler format
+            print(f"\n{args.population.upper()} POPULATION AUDIT")
+            print(f"Status: {result['status'].upper()}")
+            print(f"Count: {result.get('prompt_count', 0)}")
+            if result.get("errors"):
+                print(f"Errors ({len(result['errors'])}):")
+                for err in result["errors"]:
+                    print(f"  ✗ {err}")
+            else:
+                print("✓ All checks passed")
+            if args.strict and result["status"] != "pass":
+                return 1
+
+        return 0
 
 
 if __name__ == "__main__":
