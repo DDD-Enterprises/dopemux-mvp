@@ -48,7 +48,7 @@ export const GenealogyExplorer: React.FC<Props> = ({
   }, [decisionId, maxHops]);
 
   // Keyboard controls
-  useInput((input) => {
+  useInput((input: string, key: any) => {
     if (input === 'e' && maxHops === 1) {
       setMaxHops(2);  // Expand to 2-hop
     }
@@ -81,7 +81,7 @@ export const GenealogyExplorer: React.FC<Props> = ({
       <Box padding={1} flexDirection="column">
         <Text color="red" bold>Error loading genealogy</Text>
         <Text>{error || 'Unknown error'}</Text>
-        <Text dimColor marginTop={1}>Press 'b' to go back</Text>
+        <Text dimColor>Press 'b' to go back</Text>
       </Box>
     );
   }
@@ -93,17 +93,17 @@ export const GenealogyExplorer: React.FC<Props> = ({
         Genealogy Explorer - Decision #{decisionId}
       </Text>
 
-      <Text dimColor marginTop={0}>
+      <Text dimColor>
         e: Expand to 2-hop | f: Full Context | b: Back | q: Quit
       </Text>
 
       {/* Center decision */}
-      <Box marginTop={1} flexDirection="column">
+      <Box flexDirection="column">
         <Text bold>{neighborhood.center.summary}</Text>
       </Box>
 
       {/* 1-hop neighbors */}
-      <Box marginTop={1} flexDirection="column">
+      <Box flexDirection="column">
         <Text color="cyan">
           1-hop neighbors ({neighborhood.hop_1_neighbors.length}):
         </Text>
@@ -126,7 +126,7 @@ export const GenealogyExplorer: React.FC<Props> = ({
 
       {/* 2-hop neighbors (if expanded) */}
       {maxHops === 2 && neighborhood.hop_2_neighbors.length > 0 && (
-        <Box marginTop={1} flexDirection="column">
+        <Box flexDirection="column">
           <Text color="cyan">
             2-hop neighbors ({neighborhood.hop_2_neighbors.length}):
           </Text>
@@ -144,7 +144,7 @@ export const GenealogyExplorer: React.FC<Props> = ({
 
       {/* Expansion hint */}
       {maxHops === 1 && (
-        <Box marginTop={1}>
+        <Box>
           <Text color="yellow">
             Press 'e' to expand to 2-hop neighbors
           </Text>
@@ -152,7 +152,7 @@ export const GenealogyExplorer: React.FC<Props> = ({
       )}
 
       {/* Network summary */}
-      <Box marginTop={1}>
+      <Box>
         <Text dimColor>
           Total network: {neighborhood.total_neighbors} decisions
           {maxHops === 2 ? ' (fully expanded)' : ''}
