@@ -3,7 +3,7 @@
 **Project**: Python-based ADHD-optimized development platform
 **Architecture**: Simplified (ConPort + SuperClaude + Python ADHD Engine)
 **Mode**: PLAN/ACT-aware with modular authority boundaries
-**Workspace**: `/Users/hue/code/dopemux-mvp`
+**Workspace**: `<workspace_root>`
 
 ## 🧠 Core ADHD Principles
 
@@ -52,7 +52,7 @@
 ### ConPort Memory Management (AUTOMATIC)
 ```bash
 # Workspace ID for ALL ConPort calls
-WORKSPACE_ID="/Users/hue/code/dopemux-mvp"
+WORKSPACE_ID="<workspace_root>"
 
 # Mandatory session initialization
 mcp__conport__get_active_context --workspace_id "$WORKSPACE_ID"

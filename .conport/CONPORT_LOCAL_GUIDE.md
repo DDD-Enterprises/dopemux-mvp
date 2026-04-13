@@ -27,15 +27,15 @@
 ./scripts/conport/restart.sh
 ```
 
-### 📊 Current Installation Details
+### 📊 Installation Details
 
-**Service Endpoint**: `http://127.0.0.1:3007/mcp`
-**Health Check**: `http://127.0.0.1:3007/`
-**Process ID**: 50757
-**Status**: ✅ FULLY OPERATIONAL
+**Service Endpoint**: `http://127.0.0.1:<port>/mcp` (port auto-detected; check `./scripts/conport/status.sh`)
+**Health Check**: `http://127.0.0.1:<port>/`
+**Process ID**: Run `./scripts/conport/status.sh` to retrieve the current PID
+**Status**: Run `./scripts/conport/status.sh --quick` for current status
 
 **Data Locations**:
-- Database: `context_portal/context.db` (112K)
+- Database: `context_portal/context.db`
 - Vector Data: `context_portal/conport_vector_data/`
 - Session Files: `.conport/sessions/`
 - Service Logs: `.conport/logs/conport.log`
