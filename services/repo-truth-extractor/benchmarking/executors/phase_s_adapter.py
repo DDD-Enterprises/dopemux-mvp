@@ -24,7 +24,7 @@ class PhaseSAdapter(ExecutorAdapter):
         self.validate_case(case)
         runner = _load_runner()
         registry = runner._load_phase_s_registry()
-        prompts = runner._resolve_phase_s_prompts(runner.get_active_s_prompts_mode())
+        prompts = runner._resolve_phase_sp_prompts()
         payload = {
             "registry_step_count": len(registry),
             "step_ids": sorted(registry.keys()),
@@ -58,4 +58,3 @@ class PhaseSAdapter(ExecutorAdapter):
             },
             work_root=str(work_root),
         )
-

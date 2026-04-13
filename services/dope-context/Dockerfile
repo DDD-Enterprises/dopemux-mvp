@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Install dependencies from centralized manifest
-RUN uv uv pip install --system --no-cache --system --no-cache .[services]
+RUN uv pip install --system --no-cache .[services]
 
 # Copy the entire dope-context service (relative to root)
 COPY services/dope-context/ .

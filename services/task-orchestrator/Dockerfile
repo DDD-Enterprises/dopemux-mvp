@@ -13,7 +13,7 @@ COPY pyproject.toml .
 COPY src/dopemux/__init__.py src/dopemux/__init__.py
 
 # Install Python dependencies from centralized manifest
-RUN uv uv pip install --system --no-cache --system --no-cache .[services]
+RUN uv pip install --system --no-cache .[services]
 
 # Copy application code and dopemux package (relative to root build context)
 COPY services/task-orchestrator/app /app/app

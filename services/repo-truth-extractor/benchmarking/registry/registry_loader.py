@@ -169,7 +169,7 @@ def build_registry_bundle() -> RegistryBundle:
         contract_rigor="phase_s_weaker_contract_caveat",
         source_paths=[
             SERVICE_ROOT / "prompts" / "phase_s" / "registry.json",
-            SERVICE_ROOT / "prompts" / "phase_s" / "PROMPT_S11_CONTRACT_LINTER.md",
+            SERVICE_ROOT / "prompts" / "phase_s" / "PROMPT_SP11_CONTRACT_LINTER.md",
         ],
         notes=["phase_s may require weaker contract rigor than FL_INT."],
     )
@@ -409,7 +409,7 @@ def build_registry_bundle() -> RegistryBundle:
             phase_or_step_family="H_Q",
             title="Repair merge conflict normalization",
             description="Exercise repair/merge style contract normalization without execution.",
-            prompt_inventory_refs=["services/repo-truth-extractor/prompts/phase_s/PROMPT_S11_CONTRACT_LINTER.md"],
+            prompt_inventory_refs=["services/repo-truth-extractor/prompts/phase_s/PROMPT_SP11_CONTRACT_LINTER.md"],
             surface_scope=["local_or_open_weight"],
             executor_kind="phase_s_adapter",
             validator_suite_id=validator_phase_s.validator_suite_id,

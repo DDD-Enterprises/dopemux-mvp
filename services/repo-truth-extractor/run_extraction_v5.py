@@ -5834,19 +5834,19 @@ def _legacy_phase_prompt_specs(phase: str) -> List[PromptSpec]:
 
 def _validate_phase_s_registry(payload: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
     if not isinstance(payload, dict):
-        raise ValueError("Phase S registry must be a JSON object.")
+        raise ValueError("Phase SP registry must be a JSON object.")
     if int(payload.get("version", 0)) != 1:
-        raise ValueError("Phase S registry must declare version=1.")
-    if str(payload.get("phase", "")).strip().upper() != "S":
-        raise ValueError("Phase S registry must declare phase='S'.")
+        raise ValueError("Phase SP registry must declare version=1.")
+    if str(payload.get("phase", "")).strip().upper() != "SP":
+        raise ValueError("Phase SP registry must declare phase='SP'.")
     steps = payload.get("steps")
     if not isinstance(steps, dict):
-        raise ValueError("Phase S registry must contain an object 'steps'.")
-    expected = set(REQUIRED_PROMPT_STEP_IDS.get("S", set()))
+        raise ValueError("Phase SP registry must contain an object 'steps'.")
+    expected = set(REQUIRED_PROMPT_STEP_IDS.get("SP", set()))
     observed = {str(key).strip().upper() for key in steps.keys()}
     if observed != expected:
         raise ValueError(
-            "Phase S registry must declare exactly steps "
+            "Phase SP registry must declare exactly steps "
             f"{sorted(expected)}. Observed: {sorted(observed)}"
         )
 
@@ -5855,25 +5855,32 @@ def _validate_phase_s_registry(payload: Dict[str, Any]) -> Dict[str, Dict[str, s
     for step_id in sorted(expected, key=step_sort_key):
         entry = steps.get(step_id)
         if not isinstance(entry, dict):
-            raise ValueError(f"Phase S registry step {step_id} must be an object.")
+            raise ValueError(f"Phase SP registry step {step_id} must be an object.")
         prompt_path = str(entry.get("prompt_path", "")).strip()
-        tier = str(entry.get("tier", "")).strip().lower()
+        tier = str(
+            entry.get("routing_tier", entry.get("tier", "synthesis"))
+        ).strip().lower() or "synthesis"
+        outputs = entry.get("outputs")
         if not prompt_path or Path(prompt_path).is_absolute():
             raise ValueError(
-                f"Phase S registry step {step_id} prompt_path must be a relative path."
+                f"Phase SP registry step {step_id} prompt_path must be a relative path."
             )
         if tier not in _VALID_PROMPT_TIERS:
             raise ValueError(
-                f"Phase S registry step {step_id} tier must be one of {sorted(_VALID_PROMPT_TIERS)}."
+                f"Phase SP registry step {step_id} routing_tier must be one of {sorted(_VALID_PROMPT_TIERS)}."
+            )
+        if not isinstance(outputs, list) or not outputs:
+            raise ValueError(
+                f"Phase SP registry step {step_id} outputs must be a non-empty list."
             )
         resolved = (phase_s_root / prompt_path).resolve()
         if not is_within(resolved, phase_s_root):
             raise ValueError(
-                f"Phase S registry step {step_id} prompt_path escapes {phase_s_root}."
+                f"Phase SP registry step {step_id} prompt_path escapes {phase_s_root}."
             )
         if not resolved.exists() or not resolved.is_file():
             raise ValueError(
-                f"Phase S registry step {step_id} prompt file does not exist: {resolved}"
+                f"Phase SP registry step {step_id} prompt file does not exist: {resolved}"
             )
         validated[step_id] = {
             "prompt_path": prompt_path,
@@ -5937,30 +5944,21 @@ def _resolve_phase_s_prompts(mode: str) -> List[PromptSpec]:
                 output_artifacts=tuple(output_artifacts),
                 tier_override=registry[step_id]["tier"],
                 source="registry",
-                contract=_step_contract_for("S", step_id),
+                contract=_step_contract_for(
+                    "SP" if str(step_id).strip().upper().startswith("SP") else "S",
+                    step_id,
+                ),
             )
         )
     return specs
 
 
 def _resolve_phase_sp_prompts() -> List[PromptSpec]:
-    registry_path = EXTRACTOR_SERVICE_DIR / "prompts" / "phase_s" / "registry.json"
-    if not registry_path.exists():
-        raise FileNotFoundError(f"Phase SP registry not found: {registry_path}")
-    payload = json.loads(registry_path.read_text(encoding="utf-8"))
-    steps_data = payload.get("steps", {})
-    base = registry_path.parent.resolve()
+    registry = _load_phase_s_registry()
+    base = phase_s_registry_dir().resolve()
     specs: List[PromptSpec] = []
-    for step_id in sorted(steps_data.keys(), key=step_sort_key):
-        entry = steps_data[step_id]
-        tier_override = str(
-            entry.get("routing_tier", entry.get("tier", "synthesis"))
-        ).strip().lower() or "synthesis"
-        if tier_override not in _VALID_PROMPT_TIERS:
-            raise RuntimeError(
-                f"Phase SP registry step {step_id} routing_tier must be one of {sorted(_VALID_PROMPT_TIERS)}."
-            )
-        prompt_path = (base / entry["prompt_path"]).resolve()
+    for step_id in sorted(registry.keys(), key=step_sort_key):
+        prompt_path = (base / registry[step_id]["prompt_path"]).resolve()
         prompt_text = safe_read(prompt_path)
         output_artifacts = extract_output_artifacts(prompt_text, step_id)
         if not output_artifacts:
@@ -5970,7 +5968,7 @@ def _resolve_phase_sp_prompts() -> List[PromptSpec]:
                 step_id=step_id,
                 prompt_path=prompt_path,
                 output_artifacts=tuple(output_artifacts),
-                tier_override=tier_override,
+                tier_override=registry[step_id]["tier"],
                 source="registry",
                 contract=_step_contract_for("SP", step_id),
             )
@@ -10949,6 +10947,38 @@ def coerce_artifacts_from_response(
     return []
 
 
+def _normalize_response_artifacts(
+    *,
+    response_text: str,
+    expected_artifacts: Tuple[str, ...],
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+    contract_lane: str,
+) -> Tuple[Optional[Any], List[Dict[str, Any]], Dict[str, Any]]:
+    provenance: Dict[str, Any] = {}
+    parsed = parse_json_from_response(response_text, metadata_out=provenance)
+    finalized_provenance = finalize_response_parse_provenance(
+        provenance,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        provider=provider,
+        model_id=model_id,
+        contract_lane=contract_lane,
+        accepted=True,
+    )
+    log_response_parse_repair(finalized_provenance)
+    artifacts = coerce_artifacts_from_response(
+        parsed=parsed,
+        raw_text=response_text,
+        expected_artifacts=expected_artifacts,
+    )
+    return parsed, artifacts, finalized_provenance
+
+
 def describe_schema_gate_failure(
     artifacts: List[Dict[str, Any]],
     expected_artifact_names: Tuple[str, ...],
@@ -11810,8 +11840,9 @@ def run_comparison_lane(
     output_artifacts: "Tuple[str, ...]",
     build_partition_context_fn,
     call_llm_fn,
-    parse_json_from_response_fn,
-    coerce_artifacts_from_response_fn,
+    parse_json_from_response_fn=None,
+    coerce_artifacts_from_response_fn=None,
+    contract_lane: str = "comparison",
 ) -> "List[Dict[str, Any]]":
     """Execute the comparison lane for eligible partitions.
 
@@ -11915,12 +11946,15 @@ def run_comparison_lane(
             if failure_type:
                 raise RuntimeError(f"LLM failure_type={failure_type!r}")
 
-            # Reuse canonical parse/normalize pipeline
-            parsed = parse_json_from_response_fn(raw_text)
-            artifacts = list(
-                coerce_artifacts_from_response_fn(
-                    parsed, raw_text, output_artifacts
-                )
+            parsed, artifacts, parse_provenance = _normalize_response_artifacts(
+                response_text=raw_text,
+                expected_artifacts=output_artifacts,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                provider=compare_provider,
+                model_id=compare_model,
+                contract_lane=contract_lane,
             )
             request_meta = {
                 "lane": "comparison",
@@ -11932,6 +11966,7 @@ def run_comparison_lane(
                 "final_contract_status": "pass",
                 "repair_invocations": 0,
                 "repair_successes": 0,
+                "response_parse_provenance": parse_provenance,
             }
             if llm_meta.get("response_received") or llm_result.get("ok"):
                 spend_record = _accumulate_runtime_spend(
@@ -14245,26 +14280,17 @@ def execute_step_for_partitions(
                     strict_error is not None
                     and _is_semantic_eof_eligible(strict_error, strict_candidate)
                 )
-                parsed, provenance = parse_json_from_response_with_provenance(
-                    response_text_local
-                )
-                finalized_provenance = finalize_response_parse_provenance(
-                    provenance,
+                parsed, artifacts_local, finalized_provenance = _normalize_response_artifacts(
+                    response_text=response_text_local,
+                    expected_artifacts=output_artifacts,
                     phase=phase,
                     step_id=step_id,
                     partition_id=partition_id,
                     provider=route_provider,
                     model_id=route_model_id,
                     contract_lane=contract_lane,
-                    accepted=True,
                 )
-                log_response_parse_repair(finalized_provenance)
                 request_meta_local["response_parse_provenance"] = finalized_provenance
-                artifacts_local = coerce_artifacts_from_response(
-                    parsed=parsed,
-                    raw_text=response_text_local,
-                    expected_artifacts=output_artifacts,
-                )
                 parse_retry_trace.append(
                     {
                         "attempt": len(parse_retry_trace) + 1,
@@ -15183,8 +15209,7 @@ def execute_step_for_partitions(
                 output_artifacts=output_artifacts,
                 build_partition_context_fn=build_partition_context,
                 call_llm_fn=call_llm,
-                parse_json_from_response_fn=parse_json_from_response,
-                coerce_artifacts_from_response_fn=coerce_artifacts_from_response,
+                contract_lane=contract_lane,
             )
             # Collect canonical results for summary (best-effort from step stats)
             canonical_results_for_summary = [
