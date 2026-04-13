@@ -8,26 +8,23 @@
 ## Core Event Flow Patterns
 
 ### Mandatory Event Routing Rules
-
 ```
-🚨 CRITICAL: All cross-plane communication MUST go through DopeconBridge
+🚨 CRITICAL: All cross-plane communication MUST go through Integration Bridge
 
-SuperClaude → Python ADHD Engine → ConPort → DopeconBridge → Dashboard/Serena
+SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashboard/Serena
 ```
 
 ### Event Flow Sequences
 
 #### Task Lifecycle Events
-
 ```
-1. Tasks Imported: SuperClaude `/dx:prd-parse` → ConPort → DopeconBridge → Dashboard/ADHD Engine
-2. Task Status Changed: ConPort `update_progress` → DopeconBridge → Dashboard
+1. Tasks Imported: SuperClaude `/dx:prd-parse` → ConPort → Integration Bridge → Dashboard/ADHD Engine
+2. Task Status Changed: ConPort `update_progress` → Integration Bridge → Dashboard
 3. Code Changed: Serena → ConPort (optional decision logging)
-4. Decision Made: ConPort → DopeconBridge (broadcast) → All systems
+4. Decision Made: ConPort → Integration Bridge (broadcast) → All systems
 ```
 
 #### Event Priority Levels
-
 - **Critical**: System failures, security alerts
 - **High**: Task blockers, status changes affecting dependencies
 - **Medium**: Progress updates, decision logging
@@ -38,14 +35,13 @@ SuperClaude → Python ADHD Engine → ConPort → DopeconBridge → Dashboard/S
 ### Task Lifecycle Events
 
 #### Task Created Event
-
 ```json
 {
   "event_type": "task_created",
   "event_id": "uuid",
   "timestamp": "2025-09-28T04:22:00Z",
   "source_system": "task-master",
-  "target_systems": ["dopecon-bridge", "conport", "serena"],
+  "target_systems": ["integration-bridge", "conport", "serena"],
   "priority": "medium",
   "data": {
     "task_id": "S-2025.09-T1",
@@ -57,7 +53,7 @@ SuperClaude → Python ADHD Engine → ConPort → DopeconBridge → Dashboard/S
     "tags": ["implementation", "claude-md"]
   },
   "routing": {
-    "next_hop": "dopecon-bridge",
+    "next_hop": "integration-bridge",
     "final_destinations": ["conport", "serena"],
     "requires_ack": true
   }
@@ -65,14 +61,13 @@ SuperClaude → Python ADHD Engine → ConPort → DopeconBridge → Dashboard/S
 ```
 
 #### Status Change Event
-
 ```json
 {
   "event_type": "status_changed",
   "event_id": "uuid",
   "timestamp": "2025-09-28T04:22:00Z",
   "source_system": "leantime",
-  "target_systems": ["dopecon-bridge", "conport"],
+  "target_systems": ["integration-bridge", "conport"],
   "priority": "high",
   "data": {
     "task_id": "S-2025.09-T1",
@@ -90,14 +85,13 @@ SuperClaude → Python ADHD Engine → ConPort → DopeconBridge → Dashboard/S
 ```
 
 #### Code Change Event
-
 ```json
 {
   "event_type": "code_changed",
   "event_id": "uuid",
   "timestamp": "2025-09-28T04:22:00Z",
   "source_system": "serena",
-  "target_systems": ["conport", "dopecon-bridge", "leantime"],
+  "target_systems": ["conport", "integration-bridge", "leantime"],
   "priority": "medium",
   "data": {
     "file_path": "/Users/hue/code/dopemux-mvp/.claude/modules/shared/sprint.md",
@@ -117,14 +111,13 @@ SuperClaude → Python ADHD Engine → ConPort → DopeconBridge → Dashboard/S
 ### Decision Events
 
 #### Decision Logged Event
-
 ```json
 {
   "event_type": "decision_logged",
   "event_id": "uuid",
   "timestamp": "2025-09-28T04:22:00Z",
   "source_system": "conport",
-  "target_systems": ["dopecon-bridge"],
+  "target_systems": ["integration-bridge"],
   "priority": "medium",
   "data": {
     "decision_id": "D-123",
@@ -143,7 +136,6 @@ SuperClaude → Python ADHD Engine → ConPort → DopeconBridge → Dashboard/S
 ## Async Handling Patterns
 
 ### Event Queue Management
-
 ```bash
 # Priority-based event processing
 PROCESS_EVENT_QUEUE() {
@@ -178,7 +170,6 @@ PROCESS_EVENT_QUEUE() {
 ```
 
 ### Circuit Breaker Pattern
-
 ```bash
 # Prevent event overwhelm and cascade failures
 EVENT_CIRCUIT_BREAKER() {
@@ -206,7 +197,6 @@ EVENT_CIRCUIT_BREAKER() {
 ```
 
 ### Eventual Consistency Handling
-
 ```bash
 # Handle out-of-order events and eventual consistency
 HANDLE_EVENTUAL_CONSISTENCY() {
@@ -236,7 +226,6 @@ HANDLE_EVENTUAL_CONSISTENCY() {
 ## Event Validation
 
 ### Schema Validation
-
 ```bash
 # Validate event against schema
 VALIDATE_EVENT() {
@@ -269,7 +258,6 @@ VALIDATE_EVENT() {
 ```
 
 ### Authority Validation
-
 ```bash
 # Ensure events come from authoritative sources
 VALIDATE_EVENT_AUTHORITY() {
@@ -313,7 +301,6 @@ VALIDATE_EVENT_AUTHORITY() {
 ## Event Monitoring and Debugging
 
 ### Event Tracing
-
 ```bash
 # Trace event propagation across systems
 TRACE_EVENT() {
@@ -332,7 +319,6 @@ TRACE_EVENT() {
 ```
 
 ### Event Metrics
-
 ```bash
 # Track event processing metrics
 TRACK_EVENT_METRICS() {
@@ -350,7 +336,6 @@ TRACK_EVENT_METRICS() {
 ## ADHD-Optimized Event Handling
 
 ### Attention-Aware Event Processing
-
 ```bash
 # Adapt event processing to user's attention state
 ADAPT_EVENT_PROCESSING() {
@@ -378,7 +363,6 @@ ADAPT_EVENT_PROCESSING() {
 ```
 
 ### Event Celebration Patterns
-
 ```bash
 # Provide ADHD-friendly feedback for significant events
 CELEBRATE_EVENT() {
