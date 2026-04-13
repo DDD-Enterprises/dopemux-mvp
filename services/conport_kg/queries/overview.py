@@ -75,12 +75,13 @@ class OverviewQueries:
     def _execute_cypher_fallback(self, cypher: str) -> List[dict]:
         """Execute via docker exec (fallback path)"""
         cmd = [
-            'docker', 'exec', 'dopemux-postgres-age',
+            'docker', 'exec', '-i', 'dopemux-postgres-age',
             'psql', '-U', 'dopemux_age', '-d', 'dopemux_knowledge_graph',
-            '-t', '-c', f"LOAD 'age'; SET search_path = ag_catalog, conport_knowledge, public; {cypher}"
+            '-t'
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        query = f"LOAD 'age'; SET search_path = ag_catalog, conport_knowledge, public; {cypher}"
+        result = subprocess.run(cmd, input=query, capture_output=True, text=True, timeout=10)
 
         if result.returncode != 0:
             raise Exception(f"Query failed: {result.stderr}")
