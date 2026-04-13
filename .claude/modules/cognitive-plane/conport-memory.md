@@ -3,7 +3,7 @@
 **Module Version**: 1.0.0
 **Authority**: Decision Logging and Knowledge Graph
 **Modes**: Both PLAN and ACT
-**Workspace**: `/Users/hue/code/dopemux-mvp`
+**Workspace**: `<repo-root>`
 
 ## Authority Boundaries
 
@@ -24,40 +24,40 @@
 ### Context Management
 ```bash
 # Get current project and active contexts
-mcp__conport__get_product_context --workspace_id "/Users/hue/code/dopemux-mvp"
-mcp__conport__get_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
+mcp__conport__get_product_context --workspace_id "<repo-root>"
+mcp__conport__get_active_context --workspace_id "<repo-root>"
 
 # Update contexts (full or partial)
-mcp__conport__update_product_context --workspace_id "/Users/hue/code/dopemux-mvp" --content {...}
-mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp" --patch_content {...}
+mcp__conport__update_product_context --workspace_id "<repo-root>" --content {...}
+mcp__conport__update_active_context --workspace_id "<repo-root>" --patch_content {...}
 ```
 
 ### Decision & Progress Tracking
 ```bash
 # Log architectural and implementation decisions
-mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" \
+mcp__conport__log_decision --workspace_id "<repo-root>" \
   --summary "decision" --rationale "why" --tags ["tag"]
 
 # Track task progress with automatic linking
-mcp__conport__log_progress --workspace_id "/Users/hue/code/dopemux-mvp" \
+mcp__conport__log_progress --workspace_id "<repo-root>" \
   --status "IN_PROGRESS" --description "task" \
   --linked_item_type "custom_data" --linked_item_id "task-ref"
 
 # Update progress status
-mcp__conport__update_progress --workspace_id "/Users/hue/code/dopemux-mvp" \
+mcp__conport__update_progress --workspace_id "<repo-root>" \
   --progress_id ID --status "DONE"
 ```
 
 ### Knowledge Graph Operations
 ```bash
 # Create semantic links between entities
-mcp__conport__link_conport_items --workspace_id "/Users/hue/code/dopemux-mvp" \
+mcp__conport__link_conport_items --workspace_id "<repo-root>" \
   --source_item_type "decision" --source_item_id "ID" \
   --target_item_type "progress_entry" --target_item_id "ID" \
   --relationship_type "implements"
 
 # Retrieve linked items
-mcp__conport__get_linked_items --workspace_id "/Users/hue/code/dopemux-mvp" \
+mcp__conport__get_linked_items --workspace_id "<repo-root>" \
   --item_type "decision" --item_id "ID"
 ```
 
@@ -68,7 +68,7 @@ mcp__conport__get_linked_items --workspace_id "/Users/hue/code/dopemux-mvp" \
 # Session initialization sequence (MANDATORY AT SESSION START)
 INITIALIZE_CONPORT_CONTEXT() {
     # 1. Determine workspace
-    WORKSPACE_ID="/Users/hue/code/dopemux-mvp"
+    WORKSPACE_ID="<repo-root>"
 
     # 2. Check for existing database
     if [ -f "$WORKSPACE_ID/context_portal/context.db" ]; then
@@ -80,11 +80,11 @@ INITIALIZE_CONPORT_CONTEXT() {
 
 LOAD_EXISTING_CONTEXT() {
     # Load all essential contexts
-    mcp__conport__get_product_context --workspace_id "/Users/hue/code/dopemux-mvp"
-    mcp__conport__get_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
-    mcp__conport__get_decisions --workspace_id "/Users/hue/code/dopemux-mvp" --limit 5
-    mcp__conport__get_progress --workspace_id "/Users/hue/code/dopemux-mvp" --limit 5
-    mcp__conport__get_recent_activity_summary --workspace_id "/Users/hue/code/dopemux-mvp" --hours_ago 24
+    mcp__conport__get_product_context --workspace_id "<repo-root>"
+    mcp__conport__get_active_context --workspace_id "<repo-root>"
+    mcp__conport__get_decisions --workspace_id "<repo-root>" --limit 5
+    mcp__conport__get_progress --workspace_id "<repo-root>" --limit 5
+    mcp__conport__get_recent_activity_summary --workspace_id "<repo-root>" --hours_ago 24
 
     echo "[CONPORT_ACTIVE] - Memory initialized. Existing contexts and recent activity loaded."
 }
@@ -99,12 +99,12 @@ AUTO_LOG_DECISION() {
     case $TRIGGER_TYPE in
         "architecture_choice")
             # User discusses system design → Log decision
-            mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" \
+            mcp__conport__log_decision --workspace_id "<repo-root>" \
               --summary "$DECISION_SUMMARY" --rationale "$REASONING" --tags ["architecture"]
             ;;
         "implementation_decision")
             # User chooses implementation approach → Log decision
-            mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" \
+            mcp__conport__log_decision --workspace_id "<repo-root>" \
               --summary "$IMPLEMENTATION_CHOICE" --rationale "$WHY_THIS_WAY" --tags ["implementation"]
             ;;
     esac
@@ -114,7 +114,7 @@ AUTO_LOG_DECISION() {
 AUTO_LOG_PROGRESS() {
     TASK_COMPLETION_EVENT="$1"
 
-    mcp__conport__update_progress --workspace_id "/Users/hue/code/dopemux-mvp" \
+    mcp__conport__update_progress --workspace_id "<repo-root>" \
       --progress_id "$CURRENT_TASK_ID" --status "DONE"
 
     # Log completion celebration for ADHD motivation
@@ -127,21 +127,21 @@ AUTO_LOG_PROGRESS() {
 ### Semantic Search
 ```bash
 # Natural language queries for conceptual searches
-mcp__conport__semantic_search_conport --workspace_id "/Users/hue/code/dopemux-mvp" \
+mcp__conport__semantic_search_conport --workspace_id "<repo-root>" \
   --query_text "natural language query" --top_k 5
 ```
 
 ### Full-Text Search
 ```bash
 # Keyword-based searches
-mcp__conport__search_decisions_fts --workspace_id "/Users/hue/code/dopemux-mvp" \
+mcp__conport__search_decisions_fts --workspace_id "<repo-root>" \
   --query_term "keywords"
 
-mcp__conport__search_custom_data_value_fts --workspace_id "/Users/hue/code/dopemux-mvp" \
+mcp__conport__search_custom_data_value_fts --workspace_id "<repo-root>" \
   --query_term "keywords"
 
 # Project glossary search
-mcp__conport__search_project_glossary_fts --workspace_id "/Users/hue/code/dopemux-mvp" \
+mcp__conport__search_project_glossary_fts --workspace_id "<repo-root>" \
   --query_term "term"
 ```
 
@@ -154,7 +154,7 @@ LINK_CODE_TO_DECISION() {
     SERENA_SESSION="$1"
     DECISION_ID="$2"
 
-    mcp__conport__link_conport_items --workspace_id "/Users/hue/code/dopemux-mvp" \
+    mcp__conport__link_conport_items --workspace_id "<repo-root>" \
       --source_item_type "custom_data" --source_item_id "$SERENA_SESSION" \
       --target_item_type "decision" --target_item_id "$DECISION_ID" \
       --relationship_type "informed_by"
@@ -168,7 +168,7 @@ CREATE_TASK_REFERENCE() {
     TASK_ID="$1"
     EXTERNAL_SYSTEM="$2"  # leantime, taskmaster
 
-    mcp__conport__log_custom_data --workspace_id "/Users/hue/code/dopemux-mvp" \
+    mcp__conport__log_custom_data --workspace_id "<repo-root>" \
       --category "external_refs" --key "$EXTERNAL_SYSTEM-REF-$TASK_ID" \
       --value "{\"type\": \"${external_system}_reference\", \"task_id\": \"$TASK_ID\", \"sync_status\": \"active\"}"
 }
@@ -187,7 +187,7 @@ ENHANCE_RESPONSE_WITH_CONTEXT() {
 
     # 2. Search ConPort for relevant context
     RELEVANT_DECISIONS=$(mcp__conport__semantic_search_conport \
-      --workspace_id "/Users/hue/code/dopemux-mvp" \
+      --workspace_id "<repo-root>" \
       --query_text "$CONCEPTS" --top_k 3)
 
     # 3. Get linked items for context expansion

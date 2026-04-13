@@ -30,7 +30,8 @@ The `/save` command integrates with Dopemux's ADHD-optimized context manager to 
 5. **Provides feedback**: Shows session ID and save note
 
 ## ADHD Optimizations
-- **25-minute interval saves**: Automatic background preservation
+- **25-minute focus-block saves**: Automatically preserves context at the end of each Pomodoro-style focus block
+- **30-second auto-save cadence**: Background state capture every 30 seconds during active sessions
 - **Zero interruption**: Doesn't break your focus flow
 - **Context continuity**: Seamless restoration after interruptions
 - **Mental model preservation**: Recaptures your thought processes
@@ -61,4 +62,4 @@ This command works with the full Dopemux CLI:
 - **Regular manual saves**: Supplement automatic saves
 
 ---
-*Powered by Dopemux's 30-second auto-save with ADHD accommodations* 🧠
+*Powered by Dopemux's 30-second auto-save cadence with 25-minute focus-block checkpoints — ADHD accommodations* 🧠

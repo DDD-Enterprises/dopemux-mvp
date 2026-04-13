@@ -23,7 +23,7 @@ Modules for code intelligence and knowledge management:
 **Note**: Per Decision #132-134, simplified to ConPort + SuperClaude
 - `task-master.md` - ⚠️ DEPRECATED - See Migration Notes section
 - `task-orchestrator.md` - ⚠️ DEPRECATED - Use ConPort progress_entry instead
-- `leantime.md` - 🚧 IN DEVELOPMENT (feature branch)
+- `leantime.md` - ⚠️ DEPRECATED - Use ConPort `progress_entry` instead
 
 ### Coordination (`coordination/`)
 Modules for integration patterns and authority boundaries:
@@ -67,7 +67,7 @@ Cross-cutting concerns and common patterns:
 - **Serena**: Code navigation, LSP operations, semantic analysis
 - **Zen**: Multi-model reasoning, planning, debugging, code review
 - **Python ADHD Engine**: Energy tracking, break monitoring, task routing (queries ConPort)
-- **Leantime**: 🚧 Status updates (in development - feature branch)
+- **Leantime**: ⚠️ DEPRECATED - Use ConPort `progress_entry` for task status tracking
 
 ## ADHD Optimizations
 
