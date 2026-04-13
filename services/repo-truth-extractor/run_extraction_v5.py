@@ -167,6 +167,9 @@ from llm_runtime import (
     run_comparison_lane as llm_runtime_run_comparison_lane,
     should_retry as llm_runtime_should_retry,
 )
+from extractor.phases.base import PhaseRunnerDeps
+from extractor.phases.a import run_phase as extracted_run_phase_A
+from extractor.phases.z import run_phase as extracted_run_phase_Z
 
 try:
     from lib.batch_clients import (
@@ -3069,6 +3072,18 @@ def _llm_runtime_deps() -> LLMRuntimeDeps:
         extract_first_json_object=extract_first_json_object,
         is_semantic_eof_eligible=_is_semantic_eof_eligible,
         try_repair_json_truncation=try_repair_json_truncation,
+    )
+
+
+def _phase_runner_deps() -> PhaseRunnerDeps:
+    return PhaseRunnerDeps(
+        repo_root=Path.cwd(),
+        repo_scan_excludes=tuple(REPO_SCAN_EXCLUDES),
+        collector_cls=Collector,
+        merge_scan_excludes=_merge_scan_excludes,
+        run_phase_inner=_run_phase_inner,
+        selected_execution_step_ids_for_phase=_selected_execution_step_ids_for_phase,
+        collect_phase_artifacts=collect_phase_artifacts,
     )
 
 
@@ -16713,73 +16728,7 @@ def _merge_scan_excludes(*groups: List[str]) -> List[str]:
 def run_phase_A(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    excludes = [
-        ".git",
-        "node_modules",
-        "venv",
-        ".venv",
-        "tests",
-        "docs",
-        "extraction",
-        "reports",
-        "tmp",
-        "_audit_out",
-        "SYSTEM_ARCHIVE",
-        "*.zip",
-    ]
-    collector = Collector(Path.cwd(), _merge_scan_excludes(excludes, REPO_SCAN_EXCLUDES))
-    targets = [
-        ".claude",
-        ".dopemux",
-        ".githooks",
-        ".github",
-        ".taskx",
-        "config",
-        "scripts",
-        "tools",
-        "compose",
-        "docker",
-        "AGENTS.md",
-        "README.md",
-        "QUICK_START.md",
-        "INSTALL.md",
-        "CHANGELOG.md",
-        "pyproject.toml",
-        "dopemux.toml",
-        "compose.yml",
-        "compose.yml",
-        "Makefile",
-        ".claude.json",
-        ".taskxroot",
-        # src/services subdirs needed by A5/A11/A12/A13
-        ".vibe",
-        "src/dopemux/hooks",
-        "src/dopemux/claude",
-        "src/dopemux/claude_tools",
-        "src/dopemux/commands",
-        "src/dopemux/mcp",
-        "src/dopemux/cli.py",
-        "src/dopemux/__main__.py",
-        "src/dopemux/routing_cli.py",
-        "src/dopemux/profile_commands.py",
-        "src/dopemux/dev_commands.py",
-        "src/dopemux/worktree_commands.py",
-        "src/dopemux/events",
-        "src/dopemux/event_bus.py",
-        "services/copilot_transcript_ingester",
-        "services/dopecon-bridge",
-        "mcp-proxy-config.copilot.yaml",
-        "mcp-proxy-config.json",
-    ]
-    _run_phase_inner(
-        "A",
-        dirs,
-        cfg,
-        collector,
-        targets,
-        ui=ui,
-        selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "A"),
-    )
+    extracted_run_phase_A(_phase_runner_deps(), dirs, cfg, ui=ui)
 
 
 def run_phase_H(
@@ -17847,17 +17796,7 @@ def run_phase_SP(
 def run_phase_Z(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    final_items = collect_phase_artifacts(dirs, ["R", "X", "T"], ["raw", "norm", "qa"])
-    _run_phase_inner(
-        "Z",
-        dirs,
-        cfg,
-        None,
-        None,
-        precollected_items=final_items,
-        ui=ui,
-        selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "Z"),
-    )
+    extracted_run_phase_Z(_phase_runner_deps(), dirs, cfg, ui=ui)
 
 
 def run_sync_scopes() -> None:
