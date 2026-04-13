@@ -89,7 +89,7 @@ class EmbeddingResponse:
     prompt_tokens: int
 
     # Performance metrics
-    processing_time_ms: float
+    processing_time_ms: float = 0.0
     request_id: Optional[str] = None
 
     # Cost information
@@ -131,7 +131,7 @@ class RerankResponse:
     documents: Optional[List[str]] = None
 
     # Performance metrics
-    processing_time_ms: float
+    processing_time_ms: float = 0.0
     request_id: Optional[str] = None
 
     # Cost information
