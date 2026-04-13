@@ -16,11 +16,11 @@ aiofiles==23.2.1
 
 # === HTTP Client & Requests ===
 httpx==0.25.2
-aiohttp==3.9.1
+aiohttp==3.13.4
 
 # === Data Processing ===
-python-multipart==0.0.6
-python-jose[cryptography]==3.3.0
+python-multipart==0.0.22
+python-jose[cryptography]==3.4.0
 
 # === Logging & Monitoring ===
 structlog==23.2.0
