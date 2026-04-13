@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["planned_features"],
+  "properties": {
+    "planned_features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "feature_name", "status", "foundation_score", "effort", "risk", "dependencies", "quick_win", "reasoning"],
+        "properties": {
+          "path": {"type": "string"},
+          "feature_name": {"type": "string"},
+          "status": {"type": "string"},
+          "foundation_score": {"type": "number"},
+          "effort": {"type": "string"},
+          "risk": {"type": "string"},
+          "dependencies": {"type": "array", "items": {"type": "string"}},
+          "quick_win": {"type": "boolean"},
+          "reasoning": {"type": "string"}
+        }
+      }
+    },
+    "implementation_blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["feature", "blocker"],
+        "properties": {
+          "feature": {"type": "string"},
+          "blocker": {"type": "string"}
+        }
+      }
+    }
+  }
+}
