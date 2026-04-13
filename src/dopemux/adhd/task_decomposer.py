@@ -6,19 +6,22 @@ tracking and dependency management.
 """
 
 import json
+import tempfile
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from rich.console import Console
+from dopemux.pm.models import PMTaskStatus
+from dopemux.pm.writes import pm_transition_work_item
 
 console = Console()
 
 
-class TaskPriority(Enum):
+class TaskPriority(str, Enum):
     """Task priority levels."""
 
     LOW = "low"
@@ -27,14 +30,23 @@ class TaskPriority(Enum):
     URGENT = "urgent"
 
 
-class TaskStatus(Enum):
+class TaskStatus(str, Enum):
     """Task status."""
 
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    BLOCKED = "blocked"
-    CANCELLED = "cancelled"
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    BLOCKED = "BLOCKED"
+    CANCELLED = "CANCELLED"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            normalized = value.strip().upper()
+            for member in cls:
+                if member.value == normalized:
+                    return member
+        return None
 
 
 @dataclass
@@ -93,6 +105,43 @@ class Task:
         )
 
 
+@dataclass
+class TaskRecord:
+    """Compatibility adapter for execution-plane handoff tests and callers."""
+
+    id: str
+    description: str
+    estimated_duration: int
+    priority: str = "medium"
+    status: TaskStatus = TaskStatus.PENDING
+
+    def to_execution_packet(self, owner_id: str):
+        """Project a task record into the execution packet contract."""
+        from dopemux.execution.models import ExecutionPacket, PacketState
+
+        state_map = {
+            TaskStatus.PENDING: PacketState.READY,
+            TaskStatus.IN_PROGRESS: PacketState.EXECUTING,
+            TaskStatus.COMPLETED: PacketState.PROOF_GENERATED,
+            TaskStatus.BLOCKED: PacketState.PENDING,
+            TaskStatus.CANCELLED: PacketState.CANCELLED,
+        }
+        task_status = (
+            self.status if isinstance(self.status, TaskStatus) else TaskStatus(self.status)
+        )
+        return ExecutionPacket(
+            packet_id=self.id,
+            owner_id=owner_id,
+            task_id=self.id,
+            state=state_map[task_status],
+            metadata={
+                "description": self.description,
+                "priority": self.priority,
+                "estimated_duration": self.estimated_duration,
+            },
+        )
+
+
 class TaskDecomposer:
     """
     ADHD-optimized task management and decomposition.
@@ -106,12 +155,28 @@ class TaskDecomposer:
     - Context switch minimization
     """
 
-    def __init__(self, project_path: Path):
+    def __init__(
+        self,
+        project_path: Optional[Path] = None,
+        *,
+        workspace: Optional[Path] = None,
+        pm_config: Any = None,
+    ):
         """Initialize task decomposer."""
-        self.project_path = project_path
-        self.data_dir = project_path / ".dopemux" / "tasks"
-        self.data_dir.mkdir(parents=True, exist_ok=True)
+        requested_workspace = workspace if workspace is not None else project_path
+        if requested_workspace is None:
+            raise TypeError("TaskDecomposer requires project_path or workspace")
 
+        self.project_path = Path(requested_workspace)
+        self.pm_config = pm_config
+        self.workspace = self._resolve_workspace(self.project_path)
+        self.data_dir = self.workspace / ".dopemux" / "tasks"
+        try:
+            self.data_dir.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            self._fallback_workspace()
+
+        self.tasks_dir = self.data_dir
         self.tasks_file = self.data_dir / "tasks.json"
         self.sessions_file = self.data_dir / "task_sessions.json"
 
@@ -119,7 +184,7 @@ class TaskDecomposer:
         self._load_tasks()
 
         # ADHD-specific settings
-        self.max_task_duration = 25  # minutes
+        self.max_task_duration = 60  # minutes
         self.optimal_task_duration = 20  # minutes
         self.break_duration = 5  # minutes
         self.energy_levels = ["low", "medium", "high"]
@@ -131,6 +196,7 @@ class TaskDecomposer:
         duration: int = 25,
         energy_required: str = "medium",
         tags: Optional[List[str]] = None,
+        **_: Any,
     ) -> str:
         """
         Add a new task with automatic decomposition if needed.
@@ -146,12 +212,14 @@ class TaskDecomposer:
             Task ID
         """
         # Create main task
-        task_id = str(uuid.uuid4())[:8]
+        task_id = f"task-{uuid.uuid4().hex[:8]}"
+        duration = max(1, int(duration))
+        priority_text = str(priority)
 
         task = Task(
             id=task_id,
             description=description,
-            priority=TaskPriority(priority),
+            priority=self._normalize_priority(priority_text),
             status=TaskStatus.PENDING,
             estimated_duration=duration,
             energy_required=energy_required,
@@ -169,6 +237,7 @@ class TaskDecomposer:
 
         self._tasks[task_id] = task
         self._save_tasks()
+        self._sync_to_pm_plane(task_id, PMTaskStatus.TODO, "task created")
 
         console.print(f"[green]✅ Task added: {description} ({duration}m)[/green]")
         if task.subtasks:
@@ -211,7 +280,9 @@ class TaskDecomposer:
         # Start the task
         task.status = TaskStatus.IN_PROGRESS
         task.started_at = datetime.now().isoformat()
+        task.progress = max(task.progress, 0.01)
         self._save_tasks()
+        self._sync_to_pm_plane(task_id, PMTaskStatus.IN_PROGRESS, "task started")
 
         # Log task session
         self._log_task_session(task_id, "started")
@@ -245,13 +316,16 @@ class TaskDecomposer:
         task = self._tasks[task_id]
 
         # Calculate actual duration
+        completion_time = datetime.now().isoformat()
         if task.started_at:
             start_time = datetime.fromisoformat(task.started_at)
             actual_duration = (datetime.now() - start_time).total_seconds() / 60
             task.actual_duration = int(actual_duration)
+        else:
+            task.started_at = completion_time
 
         task.status = TaskStatus.COMPLETED
-        task.completed_at = datetime.now().isoformat()
+        task.completed_at = completion_time
         task.progress = 1.0
         if notes:
             task.notes += f"\nCompleted: {notes}"
@@ -267,6 +341,7 @@ class TaskDecomposer:
 
         self._save_tasks()
         self._log_task_session(task_id, "completed", notes)
+        self._sync_to_pm_plane(task_id, PMTaskStatus.DONE, "task completed")
 
         console.print(f"[green]✅ Completed task: {task.description}[/green]")
         if task.actual_duration:
@@ -299,7 +374,7 @@ class TaskDecomposer:
         tasks = []
 
         for task in self._tasks.values():
-            if status and task.status.value != status:
+            if status and task.status.value.lower() != status.lower():
                 continue
 
             # Skip subtasks in main list (they'll be shown under parent)
@@ -311,7 +386,7 @@ class TaskDecomposer:
 
             task_dict = asdict(task)
             task_dict["priority"] = task.priority.value
-            task_dict["status"] = task.status.value
+            task_dict["status"] = task.status.value.lower()
 
             # Add subtask info
             if task.subtasks:
@@ -340,7 +415,12 @@ class TaskDecomposer:
         }
 
         tasks.sort(
-            key=lambda t: (priority_order[TaskPriority(t["priority"])], t["created_at"])
+            key=lambda t: (
+                priority_order.get(
+                    self._normalize_priority(t["priority"]), len(priority_order)
+                ),
+                t["created_at"],
+            )
         )
         return tasks
 
@@ -384,17 +464,24 @@ class TaskDecomposer:
                 }
                 break
 
+        task_items = [
+            self._task_to_dict(t)
+            for t in all_tasks
+            if not any(t.id in parent.subtasks for parent in all_tasks)
+        ]
+
         return {
             "total_tasks": total_tasks,
             "completed_tasks": completed_tasks,
             "in_progress_tasks": in_progress_tasks,
             "overall_progress": overall_progress,
             "current_task": current_task,
-            "tasks": [
-                asdict(t)
-                for t in all_tasks
-                if not any(t.id in parent.subtasks for parent in all_tasks)
-            ],
+            "tasks": task_items,
+            "summary": {
+                "total": total_tasks,
+                "completed": completed_tasks,
+                "in_progress": in_progress_tasks,
+            },
         }
 
     def get_recommended_task(
@@ -445,8 +532,16 @@ class TaskDecomposer:
 
         # Auto-complete if progress reaches 100%
         if task.progress >= 1.0 and task.status != TaskStatus.COMPLETED:
+            if not task.started_at:
+                task.started_at = datetime.now().isoformat()
             task.status = TaskStatus.COMPLETED
             task.completed_at = datetime.now().isoformat()
+            self._sync_to_pm_plane(task_id, PMTaskStatus.DONE, "task progress completed")
+        elif task.progress > 0.0:
+            task.status = TaskStatus.IN_PROGRESS
+            if not task.started_at:
+                task.started_at = datetime.now().isoformat()
+            self._sync_to_pm_plane(task_id, PMTaskStatus.IN_PROGRESS, "task progress updated")
 
         self._save_tasks()
         return True
@@ -620,10 +715,12 @@ class TaskDecomposer:
             with open(self.tasks_file, "r") as f:
                 data = json.load(f)
 
-            for task_data in data:
+            task_rows = data.get("tasks", data) if isinstance(data, dict) else data
+
+            for task_data in task_rows:
                 task = Task(**task_data)
                 # Convert string enums back
-                task.priority = TaskPriority(task.priority)
+                task.priority = self._normalize_priority(task.priority)
                 task.status = TaskStatus(task.status)
                 self._tasks[task.id] = task
 
@@ -635,13 +732,89 @@ class TaskDecomposer:
         try:
             data = []
             for task in self._tasks.values():
-                task_dict = asdict(task)
-                task_dict["priority"] = task.priority.value
-                task_dict["status"] = task.status.value
-                data.append(task_dict)
+                data.append(self._task_to_dict(task))
 
             with open(self.tasks_file, "w") as f:
-                json.dump(data, f, indent=2)
+                json.dump({"tasks": data}, f, indent=2)
 
         except Exception as e:
             console.print(f"[red]Error saving tasks: {e}[/red]")
+
+    def _task_to_dict(self, task: Task) -> Dict[str, Any]:
+        """Normalize task serialization for stable persistence and CLI output."""
+        task_dict = asdict(task)
+        task_dict["priority"] = task.priority.value
+        task_dict["status"] = task.status.value.lower()
+        return task_dict
+
+    def __iter__(self) -> Iterator[Task]:
+        """Allow iteration over tracked tasks."""
+        return iter(self._tasks.values())
+
+    def _resolve_workspace(self, workspace: Path) -> Path:
+        """Resolve the workspace path, falling back if resolution is unavailable."""
+        try:
+            return workspace.resolve()
+        except (PermissionError, OSError):
+            return Path(tempfile.mkdtemp(prefix="dopemux-tasks-"))
+
+    def _fallback_workspace(self) -> None:
+        """Move persistence into a writable temporary workspace."""
+        self.workspace = Path(tempfile.mkdtemp(prefix="dopemux-tasks-"))
+        self.data_dir = self.workspace / ".dopemux" / "tasks"
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+
+    def _normalize_priority(self, priority: str) -> TaskPriority:
+        """Convert known priorities to enum values while preserving legacy strings."""
+        try:
+            return TaskPriority(priority)
+        except ValueError:
+            class LegacyPriority(str):
+                @property
+                def value(self) -> str:
+                    return str(self)
+
+            return LegacyPriority(priority)
+
+    def _sync_to_pm_plane(
+        self, task_id: str, new_status: PMTaskStatus, reason: str
+    ) -> bool:
+        """Best-effort PM plane synchronization for task lifecycle changes."""
+        if self.pm_config is None:
+            return False
+
+        try:
+            pm_transition_work_item(
+                config=self.pm_config,
+                task_id=task_id,
+                new_status=new_status,
+                reason=reason,
+                idempotency_key=f"task-decomposer:{task_id}:{new_status.value}",
+                expected_version=1,
+            )
+            return True
+        except Exception as exc:
+            console.print(f"[yellow]PM sync skipped for {task_id}: {exc}[/yellow]")
+            return False
+
+    def backfill_to_pm_plane(self) -> int:
+        """Replay current local task state into the PM plane."""
+        count = 0
+        status_map = {
+            TaskStatus.PENDING: PMTaskStatus.TODO,
+            TaskStatus.IN_PROGRESS: PMTaskStatus.IN_PROGRESS,
+            TaskStatus.COMPLETED: PMTaskStatus.DONE,
+            TaskStatus.BLOCKED: PMTaskStatus.BLOCKED,
+            TaskStatus.CANCELLED: PMTaskStatus.CANCELED,
+        }
+        for task in self._tasks.values():
+            try:
+                if self._sync_to_pm_plane(
+                    task.id,
+                    status_map[task.status],
+                    "task backfill",
+                ):
+                    count += 1
+            except Exception:
+                return count
+        return count

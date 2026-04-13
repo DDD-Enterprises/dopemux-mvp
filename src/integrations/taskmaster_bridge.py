@@ -136,6 +136,16 @@ class TaskMasterMCPClient:
         task_master_dir = Path(self.task_master_path)
         task_master_dir.mkdir(exist_ok=True)
 
+        # Create tasks directory
+        tasks_dir = task_master_dir / "tasks"
+        tasks_dir.mkdir(exist_ok=True)
+
+        # Create empty tasks.json if it doesn't exist
+        tasks_file = tasks_dir / "tasks.json"
+        if not tasks_file.exists():
+            with open(tasks_file, "w") as f:
+                json.dump({"tasks": [], "metadata": {}}, f, indent=2)
+
         # Create config.json
         config_file = task_master_dir / "config.json"
         if not config_file.exists():
@@ -161,16 +171,6 @@ class TaskMasterMCPClient:
 
             with open(config_file, "w") as f:
                 json.dump(config_data, f, indent=2)
-
-        # Create tasks directory
-        tasks_dir = task_master_dir / "tasks"
-        tasks_dir.mkdir(exist_ok=True)
-
-        # Create empty tasks.json if it doesn't exist
-        tasks_file = tasks_dir / "tasks.json"
-        if not tasks_file.exists():
-            with open(tasks_file, "w") as f:
-                json.dump({"tasks": [], "metadata": {}}, f, indent=2)
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -222,7 +222,10 @@ class TaskMasterMCPClient:
                 },
             }
 
-            response = await self._send_mcp_request(init_request)
+            response = await self._send_mcp_request(
+                init_request,
+                require_connected=False,
+            )
 
             if response.get("result"):
                 self._connected = True
@@ -230,6 +233,9 @@ class TaskMasterMCPClient:
                 return True
             else:
                 logger.error(f"Failed to initialize Task-Master MCP: {response}")
+                if self._process:
+                    self._process.terminate()
+                    self._process = None
                 return False
 
         except Exception as e:
@@ -242,24 +248,21 @@ class TaskMasterMCPClient:
     async def disconnect(self):
         """Gracefully disconnect from Task-Master MCP server."""
         if self._process:
+            shutdown_request = {
+                "jsonrpc": "2.0",
+                "method": "notifications/shutdown",
+            }
             try:
-                # Send shutdown notification
-                shutdown_request = {
-                    "jsonrpc": "2.0",
-                    "method": "notifications/shutdown",
-                }
-                await self._send_mcp_request(shutdown_request)
-
-                # Terminate process
+                if self._connected:
+                    await self._send_mcp_request(shutdown_request)
+            except Exception as e:
+                logger.warning(f"Error during Task-Master shutdown: {e}")
+            finally:
                 self._process.terminate()
                 try:
                     self._process.wait(timeout=5)
                 except subprocess.TimeoutExpired:
                     self._process.kill()
-
-            except Exception as e:
-                logger.warning(f"Error during Task-Master shutdown: {e}")
-            finally:
                 self._process = None
                 self._connected = False
                 logger.info("Disconnected from Task-Master MCP server")
@@ -269,7 +272,11 @@ class TaskMasterMCPClient:
         self._request_id += 1
         return self._request_id
 
-    async def _send_mcp_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    async def _send_mcp_request(
+        self,
+        request: Dict[str, Any],
+        require_connected: bool = True,
+    ) -> Dict[str, Any]:
         """
         Send MCP request to Task-Master server.
 
@@ -279,7 +286,7 @@ class TaskMasterMCPClient:
         Returns:
             MCP response
         """
-        if not self._process or not self._connected:
+        if not self._process or (require_connected and not self._connected):
             raise DopemuxIntegrationError("Not connected to Task-Master")
 
         try:
@@ -339,20 +346,25 @@ class TaskMasterMCPClient:
             temp_file_path = temp_file.name
 
         try:
-            response = await self._send_mcp_request(
-                {
-                    "jsonrpc": "2.0",
-                    "id": self._next_request_id(),
-                    "method": "tools/call",
-                    "params": {
-                        "name": "parse_prd",
-                        "arguments": {
-                            "prdFile": temp_file_path,
-                            "projectName": project_name,
+            try:
+                response = await self._send_mcp_request(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": self._next_request_id(),
+                        "method": "tools/call",
+                        "params": {
+                            "name": "parse_prd",
+                            "arguments": {
+                                "prdFile": temp_file_path,
+                                "projectName": project_name,
+                            },
                         },
-                    },
-                }
-            )
+                    }
+                )
+            except AIServiceError:
+                raise
+            except Exception as e:
+                raise AIServiceError(f"Task-Master error: {e}") from e
 
             if response.get("result", {}).get("content"):
                 result_data = json.loads(response["result"]["content"][0]["text"])
@@ -390,14 +402,13 @@ class TaskMasterMCPClient:
                     risk_factors=result_data.get("riskFactors", []),
                 )
 
+            raise AIServiceError("Failed to parse PRD")
         finally:
             # Clean up temporary file
             try:
                 os.unlink(temp_file_path)
             except Exception:
                 pass
-
-        raise AIServiceError("Failed to parse PRD")
 
     def _parse_subtasks(self, subtasks_data: List[Dict]) -> List[TaskMasterTask]:
         """Parse subtasks recursively."""
