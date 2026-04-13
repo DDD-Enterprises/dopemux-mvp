@@ -773,7 +773,7 @@ class PersonalPatternAdapter:
     ) -> str:
         """Generate unique delta ID."""
         delta_content = f"{template_hash}_{user_session_id}_{personalization_type.value}_{time.time()}"
-        return hashlib.md5(delta_content.encode()).hexdigest()[:16]
+        return hashlib.sha256(delta_content.encode()).hexdigest()[:16]
 
     def _calculate_personalization_confidence(
         self, deltas: List[PersonalizationDelta], profile: PersonalLearningProfile

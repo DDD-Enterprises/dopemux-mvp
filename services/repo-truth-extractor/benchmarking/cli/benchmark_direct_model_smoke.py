@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import getpass
 import os
 import sys
@@ -13,7 +14,6 @@ if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
 from benchmarking.direct_model.runner import DirectModelRunner
-from output_safety import sanitized_json_text
 
 
 @contextmanager
@@ -99,7 +99,12 @@ def main(argv: list[str] | None = None) -> int:
         xai_api_key=args.xai_api_key,
         prompt_for_keys=not args.no_prompt_for_keys,
     )
-    print(sanitized_json_text(payload, sort_keys=True, ensure_ascii=True))
+    summary = {
+        "ok": bool(payload.get("ok")),
+        "attempt_count": len(payload.get("attempts", [])),
+        "proof_dir": str(args.proof_dir) if args.proof_dir else None,
+    }
+    print(json.dumps(summary, sort_keys=True, ensure_ascii=True))
     return 0
 
 

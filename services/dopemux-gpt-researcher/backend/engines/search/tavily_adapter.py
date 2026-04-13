@@ -25,6 +25,14 @@ from .base_adapter import (
 logger = logging.getLogger(__name__)
 
 
+def _hostname(url: str) -> str:
+    return (urlparse(url).hostname or "").lower().rstrip(".")
+
+
+def _host_matches(hostname: str, *domains: str) -> bool:
+    return any(hostname == domain or hostname.endswith(f".{domain}") for domain in domains)
+
+
 class TavilySearchAdapter(BaseSearchAdapter):
     """
     Tavily search engine adapter for developer-focused real-time search
@@ -59,7 +67,7 @@ class TavilySearchAdapter(BaseSearchAdapter):
         # Developer-focused domain quality mappings
         self.quality_domains = {
             SourceQuality.EXCELLENT: [
-                'docs.python.org', 'developer.mozilla.org', 'docs.microsoft.com',
+                'docs.python.org', 'developer.mozilla.org', 'learn.microsoft.com',
                 'docs.aws.amazon.com', 'cloud.google.com', 'docs.github.com',
                 'kubernetes.io', 'react.dev', 'nextjs.org', 'docs.docker.com',
                 'fastapi.tiangolo.com', 'flask.palletsprojects.com', 'djangoproject.com'
@@ -70,7 +78,7 @@ class TavilySearchAdapter(BaseSearchAdapter):
                 'stripe.com', 'digitalocean.com', 'linode.com', 'heroku.com'
             ],
             SourceQuality.MODERATE: [
-                'blogs.', 'tutorial', '.edu', 'geeksforgeeks.org',
+                'geeksforgeeks.org',
                 'w3schools.com', 'tutorialspoint.com', 'javatpoint.com',
                 'codecademy.com', 'udemy.com'
             ]
@@ -79,7 +87,7 @@ class TavilySearchAdapter(BaseSearchAdapter):
         # Developer-focused include domains by default
         if not self.include_domains:
             self.include_domains = [
-                'stackoverflow.com', 'github.com', 'docs.', 'developer.',
+                'stackoverflow.com', 'github.com', 'docs.python.org', 'developer.mozilla.org',
                 'dev.to', 'medium.com', 'freecodecamp.org'
             ]
 
@@ -237,18 +245,20 @@ class TavilySearchAdapter(BaseSearchAdapter):
 
         type_domain_map = {
             SearchResultType.DOCUMENTATION: [
-                'docs.', 'developer.', 'api.', 'guide.', 'documentation.'
+                'docs.python.org', 'developer.mozilla.org', 'docs.github.com',
+                'learn.microsoft.com', 'react.dev', 'nextjs.org', 'docs.docker.com'
             ],
             SearchResultType.CODE_EXAMPLE: [
                 'github.com', 'codepen.io', 'jsfiddle.net', 'codesandbox.io',
                 'replit.com', 'stackblitz.com'
             ],
             SearchResultType.API_REFERENCE: [
-                'docs.', 'api.', 'developer.', 'reference.'
+                'api.github.com', 'developer.mozilla.org', 'docs.python.org',
+                'learn.microsoft.com'
             ],
             SearchResultType.TUTORIAL: [
-                'tutorial', 'learn', 'guide', 'course', 'freecodecamp.org',
-                'codecademy.com', 'dev.to'
+                'freecodecamp.org', 'codecademy.com', 'dev.to',
+                'coursera.org', 'udemy.com'
             ],
             SearchResultType.STACK_OVERFLOW: [
                 'stackoverflow.com', 'stackexchange.com'
@@ -345,26 +355,26 @@ class TavilySearchAdapter(BaseSearchAdapter):
     def _classify_result_type(self, url: str, content: str, title: str) -> SearchResultType:
         """Classify result type based on URL patterns and content"""
 
-        domain = urlparse(url).netloc.lower()
+        domain = _hostname(url)
         path = urlparse(url).path.lower()
 
         # Check domain patterns
-        if 'stackoverflow.com' in domain:
+        if _host_matches(domain, 'stackoverflow.com'):
             return SearchResultType.STACK_OVERFLOW
-        elif 'github.com' in domain:
+        elif _host_matches(domain, 'github.com'):
             if '/issues/' in path:
                 return SearchResultType.GITHUB_ISSUE
             elif any(ext in path for ext in ['.py', '.js', '.java', '.cpp', '.c', '.go', '.rs']):
                 return SearchResultType.CODE_EXAMPLE
             else:
                 return SearchResultType.CODE_EXAMPLE  # Default for GitHub
-        elif 'docs.' in domain or 'documentation' in path:
+        elif domain.startswith('docs.') or 'documentation' in path:
             return SearchResultType.DOCUMENTATION
-        elif 'api.' in domain or '/api/' in path or 'reference' in path:
+        elif domain.startswith('api.') or '/api/' in path or 'reference' in path:
             return SearchResultType.API_REFERENCE
-        elif any(word in domain for word in ['tutorial', 'learn', 'course']):
+        elif domain.startswith('tutorial.') or domain.startswith('learn.') or domain.startswith('course.'):
             return SearchResultType.TUTORIAL
-        elif any(word in domain for word in ['blog', 'medium', 'dev.to', 'hashnode']):
+        elif domain.startswith('blog.') or _host_matches(domain, 'medium.com', 'dev.to', 'hashnode.com'):
             return SearchResultType.BLOG_POST
 
         # Check content patterns
@@ -386,21 +396,21 @@ class TavilySearchAdapter(BaseSearchAdapter):
     def _assess_source_quality(self, url: str) -> SourceQuality:
         """Assess source quality based on domain reputation"""
 
-        domain = urlparse(url).netloc.lower()
+        domain = _hostname(url)
 
         # Check against quality domain lists
         for quality, domains in self.quality_domains.items():
-            if any(quality_domain in domain for quality_domain in domains):
+            if any(_host_matches(domain, quality_domain) for quality_domain in domains):
                 return quality
 
         # Additional heuristics for developer content
         if domain.endswith('.edu') or domain.endswith('.gov'):
             return SourceQuality.EXCELLENT
-        elif 'docs.' in domain or 'developer.' in domain or 'api.' in domain:
+        elif domain.startswith('docs.') or domain.startswith('developer.') or domain.startswith('api.'):
             return SourceQuality.EXCELLENT
-        elif 'github.com' in domain:
+        elif _host_matches(domain, 'github.com'):
             return SourceQuality.GOOD
-        elif 'stackoverflow.com' in domain:
+        elif _host_matches(domain, 'stackoverflow.com'):
             return SourceQuality.GOOD
         elif any(word in domain for word in ['official', 'main', 'primary']):
             return SourceQuality.GOOD
@@ -429,10 +439,10 @@ class TavilySearchAdapter(BaseSearchAdapter):
 
         # Developer content bonus
         developer_bonus = 0
-        url = item.get('url', '').lower()
+        url = _hostname(item.get('url', ''))
         content = item.get('content', '').lower()
 
-        if any(domain in url for domain in ['stackoverflow.com', 'github.com', 'docs.']):
+        if _host_matches(url, 'stackoverflow.com', 'github.com') or url.startswith('docs.'):
             developer_bonus += 0.1
 
         if any(word in content for word in ['code', 'function', 'class', 'method', 'api']):
@@ -465,12 +475,12 @@ class TavilySearchAdapter(BaseSearchAdapter):
 
     def _get_domain_rank(self, url: str) -> int:
         """Get domain authority rank (higher is better)"""
-        domain = urlparse(url).netloc.lower()
+        domain = _hostname(url)
 
         # High authority domains
-        if any(d in domain for d in ['stackoverflow.com', 'github.com', 'docs.', 'developer.']):
+        if _host_matches(domain, 'stackoverflow.com', 'github.com') or domain.startswith('docs.') or domain.startswith('developer.'):
             return 5
-        elif any(d in domain for d in ['medium.com', 'dev.to', 'freecodecamp.org']):
+        elif _host_matches(domain, 'medium.com', 'dev.to', 'freecodecamp.org'):
             return 4
         elif '.edu' in domain or '.gov' in domain:
             return 5
@@ -531,7 +541,7 @@ class TavilySearchAdapter(BaseSearchAdapter):
         result.api_endpoints = list(set(api_endpoints))  # Remove duplicates
 
         # Extract GitHub stars if it's a GitHub URL
-        if 'github.com' in result.url:
+        if _host_matches(_hostname(result.url), 'github.com'):
             star_match = re.search(r'(\d+)\s*star', content, re.IGNORECASE)
             if star_match:
                 try:

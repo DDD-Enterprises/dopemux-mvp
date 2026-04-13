@@ -377,7 +377,7 @@ See the examples directory for more detailed usage patterns.
 
             # Generate URL (would be real docs URL in production)
             url = f"https://docs.{library_name.lower()}.com"
-            if 'github.com' in library_id:
+            if library_id.startswith("/"):
                 url = f"https://github.com{library_id}"
             elif library_name in ['react', 'vue', 'angular']:
                 url = f"https://{library_name.lower()}.dev"

@@ -713,7 +713,7 @@ class AdaptiveLearningEngine:
     def _generate_sequence_id(self, user_session_id: str) -> str:
         """Generate unique sequence ID."""
         timestamp = datetime.now().isoformat()
-        return hashlib.md5(f"{user_session_id}_{timestamp}".encode()).hexdigest()[:12]
+        return hashlib.sha256(f"{user_session_id}_{timestamp}".encode()).hexdigest()[:12]
 
     async def _calculate_sequence_effectiveness(
         self, sequence: NavigationSequence, user_satisfaction: Optional[float] = None
