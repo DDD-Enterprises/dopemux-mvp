@@ -316,8 +316,7 @@ def update_run_manifest_promptset_block(
     manifest_path = run_root / "RUN_MANIFEST.json"
     payload: Dict[str, Any] = {}
     if manifest_path.exists():
-        try:
-            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            payload = deps.load_json(manifest_path)
         except Exception:
             payload = {}
     payload["run_status"] = "BLOCKED"
