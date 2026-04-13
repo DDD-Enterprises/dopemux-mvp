@@ -137,10 +137,7 @@ def call_llm(
     lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     if deps.live_llm_calls_blocked_for_tests():
-        message = (
-            f"Live LLM call blocked in test context provider={provider} model={model_id}. "
-            f"Set {deps.live_llm_tests_env}=1 to override."
-        )
+        message = "Live LLM call blocked in test context."
         logger.error(message)
         raise RuntimeError(message)
     base_url = deps.llm_base_url(provider, cfg)
