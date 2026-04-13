@@ -1,7 +1,7 @@
 {
   "packet": "rte-seam-extraction-foundation",
   "title": "RTE seam extraction and deterministic modularization",
-  "status": "slice_5_complete_pending_remaining_slices",
+  "status": "slice_6_complete_pending_remaining_slices",
   "commit_plan": [
     {
       "slice": 1,
@@ -36,7 +36,7 @@
     {
       "slice": 6,
       "name": "Extract one independent phase and one dependent phase",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "slice": 7,
@@ -104,6 +104,15 @@
         "Updated run_extraction_v5.py to keep the canonical public LLM/runtime helpers as thin wrappers, while preserving monkeypatch-visible wrapper surfaces for retry, parse/coerce, and comparison parity tests.",
         "Added a focused LLM seam wrapper test and validated the extracted boundary against observability, retry, parse-repair, comparison isolation, prelive hardening, live-guard, cost-cap, CLI compatibility, and direct dry-run smoke coverage."
       ]
+    },
+    {
+      "slice": 6,
+      "name": "Extract one independent phase and one dependent phase",
+      "summary": [
+        "Added services/repo-truth-extractor/extractor/phases/base.py plus extracted phase modules for A and Z, keeping the seam dependency-injected and limited to one independent phase and one dependent/meta phase.",
+        "Updated run_extraction_v5.py to keep run_phase_A and run_phase_Z as the canonical public wrapper surface, while routing their implementation through the extracted modules via a runner-bound dependency bundle.",
+        "Added focused seam tests for both wrapper delegation and the extracted module behavior, then validated the change against phase interaction, phase step filtering, operator-safety, v4 compatibility, CLI truth, and direct phase-A dry-run smoke."
+      ]
     }
   ],
   "replan_events": [
@@ -150,6 +159,11 @@
     {
       "sha": "bfcb559ddcb383003af59cfd1e5d1ef2e61888dc",
       "role": "slice_5_llm_runtime_seam",
+      "created_in_this_packet": true
+    },
+    {
+      "sha": "2eee726e474a3dcbbd3451efe80ae5ba2b461571",
+      "role": "slice_6_phase_runner_seam",
       "created_in_this_packet": true
     }
   ],
@@ -299,6 +313,24 @@
       "label": "slice_5_phase_a_dry_run_smoke",
       "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id slice5_smoke --output-root /tmp/rte_slice5_smoke",
       "status": "passed"
+    },
+    {
+      "label": "slice_6_python_compile_checks",
+      "command": "python3 -m py_compile services/repo-truth-extractor/extractor/__init__.py services/repo-truth-extractor/extractor/phases/__init__.py services/repo-truth-extractor/extractor/phases/base.py services/repo-truth-extractor/extractor/phases/a.py services/repo-truth-extractor/extractor/phases/z.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_phase_runner_seam.py",
+      "status": "passed",
+      "files_checked": 7
+    },
+    {
+      "label": "slice_6_phase_runner_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_phase_runner_seam.py services/repo-truth-extractor/tests/test_phase_interaction.py services/repo-truth-extractor/tests/test_phase_execution_step_filter.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v4_core.py services/repo-truth-extractor/tests/test_truth_run_cli.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 94,
+      "fail_count": 0
+    },
+    {
+      "label": "slice_6_phase_a_dry_run_smoke",
+      "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id slice6_phase_a_smoke --output-root /tmp/rte_slice6_phase_a_smoke",
+      "status": "passed"
     }
   ],
   "codereview": {
@@ -309,19 +341,20 @@
       "Reviewed the slice-2 diff to confirm only static runtime config moved and phase/dependency semantics remained in run_extraction_v5.py.",
       "Reviewed the slice-3 diff to confirm phase ordering, metadata, and required step sets moved into phases.py without moving artifact-group or execution logic.",
       "Reviewed the slice-4 diff to confirm reporting.py centralizes only artifact/report writers while run_extraction_v5.py remains the canonical public writer surface and execution authority.",
-      "Reviewed the slice-5 diff to confirm llm_runtime.py centralizes provider transport, retry, parse/coerce, and comparison-lane implementation while run_extraction_v5.py remains the canonical public runtime surface."
+      "Reviewed the slice-5 diff to confirm llm_runtime.py centralizes provider transport, retry, parse/coerce, and comparison-lane implementation while run_extraction_v5.py remains the canonical public runtime surface.",
+      "Reviewed the slice-6 diff to confirm only phases A and Z moved behind the extracted runner seam, with the dispatch loop, phase map, and remaining phase logic still authoritative in run_extraction_v5.py."
     ]
   },
   "precommit": {
     "status": "passed",
-    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_llm_runtime_seam.py"
+    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/extractor/__init__.py services/repo-truth-extractor/extractor/phases/__init__.py services/repo-truth-extractor/extractor/phases/base.py services/repo-truth-extractor/extractor/phases/a.py services/repo-truth-extractor/extractor/phases/z.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_phase_runner_seam.py"
   },
   "evidence_ledger_completeness": "complete",
   "pr": {
     "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/444",
     "status": "draft_open"
   },
-  "merge_readiness": "draft_pr_open_slice_5_complete_remaining_packet_slices_pending",
+  "merge_readiness": "draft_pr_open_slice_6_complete_remaining_packet_slices_pending",
   "worktree": {
     "path": "/Users/hue/code/dopemux-mvp-rte-seams-v2",
     "branch": "codex/rte-seam-extraction-foundation-v2",
