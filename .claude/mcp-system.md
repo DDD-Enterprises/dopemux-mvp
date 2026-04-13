@@ -14,7 +14,7 @@ Every Claude Code session MUST begin with:
 
 1. **Check Active Context**
    ```
-   mcp__conport__get_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
+   mcp__conport__get_active_context --workspace_id "<repo-root>"
    ```
 
 2. **Review In-Progress Tasks**
@@ -29,12 +29,12 @@ Before implementing ANY new feature or using unfamiliar libraries:
 
 1. **Resolve Library ID**
    ```
-   mcp__context7__resolve-library-id "library-name"
+   mcp__context7__resolve_library_id "library-name"
    ```
 
 2. **Get Focused Documentation**
    ```
-   mcp__context7__get-library-docs "/org/library" --topic "specific-feature" --tokens 2000
+   mcp__context7__get_library_docs "/org/library" --topic "specific-feature" --tokens 2000
    ```
 
 3. **Never guess** - always get authoritative documentation first
@@ -44,17 +44,17 @@ This user has ADHD - context loss is devastating:
 
 1. **Before ANY interruption or break**
    ```
-   mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp" --patch_content '{"interruption_state": "what I was doing", "mental_model": "current understanding", "next_steps": "what to do next"}'
+   mcp__conport__update_active_context --workspace_id "<repo-root>" --patch_content '{"interruption_state": "what I was doing", "mental_model": "current understanding", "next_steps": "what to do next"}'
    ```
 
 2. **Log ALL important decisions**
    ```
-   mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" --summary "decision made" --rationale "why this choice" --implementation_details "how to implement"
+   mcp__conport__log_decision --workspace_id "<repo-root>" --summary "decision made" --rationale "why this choice" --implementation_details "how to implement"
    ```
 
 3. **Track progress for motivation**
    ```
-   mcp__conport__log_progress --workspace_id "/Users/hue/code/dopemux-mvp" --status "IN_PROGRESS" --description "current task description"
+   mcp__conport__log_progress --workspace_id "<repo-root>" --status "IN_PROGRESS" --description "current task description"
    ```
 
 ## Available MCP Servers
@@ -99,22 +99,22 @@ This user has ADHD - context loss is devastating:
 
 ### Documentation Access
 ```bash
-mcp__context7__resolve-library-id "library-name"
-mcp__context7__get-library-docs "/org/lib" --topic "feature" --tokens 2000
+mcp__context7__resolve_library_id "library-name"
+mcp__context7__get_library_docs "/org/lib" --topic "feature" --tokens 2000
 ```
 
 ### Context Management
 ```bash
-mcp__conport__get_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
-mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp" --patch_content '{}'
-mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" --summary "" --rationale ""
-mcp__conport__log_progress --workspace_id "/Users/hue/code/dopemux-mvp" --status "" --description ""
+mcp__conport__get_active_context --workspace_id "<repo-root>"
+mcp__conport__update_active_context --workspace_id "<repo-root>" --patch_content '{}'
+mcp__conport__log_decision --workspace_id "<repo-root>" --summary "" --rationale ""
+mcp__conport__log_progress --workspace_id "<repo-root>" --status "" --description ""
 ```
 
 ### Knowledge Storage
 ```bash
-mcp__conport__log_system_pattern --workspace_id "/Users/hue/code/dopemux-mvp" --name "" --description ""
-mcp__conport__log_custom_data --workspace_id "/Users/hue/code/dopemux-mvp" --category "" --key "" --value ""
+mcp__conport__log_system_pattern --workspace_id "<repo-root>" --name "" --description ""
+mcp__conport__log_custom_data --workspace_id "<repo-root>" --category "" --key "" --value ""
 ```
 
 ## System Health Monitoring
@@ -127,7 +127,7 @@ mcp__conport__log_custom_data --workspace_id "/Users/hue/code/dopemux-mvp" --cat
 ### Recovery Commands
 ```bash
 # Restart MetaMCP broker if needed
-cd /Users/hue/code/dopemux-mvp && python3 start_metamcp_minimal.py &
+cd <repo-root> && python3 start_metamcp_minimal.py &
 
 # Check broker process
 ps aux | grep python3 | grep start_metamcp
