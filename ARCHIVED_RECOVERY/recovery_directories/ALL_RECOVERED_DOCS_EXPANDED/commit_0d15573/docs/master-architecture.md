@@ -46,7 +46,7 @@ foundational_principles:
 
 ## 📚 Complete Architecture Reference
 
-### Arc42 Architecture Documentation (100% Complete)
+### Arc42 Architecture Documentation (10/12 sections present)
 Located in: `./docs/DMPX IMPORT/dopemux-docs/architecture/`
 
 | Section | Status | Implementation Ready |
@@ -62,7 +62,7 @@ Located in: `./docs/DMPX IMPORT/dopemux-docs/architecture/`
 | [11-Risks & Technical Debt](./DMPX%20IMPORT/dopemux-docs/architecture/11-risks/) | ✅ Complete | ✅ Ready |
 | [12-Glossary](./DMPX%20IMPORT/dopemux-docs/architecture/12-glossary/) | ✅ Complete | ✅ Ready |
 
-**Architecture Completeness**: 10/12 sections complete (83% complete), 100% implementation-ready
+**Architecture Completeness**: 10/12 sections present (83% complete); all available sections are implementation-ready. Sections 03 (Context) and 08 (Cross-cutting Concepts) are not yet authored.
 
 ### Critical Architectural Decisions (ADRs)
 Complete set of 14 ADRs covering all major system decisions:
