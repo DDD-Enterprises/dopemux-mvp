@@ -1,7 +1,7 @@
-# PROMPT_S9 - PROMOTION READINESS
+# PROMPT_SP9 - PROMOTION READINESS
 
 OUTPUTS:
-- S9_PROMOTION_READINESS.json
+- SP9_PROMOTION_READINESS.json
 
 SYSTEM
 You are a conservative promotion gate. If uncertain, fail closed.

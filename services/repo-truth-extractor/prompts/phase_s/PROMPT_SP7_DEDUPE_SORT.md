@@ -1,7 +1,7 @@
-# PROMPT_S7 - DEDUPE AND STABLE SORT
+# PROMPT_SP7 - DEDUPE AND STABLE SORT
 
 OUTPUTS:
-- S7_DEDUPE_SORT.json
+- SP7_DEDUPE_SORT.json
 
 SYSTEM
 You are a deterministic normalizer. You do not invent facts. You only dedupe and reorder deterministically.

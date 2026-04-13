@@ -1,19 +1,19 @@
 {
-  "phase": "S",
+  "phase": "SP",
   "steps": {
-    "S0": {"prompt_path": "PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md", "tier": "synthesis"},
-    "S1": {"prompt_path": "PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md", "tier": "synthesis"},
-    "S2": {"prompt_path": "PROMPT_S2_DECISION_DOSSIER.md", "tier": "synthesis"},
-    "S3": {"prompt_path": "PROMPT_S3_ARCH_PROOF_HOOKS.md", "tier": "synthesis"},
-    "S4": {"prompt_path": "PROMPT_S4_TRUTH_PACK_INDEX.md", "tier": "synthesis"},
-    "S5": {"prompt_path": "PROMPT_S5_DECISION_GRAPH.md", "tier": "synthesis"},
-    "S6": {"prompt_path": "PROMPT_S6_LEANTIME_ANALYSIS.md", "tier": "synthesis"},
-    "S7": {"prompt_path": "PROMPT_S7_DEDUPE_SORT.md", "tier": "synthesis"},
-    "S8": {"prompt_path": "PROMPT_S8_DRIFT_CHECK.md", "tier": "synthesis"},
-    "S9": {"prompt_path": "PROMPT_S9_PROMOTION_READINESS.md", "tier": "synthesis"},
-    "S10": {"prompt_path": "PROMPT_S10_REDACTION_PASS.md", "tier": "synthesis"},
-    "S11": {"prompt_path": "PROMPT_S11_CONTRACT_LINTER.md", "tier": "synthesis"},
-    "S12": {"prompt_path": "PROMPT_S12_STABILITY_SIGNATURE.md", "tier": "synthesis"}
+    "SP0": {"prompt_path": "PROMPT_SP0_OPUS_ARCHITECTURE_SYNTHESIS.md", "tier": "synthesis"},
+    "SP1": {"prompt_path": "PROMPT_SP1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md", "tier": "synthesis"},
+    "SP2": {"prompt_path": "PROMPT_SP2_DECISION_DOSSIER.md", "tier": "synthesis"},
+    "SP3": {"prompt_path": "PROMPT_SP3_ARCH_PROOF_HOOKS.md", "tier": "synthesis"},
+    "SP4": {"prompt_path": "PROMPT_SP4_TRUTH_PACK_INDEX.md", "tier": "synthesis"},
+    "SP5": {"prompt_path": "PROMPT_SP5_DECISION_GRAPH.md", "tier": "synthesis"},
+    "SP6": {"prompt_path": "PROMPT_SP6_LEANTIME_ANALYSIS.md", "tier": "synthesis"},
+    "SP7": {"prompt_path": "PROMPT_SP7_DEDUPE_SORT.md", "tier": "synthesis"},
+    "SP8": {"prompt_path": "PROMPT_SP8_DRIFT_CHECK.md", "tier": "synthesis"},
+    "SP9": {"prompt_path": "PROMPT_SP9_PROMOTION_READINESS.md", "tier": "synthesis"},
+    "SP10": {"prompt_path": "PROMPT_SP10_REDACTION_PASS.md", "tier": "synthesis"},
+    "SP11": {"prompt_path": "PROMPT_SP11_CONTRACT_LINTER.md", "tier": "synthesis"},
+    "SP12": {"prompt_path": "PROMPT_SP12_STABILITY_SIGNATURE.md", "tier": "synthesis"}
   },
   "version": 1
 }
