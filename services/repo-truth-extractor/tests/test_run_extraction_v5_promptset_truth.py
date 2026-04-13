@@ -49,17 +49,24 @@ def test_v4_schema_rollout_manifest_tracks_packet_03_tranche() -> None:
     assert all((schema_dir / name).exists() for name in schema_files)
 
 
-def test_v5_phase_s_registry_and_step_controls_match_current_contract() -> None:
+def test_v5_phase_sp_registry_and_step_controls_match_current_contract() -> None:
     runner = _load_runner_module()
-    runner.set_active_s_prompts_mode("registry")
 
-    specs = runner.get_phase_prompts("S")
+    specs = runner.get_phase_prompts("SP")
 
-    assert [spec.step_id for spec in specs] == [f"S{i}" for i in range(13)]
+    assert [spec.step_id for spec in specs] == [f"SP{i}" for i in range(13)]
     assert all(spec.source == "registry" for spec in specs)
     assert all(spec.prompt_path.exists() for spec in specs)
     assert all(spec.tier_override in {"bulk", "extract", "synthesis", "qa"} for spec in specs)
-    assert runner._get_s_step_controls(SimpleNamespace(s_steps="S12,S0")) == ["S0", "S12"]
+
+
+def test_v5_phase_s_always_returns_legacy_prompts() -> None:
+    runner = _load_runner_module()
+
+    specs = runner.get_phase_prompts("S")
+
+    assert all(spec.source == "legacy" for spec in specs)
+    assert [spec.step_id for spec in specs] == [f"S{i}" for i in range(13)]
 
 
 def test_v5_phase_s_rejects_non_base_steps_in_selection() -> None:

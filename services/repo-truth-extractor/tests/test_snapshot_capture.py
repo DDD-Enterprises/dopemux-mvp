@@ -32,7 +32,7 @@ def test_validator_suite_capture_uses_real_source_hashes() -> None:
         contract_rigor="phase_s_weaker_contract_caveat",
         source_paths=[
             SERVICE_ROOT / "prompts" / "phase_s" / "registry.json",
-            SERVICE_ROOT / "prompts" / "phase_s" / "PROMPT_S11_CONTRACT_LINTER.md",
+            SERVICE_ROOT / "prompts" / "phase_s" / "PROMPT_SP11_CONTRACT_LINTER.md",
         ],
     )
     assert validator_suite.version_hash == validator_suite.content_hash
