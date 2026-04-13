@@ -1,6 +1,7 @@
 # MCP Integration Bridge Service
 # Python-based central coordination layer for task management systems
 FROM python:3.11-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -16,7 +17,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv uv pip install --system --no-cache --system --no-cache -r requirements.txt
 
 # Copy application code
 COPY . .
