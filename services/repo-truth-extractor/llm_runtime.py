@@ -662,11 +662,9 @@ def call_llm(
             if delay_seconds > 0:
                 time.sleep(delay_seconds)
     logger.error(
-        "LLM call failed after %s attempts (%.1fs retry delay) provider=%s model=%s.",
+        "LLM call failed after %s attempts (%.1fs retry delay).",
         attempt,
         total_retry_delay,
-        provider,
-        model_id,
     )
     last_failure_meta["total_retry_delay_seconds"] = total_retry_delay
     return {
