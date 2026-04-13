@@ -47,4 +47,5 @@ def test_inject_promptset_rules_is_idempotent() -> None:
     prompt = "# Test\n\n## Shared Rules\nRefer to PROMPTSET_RULES.md.\n"
     once = runner._inject_promptset_rules(prompt)
     twice = runner._inject_promptset_rules(once)
-    assert once == twice or "PROMPTSET_RULES" in twice
+    assert once == twice
+    assert twice.count("## PROMPTSET_RULES.md (Injected)") == 1

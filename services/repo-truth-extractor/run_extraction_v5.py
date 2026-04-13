@@ -394,7 +394,7 @@ STAGED_SAFE_PRESET_NAME = "staged-safe"
 FIRST_LIVE_PRESET_DEFAULT_CAP_USD = 5.0
 STAGED_SAFE_PRESET_DEFAULT_CAP_USD = 2.5
 FIRST_LIVE_INITIAL_PHASES = ("A", "H", "D", "C")
-FIRST_LIVE_POST_REVIEW_PHASES = ("R", "X", "T", "Z", "S")
+FIRST_LIVE_POST_REVIEW_PHASES = ("R", "X", "T", "Z", "S", "SP")
 PARSE_FAILURE_ABORT_THRESHOLD = 0.05
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
@@ -416,6 +416,7 @@ PHASE_REQUIRED_DEPENDENCIES: Dict[str, List[str]] = {
     "T": ["R", "X"],
     "Z": ["R", "X", "T"],
     "S": ["R"],
+    "SP": ["R"],
 }
 PHASE_OPTIONAL_DEPENDENCIES: Dict[str, List[str]] = {
     "A": [],
@@ -432,6 +433,7 @@ PHASE_OPTIONAL_DEPENDENCIES: Dict[str, List[str]] = {
     "T": [],
     "Z": [],
     "S": ["X", "T", "Z", "MANUAL"],
+    "SP": ["X", "T", "Z"],
 }
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
@@ -783,7 +785,7 @@ ROUTING_POLICY_GUIDE: Dict[str, Dict[str, Any]] = {
 }
 ACTIVE_OUTPUT_LAYOUT: Optional["OutputLayout"] = None
 DOCS_GOVERNANCE_PHASES: Set[str] = {"A", "H", "D", "W", "B", "G"}
-PREMIUM_SYNTHESIS_PHASES: Set[str] = {"R", "X", "T", "Z", "S", "M"}
+PREMIUM_SYNTHESIS_PHASES: Set[str] = {"R", "X", "T", "Z", "S", "SP", "M"}
 BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
     ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
@@ -854,7 +856,7 @@ GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     ],
 }
 
-OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "T", "X", "Z", "M"}
+OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "SP", "T", "X", "Z", "M"}
 OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
@@ -1077,6 +1079,13 @@ def step_sort_key(step_id: str) -> Tuple[str, int]:
     return (match.group(1), int(match.group(2)))
 
 
+def step_phase_id(step_id: str) -> str:
+    match = re.match(r"^([A-Z]+)\d+$", str(step_id or "").strip().upper())
+    if not match:
+        return ""
+    return match.group(1)
+
+
 def _parse_step_csv(raw: str) -> List[str]:
     tokens: List[str] = []
     seen: Set[str] = set()
@@ -1126,7 +1135,7 @@ def _get_execution_step_filter(args: argparse.Namespace) -> Optional[str]:
     normalized = raw.upper()
     if "," in normalized:
         raise RuntimeError("Execution step filtering accepts exactly one step id.")
-    if not re.match(r"^[A-Z]\d+$", normalized):
+    if not re.match(r"^[A-Z]+\d+$", normalized):
         raise RuntimeError(f"Unsupported execution step id: {normalized}")
     phase = str(getattr(args, "phase", "") or "").strip().upper()
     if not phase:
@@ -1139,7 +1148,7 @@ def _get_execution_step_filter(args: argparse.Namespace) -> Optional[str]:
         )
     if phase == "S" and getattr(args, "s_steps", None):
         raise RuntimeError("Use either --step or --s-steps for phase S, not both.")
-    if normalized[0] != phase:
+    if step_phase_id(normalized) != phase:
         raise RuntimeError(f"--step {normalized} does not belong to phase {phase}.")
     return normalized
 
@@ -1301,6 +1310,7 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
     "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12"},
+    "SP": set(PHASE_SP_BASE_STEPS),
     "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 
@@ -5759,7 +5769,7 @@ def _legacy_phase_prompt_specs(phase: str) -> List[PromptSpec]:
     expected_steps = REQUIRED_PROMPT_STEP_IDS.get(phase, set())
     primary_root = prompt_root()
     for prompt_path in sorted(primary_root.glob(f"PROMPT_{phase}*_*.md")):
-        match = re.match(r"PROMPT_([A-Z][0-9]+)", prompt_path.name)
+        match = re.match(r"PROMPT_([A-Z]+\d+)", prompt_path.name)
         if not match:
             continue
         step_id = match.group(1)
@@ -5770,7 +5780,7 @@ def _legacy_phase_prompt_specs(phase: str) -> List[PromptSpec]:
         if missing_steps:
             v4_prompt_root = EXTRACTOR_SERVICE_DIR / "promptsets" / "v4" / "prompts"
             for prompt_path in sorted(v4_prompt_root.glob("PROMPT_S*_*.md")):
-                match = re.match(r"PROMPT_([A-Z][0-9]+)", prompt_path.name)
+                match = re.match(r"PROMPT_([A-Z]+\d+)", prompt_path.name)
                 if not match:
                     continue
                 step_id = match.group(1)
@@ -6308,7 +6318,7 @@ def collect_prompt_index() -> (
     step_map: Dict[str, List[Path]] = defaultdict(list)
     prompt_paths = sorted(prompt_root().glob("PROMPT_*.md"))
     for prompt_path in prompt_paths:
-        match = re.match(r"PROMPT_([A-Z][0-9]+)_", prompt_path.name)
+        match = re.match(r"PROMPT_([A-Z]+\d+)_", prompt_path.name)
         if not match:
             continue
         step_id = match.group(1)
@@ -6318,7 +6328,7 @@ def collect_prompt_index() -> (
     duplicates: Dict[str, List[str]] = {}
     for step_id in sorted(step_map.keys(), key=step_sort_key):
         paths = sorted(step_map[step_id], key=lambda p: p.name)
-        phase = step_id[0]
+        phase = step_phase_id(step_id) or step_id[:1]
         phase_map.setdefault(phase, {})
         phase_map[phase][step_id] = paths
         if len(paths) > 1:
@@ -12131,6 +12141,8 @@ def _load_promptset_rules() -> str:
 
 def _inject_promptset_rules(prompt_text: str) -> str:
     if not prompt_text:
+        return prompt_text
+    if "## PROMPTSET_RULES.md (Injected)" in prompt_text:
         return prompt_text
     if "PROMPTSET_RULES" not in prompt_text and "Shared Rules" not in prompt_text:
         return prompt_text
@@ -18415,7 +18427,7 @@ def _selected_execution_step_ids_for_phase(
     if phase_upper == "S" and cfg.selected_s_steps:
         return list(cfg.selected_s_steps)
     selected = str(cfg.selected_execution_step or "").strip().upper()
-    if not selected or selected[:1] != phase_upper:
+    if not selected or step_phase_id(selected) != phase_upper:
         return None
     return [selected]
 
@@ -19872,7 +19884,7 @@ def main() -> None:
         "--preset-stage",
         choices=["initial", "post-review", "full"],
         default="initial",
-        help="Preset stage to execute. 'initial' runs A/H/D/C, 'post-review' runs R/X/T/Z/S.",
+        help="Preset stage to execute. 'initial' runs A/H/D/C, 'post-review' runs R/X/T/Z/S/SP.",
     )
     parser.add_argument(
         "--skip-pre-live-validator",
