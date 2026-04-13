@@ -173,6 +173,7 @@ aliases:
   claude-sonnet-4: sonnet
   claude-haiku: haiku
   claude-opus: opus
+  claude-opus-4-6: opus
   claude-opus-4-1-20250805: opus
   claude-opus-4-20250514: opus
   claude-opus-4: opus
