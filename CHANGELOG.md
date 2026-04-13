@@ -8,6 +8,8 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Run ID propagation across `queue-drain` and `flight` to ensure consistent artifact grouping.
 - Persistent `RUN_SUMMARY.md` writing at the end of `queue-drain` execution.
 - Git case-insensitivity warning in `preflight` for macOS environments.
+- Phase S prompt rendering for SP placeholders in the v5 runner, with stub rules config scaffolding.
+- Promptset audit now supports `--population` for Phase S, S_INT, FL_INT, prescan, and all.
 
 ### Changed
 - `stage_and_push_if_needed` now uses `git add -A` to detect case-only renames on macOS.
@@ -17,6 +19,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - `flight-deck` now delegates to the authoritative `flight` dashboard path so autopilot, remediation, and merge execution share the same runtime.
 - The docs workflow now runs on pull requests and `main` pushes only, preventing PR-branch push runs from re-failing on unrelated legacy docs debt.
 - Active extractor docs now describe the validated bounded v5 lane, the current reliability contract, and the upgrade-design reality check for this branch.
+- S_INT and FL_INT prompt files now use the `PROMPT_` filename prefix and registries reference the renamed files.
 
 ### Fixed
 - Validation-only PRs are no longer shown as queued-for-merge before local verification is complete.

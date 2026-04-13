@@ -5,12 +5,17 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-17'
-last_review: '2026-03-17'
+last_review: '2026-04-13'
 next_review: '2026-06-15'
 prelude: Release Notes V0.1.0 (explanation) for dopemux documentation and developer
   workflows.
 ---
 # Release Notes - v0.1.0
+
+## Unreleased (post-v0.1.0)
+- Phase S prompt rendering now supports SP template variables in the v5 runner.
+- S_INT and FL_INT prompt files standardized on the `PROMPT_` filename prefix.
+- Promptset audit CLI supports `--population` for Phase S, S_INT, FL_INT, prescan, and all.
 
 ## Status: VALIDATED
 This release represents the first baseline of the PR Merge Specialist, validated across 5 development tranches.
