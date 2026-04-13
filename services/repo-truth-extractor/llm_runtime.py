@@ -417,7 +417,6 @@ def call_llm(
                 response_json = response.json()
                 response_text = response_json["choices"][0]["message"]["content"]
             elif provider == "gemini":
-                gemini_timeout = max(10, _remaining_timeout_seconds())
                 client = deps.get_gemini_client(api_key)
                 response = client.models.generate_content(
                     model=model_id,
