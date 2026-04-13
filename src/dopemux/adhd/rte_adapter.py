@@ -1,75 +1,82 @@
 import json
-import os
-import httpx
-from pathlib import Path
-from typing import Dict, Any, List, Optional
 import logging
+import os
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import httpx
 
 try:
     from src.dopemux.adhd.attention_monitor import AttentionMonitor
     from src.dopemux.adhd.task_decomposer import TaskDecomposer
+
     ADHD_AVAILABLE = True
 except ImportError:
     ADHD_AVAILABLE = False
-    
+
 logger = logging.getLogger(__name__)
+
 
 class RTEAdapter:
     """Boundary adapter between 2025 Cognitive Plane and 2026 RTE architecture."""
-    
+
     def __init__(self, workspace_root: Path):
         self.workspace_root = workspace_root
         self.rte_output_dir = self.workspace_root / "extraction"
         self.conport_url = os.getenv("CONPORT_URL", "http://localhost:3004")
-        
+
         self.attention_monitor = None
         self.task_decomposer = None
-        
+
         if ADHD_AVAILABLE:
             self.attention_monitor = AttentionMonitor(project_path=workspace_root)
             self.task_decomposer = TaskDecomposer(project_path=workspace_root)
-            
-    def get_latest_truth(self, artifact_type: str = "doctor/DOCTOR_FULL") -> Dict[str, Any]:
+
+    def get_latest_truth(
+        self, artifact_type: str = "doctor/DOCTOR_FULL"
+    ) -> Dict[str, Any]:
         """Read the latest specified JSON artifact from RTE output."""
         path = self.rte_output_dir / f"{artifact_type}.json"
         if not path.exists():
             raise FileNotFoundError(f"RTE Artifact not found at: {path}")
-            
-        with open(path, 'r') as f:
+
+        with open(path, "r") as f:
             return json.load(f)
 
-    async def write_decision_to_conport(self, decision_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def write_decision_to_conport(
+        self, decision_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Write truth artifacts as 'decisions' into ConPort KG."""
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.conport_url}/api/decisions",
-                json=decision_data,
-                timeout=10.0
+                f"{self.conport_url}/api/decisions", json=decision_data, timeout=10.0
             )
             response.raise_for_status()
             return response.json()
 
-    async def process_truth_with_adhd_context(self, artifact_type: str = "doctor/DOCTOR_FULL") -> Dict[str, Any]:
+    async def process_truth_with_adhd_context(
+        self, artifact_type: str = "doctor/DOCTOR_FULL"
+    ) -> Dict[str, Any]:
         """
         Read RTE truth, analyze current ADHD energy state, and decompose the
         truth findings into actionable, bite-sized tasks.
         """
         truth = self.get_latest_truth(artifact_type)
-        
+
         if not ADHD_AVAILABLE or not self.attention_monitor or not self.task_decomposer:
             logger.warning("ADHD Engine not available. Falling back to raw truth.")
             return {"status": "raw", "truth": truth}
-            
+
         # 1. Measure Energy/Attention State
         metrics = self.attention_monitor.get_current_metrics()
         energy_level = metrics.get("state", "medium")
-        
+
         logger.info(f"Current ADHD Energy State: {energy_level}")
-        
+
         # 2. Extract Actionable Items from Truth
         # For DOCTOR_FULL, we might look at 'phases' or 'recommendations'
         phases = truth.get("phases", [])
-        
+
         # 3. Task Decomposition based on Energy
         decomposed_tasks = []
         for phase in phases:
@@ -78,16 +85,15 @@ class RTEAdapter:
                 title=f"Process RTE Phase {phase}",
                 description=f"Analyze and integrate findings from RTE Phase {phase}",
                 priority="high",
-                estimated_hours=2.0
+                estimated_hours=2.0,
             )
             # The decomposer automatically breaks it down further if energy is low
             # (handled internally or via get_recommended_task)
             decomposed_tasks.append(task_id)
-            
+
         # 4. Get Recommended Next Action
         next_task = self.task_decomposer.get_recommended_task(energy_level=energy_level)
-        
-        
+
         # 5. Log the Decomposition Decision to ConPort KG
         decision_payload = {
             "title": "RTE Truth Decomposed",
@@ -96,21 +102,29 @@ class RTEAdapter:
             "context": {
                 "energy_level": energy_level,
                 "tasks_created": decomposed_tasks,
-                "recommended_action": next_task.get("title") if isinstance(next_task, dict) else (next_task.title if next_task else None),
-                "source": "RTE_ADAPTER_ADHD_ENGINE"
+                "recommended_action": (
+                    next_task.get("title")
+                    if isinstance(next_task, dict)
+                    else (next_task.title if next_task else None)
+                ),
+                "source": "RTE_ADAPTER_ADHD_ENGINE",
             },
-            "workspace_id": str(self.workspace_root.name)
+            "workspace_id": str(self.workspace_root.name),
         }
-        
+
         # We need to run the async write_decision_to_conport
         # Since this method itself is async, we can await it directly.
         conport_result = await self.write_decision_to_conport(decision_payload)
-        
+
         return {
             "status": "processed",
             "energy_level": energy_level,
             "tasks_created": len(decomposed_tasks),
-            "recommended_next_action": next_task.get("title") if isinstance(next_task, dict) else (next_task.title if next_task else None),
+            "recommended_next_action": (
+                next_task.get("title")
+                if isinstance(next_task, dict)
+                else (next_task.title if next_task else None)
+            ),
             "truth_artifact": truth,
-            "conport_logging": conport_result
+            "conport_logging": conport_result,
         }

@@ -8,7 +8,7 @@ import asyncio
 import logging
 import sys
 from pathlib import Path
-from typing import Optional, Any, List, Dict
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -16,22 +16,26 @@ _integration_manager: Optional[Any] = None
 _integration_enabled = True
 
 
-def initialize_integration(workspace_id: str, event_bus_url: str = "redis://localhost:6379"):
+def initialize_integration(
+    workspace_id: str, event_bus_url: str = "redis://localhost:6379"
+):
     """Initialize Dope-Context integration with ConPort-KG"""
     global _integration_manager, _integration_enabled
 
     try:
-        bridge_path = str(Path(__file__).parent.parent.parent.parent / "mcp-dopecon-bridge")
+        bridge_path = str(
+            Path(__file__).parent.parent.parent.parent / "mcp-dopecon-bridge"
+        )
         if bridge_path not in sys.path:
             sys.path.insert(0, bridge_path)
 
         from event_bus import EventBus
+
         from integrations.dope_context import DopeContextIntegrationManager
 
         event_bus = EventBus(redis_url=event_bus_url)
         _integration_manager = DopeContextIntegrationManager(
-            event_bus=event_bus,
-            workspace_id=workspace_id
+            event_bus=event_bus, workspace_id=workspace_id
         )
 
         asyncio.create_task(_initialize_async(event_bus))

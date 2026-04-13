@@ -9,9 +9,10 @@ Enforces Two-Plane Architecture authority boundaries:
 - Blocks unauthorized cross-plane communication
 """
 
-from fastapi import Request, HTTPException
-from starlette.middleware.base import BaseHTTPMiddleware
 import logging
+
+from fastapi import HTTPException, Request
+from starlette.middleware.base import BaseHTTPMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +29,11 @@ class KGAuthorityMiddleware(BaseHTTPMiddleware):
     AUTHORITY_RULES = {
         "/kg/health": {
             "allowed_planes": ["pm_plane", "cognitive_plane", None],  # Public
-            "allowed_methods": ["GET"]
+            "allowed_methods": ["GET"],
         },
         "/kg/decisions": {
             "allowed_planes": ["pm_plane", "cognitive_plane"],
-            "allowed_methods": ["GET"]  # Read-only from PM plane
+            "allowed_methods": ["GET"],  # Read-only from PM plane
         },
     }
 
@@ -69,7 +70,7 @@ class KGAuthorityMiddleware(BaseHTTPMiddleware):
                     )
                     raise HTTPException(
                         status_code=403,
-                        detail=f"Plane '{source_plane}' not authorized for {path}"
+                        detail=f"Plane '{source_plane}' not authorized for {path}",
                     )
 
                 # Check method authorization
@@ -81,7 +82,7 @@ class KGAuthorityMiddleware(BaseHTTPMiddleware):
                     )
                     raise HTTPException(
                         status_code=405,
-                        detail=f"Method '{method}' not allowed for {path}"
+                        detail=f"Method '{method}' not allowed for {path}",
                     )
 
                 logger.info(f"✅ KG request authorized: {source_plane} {method} {path}")

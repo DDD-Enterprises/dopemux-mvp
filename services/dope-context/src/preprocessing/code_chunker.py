@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
 try:
-    import tree_sitter_python as tspython
     import tree_sitter_javascript as tsjavascript
+    import tree_sitter_python as tspython
     import tree_sitter_typescript as tstypescript
     from tree_sitter import Language, Node, Parser, Tree
 
@@ -219,7 +219,11 @@ class CodeChunker:
         # Node types to extract (language-specific)
         target_types = {
             "python": ["function_definition", "class_definition", "module"],
-            "py": ["function_definition", "class_definition", "module"],  # Support .py extension
+            "py": [
+                "function_definition",
+                "class_definition",
+                "module",
+            ],  # Support .py extension
             "javascript": [
                 "function_declaration",
                 "class_declaration",

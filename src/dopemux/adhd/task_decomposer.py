@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
 from rich.console import Console
+
 from dopemux.pm.models import PMTaskStatus
 from dopemux.pm.writes import pm_transition_work_item
 
@@ -127,7 +128,9 @@ class TaskRecord:
             TaskStatus.CANCELLED: PacketState.CANCELLED,
         }
         task_status = (
-            self.status if isinstance(self.status, TaskStatus) else TaskStatus(self.status)
+            self.status
+            if isinstance(self.status, TaskStatus)
+            else TaskStatus(self.status)
         )
         return ExecutionPacket(
             packet_id=self.id,
@@ -536,12 +539,16 @@ class TaskDecomposer:
                 task.started_at = datetime.now().isoformat()
             task.status = TaskStatus.COMPLETED
             task.completed_at = datetime.now().isoformat()
-            self._sync_to_pm_plane(task_id, PMTaskStatus.DONE, "task progress completed")
+            self._sync_to_pm_plane(
+                task_id, PMTaskStatus.DONE, "task progress completed"
+            )
         elif task.progress > 0.0:
             task.status = TaskStatus.IN_PROGRESS
             if not task.started_at:
                 task.started_at = datetime.now().isoformat()
-            self._sync_to_pm_plane(task_id, PMTaskStatus.IN_PROGRESS, "task progress updated")
+            self._sync_to_pm_plane(
+                task_id, PMTaskStatus.IN_PROGRESS, "task progress updated"
+            )
 
         self._save_tasks()
         return True
@@ -769,6 +776,7 @@ class TaskDecomposer:
         try:
             return TaskPriority(priority)
         except ValueError:
+
             class LegacyPriority(str):
                 @property
                 def value(self) -> str:

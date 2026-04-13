@@ -6,7 +6,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Awaitable, Callable, Optional, Set
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -106,7 +105,7 @@ class IndexingWorker:
                     exc,
                 )
                 if attempt < self.max_retries:
-                    await asyncio.sleep(self.retry_backoff ** attempt)
+                    await asyncio.sleep(self.retry_backoff**attempt)
         return False
 
     def get_stats(self) -> dict:

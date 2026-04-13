@@ -4,21 +4,21 @@ Tracks search calls to measure LLM search behavior before/after enhancements.
 """
 
 import json
-
 import logging
 
 logger = logging.getLogger(__name__)
 
 import os
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from dataclasses import dataclass, asdict
 
 
 @dataclass
 class SearchMetric:
     """Single search call metric."""
+
     timestamp: str
     tool_name: str  # search_code, docs_search, search_all
     query: str
@@ -67,8 +67,14 @@ class MetricsTracker:
 
         # Check if explicit search request
         explicit_keywords = [
-            "find", "search", "locate", "look for", "show me",
-            "get me", "where is", "which file"
+            "find",
+            "search",
+            "locate",
+            "look for",
+            "show me",
+            "get me",
+            "where is",
+            "which file",
         ]
         is_explicit = any(kw in query_lower for kw in explicit_keywords)
 
@@ -77,48 +83,72 @@ class MetricsTracker:
             return ("explicit_search", True)
 
         # Understanding code
-        if any(kw in query_lower for kw in [
-            "how does", "how is", "what does", "explain", "understand",
-            "what is", "tell me about"
-        ]):
+        if any(
+            kw in query_lower
+            for kw in [
+                "how does",
+                "how is",
+                "what does",
+                "explain",
+                "understand",
+                "what is",
+                "tell me about",
+            ]
+        ):
             return ("understanding", False)
 
         # Making changes
-        if any(kw in query_lower for kw in [
-            "add", "modify", "change", "update", "implement", "create",
-            "remove", "delete", "refactor"
-        ]):
+        if any(
+            kw in query_lower
+            for kw in [
+                "add",
+                "modify",
+                "change",
+                "update",
+                "implement",
+                "create",
+                "remove",
+                "delete",
+                "refactor",
+            ]
+        ):
             return ("making_changes", False)
 
         # Debugging
-        if any(kw in query_lower for kw in [
-            "why", "debug", "fix", "error", "issue", "problem", "failing",
-            "not working", "broken"
-        ]):
+        if any(
+            kw in query_lower
+            for kw in [
+                "why",
+                "debug",
+                "fix",
+                "error",
+                "issue",
+                "problem",
+                "failing",
+                "not working",
+                "broken",
+            ]
+        ):
             return ("debugging", False)
 
         # Review/patterns
-        if any(kw in query_lower for kw in [
-            "review", "pattern", "best practice", "similar", "like"
-        ]):
+        if any(
+            kw in query_lower
+            for kw in ["review", "pattern", "best practice", "similar", "like"]
+        ):
             return ("review", False)
 
         # Impact analysis
-        if any(kw in query_lower for kw in [
-            "depends on", "uses", "calls", "references", "affected by"
-        ]):
+        if any(
+            kw in query_lower
+            for kw in ["depends on", "uses", "calls", "references", "affected by"]
+        ):
             return ("impact_analysis", False)
 
         # Default: questions
         return ("questions", False)
 
-    def log_search(
-        self,
-        tool_name: str,
-        query: str,
-        workspace: str,
-        top_k: int = 10
-    ):
+    def log_search(self, tool_name: str, query: str, workspace: str, top_k: int = 10):
         """
         Log a search call.
 
@@ -137,7 +167,7 @@ class MetricsTracker:
             workspace=workspace,
             top_k=top_k,
             scenario=scenario,
-            explicit_search=is_explicit
+            explicit_search=is_explicit,
         )
 
         # Load existing metrics
@@ -150,7 +180,9 @@ class MetricsTracker:
         self._save_metrics(metrics)
 
         # Also log to console for immediate visibility
-        logger.info(f"[METRICS] {tool_name} | scenario={scenario} | explicit={is_explicit} | query={query[:50]}...")
+        logger.info(
+            f"[METRICS] {tool_name} | scenario={scenario} | explicit={is_explicit} | query={query[:50]}..."
+        )
 
     def get_summary(self, since_timestamp: Optional[str] = None) -> Dict:
         """
@@ -166,10 +198,7 @@ class MetricsTracker:
 
         # Filter by timestamp if provided
         if since_timestamp:
-            metrics = [
-                m for m in metrics
-                if m["timestamp"] >= since_timestamp
-            ]
+            metrics = [m for m in metrics if m["timestamp"] >= since_timestamp]
 
         if not metrics:
             return {
@@ -178,7 +207,7 @@ class MetricsTracker:
                 "implicit_searches": 0,
                 "explicit_percentage": 0,
                 "implicit_percentage": 0,
-                "scenarios": {}
+                "scenarios": {},
             }
 
         total = len(metrics)
@@ -206,12 +235,11 @@ class MetricsTracker:
             "scenarios": scenarios,
             "tools": tools,
             "sample_queries": {
-                scenario: [
-                    m["query"] for m in metrics
-                    if m["scenario"] == scenario
-                ][:3]  # First 3 examples per scenario
+                scenario: [m["query"] for m in metrics if m["scenario"] == scenario][
+                    :3
+                ]  # First 3 examples per scenario
                 for scenario in scenarios.keys()
-            }
+            },
         }
 
     def export_for_analysis(self, output_file: str):
@@ -229,7 +257,7 @@ class MetricsTracker:
             logger.info("[METRICS] No metrics to export")
             return
 
-        with open(output_file, 'w', newline='') as f:
+        with open(output_file, "w", newline="") as f:
             if metrics:
                 writer = csv.DictWriter(f, fieldnames=metrics[0].keys())
                 writer.writeheader()
@@ -248,14 +276,14 @@ class MetricsTracker:
             return []
 
         try:
-            with open(self.metrics_file, 'r') as f:
+            with open(self.metrics_file, "r") as f:
                 return json.load(f)
         except (json.JSONDecodeError, IOError):
             return []
 
     def _save_metrics(self, metrics: List[Dict]):
         """Save metrics to file."""
-        with open(self.metrics_file, 'w') as f:
+        with open(self.metrics_file, "w") as f:
             json.dump(metrics, f, indent=2)
 
 

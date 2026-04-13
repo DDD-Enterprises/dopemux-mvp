@@ -13,7 +13,6 @@ from typing import Dict, List, Optional, Tuple
 import voyageai
 from voyageai import AsyncClient
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -103,7 +102,9 @@ class ContextualizedEmbedder:
         self._request_times: List[datetime] = []
         self._rate_limit_lock = asyncio.Lock()
 
-    def _cache_key(self, document_chunks: List[str], model: str, input_type: str) -> str:
+    def _cache_key(
+        self, document_chunks: List[str], model: str, input_type: str
+    ) -> str:
         """Generate cache key from document chunks."""
         content = f"{model}:{input_type}:" + "|".join(document_chunks)
         return hashlib.sha256(content.encode()).hexdigest()
@@ -156,7 +157,9 @@ class ContextualizedEmbedder:
             cost_usd=0.0,
         )
 
-    def _cache_response(self, cache_key: str, response: ContextualizedEmbeddingResponse):
+    def _cache_response(
+        self, cache_key: str, response: ContextualizedEmbeddingResponse
+    ):
         """Cache embedding response."""
         self.cache[cache_key] = (response, datetime.now())
 
@@ -273,9 +276,7 @@ class ContextualizedEmbedder:
             logger.debug(f"All {len(documents)} documents cached")
             return responses  # type: ignore
 
-        logger.debug(
-            f"Batch: {len(documents)} total, {len(uncached_docs)} uncached"
-        )
+        logger.debug(f"Batch: {len(documents)} total, {len(uncached_docs)} uncached")
 
         # Rate limit
         await self._check_rate_limit()
@@ -376,7 +377,9 @@ async def main():
         model="voyage-context-3",
         input_type="document",
     )
-    logger.info(f"Single doc: {len(response.embeddings)} chunks, ${response.cost_usd:.6f}")
+    logger.info(
+        f"Single doc: {len(response.embeddings)} chunks, ${response.cost_usd:.6f}"
+    )
 
     # Batch documents
     docs = [

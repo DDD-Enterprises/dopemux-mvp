@@ -13,6 +13,7 @@ from typing import Dict, List, Optional
 
 try:
     from openai import AsyncOpenAI
+
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ContextRequest:
     """Request for context generation."""
+
     chunk: CodeChunk
     file_path: str
     module_name: Optional[str] = None
@@ -38,6 +40,7 @@ class ContextRequest:
 @dataclass
 class ContextResponse:
     """Generated context response."""
+
     context: str
     tokens_used: int
     cached: bool = False
@@ -107,9 +110,7 @@ class OpenAIContextGenerator:
             ContextResponse with generated context
         """
         request = ContextRequest(
-            chunk=chunk,
-            file_path=file_path,
-            module_name=module_name
+            chunk=chunk, file_path=file_path, module_name=module_name
         )
 
         # Check cache
@@ -119,10 +120,7 @@ class OpenAIContextGenerator:
             if datetime.now() - timestamp < self.cache_ttl:
                 self.cache_hits += 1
                 return ContextResponse(
-                    context=response.context,
-                    tokens_used=0,
-                    cached=True,
-                    cost_usd=0.0
+                    context=response.context, tokens_used=0, cached=True, cost_usd=0.0
                 )
 
         # Generate context
@@ -136,15 +134,12 @@ class OpenAIContextGenerator:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a code documentation assistant. Generate concise, informative context descriptions for code chunks."
+                        "content": "You are a code documentation assistant. Generate concise, informative context descriptions for code chunks.",
                     },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
+                    {"role": "user", "content": prompt},
                 ],
                 # gpt-5-mini only supports default temperature=1, max_completion_tokens instead of max_tokens
-                max_completion_tokens=200
+                max_completion_tokens=200,
             )
 
             context = completion.choices[0].message.content.strip()
@@ -153,8 +148,12 @@ class OpenAIContextGenerator:
             output_tokens = completion.usage.completion_tokens
 
             # Calculate cost based on model
-            model_pricing = self.PRICING.get(self.model, {"input": 0.15, "output": 0.60})
-            cost_usd = (input_tokens * model_pricing["input"] / 1_000_000) + (output_tokens * model_pricing["output"] / 1_000_000)
+            model_pricing = self.PRICING.get(
+                self.model, {"input": 0.15, "output": 0.60}
+            )
+            cost_usd = (input_tokens * model_pricing["input"] / 1_000_000) + (
+                output_tokens * model_pricing["output"] / 1_000_000
+            )
 
             self.total_tokens += tokens_used
             self.total_cost_usd += cost_usd
@@ -163,7 +162,7 @@ class OpenAIContextGenerator:
                 context=context,
                 tokens_used=tokens_used,
                 cached=False,
-                cost_usd=cost_usd
+                cost_usd=cost_usd,
             )
 
             # Cache result
@@ -178,7 +177,7 @@ class OpenAIContextGenerator:
                 context=f"Code from {file_path}",
                 tokens_used=0,
                 cached=False,
-                cost_usd=0.0
+                cost_usd=0.0,
             )
 
     async def generate_contexts_batch(
@@ -216,10 +215,7 @@ class OpenAIContextGenerator:
         return await asyncio.gather(*tasks)
 
     def _build_prompt(
-        self,
-        chunk: CodeChunk,
-        file_path: str,
-        module_name: Optional[str] = None
+        self, chunk: CodeChunk, file_path: str, module_name: Optional[str] = None
     ) -> str:
         """Build prompt for context generation."""
 
@@ -241,26 +237,32 @@ Provide a brief description that would help someone understand what this code do
 
     def get_stats(self) -> Dict:
         """Get usage statistics."""
-        cache_rate = self.cache_hits / self.total_requests if self.total_requests > 0 else 0
+        cache_rate = (
+            self.cache_hits / self.total_requests if self.total_requests > 0 else 0
+        )
         return {
             "total_requests": self.total_requests,
             "cache_hits": self.cache_hits,
             "cache_rate": round(cache_rate, 3),
             "total_tokens": self.total_tokens,
-            "avg_tokens_per_request": round(self.total_tokens / max(1, self.total_requests - self.cache_hits), 1)
+            "avg_tokens_per_request": round(
+                self.total_tokens / max(1, self.total_requests - self.cache_hits), 1
+            ),
         }
 
     def get_cost_summary(self) -> Dict:
         """Get cost tracking summary."""
         try:
-            cache_rate = self.cache_hits / self.total_requests if self.total_requests > 0 else 0
+            cache_rate = (
+                self.cache_hits / self.total_requests if self.total_requests > 0 else 0
+            )
             return {
-                "model": getattr(self, 'model', 'unknown'),
-                "total_requests": getattr(self, 'total_requests', 0),
-                "cache_hits": getattr(self, 'cache_hits', 0),
+                "model": getattr(self, "model", "unknown"),
+                "total_requests": getattr(self, "total_requests", 0),
+                "cache_hits": getattr(self, "cache_hits", 0),
                 "cache_rate": round(cache_rate, 3),
-                "total_tokens": getattr(self, 'total_tokens', 0),
-                "total_cost_usd": round(getattr(self, 'total_cost_usd', 0.0), 4),
+                "total_tokens": getattr(self, "total_tokens", 0),
+                "total_cost_usd": round(getattr(self, "total_cost_usd", 0.0), 4),
             }
         except Exception as e:
             # Return safe fallback if anything fails

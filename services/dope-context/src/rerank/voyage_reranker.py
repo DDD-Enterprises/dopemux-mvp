@@ -12,7 +12,6 @@ from voyageai import AsyncClient
 
 from ..search.dense_search import SearchResult
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -239,6 +238,7 @@ class VoyageReranker:
 async def main():
     """Example usage of VoyageReranker."""
     import os
+
     from ..search.dense_search import SearchResult
 
     api_key = os.getenv("VOYAGE_API_KEY")

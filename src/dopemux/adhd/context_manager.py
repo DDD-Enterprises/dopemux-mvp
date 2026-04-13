@@ -130,7 +130,9 @@ class ContextManager:
         except (ValueError, OSError):
             # ValueError: path is outside project
             # OSError: path doesn't exist or permission issues
-            console.print(f"[red]Security: Blocked access to path outside project: {file_path}[/red]")
+            console.print(
+                f"[red]Security: Blocked access to path outside project: {file_path}[/red]"
+            )
             return False
 
     def _run_git_command(self, args: List[str], timeout: int = 10) -> Optional[str]:
@@ -146,7 +148,13 @@ class ContextManager:
         """
         # Validate git command arguments
         allowed_commands = {
-            "branch", "status", "log", "show", "diff", "rev-parse", "config"
+            "branch",
+            "status",
+            "log",
+            "show",
+            "diff",
+            "rev-parse",
+            "config",
         }
 
         if not args or args[0] not in allowed_commands:
@@ -164,14 +172,16 @@ class ContextManager:
                 capture_output=True,
                 text=True,
                 timeout=timeout,
-                check=False  # Don't raise on non-zero exit
+                check=False,  # Don't raise on non-zero exit
             )
 
             if result.returncode == 0:
                 return result.stdout.strip()
             else:
                 # Log error but don't expose it to prevent information leakage
-                console.print(f"[yellow]Git command failed (code {result.returncode})[/yellow]")
+                console.print(
+                    f"[yellow]Git command failed (code {result.returncode})[/yellow]"
+                )
                 return None
 
         except subprocess.TimeoutExpired:
@@ -459,14 +469,18 @@ class ContextManager:
             elif modified_files:
                 # Determine primary file type
                 extensions = [Path(f).suffix for f in modified_files]
-                common_ext = max(set(extensions), key=extensions.count) if extensions else ""
+                common_ext = (
+                    max(set(extensions), key=extensions.count) if extensions else ""
+                )
 
                 if len(modified_files) == 1:
                     return f"Modified {Path(modified_files[0]).name}"
                 elif common_ext == ".py":
                     return f"Updated Python code ({len(modified_files)} files)"
                 elif common_ext in [".js", ".ts", ".tsx"]:
-                    return f"Updated JavaScript/TypeScript ({len(modified_files)} files)"
+                    return (
+                        f"Updated JavaScript/TypeScript ({len(modified_files)} files)"
+                    )
                 elif common_ext == ".md":
                     return f"Updated documentation ({len(modified_files)} files)"
                 else:
@@ -591,7 +605,9 @@ class ContextManager:
             return "feature"
         elif any(keyword in message for keyword in ["fix", "bug", "error", "issue"]):
             return "bugfix"
-        elif any(keyword in message for keyword in ["doc", "readme", "guide", "explain"]):
+        elif any(
+            keyword in message for keyword in ["doc", "readme", "guide", "explain"]
+        ):
             return "documentation"
         elif any(keyword in message for keyword in ["test", "coverage", "spec"]):
             return "testing"
@@ -619,7 +635,10 @@ class ContextManager:
                 test_files += 1
             elif path_lower.endswith((".md", ".rst", ".txt")):
                 doc_files += 1
-            elif any(config_word in path_lower for config_word in ["config", "settings", ".env", ".yml", ".yaml"]):
+            elif any(
+                config_word in path_lower
+                for config_word in ["config", "settings", ".env", ".yml", ".yaml"]
+            ):
                 config_files += 1
 
         # Determine type based on file patterns
@@ -641,15 +660,14 @@ class ContextManager:
                 conn.execute(
                     """INSERT OR IGNORE INTO session_tags (session_id, tag)
                        VALUES (?, ?)""",
-                    (session_id, tag)
+                    (session_id, tag),
                 )
 
     def get_session_tags(self, session_id: str) -> List[str]:
         """Get tags for a session."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
-                "SELECT tag FROM session_tags WHERE session_id = ?",
-                (session_id,)
+                "SELECT tag FROM session_tags WHERE session_id = ?", (session_id,)
             )
             return [row[0] for row in cursor.fetchall()]
 
@@ -662,23 +680,27 @@ class ContextManager:
                    JOIN session_tags st ON cs.session_id = st.session_id
                    WHERE st.tag = ? AND cs.working_directory = ?
                    ORDER BY cs.timestamp DESC LIMIT ?""",
-                (tag, str(self.project_path), limit)
+                (tag, str(self.project_path), limit),
             )
 
             sessions = []
             for row in cursor.fetchall():
                 session_id, timestamp, data_json = row
                 data = json.loads(data_json)
-                sessions.append({
-                    "id": session_id,
-                    "timestamp": timestamp,
-                    "current_goal": data.get("current_goal", "No goal set"),
-                    "open_files": data.get("open_files", []),
-                    "git_branch": data.get("git_state", {}).get("branch", "unknown"),
-                    "focus_duration": data.get("focus_duration", 0),
-                    "message": data.get("message", ""),
-                    "tags": self.get_session_tags(session_id)
-                })
+                sessions.append(
+                    {
+                        "id": session_id,
+                        "timestamp": timestamp,
+                        "current_goal": data.get("current_goal", "No goal set"),
+                        "open_files": data.get("open_files", []),
+                        "git_branch": data.get("git_state", {}).get(
+                            "branch", "unknown"
+                        ),
+                        "focus_duration": data.get("focus_duration", 0),
+                        "message": data.get("message", ""),
+                        "tags": self.get_session_tags(session_id),
+                    }
+                )
 
             return sessions
 
@@ -846,14 +868,14 @@ class ContextManager:
                 # Clear existing tags for this session
                 conn.execute(
                     "DELETE FROM session_tags WHERE session_id = ?",
-                    (context.session_id,)
+                    (context.session_id,),
                 )
                 # Insert new tags
                 for tag in context.tags:
                     conn.execute(
                         """INSERT INTO session_tags (session_id, tag)
                            VALUES (?, ?)""",
-                        (context.session_id, tag)
+                        (context.session_id, tag),
                     )
 
     def _update_session_metadata(self, session_id: str) -> None:
