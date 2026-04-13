@@ -238,7 +238,7 @@ except Exception:  # pragma: no cover - optional rich rendering
 
 # --- Configuration & Constants ---
 
-PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "X", "Q", "R", "T", "Z", "S"]
+PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "X", "Q", "R", "T", "Z", "S", "SP"]
 PROMPT_HASH_MODE = "strict"
 PROMPT_ROOT_ENV_VAR = "REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"
 LEGACY_PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
@@ -252,6 +252,8 @@ S_PROMPTS_LEGACY = "legacy"
 S_PROMPTS_MODES = {S_PROMPTS_AUTO, S_PROMPTS_REGISTRY, S_PROMPTS_LEGACY}
 PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(13))
 PHASE_S_BASE_STEP_SET = set(PHASE_S_BASE_STEPS)
+PHASE_SP_BASE_STEPS = tuple(f"SP{i}" for i in range(13))
+PHASE_SP_BASE_STEP_SET = set(PHASE_SP_BASE_STEPS)
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
 COVERAGE_ROLLUP_FILENAME = "COVERAGE_ROLLUP.json"
@@ -342,6 +344,7 @@ PHASE_DIR_NAMES: Dict[str, str] = {
     "T": "T_task_packets",
     "Z": "Z_handoff_freeze",
     "S": "S_synthesis",
+    "SP": "SP_synthesis_pipeline",
 }
 PHASE_DISPLAY_NAMES: Dict[str, str] = {
     "A": "Repo Plane",
@@ -358,6 +361,7 @@ PHASE_DISPLAY_NAMES: Dict[str, str] = {
     "T": "Task Packets",
     "Z": "Handoff Freeze",
     "S": "Synthesis",
+    "SP": "Synthesis Pipeline",
 }
 PHASE_PURPOSES: Dict[str, str] = {
     "A": "Scan repository instruction, router, hook, compose, and provider-control surfaces.",
@@ -374,6 +378,7 @@ PHASE_PURPOSES: Dict[str, str] = {
     "T": "Derive task packets from arbitration and feature-index outputs.",
     "Z": "Freeze final handoff package from arbitration, feature index, and task packets.",
     "S": "Synthesize the final truth pack from arbitration outputs plus downstream rollups.",
+    "SP": "Post-processing pipeline: dedupe, drift check, promotion readiness, redaction, linting, stability.",
 }
 LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
     "R2_synthesis": "R_arbitration",
@@ -1013,7 +1018,7 @@ def prompt_root() -> Path:
     return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
 
 
-_ACTIVE_S_PROMPTS_MODE = S_PROMPTS_AUTO
+_ACTIVE_S_PROMPTS_MODE = S_PROMPTS_LEGACY
 _VALID_PROMPT_TIERS = {"bulk", "extract", "synthesis", "qa"}
 
 
@@ -1066,7 +1071,7 @@ def _legacy_phase_prompt_roots(phase: str) -> List[Path]:
 
 
 def step_sort_key(step_id: str) -> Tuple[str, int]:
-    match = re.match(r"^([A-Z])(\d+)$", step_id)
+    match = re.match(r"^([A-Z]+)(\d+)$", step_id)
     if not match:
         return (step_id[:1], 999999)
     return (match.group(1), int(match.group(2)))
@@ -5915,10 +5920,40 @@ def _resolve_phase_s_prompts(mode: str) -> List[PromptSpec]:
     return specs
 
 
+def _resolve_phase_sp_prompts() -> List[PromptSpec]:
+    registry_path = EXTRACTOR_SERVICE_DIR / "prompts" / "phase_s" / "registry.json"
+    if not registry_path.exists():
+        raise FileNotFoundError(f"Phase SP registry not found: {registry_path}")
+    payload = json.loads(registry_path.read_text(encoding="utf-8"))
+    steps_data = payload.get("steps", {})
+    base = registry_path.parent.resolve()
+    specs: List[PromptSpec] = []
+    for step_id in sorted(steps_data.keys(), key=step_sort_key):
+        entry = steps_data[step_id]
+        prompt_path = (base / entry["prompt_path"]).resolve()
+        prompt_text = safe_read(prompt_path)
+        output_artifacts = extract_output_artifacts(prompt_text, step_id)
+        if not output_artifacts:
+            output_artifacts = (f"{step_id}.json",)
+        specs.append(
+            PromptSpec(
+                step_id=step_id,
+                prompt_path=prompt_path,
+                output_artifacts=tuple(output_artifacts),
+                tier_override=entry.get("tier", "synthesis"),
+                source="registry",
+                contract=_step_contract_for("SP", step_id),
+            )
+        )
+    return specs
+
+
 def get_phase_prompts(phase: str) -> List[PromptSpec]:
     phase_code = str(phase or "").upper()
     if phase_code == "S":
-        return _resolve_phase_s_prompts(get_active_s_prompts_mode())
+        return _legacy_phase_prompt_specs("S")
+    if phase_code == "SP":
+        return _resolve_phase_sp_prompts()
     return _legacy_phase_prompt_specs(phase_code)
 
 
@@ -12083,6 +12118,28 @@ def generate_comparison_summary(
     return summary
 
 
+_PROMPTSET_RULES_CACHE: Optional[str] = None
+
+
+def _load_promptset_rules() -> str:
+    global _PROMPTSET_RULES_CACHE
+    if _PROMPTSET_RULES_CACHE is None:
+        rules_path = EXTRACTOR_SERVICE_DIR / "promptsets" / "v4" / "PROMPTSET_RULES.md"
+        _PROMPTSET_RULES_CACHE = safe_read(rules_path) if rules_path.exists() else ""
+    return _PROMPTSET_RULES_CACHE
+
+
+def _inject_promptset_rules(prompt_text: str) -> str:
+    if not prompt_text:
+        return prompt_text
+    if "PROMPTSET_RULES" not in prompt_text and "Shared Rules" not in prompt_text:
+        return prompt_text
+    rules = _load_promptset_rules()
+    if not rules:
+        return prompt_text
+    return prompt_text + "\n\n---\n## PROMPTSET_RULES.md (Injected)\n" + rules
+
+
 def execute_step_for_partitions(
     phase: str,
     prompt_spec: PromptSpec,
@@ -12118,6 +12175,7 @@ def execute_step_for_partitions(
             contract_sidefill_enabled and plural_expected_json_artifacts(step_contract)
         )
     prompt_text = safe_read(prompt_path)
+    prompt_text = _inject_promptset_rules(prompt_text)
     if not prompt_text:
         logger.error("Could not read prompt: %s", prompt_path)
         return {
@@ -19406,11 +19464,7 @@ def run_phase_T(
 def run_phase_S(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    s_specs = get_phase_prompts("S")
-    effective_mode = S_PROMPTS_LEGACY
-    if s_specs and all(spec.source == "registry" for spec in s_specs):
-        effective_mode = S_PROMPTS_REGISTRY
-    logger.info("S_PROMPTS_MODE=%s", effective_mode)
+    logger.info("S_PROMPTS_MODE=legacy (V4 prompts; SP phase for registry pipeline)")
     r_norm = dirs["R"] / "norm"
     input_sources: Dict[Path, str] = {}
     if r_norm.exists():
@@ -19479,6 +19533,37 @@ def run_phase_S(
             if cfg.selected_s_steps
             else _selected_execution_step_ids_for_phase(cfg, "S")
         ),
+    )
+
+
+def run_phase_SP(
+    dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
+) -> None:
+    logger.info("S_PROMPTS_MODE=registry (SP pipeline prompts)")
+    r_norm = dirs["R"] / "norm"
+    input_sources: Dict[Path, str] = {}
+    if r_norm.exists():
+        for path in sorted(r_norm.glob("*.json")) + sorted(r_norm.glob("*.md")):
+            input_sources[path.resolve()] = "R"
+    if not input_sources:
+        raise RuntimeError("Phase SP requires R norm outputs")
+
+    for phase in ["X", "T", "Z"]:
+        norm_dir = dirs[phase] / "norm"
+        if norm_dir.exists():
+            for path in sorted(norm_dir.glob("*.json")) + sorted(norm_dir.glob("*.md")):
+                input_sources.setdefault(path.resolve(), phase)
+
+    deduped_inputs = sorted(input_sources.keys(), key=str)
+    _run_phase_inner(
+        "SP",
+        dirs,
+        cfg,
+        None,
+        None,
+        precollected_items=to_items(deduped_inputs),
+        ui=ui,
+        selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "SP"),
     )
 
 
@@ -21050,6 +21135,7 @@ def main() -> None:
         "T": run_phase_T,
         "Z": run_phase_Z,
         "S": run_phase_S,
+        "SP": run_phase_SP,
     }
 
     for phase in phases:
