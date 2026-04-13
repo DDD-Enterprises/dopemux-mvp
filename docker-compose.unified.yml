@@ -35,7 +35,7 @@ services:
       - "6380:6379"  # Different port to avoid conflict
     volumes:
       - redis_leantime_data:/data
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-dopemux_redis}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     networks:
       - dopemux-network
     restart: unless-stopped
@@ -49,7 +49,7 @@ services:
     environment:
       POSTGRES_DB: dopemux_unified
       POSTGRES_USER: dopemux
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dopemux_secure_2024}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_MULTIPLE_DATABASES: "dopemux_memory,leantime,conport,metamcp"
     volumes:
       - postgres_primary_data:/var/lib/postgresql/data
@@ -71,7 +71,7 @@ services:
       - "5455:5432"  # Using 5455 to avoid conflict with primary PostgreSQL
     environment:
       POSTGRES_USER: dopemux_age
-      POSTGRES_PASSWORD: ${AGE_DB_PASSWORD:-dopemux_age_dev_password}
+      POSTGRES_PASSWORD: ${AGE_DB_PASSWORD}
       POSTGRES_DB: dopemux_knowledge_graph
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
     volumes:
@@ -98,10 +98,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-dopemux_mysql_root_2024}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-leantime}
-      MYSQL_USER: ${MYSQL_USER:-leantime}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-leantime_secure_2024}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     command: >
       --character-set-server=UTF8MB4
       --collation-server=UTF8MB4_unicode_ci
@@ -136,8 +136,8 @@ services:
     image: minio/minio:RELEASE.2023-03-20T20-16-18Z
     container_name: dopemux-milvus-minio
     environment:
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
     ports:
       - "9001:9001"  # Console
       - "9000:9000"  # API
@@ -179,13 +179,13 @@ services:
       - "8080:8080"
     environment:
       LEAN_DB_HOST: mysql-leantime
-      LEAN_DB_USER: ${MYSQL_USER:-leantime}
-      LEAN_DB_PASSWORD: ${MYSQL_PASSWORD:-leantime_secure_2024}
-      LEAN_DB_DATABASE: ${MYSQL_DATABASE:-leantime}
-      LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD:-dopemux_session_secure_2024}
+      LEAN_DB_USER: ${MYSQL_USER}
+      LEAN_DB_PASSWORD: ${MYSQL_PASSWORD}
+      LEAN_DB_DATABASE: ${MYSQL_DATABASE}
+      LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD}
       LEAN_REDIS_URL: redis-leantime:6379
-      LEAN_REDIS_AUTH: ${REDIS_PASSWORD:-dopemux_redis}
-      LEAN_API_ENABLED: ${LEAN_API_ENABLED:-true}
+      LEAN_REDIS_AUTH: ${REDIS_PASSWORD}
+      LEAN_API_ENABLED: ${LEAN_API_ENABLED}
     depends_on:
       - mysql-leantime
       - redis-leantime
@@ -246,7 +246,7 @@ services:
     ports:
       - "3004:3004"
     environment:
-      - DATABASE_URL=postgresql://dopemux:${POSTGRES_PASSWORD:-dopemux_secure_2024}@postgres-primary:5432/conport
+      - DATABASE_URL=postgresql://dopemux:${POSTGRES_PASSWORD}@postgres-primary:5432/conport
       - MCP_SERVER_PORT=3004
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -324,7 +324,7 @@ services:
     environment:
       - BRIDGE_PORT=3016
       - REDIS_URL=redis://redis-primary:6379
-      - POSTGRES_URL=postgresql://dopemux:${POSTGRES_PASSWORD:-dopemux_secure_2024}@postgres-primary:5432/dopemux_unified
+      - POSTGRES_URL=postgresql://dopemux:${POSTGRES_PASSWORD}@postgres-primary:5432/dopemux_unified
     depends_on:
       - redis-primary
       - postgres-primary
@@ -398,9 +398,9 @@ services:
       - "8081:8081"
     environment:
       - REDIS_HOSTS=primary:redis-primary:6379,leantime:redis-leantime:6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-dopemux_redis_2024}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - HTTP_USER=admin
-      - HTTP_PASSWORD=dopemux-redis-ui
+      - HTTP_PASSWORD=${REDIS_UI_PASSWORD}
     depends_on:
       - redis-primary
       - redis-leantime
