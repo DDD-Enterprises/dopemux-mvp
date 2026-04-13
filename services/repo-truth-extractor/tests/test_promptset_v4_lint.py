@@ -33,6 +33,44 @@ def test_v4_promptset_lint_passes() -> None:
     assert summary["lint_failures"] == 0
 
 
+def test_phase_s_audit_passes() -> None:
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    payload = module.run_population_audit("phase_s", root)
+    assert payload["summary"]["status"] == "PASS"
+
+
+def test_phase_s_int_audit_passes() -> None:
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    payload = module.run_population_audit("phase_s_int", root)
+    assert payload["summary"]["status"] == "PASS"
+
+
+def test_phase_fl_int_audit_passes() -> None:
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    payload = module.run_population_audit("phase_fl_int", root)
+    assert payload["summary"]["status"] == "PASS"
+
+
+def test_all_populations_audit_passes(monkeypatch) -> None:
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "repo_truth_extractor_promptset_audit_v4.py",
+            "--population",
+            "all",
+            "--repo-root",
+            str(root),
+        ],
+    )
+    assert module.main() == 0
+
+
 def test_v4_promptset_contains_c10_service_catalog() -> None:
     root = Path(__file__).resolve().parents[3]
     promptset = yaml.safe_load((root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "promptset.yaml").read_text(encoding="utf-8"))

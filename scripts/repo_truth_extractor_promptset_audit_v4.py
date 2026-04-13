@@ -7,6 +7,7 @@ import argparse
 import datetime as dt
 import json
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -89,6 +90,12 @@ def parse_args() -> argparse.Namespace:
         "--strict",
         action="store_true",
         help="Exit non-zero on any lint failure",
+    )
+    parser.add_argument(
+        "--population",
+        choices=["v4", "phase_s", "phase_s_int", "phase_fl_int", "prescan", "all"],
+        default="v4",
+        help="Which prompt population to audit (default: v4)",
     )
     parser.add_argument(
         "--model-map",
@@ -650,6 +657,179 @@ def _report_markdown(summary: Dict[str, Any], rows: Sequence[PromptAuditRow]) ->
     return "\n".join(lines) + "\n"
 
 
+def _simple_summary(status: str, issues: Sequence[str]) -> Dict[str, Any]:
+    return {
+        "status": status,
+        "lint_failures": len(issues),
+        "issues": list(issues),
+    }
+
+
+def _audit_phase_s(repo_root: Path) -> Dict[str, Any]:
+    issues: List[str] = []
+    prompt_root = repo_root / "services" / "repo-truth-extractor" / "prompts" / "phase_s"
+    registry_path = prompt_root / "registry.json"
+    if not registry_path.exists():
+        return _simple_summary("FAIL", ["missing_registry.json"])
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    steps = registry.get("steps", {})
+    if not isinstance(steps, dict):
+        return _simple_summary("FAIL", ["registry_steps_not_object"])
+
+    expected_vars = {
+        "S7": {"SCHEMA_JSON", "RULES_JSON", "CANONICAL_JSON"},
+        "S8": {"BASE_JSON", "NEW_JSON"},
+        "S9": {"PROMOTION_RULES_JSON", "METRICS_JSON", "CANONICAL_JSON"},
+        "S10": {"CANONICAL_JSON"},
+        "S11": {"CONTRACT_RULES_JSON", "CANONICAL_JSON"},
+        "S12": {"CANONICAL_JSON"},
+    }
+
+    for step_id, row in steps.items():
+        prompt_file = str(row.get("prompt_path", "")).strip()
+        if not prompt_file:
+            issues.append(f"{step_id}:missing_prompt_path")
+            continue
+        if not re.match(rf"^PROMPT_{re.escape(step_id)}_.+\.md$", prompt_file):
+            issues.append(f"{step_id}:prompt_name_mismatch:{prompt_file}")
+        prompt_path = prompt_root / prompt_file
+        if not prompt_path.exists():
+            issues.append(f"{step_id}:missing_prompt_file:{prompt_file}")
+            continue
+        schema_path = row.get("schema_path")
+        if schema_path:
+            schema_file = prompt_root / str(schema_path)
+            if not schema_file.exists():
+                issues.append(f"{step_id}:missing_schema:{schema_path}")
+        if step_id in expected_vars:
+            text = prompt_path.read_text(encoding="utf-8")
+            actual = set(re.findall(r"\{\{([A-Z_]+)\}\}", text))
+            missing = expected_vars[step_id] - actual
+            extra = actual - expected_vars[step_id]
+            if missing:
+                issues.append(f"{step_id}:missing_vars:{sorted(missing)}")
+            if extra:
+                issues.append(f"{step_id}:unexpected_vars:{sorted(extra)}")
+
+    status = "PASS" if not issues else "FAIL"
+    return _simple_summary(status, issues)
+
+
+def _audit_phase_s_int(repo_root: Path) -> Dict[str, Any]:
+    issues: List[str] = []
+    module_root = repo_root / "services" / "repo-truth-extractor"
+    sys.path.insert(0, str(module_root))
+    import s_int.models as s_int_models  # type: ignore
+
+    prompt_root = module_root / "prompts" / "phase_s_int"
+    schema_root = prompt_root / "schemas"
+    for step in s_int_models.S_INT_STEPS:
+        if not step.prompt_file.startswith("PROMPT_"):
+            issues.append(f"{step.step_id}:prompt_missing_prefix:{step.prompt_file}")
+        prompt_path = prompt_root / step.prompt_file
+        if not prompt_path.exists():
+            issues.append(f"{step.step_id}:missing_prompt_file:{step.prompt_file}")
+            continue
+        text = prompt_path.read_text(encoding="utf-8")
+        if "{{S_INT_INPUT_JSON}}" not in text:
+            issues.append(f"{step.step_id}:missing_var:S_INT_INPUT_JSON")
+        if "{{PRIOR_OUTPUTS_JSON}}" not in text:
+            issues.append(f"{step.step_id}:missing_var:PRIOR_OUTPUTS_JSON")
+        schema_path = schema_root / step.schema_file
+        if not schema_path.exists():
+            issues.append(f"{step.step_id}:missing_schema:{step.schema_file}")
+
+    status = "PASS" if not issues else "FAIL"
+    return _simple_summary(status, issues)
+
+
+def _audit_phase_fl_int(repo_root: Path) -> Dict[str, Any]:
+    issues: List[str] = []
+    prompt_root = repo_root / "services" / "repo-truth-extractor" / "prompts" / "phase_fl_int"
+    registry_path = prompt_root / "registry.json"
+    if not registry_path.exists():
+        return _simple_summary("FAIL", ["missing_registry.json"])
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    steps = registry.get("steps", {})
+    if not isinstance(steps, dict):
+        return _simple_summary("FAIL", ["registry_steps_not_object"])
+
+    for step_id, row in steps.items():
+        prompt_file = str(row.get("prompt_path", "")).strip()
+        schema_file = str(row.get("schema_path", "")).strip()
+        if not prompt_file.startswith("PROMPT_"):
+            issues.append(f"{step_id}:prompt_missing_prefix:{prompt_file}")
+        prompt_path = prompt_root / prompt_file
+        if not prompt_path.exists():
+            issues.append(f"{step_id}:missing_prompt_file:{prompt_file}")
+            continue
+        text = prompt_path.read_text(encoding="utf-8")
+        if "{{FL_INT_INPUT_JSON}}" not in text:
+            issues.append(f"{step_id}:missing_var:FL_INT_INPUT_JSON")
+        if "{{PRIOR_OUTPUTS_JSON}}" not in text:
+            issues.append(f"{step_id}:missing_var:PRIOR_OUTPUTS_JSON")
+        if schema_file:
+            schema_path = prompt_root / schema_file
+            if not schema_path.exists():
+                issues.append(f"{step_id}:missing_schema:{schema_file}")
+
+    status = "PASS" if not issues else "FAIL"
+    return _simple_summary(status, issues)
+
+
+def _audit_prescan(repo_root: Path) -> Dict[str, Any]:
+    issues: List[str] = []
+    prescan_path = repo_root / "services" / "repo-truth-extractor" / "lib" / "prescan" / "grok_passes.py"
+    if not prescan_path.exists():
+        return _simple_summary("FAIL", ["missing_grok_passes.py"])
+    text = prescan_path.read_text(encoding="utf-8")
+
+    consts = [
+        "_DEDUP_SYSTEM_PROMPT",
+        "_DISCOVER_SYSTEM_PROMPT",
+        "_FEASIBILITY_SYSTEM_PROMPT",
+        "_OPTIMIZE_SYSTEM_PROMPT",
+    ]
+    for name in consts:
+        if re.search(rf"^{name}\s*=\s*[\"']{{3}}", text, re.MULTILINE) is None:
+            issues.append(f"missing_constant:{name}")
+
+    mapping_match = re.search(r"PASS_SYSTEM_PROMPTS\s*=\s*\{(.*?)\}\s*", text, re.DOTALL)
+    if not mapping_match:
+        issues.append("missing_PASS_SYSTEM_PROMPTS")
+    else:
+        mapping_body = mapping_match.group(1)
+        expected_pairs = {
+            '"dedup": _DEDUP_SYSTEM_PROMPT',
+            '"discover": _DISCOVER_SYSTEM_PROMPT',
+            '"feasibility": _FEASIBILITY_SYSTEM_PROMPT',
+            '"optimize": _OPTIMIZE_SYSTEM_PROMPT',
+        }
+        for pair in expected_pairs:
+            if pair not in mapping_body:
+                issues.append(f"missing_mapping:{pair}")
+
+    status = "PASS" if not issues else "FAIL"
+    return _simple_summary(status, issues)
+
+
+def run_population_audit(population: str, repo_root: Path) -> Dict[str, Any]:
+    if population == "v4":
+        promptset_path = repo_root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "promptset.yaml"
+        artifacts_path = repo_root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "artifacts.yaml"
+        model_map_path = repo_root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "model_map.yaml"
+        return run_audit(repo_root, promptset_path, artifacts_path, model_map_path)
+    if population == "phase_s":
+        return {"summary": _audit_phase_s(repo_root)}
+    if population == "phase_s_int":
+        return {"summary": _audit_phase_s_int(repo_root)}
+    if population == "phase_fl_int":
+        return {"summary": _audit_phase_fl_int(repo_root)}
+    if population == "prescan":
+        return {"summary": _audit_prescan(repo_root)}
+    raise ValueError(f"Unknown population: {population}")
+
+
 def run_audit(
     repo_root: Path,
     promptset_path: Path,
@@ -692,14 +872,28 @@ def main() -> int:
     artifacts_path = (repo_root / args.artifacts).resolve()
     model_map_path = (repo_root / args.model_map).resolve()
 
-    payload = run_audit(repo_root, promptset_path, artifacts_path, model_map_path)
+    if args.population == "all":
+        populations = ["v4", "phase_s", "phase_s_int", "phase_fl_int", "prescan"]
+        per_pop: Dict[str, Dict[str, Any]] = {}
+        status = "PASS"
+        for pop in populations:
+            payload = run_population_audit(pop, repo_root)
+            per_pop[pop] = payload.get("summary", {})
+            if per_pop[pop].get("status") != "PASS":
+                status = "FAIL"
+        payload = {"summary": {"status": status, "populations": per_pop}}
+    elif args.population == "v4":
+        payload = run_audit(repo_root, promptset_path, artifacts_path, model_map_path)
+    else:
+        payload = run_population_audit(args.population, repo_root)
+
     print(json.dumps(payload["summary"], indent=2, sort_keys=True))
 
     if args.json_out:
         args.json_out.parent.mkdir(parents=True, exist_ok=True)
         args.json_out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
-    if args.report_out:
+    if args.report_out and args.population == "v4":
         rows = [
             PromptAuditRow(
                 phase=str(row["phase"]),
