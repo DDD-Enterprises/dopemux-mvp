@@ -278,10 +278,10 @@
   },
   "evidence_ledger_completeness": "complete",
   "pr": {
-    "url": null,
-    "status": "pending_creation"
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/444",
+    "status": "draft_open"
   },
-  "merge_readiness": "slice_4_complete_local_branch_pending_pr_and_review",
+  "merge_readiness": "draft_pr_open_pending_review_and_remaining_packet_slices",
   "worktree": {
     "path": "/Users/hue/code/dopemux-mvp-rte-seams-v2",
     "branch": "codex/rte-seam-extraction-foundation-v2",
