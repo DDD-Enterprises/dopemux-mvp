@@ -1,19 +1,136 @@
 {
+  "version": 1,
   "phase": "SP",
   "steps": {
-    "SP0": {"prompt_path": "PROMPT_SP0_OPUS_ARCHITECTURE_SYNTHESIS.md", "tier": "synthesis"},
-    "SP1": {"prompt_path": "PROMPT_SP1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md", "tier": "synthesis"},
-    "SP2": {"prompt_path": "PROMPT_SP2_DECISION_DOSSIER.md", "tier": "synthesis"},
-    "SP3": {"prompt_path": "PROMPT_SP3_ARCH_PROOF_HOOKS.md", "tier": "synthesis"},
-    "SP4": {"prompt_path": "PROMPT_SP4_TRUTH_PACK_INDEX.md", "tier": "synthesis"},
-    "SP5": {"prompt_path": "PROMPT_SP5_DECISION_GRAPH.md", "tier": "synthesis"},
-    "SP6": {"prompt_path": "PROMPT_SP6_LEANTIME_ANALYSIS.md", "tier": "synthesis"},
-    "SP7": {"prompt_path": "PROMPT_SP7_DEDUPE_SORT.md", "tier": "synthesis"},
-    "SP8": {"prompt_path": "PROMPT_SP8_DRIFT_CHECK.md", "tier": "synthesis"},
-    "SP9": {"prompt_path": "PROMPT_SP9_PROMOTION_READINESS.md", "tier": "synthesis"},
-    "SP10": {"prompt_path": "PROMPT_SP10_REDACTION_PASS.md", "tier": "synthesis"},
-    "SP11": {"prompt_path": "PROMPT_SP11_CONTRACT_LINTER.md", "tier": "synthesis"},
-    "SP12": {"prompt_path": "PROMPT_SP12_STABILITY_SIGNATURE.md", "tier": "synthesis"}
-  },
-  "version": 1
+    "SP0": {
+      "prompt_path": "PROMPT_SP0_OPUS_ARCHITECTURE_SYNTHESIS.md",
+      "schema_path": null,
+      "outputs": ["SP0_ARCHITECTURE_SYNTHESIS_OPUS.md"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": ["R", "X", "T", "Z"],
+      "prior_step_ids": []
+    },
+    "SP1": {
+      "prompt_path": "PROMPT_SP1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md",
+      "schema_path": null,
+      "outputs": ["SP1_MCP_TO_HOOKS_MIGRATION_PLAN.md"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP0"]
+    },
+    "SP2": {
+      "prompt_path": "PROMPT_SP2_DECISION_DOSSIER.md",
+      "schema_path": null,
+      "outputs": ["SP2_DECISION_DOSSIER.md"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP0"]
+    },
+    "SP3": {
+      "prompt_path": "PROMPT_SP3_ARCH_PROOF_HOOKS.md",
+      "schema_path": null,
+      "outputs": ["SP3_ARCH_PROOF_HOOKS.md"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP0"]
+    },
+    "SP4": {
+      "prompt_path": "PROMPT_SP4_TRUTH_PACK_INDEX.md",
+      "schema_path": "schemas/SP4.json",
+      "outputs": ["SP4_TRUTH_PACK_INDEX.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP0"]
+    },
+    "SP5": {
+      "prompt_path": "PROMPT_SP5_DECISION_GRAPH.md",
+      "schema_path": "schemas/SP5.json",
+      "outputs": ["SP5_DECISION_GRAPH.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP2"]
+    },
+    "SP6": {
+      "prompt_path": "PROMPT_SP6_LEANTIME_ANALYSIS.md",
+      "schema_path": null,
+      "outputs": ["SP6_LEANTIME_ANALYSIS.md"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP0"]
+    },
+    "SP7": {
+      "prompt_path": "PROMPT_SP7_DEDUPE_SORT.md",
+      "schema_path": "schemas/SP7.json",
+      "outputs": ["SP7_DEDUPE_SORT.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP4"]
+    },
+    "SP8": {
+      "prompt_path": "PROMPT_SP8_DRIFT_CHECK.md",
+      "schema_path": "schemas/SP8.json",
+      "outputs": ["SP8_DRIFT_CHECK.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP7"]
+    },
+    "SP9": {
+      "prompt_path": "PROMPT_SP9_PROMOTION_READINESS.md",
+      "schema_path": "schemas/SP9.json",
+      "outputs": ["SP9_PROMOTION_READINESS.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP7", "SP8"]
+    },
+    "SP10": {
+      "prompt_path": "PROMPT_SP10_REDACTION_PASS.md",
+      "schema_path": "schemas/SP10.json",
+      "outputs": ["SP10_REDACTION_PASS.json"],
+      "ladder_name": "cheap_eval",
+      "routing_tier": "synthesis",
+      "max_hops": 2,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP7"]
+    },
+    "SP11": {
+      "prompt_path": "PROMPT_SP11_CONTRACT_LINTER.md",
+      "schema_path": "schemas/SP11.json",
+      "outputs": ["SP11_CONTRACT_LINTER.json"],
+      "ladder_name": "cheap_eval",
+      "routing_tier": "qa",
+      "max_hops": 2,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP7"]
+    },
+    "SP12": {
+      "prompt_path": "PROMPT_SP12_STABILITY_SIGNATURE.md",
+      "schema_path": "schemas/SP12.json",
+      "outputs": ["SP12_STABILITY_SIGNATURE.json"],
+      "ladder_name": "cheap_eval",
+      "routing_tier": "qa",
+      "max_hops": 2,
+      "input_phase_ids": [],
+      "prior_step_ids": ["SP7", "SP10", "SP11"]
+    }
+  }
 }
