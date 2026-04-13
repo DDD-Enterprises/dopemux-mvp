@@ -12116,7 +12116,7 @@ def execute_step_for_partitions(
     if str(contract_lane or "").upper() == "AGG":
         contract_sidefill_enabled = bool(
             contract_sidefill_enabled and plural_expected_json_artifacts(step_contract)
-        )
+    )
     prompt_text = safe_read(prompt_path)
     if not prompt_text:
         logger.error("Could not read prompt: %s", prompt_path)
@@ -12129,6 +12129,14 @@ def execute_step_for_partitions(
             "failed": len(partitions),
             "auth_failures": 0,
         }
+    if phase == "S" and "{{" in prompt_text:
+        from sp.models import SP_STEPS_BY_ID
+        from sp.render import render_sp_prompt
+
+        sp_step = SP_STEPS_BY_ID.get(step_id)
+        if sp_step is not None:
+            sp_context = _build_sp_context(phase_dir, step_id)
+            prompt_text = render_sp_prompt(sp_step, sp_context)
 
     raw_dir = phase_dir / "raw"
     route_info = resolve_effective_step_route(
@@ -16565,6 +16573,46 @@ def _load_json(path: Path) -> Dict[str, Any]:
         return payload if isinstance(payload, dict) else {}
     except Exception:
         return {}
+
+
+def _load_json_payload(path: Path) -> Any:
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _build_sp_context(phase_dir: Path, step_id: str) -> Dict[str, Any]:
+    context: Dict[str, Any] = {}
+    inventory_payload = _load_json_payload(phase_dir / "inputs" / "INVENTORY.json")
+    if inventory_payload is not None:
+        context["SP_PHASE_INPUT_JSON"] = inventory_payload
+
+    config_root = EXTRACTOR_SERVICE_DIR / "prompts" / "phase_s" / "config"
+    context["RULES_JSON"] = _load_json_payload(config_root / "dedupe_sort_rules.json") or {}
+    context["CONTRACT_RULES_JSON"] = _load_json_payload(config_root / "contract_rules.json") or {}
+    context["PROMOTION_RULES_JSON"] = _load_json_payload(config_root / "promotion_rules.json") or {}
+
+    schema_path = EXTRACTOR_SERVICE_DIR / "prompts" / "phase_s" / "schemas" / f"{step_id}.json"
+    context["SCHEMA_JSON"] = _load_json_payload(schema_path) or {}
+
+    norm_dir = phase_dir / "norm"
+    canonical_payload = _load_json_payload(norm_dir / "S7_DEDUPE_SORT.json")
+    if canonical_payload is None:
+        canonical_payload = _load_json_payload(norm_dir / "S4_TRUTH_PACK_INDEX.json")
+    if canonical_payload is not None:
+        context["CANONICAL_JSON"] = canonical_payload
+
+    new_payload = _load_json_payload(norm_dir / "S7_DEDUPE_SORT.json")
+    if new_payload is not None:
+        context["NEW_JSON"] = new_payload
+
+    metrics_payload = _load_json_payload(norm_dir / "S8_DRIFT_CHECK.json")
+    context["METRICS_JSON"] = metrics_payload or {}
+    context["BASE_JSON"] = {}
+    return context
 
 
 def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
