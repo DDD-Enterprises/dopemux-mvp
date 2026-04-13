@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["hidden_features"],
+  "properties": {
+    "hidden_features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "feature_name", "description", "confidence", "extraction_phase"],
+        "properties": {
+          "path": {"type": "string"},
+          "feature_name": {"type": "string"},
+          "description": {"type": "string"},
+          "confidence": {"type": "number"},
+          "extraction_phase": {"type": "string"}
+        }
+      }
+    },
+    "drift_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "claim", "drift_type", "severity"],
+        "properties": {
+          "path": {"type": "string"},
+          "claim": {"type": "string"},
+          "drift_type": {"type": "string"},
+          "severity": {"type": "string"}
+        }
+      }
+    },
+    "ghost_assessments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "worth_restoring", "reason"],
+        "properties": {
+          "path": {"type": "string"},
+          "worth_restoring": {"type": "boolean"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "rediscovery_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "insight"],
+        "properties": {
+          "path": {"type": "string"},
+          "insight": {"type": "string"}
+        }
+      }
+    }
+  }
+}
