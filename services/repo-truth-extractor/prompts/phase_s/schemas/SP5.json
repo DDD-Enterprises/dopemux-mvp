@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status", "nodes", "edges"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "FAIL_CLOSED"]},
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "label"],
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"type": "string", "enum": ["decision", "risk", "conflict", "evidence"]},
+          "label": {"type": "string"}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "target", "relationship"],
+        "properties": {
+          "source": {"type": "string"},
+          "target": {"type": "string"},
+          "relationship": {"type": "string", "enum": ["depends_on", "exposes", "supports"]}
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["context", "reason"],
+        "properties": {
+          "context": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}

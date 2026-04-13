@@ -3,7 +3,7 @@ id: 00-MASTER-INDEX
 title: 00 Master Index
 type: explanation
 owner: '@hu3mann'
-last_review: '2026-03-30'
+last_review: '2026-04-12'
 next_review: '2026-06-30'
 author: '@hu3mann'
 date: '2026-02-05'
@@ -101,6 +101,7 @@ Status: [LOGGED] Topology Complete
 
 ### Core Architecture
 - [Architecture Overview](04-explanation/architecture/dopemux-architecture-overview.md) - Complete system architecture
+- [Full Codebase Explainer](04-explanation/architecture/dopemux-mvp-full-codebase-explainer.md) - Repo-truth explainer for the active Dopemux control surfaces, service boundaries, and authority split
 - [System Bible](04-explanation/architecture/system-bible.md) - Consolidated knowledge base
 - [Three-Layer Integration](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
 - [Multi-Instance Implementation](04-explanation/architecture/multi-instance-implementation.md)
@@ -196,6 +197,7 @@ Status: [LOGGED] Topology Complete
 
 ### Technical Deep Dives
 - [Memory And Persistence Deep Dive](04-explanation/technical-deep-dives/memory-and-persistence-deep-dive.md)
+- [Repo Truth Extractor — Structure, Architecture & Optimal Design](04-explanation/technical-deep-dives/repo-truth-extractor-structure-architecture-and-optimal-design.md)
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)
 - [ConPort Technical Deep Dive](04-explanation/technical-deep-dives/conport-technical-deep-dive.md)
 - [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md)

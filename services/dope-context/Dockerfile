@@ -1,5 +1,6 @@
 # Dope-Context MCP Server Dockerfile
 FROM python:3.11-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
@@ -15,13 +16,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Install dependencies from centralized manifest
-RUN pip install --no-cache-dir .[services]
+RUN uv uv pip install --system --no-cache --system --no-cache .[services]
 
 # Copy the entire dope-context service (relative to root)
 COPY services/dope-context/ .
 
 # Try to install the MCP package if it exists
-RUN if [ -d "/app/src/mcp" ]; then cd /app/src/mcp && pip install -e . || true; fi
+RUN if [ -d "/app/src/mcp" ]; then cd /app/src/mcp && uv pip install --system --no-cache -e . || true; fi
 
 # Set environment variables
 ENV MCP_SERVER_PORT=3010

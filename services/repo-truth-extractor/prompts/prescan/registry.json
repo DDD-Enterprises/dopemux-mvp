@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "phase": "PRESCAN",
+  "note": "Prescan prompts are Python constants in lib/prescan/grok_passes.py. This registry provides governance metadata only.",
+  "steps": {
+    "PRESCAN_DEDUP": {
+      "constant_name": "_DEDUP_SYSTEM_PROMPT",
+      "source_file": "lib/prescan/grok_passes.py",
+      "schema_path": "schemas/dedup.json",
+      "outputs": ["duplicate_assessments", "version_chain_summaries", "divergent_pairs"],
+      "routing_tier": "prescan",
+      "providers": ["xai/grok-3-mini-fast", "openrouter/openai/gpt-5.2"]
+    },
+    "PRESCAN_DISCOVER": {
+      "constant_name": "_DISCOVER_SYSTEM_PROMPT",
+      "source_file": "lib/prescan/grok_passes.py",
+      "schema_path": "schemas/discover.json",
+      "outputs": ["hidden_features", "drift_signals", "ghost_assessments", "rediscovery_candidates"],
+      "routing_tier": "prescan",
+      "providers": ["xai/grok-3-mini-fast", "openrouter/openai/gpt-5.2"]
+    },
+    "PRESCAN_FEASIBILITY": {
+      "constant_name": "_FEASIBILITY_SYSTEM_PROMPT",
+      "source_file": "lib/prescan/grok_passes.py",
+      "schema_path": "schemas/feasibility.json",
+      "outputs": ["planned_features", "implementation_blockers"],
+      "routing_tier": "prescan",
+      "providers": ["xai/grok-3-mini-fast", "openrouter/openai/gpt-5.2"]
+    },
+    "PRESCAN_OPTIMIZE": {
+      "constant_name": "_OPTIMIZE_SYSTEM_PROMPT",
+      "source_file": "lib/prescan/grok_passes.py",
+      "schema_path": "schemas/optimize.json",
+      "outputs": ["skip_list", "compress_chains", "phase_routing_overrides", "model_routing_hints", "estimated_savings"],
+      "routing_tier": "prescan",
+      "providers": ["xai/grok-3-mini-fast", "openrouter/openai/gpt-5.2"]
+    }
+  }
+}

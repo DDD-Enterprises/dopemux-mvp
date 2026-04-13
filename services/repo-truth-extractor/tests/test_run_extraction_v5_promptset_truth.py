@@ -49,17 +49,91 @@ def test_v4_schema_rollout_manifest_tracks_packet_03_tranche() -> None:
     assert all((schema_dir / name).exists() for name in schema_files)
 
 
-def test_v5_phase_s_registry_and_step_controls_match_current_contract() -> None:
+def test_v5_phase_sp_registry_and_step_controls_match_current_contract() -> None:
     runner = _load_runner_module()
+
+    specs = {spec.step_id: spec for spec in runner.get_phase_prompts("SP")}
+
+    assert list(specs) == [f"SP{i}" for i in range(13)]
+    assert runner.REQUIRED_PROMPT_STEP_IDS["SP"] == {f"SP{i}" for i in range(13)}
+    assert all(spec.source == "registry" for spec in specs.values())
+    assert all(spec.prompt_path.exists() for spec in specs.values())
+    assert all(
+        spec.tier_override in {"bulk", "extract", "synthesis", "qa"}
+        for spec in specs.values()
+    )
+    assert specs["SP11"].tier_override == "qa"
+    assert specs["SP12"].tier_override == "qa"
+
+
+def test_v5_phase_sp_supports_generic_single_step_filtering() -> None:
+    runner = _load_runner_module()
+
+    selected = runner._get_execution_step_filter(
+        SimpleNamespace(step="SP7", phase="SP", s_steps=None)
+    )
+
+    assert selected == "SP7"
+    cfg = runner.RunnerConfig(
+        dry_run=True,
+        max_files_docs=1,
+        max_files_code=1,
+        max_chars=1,
+        max_request_bytes=1,
+        file_truncate_chars=1,
+        home_scan_mode="safe",
+        resume=False,
+        fail_fast_auth=True,
+        gemini_auth_mode="auto",
+        gemini_transport="sdk",
+        openai_transport="openai_sdk",
+        xai_transport="openai_sdk",
+        retry_policy="none",
+        retry_max_attempts=1,
+        retry_base_seconds=0.0,
+        retry_max_seconds=0.0,
+        phase_auth_fail_threshold=1,
+        partition_workers=1,
+        debug_phase_inputs=False,
+        fail_fast_missing_inputs=False,
+        selected_execution_step=selected,
+    )
+    assert runner._selected_execution_step_ids_for_phase(cfg, "SP") == ["SP7"]
+
+
+def test_v5_post_review_preset_sequence_includes_sp_phase() -> None:
+    runner = _load_runner_module()
+
+    assert runner.first_live_phase_sequence("post-review") == [
+        "R",
+        "X",
+        "T",
+        "Z",
+        "S",
+        "SP",
+    ]
+
+
+def test_v5_phase_s_prompt_mode_is_legacy_only() -> None:
+    runner = _load_runner_module()
+
+    runner.set_active_s_prompts_mode(None)
+    assert runner.get_active_s_prompts_mode() == runner.S_PROMPTS_LEGACY
+
+    runner.set_active_s_prompts_mode("auto")
+    assert runner.get_active_s_prompts_mode() == runner.S_PROMPTS_LEGACY
+
     runner.set_active_s_prompts_mode("registry")
+    assert runner.get_active_s_prompts_mode() == runner.S_PROMPTS_LEGACY
+
+
+def test_v5_phase_s_always_returns_legacy_prompts() -> None:
+    runner = _load_runner_module()
 
     specs = runner.get_phase_prompts("S")
 
+    assert all(spec.source == "legacy" for spec in specs)
     assert [spec.step_id for spec in specs] == [f"S{i}" for i in range(13)]
-    assert all(spec.source == "registry" for spec in specs)
-    assert all(spec.prompt_path.exists() for spec in specs)
-    assert all(spec.tier_override in {"bulk", "extract", "synthesis", "qa"} for spec in specs)
-    assert runner._get_s_step_controls(SimpleNamespace(s_steps="S12,S0")) == ["S0", "S12"]
 
 
 def test_v5_phase_s_rejects_non_base_steps_in_selection() -> None:

@@ -10,6 +10,7 @@
         "EXA_API_KEY": "${EXA_API_KEY}",
         "TAVILY_API_KEY": "${TAVILY_API_KEY}",
         "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}",
         "DEBUG": "false"
       }
     }

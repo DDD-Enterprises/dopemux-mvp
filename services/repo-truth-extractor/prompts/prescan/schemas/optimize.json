@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["skip_list"],
+  "properties": {
+    "skip_list": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "compress_chains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["chain_id", "send_summary_instead", "summary_hint"],
+        "properties": {
+          "chain_id": {"type": "string"},
+          "send_summary_instead": {"type": "boolean"},
+          "summary_hint": {"type": "string"}
+        }
+      }
+    },
+    "phase_routing_overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "recommended_phase", "reason"],
+        "properties": {
+          "path": {"type": "string"},
+          "recommended_phase": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "model_routing_hints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["partition_pattern", "recommended_model", "reason"],
+        "properties": {
+          "partition_pattern": {"type": "string"},
+          "recommended_model": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "estimated_savings": {
+      "type": "object",
+      "required": ["files_skipped", "files_compressed", "estimated_token_reduction_pct"],
+      "properties": {
+        "files_skipped": {"type": "integer"},
+        "files_compressed": {"type": "integer"},
+        "estimated_token_reduction_pct": {"type": "number"}
+      }
+    }
+  }
+}

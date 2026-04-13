@@ -8,12 +8,10 @@ Handles coordination between Leantime, AI agents, and local systems.
 import asyncio
 import json
 import logging
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set, Callable
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict
 from enum import Enum
-from collections import deque
 
 import redis.asyncio as redis
 
@@ -94,32 +92,6 @@ class CoordinationEvent:
             self.created_at = datetime.now(timezone.utc)
 
 
-@dataclass
-class SuppressionTelemetry:
-    """Telemetry for event suppression analysis."""
-    # Lifetime counters
-    events_received: int = 0
-    events_passed: int = 0
-    events_suppressed: int = 0
-
-    # Per-rule suppression counters (6 suppression rules)
-    suppressed_by_custom_filter: int = 0
-    suppressed_by_deep_focus_priority: int = 0
-    suppressed_by_deep_focus_interrupt: int = 0
-    suppressed_by_energy_level: int = 0
-    suppressed_by_flood: int = 0
-    suppressed_by_expiry: int = 0
-
-    # Per-event-type breakdown
-    per_event_type: Dict[str, Dict[str, int]] = field(default_factory=dict)
-
-    # Per-priority breakdown
-    per_priority: Dict[str, Dict[str, int]] = field(default_factory=dict)
-
-    # Start time for rate calculations
-    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-
-
 class EventCoordinator:
     """
     Event-driven coordination system for seamless PM automation.
@@ -157,9 +129,6 @@ class EventCoordinator:
             "adhd_accommodations": 0,
             "sync_conflicts": 0
         }
-
-        # Suppression telemetry
-        self.suppression_telemetry = SuppressionTelemetry()
 
     async def initialize(self) -> None:
         """Initialize event coordination system."""
@@ -224,11 +193,7 @@ class EventCoordinator:
                 )
                 self.workers.append(worker)
 
-        # Start telemetry logger
-        telemetry_worker = asyncio.create_task(self._telemetry_logger())
-        self.workers.append(telemetry_worker)
-
-        logger.info(f"👥 Started {len(self.workers)} event processing workers (including telemetry logger)")
+        logger.info(f"👥 Started {len(self.workers)} event processing workers")
 
     async def _event_worker(self, priority: EventPriority, worker_id: str) -> None:
         """Event processing worker for specific priority level."""
@@ -252,34 +217,6 @@ class EventCoordinator:
 
         logger.debug(f"🛑 Event worker {worker_id} stopped")
 
-    async def _telemetry_logger(self) -> None:
-        """Background task to log suppression telemetry every 60 seconds."""
-        logger.debug("📊 Telemetry logger started")
-
-        while self.running:
-            try:
-                await asyncio.sleep(60.0)  # Log every 60 seconds
-
-                report = self.get_suppression_report()
-                summary = report["summary"]
-
-                logger.info(
-                    f"📊 Suppression Telemetry: "
-                    f"received={summary['events_received']}, "
-                    f"passed={summary['events_passed']}, "
-                    f"suppressed={summary['events_suppressed']}, "
-                    f"signal/noise={summary['signal_noise_ratio']:.2f}, "
-                    f"suppression_rate={summary['suppression_rate_pct']:.1f}%"
-                )
-
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                logger.error(f"Telemetry logger error: {e}")
-                await asyncio.sleep(1.0)
-
-        logger.debug("📊 Telemetry logger stopped")
-
     async def _process_event(self, event: CoordinationEvent, worker_id: str) -> None:
         """Process individual coordination event."""
         try:
@@ -294,7 +231,6 @@ class EventCoordinator:
             # Check if event has expired
             if event.expires_at and datetime.now(timezone.utc) > event.expires_at:
                 logger.warning(f"⏰ Event expired: {event.id}")
-                self._record_suppression(event, "expiry")
                 return
 
             # Get processors for this event type
@@ -386,55 +322,33 @@ class EventCoordinator:
     async def _should_process_event(self, event: CoordinationEvent) -> bool:
         """Determine if event should be processed based on ADHD state."""
         try:
-            # Track that we received an event
-            self.suppression_telemetry.events_received += 1
-            event_type_str = event.event_type.value
-            priority_str = event.priority.name
-
-            # Initialize per-event-type tracking
-            if event_type_str not in self.suppression_telemetry.per_event_type:
-                self.suppression_telemetry.per_event_type[event_type_str] = {"received": 0, "suppressed": 0}
-            self.suppression_telemetry.per_event_type[event_type_str]["received"] += 1
-
-            # Initialize per-priority tracking
-            if priority_str not in self.suppression_telemetry.per_priority:
-                self.suppression_telemetry.per_priority[priority_str] = {"received": 0, "suppressed": 0}
-            self.suppression_telemetry.per_priority[priority_str]["received"] += 1
-
             # Apply custom filters
             for filter_func in self.event_filters:
                 if not await filter_func(event):
-                    self._record_suppression(event, "custom_filter")
                     return False
 
             # Check focus mode restrictions
             if self.current_focus_mode == "deep":
                 # In deep focus, only allow critical events
                 if event.priority not in [EventPriority.CRITICAL, EventPriority.HIGH]:
-                    self._record_suppression(event, "deep_focus_priority")
                     return False
 
                 # Block interrupting events unless critical
                 if not event.interruption_allowed and event.priority != EventPriority.CRITICAL:
-                    self._record_suppression(event, "deep_focus_interrupt")
                     return False
 
             # Check energy level matching
             if self.current_energy_level == "low":
                 # Low energy: avoid high cognitive load events
                 if event.cognitive_load > 0.7:
-                    self._record_suppression(event, "energy_level")
                     return False
 
             # Check for event flooding (ADHD protection)
             recent_events = await self._get_recent_event_count(event.event_type)
             if recent_events > 10:  # More than 10 similar events in last minute
                 logger.warning(f"🌊 Event flooding detected: {event.event_type}")
-                self._record_suppression(event, "flood")
                 return False
 
-            # Event passed all filters
-            self.suppression_telemetry.events_passed += 1
             return True
 
         except Exception as e:
@@ -448,28 +362,9 @@ class EventCoordinator:
             count = await self.redis_client.get(key)
             return int(count) if count else 0
 
-        except Exception as e:
+        except Exception:
             return 0
 
-    def _record_suppression(self, event: CoordinationEvent, rule: str) -> None:
-        """Record event suppression with rule and metadata."""
-        # Increment overall suppression counter
-        self.suppression_telemetry.events_suppressed += 1
-
-        # Increment per-rule counter
-        rule_attr = f"suppressed_by_{rule}"
-        current_count = getattr(self.suppression_telemetry, rule_attr, 0)
-        setattr(self.suppression_telemetry, rule_attr, current_count + 1)
-
-        # Update per-event-type suppression
-        event_type_str = event.event_type.value
-        if event_type_str in self.suppression_telemetry.per_event_type:
-            self.suppression_telemetry.per_event_type[event_type_str]["suppressed"] += 1
-
-        # Update per-priority suppression
-        priority_str = event.priority.name
-        if priority_str in self.suppression_telemetry.per_priority:
-            self.suppression_telemetry.per_priority[priority_str]["suppressed"] += 1
     # Default Event Processors
 
     async def _process_task_created(self, event: CoordinationEvent) -> None:
@@ -546,7 +441,7 @@ class EventCoordinator:
             await self._setup_sprint_progress_automation(sprint_id)
 
             # 4. Update Claude.md context automatically
-            await self._update_claude_context_for_slogger.info(sprint_id, sprint_context)
+            await self._update_claude_context_for_sprint(sprint_id, sprint_context)
 
             self.metrics["automation_triggers"] += 1
 
@@ -734,200 +629,63 @@ class EventCoordinator:
 
     async def _assign_agent_to_task(self, task_id: str, agent: str) -> None:
         """Assign AI agent to task."""
-        try:
-            if self.redis_client:
-                key = f"task:agent:{self.workspace_id}:{task_id}"
-                payload = {
-                    "task_id": task_id,
-                    "agent": agent,
-                    "assigned_at": datetime.now(timezone.utc).isoformat(),
-                }
-                await self.redis_client.setex(key, 86400, json.dumps(payload))
-            logger.info("Assigned agent %s to task %s", agent, task_id)
-        except Exception as exc:
-            logger.error("Failed to assign agent to task %s: %s", task_id, exc)
+        # Placeholder - would dispatch to specific agent
+        pass
 
     async def _cache_task_context(self, event: CoordinationEvent) -> None:
         """Cache task context for quick access."""
-        try:
-            if not self.redis_client:
-                return
-            task_id = str(event.data.get("task_id") or event.data.get("id") or event.id)
-            key = f"task:context:{self.workspace_id}:{task_id}"
-            payload = {
-                "event_id": event.id,
-                "event_type": event.event_type.value,
-                "data": event.data,
-                "cached_at": datetime.now(timezone.utc).isoformat(),
-            }
-            await self.redis_client.setex(key, 3600, json.dumps(payload))
-        except Exception as exc:
-            logger.error("Failed to cache task context for event %s: %s", event.id, exc)
+        # Placeholder - would store in Redis
+        pass
 
     async def _handle_task_start(self, event: CoordinationEvent) -> None:
         """Handle task start event."""
-        task_id = str(event.data.get("task_id") or event.data.get("id") or event.id)
-        await self._cache_task_context(event)
-        if agent := event.data.get("agent"):
-            await self._assign_agent_to_task(task_id, str(agent))
-        self.metrics["task_started_count"] = self.metrics.get("task_started_count", 0) + 1
+        # Placeholder - would setup monitoring and tracking
+        pass
 
     async def _handle_task_completion(self, event: CoordinationEvent) -> None:
         """Handle task completion event."""
-        self.metrics["task_completed_count"] = self.metrics.get("task_completed_count", 0) + 1
-        await self._propagate_task_update(event)
+        # Placeholder - would update all systems and trigger next actions
+        pass
 
     async def _handle_task_blocked(self, event: CoordinationEvent) -> None:
         """Handle task blocked event."""
-        self.metrics["task_blocked_count"] = self.metrics.get("task_blocked_count", 0) + 1
-        await self._propagate_task_update(event)
-        await self._emit_focus_suggestion(
-            {
-                "task_id": event.data.get("task_id"),
-                "reason": event.data.get("block_reason", "blocked"),
-            }
-        )
+        # Placeholder - would analyze blockers and suggest solutions
+        pass
 
     async def _propagate_task_update(self, event: CoordinationEvent) -> None:
         """Propagate task update to all systems."""
-        try:
-            if not self.redis_client:
-                return
-            channel = f"events:task-updates:{self.workspace_id}"
-            payload = {
-                "event_id": event.id,
-                "event_type": event.event_type.value,
-                "data": event.data,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            }
-            await self.redis_client.publish(channel, json.dumps(payload))
-        except Exception as exc:
-            logger.error("Failed to propagate task update for event %s: %s", event.id, exc)
+        # Placeholder - would sync to Leantime, ConPort, local systems
+        pass
 
     async def _pause_task_gracefully(self, task_id: str) -> None:
         """Pause task with context preservation."""
-        try:
-            if self.redis_client:
-                key = f"task:paused:{self.workspace_id}:{task_id}"
-                payload = {
-                    "task_id": task_id,
-                    "paused_at": datetime.now(timezone.utc).isoformat(),
-                }
-                await self.redis_client.setex(key, 86400, json.dumps(payload))
-        except Exception as exc:
-            logger.error("Failed to pause task %s gracefully: %s", task_id, exc)
+        # Placeholder - would preserve current state
+        pass
 
     async def _store_context_preservation(self, context: Dict[str, Any]) -> None:
         """Store context for later resumption."""
-        try:
-            if not self.redis_client:
-                return
-            context_id = context.get("task_id") or context.get("context_id") or "unknown"
-            key = f"context:preservation:{self.workspace_id}:{context_id}"
-            payload = {
-                "context": context,
-                "stored_at": datetime.now(timezone.utc).isoformat(),
-            }
-            await self.redis_client.setex(key, 86400, json.dumps(payload))
-        except Exception as exc:
-            logger.error("Failed to store preserved context: %s", exc)
+        # Placeholder - would store in Redis/ConPort
+        pass
 
     async def _emit_break_notification(self, notification: Dict[str, Any]) -> None:
         """Emit break notification."""
-        try:
-            if self.redis_client:
-                channel = f"events:break-notifications:{self.workspace_id}"
-                await self.redis_client.publish(channel, json.dumps(notification))
-            self.metrics["break_notifications_emitted"] = (
-                self.metrics.get("break_notifications_emitted", 0) + 1
-            )
-        except Exception as exc:
-            logger.error("Failed to emit break notification: %s", exc)
+        # Placeholder - would send to UI/notification system
+        pass
 
     async def _emit_focus_suggestion(self, suggestion: Dict[str, Any]) -> None:
         """Emit focus mode suggestion."""
-        try:
-            if self.redis_client:
-                channel = f"events:focus-suggestions:{self.workspace_id}"
-                await self.redis_client.publish(channel, json.dumps(suggestion))
-            self.metrics["focus_suggestions_emitted"] = (
-                self.metrics.get("focus_suggestions_emitted", 0) + 1
-            )
-        except Exception as exc:
-            logger.error("Failed to emit focus suggestion: %s", exc)
+        # Placeholder - would send to focus management system
+        pass
 
     async def _emit_auto_decomposition_event(self, task: Dict[str, Any]) -> None:
         """Emit automatic decomposition event."""
-        try:
-            if self.redis_client:
-                channel = f"events:auto-decompose:{self.workspace_id}"
-                payload = {
-                    "task": task,
-                    "triggered_at": datetime.now(timezone.utc).isoformat(),
-                }
-                await self.redis_client.publish(channel, json.dumps(payload))
-            self.metrics["auto_decomposition_events"] = (
-                self.metrics.get("auto_decomposition_events", 0) + 1
-            )
-        except Exception as exc:
-            logger.error("Failed to emit auto decomposition event: %s", exc)
+        # Placeholder - would trigger decomposition
+        pass
 
     async def _setup_sprint_progress_automation(self, sprint_id: str) -> None:
         """Setup automated progress tracking for sprint."""
-        try:
-            if not self.redis_client:
-                return
-            key = f"sprint:automation:{self.workspace_id}:{sprint_id}"
-            payload = {
-                "sprint_id": sprint_id,
-                "automation_enabled": True,
-                "configured_at": datetime.now(timezone.utc).isoformat(),
-            }
-            await self.redis_client.setex(key, 86400, json.dumps(payload))
-        except Exception as exc:
-            logger.error("Failed to setup sprint progress automation for %s: %s", sprint_id, exc)
-
-    def get_suppression_report(self) -> Dict[str, Any]:
-        """Get comprehensive suppression telemetry report."""
-        t = self.suppression_telemetry
-
-        # Calculate signal/noise ratio
-        signal_noise_ratio = (
-            t.events_passed / t.events_received if t.events_received > 0 else 0.0
-        )
-        suppression_rate_pct = (
-            (t.events_suppressed / t.events_received * 100) if t.events_received > 0 else 0.0
-        )
-
-        # Calculate runtime
-        runtime_seconds = (datetime.now(timezone.utc) - t.started_at).total_seconds()
-        runtime_minutes = runtime_seconds / 60.0
-
-        return {
-            "summary": {
-                "events_received": t.events_received,
-                "events_passed": t.events_passed,
-                "events_suppressed": t.events_suppressed,
-                "signal_noise_ratio": round(signal_noise_ratio, 3),
-                "suppression_rate_pct": round(suppression_rate_pct, 1),
-                "runtime_minutes": round(runtime_minutes, 1)
-            },
-            "per_rule_breakdown": {
-                "custom_filter": t.suppressed_by_custom_filter,
-                "deep_focus_priority": t.suppressed_by_deep_focus_priority,
-                "deep_focus_interrupt": t.suppressed_by_deep_focus_interrupt,
-                "energy_level": t.suppressed_by_energy_level,
-                "flood": t.suppressed_by_flood,
-                "expiry": t.suppressed_by_expiry
-            },
-            "per_event_type": t.per_event_type,
-            "per_priority": t.per_priority,
-            "adhd_state": {
-                "focus_mode": self.current_focus_mode,
-                "energy_level": self.current_energy_level,
-                "context_switches": self.active_context_switches
-            }
-        }
+        # Placeholder - would configure automatic progress monitoring
+        pass
 
     # Health and Monitoring
 
@@ -969,7 +727,6 @@ class EventCoordinator:
                     "context_switches": self.active_context_switches,
                     "last_break": self.last_break_time.isoformat()
                 },
-                "suppression_telemetry": self.get_suppression_report(),
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
 
@@ -1000,7 +757,7 @@ class EventCoordinator:
 # Factory function for easy initialization
 async def create_event_coordinator(
     redis_url: str = "redis://localhost:6379",
-    workspace_id: str = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", os.getcwd()))
+    workspace_id: str = "/Users/hue/code/dopemux-mvp"
 ) -> EventCoordinator:
     """Create and initialize event coordinator."""
     coordinator = EventCoordinator(redis_url)

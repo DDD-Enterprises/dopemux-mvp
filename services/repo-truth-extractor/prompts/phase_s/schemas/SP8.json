@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status", "reorder_only", "counts", "diffs"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "NEEDS_REVIEW", "FAIL_CLOSED"]},
+    "reorder_only": {"type": "boolean"},
+    "counts": {
+      "type": "object",
+      "properties": {
+        "value_change": {"type": "integer"},
+        "missing_field": {"type": "integer"},
+        "added_field": {"type": "integer"},
+        "type_change": {"type": "integer"}
+      }
+    },
+    "diffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "kind"],
+        "properties": {
+          "path": {"type": "string"},
+          "kind": {"type": "string", "enum": ["reorder_only", "value_change", "missing_field", "added_field", "type_change"]},
+          "base": {},
+          "new": {}
+        }
+      }
+    }
+  }
+}

@@ -6,11 +6,6 @@ entity detection into a single, comprehensive extraction system.
 """
 
 import sys
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
@@ -27,14 +22,14 @@ try:
     from markdown_patterns import MarkdownPatternExtractor
     from yaml_extractor import YamlExtractor
 except ImportError as e:
-    logger.info(f"⚠️ Could not import extraction modules: {e}")
-    logger.info("Make sure you're running from the dopemux-mvp directory")
+    print(f"⚠️ Could not import extraction modules: {e}")
+    print("Make sure you're running from the dopemux-mvp directory")
 
 # Import from analysis module
 try:
     from ..analysis.extractor import MultiAngleExtractor
 except ImportError:
-    logger.info("⚠️ Could not import MultiAngleExtractor - some features may be limited")
+    print("⚠️ Could not import MultiAngleExtractor - some features may be limited")
     MultiAngleExtractor = None
 
 
@@ -140,7 +135,7 @@ class UnifiedDocumentExtractor:
                     )
                     adhd_profile = self.adhd_extractor.extract_adhd_profile(doc_info.content)
                 except Exception as e:
-                    logger.error(f"⚠️ ADHD extraction failed for {file_path}: {e}")
+                    print(f"⚠️ ADHD extraction failed for {file_path}: {e}")
 
             # Layer 3: Multi-angle extraction
             multi_angle_entities = {}
@@ -167,7 +162,7 @@ class UnifiedDocumentExtractor:
                         # Convert MultiAngleExtractor results to our entity format
                         multi_angle_entities = self._convert_multi_angle_results(analysis_result)
                 except Exception as e:
-                    logger.error(f"⚠️ Multi-angle extraction failed for {file_path}: {e}")
+                    print(f"⚠️ Multi-angle extraction failed for {file_path}: {e}")
 
             # Calculate confidence summary
             confidence_scores = []
@@ -233,7 +228,6 @@ class UnifiedDocumentExtractor:
                 processing_time=time.time() - start_time,
                 error_message=str(e)
             )
-            logger.error(f"Error: {e}")
         finally:
             self.total_documents += 1
 
@@ -391,7 +385,7 @@ class UnifiedDocumentExtractor:
                         entities[f"multi_angle_{category}"] = entity_list
 
         except Exception as e:
-            logger.error(f"⚠️ Error converting multi-angle results: {e}")
+            print(f"⚠️ Error converting multi-angle results: {e}")
 
         return entities
 
