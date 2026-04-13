@@ -9,7 +9,7 @@ def test_s_int_prompt_files_and_schemas_exist() -> None:
     prompt_root = root / "services" / "repo-truth-extractor" / "prompts" / "phase_s_int"
     schema_root = prompt_root / "schemas"
     for stem in ["S16", "S17", "S18", "S19", "S20"]:
-        prompt_path = next(prompt_root.glob(f"{stem}_*.md"))
+        prompt_path = next(prompt_root.glob(f"PROMPT_{stem}_*.md"))
         schema_path = schema_root / f"{stem}.json"
         assert prompt_path.exists()
         assert "{{S_INT_INPUT_JSON}}" in prompt_path.read_text(encoding="utf-8")

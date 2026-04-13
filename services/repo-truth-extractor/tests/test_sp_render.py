@@ -4,8 +4,8 @@ import json
 import pytest
 from pathlib import Path
 
-from services.repo_truth_extractor.sp.models import SP_STEPS_BY_ID
-from services.repo_truth_extractor.sp.render import render_sp_prompt
+from sp.models import SP_STEPS, SP_STEPS_BY_ID
+from sp.render import render_sp_prompt
 
 
 class TestSPRender:
@@ -101,7 +101,7 @@ class TestSPRender:
 
     def test_all_sp_steps_have_valid_prompt_files(self):
         """Test that every SPStep references a prompt file that exists."""
-        prompts_dir = Path(__file__).parents[2] / "prompts" / "phase_s"
+        prompts_dir = Path(__file__).parents[1] / "prompts" / "phase_s"
 
         for step in SP_STEPS_BY_ID.values():
             prompt_path = prompts_dir / step.prompt_file
@@ -109,7 +109,7 @@ class TestSPRender:
 
     def test_sp_steps_template_vars_match_prompts(self):
         """Test that template vars in model match {{...}} in actual prompt files."""
-        prompts_dir = Path(__file__).parents[2] / "prompts" / "phase_s"
+        prompts_dir = Path(__file__).parents[1] / "prompts" / "phase_s"
 
         for step in SP_STEPS_BY_ID.values():
             prompt_path = prompts_dir / step.prompt_file
