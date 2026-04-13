@@ -165,6 +165,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const currentTask = tasks.find((task) => task.id === currentTaskId);
   const statusTone = statusStyles[cognitiveState.status];
 
+  const isOvertime = currentTask ? taskTimer > currentTask.estimatedMinutes * 60 : false;
+  const overtimeMinutes = isOvertime
+    ? Math.floor((taskTimer - currentTask!.estimatedMinutes * 60) / 60)
+    : 0;
+
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
     if (complexity > 0.5) return brandTokens.colors.giltEdge;
@@ -278,24 +283,44 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           <Typography variant="h5" sx={{ mb: 0.5 }}>
             {currentTask.title}
           </Typography>
-          <Typography
-            variant="h3"
-            role="timer"
-            aria-label={getTimerAriaLabel(taskTimer)}
-            sx={{
-              fontFamily: '"Space Grotesk", sans-serif',
-              mb: 1,
-              ...(isTimerRunning && {
-                animation: 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                '@keyframes timer-pulse': {
-                  '0%, 100%': { opacity: 1 },
-                  '50%': { opacity: 0.6 },
-                },
-              }),
-            }}
-          >
-            {formatTime(taskTimer)}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5 }}>
+            <Typography
+              variant="h3"
+              role="timer"
+              aria-label={getTimerAriaLabel(taskTimer)}
+              sx={{
+                fontFamily: '"Space Grotesk", sans-serif',
+                mb: 1,
+                color: isOvertime ? brandTokens.colors.gremlinPink : 'inherit',
+                ...(isTimerRunning && {
+                  animation: 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                  '@keyframes timer-pulse': {
+                    '0%, 100%': { opacity: 1 },
+                    '50%': { opacity: 0.6 },
+                  },
+                }),
+              }}
+            >
+              {formatTime(taskTimer)}
+            </Typography>
+            {isOvertime && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: brandTokens.colors.gremlinPink,
+                  fontWeight: 'bold',
+                  letterSpacing: '0.1em',
+                  bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 1,
+                  border: `1px solid ${alpha(brandTokens.colors.gremlinPink, 0.3)}`,
+                }}
+              >
+                OVERTIME +{overtimeMinutes}M
+              </Typography>
+            )}
+          </Box>
           <LinearProgress
             variant="determinate"
             value={Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)}
@@ -303,15 +328,23 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               mb: 2.5,
               height: 6,
               borderRadius: 3,
-              bgcolor: alpha(brandTokens.colors.saintGold, 0.1),
+              bgcolor: isOvertime
+                ? alpha(brandTokens.colors.gremlinPink, 0.1)
+                : alpha(brandTokens.colors.saintGold, 0.1),
               '& .MuiLinearProgress-bar': {
-                bgcolor: brandTokens.colors.saintGold,
+                bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
                 borderRadius: 3,
-                boxShadow: brandTokens.shadows.goldBloom,
+                boxShadow: isOvertime
+                  ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.4)}`
+                  : brandTokens.shadows.goldBloom,
               },
             }}
             aria-label="Current task progress"
-            aria-valuetext={`${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`}
+            aria-valuetext={
+              isOvertime
+                ? `100% - Overtime: ${overtimeMinutes} minutes`
+                : `${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`
+            }
           />
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
