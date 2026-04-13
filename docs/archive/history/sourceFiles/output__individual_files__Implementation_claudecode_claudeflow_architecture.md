@@ -1,3 +1,15 @@
+---
+id: output__individual_files__Implementation_claudecode_claudeflow_architecture
+title: Output  Individual Files  Implementation Claudecode Claudeflow Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Implementation Claudecode Claudeflow Architecture
+  (explanation) for dopemux documentation and developer workflows.
+---
 As an expert Principal Engineer, I have analyzed your request. I cannot directly access local file paths like the one provided. Therefore, I will proceed by creating a structured analysis based on a hypothetical document with the characteristics implied by the file name `Implementation-claudecode-claudeflow.md` and the details in your query.
 
 This blueprint represents the kind of technical extraction expected from a comprehensive implementation document for such a system.

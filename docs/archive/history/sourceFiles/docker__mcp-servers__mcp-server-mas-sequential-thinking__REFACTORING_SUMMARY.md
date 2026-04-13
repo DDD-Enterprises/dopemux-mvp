@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__mcp-server-mas-sequential-thinking__REFACTORING_SUMMARY
+title: Docker  Mcp Servers  Mcp Server Mas Sequential Thinking  Refactoring Summary
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Mcp Server Mas Sequential Thinking  Refactoring Summary
+  (explanation) for dopemux documentation and developer workflows.
+---
 # MCP Sequential Thinking Server - Refactoring Summary
 
 ## Overview

@@ -1,3 +1,15 @@
+---
+id: docs__analysis__05-synthesis-decisions
+title: Docs  Analysis  05 Synthesis Decisions
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Analysis  05 Synthesis Decisions (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Synthesis & Key Architectural Decisions
 
 ## Executive Summary

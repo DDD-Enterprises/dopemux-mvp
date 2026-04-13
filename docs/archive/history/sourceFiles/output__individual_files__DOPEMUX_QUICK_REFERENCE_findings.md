@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_QUICK_REFERENCE_findings
+title: Output  Individual Files  Dopemux Quick Reference Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Quick Reference Findings (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. Based on my analysis of the document `DOPEMUX_QUICK_REFERENCE.md`, here is the extracted technical blueprint.
 
 ***

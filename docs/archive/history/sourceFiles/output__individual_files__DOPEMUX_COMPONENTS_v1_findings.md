@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_COMPONENTS_v1_findings
+title: Output  Individual Files  Dopemux Components V1 Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Components V1 Findings (explanation) for
+  dopemux documentation and developer workflows.
+---
 Of course. Based on the analysis of `DOPEMUX_COMPONENTS_v1.md`, here is the structured extraction of its core engineering and architectural details.
 
 ***

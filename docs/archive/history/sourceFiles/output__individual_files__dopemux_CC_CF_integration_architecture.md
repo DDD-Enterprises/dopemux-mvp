@@ -1,3 +1,15 @@
+---
+id: output__individual_files__dopemux_CC_CF_integration_architecture
+title: Output  Individual Files  Dopemux Cc Cf Integration Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Cc Cf Integration Architecture (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. Based on my analysis of the document `dopemux_CC_CF_integration.md`, here is the extracted technical blueprint.
 
 ***

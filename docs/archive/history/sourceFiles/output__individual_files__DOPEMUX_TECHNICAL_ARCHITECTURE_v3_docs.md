@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_TECHNICAL_ARCHITECTURE_v3_docs
+title: Output  Individual Files  Dopemux Technical Architecture V3 Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Technical Architecture V3 Docs (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As an Enterprise Architect, I understand the importance of clear, high-level documentation. Clarity in design is paramount for alignment across engineering, product, and leadership.
 
 Upon attempting to access the specified document, I must note that as an AI, I am unable to access local file paths such as `/Users/hue/code/dmpx/docs/DOPEMUX_TECHNICAL_ARCHITECTURE_v3.md`.

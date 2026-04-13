@@ -1,3 +1,17 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__integrations__dopemux_routing_logic_design_doc_spec_v_0
+title: Docs  Historical  Preliminary Docs Normalized  Research  Integrations  Dopemux
+  Routing Logic Design Doc Spec V 0
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Integrations  Dopemux
+  Routing Logic Design Doc Spec V 0 (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Dopemux Routing Logic — Design Doc & Spec (v0.1)
 
 > Purpose: Define a provider-agnostic routing layer for Dopemux that defaults to Anthropic’s Claude (subscription-backed) for “cc default”, and intelligently shifts traffic to a programmable fallback hub (via LiteLLM or native adapters) based on limits, context size, task type, cost/latency, and provider health. Debugging transcripts have been intentionally omitted; this is a clean specification.

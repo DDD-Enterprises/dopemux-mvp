@@ -1,3 +1,15 @@
+---
+id: docs__research__research-findings-01-milvus-hybrid
+title: Docs  Research  Research Findings 01 Milvus Hybrid
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Research  Research Findings 01 Milvus Hybrid (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Research Findings: Milvus Hybrid Search Architecture
 
 ## Overview

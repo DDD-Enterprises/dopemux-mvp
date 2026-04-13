@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__ROLE_TOOL_MAPPING_MATRIX
+title: Docs  03 Reference  Role Tool Mapping Matrix
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  03 Reference  Role Tool Mapping Matrix (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Role-Based Tool Mapping Matrix
 
 ## 🎯 Overview

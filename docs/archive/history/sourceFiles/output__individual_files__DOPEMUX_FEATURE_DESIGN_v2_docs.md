@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_FEATURE_DESIGN_v2_docs
+title: Output  Individual Files  Dopemux Feature Design V2 Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Feature Design V2 Docs (explanation) for
+  dopemux documentation and developer workflows.
+---
 Of course. As a Principal Engineer, I have analyzed the technical implementation document. Here is a structured extraction of the core engineering and architectural details.
 
 ***

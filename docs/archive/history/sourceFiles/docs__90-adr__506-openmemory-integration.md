@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__506-openmemory-integration
+title: Docs  90 Adr  506 Openmemory Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  506 Openmemory Integration (explanation) for dopemux documentation
+  and developer workflows.
+---
 # ADR-506: OpenMemory (0mem) Integration
 
 **Status**: Accepted

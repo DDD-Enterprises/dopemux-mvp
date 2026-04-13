@@ -1,3 +1,15 @@
+---
+id: output__individual_files____Filth_and_Roast_Ritual_findings
+title: Output  Individual Files    Filth And Roast Ritual Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files    Filth And Roast Ritual Findings (explanation)
+  for dopemux documentation and developer workflows.
+---
 As a Systems Analyst, I am ready to analyze your document and provide the structured summary you require.
 
 However, I am unable to access local file paths on your computer, such as `/Users/hue/code/dmpx/research/findings/# Filth and Roast Ritual`, for security and technical reasons.

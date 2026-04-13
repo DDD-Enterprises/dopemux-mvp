@@ -1,3 +1,17 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__integrations__multi-instance-claude-code-research
+title: Docs  Historical  Preliminary Docs Normalized  Research  Integrations  Multi
+  Instance Claude Code Research
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Integrations  Multi
+  Instance Claude Code Research (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Multi-Instance Claude Code Setups & Subagent Architectures
 
 ## Overview

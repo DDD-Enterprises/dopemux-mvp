@@ -1,3 +1,15 @@
+---
+id: prompts__asess-technical-debt
+title: Prompts  Asess Technical Debt
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Prompts  Asess Technical Debt (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Technical Debt Analysis & Remediation Automation
 
 ## Mission Statement

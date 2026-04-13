@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__DOPEMUX_GAP_ANALYSIS
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Gap Analysis
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Gap Analysis
+  (explanation) for dopemux documentation and developer workflows.
+---
 # DOPEMUX Design Documents Gap Analysis
 ## Comprehensive Review of Research vs. Existing Documentation
 

@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__mcp-server-mas-sequential-thinking__CHANGELOG
+title: Docker  Mcp Servers  Mcp Server Mas Sequential Thinking  Changelog
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Mcp Server Mas Sequential Thinking  Changelog (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Changelog
 
 All notable changes to this project will be documented in this file.

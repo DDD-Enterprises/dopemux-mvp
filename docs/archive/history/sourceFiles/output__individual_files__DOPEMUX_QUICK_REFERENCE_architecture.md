@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_QUICK_REFERENCE_architecture
+title: Output  Individual Files  Dopemux Quick Reference Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Quick Reference Architecture (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. Here is the structured analysis of the `DOPEMUX_QUICK_REFERENCE.md` document, focusing exclusively on the engineering and architectural details.
 
 ***

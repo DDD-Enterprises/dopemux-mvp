@@ -1,3 +1,15 @@
+---
+id: docs__04-explanation__features__work-effort-tracking
+title: Docs  04 Explanation  Features  Work Effort Tracking
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  04 Explanation  Features  Work Effort Tracking (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Work Effort Tracking - ADHD Completion Support
 
 ## Overview

@@ -1,3 +1,15 @@
+---
+id: dopemux-docuXtractor__src__docuxtractor__templates__diataxis_tutorial_template
+title: Dopemux Docuxtractor  Src  Docuxtractor  Templates  Diataxis Tutorial Template
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Dopemux Docuxtractor  Src  Docuxtractor  Templates  Diataxis Tutorial Template
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Tutorial: {title}
 
 **Learning Objective:** {learning_objective}

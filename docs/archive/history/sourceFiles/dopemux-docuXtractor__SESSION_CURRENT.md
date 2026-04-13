@@ -1,3 +1,15 @@
+---
+id: dopemux-docuXtractor__SESSION_CURRENT
+title: Dopemux Docuxtractor  Session Current
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Dopemux Docuxtractor  Session Current (explanation) for dopemux documentation
+  and developer workflows.
+---
 # DocuXtractor Session State - Phase 1 Complete
 
 **Date**: 2025-01-24

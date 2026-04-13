@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__modern-terminal-frameworks
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Modern Terminal
+  Frameworks
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Modern
+  Terminal Frameworks (explanation) for dopemux documentation and developer workflows.
+---
 # Modern terminal frameworks and UI patterns for improving Dopemux
 
 Modern terminal interfaces have undergone a renaissance from 2023-2025, driven by sophisticated frameworks and innovative UX patterns that transform command-line tools into rich, interactive applications. Based on comprehensive research across frameworks, design patterns, and successful implementations, this report provides actionable insights for enhancing Dopemux's user experience.

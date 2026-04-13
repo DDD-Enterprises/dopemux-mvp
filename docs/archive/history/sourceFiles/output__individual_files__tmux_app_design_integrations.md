@@ -1,3 +1,15 @@
+---
+id: output__individual_files__tmux_app_design_integrations
+title: Output  Individual Files  Tmux App Design Integrations
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Tmux App Design Integrations (explanation) for
+  dopemux documentation and developer workflows.
+---
 Based on the analysis of the technical implementation document `tmux-app-design.md`, here are the extracted engineering and architectural details.
 
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)

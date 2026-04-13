@@ -1,3 +1,15 @@
+---
+id: output__individual_files__awesome_claude_code_analysis_integrations
+title: Output  Individual Files  Awesome Claude Code Analysis Integrations
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Awesome Claude Code Analysis Integrations (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As an Enterprise Architect, I will analyze the specified document and provide a structured distillation of its high-level design.
 
 First, an important clarification: I cannot directly access local file systems, including the path `/Users/hue/code/dmpx/research/integrations/awesome-claude-code-analysis.md`.

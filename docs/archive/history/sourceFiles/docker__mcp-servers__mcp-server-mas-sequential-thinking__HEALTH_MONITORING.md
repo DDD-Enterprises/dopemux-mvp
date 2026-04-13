@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__mcp-server-mas-sequential-thinking__HEALTH_MONITORING
+title: Docker  Mcp Servers  Mcp Server Mas Sequential Thinking  Health Monitoring
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Mcp Server Mas Sequential Thinking  Health Monitoring
+  (explanation) for dopemux documentation and developer workflows.
+---
 # MCP Sequential Thinking Server - Health Monitoring Guide
 
 This guide provides comprehensive health monitoring and diagnostic capabilities for your custom MCP Sequential Thinking Server.

@@ -1,3 +1,15 @@
+---
+id: output__individual_files__claude_tools_integration_findings
+title: Output  Individual Files  Claude Tools Integration Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Claude Tools Integration Findings (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As a Principal Engineer, I will analyze the technical document you've specified.
 
 However, as a large language model, I cannot access local file paths like `/Users/hue/code/dmpx/research/findings/claude-tools-integration.md`.

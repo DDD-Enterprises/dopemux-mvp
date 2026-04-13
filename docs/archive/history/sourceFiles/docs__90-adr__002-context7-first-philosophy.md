@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__002-context7-first-philosophy
+title: Docs  90 Adr  002 Context7 First Philosophy
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  002 Context7 First Philosophy (explanation) for dopemux documentation
+  and developer workflows.
+---
 # ADR-002: Context7-First Philosophy
 
 **Status**: Accepted

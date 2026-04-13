@@ -1,3 +1,15 @@
+---
+id: docs__mcpOrchestratorTemp__ACTUAL_MCP_TOOLS_INVENTORY
+title: Docs  Mcporchestratortemp  Actual Mcp Tools Inventory
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Mcporchestratortemp  Actual Mcp Tools Inventory (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Actual MCP Tools Inventory - Dopemux
 
 **Date**: January 18, 2025

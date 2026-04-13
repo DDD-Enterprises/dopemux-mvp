@@ -1,3 +1,15 @@
+---
+id: docs__91-rfc__rfc-0042-semantic-search-mcp
+title: Docs  91 Rfc  Rfc 0042 Semantic Search Mcp
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  91 Rfc  Rfc 0042 Semantic Search Mcp (explanation) for dopemux documentation
+  and developer workflows.
+---
 # RFC-0042: Hybrid MCP Semantic Search for Dopemux (Claude-Context + Milvus DocRAG + Voyage Reranker)
 
 **Status:** Accepted — Phase 1 rollout

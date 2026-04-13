@@ -1,3 +1,15 @@
+---
+id: docs__LEANTIME_API_TROUBLESHOOTING
+title: Docs  Leantime Api Troubleshooting
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Leantime Api Troubleshooting (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Leantime API Troubleshooting Guide
 
 **Current Status**: API key authentication failing with "Invalid API Key" error

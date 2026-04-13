@@ -1,3 +1,15 @@
+---
+id: docs__94-architecture__zero-touch-sync-architecture
+title: Docs  94 Architecture  Zero Touch Sync Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  94 Architecture  Zero Touch Sync Architecture (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Zero-Touch Sync Architecture
 
 **Version:** 1.0

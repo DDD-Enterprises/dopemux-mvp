@@ -1,3 +1,15 @@
+---
+id: docs__PHASE_2_TMUX_INTEGRATION
+title: Docs  Phase 2 Tmux Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Phase 2 Tmux Integration (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Phase 2 Feature: Tmux ADHD-Optimized Status Bar
 
 **Date**: September 21, 2025

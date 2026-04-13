@@ -1,3 +1,15 @@
+---
+id: rte-04-fl-routing-and-benchmark-governance-evidence
+title: Rte 04 Fl Routing And Benchmark Governance Evidence
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Rte 04 Fl Routing And Benchmark Governance Evidence (reference) for dopemux
+  documentation and developer workflows.
+---
 # RTE-04 FL Routing and Benchmark Governance Evidence
 
 ## Packet boundary

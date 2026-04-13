@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__mcp-server-mas-sequential-thinking__CLAUDE
+title: Docker  Mcp Servers  Mcp Server Mas Sequential Thinking  Claude
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Mcp Server Mas Sequential Thinking  Claude (explanation)
+  for dopemux documentation and developer workflows.
+---
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.

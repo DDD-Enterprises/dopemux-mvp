@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__cf-metagpt
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Cf Metagpt
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Cf Metagpt
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Software orchestration strategies compared for Dopemux CLI platform
 
 The comparison of four orchestration strategies for Dopemux reveals distinct advantages and trade-offs across each approach. **Claude-flow emerges as the most compelling option for immediate implementation**, achieving 150,000+ lines of production-ready code in under 2 days with native tmux integration and a 32.3% token reduction. CrewAI offers the fastest execution at 5.76x speed improvements with the simplest setup process, while MetaGPT provides the highest quality outputs with 100% task completion rates through its structured SOP approach. The multi-Claude orchestration strategy offers maximum flexibility but requires significant custom engineering effort.

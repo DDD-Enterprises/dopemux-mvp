@@ -1,3 +1,15 @@
+---
+id: docs__DEVELOPMENT_SESSION
+title: Docs  Development Session
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Development Session (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Development Session: Comprehensive Test Coverage Implementation
 
 **Date**: January 18, 2025

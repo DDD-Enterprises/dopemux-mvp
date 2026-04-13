@@ -1,3 +1,15 @@
+---
+id: docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION
+title: Docs  Mcporchestratortemp  Implementation Plan Mcp Orchestration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Mcporchestratortemp  Implementation Plan Mcp Orchestration (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Complete Implementation Plan: zen-mcp + Role-Based MCP Orchestration with Automated Session Management
 
 ## Overview

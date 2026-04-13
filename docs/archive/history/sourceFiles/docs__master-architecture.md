@@ -1,3 +1,15 @@
+---
+id: docs__master-architecture
+title: Docs  Master Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Master Architecture (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Dopemux Master Architecture Document
 ## Consolidated Implementation-Ready Specification
 

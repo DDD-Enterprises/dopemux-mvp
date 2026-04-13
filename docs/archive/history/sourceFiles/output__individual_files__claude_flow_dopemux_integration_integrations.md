@@ -1,3 +1,15 @@
+---
+id: output__individual_files__claude_flow_dopemux_integration_integrations
+title: Output  Individual Files  Claude Flow Dopemux Integration Integrations
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Claude Flow Dopemux Integration Integrations (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As an Enterprise Architect, I am prepared to analyze the document and provide a structured distillation of its high-level design.
 
 However, due to security and privacy protocols, I am unable to access local file paths on your machine, such as the one you've provided: `/Users/hue/code/dmpx/research/integrations/claude-flow-dopemux-integration.md`.

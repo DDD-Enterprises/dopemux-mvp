@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__ARCHITECTURE_Dopemux_System
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Architecture Dopemux System
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Architecture Dopemux
+  System (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux System Architecture Specification
 **Version 1.0 | Multi-Platform Development Orchestration Architecture**
 

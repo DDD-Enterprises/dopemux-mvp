@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_FEATURE_DESIGN_docs
+title: Output  Individual Files  Dopemux Feature Design Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Feature Design Docs (explanation) for dopemux
+  documentation and developer workflows.
+---
 Of course. Based on the provided document `DOPEMUX_FEATURE_DESIGN.md`, here is the extracted engineering and architectural analysis.
 
 ***

@@ -1,3 +1,15 @@
+---
+id: docs__04-explanation__features__health-monitoring
+title: Docs  04 Explanation  Features  Health Monitoring
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  04 Explanation  Features  Health Monitoring (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Dopemux Health Monitoring System
 
 Comprehensive health monitoring and diagnostic system for the Dopemux ADHD-optimized development platform with integrated support for Claude Code, MCP servers, and Docker-based services.

@@ -1,3 +1,15 @@
+---
+id: docs__04-explanation__README
+title: Docs  04 Explanation  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  04 Explanation  Readme (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Explanations - Understanding-Oriented Documentation
 
 Deep explanations and conceptual understanding of Dopemux's architecture, design decisions, and ADHD optimization strategies. These docs are **understanding-oriented** and explore the "why" behind the system.

@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__patch__README
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Patch  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Patch  Readme (explanation) for
+  dopemux documentation and developer workflows.
+---
 # Cross-Platform Compatibility Patches
 
 This directory contains patch scripts to improve the cross-platform compatibility of the zen-mcp server.

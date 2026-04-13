@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__docrag-service__README
+title: Docker  Mcp Servers  Docrag Service  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Docrag Service  Readme (explanation) for dopemux documentation
+  and developer workflows.
+---
 # DocRAG Service
 
 A semantic search service for Dopemux that provides document ingestion and retrieval using Milvus vector database and Voyage AI embeddings with reranking.

@@ -1,3 +1,15 @@
+---
+id: rte-02-live-readiness-hardening-evidence
+title: Rte 02 Live Readiness Hardening Evidence
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Rte 02 Live Readiness Hardening Evidence (reference) for dopemux documentation
+  and developer workflows.
+---
 # Packet 02 Evidence Note
 
 - Worktree: `/tmp/dopemux-rte-02-live-readiness-hardening`

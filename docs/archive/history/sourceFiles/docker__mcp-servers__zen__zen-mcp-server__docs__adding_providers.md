@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__adding_providers
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Adding Providers
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Adding Providers (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Adding a New Provider
 
 This guide explains how to add support for a new AI model provider to the Zen MCP Server. The provider system is designed to be extensible and follows a simple pattern.

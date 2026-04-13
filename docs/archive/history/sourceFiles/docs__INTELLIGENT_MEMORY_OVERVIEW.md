@@ -1,3 +1,15 @@
+---
+id: docs__INTELLIGENT_MEMORY_OVERVIEW
+title: Docs  Intelligent Memory Overview
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Intelligent Memory Overview (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Dopemux Intelligent Memory Layer - Executive Overview
 
 **Date**: September 22, 2025

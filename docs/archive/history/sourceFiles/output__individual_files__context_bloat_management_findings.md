@@ -1,3 +1,15 @@
+---
+id: output__individual_files__context_bloat_management_findings
+title: Output  Individual Files  Context Bloat Management Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Context Bloat Management Findings (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As a meticulous Research Analyst, I am ready to analyze the document.
 
 However, I cannot directly access local file paths like `/Users/hue/code/dmpx/research/findings/context-bloat-management.md` for security and privacy reasons.

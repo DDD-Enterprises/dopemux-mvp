@@ -1,3 +1,15 @@
+---
+id: output__SYSTEM_BIBLE
+title: Output  System Bible
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  System Bible (explanation) for dopemux documentation and developer
+  workflows.
+---
 # System Bible: Consolidated Knowledge Base
 
 Of course. Based on the provided document `IMPLEMENTATION_Dopemux_Phase1.md`, here is the extracted technical blueprint.

@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__context-revival
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Context Revival
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Context Revival (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Context Revival: AI Memory Beyond Context Limits
 
 ## **The Most Profound Feature: Context Revival After Reset**

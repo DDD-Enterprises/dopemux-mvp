@@ -1,3 +1,15 @@
+---
+id: MCP_SERVER_CONNECTION_RESOLUTION_CHECKPOINT
+title: Mcp Server Connection Resolution Checkpoint
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Mcp Server Connection Resolution Checkpoint (explanation) for dopemux documentation
+  and developer workflows.
+---
 # MCP Server Connection Resolution - Checkpoint Save
 
 **Date**: 2025-09-24

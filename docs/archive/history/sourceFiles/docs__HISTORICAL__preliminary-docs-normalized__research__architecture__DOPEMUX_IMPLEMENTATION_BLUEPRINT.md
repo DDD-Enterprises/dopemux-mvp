@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__architecture__DOPEMUX_IMPLEMENTATION_BLUEPRINT
+title: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Dopemux
+  Implementation Blueprint
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Dopemux
+  Implementation Blueprint (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Implementation Blueprint v1.0
 ## Consolidated Guide from Research to Production
 
