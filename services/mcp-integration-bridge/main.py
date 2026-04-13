@@ -1670,9 +1670,9 @@ async def get_project_dashboard(project_id: str):
 
         return dashboard
 
-    except Exception as e:
-        logger.error(f"❌ Dashboard generation failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("❌ Dashboard generation failed")
+        raise HTTPException(status_code=500, detail="Dashboard generation failed")
 
 
 @app.get("/api/workflow-templates")

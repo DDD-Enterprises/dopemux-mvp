@@ -70,8 +70,8 @@ async def health_check():
             # Quick test query
             overview.get_recent_decisions(1)
             return {"status": "healthy", "message": "KG queries operational"}
-    except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+    except Exception:
+        return {"status": "unhealthy", "error": "Health check failed"}
 
     return {"status": "unavailable", "message": "KG queries not initialized"}
 
