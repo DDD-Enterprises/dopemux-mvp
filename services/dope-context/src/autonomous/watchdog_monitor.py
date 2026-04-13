@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Callable, List, Optional, Set
 
 try:
+    from watchdog.events import FileSystemEvent, FileSystemEventHandler  # type: ignore
     from watchdog.observers import Observer  # type: ignore
-    from watchdog.events import FileSystemEventHandler, FileSystemEvent  # type: ignore
 except ImportError:  # pragma: no cover - exercised in constrained envs
     Observer = None  # type: ignore
 
@@ -256,7 +256,7 @@ class WatchdogMonitor:
             "running": self._running,
             "workspace": str(self.workspace_path),
             "debounce_seconds": self.debounce_seconds,
-            "pending_changes": len(self.event_handler.changed_files)
-            if self.event_handler
-            else 0,
+            "pending_changes": (
+                len(self.event_handler.changed_files) if self.event_handler else 0
+            ),
         }

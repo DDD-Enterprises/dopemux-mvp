@@ -11,19 +11,25 @@ Provides HTTP API for cross-plane KG access:
 Integration Bridge at PORT_BASE+16
 """
 
-from fastapi import APIRouter, HTTPException, Header, Query
-from typing import Optional, List
-import sys
 import os
+import sys
+from typing import List, Optional
+
+from fastapi import APIRouter, Header, HTTPException, Query
 
 # Add conport_kg to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'conport_kg'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "conport_kg"))
 
 try:
-    from queries.overview import OverviewQueries
-    from queries.exploration import ExplorationQueries
     from queries.deep_context import DeepContextQueries
-    from queries.models import DecisionCard, DecisionSummary, DecisionNeighborhood, FullDecisionContext
+    from queries.exploration import ExplorationQueries
+    from queries.models import (
+        DecisionCard,
+        DecisionNeighborhood,
+        DecisionSummary,
+        FullDecisionContext,
+    )
+    from queries.overview import OverviewQueries
 except ImportError as e:
     print(f"⚠️  ConPort KG queries not available: {e}")
     OverviewQueries = None
@@ -33,7 +39,7 @@ except ImportError as e:
 router = APIRouter(
     prefix="/kg",
     tags=["knowledge-graph"],
-    responses={404: {"description": "Not found"}}
+    responses={404: {"description": "Not found"}},
 )
 
 
@@ -72,8 +78,7 @@ async def health_check():
 
 @router.get("/decisions/recent")
 async def get_recent_decisions(
-    limit: int = Query(3, ge=1, le=20),
-    x_source_plane: Optional[str] = Header(None)
+    limit: int = Query(3, ge=1, le=20), x_source_plane: Optional[str] = Header(None)
 ):
     """
     Get recent decisions (Tier 1)
@@ -86,7 +91,9 @@ async def get_recent_decisions(
 
     # Validate authority
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
-        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+        raise HTTPException(
+            status_code=403, detail=f"Invalid source plane: {x_source_plane}"
+        )
 
     overview, _, _ = get_query_classes()
     if not overview:
@@ -103,12 +110,12 @@ async def get_recent_decisions(
                     "summary": d.summary,
                     "timestamp": d.timestamp,
                     "related_count": d.related_count,
-                    "tags": d.tags
+                    "tags": d.tags,
                 }
                 for d in decisions
             ],
             "count": len(decisions),
-            "tier": 1
+            "tier": 1,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
@@ -116,8 +123,7 @@ async def get_recent_decisions(
 
 @router.get("/decisions/{decision_id}/summary")
 async def get_decision_summary(
-    decision_id: int,
-    x_source_plane: Optional[str] = Header(None)
+    decision_id: int, x_source_plane: Optional[str] = Header(None)
 ):
     """
     Get decision summary with relationship count (Tier 1)
@@ -129,7 +135,9 @@ async def get_decision_summary(
     """
 
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
-        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+        raise HTTPException(
+            status_code=403, detail=f"Invalid source plane: {x_source_plane}"
+        )
 
     overview, _, _ = get_query_classes()
     if not overview:
@@ -148,7 +156,7 @@ async def get_decision_summary(
             "relationship_types": summary.relationship_types,
             "cognitive_load": summary.get_cognitive_load(),
             "tags": summary.tags,
-            "tier": 1
+            "tier": 1,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
@@ -159,7 +167,7 @@ async def get_decision_neighborhood(
     decision_id: int,
     max_hops: int = Query(1, ge=1, le=2),
     limit_per_hop: int = Query(10, ge=1, le=20),
-    x_source_plane: Optional[str] = Header(None)
+    x_source_plane: Optional[str] = Header(None),
 ):
     """
     Get decision neighborhood with progressive disclosure (Tier 2)
@@ -171,7 +179,9 @@ async def get_decision_neighborhood(
     """
 
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
-        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+        raise HTTPException(
+            status_code=403, detail=f"Invalid source plane: {x_source_plane}"
+        )
 
     _, exploration, _ = get_query_classes()
     if not exploration:
@@ -186,7 +196,7 @@ async def get_decision_neighborhood(
             "center": {
                 "id": neighborhood.center.id,
                 "summary": neighborhood.center.summary,
-                "timestamp": neighborhood.center.timestamp
+                "timestamp": neighborhood.center.timestamp,
             },
             "hop_1_neighbors": [
                 {"id": d.id, "summary": d.summary, "timestamp": d.timestamp}
@@ -198,7 +208,7 @@ async def get_decision_neighborhood(
             ],
             "total_neighbors": neighborhood.total_neighbors,
             "is_expanded": neighborhood.is_expanded,
-            "tier": 2
+            "tier": 2,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
@@ -206,8 +216,7 @@ async def get_decision_neighborhood(
 
 @router.get("/decisions/{decision_id}/context")
 async def get_full_context(
-    decision_id: int,
-    x_source_plane: Optional[str] = Header(None)
+    decision_id: int, x_source_plane: Optional[str] = Header(None)
 ):
     """
     Get complete decision context (Tier 3)
@@ -220,7 +229,9 @@ async def get_full_context(
     """
 
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
-        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+        raise HTTPException(
+            status_code=403, detail=f"Invalid source plane: {x_source_plane}"
+        )
 
     _, _, deep_context = get_query_classes()
     if not deep_context:
@@ -236,7 +247,7 @@ async def get_full_context(
                 "rationale": context.decision.rationale,
                 "implementation": context.decision.implementation,
                 "timestamp": context.decision.timestamp,
-                "tags": context.decision.tags
+                "tags": context.decision.tags,
             },
             "direct_relationships": [
                 {
@@ -245,7 +256,7 @@ async def get_full_context(
                     "type": r.type,
                     "description": r.description,
                     "timestamp": r.timestamp,
-                    "direction": r.direction
+                    "direction": r.direction,
                 }
                 for r in context.direct_relationships
             ],
@@ -255,7 +266,7 @@ async def get_full_context(
             ],
             "total_related": context.total_related,
             "cognitive_load": context.cognitive_load,
-            "tier": 3
+            "tier": 3,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
@@ -266,7 +277,7 @@ async def search_decisions(
     tag: Optional[str] = None,
     text: Optional[str] = None,
     limit: int = Query(3, ge=1, le=20),
-    x_source_plane: Optional[str] = Header(None)
+    x_source_plane: Optional[str] = Header(None),
 ):
     """
     Search decisions by tag or full-text
@@ -278,7 +289,9 @@ async def search_decisions(
     """
 
     if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
-        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+        raise HTTPException(
+            status_code=403, detail=f"Invalid source plane: {x_source_plane}"
+        )
 
     overview, _, deep_context = get_query_classes()
     if not overview or not deep_context:
@@ -294,7 +307,9 @@ async def search_decisions(
             decisions = deep_context.search_full_text(text, limit)
             tier = 3
         else:
-            raise HTTPException(status_code=400, detail="Must provide 'tag' or 'text' parameter")
+            raise HTTPException(
+                status_code=400, detail="Must provide 'tag' or 'text' parameter"
+            )
 
         return {
             "decisions": [
@@ -303,7 +318,7 @@ async def search_decisions(
             ],
             "count": len(decisions),
             "query_type": "tag" if tag else "text",
-            "tier": tier
+            "tier": tier,
         }
     except HTTPException:
         raise

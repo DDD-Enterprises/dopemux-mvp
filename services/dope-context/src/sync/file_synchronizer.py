@@ -11,10 +11,9 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Set, Optional
+from typing import Dict, List, Optional, Set
 
 from ..utils.workspace import get_snapshot_dir
-
 
 logger = logging.getLogger(__name__)
 

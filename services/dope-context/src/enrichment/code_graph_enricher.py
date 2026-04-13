@@ -18,11 +18,11 @@ Performance:
 """
 
 import asyncio
+import json
 import logging
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-import json
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,9 @@ class CodeGraphEnricher:
     - Imported by count (how many files this imports)
     """
 
-    def __init__(self, redis_client=None, cache_ttl: int = 1800, workspace_path: Path = None):
+    def __init__(
+        self, redis_client=None, cache_ttl: int = 1800, workspace_path: Path = None
+    ):
         """
         Initialize code graph enricher.
 
@@ -65,6 +67,7 @@ class CodeGraphEnricher:
 
         try:
             import sys
+
             serena_path = Path(__file__).parent.parent.parent.parent / "serena" / "v2"
             if str(serena_path) not in sys.path:
                 sys.path.insert(0, str(serena_path))
@@ -132,19 +135,12 @@ class CodeGraphEnricher:
             return
 
         try:
-            self.redis_client.setex(
-                cache_key,
-                self.cache_ttl,
-                json.dumps(data)
-            )
+            self.redis_client.setex(cache_key, self.cache_ttl, json.dumps(data))
         except Exception as e:
             logger.debug(f"Cache write failed: {e}")
 
     async def _get_references_count(
-        self,
-        file_path: str,
-        symbol: Optional[str],
-        start_line: int
+        self, file_path: str, symbol: Optional[str], start_line: int
     ) -> int:
         """
         Get reference count from Serena MCP.
@@ -164,7 +160,7 @@ class CodeGraphEnricher:
             # Check cache
             cached = await self._get_cached_relationships(cache_key)
             if cached:
-                return cached.get('count', 0)
+                return cached.get("count", 0)
 
             # Call Serena MCP find_references tool (direct import pattern)
             serena = await self._get_serena_server()
@@ -175,14 +171,17 @@ class CodeGraphEnricher:
                         line=start_line,
                         column=0,
                         max_results=100,  # Count all references
-                        include_declaration=True
+                        include_declaration=True,
                     )
 
                     import json
-                    result_dict = json.loads(result_json)
-                    count = result_dict.get('found', 0)
 
-                    logger.debug(f"✅ Serena find_references: {file_path}:{start_line} → {count} refs")
+                    result_dict = json.loads(result_json)
+                    count = result_dict.get("found", 0)
+
+                    logger.debug(
+                        f"✅ Serena find_references: {file_path}:{start_line} → {count} refs"
+                    )
 
                 except Exception as call_error:
                     logger.debug(f"Serena call failed: {call_error}")
@@ -191,9 +190,11 @@ class CodeGraphEnricher:
                 count = 0  # Serena unavailable
 
             # Cache result
-            await self._cache_relationships(cache_key, {'count': count})
+            await self._cache_relationships(cache_key, {"count": count})
 
-            logger.debug(f"References for {file_path}:{symbol} at line {start_line}: {count}")
+            logger.debug(
+                f"References for {file_path}:{symbol} at line {start_line}: {count}"
+            )
             return count
 
         except Exception as e:
@@ -201,9 +202,7 @@ class CodeGraphEnricher:
             return 0
 
     async def _get_code_graph_data(
-        self,
-        file_path: str,
-        symbol: Optional[str]
+        self, file_path: str, symbol: Optional[str]
     ) -> Dict[str, int]:
         """
         Get code graph metadata from Serena.
@@ -228,10 +227,7 @@ class CodeGraphEnricher:
                 return cached
 
             # Mock response
-            graph_data = {
-                'callees': 0,
-                'imports': 0
-            }
+            graph_data = {"callees": 0, "imports": 0}
 
             # Cache result
             await self._cache_relationships(cache_key, graph_data)
@@ -240,7 +236,7 @@ class CodeGraphEnricher:
 
         except Exception as e:
             logger.debug(f"Failed to get code graph for {file_path}:{symbol}: {e}")
-            return {'callees': 0, 'imports': 0}
+            return {"callees": 0, "imports": 0}
 
     async def _enrich_single_result(self, result: Dict) -> Dict:
         """
@@ -256,14 +252,14 @@ class CodeGraphEnricher:
         start_time = time.time()
 
         try:
-            file_path = result.get('file_path', '')
-            symbol = result.get('function_name')
-            start_line = result.get('start_line')
+            file_path = result.get("file_path", "")
+            symbol = result.get("function_name")
+            start_line = result.get("start_line")
 
             # Skip if no symbol or no line number
             if not symbol or start_line is None:
-                result['relationships'] = None
-                result['enrichment_skipped'] = 'missing_symbol_or_line'
+                result["relationships"] = None
+                result["enrichment_skipped"] = "missing_symbol_or_line"
                 return result
 
             # Parallel fetch: references + code graph
@@ -274,25 +270,25 @@ class CodeGraphEnricher:
             try:
                 callers_count, graph_data = await asyncio.wait_for(
                     asyncio.gather(refs_task, graph_task),
-                    timeout=0.2  # 200ms ADHD target
+                    timeout=0.2,  # 200ms ADHD target
                 )
             except asyncio.TimeoutError:
                 logger.warning(f"Enrichment timeout for {file_path}:{symbol}")
                 callers_count = 0
-                graph_data = {'callees': 0, 'imports': 0}
+                graph_data = {"callees": 0, "imports": 0}
 
             # Build relationship metadata
             relationships = {
-                'callers': callers_count,
-                'callees': graph_data.get('callees', 0),
-                'imports': graph_data.get('imports', 0),
-                'impact_score': self._calculate_impact_score(callers_count),
-                'impact_level': self._get_impact_level(callers_count),
-                'impact_message': self._get_impact_message(callers_count)
+                "callers": callers_count,
+                "callees": graph_data.get("callees", 0),
+                "imports": graph_data.get("imports", 0),
+                "impact_score": self._calculate_impact_score(callers_count),
+                "impact_level": self._get_impact_level(callers_count),
+                "impact_message": self._get_impact_message(callers_count),
             }
 
-            result['relationships'] = relationships
-            result['enrichment_status'] = 'success'
+            result["relationships"] = relationships
+            result["enrichment_status"] = "success"
 
             elapsed_ms = (time.time() - start_time) * 1000
             logger.debug(f"Enriched {symbol} in {elapsed_ms:.1f}ms")
@@ -301,8 +297,8 @@ class CodeGraphEnricher:
 
         except Exception as e:
             logger.warning(f"Enrichment failed for result: {e}")
-            result['relationships'] = None
-            result['enrichment_status'] = f'error: {str(e)}'
+            result["relationships"] = None
+            result["enrichment_status"] = f"error: {str(e)}"
             return result
 
     def _calculate_impact_score(self, callers_count: int) -> float:
@@ -320,6 +316,7 @@ class CodeGraphEnricher:
             return 0.0
 
         import math
+
         score = min(1.0, math.log10(callers_count + 1) / 3.0)
         return round(score, 2)
 
@@ -366,10 +363,7 @@ class CodeGraphEnricher:
             return f"CRITICAL IMPACT - {callers_count}+ callers (review carefully!)"
 
     async def enrich_results(
-        self,
-        results: List[Dict],
-        max_enrich: int = 5,
-        timeout_per_result: float = 0.2
+        self, results: List[Dict], max_enrich: int = 5, timeout_per_result: float = 0.2
     ) -> List[Dict]:
         """
         Enrich search results with code graph relationships.
@@ -396,7 +390,7 @@ class CodeGraphEnricher:
         if not serena_available:
             logger.info("Serena unavailable - returning results without enrichment")
             for result in results:
-                result['relationships'] = None
+                result["relationships"] = None
             return results
 
         # Enrich only top N results
@@ -411,7 +405,7 @@ class CodeGraphEnricher:
         try:
             enriched = await asyncio.gather(
                 *[self._enrich_single_result(result) for result in to_enrich],
-                return_exceptions=True
+                return_exceptions=True,
             )
 
             # Filter out exceptions
@@ -424,7 +418,7 @@ class CodeGraphEnricher:
 
             # Add unenriched results
             for result in remaining:
-                result['relationships'] = None
+                result["relationships"] = None
                 enriched_results.append(result)
 
             elapsed_ms = (time.time() - start_time) * 1000
@@ -436,7 +430,7 @@ class CodeGraphEnricher:
             logger.error(f"Enrichment failed: {e}")
             # Return original results without enrichment
             for result in results:
-                result['relationships'] = None
+                result["relationships"] = None
             return results
 
 

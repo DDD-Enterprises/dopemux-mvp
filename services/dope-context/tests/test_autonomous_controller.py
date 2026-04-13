@@ -1,9 +1,8 @@
 import asyncio
 import functools
-
-import pytest
 from pathlib import Path
 
+import pytest
 from src.autonomous.autonomous_controller import (
     AutonomousConfig,
     AutonomousController,
@@ -59,6 +58,7 @@ class DummyPeriodic:
 
 
 if not hasattr(pytest.mark, "asyncio"):
+
     def _asyncio_marker(func):
         @functools.wraps(func)
         def _wrapper(*args, **kwargs):
@@ -71,6 +71,7 @@ if not hasattr(pytest.mark, "asyncio"):
 
 def test_autonomous_controller_registry_keys(tmp_path, monkeypatch):
     """Ensure controllers register under custom keys for docs/code isolation."""
+
     async def _run():
         workspace = tmp_path / "repo"
         workspace.mkdir()

@@ -40,9 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 async def enrich_with_code_graph(
-    search_results: List[Dict],
-    max_enrich: int = 5,
-    timeout_per_result: float = 0.2
+    search_results: List[Dict], max_enrich: int = 5, timeout_per_result: float = 0.2
 ) -> List[Dict]:
     """
     Enrich dope-context search results with Serena code graph data.
@@ -80,23 +78,20 @@ async def enrich_with_code_graph(
             enriched_results.append(enriched)
         except Exception as e:
             logger.warning(f"Enrichment failed for result: {e}")
-            result['relationships'] = None
-            result['enrichment_status'] = f'error: {str(e)}'
+            result["relationships"] = None
+            result["enrichment_status"] = f"error: {str(e)}"
             enriched_results.append(result)
 
     # Add unenriched results
     for result in remaining:
-        result['relationships'] = None
-        result['enrichment_status'] = 'not_enriched'
+        result["relationships"] = None
+        result["enrichment_status"] = "not_enriched"
         enriched_results.append(result)
 
     return enriched_results
 
 
-async def _enrich_single_result(
-    result: Dict,
-    timeout: float
-) -> Dict:
+async def _enrich_single_result(result: Dict, timeout: float) -> Dict:
     """
     Enrich a single search result.
 
@@ -109,14 +104,14 @@ async def _enrich_single_result(
     Returns:
         Result with 'relationships' field added
     """
-    file_path = result.get('file_path', '')
-    start_line = result.get('start_line')
-    symbol = result.get('function_name')
+    file_path = result.get("file_path", "")
+    start_line = result.get("start_line")
+    symbol = result.get("function_name")
 
     # Skip if missing required fields
     if not file_path or start_line is None:
-        result['relationships'] = None
-        result['enrichment_status'] = 'missing_required_fields'
+        result["relationships"] = None
+        result["enrichment_status"] = "missing_required_fields"
         return result
 
     try:
@@ -128,16 +123,18 @@ async def _enrich_single_result(
         # The ACTUAL enrichment needs to happen in Claude Code orchestration layer
         # using the pattern shown in the module docstring.
 
-        result['relationships'] = None
-        result['enrichment_status'] = 'use_claude_code_orchestration'
-        result['enrichment_hint'] = 'Call mcp__serena-v2__find_references from Claude Code level'
+        result["relationships"] = None
+        result["enrichment_status"] = "use_claude_code_orchestration"
+        result["enrichment_hint"] = (
+            "Call mcp__serena-v2__find_references from Claude Code level"
+        )
 
         return result
 
     except Exception as e:
         logger.warning(f"Enrichment failed: {e}")
-        result['relationships'] = None
-        result['enrichment_status'] = f'error: {str(e)}'
+        result["relationships"] = None
+        result["enrichment_status"] = f"error: {str(e)}"
         return result
 
 
@@ -147,6 +144,7 @@ def calculate_impact_score(callers_count: int) -> float:
         return 0.0
 
     import math
+
     score = min(1.0, math.log10(callers_count + 1) / 3.0)
     return round(score, 2)
 

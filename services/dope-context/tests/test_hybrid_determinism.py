@@ -18,7 +18,11 @@ def _register_qdrant_stub():
         "MatchValue",
         "SearchParams",
     ]:
-        setattr(models_module, name, type(name, (), {"__init__": lambda self, *args, **kwargs: None}))
+        setattr(
+            models_module,
+            name,
+            type(name, (), {"__init__": lambda self, *args, **kwargs: None}),
+        )
     models_module.PayloadSchemaType = types.SimpleNamespace(KEYWORD="keyword")
     models_module.Distance = types.SimpleNamespace(DOT="dot")
 
@@ -38,7 +42,19 @@ def _register_qdrant_stub():
 
 
 _register_qdrant_stub()
-sys.modules.setdefault("rank_bm25", types.SimpleNamespace(BM25Okapi=type("BM25Okapi", (), {"__init__": lambda self, corpus: None, "get_scores": lambda self, query: []})))
+sys.modules.setdefault(
+    "rank_bm25",
+    types.SimpleNamespace(
+        BM25Okapi=type(
+            "BM25Okapi",
+            (),
+            {
+                "__init__": lambda self, corpus: None,
+                "get_scores": lambda self, query: [],
+            },
+        )
+    ),
+)
 
 from src.search.dense_search import SearchProfile, SearchResult
 from src.search.hybrid_search import HybridSearch, reciprocal_rank_fusion

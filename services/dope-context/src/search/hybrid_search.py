@@ -10,8 +10,7 @@ from typing import Dict, List, Optional, Tuple
 
 from rank_bm25 import BM25Okapi
 
-from .dense_search import MultiVectorSearch, SearchResult, SearchProfile
-
+from .dense_search import MultiVectorSearch, SearchProfile, SearchResult
 
 logger = logging.getLogger(__name__)
 
