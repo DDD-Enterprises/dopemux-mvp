@@ -6,11 +6,6 @@ performance tracking designed to reduce cognitive load.
 """
 
 from dataclasses import dataclass
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 from datetime import datetime
 from typing import Optional
 
@@ -73,8 +68,8 @@ class EmbeddingHealthMetrics:
             gentle_mode: Use encouraging language and visual cues
         """
         if gentle_mode:
-            logger.info("🚀 Embedding Pipeline Status")
-            logger.info("=" * 40)
+            print("🚀 Embedding Pipeline Status")
+            print("=" * 40)
 
         # Progress bar for documents
         total_docs = max(self.documents_processed, 1)
@@ -83,7 +78,7 @@ class EmbeddingHealthMetrics:
         filled = int(bar_width * progress_pct / 100)
         bar = "█" * filled + "░" * (bar_width - filled)
 
-        logger.info(f"📊 Progress: [{bar}] {progress_pct:.1f}% ({self.documents_embedded:,}/{total_docs:,})")
+        print(f"📊 Progress: [{bar}] {progress_pct:.1f}% ({self.documents_embedded:,}/{total_docs:,})")
 
         # Performance indicators
         speed = self.get_processing_speed()
@@ -92,26 +87,26 @@ class EmbeddingHealthMetrics:
         success_emoji = "✅" if success_rate > 0.95 else "⚠️" if success_rate > 0.8 else "❌"
         speed_emoji = "⚡" if speed > 10 else "🐌" if speed < 1 else "🚶"
 
-        logger.info(f"{speed_emoji} Speed: {speed:.1f} docs/sec")
-        logger.info(f"{success_emoji} Success: {success_rate:.1%}")
+        print(f"{speed_emoji} Speed: {speed:.1f} docs/sec")
+        print(f"{success_emoji} Success: {success_rate:.1%}")
 
         # Quality metrics
         if self.recall_at_10 > 0:
             quality_emoji = "🎯" if self.recall_at_10 > 0.95 else "⚠️"
-            logger.info(f"{quality_emoji} Recall@10: {self.recall_at_10:.3f}")
+            print(f"{quality_emoji} Recall@10: {self.recall_at_10:.3f}")
 
         # Cost tracking
         if self.total_cost_usd > 0:
             cost_emoji = "💰" if self.total_cost_usd < 10 else "💸"
-            logger.info(f"{cost_emoji} Cost: ${self.total_cost_usd:.2f}")
+            print(f"{cost_emoji} Cost: ${self.total_cost_usd:.2f}")
 
             if self.monthly_budget_remaining is not None:
                 budget_pct = (self.monthly_budget_remaining / (self.total_cost_usd + self.monthly_budget_remaining)) * 100
                 budget_emoji = "🟢" if budget_pct > 50 else "🟡" if budget_pct > 20 else "🔴"
-                logger.info(f"{budget_emoji} Budget: {budget_pct:.0f}% remaining")
+                print(f"{budget_emoji} Budget: {budget_pct:.0f}% remaining")
 
         if gentle_mode and self.documents_failed > 0:
-            logger.error(f"💙 Don't worry about {self.documents_failed} failed docs - that's normal!")
+            print(f"💙 Don't worry about {self.documents_failed} failed docs - that's normal!")
 
     def update_cost_metrics(self, embedding_cost: float = 0.0, rerank_cost: float = 0.0):
         """

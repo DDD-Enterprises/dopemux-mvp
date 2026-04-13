@@ -1,0 +1,67 @@
+# Architecture Decision Record
+
+**Date:** {{ date }}
+**Status:** Proposed
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+
+## Context
+
+{% if decisions %}
+{{ decisions | extract_content(400) }}
+{% else %}
+No specific context identified from conversation analysis.
+{% endif %}
+
+## Decisions
+
+{% for decision in decisions | sort_by_confidence %}
+### {{ loop.index }}. {{ decision.content }}
+
+**Type:** {{ decision.metadata.decision_type | title }}
+**Urgency:** {{ decision.metadata.urgency | format_priority }}
+**Scope:** {{ decision.metadata.scope | title }}
+
+{% if decision.metadata.rationale %}
+**Rationale:**
+{% for reason in decision.metadata.rationale %}
+- {{ reason }}
+{% endfor %}
+{% endif %}
+
+{% if decision.metadata.alternatives %}
+**Alternatives Considered:**
+{% for alt in decision.metadata.alternatives %}
+- {{ alt }}
+{% endfor %}
+{% endif %}
+
+---
+
+{% endfor %}
+
+## Consequences
+
+### Positive
+{% for decision in decisions %}
+{% if decision.metadata.rationale %}
+{% for reason in decision.metadata.rationale %}
+- {{ reason }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+### Negative
+{% for risk in risks %}
+- {{ risk.content }}
+{% endfor %}
+
+## Compliance
+
+{% for constraint in constraints %}
+{% if constraint.metadata.constraint_type == 'regulatory' %}
+- {{ constraint.content }}
+{% endif %}
+{% endfor %}
+
+---
+*Generated from {{ total_fields }} extracted fields*
