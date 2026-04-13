@@ -1,0 +1,59 @@
+# Product Requirements Document
+
+**Date:** {{ date }}
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+**Stakeholders:** {{ unique_stakeholders | format_stakeholders }}
+
+## Executive Summary
+
+{{ features | extract_content(300) }}
+
+## Features & Requirements
+
+{% for feature in features | sort_by_confidence %}
+### {{ loop.index }}. {{ feature.content | title }}
+
+**Confidence:** {{ feature.confidence | format_confidence }}
+**Stakeholders:** {{ feature.stakeholders | format_stakeholders }}
+
+{% if feature.metadata.user_story.persona %}
+**User Story:** As a {{ feature.metadata.user_story.persona }}, I want {{ feature.metadata.user_story.goal }} so that {{ feature.metadata.user_story.benefit }}.
+{% endif %}
+
+{% if feature.metadata.acceptance_criteria %}
+**Acceptance Criteria:**
+{% for criteria in feature.metadata.acceptance_criteria %}
+- {{ criteria }}
+{% endfor %}
+{% endif %}
+
+{% if feature.metadata.priority %}
+**Priority:** {{ feature.metadata.priority | format_priority }}
+{% endif %}
+
+---
+
+{% endfor %}
+
+## Constraints
+
+{% if constraints %}
+{% for constraint in constraints | sort_by_confidence %}
+- **{{ constraint.content }}** ({{ constraint.metadata.constraint_type | title }}, {{ constraint.metadata.severity | format_priority }})
+{% endfor %}
+{% else %}
+No constraints identified.
+{% endif %}
+
+## Research & Data
+
+{% if research %}
+{% for item in research | sort_by_confidence %}
+- {{ item.content }} {% if item.metadata.source %}(Source: {{ item.metadata.source }}){% endif %}
+{% endfor %}
+{% else %}
+No research data available.
+{% endif %}
+
+---
+*Generated from {{ total_fields }} extracted fields*

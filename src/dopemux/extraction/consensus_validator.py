@@ -109,7 +109,7 @@ class ModelAPIClient:
         elif self.provider == ModelProvider.VOYAGE:
             return await self._voyage_embed(text)
         else:
-            raise ValueError(f"Unsupported embedding provider: {self.provider}")
+            raise NotImplementedError(f"Provider {self.provider} not implemented")
 
     async def _openai_embed(self, text: str) -> List[float]:
         """OpenAI embedding API call."""
@@ -303,7 +303,7 @@ class ConsensusValidator:
             )
 
         if self.config.progress_updates:
-            logger.info(f"🤝 Validating consensus for document {document_id}...")
+            print(f"🤝 Validating consensus for document {document_id}...")
 
         # Generate embeddings from consensus models
         consensus_embeddings = {"primary": primary_embedding}
@@ -384,12 +384,12 @@ class ConsensusValidator:
         # ADHD-friendly feedback
         if self.config.progress_updates:
             if is_consensus:
-                logger.info(f"✅ Strong consensus for {document_id} (score: {consensus_score:.3f})")
+                print(f"✅ Strong consensus for {document_id} (score: {consensus_score:.3f})")
             elif is_outlier:
                 if self.config.gentle_warnings:
-                    logger.info(f"💙 {document_id} shows some variation across models - that's okay, just noting it")
+                    print(f"💙 {document_id} shows some variation across models - that's okay, just noting it")
                 else:
-                    logger.info(f"⚠️ Low consensus for {document_id} (score: {consensus_score:.3f})")
+                    print(f"⚠️ Low consensus for {document_id} (score: {consensus_score:.3f})")
 
         if failed_models:
             logger.debug(f"Failed models for {document_id}: {failed_models}")
@@ -415,7 +415,7 @@ class ConsensusValidator:
         validation_limit = min(len(results), 5)  # Validate top 5 only
 
         if self.config.progress_updates:
-            logger.info(f"🤝 Adding consensus validation to top {validation_limit} results...")
+            print(f"🤝 Adding consensus validation to top {validation_limit} results...")
 
         validated_results = []
 
@@ -479,17 +479,17 @@ class ConsensusValidator:
         """Display ADHD-friendly consensus validation summary."""
         summary = self.get_consensus_summary()
 
-        logger.info("🤝 Consensus Validation Summary")
-        logger.info("=" * 35)
-        logger.info(f"📊 Validated: {summary['total_validations']} documents")
-        logger.info(f"✅ Consensus: {summary['consensus_rate']:.1%}")
-        logger.info(f"⚠️ Outliers: {summary['outlier_rate']:.1%}")
-        logger.info(f"💰 Cost: ${summary['total_cost_usd']:.3f}")
-        logger.info(f"📈 Usage: {summary['daily_usage']}/{summary['daily_limit']} today")
+        print("🤝 Consensus Validation Summary")
+        print("=" * 35)
+        print(f"📊 Validated: {summary['total_validations']} documents")
+        print(f"✅ Consensus: {summary['consensus_rate']:.1%}")
+        print(f"⚠️ Outliers: {summary['outlier_rate']:.1%}")
+        print(f"💰 Cost: ${summary['total_cost_usd']:.3f}")
+        print(f"📈 Usage: {summary['daily_usage']}/{summary['daily_limit']} today")
 
         if summary['avg_consensus_score'] > 0:
             score_emoji = "🟢" if summary['avg_consensus_score'] > 0.9 else "🟡" if summary['avg_consensus_score'] > 0.8 else "🔴"
-            logger.info(f"{score_emoji} Avg Score: {summary['avg_consensus_score']:.3f}")
+            print(f"{score_emoji} Avg Score: {summary['avg_consensus_score']:.3f}")
 
 
 # Example usage

@@ -142,11 +142,9 @@ class ClaudeContextManager:
     async def _load_base_claude_md(self) -> None:
         """Load base Claude.md content as template."""
         try:
-            if await asyncio.to_thread(self.claude_md_path.exists):
-                self.base_claude_md = await asyncio.to_thread(
-                    self.claude_md_path.read_text,
-                    encoding='utf-8'
-                )
+            if self.claude_md_path.exists():
+                with open(self.claude_md_path, 'r', encoding='utf-8') as f:
+                    self.base_claude_md = f.read()
 
                 logger.info(f"📄 Loaded base Claude.md from {self.claude_md_path}")
             else:
@@ -697,24 +695,18 @@ class ClaudeContextManager:
             time_since_update = (datetime.now(timezone.utc) - self.last_update).total_seconds()
             return time_since_update > self.update_frequency
 
-        except Exception as e:
+        except Exception:
             return False
+
     async def _write_claude_md(self, content: str) -> None:
         """Write updated content to Claude.md."""
         try:
             # Ensure directory exists
-            await asyncio.to_thread(
-                self.claude_md_path.parent.mkdir,
-                parents=True,
-                exist_ok=True
-            )
+            self.claude_md_path.parent.mkdir(parents=True, exist_ok=True)
 
             # Write content
-            await asyncio.to_thread(
-                self.claude_md_path.write_text,
-                content,
-                encoding='utf-8'
-            )
+            with open(self.claude_md_path, 'w', encoding='utf-8') as f:
+                f.write(content)
 
             logger.debug(f"📝 Updated {self.claude_md_path}")
 
@@ -773,6 +765,6 @@ This project uses automated PM workflow orchestration with Leantime integration.
             try:
                 await self.monitor_task
             except asyncio.CancelledError:
-                logger.debug("Claude.md context monitor cancelled")
+                pass
 
         logger.info("✅ Claude.md Context Manager shutdown complete")

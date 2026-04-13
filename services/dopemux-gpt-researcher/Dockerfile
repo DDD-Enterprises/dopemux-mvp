@@ -21,12 +21,10 @@ WORKDIR /app
 # === Dependencies Stage ===
 FROM base as dependencies
 
-# Copy dependency manifests first for better caching
-COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/
-
+# Copy requirements and install Python dependencies
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir .[services]
+    pip install --no-cache-dir -r requirements.txt
 
 # Install gpt-researcher (will be configurable for different versions)
 RUN pip install --no-cache-dir gpt-researcher
@@ -34,9 +32,9 @@ RUN pip install --no-cache-dir gpt-researcher
 # === Application Stage ===
 FROM dependencies as application
 
-# Copy research_api source code (renamed from backend to avoid package collision)
-COPY services/dopemux-gpt-researcher/research_api/ ./research_api/
-COPY --chown=dopemux:dopemux services/dopemux-gpt-researcher/ .
+# Copy backend source code
+COPY backend/ ./backend/
+COPY --chown=dopemux:dopemux . .
 
 # Create necessary directories
 RUN mkdir -p /app/logs /app/data /app/cache && \
@@ -46,7 +44,7 @@ RUN mkdir -p /app/logs /app/data /app/cache && \
 USER dopemux
 
 # Set Python path for imports
-ENV PYTHONPATH=/app:$PYTHONPATH
+ENV PYTHONPATH=/app/backend:$PYTHONPATH
 
 # Expose the application port
 EXPOSE 8000
@@ -55,5 +53,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Default command - run FastAPI server (no more package collision!)
-CMD ["python", "-m", "uvicorn", "research_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Default command - run FastAPI server
+CMD ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
