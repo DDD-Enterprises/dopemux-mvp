@@ -2,54 +2,80 @@
 
 Source: `purring-puzzling-coral.md` (V5 Extraction Engine Live Run Readiness & Prompt Optimization)
 
-**Legend**: `[ ]` pending | `[~]` in progress | `[x]` done | `[!]` blocked
+**Legend**: `[ ]` pending | `[~]` in progress or partial | `[x]` done | `[!]` blocked | `[-]` deferred or superseded
 **Tool key**: `CX` = Codex Desktop | `CC:O` = Claude Code Opus | `CC:S` = Claude Code Sonnet | `GC` = Gemini CLI
+
+---
+
+## Reconciled Status Snapshot (through Packet 04)
+
+This checklist predates the audit-backed packet stream and its raw checkbox state is not reliable by itself.
+
+Use these in-repo sources as current status authority:
+
+- `docs/05-audit-reports/rte-state-of-work-audit-20260410.md`
+- `docs/03-reference/task-packets/rte-05-canon-reconciliation-matrix.md`
+- Packet evidence notes for `rte-01` through `rte-04`
+
+Reconciled reality through Packet 04:
+
+- Packet 01 closed the R0 prompt conflict, parse-failure abort threshold, batch-mode contradiction, and minimum Phase S gate.
+- Packet 02 completed the missing confidence-ramp artifacts, hardened `BatchResponseValidator`, added the dedicated `batch_planner` test, and added `--preset staged-safe`.
+- Packet 03 created the six missing prompts and the initial measurable `promptsets/v4/schemas/` rollout.
+- Packet 04 documented FL_INT ladder truth and BM-LIVE posture, while leaving operator-governed promotion decisions explicitly unresolved.
+
+Deferred-lane authority:
+
+- Packet 07 parks `FL-POST-V1` and `FL-PIPELINE` outside the active remediation lane.
+- Use `docs/03-reference/task-packets/rte-07-post-v1-deferred-register.md` for rationale and re-entry criteria.
+- Do not treat those deferred items as near-term checklist work unless Packet 07 re-entry conditions are explicitly met.
 
 ---
 
 ## Phase A — Safety Gates (Must Complete Before Live Run)
 
 ### A0. Resolve Bundle Conflicts `CX GPT-5.4-mini`
-- [ ] Resolve 47 conflict markers in `model_map.yaml`
+- [x] Resolve 47 conflict markers in `model_map.yaml`
   - Accept HEAD for model IDs (`grok-4-1-fast-reasoning`)
   - Accept pr321 for lane_class assignments (`BULK_DOCS_GENERAL` for R/S)
-- [ ] Resolve 11 conflict markers in `run_extraction_v5.py`
+- [x] Resolve 11 conflict markers in `run_extraction_v5.py`
   - Accept HEAD for auth sequence
   - Accept pr321 for sampling logic
-- [ ] Verify: `grep -c "<<<<<<" model_map.yaml run_extraction_v5.py` → both return 0
+- [x] Verify: `grep -c "<<<<<<" model_map.yaml run_extraction_v5.py` → both return 0
+  - Reconciled note: the remaining prompt-side R0 conflict was closed in Packet 01.
 
 ### A1. Hard Cost Ceiling `CX GPT-5.4`
-- [ ] Add `--max-cost-usd` CLI flag to `run_extraction_v5.py`
-- [ ] Wire into prescan cost estimator (`lib/prescan/cost_estimator.py`)
-- [ ] Abort before batch submission if projected cost exceeds budget
+- [x] Add `--max-cost-usd` CLI flag to `run_extraction_v5.py`
+- [x] Wire into prescan cost estimator (`lib/prescan/cost_estimator.py`)
+- [x] Abort before batch submission if projected cost exceeds budget
 
 ### A2. Dual Live-Consent Guard `CX GPT-5.4-mini`
-- [ ] Require both `--execute` AND `DPMX_LIVE_OK=1` env var for live API calls
-- [ ] Add guard at all `batch_clients.submit()` and `_execute_live_batch()` call sites
+- [x] Require both `--execute` AND `DPMX_LIVE_OK=1` env var for live API calls
+- [x] Add guard at all `batch_clients.submit()` and `_execute_live_batch()` call sites
 
 ### A3. Fix Batch Result Parsing `CX GPT-5.4-mini`
-- [ ] Count discarded JSON lines in `lib/batch_clients.py` `fetch_results()` (~L154-176)
-- [ ] Log every discard with content
-- [ ] Abort if >5% loss: `BatchCorruptionError`
+- [x] Count discarded JSON lines in the active parse-failure path
+- [x] Log every discard with content
+- [x] Abort if >5% loss
+  - Reconciled note: Packet 01 implemented the fail-closed threshold in the current v5 live-readiness path.
 
 ### A4. Per-Phase Spend Accumulator `CX GPT-5.4`
-- [ ] Create new `lib/spend_ledger.py` with `SpendLedger` class
-- [ ] Track `input_tokens`, `output_tokens`, `estimated_cost_usd` per phase
-- [ ] Write to `{run_dir}/spend_ledger.json` after each phase
-- [ ] Check against `--max-cost-usd` before starting next phase
+- [x] Create new `lib/spend_ledger.py` with `SpendLedger` class
+- [x] Track `input_tokens`, `output_tokens`, `estimated_cost_usd` per phase
+- [x] Write to `{run_dir}/spend_ledger.json` after each phase
+- [x] Check against `--max-cost-usd` before starting next phase
 
 ### A5. Prescan Model Routing Optimization `CX GPT-5.4-mini`
-- [ ] Route dedup/discover/feasibility passes to `gpt-5-nano` in `lib/prescan/grok_passes.py`
-- [ ] Keep Grok 4.20 for optimize pass only
+- [x] Route dedup/discover/feasibility passes to `gpt-5-nano` in `lib/prescan/grok_passes.py`
+- [x] Keep Grok 4.20 for optimize pass only
 
 ### A6. Enable Batch API by Default `CX GPT-5.4-mini`
-- [ ] Change `--batch-mode` default to `True` in `run_extraction_v5.py`
-- [ ] Add `--no-batch` flag for explicit opt-out
+- [-] Superseded by safe-live reconciliation
+  - Packet 01 aligned the contradictory defaults around the current safe-live posture instead of enabling batch by default.
 
 ### A7. Integration Test `CX GPT-5.4`
-- [ ] Create `tests/test_live_integration_pilot.py`
-- [ ] 1 real batch submission (1 partition, `gpt-5-nano`)
-- [ ] Mark with `@pytest.mark.live`
+- [x] Current packet stream has targeted runtime/operator safety coverage for the live-readiness surface
+- [-] A paid live pilot remains outside the packetized remediation baseline and should not be inferred as already run
 
 ### Phase A Verification
 - [ ] `python validate_pre_live_gate_v25.py`
@@ -180,22 +206,22 @@ Source: `purring-puzzling-coral.md` (V5 Extraction Engine Live Run Readiness & P
   - All 9 required sections
 
 **Codex-assigned (template-based)** `CX GPT-5.4`
-- [ ] C18_OBSERVABILITY_SURFACE: logging.getLogger, structlog, Counter/Gauge/Histogram, /health, /metrics, OpenTelemetry
-- [ ] C19_ERROR_HANDLING_PATTERNS: try/except, bare except:, reraise vs swallow, unhandled IO
-- [ ] G6_DEPENDENCY_HEALTH_SURFACE: pyproject.toml deps, requirements*.txt, uv.lock, unpinned deps
-- [ ] C20_STATE_MANAGEMENT_SURFACE: self.xxx mutations, module globals, SQLite writes, Redis set/get
-- [ ] C21_PERFORMANCE_SURFACE: time.sleep in async, N+1 queries, sync requests in async def, unbounded loops
-- [ ] G7_TECHNICAL_DEBT_REGISTER: TODO/FIXME/HACK/XXX, deprecated decorators, CHANGE_ME, large commented blocks
+- [x] C18_OBSERVABILITY_SURFACE: logging.getLogger, structlog, Counter/Gauge/Histogram, /health, /metrics, OpenTelemetry
+- [x] C19_ERROR_HANDLING_PATTERNS: try/except, bare except:, reraise vs swallow, unhandled IO
+- [x] G6_DEPENDENCY_HEALTH_SURFACE: pyproject.toml deps, requirements*.txt, uv.lock, unpinned deps
+- [x] C20_STATE_MANAGEMENT_SURFACE: self.xxx mutations, module globals, SQLite writes, Redis set/get
+- [x] C21_PERFORMANCE_SURFACE: time.sleep in async, N+1 queries, sync requests in async def, unbounded loops
+- [x] G7_TECHNICAL_DEBT_REGISTER: TODO/FIXME/HACK/XXX, deprecated decorators, CHANGE_ME, large commented blocks
 
 **Registration for ALL new prompts**:
 - [x] Add G5 to G-phase in `promptset.yaml`
-- [ ] Add G6, G7 to G-phase in `promptset.yaml`
+- [x] Add G6, G7 to G-phase in `promptset.yaml`
 - [x] Add R11 to R-phase in `promptset.yaml`
-- [ ] Add C18, C19, C20, C21 to C-phase in `promptset.yaml`
+- [x] Add C18, C19, C20, C21 to C-phase in `promptset.yaml`
 - [x] Register G5 + R11 artifacts in `artifacts.yaml`
-- [ ] Register C18-C21, G6, G7 artifacts in `artifacts.yaml`
+- [x] Register C18-C21, G6, G7 artifacts in `artifacts.yaml`
 - [x] Add G5 + R11 model routing in `model_map.yaml`
-- [ ] Add C18-C21, G6, G7 model routing in `model_map.yaml`
+- [x] Add C18-C21, G6, G7 model routing in `model_map.yaml`
 
 ---
 
@@ -210,7 +236,7 @@ Source: `purring-puzzling-coral.md` (V5 Extraction Engine Live Run Readiness & P
 #### Pass 8: Verification & Integration Tests `GC Gemini Flash`
 
 **8A — Contract verification** (zero LLM cost)
-- [ ] Run `scripts/repo_truth_extractor_promptset_audit_v4.py` on full promptset
+- [x] Run `scripts/repo_truth_extractor_promptset_audit_v4.py` on full promptset
 - [ ] Add checks: no "domain-specific patterns", no scope duplicates, all new artifacts registered
 
 **8B — Spot-check live extraction**

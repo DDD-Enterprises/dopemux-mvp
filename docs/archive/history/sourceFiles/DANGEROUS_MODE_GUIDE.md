@@ -1,3 +1,15 @@
+---
+id: DANGEROUS_MODE_GUIDE
+title: Dangerous Mode Guide
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Dangerous Mode Guide (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Dopemux Dangerous Mode Setup Guide
 
 This guide shows you how to run Dopemux in "dangerous mode" similar to Claude Code's `--dangerously-skip-permissions` flag.

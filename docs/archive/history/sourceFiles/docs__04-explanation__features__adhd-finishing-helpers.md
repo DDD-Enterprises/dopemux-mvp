@@ -1,3 +1,15 @@
+---
+id: docs__04-explanation__features__adhd-finishing-helpers
+title: Docs  04 Explanation  Features  Adhd Finishing Helpers
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  04 Explanation  Features  Adhd Finishing Helpers (explanation) for
+  dopemux documentation and developer workflows.
+---
 # ADHD Finishing Helpers Feature Specification
 
 **Status**: Implementation Ready

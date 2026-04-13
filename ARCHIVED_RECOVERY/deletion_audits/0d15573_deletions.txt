@@ -1,0 +1,15 @@
+docs/ADHD_OPTIMIZED_ARCHITECTURE.md
+docs/ARCHITECTURE.md
+docs/COMPLETE_ARCHITECTURE_SUMMARY.md
+docs/CONFIGURATION.md
+docs/HEALTH_MONITORING.md
+docs/IMPLEMENTATION_SPECIFICATION.md
+docs/IMPLEMENTATION_SUMMARY.md
+docs/MCP_DYNAMIC_DISCOVERY_SYSTEM.md
+docs/MCP_ROUTING_MATRIX.md
+docs/MCP_SERVER_SPECIFICATIONS.md
+docs/METAMCP_ORCHESTRATION_ROADMAP.md
+docs/adhd-support.md
+docs/leantime-integration-plan.md
+docs/master-architecture.md
+docs/session-documentation-synthesis-complete.md

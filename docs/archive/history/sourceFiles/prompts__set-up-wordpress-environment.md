@@ -1,3 +1,15 @@
+---
+id: prompts__set-up-wordpress-environment
+title: Prompts  Set Up Wordpress Environment
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Prompts  Set Up Wordpress Environment (explanation) for dopemux documentation
+  and developer workflows.
+---
 ## WordPress Development Environment Setup
 
 **WordPress environment setup requires focused approach to avoid over-engineering.**

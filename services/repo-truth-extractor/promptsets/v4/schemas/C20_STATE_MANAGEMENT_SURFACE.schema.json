@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "promptsets/v4/schemas/C20_STATE_MANAGEMENT_SURFACE.schema.json",
+  "title": "STATE_MANAGEMENT_SURFACE@v1",
+  "type": "object",
+  "required": ["schema", "items"],
+  "properties": {
+    "schema": { "const": "STATE_MANAGEMENT_SURFACE@v1" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "state_type", "mutation_kind", "path", "line_range", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "state_type": {
+            "type": "string",
+            "enum": ["instance_attribute", "module_global", "sqlite_write", "redis_write", "cache_mutation", "session_state"]
+          },
+          "mutation_kind": {
+            "type": "string",
+            "enum": ["assignment", "append_or_extend", "setdefault_or_update", "delete", "persistence_write"]
+          },
+          "path": { "type": "string" },
+          "line_range": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+          "evidence": { "type": "array", "minItems": 1 }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

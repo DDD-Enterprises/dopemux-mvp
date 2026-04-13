@@ -89,7 +89,7 @@ class EmbeddingResponse:
     prompt_tokens: int
 
     # Performance metrics
-    processing_time_ms: float
+    processing_time_ms: float = 0.0
     request_id: Optional[str] = None
 
     # Cost information
@@ -124,14 +124,17 @@ class RerankResponse:
     Contains relevance scores and optional reranked documents.
     """
 
-    # Required fields (must come first)
     scores: List[float]
     model: str
-    processing_time_ms: float
 
-    # Optional fields (all have defaults)
+    # Optional reranked documents
     documents: Optional[List[str]] = None
+
+    # Performance metrics
+    processing_time_ms: float = 0.0
     request_id: Optional[str] = None
+
+    # Cost information
     estimated_cost_usd: float = 0.0
 
 

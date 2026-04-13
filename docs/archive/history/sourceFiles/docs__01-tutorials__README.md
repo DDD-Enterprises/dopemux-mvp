@@ -1,3 +1,15 @@
+---
+id: docs__01-tutorials__README
+title: Docs  01 Tutorials  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  01 Tutorials  Readme (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Tutorials - Learning-Oriented Documentation
 
 Welcome to Dopemux tutorials! These guides are designed for **learning** and provide step-by-step walkthroughs for getting started.

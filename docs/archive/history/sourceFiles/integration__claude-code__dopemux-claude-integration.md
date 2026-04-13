@@ -1,3 +1,15 @@
+---
+id: integration__claude-code__dopemux-claude-integration
+title: Integration  Claude Code  Dopemux Claude Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Integration  Claude Code  Dopemux Claude Integration (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Dopemux-Claude Code Integration Strategy
 
 ## Overview

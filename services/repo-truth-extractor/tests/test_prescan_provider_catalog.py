@@ -131,12 +131,16 @@ class TestPricing:
         assert result["input_1m_usd"] == 10.0
         assert result["output_1m_usd"] == 40.0
         assert result["pricing_authority"] == "fallback_default"
+        assert result["pricing_status"] == "UNPRICED_UNKNOWN"
 
     def test_pricing_maps_spend_ledger_dict_fields(self) -> None:
         fake_rate = {
             "input_cost_per_1m_usd": 2.5,
             "output_cost_per_1m_usd": 8.0,
-            "pricing_source": "route_registry_baseline",
+            "pricing_source": "catalog_ref",
+            "pricing_status": "PRICED_CONFIRMED",
+            "pricing_confidence": "HIGH",
+            "pricing_source_type": "first_party_provider_pricing",
         }
         mock_get_rate = MagicMock(return_value=fake_rate)
         with patch("lib.prescan.provider_catalog.get_model_cost_rate", mock_get_rate):
@@ -144,7 +148,9 @@ class TestPricing:
         mock_get_rate.assert_called_once_with(provider="openai", model_id="gpt-5.4")
         assert result["input_1m_usd"] == 2.5
         assert result["output_1m_usd"] == 8.0
-        assert result["pricing_authority"] == "shared_spend_ledger_registry"
+        assert result["pricing_authority"] == "catalog_ref"
+        assert result["pricing_status"] == "PRICED_CONFIRMED"
+        assert result["pricing_confidence"] == "HIGH"
 
     def test_pricing_falls_back_to_defaults_when_rate_keys_missing(self) -> None:
         mock_get_rate = MagicMock(return_value={})

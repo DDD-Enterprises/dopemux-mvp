@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__dopemux-feature-analysis
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dopemux
+  Feature Analysis
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dopemux
+  Feature Analysis (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Feature Analysis: zen-mcp & Superclaude Assessment
 
 **Date**: September 17, 2025  

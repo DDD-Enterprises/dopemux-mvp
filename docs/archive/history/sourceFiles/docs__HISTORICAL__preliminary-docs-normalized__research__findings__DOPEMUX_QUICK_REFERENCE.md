@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__DOPEMUX_QUICK_REFERENCE
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dopemux
+  Quick Reference
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dopemux
+  Quick Reference (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Quick Reference Guide
 ## Corrected Architecture & Key Decisions
 

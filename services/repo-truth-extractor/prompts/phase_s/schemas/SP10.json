@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status", "findings"],
+  "properties": {
+    "status": {"type": "string", "enum": ["OK", "FAIL_CLOSED"]},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "reason"],
+        "properties": {
+          "path": {"type": "string"},
+          "reason": {"type": "string", "enum": ["looks_like_api_key", "looks_like_token", "looks_like_password", "looks_like_private_url", "looks_like_personal_data"]}
+        }
+      }
+    }
+  }
+}

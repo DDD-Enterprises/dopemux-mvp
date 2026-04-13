@@ -32,7 +32,7 @@ The console helper automatically handles color tags, so you can pass `message` a
 
 ## 3. Startup Banner
 
-Startup branding is owned by [splash.py](/Users/hue/code/dopemux-mvp/src/dopemux/ui/splash.py).
+Startup branding is owned by [splash.py](../../src/dopemux/ui/splash.py).
 
 - The startup banner is a framed mark, not a scrolling gimmick.
 - Rich mode uses cyan-to-violet logo coloring plus magenta/violet/cyan lane tags.

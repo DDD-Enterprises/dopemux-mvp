@@ -1,3 +1,15 @@
+---
+id: docs__91-rfc__README
+title: Docs  91 Rfc  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  91 Rfc  Readme (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Request for Comments (RFCs)
 
 This directory contains Request for Comments (RFCs) for proposed features, changes, and improvements to Dopemux. RFCs enable community discussion before implementation.

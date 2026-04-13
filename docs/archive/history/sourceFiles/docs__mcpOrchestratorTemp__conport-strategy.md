@@ -1,5 +1,16 @@
-
-  🚀 Enhanced Dopemux MCP Orchestration with ConPort Integration
+---
+id: docs__mcpOrchestratorTemp__conport-strategy
+title: Docs  Mcporchestratortemp  Conport Strategy
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Mcporchestratortemp  Conport Strategy (explanation) for dopemux documentation
+  and developer workflows.
+---
+🚀 Enhanced Dopemux MCP Orchestration with ConPort Integration
 
   Key Insights from Your ConPort Strategy
 

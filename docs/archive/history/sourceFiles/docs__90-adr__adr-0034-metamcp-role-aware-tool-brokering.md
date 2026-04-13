@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__adr-0034-metamcp-role-aware-tool-brokering
+title: Docs  90 Adr  Adr 0034 Metamcp Role Aware Tool Brokering
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  Adr 0034 Metamcp Role Aware Tool Brokering (explanation) for
+  dopemux documentation and developer workflows.
+---
 # ADR-0034: MetaMCP Role-aware Tool Brokering for Token Optimization
 
 ---

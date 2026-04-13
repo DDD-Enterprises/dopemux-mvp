@@ -1,3 +1,15 @@
+---
+id: docs__LEANTIME_MCP_OFFICIAL_ANALYSIS
+title: Docs  Leantime Mcp Official Analysis
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Leantime Mcp Official Analysis (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Leantime MCP Official Integration Analysis
 
 **Date**: September 22, 2025

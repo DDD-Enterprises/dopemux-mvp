@@ -8,6 +8,8 @@ import sys
 import types
 from pathlib import Path
 
+import pytest
+
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[3]
@@ -103,6 +105,28 @@ def test_apply_first_live_preset_applies_conservative_defaults() -> None:
     assert args.batch_mode is False
     assert args.batch_wait_timeout_seconds == runner.INTERACTIVE_SAFE_BATCH_WAIT_SECONDS
     assert preview["full_recommended_sequence"][4] == "CHECKPOINT_REVIEW"
+
+
+def test_apply_staged_safe_preset_enables_batch_defaults() -> None:
+    runner = _load_runner_module()
+    args = argparse.Namespace(
+        preset_stage="initial",
+        routing_policy="balanced_openrouter",
+        max_cost_usd=None,
+        partition_workers=8,
+        batch_mode=False,
+        batch_wait_timeout_seconds=86400,
+        compare_mode=None,
+        output_root=None,
+    )
+    phases, preview = runner.apply_staged_safe_preset(args, [])
+    assert phases == ["A", "H", "D", "C"]
+    assert args.routing_policy == "cost"
+    assert args.max_cost_usd == runner.STAGED_SAFE_PRESET_DEFAULT_CAP_USD
+    assert args.partition_workers == 1
+    assert args.batch_mode is True
+    assert args.batch_wait_timeout_seconds == runner.INTERACTIVE_SAFE_BATCH_WAIT_SECONDS
+    assert preview["preset"] == runner.STAGED_SAFE_PRESET_NAME
 
 
 def test_help_output_omits_contract_scope_warning() -> None:
@@ -368,7 +392,7 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
             "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
                 "provider": "openrouter",
                 "model_id": "openai/gpt-5.3-codex",
@@ -404,10 +428,10 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
 
 def test_route_readiness_summary_distinguishes_required_fallback_and_configured() -> None:
     runner = _load_runner_module()
-    summary = runner.derive_route_readiness_summary(["A", "H", "D", "C"], "cost")
+    summary = runner.derive_route_readiness_summary(["A", "H", "D"], "cost")
 
     assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert "GEMINI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "XAI_API_KEY" in summary["api_key_env_categories"]["optional_fallback"]
     assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
 
@@ -447,5 +471,218 @@ def test_print_config_includes_route_readiness_summary() -> None:
     assert summary["target_phases"] == ["A", "H", "D", "C"]
     assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
+    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert summary["api_key_env_categories"]["configured_not_required"] == []
     assert payload["effective_model_routing"]["A"]["scope"] == "representative_phase_default_not_step_authoritative"
+
+
+def test_print_config_reports_batch_mode_disabled_by_default() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--phase",
+            "A",
+            "--dry-run",
+            "--print-config",
+            "--run-id",
+            "tp6_batch_default_probe",
+            "--no-write-latest",
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    payload = json.loads(result.stdout)
+    assert payload["cli"]["batch_mode"] is False
+
+
+def test_staged_safe_print_config_writes_confidence_ramp_artifacts(
+    tmp_path: Path,
+) -> None:
+    output_root = tmp_path / "artifact-root"
+    run_id = "tp6_staged_safe_artifact_probe"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--preset",
+            "staged-safe",
+            "--dry-run",
+            "--print-config",
+            "--run-id",
+            run_id,
+            "--no-write-latest",
+            "--output-root",
+            str(output_root),
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    payload = json.loads(result.stdout)
+    run_root = output_root / "runs" / run_id
+    batch_pilot = json.loads((run_root / "BATCH_PILOT.json").read_text(encoding="utf-8"))
+    phase_slice = json.loads((run_root / "PHASE_SLICE.json").read_text(encoding="utf-8"))
+    breaker_state = json.loads((run_root / "BREAKER_STATE.json").read_text(encoding="utf-8"))
+    gate_decision = json.loads((run_root / "PHASE_GATE_DECISION.json").read_text(encoding="utf-8"))
+
+    assert payload["cli"]["preset"] == "staged-safe"
+    assert payload["cli"]["batch_mode"] is True
+    assert batch_pilot["preset"] == "staged-safe"
+    assert batch_pilot["batch_mode"] is True
+    assert phase_slice["selected_phases"] == ["A", "H", "D", "C"]
+    assert breaker_state["preset"] == "staged-safe"
+    assert gate_decision["preset"] == "staged-safe"
+    assert gate_decision["decision"] == "PREVIEW_ONLY"
+
+
+def test_run_phase_s_blocks_on_empty_r_outputs(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    root = tmp_path / "run"
+    dirs = {"root": root}
+    for phase in runner.PHASES:
+        phase_dir = root / runner.PHASE_DIR_NAMES[phase]
+        dirs[phase] = phase_dir
+        (phase_dir / "norm").mkdir(parents=True, exist_ok=True)
+        (phase_dir / "inputs").mkdir(parents=True, exist_ok=True)
+    (dirs["R"] / "norm" / "R0_CONTROL_PLANE_TRUTH_MAP.md").write_text("", encoding="utf-8")
+    monkeypatch.setattr(runner, "_run_phase_inner", lambda *args, **kwargs: None)
+    with pytest.raises(RuntimeError, match="minimum-quality R outputs"):
+        runner.run_phase_S(dirs, _make_cfg(runner))
+
+
+def test_run_phase_s_blocks_on_invalid_r_json(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    root = tmp_path / "run"
+    dirs = {"root": root}
+    for phase in runner.PHASES:
+        phase_dir = root / runner.PHASE_DIR_NAMES[phase]
+        dirs[phase] = phase_dir
+        (phase_dir / "norm").mkdir(parents=True, exist_ok=True)
+        (phase_dir / "inputs").mkdir(parents=True, exist_ok=True)
+    (dirs["R"] / "norm" / "R_ARBITRATION.json").write_text("{not-json", encoding="utf-8")
+    monkeypatch.setattr(runner, "_run_phase_inner", lambda *args, **kwargs: None)
+    with pytest.raises(RuntimeError, match="minimum-quality R outputs"):
+        runner.run_phase_S(dirs, _make_cfg(runner))
+
+
+def test_classify_provider_readiness_blocker_distinguishes_env_auth_and_quota() -> None:
+    runner = _load_runner_module()
+
+    missing = runner.classify_provider_readiness_blocker(
+        provider="openrouter",
+        model_id="openai/gpt-5.4",
+        api_key_env="OPENROUTER_API_KEY",
+        api_key_present=False,
+        status_code=None,
+        failure_type="auth_missing",
+        provider_error_reason=None,
+    )
+    auth = runner.classify_provider_readiness_blocker(
+        provider="openrouter",
+        model_id="openai/gpt-5.4",
+        api_key_env="OPENROUTER_API_KEY",
+        api_key_present=True,
+        status_code=401,
+        failure_type="auth_rejected",
+        provider_error_reason="user not found",
+    )
+    quota = runner.classify_provider_readiness_blocker(
+        provider="openai",
+        model_id="gpt-5.4",
+        api_key_env="OPENAI_API_KEY",
+        api_key_present=True,
+        status_code=429,
+        failure_type="quota_or_billing",
+        provider_error_reason="insufficient_quota",
+    )
+
+    assert missing["blocker_code"] == "API_KEY_MISSING"
+    assert missing["rerun_worthiness"] == "rerun_after_env_fix"
+    assert auth["blocker_code"] == "PROVIDER_AUTH_REJECTED"
+    assert auth["remediation_class"] == "fix_provider_credentials_or_permissions"
+    assert quota["blocker_code"] == "QUOTA_OR_BILLING_BLOCK"
+    assert quota["rerun_worthiness"] == "rerun_after_billing_fix"
+
+
+def test_run_provider_preflight_emits_machine_readable_readiness_blockers(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+
+    monkeypatch.setattr(
+        runner,
+        "collect_provider_routes",
+        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+            "openrouter:openai/gpt-5.4:OPENROUTER_API_KEY": {
+                "provider": "openrouter",
+                "model_id": "openai/gpt-5.4",
+                "api_key_env": "OPENROUTER_API_KEY",
+            },
+            "openai:gpt-5.4:OPENAI_API_KEY": {
+                "provider": "openai",
+                "model_id": "gpt-5.4",
+                "api_key_env": "OPENAI_API_KEY",
+            },
+        },
+    )
+
+    def _fake_probe(provider, model_id, api_key_env, cfg):  # type: ignore[no-untyped-def]
+        if provider == "openrouter":
+            return {
+                "provider": provider,
+                "model_id": model_id,
+                "api_key_env_name": api_key_env,
+                "api_key_env_resolved": api_key_env,
+                "status_code": 401,
+                "failure_type": "auth_rejected",
+                "provider_signature": f"{provider}:{model_id}",
+                "ready": False,
+                "readiness_blocker": {
+                    "ready": False,
+                    "blocker_code": "PROVIDER_AUTH_REJECTED",
+                    "blocker_class": "auth",
+                    "remediation_class": "fix_provider_credentials_or_permissions",
+                    "rerun_worthiness": "rerun_after_auth_fix",
+                    "human_summary": "blocked",
+                },
+            }
+        return {
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env_name": api_key_env,
+            "api_key_env_resolved": api_key_env,
+            "status_code": 429,
+            "failure_type": "quota_or_billing",
+            "provider_signature": f"{provider}:{model_id}",
+            "ready": False,
+            "readiness_blocker": {
+                "ready": False,
+                "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+                "blocker_class": "quota_billing",
+                "remediation_class": "restore_quota_or_billing",
+                "rerun_worthiness": "rerun_after_billing_fix",
+                "human_summary": "blocked",
+            },
+        }
+
+    monkeypatch.setattr(runner, "run_provider_doctor_probe", _fake_probe)
+
+    ok, payload = runner.run_provider_preflight(tmp_path, "ops_readiness_probe", cfg, ["A"])
+
+    assert ok is False
+    assert payload["status"] == "FAIL"
+    assert payload["failed_blocker_codes"] == ["PROVIDER_AUTH_REJECTED", "QUOTA_OR_BILLING_BLOCK"]
+    assert payload["rerun_worthiness"] == "worth_rerunning_after_fixes"
+    assert payload["failure_summary"][0]["readiness_blocker"]["blocker_code"] in {
+        "PROVIDER_AUTH_REJECTED",
+        "QUOTA_OR_BILLING_BLOCK",
+    }

@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_COMPLETE_SYSTEM_v3_architecture
+title: Output  Individual Files  Dopemux Complete System V3 Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Complete System V3 Architecture (explanation)
+  for dopemux documentation and developer workflows.
+---
 As a distinguished Enterprise Architect, I will proceed with your request.
 
 However, I must first clarify a critical constraint. For security and privacy reasons, I cannot directly access local file paths on your machine, including the specified path: `/Users/hue/code/dmpx/research/architecture/DOPEMUX_COMPLETE_SYSTEM_v3.md`.

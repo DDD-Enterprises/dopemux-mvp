@@ -1,3 +1,15 @@
+---
+id: docs__92-runbooks__runbook-zero-touch-sync
+title: Docs  92 Runbooks  Runbook Zero Touch Sync
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  92 Runbooks  Runbook Zero Touch Sync (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Runbook: Zero-Touch Sync Operations
 
 **Version:** 1.0

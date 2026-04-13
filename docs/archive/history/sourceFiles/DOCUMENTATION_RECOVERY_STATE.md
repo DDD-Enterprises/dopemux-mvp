@@ -1,3 +1,15 @@
+---
+id: DOCUMENTATION_RECOVERY_STATE
+title: Documentation Recovery State
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Documentation Recovery State (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Dopemux Documentation Recovery - Session State Save
 
 ## 🎯 MASSIVE SUCCESS ACHIEVED

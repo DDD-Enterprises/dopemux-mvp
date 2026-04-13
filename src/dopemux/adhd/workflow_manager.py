@@ -17,13 +17,13 @@ Core Features:
 """
 
 import asyncio
-import time
-from typing import Dict, Any, Optional, List, Tuple
-from datetime import datetime, timedelta
 import logging
+import time
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
-from ..ux.progress_display import ProgressDisplay
 from ..ux.interactive_prompts import InteractivePrompts
+from ..ux.progress_display import ProgressDisplay
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class ADHDWorkflowManager:
             "task_description": task_description,
             "focus_level": self.current_focus_level,
             "target_duration": self.session_duration_minutes,
-            "break_duration": self.break_duration_minutes
+            "break_duration": self.break_duration_minutes,
         }
 
         logger.info(f"Started ADHD session: {session_data['session_id']}")
@@ -97,7 +97,7 @@ class ADHDWorkflowManager:
             "duration_minutes": round(duration, 1),
             "cognitive_load_avg": self._calculate_avg_cognitive_load(),
             "breaks_taken": 1 if self.last_break_time else 0,
-            "focus_level_final": self.current_focus_level
+            "focus_level_final": self.current_focus_level,
         }
 
         # Reset session state
@@ -117,7 +117,9 @@ class ADHDWorkflowManager:
         if not self.session_start_time:
             return False, "No active session"
 
-        elapsed_minutes = (datetime.now() - self.session_start_time).total_seconds() / 60
+        elapsed_minutes = (
+            datetime.now() - self.session_start_time
+        ).total_seconds() / 60
 
         # Time-based break check
         if elapsed_minutes >= self.session_duration_minutes:
@@ -130,7 +132,9 @@ class ADHDWorkflowManager:
 
         # Recent break check (prevent too frequent breaks)
         if self.last_break_time:
-            time_since_break = (datetime.now() - self.last_break_time).total_seconds() / 60
+            time_since_break = (
+                datetime.now() - self.last_break_time
+            ).total_seconds() / 60
             if time_since_break < 20:  # Minimum 20min between breaks
                 return False, "Recent break taken"
 
@@ -146,10 +150,7 @@ class ADHDWorkflowManager:
         break_needed, reason = self.check_break_needed()
 
         if not break_needed:
-            return {
-                "suggested": False,
-                "reason": reason
-            }
+            return {"suggested": False, "reason": reason}
 
         # Generate break activities based on cognitive load
         activities = self._generate_break_activities()
@@ -159,7 +160,7 @@ class ADHDWorkflowManager:
             "reason": reason,
             "duration_minutes": self.break_duration_minutes,
             "activities": activities,
-            "urgency": "high" if reason.startswith("High cognitive") else "medium"
+            "urgency": "high" if reason.startswith("High cognitive") else "medium",
         }
 
     def update_cognitive_load(self, load_level: float, context: str = "") -> None:
@@ -172,11 +173,9 @@ class ADHDWorkflowManager:
         """
         timestamp = datetime.now()
 
-        self.cognitive_load_history.append({
-            "timestamp": timestamp,
-            "load": load_level,
-            "context": context
-        })
+        self.cognitive_load_history.append(
+            {"timestamp": timestamp, "load": load_level, "context": context}
+        )
 
         # Update focus level based on load
         if load_level < 0.3:
@@ -190,7 +189,9 @@ class ADHDWorkflowManager:
         if len(self.cognitive_load_history) > 50:
             self.cognitive_load_history = self.cognitive_load_history[-50:]
 
-        logger.debug(f"Cognitive load updated: {load_level:.2f} ({self.current_focus_level})")
+        logger.debug(
+            f"Cognitive load updated: {load_level:.2f} ({self.current_focus_level})"
+        )
 
     def take_break(self) -> Dict[str, Any]:
         """
@@ -205,10 +206,14 @@ class ADHDWorkflowManager:
             "break_taken": True,
             "timestamp": self.last_break_time.isoformat(),
             "duration_minutes": self.break_duration_minutes,
-            "next_session_start": (self.last_break_time + timedelta(minutes=self.break_duration_minutes)).isoformat()
+            "next_session_start": (
+                self.last_break_time + timedelta(minutes=self.break_duration_minutes)
+            ).isoformat(),
         }
 
-    def get_progressive_info(self, full_info: Dict[str, Any], user_expertise: str = "intermediate") -> Dict[str, Any]:
+    def get_progressive_info(
+        self, full_info: Dict[str, Any], user_expertise: str = "intermediate"
+    ) -> Dict[str, Any]:
         """
         Apply progressive disclosure to information based on user context.
 
@@ -242,12 +247,16 @@ class ADHDWorkflowManager:
         """
         return {
             "session_active": self.session_start_time is not None,
-            "session_start": self.session_start_time.isoformat() if self.session_start_time else None,
-            "last_break": self.last_break_time.isoformat() if self.last_break_time else None,
+            "session_start": (
+                self.session_start_time.isoformat() if self.session_start_time else None
+            ),
+            "last_break": (
+                self.last_break_time.isoformat() if self.last_break_time else None
+            ),
             "current_focus_level": self.current_focus_level,
             "cognitive_load_recent": self._calculate_avg_cognitive_load(),
             "session_duration_minutes": self.session_duration_minutes,
-            "cognitive_load_history_count": len(self.cognitive_load_history)
+            "cognitive_load_history_count": len(self.cognitive_load_history),
         }
 
     def restore_context(self, snapshot: Dict[str, Any]) -> bool:
@@ -262,9 +271,13 @@ class ADHDWorkflowManager:
         """
         try:
             if snapshot.get("session_active"):
-                self.session_start_time = datetime.fromisoformat(snapshot["session_start"])
+                self.session_start_time = datetime.fromisoformat(
+                    snapshot["session_start"]
+                )
                 if snapshot.get("last_break"):
-                    self.last_break_time = datetime.fromisoformat(snapshot["last_break"])
+                    self.last_break_time = datetime.fromisoformat(
+                        snapshot["last_break"]
+                    )
                 self.current_focus_level = snapshot.get("current_focus_level", "medium")
 
             logger.info("Context restored successfully")
@@ -281,7 +294,8 @@ class ADHDWorkflowManager:
         # Get measurements within time window
         cutoff_time = datetime.now() - timedelta(minutes=window_minutes)
         recent_loads = [
-            entry["load"] for entry in self.cognitive_load_history
+            entry["load"]
+            for entry in self.cognitive_load_history
             if entry["timestamp"] > cutoff_time
         ]
 
@@ -297,7 +311,7 @@ class ADHDWorkflowManager:
                 "Take a 2-minute breathing exercise",
                 "Step away from screen and look at something 20+ feet away",
                 "Do gentle neck and shoulder stretches",
-                "Drink water and have a healthy snack"
+                "Drink water and have a healthy snack",
             ]
         elif avg_load > 0.6:
             # Medium cognitive load - suggest light activities
@@ -305,7 +319,7 @@ class ADHDWorkflowManager:
                 "Stand up and walk around for 2 minutes",
                 "Do some simple desk stretches",
                 "Listen to 1 minute of calming music",
-                "Practice the 4-7-8 breathing technique"
+                "Practice the 4-7-8 breathing technique",
             ]
         else:
             # Lower cognitive load - suggest engagement activities
@@ -313,7 +327,7 @@ class ADHDWorkflowManager:
                 "Take a short walk outside if possible",
                 "Do some light physical activity",
                 "Listen to an interesting podcast segment",
-                "Have a conversation with a colleague"
+                "Have a conversation with a colleague",
             ]
 
 

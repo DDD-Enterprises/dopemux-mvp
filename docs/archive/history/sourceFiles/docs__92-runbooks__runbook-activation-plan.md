@@ -1,14 +1,23 @@
 ---
 id: runbook-activation-plan
-title: Runbook — Dopemux Activation Plan
+title: "Runbook \u2014 Dopemux Activation Plan"
 type: runbook
-owner: @hu3mann
+owner: '@hu3mann'
 last_review: 2025-09-24
 next_review: 2025-12-24
-tags: [adhd, activation, planning, execution]
-related: [runbook-project-analysis-backup, runbook-extended-roadmap]
+tags:
+- adhd
+- activation
+- planning
+- execution
+related:
+- runbook-project-analysis-backup
+- runbook-extended-roadmap
+author: '@hu3mann'
+date: '2026-04-13'
+prelude: "Runbook \u2014 Dopemux Activation Plan (explanation) for dopemux documentation\
+  \ and developer workflows."
 ---
-
 # Dopemux Integration Activation Plan
 
 ## Planning Session Details

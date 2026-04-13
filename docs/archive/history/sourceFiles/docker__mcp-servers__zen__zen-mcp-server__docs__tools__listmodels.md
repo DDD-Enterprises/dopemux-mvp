@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__tools__listmodels
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Tools  Listmodels
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Tools  Listmodels (explanation)
+  for dopemux documentation and developer workflows.
+---
 # ListModels Tool - List Available Models
 
 **Display all available AI models organized by provider**

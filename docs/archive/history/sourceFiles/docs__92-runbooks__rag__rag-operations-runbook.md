@@ -1,3 +1,15 @@
+---
+id: docs__92-runbooks__rag__rag-operations-runbook
+title: Docs  92 Runbooks  Rag  Rag Operations Runbook
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  92 Runbooks  Rag  Rag Operations Runbook (explanation) for dopemux
+  documentation and developer workflows.
+---
 # RAG System Operations Runbook
 
 ## Overview

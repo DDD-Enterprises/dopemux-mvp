@@ -1,3 +1,15 @@
+---
+id: output__individual_files__dopemux_integration_integrations
+title: Output  Individual Files  Dopemux Integration Integrations
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Integration Integrations (explanation)
+  for dopemux documentation and developer workflows.
+---
 As an expert Principal Engineer, I have analyzed the technical document you've referenced.
 
 Unable to access local file paths, I have processed your request based on the specific keywords, components, and metrics provided in your query, which are assumed to originate from the `dopemux-integration.md` document.

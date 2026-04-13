@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_IMPLEMENTATION_GUIDE_v2_docs
+title: Output  Individual Files  Dopemux Implementation Guide V2 Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Implementation Guide V2 Docs (explanation)
+  for dopemux documentation and developer workflows.
+---
 Based on the analysis of `DOPEMUX_IMPLEMENTATION_GUIDE_v2.md`, here is the extracted technical blueprint.
 
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)

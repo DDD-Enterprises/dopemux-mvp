@@ -6,7 +6,6 @@ from pathlib import Path
 import jsonschema
 import pytest
 
-
 ROOT = Path(__file__).resolve().parents[4]
 SCHEMAS = ROOT / "contracts" / "dope-context"
 

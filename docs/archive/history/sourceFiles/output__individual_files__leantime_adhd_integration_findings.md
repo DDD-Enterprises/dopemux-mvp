@@ -1,3 +1,15 @@
+---
+id: output__individual_files__leantime_adhd_integration_findings
+title: Output  Individual Files  Leantime Adhd Integration Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Leantime Adhd Integration Findings (explanation)
+  for dopemux documentation and developer workflows.
+---
 As an AI, I cannot access local file paths. Therefore, I cannot read the document at `/Users/hue/code/dmpx/research/findings/leantime-adhd-integration.md`.
 
 Please provide the content of the document for a precise analysis.

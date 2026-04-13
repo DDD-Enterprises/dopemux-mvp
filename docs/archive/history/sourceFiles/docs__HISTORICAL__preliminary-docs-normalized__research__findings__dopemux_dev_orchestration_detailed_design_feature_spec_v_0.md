@@ -1,3 +1,17 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__dopemux_dev_orchestration_detailed_design_feature_spec_v_0
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dopemux
+  Dev Orchestration Detailed Design Feature Spec V 0
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dopemux
+  Dev Orchestration Detailed Design Feature Spec V 0 (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Dopemux Dev Orchestration — Detailed Design/Feature Spec (v0.2)
 
 **Author:** Dopemux Core • **Status:** Draft for implementation • **Updated:** 2025‑09‑17 • **Scope:** Phase 1–2

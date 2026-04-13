@@ -1,3 +1,15 @@
+---
+id: EXA_MCP_REFACTOR_CHECKPOINT
+title: Exa Mcp Refactor Checkpoint
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Exa Mcp Refactor Checkpoint (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Exa MCP Server Refactor Checkpoint
 
 ## 📊 **Current Status**

@@ -1,23 +1,23 @@
 import asyncio
-import importlib
+import importlib.util
 import os
 import sys
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 
-server_dir = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        "../../docker/mcp-servers-source/desktop-commander",
-    )
+SERVER_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "docker"
+    / "mcp-servers-source"
+    / "desktop-commander"
+    / "server.py"
 )
-if server_dir not in sys.path:
-    sys.path.insert(0, server_dir)
+MODULE_NAME = "desktop_commander_server_under_test"
 
 
 def _import_server_module():
-    sys.modules.pop("server", None)
     fastmcp_module = MagicMock()
     fastmcp_module.FastMCP.return_value.tool.side_effect = lambda: (lambda func: func)
     with patch.dict(
@@ -29,7 +29,13 @@ def _import_server_module():
             "fastmcp": fastmcp_module,
         },
     ):
-        return importlib.import_module("server")
+        spec = importlib.util.spec_from_file_location(MODULE_NAME, SERVER_PATH)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules.pop(MODULE_NAME, None)
+        sys.modules[MODULE_NAME] = module
+        assert spec and spec.loader
+        spec.loader.exec_module(module)
+        return module
 
 
 class TestDesktopCommanderSecurity(unittest.TestCase):

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "promptsets/v4/schemas/C21_PERFORMANCE_SURFACE.schema.json",
+  "title": "PERFORMANCE_SURFACE@v1",
+  "type": "object",
+  "required": ["schema", "items"],
+  "properties": {
+    "schema": { "const": "PERFORMANCE_SURFACE@v1" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "risk_type", "severity", "path", "line_range", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "risk_type": {
+            "type": "string",
+            "enum": ["blocking_call_in_async", "sync_network_in_async", "n_plus_one_query", "unbounded_loop", "repeated_expensive_scan"]
+          },
+          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "path": { "type": "string" },
+          "line_range": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+          "evidence": { "type": "array", "minItems": 1 }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

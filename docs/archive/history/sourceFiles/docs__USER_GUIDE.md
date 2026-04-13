@@ -1,3 +1,14 @@
+---
+id: docs__USER_GUIDE
+title: Docs  User Guide
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  User Guide (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux User Guide
 
 Complete guide to using Dopemux with Leantime and Task-Master AI integration for ADHD-optimized project management.

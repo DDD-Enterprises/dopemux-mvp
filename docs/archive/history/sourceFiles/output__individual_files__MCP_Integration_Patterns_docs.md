@@ -1,3 +1,15 @@
+---
+id: output__individual_files__MCP_Integration_Patterns_docs
+title: Output  Individual Files  Mcp Integration Patterns Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Mcp Integration Patterns Docs (explanation) for
+  dopemux documentation and developer workflows.
+---
 Of course. Based on the provided document `MCP_Integration_Patterns.md`, here is the extracted technical blueprint.
 
 ### **Technical Analysis of MCP Integration Patterns**

@@ -1,3 +1,15 @@
+---
+id: output__individual_files__Dopemux_UI_Spec__tmux___Ink__findings
+title: Output  Individual Files  Dopemux Ui Spec  Tmux   Ink  Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Ui Spec  Tmux   Ink  Findings (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. Here is the engineering and architectural analysis of the provided technical implementation document, "Dopemux UI Spec (tmux + Ink)."
 
 ***

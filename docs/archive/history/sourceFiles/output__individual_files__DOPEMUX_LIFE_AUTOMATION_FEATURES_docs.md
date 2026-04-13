@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_LIFE_AUTOMATION_FEATURES_docs
+title: Output  Individual Files  Dopemux Life Automation Features Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Life Automation Features Docs (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As a world-class Systems Analyst, I have read and analyzed the document. Here is the extracted information in the required structured format.
 
 ### 1. Core Business Goals & User Problems

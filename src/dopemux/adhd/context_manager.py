@@ -5,14 +5,7 @@ Handles automatic preservation and restoration of development context including
 files, cursor positions, mental model, and decision history.
 """
 
-import os
-
 import hashlib
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 import json
 import shlex
 import sqlite3
@@ -23,7 +16,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ..console_utils import console
+from rich.console import Console
+
+console = Console()
 
 
 class ContextSnapshot:
@@ -111,7 +106,7 @@ class ContextManager:
 
         # Create initial session
         self._current_session_id = str(uuid.uuid4())
-        console.log("[success]✓ Context manager initialized[/success]")
+        console.print("[green]✓ Context manager initialized[/green]")
 
     def _validate_project_path(self, file_path: Path) -> bool:
         """
@@ -135,7 +130,9 @@ class ContextManager:
         except (ValueError, OSError):
             # ValueError: path is outside project
             # OSError: path doesn't exist or permission issues
-            console.log(f"[error]Security: Blocked access to path outside project: {file_path}[/error]")
+            console.print(
+                f"[red]Security: Blocked access to path outside project: {file_path}[/red]"
+            )
             return False
 
     def _run_git_command(self, args: List[str], timeout: int = 10) -> Optional[str]:
@@ -151,11 +148,17 @@ class ContextManager:
         """
         # Validate git command arguments
         allowed_commands = {
-            "branch", "status", "log", "show", "diff", "rev-parse", "config"
+            "branch",
+            "status",
+            "log",
+            "show",
+            "diff",
+            "rev-parse",
+            "config",
         }
 
         if not args or args[0] not in allowed_commands:
-            console.log(f"[error]Security: Git command not allowed: {args}[/error]")
+            console.print(f"[red]Security: Git command not allowed: {args}[/red]")
             return None
 
         # Build secure command
@@ -169,21 +172,23 @@ class ContextManager:
                 capture_output=True,
                 text=True,
                 timeout=timeout,
-                check=False  # Don't raise on non-zero exit
+                check=False,  # Don't raise on non-zero exit
             )
 
             if result.returncode == 0:
                 return result.stdout.strip()
             else:
                 # Log error but don't expose it to prevent information leakage
-                console.log(f"[warning]Git command failed (code {result.returncode})[/warning]")
+                console.print(
+                    f"[yellow]Git command failed (code {result.returncode})[/yellow]"
+                )
                 return None
 
         except subprocess.TimeoutExpired:
-            console.log(f"[error]Git command timed out after {timeout}s[/error]")
+            console.print(f"[red]Git command timed out after {timeout}s[/red]")
             return None
         except Exception as e:
-            console.log(f"[error]Git command error: {type(e).__name__}[/error]")
+            console.print(f"[red]Git command error: {type(e).__name__}[/red]")
             return None
 
     def _init_storage(self) -> None:
@@ -274,7 +279,7 @@ class ContextManager:
             return context.session_id
 
         except Exception as e:
-            console.log(f"[error]Error saving context: {e}[/error]")
+            console.print(f"[red]Error saving context: {e}[/red]")
             # Emergency fallback
             emergency_session_id = self._emergency_save()
             return emergency_session_id or str(uuid.uuid4())
@@ -305,7 +310,7 @@ class ContextManager:
             return None
 
         except Exception as e:
-            console.log(f"[error]Error restoring session {session_id}: {e}[/error]")
+            console.print(f"[red]Error restoring session {session_id}: {e}[/red]")
             return None
 
     def restore_latest(self) -> Optional[Dict[str, Any]]:
@@ -333,7 +338,7 @@ class ContextManager:
             return None
 
         except Exception as e:
-            console.log(f"[error]Error restoring latest session: {e}[/error]")
+            console.print(f"[red]Error restoring latest session: {e}[/red]")
             return None
 
     def list_sessions(self, limit: int = 20) -> List[Dict[str, Any]]:
@@ -377,7 +382,7 @@ class ContextManager:
                     )
 
         except Exception as e:
-            console.log(f"[error]Error listing sessions: {e}[/error]")
+            console.print(f"[red]Error listing sessions: {e}[/red]")
 
         return sessions
 
@@ -387,19 +392,19 @@ class ContextManager:
             context = self._capture_current_state()
             return context.to_dict()
         except Exception as e:
-            console.log(f"[error]Error getting current context: {e}[/error]")
+            console.print(f"[red]Error getting current context: {e}[/red]")
             return {}
 
     def start_auto_save(self, interval: int = 30) -> None:
         """Start automatic context saving."""
         self._auto_save_enabled = True
         # In a real implementation, this would start a background thread
-        console.log(f"[info]Auto-save enabled (every {interval}s)[/info]")
+        console.print(f"[blue]Auto-save enabled (every {interval}s)[/blue]")
 
     def stop_auto_save(self) -> None:
         """Stop automatic context saving."""
         self._auto_save_enabled = False
-        console.log("[info]Auto-save disabled[/info]")
+        console.print("[blue]Auto-save disabled[/blue]")
 
     def cleanup_old_sessions(self, days: int = 30) -> int:
         """
@@ -427,12 +432,12 @@ class ContextManager:
                         session_file.unlink()
 
                 console.print(
-                    f"[success]✓ Cleaned up {deleted_count} old sessions[/success]"
+                    f"[green]✓ Cleaned up {deleted_count} old sessions[/green]"
                 )
                 return deleted_count
 
         except Exception as e:
-            console.log(f"[error]Error cleaning up sessions: {e}[/error]")
+            console.print(f"[red]Error cleaning up sessions: {e}[/red]")
             return 0
 
     def generate_smart_description(self, context: ContextSnapshot) -> str:
@@ -441,8 +446,7 @@ class ContextManager:
 
         # Check git status for recent changes
         if git_state.get("status"):
-            status_text = str(git_state["status"]).replace("\\n", "\n")
-            status_lines = status_text.split("\n")
+            status_lines = git_state["status"].split("\n")
             modified_files = []
             added_files = []
             deleted_files = []
@@ -450,11 +454,11 @@ class ContextManager:
             for line in status_lines:
                 line = line.strip()
                 if line.startswith("M "):
-                    modified_files.append(line[1:].strip())
+                    modified_files.append(line[2:])
                 elif line.startswith("A "):
-                    added_files.append(line[1:].strip())
+                    added_files.append(line[2:])
                 elif line.startswith("D "):
-                    deleted_files.append(line[1:].strip())
+                    deleted_files.append(line[2:])
 
             # Generate description based on changes
             if added_files:
@@ -465,14 +469,18 @@ class ContextManager:
             elif modified_files:
                 # Determine primary file type
                 extensions = [Path(f).suffix for f in modified_files]
-                common_ext = max(set(extensions), key=extensions.count) if extensions else ""
+                common_ext = (
+                    max(set(extensions), key=extensions.count) if extensions else ""
+                )
 
                 if len(modified_files) == 1:
                     return f"Modified {Path(modified_files[0]).name}"
                 elif common_ext == ".py":
                     return f"Updated Python code ({len(modified_files)} files)"
                 elif common_ext in [".js", ".ts", ".tsx"]:
-                    return f"Updated JavaScript/TypeScript ({len(modified_files)} files)"
+                    return (
+                        f"Updated JavaScript/TypeScript ({len(modified_files)} files)"
+                    )
                 elif common_ext == ".md":
                     return f"Updated documentation ({len(modified_files)} files)"
                 else:
@@ -597,7 +605,9 @@ class ContextManager:
             return "feature"
         elif any(keyword in message for keyword in ["fix", "bug", "error", "issue"]):
             return "bugfix"
-        elif any(keyword in message for keyword in ["doc", "readme", "guide", "explain"]):
+        elif any(
+            keyword in message for keyword in ["doc", "readme", "guide", "explain"]
+        ):
             return "documentation"
         elif any(keyword in message for keyword in ["test", "coverage", "spec"]):
             return "testing"
@@ -625,7 +635,10 @@ class ContextManager:
                 test_files += 1
             elif path_lower.endswith((".md", ".rst", ".txt")):
                 doc_files += 1
-            elif any(config_word in path_lower for config_word in ["config", "settings", ".env", ".yml", ".yaml"]):
+            elif any(
+                config_word in path_lower
+                for config_word in ["config", "settings", ".env", ".yml", ".yaml"]
+            ):
                 config_files += 1
 
         # Determine type based on file patterns
@@ -647,15 +660,14 @@ class ContextManager:
                 conn.execute(
                     """INSERT OR IGNORE INTO session_tags (session_id, tag)
                        VALUES (?, ?)""",
-                    (session_id, tag)
+                    (session_id, tag),
                 )
 
     def get_session_tags(self, session_id: str) -> List[str]:
         """Get tags for a session."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
-                "SELECT tag FROM session_tags WHERE session_id = ?",
-                (session_id,)
+                "SELECT tag FROM session_tags WHERE session_id = ?", (session_id,)
             )
             return [row[0] for row in cursor.fetchall()]
 
@@ -668,23 +680,27 @@ class ContextManager:
                    JOIN session_tags st ON cs.session_id = st.session_id
                    WHERE st.tag = ? AND cs.working_directory = ?
                    ORDER BY cs.timestamp DESC LIMIT ?""",
-                (tag, str(self.project_path), limit)
+                (tag, str(self.project_path), limit),
             )
 
             sessions = []
             for row in cursor.fetchall():
                 session_id, timestamp, data_json = row
                 data = json.loads(data_json)
-                sessions.append({
-                    "id": session_id,
-                    "timestamp": timestamp,
-                    "current_goal": data.get("current_goal", "No goal set"),
-                    "open_files": data.get("open_files", []),
-                    "git_branch": data.get("git_state", {}).get("branch", "unknown"),
-                    "focus_duration": data.get("focus_duration", 0),
-                    "message": data.get("message", ""),
-                    "tags": self.get_session_tags(session_id)
-                })
+                sessions.append(
+                    {
+                        "id": session_id,
+                        "timestamp": timestamp,
+                        "current_goal": data.get("current_goal", "No goal set"),
+                        "open_files": data.get("open_files", []),
+                        "git_branch": data.get("git_state", {}).get(
+                            "branch", "unknown"
+                        ),
+                        "focus_duration": data.get("focus_duration", 0),
+                        "message": data.get("message", ""),
+                        "tags": self.get_session_tags(session_id),
+                    }
+                )
 
             return sessions
 
@@ -760,7 +776,7 @@ class ContextManager:
                         )
 
         except Exception as e:
-            console.log(f"[warning]Warning: Could not get open files: {e}[/warning]")
+            console.print(f"[yellow]Warning: Could not get open files: {e}[/yellow]")
 
         return open_files[:10]  # Limit to 10 most recent
 
@@ -786,7 +802,7 @@ class ContextManager:
                 git_state["last_commit"] = last_commit
 
         except Exception as e:
-            console.log(f"[warning]Warning: Could not get git state: {e}[/warning]")
+            console.print(f"[yellow]Warning: Could not get git state: {e}[/yellow]")
 
         return git_state
 
@@ -852,14 +868,14 @@ class ContextManager:
                 # Clear existing tags for this session
                 conn.execute(
                     "DELETE FROM session_tags WHERE session_id = ?",
-                    (context.session_id,)
+                    (context.session_id,),
                 )
                 # Insert new tags
                 for tag in context.tags:
                     conn.execute(
                         """INSERT INTO session_tags (session_id, tag)
                            VALUES (?, ?)""",
-                        (context.session_id, tag)
+                        (context.session_id, tag),
                     )
 
     def _update_session_metadata(self, session_id: str) -> None:
@@ -884,39 +900,12 @@ class ContextManager:
             json.dump(context.to_dict(), f, indent=2)
 
     def _apply_context(self, context_data: Dict[str, Any]) -> None:
-        """Apply restored context by opening relevant files and restoring positions."""
-        try:
-            # Get files from context
-            open_files = context_data.get('open_files', [])
-            current_file = context_data.get('current_file')
-            cursor_position = context_data.get('cursor_position')
-
-            # Open current file if specified
-            if current_file and os.path.exists(current_file):
-                # In Claude Code, we can suggest opening the file
-                console.print(
-                    f"[info]💡 Context restored - consider opening: {current_file}[/info]"
-                )
-                if cursor_position:
-                    console.print(
-                        f"[info]   Cursor position: line {cursor_position.get('line', '?')}, col {cursor_position.get('column', '?')}[/info]"
-                    )
-
-            # Show other context info
-            current_goal = context_data.get('current_goal', 'Unknown')
-            console.log(f"[info]🎯 Current goal: {current_goal}[/info]")
-
-            # Show any recent changes or notes
-            notes = context_data.get('notes', [])
-            if notes:
-                console.log(f"[info]📝 Recent notes: {len(notes)} items[/info]")
-
-        except Exception as e:
-            console.log(f"[error]❌ Failed to apply context: {e}[/error]")
-            # Fallback to basic display
-            console.print(
-                f"[info]Context data available: {list(context_data.keys()) if context_data else 'None'}[/info]"
-            )
+        """Apply restored context (placeholder for editor integration)."""
+        # This would integrate with the editor to restore file positions
+        # For now, just print what would be restored
+        console.print(
+            f"[blue]Restoring context: {context_data.get('current_goal', 'Unknown')}[/blue]"
+        )
 
     def _emergency_save(self) -> Optional[str]:
         """Emergency context save on system failure."""
@@ -933,8 +922,8 @@ class ContextManager:
             }
             with open(emergency_file, "w") as f:
                 json.dump(emergency_context, f, indent=2)
-            console.log("[warning]Emergency context saved[/warning]")
+            console.print("[yellow]Emergency context saved[/yellow]")
             return emergency_session_id
         except Exception as e:
-            console.log(f"[error]Emergency save failed: {e}[/error]")
+            console.print(f"[red]Emergency save failed: {e}[/red]")
             return None

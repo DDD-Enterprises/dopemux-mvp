@@ -13,17 +13,17 @@ import asyncio
 import hashlib
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
-from datetime import datetime
 
-from ..preprocessing.code_chunker import CodeChunker, CodeChunk, ChunkingConfig
+from ..embeddings.contextualized_embedder import ContextualizedEmbedder
+
 # OpenAIContextGenerator imported inside the example function to avoid import-time issues
 from ..embeddings.voyage_embedder import VoyageEmbedder
-from ..embeddings.contextualized_embedder import ContextualizedEmbedder
+from ..preprocessing.code_chunker import ChunkingConfig, CodeChunk, CodeChunker
 from ..search.dense_search import MultiVectorSearch
-from ..sync.incremental_indexer import IncrementalIndexer, ChunkMetadata, ChunkSnapshot
-
+from ..sync.incremental_indexer import ChunkMetadata, ChunkSnapshot, IncrementalIndexer
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +39,20 @@ class IndexingConfig:
     )
     exclude_patterns: List[str] = field(
         default_factory=lambda: [
-            "*test*", "*__pycache__*", "*.pyc",
-            "*/venv/*", "*/.venv/*", "*/site-packages/*",
-            "*/archive/*", "*/ARCHIVED_*/*", "*/backup/*",
-            "*/processing_inputs/*", "*/.worktrees/*",
-            "*/node_modules/*", "*/dist/*", "*/build/*"
+            "*test*",
+            "*__pycache__*",
+            "*.pyc",
+            "*/venv/*",
+            "*/.venv/*",
+            "*/site-packages/*",
+            "*/archive/*",
+            "*/ARCHIVED_*/*",
+            "*/backup/*",
+            "*/processing_inputs/*",
+            "*/.worktrees/*",
+            "*/node_modules/*",
+            "*/dist/*",
+            "*/build/*",
         ]
     )
     max_files: Optional[int] = None
@@ -163,6 +172,7 @@ class IndexingPipeline:
             Deterministic chunk ID (UUID string)
         """
         import uuid
+
         id_str = f"{file_path}:{chunk.start_line}:{chunk.end_line}"
         # Create UUID from hash (first 16 bytes of SHA256)
         hash_bytes = hashlib.sha256(id_str.encode()).digest()[:16]
@@ -201,7 +211,9 @@ class IndexingPipeline:
         logger.info(f"Discovered {len(filtered_files)} files to index")
         return filtered_files
 
-    async def _process_file(self, file_path: Path) -> tuple[List[Dict], List[ChunkMetadata]]:
+    async def _process_file(
+        self, file_path: Path
+    ) -> tuple[List[Dict], List[ChunkMetadata]]:
         """
         Process single file through pipeline.
 
@@ -291,9 +303,9 @@ class IndexingPipeline:
 
             # Track embedding cost
             embedding_cost = (
-                content_response.cost_usd +
-                sum(resp.cost_usd for resp in title_embeddings) +
-                sum(resp.cost_usd for resp in breadcrumb_embeddings)
+                content_response.cost_usd
+                + sum(resp.cost_usd for resp in title_embeddings)
+                + sum(resp.cost_usd for resp in breadcrumb_embeddings)
             )
             self.progress.embedding_cost_usd += embedding_cost
 
@@ -494,7 +506,9 @@ class IndexingPipeline:
             if chunk_meta:
                 snapshot = self.incremental_indexer.load_chunk_snapshot()
                 if snapshot is None:
-                    snapshot = ChunkSnapshot(workspace_path=str(self.config.workspace_path))
+                    snapshot = ChunkSnapshot(
+                        workspace_path=str(self.config.workspace_path)
+                    )
 
                 file_hash = self.incremental_indexer._hash_content(
                     file_path.read_text(encoding="utf-8")
@@ -519,7 +533,7 @@ class IndexingPipeline:
     def _safe_get_cost_summary(self, obj) -> Dict:
         """Safely get cost summary from an object."""
         try:
-            if hasattr(obj, 'get_cost_summary'):
+            if hasattr(obj, "get_cost_summary"):
                 return obj.get_cost_summary()
         except Exception as e:
             logger.warning(f"Failed to get cost summary: {e}")
@@ -547,9 +561,11 @@ class IndexingPipeline:
 
 # Example usage
 if __name__ == "__main__":
+
     async def main():
         """Example usage of IndexingPipeline."""
         import os
+
         from ..context.openai_generator import OpenAIContextGenerator
 
         # Initialize components

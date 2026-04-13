@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_COMPLETE_CLI_APPLICATION_docs
+title: Output  Individual Files  Dopemux Complete Cli Application Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Complete Cli Application Docs (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As a distinguished Enterprise Architect, I have analyzed the architecture described in the document `DOPEMUX_COMPLETE_CLI_APPLICATION.md`. Below is my structured distillation of its high-level design.
 
 ***

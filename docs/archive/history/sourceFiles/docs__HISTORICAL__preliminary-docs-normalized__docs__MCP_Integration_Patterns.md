@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__MCP_Integration_Patterns
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Mcp Integration Patterns
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Mcp Integration Patterns
+  (explanation) for dopemux documentation and developer workflows.
+---
 # MCP Integration Patterns
 **Model Context Protocol Implementation Guide for Dopemux**
 

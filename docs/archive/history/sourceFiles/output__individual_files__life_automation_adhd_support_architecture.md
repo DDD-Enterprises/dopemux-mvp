@@ -1,3 +1,15 @@
+---
+id: output__individual_files__life_automation_adhd_support_architecture
+title: Output  Individual Files  Life Automation Adhd Support Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Life Automation Adhd Support Architecture (explanation)
+  for dopemux documentation and developer workflows.
+---
 Based on the document provided, here is the extracted information:
 
 ### 1. Core Business Goals & User Problems

@@ -1,3 +1,15 @@
+---
+id: docs__02-how-to__finishing-helpers-implementation
+title: Docs  02 How To  Finishing Helpers Implementation
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  02 How To  Finishing Helpers Implementation (explanation) for dopemux
+  documentation and developer workflows.
+---
 # ADHD Finishing Helpers Implementation Guide
 
 **For Developers**: Technical implementation guide for the ADHD Finishing Helpers system

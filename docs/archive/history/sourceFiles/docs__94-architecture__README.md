@@ -1,3 +1,15 @@
+---
+id: docs__94-architecture__README
+title: Docs  94 Architecture  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  94 Architecture  Readme (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Architecture Documentation
 
 This directory contains comprehensive architectural documentation for Dopemux, including system design, component relationships, and technical specifications organized using arc42 methodology.

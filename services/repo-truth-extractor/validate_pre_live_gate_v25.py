@@ -492,11 +492,10 @@ def evaluate_contract_map(
     observed_target_keys = sorted(
         key
         for key in map_steps.keys()
+        if str(key).split(":")[0] in set(config.target_phases)
         and (
             not target_step
             or (":" in str(key) and str(key).split(":", 1)[1].strip().upper() == target_step)
-        )
-            or str(key).split(":", 1)[1].strip().upper() == target_step
         )
     )
     if hash_one != hash_two or expected_target_keys != observed_target_keys:

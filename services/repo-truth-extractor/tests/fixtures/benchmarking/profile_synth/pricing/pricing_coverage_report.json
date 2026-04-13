@@ -1,0 +1,58 @@
+{
+  "active_benchmark_universe_size": 3,
+  "coverage_counts": {
+    "partially_priced": 1,
+    "priced": 1,
+    "unknown": 1
+  },
+  "partially_priced_candidates": [
+    "gemini/gemini-3.1-pro-preview"
+  ],
+  "priced_candidates": [
+    "openai/gpt-5.4"
+  ],
+  "pricing_catalog_source": "deterministic_profile_synth_fixture",
+  "pricing_catalog_version": "fixture_v1",
+  "rows": [
+    {
+      "coverage_class": "priced",
+      "input_cost_per_m": 1.25,
+      "model_key": "openai/gpt-5.4",
+      "output_cost_per_m": 10.0,
+      "pricing_caveat": "",
+      "pricing_confidence": "HIGH",
+      "pricing_source_ref": "fixture",
+      "pricing_source_type": "fixture",
+      "pricing_status": "PRICED_CONFIRMED",
+      "surface_scope": "direct_provider_api"
+    },
+    {
+      "coverage_class": "partially_priced",
+      "input_cost_per_m": 2.5,
+      "model_key": "gemini/gemini-3.1-pro-preview",
+      "output_cost_per_m": 15.0,
+      "pricing_caveat": "Preview pricing is caveated.",
+      "pricing_confidence": "MEDIUM",
+      "pricing_source_ref": "fixture",
+      "pricing_source_type": "fixture",
+      "pricing_status": "PRICED_WITH_CAVEAT",
+      "surface_scope": "direct_provider_api"
+    },
+    {
+      "coverage_class": "unknown",
+      "input_cost_per_m": null,
+      "model_key": "xai/grok-4.20",
+      "output_cost_per_m": null,
+      "pricing_caveat": "No catalog entry present for active benchmark candidate.",
+      "pricing_confidence": "UNKNOWN",
+      "pricing_source_ref": "",
+      "pricing_source_type": "unknown",
+      "pricing_status": "UNPRICED_UNKNOWN",
+      "surface_scope": "unknown"
+    }
+  ],
+  "stale_candidates": [],
+  "unknown_candidates": [
+    "xai/grok-4.20"
+  ]
+}

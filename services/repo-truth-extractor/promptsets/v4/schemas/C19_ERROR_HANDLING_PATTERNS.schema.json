@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "promptsets/v4/schemas/C19_ERROR_HANDLING_PATTERNS.schema.json",
+  "title": "ERROR_HANDLING_PATTERNS@v1",
+  "type": "object",
+  "required": ["schema", "items"],
+  "properties": {
+    "schema": { "const": "ERROR_HANDLING_PATTERNS@v1" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "handling_style", "protected_symbol", "path", "line_range", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "handling_style": {
+            "type": "string",
+            "enum": ["targeted_catch", "broad_catch", "bare_except", "reraise", "swallow", "retry_wrapper", "fallback_return"]
+          },
+          "protected_symbol": { "type": "string" },
+          "path": { "type": "string" },
+          "line_range": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+          "evidence": { "type": "array", "minItems": 1 }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

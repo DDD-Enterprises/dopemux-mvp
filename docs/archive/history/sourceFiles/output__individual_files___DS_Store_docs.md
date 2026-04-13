@@ -1,3 +1,15 @@
+---
+id: output__individual_files___DS_Store_docs
+title: Output  Individual Files   Ds Store Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files   Ds Store Docs (explanation) for dopemux documentation
+  and developer workflows.
+---
 As a Systems Analyst, I have analyzed the specified file: `/Users/hue/code/dmpx/docs/.DS_Store`.
 
 It is important to note that a `.DS_Store` file is a system file automatically created by Apple's macOS operating system. It stores custom attributes of its containing folder, such as the position of icons or the choice of a background image. It is not a document containing business or technical specifications.

@@ -1,3 +1,15 @@
+---
+id: output__individual_files__multi_llm_chat_and_RAG_memory_findings
+title: Output  Individual Files  Multi Llm Chat And Rag Memory Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Multi Llm Chat And Rag Memory Findings (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. Based on the analysis of the document `multi-llm-chat-and-RAG-memory.md`, here is a structured summary of its core components.
 
 ### 1. Research Question or Hypothesis

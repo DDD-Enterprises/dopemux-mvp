@@ -2,9 +2,8 @@
 Document processing and chunking utilities.
 """
 
-import logging
-
 import hashlib
+import logging
 import re
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
@@ -13,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import tiktoken
+
     TIKTOKEN_AVAILABLE = True
 except ImportError:  # pragma: no cover - exercised in constrained envs
     TIKTOKEN_AVAILABLE = False
@@ -20,6 +20,7 @@ except ImportError:  # pragma: no cover - exercised in constrained envs
 
 try:
     from bs4 import BeautifulSoup
+
     BS4_AVAILABLE = True
 except ImportError:  # pragma: no cover
     BS4_AVAILABLE = False
@@ -27,6 +28,7 @@ except ImportError:  # pragma: no cover
 
 try:
     from docx import Document as DocxDocument
+
     DOCX_AVAILABLE = True
 except ImportError:  # pragma: no cover
     DOCX_AVAILABLE = False
@@ -34,6 +36,7 @@ except ImportError:  # pragma: no cover
 
 try:
     from markdown import markdown
+
     MARKDOWN_AVAILABLE = True
 except ImportError:  # pragma: no cover
     MARKDOWN_AVAILABLE = False
@@ -41,6 +44,7 @@ except ImportError:  # pragma: no cover
 
 try:
     from PyPDF2 import PdfReader
+
     PYPDF2_AVAILABLE = True
 except ImportError:  # pragma: no cover
     PYPDF2_AVAILABLE = False
@@ -48,6 +52,7 @@ except ImportError:  # pragma: no cover
 
 try:
     import magic
+
     MAGIC_AVAILABLE = True
 except ImportError:
     MAGIC_AVAILABLE = False
@@ -219,7 +224,9 @@ class DocumentProcessor:
 
             # If paragraph is small, try to add to current chunk
             if len(paragraph) <= chunk_size:
-                test_addition = current_chunk + ("\n\n" if current_chunk else "") + paragraph
+                test_addition = (
+                    current_chunk + ("\n\n" if current_chunk else "") + paragraph
+                )
                 if len(test_addition) <= chunk_size:
                     current_chunk = test_addition
                     continue
@@ -245,7 +252,9 @@ class DocumentProcessor:
                     continue
 
                 # Try to add sentence to current chunk
-                test_addition = current_chunk + (" " if current_chunk else "") + sentence
+                test_addition = (
+                    current_chunk + (" " if current_chunk else "") + sentence
+                )
 
                 if len(test_addition) <= chunk_size:
                     current_chunk = test_addition
@@ -315,9 +324,9 @@ class DocumentProcessor:
         current_section = []
         current_size = 0
 
-        for line in text.split('\n'):
+        for line in text.split("\n"):
             # Detect markdown headers
-            header_match = re.match(r'^(#{1,6})\s+(.+)', line)
+            header_match = re.match(r"^(#{1,6})\s+(.+)", line)
 
             if header_match:
                 level = len(header_match.group(1))
@@ -332,9 +341,9 @@ class DocumentProcessor:
                         for h_level, h_title in current_hierarchy:
                             hierarchy_headers.append(f"{'#' * h_level} {h_title}")
 
-                        chunk_text = '\n'.join(hierarchy_headers + current_section)
+                        chunk_text = "\n".join(hierarchy_headers + current_section)
                     else:
-                        chunk_text = '\n'.join(current_section)
+                        chunk_text = "\n".join(current_section)
 
                     # Extract hierarchy path
                     hierarchy_path = [h[1] for h in current_hierarchy]
@@ -367,9 +376,9 @@ class DocumentProcessor:
                         hierarchy_headers = []
                         for h_level, h_title in current_hierarchy:
                             hierarchy_headers.append(f"{'#' * h_level} {h_title}")
-                        chunk_text = '\n'.join(hierarchy_headers + current_section)
+                        chunk_text = "\n".join(hierarchy_headers + current_section)
                     else:
-                        chunk_text = '\n'.join(current_section)
+                        chunk_text = "\n".join(current_section)
 
                     hierarchy_path = [h[1] for h in current_hierarchy]
                     header_level = current_hierarchy[-1][0] if current_hierarchy else 0
@@ -386,9 +395,9 @@ class DocumentProcessor:
                 hierarchy_headers = []
                 for h_level, h_title in current_hierarchy:
                     hierarchy_headers.append(f"{'#' * h_level} {h_title}")
-                chunk_text = '\n'.join(hierarchy_headers + current_section)
+                chunk_text = "\n".join(hierarchy_headers + current_section)
             else:
-                chunk_text = '\n'.join(current_section)
+                chunk_text = "\n".join(current_section)
 
             hierarchy_path = [h[1] for h in current_hierarchy]
             header_level = current_hierarchy[-1][0] if current_hierarchy else 0
@@ -417,11 +426,11 @@ class DocumentProcessor:
         complexity = 0.0
 
         # Code blocks increase complexity
-        if '```' in chunk_text or '    ' in chunk_text[:50]:  # Indented code
+        if "```" in chunk_text or "    " in chunk_text[:50]:  # Indented code
             complexity += 0.3
 
         # Tables increase complexity
-        if '|' in chunk_text and chunk_text.count('|') > 5:
+        if "|" in chunk_text and chunk_text.count("|") > 5:
             complexity += 0.2
 
         # Length factor
@@ -429,7 +438,7 @@ class DocumentProcessor:
         complexity += length_factor
 
         # Technical density (capital words, underscores, symbols)
-        technical_indicators = len(re.findall(r'[A-Z_]{2,}', chunk_text))
+        technical_indicators = len(re.findall(r"[A-Z_]{2,}", chunk_text))
         if technical_indicators > 5:
             complexity += 0.2
 
@@ -479,11 +488,15 @@ class DocumentProcessor:
             )
 
             document_chunks = []
-            for i, (chunk_text, hierarchy_path, header_level) in enumerate(structured_chunks):
+            for i, (chunk_text, hierarchy_path, header_level) in enumerate(
+                structured_chunks
+            ):
                 # Detect section type
-                has_code = '```' in chunk_text
-                has_table = '|' in chunk_text and chunk_text.count('|') > 5
-                section_type = "code" if has_code else ("table" if has_table else "content")
+                has_code = "```" in chunk_text
+                has_table = "|" in chunk_text and chunk_text.count("|") > 5
+                section_type = (
+                    "code" if has_code else ("table" if has_table else "content")
+                )
 
                 # Create enhanced metadata with hierarchy
                 metadata = ChunkMetadata(
@@ -510,7 +523,9 @@ class DocumentProcessor:
                         if hasattr(metadata, key):
                             setattr(metadata, key, value)
 
-                document_chunks.append(DocumentChunk(text=chunk_text, metadata=metadata))
+                document_chunks.append(
+                    DocumentChunk(text=chunk_text, metadata=metadata)
+                )
 
         else:
             # Fallback to basic chunking for non-markdown or if disabled
@@ -535,7 +550,9 @@ class DocumentProcessor:
                         if hasattr(metadata, key):
                             setattr(metadata, key, value)
 
-                document_chunks.append(DocumentChunk(text=chunk_text, metadata=metadata))
+                document_chunks.append(
+                    DocumentChunk(text=chunk_text, metadata=metadata)
+                )
 
         # Hard invariant: ordinals must be contiguous and deterministic.
         observed = [chunk.metadata.chunk_index for chunk in document_chunks]

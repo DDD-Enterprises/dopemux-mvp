@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__036-adhd-simple-accommodations
+title: Docs  90 Adr  036 Adhd Simple Accommodations
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  036 Adhd Simple Accommodations (explanation) for dopemux documentation
+  and developer workflows.
+---
 # ADR-036: Simple ADHD Accommodations Over Complex Attention Detection
 
 **Date**: 2025-09-24

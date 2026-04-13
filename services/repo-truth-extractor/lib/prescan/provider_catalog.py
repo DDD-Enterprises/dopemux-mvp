@@ -93,15 +93,24 @@ def _pricing(provider: str, model_id: str) -> dict[str, Any]:
         input_1m = 10.0
         output_1m = 40.0
         authority = "fallback_default"
+        status = "UNPRICED_UNKNOWN"
+        confidence = "UNKNOWN"
+        source_type = "inferred_estimated_fallback"
     else:
         rate = get_model_cost_rate(provider=provider, model_id=model_id)
         input_1m = rate.get("input_cost_per_1m_usd", 10.0)
         output_1m = rate.get("output_cost_per_1m_usd", 40.0)
-        authority = "shared_spend_ledger_registry"
+        authority = str(rate.get("pricing_source") or "shared_spend_ledger_registry")
+        status = str(rate.get("pricing_status") or "UNPRICED_UNKNOWN")
+        confidence = str(rate.get("pricing_confidence") or "UNKNOWN")
+        source_type = str(rate.get("pricing_source_type") or "unknown")
     return {
         "input_1m_usd": float(input_1m),
         "output_1m_usd": float(output_1m),
         "pricing_authority": authority,
+        "pricing_status": status,
+        "pricing_confidence": confidence,
+        "pricing_source_type": source_type,
     }
 
 

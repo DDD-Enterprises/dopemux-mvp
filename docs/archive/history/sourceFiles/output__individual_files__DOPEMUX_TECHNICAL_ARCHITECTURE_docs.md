@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_TECHNICAL_ARCHITECTURE_docs
+title: Output  Individual Files  Dopemux Technical Architecture Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Technical Architecture Docs (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As an Enterprise Architect, I am ready to analyze the document and provide a structured distillation of its design.
 
 However, I must first clarify a critical constraint: As an AI, I do not have access to your local file system. Therefore, I cannot directly read the document at the path `/Users/hue/code/dmpx/docs/DOPEMUX_TECHNICAL_ARCHITECTURE.md`.

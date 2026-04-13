@@ -232,3 +232,42 @@ def test_schema_declares_intelligence_fields_used_by_prescan_readers() -> None:
     assert "version_chain_count" in properties
     assert "compression_potential_files" in properties
     assert "corpus_health_score" in corpus_summary_properties
+
+
+def test_batch_response_validator_rejects_malformed_nested_discover_payload(
+    tmp_path: Path,
+) -> None:
+    runner = GrokPassRunner(_make_config(tmp_path))
+    valid, _data, error = runner._validator.validate(
+        "discover",
+        """
+        {
+          "hidden_features": [
+            {
+              "path": "docs/hidden.md",
+              "feature_name": "Hidden Feature"
+            }
+          ]
+        }
+        """,
+    )
+
+    assert valid is False
+    assert "hidden_features[0] missing required fields" in error
+
+
+def test_batch_response_validator_rejects_non_list_optimize_skip_list(
+    tmp_path: Path,
+) -> None:
+    runner = GrokPassRunner(_make_config(tmp_path))
+    valid, _data, error = runner._validator.validate(
+        "optimize",
+        """
+        {
+          "skip_list": "docs/topic-v1.md"
+        }
+        """,
+    )
+
+    assert valid is False
+    assert error == "skip_list must be a list"

@@ -1,3 +1,15 @@
+---
+id: dopemux-docuXtractor__src__docuxtractor__templates__c4_system_template
+title: Dopemux Docuxtractor  Src  Docuxtractor  Templates  C4 System Template
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Dopemux Docuxtractor  Src  Docuxtractor  Templates  C4 System Template (explanation)
+  for dopemux documentation and developer workflows.
+---
 # C4 System Context: {title}
 
 **Version:** {version}

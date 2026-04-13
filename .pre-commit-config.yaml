@@ -116,6 +116,7 @@ repos:
               if [[ "$normalized" =~ ^\./(llm-plans/|dopemux_voice_branding_bundle/|config/instructions/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(task-packets/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|out/|_audit_out/|extraction/|proof/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(ARCHIVED_RECOVERY|audit_inputs|audit_prep)/ ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
 
               # Config/state and tooling docs

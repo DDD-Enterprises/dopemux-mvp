@@ -1,3 +1,15 @@
+---
+id: docs__adr__ADR-004-normalize-conversation-schema
+title: Docs  Adr  Adr 004 Normalize Conversation Schema
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Adr  Adr 004 Normalize Conversation Schema (explanation) for dopemux
+  documentation and developer workflows.
+---
 # ADR-004: Normalize Conversation Schema Across Tools
 
 **Status**: Accepted

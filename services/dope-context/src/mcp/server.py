@@ -9,30 +9,33 @@ MCP Tools:
 4. clear_index - Delete collection
 """
 
-import asyncio
 import ast
+import asyncio
 import json
 import logging
 import os
 import pickle
 import subprocess
-import aiohttp
-from time import perf_counter
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
+from time import perf_counter
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+import aiohttp
 
 FASTMCP_AVAILABLE = True
 try:
     from fastmcp import FastMCP
 except ImportError:  # pragma: no cover - exercised in constrained envs
     from .fastmcp_stub import FastMCP
+
     FASTMCP_AVAILABLE = False
 try:
     from starlette.requests import Request
     from starlette.responses import JSONResponse
 except ImportError:  # pragma: no cover - for constrained test envs
+
     class Request:  # type: ignore
         """Fallback request stub."""
 
@@ -45,29 +48,36 @@ except ImportError:  # pragma: no cover - for constrained test envs
         def __init__(self, content=None, **kwargs):
             super().__init__(content or {})
 
-from ..preprocessing.code_chunker import CodeChunker, ChunkingConfig
+
+from ..autonomous.autonomous_controller import AutonomousConfig, AutonomousController
 from ..context.openai_generator import OpenAIContextGenerator
-from ..embeddings.voyage_embedder import VoyageEmbedder
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
-from ..search.dense_search import MultiVectorSearch, SearchProfile
-from ..search.hybrid_search import HybridSearch, BM25Index
-from ..rerank.voyage_reranker import VoyageReranker
+from ..embeddings.voyage_embedder import VoyageEmbedder
+from ..pipeline.docs_pipeline import DocIndexingPipeline
 from ..pipeline.indexing_pipeline import (
-    IndexingPipeline,
     IndexingConfig,
+    IndexingPipeline,
     IndexingProgress,
 )
-from ..pipeline.docs_pipeline import DocIndexingPipeline
+from ..preprocessing.code_chunker import ChunkingConfig, CodeChunker
+from ..rerank.voyage_reranker import VoyageReranker
+from ..search.dense_search import MultiVectorSearch, SearchProfile
 from ..search.docs_search import DocumentSearch
-from ..utils.workspace import get_workspace_root, get_collection_names, get_snapshot_dir, workspace_to_hash
-from ..sync.file_synchronizer import FileSynchronizer, ChangeSet
+from ..search.hybrid_search import BM25Index, HybridSearch
+from ..sync.file_synchronizer import ChangeSet, FileSynchronizer
 from ..utils.metrics_tracker import get_tracker
 from ..utils.token_budget import truncate_code_results, truncate_docs_results
-from ..autonomous.autonomous_controller import AutonomousController, AutonomousConfig
+from ..utils.workspace import (
+    get_collection_names,
+    get_snapshot_dir,
+    get_workspace_root,
+    workspace_to_hash,
+)
 
 # ConPort-KG Integration (optional)
 try:
     from dopecon_bridge_connector import emit_search_completed
+
     CONPORT_INTEGRATION_AVAILABLE = True
 except ImportError:
     CONPORT_INTEGRATION_AVAILABLE = False
@@ -105,15 +115,9 @@ def _resolve_transport_runtime() -> Tuple[str, str, int]:
         logger.warning("Unknown MCP transport '%s'; defaulting to 'stdio'", transport)
         transport = "stdio"
 
-    host = (
-        os.getenv("MCP_SERVER_HOST")
-        or os.getenv("FASTMCP_HOST")
-        or "0.0.0.0"
-    )
+    host = os.getenv("MCP_SERVER_HOST") or os.getenv("FASTMCP_HOST") or "0.0.0.0"
     port_str = (
-        os.getenv("MCP_SERVER_PORT")
-        or os.getenv("FASTMCP_PORT")
-        or os.getenv("PORT")
+        os.getenv("MCP_SERVER_PORT") or os.getenv("FASTMCP_PORT") or os.getenv("PORT")
     )
     try:
         port = int(port_str) if port_str else 3010
@@ -142,13 +146,13 @@ def _normalize_decision_limit(limit_value: Any) -> int:
     return max(1, min(parsed, TRINITY_DECISION_MAX_LIMIT))
 
 
-@mcp.custom_route("/health", methods=["GET"])
+# # @mcp.custom_route("/health", methods=["GET"])
 async def health_check(_: Request) -> JSONResponse:
     """Basic health endpoint for container probes."""
     return JSONResponse({"status": "ok"})
 
 
-@mcp.custom_route("/info", methods=["GET"])
+# # @mcp.custom_route("/info", methods=["GET"])
 async def service_info(_: Request) -> JSONResponse:
     """Service discovery endpoint - auto-config support (ADR-208)"""
     transport, host, port = _resolve_transport_runtime()
@@ -158,44 +162,46 @@ async def service_info(_: Request) -> JSONResponse:
         if not FASTMCP_AVAILABLE
         else None
     )
-    return JSONResponse({
-        "name": "dope-context",
-        "version": "1.0.0",
-        "fastmcp_available": FASTMCP_AVAILABLE,
-        "canonical_entrypoint": "python -m src.mcp.server",
-        "mcp": {
-            "protocol": "stdio" if transport == "stdio" else "sse",
-            "connection": {
-                "type": "stdio" if transport == "stdio" else "sse",
-                "url": connection_url
-            },
-            "env": {
-                "VOYAGE_API_KEY": "${VOYAGEAI_API_KEY:-}",
-                "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
-                "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}"
-            }
-        },
-        "runtime": {
-            "transport": transport,
-            "host": host,
-            "port": port,
+    return JSONResponse(
+        {
+            "name": "dope-context",
+            "version": "1.0.0",
             "fastmcp_available": FASTMCP_AVAILABLE,
             "canonical_entrypoint": "python -m src.mcp.server",
-        },
-        "health": "/health",
-        "description": "Semantic code search and autonomous indexing",
-        "metadata": {
-            "role": "workflow",
-            "priority": "high",
-            "adhd_integration": True,
-            "autonomous_indexing": True,
-            "conport_integration": CONPORT_INTEGRATION_AVAILABLE,
-            "warning": warning,
+            "mcp": {
+                "protocol": "stdio" if transport == "stdio" else "sse",
+                "connection": {
+                    "type": "stdio" if transport == "stdio" else "sse",
+                    "url": connection_url,
+                },
+                "env": {
+                    "VOYAGE_API_KEY": "${VOYAGEAI_API_KEY:-}",
+                    "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+                    "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}",
+                },
+            },
+            "runtime": {
+                "transport": transport,
+                "host": host,
+                "port": port,
+                "fastmcp_available": FASTMCP_AVAILABLE,
+                "canonical_entrypoint": "python -m src.mcp.server",
+            },
+            "health": "/health",
+            "description": "Semantic code search and autonomous indexing",
+            "metadata": {
+                "role": "workflow",
+                "priority": "high",
+                "adhd_integration": True,
+                "autonomous_indexing": True,
+                "conport_integration": CONPORT_INTEGRATION_AVAILABLE,
+                "warning": warning,
+            },
         }
-    })
+    )
 
 
-@mcp.custom_route("/autoindex/bootstrap", methods=["POST"])
+# # @mcp.custom_route("/autoindex/bootstrap", methods=["POST"])
 async def autoindex_bootstrap(request: Request) -> JSONResponse:
     """Trigger startup bootstrap indexing then autonomous watchers."""
     payload: Dict[str, Any] = {}
@@ -213,7 +219,9 @@ async def autoindex_bootstrap(request: Request) -> JSONResponse:
     debounce_seconds = float(payload.get("debounce_seconds", 5.0))
     periodic_interval = int(payload.get("periodic_interval", 600))
 
-    workspace = Path(workspace_path).resolve() if workspace_path else get_workspace_root()
+    workspace = (
+        Path(workspace_path).resolve() if workspace_path else get_workspace_root()
+    )
     key = str(workspace)
     running_task = _autoindex_bootstrap_tasks.get(key)
 
@@ -250,7 +258,7 @@ async def autoindex_bootstrap(request: Request) -> JSONResponse:
     )
 
 
-@mcp.custom_route("/autoindex/status", methods=["GET"])
+# # @mcp.custom_route("/autoindex/status", methods=["GET"])
 async def autoindex_status(request: Request) -> JSONResponse:
     """Return startup autoindex status for one or all tracked workspaces."""
     workspace_path = None
@@ -295,7 +303,10 @@ async def _get_adhd_config():
     if _adhd_config is None:
         try:
             import sys
-            sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "adhd_engine"))
+
+            sys.path.insert(
+                0, str(Path(__file__).parent.parent.parent.parent / "adhd_engine")
+            )
 
             from adhd_config_service import get_adhd_config_service
             from feature_flags import ADHDFeatureFlags
@@ -327,9 +338,7 @@ async def get_dynamic_top_k(user_id: str = "default", requested_top_k: int = 10)
             from feature_flags import FEATURE_ADHD_ENGINE_DOPE_CONTEXT
 
             if await feature_flags.is_enabled(
-                FEATURE_ADHD_ENGINE_DOPE_CONTEXT,
-                "dope-context",
-                user_id
+                FEATURE_ADHD_ENGINE_DOPE_CONTEXT, "dope-context", user_id
             ):
                 return await adhd_config.get_max_results(user_id)
         except Exception as e:
@@ -342,6 +351,7 @@ async def get_dynamic_top_k(user_id: str = "default", requested_top_k: int = 10)
 # ============================================================================
 # Component Caching Layer - Reduces overhead from ~500ms to ~50ms per search
 # ============================================================================
+
 
 @lru_cache(maxsize=10)
 def _get_cached_embedder(api_key: str, model: str = "voyage-code-3") -> VoyageEmbedder:
@@ -382,9 +392,7 @@ def _get_cached_reranker(api_key: str) -> VoyageReranker:
 
 @lru_cache(maxsize=20)
 def _get_cached_vector_search(
-    collection_name: str,
-    url: str,
-    port: int
+    collection_name: str, url: str, port: int
 ) -> MultiVectorSearch:
     """
     Get cached MultiVectorSearch instance (reuses Qdrant client).
@@ -425,9 +433,7 @@ def _get_cached_contextualized_embedder(api_key: str) -> ContextualizedEmbedder:
 
 @lru_cache(maxsize=20)
 def _get_cached_document_search(
-    collection_name: str,
-    url: str,
-    port: int
+    collection_name: str, url: str, port: int
 ) -> DocumentSearch:
     """
     Get cached DocumentSearch instance (reuses Qdrant client).
@@ -545,9 +551,10 @@ def _load_snapshot_metadata(workspace: Path, workspace_hash: str) -> Dict[str, A
         try:
             data = json.loads(snapshot_file.read_text())
             metadata["files_indexed"] = len(data.get("files", {}))
-            metadata["last_snapshot"] = data.get("created_at") or datetime.fromtimestamp(
-                snapshot_file.stat().st_mtime
-            ).isoformat()
+            metadata["last_snapshot"] = (
+                data.get("created_at")
+                or datetime.fromtimestamp(snapshot_file.stat().st_mtime).isoformat()
+            )
         except Exception as exc:
             logger.debug("Failed to parse snapshot %s: %s", snapshot_file, exc)
 
@@ -556,9 +563,13 @@ def _load_snapshot_metadata(workspace: Path, workspace_hash: str) -> Dict[str, A
         try:
             data = json.loads(chunk_snapshot_file.read_text())
             files = data.get("files", {})
-            metadata["total_chunks"] = sum(len(file.get("chunks", [])) for file in files.values())
+            metadata["total_chunks"] = sum(
+                len(file.get("chunks", [])) for file in files.values()
+            )
         except Exception as exc:
-            logger.debug("Failed to parse chunk snapshot %s: %s", chunk_snapshot_file, exc)
+            logger.debug(
+                "Failed to parse chunk snapshot %s: %s", chunk_snapshot_file, exc
+            )
 
     metadata["workspace_exists"] = workspace.exists()
     return metadata
@@ -740,13 +751,17 @@ async def _run_workspace_autoindex_bootstrap(
         status["status"] = "failed"
         status["error"] = str(exc)
         status["failed_at"] = datetime.utcnow().isoformat()
-        logger.error("Autoindex bootstrap failed for %s: %s", workspace, exc, exc_info=True)
+        logger.error(
+            "Autoindex bootstrap failed for %s: %s", workspace, exc, exc_info=True
+        )
         return status
     finally:
         _autoindex_bootstrap_tasks.pop(key, None)
 
 
-async def _describe_collection(collection_name: str, url: str, port: int) -> Dict[str, Any]:
+async def _describe_collection(
+    collection_name: str, url: str, port: int
+) -> Dict[str, Any]:
     """
     Fetch collection information from Qdrant with graceful error handling.
     """
@@ -807,7 +822,9 @@ def _initialize_components():
     workspace_root = get_workspace_root()
     code_collection, docs_collection = get_collection_names(workspace_root)
     logger.info(f"Using workspace: {workspace_root}")
-    logger.info(f"Code collection: {code_collection}, Docs collection: {docs_collection}")
+    logger.info(
+        f"Code collection: {code_collection}, Docs collection: {docs_collection}"
+    )
 
     # Initialize components
     chunker = CodeChunker(config=ChunkingConfig())
@@ -951,12 +968,15 @@ async def _index_workspace_impl(
 
             # Persist BM25 to disk for fast loading
             bm25_cache_path = get_snapshot_dir(workspace) / "bm25_index.pkl"
-            with open(bm25_cache_path, 'wb') as f:
-                pickle.dump({
-                    'bm25': bm25_index.bm25,
-                    'documents': bm25_index.documents,
-                    'doc_ids': bm25_index.doc_ids,
-                }, f)
+            with open(bm25_cache_path, "wb") as f:
+                pickle.dump(
+                    {
+                        "bm25": bm25_index.bm25,
+                        "documents": bm25_index.documents,
+                        "doc_ids": bm25_index.doc_ids,
+                    },
+                    f,
+                )
             logger.info(f"BM25 index built and cached: {len(all_docs)} documents")
         else:
             logger.warning("No documents to build BM25 index")
@@ -1045,10 +1065,7 @@ async def _search_code_impl(
 
         # Log metrics for benchmarking
         get_tracker().log_search(
-            tool_name="search_code",
-            query=query,
-            workspace=str(workspace),
-            top_k=top_k
+            tool_name="search_code", query=query, workspace=str(workspace), top_k=top_k
         )
 
         logger.info(f"Searching workspace: {workspace} → collection: {code_collection}")
@@ -1059,10 +1076,12 @@ async def _search_code_impl(
             logger.error(
                 "Voyage API key not set (expected VOYAGE_API_KEY or VOYAGEAI_API_KEY)"
             )
-            return [{
-                "error": "Voyage API key environment variable not set",
-                "help": "Set VOYAGE_API_KEY or VOYAGEAI_API_KEY to enable embeddings and reranking"
-            }]
+            return [
+                {
+                    "error": "Voyage API key environment variable not set",
+                    "help": "Set VOYAGE_API_KEY or VOYAGEAI_API_KEY to enable embeddings and reranking",
+                }
+            ]
 
         # Get cached components (reuses HTTP clients and connections)
         qdrant_url = os.getenv("QDRANT_URL", "localhost")
@@ -1081,21 +1100,25 @@ async def _search_code_impl(
 
             if vector_count == 0:
                 logger.warning(f"Collection '{code_collection}' is empty")
-                return [{
-                    "error": f"Collection '{code_collection}' is empty. Run index_workspace first.",
-                    "workspace": str(workspace),
-                    "collection": code_collection,
-                    "help": f"Run: mcp__dope-context__index_workspace(workspace_path='{workspace}')"
-                }]
+                return [
+                    {
+                        "error": f"Collection '{code_collection}' is empty. Run index_workspace first.",
+                        "workspace": str(workspace),
+                        "collection": code_collection,
+                        "help": f"Run: mcp__dope-context__index_workspace(workspace_path='{workspace}')",
+                    }
+                ]
         except Exception as collection_error:
             logger.error(f"Collection check failed: {collection_error}")
-            return [{
-                "error": f"Collection '{code_collection}' not found or inaccessible.",
-                "workspace": str(workspace),
-                "collection": code_collection,
-                "details": str(collection_error),
-                "help": f"Run: mcp__dope-context__index_workspace(workspace_path='{workspace}')"
-            }]
+            return [
+                {
+                    "error": f"Collection '{code_collection}' not found or inaccessible.",
+                    "workspace": str(workspace),
+                    "collection": code_collection,
+                    "details": str(collection_error),
+                    "help": f"Run: mcp__dope-context__index_workspace(workspace_path='{workspace}')",
+                }
+            ]
 
         embedder = _get_cached_embedder(
             api_key=voyage_key,
@@ -1108,23 +1131,37 @@ async def _search_code_impl(
 
         if bm25_cache_path.exists():
             try:
-                with open(bm25_cache_path, 'rb') as f:
+                with open(bm25_cache_path, "rb") as f:
                     raw = f.read()
-                import json, pickle
+                import json
+                import pickle
+
                 try:
-                    cached = json.loads(raw.decode('utf-8')) if raw.strip().startswith(b'{') else pickle.loads(raw)
+                    cached = (
+                        json.loads(raw.decode("utf-8"))
+                        if raw.strip().startswith(b"{")
+                        else pickle.loads(raw)
+                    )
                 except Exception:
                     cached = pickle.loads(raw)
-                    logger.warning("Legacy pickle BM25 cache loaded; consider JSON migration")
-                bm25_index.bm25 = cached['bm25']
-                bm25_index.documents = cached['documents']
-                bm25_index.doc_ids = cached['doc_ids']
-                logger.info(f"Loaded BM25 index from cache: {len(bm25_index.doc_ids)} docs")
+                    logger.warning(
+                        "Legacy pickle BM25 cache loaded; consider JSON migration"
+                    )
+                bm25_index.bm25 = cached["bm25"]
+                bm25_index.documents = cached["documents"]
+                bm25_index.doc_ids = cached["doc_ids"]
+                logger.info(
+                    f"Loaded BM25 index from cache: {len(bm25_index.doc_ids)} docs"
+                )
             except Exception as cache_error:
-                logger.warning(f"BM25 cache load failed, dense-only search: {cache_error}")
+                logger.warning(
+                    f"BM25 cache load failed, dense-only search: {cache_error}"
+                )
                 bm25_index = BM25Index()  # Empty fallback
         else:
-            logger.info(f"No BM25 cache found at {bm25_cache_path}, using dense-only search")
+            logger.info(
+                f"No BM25 cache found at {bm25_cache_path}, using dense-only search"
+            )
 
         if _hybrid_search and not isinstance(_hybrid_search, HybridSearch):
             hybrid_search = _hybrid_search
@@ -1138,11 +1175,13 @@ async def _search_code_impl(
 
     except Exception as setup_error:
         logger.error(f"Search setup failed: {setup_error}", exc_info=True)
-        return [{
-            "error": f"Search initialization failed: {str(setup_error)}",
-            "query": query,
-            "workspace": str(workspace) if 'workspace' in locals() else "unknown"
-        }]
+        return [
+            {
+                "error": f"Search initialization failed: {str(setup_error)}",
+                "query": query,
+                "workspace": str(workspace) if "workspace" in locals() else "unknown",
+            }
+        ]
 
     try:
         # Select profile
@@ -1174,11 +1213,13 @@ async def _search_code_impl(
             )
         except Exception as embed_error:
             logger.error(f"Embedding failed: {embed_error}")
-            return [{
-                "error": f"Query embedding failed: {str(embed_error)}",
-                "query": query,
-                "help": "Check VOYAGE_API_KEY or VOYAGEAI_API_KEY and network connectivity"
-            }]
+            return [
+                {
+                    "error": f"Query embedding failed: {str(embed_error)}",
+                    "query": query,
+                    "help": "Check VOYAGE_API_KEY or VOYAGEAI_API_KEY and network connectivity",
+                }
+            ]
 
         query_vectors = {
             "content": query_content.embedding,
@@ -1201,12 +1242,14 @@ async def _search_code_impl(
             )
         except Exception as search_error:
             logger.error(f"Search failed: {search_error}")
-            return [{
-                "error": f"Vector search failed: {str(search_error)}",
-                "query": query,
-                "workspace": str(workspace),
-                "collection": code_collection
-            }]
+            return [
+                {
+                    "error": f"Vector search failed: {str(search_error)}",
+                    "query": query,
+                    "workspace": str(workspace),
+                    "collection": code_collection,
+                }
+            ]
 
         # Rerank if requested
         if use_reranking and search_results:
@@ -1229,8 +1272,10 @@ async def _search_code_impl(
                         "relevance_score": r.relevance_score,
                         "original_rank": r.original_rank,
                         "reranked": True,
-                        "start_line": getattr(r.search_result, 'start_line', None),  # F-NEW-5 support
-                        "end_line": getattr(r.search_result, 'end_line', None),
+                        "start_line": getattr(
+                            r.search_result, "start_line", None
+                        ),  # F-NEW-5 support
+                        "end_line": getattr(r.search_result, "end_line", None),
                     }
                     for r in final_results
                 ]
@@ -1251,7 +1296,9 @@ async def _search_code_impl(
 
                 return truncated_results
             except Exception as rerank_error:
-                logger.warning(f"Reranking failed, returning dense results: {rerank_error}")
+                logger.warning(
+                    f"Reranking failed, returning dense results: {rerank_error}"
+                )
                 # Fall through to return without reranking
 
         # Return without reranking (or reranking failed)
@@ -1264,8 +1311,8 @@ async def _search_code_impl(
                 "context": r.context_snippet,
                 "score": r.score,
                 "reranked": False,
-                "start_line": getattr(r, 'start_line', None),  # F-NEW-5 support
-                "end_line": getattr(r, 'end_line', None),
+                "start_line": getattr(r, "start_line", None),  # F-NEW-5 support
+                "end_line": getattr(r, "end_line", None),
             }
             for r in search_results[:top_k]
         ]
@@ -1292,7 +1339,7 @@ async def _search_code_impl(
                 enricher = await get_code_graph_enricher()
                 final_results = await enricher.enrich_results(
                     results=truncated_results,
-                    max_enrich=5  # ADHD limit: enrich top 5 only
+                    max_enrich=5,  # ADHD limit: enrich top 5 only
                 )
                 logger.info(f"✅ Results enriched with code graph relationships")
             except Exception as enrich_error:
@@ -1303,11 +1350,13 @@ async def _search_code_impl(
 
     except Exception as execution_error:
         logger.error(f"Search execution failed: {execution_error}", exc_info=True)
-        return [{
-            "error": f"Search execution failed: {str(execution_error)}",
-            "query": query,
-            "workspace": str(workspace)
-        }]
+        return [
+            {
+                "error": f"Search execution failed: {str(execution_error)}",
+                "query": query,
+                "workspace": str(workspace),
+            }
+        ]
 
 
 @mcp.tool()
@@ -1417,8 +1466,12 @@ async def _get_index_status_impl(
         workspace_hash = workspace_to_hash(workspace)
         code_collection, docs_collection = get_collection_names(workspace)
 
-        code_status = await _describe_collection(code_collection, qdrant_url, qdrant_port)
-        docs_status = await _describe_collection(docs_collection, qdrant_url, qdrant_port)
+        code_status = await _describe_collection(
+            code_collection, qdrant_url, qdrant_port
+        )
+        docs_status = await _describe_collection(
+            docs_collection, qdrant_url, qdrant_port
+        )
         snapshot_meta = _load_snapshot_metadata(workspace, workspace_hash)
 
         workspace_entry = {
@@ -1501,6 +1554,7 @@ async def _clear_index_impl(
             cleared.append(label)
         except Exception as exc:
             errors.append({"index": label, "error": str(exc)})
+
     if target_normalized in {"code", "both"}:
         await _delete_collection(code_collection, "code")
         bm25_cache_path = _snapshot_dir_for_hash(workspace_hash) / "bm25_index.pkl"
@@ -1638,10 +1692,7 @@ async def _docs_search_impl(
 
     # Log metrics for benchmarking
     get_tracker().log_search(
-        tool_name="docs_search",
-        query=query,
-        workspace=str(workspace),
-        top_k=top_k
+        tool_name="docs_search", query=query, workspace=str(workspace), top_k=top_k
     )
 
     logger.info(f"Searching docs: {workspace} → collection: {docs_collection}")
@@ -1654,10 +1705,12 @@ async def _docs_search_impl(
         logger.error(
             "Voyage API key not set (expected VOYAGE_API_KEY or VOYAGEAI_API_KEY)"
         )
-        payload = [{
-            "error": "Voyage API key environment variable not set",
-            "help": "Set VOYAGE_API_KEY or VOYAGEAI_API_KEY in your environment"
-        }]
+        payload = [
+            {
+                "error": "Voyage API key environment variable not set",
+                "help": "Set VOYAGE_API_KEY or VOYAGEAI_API_KEY in your environment",
+            }
+        ]
         if return_meta:
             return {
                 "lane_used": "docs",
@@ -1721,7 +1774,8 @@ async def _docs_search_impl(
     raw_results = [
         {
             "source_path": r.file_path,
-            "text": r.content[:max_content_length] + ("..." if len(r.content) > max_content_length else ""),
+            "text": r.content[:max_content_length]
+            + ("..." if len(r.content) > max_content_length else ""),
             "score": r.score,
             "doc_type": r.payload.get("doc_type", "unknown"),
             "truncated": len(r.content) > max_content_length,
@@ -1878,7 +1932,9 @@ def _load_decision_sync_config(workspace: Path) -> Dict[str, Any]:
         if isinstance(payload, dict):
             defaults.update(payload)
     except Exception as exc:
-        logger.warning("Failed to load decision sync config at %s: %s", config_path, exc)
+        logger.warning(
+            "Failed to load decision sync config at %s: %s", config_path, exc
+        )
 
     return defaults
 
@@ -2046,7 +2102,7 @@ async def _search_all_impl(
         tool_name="search_all",
         query=query,
         workspace=str(workspace),
-        top_k=requested_top_k
+        top_k=requested_top_k,
     )
 
     logger.info(f"Unified search in workspace: {workspace}")
@@ -2221,15 +2277,21 @@ async def _sync_workspace_impl(
             # Get cached components
             qdrant_url = os.getenv("QDRANT_URL", "localhost")
             qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
-            vector_search = _get_cached_vector_search(code_collection, qdrant_url, qdrant_port)
+            vector_search = _get_cached_vector_search(
+                code_collection, qdrant_url, qdrant_port
+            )
 
             # Create pipeline for incremental updates
             chunker = CodeChunker()
             openai_key = os.getenv("OPENAI_API_KEY")
-            context_generator = OpenAIContextGenerator(api_key=openai_key) if openai_key else None
+            context_generator = (
+                OpenAIContextGenerator(api_key=openai_key) if openai_key else None
+            )
             voyage_key = _get_voyage_api_key()
             standard_embedder = _get_cached_embedder(api_key=voyage_key)
-            contextualized_embedder = _get_cached_contextualized_embedder(api_key=voyage_key)
+            contextualized_embedder = _get_cached_contextualized_embedder(
+                api_key=voyage_key
+            )
 
             config = IndexingConfig(
                 workspace_path=workspace,
@@ -2249,7 +2311,9 @@ async def _sync_workspace_impl(
             # Index only changed files
             changed_files = changes.added + changes.modified
             if changed_files:
-                changed_patterns = [Path(path).as_posix().lstrip("./") for path in changed_files]
+                changed_patterns = [
+                    Path(path).as_posix().lstrip("./") for path in changed_files
+                ]
                 # Create temporary config with only changed files
                 temp_config = IndexingConfig(
                     workspace_path=workspace,
@@ -2298,12 +2362,15 @@ async def _sync_workspace_impl(
                     bm25_index = BM25Index()
                     bm25_index.build_index(all_docs)
                     bm25_cache_path = get_snapshot_dir(workspace) / "bm25_index.pkl"
-                    with open(bm25_cache_path, 'wb') as f:
-                        pickle.dump({
-                            'bm25': bm25_index.bm25,
-                            'documents': bm25_index.documents,
-                            'doc_ids': bm25_index.doc_ids,
-                        }, f)
+                    with open(bm25_cache_path, "wb") as f:
+                        pickle.dump(
+                            {
+                                "bm25": bm25_index.bm25,
+                                "documents": bm25_index.documents,
+                                "doc_ids": bm25_index.doc_ids,
+                            },
+                            f,
+                        )
                     logger.info("BM25 index updated after sync")
             except Exception as bm25_error:
                 logger.warning(f"BM25 update failed: {bm25_error}")
@@ -2377,7 +2444,9 @@ async def sync_workspace(
 
     results = []
     for workspace in targets:
-        result = await _sync_workspace_impl(str(workspace), include_patterns, auto_reindex)
+        result = await _sync_workspace_impl(
+            str(workspace), include_patterns, auto_reindex
+        )
         results.append(result)
 
     if len(results) == 1:
@@ -2728,8 +2797,6 @@ async def get_autonomous_status() -> Dict:
     }
 
 
-
-
 # AUTONOMOUS DOCS INDEXING
 
 
@@ -2998,7 +3065,9 @@ async def get_chunk_complexity(file_path: str, symbol: str) -> Dict:
         ast.Match,
         ast.comprehension,
     )
-    branch_count = sum(1 for node in ast.walk(target_tree) if isinstance(node, branch_nodes))
+    branch_count = sum(
+        1 for node in ast.walk(target_tree) if isinstance(node, branch_nodes)
+    )
 
     def _max_depth(node: ast.AST, depth: int = 0) -> int:
         children = list(ast.iter_child_nodes(node))

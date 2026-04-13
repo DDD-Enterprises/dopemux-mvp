@@ -1,3 +1,15 @@
+---
+id: dopemux-docuXtractor__todo
+title: Dopemux Docuxtractor  Todo
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Dopemux Docuxtractor  Todo (explanation) for dopemux documentation and developer
+  workflows.
+---
 # DocuXtractor Development Todo List
 
 ## Current Status: Technical Specifications Complete → Implementation Ready

@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__adr-011-privacy-first-ai
+title: Docs  90 Adr  Adr 011 Privacy First Ai
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  Adr 011 Privacy First Ai (explanation) for dopemux documentation
+  and developer workflows.
+---
 # ADR-011: Privacy-First AI Classification Strategy
 
 **Status**: Proposed

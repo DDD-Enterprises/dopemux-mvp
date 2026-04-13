@@ -1,0 +1,47 @@
+{
+  "blocker_classification": {
+    "artifact_or_state_blockers": [],
+    "code_blockers": [],
+    "deferred_non_blocking": [],
+    "environment_blockers": [],
+    "external_provider_blockers": [],
+    "false_positives": []
+  },
+  "conditions": [
+    {
+      "details": {
+        "pal_validation_file": null,
+        "routes_count": 9
+      },
+      "layer": "pal_provider_validation",
+      "message": "PAL validation was not provided for the selected routes. Runtime eligibility remains environment-based.",
+      "reason_code": "PAL_REQUIRED_UNAVAILABLE"
+    }
+  ],
+  "environment_summary": {
+    "live_online_status": "environment_blocked_or_unverified",
+    "message": "Repo and tooling checks can pass while live online readiness remains blocked or unverified by current provider credentials, PAL evidence, or online preflight.",
+    "tooling_status": "CONDITIONAL_GO"
+  },
+  "generated_at": "2026-04-10T22:15:18.109858+00:00",
+  "layers": {
+    "contract_map_determinism": "PASS",
+    "critical_tests": "PASS",
+    "import_cli_smoke": "PASS",
+    "online_provider_preflight": "PASS",
+    "pal_provider_validation": "SKIPPED",
+    "repo_drift_tests": "PASS",
+    "route_derived_readiness": "PASS",
+    "smoke_and_verify_evidence": "PASS",
+    "target_prompt_integrity": "PASS",
+    "truth_split_audit": "PASS"
+  },
+  "operator_verdict": "GO_NOW",
+  "output_dir": "/Users/hue/code/dopemux-mvp/reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260410T221503Z",
+  "reason_codes": [],
+  "repo_wide_findings": [],
+  "run_id": "pre_live_gate_v25_20260410T221503Z",
+  "run_scoped_blockers": [],
+  "verdict": "CONDITIONAL_GO",
+  "waivers": []
+}

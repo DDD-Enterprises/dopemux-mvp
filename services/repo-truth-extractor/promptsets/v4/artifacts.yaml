@@ -898,6 +898,28 @@ artifacts:
   - path
   - line_range
   - id
+- phase: G
+  artifact_name: DEPENDENCY_HEALTH_SURFACE.json
+  canonical_writer_step_id: G6
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: G
+  artifact_name: TECHNICAL_DEBT_REGISTER.json
+  canonical_writer_step_id: G7
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
 - phase: H
   artifact_name: HOMECTRL_NORM_MANIFEST.json
   canonical_writer_step_id: H9
@@ -1956,6 +1978,50 @@ artifacts:
 - phase: C
   artifact_name: COGNITIVE_FEATURES_SURFACE.json
   canonical_writer_step_id: C17
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: C
+  artifact_name: OBSERVABILITY_SURFACE.json
+  canonical_writer_step_id: C18
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: C
+  artifact_name: ERROR_HANDLING_PATTERNS.json
+  canonical_writer_step_id: C19
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: C
+  artifact_name: STATE_MANAGEMENT_SURFACE.json
+  canonical_writer_step_id: C20
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+  - line_range
+- phase: C
+  artifact_name: PERFORMANCE_SURFACE.json
+  canonical_writer_step_id: C21
   kind: json_item_list
   norm_artifact: true
   allow_timestamp_keys: false

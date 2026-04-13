@@ -1,3 +1,15 @@
+---
+id: output__individual_files__PRD_Dopemux_Comprehensive_docs
+title: Output  Individual Files  Prd Dopemux Comprehensive Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Prd Dopemux Comprehensive Docs (explanation) for
+  dopemux documentation and developer workflows.
+---
 Here is the analysis of the document `PRD_Dopemux_Comprehensive.md`.
 
 ### 1. Core Business Goals & User Problems

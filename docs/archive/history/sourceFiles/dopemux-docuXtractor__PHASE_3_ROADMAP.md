@@ -1,3 +1,15 @@
+---
+id: dopemux-docuXtractor__PHASE_3_ROADMAP
+title: Dopemux Docuxtractor  Phase 3 Roadmap
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Dopemux Docuxtractor  Phase 3 Roadmap (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Phase 3 Implementation Roadmap - Cloud Integration
 
 **Previous**: Phase 2 Complete (Discovery + Processing + Pattern Extraction)

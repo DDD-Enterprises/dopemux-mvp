@@ -117,6 +117,8 @@ def test_model_cost_rate_exact_and_fuzzy_match() -> None:
     }
     assert fuzzy["match_type"] in {"exact", "fuzzy"}
     assert fuzzy["unknown_model"] is False
+    assert "pricing_status" in exact
+    assert "pricing_source_type" in exact
 
 
 def test_unknown_fallback_increments_legacy_and_new_counters(tmp_path: Path) -> None:
@@ -133,6 +135,7 @@ def test_unknown_fallback_increments_legacy_and_new_counters(tmp_path: Path) -> 
     )
 
     assert priced["unknown_model"] is True
+    assert priced["pricing_status"] == "UNPRICED_UNKNOWN"
     assert ledger.record.fallback_usage_count == 1
     assert ledger.record.unknown_model_events == 1
 

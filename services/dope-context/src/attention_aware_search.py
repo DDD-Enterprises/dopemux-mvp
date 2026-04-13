@@ -59,16 +59,18 @@ class AttentionAwareSearch:
             self._adhd_feature_flags = ADHDFeatureFlags(self._adhd_config.redis_client)
             self._initialized = True
 
-            logger.info("✅ Dope-Context connected to ADHD Engine for attention-aware search")
+            logger.info(
+                "✅ Dope-Context connected to ADHD Engine for attention-aware search"
+            )
 
         except Exception as e:
-            logger.warning(f"⚠️  ADHD Engine unavailable for attention-aware search: {e}")
+            logger.warning(
+                f"⚠️  ADHD Engine unavailable for attention-aware search: {e}"
+            )
             self._initialized = False
 
     async def get_adaptive_result_limit(
-        self,
-        user_id: str = "default",
-        requested_limit: Optional[int] = None
+        self, user_id: str = "default", requested_limit: Optional[int] = None
     ) -> int:
         """
         Get adaptive result limit based on attention state.
@@ -97,8 +99,7 @@ class AttentionAwareSearch:
             try:
                 # Check if feature is enabled
                 is_enabled = await self._adhd_feature_flags.is_enabled(
-                    "attention_aware_search",
-                    user_id
+                    "attention_aware_search", user_id
                 )
 
                 if not is_enabled:
@@ -110,15 +111,17 @@ class AttentionAwareSearch:
 
                 # Map attention state to result limit
                 attention_limits = {
-                    'scattered': 5,
-                    'transitioning': 7,
-                    'focused': 10,
-                    'deep_focus': 15,
-                    'hyperfocus': 20
+                    "scattered": 5,
+                    "transitioning": 7,
+                    "focused": 10,
+                    "deep_focus": 15,
+                    "hyperfocus": 20,
                 }
 
                 limit = attention_limits.get(attention_state, 10)
-                logger.info(f"📊 Attention-aware limit: {attention_state} → {limit} results")
+                logger.info(
+                    f"📊 Attention-aware limit: {attention_state} → {limit} results"
+                )
                 return limit
 
             except Exception as e:
@@ -128,9 +131,7 @@ class AttentionAwareSearch:
         return requested_limit if requested_limit is not None else 10
 
     async def get_attention_optimized_top_k(
-        self,
-        user_id: str = "default",
-        base_top_k: int = 10
+        self, user_id: str = "default", base_top_k: int = 10
     ) -> int:
         """
         Backward-compatible method for getting adaptive top_k.
@@ -165,8 +166,7 @@ async def get_attention_aware_search() -> AttentionAwareSearch:
 
 
 async def get_adaptive_search_limit(
-    user_id: str = "default",
-    requested: Optional[int] = None
+    user_id: str = "default", requested: Optional[int] = None
 ) -> int:
     """
     Convenience function for getting adaptive search limit.

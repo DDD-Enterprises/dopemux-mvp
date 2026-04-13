@@ -12,15 +12,14 @@ from qdrant_client import AsyncQdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import (
     Distance,
-    VectorParams,
+    FieldCondition,
+    Filter,
+    MatchValue,
+    NamedVector,
     PointStruct,
     SearchRequest,
-    NamedVector,
-    Filter,
-    FieldCondition,
-    MatchValue,
+    VectorParams,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -472,7 +471,7 @@ class MultiVectorSearch:
                 # Extract payloads and add IDs
                 for record in records:
                     payload = dict(record.payload) if record.payload else {}
-                    payload['id'] = str(record.id)  # Add ID for BM25 doc_id mapping
+                    payload["id"] = str(record.id)  # Add ID for BM25 doc_id mapping
                     all_payloads.append(payload)
 
                 # Check if more results available
@@ -481,7 +480,9 @@ class MultiVectorSearch:
 
                 offset = next_offset
 
-            logger.info(f"Retrieved {len(all_payloads)} payloads from '{self.collection_name}'")
+            logger.info(
+                f"Retrieved {len(all_payloads)} payloads from '{self.collection_name}'"
+            )
             return all_payloads
 
         except Exception as e:

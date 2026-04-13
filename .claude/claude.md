@@ -1,174 +1,121 @@
-# Python Project - Dopemux Configuration
+# Dopemux Development Platform
 
-Project-specific Claude Code instructions for python development with ADHD accommodations.
+**Project**: Python-based ADHD-optimized development platform
+**Architecture**: Simplified (ConPort + SuperClaude + Python ADHD Engine)
+**Mode**: PLAN/ACT-aware with modular authority boundaries
+**Workspace**: `/Users/hue/code/dopemux-mvp`
 
-## Project Context
+## 🧠 Core ADHD Principles
 
-You are working on a **python project** with Dopemux ADHD optimizations enabled.
+- **Context Preservation**: Auto-save every 30 seconds, maintain awareness across interruptions
+- **Gentle Guidance**: Encouraging, supportive language with clear next steps
+- **Progressive Disclosure**: Essential info first, details on request
+- **Decision Reduction**: Maximum 3 options to reduce cognitive overwhelm
+- **Task Chunking**: Break work into 25-minute segments with visual progress
 
-### ADHD Accommodations Active
-- **Focus Duration**: 30 minutes average
-- **Break Intervals**: 5 minutes
-- **Notification Style**: gentle
-- **Visual Complexity**: minimal
-- **Attention Adaptation**: Enabled
+## ⚡ Simplified Task & Cognitive Architecture
 
-### Development Principles
-- **Context Preservation**: Auto-save every 30 seconds
-- **Gentle Guidance**: Use encouraging, supportive language
-- **Progressive Disclosure**: Show essential info first, details on request
-- **Task Chunking**: Break work into 30-minute segments
+### Task Management (ConPort + SuperClaude + Python ADHD Engine)
+**Authorities**: Task storage, PRD decomposition, ADHD optimization, progress tracking
+- **ConPort (PostgreSQL AGE)**: Task storage via progress_entry, metadata in custom_data, dependencies via link_conport_items, knowledge graph queries for unblocked tasks, decision logging
+- **SuperClaude**: PRD parsing via `/dx:prd-parse` with Zen planner, 25 standard commands, 15 specialized agents, `/dx:` custom commands for ADHD workflows
+- **Python ADHD Engine**: Energy tracking, cognitive load calculation, break monitoring, attention state analysis, smart task routing, hyperfocus protection
+- **React Ink Dashboard**: Visual task progress, ADHD metrics, attention-aware UI, real-time updates
 
+### Cognitive Plane
+**Authorities**: Code intelligence, navigation, context preservation, semantic understanding
+- **Serena LSP**: Full LSP server with ADHD accommodations (max 10 results, 3-level context depth), semantic code analysis, navigation caching, Tree-sitter parsing, claude-context MCP integration
+- **ConPort**: Decision logging, knowledge graph, architectural relationship tracking, pattern storage, session persistence
 
-### Python Development Guidelines
-- Use type hints for better ADHD developer experience
-- Follow PEP 8 with Black formatting
-- Prefer explicit over implicit (Zen of Python)
-- Use dataclasses and Pydantic for clear data structures
-- Write docstrings for all public functions
+### Integration Layer
+**Event-Driven Coordination**: Redis Streams + EventBus + Integration Bridge
+- **Authority Enforcement**: Tool-level boundaries enforced via MetaMCP role-based filtering
+- **Event Routing**: SuperClaude → Python ADHD Engine → ConPort → Dashboard (all async)
+- **Conflict Resolution**: ConPort is source of truth for tasks, decisions, and ADHD state
 
-### Testing Strategy
-- Use pytest for all testing
-- Write tests first for complex logic
-- Use descriptive test names
-- Mock external dependencies
+## 🎯 Mode-Aware Operation
 
+**PLAN Mode**: Architecture, sprint planning, story breakdown
+- Load PM plane modules + decision modules
+- Focus on strategic thinking and synthesis
+- Log decisions with rationale in ConPort
 
-## ADHD-Optimized Response Patterns
+**ACT Mode**: Implementation, debugging, testing
+- Load cognitive plane + execution modules
+- Focus on concrete changes and linking artifacts
+- Track progress and create deliverables
 
-### When User is Focused
-- Provide comprehensive technical details
-- Include multiple implementation approaches
-- Show complete code examples with explanations
+**Mode Detection**: Automatic based on activity type and user context
 
-### When User is Scattered
-- Use bullet points and concise explanations
-- Highlight only critical information
-- Provide ONE clear next action
-- Keep responses under 500 words
+## 🚀 Integration Points
 
-### During Context Switches
-- Provide brief orientation: "You were working on X, now Y"
-- Bridge between tasks with summaries
-- Maintain awareness of previous context
+### ConPort Memory Management (AUTOMATIC)
+```bash
+# Workspace ID for ALL ConPort calls
+WORKSPACE_ID="/Users/hue/code/dopemux-mvp"
 
-## Project Standards
+# Mandatory session initialization
+mcp__conport__get_active_context --workspace_id "$WORKSPACE_ID"
+mcp__conport__get_recent_activity_summary --workspace_id "$WORKSPACE_ID" --hours_ago 24
+```
 
-### Documentation Standards
-- Follow `docs/03-reference/contributing.md` for all doc changes
-- Always place docs in correct Diataxis section (01-tutorials through 92-runbooks)
-- Never create `-2`/`-3` filename copies - use git for versioning
-- Always use lowercase kebab-case filenames
-- All docs require YAML frontmatter (id, title, type, owner, date, status, prelude)
-- Run `scripts/lint-docs.sh` after doc changes to check hygiene
-- Archive superseded docs by moving to `archive/`, not by renaming
+### Sprint Management (mem4sprint)
+```bash
+# Set mode and create sprint structure
+mcp__conport__update_active_context --workspace_id "$WORKSPACE_ID" --patch_content '{"mode": "PLAN", "sprint_id": "S-2025.09"}'
+mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_goals" --key "S-2025.09-G1" --value '{"type": "sprint_goal", "content": "Goal description", "sprint_id": "S-2025.09", "status": "planned"}'
+```
 
-### Code Organization
-- Use src/ layout for packages
-- Group related functionality in modules
-- Clear separation of concerns
-- Consistent import ordering (isort)
+### Authority Routing
+- **Task Storage**: ConPort progress_entry + custom_data only (no external orchestrators)
+- **PRD Decomposition**: SuperClaude `/dx:prd-parse` with Zen planner (human review required)
+- **ADHD Optimization**: Python ADHD Engine queries ConPort, no direct task modification
+- **Decisions**: Log in ConPort only (single source of truth)
+- **Code Navigation**: Serena LSP only (LSP protocol + semantic analysis)
+- **Knowledge Graph**: ConPort PostgreSQL AGE only (decisions, patterns, relationships)
 
-### Dependencies
-- Use pyproject.toml for project configuration
-- Pin versions for reproducible builds
-- Use virtual environments
-- Document all dependencies
+## 🎯 SuperClaude Integration (v4.1.5)
 
+**Status**: Fully integrated with Dopemux MCP stack (Decision #142-144)
 
-## Integration with Dopemux
+**Available Tools**:
+- **25 Slash Commands**: `/sc:implement`, `/sc:workflow`, `/sc:research`, `/sc:analyze`, etc.
+- **7 Behavioral Modes**: Brainstorming, Deep Research, Task Management, Token Efficiency, Orchestration, Introspection, Business Panel
+- **16 Specialized Agents**: Frontend, Backend, Security, QA, DevOps, Performance, Refactoring, etc.
 
-### Available Commands
-- `dopemux save` - Manual context preservation
-- `dopemux restore` - Restore previous session
-- `dopemux status` - Check attention metrics
-- `dopemux task` - ADHD-friendly task management
+**MCP Customization**:
+- `sequential` → `zen` (multi-model reasoning: thinkdeep, planner, consensus, debug, codereview)
+- `tavily` → `exa` + `gpt-researcher` (neural search + deep research)
+- Kept: `magic` (UI generation), `playwright` (testing), `context7` (docs), `serena` (code), `morphllm` (transforms)
 
-### Context Sharing
-- Session state automatically preserved
-- Mental model tracked across interruptions
-- Decision history maintained
-- Progress visualization available
+**Workflow Integration**:
+See `.claude/modules/shared/superclaude-workflows.md` for complete integration patterns, command selection guide, and ADHD session workflows.
+
+**MCP Documentation**:
+All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
+- MCP_Zen.md - Multi-model reasoning suite (6 tools)
+- MCP_ConPort.md - Knowledge graph & task management (9 capabilities)
+- MCP_Serena.md - Code intelligence v2 (LSP + semantic analysis)
+- MCP_Exa.md - Neural search for simple queries
+- MCP_GPTResearcher.md - Deep multi-source research
+
+## 📚 Detailed Information Locations
+
+When you need comprehensive details, refer to:
+
+**SuperClaude Workflows**: `.claude/modules/shared/superclaude-workflows.md` (integration patterns, command selection, ADHD sessions)
+**Task Management**: `.claude/modules/superclaude-integration.md`, `.claude/modules/custom-commands.md`
+**Cognitive Plane**: `.claude/modules/cognitive-plane/` (serena-lsp.md, conport-memory.md)
+**ADHD Engine**: `.claude/modules/adhd-patterns.md` (sessions, energy tracking, break management)
+**Shared Systems**: `.claude/modules/shared/` (sprint.md, event-patterns.md, superclaude-workflows.md)
+**Filesystem Organization**: `docs/03-reference/filesystem-guide.md` (directory structure, file placement rules)
+
+## 🎖️ Success Metrics
+
+**Target Improvements**: 77% token reduction ✅ | 85% ADHD task completion | Sub-2s context switching | Zero authority violations
 
 ---
 
-**Focus**: python development with ADHD accommodations
-**Goal**: Maintain productivity while respecting neurodivergent needs
-**Style**: Supportive, clear, action-oriented
-
-## Task-Orchestrator Integration (Implicit)
-
-Claude MUST use task-orchestrator MCP tools automatically in these situations:
-
-### Auto-Session Management
-- On FIRST prompt of a conversation: the UserPromptSubmit hook auto-starts a session via `start_session`
-- On conversation end: the Stop hook handles `end_session` automatically
-- After 25 minutes of work: check `get_adhd_state` and display break reminder if needed
-
-### Auto-Workflow Tracking
-- Before any multi-step implementation: call `decompose_task` and display the visual tree
-- After completing significant work: call `log_decision` for architectural choices
-- When switching between tasks: call `record_context_switch`
-
-### Visual Output Rules
-- All Task-Orchestrator tools return a `display` field with pre-formatted Unicode visuals. Claude MUST print this field exactly as returned without additional interpretation.
-- When starting a session: display the session banner from `start_session` result
-- When user asks "what am I working on?" or seems disoriented: call `get_workflow_status`
-- When recommending a break: use the break reminder visual from `get_visual_status`
-- When decomposing tasks: show the visual tree from `decompose_task` result
-
-### Risk-Aware Development
-- Before editing >3 files: call `assess_risk` with the change description
-- Before refactoring: call `analyze_dependencies` with affected components
-
-### SuperClaude Command Enhancement
-| Command | Orchestrator Integration |
-|---------|------------------------|
-| `/sc:implement` | Auto-call `decompose_task` → show visual tree → `start_session` |
-| `/sc:troubleshoot` | Auto-call `assess_risk` for affected area |
-| `/sc:load` | Auto-call `get_workflow_status` → display dashboard |
-| `/sc:save` | Auto-call `end_session` with progress notes |
-| `/sc:task` | Auto-call `get_task_recommendations` based on energy |
-
-## General Implementation Invariants (all work)
-
-SERVICE MANAGEMENT (platform native)
-- Prefer the OS-native service manager for long-running daemons:
-  - macOS: launchd (LaunchAgents/LaunchDaemons)
-  - Linux: systemd
-  - Windows: SCM
-- Do not start critical daemons via subprocess.Popen from a CLI unless the Task Packet explicitly requires it.
-- Do not use Docker as a supervisor for local host services unless the Task Packet explicitly requires it.
-- Do not hardcode machine-specific paths (/Users/..., $HOME/code/...). Resolve paths dynamically.
-- Service configs must be generated from a single source of truth and must be rebuildable (idempotent).
-- Secrets must never be stored in service definition files (plists/unit files). Secrets must be loaded from a dedicated env/secret file or OS key store.
-If any of the above would be violated, STOP and request guidance.
-
-SHELL SAFETY
-- Avoid giant inline strings in shell commands. Use --body-file, heredocs, or temp files.
-- Never rely on eval for command execution. Prefer bash -lc "<cmd>" if a string must be executed.
-- When a command contains quotes/newlines/pipes, prefer a heredoc or a script file over escaping.
-- Always record exit codes for verification commands.
-If a shell command fails due to quoting, rewrite it using a file or heredoc, not more escaping.
-
-STATE AND EVIDENCE DISCIPLINE
-- Before work: git status --porcelain must be empty. If not, STOP.
-- After work: git status --porcelain must be empty. No untracked files allowed.
-- Any new file must be either committed or intentionally ignored via a narrow .gitignore rule committed separately.
-- Never simulate command output. If a command cannot be run, write UNKNOWN and STOP.
-- Evidence must be produced via the repo harness (if available) and must contain verbatim outputs including:
-  - repo identity (pwd, git rev-parse --show-toplevel, branch, sha)
-  - diffstat + full diff for relevant commits
-  - test/verification command outputs
-
-PLANNING GATE (mandatory for non-trivial changes)
-- Before editing any file, write proof/PLAN.txt containing:
-  - Objective (1-2 lines)
-  - Scope: allowed files (exact paths)
-  - Steps (numbered, <= 7)
-  - Verification commands
-- If a plan cannot be written, STOP.
-
-DEFAULT WORKDIR
-- Use one canonical repo directory per project.
-- If worktrees are used, every proof must include pwd + git rev-parse --show-toplevel.
+**MCP Status**: Fully operational with ConPort auto-initialization
+**Python Standards**: Type hints, pytest, PEP 8 with Black formatting, src/ layout
+**ADHD Support**: Progressive disclosure, gentle guidance, visual progress indicators active

@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__.claude__claude
+title: Docker  Mcp Servers  .Claude  Claude
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  .Claude  Claude (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Python Project - Dopemux Configuration
 
 Project-specific Claude Code instructions for python development with ADHD accommodations.

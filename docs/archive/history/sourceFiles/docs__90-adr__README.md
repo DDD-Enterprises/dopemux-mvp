@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__README
+title: Docs  90 Adr  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  Readme (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Architecture Decision Records (ADRs)
 
 This directory contains Architecture Decision Records (ADRs) that document important architectural decisions made during Dopemux development, with their context and consequences.

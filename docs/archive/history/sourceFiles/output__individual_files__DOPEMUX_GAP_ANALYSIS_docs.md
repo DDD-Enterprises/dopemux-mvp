@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_GAP_ANALYSIS_docs
+title: Output  Individual Files  Dopemux Gap Analysis Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Gap Analysis Docs (explanation) for dopemux
+  documentation and developer workflows.
+---
 Based on the analysis of the research document `DOPEMUX_GAP_ANALYSIS.md`, here are its core components:
 
 ### 1. Research Question or Hypothesis

@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "phase": "S_INT",
+  "steps": {
+    "S16": {
+      "prompt_path": "PROMPT_S16_mcp_split_validity.md",
+      "schema_path": "schemas/S16.json",
+      "outputs": ["MCP_SPLIT_VALIDITY.json"],
+      "ladder_name": "structure",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": []
+    },
+    "S17": {
+      "prompt_path": "PROMPT_S17_hook_surface_map.md",
+      "schema_path": "schemas/S17.json",
+      "outputs": ["HOOK_SURFACE_MAP.json"],
+      "ladder_name": "structure",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["S16"]
+    },
+    "S18": {
+      "prompt_path": "PROMPT_S18_contract_coverage.md",
+      "schema_path": "schemas/S18.json",
+      "outputs": ["CONTRACT_COVERAGE.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["S17"]
+    },
+    "S19": {
+      "prompt_path": "PROMPT_S19_gradecard.md",
+      "schema_path": "schemas/S19.json",
+      "outputs": ["GRADECARD.json"],
+      "ladder_name": "cheap_eval",
+      "routing_tier": "qa",
+      "max_hops": 2,
+      "input_phase_ids": [],
+      "prior_step_ids": ["S18"]
+    },
+    "S20": {
+      "prompt_path": "PROMPT_S20_v1_release_plan.md",
+      "schema_path": "schemas/S20.json",
+      "outputs": ["V1_RELEASE_PLAN.json"],
+      "ladder_name": "reasoned_plan",
+      "routing_tier": "synthesis",
+      "max_hops": 3,
+      "input_phase_ids": [],
+      "prior_step_ids": ["S19"]
+    }
+  }
+}

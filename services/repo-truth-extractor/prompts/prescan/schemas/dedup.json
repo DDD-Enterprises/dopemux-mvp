@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["duplicate_assessments"],
+  "properties": {
+    "duplicate_assessments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["group_id", "confirmed_duplicate", "canonical_path", "superseded_paths", "confidence", "reasoning"],
+        "properties": {
+          "group_id": {"type": "string"},
+          "confirmed_duplicate": {"type": "boolean"},
+          "canonical_path": {"type": "string"},
+          "superseded_paths": {"type": "array", "items": {"type": "string"}},
+          "confidence": {"type": "number"},
+          "reasoning": {"type": "string"}
+        }
+      }
+    },
+    "version_chain_summaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["chain_id", "base_topic", "evolution_narrative", "latest_path", "superseded_paths", "key_changes"],
+        "properties": {
+          "chain_id": {"type": "string"},
+          "base_topic": {"type": "string"},
+          "evolution_narrative": {"type": "string"},
+          "latest_path": {"type": "string"},
+          "superseded_paths": {"type": "array", "items": {"type": "string"}},
+          "key_changes": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "divergent_pairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["paths", "reason"],
+        "properties": {
+          "paths": {"type": "array", "items": {"type": "string"}},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}

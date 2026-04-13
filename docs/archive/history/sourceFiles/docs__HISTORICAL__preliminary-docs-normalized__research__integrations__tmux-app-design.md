@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__integrations__tmux-app-design
+title: Docs  Historical  Preliminary Docs Normalized  Research  Integrations  Tmux
+  App Design
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Integrations  Tmux
+  App Design (explanation) for dopemux documentation and developer workflows.
+---
 # Building dopemux: comprehensive design patterns for Python-based tmux applications
 
 The research reveals a mature ecosystem of Python tmux applications leveraging object-oriented APIs, declarative configurations, and modern terminal UI frameworks. The most successful implementations combine **libtmux's programmatic control** with **textual's reactive UI patterns** and **TPM's extensible plugin architecture** to create productive, beautiful terminal experiences.

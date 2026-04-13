@@ -1,6 +1,7 @@
 # GPT Researcher MCP Server Dockerfile
 # Enables autonomous research capabilities via MCP protocol with HTTP transport
 FROM python:3.11-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
@@ -16,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Install dependencies from centralized manifest
-RUN pip install --no-cache-dir .[services]
+RUN uv pip install --system --no-cache .[services]
 
 # Clone GPT Researcher MCP server to /app/gptr-mcp
 RUN git clone https://github.com/assafelovic/gptr-mcp.git /app/gptr-mcp
@@ -25,14 +26,13 @@ RUN git clone https://github.com/assafelovic/gptr-mcp.git /app/gptr-mcp
 RUN sed -i 's/port=8000/port=int(os.getenv("MCP_SERVER_PORT", "8000"))/g' /app/gptr-mcp/server.py
 
 # Install Python dependencies from the cloned repo
-RUN pip install --no-cache-dir -r /app/gptr-mcp/requirements.txt
+RUN uv pip install --system --no-cache -r /app/gptr-mcp/requirements.txt
 
 # Create logs and data directories
 RUN mkdir -p /app/logs /app/data
 
 # Copy wrapper and environment files (relative to root)
 COPY docker/mcp-servers-source/gptr-mcp/wrapper.py /app/wrapper.py
-COPY docker/mcp-servers-source/gptr-mcp/.env.template /app/.env
 
 # Expose MCP server ports
 EXPOSE 3009 3013

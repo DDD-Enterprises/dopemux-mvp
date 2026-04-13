@@ -1,3 +1,15 @@
+---
+id: docuxtractor__test_output_e2e__embedding_validation_report
+title: Docuxtractor  Test Output E2E  Embedding Validation Report
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docuxtractor  Test Output E2E  Embedding Validation Report (explanation)
+  for dopemux documentation and developer workflows.
+---
 # DocuXtractor Embedding Pipeline Validation Report
 
 Generated: 2025-09-24 07:48:39

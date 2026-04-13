@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__architecture__leantime-taskmaster-integration2
+title: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Leantime
+  Taskmaster Integration2
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Leantime
+  Taskmaster Integration2 (explanation) for dopemux documentation and developer workflows.
+---
 # Deep technical integration architecture for Leantime MCP and Claude-Task-Master on dopemux
 
 This comprehensive technical analysis explores the integration architecture between Leantime MCP Server and Claude-Task-Master for creating a sophisticated two-tier task management system on the dopemux platform. The research reveals both tools implement Model Context Protocol (MCP) with complementary capabilities - Leantime handling strategic project management while Claude-Task-Master manages granular code implementation tasks.

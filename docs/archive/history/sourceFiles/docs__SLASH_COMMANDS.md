@@ -1,3 +1,15 @@
+---
+id: docs__SLASH_COMMANDS
+title: Docs  Slash Commands
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Slash Commands (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Dopemux Slash Commands for Claude Code
 
 Seamless integration between Dopemux health monitoring and Claude Code through slash commands, providing instant access to system health, MCP server status, and automated fixes directly from your development environment.

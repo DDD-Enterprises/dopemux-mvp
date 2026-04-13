@@ -1,3 +1,15 @@
+---
+id: docs__94-architecture__c4-l3-code
+title: Docs  94 Architecture  C4 L3 Code
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  94 Architecture  C4 L3 Code (explanation) for dopemux documentation
+  and developer workflows.
+---
 # C4 Level 3 — Code Diagram
 
 ## TODO

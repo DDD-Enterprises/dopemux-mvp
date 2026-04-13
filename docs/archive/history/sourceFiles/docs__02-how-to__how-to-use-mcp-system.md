@@ -1,3 +1,15 @@
+---
+id: docs__02-how-to__how-to-use-mcp-system
+title: Docs  02 How To  How To Use Mcp System
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  02 How To  How To Use Mcp System (explanation) for dopemux documentation
+  and developer workflows.
+---
 # How To: Use the MCP System for ADHD-Optimized Development
 **Category**: `problem-oriented solution guides`
 **Target Audience**: `practitioners`

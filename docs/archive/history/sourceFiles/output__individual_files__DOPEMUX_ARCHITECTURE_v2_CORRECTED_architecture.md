@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_ARCHITECTURE_v2_CORRECTED_architecture
+title: Output  Individual Files  Dopemux Architecture V2 Corrected Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Architecture V2 Corrected Architecture
+  (explanation) for dopemux documentation and developer workflows.
+---
 Of course. As an Enterprise Architect, I am prepared to analyze the provided document and distill its key architectural elements.
 
 However, due to security and privacy protocols, I am unable to access local file paths on your machine, including the specified path: `/Users/hue/code/dmpx/research/architecture/DOPEMUX_ARCHITECTURE_v2_CORRECTED.md`.

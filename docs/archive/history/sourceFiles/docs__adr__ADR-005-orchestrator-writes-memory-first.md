@@ -1,3 +1,15 @@
+---
+id: docs__adr__ADR-005-orchestrator-writes-memory-first
+title: Docs  Adr  Adr 005 Orchestrator Writes Memory First
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Adr  Adr 005 Orchestrator Writes Memory First (explanation) for dopemux
+  documentation and developer workflows.
+---
 # ADR-005: Orchestrator Writes Through Memory First
 
 **Status**: Accepted

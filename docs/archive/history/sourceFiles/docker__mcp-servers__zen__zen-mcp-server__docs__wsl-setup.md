@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__wsl-setup
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Wsl Setup
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Wsl Setup (explanation) for
+  dopemux documentation and developer workflows.
+---
 # WSL (Windows Subsystem for Linux) Setup Guide
 
 This guide provides detailed instructions for setting up Zen MCP Server on Windows using WSL.
