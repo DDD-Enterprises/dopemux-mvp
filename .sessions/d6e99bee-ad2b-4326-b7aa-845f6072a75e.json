@@ -1,0 +1,30 @@
+{
+  "session_id": "d6e99bee-ad2b-4326-b7aa-845f6072a75e",
+  "created_at": "2025-09-27T22:51:19.066987",
+  "last_activity": "2025-09-27T22:51:19.066992",
+  "task_ids": [],
+  "completed_tasks": [],
+  "attention_state": "resuming",
+  "break_history": [
+    {
+      "type": "pause",
+      "timestamp": "2025-09-27T22:51:21.094098",
+      "reason": "user_initiated"
+    },
+    {
+      "type": "resume",
+      "timestamp": "2025-09-27T22:51:23.098830",
+      "break_duration_minutes": 0.03341221666666667
+    }
+  ],
+  "total_focus_minutes": 0,
+  "interruptions": 1,
+  "context_switches": 1,
+  "preferences": {
+    "break_interval": 25,
+    "notification_style": "gentle",
+    "hyperfocus_protection": true
+  },
+  "last_pause": "2025-09-27T22:51:21.094092",
+  "last_resume": "2025-09-27T22:51:23.098810"
+}

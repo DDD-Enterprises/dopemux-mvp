@@ -1,0 +1,15 @@
+CCDOCS/ADR-009-session-management-persistence.md
+CCDOCS/SESSION_PERSISTENCE_ARCHIVE.md
+CCDOCS/TEST_IMPROVEMENT_SESSION.md
+CCDOCS/semantic-search-evaluation-plan.md
+CCDOCS/session-documentation-synthesis-complete.md
+DANGEROUS_MODE_GUIDE.md
+NEXT_SESSION_PLAN.md
+SESSION_CHECKPOINT_RESEARCH.md
+SESSION_CONTEXT_DOCS_PROCESSING.md
+docs/04-explanation/historical/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/readme.md
+docs/04-explanation/historical/DMPX IMPORT/dopemux-docs/architecture/09-decisions/index.md
+docs/04-explanation/historical/DMPX IMPORT/dopemux-docs/readme.md
+docs/04-explanation/historical/dmpx-import-root/dopemux-docs/UPDATED_DOCS/readme.md
+docs/04-explanation/historical/dmpx-import-root/dopemux-docs/architecture/09-decisions/index.md
+docs/04-explanation/historical/dmpx-import-root/dopemux-docs/readme.md

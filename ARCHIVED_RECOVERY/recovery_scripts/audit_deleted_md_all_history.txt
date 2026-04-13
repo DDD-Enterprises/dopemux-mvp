@@ -1,0 +1,516 @@
+CCDOCS/ADR-009-session-management-persistence.md
+CCDOCS/semantic-search-evaluation-plan.md
+CCDOCS/SESSION_PERSISTENCE_ARCHIVE.md
+CCDOCS/session-documentation-synthesis-complete.md
+CCDOCS/TEST_IMPROVEMENT_SESSION.md
+CODE_ARCHIVE_COMPLETE.md
+CONTEXT_PRESERVATION_SESSION.md
+DANGEROUS_MODE_GUIDE.md
+DEVELOPMENT_SESSION.md
+docs/04-explanation/historical/DMPX IMPORT/dopemux-docs/architecture/09-decisions/index.md
+docs/04-explanation/historical/DMPX IMPORT/dopemux-docs/readme.md
+docs/04-explanation/historical/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/readme.md
+docs/04-explanation/historical/dmpx-import-root/dopemux-docs/architecture/09-decisions/index.md
+docs/04-explanation/historical/dmpx-import-root/dopemux-docs/readme.md
+docs/04-explanation/historical/dmpx-import-root/dopemux-docs/UPDATED_DOCS/readme.md
+docs/91-rfc/_research-log/2025-09-19-raw-brainstorm.md
+docs/94-architecture/cross-cutting-concerns.md
+docs/ADHD_OPTIMIZED_ARCHITECTURE.md
+docs/adhd-support.md
+docs/ARCHITECTURE.md
+docs/COMPLETE_ARCHITECTURE_SUMMARY.md
+docs/CONFIGURATION.md
+docs/DMPX IMPORT/claude.md
+docs/DMPX IMPORT/dopemux-docs/architecture/01-introduction/goals-and-requirements.md
+docs/DMPX IMPORT/dopemux-docs/architecture/02-constraints/business-constraints.md
+docs/DMPX IMPORT/dopemux-docs/architecture/04-solution-strategy/system-architecture.md
+docs/DMPX IMPORT/dopemux-docs/architecture/05-building-blocks/ui/ai-assistant-windows.md
+docs/DMPX IMPORT/dopemux-docs/architecture/05-building-blocks/ui/layout-system.md
+docs/DMPX IMPORT/dopemux-docs/architecture/06-runtime/runtime-view.md
+docs/DMPX IMPORT/dopemux-docs/architecture/07-deployment/deployment-architecture.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-000-index.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-001-architecture-paradigm.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-002-adhd-accommodation-integration.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-003-editor-implementation.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-004-visual-workflow-ui.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-005-memory-architecture.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-006-mcp-server-selection.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-007-routing-logic-architecture.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-008-task-management-integration.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-009-session-management-persistence.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-010-custom-agent-rnd-strategy.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-011-adhd-accommodation-technical-decisions.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-011-local-first-data.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-012-embeddings-provider.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-012-mcp-server-integration-patterns.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-013-data-classification.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-013-security-architecture-adaptive-learning.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-014-slice-based-development-workflow.md
+docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/index.md
+docs/DMPX IMPORT/dopemux-docs/architecture/10-quality/quality-requirements.md
+docs/DMPX IMPORT/dopemux-docs/architecture/11-risks/risks-technical-debt.md
+docs/DMPX IMPORT/dopemux-docs/architecture/12-glossary/glossary.md
+docs/DMPX IMPORT/dopemux-docs/diagrams/ui-layouts/development-layout.md
+docs/DMPX IMPORT/dopemux-docs/phase2-completion-summary.md
+docs/DMPX IMPORT/dopemux-docs/product/implementation-roadmap.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/adhd_optimized_interface_design.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/ai-assistant-windows.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/business-constraints.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/claude_flow_orchestration.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/deployment-architecture.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/development-layout.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/dopemux_api_specification.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/dopemux_product_requirements.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/goals-and-requirements.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/implementation-roadmap.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/interaction_patterns.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/layout-system.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/multi_level_memory_architecture.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/multi_model_orchestration.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/quality-requirements.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/system_architecture.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/taskmaster_integration.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/terminal_ide_architecture.md
+docs/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/terminal-app-frameworks.md
+docs/DMPX IMPORT/dopemux-docs/README.md
+docs/DMPX IMPORT/dopemux-docs/tutorials/getting-started.md
+docs/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/adhd-feature-development-spec.md
+docs/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/deployment-architecture.md
+docs/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/diagrams/ui-layouts/development-layout.md
+docs/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/diagrams/ui-layouts/terminal-layout-visual.md
+docs/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/dopemux_api_specification.md
+docs/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/implementation-roadmap.md
+docs/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/quality-requirements.md
+docs/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/README.md
+docs/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/system_architecture.md
+docs/DMPX IMPORT/finaldocs/architecture/adrs/ADR-001-architecture-paradigm.md
+docs/DMPX IMPORT/finaldocs/architecture/adrs/ADR-002-adhd-accommodation-integration.md
+docs/DMPX IMPORT/finaldocs/architecture/design/system_architecture.md
+docs/DMPX IMPORT/finaldocs/business/strategy/dopemux_business_strategy.md
+docs/DMPX IMPORT/finaldocs/development/methodology/adhd_informed_development_methodology.md
+docs/DMPX IMPORT/finaldocs/implementation/claude-code/claude_code_customization.md
+docs/DMPX IMPORT/finaldocs/implementation/frameworks/dependency_framework.md
+docs/DMPX IMPORT/finaldocs/implementation/terminal-ide/terminal_ide_architecture.md
+docs/DMPX IMPORT/finaldocs/integrations/claude-flow/claude_flow_orchestration.md
+docs/DMPX IMPORT/finaldocs/integrations/multi-llm/multi_model_orchestration.md
+docs/DMPX IMPORT/finaldocs/product/prd/dopemux_product_requirements.md
+docs/DMPX IMPORT/finaldocs/schemas/api/dopemux_api_specification.md
+docs/DMPX IMPORT/finaldocs/systems/memory/multi_level_memory_architecture.md
+docs/DMPX IMPORT/finaldocs/ux/interfaces/adhd_optimized_interface_design.md
+docs/DMPX IMPORT/finaldocs/ux/patterns/interaction_patterns.md
+docs/DMPX IMPORT/finaldocs/workflows/taskmaster/taskmaster_integration.md
+docs/HEALTH_MONITORING.md
+docs/HISTORICAL/architecture-iterations/ADHD_OPTIMIZED_ARCHITECTURE.md
+docs/HISTORICAL/architecture-iterations/ARCHITECTURE.md
+docs/HISTORICAL/architecture-iterations/COMPLETE_ARCHITECTURE_SUMMARY.md
+docs/HISTORICAL/DMPX IMPORT/claude.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/01-introduction/goals-and-requirements.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/02-constraints/business-constraints.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/04-solution-strategy/system-architecture.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/05-building-blocks/ui/ai-assistant-windows.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/05-building-blocks/ui/layout-system.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/06-runtime/runtime-view.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/07-deployment/deployment-architecture.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-000-index.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-001-architecture-paradigm.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-002-adhd-accommodation-integration.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-003-editor-implementation.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-004-visual-workflow-ui.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-005-memory-architecture.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-006-mcp-server-selection.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-007-routing-logic-architecture.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-008-task-management-integration.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-009-session-management-persistence.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-010-custom-agent-rnd-strategy.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-011-adhd-accommodation-technical-decisions.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-011-local-first-data.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-012-embeddings-provider.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-012-mcp-server-integration-patterns.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-013-data-classification.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-013-security-architecture-adaptive-learning.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/09-decisions/ADR-014-slice-based-development-workflow.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/10-quality/quality-requirements.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/11-risks/risks-technical-debt.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/architecture/12-glossary/glossary.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/diagrams/ui-layouts/development-layout.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/phase2-completion-summary.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/implementation-roadmap.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/adhd_optimized_interface_design.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/ai-assistant-windows.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/business-constraints.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/claude_flow_orchestration.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/deployment-architecture.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/development-layout.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/dopemux_api_specification.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/dopemux_product_requirements.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/goals-and-requirements.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/implementation-roadmap.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/interaction_patterns.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/layout-system.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/multi_level_memory_architecture.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/multi_model_orchestration.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/quality-requirements.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/system_architecture.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/taskmaster_integration.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/terminal_ide_architecture.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/product/UPDATED_DOCS/terminal-app-frameworks.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/tutorials/getting-started.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/adhd-feature-development-spec.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/deployment-architecture.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/diagrams/ui-layouts/development-layout.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/diagrams/ui-layouts/terminal-layout-visual.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/dopemux_api_specification.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/implementation-roadmap.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/quality-requirements.md
+docs/HISTORICAL/DMPX IMPORT/dopemux-docs/UPDATED_DOCS/system_architecture.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/architecture/adrs/ADR-001-architecture-paradigm.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/architecture/adrs/ADR-002-adhd-accommodation-integration.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/architecture/design/system_architecture.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/business/strategy/dopemux_business_strategy.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/development/methodology/adhd_informed_development_methodology.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/implementation/claude-code/claude_code_customization.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/implementation/frameworks/dependency_framework.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/implementation/terminal-ide/terminal_ide_architecture.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/integrations/claude-flow/claude_flow_orchestration.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/integrations/multi-llm/multi_model_orchestration.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/product/prd/dopemux_product_requirements.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/schemas/api/dopemux_api_specification.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/systems/memory/multi_level_memory_architecture.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/ux/interfaces/adhd_optimized_interface_design.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/ux/patterns/interaction_patterns.md
+docs/HISTORICAL/DMPX IMPORT/finaldocs/workflows/taskmaster/taskmaster_integration.md
+docs/HISTORICAL/PRD_Dopemux_Comprehensive.md
+docs/HISTORICAL/preliminary-docs-normalized/research/.DS_Store.md
+docs/HISTORICAL/preliminary-docs-normalized/research/architecture/.DS_Store.md
+docs/HISTORICAL/preliminary-docs-normalized/research/findings/.DS_Store.md
+docs/HISTORICAL/preliminary-docs-normalized/research/findings/adhd-support.md
+docs/HISTORICAL/preliminary-docs-normalized/research/findings/DOPEMUX_CUSTOM_AGENT_RND.md
+docs/HISTORICAL/preliminary-docs-normalized/research/findings/DOPEMUX_QUICK_REFERENCE.md
+docs/HISTORICAL/preliminary-docs-normalized/research/findings/Implementation-claudecode-claudeflow.md
+docs/IMPLEMENTATION_SPECIFICATION.md
+docs/IMPLEMENTATION_SUMMARY.md
+docs/leantime-integration-plan.md
+docs/master-architecture.md
+docs/MCP_DYNAMIC_DISCOVERY_SYSTEM.md
+docs/MCP_ROUTING_MATRIX.md
+docs/MCP_SERVER_SPECIFICATIONS.md
+docs/mcpOrchestratorTemp/Architecture and Orchestration Research Claude Flow vs Vlaude code.md
+docs/mcpOrchestratorTemp/baseDataAndDesign.md
+docs/mcpOrchestratorTemp/conport-strategy.md
+docs/mcpOrchestratorTemp/IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md
+docs/METAMCP_ORCHESTRATION_ROADMAP.md
+docs/research/historical-extracts/CLAUDE_CODE_COMPLETE_CONFIG.md
+docs/research/historical-extracts/PRD_Dopemux_Comprehensive.md
+docs/research/historical-extracts/README-MIGRATION-TOMBSTONE.md
+docs/session-documentation-synthesis-complete.md
+FINAL_PROJECT_STATUS.md
+INTEGRATION_PACK_SUMMARY.md
+INTEGRATION_SUMMARY.md
+INTELLIGENT_MEMORY_OVERVIEW.md
+LEANTIME_API_TROUBLESHOOTING.md
+LEANTIME_INTEGRATION_SUCCESS.md
+LEANTIME_MCP_OFFICIAL_ANALYSIS.md
+LEANTIME_POST_SETUP.md
+LEANTIME_SETUP_SUMMARY.md
+MCP_COMPLETE_TOOL_ANALYSIS.md
+MCP_DETAILED_ANALYSIS_PLAN.md
+MCP_TOOL_ANALYSIS_CONTEXT.md
+MEMORY_STACK_DEPLOYMENT_SUCCESS.md
+MEMORY_SYSTEM_HTTP_API_DEMO.md
+MEMORY_SYSTEM_VALIDATION_REPORT.md
+METAMCP_CLAUDE_CODE_INTEGRATION.md
+METAMCP_IMPLEMENTATION_SUMMARY.md
+NEXT_SESSION_PLAN.md
+PERSISTENT_VOLUMES_SETUP.md
+PHASE_1_COMPLETION_REPORT.md
+PHASE_2_TMUX_INTEGRATION.md
+SESSION_CHECKPOINT_RESEARCH.md
+SESSION_COMPLETION_STATUS.md
+SESSION_CONTEXT_DOCS_PROCESSING.md
+SESSION_PERSISTENCE_ARCHIVE.md
+src/dopemux/ChatRipperXXX/.claude/agents/privacy-guardian.md
+src/dopemux/ChatRipperXXX/.claude/agents/task-checker.md
+src/dopemux/ChatRipperXXX/.claude/agents/task-executor.md
+src/dopemux/ChatRipperXXX/.claude/agents/task-orchestrator.md
+src/dopemux/ChatRipperXXX/.claude/CHATX_OPTIMIZATION_SUMMARY.md
+src/dopemux/ChatRipperXXX/.claude/commands/bootstrap.md
+src/dopemux/ChatRipperXXX/.claude/commands/caveat.md
+src/dopemux/ChatRipperXXX/.claude/commands/code-search.md
+src/dopemux/ChatRipperXXX/.claude/commands/commit-pr.md
+src/dopemux/ChatRipperXXX/.claude/commands/complete.md
+src/dopemux/ChatRipperXXX/.claude/commands/conport/note.md
+src/dopemux/ChatRipperXXX/.claude/commands/debug.md
+src/dopemux/ChatRipperXXX/.claude/commands/decision.md
+src/dopemux/ChatRipperXXX/.claude/commands/diff-proposal.md
+src/dopemux/ChatRipperXXX/.claude/commands/docs/docs-get.md
+src/dopemux/ChatRipperXXX/.claude/commands/docs/docs-index.md
+src/dopemux/ChatRipperXXX/.claude/commands/docs/docs-toc.md
+src/dopemux/ChatRipperXXX/.claude/commands/docs/find.md
+src/dopemux/ChatRipperXXX/.claude/commands/followup.md
+src/dopemux/ChatRipperXXX/.claude/commands/forensic-validation.md
+src/dopemux/ChatRipperXXX/.claude/commands/get-decisions.md
+src/dopemux/ChatRipperXXX/.claude/commands/gh/issue-create.md
+src/dopemux/ChatRipperXXX/.claude/commands/gh/pr-checks.md
+src/dopemux/ChatRipperXXX/.claude/commands/gh/pr-create.md
+src/dopemux/ChatRipperXXX/.claude/commands/gh/pr-merge.md
+src/dopemux/ChatRipperXXX/.claude/commands/git/audit.md
+src/dopemux/ChatRipperXXX/.claude/commands/git/git-commit.md
+src/dopemux/ChatRipperXXX/.claude/commands/hooks-dashboard.md
+src/dopemux/ChatRipperXXX/.claude/commands/implement.md
+src/dopemux/ChatRipperXXX/.claude/commands/mem-query.md
+src/dopemux/ChatRipperXXX/.claude/commands/mem/save.md
+src/dopemux/ChatRipperXXX/.claude/commands/mem/summarize.md
+src/dopemux/ChatRipperXXX/.claude/commands/pattern.md
+src/dopemux/ChatRipperXXX/.claude/commands/plan-tasks.md
+src/dopemux/ChatRipperXXX/.claude/commands/plan.md
+src/dopemux/ChatRipperXXX/.claude/commands/privacy-scan.md
+src/dopemux/ChatRipperXXX/.claude/commands/research.md
+src/dopemux/ChatRipperXXX/.claude/commands/retrospect.md
+src/dopemux/ChatRipperXXX/.claude/commands/runbook-update.md
+src/dopemux/ChatRipperXXX/.claude/commands/scratch.md
+src/dopemux/ChatRipperXXX/.claude/commands/search-decisions.md
+src/dopemux/ChatRipperXXX/.claude/commands/security-review.md
+src/dopemux/ChatRipperXXX/.claude/commands/ship.md
+src/dopemux/ChatRipperXXX/.claude/commands/story.md
+src/dopemux/ChatRipperXXX/.claude/commands/switch.md
+src/dopemux/ChatRipperXXX/.claude/commands/tdd-loop.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/add-dependency/add-dependency.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/add-subtask/add-subtask.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/add-subtask/convert-task-to-subtask.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/add-task/add-task.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/analyze-complexity/analyze-complexity.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/clear-subtasks/clear-all-subtasks.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/clear-subtasks/clear-subtasks.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/complete-task.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/complexity-report/complexity-report.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/expand/expand-all-tasks.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/expand/expand-task.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/fix-dependencies/fix-dependencies.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/generate/generate-tasks.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/help.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/init/init-project-quick.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/init/init-project.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/learn.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/list.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/list/list-tasks-by-status.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/list/list-tasks-with-subtasks.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/list/list-tasks.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/models/setup-models.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/models/view-models.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/next/next-task.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/parse-prd/parse-prd-with-research.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/parse-prd/parse-prd.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/remove-dependency/remove-dependency.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/remove-subtask/remove-subtask.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/remove-task/remove-task.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/set-status/to-cancelled.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/set-status/to-deferred.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/set-status/to-done.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/set-status/to-in-progress.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/set-status/to-pending.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/set-status/to-review.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/setup/install-taskmaster.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/setup/quick-install-taskmaster.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/show/show-task.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/status/project-status.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/sync-readme/sync-readme.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/tm-main.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/update/update-single-task.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/update/update-task.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/update/update-tasks-from-id.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/utils/analyze-project.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/validate-dependencies/validate-dependencies.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/workflows/auto-implement-tasks.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/workflows/command-pipeline.md
+src/dopemux/ChatRipperXXX/.claude/commands/tm/workflows/smart-workflow.md
+src/dopemux/ChatRipperXXX/.claude/commands/todo.md
+src/dopemux/ChatRipperXXX/.claude/commands/web/triage.md
+src/dopemux/ChatRipperXXX/.claude/commands/workflow-end-to-end.md
+src/dopemux/ChatRipperXXX/.claude/commands/workflow-summary.md
+src/dopemux/ChatRipperXXX/.claude/commands/zen-continue.md
+src/dopemux/ChatRipperXXX/.claude/commands/zen.md
+src/dopemux/ChatRipperXXX/.claude/dynamic-discovery/architecture.md
+src/dopemux/ChatRipperXXX/.claude/dynamic-discovery/integration-guide.md
+src/dopemux/ChatRipperXXX/.claude/hooks/CHEATSHEET.md
+src/dopemux/ChatRipperXXX/.claude/hooks/README.md
+src/dopemux/ChatRipperXXX/.claude/mcp/README.md
+src/dopemux/ChatRipperXXX/.claude/platform-evolution/DEPLOYMENT_COMPLETE.md
+src/dopemux/ChatRipperXXX/.claude/SYSTEM_OVERVIEW.md
+src/dopemux/ChatRipperXXX/.claude/templates/task.md
+src/dopemux/ChatRipperXXX/.claude/TM_COMMANDS_GUIDE.md
+src/dopemux/ChatRipperXXX/.claude/todos/active.md
+src/dopemux/ChatRipperXXX/.claude/todos/backlog.md
+src/dopemux/ChatRipperXXX/.claude/todos/completed.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_001.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_002.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_003.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_004.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_005.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_006.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_007.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_008.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_010.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_012.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_013.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_014.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_015.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_020.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_021.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_022.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_027.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_028.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_029.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_031.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_032.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_033.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_034.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_035.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_036.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_040.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_041.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_046.md
+src/dopemux/ChatRipperXXX/.claude/todos/high/task_047.md
+src/dopemux/ChatRipperXXX/.claude/todos/low/task_018.md
+src/dopemux/ChatRipperXXX/.claude/todos/low/task_019.md
+src/dopemux/ChatRipperXXX/.claude/todos/low/task_025.md
+src/dopemux/ChatRipperXXX/.claude/todos/low/task_026.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_009.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_011.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_016.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_017.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_023.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_024.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_030.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_037.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_038.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_042.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_043.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_044.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_045.md
+src/dopemux/ChatRipperXXX/.claude/todos/medium/task_048.md
+src/dopemux/ChatRipperXXX/.claude/todos/migration_summary.md
+src/dopemux/ChatRipperXXX/.claude/todos/README.md
+src/dopemux/ChatRipperXXX/.claude/workflows/optimized-patterns.md
+src/dopemux/ChatRipperXXX/.github/instructions/dev_workflow.instructions.md
+src/dopemux/ChatRipperXXX/.github/instructions/self_improve.instructions.md
+src/dopemux/ChatRipperXXX/.github/instructions/taskmaster.instructions.md
+src/dopemux/ChatRipperXXX/.github/instructions/vscode_rules.instructions.md
+src/dopemux/ChatRipperXXX/.github/ISSUE_TEMPLATE/bug_report.md
+src/dopemux/ChatRipperXXX/.github/ISSUE_TEMPLATE/feature_request.md
+src/dopemux/ChatRipperXXX/.github/ISSUE_TEMPLATE/task.md
+src/dopemux/ChatRipperXXX/.github/PULL_REQUEST_TEMPLATE.md
+src/dopemux/ChatRipperXXX/.serena/memories/project_overview.md
+src/dopemux/ChatRipperXXX/.serena/memories/suggested_commands.md
+src/dopemux/ChatRipperXXX/.serena/memories/tech_stack.md
+src/dopemux/ChatRipperXXX/AGENTS.md
+src/dopemux/ChatRipperXXX/architecture-comprehensive.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/code-of-conduct.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/CONTRIBUTING.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/HOW_IT_WORKS.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/README.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/AI-IntelliJ-Plugin/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/AVS-Vibe-Developer-Guide/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/AWS-MCP-Server/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Basic-Memory/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/claude-code-mcp-enhanced/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Comm/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Course-Builder/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Cursor-Tools/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/DroidconKotlin/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/EDSL/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Giselle/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Guitar/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/JSBeeb/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Lamoom-Python/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/LangGraphJS/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Network-Chronicles/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Note-Companion/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Pareto-Mac/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/Perplexity-MCP/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/SPy/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/claude.md-files/TPL/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/official-documentation/Anthropic-Quickstarts/CLAUDE.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/act/act.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/add-to-changelog/add-to-changelog.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/clean/clean.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/commit/commit.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/context-prime/context-prime.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/create-jtbd/create-jtbd.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/create-pr/create-pr.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/create-prd/create-prd.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/create-prp/create-prp.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/create-pull-request/create-pull-request.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/create-worktrees/create-worktrees.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/fix-github-issue/fix-github-issue.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/husky/husky.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/initref/initref.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/load-llms-txt/load-llms-txt.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/pr-review/pr-review.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/release/release.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/testing_plan_integration/testing_plan_integration.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/todo/todo.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/update-branch-name/update-branch-name.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/slash-commands/update-docs/update-docs.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/resources/workflows-knowledge-guides/Blogging-Platform-Instructions/view_commands.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/scripts/BADGE_AUTOMATION_SETUP.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/scripts/README.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/templates/announcements.md
+src/dopemux/ChatRipperXXX/awesome-claude-code/templates/README.template.md
+src/dopemux/ChatRipperXXX/claude-platform-evolution/QUICK_START.md
+src/dopemux/ChatRipperXXX/claude-platform-evolution/README.md
+src/dopemux/ChatRipperXXX/claude-platform-evolution/UNIVERSAL_DEPLOYMENT_SUMMARY.md
+src/dopemux/ChatRipperXXX/CLAUDE.md
+src/dopemux/ChatRipperXXX/docs/acceptance-criteria.md
+src/dopemux/ChatRipperXXX/docs/agent-workflows.md
+src/dopemux/ChatRipperXXX/docs/architecture.md
+src/dopemux/ChatRipperXXX/docs/design/adrs/0001-record-architecture-decisions.md
+src/dopemux/ChatRipperXXX/docs/design/adrs/0002-default-chunking-strategy.md
+src/dopemux/ChatRipperXXX/docs/design/adrs/0003-local-transcription-engine.md
+src/dopemux/ChatRipperXXX/docs/design/adrs/0004-acquisition-ux-imessage-icloud-usb.md
+src/dopemux/ChatRipperXXX/docs/design/adrs/0017-transcription-engine-faster-whisper.md
+src/dopemux/ChatRipperXXX/docs/design/adrs/0018-cli-error-model-rfc7807.md
+src/dopemux/ChatRipperXXX/docs/design/adrs/ADR-008-psychology-graph-integration.md
+src/dopemux/ChatRipperXXX/docs/design/adrs/index.md
+src/dopemux/ChatRipperXXX/docs/design/next.md
+src/dopemux/ChatRipperXXX/docs/design/specifications/cloud-enrichment.md
+src/dopemux/ChatRipperXXX/docs/design/specifications/image-enrichment.md
+src/dopemux/ChatRipperXXX/docs/design/specifications/imessage-extractor.md
+src/dopemux/ChatRipperXXX/docs/design/specifications/index.md
+src/dopemux/ChatRipperXXX/docs/development/contributing.md
+src/dopemux/ChatRipperXXX/docs/development/developer-guide.md
+src/dopemux/ChatRipperXXX/docs/development/repo-prompt.md
+src/dopemux/ChatRipperXXX/docs/development/test-strategy.md
+src/dopemux/ChatRipperXXX/docs/dopemux-mvp-research.md
+src/dopemux/ChatRipperXXX/docs/extractor_readiness.md
+src/dopemux/ChatRipperXXX/docs/how-to/instagram-zip.md
+src/dopemux/ChatRipperXXX/docs/how-to/iphone-backup.md
+src/dopemux/ChatRipperXXX/docs/how-to/pdf-ingestion.md
+src/dopemux/ChatRipperXXX/docs/how-to/transcription-local.md
+src/dopemux/ChatRipperXXX/docs/implementation-plan.md
+src/dopemux/ChatRipperXXX/docs/implementation.md
+src/dopemux/ChatRipperXXX/docs/index.md
+src/dopemux/ChatRipperXXX/docs/interfaces.md
+src/dopemux/ChatRipperXXX/docs/operations/non-functional-requirements.md
+src/dopemux/ChatRipperXXX/docs/operations/security-threat-model.md
+src/dopemux/ChatRipperXXX/docs/overview.md
+src/dopemux/ChatRipperXXX/docs/plans/extractor-hardening.md
+src/dopemux/ChatRipperXXX/docs/plans/wave2.md
+src/dopemux/ChatRipperXXX/docs/policy/code-of-conduct.md
+src/dopemux/ChatRipperXXX/docs/policy/pr.md
+src/dopemux/ChatRipperXXX/docs/policy/security.md
+src/dopemux/ChatRipperXXX/docs/psychology-analysis.md
+src/dopemux/ChatRipperXXX/docs/README.md
+src/dopemux/ChatRipperXXX/docs/reference/changelog.md
+src/dopemux/ChatRipperXXX/docs/reference/commands/index.md
+src/dopemux/ChatRipperXXX/docs/reference/faq.md
+src/dopemux/ChatRipperXXX/docs/reference/workflow/taskmaster-integration.md
+src/dopemux/ChatRipperXXX/docs/repo-prompt-xml.md
+src/dopemux/ChatRipperXXX/docs/research/image-enrichment.md
+src/dopemux/ChatRipperXXX/docs/research/image-psychology-model-research-plan.md
+src/dopemux/ChatRipperXXX/docs/SESSION_SUMMARY.md
+src/dopemux/ChatRipperXXX/llm-context.md
+src/dopemux/ChatRipperXXX/llms.md
+src/dopemux/ChatRipperXXX/README.md
+TEST_COVERAGE_REPORT.md
+TEST_IMPROVEMENT_SESSION.md
+UNIFIED_MEMORY_IMPLEMENTATION.md
