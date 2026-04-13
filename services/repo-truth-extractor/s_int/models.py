@@ -41,11 +41,11 @@ S_INT_LADDERS: Dict[str, List[Route]] = {
 }
 
 S_INT_STEPS: List[SIntStep] = [
-    SIntStep("S16", "S16_mcp_split_validity.md", "S16.json", "structure", "synthesis", 3),
-    SIntStep("S17", "S17_hook_surface_map.md", "S17.json", "structure", "synthesis", 3),
-    SIntStep("S18", "S18_contract_coverage.md", "S18.json", "reasoned_plan", "synthesis", 3),
-    SIntStep("S19", "S19_gradecard.md", "S19.json", "cheap_eval", "qa", 2),
-    SIntStep("S20", "S20_v1_release_plan.md", "S20.json", "reasoned_plan", "synthesis", 3),
+    SIntStep("S16", "PROMPT_S16_mcp_split_validity.md", "S16.json", "structure", "synthesis", 3),
+    SIntStep("S17", "PROMPT_S17_hook_surface_map.md", "S17.json", "structure", "synthesis", 3),
+    SIntStep("S18", "PROMPT_S18_contract_coverage.md", "S18.json", "reasoned_plan", "synthesis", 3),
+    SIntStep("S19", "PROMPT_S19_gradecard.md", "S19.json", "cheap_eval", "qa", 2),
+    SIntStep("S20", "PROMPT_S20_v1_release_plan.md", "S20.json", "reasoned_plan", "synthesis", 3),
 ]
 
 
