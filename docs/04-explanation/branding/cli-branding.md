@@ -30,11 +30,24 @@ This document explains how the Ritual Daemon voice surfaces inside `dopemux` CLI
 
 The console helper automatically handles color tags, so you can pass `message` as a preformatted string (e.g., `[dim]Hint[/dim]`) and it will still emit the chip in front.
 
-## 3. Printing without chips
+## 3. Startup Banner
+
+Startup branding is owned by [splash.py](/Users/hue/code/dopemux-mvp/src/dopemux/ui/splash.py).
+
+- The startup banner is a framed mark, not a scrolling gimmick.
+- Rich mode uses cyan-to-violet logo coloring plus magenta/violet/cyan lane tags.
+- Plain mode must print the same framed banner text with no ANSI escapes.
+- The drip accent is limited to the two short interior lines under the logo.
+- Startup copy that follows the banner should reinforce the same hierarchy:
+  - deterministic core
+  - memory mesh
+  - operator
+
+## 4. Printing without chips
 
 If a command needs to print a table, raw Markdown, or other layout-sensitive block, simply call `console.print(..., brand_chip="")`. This bypasses auto-tagging while leaving `RitualConsole` available for other adjacent lines.
 
-## 4. Future contribution tips
+## 5. Future contribution tips
 
 1. Start with `brand_status(...)` whenever you want a chip; add new chip constants to the brand system if needed.
 1. Avoid sprinkling literal `console.print("[color]...")` lines unless you're printing multiline tables or help text that relies on precise spacing.
