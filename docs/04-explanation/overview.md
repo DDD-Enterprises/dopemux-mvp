@@ -5,7 +5,7 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-19'
-last_review: '2026-03-30'
+last_review: '2026-04-12'
 next_review: '2026-06-30'
 prelude: Understanding-oriented explanation index for architecture, design rationale, and system behavior.
 ---
@@ -23,6 +23,8 @@ Explanation docs provide architecture and design context for why the system work
 
 ## Highlighted Active Topics
 
+- [Dopemux MVP - Full Codebase Explainer](architecture/dopemux-mvp-full-codebase-explainer.md)
+- [Repo Truth Extractor — Structure, Architecture & Optimal Design](technical-deep-dives/repo-truth-extractor-structure-architecture-and-optimal-design.md)
 - [Memory And Persistence Deep Dive](technical-deep-dives/memory-and-persistence-deep-dive.md)
 - [Workflow Kit Architecture](workflow-kit-architecture.md)
 - [PR Merge Queue Orchestration](pr-merge-queue-orchestration.md)
