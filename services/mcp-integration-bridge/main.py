@@ -1012,9 +1012,9 @@ class TaskIntegrationService:
                     "status_distribution": status_counts,
                 }
 
-        except Exception as e:
-            logger.error(f"❌ Failed to get project progress: {e}")
-            return {"error": str(e)}
+        except Exception:
+            logger.exception("❌ Failed to get project progress")
+            return {"error": "Unable to retrieve project progress"}
 
     async def create_workflow_from_template(
         self, template_name: str, project_id: str, context: Dict[str, Any]
