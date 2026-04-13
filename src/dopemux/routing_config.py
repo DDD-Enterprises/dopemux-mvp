@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 import logging
 from pathlib import Path
+import shutil
 from typing import Any, Dict, Optional
 
 import yaml
@@ -76,6 +78,115 @@ class RoutingConfig:
             )
         except Exception as e:
             raise RoutingConfigError(f"Failed to copy template: {e}") from e
+
+    def load_template(self) -> Dict[str, Any]:
+        """Load the repo-owned routing template."""
+        if not self.TEMPLATE_PATH.exists():
+            raise RoutingConfigError(
+                f"Routing template not found at {self.TEMPLATE_PATH}"
+            )
+
+        try:
+            with open(self.TEMPLATE_PATH, "r", encoding="utf-8") as f:
+                return yaml.safe_load(f) or {}
+        except yaml.YAMLError as e:
+            raise RoutingConfigError(f"Invalid YAML in routing template: {e}") from e
+        except Exception as e:
+            raise RoutingConfigError(f"Failed to load routing template: {e}") from e
+
+    def audit_alias_contract(
+        self, config: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Compare current alias mappings against the repo-owned template."""
+        current = config if config is not None else self.load()
+        template = self.load_template()
+
+        template_aliases = template.get("aliases", {})
+        current_aliases = current.get("aliases", {})
+
+        if not isinstance(template_aliases, dict):
+            raise RoutingConfigError("Template aliases must be a dictionary")
+        if not isinstance(current_aliases, dict):
+            raise RoutingConfigError("Config aliases must be a dictionary")
+
+        missing = {
+            alias: target
+            for alias, target in template_aliases.items()
+            if alias not in current_aliases
+        }
+        mismatched = {
+            alias: {"expected": target, "actual": current_aliases[alias]}
+            for alias, target in template_aliases.items()
+            if alias in current_aliases and current_aliases[alias] != target
+        }
+
+        return {
+            "config_path": str(self.config_path),
+            "template_path": str(self.TEMPLATE_PATH),
+            "template_aliases": template_aliases,
+            "missing_aliases": missing,
+            "mismatched_aliases": mismatched,
+            "stale": bool(missing or mismatched),
+        }
+
+    def repair_alias_contract(self) -> Dict[str, Any]:
+        """Repair repo-owned alias drift without overwriting unrelated config."""
+        current = self.load()
+        audit = self.audit_alias_contract(current)
+        if not audit["stale"]:
+            return {
+                "changed": False,
+                "backup_path": None,
+                "audit": audit,
+            }
+
+        merged_aliases = dict(current.get("aliases", {}))
+        merged_aliases.update(audit["template_aliases"])
+
+        backup_path = self.config_path.with_name(
+            f"{self.config_path.name}.bak.{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        )
+        shutil.copy2(self.config_path, backup_path)
+
+        self._write_alias_block(merged_aliases)
+        self._loaded = False
+        repaired = self.load()
+
+        return {
+            "changed": True,
+            "backup_path": str(backup_path),
+            "audit": self.audit_alias_contract(repaired),
+        }
+
+    def _write_alias_block(self, aliases: Dict[str, str]) -> None:
+        """Rewrite only the top-level aliases block in routing.yaml."""
+        text = self.config_path.read_text(encoding="utf-8")
+        lines = text.splitlines(keepends=True)
+
+        start = None
+        end = len(lines)
+        for index, line in enumerate(lines):
+            if line.strip() == "aliases:" and line[: len(line) - len(line.lstrip())] == "":
+                start = index
+                break
+
+        if start is None:
+            raise RoutingConfigError("routing.yaml missing top-level aliases section")
+
+        for index in range(start + 1, len(lines)):
+            stripped = lines[index].strip()
+            if not stripped:
+                continue
+            if lines[index][: len(lines[index]) - len(lines[index].lstrip())] == "":
+                end = index
+                break
+
+        alias_lines = ["aliases:\n"]
+        for alias, target in aliases.items():
+            alias_lines.append(f"  {alias}: {target}\n")
+
+        updated = "".join(lines[:start] + alias_lines + lines[end:])
+        self.config_path.write_text(updated, encoding="utf-8")
 
     def validate(self) -> None:
         """Validate the loaded configuration.
@@ -371,4 +482,3 @@ class RoutingConfig:
         if not self._loaded:
             self.load()
         return self.config.get("ports", {})
-

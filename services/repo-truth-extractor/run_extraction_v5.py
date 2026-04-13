@@ -4472,7 +4472,10 @@ def resolve_effective_step_route(
                 f"JSON-managed step {phase}:{step_id} missing primary_routes in model_map.yaml."
             )
         if strict_required:
-            strict_ladder: List[Tuple[str, str, str]] = []
+            # For strict-required stages, we deliberately track only provider and model_id in
+            # strict_ladder to avoid persisting authentication-related environment identifiers
+            # (such as api_key_env names) in any logged or serialized strict-route metadata.
+            strict_ladder: List[Tuple[str, str]] = []
             strict_attempts: List[Dict[str, Any]] = []
             for route in primary_routes:
                 selected_route, attempts = resolve_stage_route(
@@ -4491,7 +4494,6 @@ def resolve_effective_step_route(
                         (
                             str(selected_route["provider"]),
                             str(selected_route["model_id"]),
-                            str(selected_route["api_key_env"]),
                         )
                     )
             if not strict_ladder:
@@ -4502,7 +4504,7 @@ def resolve_effective_step_route(
                     "Strict-required stage has no strict-capable route before token spend: "
                     f"{phase}:{step_id} attempts={attempt_json}"
                 )
-            provider, model_id, api_key_env = strict_ladder[0]
+            provider, model_id = strict_ladder[0]
             logger.info(
                 "STRICT_ROUTE_CHOSEN phase=%s step=%s provider=%s model=%s",
                 phase,
@@ -4516,7 +4518,9 @@ def resolve_effective_step_route(
                 "ladder": strict_ladder,
                 "provider": provider,
                 "model_id": model_id,
-                "api_key_env": api_key_env,
+                # Intentionally omit api_key_env from the returned strict metadata; callers
+                # that need the environment-variable name should derive it from the original
+                # contract routes rather than from strict_ladder.
                 "reason": "contract_lane_primary_strict",
                 "contract_lane": resolve_contract_lane(contract),
                 "strict_required": True,
