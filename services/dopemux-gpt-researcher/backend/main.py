@@ -10,6 +10,7 @@ FastAPI application that provides enhanced research capabilities with:
 """
 
 import asyncio
+import json
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -354,7 +355,11 @@ async def websocket_progress_endpoint(websocket: WebSocket, user_id: str, task_i
         while True:
             try:
                 data = await websocket.receive_text()
-                message = eval(data)  # In production, use json.loads with error handling
+                try:
+                    message = json.loads(data)
+                except json.JSONDecodeError:
+                    logger.warning("Invalid JSON received on websocket; dropping message")
+                    continue
 
                 if message.get("type") == "ping":
                     await websocket.send_json({"type": "pong"})
