@@ -16,10 +16,10 @@ aiofiles==23.2.1
 
 # === HTTP Client & Requests ===
 httpx==0.25.2
-aiohttp==3.9.1
+aiohttp==3.13.4
 
 # === Data Processing ===
-python-multipart==0.0.6
+python-multipart==0.0.22
 python-jose[cryptography]==3.3.0
 
 # === Logging & Monitoring ===
@@ -34,7 +34,7 @@ alembic==1.13.1
 python-dotenv==1.0.0
 
 # === Development & Testing ===
-pytest==7.4.3
+pytest==9.0.3
 pytest-asyncio==0.21.1
 pytest-mock==3.12.0
 
