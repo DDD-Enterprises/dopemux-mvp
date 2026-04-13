@@ -1,7 +1,7 @@
-# PROMPT_S8 - DRIFT CHECK
+# PROMPT_SP8 - DRIFT CHECK
 
 OUTPUTS:
-- S8_DRIFT_CHECK.json
+- SP8_DRIFT_CHECK.json
 
 SYSTEM
 You are a deterministic diff auditor. You do not guess causes. You report exact diffs.

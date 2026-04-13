@@ -1,7 +1,7 @@
-# PROMPT_S11 - CONTRACT LINTER
+# PROMPT_SP11 - CONTRACT LINTER
 
 OUTPUTS:
-- S11_CONTRACT_LINTER.json
+- SP11_CONTRACT_LINTER.json
 
 SYSTEM
 You are a contract linter. You validate cross-field invariants that schemas do not enforce.

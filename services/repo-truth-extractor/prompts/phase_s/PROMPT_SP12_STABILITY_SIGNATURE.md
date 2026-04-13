@@ -1,7 +1,7 @@
-# PROMPT_S12 - STABILITY SIGNATURE
+# PROMPT_SP12 - STABILITY SIGNATURE
 
 OUTPUTS:
-- S12_STABILITY_SIGNATURE.json
+- SP12_STABILITY_SIGNATURE.json
 
 SYSTEM
 You are a stability signature generator. Output must be deterministic.
