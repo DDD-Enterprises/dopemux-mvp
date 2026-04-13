@@ -6,10 +6,11 @@ Phase 2: ADHD-Optimized API with session management and real-time progress
 
 import os
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Dict, List, Optional, Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,6 +28,8 @@ from models.research_task import ResearchType, ADHDConfiguration, ProjectContext
 from services.orchestrator import ResearchTaskOrchestrator
 from services.session_manager import SessionManager
 from engines.search.search_orchestrator import SearchStrategy
+
+logger = logging.getLogger(__name__)
 
 # ========================
 # Configuration
@@ -55,7 +58,7 @@ class ResearchRequest(BaseModel):
     research_type: str = Field(default="exploratory", description="Type: exploratory, technical, comparative, systematic")
     depth: str = Field(default="balanced", description="Depth: shallow, balanced, deep")
     adhd_config: Optional[Dict[str, Any]] = Field(default=None, description="ADHD-specific settings")
-    session_id: Optional[str] = Field(default=None, description="Session ID for resuming")
+    session_id: Optional[UUID] = Field(default=None, description="Session ID for resuming")
     max_sources: int = Field(default=10, description="Maximum sources to analyze")
     timeout_minutes: int = Field(default=25, description="Pomodoro-aligned timeout")
 
@@ -298,7 +301,7 @@ async def create_research_task(
 
     try:
         # Create or restore session
-        session_id = request.session_id or str(uuid4())
+        session_id = str(request.session_id or uuid4())
 
         if app_state.session_manager:
             session = await app_state.session_manager.get_or_create_session(session_id)
@@ -360,7 +363,8 @@ async def create_research_task(
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to create research task: {str(e)}")
+        logger.exception("Failed to create research task")
+        raise HTTPException(status_code=500, detail="Failed to create research task")
 
 
 @app.get("/api/v1/research/{task_id}")
