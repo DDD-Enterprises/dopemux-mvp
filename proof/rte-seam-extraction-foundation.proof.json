@@ -1,7 +1,7 @@
 {
   "packet": "rte-seam-extraction-foundation",
   "title": "RTE seam extraction and deterministic modularization",
-  "status": "slice_2_complete_pending_slice_3",
+  "status": "slice_3_complete_pending_slice_4",
   "commit_plan": [
     {
       "slice": 1,
@@ -21,7 +21,7 @@
     {
       "slice": 3,
       "name": "Extract phase enum and dependency map",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "slice": 4,
@@ -77,6 +77,15 @@
         "Updated run_extraction_v5.py to import and re-export the moved static constants while keeping phase ordering, dependency metadata, and runtime orchestration local for the next slice.",
         "Added a focused seam parity test to prove the v5 public surface still exposes the same runtime paths and static constants after the extraction."
       ]
+    },
+    {
+      "slice": 3,
+      "name": "Extract phase enum and dependency map",
+      "summary": [
+        "Added services/repo-truth-extractor/phases.py with string-compatible PhaseId values, deterministic phase ordering, centralized phase metadata, dependency maps, and required prompt step IDs.",
+        "Updated run_extraction_v5.py to import and re-export the phase metadata seam while leaving runtime orchestration and artifact-group logic in place.",
+        "Fixed two strict-route runtime assumptions uncovered during validation by falling back to PROVIDER_API_KEY_ENV when strict route metadata intentionally omits api_key_env."
+      ]
     }
   ],
   "replan_events": [
@@ -85,6 +94,12 @@
       "reason": "Full extractor activation surfaced comparison-lane normalization drift, Phase S/SP registry drift, and benchmark smoke dependence on repo-level proof directories.",
       "inserted_before_slice": 2,
       "result": "Slice 2 seam extraction deferred until extractor smoke and full-suite stabilization gates passed."
+    },
+    {
+      "event": "slice_3_strict_route_runtime_fix",
+      "reason": "Slice 3 validation exposed existing runtime assumptions that strict route metadata always carries api_key_env, causing dry-run phase A failures for strict-required routes.",
+      "inserted_before_slice": 4,
+      "result": "Kept slice 3 intact but amended run_extraction_v5.py to derive api_key_env from PROVIDER_API_KEY_ENV when strict route payloads omit it by design."
     }
   ],
   "skipped_or_abandoned_slices": [],
@@ -102,6 +117,11 @@
     {
       "sha": "dc4d3034b48c6854a765f710373055e59f8f30bb",
       "role": "slice_2_static_config_seam",
+      "created_in_this_packet": true
+    },
+    {
+      "sha": "3d845eccd60bfefa63e770266ad9052f7c4a2b04",
+      "role": "slice_3_phase_metadata_seam",
       "created_in_this_packet": true
     }
   ],
@@ -183,6 +203,24 @@
       "label": "slice_2_cli_help_smoke",
       "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --help",
       "status": "passed"
+    },
+    {
+      "label": "slice_3_python_compile_checks",
+      "command": "python3 -m py_compile services/repo-truth-extractor/phases.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_phases_seam.py",
+      "status": "passed",
+      "files_checked": 3
+    },
+    {
+      "label": "slice_3_phase_metadata_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_phases_seam.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_phase_interaction.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 65,
+      "fail_count": 0
+    },
+    {
+      "label": "slice_3_phase_a_dry_run_smoke",
+      "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id tp5_dry_run_noise_probe --output-root /tmp/rte_slice3_probe_fix3",
+      "status": "passed"
     }
   ],
   "codereview": {
@@ -190,19 +228,20 @@
     "evidence": [
       "Reviewed the localized diff for CI, registry, comparison-lane normalization, profile-synth fixture materialization, and operator-safety test alignment.",
       "Ran git diff --check on the touched files with no findings.",
-      "Reviewed the slice-2 diff to confirm only static runtime config moved and phase/dependency semantics remained in run_extraction_v5.py."
+      "Reviewed the slice-2 diff to confirm only static runtime config moved and phase/dependency semantics remained in run_extraction_v5.py.",
+      "Reviewed the slice-3 diff to confirm phase ordering, metadata, and required step sets moved into phases.py without moving artifact-group or execution logic."
     ]
   },
   "precommit": {
     "status": "passed",
-    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/rte_config.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_config_seam.py"
+    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/phases.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_phases_seam.py"
   },
   "evidence_ledger_completeness": "complete",
   "pr": {
     "url": null,
     "status": "not_opened"
   },
-  "merge_readiness": "slice_2_complete_local_branch_not_ready_without_follow_on_slices_and_pr",
+  "merge_readiness": "slice_3_complete_local_branch_not_ready_without_follow_on_slices_and_pr",
   "worktree": {
     "path": "/Users/hue/code/dopemux-mvp-rte-seams-v2",
     "branch": "codex/rte-seam-extraction-foundation-v2",
