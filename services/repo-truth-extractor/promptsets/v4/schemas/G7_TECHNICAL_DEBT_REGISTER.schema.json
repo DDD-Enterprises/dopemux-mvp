@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "promptsets/v4/schemas/G7_TECHNICAL_DEBT_REGISTER.schema.json",
+  "title": "TECHNICAL_DEBT_REGISTER@v1",
+  "type": "object",
+  "required": ["schema", "items"],
+  "properties": {
+    "schema": { "const": "TECHNICAL_DEBT_REGISTER@v1" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "debt_type", "description", "path", "line_range", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "debt_type": {
+            "type": "string",
+            "enum": ["todo_marker", "fixme_marker", "hack_marker", "deprecated_surface", "placeholder_marker", "commented_out_code"]
+          },
+          "description": { "type": "string" },
+          "path": { "type": "string" },
+          "line_range": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+          "evidence": { "type": "array", "minItems": 1 }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

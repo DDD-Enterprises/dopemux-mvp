@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__README
+title: Docs  03 Reference  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  03 Reference  Readme (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Reference - Information-Oriented Documentation
 
 Comprehensive reference materials for Dopemux APIs, configurations, and technical specifications. These docs are **information-oriented** and focus on accuracy and completeness.

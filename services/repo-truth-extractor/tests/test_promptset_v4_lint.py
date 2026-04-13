@@ -172,3 +172,73 @@ def test_v4_promptset_lint_flags_non_monotonic_extraction_numbering(tmp_path: Pa
         note.startswith("scan:extraction_procedure_non_monotonic_numbering")
         for note in r0_row["notes"]
     )
+
+
+# Phase 3 Tests - Extended Audit Script
+
+
+def test_phase_s_audit_passes() -> None:
+    """Verify phase_s audit passes with current state."""
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    result = module._audit_phase_s(root)
+
+    assert result["status"] == "pass", f"Errors: {result.get('errors', [])}"
+    assert result["prompt_count"] == 13
+    assert result["schema_count"] == 8  # SP4, SP5, SP7-SP12 (8 total)
+    assert len(result.get("errors", [])) == 0
+
+
+def test_phase_s_int_audit_passes() -> None:
+    """Verify phase_s_int audit passes with current state."""
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    result = module._audit_phase_s_int(root)
+
+    assert result["status"] == "pass", f"Errors: {result.get('errors', [])}"
+    assert result["prompt_count"] == 5
+    assert result["schema_count"] == 5
+    assert len(result.get("errors", [])) == 0
+
+
+def test_phase_fl_int_audit_passes() -> None:
+    """Verify phase_fl_int audit passes with current state."""
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    result = module._audit_phase_fl_int(root)
+
+    assert result["status"] == "pass", f"Errors: {result.get('errors', [])}"
+    assert result["prompt_count"] == 8
+    assert len(result.get("errors", [])) == 0
+
+
+def test_prescan_audit_passes() -> None:
+    """Verify prescan audit passes with current state."""
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    result = module._audit_prescan(root)
+
+    assert result["status"] == "pass", f"Errors: {result.get('errors', [])}"
+    assert result["prompt_count"] == 4
+    assert len(result.get("errors", [])) == 0
+
+
+def test_all_populations_audit_passes() -> None:
+    """Verify --population all mode runs all 5 audits and aggregates results."""
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+
+    results = {}
+    for pop in ["v4", "phase_s", "phase_s_int", "phase_fl_int", "prescan"]:
+        results[pop] = module._audit_population(pop, root)
+
+    # All populations should pass
+    for pop, result in results.items():
+        assert result["status"] == "pass", f"{pop} failed: {result.get('errors', [])}"
+
+    # Verify each has expected counts
+    assert results["v4"]["prompt_count"] > 0
+    assert results["phase_s"]["prompt_count"] == 13
+    assert results["phase_s_int"]["prompt_count"] == 5
+    assert results["phase_fl_int"]["prompt_count"] == 8
+    assert results["prescan"]["prompt_count"] == 4

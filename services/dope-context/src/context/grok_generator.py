@@ -14,8 +14,8 @@ import logging
 import os
 from dataclasses import dataclass
 from typing import List
-import aiohttp
 
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -113,9 +113,7 @@ Focus on: What does this code do? What's its purpose in the larger system?"""
                         },
                         json={
                             "model": self.model,
-                            "messages": [
-                                {"role": "user", "content": prompt}
-                            ],
+                            "messages": [{"role": "user", "content": prompt}],
                             "temperature": 0.3,
                             "max_tokens": 200,  # 2-3 sentences = ~150 tokens
                         },
@@ -126,7 +124,9 @@ Focus on: What does this code do? What's its purpose in the larger system?"""
                             context = data["choices"][0]["message"]["content"].strip()
 
                             if context:
-                                logger.debug(f"Generated context with {self.model} for {file_path}")
+                                logger.debug(
+                                    f"Generated context with {self.model} for {file_path}"
+                                )
                                 return ContextResponse(
                                     context=context,
                                     tokens=data.get("usage", {}).get("total_tokens", 0),
@@ -134,7 +134,9 @@ Focus on: What does this code do? What's its purpose in the larger system?"""
                                 )
                         else:
                             error_text = await response.text()
-                            logger.warning(f"OpenRouter API error {response.status}: {error_text}")
+                            logger.warning(
+                                f"OpenRouter API error {response.status}: {error_text}"
+                            )
 
                 # If we got here, API call failed - use fallback
                 self.failed_requests += 1
@@ -213,7 +215,7 @@ Focus on: What does this code do? What's its purpose in the larger system?"""
         """Generate simple fallback context."""
 
         # Try to infer purpose from code
-        lines = chunk_content.split('\n')
+        lines = chunk_content.split("\n")
 
         # Look for docstring
         for line in lines[:5]:

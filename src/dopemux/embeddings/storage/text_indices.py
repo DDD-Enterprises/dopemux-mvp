@@ -159,18 +159,15 @@ class BM25Index(BaseTextIndex):
             # Get BM25 scores for all documents
             scores = self.bm25.get_scores(query_tokens)
 
-            candidates = []
-            for idx, score in enumerate(scores):
-                overlap_count = len(set(query_tokens) & set(self.tokenized_docs[idx]))
-                if overlap_count == 0:
-                    continue
-                candidates.append((idx, overlap_count, float(score)))
+            # Get top-k results
+            top_indices = np.argsort(scores)[::-1][:k]
 
-            candidates.sort(key=lambda item: (-item[1], -item[2], item[0]))
-            return [
-                (self.doc_ids[idx], score)
-                for idx, _overlap_count, score in candidates[:k]
-            ]
+            results = []
+            for idx in top_indices:
+                if scores[idx] > 0:  # Only return non-zero scores
+                    results.append((self.doc_ids[idx], float(scores[idx])))
+
+            return results
 
         except Exception as e:
             logger.error(f"❌ BM25 search failed: {e}")
@@ -214,15 +211,8 @@ class BM25Index(BaseTextIndex):
             EmbeddingIndexError: When loading fails
         """
         try:
-            import json, base64
             with open(path, 'rb') as f:
-                raw = f.read()
-            # Use JSON if possible else fallback with warning
-            try:
-                data = json.loads(raw.decode('utf-8')) if raw.strip().startswith(b'{') else pickle.loads(raw)
-            except Exception:
-                data = pickle.loads(raw)
-                logger.warning("Legacy pickle index loaded; consider re-saving in JSON format")
+                data = pickle.load(f)
 
             self.documents = data["documents"]
             self.doc_ids = data["doc_ids"]

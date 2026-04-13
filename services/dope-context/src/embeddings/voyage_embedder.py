@@ -14,7 +14,6 @@ from typing import Dict, List, Literal, Optional, Tuple
 import voyageai
 from voyageai import AsyncClient
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -394,7 +393,9 @@ async def main():
         model="voyage-code-3",
         input_type="document",
     )
-    logger.info(f"Single embedding: {len(response.embedding)}d, ${response.cost_usd:.6f}")
+    logger.info(
+        f"Single embedding: {len(response.embedding)}d, ${response.cost_usd:.6f}"
+    )
 
     # Batch embedding
     code_chunks = [

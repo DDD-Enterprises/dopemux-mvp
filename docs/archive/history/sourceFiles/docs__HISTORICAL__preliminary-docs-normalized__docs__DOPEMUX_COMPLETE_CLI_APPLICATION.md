@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__DOPEMUX_COMPLETE_CLI_APPLICATION
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Complete Cli Application
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Dopemux Complete Cli
+  Application (explanation) for dopemux documentation and developer workflows.
+---
 # DOPEMUX: Complete CLI Application Architecture
 ## Multi-Platform Agentic Development & Life Automation System
 

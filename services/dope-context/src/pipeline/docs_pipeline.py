@@ -12,7 +12,6 @@ from ..preprocessing.document_processor import DocumentProcessor
 from ..preprocessing.models import DocumentChunk
 from ..search.docs_search import DocumentSearch
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -111,7 +110,9 @@ class DocIndexingPipeline:
         """Return deterministic chunk identifier for a document ordinal."""
         return f"{doc_id}::chunk::{ordinal}"
 
-    def _validate_chunk_ordinals(self, chunks: List[DocumentChunk], source: Path) -> None:
+    def _validate_chunk_ordinals(
+        self, chunks: List[DocumentChunk], source: Path
+    ) -> None:
         """Validate chunk ordinal continuity for fail-closed indexing."""
         ordinals = [chunk.metadata.chunk_index for chunk in chunks]
         expected = list(range(len(chunks)))
@@ -120,18 +121,24 @@ class DocIndexingPipeline:
                 f"Chunk ordinal mismatch for {source}: expected {expected}, got {ordinals}"
             )
 
-    def _discover_documents(self, include_patterns: Optional[List[str]] = None) -> List[Path]:
+    def _discover_documents(
+        self, include_patterns: Optional[List[str]] = None
+    ) -> List[Path]:
         """Discover candidate docs files for indexing."""
         patterns = include_patterns or self.DEFAULT_INCLUDE_PATTERNS
         files: Set[Path] = set()
 
         for pattern in patterns:
             for candidate in self.workspace_path.glob(f"**/{pattern}"):
-                if candidate.is_file() and not self._should_exclude(candidate.relative_to(self.workspace_path)):
+                if candidate.is_file() and not self._should_exclude(
+                    candidate.relative_to(self.workspace_path)
+                ):
                     files.add(candidate.resolve())
 
         discovered = sorted(files)
-        logger.info("Discovered %s docs files in %s", len(discovered), self.workspace_path)
+        logger.info(
+            "Discovered %s docs files in %s", len(discovered), self.workspace_path
+        )
         return discovered
 
     def _build_chunk_payload(
@@ -256,11 +263,15 @@ class DocIndexingPipeline:
             points.append((embedding, embedding, embedding, payload, None))
 
         for i in range(0, len(points), self.qdrant_batch_size):
-            await self.doc_search.insert_points_batch(points[i : i + self.qdrant_batch_size])
+            await self.doc_search.insert_points_batch(
+                points[i : i + self.qdrant_batch_size]
+            )
 
         return len(points), embed_response.cost_usd
 
-    async def index_workspace(self, include_patterns: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def index_workspace(
+        self, include_patterns: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
         """Index all matching documents in the workspace."""
         progress = DocsIndexingProgress(workspace=str(self.workspace_path))
         await self.doc_search.create_collection()
@@ -277,7 +288,9 @@ class DocIndexingPipeline:
                 chunk_count, cost_usd = await self._index_document(file_path)
             except Exception as exc:
                 progress.error_documents += 1
-                progress.errors.append({"file": file_path.as_posix(), "error": str(exc)})
+                progress.errors.append(
+                    {"file": file_path.as_posix(), "error": str(exc)}
+                )
                 logger.warning("Document indexing failed for %s: %s", file_path, exc)
                 continue
 

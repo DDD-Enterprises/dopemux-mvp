@@ -1,3 +1,15 @@
+---
+id: docuxtractor__SESSION_STATE
+title: Docuxtractor  Session State
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docuxtractor  Session State (explanation) for dopemux documentation and developer
+  workflows.
+---
 # DocuXtractor Implementation Session State
 
 ## Current Status: Foundation Complete, Implementing Core Components

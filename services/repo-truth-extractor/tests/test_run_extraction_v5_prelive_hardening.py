@@ -238,6 +238,92 @@ def test_classify_request_failure_distinguishes_batch_terminal_and_parse_failure
     )
 
 
+def test_normalize_step_keeps_parse_failures_at_threshold(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "A_repo_control_plane"
+    raw_dir = phase_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    prompt_path = tmp_path / "PROMPT_A2_TEST.md"
+    prompt_path.write_text("Return OUT.json", encoding="utf-8")
+    prompt = runner.PromptSpec(
+        step_id="A2",
+        prompt_path=prompt_path,
+        output_artifacts=("OUT.json",),
+    )
+    partitions = []
+    for idx in range(20):
+        partition_id = f"A_P{idx + 1:04d}"
+        partitions.append({"id": partition_id})
+        if idx == 0:
+            continue
+        (raw_dir / f"A2__{partition_id}.json").write_text(
+            json.dumps(
+                {
+                    "phase": "A",
+                    "step_id": "A2",
+                    "partition_id": partition_id,
+                    "generated_at": "2026-04-11T00:00:00+00:00",
+                    "artifacts": [
+                        {
+                            "artifact_name": "OUT.json",
+                            "payload": {"schema": "itemlist@v1", "items": []},
+                        }
+                    ],
+                    "request_meta": {},
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    qa = runner.normalize_step("A", prompt, phase_dir, partitions, step_exec_stats={})
+    assert qa["raw_failed"] == 1
+    assert qa["raw_ok"] == 19
+    assert qa["parse_failure_rate"] == 0.05
+
+
+def test_normalize_step_aborts_when_parse_failures_exceed_threshold(
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "A_repo_control_plane"
+    raw_dir = phase_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    prompt_path = tmp_path / "PROMPT_A2_TEST.md"
+    prompt_path.write_text("Return OUT.json", encoding="utf-8")
+    prompt = runner.PromptSpec(
+        step_id="A2",
+        prompt_path=prompt_path,
+        output_artifacts=("OUT.json",),
+    )
+    partitions = [{"id": "A_P0001"}, {"id": "A_P0002"}]
+    (raw_dir / "A2__A_P0001.json").write_text(
+        json.dumps(
+            {
+                "phase": "A",
+                "step_id": "A2",
+                "partition_id": "A_P0001",
+                "generated_at": "2026-04-11T00:00:00+00:00",
+                "artifacts": [
+                    {
+                        "artifact_name": "OUT.json",
+                        "payload": {"schema": "itemlist@v1", "items": []},
+                    }
+                ],
+                "request_meta": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="Parse failure threshold exceeded"):
+        runner.normalize_step("A", prompt, phase_dir, partitions, step_exec_stats={})
+
+    qa = json.loads((phase_dir / "qa" / "A2_QA.json").read_text(encoding="utf-8"))
+    assert qa["raw_failed"] == 1
+    assert qa["raw_ok"] == 1
+    assert qa["parse_failure_rate"] == 0.5
+
+
 def test_coerce_artifacts_accepts_top_level_single_artifact_object() -> None:
     runner = _load_runner_module()
     parsed = {

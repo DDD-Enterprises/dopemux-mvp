@@ -1,3 +1,15 @@
+---
+id: docs__rfc__RFC-001-unified-memory-graph
+title: Docs  Rfc  Rfc 001 Unified Memory Graph
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Rfc  Rfc 001 Unified Memory Graph (explanation) for dopemux documentation
+  and developer workflows.
+---
 # RFC-001: Dopemux Unified Memory Graph (ConPort + Milvus + SQL/Neo4j + Zep)
 
 **Status**: Draft

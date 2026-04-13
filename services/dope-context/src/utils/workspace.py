@@ -27,7 +27,9 @@ if str(project_root) not in sys.path:
 # Import shared workspace detection (SINGLE SOURCE OF TRUTH)
 # This fixes the worktree bug: git worktrees have .git as FILE, not directory!
 try:
-    from src.dopemux.workspace_detection import get_workspace_root as _get_workspace_root
+    from src.dopemux.workspace_detection import (
+        get_workspace_root as _get_workspace_root,
+    )
 except ModuleNotFoundError:
     # Fallback implementation for Docker images where the shared dopemux package
     # is not available. Keeps workspace detection consistent with the main repo.
@@ -143,16 +145,17 @@ def workspace_to_hash(workspace_path: Path) -> str:
         8-character hex hash
     """
     import os
-    
+
     # Check for hash override (for Docker where mount path differs from host)
     override = os.getenv("WORKSPACE_HASH_OVERRIDE")
     if override:
         import logging
+
         logging.getLogger(__name__).info(
             f"Using WORKSPACE_HASH_OVERRIDE={override} (workspace: {workspace_path})"
         )
         return override
-    
+
     normalized = str(workspace_path.resolve())
     hash_full = hashlib.md5(normalized.encode()).hexdigest()
     return hash_full[:8]

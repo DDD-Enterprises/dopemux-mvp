@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status"],
+  "properties": {
+    "status": {"type": "string", "enum": ["PASS", "FAIL", "NEEDS_REVIEW", "FAIL_CLOSED"]},
+    "violations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["rule_id", "path", "severity"],
+        "properties": {
+          "rule_id": {"type": "string"},
+          "path": {"type": "string"},
+          "severity": {"type": "string", "enum": ["high", "med", "low"]},
+          "detail": {"type": "string"}
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["rule_id", "reason"],
+        "properties": {
+          "rule_id": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}

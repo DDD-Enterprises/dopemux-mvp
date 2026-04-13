@@ -1,3 +1,15 @@
+---
+id: output__individual_files__multi_instance_claude_code_research_integrations
+title: Output  Individual Files  Multi Instance Claude Code Research Integrations
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Multi Instance Claude Code Research Integrations
+  (explanation) for dopemux documentation and developer workflows.
+---
 Of course. Here is the structured analysis of the provided research document.
 
 ### 1. Research Question or Hypothesis

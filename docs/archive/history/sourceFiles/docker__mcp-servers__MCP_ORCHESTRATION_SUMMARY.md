@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__MCP_ORCHESTRATION_SUMMARY
+title: Docker  Mcp Servers  Mcp Orchestration Summary
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Mcp Orchestration Summary (explanation) for dopemux
+  documentation and developer workflows.
+---
 # 🎯 Dopemux MCP Server Orchestration - Complete Setup
 
 ## 📊 Architecture Overview

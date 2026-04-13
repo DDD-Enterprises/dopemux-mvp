@@ -1,13 +1,16 @@
 ---
 id: onepager-docs-system
-title: One-Pager — Dopemux Docs System
+title: "One-Pager \u2014 Dopemux Docs System"
 type: tutorial
-owner: @hu3mann
+owner: '@hu3mann'
 status: active
 last_review: 2025-09-19
 next_review: 2025-12-18
+author: '@hu3mann'
+date: '2026-04-13'
+prelude: "One-Pager \u2014 Dopemux Docs System (explanation) for dopemux documentation\
+  \ and developer workflows."
 ---
-
 **Goal:** A tiny, durable set of docs that always loads the right context in Claude Code.
 
 **Shelves (Diátaxis):**

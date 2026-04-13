@@ -1,3 +1,15 @@
+---
+id: docs__92-runbooks__runbook-adhd-finishing-helpers-roadmap
+title: Docs  92 Runbooks  Runbook Adhd Finishing Helpers Roadmap
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  92 Runbooks  Runbook Adhd Finishing Helpers Roadmap (explanation) for
+  dopemux documentation and developer workflows.
+---
 # ADHD Finishing Helpers Implementation Roadmap
 
 **Status**: Ready for Implementation

@@ -1,10 +1,11 @@
 """
-Leantime JSON-RPC DopeconBridge for Dopemux
+Leantime JSON-RPC Integration Bridge for Dopemux
 
 This module provides a bridge between Dopemux and Leantime through JSON-RPC 2.0 API.
 Handles project management, task tracking, and ADHD-optimized workflows.
 """
 
+import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime
@@ -14,12 +15,8 @@ from typing import Any, Dict, List, Optional
 from core.config import Config
 from core.exceptions import DopemuxIntegrationError
 from core.monitoring import MetricsCollector
-try:
-    from src.utils.adhd_optimizations import ADHDTaskOptimizer
-    from src.utils.security import SecureTokenManager
-except ModuleNotFoundError:
-    from utils.adhd_optimizations import ADHDTaskOptimizer
-    from utils.security import SecureTokenManager
+from utils.adhd_optimizations import ADHDTaskOptimizer
+from utils.security import SecureTokenManager
 
 from .leantime_jsonrpc_client import LeantimeJSONRPCClient, create_leantime_client
 
@@ -392,11 +389,8 @@ class LeantimeBridge:
 
         if response.success and response.data:
             result_data = response.data
-            if isinstance(result_data, dict) and result_data.get("success"):
+            if result_data.get("success"):
                 optimized_task.id = result_data.get("ticketId")
-                return optimized_task
-            elif isinstance(result_data, int):  # Direct ticket ID returned
-                optimized_task.id = result_data
                 return optimized_task
 
         return None
@@ -418,7 +412,7 @@ class LeantimeBridge:
             raise ValueError("Task ID required for update")
 
         response = await self.api_client.update_ticket(
-            ticket_id=task.id,
+            task.id,
             headline=task.headline,
             description=task.description,
             status=task.status.value,
@@ -426,7 +420,7 @@ class LeantimeBridge:
             storypoints=task.story_points,
         )
 
-        return response.success
+        return bool(response.success)
 
     async def delete_task(self, task_id: int) -> bool:
         """
@@ -442,8 +436,7 @@ class LeantimeBridge:
             raise DopemuxIntegrationError("Not connected to Leantime")
 
         response = await self.api_client.delete_ticket(task_id)
-
-        return response.success
+        return bool(response.success)
 
     # ADHD-Specific Methods
 
@@ -572,7 +565,6 @@ class LeantimeBridge:
             }
 
 
-            logger.error(f"Error: {e}")
 # Factory function for easy instantiation
 def create_leantime_bridge(config: Config) -> LeantimeBridge:
     """

@@ -7,7 +7,6 @@ from qdrant_client.http import models
 
 from .dense_search import MultiVectorSearch, SearchProfile, SearchResult
 
-
 logger = logging.getLogger(__name__)
 
 

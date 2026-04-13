@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__PRD_Dopemux_Comprehensive
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Prd Dopemux Comprehensive
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Prd Dopemux Comprehensive
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Product Requirements Document
 **Version 1.0 | Multi-Platform Development Orchestration System**
 

@@ -1,3 +1,15 @@
+---
+id: output__individual_files__ADHD_Feature_Specification_docs
+title: Output  Individual Files  Adhd Feature Specification Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Adhd Feature Specification Docs (explanation) for
+  dopemux documentation and developer workflows.
+---
 Of course. As an expert Principal Engineer, I have analyzed the provided document and extracted the core technical details into the required format.
 
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)

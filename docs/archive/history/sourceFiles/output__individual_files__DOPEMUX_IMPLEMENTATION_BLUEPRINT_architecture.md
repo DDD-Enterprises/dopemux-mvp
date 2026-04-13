@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_IMPLEMENTATION_BLUEPRINT_architecture
+title: Output  Individual Files  Dopemux Implementation Blueprint Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Implementation Blueprint Architecture (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As a Principal Engineer, I will analyze the document and provide a structured technical extraction.
 
 Awaiting the content of the document `DOPEMUX_IMPLEMENTATION_BLUEPRINT.md`. Please provide the text.

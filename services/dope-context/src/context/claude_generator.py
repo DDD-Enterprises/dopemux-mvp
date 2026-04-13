@@ -24,7 +24,6 @@ except ImportError:
 
 from ..preprocessing.code_chunker import CodeChunk
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -392,7 +391,8 @@ Context:"""
 async def main():
     """Example usage of ClaudeContextGenerator."""
     import os
-    from ..preprocessing.code_chunker import CodeChunker, CodeChunk
+
+    from ..preprocessing.code_chunker import CodeChunk, CodeChunker
 
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:

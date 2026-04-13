@@ -1,3 +1,15 @@
+---
+id: docs__02-how-to__documentation-review-checklist
+title: Docs  02 How To  Documentation Review Checklist
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  02 How To  Documentation Review Checklist (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Documentation Review Checklist
 
 *Quick reference for reviewing RFC, ADR, and arc42 documentation in Dopemux*

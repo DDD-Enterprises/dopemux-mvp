@@ -394,7 +394,6 @@ class LeantimeJSONRPCClient:
             }
 
 
-            logger.error(f"Error: {e}")
 # Factory function for easy instantiation
 def create_leantime_client(config: Config) -> LeantimeJSONRPCClient:
     """

@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_DESIGN_COMPARISON_ANALYSIS_docs
+title: Output  Individual Files  Dopemux Design Comparison Analysis Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Design Comparison Analysis Docs (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As a Research Analyst, I have meticulously analyzed the document `DOPEMUX_DESIGN_COMPARISON_ANALYSIS.md` and extracted its core components. Here is the structured summary.
 
 ***

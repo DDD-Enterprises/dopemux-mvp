@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__.github__pull_request_template
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  .Github  Pull Request Template
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  .Github  Pull Request Template
+  (explanation) for dopemux documentation and developer workflows.
+---
 ## PR Title Format
 
 **Please ensure your PR title follows [Conventional Commits](https://www.conventionalcommits.org/) format:**

@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__docs__adding_tools
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Adding Tools
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Docs  Adding Tools (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Adding Tools to Zen MCP Server
 
 This guide explains how to add new tools to the Zen MCP Server. Tools enable Claude to interact with AI models for specialized tasks like code analysis, debugging, and collaborative thinking.

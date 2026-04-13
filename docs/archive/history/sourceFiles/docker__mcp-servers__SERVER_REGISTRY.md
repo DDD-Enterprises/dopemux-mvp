@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__SERVER_REGISTRY
+title: Docker  Mcp Servers  Server Registry
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Server Registry (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 🗂️ Dopemux MCP Server Registry
 
 Complete registry of all MCP servers in the Dopemux orchestration, organized by priority and role according to ADR-007 and ADR-012.

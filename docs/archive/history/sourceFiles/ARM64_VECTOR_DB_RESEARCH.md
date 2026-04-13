@@ -1,3 +1,15 @@
+---
+id: ARM64_VECTOR_DB_RESEARCH
+title: Arm64 Vector Db Research
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Arm64 Vector Db Research (explanation) for dopemux documentation and developer
+  workflows.
+---
 # ARM64 Vector Database Research - Milvus Replacement
 **Date**: 2025-09-24
 **Purpose**: Find ARM64-compatible replacement for Milvus to unlock 5 blocked services

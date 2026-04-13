@@ -6,7 +6,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Awaitable, Callable, Optional
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -75,7 +74,9 @@ class PeriodicSync:
                 raise
             except Exception as exc:
                 self._last_error = str(exc)
-                logger.warning("Periodic sync failed for %s: %s", self.workspace_path, exc)
+                logger.warning(
+                    "Periodic sync failed for %s: %s", self.workspace_path, exc
+                )
 
     def get_stats(self) -> dict:
         """Return periodic sync health/status metrics."""

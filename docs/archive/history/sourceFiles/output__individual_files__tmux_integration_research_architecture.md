@@ -1,3 +1,15 @@
+---
+id: output__individual_files__tmux_integration_research_architecture
+title: Output  Individual Files  Tmux Integration Research Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Tmux Integration Research Architecture (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. Here is a structured analysis of the research document `tmux_integration_research.md`.
 
 ***

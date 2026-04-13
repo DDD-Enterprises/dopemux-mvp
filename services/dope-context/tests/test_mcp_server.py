@@ -9,9 +9,10 @@ import os
 import sys
 import tempfile
 import types
-import pytest
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 TEST_HOME = Path(tempfile.gettempdir()) / "dope-context-test-home"
 TEST_HOME.mkdir(parents=True, exist_ok=True)
@@ -21,6 +22,7 @@ os.environ.setdefault("VOYAGEAI_API_KEY", "test")
 
 
 if not hasattr(pytest.mark, "anyio"):
+
     def _anyio_marker(func):
         @functools.wraps(func)
         def _wrapper(*args, **kwargs):
@@ -31,6 +33,7 @@ if not hasattr(pytest.mark, "anyio"):
     pytest.mark.anyio = _anyio_marker
 
 if not hasattr(pytest.mark, "asyncio"):
+
     def _asyncio_marker(func):
         @functools.wraps(func)
         def _wrapper(*args, **kwargs):
@@ -39,6 +42,7 @@ if not hasattr(pytest.mark, "asyncio"):
         return _wrapper
 
     pytest.mark.asyncio = _asyncio_marker
+
 
 class _StubAsyncClient:
     """Minimal voyageai.AsyncClient stub for tests."""
@@ -110,7 +114,11 @@ def _register_qdrant_stub():
         "MatchValue",
         "SearchParams",
     ]:
-        setattr(models_module, name, type(name, (), {"__init__": lambda self, *args, **kwargs: None}))
+        setattr(
+            models_module,
+            name,
+            type(name, (), {"__init__": lambda self, *args, **kwargs: None}),
+        )
 
     models_module.PayloadSchemaType = types.SimpleNamespace(KEYWORD="keyword")
     models_module.Distance = types.SimpleNamespace(DOT="dot")
@@ -140,26 +148,27 @@ class _StubBM25:
 sys.modules.setdefault("rank_bm25", types.SimpleNamespace(BM25Okapi=_StubBM25))
 
 from src.mcp.server import (
-    _default_decision_sync_config,
-    _normalize_decision_limit,
-    _search_all_impl,
-    _docs_search_impl,
-    _run_workspace_autoindex_bootstrap,
-    _index_workspace_impl,
-    _search_code_impl,
-    _get_index_status_impl,
     _clear_index_impl,
+    _default_decision_sync_config,
+    _docs_search_impl,
+    _get_index_status_impl,
+    _index_workspace_impl,
+    _normalize_decision_limit,
+    _run_workspace_autoindex_bootstrap,
+    _search_all_impl,
+    _search_code_impl,
     configure_decision_auto_indexing,
-    search_code,
     docs_search,
     search_all,
-    sync_workspace,
-    sync_docs,
+    search_code,
     service_info,
+    sync_docs,
+    sync_workspace,
 )
 from src.pipeline.indexing_pipeline import IndexingProgress
+from src.rerank.voyage_reranker import RerankResponse, RerankResult
 from src.search.dense_search import SearchResult
-from src.rerank.voyage_reranker import RerankResult, RerankResponse
+
 from src.utils.workspace import workspace_to_hash
 
 
@@ -425,7 +434,9 @@ async def test_get_index_status_tool(tmp_path, monkeypatch):
     monkeypatch.setattr("src.mcp.server.Path.home", lambda: fake_home)
 
     class DummyVectorSearch:
-        def __init__(self, collection_name, url="localhost", port=6333, vector_size=1024):
+        def __init__(
+            self, collection_name, url="localhost", port=6333, vector_size=1024
+        ):
             self.collection_name = collection_name
 
         async def get_collection_info(self):
@@ -454,7 +465,9 @@ async def test_clear_index_tool(tmp_path, monkeypatch):
     workspace_hash = workspace_to_hash(workspace)
 
     fake_home = tmp_path / "home"
-    bm25_path = fake_home / ".dope-context" / "snapshots" / workspace_hash / "bm25_index.pkl"
+    bm25_path = (
+        fake_home / ".dope-context" / "snapshots" / workspace_hash / "bm25_index.pkl"
+    )
     bm25_path.parent.mkdir(parents=True, exist_ok=True)
     bm25_path.write_bytes(b"cache")
 
@@ -463,7 +476,9 @@ async def test_clear_index_tool(tmp_path, monkeypatch):
     deleted = []
 
     class DummyVectorSearch:
-        def __init__(self, collection_name, url="localhost", port=6333, vector_size=1024):
+        def __init__(
+            self, collection_name, url="localhost", port=6333, vector_size=1024
+        ):
             self.collection_name = collection_name
 
         async def delete_collection(self):
@@ -497,7 +512,10 @@ async def test_search_code_multi_workspace(tmp_path, monkeypatch):
 
     assert result["workspace_count"] == 2
     assert result["total_results"] == 2
-    assert [entry["results"][0] for entry in result["results"]] == ["ws1-result", "ws2-result"]
+    assert [entry["results"][0] for entry in result["results"]] == [
+        "ws1-result",
+        "ws2-result",
+    ]
 
 
 @pytest.mark.anyio
@@ -633,7 +651,9 @@ def test_trinity_decision_limit_normalization_defaults_to_top3():
 
 
 @pytest.mark.anyio
-async def test_search_all_clamps_decision_limit_to_trinity_boundary(tmp_path, monkeypatch):
+async def test_search_all_clamps_decision_limit_to_trinity_boundary(
+    tmp_path, monkeypatch
+):
     """Unified search must clamp decision retrieval at trinity max boundary."""
     workspace = tmp_path / "ws"
     workspace.mkdir()
@@ -682,7 +702,9 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
     workspace.mkdir()
 
     embed_mock = AsyncMock(
-        return_value=types.SimpleNamespace(embeddings=[[0.2] * 4], total_tokens=1, cost_usd=0.0)
+        return_value=types.SimpleNamespace(
+            embeddings=[[0.2] * 4], total_tokens=1, cost_usd=0.0
+        )
     )
 
     class _FakeDocsEmbedder:
@@ -705,9 +727,17 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
             assert filter_by is None
             return [fake_result]
 
-    monkeypatch.setattr("src.mcp.server._get_voyage_api_key", lambda required=False: "test-key")
-    monkeypatch.setattr("src.mcp.server._get_cached_contextualized_embedder", lambda api_key: _FakeDocsEmbedder())
-    monkeypatch.setattr("src.mcp.server._get_cached_document_search", lambda collection_name, url, port: _FakeDocSearch())
+    monkeypatch.setattr(
+        "src.mcp.server._get_voyage_api_key", lambda required=False: "test-key"
+    )
+    monkeypatch.setattr(
+        "src.mcp.server._get_cached_contextualized_embedder",
+        lambda api_key: _FakeDocsEmbedder(),
+    )
+    monkeypatch.setattr(
+        "src.mcp.server._get_cached_document_search",
+        lambda collection_name, url, port: _FakeDocSearch(),
+    )
 
     response = await _docs_search_impl(
         query="auth decision",
@@ -746,7 +776,12 @@ async def test_service_info_includes_runtime_diagnostics(monkeypatch):
 
     assert payload["canonical_entrypoint"] == "python -m src.mcp.server"
     assert "fastmcp_available" in payload
-    assert payload["runtime"]["transport"] in {"http", "sse", "streamable-http", "stdio"}
+    assert payload["runtime"]["transport"] in {
+        "http",
+        "sse",
+        "streamable-http",
+        "stdio",
+    }
     assert payload["runtime"]["canonical_entrypoint"] == "python -m src.mcp.server"
     assert "url" in payload["mcp"]["connection"]
 
@@ -775,11 +810,17 @@ async def test_autoindex_bootstrap_starts_autonomous(tmp_path, monkeypatch):
     start_code_auto = AsyncMock(return_value={"status": "started"})
     start_docs_auto = AsyncMock(return_value={"status": "started"})
 
-    monkeypatch.setattr("src.mcp.server._workspace_snapshot_signature", lambda ws: "sig-1")
+    monkeypatch.setattr(
+        "src.mcp.server._workspace_snapshot_signature", lambda ws: "sig-1"
+    )
     monkeypatch.setattr("src.mcp.server._index_workspace_impl", index_code)
     monkeypatch.setattr("src.mcp.server._index_docs_impl", index_docs)
-    monkeypatch.setattr("src.mcp.server._start_autonomous_indexing_single", start_code_auto)
-    monkeypatch.setattr("src.mcp.server._start_autonomous_docs_indexing_single", start_docs_auto)
+    monkeypatch.setattr(
+        "src.mcp.server._start_autonomous_indexing_single", start_code_auto
+    )
+    monkeypatch.setattr(
+        "src.mcp.server._start_autonomous_docs_indexing_single", start_docs_auto
+    )
     monkeypatch.setattr("src.mcp.server._read_autoindex_marker", lambda ws: {})
 
     result = await _run_workspace_autoindex_bootstrap(
@@ -808,15 +849,21 @@ async def test_autoindex_bootstrap_idempotent_skip(tmp_path, monkeypatch):
     start_code_auto = AsyncMock(return_value={"status": "started"})
     start_docs_auto = AsyncMock(return_value={"status": "started"})
 
-    monkeypatch.setattr("src.mcp.server._workspace_snapshot_signature", lambda ws: "sig-2")
+    monkeypatch.setattr(
+        "src.mcp.server._workspace_snapshot_signature", lambda ws: "sig-2"
+    )
     monkeypatch.setattr(
         "src.mcp.server._read_autoindex_marker",
         lambda ws: {"status": "completed", "snapshot_signature": "sig-2"},
     )
     monkeypatch.setattr("src.mcp.server._index_workspace_impl", index_code)
     monkeypatch.setattr("src.mcp.server._index_docs_impl", index_docs)
-    monkeypatch.setattr("src.mcp.server._start_autonomous_indexing_single", start_code_auto)
-    monkeypatch.setattr("src.mcp.server._start_autonomous_docs_indexing_single", start_docs_auto)
+    monkeypatch.setattr(
+        "src.mcp.server._start_autonomous_indexing_single", start_code_auto
+    )
+    monkeypatch.setattr(
+        "src.mcp.server._start_autonomous_docs_indexing_single", start_docs_auto
+    )
 
     result = await _run_workspace_autoindex_bootstrap(
         workspace,

@@ -353,6 +353,11 @@ proof/
 .dopetask/proof/
 extraction/prescan/
 
+# Tracked packet proof ledger
+!proof/
+proof/*
+!proof/rte-seam-extraction-foundation.proof.json
+
 # Extraction and Research artifacts
 _audit_out/
 extraction/v*/

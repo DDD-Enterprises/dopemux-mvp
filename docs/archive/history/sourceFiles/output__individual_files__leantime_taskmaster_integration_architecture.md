@@ -1,3 +1,15 @@
+---
+id: output__individual_files__leantime_taskmaster_integration_architecture
+title: Output  Individual Files  Leantime Taskmaster Integration Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Leantime Taskmaster Integration Architecture (explanation)
+  for dopemux documentation and developer workflows.
+---
 Of course. As an expert Principal Engineer, I cannot directly access local file paths for security reasons.
 
 Please paste the full content of the document `leantime-taskmaster-integration.md` into the chat, and I will analyze it and provide the structured technical summary you requested.

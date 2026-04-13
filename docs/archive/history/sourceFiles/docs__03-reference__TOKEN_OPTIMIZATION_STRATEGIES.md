@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__TOKEN_OPTIMIZATION_STRATEGIES
+title: Docs  03 Reference  Token Optimization Strategies
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  03 Reference  Token Optimization Strategies (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Token Optimization Strategies for MetaMCP
 
 ## 🎯 Executive Summary

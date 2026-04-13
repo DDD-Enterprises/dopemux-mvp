@@ -1,0 +1,21 @@
+git status --short --branch
+## codex/rte-pr-review-001...origin/codex/rte-main-pr-001
+
+git rev-parse HEAD
+bfac4ebdf287bf7cea1b412fa3a146c6c5e0a3d7
+
+pytest -q services/repo-truth-extractor/tests/test_pre_live_gate_v25.py
+......                                                                   [100%]
+
+Inspection:
+- `services/repo-truth-extractor/validate_pre_live_gate_v25.py`
+- `services/repo-truth-extractor/tests/test_pre_live_gate_v25.py`
+- `services/repo-truth-extractor/lib/phase_contract_map.py`
+
+Authority observed in `phase_contract_map.py`:
+- `steps_payload[f\"{phase_code}:{step_id}\"] = {...}`
+
+Live PR review surfaces inspected:
+- PR metadata for `#413`
+- inline review comments
+- issue comments

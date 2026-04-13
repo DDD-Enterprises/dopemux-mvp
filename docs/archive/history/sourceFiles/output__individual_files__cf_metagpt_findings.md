@@ -1,3 +1,15 @@
+---
+id: output__individual_files__cf_metagpt_findings
+title: Output  Individual Files  Cf Metagpt Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Cf Metagpt Findings (explanation) for dopemux documentation
+  and developer workflows.
+---
 Of course. Here is the structured analysis of the provided research document.
 
 ### 1. Research Question or Hypothesis

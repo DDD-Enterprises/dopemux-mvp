@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__context-bloat-management
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Context
+  Bloat Management
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Context
+  Bloat Management (explanation) for dopemux documentation and developer workflows.
+---
 # Comprehensive solutions for mitigating MCP tool definition context bloat
 
 Model Context Protocol (MCP) implementations face a critical challenge where tool definitions can consume 100,000+ tokens across multiple servers, degrading performance and exhausting context windows before meaningful work begins. This research presents practical, production-tested solutions combining architectural patterns, open-source libraries, and optimization strategies that achieve up to 95% context reduction while maintaining full functionality.

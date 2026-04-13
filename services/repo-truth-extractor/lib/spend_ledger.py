@@ -15,6 +15,11 @@ UNKNOWN_MODEL_POLICY = "baseline_v1_fallback"
 BASELINE_INPUT_COST_PER_1M_USD = 0.15
 BASELINE_OUTPUT_COST_PER_1M_USD = 0.60
 
+try:
+    from benchmarking.pricing.catalog import load_pricing_catalog
+except ImportError:  # pragma: no cover - fallback only when imported out of tree
+    load_pricing_catalog = None
+
 
 def _baseline_rate(pricing_source: str = "route_registry_baseline") -> Dict[str, Any]:
     return {
@@ -44,6 +49,36 @@ MODEL_COST_RATES: Dict[str, Dict[str, Any]] = {
     "openrouter/openai/gpt-5.4": _baseline_rate(),
     "openrouter/anthropic/claude-opus-4-6": _baseline_rate(),
 }
+
+
+def _catalog_rates() -> Dict[str, Dict[str, Any]]:
+    if load_pricing_catalog is None:
+        return {}
+    try:
+        catalog = load_pricing_catalog()
+    except Exception as exc:  # pragma: no cover - fail closed to legacy registry
+        logger.warning("Failed to load pricing catalog; using baseline spend registry: %s", exc)
+        return {}
+    rates: Dict[str, Dict[str, Any]] = {}
+    for model_key, row in catalog.models.items():
+        input_cost = row.get("input_cost_per_m")
+        output_cost = row.get("output_cost_per_m")
+        if input_cost is None or output_cost is None:
+            continue
+        rates[model_key] = {
+            "input_cost_per_1m_usd": float(input_cost),
+            "output_cost_per_1m_usd": float(output_cost),
+            "pricing_source": str(row.get("pricing_source_ref") or row.get("pricing_source_type") or "catalog"),
+            "pricing_source_type": str(row.get("pricing_source_type") or "unknown"),
+            "pricing_status": str(row.get("pricing_status") or "UNPRICED_UNKNOWN"),
+            "pricing_confidence": str(row.get("pricing_confidence") or "UNKNOWN"),
+            "pricing_currency": str(row.get("pricing_currency") or "USD"),
+            "surface_scope": str(row.get("surface_scope") or "unknown"),
+        }
+    return rates
+
+
+MODEL_COST_RATES.update(_catalog_rates())
 
 
 @dataclass
@@ -183,6 +218,11 @@ def get_model_cost_rate(
                 "pricing_source": str(
                     rate.get("pricing_source") or "route_registry_baseline"
                 ),
+                "pricing_source_type": str(rate.get("pricing_source_type") or "legacy_baseline"),
+                "pricing_status": str(rate.get("pricing_status") or "PRICED_WITH_CAVEAT"),
+                "pricing_confidence": str(rate.get("pricing_confidence") or "LOW"),
+                "pricing_currency": str(rate.get("pricing_currency") or "USD"),
+                "surface_scope": str(rate.get("surface_scope") or "unknown"),
                 "match_type": "exact" if index == 0 else "fuzzy",
                 "unknown_model": False,
                 "input_cost_per_1m_usd": _safe_float(
@@ -207,6 +247,11 @@ def get_model_cost_rate(
         "pricing_key": fallback_key,
         "pricing_version": PRICING_VERSION,
         "pricing_source": str(fallback["pricing_source"]),
+        "pricing_source_type": "inferred_estimated_fallback",
+        "pricing_status": "UNPRICED_UNKNOWN",
+        "pricing_confidence": "UNKNOWN",
+        "pricing_currency": "USD",
+        "surface_scope": "unknown",
         "match_type": "fallback",
         "unknown_model": True,
         "input_cost_per_1m_usd": _safe_float(fallback["input_cost_per_1m_usd"]),

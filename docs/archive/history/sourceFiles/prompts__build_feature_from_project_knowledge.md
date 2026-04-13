@@ -1,4 +1,15 @@
-
+---
+id: prompts__build_feature_from_project_knowledge
+title: Prompts  Build Feature From Project Knowledge
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Prompts  Build Feature From Project Knowledge (explanation) for dopemux documentation
+  and developer workflows.
+---
 DesktopCommander Logo
 DesktopCommander
 Prompts

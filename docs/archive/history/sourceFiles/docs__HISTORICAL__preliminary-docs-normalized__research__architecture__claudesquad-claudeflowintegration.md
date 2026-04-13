@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__architecture__claudesquad-claudeflowintegration
+title: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Claudesquad
+  Claudeflowintegration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Claudesquad
+  Claudeflowintegration (explanation) for dopemux documentation and developer workflows.
+---
 Looking at your dopemux architecture and the need to integrate claude-squad's multiplexing, git worktree, and multi-agent capabilities, I'll create a comprehensive design document that leverages the best patterns from both systems.
 
 ## Context & Goal

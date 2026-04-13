@@ -1,3 +1,15 @@
+---
+id: output__individual_files__DOPEMUX_COMPREHENSIVE_DETAILS_EXTRACTION_docs
+title: Output  Individual Files  Dopemux Comprehensive Details Extraction Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Dopemux Comprehensive Details Extraction Docs (explanation)
+  for dopemux documentation and developer workflows.
+---
 As a meticulous Research Analyst, I am ready to analyze the document.
 
 However, I cannot directly access local file paths on your computer, such as `/Users/hue/code/dmpx/docs/DOPEMUX_COMPREHENSIVE_DETAILS_EXTRACTION.md`, due to security and privacy restrictions.

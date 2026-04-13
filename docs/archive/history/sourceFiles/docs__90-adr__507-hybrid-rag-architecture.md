@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__507-hybrid-rag-architecture
+title: Docs  90 Adr  507 Hybrid Rag Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  507 Hybrid Rag Architecture (explanation) for dopemux documentation
+  and developer workflows.
+---
 # ADR-507: Hybrid RAG Architecture
 
 **Status**: Accepted

@@ -14,7 +14,6 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -66,6 +65,7 @@ def estimate_dict_tokens(data: Dict[str, Any]) -> int:
     """
     # Serialize to string and estimate
     import json
+
     try:
         json_str = json.dumps(data)
         return estimate_tokens(json_str)
@@ -73,9 +73,12 @@ def estimate_dict_tokens(data: Dict[str, Any]) -> int:
         # Fallback: rough estimate from string representation
         return estimate_tokens(str(data))
 
-
         logger.error(f"Error: {e}")
-def truncate_text(text: str, max_chars: int, suffix: str = "... [truncated]") -> tuple[str, bool]:
+
+
+def truncate_text(
+    text: str, max_chars: int, suffix: str = "... [truncated]"
+) -> tuple[str, bool]:
     """
     Truncate text to maximum character count.
 
@@ -147,7 +150,7 @@ def truncate_code_results(
             truncated_code, was_truncated = truncate_text(
                 original_code,
                 per_item_max_chars,
-                suffix="\n... [code truncated for token budget]"
+                suffix="\n... [code truncated for token budget]",
             )
 
             truncated_item["code"] = truncated_code
@@ -229,7 +232,7 @@ def truncate_docs_results(
             truncated_text, was_truncated = truncate_text(
                 original_text,
                 per_item_max_chars,
-                suffix="\n... [text truncated for token budget]"
+                suffix="\n... [text truncated for token budget]",
             )
 
             truncated_item["text"] = truncated_text

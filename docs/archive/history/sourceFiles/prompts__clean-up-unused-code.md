@@ -1,4 +1,15 @@
-
+---
+id: prompts__clean-up-unused-code
+title: Prompts  Clean Up Unused Code
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Prompts  Clean Up Unused Code (explanation) for dopemux documentation and
+  developer workflows.
+---
 DesktopCommander Logo
 DesktopCommander
 Prompts

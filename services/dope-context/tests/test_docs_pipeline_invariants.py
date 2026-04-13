@@ -21,7 +21,11 @@ def _register_qdrant_stub():
         "MatchValue",
         "SearchParams",
     ]:
-        setattr(models_module, name, type(name, (), {"__init__": lambda self, *args, **kwargs: None}))
+        setattr(
+            models_module,
+            name,
+            type(name, (), {"__init__": lambda self, *args, **kwargs: None}),
+        )
     models_module.PayloadSchemaType = types.SimpleNamespace(KEYWORD="keyword")
     models_module.Distance = types.SimpleNamespace(DOT="dot")
 

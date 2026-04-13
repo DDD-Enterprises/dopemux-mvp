@@ -1,14 +1,23 @@
 ---
 id: runbook-project-analysis-backup
-title: Runbook — Project Analysis Backup
+title: "Runbook \u2014 Project Analysis Backup"
 type: runbook
-owner: @hu3mann
+owner: '@hu3mann'
 last_review: 2025-09-24
 next_review: 2025-12-24
-tags: [adhd, analysis, backup, thinkdeep]
-related: [runbook-activation-plan, runbook-extended-roadmap]
+tags:
+- adhd
+- analysis
+- backup
+- thinkdeep
+related:
+- runbook-activation-plan
+- runbook-extended-roadmap
+author: '@hu3mann'
+date: '2026-04-13'
+prelude: "Runbook \u2014 Project Analysis Backup (explanation) for dopemux documentation\
+  \ and developer workflows."
 ---
-
 # Dopemux Project Analysis Backup
 
 ## Investigation Status

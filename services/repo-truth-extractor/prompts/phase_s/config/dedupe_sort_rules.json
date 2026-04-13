@@ -1,0 +1,5 @@
+{
+  "dedupe_keys": ["id", "path"],
+  "sort_order": ["path", "line_start", "id"],
+  "notes": "Stub rules — refine when SP pipeline goes live with specific deduplication and sorting requirements"
+}

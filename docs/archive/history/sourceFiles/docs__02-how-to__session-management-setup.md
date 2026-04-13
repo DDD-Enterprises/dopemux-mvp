@@ -1,3 +1,15 @@
+---
+id: docs__02-how-to__session-management-setup
+title: Docs  02 How To  Session Management Setup
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  02 How To  Session Management Setup (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 🧠 ADHD-Friendly Session Management Setup
 
 This guide helps you set up the new session management slash commands (`/save`, `/restore`, `/sessions`) in Claude Code with beautiful, ADHD-optimized visual output.

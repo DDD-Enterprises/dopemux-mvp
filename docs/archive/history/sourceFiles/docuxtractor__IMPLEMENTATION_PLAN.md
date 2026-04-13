@@ -1,3 +1,15 @@
+---
+id: docuxtractor__IMPLEMENTATION_PLAN
+title: Docuxtractor  Implementation Plan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docuxtractor  Implementation Plan (explanation) for dopemux documentation
+  and developer workflows.
+---
 # DocuXtractor Implementation Plan
 
 ## Vision: Transform ANY text into professional software documentation

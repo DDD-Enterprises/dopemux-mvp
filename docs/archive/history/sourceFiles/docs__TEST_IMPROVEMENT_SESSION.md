@@ -1,3 +1,15 @@
+---
+id: docs__TEST_IMPROVEMENT_SESSION
+title: Docs  Test Improvement Session
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Test Improvement Session (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Test Improvement Session - January 18, 2025
 
 **Session Goal**: Fix top 3 test priorities identified in coverage report

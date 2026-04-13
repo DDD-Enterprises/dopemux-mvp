@@ -1,3 +1,15 @@
+---
+id: docs__94-architecture__rag__hybrid-retrieval-design
+title: Docs  94 Architecture  Rag  Hybrid Retrieval Design
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  94 Architecture  Rag  Hybrid Retrieval Design (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Hybrid Retrieval Pipeline Design
 
 ## Overview

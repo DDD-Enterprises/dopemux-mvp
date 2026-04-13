@@ -1,3 +1,15 @@
+---
+id: docs__LEANTIME_SETUP_SUMMARY
+title: Docs  Leantime Setup Summary
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Leantime Setup Summary (explanation) for dopemux documentation and
+  developer workflows.
+---
 # 🎉 Leantime Integration Setup Complete
 
 **Date**: September 21, 2025

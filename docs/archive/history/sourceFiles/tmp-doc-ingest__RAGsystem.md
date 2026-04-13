@@ -1,3 +1,15 @@
+---
+id: tmp-doc-ingest__RAGsystem
+title: Tmp Doc Ingest  Ragsystem
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Tmp Doc Ingest  Ragsystem (explanation) for dopemux documentation and developer
+  workflows.
+---
 Executive Summary
 
 Dopemux’s Retrieval-Augmented Generation (RAG) system is redesigned for high-quality context retrieval across both documentation and code. We implement a two-stage hybrid retrieval pipeline combining dense semantic search with BM25 keyword matching, followed by an advanced reranker to boost precision ￼ ￼. The system uses Milvus (open-source vector database) as the unified store for embeddings and sparse indices, configured with HNSW (M=16, efConstruction=200, efSearch=128) for efficient vector search ￼ and built-in BM25 for full-text search ￼. At ingestion, documents and code are chunked with contextual preludes (50–100 tokens for docs; ~20–60 tokens for code) prepended to each chunk, improving retrieval accuracy by infusing summary context ￼ ￼. These preludes plus content are embedded via specialized Voyage AI models – voyage-context-3 for docs and voyage-code-3 for code – which significantly outperform prior embeddings in their domains ￼ ￼. The system auto-graphs all retrieved and injected content into ConPort (Context Portal) – a project memory graph – capturing nodes for context items and edges for relationships (with scores), invisibly to the user. Role- and task-aware policies adjust retrieval behavior: e.g. a Developer in a coding task will retrieve more code chunks, whereas a PM will emphasize design docs. Finally, a structured context header of ~6–10 items (≤2.5k tokens, ~20% headroom) is assembled and injected into the LLM’s prompt, ensuring the assistant has the most relevant project knowledge. The result is an end-to-end CodeRAG and DocRAG pipeline with robust indexing, adaptive retrieval, memory integration, and configurable policies – all geared to maximize answer quality while maintaining acceptable latency. We provide below detailed pipeline diagrams, Milvus configuration tables, context assembly schemas, example memory calls, role policy JSON, and an evaluation & rollout plan to ensure this system’s success.

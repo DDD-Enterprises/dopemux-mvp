@@ -1,3 +1,15 @@
+---
+id: docs__94-architecture__rag__rag-system-overview
+title: Docs  94 Architecture  Rag  Rag System Overview
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  94 Architecture  Rag  Rag System Overview (explanation) for dopemux
+  documentation and developer workflows.
+---
 # Dopemux RAG System Architecture Overview
 
 ## Executive Summary

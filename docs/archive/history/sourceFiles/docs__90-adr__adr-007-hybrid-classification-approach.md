@@ -1,3 +1,15 @@
+---
+id: docs__90-adr__adr-007-hybrid-classification-approach
+title: Docs  90 Adr  Adr 007 Hybrid Classification Approach
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  90 Adr  Adr 007 Hybrid Classification Approach (explanation) for dopemux
+  documentation and developer workflows.
+---
 # ADR-007: Hybrid Classification Approach for Memory Intelligence
 
 **Status**: Proposed

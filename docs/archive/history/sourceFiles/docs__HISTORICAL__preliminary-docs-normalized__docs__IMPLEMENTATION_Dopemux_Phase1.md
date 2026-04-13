@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__docs__IMPLEMENTATION_Dopemux_Phase1
+title: Docs  Historical  Preliminary Docs Normalized  Docs  Implementation Dopemux
+  Phase1
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Docs  Implementation Dopemux
+  Phase1 (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Phase 1 Implementation Plan
 **16-Week Development Platform Implementation | 84.8% SWE-Bench Target**
 

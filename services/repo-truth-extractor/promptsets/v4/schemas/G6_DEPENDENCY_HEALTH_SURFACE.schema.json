@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "promptsets/v4/schemas/G6_DEPENDENCY_HEALTH_SURFACE.schema.json",
+  "title": "DEPENDENCY_HEALTH_SURFACE@v1",
+  "type": "object",
+  "required": ["schema", "items"],
+  "properties": {
+    "schema": { "const": "DEPENDENCY_HEALTH_SURFACE@v1" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "issue_type", "package_name", "path", "line_range", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "issue_type": {
+            "type": "string",
+            "enum": ["unpinned_dependency", "alternate_source", "lockfile_missing", "manifest_duplication", "version_constraint_risk"]
+          },
+          "package_name": { "type": "string" },
+          "path": { "type": "string" },
+          "line_range": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+          "evidence": { "type": "array", "minItems": 1 }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

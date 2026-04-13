@@ -1,3 +1,15 @@
+---
+id: docs__HISTORICAL__REFACTORING_PLAN
+title: Docs  Historical  Refactoring Plan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Refactoring Plan (explanation) for dopemux documentation
+  and developer workflows.
+---
 # HISTORICAL Docs Refactoring Plan
 
 ## Context

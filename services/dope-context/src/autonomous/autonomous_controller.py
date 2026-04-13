@@ -11,10 +11,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Dict, Optional, Set
 
-from .watchdog_monitor import WatchdogMonitor
 from .indexing_worker import IndexingWorker
 from .periodic_sync import PeriodicSync
-
+from .watchdog_monitor import WatchdogMonitor
 
 logger = logging.getLogger(__name__)
 
@@ -142,12 +141,15 @@ class AutonomousController:
         result = await self.sync_callback(workspace_path)
 
         # If changes detected, trigger indexing
-        changed_count = int(result.get("total_changes", result.get("changes", 0))) if result else 0
-        has_changes = bool(result.get("has_changes", changed_count > 0)) if result else False
+        changed_count = (
+            int(result.get("total_changes", result.get("changes", 0))) if result else 0
+        )
+        has_changes = (
+            bool(result.get("has_changes", changed_count > 0)) if result else False
+        )
         if has_changes:
             logger.info(
-                f"Periodic sync found {changed_count} changes, "
-                f"triggering reindex"
+                f"Periodic sync found {changed_count} changes, " f"triggering reindex"
             )
 
             # Trigger full reindex for changed files
@@ -182,9 +184,7 @@ class AutonomousController:
         # Register in global registry
         AutonomousController._active_controllers[self.registry_key] = self
 
-        logger.info(
-            f"Autonomous indexing active for {self.workspace_path.name}"
-        )
+        logger.info(f"Autonomous indexing active for {self.workspace_path.name}")
 
     async def stop(self):
         """Stop autonomous indexing gracefully."""

@@ -1,3 +1,15 @@
+---
+id: docker__mcp-servers__zen__zen-mcp-server__CHANGELOG
+title: Docker  Mcp Servers  Zen  Zen Mcp Server  Changelog
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docker  Mcp Servers  Zen  Zen Mcp Server  Changelog (explanation) for dopemux
+  documentation and developer workflows.
+---
 # CHANGELOG
 
 <!-- version list -->

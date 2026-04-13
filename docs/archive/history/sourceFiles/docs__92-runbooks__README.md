@@ -1,3 +1,15 @@
+---
+id: docs__92-runbooks__README
+title: Docs  92 Runbooks  Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  92 Runbooks  Readme (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Runbooks - Operational Procedures
 
 This directory contains operational runbooks for maintaining, troubleshooting, and operating Dopemux systems. These are **action-oriented** procedures for operational tasks.

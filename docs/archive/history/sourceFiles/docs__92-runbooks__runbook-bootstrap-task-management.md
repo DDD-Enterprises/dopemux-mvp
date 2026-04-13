@@ -1,15 +1,24 @@
 ---
 id: runbook-bootstrap-task-management
-title: Runbook — Bootstrap Task Management When Systems Are Broken
+title: "Runbook \u2014 Bootstrap Task Management When Systems Are Broken"
 type: runbook
-owner: @hu3mann
+owner: '@hu3mann'
 last_review: 2025-09-24
 next_review: 2025-12-24
-tags: [adhd, bootstrap, task-management, meta-process]
+tags:
+- adhd
+- bootstrap
+- task-management
+- meta-process
 priority: urgent
-related: [runbook-activation-plan, runbook-extended-roadmap]
+related:
+- runbook-activation-plan
+- runbook-extended-roadmap
+author: '@hu3mann'
+date: '2026-04-13'
+prelude: "Runbook \u2014 Bootstrap Task Management When Systems Are Broken (explanation)\
+  \ for dopemux documentation and developer workflows."
 ---
-
 # Bootstrap Task Management When Systems Are Broken
 
 ## The Bootstrap Problem

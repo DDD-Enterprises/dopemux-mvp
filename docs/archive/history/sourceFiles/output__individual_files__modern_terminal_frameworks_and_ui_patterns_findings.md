@@ -1,3 +1,15 @@
+---
+id: output__individual_files__modern_terminal_frameworks_and_ui_patterns_findings
+title: Output  Individual Files  Modern Terminal Frameworks And Ui Patterns Findings
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Output  Individual Files  Modern Terminal Frameworks And Ui Patterns Findings
+  (explanation) for dopemux documentation and developer workflows.
+---
 Of course. Here is the structured analysis of the research document `modern-terminal-frameworks-and-ui-patterns.md`.
 
 ***

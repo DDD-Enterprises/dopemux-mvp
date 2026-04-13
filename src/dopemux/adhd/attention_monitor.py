@@ -12,14 +12,11 @@ from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Callable, Dict, List, Optional
 
-import logging
+from rich.console import Console
 
-logger = logging.getLogger(__name__)
-if TYPE_CHECKING:
-    from ..config.manager import AttentionConfig
-
+console = Console()
 
 
 @dataclass
@@ -57,7 +54,7 @@ class AttentionMonitor:
     - Privacy-respecting metrics (no actual keystrokes logged)
     """
 
-    def __init__(self, project_path: Path, config: Optional['AttentionConfig'] = None):
+    def __init__(self, project_path: Path):
         """Initialize attention monitor."""
         self.project_path = project_path
         self.data_dir = project_path / ".dopemux" / "attention"
@@ -83,19 +80,11 @@ class AttentionMonitor:
         self._focus_session_start: Optional[datetime] = None
 
         # Configuration
-        if config:
-            self.sample_interval = config.sample_interval
-            self.keystroke_threshold = config.keystroke_threshold
-            self.context_switch_threshold = config.context_switch_threshold
-            # Check if config has focus_threshold (it might not, default 0.7)
-            self.focus_threshold = getattr(config, 'focus_threshold', 0.7)
-            self.hyperfocus_duration = getattr(config, 'hyperfocus_duration', 45)
-        else:
-            self.sample_interval = 5  # seconds
-            self.keystroke_threshold = 2.0  # keys per second for active typing
-            self.context_switch_threshold = 3  # switches per minute for scattered
-            self.focus_threshold = 0.7  # focus score threshold
-            self.hyperfocus_duration = 45  # minutes for hyperfocus detection
+        self.sample_interval = 5  # seconds
+        self.keystroke_threshold = 2.0  # keys per second for active typing
+        self.context_switch_threshold = 3  # switches per minute for scattered
+        self.focus_threshold = 0.7  # focus score threshold
+        self.hyperfocus_duration = 45  # minutes for hyperfocus detection
 
     def start_monitoring(self) -> None:
         """Start attention monitoring in background thread."""
@@ -107,7 +96,7 @@ class AttentionMonitor:
         self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
         self._monitor_thread.start()
 
-        logger.info("🧠 Attention monitoring started")
+        console.print("[green]🧠 Attention monitoring started[/green]")
 
     def stop_monitoring(self) -> None:
         """Stop attention monitoring."""
@@ -117,7 +106,7 @@ class AttentionMonitor:
 
         # Save final metrics
         self._save_session_metrics()
-        logger.info("Attention monitoring stopped")
+        console.print("[blue]Attention monitoring stopped[/blue]")
 
     def get_current_metrics(self) -> Dict[str, Any]:
         """Get current attention metrics."""
@@ -205,7 +194,7 @@ class AttentionMonitor:
                 self._collect_metrics()
                 time.sleep(self.sample_interval)
             except Exception as e:
-                logger.error(f"Attention monitoring error: {e}")
+                console.print(f"[red]Attention monitoring error: {e}[/red]")
                 time.sleep(self.sample_interval)
 
     def _collect_metrics(self) -> None:
@@ -250,7 +239,7 @@ class AttentionMonitor:
             try:
                 callback(metrics)
             except Exception as e:
-                logger.error(f"Callback error: {e}")
+                console.print(f"[yellow]Callback error: {e}[/yellow]")
 
     def _calculate_keystroke_rate(self) -> float:
         """Calculate current keystroke rate (keys per minute)."""
@@ -355,7 +344,7 @@ class AttentionMonitor:
                 self._log_focus_session(focus_duration)
                 self._focus_session_start = None
 
-            logger.info(f"Attention state: {new_state}")
+            console.print(f"[blue]Attention state: {new_state}[/blue]")
         else:
             # Same state, increment duration
             self._state_duration += self.sample_interval

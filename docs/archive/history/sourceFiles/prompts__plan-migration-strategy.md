@@ -1,3 +1,15 @@
+---
+id: prompts__plan-migration-strategy
+title: Prompts  Plan Migration Strategy
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Prompts  Plan Migration Strategy (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Technology Migration Automation
 
 ## Mission Statement

@@ -1,3 +1,15 @@
+---
+id: dopemux-docuXtractor__technical_specifications
+title: Dopemux Docuxtractor  Technical Specifications
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Dopemux Docuxtractor  Technical Specifications (explanation) for dopemux
+  documentation and developer workflows.
+---
 # DocuXtractor Technical Specifications
 
 **Source**: Deep analysis of Dopemux 11-pattern document processing system

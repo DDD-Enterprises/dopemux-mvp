@@ -1,0 +1,266 @@
+{
+  "audit_id": "TP-RTE-BENCH-AUDIT-001",
+  "generated_on": "2026-04-11",
+  "axes": [
+    {
+      "axis": "route_collapse_route_ownership_admissibility",
+      "priority": "high",
+      "grade": "PARTIAL",
+      "status": "bounded_proof_good_live_restart_blocked",
+      "what_is_proven": [
+        "Lane separation exists in the benchmark contract.",
+        "R1C proved dry-run owned-lane distinctness.",
+        "Bounded admissibility passed in dry-run benchmark mode."
+      ],
+      "what_is_missing": [
+        "Live owned-lane execution did not admit any attempts in the latest environment."
+      ],
+      "top_blockers": [
+        "live_owned_lane_provider_readiness"
+      ],
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-SPLIT-001/20260411T001636Z/sample_attempt_shapes.json",
+        "proof/benchmarking/TP-RTE-BENCH-R1C/benchmarking-20260410-001/bounded_admissibility_result.json",
+        "proof/benchmarking/TP-RTE-BENCH-R1D/20260411T051526Z/live_admissibility_result.json"
+      ],
+      "next_packet": "ops-owned-lane-readiness"
+    },
+    {
+      "axis": "live_execution_readiness",
+      "priority": "high",
+      "grade": "NO",
+      "status": "blocked_in_current_environment",
+      "what_is_proven": [
+        "Provider env vars are present.",
+        "The live readiness gate fails closed on auth/quota problems."
+      ],
+      "what_is_missing": [
+        "OpenRouter live auth readiness.",
+        "OpenAI direct quota or billing readiness.",
+        "Any admitted live attempts for the owned strict-extraction lane."
+      ],
+      "top_blockers": [
+        "route_openrouter_openai_gpt_5_4_v1:auth_rejected",
+        "route_openai_gpt_5_4_v1:quota_or_billing",
+        "route_openrouter_openai_gpt_5_3_codex_v1:auth_rejected"
+      ],
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-R1D/20260411T051526Z/provider_readiness_report.json",
+        "proof/benchmarking/TP-RTE-BENCH-R1D/20260411T051526Z/spend_and_failure_summary.json",
+        "proof/benchmarking/TP-RTE-BENCH-R1D/20260411T051526Z/R1D_DECISION_MEMO.md"
+      ],
+      "next_packet": "ops-owned-lane-readiness"
+    },
+    {
+      "axis": "feedback_loop_to_routing_and_profiles",
+      "priority": "high",
+      "grade": "PARTIAL",
+      "status": "reviewable_but_not_dynamic",
+      "what_is_proven": [
+        "Direct-model, pricing, runtime-route, and governance evidence can be synthesized downstream.",
+        "Blocked lanes and caveats remain explicit in synthesis outputs."
+      ],
+      "what_is_missing": [
+        "Any truthful auto-apply path.",
+        "Any unblocked routing diff in the latest synthesis proof."
+      ],
+      "top_blockers": [
+        "profile_updates_review_only",
+        "runtime_route_candidates_blocked",
+        "pricing_unknowns_block_cost_optimization"
+      ],
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-PROFILE-SYNTH-001/20260411T040331Z/PROFILE_SYNTHESIS_SUMMARY.json",
+        "proof/benchmarking/TP-RTE-BENCH-PROFILE-SYNTH-001/20260411T040331Z/BLOCKED_LANES.json"
+      ],
+      "next_packet": "pricing-truth-followup"
+    },
+    {
+      "axis": "pricing_integration_completeness",
+      "priority": "high",
+      "grade": "PARTIAL",
+      "status": "materially_improved_not_complete",
+      "what_is_proven": [
+        "Active universe coverage exists.",
+        "Confirmed priced, caveated, stale, and unknown classes are separated."
+      ],
+      "what_is_missing": [
+        "Confirmed pricing for xai/grok-4.20.",
+        "Fresh pricing for xai/grok-4.20-beta-0309-reasoning."
+      ],
+      "top_blockers": [
+        "xai/grok-4.20:UNPRICED_UNKNOWN",
+        "xai/grok-4.20-beta-0309-reasoning:STALE_NEEDS_REFRESH"
+      ],
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-PRICE-001/20260411T033247Z/pricing_coverage_report.json",
+        "proof/benchmarking/TP-RTE-BENCH-PRICE-001/20260411T033247Z/pricing_gap_list.json"
+      ],
+      "next_packet": "pricing-truth-followup"
+    },
+    {
+      "axis": "phase_s_contract_rigor_relative_to_core_phases",
+      "priority": "high",
+      "grade": "NO",
+      "status": "fail_closed_controls_without_core_parity",
+      "what_is_proven": [
+        "Phase S registry selection can fail closed.",
+        "Phase S step selection is canonicalized and duplicate-invalidated.",
+        "Prompt contract files are checked for fail-closed and secret-handling expectations."
+      ],
+      "what_is_missing": [
+        "Runtime-route identity surface.",
+        "Provider-backed live readiness surface.",
+        "Admissibility/gating depth comparable to the core runtime-route lane."
+      ],
+      "top_blockers": [
+        "phase_s_adapter_outputs_registry_summary_only",
+        "phase_s_validator_strength_is_moderate",
+        "no_phase_s_live_route_truth_surface"
+      ],
+      "evidence_refs": [
+        "services/repo-truth-extractor/benchmarking/executors/phase_s_adapter.py",
+        "services/repo-truth-extractor/benchmarking/validators/phase_s_validator_wrapper.py",
+        "services/repo-truth-extractor/tests/test_phase_s_prompt_registry.py",
+        "services/repo-truth-extractor/tests/test_phase_s_step_selection.py",
+        "services/repo-truth-extractor/tests/test_phase_s_posttail_prompts.py"
+      ],
+      "next_packet": "phase-s-contract-parity"
+    },
+    {
+      "axis": "scoring_rigor_and_calibratability",
+      "priority": "medium",
+      "grade": "PARTIAL",
+      "status": "deterministic_but_still_shallow",
+      "what_is_proven": [
+        "Scoring is deterministic and policy-driven.",
+        "Contract-gate failure collapses score to zero."
+      ],
+      "what_is_missing": [
+        "Richer regression/comparison depth.",
+        "More explicit calibration evidence."
+      ],
+      "top_blockers": [
+        "regression_compare_is_skeleton",
+        "dimension_scoring_is_presence_heavy"
+      ],
+      "evidence_refs": [
+        "services/repo-truth-extractor/benchmarking/scoring/task_scoring.py",
+        "services/repo-truth-extractor/benchmarking/rollups/regression_compare.py"
+      ],
+      "next_packet": "scoring-calibration"
+    },
+    {
+      "axis": "model_and_pricing_coverage_sufficiency",
+      "priority": "medium",
+      "grade": "PARTIAL",
+      "status": "bounded_set_sufficient_broad_set_not_sufficient",
+      "what_is_proven": [
+        "DMB-001 produced direct-model evidence for the current bounded candidate set.",
+        "PRICE-001 covers the active benchmark universe."
+      ],
+      "what_is_missing": [
+        "Fully confirmed cost truth across all active providers.",
+        "Broader live runtime-route evidence."
+      ],
+      "top_blockers": [
+        "coverage_has_unknowns_and_stale_rows"
+      ],
+      "evidence_refs": [
+        "proof/benchmarking/TP-RTE-BENCH-DMB-001/20260411T030110Z/DIRECT_MODEL_COMPARISON.json",
+        "proof/benchmarking/TP-RTE-BENCH-PRICE-001/20260411T033247Z/pricing_coverage_report.json"
+      ],
+      "next_packet": "pricing-truth-followup"
+    },
+    {
+      "axis": "prescan_cost_prediction_realism",
+      "priority": "medium",
+      "grade": "NO",
+      "status": "heuristic_only",
+      "what_is_proven": [
+        "Prescan incremental analysis is truth-preserving and deterministic enough for planning."
+      ],
+      "what_is_missing": [
+        "Connection to benchmark pricing truth.",
+        "Provider-specific realistic costing beyond heuristics."
+      ],
+      "top_blockers": [
+        "hard_coded_prescan_pricing_basis",
+        "token_and_output_estimation_are_heuristic"
+      ],
+      "evidence_refs": [
+        "services/repo-truth-extractor/lib/prescan/cost_estimator.py",
+        "services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py"
+      ],
+      "next_packet": "prescan-cost-realism"
+    },
+    {
+      "axis": "hallucination_prevention",
+      "priority": "low",
+      "grade": "YES",
+      "status": "strong_enough",
+      "what_is_proven": [
+        "Lane surfaces are kept distinct.",
+        "Phase S prompts are checked for fail-closed and secret-leak constraints."
+      ],
+      "what_is_missing": [],
+      "top_blockers": [],
+      "evidence_refs": [
+        "services/repo-truth-extractor/tests/test_benchmark_lane_split.py",
+        "services/repo-truth-extractor/tests/test_phase_s_posttail_prompts.py"
+      ],
+      "next_packet": null
+    },
+    {
+      "axis": "measurement_immutability",
+      "priority": "low",
+      "grade": "YES",
+      "status": "strong_enough",
+      "what_is_proven": [
+        "Attempt persistence links DB records to filesystem evidence bundles.",
+        "Governance decisions are append-only and supersession-aware."
+      ],
+      "what_is_missing": [],
+      "top_blockers": [],
+      "evidence_refs": [
+        "services/repo-truth-extractor/tests/test_attempt_persistence_smoke.py",
+        "services/repo-truth-extractor/tests/test_governance_decision_log.py"
+      ],
+      "next_packet": null
+    },
+    {
+      "axis": "comparability_controls",
+      "priority": "low",
+      "grade": "YES",
+      "status": "strong_enough_for_bounded_contests",
+      "what_is_proven": [
+        "Comparison lane is isolated from canonical outputs.",
+        "Admissibility uses explicit blocker codes and fail-closed logic."
+      ],
+      "what_is_missing": [],
+      "top_blockers": [],
+      "evidence_refs": [
+        "services/repo-truth-extractor/tests/test_comparison_lane.py",
+        "services/repo-truth-extractor/tests/test_campaign_admissibility.py"
+      ],
+      "next_packet": null
+    },
+    {
+      "axis": "governance_auditability",
+      "priority": "low",
+      "grade": "YES",
+      "status": "reviewable_and_traceable",
+      "what_is_proven": [
+        "Governance packets contain evidence refs and required actions.",
+        "Governance history distinguishes current and historical decisions."
+      ],
+      "what_is_missing": [],
+      "top_blockers": [],
+      "evidence_refs": [
+        "services/repo-truth-extractor/tests/test_governance_packets.py",
+        "services/repo-truth-extractor/tests/test_governance_history_views.py"
+      ],
+      "next_packet": null
+    }
+  ]
+}

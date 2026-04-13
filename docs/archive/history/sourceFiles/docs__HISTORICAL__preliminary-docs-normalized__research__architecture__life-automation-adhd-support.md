@@ -1,3 +1,16 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__architecture__life-automation-adhd-support
+title: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Life
+  Automation Adhd Support
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-13'
+last_review: '2026-04-13'
+next_review: '2026-07-12'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Architecture  Life
+  Automation Adhd Support (explanation) for dopemux documentation and developer workflows.
+---
 Automating Personal and Business Tasks with Agents
 Beyond coding, your platform will host agents that handle a variety of personal, administrative, and
 business tasks (some in the adult content domain, social media, finance, etc.). Let’s break down how agents
