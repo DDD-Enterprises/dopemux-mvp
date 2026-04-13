@@ -1,7 +1,7 @@
 {
   "packet": "rte-seam-extraction-foundation",
   "title": "RTE seam extraction and deterministic modularization",
-  "status": "slice_4_complete_pending_pr_and_remaining_slices",
+  "status": "slice_5_complete_pending_remaining_slices",
   "commit_plan": [
     {
       "slice": 1,
@@ -31,7 +31,7 @@
     {
       "slice": 5,
       "name": "Extract LLM interface seam",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "slice": 6,
@@ -95,6 +95,15 @@
         "Updated run_extraction_v5.py to keep the canonical public writer functions as thin wrappers over the extracted reporting implementation while preserving artifact paths, serialization, and blocked-run semantics.",
         "Added a focused wrapper-delegation seam test and validated the extracted reporting path against the existing rollup, golden-fixture, resume-smoke, validator-repair-provenance, v4 compatibility, CLI truth, and operator-safety suites."
       ]
+    },
+    {
+      "slice": 5,
+      "name": "Extract LLM interface seam",
+      "summary": [
+        "Added services/repo-truth-extractor/llm_runtime.py as the implementation seam for provider transport calls, retry/backoff decisions, parse/coerce normalization, route-ladder escalation metadata, and comparison-lane execution.",
+        "Updated run_extraction_v5.py to keep the canonical public LLM/runtime helpers as thin wrappers, while preserving monkeypatch-visible wrapper surfaces for retry, parse/coerce, and comparison parity tests.",
+        "Added a focused LLM seam wrapper test and validated the extracted boundary against observability, retry, parse-repair, comparison isolation, prelive hardening, live-guard, cost-cap, CLI compatibility, and direct dry-run smoke coverage."
+      ]
     }
   ],
   "replan_events": [
@@ -136,6 +145,11 @@
     {
       "sha": "d58bd2661158a2dd4be85938dec28251e8e800f1",
       "role": "slice_4_reporting_seam",
+      "created_in_this_packet": true
+    },
+    {
+      "sha": "bfcb559ddcb383003af59cfd1e5d1ef2e61888dc",
+      "role": "slice_5_llm_runtime_seam",
       "created_in_this_packet": true
     }
   ],
@@ -260,6 +274,31 @@
       "label": "slice_4_phase_a_dry_run_smoke",
       "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id slice4_smoke --output-root /tmp/rte_slice4_smoke",
       "status": "passed"
+    },
+    {
+      "label": "slice_5_python_compile_checks",
+      "command": "python3 -m py_compile services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_llm_runtime_seam.py",
+      "status": "passed",
+      "files_checked": 3
+    },
+    {
+      "label": "slice_5_llm_boundary_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_llm_runtime_seam.py services/repo-truth-extractor/tests/test_v5_observability_improvements.py services/repo-truth-extractor/tests/test_run_extraction_v3_retry.py services/repo-truth-extractor/tests/test_run_extraction_v3_parse_retry.py services/repo-truth-extractor/tests/test_comparison_lane.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py services/repo-truth-extractor/tests/test_run_extraction_v3_artifact_parsing.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 61,
+      "fail_count": 0
+    },
+    {
+      "label": "slice_5_compatibility_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_live_llm_guard.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py services/repo-truth-extractor/tests/test_run_extraction_v4_core.py services/repo-truth-extractor/tests/test_truth_run_cli.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 42,
+      "fail_count": 0
+    },
+    {
+      "label": "slice_5_phase_a_dry_run_smoke",
+      "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id slice5_smoke --output-root /tmp/rte_slice5_smoke",
+      "status": "passed"
     }
   ],
   "codereview": {
@@ -269,19 +308,20 @@
       "Ran git diff --check on the touched files with no findings.",
       "Reviewed the slice-2 diff to confirm only static runtime config moved and phase/dependency semantics remained in run_extraction_v5.py.",
       "Reviewed the slice-3 diff to confirm phase ordering, metadata, and required step sets moved into phases.py without moving artifact-group or execution logic.",
-      "Reviewed the slice-4 diff to confirm reporting.py centralizes only artifact/report writers while run_extraction_v5.py remains the canonical public writer surface and execution authority."
+      "Reviewed the slice-4 diff to confirm reporting.py centralizes only artifact/report writers while run_extraction_v5.py remains the canonical public writer surface and execution authority.",
+      "Reviewed the slice-5 diff to confirm llm_runtime.py centralizes provider transport, retry, parse/coerce, and comparison-lane implementation while run_extraction_v5.py remains the canonical public runtime surface."
     ]
   },
   "precommit": {
     "status": "passed",
-    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/reporting.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_reporting_seam.py"
+    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_llm_runtime_seam.py"
   },
   "evidence_ledger_completeness": "complete",
   "pr": {
     "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/444",
     "status": "draft_open"
   },
-  "merge_readiness": "draft_pr_open_pending_review_and_remaining_packet_slices",
+  "merge_readiness": "draft_pr_open_slice_5_complete_remaining_packet_slices_pending",
   "worktree": {
     "path": "/Users/hue/code/dopemux-mvp-rte-seams-v2",
     "branch": "codex/rte-seam-extraction-foundation-v2",
