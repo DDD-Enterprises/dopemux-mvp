@@ -1,0 +1,61 @@
+{
+  "packet": "recovery-audit",
+  "objective": "Reconstruct lost temporary worktree state into a verified branch/worktree inventory and consolidation plan.",
+  "evidence_ledger": [
+    ".recovery/branches.vv.txt",
+    ".recovery/worktrees.porcelain.txt",
+    ".recovery/reflog.all.txt",
+    ".recovery/refs.txt",
+    ".recovery/fsck.txt",
+    ".recovery/stashes.txt"
+  ],
+  "slices": [
+    {
+      "name": "freeze-and-capture",
+      "status": "complete",
+      "verification": ["git status", "git worktree list --porcelain", "git reflog --all"]
+    },
+    {
+      "name": "recover-orphans",
+      "status": "complete",
+      "verification": ["git show <sha>", "git branch recover/<slug> <sha>"]
+    },
+    {
+      "name": "classify-and-consolidate",
+      "status": "complete",
+      "verification": ["git cherry -v", "git log base..branch"]
+    }
+  ],
+  "branch_decisions": [
+    {
+      "branch": "recover/statusline-docs-023e2e6",
+      "action": "merged_surgically",
+      "target": "recovery/consolidated",
+      "reason": "Restored missing statusline documentation to current HEAD line."
+    },
+    {
+      "branch": "recover/security-review-5bac763",
+      "action": "merged_surgically",
+      "target": "recovery/consolidated",
+      "reason": "Restored security review command to current HEAD line."
+    },
+    {
+      "branch": "recover/integration-tests-5bb06a7",
+      "action": "merged_surgically",
+      "target": "recovery/consolidated",
+      "reason": "Restored sync manager persistence tests to current HEAD line."
+    },
+    {
+      "branch": "recover/adhd-engine-extraction-562efe1",
+      "action": "side-car_recovery",
+      "target": "N/A",
+      "reason": "Massive architectural drift from 2025; kept as authority for cognitive plane restoration."
+    }
+  ],
+  "residual_risks": [
+    "reflog expiry may have dropped older detached work",
+    "untracked files from deleted worktree directories may be permanently gone",
+    "authority mapping remains unresolved for some drifted subsystems"
+  ],
+  "final_confidence": "MEDIUM"
+}
