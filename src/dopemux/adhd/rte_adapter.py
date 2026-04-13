@@ -87,10 +87,30 @@ class RTEAdapter:
         # 4. Get Recommended Next Action
         next_task = self.task_decomposer.get_recommended_task(energy_level=energy_level)
         
+        
+        # 5. Log the Decomposition Decision to ConPort KG
+        decision_payload = {
+            "title": "RTE Truth Decomposed",
+            "summary": f"Analyzed RTE artifact '{artifact_type}' at energy level '{energy_level}' and generated {len(decomposed_tasks)} tasks.",
+            "rationale": "Automated ADHD Engine task breakdown to prevent cognitive overload.",
+            "context": {
+                "energy_level": energy_level,
+                "tasks_created": decomposed_tasks,
+                "recommended_action": next_task.get("title") if isinstance(next_task, dict) else (next_task.title if next_task else None),
+                "source": "RTE_ADAPTER_ADHD_ENGINE"
+            },
+            "workspace_id": str(self.workspace_root.name)
+        }
+        
+        # We need to run the async write_decision_to_conport
+        # Since this method itself is async, we can await it directly.
+        conport_result = await self.write_decision_to_conport(decision_payload)
+        
         return {
             "status": "processed",
             "energy_level": energy_level,
             "tasks_created": len(decomposed_tasks),
             "recommended_next_action": next_task.get("title") if isinstance(next_task, dict) else (next_task.title if next_task else None),
-            "truth_artifact": truth
+            "truth_artifact": truth,
+            "conport_logging": conport_result
         }
