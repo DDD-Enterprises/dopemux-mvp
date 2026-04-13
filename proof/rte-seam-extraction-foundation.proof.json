@@ -1,7 +1,7 @@
 {
   "packet": "rte-seam-extraction-foundation",
   "title": "RTE seam extraction and deterministic modularization",
-  "status": "slice_3_complete_pending_slice_4",
+  "status": "slice_4_complete_pending_pr_and_remaining_slices",
   "commit_plan": [
     {
       "slice": 1,
@@ -26,7 +26,7 @@
     {
       "slice": 4,
       "name": "Extract manifest/proof seam",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "slice": 5,
@@ -86,6 +86,15 @@
         "Updated run_extraction_v5.py to import and re-export the phase metadata seam while leaving runtime orchestration and artifact-group logic in place.",
         "Fixed two strict-route runtime assumptions uncovered during validation by falling back to PROVIDER_API_KEY_ENV when strict route metadata intentionally omits api_key_env."
       ]
+    },
+    {
+      "slice": 4,
+      "name": "Extract manifest/proof seam",
+      "summary": [
+        "Added services/repo-truth-extractor/reporting.py as the implementation seam for telemetry snapshots, run manifest updates, phase coverage, coverage rollups, resume proof writing, proof-pack updates, and blocked-promptset proof emission.",
+        "Updated run_extraction_v5.py to keep the canonical public writer functions as thin wrappers over the extracted reporting implementation while preserving artifact paths, serialization, and blocked-run semantics.",
+        "Added a focused wrapper-delegation seam test and validated the extracted reporting path against the existing rollup, golden-fixture, resume-smoke, validator-repair-provenance, v4 compatibility, CLI truth, and operator-safety suites."
+      ]
     }
   ],
   "replan_events": [
@@ -122,6 +131,11 @@
     {
       "sha": "3d845eccd60bfefa63e770266ad9052f7c4a2b04",
       "role": "slice_3_phase_metadata_seam",
+      "created_in_this_packet": true
+    },
+    {
+      "sha": "d58bd2661158a2dd4be85938dec28251e8e800f1",
+      "role": "slice_4_reporting_seam",
       "created_in_this_packet": true
     }
   ],
@@ -221,6 +235,31 @@
       "label": "slice_3_phase_a_dry_run_smoke",
       "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id tp5_dry_run_noise_probe --output-root /tmp/rte_slice3_probe_fix3",
       "status": "passed"
+    },
+    {
+      "label": "slice_4_python_compile_checks",
+      "command": "python3 -m py_compile services/repo-truth-extractor/reporting.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_reporting_seam.py",
+      "status": "passed",
+      "files_checked": 3
+    },
+    {
+      "label": "slice_4_reporting_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_reporting_seam.py services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py services/repo-truth-extractor/tests/test_v5_golden_fixture_smoke.py services/repo-truth-extractor/tests/test_v5_resume_smoke.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 15,
+      "fail_count": 0
+    },
+    {
+      "label": "slice_4_compatibility_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_run_extraction_v4_core.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 58,
+      "fail_count": 0
+    },
+    {
+      "label": "slice_4_phase_a_dry_run_smoke",
+      "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id slice4_smoke --output-root /tmp/rte_slice4_smoke",
+      "status": "passed"
     }
   ],
   "codereview": {
@@ -229,19 +268,20 @@
       "Reviewed the localized diff for CI, registry, comparison-lane normalization, profile-synth fixture materialization, and operator-safety test alignment.",
       "Ran git diff --check on the touched files with no findings.",
       "Reviewed the slice-2 diff to confirm only static runtime config moved and phase/dependency semantics remained in run_extraction_v5.py.",
-      "Reviewed the slice-3 diff to confirm phase ordering, metadata, and required step sets moved into phases.py without moving artifact-group or execution logic."
+      "Reviewed the slice-3 diff to confirm phase ordering, metadata, and required step sets moved into phases.py without moving artifact-group or execution logic.",
+      "Reviewed the slice-4 diff to confirm reporting.py centralizes only artifact/report writers while run_extraction_v5.py remains the canonical public writer surface and execution authority."
     ]
   },
   "precommit": {
     "status": "passed",
-    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/phases.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_phases_seam.py"
+    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/reporting.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_reporting_seam.py"
   },
   "evidence_ledger_completeness": "complete",
   "pr": {
     "url": null,
-    "status": "not_opened"
+    "status": "pending_creation"
   },
-  "merge_readiness": "slice_3_complete_local_branch_not_ready_without_follow_on_slices_and_pr",
+  "merge_readiness": "slice_4_complete_local_branch_pending_pr_and_review",
   "worktree": {
     "path": "/Users/hue/code/dopemux-mvp-rte-seams-v2",
     "branch": "codex/rte-seam-extraction-foundation-v2",
