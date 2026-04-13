@@ -7,18 +7,22 @@ from typing import Any
 import httpx
 import pytest
 
+SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestrator"
+SERVICE_ROOT_STR = str(SERVICE_ROOT)
+if SERVICE_ROOT_STR not in sys.path:
+    sys.path.insert(0, SERVICE_ROOT_STR)
+
+# Prevent cross-test module collisions from other services that also expose
+# a top-level `app.py` module on sys.path.
+for _module_name in list(sys.modules):
+    if _module_name == "app" or _module_name.startswith("app."):
+        sys.modules.pop(_module_name, None)
+
+from app.main import app  # noqa: E402
+from app.services.workflow_service import WorkflowService  # noqa: E402
+from app.services.workflow_store import WorkflowStore  # noqa: E402
 
 _UNSET: Any = object()  # sentinel for detecting absent attributes
-
-
-SERVICE_ROOT = Path(__file__).resolve().parents[1]
-if str(SERVICE_ROOT) not in sys.path:
-    sys.path.insert(0, str(SERVICE_ROOT))
-
-from app.main import app
-from app.services.workflow_service import WorkflowService
-from app.services.workflow_store import WorkflowStore
-
 
 class RecordingBridgeClient:
     def __init__(self):

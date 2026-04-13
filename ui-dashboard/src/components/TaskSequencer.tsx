@@ -48,33 +48,35 @@ interface TaskSequencerProps {
   cognitiveState: CognitiveState;
 }
 
+const INITIAL_TASKS: Task[] = [
+  {
+    id: '1',
+    title: 'Implement LSTM cognitive predictor',
+    complexity: 0.8,
+    estimatedMinutes: 120,
+    status: 'in_progress',
+    energyRequired: 'high',
+  },
+  {
+    id: '2',
+    title: 'Create UI dashboard components',
+    complexity: 0.6,
+    estimatedMinutes: 90,
+    status: 'pending',
+    energyRequired: 'medium',
+  },
+  {
+    id: '3',
+    title: 'Write unit tests',
+    complexity: 0.4,
+    estimatedMinutes: 45,
+    status: 'pending',
+    energyRequired: 'low',
+  },
+];
+
 const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      title: 'Implement LSTM cognitive predictor',
-      complexity: 0.8,
-      estimatedMinutes: 120,
-      status: 'in_progress',
-      energyRequired: 'high',
-    },
-    {
-      id: '2',
-      title: 'Create UI dashboard components',
-      complexity: 0.6,
-      estimatedMinutes: 90,
-      status: 'pending',
-      energyRequired: 'medium',
-    },
-    {
-      id: '3',
-      title: 'Write unit tests',
-      complexity: 0.4,
-      estimatedMinutes: 45,
-      status: 'pending',
-      energyRequired: 'low',
-    },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
 
   const [currentTaskId, setCurrentTaskId] = useState<string | null>('1');
   const [taskTimer, setTaskTimer] = useState<number>(0);
@@ -127,6 +129,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     const currentIndex = optimizedTasks.findIndex((task) => task.id === taskId);
     const nextIndex = (currentIndex + 1) % optimizedTasks.length;
     setCurrentTaskId(optimizedTasks[nextIndex].id);
+  };
+
+  const resetTasks = () => {
+    const freshTasks = INITIAL_TASKS.map((task) => ({ ...task }));
+    setTasks(freshTasks);
+    setCurrentTaskId(freshTasks[0].id);
+    setTaskTimer(0);
+    setIsTimerRunning(false);
   };
 
   const formatTime = (seconds: number): string => {
@@ -190,22 +200,47 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
-        <Box
-          role="status"
-          aria-label={`Total remaining duration: ${totalRemainingMinutes} minutes`}
-          sx={{
-            ml: 'auto',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-            color: brandTokens.colors.saintGold,
-          }}
+        <Tooltip
+          title={
+            totalRemainingMinutes === 0
+              ? 'Task sequence complete'
+              : getDurationAriaLabel(totalRemainingMinutes)
+          }
+          arrow
         >
-          <Clock size={16} aria-hidden="true" />
-          <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-            {totalRemainingMinutes}m
-          </Typography>
-        </Box>
+          <Box
+            role="status"
+            aria-label={
+              totalRemainingMinutes === 0
+                ? 'Task sequence complete'
+                : getDurationAriaLabel(totalRemainingMinutes)
+            }
+            tabIndex={0}
+            sx={{
+              ml: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              color: totalRemainingMinutes === 0 ? brandTokens.colors.serumMint : brandTokens.colors.saintGold,
+              cursor: 'help',
+              transition: 'color 0.3s ease',
+              '&:focus': {
+                outline: 'none',
+                borderRadius: 1,
+                boxShadow: `0 0 0 2px ${totalRemainingMinutes === 0 ? brandTokens.colors.serumMint : brandTokens.colors.saintGold}`,
+              },
+            }}
+          >
+            {totalRemainingMinutes === 0 ? (
+              <CheckCircle size={16} aria-hidden="true" />
+            ) : (
+              <Clock size={16} aria-hidden="true" />
+            )}
+            <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+              {totalRemainingMinutes === 0 ? 'DONE' : `${totalRemainingMinutes}m`}
+            </Typography>
+          </Box>
+        </Tooltip>
         <Tooltip title="Real-time task synchronization active" arrow>
           <Chip
             size="small"
@@ -332,9 +367,24 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           <Typography variant="h6" sx={{ color: brandTokens.colors.serumMint, mb: 1 }}>
             Ritual Complete
           </Typography>
-          <Typography variant="body2">
+          <Typography variant="body2" sx={{ mb: 2 }}>
             All muzzled. Your backlog is silent... for now.
           </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={resetTasks}
+            sx={{
+              borderColor: brandTokens.colors.serumMint,
+              color: brandTokens.colors.serumMint,
+              '&:hover': {
+                borderColor: brandTokens.colors.serumMint,
+                background: alpha(brandTokens.colors.serumMint, 0.1),
+              },
+            }}
+          >
+            Reset Ritual
+          </Button>
         </Box>
       )}
 

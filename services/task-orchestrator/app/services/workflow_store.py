@@ -47,7 +47,7 @@ class WorkflowStore:
 
     def __init__(
         self,
-        workspace_id: Union["os.PathLike[str]", str],
+        workspace_id: Union[str, "os.PathLike[str]"],
         *,
         bridge_url: Optional[str] = None,
         bridge_token: Optional[str] = None,
@@ -65,7 +65,7 @@ class WorkflowStore:
         )
 
     @staticmethod
-    def _normalize_workspace_id(workspace_id: object) -> str:
+    def _normalize_workspace_id(workspace_id: "Union[str, os.PathLike[str]]") -> str:
         if workspace_id is None:
             raise WorkflowStoreError("workspace_id is required")
         normalized = str(workspace_id).strip()
