@@ -1,0 +1,113 @@
+6e08355 feat(config): update MCP configuration and production monitoring setup
+13f2779 feat(infrastructure): implement unified Docker architecture consolidation
+5c4b42e feat(task-orchestrator): implement 37 specialized tools with ML-powered ADHD optimization
+c0579e0 feat(serena): implement v2 ADHD-optimized adaptive navigation intelligence system
+3e9611a feat(conport): implement industrial-strength PostgreSQL persistence with ADHD optimizations
+a2be680 docs(architecture): add comprehensive v2.0 architecture overview and ADRs
+e4f0554 feat(task-orchestrator): complete 37 specialized tools implementation
+5d24d33 feat(serena): complete memory enhancement architecture with layered implementation
+7969d20 docs: comprehensive session persistence and strategic analysis
+645bef4 docs: add comprehensive session handoff for next boot
+f099429 feat: complete unified architecture deployment with ADHD optimizations
+8bbaf71 commit work
+77ca809 feat: two-plane architecture with ADHD optimizations - complete GPT-researcher integration
+3d6f4a5 feat(extraction): add comprehensive chatlog extraction pipeline with adaptive synthesis
+30ed1d0 revert(gptr-mcp): stop tracking ignored gptr-mcp files; keep local only per .gitignore
+fa7c11a feat(mcp/gpt-researcher): add stdio helper + start scripts; HTTP wrapper + health; proxy wiring; setup docs
+8df393d feat(cli): add --mcp-up flag and mcp/servers commands; update CLI and slash-command docs
+abc07ee feat(autostart): add launchd/systemd services and docs; boot script waits for Docker and starts MCP stack
+e2f1607 docs(mas): update MAS commands to stdio entrypoint, add start-mas.sh usage, fix logs reference; note external mcp-network
+2bf8780 chore(docker): mark mcp-network and mcp_{logs,cache} as external; fix broker command to use stdio entrypoint for mas-sequential-thinking
+bd8f76c chore: add start-mas.sh helper to build/start and health-check mas-sequential-thinking
+2f83e4b chore(gitignore): ignore local clones gptr-mcp/ and metamcp/
+b0cbedc chore(gitignore): ignore .env.conport, task/worktrees, vector data; add .env.conport.example
+48955a3 chore(claude): add claude_config.json
+e332c30 chore: untrack embedded repos and add local ignores for services/conport and archived dopemux-docuXtractor
+d5f6011 ops: add recovery helper scripts and enhanced patterns module
+0958160 installers(leantime): add default configs
+f178788 tests: add persistence, role switching, and session command tests
+d4284f8 feat(metamcp): add minimal starter script
+bddb5cc src: add tools (ConPort client) and archived ADHD module
+7a46003 services: add service modules and scaffolding
+038fffe scripts: add ConPort tools, docs validator, and GPT Researcher utilities
+e93ea5e docker: add ConPort direct server and health check scripts
+46ee5bb config: add docs and RAG configurations
+2dbe715 docs: add ConPort guides, checkpoints, and cleanup summaries
+ff529e5 chore(conport): track docs only; ignore runtime files (logs/pids/sessions)
+f5ca370 chore(infrastructure): update MCP server configurations and deployment files
+fd7d69e chore(docs): major documentation cleanup and restructuring
+ae6d315 feat(task-management): implement unified mem4sprint framework integration
+6b794f5 docs(components): add Task Master and Security component hubs with pointers; structure ready for further grouping
+3749af0 docs(titles): apply title improvements for low-information pages (Overview/Index/Summary/Specification) per proposal
+fba9091 docs(components): add components/{memory,leantime} and regroup related docs; add indexes for 02-how-to and 04-explanation; generate title improvements proposal
+94d2600 docs(structure): reduce clutter via subfolders (MCP, MetaMCP components) and add indexes; improve key titles (overview, project guide)
+c5292e8 docs(reference): group MCP docs under 03-reference/mcp/ and MetaMCP under 03-reference/components/metamcp; add index READMEs
+5377c47 docs(structure): clean docs/ root to desired top-level (move stray files/dirs into sections; add assets; normalize); relocate EXTERNAL_DOCS_SHORTLIST to 03-reference
+f23ba89 docs(plan): add historical docs refactoring plan; seed docs/_manifest.yaml and features.yaml
+ec1b715 docs(nav): update mkdocs.yml to reflect normalized structure (Sections + ADRs/RFCs/Runbooks + Architecture pages); ensure frontmatter
+49c1e9e docs(normalize): kebab-case filenames and categorize within docs/ (Option A); add 03-reference/components/
+468632d docs(frontmatter): add/repair YAML frontmatter across docs; standardize defaults (id,title,type,owner,review dates)
+e185ea8 docs(adr): standardize filenames & consolidate to docs/90-adr; fix duplicate IDs (0012, 0014, 0015, 0042, 0043, 0508)
+86b07f3 chore(cleanup): add orphan_cleanup utility and document safe purge flow
+f61bac8 security: Comprehensive security vulnerability fixes
+f949e4c feat(mcp): Add GPT Researcher autonomous research server for rich queries
+fddb54d feat(metamcp): Add HTTP client for containerized MCP server communication
+eab55d8 docs(adhd): Archive complex attention manager in favor of user-controlled approach
+7219b47 feat(metamcp): Add ADHD-aware tool selection and finishing helpers
+8d49426 refactor(mcp): Migrate MCP servers to proper HTTP transport architecture
+34880cc docs: Comprehensive MCP architecture and tooling documentation updates
+a61873a feat(pm): Enhance project management toolchain integration
+57cbff2 refactor(mcp): Migrate EXA MCP server from Node.js to Python
+1dbf3e7 feat(core): Add AIServiceError exception class
+cd29ced checkpoint: Research phase progress with Milvus hybrid architecture validation
+17fe963 docs: Complete comprehensive Dopemux analysis framework
+3a80f28 docs: Add comprehensive RAG system architecture and documentation
+deb7491 test: Comprehensive test suite improvements and ADHD-specific testing
+dcc797f feat: Major Dopemux core system enhancements and integrations
+aaf6e00 feat: Enhance MCP server integrations and core system improvements
+06904f6 refactor: Update dependencies and disable problematic pre-commit hooks
+f21c633 feat: Implement dangerous mode for Dopemux with secure defaults
+17fdc07 feat: Add session management and integration testing from current session
+e682f11 feat: Add advanced codebase analysis and complete integration updates
+347e523 refactor: Major dependency and architecture improvements
+4e4add6 feat: Add AI-powered Claude Code security reviews for Dopemux
+5ebe72f docs: Add complete MCP server tool analysis and capabilities
+85966f8 feat: Add comprehensive UI scripts and system validation reports
+fc68627 feat: Implement lightweight MetaMCP status query system
+ca49c4b docs: Add intelligent memory layer architecture and design decisions
+d523169 docs: Add comprehensive MetaMCP server analysis and optimization plan
+c41f81b feat: Complete Leantime ADHD-optimized project management integration
+e06dfc8 feat: Optimize MetaMCP broker configuration for performance
+c3b3820 feat: Complete unified memory system validation and deployment
+77bba24 feat: Complete Dopemux Unified Memory Stack deployment success
+6e40410 🧠 UNIFIED MEMORY GRAPH: Complete Implementation
+89024e0 🚀 PHASE 1 COMPLETE: Live Server Integration & Production Deployment
+966230d 🎉 MISSION ACCOMPLISHED: MetaMCP ADHD-Optimized Development System Complete
+998ef0b chore: Update MAS Sequential Thinking submodule reference
+2b365c3 feat: Complete ADR-0034 implementation with full feature parity
+806e6f4 feat: Integrate ClearThought MCP reasoning and enhance submodule
+5ee052d feat: Complete MetaMCP orchestration system for ADHD-optimized token management
+7129b19 📋 Add UX Phase Tracker RFC & ADR for workflow state management
+103e455 🚀 Integrate RFC workflow automation and enhanced documentation tooling
+ae338ed 📋 Complete MCP documentation framework integration
+04576e1 🔧 Preserve MCP server documentation and automation work
+3a546dd 🔧 Update Claude Code project configuration
+ac94321 📋 Add MCP slash commands setup documentation
+ca14a8d 📖 Update multi-instance MCP documentation with git worktree integration
+3759c31 🔍 Add vector search and indexing automation scripts
+3c53a9c 🔧 Enhance multi-instance MCP configuration
+fec8fe5 📝 Update documentation for multi-instance MCP support
+2cc1059 📚 Add comprehensive integration documentation and cleanup
+0d15573 🚀 Integrate Advanced Documentation Automation & Governance
+11b6b52 🧹 Complete documentation refactoring and cleanup
+b2918e2 📚 Integrate comprehensive RFC/ADR/arc42 documentation framework
+6a6e325 predocvchangew
+fc8da36 design and docs
+f5fcef7 🔧 Fix MCP Configuration & Add Leantime Integration
+3603c71 🚀 Complete Dopemux MVP: Leantime + Task-Master AI Integration with Full ADHD Optimizations
+585718d doc reshuffle
+484f8f3 ✅ Fix top 3 test priorities: Context Manager, Claude Configurator, Integration Tests
+ad26489 🧪 Complete comprehensive test coverage implementation
+bd8494b add tests
+b6c8940 📚 Complete comprehensive documentation with diagrams and architecture
+fb3bd18 Complete Dopemux MVP implementation
