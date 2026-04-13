@@ -75,7 +75,7 @@ services:
       POSTGRES_DB: dopemux_knowledge_graph
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
     volumes:
-      - postgres_age_data:/var/lib/postgresql/data
+      - postgres_age_data:/var/lib/postgresql
       - ./docker/memory-stack/init-scripts:/docker-entrypoint-initdb.d:ro
     networks:
       - dopemux-network
@@ -198,50 +198,50 @@ services:
   # ===================================================================
 
   # Context7 - Documentation & API References (CRITICAL PATH)
-  mcp-context7:
-    build:
-      context: ./docker/mcp-servers/context7
-      dockerfile: Dockerfile
-    container_name: dopemux-mcp-context7
-    ports:
-      - "3002:3002"
-    environment:
-      - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
-      - CONTEXT7_ENDPOINT=${CONTEXT7_ENDPOINT}
-      - MCP_SERVER_PORT=3002
-    networks:
-      - dopemux-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3002/health || nc -z localhost 3002"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
+#  mcp-context7:
+#    build:
+#      context: .
+#      dockerfile: ./docker/mcp-servers/context7/Dockerfile
+#    container_name: dopemux-mcp-context7
+#    ports:
+#      - "3002:3002"
+#    environment:
+#      - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
+#      - CONTEXT7_ENDPOINT=${CONTEXT7_ENDPOINT}
+#      - MCP_SERVER_PORT=3002
+#    networks:
+#      - dopemux-network
+#    restart: unless-stopped
+#    healthcheck:
+#      test: ["CMD-SHELL", "curl -f http://localhost:3002/health || nc -z localhost 3002"]
+#      timeout: 10s
+#      retries: 3
+#      interval: 30s
 
   # Zen - Multi-model Orchestration (CRITICAL PATH)
-  mcp-zen:
-    build:
-      context: ./docker/mcp-servers/zen
-      dockerfile: Dockerfile
-    container_name: dopemux-mcp-zen
-    ports:
-      - "3003:3003"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
-      - DEFAULT_MODEL=auto
-      - MCP_SERVER_PORT=3003
-    networks:
-      - dopemux-network
-    restart: unless-stopped
+#  mcp-zen:
+#    build:
+#      context: .
+#      dockerfile: ./docker/mcp-servers/zen/Dockerfile
+#    container_name: dopemux-mcp-zen
+#    ports:
+#      - "3003:3003"
+#    environment:
+#      - OPENAI_API_KEY=${OPENAI_API_KEY}
+#      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+#      - GEMINI_API_KEY=${GEMINI_API_KEY}
+#      - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
+#      - DEFAULT_MODEL=auto
+#      - MCP_SERVER_PORT=3003
+#    networks:
+#      - dopemux-network
+#    restart: unless-stopped
 
   # ConPort - Decision Logging & Memory (CRITICAL PATH)
   mcp-conport:
     build:
-      context: ./docker/mcp-servers/conport
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./docker/mcp-servers-source/conport/Dockerfile
     container_name: dopemux-mcp-conport
     ports:
       - "3004:3004"
@@ -260,8 +260,8 @@ services:
   # Serena LSP - Code Navigation (CRITICAL PATH)
   mcp-serena:
     build:
-      context: ./docker/mcp-servers/serena
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./docker/mcp-servers-source/serena/Dockerfile
     container_name: dopemux-mcp-serena
     ports:
       - "3006:3006"
@@ -276,42 +276,66 @@ services:
   # ===================================================================
 
   # Task Master AI - Task Decomposition (DISABLED: External dependency issues)
-  # mcp-task-master-ai:
-  #   build:
-  #     context: ./docker/mcp-servers/task-master-ai
-  #     dockerfile: Dockerfile
-  #   container_name: dopemux-mcp-task-master-ai
-  #   ports:
-  #     - "3005:3005"
-  #   environment:
-  #     - MCP_SERVER_PORT=3005
-  #     - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
-  #   networks:
-  #     - dopemux-network
-  #   restart: unless-stopped
+  mcp-task-master-ai:
+     build:
+       context: .
+       dockerfile: ./docker/mcp-servers-source/task-master-ai/Dockerfile
+     container_name: mcp-default-task-master-ai
+     ports:
+       - "3005:3005"
+     environment:
+       - MCP_SERVER_PORT=3005
+       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+       - OPENAI_API_KEY=${OPENAI_API_KEY}
+     networks:
+       - dopemux-network
+     restart: unless-stopped
 
   # Leantime Bridge - PM Integration (TODO: Check after Leantime is running)
-  # mcp-leantime-bridge:
-  #   build:
-  #     context: ./docker/mcp-servers/leantime-bridge
-  #     dockerfile: Dockerfile
-  #   container_name: dopemux-mcp-leantime-bridge
-  #   ports:
-  #     - "3015:3015"
-  #   environment:
-  #     - MCP_SERVER_PORT=3015
-  #     - LEANTIME_API_URL=http://leantime:80
-  #     - LEANTIME_API_TOKEN=${LEAN_MCP_TOKEN}
-  #   depends_on:
-  #     - leantime
-  #   networks:
-  #     - dopemux-network
-  #   restart: unless-stopped
+  mcp-leantime-bridge:
+     build:
+       context: .
+       dockerfile: ./docker/mcp-servers-source/leantime-bridge/Dockerfile
+     container_name: mcp-default-leantime-bridge
+     ports:
+       - "3015:3015"
+     environment:
+       - MCP_SERVER_PORT=3015
+       - LEANTIME_API_URL=http://leantime:80
+       - LEANTIME_API_TOKEN=${LEAN_MCP_TOKEN}
+     depends_on:
+       - leantime
+     networks:
+       - dopemux-network
+     restart: unless-stopped
 
   # ===================================================================
   # COORDINATION LAYER - INTEGRATION BRIDGE
   # ===================================================================
+
+
+  # Task Orchestrator - Workflow Management
+  task-orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dopemux-task-orchestrator
+    ports:
+      - "8096:8000"
+    environment:
+      - REDIS_URL=redis://redis-primary:6379
+      - POSTGRES_URL=postgresql+asyncpg://dopemux:${POSTGRES_PASSWORD}@postgres-primary:5432/dopemux_unified
+    depends_on:
+      - redis-primary
+      - postgres-primary
+    networks:
+      - dopemux-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Integration Bridge - Cross-Plane Communication
   integration-bridge:
@@ -324,7 +348,7 @@ services:
     environment:
       - BRIDGE_PORT=3016
       - REDIS_URL=redis://redis-primary:6379
-      - POSTGRES_URL=postgresql://dopemux:${POSTGRES_PASSWORD}@postgres-primary:5432/dopemux_unified
+      - POSTGRES_URL=postgresql+asyncpg://dopemux:${POSTGRES_PASSWORD}@postgres-primary:5432/dopemux_unified
     depends_on:
       - redis-primary
       - postgres-primary
@@ -344,8 +368,8 @@ services:
   # GPT-Researcher MCP
   mcp-gptr-mcp:
     build:
-      context: ./docker/mcp-servers/gptr-mcp
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./docker/mcp-servers-source/gptr-mcp/Dockerfile
     container_name: dopemux-mcp-gptr-mcp
     ports:
       - "3009:8000"  # Map host 3009 to container 8000 (gptr-mcp default port)
@@ -365,8 +389,8 @@ services:
   # Claude Context Service
   mcp-claude-context:
     build:
-      context: ./docker/mcp-servers/claude-context
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/dope-context/Dockerfile
     container_name: dopemux-mcp-claude-context
     ports:
       - "3007:3007"
@@ -412,42 +436,7 @@ services:
   # ADHD ENGINE - Path C Migration Week 1 (Decision #140)
   # ===================================================================
 
-  adhd-engine:
-    build:
-      context: ./services/adhd_engine
-      dockerfile: Dockerfile
-    container_name: dopemux-adhd-engine
-    ports:
-      - "8095:8000"
-    environment:
-      - REDIS_URL=redis://redis-primary:6379
-      - REDIS_DB=6
-      - WORKSPACE_ID=/Users/hue/code/dopemux-mvp
-      - LOG_LEVEL=INFO
-      - ENERGY_MONITOR_INTERVAL=300
-      - ATTENTION_MONITOR_INTERVAL=180
-      - COGNITIVE_MONITOR_INTERVAL=120
-      - BREAK_MONITOR_INTERVAL=60
-      - HYPERFOCUS_MONITOR_INTERVAL=300
-    volumes:
-      # Mount ConPort database (read-only) for activity tracking
-      - ./context_portal:/conport_data:ro
-    depends_on:
-      redis-primary:
-        condition: service_healthy
-    networks:
-      - dopemux-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health').raise_for_status()"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    labels:
-      - "com.dopemux.service=adhd-engine"
-      - "com.dopemux.migration=path-c-week1"
-      - "com.dopemux.decision=140"
+
 
 networks:
   dopemux-network:

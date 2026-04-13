@@ -142,13 +142,13 @@ def _normalize_decision_limit(limit_value: Any) -> int:
     return max(1, min(parsed, TRINITY_DECISION_MAX_LIMIT))
 
 
-@mcp.custom_route("/health", methods=["GET"])
+# @mcp.custom_route("/health", methods=["GET"])
 async def health_check(_: Request) -> JSONResponse:
     """Basic health endpoint for container probes."""
     return JSONResponse({"status": "ok"})
 
 
-@mcp.custom_route("/info", methods=["GET"])
+# @mcp.custom_route("/info", methods=["GET"])
 async def service_info(_: Request) -> JSONResponse:
     """Service discovery endpoint - auto-config support (ADR-208)"""
     transport, host, port = _resolve_transport_runtime()
@@ -195,7 +195,7 @@ async def service_info(_: Request) -> JSONResponse:
     })
 
 
-@mcp.custom_route("/autoindex/bootstrap", methods=["POST"])
+# @mcp.custom_route("/autoindex/bootstrap", methods=["POST"])
 async def autoindex_bootstrap(request: Request) -> JSONResponse:
     """Trigger startup bootstrap indexing then autonomous watchers."""
     payload: Dict[str, Any] = {}
@@ -250,7 +250,7 @@ async def autoindex_bootstrap(request: Request) -> JSONResponse:
     )
 
 
-@mcp.custom_route("/autoindex/status", methods=["GET"])
+# @mcp.custom_route("/autoindex/status", methods=["GET"])
 async def autoindex_status(request: Request) -> JSONResponse:
     """Return startup autoindex status for one or all tracked workspaces."""
     workspace_path = None

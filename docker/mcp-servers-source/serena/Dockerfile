@@ -1,4 +1,5 @@
 FROM python:3.11-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
@@ -14,8 +15,8 @@ RUN apt-get update && apt-get install -y \
 
 # Install dependencies from centralized manifest
 # We also include serena from git as before
-RUN pip install --no-cache-dir .[services] && \
-    pip install --no-cache-dir "git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb"
+RUN uv pip install --system --no-cache .[services] mcp-proxy && \
+    uv pip install --system --no-cache "git+https://github.com/oraios/serena.git@f561204840eb4a96c6956d5cd98712f8ed52d0cb"
 
 # Copy wrapper script and info server (relative to root)
 COPY docker/mcp-servers-source/serena/wrapper.py /app/wrapper.py
