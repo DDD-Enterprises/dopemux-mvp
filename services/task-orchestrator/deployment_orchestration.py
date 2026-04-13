@@ -118,9 +118,9 @@ class DeploymentOrchestrationCoordinator:
     - Break-friendly deployment scheduling
     """
 
-    def __init__(self, conport_client=None, pal_client=None):
+    def __init__(self, conport_client=None, context7_client=None):
         self.conport = conport_client
-        self.pal = pal_client
+        self.context7 = context7_client
 
         # Pipeline management
         self.pipelines: Dict[str, DeploymentPipeline] = {}
@@ -458,6 +458,7 @@ class DeploymentOrchestrationCoordinator:
             task.status = DeploymentStatus.FAILED
             task.error_message = str(e)
             return False
+
         finally:
             task.completed_at = datetime.now()
 
@@ -511,7 +512,6 @@ class DeploymentOrchestrationCoordinator:
                 "timestamp": datetime.now().isoformat()
             }
 
-            logger.error(f"Error: {e}")
     async def _format_test_results_adhd_friendly(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """Format test results in ADHD-friendly manner."""
         # Add visual indicators

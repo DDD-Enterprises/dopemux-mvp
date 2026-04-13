@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Serena KG Provider - LSP Integration for Knowledge Graph
-Part of Dope Decision Graph (formerly ConPort KG)
+Part of CONPORT-KG-2025 Phase 8C
 
 Provides seamless KG integration in Serena LSP:
 - Hover tooltips for decision references
@@ -13,11 +13,6 @@ Decision #118 (automation architecture)
 """
 
 import re
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 import os
 import sys
 from typing import List, Optional, Dict, Any
@@ -31,7 +26,7 @@ try:
     from queries.deep_context import DeepContextQueries
     from queries.models import DecisionCard, DecisionSummary
 except ImportError:
-    logger.info("⚠️  Dope Decision Graph queries not available")
+    print("⚠️  ConPort KG queries not available")
     OverviewQueries = None
 
 
@@ -51,10 +46,10 @@ class SerenaKGProvider:
             self.overview = OverviewQueries()
             self.exploration = ExplorationQueries()
             self.deep_context = DeepContextQueries()
-            logger.info("✅ SerenaKGProvider initialized with KG queries")
+            print("✅ SerenaKGProvider initialized with KG queries")
         else:
             self.overview = None
-            logger.info("⚠️  SerenaKGProvider: KG queries unavailable")
+            print("⚠️  SerenaKGProvider: KG queries unavailable")
 
     def provide_hover(
         self,
@@ -114,7 +109,7 @@ class SerenaKGProvider:
             }
 
         except Exception as e:
-            logger.error(f"⚠️  Hover provider failed for decision #{decision_id}: {e}")
+            print(f"⚠️  Hover provider failed for decision #{decision_id}: {e}")
             return None
 
     def update_file_context_sidebar(self, file_path: str) -> Dict[str, Any]:
@@ -168,7 +163,7 @@ class SerenaKGProvider:
             }
 
         except Exception as e:
-            logger.error(f"⚠️  Sidebar update failed for {file_path}: {e}")
+            print(f"⚠️  Sidebar update failed for {file_path}: {e}")
             return {'items': [], 'collapsed': True}
 
     def correlate_code_to_decisions(self, file_path: str) -> List[DecisionCard]:
@@ -199,24 +194,27 @@ class SerenaKGProvider:
                 by_module = self.overview.search_by_tag(module, limit=5)
                 for d in by_module:
                     all_decisions[d.id] = d
-            except Exception as e:
-                logger.error(f"Error: {e}")
+            except:
+                pass
+
         # Strategy 2: Full-text search on module
         if module and self.deep_context:
             try:
                 by_text = self.deep_context.search_full_text(module, limit=5)
                 for d in by_text:
                     all_decisions[d.id] = d
-            except Exception as e:
-                logger.error(f"Error: {e}")
+            except:
+                pass
+
         # Strategy 3: Recent decisions (fallback)
         if len(all_decisions) < 3:
             try:
                 recent = self.overview.get_recent_decisions(3)
                 for d in recent:
                     all_decisions[d.id] = d
-            except Exception as e:
-                logger.error(f"Error: {e}")
+            except:
+                pass
+
         # Return Top-3 most relevant
         return list(all_decisions.values())[:3]
 
@@ -252,14 +250,14 @@ class SerenaKGProvider:
 
 # Standalone test
 if __name__ == "__main__":
-    logger.info("=" * 70)
-    logger.info("Serena KG Provider Test")
-    logger.info("=" * 70)
+    print("=" * 70)
+    print("Serena KG Provider Test")
+    print("=" * 70)
 
     provider = SerenaKGProvider()
 
     # Test 1: Hover provider
-    logger.info("\n[Test 1] Hover Provider:")
+    print("\n[Test 1] Hover Provider:")
     test_lines = [
         "// Decision #85 - Serena Memory Enhancement",
         "# See Decision #92 for context",
@@ -275,14 +273,14 @@ if __name__ == "__main__":
         if hover:
             decision_match = re.search(r'#(\d+)', line)
             decision_num = decision_match.group(1) if decision_match else '?'
-            logger.info(f"   '{line[:40]}...'")
-            logger.info(f"      → Hover tooltip generated")
-            logger.info(f"      → Decision #{decision_num}")
+            print(f"   '{line[:40]}...'")
+            print(f"      → Hover tooltip generated")
+            print(f"      → Decision #{decision_num}")
         else:
-            logger.info(f"   '{line}' → No hover")
+            print(f"   '{line}' → No hover")
 
     # Test 2: Sidebar updates
-    logger.info("\n[Test 2] Sidebar Panel Updates:")
+    print("\n[Test 2] Sidebar Panel Updates:")
     test_files = [
         "services/serena/v2/mcp_client.py",
         "services/auth/token_manager.py",
@@ -292,18 +290,18 @@ if __name__ == "__main__":
     for file_path in test_files:
         sidebar = provider.update_file_context_sidebar(file_path)
         module = provider._extract_module_name(file_path)
-        logger.info(f"   {file_path}")
-        logger.info(f"      Module: {module}")
-        logger.info(f"      Items: {len(sidebar['items'])}")
-        logger.info(f"      Collapsed: {sidebar['collapsed']}")
+        print(f"   {file_path}")
+        print(f"      Module: {module}")
+        print(f"      Items: {len(sidebar['items'])}")
+        print(f"      Collapsed: {sidebar['collapsed']}")
 
     # Test 3: Code-decision correlation
-    logger.info("\n[Test 3] Code-Decision Correlation:")
+    print("\n[Test 3] Code-Decision Correlation:")
     for file_path in test_files[:2]:
         decisions = provider.correlate_code_to_decisions(file_path)
-        logger.info(f"   {file_path}")
-        logger.info(f"      Found {len(decisions)} correlated decisions")
+        print(f"   {file_path}")
+        print(f"      Found {len(decisions)} correlated decisions")
         for d in decisions:
-            logger.info(f"         #{d.id}: {d.summary[:45]}...")
+            print(f"         #{d.id}: {d.summary[:45]}...")
 
-    logger.info("\n✅ All Serena KG Provider tests passed!")
+    print("\n✅ All Serena KG Provider tests passed!")

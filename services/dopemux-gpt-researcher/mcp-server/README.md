@@ -7,22 +7,21 @@ An MCP (Model Context Protocol) server wrapper for GPT-Researcher, providing ADH
 - **6 Research Tools**: Quick search, deep research, documentation search, code examples, trend analysis, and research summarization
 - **ADHD Optimizations**: Built-in break intervals, focus duration management, and gentle notifications
 - **Session Management**: Track active research tasks and maintain history
-- **Multi-Engine Support**: Integrates with Exa, Tavily, Perplexity, and PAL apilookup search engines
+- **Multi-Engine Support**: Integrates with Exa, Tavily, Perplexity, and Context7 search engines
 
 ## Installation
 
 1. Ensure GPT-Researcher is installed:
-
 ```bash
 pip install gpt-researcher
 ```
 
 2. Set up environment variables (optional, for full functionality):
-
 ```bash
 export EXA_API_KEY="your-exa-key"
 export TAVILY_API_KEY="your-tavily-key"
 export PERPLEXITY_API_KEY="your-perplexity-key"
+export CONTEXT7_API_KEY="your-context7-key"
 ```
 
 ## Usage
@@ -30,7 +29,6 @@ export PERPLEXITY_API_KEY="your-perplexity-key"
 ### Standalone Testing
 
 Test the server with the provided test script:
-
 ```bash
 python test_server.py
 ```
@@ -52,6 +50,7 @@ Add the following to your Claude configuration (`.claude/claude_config.json`):
         "EXA_API_KEY": "${EXA_API_KEY}",
         "TAVILY_API_KEY": "${TAVILY_API_KEY}",
         "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
       }
     }
   }
@@ -87,14 +86,12 @@ Add the following to your Claude configuration (`.claude/claude_config.json`):
 ### Resources
 
 The server provides access to:
-
 - `research://active-tasks`: List of currently active research tasks
 - `research://history`: Previous research results and summaries
 
 ## Architecture
 
 The server integrates with the existing GPT-Researcher components:
-
 - `ResearchTaskOrchestrator`: Manages research workflows
 - `SearchOrchestrator`: Coordinates multiple search engines
 - `QueryClassificationEngine`: Intelligently routes queries
@@ -105,7 +102,6 @@ The server integrates with the existing GPT-Researcher components:
 ### Running in Debug Mode
 
 Enable debug logging:
-
 ```bash
 DEBUG=true python server.py
 ```
@@ -113,13 +109,11 @@ DEBUG=true python server.py
 ### Testing
 
 Run the test suite:
-
 ```bash
 python test_server.py
 ```
 
 Expected output:
-
 - ✅ Initialization successful
 - ✅ 6 tools available
 - ✅ 2 resources available

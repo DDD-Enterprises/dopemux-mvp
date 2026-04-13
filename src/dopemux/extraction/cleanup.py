@@ -6,11 +6,6 @@ cleanup capabilities with detailed activity reporting for ADHD-friendly transpar
 """
 
 import os
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 import shutil
 import tempfile
 import time
@@ -112,7 +107,7 @@ class FileTracker:
 
         # Create initial snapshot
         self._create_file_snapshot()
-        logger.info(f"📊 File tracking started at {self.tracking_start_time.strftime('%H:%M:%S')}")
+        print(f"📊 File tracking started at {self.tracking_start_time.strftime('%H:%M:%S')}")
 
     def stop_tracking(self):
         """Stop tracking file operations."""
@@ -125,7 +120,7 @@ class FileTracker:
         self._detect_file_changes()
 
         processing_time = (datetime.now() - self.tracking_start_time).total_seconds()
-        logger.info(f"📊 File tracking stopped after {processing_time:.2f}s")
+        print(f"📊 File tracking stopped after {processing_time:.2f}s")
 
     def tracking(self):
         """Context manager for file tracking."""
@@ -159,7 +154,7 @@ class FileTracker:
 
         except Exception as e:
             # Don't let tracking errors break the pipeline
-            logger.error(f"⚠️ File tracking error for {file_path}: {e}")
+            print(f"⚠️ File tracking error for {file_path}: {e}")
 
     def _create_file_snapshot(self):
         """Create snapshot of current file system state."""
@@ -180,7 +175,7 @@ class FileTracker:
                         continue
 
         except Exception as e:
-            logger.error(f"⚠️ Error creating file snapshot: {e}")
+            print(f"⚠️ Error creating file snapshot: {e}")
 
     def _detect_file_changes(self):
         """Detect file changes since tracking started."""
@@ -216,7 +211,7 @@ class FileTracker:
                     self.log_operation('deleted', Path(file_key))
 
         except Exception as e:
-            logger.error(f"⚠️ Error detecting file changes: {e}")
+            print(f"⚠️ Error detecting file changes: {e}")
 
     def generate_activity_report(self) -> Dict[str, Any]:
         """Generate comprehensive activity report."""
@@ -375,7 +370,7 @@ class PipelineCleanup:
         start_time = time.time()
 
         try:
-            logger.info("🧹 Starting pipeline cleanup...")
+            print("🧹 Starting pipeline cleanup...")
 
             # Identify files to remove
             files_to_remove = self._identify_cleanup_candidates(activity_report, target_directory)
@@ -387,7 +382,7 @@ class PipelineCleanup:
             if not self.config.dry_run:
                 removed_files, space_freed = self._remove_files(files_to_remove)
             else:
-                logger.info("🔍 Dry run mode - no files will be removed")
+                print("🔍 Dry run mode - no files will be removed")
                 removed_files = files_to_remove
                 space_freed = sum(self._get_file_size(Path(f)) for f in files_to_remove)
 
@@ -395,7 +390,7 @@ class PipelineCleanup:
             final_report = self._generate_cleanup_report(activity_report, removed_files, space_freed)
 
             processing_time = time.time() - start_time
-            logger.info(f"✅ Cleanup complete! ({processing_time:.2f}s)")
+            print(f"✅ Cleanup complete! ({processing_time:.2f}s)")
 
             return CleanupResult(
                 config=self.config,
@@ -409,7 +404,7 @@ class PipelineCleanup:
 
         except Exception as e:
             processing_time = time.time() - start_time
-            logger.error(f"❌ Cleanup failed: {e}")
+            print(f"❌ Cleanup failed: {e}")
 
             return CleanupResult(
                 config=self.config,
@@ -455,7 +450,7 @@ class PipelineCleanup:
                 unique_candidates.append(file_path)
                 seen.add(file_path)
 
-        logger.info(f"🎯 Identified {len(unique_candidates)} files for cleanup")
+        print(f"🎯 Identified {len(unique_candidates)} files for cleanup")
         return unique_candidates
 
     def _filter_old_files(self, file_paths: List[str]) -> List[str]:
@@ -483,8 +478,9 @@ class PipelineCleanup:
                 if match.is_file():
                     matches.append(str(match.resolve()))
             return matches
-        except Exception as e:
+        except Exception:
             return []
+
     def _remove_files(self, file_paths: List[str]) -> Tuple[List[str], int]:
         """Remove files and return list of removed files and space freed."""
         removed_files = []
@@ -507,7 +503,7 @@ class PipelineCleanup:
                     space_freed += file_size
 
             except Exception as e:
-                logger.info(f"⚠️ Could not remove {file_path}: {e}")
+                print(f"⚠️ Could not remove {file_path}: {e}")
 
         return removed_files, space_freed
 

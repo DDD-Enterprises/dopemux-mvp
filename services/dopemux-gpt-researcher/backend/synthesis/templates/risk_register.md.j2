@@ -1,0 +1,39 @@
+# Risk Register
+
+**Date:** {{ date }}
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+
+## Risk Summary
+
+| Risk | Type | Probability | Impact | Severity | Owner |
+|------|------|-------------|--------|----------|-------|
+{% for risk in risks | sort_by_confidence %}
+| {{ risk.content[:50] }}... | {{ risk.metadata.risk_type | title }} | {{ risk.metadata.probability | title }} | {{ risk.metadata.impact_level | title }} | {{ risk.metadata.severity | format_priority }} | {{ risk.metadata.owner }} |
+{% endfor %}
+
+## Detailed Risk Analysis
+
+{% for risk in risks | sort_by_confidence %}
+### Risk {{ loop.index }}: {{ risk.content }}
+
+**Category:** {{ risk.metadata.risk_type | title }}
+**Probability:** {{ risk.metadata.probability | title }}
+**Impact Level:** {{ risk.metadata.impact_level | format_priority }}
+**Overall Severity:** {{ risk.metadata.severity | format_priority }}
+**Risk Owner:** {{ risk.metadata.owner }}
+
+{% if risk.metadata.mitigation %}
+**Mitigation Strategies:**
+{% for mit in risk.metadata.mitigation %}
+- {{ mit }}
+{% endfor %}
+{% endif %}
+
+**Timeline:** {{ risk.metadata.timeline }}
+
+---
+
+{% endfor %}
+
+---
+*Generated from {{ total_fields }} extracted fields*
