@@ -55,9 +55,58 @@ def test_v5_phase_sp_registry_and_step_controls_match_current_contract() -> None
     specs = runner.get_phase_prompts("SP")
 
     assert [spec.step_id for spec in specs] == [f"SP{i}" for i in range(13)]
+    assert runner.REQUIRED_PROMPT_STEP_IDS["SP"] == {f"SP{i}" for i in range(13)}
     assert all(spec.source == "registry" for spec in specs)
     assert all(spec.prompt_path.exists() for spec in specs)
     assert all(spec.tier_override in {"bulk", "extract", "synthesis", "qa"} for spec in specs)
+
+
+def test_v5_phase_sp_supports_generic_single_step_filtering() -> None:
+    runner = _load_runner_module()
+
+    selected = runner._get_execution_step_filter(
+        SimpleNamespace(step="SP7", phase="SP", s_steps=None)
+    )
+
+    assert selected == "SP7"
+    cfg = runner.RunnerConfig(
+        dry_run=True,
+        max_files_docs=1,
+        max_files_code=1,
+        max_chars=1,
+        max_request_bytes=1,
+        file_truncate_chars=1,
+        home_scan_mode="safe",
+        resume=False,
+        fail_fast_auth=True,
+        gemini_auth_mode="auto",
+        gemini_transport="sdk",
+        openai_transport="openai_sdk",
+        xai_transport="openai_sdk",
+        retry_policy="none",
+        retry_max_attempts=1,
+        retry_base_seconds=0.0,
+        retry_max_seconds=0.0,
+        phase_auth_fail_threshold=1,
+        partition_workers=1,
+        debug_phase_inputs=False,
+        fail_fast_missing_inputs=False,
+        selected_execution_step=selected,
+    )
+    assert runner._selected_execution_step_ids_for_phase(cfg, "SP") == ["SP7"]
+
+
+def test_v5_post_review_preset_sequence_includes_sp_phase() -> None:
+    runner = _load_runner_module()
+
+    assert runner.first_live_phase_sequence("post-review") == [
+        "R",
+        "X",
+        "T",
+        "Z",
+        "S",
+        "SP",
+    ]
 
 
 def test_v5_phase_s_always_returns_legacy_prompts() -> None:
