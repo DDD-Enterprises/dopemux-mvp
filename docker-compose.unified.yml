@@ -324,7 +324,7 @@ services:
     environment:
       - BRIDGE_PORT=3016
       - REDIS_URL=redis://redis-primary:6379
-      - POSTGRES_URL=postgresql://dopemux:${POSTGRES_PASSWORD}@postgres-primary:5432/dopemux_unified
+      - POSTGRES_URL=postgresql+asyncpg://dopemux:${POSTGRES_PASSWORD}@postgres-primary:5432/dopemux_unified
     depends_on:
       - redis-primary
       - postgres-primary
