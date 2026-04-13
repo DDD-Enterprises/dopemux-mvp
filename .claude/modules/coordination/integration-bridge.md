@@ -1,15 +1,14 @@
-# DopeconBridge Module
+# Integration Bridge Module
 
 **Module Version**: 2.0.0 (Simplified Architecture)
 **Authority**: Event Coordination and Async Communication
 **Modes**: Both PLAN and ACT
-**Service**: `/services/mcp-dopecon-bridge/` at PORT_BASE+16
+**Service**: `/services/mcp-integration-bridge/` at PORT_BASE+16
 **Decision Reference**: #132 (Simplified architecture)
 
 ## Purpose
 
-The DopeconBridge provides **event-driven coordination** between:
-
+The Integration Bridge provides **event-driven coordination** between:
 - ConPort (task & decision storage)
 - SuperClaude (PRD parsing via `/dx:prd-parse`)
 - Python ADHD Engine (cognitive optimization)
@@ -19,16 +18,14 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 
 ## Authority Boundaries
 
-**DopeconBridge ONLY Authority:**
-
+**Integration Bridge ONLY Authority:**
 - Async event routing between services
 - Redis Streams queue management
 - Event bus coordination (pub/sub)
 - Multi-instance event isolation
 - MetaMCP role-based tool filtering enforcement
 
-**DopeconBridge NEVER:**
-
+**Integration Bridge NEVER:**
 - Stores task data (ConPort authority)
 - Parses PRDs (SuperClaude authority)
 - Calculates ADHD metrics (Python ADHD Engine authority)
@@ -38,7 +35,6 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 ## Event Coordination Patterns
 
 ### Simplified Event Flow
-
 ```bash
 # PRD to Task Creation Flow
 1. User runs: /dx:prd-parse "requirements.md"
@@ -46,7 +42,7 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 3. Human reviews and approves
 4. Python validator → adds ADHD metadata
 5. ConPort batch import → progress_entry + custom_data + links
-6. DopeconBridge → publishes "tasks_imported" event
+6. Integration Bridge → publishes "tasks_imported" event
 7. Dashboard → updates UI with new tasks
 8. ADHD Engine → analyzes tasks and calculates recommendations
 
@@ -54,15 +50,14 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 1. User runs: /dx:implement
 2. ADHD Engine → queries ConPort for optimal task
 3. Python session manager → starts 25min timer
-4. DopeconBridge → publishes "session_started" event
+4. Integration Bridge → publishes "session_started" event
 5. Dashboard → shows timer + current task
 6. Auto-save every 5min → ConPort update_progress
-7. DopeconBridge → publishes "progress_updated" event
+7. Integration Bridge → publishes "progress_updated" event
 8. Dashboard → updates progress bar
 ```
 
 ### Redis Streams Architecture
-
 ```python
 # Event Bus Implementation
 import redis
@@ -132,8 +127,7 @@ async for msg_id, msg_data in bus.subscribe("dopemux:events", "dashboard"):
 
 ## REST API Endpoints
 
-### DopeconBridge HTTP API
-
+### Integration Bridge HTTP API
 ```bash
 # Base URL: http://localhost:3016 (or PORT_BASE+16)
 
@@ -172,10 +166,10 @@ Content-Type: application/json
 
 ## MetaMCP Role-Based Tool Filtering
 
-The DopeconBridge enforces **tool-level boundaries** via MetaMCP configuration:
+The Integration Bridge enforces **tool-level boundaries** via MetaMCP configuration:
 
 ```yaml
-# MetaMCP Role Configuration (enforced by DopeconBridge)
+# MetaMCP Role Configuration (enforced by Integration Bridge)
 roles:
   dopemux-quickfix:
     tools:
@@ -191,7 +185,7 @@ roles:
       - mcp__serena__*  # All Serena navigation
       - mcp__conport__log_progress
       - mcp__conport__update_progress
-      - mcp__pal__apilookup
+      - mcp__context7__get_library_docs
 
   dopemux-plan:
     tools:
@@ -234,6 +228,5 @@ EVENT_STREAM = f"dopemux:{INSTANCE_NAME}:events"
 ---
 
 **See Also:**
-
 - `.claude/modules/coordination/authority-matrix.md` - Authority boundaries reference
 - `.claude/modules/shared/event-patterns.md` - Event design patterns
