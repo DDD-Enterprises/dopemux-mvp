@@ -39,7 +39,7 @@ export const DecisionBrowser: React.FC<Props> = ({onSelect}) => {
   }, []);
 
   // Keyboard navigation
-  useInput((input, key) => {
+  useInput((input: string, key: any) => {
     if (key.upArrow) {
       setSelected(s => Math.max(0, s - 1));
     }
@@ -72,7 +72,7 @@ export const DecisionBrowser: React.FC<Props> = ({onSelect}) => {
       <Box padding={1} flexDirection="column">
         <Text color="red" bold>Error loading decisions</Text>
         <Text>{error}</Text>
-        <Text dimColor marginTop={1}>
+        <Text dimColor>
           Make sure Integration Bridge is running on port 3016
         </Text>
       </Box>
@@ -86,11 +86,11 @@ export const DecisionBrowser: React.FC<Props> = ({onSelect}) => {
         Decision Browser (Top-3 ADHD Pattern)
       </Text>
 
-      <Text dimColor marginTop={0}>
+      <Text dimColor>
         Navigate: ↑↓ | Select: Enter | Quit: q
       </Text>
 
-      <Box flexDirection="column" marginTop={1}>
+      <Box flexDirection="column">
         {decisions.map((d, i) => (
           <Box key={d.id} marginY={1}>
             <Text color={selected === i ? 'cyan' : 'white'}>
@@ -105,13 +105,13 @@ export const DecisionBrowser: React.FC<Props> = ({onSelect}) => {
       </Box>
 
       {decisions.length === 0 && (
-        <Box marginTop={1}>
+        <Box>
           <Text color="yellow">No decisions found</Text>
         </Box>
       )}
 
       {decisions.length > 0 && (
-        <Box marginTop={1}>
+        <Box>
           <Text dimColor>
             Showing {decisions.length} of {decisions.length} recent decisions
           </Text>

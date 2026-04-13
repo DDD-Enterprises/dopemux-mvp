@@ -43,7 +43,7 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
   }, [decisionId]);
 
   // Keyboard controls
-  useInput((input) => {
+  useInput((input: string, key: any) => {
     if (input === 'b') {
       onBack();
     }
@@ -68,7 +68,7 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
       <Box padding={1} flexDirection="column">
         <Text color="red" bold>Error loading context</Text>
         <Text>{error || 'Unknown error'}</Text>
-        <Text dimColor marginTop={1}>Press 'b' to go back</Text>
+        <Text dimColor>Press 'b' to go back</Text>
       </Box>
     );
   }
@@ -80,17 +80,17 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
         Deep Context - Decision #{decisionId}
       </Text>
 
-      <Text dimColor marginTop={0}>
+      <Text dimColor>
         b: Back | q: Quit
       </Text>
 
       {/* Decision Summary */}
-      <Box marginTop={1} flexDirection="column">
+      <Box flexDirection="column">
         <Text bold>{context.decision.summary}</Text>
       </Box>
 
       {/* Cognitive Load Indicator */}
-      <Box marginTop={1}>
+      <Box>
         <Text color="magenta" bold>
           Cognitive Load: {context.cognitive_load.toUpperCase()}
         </Text>
@@ -98,7 +98,7 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
 
       {/* Rationale Section */}
       {context.decision.rationale && (
-        <Box marginTop={1} flexDirection="column">
+        <Box flexDirection="column">
           <Text color="cyan" bold>Rationale:</Text>
           <Box marginLeft={2}>
             <Text>
@@ -111,7 +111,7 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
 
       {/* Implementation Section */}
       {context.decision.implementation && (
-        <Box marginTop={1} flexDirection="column">
+        <Box flexDirection="column">
           <Text color="cyan" bold>Implementation:</Text>
           <Box marginLeft={2}>
             <Text>
@@ -123,7 +123,7 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
       )}
 
       {/* Relationships Section */}
-      <Box marginTop={1} flexDirection="column">
+      <Box flexDirection="column">
         <Text color="cyan" bold>
           Relationships ({context.direct_relationships.length}):
         </Text>
@@ -148,7 +148,7 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
       </Box>
 
       {/* Related Decisions Summary */}
-      <Box marginTop={1} flexDirection="column">
+      <Box flexDirection="column">
         <Text>
           Related decisions: {context.related_decisions.length}
         </Text>
@@ -159,7 +159,7 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
 
       {/* Tags (if available) */}
       {context.decision.tags && context.decision.tags.length > 0 && (
-        <Box marginTop={1}>
+        <Box>
           <Text dimColor>
             Tags: {context.decision.tags.join(', ')}
           </Text>
