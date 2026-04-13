@@ -753,7 +753,7 @@ def write_blocked_promptset_proof_pack(
     proof: Dict[str, Any] = {}
     if proof_path.exists():
         try:
-            proof = json.loads(proof_path.read_text(encoding="utf-8") or "{}")
+            proof = deps.load_json(proof_path)
         except Exception:
             proof = {}
     blocked_at = deps.now_iso()
