@@ -383,7 +383,6 @@ def call_llm(
         attempt += 1
         status_code: Optional[int] = None
         response_body = ""
-        failure_type = "unknown"
         provider_error_reason = None
         attempt_span_id = deps.new_span_id()
         _emit_lifecycle(
@@ -532,8 +531,6 @@ def call_llm(
                 status_code, response_body, str(exc)
             )
             provider_error_reason = deps.extract_provider_error_reason(response_body)
-            safe_exc = deps.sanitize_error_text(str(exc))
-            safe_body = deps.sanitize_error_text(response_body)
             exception_info = deps.capture_exception_metadata(exc)
             retry_trace.append(
                 {
@@ -603,26 +600,28 @@ def call_llm(
             )
             if response_body:
                 logger.warning(
-                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s: %s | body=%s",
+                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s provider_error_reason=%s exception_type=%s response_body_redacted=%s",
                     attempt,
                     cfg.retry_max_attempts,
                     provider,
                     model_id,
                     status_code,
                     failure_type,
-                    safe_exc,
-                    safe_body,
+                    provider_error_reason,
+                    exception_info.get("exception_type"),
+                    True,
                 )
             else:
                 logger.warning(
-                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s: %s",
+                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s provider_error_reason=%s exception_type=%s",
                     attempt,
                     cfg.retry_max_attempts,
                     provider,
                     model_id,
                     status_code,
                     failure_type,
-                    safe_exc,
+                    provider_error_reason,
+                    exception_info.get("exception_type"),
                 )
 
             if (
@@ -635,9 +634,8 @@ def call_llm(
                 mode_index += 1
                 effective_mode = auth_mode_sequence[mode_index]
                 logger.warning(
-                    "Gemini openai_compat auth pivot after auth failure: next_mode=%s endpoint=%s",
+                    "Gemini openai_compat auth pivot after auth failure: next_mode=%s",
                     effective_mode,
-                    endpoint_url,
                 )
                 continue
 
@@ -1040,18 +1038,28 @@ def compute_comparison_resume_decision(
     provider: str,
     model: str,
 ) -> Dict[str, str]:
-    del step_id, partition_id, provider, model
     if not comparison_artifact_path.exists():
         return {"action": "RERUN", "reason": "missing_comparison_artifact"}
     try:
         text = comparison_artifact_path.read_text(encoding="utf-8")
         if not text.strip():
             return {"action": "RERUN", "reason": "empty_comparison_artifact"}
-        json.loads(text)
+        payload = json.loads(text)
     except json.JSONDecodeError:
         return {"action": "RERUN", "reason": "invalid_comparison_artifact"}
     except Exception:
         return {"action": "RERUN", "reason": "unreadable_comparison_artifact"}
+    if not isinstance(payload, dict):
+        return {"action": "RERUN", "reason": "invalid_comparison_artifact_shape"}
+    required_keys = {"phase", "step_id", "partition_id", "artifacts", "request_meta"}
+    if not required_keys.issubset(payload):
+        return {"action": "RERUN", "reason": "invalid_comparison_artifact_shape"}
+    if not isinstance(payload.get("artifacts"), list):
+        return {"action": "RERUN", "reason": "invalid_comparison_artifact_shape"}
+    if not isinstance(payload.get("request_meta"), dict):
+        return {"action": "RERUN", "reason": "invalid_comparison_artifact_shape"}
+    if payload.get("step_id") != step_id or payload.get("partition_id") != partition_id:
+        return {"action": "RERUN", "reason": "mismatched_comparison_artifact"}
     return {"action": "SKIP", "reason": "valid_comparison_artifact"}
 
 
