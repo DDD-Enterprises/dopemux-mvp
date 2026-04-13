@@ -43,6 +43,24 @@ if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
 from output_safety import sanitize_payload_for_output, sanitize_text_for_output, sanitized_json_bytes, sanitized_json_text
+from phases import (
+    CODE_HEAVY_PHASES,
+    LEGACY_PHASE_DIR_ALIASES,
+    PHASES,
+    PHASE_DIR_NAMES,
+    PHASE_DISPLAY_NAMES,
+    PHASE_OPTIONAL_DEPENDENCIES,
+    PHASE_PURPOSES,
+    PHASE_REQUIRED_DEPENDENCIES,
+    PHASE_S_BASE_STEPS,
+    PHASE_S_BASE_STEP_SET,
+    PHASE_SP_BASE_STEPS,
+    PHASE_SP_BASE_STEP_SET,
+    REQUIRED_PROMPT_STEP_IDS,
+    R_OPTIONAL_INPUT_PHASES,
+    R_REQUIRED_INPUT_PHASES,
+    VERIFY_PHASE_CHOICES,
+)
 from rte_config import (
     BENCHMARK_ROUTE_OWNERSHIP_MODE,
     COST_ABORT_FILENAME,
@@ -312,108 +330,7 @@ except Exception:  # pragma: no cover - optional rich rendering
     Text = None  # type: ignore[assignment]
 
 # --- Configuration & Constants ---
-
-PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "X", "Q", "R", "T", "Z", "S", "SP"]
-PHASE_S_BASE_STEPS = tuple(f"S{i}" for i in range(13))
-PHASE_S_BASE_STEP_SET = set(PHASE_S_BASE_STEPS)
-PHASE_SP_BASE_STEPS = tuple(f"SP{i}" for i in range(13))
-PHASE_SP_BASE_STEP_SET = set(PHASE_SP_BASE_STEPS)
-VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
-# mapping from phase code to directory suffix
-PHASE_DIR_NAMES: Dict[str, str] = {
-    "A": "A_repo_control_plane",
-    "H": "H_home_control_plane",
-    "D": "D_docs_pipeline",
-    "C": "C_code_surfaces",
-    "E": "E_execution_plane",
-    "W": "W_workflow_plane",
-    "B": "B_boundary_plane",
-    "G": "G_governance_plane",
-    "Q": "Q_quality_assurance",
-    "R": "R_arbitration",
-    "X": "X_feature_index",
-    "T": "T_task_packets",
-    "Z": "Z_handoff_freeze",
-    "S": "S_synthesis",
-    "SP": "SP_synthesis_pipeline",
-}
-PHASE_DISPLAY_NAMES: Dict[str, str] = {
-    "A": "Repo Plane",
-    "H": "Home Plane",
-    "D": "Docs Plane",
-    "C": "Code Plane",
-    "E": "Execution Plane",
-    "W": "Workflow Plane",
-    "B": "Boundary Plane",
-    "G": "Governance Plane",
-    "Q": "Quality Assurance",
-    "R": "Arbitration",
-    "X": "Feature Index",
-    "T": "Task Packets",
-    "Z": "Handoff Freeze",
-    "S": "Synthesis",
-    "SP": "Synthesis Pipeline",
-}
-PHASE_PURPOSES: Dict[str, str] = {
-    "A": "Scan repository instruction, router, hook, compose, and provider-control surfaces.",
-    "H": "Scan operator home-level configs, providers, tmux flows, and local control-plane state.",
-    "D": "Extract documentation contracts, drift, recency, and canonical doc boundaries.",
-    "C": "Extract code entrypoints, schemas, runtime writers, and implementation truth surfaces.",
-    "E": "Map execution/bootstrap surfaces such as scripts, installers, docker, and ops entrypoints.",
-    "W": "Map workflows, automation surfaces, and execution orchestration paths.",
-    "B": "Extract boundary enforcement, contracts, and cross-plane isolation surfaces.",
-    "G": "Extract governance rules, hygiene controls, and policy enforcement surfaces.",
-    "Q": "Cross-check prior phases for contract failures, gaps, and extractor QA signals.",
-    "R": "Arbitrate normalized truth across required upstream phases and optional enrichments.",
-    "X": "Index repo feature surfaces directly from code, config, scripts, and docs.",
-    "T": "Derive task packets from arbitration and feature-index outputs.",
-    "Z": "Freeze final handoff package from arbitration, feature index, and task packets.",
-    "S": "Synthesize the final truth pack from arbitration outputs plus downstream rollups.",
-    "SP": "Post-processing pipeline: dedupe, drift check, promotion readiness, redaction, linting, stability.",
-}
-LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
-    "R2_synthesis": "R_arbitration",
-}
 EXTRACTOR_SERVICE_DIR = RUNNER_SERVICE_DIR
-CODE_HEAVY_PHASES = {"C", "E", "Q"}
-R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
-# Optional phases whose norm outputs enrich R arbitration when available.
-# B→R3/R8/R10  E→R0/R5/R8  G→R0/R6/R7  W→R5/R6  Q→R7/R8
-R_OPTIONAL_INPUT_PHASES = ["B", "E", "G", "W", "Q", "X"]
-PHASE_REQUIRED_DEPENDENCIES: Dict[str, List[str]] = {
-    "A": [],
-    "H": [],
-    "D": [],
-    "C": [],
-    "E": [],
-    "W": [],
-    "B": [],
-    "G": [],
-    "Q": ["A", "H", "D", "C", "E", "W", "B", "G", "X"],
-    "R": list(R_REQUIRED_INPUT_PHASES),
-    "X": [],
-    "T": ["R", "X"],
-    "Z": ["R", "X", "T"],
-    "S": ["R"],
-    "SP": ["R"],
-}
-PHASE_OPTIONAL_DEPENDENCIES: Dict[str, List[str]] = {
-    "A": [],
-    "H": [],
-    "D": [],
-    "C": [],
-    "E": [],
-    "W": [],
-    "B": [],
-    "G": [],
-    "Q": [],
-    "R": list(R_OPTIONAL_INPUT_PHASES),
-    "X": [],
-    "T": [],
-    "Z": [],
-    "S": ["X", "T", "Z", "MANUAL"],
-    "SP": ["X", "T", "Z"],
-}
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
@@ -1271,24 +1188,6 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "gemini": "GEMINI_API_KEY",
     "xai": "XAI_API_KEY",
     "openrouter": "OPENROUTER_API_KEY",
-}
-REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
-    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A99"},
-    "H": {"H0", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H9"},
-    "D": {"D0", "D1", "D2", "D3", "D4", "D5"},
-    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21"},
-    "E": {"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E9"},
-    "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
-    "B": {"B0", "B1", "B2", "B3", "B9"},
-    "G": {"G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9", "Q11"},
-    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11"},
-    "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
-    "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
-    "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12"},
-    "SP": set(PHASE_SP_BASE_STEPS),
-    "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 
 
@@ -12226,7 +12125,10 @@ def execute_step_for_partitions(
     step_ladder = [tuple(route) for route in route_info["ladder"]]
     initial_provider = str(route_info["provider"])
     initial_model_id = str(route_info["model_id"])
-    initial_api_key_env = str(route_info["api_key_env"])
+    initial_api_key_env = str(
+        route_info.get("api_key_env")
+        or PROVIDER_API_KEY_ENV.get(initial_provider, "")
+    )
     routing_reason = str(route_info["reason"])
     strict_route_attempts = (
         list(route_info.get("strict_route_attempts"))
@@ -15371,20 +15273,19 @@ def _run_phase_inner(
             phase_tier_defaults[tier_name] = f"{routes[0][0]}/{routes[0][1]}"
     first_step = prompts[0] if prompts else None
     if first_step is not None:
-        first_ladder = resolve_effective_step_route(
+        first_route = resolve_effective_step_route(
             phase,
             first_step.step_id,
             cfg,
             tier_override=first_step.tier_override,
             step_contract=first_step.contract,
-        )["ladder"]
+        )
+        provider = str(first_route["provider"])
+        model_id = str(first_route["model_id"])
     else:
-        first_ladder = []
-    provider, model_id, _ = (
-        first_ladder[0]
-        if first_ladder
-        else MODEL_ROUTING.get(phase, ("openai", "gpt-5-mini", "OPENAI_API_KEY"))
-    )
+        provider, model_id, _api_key_env = MODEL_ROUTING.get(
+            phase, ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+        )
     ui_flags = (
         f"resume:{cfg.resume},dry_run:{cfg.dry_run},debug_phase_inputs:{cfg.debug_phase_inputs},"
         f"fail_fast_auth:{cfg.fail_fast_auth},routing_policy:{cfg.routing_policy},"
@@ -15436,7 +15337,9 @@ def _run_phase_inner(
         )
         provider = str(route_info["provider"])
         model_id = str(route_info["model_id"])
-        api_key_env = str(route_info["api_key_env"])
+        api_key_env = str(
+            route_info.get("api_key_env") or PROVIDER_API_KEY_ENV.get(provider, "")
+        )
         if provider == "gemini" and not cfg.dry_run:
             probe = run_gemini_auth_probe(
                 run_id=phase_dir.parent.name,
