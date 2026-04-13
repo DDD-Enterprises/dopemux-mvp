@@ -606,11 +606,9 @@ def call_llm(
             )
             if response_body:
                 logger.warning(
-                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s provider_error_reason=%s exception_type=%s response_body_redacted=%s",
+                    "LLM call failed attempt %s/%s status=%s failure_type=%s provider_error_reason=%s exception_type=%s response_body_redacted=%s",
                     attempt,
                     cfg.retry_max_attempts,
-                    provider,
-                    model_id,
                     status_code,
                     failure_type,
                     provider_error_reason,
@@ -619,11 +617,9 @@ def call_llm(
                 )
             else:
                 logger.warning(
-                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s provider_error_reason=%s exception_type=%s",
+                    "LLM call failed attempt %s/%s status=%s failure_type=%s provider_error_reason=%s exception_type=%s",
                     attempt,
                     cfg.retry_max_attempts,
-                    provider,
-                    model_id,
                     status_code,
                     failure_type,
                     provider_error_reason,
