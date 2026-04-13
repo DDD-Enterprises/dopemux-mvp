@@ -10,6 +10,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
 
+from rte_config import (
+    COVERAGE_ROLLUP_FILENAME,
+    FAILURE_INDEX_FILENAME,
+    PROOF_PACK_FILENAME,
+    RESUME_PROOF_FILENAME,
+    RUN_DASHBOARD_FILENAME,
+    STEP_METRICS_FILENAME,
+)
+
 
 @dataclass(frozen=True)
 class TelemetryWriterDeps:
@@ -68,7 +77,7 @@ def write_step_metrics_snapshot(
     step_id: str,
     metrics: Dict[str, Any],
 ) -> Dict[str, Any]:
-    target = deps.telemetry_path(run_root, "STEP_METRICS.json")
+    target = deps.telemetry_path(run_root, STEP_METRICS_FILENAME)
     with deps.telemetry_snapshot_lock:
         payload = deps.load_json_object(target)
         steps = payload.get("steps")
@@ -92,7 +101,7 @@ def write_failure_index_snapshot(
     failure_histogram: Dict[str, int],
     first_failure: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    target = deps.telemetry_path(run_root, "FAILURE_INDEX.json")
+    target = deps.telemetry_path(run_root, FAILURE_INDEX_FILENAME)
     with deps.telemetry_snapshot_lock:
         payload = deps.load_json_object(target)
         steps = payload.get("steps")
@@ -142,7 +151,7 @@ def write_run_dashboard_snapshot(
     payload: Dict[str, Any],
     source: str,
 ) -> Dict[str, Any]:
-    target = deps.telemetry_path(run_root, "RUN_DASHBOARD.json")
+    target = deps.telemetry_path(run_root, RUN_DASHBOARD_FILENAME)
     snapshot = {
         "generated_at": deps.now_iso(),
         "run_id": run_root.name,
@@ -316,6 +325,7 @@ def update_run_manifest_promptset_block(
     manifest_path = run_root / "RUN_MANIFEST.json"
     payload: Dict[str, Any] = {}
     if manifest_path.exists():
+        try:
             payload = deps.load_json(manifest_path)
         except Exception:
             payload = {}
@@ -541,7 +551,7 @@ def write_coverage_rollup(
             "prompt_failures_count": int((promptset_report or {}).get("prompt_failures_count", 0)),
             "phases_executed_count": 0,
         }
-        deps.write_json(dirs["root"] / "COVERAGE_ROLLUP.json", payload)
+        deps.write_json(dirs["root"] / COVERAGE_ROLLUP_FILENAME, payload)
         deps.write_strict_passthrough_attestations(dirs, run_id, [])
         return payload
     phase_rollup: Dict[str, Any] = {}
@@ -596,7 +606,7 @@ def write_coverage_rollup(
         "prompt_failures_count": int((promptset_report or {}).get("prompt_failures_count", 0)),
         "phases_executed_count": 0 if blocked_promptset else len(phase_rollup),
     }
-    deps.write_json(dirs["root"] / "COVERAGE_ROLLUP.json", payload)
+    deps.write_json(dirs["root"] / COVERAGE_ROLLUP_FILENAME, payload)
     deps.update_run_manifest_status(
         dirs["root"],
         blocked_promptset=blocked_promptset,
@@ -685,7 +695,7 @@ def write_resume_proof(
     if blocked_promptset:
         payload["blocked_reason"] = deps.promptset_blocked_reason
         payload["blocked"] = deps.resume_blocked_payload(promptset)
-    deps.write_json(dirs["root"] / "RESUME_PROOF.json", payload)
+    deps.write_json(dirs["root"] / RESUME_PROOF_FILENAME, payload)
     return payload
 
 
@@ -701,7 +711,7 @@ def update_proof_pack(
     phase_finished_at: str,
 ) -> None:
     deps.refresh_run_manifest_artifacts(dirs["root"], dirs)
-    proof_path = dirs["root"] / "PROOF_PACK.json"
+    proof_path = dirs["root"] / PROOF_PACK_FILENAME
     proof: Dict[str, Any] = {}
     if proof_path.exists():
         try:
@@ -726,8 +736,8 @@ def update_proof_pack(
     auth_doctor = doctor_dir / "AUTH_DOCTOR.json"
     full_doctor = doctor_dir / "DOCTOR_FULL.json"
     routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
-    coverage_rollup = dirs["root"] / "COVERAGE_ROLLUP.json"
-    resume_proof = dirs["root"] / "RESUME_PROOF.json"
+    coverage_rollup = dirs["root"] / COVERAGE_ROLLUP_FILENAME
+    resume_proof = dirs["root"] / RESUME_PROOF_FILENAME
     proof["linked_artifacts"] = {
         "coverage_rollup": str(coverage_rollup.resolve()) if coverage_rollup.exists() else None,
         "resume_proof": str(resume_proof.resolve()) if resume_proof.exists() else None,
@@ -748,7 +758,7 @@ def write_blocked_promptset_proof_pack(
     prompt_report: Dict[str, Any],
 ) -> None:
     deps.refresh_run_manifest_artifacts(dirs["root"], dirs)
-    proof_path = dirs["root"] / "PROOF_PACK.json"
+    proof_path = dirs["root"] / PROOF_PACK_FILENAME
     proof: Dict[str, Any] = {}
     if proof_path.exists():
         try:
@@ -756,8 +766,8 @@ def write_blocked_promptset_proof_pack(
         except Exception:
             proof = {}
     blocked_at = deps.now_iso()
-    coverage_rollup = dirs["root"] / "COVERAGE_ROLLUP.json"
-    resume_proof = dirs["root"] / "RESUME_PROOF.json"
+    coverage_rollup = dirs["root"] / COVERAGE_ROLLUP_FILENAME
+    resume_proof = dirs["root"] / RESUME_PROOF_FILENAME
     routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
     proof["run_id"] = run_id
     proof["git_sha"] = deps.get_git_sha(root)

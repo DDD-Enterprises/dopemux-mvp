@@ -120,8 +120,9 @@ DPMX_WEBHOOK_SCHEMA = "DPMX_WEBHOOK_V1"
 DPMX_WEBHOOK_EVENT = "batch.completed"
 BENCHMARK_ROUTE_OWNERSHIP_MODE = "strict_extraction_lane_owned_v1"
 
-RUNNER_SCRIPT = Path(__file__).resolve()
-REPO_ROOT = RUNNER_SCRIPT.parents[2]
+CONFIG_FILE = Path(__file__).resolve()
+RUNNER_SCRIPT = CONFIG_FILE.with_name("run_extraction_v5.py")
+REPO_ROOT = CONFIG_FILE.parents[2]
 PRICING_CONFIG_PATH = REPO_ROOT / "config" / "pricing.yaml"
 V5_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v5")
 V5_RUNS_ROOT = V5_EXTRACTION_ROOT / "runs"
@@ -136,4 +137,3 @@ RUNTIME_PATHS = RuntimePaths(
     latest_run_file=V5_LATEST_RUN_FILE,
     doctor_root=V5_DOCTOR_ROOT,
 )
-

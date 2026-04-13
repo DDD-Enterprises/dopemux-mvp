@@ -23,6 +23,8 @@ def test_runtime_paths_match_v5_runner_surface() -> None:
     runner = _load_runner_module()
 
     assert runner.RUNNER_SCRIPT == rte_config.RUNNER_SCRIPT
+    assert rte_config.RUNNER_SCRIPT == Path(runner.__file__).resolve()
+    assert rte_config.RUNNER_SCRIPT.name == "run_extraction_v5.py"
     assert runner.REPO_ROOT == rte_config.REPO_ROOT
     assert runner.PRICING_CONFIG_PATH == rte_config.PRICING_CONFIG_PATH
     assert runner.V5_EXTRACTION_ROOT == rte_config.RUNTIME_PATHS.extraction_root
