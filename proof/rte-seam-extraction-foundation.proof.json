@@ -1,7 +1,7 @@
 {
   "packet": "rte-seam-extraction-foundation",
   "title": "RTE seam extraction and deterministic modularization",
-  "status": "stabilization_complete_pending_slice_2",
+  "status": "slice_2_complete_pending_slice_3",
   "commit_plan": [
     {
       "slice": 1,
@@ -16,7 +16,7 @@
     {
       "slice": 2,
       "name": "Extract static config seam",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "slice": 3,
@@ -68,6 +68,15 @@
         "Made profile-synthesis smoke deterministic by materializing fixture-backed benchmark inputs instead of discovering repo-level proof runs.",
         "Updated stale operator-safety assertions to match current route-readiness runtime truth for the first-live preset and cost routing."
       ]
+    },
+    {
+      "slice": 2,
+      "name": "Extract static config seam",
+      "summary": [
+        "Added services/repo-truth-extractor/rte_config.py as the typed runtime-path and static-constants seam for v5 artifact names, prompt env vars, promptgen defaults, and v5 path roots.",
+        "Updated run_extraction_v5.py to import and re-export the moved static constants while keeping phase ordering, dependency metadata, and runtime orchestration local for the next slice.",
+        "Added a focused seam parity test to prove the v5 public surface still exposes the same runtime paths and static constants after the extraction."
+      ]
     }
   ],
   "replan_events": [
@@ -78,19 +87,22 @@
       "result": "Slice 2 seam extraction deferred until extractor smoke and full-suite stabilization gates passed."
     }
   ],
-  "skipped_or_abandoned_slices": [
-    {
-      "slice": 2,
-      "name": "Extract static config seam",
-      "status": "not_started",
-      "rationale": "Packet stops after stabilization tranche. Seam extraction resumes only after the completed stabilization gate."
-    }
-  ],
+  "skipped_or_abandoned_slices": [],
   "commit_shas": [
     {
       "sha": "838014d8ba20f1b72aef8f8b7d08fb5d1cd8546e",
       "role": "base_head",
       "created_in_this_packet": false
+    },
+    {
+      "sha": "49e2cb0d2ae2b99508c2baf1493f4d980a664699",
+      "role": "post_pr_441_merge_base",
+      "created_in_this_packet": false
+    },
+    {
+      "sha": "dc4d3034b48c6854a765f710373055e59f8f30bb",
+      "role": "slice_2_static_config_seam",
+      "created_in_this_packet": true
     }
   ],
   "slice_verification": [
@@ -146,29 +158,55 @@
       "label": "dependency_sync",
       "command": "UV_CACHE_DIR=.uv-cache uv sync --frozen --extra test --extra services",
       "status": "passed"
+    },
+    {
+      "label": "slice_2_python_compile_checks",
+      "command": "python3 -m py_compile services/repo-truth-extractor/rte_config.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_config_seam.py",
+      "status": "passed",
+      "files_checked": 3
+    },
+    {
+      "label": "slice_2_config_seam_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_rte_config_seam.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 14,
+      "fail_count": 0
+    },
+    {
+      "label": "slice_2_cli_wrapper_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_run_extraction_v4_core.py services/repo-truth-extractor/tests/test_truth_run_cli.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 18,
+      "fail_count": 0
+    },
+    {
+      "label": "slice_2_cli_help_smoke",
+      "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --help",
+      "status": "passed"
     }
   ],
   "codereview": {
     "status": "completed_no_blocking_findings",
     "evidence": [
       "Reviewed the localized diff for CI, registry, comparison-lane normalization, profile-synth fixture materialization, and operator-safety test alignment.",
-      "Ran git diff --check on the touched files with no findings."
+      "Ran git diff --check on the touched files with no findings.",
+      "Reviewed the slice-2 diff to confirm only static runtime config moved and phase/dependency semantics remained in run_extraction_v5.py."
     ]
   },
   "precommit": {
     "status": "passed",
-    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files .github/workflows/ci-complete.yml .gitignore services/repo-truth-extractor/benchmarking/executors/phase_s_adapter.py services/repo-truth-extractor/benchmarking/registry/registry_loader.py services/repo-truth-extractor/benchmarking/synthesis/profile_synth.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/conftest.py services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/direct_model/RUN_MANIFEST.json services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/direct_model/DIRECT_MODEL_COMPARISON.json services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/direct_model/DIRECT_MODEL_CAMPAIGN_MANIFEST.json services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/pricing/RUN_MANIFEST.json services/repo-truth-extractor/tests/fixtures/benchmarking/profile_synth/pricing/pricing_coverage_report.json proof/rte-seam-extraction-foundation.proof.json"
+    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/rte_config.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_config_seam.py"
   },
   "evidence_ledger_completeness": "complete",
   "pr": {
     "url": null,
     "status": "not_opened"
   },
-  "merge_readiness": "local_stabilization_complete_not_ready_for_merge_without_commit_and_pr",
+  "merge_readiness": "slice_2_complete_local_branch_not_ready_without_follow_on_slices_and_pr",
   "worktree": {
-    "path": "/Users/hue/code/dopemux-mvp",
-    "branch": "packet/rte-07-post-v1-deferred",
-    "cleanup_status": "not_applicable_in_current_sandbox",
-    "branch_request_status": "requested packet branch was not created in this writable checkout because sandboxed git ref writes were blocked"
+    "path": "/Users/hue/code/dopemux-mvp-rte-seams-v2",
+    "branch": "codex/rte-seam-extraction-foundation-v2",
+    "cleanup_status": "pending_after_packet_completion",
+    "branch_request_status": "created_from_post_pr_441_merge_commit"
   }
 }
