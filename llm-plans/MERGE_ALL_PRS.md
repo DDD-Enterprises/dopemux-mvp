@@ -1,16 +1,12 @@
-# Plan: Merge All Open PRs
+# PR Queue Drainage Plan
 
-## Objective
-Add all remaining open PRs (17 in total) to the auto-merge queue.
+**Objective:** Drain the PR queue by merging all open, valid PRs into the main branch, deleting their associated branches, and handling any currently failing checks or conflicts.
 
-## Scope & Impact
-- Target PRs: All currently open PRs.
-- Impact: CI will process them in the merge queue and merge them into `main`.
+## Strategy:
+1.  **Auto-Merge Valid PRs:** Enable auto-merge for PR #440 (the packet-07 cognitive plane integration) which is currently running CI checks.
+2.  **Merge Passing PRs:** Iterate through all historically passing PRs (431, 417, 416, 414, 406, 397) and explicitly execute `gh pr merge --merge --delete-branch` to drain the backlog.
+3.  **Triage Failing PRs:** For the remaining failing PRs (438, 412, 398), use the PR Merge Specialist script to spin up isolated worktrees (`pr-fix --id <num>`), diagnose their CI/conflict failures, surgically resolve them, and push the fixes to unlock their merges.
 
-## Implementation Steps
-1. Fetch all open PR numbers using `gh pr list`.
-2. Iterate through each PR and run `gh pr merge <PR_ID> --auto --merge`.
-3. This queues them for merging without requiring manual approval, assuming they pass CI.
-
-## Verification
-- Run `gh pr list` to confirm they are added to the merge queue.
+## Execution Constraints:
+- Use isolated `git worktree` environments for all failing PR triage to avoid contaminating the stable `main` branch state.
+- Ensure all merged PRs have their remote branches explicitly deleted to maintain repository hygiene.

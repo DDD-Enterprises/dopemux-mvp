@@ -392,7 +392,7 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
             "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
                 "provider": "openrouter",
                 "model_id": "openai/gpt-5.3-codex",
