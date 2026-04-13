@@ -52,13 +52,18 @@ def test_v4_schema_rollout_manifest_tracks_packet_03_tranche() -> None:
 def test_v5_phase_sp_registry_and_step_controls_match_current_contract() -> None:
     runner = _load_runner_module()
 
-    specs = runner.get_phase_prompts("SP")
+    specs = {spec.step_id: spec for spec in runner.get_phase_prompts("SP")}
 
-    assert [spec.step_id for spec in specs] == [f"SP{i}" for i in range(13)]
+    assert list(specs) == [f"SP{i}" for i in range(13)]
     assert runner.REQUIRED_PROMPT_STEP_IDS["SP"] == {f"SP{i}" for i in range(13)}
-    assert all(spec.source == "registry" for spec in specs)
-    assert all(spec.prompt_path.exists() for spec in specs)
-    assert all(spec.tier_override in {"bulk", "extract", "synthesis", "qa"} for spec in specs)
+    assert all(spec.source == "registry" for spec in specs.values())
+    assert all(spec.prompt_path.exists() for spec in specs.values())
+    assert all(
+        spec.tier_override in {"bulk", "extract", "synthesis", "qa"}
+        for spec in specs.values()
+    )
+    assert specs["SP11"].tier_override == "qa"
+    assert specs["SP12"].tier_override == "qa"
 
 
 def test_v5_phase_sp_supports_generic_single_step_filtering() -> None:
@@ -107,6 +112,19 @@ def test_v5_post_review_preset_sequence_includes_sp_phase() -> None:
         "S",
         "SP",
     ]
+
+
+def test_v5_phase_s_prompt_mode_is_legacy_only() -> None:
+    runner = _load_runner_module()
+
+    runner.set_active_s_prompts_mode(None)
+    assert runner.get_active_s_prompts_mode() == runner.S_PROMPTS_LEGACY
+
+    runner.set_active_s_prompts_mode("auto")
+    assert runner.get_active_s_prompts_mode() == runner.S_PROMPTS_LEGACY
+
+    runner.set_active_s_prompts_mode("registry")
+    assert runner.get_active_s_prompts_mode() == runner.S_PROMPTS_LEGACY
 
 
 def test_v5_phase_s_always_returns_legacy_prompts() -> None:
