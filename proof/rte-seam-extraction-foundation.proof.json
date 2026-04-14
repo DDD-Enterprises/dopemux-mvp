@@ -1,7 +1,7 @@
 {
   "packet": "rte-seam-extraction-foundation",
   "title": "RTE seam extraction and deterministic modularization",
-  "status": "slice_6_complete_pending_remaining_slices",
+  "status": "packet_complete_pending_pr_creation",
   "commit_plan": [
     {
       "slice": 1,
@@ -41,12 +41,12 @@
     {
       "slice": 7,
       "name": "Add iR_l integration proof",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "slice": 8,
       "name": "Command authority cleanup",
-      "status": "pending"
+      "status": "completed"
     }
   ],
   "completed_slices": [
@@ -113,6 +113,24 @@
         "Updated run_extraction_v5.py to keep run_phase_A and run_phase_Z as the canonical public wrapper surface, while routing their implementation through the extracted modules via a runner-bound dependency bundle.",
         "Added focused seam tests for both wrapper delegation and the extracted module behavior, then validated the change against phase interaction, phase step filtering, operator-safety, v4 compatibility, CLI truth, and direct phase-A dry-run smoke."
       ]
+    },
+    {
+      "slice": 7,
+      "name": "Add iR_l integration proof",
+      "summary": [
+        "Added a shared router post-processing helper in run_extraction_v5.py so the existing runtime path for partition reordering and context-brief injection is testable without changing execution authority.",
+        "Added focused runtime proof tests showing that prescan intelligence changes partition construction by skipping duplicate-marked files and reprioritizing higher-value files, and changes partition payloads by reordering paths within a partition and attaching context briefs.",
+        "Validated the proof against the existing prescan integration and consumer suites plus direct dry-run smoke, keeping the router behavior local, deterministic, and fixture-backed."
+      ]
+    },
+    {
+      "slice": 8,
+      "name": "Command authority cleanup",
+      "summary": [
+        "Updated dopemux extractor command help and warning text so it explicitly reads as legacy promptset/prescan tooling rather than a peer operator authority.",
+        "Made the legacy extractor run/status help point operators to `dopemux extract truth-run` as the canonical operator path while preserving compatibility-only surfaces for promptset generation and validation.",
+        "Added command-authority tests covering the legacy extractor help, safety warning, promptset-scope status help, and the continued availability of the canonical truth-run command."
+      ]
     }
   ],
   "replan_events": [
@@ -127,6 +145,12 @@
       "reason": "Slice 3 validation exposed existing runtime assumptions that strict route metadata always carries api_key_env, causing dry-run phase A failures for strict-required routes.",
       "inserted_before_slice": 4,
       "result": "Kept slice 3 intact but amended run_extraction_v5.py to derive api_key_env from PROVIDER_API_KEY_ENV when strict route payloads omit it by design."
+    },
+    {
+      "event": "packet_closeout_regression_fix",
+      "reason": "Final packet closeout surfaced a strict-ladder compatibility regression in llm_runtime.py, a stale v5-path detector in extraction_hygiene.py after the config seam, and a broken prescan classifier fixture that asserted against a missing app.py entry.",
+      "inserted_before_slice": 8,
+      "result": "Added route normalization for legacy strict ladders without widening strict route metadata, restored imported V5_EXTRACTION_ROOT detection in hygiene scanning, repaired the stale prescan fixture, and reran targeted plus full extractor validation."
     }
   ],
   "skipped_or_abandoned_slices": [],
@@ -164,6 +188,21 @@
     {
       "sha": "2eee726e474a3dcbbd3451efe80ae5ba2b461571",
       "role": "slice_6_phase_runner_seam",
+      "created_in_this_packet": true
+    },
+    {
+      "sha": "50247251059df6091fa75114ee220ed00955bbe5",
+      "role": "slice_7_intelligence_routing_proof",
+      "created_in_this_packet": true
+    },
+    {
+      "sha": "181957646c4c0e771724d7c1300c95d035e5d937",
+      "role": "slice_8_command_authority_cleanup",
+      "created_in_this_packet": true
+    },
+    {
+      "sha": "e1deeb9802cbb8fd3f9d02f7ea6097fa0c539fe0",
+      "role": "packet_closeout_regression_fix",
       "created_in_this_packet": true
     }
   ],
@@ -205,9 +244,9 @@
     },
     {
       "label": "full_extractor_suite",
-      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests -n auto --maxfail=1 --disable-warnings --no-cov",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest services/repo-truth-extractor/tests -n auto --maxfail=1 --disable-warnings --no-cov",
       "status": "passed",
-      "pass_count": 692,
+      "pass_count": 730,
       "fail_count": 0
     },
     {
@@ -331,6 +370,45 @@
       "label": "slice_6_phase_a_dry_run_smoke",
       "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id slice6_phase_a_smoke --output-root /tmp/rte_slice6_phase_a_smoke",
       "status": "passed"
+    },
+    {
+      "label": "slice_7_python_compile_checks",
+      "command": "python3 -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_router_runtime_integration.py",
+      "status": "passed",
+      "files_checked": 2
+    },
+    {
+      "label": "slice_7_router_runtime_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_router_runtime_integration.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py services/repo-truth-extractor/tests/test_prescan_consumers.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 11,
+      "fail_count": 0
+    },
+    {
+      "label": "slice_7_phase_a_dry_run_smoke",
+      "command": "python3 services/repo-truth-extractor/run_extraction_v5.py --phase A --step A0 --dry-run --ui plain --run-id slice7_smoke --output-root /tmp/rte_slice7_smoke --prescan /tmp/rte_slice7_missing_prescan",
+      "status": "passed"
+    },
+    {
+      "label": "slice_8_command_authority_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q tests/unit/test_extractor_command_authority.py tests/unit/test_extractor_runner_resolution.py services/repo-truth-extractor/tests/test_phase_interaction.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_truth_run_cli.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 82,
+      "fail_count": 0
+    },
+    {
+      "label": "packet_closeout_regression_checks",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_prescan_core_pipeline.py services/repo-truth-extractor/tests/test_hygiene_version_path.py services/repo-truth-extractor/tests/test_phase_d_sidefill.py::test_d1_missing_artifact_sidefill_repairs_and_normalizes_schema_ids --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 11,
+      "fail_count": 0
+    },
+    {
+      "label": "packet_closeout_command_unit_checks",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q tests/unit/test_extractor_command_authority.py tests/unit/test_extractor_runner_resolution.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 7,
+      "fail_count": 0
     }
   ],
   "codereview": {
@@ -342,23 +420,26 @@
       "Reviewed the slice-3 diff to confirm phase ordering, metadata, and required step sets moved into phases.py without moving artifact-group or execution logic.",
       "Reviewed the slice-4 diff to confirm reporting.py centralizes only artifact/report writers while run_extraction_v5.py remains the canonical public writer surface and execution authority.",
       "Reviewed the slice-5 diff to confirm llm_runtime.py centralizes provider transport, retry, parse/coerce, and comparison-lane implementation while run_extraction_v5.py remains the canonical public runtime surface.",
-      "Reviewed the slice-6 diff to confirm only phases A and Z moved behind the extracted runner seam, with the dispatch loop, phase map, and remaining phase logic still authoritative in run_extraction_v5.py."
+      "Reviewed the slice-6 diff to confirm only phases A and Z moved behind the extracted runner seam, with the dispatch loop, phase map, and remaining phase logic still authoritative in run_extraction_v5.py.",
+      "Reviewed the slice-7 diff to confirm router proof work stays on existing runtime behavior: build_partitions router sorting/skipping plus active router partition reordering and context-brief injection.",
+      "Reviewed the slice-8 diff to confirm dopemux extractor help and warnings clarify authority without changing the actual runtime launch path, which remains dopemux extract truth-run -> run_extraction_v5.py.",
+      "Reviewed the closeout regression diff to confirm the strict-ladder fix only normalizes legacy 2-tuple routes at the LLM seam, the hygiene detector still reports imported v5 roots correctly after the config seam, and the prescan classifier test fixture now matches its asserted app.py case."
     ]
   },
   "precommit": {
     "status": "passed",
-    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/extractor/__init__.py services/repo-truth-extractor/extractor/phases/__init__.py services/repo-truth-extractor/extractor/phases/base.py services/repo-truth-extractor/extractor/phases/a.py services/repo-truth-extractor/extractor/phases/z.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_phase_runner_seam.py"
+    "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pre-commit run --files services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/extraction_hygiene.py services/repo-truth-extractor/tests/test_prescan_core_pipeline.py proof/rte-seam-extraction-foundation.proof.json"
   },
   "evidence_ledger_completeness": "complete",
   "pr": {
-    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/444",
-    "status": "draft_open"
+    "url": null,
+    "status": "pending_creation"
   },
-  "merge_readiness": "draft_pr_open_slice_6_complete_remaining_packet_slices_pending",
+  "merge_readiness": "packet_complete_pending_pr_creation",
   "worktree": {
-    "path": "/Users/hue/code/dopemux-mvp-rte-seams-v2",
-    "branch": "codex/rte-seam-extraction-foundation-v2",
-    "cleanup_status": "pending_after_packet_completion",
-    "branch_request_status": "created_from_post_pr_441_merge_commit"
+    "path": "/Users/hue/code/dopemux-mvp",
+    "branch": "codex/rte-intelligence-routing-proof",
+    "cleanup_status": "not_requested",
+    "branch_request_status": "follow_on_branch_created_after_pr_444_merge"
   }
 }
