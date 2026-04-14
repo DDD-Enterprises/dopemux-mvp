@@ -409,6 +409,7 @@ function App() {
                         display: 'flex',
                         alignItems: 'center',
                         outline: 'none',
+                        cursor: 'help',
                         '&:focus': {
                           borderRadius: 1,
                           boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
@@ -451,7 +452,11 @@ function App() {
             {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
           </Box>
           {notifications.length > 0 ? (
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Box
+              sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}
+              role="log"
+              aria-live="polite"
+            >
               {notifications.map((notification) => (
                 <Chip
                   key={`${notification.timestamp}-${notification.message}`}

@@ -165,6 +165,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const currentTask = tasks.find((task) => task.id === currentTaskId);
   const statusTone = statusStyles[cognitiveState.status];
 
+  const isOvertime = useMemo(() => {
+    if (!currentTask) return false;
+    return (taskTimer / 60) > currentTask.estimatedMinutes;
+  }, [currentTask, taskTimer]);
+
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
     if (complexity > 0.5) return brandTokens.colors.giltEdge;
@@ -303,15 +308,23 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               mb: 2.5,
               height: 6,
               borderRadius: 3,
-              bgcolor: alpha(brandTokens.colors.saintGold, 0.1),
+              bgcolor: alpha(isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold, 0.1),
               '& .MuiLinearProgress-bar': {
-                bgcolor: brandTokens.colors.saintGold,
+                bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
                 borderRadius: 3,
-                boxShadow: brandTokens.shadows.goldBloom,
+                boxShadow: isOvertime
+                  ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}`
+                  : brandTokens.shadows.goldBloom,
               },
             }}
             aria-label="Current task progress"
-            aria-valuetext={`${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`}
+            aria-valuetext={
+              isOvertime
+                ? `Overtime: ${Math.floor(taskTimer / 60 - currentTask.estimatedMinutes)} ${
+                    Math.floor(taskTimer / 60 - currentTask.estimatedMinutes) === 1 ? 'minute' : 'minutes'
+                  } past estimate`
+                : `${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`
+            }
           />
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
