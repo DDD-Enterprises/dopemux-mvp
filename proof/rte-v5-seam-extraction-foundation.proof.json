@@ -185,6 +185,6 @@
     ],
     "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/452",
     "merge_readiness": "ready_for_review",
-    "worktree_cleanup_status": "pending_after_artifact_capture"
+    "worktree_cleanup_status": "completed"
   }
 }
