@@ -1,0 +1,190 @@
+{
+  "packet": {
+    "name": "RTE-v5 Seam Extraction Foundation Restart",
+    "date": "2026-04-14",
+    "worktree": "/Users/hue/code/dopemux-mvp-worktrees/rte-v5-seam-foundation-restart",
+    "branch": "tp/rte-v5-seam-foundation-restart",
+    "restart_base": {
+      "remote": "origin/main",
+      "base_commit": "26d4587c455651b8443363938aa42244befe2ffb"
+    }
+  },
+  "commit_plan": {
+    "planned_slices": [
+      "Slice 0: characterization gate and baseline triage",
+      "Slice 1: output layout and run-context helpers",
+      "Slice 2: deterministic report/proof writers",
+      "Slice 3: promptset discovery/hash/block helpers",
+      "Slice 4: thin phase wrapper collection helpers",
+      "Slice 5: doctor/preflight/cost-preview operator helpers"
+    ],
+    "completed_slices": [
+      {
+        "slice": "Slice 0",
+        "status": "completed",
+        "summary": "Added characterization coverage for wrapper delegation, output layout, v4 forwarding, blocked promptsets, and import-surface stability. Fixed the missing-required-prompt fail-open bug in `_prompt_hash_report_for_phase`.",
+        "commit_shas": [
+          "a9214807e"
+        ],
+        "verification": [
+          "pytest -q services/repo-truth-extractor/tests/test_rte_v5_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py -q"
+        ]
+      },
+      {
+        "slice": "Slice 1",
+        "status": "completed",
+        "summary": "Extracted output layout, run-id, run-dir, and latest-run helpers into `rte_output_layout.py` while preserving re-exports from `run_extraction_v5.py`.",
+        "commit_shas": [
+          "a9214807e"
+        ],
+        "verification": [
+          "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_output_layout.py",
+          "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py -q"
+        ]
+      },
+      {
+        "slice": "Slice 2",
+        "status": "completed",
+        "summary": "Extracted deterministic report/proof writers and manifest/count helpers into `rte_reports.py`, with `run_extraction_v5.py` retaining the import surface.",
+        "commit_shas": [
+          "a9214807e"
+        ],
+        "verification": [
+          "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_reports.py services/repo-truth-extractor/rte_output_layout.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py",
+          "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py services/repo-truth-extractor/tests/test_v5_resume_smoke.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py -q"
+        ]
+      },
+      {
+        "slice": "Slice 3",
+        "status": "completed",
+        "summary": "Extracted prompt-root discovery, registry validation, prompt hashing, and blocked-promptset payload helpers into `rte_promptset.py` without changing fail-closed behavior.",
+        "commit_shas": [
+          "a9214807e"
+        ],
+        "verification": [
+          "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_promptset.py",
+          "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_phase_s_step_selection.py services/repo-truth-extractor/tests/test_phase_s_prompt_registry.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py -q"
+        ]
+      },
+      {
+        "slice": "Slice 4",
+        "status": "completed",
+        "summary": "Extracted scan-plan and precollected-input assembly helpers into `rte_phase_wrappers.py`, preserving wrapper-visible target lists in `run_extraction_v5.py` for characterization stability.",
+        "commit_shas": [
+          "a9214807e"
+        ],
+        "verification": [
+          "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_phase_wrappers.py",
+          "pytest -q services/repo-truth-extractor/tests/test_phase_interaction.py services/repo-truth-extractor/tests/test_phase_execution_step_filter.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_phase_s_step_selection.py services/repo-truth-extractor/tests/test_phase_s_prompt_registry.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py -q"
+        ]
+      },
+      {
+        "slice": "Slice 5",
+        "status": "completed",
+        "summary": "Extracted operator-surface helpers for presets, route-readiness aggregation, provider preflight, validator execution, and cost preview into `rte_ops_surfaces.py` while leaving routing-core authority in `run_extraction_v5.py`.",
+        "commit_shas": [
+          "a9214807e"
+        ],
+        "verification": [
+          "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_ops_surfaces.py",
+          "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py -q"
+        ]
+      }
+    ],
+    "replan_events": [
+      {
+        "event": "restart",
+        "rationale": "Discarded prior seam branches and restarted from a clean `origin/main` worktree to avoid carrying broadened out-of-packet drift."
+      }
+    ],
+    "skipped_or_abandoned_slices": [],
+    "quarantines": []
+  },
+  "evidence_ledger": {
+    "files_inspected": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/run_extraction_v4.py",
+      "src/dopemux/cli.py",
+      "src/dopemux/commands/extractor_commands.py",
+      "src/dopemux/commands/extract_commands.py",
+      "services/repo-truth-extractor/reporting.py",
+      "services/repo-truth-extractor/phases.py",
+      "services/repo-truth-extractor/rte_config.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py",
+      "services/repo-truth-extractor/tests/test_phase_interaction.py",
+      "services/repo-truth-extractor/tests/test_phase_execution_step_filter.py",
+      "services/repo-truth-extractor/tests/test_phase_s_step_selection.py",
+      "services/repo-truth-extractor/tests/test_phase_s_prompt_registry.py",
+      "services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py"
+    ],
+    "packet_critical_baseline": {
+      "status": "passed on fresh restart base before extraction",
+      "command": "pytest -q services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_run_extraction_v4_core.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py -q"
+    },
+    "compatibility_symbols_preserved": [
+      "OutputLayout",
+      "RunContext",
+      "configure_output_layout",
+      "current_doctor_root",
+      "latest_run_id_path",
+      "get_run_dirs",
+      "write_runner_identity",
+      "update_run_manifest_contract_map",
+      "refresh_run_manifest_artifacts",
+      "gather_phase_counts",
+      "get_phase_prompts",
+      "_prompt_hash_report_for_phase",
+      "promptset_fingerprint",
+      "set_active_s_prompts_mode",
+      "_get_s_step_controls",
+      "step_sort_key",
+      "derive_route_readiness_summary",
+      "run_provider_preflight",
+      "run_pre_live_validator",
+      "apply_first_live_preset",
+      "build_phase_cost_preview",
+      "_preview_partition_usage",
+      "max_files_for_phase"
+    ],
+    "artifact_contracts_checked": [
+      "runs root under active output layout",
+      "doctor root under active output layout",
+      "latest_run_id.txt under active output layout",
+      "PROOF_PACK.json",
+      "COVERAGE_ROLLUP.json",
+      "RESUME_PROOF.json",
+      "doctor/PROVIDER_PREFLIGHT.json"
+    ]
+  },
+  "finalization": {
+    "codereview": {
+      "status": "completed",
+      "findings": [],
+      "resolution_ledger": [
+        "Preserved wrapper-visible phase target literals after Slice 4 because `test_phase_interaction.py` characterizes wrapper source, not only runtime behavior.",
+        "Kept `run_extraction_v5.py` as the canonical import surface by delegating through wrapper functions instead of rewriting direct consumers."
+      ]
+    },
+    "validation": {
+      "packet_critical_and_slice_suites": [
+        "pytest -q services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_run_extraction_v4_core.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py services/repo-truth-extractor/tests/test_phase_interaction.py services/repo-truth-extractor/tests/test_phase_execution_step_filter.py services/repo-truth-extractor/tests/test_phase_s_step_selection.py services/repo-truth-extractor/tests/test_phase_s_prompt_registry.py services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py services/repo-truth-extractor/tests/test_v5_resume_smoke.py -q",
+        "pre-commit run --all-files"
+      ],
+      "precommit_status": "passed"
+    },
+    "evidence_ledger_completeness": "complete_for_packet_scope",
+    "final_confidence": "VERIFIED",
+    "residual_risks": [
+      "v4 compatibility remains a long-tail maintenance burden.",
+      "v3 remains semi-active in wrapper and test surfaces.",
+      "CLI surface drift is still unresolved outside this packet.",
+      "The execution core remains monolithic after deterministic seam extraction.",
+      "Broader baseline test health may still require separate triage.",
+      "External non-repo consumers of proof and telemetry artifacts remain UNKNOWN."
+    ],
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/452",
+    "merge_readiness": "ready_for_review",
+    "worktree_cleanup_status": "pending_after_artifact_capture"
+  }
+}
