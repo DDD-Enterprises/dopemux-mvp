@@ -82,6 +82,7 @@ def test_classifier_categorizes_files(tmp_path: Path) -> None:
 
     entries = [
         FileEntry(rel_path="docs/README.md", size_bytes=50, extension=".md"),
+        FileEntry(rel_path="app.py", size_bytes=120, extension=".py"),
         FileEntry(rel_path="image.png", size_bytes=50000, extension=".png"),
     ]
 
