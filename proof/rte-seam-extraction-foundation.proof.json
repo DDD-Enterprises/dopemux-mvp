@@ -1,7 +1,7 @@
 {
   "packet": "rte-seam-extraction-foundation",
   "title": "RTE seam extraction and deterministic modularization",
-  "status": "packet_complete_pending_pr_creation",
+  "status": "packet_complete_pr_open",
   "commit_plan": [
     {
       "slice": 1,
@@ -432,10 +432,10 @@
   },
   "evidence_ledger_completeness": "complete",
   "pr": {
-    "url": null,
-    "status": "pending_creation"
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/451",
+    "status": "open"
   },
-  "merge_readiness": "packet_complete_pending_pr_creation",
+  "merge_readiness": "ready_for_review",
   "worktree": {
     "path": "/Users/hue/code/dopemux-mvp",
     "branch": "codex/rte-intelligence-routing-proof",
