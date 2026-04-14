@@ -119,6 +119,20 @@ def is_auth_classified_failure(failure_type: Optional[str]) -> bool:
     }
 
 
+def _normalize_ladder_route(
+    route: Sequence[str],
+    provider_api_key_env: Dict[str, str],
+) -> Tuple[str, str, str]:
+    provider = str(route[0]) if len(route) > 0 else ""
+    model_id = str(route[1]) if len(route) > 1 else ""
+    api_key_env = (
+        str(route[2])
+        if len(route) > 2
+        else str(provider_api_key_env.get(provider, ""))
+    )
+    return provider, model_id, api_key_env
+
+
 def call_llm(
     deps: LLMRuntimeDeps,
     provider: str,
@@ -683,12 +697,17 @@ def call_llm_with_ladder(
     ui: Optional[Any] = None,
 ) -> Dict[str, Any]:
     denylist = {str(provider).strip().lower() for provider in cfg.provider_denylist}
+    normalized_ladder = [
+        _normalize_ladder_route(route, deps.provider_api_key_env) for route in ladder
+    ]
     if denylist:
         ladder = [
-            tuple(route)
-            for route in ladder
+            route
+            for route in normalized_ladder
             if str(route[0]).strip().lower() not in denylist
         ]
+    else:
+        ladder = normalized_ladder
     if not ladder:
         return {
             "response_text": "",
@@ -715,7 +734,7 @@ def call_llm_with_ladder(
     opus_eligible: Optional[bool] = None
     opus_block_reason: Optional[str] = None
     for hop_index in range(max_hops):
-        route = tuple(ladder[hop_index])
+        route = _normalize_ladder_route(ladder[hop_index], deps.provider_api_key_env)
         provider, model_id, api_key_env = route
         payload = execute_attempt(route, hop_index)
         request_meta = (
@@ -749,7 +768,9 @@ def call_llm_with_ladder(
         final_payload = dict(payload)
         if not escalation_trigger or hop_index + 1 >= max_hops:
             break
-        next_route = tuple(ladder[hop_index + 1])
+        next_route = _normalize_ladder_route(
+            ladder[hop_index + 1], deps.provider_api_key_env
+        )
         if (
             deps.is_break_glass_opus_route(next_route)
             and escalation_class != "hard_reconciliation"
@@ -782,7 +803,7 @@ def call_llm_with_ladder(
             "response_text": "",
             "request_meta": {"failure_type": "routing_unresolved"},
             "artifacts": [],
-            "route": tuple(ladder[0]),
+            "route": _normalize_ladder_route(ladder[0], deps.provider_api_key_env),
             "escalation_trigger": "routing_unresolved",
         }
     final_request_meta = (
@@ -805,7 +826,10 @@ def call_llm_with_ladder(
         final_request_meta["opus_block_reason"] = opus_block_reason
     else:
         final_request_meta.setdefault("opus_block_reason", None)
-    final_route = tuple(final_payload.get("route") or ("", "", ""))
+    final_route = _normalize_ladder_route(
+        final_payload.get("route") or ("", "", ""),
+        deps.provider_api_key_env,
+    )
     final_request_meta["provider"] = (
         final_route[0] if len(final_route) > 0 else final_request_meta.get("provider")
     )
