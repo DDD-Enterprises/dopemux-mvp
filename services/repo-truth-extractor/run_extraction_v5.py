@@ -6594,6 +6594,30 @@ def build_partitions(
     return partitions
 
 
+def _apply_router_partition_hints(
+    phase: str,
+    partitions: List[Dict[str, Any]],
+    router: Optional[Any] = None,
+) -> List[Dict[str, Any]]:
+    active_router = router or _ACTIVE_INTELLIGENCE_ROUTER
+    if not active_router:
+        return partitions
+    try:
+        from lib.prescan.partition_brief_generator import PartitionBriefGenerator
+
+        brief_gen = PartitionBriefGenerator(active_router.code_report, token_budget=2000)
+    except (ImportError, ModuleNotFoundError):
+        brief_gen = None
+    for partition in partitions:
+        partition["paths"] = active_router.reorder_partition(partition["paths"])
+        if brief_gen:
+            brief = brief_gen.generate_brief(phase, partition["paths"])
+            if brief:
+                partition["context_brief"] = brief
+    logger.info("Phase %s: router reordered %d partitions", phase, len(partitions))
+    return partitions
+
+
 def sort_key_for_item(item: Dict[str, Any]) -> Tuple[str, int, str, str]:
     path = str(item.get("path", ""))
     line_start = 0
@@ -13460,21 +13484,7 @@ def _run_phase_inner(
         phase, inventory, max_files=max_files, max_chars=cfg.max_chars, router=cfg.router
     )
 
-    # DC2 Phase 2: Router post-processing (reorder + briefs)
-    router = _ACTIVE_INTELLIGENCE_ROUTER
-    if router:
-        try:
-            from lib.prescan.partition_brief_generator import PartitionBriefGenerator
-            brief_gen = PartitionBriefGenerator(router.code_report, token_budget=2000)
-        except Exception:
-            brief_gen = None
-        for idx, partition in enumerate(partitions):
-            partition["paths"] = router.reorder_partition(partition["paths"])
-            if brief_gen:
-                brief = brief_gen.generate_brief(phase, partition["paths"])
-                if brief:
-                    partition["context_brief"] = brief
-        logger.info("Phase %s: router reordered %d partitions", phase, len(partitions))
+    partitions = _apply_router_partition_hints(phase, partitions)
 
     write_json(
         phase_dir / "inputs" / "INVENTORY.json",
@@ -16311,20 +16321,7 @@ def run_phase_R_async_submit(
     )
 
     # DC2 Phase 2: Router post-processing for Phase R (async path)
-    _r_router = _ACTIVE_INTELLIGENCE_ROUTER
-    if _r_router:
-        try:
-            from lib.prescan.partition_brief_generator import PartitionBriefGenerator
-            _r_brief_gen = PartitionBriefGenerator(_r_router.code_report, token_budget=2000)
-        except Exception:
-            _r_brief_gen = None
-        for _r_idx, _r_part in enumerate(partitions):
-            _r_part["paths"] = _r_router.reorder_partition(_r_part["paths"])
-            if _r_brief_gen:
-                _r_brief = _r_brief_gen.generate_brief("R", _r_part["paths"])
-                if _r_brief:
-                    _r_part["context_brief"] = _r_brief
-        logger.info("Phase R (async): router reordered %d partitions", len(partitions))
+    partitions = _apply_router_partition_hints("R", partitions)
 
     prompts = get_phase_prompts("R")
     if not prompts:
