@@ -7175,7 +7175,12 @@ def _apply_router_partition_hints(
         brief_gen = PartitionBriefGenerator(active_router.code_report, token_budget=2000)
     except (ImportError, ModuleNotFoundError):
         brief_gen = None
-    for partition in partitions:
+    try:
+        from lib.prescan.partition_brief_generator import PartitionBriefGenerator
+
+        brief_gen = PartitionBriefGenerator(active_router.code_report, token_budget=2000)
+    except (ImportError, ModuleNotFoundError):
+        brief_gen = None
         partition["paths"] = active_router.reorder_partition(partition["paths"])
         if brief_gen:
             brief = brief_gen.generate_brief(phase, partition["paths"])
