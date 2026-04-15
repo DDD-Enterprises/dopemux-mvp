@@ -61,6 +61,63 @@ from phases import (
     R_REQUIRED_INPUT_PHASES,
     VERIFY_PHASE_CHOICES,
 )
+from rte_output_layout import (
+    OutputLayout,
+    RunContext,
+    configure_output_layout as _configure_output_layout_impl,
+    current_doctor_root as _current_doctor_root_impl,
+    current_extraction_root as _current_extraction_root_impl,
+    current_output_layout as _current_output_layout_impl,
+    current_runs_root as _current_runs_root_impl,
+    generate_run_id as _generate_run_id_impl,
+    get_run_dirs as _get_run_dirs_impl,
+    latest_run_id_path as _latest_run_id_path_impl,
+    load_run_id as _load_run_id_impl,
+    persist_latest_run_id as _persist_latest_run_id_impl,
+    resolve_run_context as _resolve_run_context_impl,
+    validate_existing_run_dir as _validate_existing_run_dir_impl,
+)
+from rte_ops_surfaces import (
+    apply_first_live_preset as _apply_first_live_preset_impl,
+    apply_staged_safe_preset as _apply_staged_safe_preset_impl,
+    argv_has_flag as _argv_has_flag_impl,
+    build_phase_cost_preview as _build_phase_cost_preview_impl,
+    collect_provider_routes as _collect_provider_routes_impl,
+    derive_route_readiness_summary as _derive_route_readiness_summary_impl,
+    first_live_phase_sequence as _first_live_phase_sequence_impl,
+    max_files_for_phase as _max_files_for_phase_impl,
+    preview_partition_usage as _preview_partition_usage_impl,
+    run_pre_live_validator as _run_pre_live_validator_impl,
+    run_provider_preflight as _run_provider_preflight_impl,
+)
+from rte_phase_wrappers import (
+    plan_home_phase as _plan_home_phase_impl,
+    plan_q_phase as _plan_q_phase_impl,
+    plan_r_phase as _plan_r_phase_impl,
+    plan_repo_scan_phase as _plan_repo_scan_phase_impl,
+    plan_s_phase as _plan_s_phase_impl,
+    plan_sp_phase as _plan_sp_phase_impl,
+    plan_t_phase as _plan_t_phase_impl,
+    plan_x_phase as _plan_x_phase_impl,
+)
+from rte_promptset import (
+    blocked_promptset_payload as _blocked_promptset_payload_impl,
+    get_active_s_prompts_mode as _get_active_s_prompts_mode_impl,
+    get_s_step_controls as _get_s_step_controls_impl,
+    legacy_phase_prompt_specs as _legacy_phase_prompt_specs_impl,
+    load_phase_s_registry as _load_phase_s_registry_impl,
+    phase_s_registry_dir as _phase_s_registry_dir_impl,
+    phase_s_registry_path as _phase_s_registry_path_impl,
+    prompt_hash_report_for_phase as _prompt_hash_report_for_phase_impl,
+    prompt_root as _prompt_root_impl,
+    promptset_fingerprint as _promptset_fingerprint_impl,
+    resolve_phase_s_prompts as _resolve_phase_s_prompts_impl,
+    resolve_phase_sp_prompts as _resolve_phase_sp_prompts_impl,
+    resume_blocked_payload as _resume_blocked_payload_impl,
+    set_active_s_prompts_mode as _set_active_s_prompts_mode_impl,
+    step_sort_key as _step_sort_key_impl,
+    validate_phase_s_registry as _validate_phase_s_registry_impl,
+)
 from rte_config import (
     BENCHMARK_ROUTE_OWNERSHIP_MODE,
     COST_ABORT_FILENAME,
@@ -136,20 +193,24 @@ from rte_config import (
     V5_LATEST_RUN_FILE,
     V5_RUNS_ROOT,
 )
-from reporting import (
+from rte_reports import (
     ReportingDeps,
     TelemetryWriterDeps,
-    update_proof_pack as reporting_update_proof_pack,
-    update_run_manifest_promptset_block as reporting_update_run_manifest_promptset_block,
-    write_blocked_promptset_proof_pack as reporting_write_blocked_promptset_proof_pack,
-    write_coverage_rollup as reporting_write_coverage_rollup,
-    write_failure_index_snapshot as reporting_write_failure_index_snapshot,
-    write_phase_coverage_manifest as reporting_write_phase_coverage_manifest,
-    write_promptset_blocked_marker as reporting_write_promptset_blocked_marker,
-    write_resume_proof as reporting_write_resume_proof,
-    write_run_dashboard_snapshot as reporting_write_run_dashboard_snapshot,
-    write_run_manifest as reporting_write_run_manifest,
-    write_step_metrics_snapshot as reporting_write_step_metrics_snapshot,
+    gather_phase_counts as rte_gather_phase_counts,
+    refresh_run_manifest_artifacts as rte_refresh_run_manifest_artifacts,
+    update_proof_pack as rte_update_proof_pack,
+    update_run_manifest_contract_map as rte_update_run_manifest_contract_map,
+    update_run_manifest_promptset_block as rte_update_run_manifest_promptset_block,
+    write_blocked_promptset_proof_pack as rte_write_blocked_promptset_proof_pack,
+    write_coverage_rollup as rte_write_coverage_rollup,
+    write_failure_index_snapshot as rte_write_failure_index_snapshot,
+    write_phase_coverage_manifest as rte_write_phase_coverage_manifest,
+    write_promptset_blocked_marker as rte_write_promptset_blocked_marker,
+    write_resume_proof as rte_write_resume_proof,
+    write_run_dashboard_snapshot as rte_write_run_dashboard_snapshot,
+    write_run_manifest as rte_write_run_manifest,
+    write_runner_identity as rte_write_runner_identity,
+    write_step_metrics_snapshot as rte_write_step_metrics_snapshot,
 )
 from llm_runtime import (
     LLMRuntimeDeps,
@@ -939,15 +1000,11 @@ TEXT_SUFFIXES = {
 
 
 def prompt_root() -> Path:
-    configured = os.getenv(PROMPT_ROOT_ENV_VAR, "").strip()
-    if not configured:
-        configured = os.getenv(LEGACY_PROMPT_ROOT_ENV_VAR, "").strip()
-    if configured:
-        return Path(configured)
-    v4_path = EXTRACTOR_SERVICE_DIR / "promptsets" / "v4" / "prompts"
-    if v4_path.exists():
-        return v4_path
-    return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
+    return _prompt_root_impl(
+        prompt_root_env_value=os.getenv(PROMPT_ROOT_ENV_VAR, ""),
+        legacy_prompt_root_env_value=os.getenv(LEGACY_PROMPT_ROOT_ENV_VAR, ""),
+        extractor_service_dir=EXTRACTOR_SERVICE_DIR,
+    )
 
 
 _ACTIVE_S_PROMPTS_MODE = S_PROMPTS_LEGACY
@@ -956,54 +1013,39 @@ _VALID_PROMPT_TIERS = {"bulk", "extract", "synthesis", "qa"}
 
 def set_active_s_prompts_mode(mode: Optional[str]) -> None:
     global _ACTIVE_S_PROMPTS_MODE
-    normalized = str(mode or "").strip().lower() or S_PROMPTS_LEGACY
-    if normalized not in S_PROMPTS_MODES:
-        allowed = ", ".join(sorted(S_PROMPTS_MODES))
-        raise RuntimeError(
-            f"Unsupported S prompts mode {mode!r}. Expected one of: {allowed}"
-        )
-    if normalized != S_PROMPTS_LEGACY:
-        logger.warning(
-            "Ignoring S prompts mode=%s; phase S always uses legacy prompts. Use phase SP for registry-backed pipeline prompts.",
-            normalized,
-        )
-        normalized = S_PROMPTS_LEGACY
-    _ACTIVE_S_PROMPTS_MODE = normalized
+    _ACTIVE_S_PROMPTS_MODE = _set_active_s_prompts_mode_impl(
+        mode,
+        legacy_mode=S_PROMPTS_LEGACY,
+        allowed_modes=S_PROMPTS_MODES,
+        logger=logger,
+    )
 
 
 def get_active_s_prompts_mode() -> str:
-    active = str(_ACTIVE_S_PROMPTS_MODE or "").strip().lower()
-    if active in S_PROMPTS_MODES:
-        return active
-    env_mode = str(os.getenv(S_PROMPTS_MODE_ENV_VAR, "")).strip().lower()
-    if not env_mode:
-        return S_PROMPTS_LEGACY
-    if env_mode not in S_PROMPTS_MODES:
-        allowed = ", ".join(sorted(S_PROMPTS_MODES))
-        raise RuntimeError(
-            f"{S_PROMPTS_MODE_ENV_VAR} must be one of {allowed}. Got: {env_mode}"
-        )
-    if env_mode != S_PROMPTS_LEGACY:
-        logger.warning(
-            "Ignoring %s=%s; phase S always uses legacy prompts. Use phase SP for registry-backed pipeline prompts.",
-            S_PROMPTS_MODE_ENV_VAR,
-            env_mode,
-        )
-        return S_PROMPTS_LEGACY
-    return env_mode
+    return _get_active_s_prompts_mode_impl(
+        active_mode=_ACTIVE_S_PROMPTS_MODE,
+        env_mode_value=os.getenv(S_PROMPTS_MODE_ENV_VAR, ""),
+        env_var_name=S_PROMPTS_MODE_ENV_VAR,
+        legacy_mode=S_PROMPTS_LEGACY,
+        allowed_modes=S_PROMPTS_MODES,
+        logger=logger,
+    )
 
 
 def phase_s_registry_dir() -> Path:
-    configured = os.getenv(PROMPT_ROOT_ENV_VAR, "").strip()
-    if not configured:
-        configured = os.getenv(LEGACY_PROMPT_ROOT_ENV_VAR, "").strip()
-    if configured:
-        return Path(configured) / "phase_s"
-    return EXTRACTOR_SERVICE_DIR / "prompts" / "phase_s"
+    return _phase_s_registry_dir_impl(
+        prompt_root_env_value=os.getenv(PROMPT_ROOT_ENV_VAR, ""),
+        legacy_prompt_root_env_value=os.getenv(LEGACY_PROMPT_ROOT_ENV_VAR, ""),
+        extractor_service_dir=EXTRACTOR_SERVICE_DIR,
+    )
 
 
 def phase_s_registry_path() -> Path:
-    return phase_s_registry_dir() / "registry.json"
+    return _phase_s_registry_path_impl(
+        prompt_root_env_value=os.getenv(PROMPT_ROOT_ENV_VAR, ""),
+        legacy_prompt_root_env_value=os.getenv(LEGACY_PROMPT_ROOT_ENV_VAR, ""),
+        extractor_service_dir=EXTRACTOR_SERVICE_DIR,
+    )
 
 
 def _legacy_phase_prompt_roots(phase: str) -> List[Path]:
@@ -1016,10 +1058,7 @@ def _legacy_phase_prompt_roots(phase: str) -> List[Path]:
 
 
 def step_sort_key(step_id: str) -> Tuple[str, int]:
-    match = re.match(r"^([A-Z]+)(\d+)$", step_id)
-    if not match:
-        return (step_id[:1], 999999)
-    return (match.group(1), int(match.group(2)))
+    return _step_sort_key_impl(step_id)
 
 
 def step_phase_id(step_id: str) -> str:
@@ -1061,14 +1100,11 @@ def _validate_s_steps(selected: List[str]) -> None:
 
 
 def _get_s_step_controls(args: argparse.Namespace) -> Optional[List[str]]:
-    raw = getattr(args, "s_steps", None)
-    if raw is None:
-        raw = os.getenv(S_STEPS_ENV_VAR, "")
-    if not str(raw or "").strip():
-        return None
-    selected = _parse_step_csv(str(raw))
-    _validate_s_steps(selected)
-    return _normalize_s_steps(selected)
+    return _get_s_step_controls_impl(
+        args,
+        env_steps_value=os.getenv(S_STEPS_ENV_VAR, ""),
+        phase_s_base_step_set=PHASE_S_BASE_STEP_SET,
+    )
 
 
 def _get_execution_step_filter(args: argparse.Namespace) -> Optional[str]:
@@ -1327,22 +1363,6 @@ class PromptSpec:
 
 
 @dataclass(frozen=True)
-class RunContext:
-    run_id: str
-    source: str
-    latest_file: Path
-    latest_written: bool
-
-
-@dataclass(frozen=True)
-class OutputLayout:
-    extraction_root: Path
-    runs_root: Path
-    latest_run_file: Path
-    doctor_root: Path
-
-
-@dataclass(frozen=True)
 class BatchWatchResult:
     exit_code: int
     next_phase: Optional[str] = None
@@ -1356,45 +1376,46 @@ class UiConfig:
     jsonl_events: bool = False
 
 
-def _default_output_layout(repo_root: Path) -> OutputLayout:
-    extraction_root = (repo_root / V5_EXTRACTION_ROOT).resolve()
-    return OutputLayout(
-        extraction_root=extraction_root,
-        runs_root=(extraction_root / "runs").resolve(),
-        latest_run_file=(extraction_root / "latest_run_id.txt").resolve(),
-        doctor_root=(extraction_root / "doctor").resolve(),
-    )
-
-
 def configure_output_layout(repo_root: Path, output_root: Optional[str]) -> OutputLayout:
     global ACTIVE_OUTPUT_LAYOUT
-    if output_root:
-        extraction_root = Path(output_root).expanduser().resolve()
-        ACTIVE_OUTPUT_LAYOUT = OutputLayout(
-            extraction_root=extraction_root,
-            runs_root=(extraction_root / "runs").resolve(),
-            latest_run_file=(extraction_root / "latest_run_id.txt").resolve(),
-            doctor_root=(extraction_root / "doctor").resolve(),
-        )
-    else:
-        ACTIVE_OUTPUT_LAYOUT = _default_output_layout(repo_root)
+    ACTIVE_OUTPUT_LAYOUT = _configure_output_layout_impl(
+        repo_root,
+        output_root,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+    )
     return ACTIVE_OUTPUT_LAYOUT
 
 
 def current_output_layout(repo_root: Path) -> OutputLayout:
-    return ACTIVE_OUTPUT_LAYOUT or _default_output_layout(repo_root)
+    return _current_output_layout_impl(
+        repo_root,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+    )
 
 
 def current_extraction_root(repo_root: Path) -> Path:
-    return current_output_layout(repo_root).extraction_root
+    return _current_extraction_root_impl(
+        repo_root,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+    )
 
 
 def current_runs_root(repo_root: Path) -> Path:
-    return current_output_layout(repo_root).runs_root
+    return _current_runs_root_impl(
+        repo_root,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+    )
 
 
 def current_doctor_root(repo_root: Path) -> Path:
-    return current_output_layout(repo_root).doctor_root
+    return _current_doctor_root_impl(
+        repo_root,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+    )
 
 
 class OperatorArgumentParser(argparse.ArgumentParser):
@@ -2542,50 +2563,48 @@ def _phase_input_stat(path: Path) -> Dict[str, Any]:
 
 def load_run_id(root: Path) -> Optional[str]:
     """Load latest run_id from file; return None if unavailable."""
-    id_file = current_output_layout(root).latest_run_file
-    if not id_file.exists():
-        return None
-    run_id = id_file.read_text(encoding="utf-8").strip()
-    if not run_id:
-        return None
-    return run_id
+    return _load_run_id_impl(
+        root,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+    )
 
 
 def _validate_existing_run_dir(
     root: Path, run_id: str, allow_create_if_missing: bool = False
 ) -> None:
-    candidate = current_runs_root(root) / run_id
-    if not candidate.exists():
-        if allow_create_if_missing:
-            candidate.mkdir(parents=True, exist_ok=True)
-            return
-        raise FileNotFoundError(f"Run directory {candidate} does not exist.")
-    if not candidate.is_dir():
-        raise NotADirectoryError(f"Path {candidate} is not a directory.")
+    _validate_existing_run_dir_impl(
+        root,
+        run_id,
+        allow_create_if_missing=allow_create_if_missing,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+    )
 
 
 def _generate_run_id(root: Path) -> str:
-    base = datetime.now(timezone.utc).strftime("run_%Y%m%dT%H%M%SZ")
-    runs_root = current_runs_root(root)
-    runs_root.mkdir(parents=True, exist_ok=True)
-
-    candidate = runs_root / base
-    suffix = 1
-    while candidate.exists():
-        candidate = runs_root / f"{base}_{suffix:02d}"
-        suffix += 1
-    candidate.mkdir(parents=True, exist_ok=False)
-    return candidate.name
+    return _generate_run_id_impl(
+        root,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+    )
 
 
 def latest_run_id_path(root: Path) -> Path:
-    return current_output_layout(root).latest_run_file
+    return _latest_run_id_path_impl(
+        root,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+    )
 
 
 def persist_latest_run_id(root: Path, run_id: str) -> None:
-    id_file = latest_run_id_path(root)
-    id_file.parent.mkdir(parents=True, exist_ok=True)
-    id_file.write_text(run_id + "\n", encoding="utf-8")
+    _persist_latest_run_id_impl(
+        root,
+        run_id,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+    )
 
 
 def resolve_run_context(
@@ -2593,76 +2612,27 @@ def resolve_run_context(
     args: argparse.Namespace,
     allow_create_if_missing: bool = False,
 ) -> RunContext:
-    latest_file = latest_run_id_path(root)
-    run_id_source = "generated"
-
-    if args.run_id:
-        run_id = args.run_id
-        _validate_existing_run_dir(
-            root, run_id, allow_create_if_missing=allow_create_if_missing
-        )
-        run_id_source = "explicit"
-    else:
-        latest = load_run_id(root)
-        if latest:
-            latest_dir = current_runs_root(root) / latest
-            if latest_dir.exists() and latest_dir.is_dir():
-                run_id = latest
-                run_id_source = "latest_run_id"
-            else:
-                logger.warning(
-                    "latest_run_id.txt points to missing run directory %s; generating new run_id.",
-                    latest_dir,
-                )
-                run_id = _generate_run_id(root)
-        else:
-            run_id = _generate_run_id(root)
-
-    write_latest = not args.no_write_latest and (
-        not args.dry_run or args.write_latest_even_on_dry_run
-    )
-    if write_latest:
-        persist_latest_run_id(root, run_id)
-
-    return RunContext(
-        run_id=run_id,
-        source=run_id_source,
-        latest_file=latest_file,
-        latest_written=write_latest,
+    return _resolve_run_context_impl(
+        root,
+        args,
+        allow_create_if_missing=allow_create_if_missing,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+        logger=logger,
     )
 
 
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     """Return dict of run paths and ensure required folders exist."""
-    base = current_runs_root(root) / run_id
-    if not base.exists():
-        raise FileNotFoundError(f"Run directory {base} does not exist.")
-    for legacy_name, canonical_name in LEGACY_PHASE_DIR_ALIASES.items():
-        legacy_path = base / legacy_name
-        canonical_path = base / canonical_name
-        if legacy_path.exists():
-            if canonical_path.exists():
-                raise RuntimeError(
-                    f"Run directory has both canonical and legacy phase folders: {canonical_path} and {legacy_path}. "
-                    f"Keep only canonical {canonical_name}."
-                )
-            raise RuntimeError(
-                f"Legacy phase folder detected: {legacy_path}. Rename it to canonical {canonical_path} before running."
-            )
-
-    dirs: Dict[str, Path] = {"root": base, "inputs": base / "00_inputs"}
-    for phase, suffix in PHASE_DIR_NAMES.items():
-        dirs[phase] = base / suffix
-
-    (dirs["inputs"]).mkdir(parents=True, exist_ok=True)
-    for phase in PHASES:
-        phase_dir = dirs[phase]
-        (phase_dir / "inputs").mkdir(parents=True, exist_ok=True)
-        (phase_dir / "raw").mkdir(parents=True, exist_ok=True)
-        (phase_dir / "norm").mkdir(parents=True, exist_ok=True)
-        (phase_dir / "qa").mkdir(parents=True, exist_ok=True)
-
-    return dirs
+    return _get_run_dirs_impl(
+        root,
+        run_id,
+        extraction_root_rel=V5_EXTRACTION_ROOT,
+        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
+        legacy_phase_dir_aliases=LEGACY_PHASE_DIR_ALIASES,
+        phase_dir_names=PHASE_DIR_NAMES,
+        phases=PHASES,
+    )
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -3442,7 +3412,7 @@ def write_step_metrics_snapshot(
     step_id: str,
     metrics: Dict[str, Any],
 ) -> Dict[str, Any]:
-    return reporting_write_step_metrics_snapshot(
+    return rte_write_step_metrics_snapshot(
         _telemetry_writer_deps(), run_root, phase, step_id, metrics
     )
 
@@ -3454,7 +3424,7 @@ def write_failure_index_snapshot(
     failure_histogram: Dict[str, int],
     first_failure: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    return reporting_write_failure_index_snapshot(
+    return rte_write_failure_index_snapshot(
         _telemetry_writer_deps(),
         run_root,
         phase,
@@ -3469,7 +3439,7 @@ def write_run_dashboard_snapshot(
     payload: Dict[str, Any],
     source: str,
 ) -> Dict[str, Any]:
-    return reporting_write_run_dashboard_snapshot(
+    return rte_write_run_dashboard_snapshot(
         _telemetry_writer_deps(), run_root, payload, source
     )
 
@@ -4248,34 +4218,25 @@ def collect_manifest_artifacts(dirs: Dict[str, Path]) -> List[Dict[str, Any]]:
 
 
 def refresh_run_manifest_artifacts(run_root: Path, dirs: Dict[str, Path]) -> None:
-    manifest_path = run_root / "RUN_MANIFEST.json"
-    payload: Dict[str, Any] = {}
-    if manifest_path.exists():
-        try:
-            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-        except Exception:
-            payload = {}
-    payload["artifacts"] = collect_manifest_artifacts(dirs)
-    payload["artifacts_updated_at"] = now_iso()
-    write_json(manifest_path, payload)
+    rte_refresh_run_manifest_artifacts(
+        run_root,
+        dirs,
+        collect_manifest_artifacts=collect_manifest_artifacts,
+        now_iso=now_iso,
+        write_json=write_json,
+    )
 
 
 def update_run_manifest_contract_map(
     run_root: Path, contract_map_path: Optional[Path]
 ) -> None:
-    if contract_map_path is None:
-        return
-    manifest_path = run_root / "RUN_MANIFEST.json"
-    payload: Dict[str, Any] = {}
-    if manifest_path.exists():
-        try:
-            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-        except Exception:
-            payload = {}
-    payload["phase_contract_map"] = str(contract_map_path.resolve())
-    payload["phase_contract_map_filename"] = PHASE_CONTRACT_MAP_FILENAME
-    payload["phase_contract_map_updated_at"] = now_iso()
-    write_json(manifest_path, payload)
+    rte_update_run_manifest_contract_map(
+        run_root,
+        contract_map_path,
+        phase_contract_map_filename=PHASE_CONTRACT_MAP_FILENAME,
+        now_iso=now_iso,
+        write_json=write_json,
+    )
 
 
 def resolve_step_tier(
@@ -5346,22 +5307,23 @@ def write_run_manifest(
     run_context: RunContext,
     phases: List[str],
 ) -> Dict[str, Any]:
-    return reporting_write_run_manifest(
+    return rte_write_run_manifest(
         _reporting_deps(), root, dirs, run_id, args, run_context, phases
     )
 
 
 def write_runner_identity(root: Path, run_root: Path, run_id: str) -> None:
-    payload = {
-        "run_id": run_id,
-        "generated_at": now_iso(),
-        "git_sha": get_git_sha(root),
-        "runner_script_path": str(RUNNER_SCRIPT.resolve()),
-        "runner_sha256": sha256_text(RUNNER_SCRIPT),
-        "python_executable": sys.executable,
-        "python_version": platform.python_version(),
-    }
-    write_json(run_root / "RUNNER_IDENTITY.json", payload)
+    rte_write_runner_identity(
+        root,
+        run_root,
+        run_id,
+        now_iso=now_iso,
+        get_git_sha=get_git_sha,
+        runner_script=RUNNER_SCRIPT,
+        sha256_text=sha256_text,
+        python_executable=sys.executable,
+        write_json=write_json,
+    )
 
 
 def update_run_manifest_probe(
@@ -5388,7 +5350,7 @@ def update_run_manifest_promptset_block(
     phase: str,
     prompt_report: Dict[str, Any],
 ) -> None:
-    reporting_update_run_manifest_promptset_block(
+    rte_update_run_manifest_promptset_block(
         _reporting_deps(), run_root, phase, prompt_report
     )
 
@@ -5419,7 +5381,7 @@ def write_promptset_blocked_marker(
     phase_dir: Path,
     prompt_report: Dict[str, Any],
 ) -> None:
-    reporting_write_promptset_blocked_marker(
+    rte_write_promptset_blocked_marker(
         _reporting_deps(), phase, phase_dir, prompt_report
     )
 
@@ -5566,202 +5528,61 @@ def _resolve_prompt_root() -> Path:
 
 
 def _legacy_phase_prompt_specs(phase: str) -> List[PromptSpec]:
-    grouped: Dict[str, List[Path]] = {}
-    expected_steps = REQUIRED_PROMPT_STEP_IDS.get(phase, set())
-    primary_root = prompt_root()
-    for prompt_path in sorted(primary_root.glob(f"PROMPT_{phase}*_*.md")):
-        match = re.match(r"PROMPT_([A-Z]+\d+)", prompt_path.name)
-        if not match:
-            continue
-        step_id = match.group(1)
-        grouped.setdefault(step_id, []).append(prompt_path)
-
-    if str(phase or "").upper() == "S":
-        missing_steps = set(expected_steps) - set(grouped.keys())
-        if missing_steps:
-            v4_prompt_root = EXTRACTOR_SERVICE_DIR / "promptsets" / "v4" / "prompts"
-            for prompt_path in sorted(v4_prompt_root.glob("PROMPT_S*_*.md")):
-                match = re.match(r"PROMPT_([A-Z]+\d+)", prompt_path.name)
-                if not match:
-                    continue
-                step_id = match.group(1)
-                if step_id not in missing_steps:
-                    continue
-                grouped.setdefault(step_id, []).append(prompt_path)
-
-    specs: List[PromptSpec] = []
-    for step_id in sorted(grouped.keys(), key=step_sort_key):
-        candidates = sorted(grouped[step_id], key=lambda p: str(p))
-        if len(candidates) > 1:
-            raise RuntimeError(
-                f"Duplicate prompts for {step_id}: {[str(p) for p in candidates]}. "
-                "Resolve duplicates before running the pipeline."
-            )
-        prompt_path = candidates[0]
-        prompt_text = safe_read(prompt_path)
-        output_artifacts = extract_output_artifacts(prompt_text, step_id)
-        if not output_artifacts:
-            logger.warning(
-                "Prompt %s (%s) does not declare explicit output artifacts. Falling back to %s.json.",
-                prompt_path.name,
-                step_id,
-                step_id,
-            )
-            output_artifacts = (f"{step_id}.json",)
-        specs.append(
-            PromptSpec(
-                step_id=step_id,
-                prompt_path=prompt_path,
-                output_artifacts=tuple(output_artifacts),
-                source="legacy",
-                contract=_step_contract_for(phase, step_id),
-            )
-        )
-    return specs
+    return _legacy_phase_prompt_specs_impl(
+        phase,
+        required_prompt_step_ids=REQUIRED_PROMPT_STEP_IDS,
+        resolve_prompt_root=prompt_root,
+        extractor_service_dir=EXTRACTOR_SERVICE_DIR,
+        prompt_spec_factory=PromptSpec,
+        safe_read=safe_read,
+        extract_output_artifacts=extract_output_artifacts,
+        step_contract_for=_step_contract_for,
+        logger=logger,
+    )
 
 
 def _validate_phase_s_registry(payload: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
-    if not isinstance(payload, dict):
-        raise ValueError("Phase SP registry must be a JSON object.")
-    if int(payload.get("version", 0)) != 1:
-        raise ValueError("Phase SP registry must declare version=1.")
-    if str(payload.get("phase", "")).strip().upper() != "SP":
-        raise ValueError("Phase SP registry must declare phase='SP'.")
-    steps = payload.get("steps")
-    if not isinstance(steps, dict):
-        raise ValueError("Phase SP registry must contain an object 'steps'.")
-    expected = set(REQUIRED_PROMPT_STEP_IDS.get("SP", set()))
-    observed = {str(key).strip().upper() for key in steps.keys()}
-    if observed != expected:
-        raise ValueError(
-            "Phase SP registry must declare exactly steps "
-            f"{sorted(expected)}. Observed: {sorted(observed)}"
-        )
-
-    phase_s_root = phase_s_registry_dir().resolve()
-    validated: Dict[str, Dict[str, str]] = {}
-    for step_id in sorted(expected, key=step_sort_key):
-        entry = steps.get(step_id)
-        if not isinstance(entry, dict):
-            raise ValueError(f"Phase SP registry step {step_id} must be an object.")
-        prompt_path = str(entry.get("prompt_path", "")).strip()
-        tier = str(
-            entry.get("routing_tier", entry.get("tier", "synthesis"))
-        ).strip().lower() or "synthesis"
-        outputs = entry.get("outputs")
-        if not prompt_path or Path(prompt_path).is_absolute():
-            raise ValueError(
-                f"Phase SP registry step {step_id} prompt_path must be a relative path."
-            )
-        if tier not in _VALID_PROMPT_TIERS:
-            raise ValueError(
-                f"Phase SP registry step {step_id} routing_tier must be one of {sorted(_VALID_PROMPT_TIERS)}."
-            )
-        if not isinstance(outputs, list) or not outputs:
-            raise ValueError(
-                f"Phase SP registry step {step_id} outputs must be a non-empty list."
-            )
-        resolved = (phase_s_root / prompt_path).resolve()
-        if not is_within(resolved, phase_s_root):
-            raise ValueError(
-                f"Phase SP registry step {step_id} prompt_path escapes {phase_s_root}."
-            )
-        if not resolved.exists() or not resolved.is_file():
-            raise ValueError(
-                f"Phase SP registry step {step_id} prompt file does not exist: {resolved}"
-            )
-        validated[step_id] = {
-            "prompt_path": prompt_path,
-            "tier": tier,
-        }
-    return validated
+    return _validate_phase_s_registry_impl(
+        payload,
+        required_prompt_step_ids=REQUIRED_PROMPT_STEP_IDS,
+        phase_s_root=phase_s_registry_dir().resolve(),
+        valid_prompt_tiers=_VALID_PROMPT_TIERS,
+        is_within=is_within,
+    )
 
 
 def _load_phase_s_registry() -> Dict[str, Dict[str, str]]:
-    registry_path = phase_s_registry_path()
-    if not registry_path.exists():
-        raise FileNotFoundError(f"Phase S registry not found: {registry_path}")
-    try:
-        payload = json.loads(registry_path.read_text(encoding="utf-8"))
-    except Exception as exc:
-        raise ValueError(
-            f"Failed to parse Phase S registry {registry_path}: {exc}"
-        ) from exc
-    return _validate_phase_s_registry(payload)
+    return _load_phase_s_registry_impl(
+        registry_path=phase_s_registry_path(),
+        validate_phase_s_registry=_validate_phase_s_registry,
+    )
 
 
 def _resolve_phase_s_prompts(mode: str) -> List[PromptSpec]:
-    normalized_mode = str(mode or S_PROMPTS_LEGACY).strip().lower() or S_PROMPTS_LEGACY
-    if normalized_mode not in S_PROMPTS_MODES:
-        allowed = ", ".join(sorted(S_PROMPTS_MODES))
-        raise RuntimeError(
-            f"Unsupported S prompts mode {mode!r}. Expected one of: {allowed}"
-        )
-    if normalized_mode == S_PROMPTS_LEGACY:
-        return _legacy_phase_prompt_specs("S")
-
-    try:
-        registry = _load_phase_s_registry()
-    except Exception as exc:
-        if normalized_mode == S_PROMPTS_REGISTRY:
-            raise RuntimeError(f"Phase S registry mode failed: {exc}") from exc
-        logger.warning(
-            "Phase S registry unavailable; falling back to legacy prompts. reason=%s",
-            exc,
-        )
-        return _legacy_phase_prompt_specs("S")
-
-    base = phase_s_registry_dir().resolve()
-    specs: List[PromptSpec] = []
-    for step_id in sorted(registry.keys(), key=step_sort_key):
-        prompt_path = (base / registry[step_id]["prompt_path"]).resolve()
-        prompt_text = safe_read(prompt_path)
-        output_artifacts = extract_output_artifacts(prompt_text, step_id)
-        if not output_artifacts:
-            logger.warning(
-                "Prompt %s (%s) does not declare explicit output artifacts. Falling back to %s.json.",
-                prompt_path.name,
-                step_id,
-                step_id,
-            )
-            output_artifacts = (f"{step_id}.json",)
-        specs.append(
-            PromptSpec(
-                step_id=step_id,
-                prompt_path=prompt_path,
-                output_artifacts=tuple(output_artifacts),
-                tier_override=registry[step_id]["tier"],
-                source="registry",
-                contract=_step_contract_for(
-                    "SP" if str(step_id).strip().upper().startswith("SP") else "S",
-                    step_id,
-                ),
-            )
-        )
-    return specs
+    return _resolve_phase_s_prompts_impl(
+        mode,
+        legacy_mode=S_PROMPTS_LEGACY,
+        allowed_modes=S_PROMPTS_MODES,
+        load_phase_s_registry=_load_phase_s_registry,
+        legacy_phase_prompt_specs=_legacy_phase_prompt_specs,
+        resolve_phase_s_registry_dir=phase_s_registry_dir,
+        prompt_spec_factory=PromptSpec,
+        safe_read=safe_read,
+        extract_output_artifacts=extract_output_artifacts,
+        step_contract_for=_step_contract_for,
+        logger=logger,
+    )
 
 
 def _resolve_phase_sp_prompts() -> List[PromptSpec]:
-    registry = _load_phase_s_registry()
-    base = phase_s_registry_dir().resolve()
-    specs: List[PromptSpec] = []
-    for step_id in sorted(registry.keys(), key=step_sort_key):
-        prompt_path = (base / registry[step_id]["prompt_path"]).resolve()
-        prompt_text = safe_read(prompt_path)
-        output_artifacts = extract_output_artifacts(prompt_text, step_id)
-        if not output_artifacts:
-            output_artifacts = (f"{step_id}.json",)
-        specs.append(
-            PromptSpec(
-                step_id=step_id,
-                prompt_path=prompt_path,
-                output_artifacts=tuple(output_artifacts),
-                tier_override=registry[step_id]["tier"],
-                source="registry",
-                contract=_step_contract_for("SP", step_id),
-            )
-        )
-    return specs
+    return _resolve_phase_sp_prompts_impl(
+        load_phase_s_registry=_load_phase_s_registry,
+        resolve_phase_s_registry_dir=phase_s_registry_dir,
+        prompt_spec_factory=PromptSpec,
+        safe_read=safe_read,
+        extract_output_artifacts=extract_output_artifacts,
+        step_contract_for=_step_contract_for,
+    )
 
 
 def get_phase_prompts(phase: str) -> List[PromptSpec]:
@@ -5801,23 +5622,18 @@ def _prompt_failure_entry(
 def _blocked_promptset_payload(
     prompt_report: Dict[str, Any], at: str
 ) -> Dict[str, Any]:
-    return {
-        "reason": PROMPTSET_BLOCKED_REASON,
-        "at": at,
-        "promptset": {
-            "status": "blocked",
-            "failures": prompt_report.get("prompt_failures", []),
-        },
-    }
+    return _blocked_promptset_payload_impl(
+        prompt_report,
+        at,
+        promptset_blocked_reason=PROMPTSET_BLOCKED_REASON,
+    )
 
 
 def _resume_blocked_payload(prompt_report: Dict[str, Any]) -> Dict[str, Any]:
-    return {
-        "reason": PROMPTSET_BLOCKED_REASON,
-        "promptset_hash": None,
-        "promptset_status": "blocked",
-        "prompt_failures": prompt_report.get("prompt_failures", []),
-    }
+    return _resume_blocked_payload_impl(
+        prompt_report,
+        promptset_blocked_reason=PROMPTSET_BLOCKED_REASON,
+    )
 
 
 def _prompt_hash_report_for_phase(
@@ -5825,153 +5641,27 @@ def _prompt_hash_report_for_phase(
     specs: List[PromptSpec],
     required_step_ids: Optional[Set[str]] = None,
 ) -> Dict[str, Any]:
-    prompt_hashes: List[Dict[str, str]] = []
-    prompt_missing: List[str] = []
-    prompt_unreadable: List[Dict[str, str]] = []
-    prompt_hash_errors: List[str] = []
-    prompt_failures: List[Dict[str, str]] = []
-
-    expected_steps = (
-        set(required_step_ids)
-        if required_step_ids is not None
-        else REQUIRED_PROMPT_STEP_IDS.get(phase, set())
+    return _prompt_hash_report_for_phase_impl(
+        phase,
+        specs,
+        required_prompt_step_ids=REQUIRED_PROMPT_STEP_IDS,
+        required_step_ids=required_step_ids,
+        prompt_hash_mode=PROMPT_HASH_MODE,
+        missing_prompt_glob=_missing_prompt_glob,
+        prompt_failure_entry=_prompt_failure_entry,
+        truncate_exception_message=_truncate_exception_message,
+        sha256_bytes=sha256_bytes,
     )
-    observed_steps = {spec.step_id for spec in specs}
-    # When scoped via --step, only validate completeness for steps explicitly in specs list.
-    target_required_steps = expected_steps.intersection(observed_steps)
-    for step_id in sorted(target_required_steps - observed_steps):
-        missing_pattern = _missing_prompt_glob(step_id)
-        prompt_missing.append(missing_pattern)
-        prompt_hash_errors.append(f"prompt_missing: {missing_pattern}")
-        prompt_failures.append(
-            _prompt_failure_entry(
-                kind="MISSING_PROMPT",
-                prompt_id=step_id,
-                path=Path(missing_pattern),
-                exception_type="FileNotFoundError",
-                exception_message=f"No prompt file found for required step '{step_id}'.",
-            )
-        )
-
-    for spec in sorted(specs, key=lambda row: (row.step_id, str(row.prompt_path))):
-        path = spec.prompt_path.resolve()
-        if not path.exists():
-            prompt_missing.append(str(path))
-            prompt_hash_errors.append(f"prompt_missing: {path}")
-            prompt_failures.append(
-                _prompt_failure_entry(
-                    kind="MISSING_PROMPT",
-                    prompt_id=spec.step_id,
-                    path=path,
-                    exception_type="FileNotFoundError",
-                    exception_message=f"Prompt file does not exist: {path}",
-                )
-            )
-            continue
-        try:
-            digest = sha256_bytes(path.read_bytes())
-        except Exception as exc:
-            error_message = _truncate_exception_message(str(exc))
-            prompt_unreadable.append(
-                {
-                    "prompt_id": spec.step_id,
-                    "path": str(path),
-                    "error": f"{type(exc).__name__}: {error_message}",
-                }
-            )
-            prompt_hash_errors.append(
-                f"prompt_unreadable: {path} :: {type(exc).__name__}: {error_message}"
-            )
-            prompt_failures.append(
-                _prompt_failure_entry(
-                    kind="UNREADABLE_PROMPT",
-                    prompt_id=spec.step_id,
-                    path=path,
-                    exception_type=type(exc).__name__,
-                    exception_message=error_message,
-                )
-            )
-            continue
-        prompt_hashes.append(
-            {"prompt_id": spec.step_id, "path": str(path), "sha256": digest}
-        )
-
-    prompt_failures = sorted(
-        prompt_failures,
-        key=lambda row: (row["prompt_id"], row["path"], row["kind"]),
-    )
-    blocked = bool(prompt_failures)
-    promptset_sha256: Optional[str] = None
-    if not blocked:
-        normalized = json.dumps(
-            sorted(prompt_hashes, key=lambda row: row["path"]),
-            ensure_ascii=True,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-        promptset_sha256 = sha256_bytes(normalized)
-
-    return {
-        "phase": phase,
-        "prompt_hash_mode": PROMPT_HASH_MODE,
-        "promptset_sha256": promptset_sha256,
-        "prompt_hashes": sorted(prompt_hashes, key=lambda row: row["path"]),
-        "prompt_missing": sorted(set(prompt_missing)),
-        "prompt_unreadable": sorted(prompt_unreadable, key=lambda row: row["path"]),
-        "prompt_hash_errors": prompt_hash_errors,
-        "prompt_failures": prompt_failures,
-        "blocked_promptset": blocked,
-        "missing_prompts_count": len(set(prompt_missing)),
-        "unreadable_prompts_count": len(prompt_unreadable),
-        "prompt_failures_count": len(prompt_failures),
-    }
 
 
 def promptset_fingerprint(phases: Iterable[str]) -> Dict[str, Any]:
-    active_phases = sorted(set(phases))
-    prompt_hashes: List[Dict[str, str]] = []
-    prompt_missing: List[str] = []
-    prompt_unreadable: List[Dict[str, str]] = []
-    prompt_hash_errors: List[str] = []
-    prompt_failures: List[Dict[str, str]] = []
-
-    for phase in active_phases:
-        report = _prompt_hash_report_for_phase(phase, get_phase_prompts(phase))
-        prompt_hashes.extend(report["prompt_hashes"])
-        prompt_missing.extend(report["prompt_missing"])
-        prompt_unreadable.extend(report["prompt_unreadable"])
-        prompt_hash_errors.extend(report["prompt_hash_errors"])
-        prompt_failures.extend(report.get("prompt_failures", []))
-
-    prompt_failures = sorted(
-        prompt_failures,
-        key=lambda row: (row["prompt_id"], row["path"], row["kind"]),
+    return _promptset_fingerprint_impl(
+        phases,
+        prompt_hash_mode=PROMPT_HASH_MODE,
+        get_phase_prompts=get_phase_prompts,
+        prompt_hash_report_for_phase=_prompt_hash_report_for_phase,
+        sha256_bytes=sha256_bytes,
     )
-    blocked = bool(prompt_failures)
-    promptset_sha256: Optional[str] = None
-    if not blocked:
-        normalized = json.dumps(
-            sorted(prompt_hashes, key=lambda row: row["path"]),
-            ensure_ascii=True,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-        promptset_sha256 = sha256_bytes(normalized)
-
-    return {
-        "active_phases": active_phases,
-        "prompt_hash_mode": PROMPT_HASH_MODE,
-        "promptset_sha256": promptset_sha256,
-        "prompt_hashes": sorted(prompt_hashes, key=lambda row: row["path"]),
-        "prompt_missing": sorted(set(prompt_missing)),
-        "prompt_unreadable": sorted(prompt_unreadable, key=lambda row: row["path"]),
-        "prompt_hash_errors": prompt_hash_errors,
-        "prompt_failures": prompt_failures,
-        "blocked_promptset": blocked,
-        "missing_prompts_count": len(set(prompt_missing)),
-        "unreadable_prompts_count": len(prompt_unreadable),
-        "prompt_failures_count": len(prompt_failures),
-    }
 
 
 def write_run_routing_fingerprint(
@@ -6303,20 +5993,12 @@ def collect_provider_routes(
     routing_policy: str,
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
 ) -> Dict[str, Dict[str, str]]:
-    summary = derive_route_readiness_summary(
+    return _collect_provider_routes_impl(
         phases,
         routing_policy,
         selected_step_ids_by_phase=selected_step_ids_by_phase,
+        derive_route_readiness_summary=derive_route_readiness_summary,
     )
-    return {
-        str(row["route_signature"]): {
-            "provider": str(row["provider"]),
-            "model_id": str(row["model_id"]),
-            "api_key_env": str(row["api_key_env"]),
-        }
-        for row in summary["routes"]
-        if str(row.get("requirement_level")) != "configured_not_required"
-    }
 
 
 def derive_route_readiness_summary(
@@ -6324,191 +6006,48 @@ def derive_route_readiness_summary(
     routing_policy: str,
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
 ) -> Dict[str, Any]:
-    route_meta: Dict[str, Dict[str, Any]] = {}
-    configured_route_meta: Dict[str, Dict[str, str]] = {}
-    selected_policy = _normalize_routing_policy(routing_policy)
-    tiers = ACTIVE_ROUTING_LADDERS.get(selected_policy) or _clone_ladders(selected_policy)
-
-    for phase in phases:
-        prompts = get_phase_prompts(phase)
-        selected_ids = None
-        if isinstance(selected_step_ids_by_phase, dict):
-            raw_selected = selected_step_ids_by_phase.get(phase)
-            if raw_selected is not None:
-                selected_ids = {
-                    str(step_id).strip().upper()
-                    for step_id in raw_selected
-                    if str(step_id).strip()
-                }
-        for prompt in prompts:
-            if selected_ids is not None and prompt.step_id not in selected_ids:
-                continue
-            step_id = str(prompt.step_id)
-            tier_override = prompt.tier_override
-            benchmark_owned_route, _, _ = _resolve_benchmark_owned_stage_route(
-                phase=phase,
-                step_id=step_id,
-                cfg=RunnerConfig(
-                    dry_run=True,
-                    max_files_docs=35,
-                    max_files_code=20,
-                    max_chars=650000,
-                    max_request_bytes=200000,
-                    file_truncate_chars=70000,
-                    home_scan_mode="safe",
-                    resume=False,
-                    fail_fast_auth=True,
-                    gemini_auth_mode="auto",
-                    gemini_transport="sdk",
-                    openai_transport="openai_sdk",
-                    xai_transport="openai_sdk",
-                    retry_policy="default",
-                    retry_max_attempts=1,
-                    retry_base_seconds=0.0,
-                    retry_max_seconds=0.0,
-                    phase_auth_fail_threshold=1,
-                    partition_workers=1,
-                    debug_phase_inputs=False,
-                    fail_fast_missing_inputs=False,
-                    routing_policy=selected_policy,
-                    batch_mode=False,
-                    live_ok=False,
-                ),
-                stage="primary",
-                step_contract=prompt.contract,
-                strict_required=is_strict_contract_step(prompt.contract),
-            )
-            if benchmark_owned_route is not None:
-                configured_ladder = [
-                    (
-                        str(benchmark_owned_route["provider"]),
-                        str(benchmark_owned_route["model_id"]),
-                        str(benchmark_owned_route["api_key_env"]),
-                    )
-                ]
-                ladder = configured_ladder
-            else:
-                step_tier = resolve_effective_step_tier(
-                    selected_policy,
-                    phase,
-                    step_id,
-                    tier_override=tier_override,
-                )
-                configured_ladder = list(tiers.get(step_tier) or tiers.get("extract") or [])
-                ladder = _resolve_step_ladder_compat(
-                    selected_policy,
-                    phase,
-                    step_id,
-                    tier_override=tier_override,
-                )
-            for provider, model_id, api_key_env in configured_ladder:
-                signature = f"{provider}:{model_id}:{api_key_env}"
-                configured_route_meta.setdefault(
-                    signature,
-                    {
-                        "route_signature": signature,
-                        "provider": provider,
-                        "model_id": model_id,
-                        "api_key_env": api_key_env,
-                    },
-                )
-
-            for index, (provider, model_id, api_key_env) in enumerate(ladder):
-                signature = f"{provider}:{model_id}:{api_key_env}"
-                entry = route_meta.setdefault(
-                    signature,
-                    {
-                        "route_signature": signature,
-                        "provider": provider,
-                        "model_id": model_id,
-                        "api_key_env": api_key_env,
-                        "required_active_route": False,
-                        "optional_fallback": False,
-                        "configured_not_required": False,
-                        "fallback_chain_present": False,
-                        "steps": [],
-                    },
-                )
-                entry["steps"].append(
-                    {
-                        "phase": phase,
-                        "step_id": step_id,
-                        "ladder_index": index,
-                        "ladder_size": len(ladder),
-                    }
-                )
-                if index == 0:
-                    entry["required_active_route"] = True
-                    if len(ladder) > 1:
-                        entry["fallback_chain_present"] = True
-                else:
-                    entry["optional_fallback"] = True
-
-    for signature, configured in configured_route_meta.items():
-        route_meta.setdefault(
-            signature,
-            {
-                "route_signature": signature,
-                "provider": configured["provider"],
-                "model_id": configured["model_id"],
-                "api_key_env": configured["api_key_env"],
-                "required_active_route": False,
-                "optional_fallback": False,
-                "configured_not_required": True,
-                "fallback_chain_present": False,
-                "steps": [],
-            },
+    def _runner_config_factory(selected_policy: str) -> RunnerConfig:
+        return RunnerConfig(
+            dry_run=True,
+            max_files_docs=35,
+            max_files_code=20,
+            max_chars=650000,
+            max_request_bytes=200000,
+            file_truncate_chars=70000,
+            home_scan_mode="safe",
+            resume=False,
+            fail_fast_auth=True,
+            gemini_auth_mode="auto",
+            gemini_transport="sdk",
+            openai_transport="openai_sdk",
+            xai_transport="openai_sdk",
+            retry_policy="default",
+            retry_max_attempts=1,
+            retry_base_seconds=0.0,
+            retry_max_seconds=0.0,
+            phase_auth_fail_threshold=1,
+            partition_workers=1,
+            debug_phase_inputs=False,
+            fail_fast_missing_inputs=False,
+            routing_policy=selected_policy,
+            batch_mode=False,
+            live_ok=False,
         )
 
-    routes: List[Dict[str, Any]] = []
-    for signature in sorted(route_meta):
-        entry = dict(route_meta[signature])
-        entry["configured_not_required"] = bool(
-            not entry["required_active_route"] and not entry["optional_fallback"]
-        )
-        if entry["required_active_route"]:
-            entry["requirement_level"] = "required_active_route"
-        elif entry["optional_fallback"]:
-            entry["requirement_level"] = "optional_fallback"
-        else:
-            entry["requirement_level"] = "configured_not_required"
-        routes.append(entry)
-
-    def _collect_envs(level: str) -> List[str]:
-        return sorted(
-            {
-                str(row["api_key_env"]).strip()
-                for row in routes
-                if str(row.get("requirement_level")) == level
-                and str(row.get("api_key_env")).strip()
-            }
-        )
-
-    def _collect_providers(level: str) -> List[str]:
-        return sorted(
-            {
-                str(row["provider"]).strip().lower()
-                for row in routes
-                if str(row.get("requirement_level")) == level
-                and str(row.get("provider")).strip()
-            }
-        )
-
-    return {
-        "target_policy": selected_policy,
-        "target_phases": [str(phase).upper() for phase in phases],
-        "routes": routes,
-        "provider_categories": {
-            "required_active_route": _collect_providers("required_active_route"),
-            "optional_fallback": _collect_providers("optional_fallback"),
-            "configured_not_required": _collect_providers("configured_not_required"),
-        },
-        "api_key_env_categories": {
-            "required_active_route": _collect_envs("required_active_route"),
-            "optional_fallback": _collect_envs("optional_fallback"),
-            "configured_not_required": _collect_envs("configured_not_required"),
-        },
-    }
+    return _derive_route_readiness_summary_impl(
+        phases,
+        routing_policy,
+        selected_step_ids_by_phase=selected_step_ids_by_phase,
+        normalize_routing_policy=_normalize_routing_policy,
+        active_routing_ladders=ACTIVE_ROUTING_LADDERS,
+        clone_ladders=_clone_ladders,
+        get_phase_prompts=get_phase_prompts,
+        runner_config_factory=_runner_config_factory,
+        resolve_benchmark_owned_stage_route=_resolve_benchmark_owned_stage_route,
+        is_strict_contract_step=is_strict_contract_step,
+        resolve_effective_step_tier=resolve_effective_step_tier,
+        resolve_step_ladder_compat=_resolve_step_ladder_compat,
+    )
 
 
 def run_provider_doctor_probe(
@@ -6610,128 +6149,20 @@ def run_provider_doctor_probe(
 def run_provider_preflight(
     root: Path, run_id: str, cfg: RunnerConfig, phases: List[str]
 ) -> Tuple[bool, Dict[str, Any]]:
-    selected_step_ids_by_phase = {
-        phase: selected_ids
-        for phase in phases
-        if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
-        is not None
-    }
-    provider_routes = collect_provider_routes(
-        phases=phases,
-        routing_policy=cfg.routing_policy,
-        selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+    return _run_provider_preflight_impl(
+        root,
+        run_id,
+        cfg,
+        phases,
+        selected_execution_step_ids_for_phase=_selected_execution_step_ids_for_phase,
+        collect_provider_routes=collect_provider_routes,
+        run_provider_doctor_probe=run_provider_doctor_probe,
+        resolve_api_key=resolve_api_key,
+        current_doctor_root=current_doctor_root,
+        now_iso=now_iso,
+        write_json=write_json,
+        routing_policy_version=ROUTING_POLICY_VERSION,
     )
-    provider_probes = [
-        run_provider_doctor_probe(
-            provider=route["provider"],
-            model_id=route["model_id"],
-            api_key_env=route["api_key_env"],
-            cfg=cfg,
-        )
-        for route in provider_routes.values()
-    ]
-    batch_capability: Dict[str, Any] = {
-        "enabled": bool(cfg.batch_mode),
-        "provider": cfg.batch_provider,
-        "status": "SKIPPED",
-        "checks": [],
-    }
-    if cfg.batch_mode:
-        checks: List[Dict[str, Any]] = []
-        providers_to_check: Set[str] = set()
-        if cfg.batch_provider == "auto":
-            providers_to_check = {
-                str(route["provider"]) for route in provider_routes.values()
-            }
-        else:
-            providers_to_check = {cfg.batch_provider}
-        for provider in sorted(providers_to_check):
-            api_key_env = "OPENAI_API_KEY"
-            if provider == "gemini":
-                api_key_env = "GEMINI_API_KEY"
-            elif provider == "xai":
-                api_key_env = "XAI_API_KEY"
-            api_key, _ = resolve_api_key(provider, api_key_env)
-            checks.append(
-                {
-                    "provider": provider,
-                    "api_key_env": api_key_env,
-                    "api_key_present": bool(api_key),
-                }
-            )
-        batch_capability = {
-            "enabled": True,
-            "provider": cfg.batch_provider,
-            "status": (
-                "PASS" if all(row["api_key_present"] for row in checks) else "FAIL"
-            ),
-            "checks": checks,
-        }
-    failures = [
-        probe
-        for probe in provider_probes
-        if not bool(probe.get("ready"))
-    ]
-    failure_summary: List[Dict[str, Any]] = []
-    for probe in failures:
-        provider = str(probe.get("provider") or "")
-        model_id = str(probe.get("model_id") or "")
-        remediation = None
-        if provider == "openrouter" and str(probe.get("failure_type") or "") == "auth_rejected":
-            remediation = (
-                "Current bounded first-live A/H/D/C routes still require this OpenRouter model "
-                "for strict JSON-managed steps. Fix the active OpenRouter credential path "
-                f"({probe.get('api_key_env_resolved') or probe.get('api_key_env_name')}) "
-                "or the bounded online route remains blocked."
-            )
-        failure_summary.append(
-            {
-                "provider": provider,
-                "model_id": model_id,
-                "api_key_env": probe.get("api_key_env_resolved")
-                or probe.get("api_key_env_name"),
-                "failure_type": probe.get("failure_type"),
-                "status_code": probe.get("status_code"),
-                "provider_signature": probe.get("provider_signature"),
-                "readiness_blocker": probe.get("readiness_blocker"),
-                "remediation": remediation,
-            }
-        )
-    blocker_codes = sorted(
-        {
-            str(blocker.get("blocker_code"))
-            for probe in failures
-            if isinstance((blocker := probe.get("readiness_blocker")), dict)
-            and str(blocker.get("blocker_code"))
-        }
-    )
-    rerun_worthiness = (
-        "worth_rerunning_after_fixes"
-        if failures
-        and all(
-            str((probe.get("readiness_blocker") or {}).get("rerun_worthiness", "")).startswith("rerun_after_")
-            for probe in failures
-        )
-        else ("ready_now" if not failures else "not_until_root_caused")
-    )
-    payload = {
-        "generated_at": now_iso(),
-        "run_id": run_id,
-        "status": "PASS" if not failures else "FAIL",
-        "routes": provider_routes,
-        "probes": provider_probes,
-        "failed_providers": [probe.get("provider") for probe in failures],
-        "failed_blocker_codes": blocker_codes,
-        "failure_summary": failure_summary,
-        "rerun_worthiness": rerun_worthiness,
-        "routing_policy": cfg.routing_policy,
-        "routing_policy_version": ROUTING_POLICY_VERSION,
-        "batch_capability": batch_capability,
-    }
-    doctor_dir = current_doctor_root(root)
-    doctor_dir.mkdir(parents=True, exist_ok=True)
-    write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
-    return (not failures), payload
 
 
 def phase_requires_provider_preflight(phase: str, cfg: RunnerConfig) -> bool:
@@ -7083,9 +6514,11 @@ def build_inventory(
 
 
 def max_files_for_phase(phase: str, cfg: RunnerConfig) -> int:
-    if phase in CODE_HEAVY_PHASES:
-        return cfg.max_files_code
-    return cfg.max_files_docs
+    return _max_files_for_phase_impl(
+        phase,
+        cfg,
+        code_heavy_phases=CODE_HEAVY_PHASES,
+    )
 
 
 def build_partitions(
@@ -14309,50 +13742,8 @@ def _run_phase_inner(
         phase_auth_failures,
     )
 
-
-def _count_files(directory: Path, suffixes: Optional[Set[str]] = None) -> int:
-    if not directory.exists():
-        return 0
-    count = 0
-    for entry in sorted(directory.iterdir()):
-        if not entry.is_file():
-            continue
-        if suffixes and entry.suffix.lower() not in suffixes:
-            continue
-        count += 1
-    return count
-
-
 def gather_phase_counts(phase_dir: Path) -> Dict[str, Any]:
-    inputs_dir = phase_dir / "inputs"
-    raw_dir = phase_dir / "raw"
-    norm_dir = phase_dir / "norm"
-    qa_dir = phase_dir / "qa"
-
-    inputs_count = _count_files(inputs_dir)
-
-    raw_ok = 0
-    raw_failed = 0
-    raw_total = 0
-    if raw_dir.exists():
-        for entry in sorted(raw_dir.iterdir()):
-            if not entry.is_file():
-                continue
-            raw_total += 1
-            if ".FAILED" in entry.name:
-                raw_failed += 1
-            elif entry.suffix.lower() == ".json":
-                raw_ok += 1
-
-    norm_count = _count_files(norm_dir, suffixes={".json"})
-    qa_count = _count_files(qa_dir, suffixes={".json", ".md", ".txt"})
-
-    return {
-        "inputs": inputs_count,
-        "raw": {"total": raw_total, "ok": raw_ok, "failed": raw_failed},
-        "norm": norm_count,
-        "qa": qa_count,
-    }
+    return rte_gather_phase_counts(phase_dir)
 
 
 def _verify_single_phase(
@@ -14815,60 +14206,27 @@ def _preview_partition_usage(
     partition: Dict[str, Any],
     cfg: RunnerConfig,
     max_files: int,
+    repo_root: Optional[Path] = None,
 ) -> Dict[str, int]:
-    output_instructions = build_output_envelope_instructions(output_artifacts)
-    context_brief = str(partition.get("context_brief") or "")
-    brief_section = f"\n{context_brief}\n" if context_brief else ""
-    prompt_prefix = (
-        "Extract from the files below.\n"
-        f"{output_instructions}\n"
-        f"{brief_section}"
-        "\nFILES:\n"
+    return _preview_partition_usage_impl(
+        phase=phase,
+        step_id=step_id,
+        prompt_text=prompt_text,
+        output_artifacts=output_artifacts,
+        provider=provider,
+        model_id=model_id,
+        partition=partition,
+        cfg=cfg,
+        max_files=max_files,
+        repo_root=repo_root or REPO_ROOT,
+        build_output_envelope_instructions=build_output_envelope_instructions,
+        build_partition_context=build_partition_context,
+        build_chat_payload=build_chat_payload,
+        serialize_payload_body=serialize_payload_body,
+        measure_payload_bytes_from_body=measure_payload_bytes_from_body,
+        estimate_text_tokens=_estimate_text_tokens,
+        apply_file_cap=_apply_file_cap,
     )
-    reserved_chars = len(prompt_prefix)
-    current_budget = max(cfg.max_chars - reserved_chars, 2048)
-    partition_paths = [str(path) for path in partition.get("paths", [])]
-    if phase == "D":
-        partition_paths, _ = _apply_file_cap(
-            step_id=step_id,
-            partition_id=str(partition.get("id") or ""),
-            files=partition_paths,
-            cfg=cfg,
-            root=REPO_ROOT,
-        )
-
-    payload_bytes = 0
-    user_prompt = ""
-    while True:
-        context, _context_stats = build_partition_context(
-            phase=phase,
-            partition_paths=partition_paths,
-            file_truncate_chars=cfg.file_truncate_chars,
-            home_scan_mode=cfg.home_scan_mode,
-            max_files=max_files,
-            max_chars=current_budget,
-            router=cfg.router,
-        )
-        user_prompt = f"{prompt_prefix}{context}"
-        payload = build_chat_payload(
-            provider,
-            model_id,
-            prompt_text,
-            user_prompt,
-            force_json_output=(provider == "gemini"),
-        )
-        payload_bytes = measure_payload_bytes_from_body(serialize_payload_body(payload))
-        if payload_bytes <= cfg.max_request_bytes or current_budget <= 1024:
-            break
-        next_budget = max(1024, int(current_budget * 0.7))
-        if next_budget == current_budget:
-            next_budget = current_budget - 1
-        current_budget = max(next_budget, 1024)
-
-    return {
-        "input_tokens": _estimate_text_tokens(prompt_text, user_prompt),
-        "payload_bytes": payload_bytes,
-    }
 
 
 def build_phase_cost_preview(
@@ -14877,160 +14235,24 @@ def build_phase_cost_preview(
     prompts: Sequence[PromptSpec],
     partitions: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
-    by_step: List[Dict[str, Any]] = []
-    by_model: Dict[str, Dict[str, Any]] = {}
-    warnings: List[str] = []
-    total_input_tokens = 0
-    total_output_tokens = 0
-    total_cost_usd = 0.0
-    unknown_model = False
-    route_override_steps: List[str] = []
-    input_estimation_mode = "runtime_prompt_projection_v1"
-    output_estimation_mode = "response_text_ratio_v1"
-    max_preview_payload_bytes = 0
-
-    for spec in prompts:
-        route = resolve_effective_step_route(
-            phase,
-            spec.step_id,
-            cfg,
-            tier_override=spec.tier_override,
-            step_contract=spec.contract,
-        )
-        reason = str(route.get("reason") or "")
-        if reason.startswith("contract_lane") or reason.startswith("env_"):
-            route_override_steps.append(spec.step_id)
-        prompt_text = safe_read(spec.prompt_path)
-        partition_input_tokens = 0
-        partition_output_tokens = 0
-        max_files = max_files_for_phase(phase, cfg)
-        for partition in partitions:
-            usage = _preview_partition_usage(
-                phase=phase,
-                step_id=spec.step_id,
-                prompt_text=prompt_text,
-                output_artifacts=spec.output_artifacts,
-                provider=str(route.get("provider") or ""),
-                model_id=str(route.get("model_id") or ""),
-                partition=partition,
-                cfg=cfg,
-                max_files=max_files,
-            )
-            input_tokens = max(128, int(usage.get("input_tokens", 0) or 0))
-            output_tokens = _project_preview_output_tokens(
-                input_tokens,
-                step_contract=spec.contract,
-            )
-            partition_input_tokens += input_tokens
-            partition_output_tokens += output_tokens
-            max_preview_payload_bytes = max(
-                max_preview_payload_bytes,
-                int(usage.get("payload_bytes", 0) or 0),
-            )
-        priced = _pricing_preview_record(
-            cfg,
-            str(route.get("provider") or ""),
-            str(route.get("model_id") or ""),
-            partition_input_tokens,
-            partition_output_tokens,
-        )
-        total_input_tokens += partition_input_tokens
-        total_output_tokens += partition_output_tokens
-        total_cost_usd += float(priced.get("estimated_cost_usd", 0.0) or 0.0)
-        unknown_model = bool(unknown_model or priced.get("unknown_model"))
-        by_step.append(
-            {
-                "step_id": spec.step_id,
-                "step_tier": route.get("step_tier"),
-                "routing_reason": reason,
-                "provider": route.get("provider"),
-                "model_id": route.get("model_id"),
-                "partition_count": len(partitions),
-                "estimated_input_tokens": partition_input_tokens,
-                "estimated_output_tokens": partition_output_tokens,
-                "estimated_cost_usd": round(
-                    float(priced.get("estimated_cost_usd", 0.0) or 0.0), 6
-                ),
-                "input_estimation_mode": input_estimation_mode,
-                "output_estimation_mode": (
-                    "json_managed_ratio_2pct_v1"
-                    if is_json_managed_step(spec.contract)
-                    else output_estimation_mode
-                ),
-                "pricing_source": priced.get("pricing_source"),
-            }
-        )
-        model_key = str(priced.get("pricing_key") or "unknown")
-        model_row = by_model.setdefault(
-            model_key,
-            {
-                "provider": priced.get("provider"),
-                "model_id": priced.get("model_id"),
-                "pricing_source": priced.get("pricing_source"),
-                "unknown_model": bool(priced.get("unknown_model")),
-                "estimated_input_tokens": 0,
-                "estimated_output_tokens": 0,
-                "estimated_cost_usd": 0.0,
-            },
-        )
-        model_row["estimated_input_tokens"] += partition_input_tokens
-        model_row["estimated_output_tokens"] += partition_output_tokens
-        model_row["estimated_cost_usd"] += float(
-            priced.get("estimated_cost_usd", 0.0) or 0.0
-        )
-
-    if route_override_steps:
-        warnings.append(
-            "Step-level routing overrides are active for this phase; top-level policy alone does not describe the full spend path."
-        )
-    if unknown_model:
-        warnings.append(
-            "At least one preview row is using fallback baseline pricing rather than a verified model-specific rate."
-        )
-    if any(is_json_managed_step(spec.contract) for spec in prompts):
-        warnings.append(
-            "JSON-managed steps use a compressed output-token preview heuristic; treat this preview as planning guidance, not ledger authority."
-        )
-    if getattr(cfg, "compare_mode", None):
-        warnings.append(
-            "Comparison lane is enabled and can add extra spend beyond the canonical route preview."
-        )
-    confidence = "medium"
-    if unknown_model or route_override_steps or not partitions:
-        confidence = "low"
-    if phase in PREMIUM_SYNTHESIS_PHASES:
-        warnings.append(
-            "This phase is premium-risk: synthesis routes can cost materially more than inventory phases."
-        )
-    return {
-        "generated_at": now_iso(),
-        "phase": phase,
-        "partition_count": len(partitions),
-        "step_count": len(prompts),
-        "pricing_version": PRICING_VERSION,
-        "routing_policy": cfg.routing_policy,
-        "confidence": confidence,
-        "route_override_steps": sorted(route_override_steps, key=step_sort_key),
-        "input_estimation_mode": input_estimation_mode,
-        "output_estimation_mode": output_estimation_mode,
-        "preview_authority": "heuristic_non_authoritative",
-        "ledger_authority": "runtime_provider_usage_when_available",
-        "max_preview_request_payload_bytes": max_preview_payload_bytes,
-        "estimated_input_tokens": total_input_tokens,
-        "estimated_output_tokens": total_output_tokens,
-        "estimated_cost_usd": round(total_cost_usd, 6),
-        "steps": sorted(by_step, key=lambda row: step_sort_key(str(row["step_id"]))),
-        "models": {
-            key: {
-                **value,
-                "estimated_cost_usd": round(
-                    float(value.get("estimated_cost_usd", 0.0) or 0.0), 6
-                ),
-            }
-            for key, value in sorted(by_model.items())
-        },
-        "warnings": warnings,
-    }
+    return _build_phase_cost_preview_impl(
+        phase,
+        cfg,
+        prompts,
+        partitions,
+        now_iso=now_iso,
+        pricing_version=PRICING_VERSION,
+        premium_synthesis_phases=PREMIUM_SYNTHESIS_PHASES,
+        resolve_effective_step_route=resolve_effective_step_route,
+        safe_read=safe_read,
+        preview_partition_usage=_preview_partition_usage,
+        max_files_for_phase=max_files_for_phase,
+        pricing_preview_record=_pricing_preview_record,
+        project_preview_output_tokens=_project_preview_output_tokens,
+        is_json_managed_step=is_json_managed_step,
+        step_sort_key=step_sort_key,
+        repo_root=REPO_ROOT,
+    )
 
 
 def write_phase_dry_run_checklist(
@@ -15639,7 +14861,7 @@ def write_phase_coverage_manifest(
     *,
     selected_step_ids: Optional[Sequence[str]] = None,
 ) -> Dict[str, Any]:
-    return reporting_write_phase_coverage_manifest(
+    return rte_write_phase_coverage_manifest(
         _reporting_deps(),
         phase,
         phase_dir,
@@ -15653,7 +14875,7 @@ def write_coverage_rollup(
     run_id: str,
     promptset_report: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    return reporting_write_coverage_rollup(
+    return rte_write_coverage_rollup(
         _reporting_deps(), root, dirs, run_id, promptset_report
     )
 
@@ -15664,7 +14886,7 @@ def write_resume_proof(
     phases: Iterable[str],
     promptset_report: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    return reporting_write_resume_proof(
+    return rte_write_resume_proof(
         _reporting_deps(), dirs, run_id, phases, promptset_report=promptset_report
     )
 
@@ -15849,7 +15071,7 @@ def update_proof_pack(
     phase_started_at: str,
     phase_finished_at: str,
 ) -> None:
-    reporting_update_proof_pack(
+    rte_update_proof_pack(
         _reporting_deps(),
         root,
         dirs,
@@ -15870,7 +15092,7 @@ def write_blocked_promptset_proof_pack(
     phases: List[str],
     prompt_report: Dict[str, Any],
 ) -> None:
-    reporting_write_blocked_promptset_proof_pack(
+    rte_write_blocked_promptset_proof_pack(
         _reporting_deps(), root, dirs, run_id, run_started_at, phases, prompt_report
     )
 
@@ -16734,30 +15956,20 @@ def run_phase_A(
 def run_phase_H(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    home = Path.home()
-    excludes = [
-        "Downloads",
-        "Library",
-        "Documents",
-        "Pictures",
-        "Music",
-        "Public",
-        "Desktop",
-        ".cache",
-        ".npm",
-        ".pip",
-    ]
-    collector = Collector(home, excludes)
-    items = collector.collect(subdirs=HOME_SAFE_ROOTS)
-    if cfg.home_scan_mode == "safe":
-        items = home_safe_filter(items, home)
+    plan = _plan_home_phase_impl(
+        home=Path.home(),
+        collector_factory=Collector,
+        home_safe_roots=HOME_SAFE_ROOTS,
+        home_scan_mode=cfg.home_scan_mode,
+        home_safe_filter=home_safe_filter,
+    )
     _run_phase_inner(
         "H",
         dirs,
         cfg,
         None,
         None,
-        precollected_items=items,
+        precollected_items=plan.precollected_items,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "H"),
     )
@@ -16766,23 +15978,32 @@ def run_phase_H(
 def run_phase_C(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(
-        Path.cwd(),
-        _merge_scan_excludes(
-            [".git", "node_modules", "venv", ".venv", "docs", "test-results"],
-            REPO_SCAN_EXCLUDES,
-        ),
-    )
     targets = [
-        "src", "services", "shared", "plugins", "tools", "scripts", "tests",
-        "docker/mcp-servers-source", "docker/mcp-servers", "components",
+        "src",
+        "services",
+        "shared",
+        "plugins",
+        "tools",
+        "scripts",
+        "tests",
+        "docker/mcp-servers-source",
+        "docker/mcp-servers",
+        "components",
     ]
+    plan = _plan_repo_scan_phase_impl(
+        cwd=Path.cwd(),
+        collector_factory=Collector,
+        merge_scan_excludes=_merge_scan_excludes,
+        repo_scan_excludes=REPO_SCAN_EXCLUDES,
+        base_excludes=[".git", "node_modules", "venv", ".venv", "docs", "test-results"],
+        targets=targets,
+    )
     _run_phase_inner(
         "C",
         dirs,
         cfg,
-        collector,
-        targets,
+        plan.collector,
+        plan.targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "C"),
     )
@@ -16791,13 +16012,20 @@ def run_phase_C(
 def run_phase_D(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(Path.cwd(), _merge_scan_excludes([".git"], REPO_SCAN_EXCLUDES))
+    plan = _plan_repo_scan_phase_impl(
+        cwd=Path.cwd(),
+        collector_factory=Collector,
+        merge_scan_excludes=_merge_scan_excludes,
+        repo_scan_excludes=REPO_SCAN_EXCLUDES,
+        base_excludes=[".git"],
+        targets=["docs"],
+    )
     _run_phase_inner(
         "D",
         dirs,
         cfg,
-        collector,
-        ["docs"],
+        plan.collector,
+        plan.targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "D"),
     )
@@ -16806,20 +16034,32 @@ def run_phase_D(
 def run_phase_E(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(
-        Path.cwd(),
-        _merge_scan_excludes([".git", "node_modules", "docs"], REPO_SCAN_EXCLUDES),
-    )
     targets = [
-        "scripts", "tools", "compose", ".github", "Makefile", "package.json",
-        "docker", "installers", "install.sh", "ops",
+        "scripts",
+        "tools",
+        "compose",
+        ".github",
+        "Makefile",
+        "package.json",
+        "docker",
+        "installers",
+        "install.sh",
+        "ops",
     ]
+    plan = _plan_repo_scan_phase_impl(
+        cwd=Path.cwd(),
+        collector_factory=Collector,
+        merge_scan_excludes=_merge_scan_excludes,
+        repo_scan_excludes=REPO_SCAN_EXCLUDES,
+        base_excludes=[".git", "node_modules", "docs"],
+        targets=targets,
+    )
     _run_phase_inner(
         "E",
         dirs,
         cfg,
-        collector,
-        targets,
+        plan.collector,
+        plan.targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "E"),
     )
@@ -16828,15 +16068,30 @@ def run_phase_E(
 def run_phase_W(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(
-        Path.cwd(), _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES)
+    targets = [
+        "docs",
+        "scripts",
+        "src",
+        "services",
+        "Makefile",
+        "compose.yml",
+        "docker",
+        "config",
+    ]
+    plan = _plan_repo_scan_phase_impl(
+        cwd=Path.cwd(),
+        collector_factory=Collector,
+        merge_scan_excludes=_merge_scan_excludes,
+        repo_scan_excludes=REPO_SCAN_EXCLUDES,
+        base_excludes=[".git", "node_modules"],
+        targets=targets,
     )
     _run_phase_inner(
         "W",
         dirs,
         cfg,
-        collector,
-        ["docs", "scripts", "src", "services", "Makefile", "compose.yml", "docker", "config"],
+        plan.collector,
+        plan.targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "W"),
     )
@@ -16845,15 +16100,21 @@ def run_phase_W(
 def run_phase_B(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(
-        Path.cwd(), _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES)
+    targets = ["src", "services", "docs", "contracts", "config", ".claude"]
+    plan = _plan_repo_scan_phase_impl(
+        cwd=Path.cwd(),
+        collector_factory=Collector,
+        merge_scan_excludes=_merge_scan_excludes,
+        repo_scan_excludes=REPO_SCAN_EXCLUDES,
+        base_excludes=[".git", "node_modules"],
+        targets=targets,
     )
     _run_phase_inner(
         "B",
         dirs,
         cfg,
-        collector,
-        ["src", "services", "docs", "contracts", "config", ".claude"],
+        plan.collector,
+        plan.targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "B"),
     )
@@ -16862,19 +16123,32 @@ def run_phase_B(
 def run_phase_G(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector = Collector(
-        Path.cwd(), _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES)
+    targets = [
+        ".github",
+        "docs",
+        ".claude",
+        "AGENTS.md",
+        "pyproject.toml",
+        ".pre-commit-config.yaml",
+        "config/repo_hygiene",
+        "pytest.ini",
+        "Makefile",
+        "contracts",
+    ]
+    plan = _plan_repo_scan_phase_impl(
+        cwd=Path.cwd(),
+        collector_factory=Collector,
+        merge_scan_excludes=_merge_scan_excludes,
+        repo_scan_excludes=REPO_SCAN_EXCLUDES,
+        base_excludes=[".git", "node_modules"],
+        targets=targets,
     )
     _run_phase_inner(
         "G",
         dirs,
         cfg,
-        collector,
-        [
-            ".github", "docs", ".claude", "AGENTS.md",
-            "pyproject.toml", ".pre-commit-config.yaml", "config/repo_hygiene",
-            "pytest.ini", "Makefile", "contracts",
-        ],
+        plan.collector,
+        plan.targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "G"),
     )
@@ -16883,19 +16157,21 @@ def run_phase_G(
 def run_phase_Q(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    items = collect_phase_artifacts(
-        dirs, ["A", "H", "D", "C", "E", "W", "B", "G", "X"], ["raw", "norm", "qa"]
+    aggregated_phases = ["A", "H", "D", "C", "E", "W", "B", "G", "X"]
+    plan = _plan_q_phase_impl(
+        dirs,
+        aggregated_phases=aggregated_phases,
+        collect_phase_artifacts=collect_phase_artifacts,
+        write_q_promptpack_declared_outputs_manifest=_write_q_promptpack_declared_outputs_manifest,
+        to_items=to_items,
     )
-    promptpack_manifest = _write_q_promptpack_declared_outputs_manifest(dirs)
-    items.extend(to_items([promptpack_manifest]))
-    items.sort(key=lambda item: str(item.get("path", "")))
     _run_phase_inner(
         "Q",
         dirs,
         cfg,
         None,
         None,
-        precollected_items=items,
+        precollected_items=plan.precollected_items,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "Q"),
     )
@@ -17595,41 +16871,31 @@ def run_phase_R(
             + "; ".join(missing)
         )
 
-    input_files: List[Path] = []
-    for phase in R_REQUIRED_INPUT_PHASES:
-        phase_norm = dirs[phase] / "norm"
-        if phase_norm.exists():
-            input_files.extend(sorted(phase_norm.glob("*.json")))
-            input_files.extend(sorted(phase_norm.glob("*.md")))
-
-    # Collect optional B/E/G/W/Q norm outputs when available
-    optional_contributed: List[str] = []
-    for opt_phase in R_OPTIONAL_INPUT_PHASES:
-        opt_norm = dirs.get(opt_phase, dirs.get(opt_phase))
-        if opt_norm is None:
-            continue
-        opt_norm = opt_norm / "norm"
-        if opt_norm.exists():
-            opt_files = sorted(opt_norm.glob("*.json")) + sorted(opt_norm.glob("*.md"))
-            if opt_files:
-                input_files.extend(opt_files)
-                optional_contributed.append(f"{opt_phase}({len(opt_files)})")
-                logger.info("R_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, len(opt_files))
-            else:
-                logger.info("R_OPTIONAL_SKIP: phase=%s reason=empty_norm_dir", opt_phase)
-        else:
-            logger.info("R_OPTIONAL_SKIP: phase=%s reason=no_norm_dir", opt_phase)
-    if optional_contributed:
-        logger.info("R_OPTIONAL_SUMMARY: contributed=%s", ", ".join(optional_contributed))
-
-    deduped_inputs = sorted(set(input_files), key=str)
+    plan_summary = _plan_r_phase_impl(
+        dirs,
+        required_input_phases=R_REQUIRED_INPUT_PHASES,
+        optional_input_phases=R_OPTIONAL_INPUT_PHASES,
+        to_items=to_items,
+    )
+    for opt_phase, count in plan_summary["optional_contributed"]:
+        logger.info("R_OPTIONAL_INPUT: phase=%s files=%d", opt_phase, count)
+    for opt_phase, reason in plan_summary["optional_skipped"]:
+        logger.info("R_OPTIONAL_SKIP: phase=%s reason=%s", opt_phase, reason)
+    if plan_summary["optional_contributed"]:
+        logger.info(
+            "R_OPTIONAL_SUMMARY: contributed=%s",
+            ", ".join(
+                f"{phase}({count})"
+                for phase, count in plan_summary["optional_contributed"]
+            ),
+        )
     _run_phase_inner(
         "R",
         dirs,
         cfg,
         None,
         None,
-        precollected_items=to_items(deduped_inputs),
+        precollected_items=plan_summary["plan"].precollected_items,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "R"),
     )
@@ -17638,23 +16904,19 @@ def run_phase_R(
 def run_phase_X(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    # X prompts (X0-X4) expect direct repo scan of feature surfaces,
-    # not R artifacts.  Scan targets align with X0 prompt contract:
-    # services/, src/, docs/, config/, scripts/, Makefile, docker, compose.yml
-    collector = Collector(
-        Path.cwd(),
-        _merge_scan_excludes([".git", "node_modules"], REPO_SCAN_EXCLUDES),
+    collector_factory = Collector
+    plan = _plan_x_phase_impl(
+        cwd=Path.cwd(),
+        collector_factory=collector_factory,
+        merge_scan_excludes=_merge_scan_excludes,
+        repo_scan_excludes=REPO_SCAN_EXCLUDES,
     )
-    targets = [
-        "services", "src", "docs", "config", "scripts",
-        "Makefile", "docker", "compose.yml",
-    ]
     _run_phase_inner(
         "X",
         dirs,
         cfg,
-        collector,
-        targets,
+        plan.collector,
+        plan.targets,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "X"),
     )
@@ -17663,25 +16925,20 @@ def run_phase_X(
 def run_phase_T(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    input_files: List[Path] = []
-    for phase in ["R", "X"]:
-        norm_dir = dirs[phase] / "norm"
-        if norm_dir.exists():
-            input_files.extend(sorted(norm_dir.glob("*.json")))
-            input_files.extend(sorted(norm_dir.glob("*.md")))
-    # T0 prompt requires governance constraints for task packet prioritisation
-    repo_root = Path.cwd()
-    for gov_path in ["AGENTS.md", ".claude/PROJECT_INSTRUCTIONS.md"]:
-        p = repo_root / gov_path
-        if p.exists():
-            input_files.append(p)
+    governance_paths = ["AGENTS.md", ".claude/PROJECT_INSTRUCTIONS.md"]
+    plan = _plan_t_phase_impl(
+        dirs,
+        repo_root=Path.cwd(),
+        governance_paths=governance_paths,
+        to_items=to_items,
+    )
     _run_phase_inner(
         "T",
         dirs,
         cfg,
         None,
         None,
-        precollected_items=to_items(input_files),
+        precollected_items=plan.precollected_items,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "T"),
     )
@@ -17691,30 +16948,13 @@ def run_phase_S(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
     logger.info("S_PROMPTS_MODE=legacy (V4 prompts; SP phase for registry pipeline)")
-    r_norm = dirs["R"] / "norm"
-    input_sources: Dict[Path, str] = {}
-    if r_norm.exists():
-        for path in sorted(r_norm.glob("*.json")) + sorted(r_norm.glob("*.md")):
-            input_sources[path.resolve()] = "R"
-    r_quality_issues: List[str] = []
-    if not input_sources:
-        r_quality_issues.append(f"missing_norm_outputs:{r_norm}")
-    else:
-        non_empty_outputs = 0
-        for path in sorted(input_sources.keys(), key=str):
-            content = safe_read(path)
-            if not content.strip():
-                r_quality_issues.append(f"empty_output:{path.name}")
-                continue
-            if path.suffix.lower() == ".json":
-                try:
-                    json.loads(content)
-                except json.JSONDecodeError:
-                    r_quality_issues.append(f"invalid_json:{path.name}")
-                    continue
-            non_empty_outputs += 1
-        if non_empty_outputs == 0:
-            r_quality_issues.append("no_nonempty_r_outputs")
+    plan_summary = _plan_s_phase_impl(
+        dirs,
+        safe_read=safe_read,
+        write_truth_pack_manifest=_write_s_truth_pack_provenance_manifest,
+        to_items=to_items,
+    )
+    r_quality_issues = plan_summary["r_quality_issues"]
     if r_quality_issues:
         logger.warning(
             "PHASE_DEPENDENCY_DEGRADED phase=S requires=R issues=%s",
@@ -17731,28 +16971,13 @@ def run_phase_S(
             "Phase S requires minimum-quality R outputs: "
             + " | ".join(r_quality_issues)
         )
-
-    for phase in ["X", "T", "Z"]:
-        norm_dir = dirs[phase] / "norm"
-        if norm_dir.exists():
-            for path in sorted(norm_dir.glob("*.json")) + sorted(norm_dir.glob("*.md")):
-                input_sources.setdefault(path.resolve(), phase)
-
-    manual_rulings_dir = dirs["root"] / "manual_rulings"
-    if manual_rulings_dir.exists():
-        for path in sorted(manual_rulings_dir.glob("PRO_*.json")):
-            input_sources.setdefault(path.resolve(), "MANUAL")
-
-    deduped_inputs = sorted(input_sources.keys(), key=str)
-    truth_pack_manifest = _write_s_truth_pack_provenance_manifest(dirs, input_sources)
-    precollected_files = deduped_inputs + [truth_pack_manifest]
     _run_phase_inner(
         "S",
         dirs,
         cfg,
         None,
         None,
-        precollected_items=to_items(precollected_files),
+        precollected_items=plan_summary["plan"].precollected_items,
         ui=ui,
         selected_step_ids=(
             list(cfg.selected_s_steps)
@@ -17766,28 +16991,16 @@ def run_phase_SP(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
     logger.info("S_PROMPTS_MODE=registry (SP pipeline prompts)")
-    r_norm = dirs["R"] / "norm"
-    input_sources: Dict[Path, str] = {}
-    if r_norm.exists():
-        for path in sorted(r_norm.glob("*.json")) + sorted(r_norm.glob("*.md")):
-            input_sources[path.resolve()] = "R"
-    if not input_sources:
+    plan_summary = _plan_sp_phase_impl(dirs, to_items=to_items)
+    if int(plan_summary.get("r_input_count", 0) or 0) <= 0:
         raise RuntimeError("Phase SP requires R norm outputs")
-
-    for phase in ["X", "T", "Z"]:
-        norm_dir = dirs[phase] / "norm"
-        if norm_dir.exists():
-            for path in sorted(norm_dir.glob("*.json")) + sorted(norm_dir.glob("*.md")):
-                input_sources.setdefault(path.resolve(), phase)
-
-    deduped_inputs = sorted(input_sources.keys(), key=str)
     _run_phase_inner(
         "SP",
         dirs,
         cfg,
         None,
         None,
-        precollected_items=to_items(deduped_inputs),
+        precollected_items=plan_summary["plan"].precollected_items,
         ui=ui,
         selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "SP"),
     )
@@ -17812,108 +17025,49 @@ def run_sync_scopes() -> None:
 
 
 def _argv_has_flag(argv: Sequence[str], *flags: str) -> bool:
-    return any(flag in argv for flag in flags)
+    return _argv_has_flag_impl(argv, *flags)
 
 
 def first_live_phase_sequence(stage: str) -> List[str]:
-    normalized = str(stage or "initial").strip().lower() or "initial"
-    if normalized == "post-review":
-        return list(FIRST_LIVE_POST_REVIEW_PHASES)
-    if normalized == "full":
-        return list(FIRST_LIVE_INITIAL_PHASES + FIRST_LIVE_POST_REVIEW_PHASES)
-    return list(FIRST_LIVE_INITIAL_PHASES)
+    return _first_live_phase_sequence_impl(
+        stage,
+        first_live_initial_phases=FIRST_LIVE_INITIAL_PHASES,
+        first_live_post_review_phases=FIRST_LIVE_POST_REVIEW_PHASES,
+    )
 
 
 def apply_first_live_preset(
     args: argparse.Namespace,
     raw_argv: Sequence[str],
 ) -> Tuple[List[str], Dict[str, Any]]:
-    stage = str(getattr(args, "preset_stage", "initial") or "initial").strip().lower()
-    selected_phases = first_live_phase_sequence(stage)
-    applied_defaults: Dict[str, Any] = {}
-    notes = [
-        "Validator is step zero for live preset execution unless --skip-pre-live-validator is set.",
-        "The initial stage stops after A/H/D/C so operators can review artifacts before synthesis phases.",
-        "Strict step-level routes can still override the top-level policy preview for some prompts.",
-    ]
-    if not _argv_has_flag(raw_argv, "--phase"):
-        applied_defaults["phase_sequence"] = list(selected_phases)
-    if not _argv_has_flag(raw_argv, "--routing-policy"):
-        args.routing_policy = "cost"
-        applied_defaults["routing_policy"] = args.routing_policy
-    if not _argv_has_flag(raw_argv, "--max-cost-usd"):
-        args.max_cost_usd = FIRST_LIVE_PRESET_DEFAULT_CAP_USD
-        applied_defaults["max_cost_usd"] = args.max_cost_usd
-    if not _argv_has_flag(raw_argv, "--partition-workers"):
-        args.partition_workers = 1
-        applied_defaults["partition_workers"] = args.partition_workers
-    if not _argv_has_flag(raw_argv, "--batch-mode", "--no-batch"):
-        args.batch_mode = False
-        applied_defaults["batch_mode"] = args.batch_mode
-    if not _argv_has_flag(raw_argv, "--batch-wait-timeout-seconds"):
-        args.batch_wait_timeout_seconds = INTERACTIVE_SAFE_BATCH_WAIT_SECONDS
-        applied_defaults["batch_wait_timeout_seconds"] = (
-            args.batch_wait_timeout_seconds
-        )
-    preview = {
-        "preset": FIRST_LIVE_PRESET_NAME,
-        "stage": stage,
-        "selected_phases": list(selected_phases),
-        "full_recommended_sequence": list(FIRST_LIVE_INITIAL_PHASES)
-        + ["CHECKPOINT_REVIEW"]
-        + list(FIRST_LIVE_POST_REVIEW_PHASES),
-        "applied_defaults": applied_defaults,
-        "compare_mode": getattr(args, "compare_mode", None),
-        "output_root": getattr(args, "output_root", None),
-        "notes": notes,
-    }
-    return selected_phases, preview
+    return _apply_first_live_preset_impl(
+        args,
+        raw_argv,
+        first_live_preset_name=FIRST_LIVE_PRESET_NAME,
+        first_live_preset_default_cap_usd=FIRST_LIVE_PRESET_DEFAULT_CAP_USD,
+        interactive_safe_batch_wait_seconds=INTERACTIVE_SAFE_BATCH_WAIT_SECONDS,
+        first_live_initial_phases=FIRST_LIVE_INITIAL_PHASES,
+        first_live_post_review_phases=FIRST_LIVE_POST_REVIEW_PHASES,
+        argv_has_flag=_argv_has_flag,
+        first_live_phase_sequence=first_live_phase_sequence,
+    )
 
 
 def apply_staged_safe_preset(
     args: argparse.Namespace,
     raw_argv: Sequence[str],
 ) -> Tuple[List[str], Dict[str, Any]]:
-    stage = str(getattr(args, "preset_stage", "initial") or "initial").strip().lower()
-    selected_phases = first_live_phase_sequence(stage)
-    applied_defaults: Dict[str, Any] = {}
-    notes = [
-        "Validator remains step zero unless --skip-pre-live-validator is set.",
-        "Staged-safe uses the same phase ladder as first-live but defaults batch execution on for bounded rollout rehearsals.",
-        "The initial stage remains A/H/D/C so operators can stop before synthesis phases.",
-    ]
-    if not _argv_has_flag(raw_argv, "--phase"):
-        applied_defaults["phase_sequence"] = list(selected_phases)
-    if not _argv_has_flag(raw_argv, "--routing-policy"):
-        args.routing_policy = "cost"
-        applied_defaults["routing_policy"] = args.routing_policy
-    if not _argv_has_flag(raw_argv, "--max-cost-usd"):
-        args.max_cost_usd = STAGED_SAFE_PRESET_DEFAULT_CAP_USD
-        applied_defaults["max_cost_usd"] = args.max_cost_usd
-    if not _argv_has_flag(raw_argv, "--partition-workers"):
-        args.partition_workers = 1
-        applied_defaults["partition_workers"] = args.partition_workers
-    if not _argv_has_flag(raw_argv, "--batch-mode", "--no-batch"):
-        args.batch_mode = True
-        applied_defaults["batch_mode"] = args.batch_mode
-    if not _argv_has_flag(raw_argv, "--batch-wait-timeout-seconds"):
-        args.batch_wait_timeout_seconds = INTERACTIVE_SAFE_BATCH_WAIT_SECONDS
-        applied_defaults["batch_wait_timeout_seconds"] = (
-            args.batch_wait_timeout_seconds
-        )
-    preview = {
-        "preset": STAGED_SAFE_PRESET_NAME,
-        "stage": stage,
-        "selected_phases": list(selected_phases),
-        "full_recommended_sequence": list(FIRST_LIVE_INITIAL_PHASES)
-        + ["CHECKPOINT_REVIEW"]
-        + list(FIRST_LIVE_POST_REVIEW_PHASES),
-        "applied_defaults": applied_defaults,
-        "compare_mode": getattr(args, "compare_mode", None),
-        "output_root": getattr(args, "output_root", None),
-        "notes": notes,
-    }
-    return selected_phases, preview
+    return _apply_staged_safe_preset_impl(
+        args,
+        raw_argv,
+        staged_safe_preset_name=STAGED_SAFE_PRESET_NAME,
+        staged_safe_preset_default_cap_usd=STAGED_SAFE_PRESET_DEFAULT_CAP_USD,
+        interactive_safe_batch_wait_seconds=INTERACTIVE_SAFE_BATCH_WAIT_SECONDS,
+        first_live_initial_phases=FIRST_LIVE_INITIAL_PHASES,
+        first_live_post_review_phases=FIRST_LIVE_POST_REVIEW_PHASES,
+        argv_has_flag=_argv_has_flag,
+        first_live_phase_sequence=first_live_phase_sequence,
+    )
 
 
 def print_preset_preview(preview: Dict[str, Any]) -> None:
@@ -17931,33 +17085,18 @@ def run_pre_live_validator(
     target_phases: Optional[Sequence[str]] = None,
     allow_online_preflight: bool = False,
 ) -> Tuple[bool, Dict[str, Any]]:
-    validator_path = EXTRACTOR_SERVICE_DIR / "validate_pre_live_gate_v25.py"
-    args = [sys.executable, str(validator_path)]
-    if target_policy:
-        args.extend(["--target-policy", str(target_policy)])
-    if target_phases:
-        normalized_phases = [str(phase).strip().upper() for phase in target_phases if str(phase).strip()]
-        if normalized_phases:
-            args.extend(["--target-phases", *normalized_phases])
-    if allow_online_preflight:
-        args.append("--allow-online-preflight")
-    result = subprocess.run(
-        args,
-        cwd=str(root),
-        text=True,
-        capture_output=True,
+    return _run_pre_live_validator_impl(
+        root,
+        run_root,
+        extractor_service_dir=EXTRACTOR_SERVICE_DIR,
+        python_executable=sys.executable,
+        target_policy=target_policy,
+        target_phases=target_phases,
+        allow_online_preflight=allow_online_preflight,
+        subprocess_run=subprocess.run,
+        now_iso=now_iso,
+        write_json=write_json,
     )
-    payload = {
-        "generated_at": now_iso(),
-        "validator_path": str(validator_path.resolve()),
-        "exit_code": int(result.returncode),
-        "status": "pass" if result.returncode == 0 else "fail",
-        "stdout": result.stdout[-4000:],
-        "stderr": result.stderr[-4000:],
-    }
-    if run_root is not None:
-        write_json(run_root / "PRELIVE_VALIDATOR_RESULT.json", payload)
-    return result.returncode == 0, payload
 
 
 def write_confidence_ramp_artifacts(
