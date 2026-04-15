@@ -37,9 +37,7 @@ def configure_output_layout(
     output_root: Optional[str],
     *,
     extraction_root_rel: Path,
-    active_output_layout: Optional[OutputLayout],
 ) -> OutputLayout:
-    del active_output_layout
     if output_root:
         extraction_root = Path(output_root).expanduser().resolve()
         return OutputLayout(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import platform
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Sequence, Set
@@ -186,7 +187,7 @@ def refresh_run_manifest_artifacts(
     payload: Dict[str, Any] = {}
     if manifest_path.exists():
         try:
-            payload = __import__("json").loads(manifest_path.read_text(encoding="utf-8"))
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
         except Exception:
             payload = {}
     payload["artifacts"] = collect_manifest_artifacts(dirs)
@@ -208,7 +209,7 @@ def update_run_manifest_contract_map(
     payload: Dict[str, Any] = {}
     if manifest_path.exists():
         try:
-            payload = __import__("json").loads(manifest_path.read_text(encoding="utf-8"))
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
         except Exception:
             payload = {}
     payload["phase_contract_map"] = str(contract_map_path.resolve())
