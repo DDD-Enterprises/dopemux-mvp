@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import subprocess
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
 
