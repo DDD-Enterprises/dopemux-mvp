@@ -391,13 +391,52 @@ def run(
     default=None,
     help="🔬 Archive Coordinate: Path to a generated promptset directory.",
 )
-def status(output_dir: Optional[str]):
+@click.option(
+    "--pipeline-version",
+    type=click.Choice(["v3", "v4", "v5"]),
+    default=None,
+    help="📊 Legacy alias mode: forward runtime status to a specific extractor pipeline version.",
+)
+@click.option(
+    "--run-id",
+    default=None,
+    help="🆔 Legacy alias mode: runtime extraction run identifier to query.",
+)
+@click.option(
+    "--json",
+    "status_json",
+    is_flag=True,
+    help="📊 Legacy alias mode: emit runtime status as machine-readable JSON.",
+)
+def status(
+    output_dir: Optional[str],
+    pipeline_version: Optional[str],
+    run_id: Optional[str],
+    status_json: bool,
+):
     """
     📊 Promptset Status: Show status of a generated promptset
 
     Retrieves synchronization state for generated promptset artifacts only.
-    This is not the canonical runtime run-status surface.
+    This is not the canonical runtime run-status surface. When a pipeline version
+    or run identifier is supplied, this command acts as an explicit legacy alias
+    to the extractor runtime status command while continuing to point operators
+    at `dopemux extract truth-run` as the canonical path.
     """
+    if pipeline_version is not None or run_id is not None or status_json:
+        console.print(
+            "[warning]`dopemux extractor status` is a legacy alias.[/warning] "
+            "Use `dopemux extract truth-run` for the canonical operator path."
+        )
+        args: List[str] = ["--status-json" if status_json else "--status"]
+        if run_id:
+            args.extend(["--run-id", run_id])
+        _run_extractor_runner(
+            pipeline_version=pipeline_version or "v5",
+            args=args,
+        )
+        return
+
     if output_dir is None:
         console.print("[warning]No --output-dir specified. Looking for latest...[/warning]")
         # Try to find the most recent generated promptset
