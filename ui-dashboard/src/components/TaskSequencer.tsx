@@ -24,6 +24,7 @@ import {
   Clock,
   Flame,
   Swords,
+  RotateCcw,
 } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
 
@@ -229,7 +230,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               color: totalRemainingMinutes === 0 ? brandTokens.colors.serumMint : brandTokens.colors.saintGold,
               cursor: 'help',
               transition: 'color 0.3s ease',
-              '&:focus': {
+              '&:focus-visible': {
                 outline: 'none',
                 borderRadius: 1,
                 boxShadow: `0 0 0 2px ${totalRemainingMinutes === 0 ? brandTokens.colors.serumMint : brandTokens.colors.saintGold}`,
@@ -386,6 +387,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           <Button
             variant="outlined"
             size="small"
+            startIcon={<RotateCcw size={16} />}
             onClick={resetTasks}
             sx={{
               borderColor: brandTokens.colors.serumMint,
@@ -414,7 +416,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               ml: 'auto',
               color: brandTokens.colors.ritualCyan,
               cursor: 'help',
-              '&:focus': {
+              '&:focus-visible': {
                 outline: 'none',
                 borderRadius: 1,
                 boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
