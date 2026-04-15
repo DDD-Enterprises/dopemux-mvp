@@ -157,6 +157,12 @@
       "reason": "A required PR unit check showed that src/dopemux/cli.py still overwrote legacy extractor subcommands at import time, so `cli extractor run/status` behavior diverged from the audited command surface and depended on import order.",
       "inserted_before_slice": 8,
       "result": "Stopped cli.py from overwriting existing extractor subcommands, made extractor status an explicit legacy alias when runtime options are supplied, updated command-authority tests to cover both import-order stability and the explicit status alias path, and reran the full unit lane locally."
+    },
+    {
+      "event": "pr_451_review_comment_remediation",
+      "reason": "Review feedback requested a narrower import exception around PartitionBriefGenerator and the route-ladder type contract in llm_runtime.py still drifted from the now-supported 2-tuple strict-route inputs.",
+      "inserted_before_slice": 8,
+      "result": "Narrowed the router partition-brief import guard to ImportError/ModuleNotFoundError, introduced RouteLike/RouteTuple aliases in llm_runtime.py so the annotations match normalized strict ladders, and reran focused extractor checks plus the full unit lane."
     }
   ],
   "skipped_or_abandoned_slices": [],
@@ -214,6 +220,11 @@
     {
       "sha": "6687b1a9acaf4055c9d00ea60b39d767c6fd6849",
       "role": "post_pr_451_cli_alias_audit_fix",
+      "created_in_this_packet": true
+    },
+    {
+      "sha": "5e3ec3445943083f3ae2e70f60c7d33a40c1fe76",
+      "role": "pr_451_review_comment_remediation",
       "created_in_this_packet": true
     }
   ],
@@ -435,6 +446,13 @@
       "pass_count": 676,
       "fail_count": 0,
       "skip_count": 2
+    },
+    {
+      "label": "pr_451_review_comment_regressions",
+      "command": "UV_CACHE_DIR=.uv-cache uv run --frozen pytest -q services/repo-truth-extractor/tests/test_router_runtime_integration.py services/repo-truth-extractor/tests/test_phase_interaction.py services/repo-truth-extractor/tests/test_comparison_lane.py tests/unit/test_extractor_command_authority.py tests/unit/test_cli_upgrades_commands.py --maxfail=1 --disable-warnings --no-cov",
+      "status": "passed",
+      "pass_count": 67,
+      "fail_count": 0
     }
   ],
   "codereview": {
@@ -450,7 +468,8 @@
       "Reviewed the slice-7 diff to confirm router proof work stays on existing runtime behavior: build_partitions router sorting/skipping plus active router partition reordering and context-brief injection.",
       "Reviewed the slice-8 diff to confirm dopemux extractor help and warnings clarify authority without changing the actual runtime launch path, which remains dopemux extract truth-run -> run_extraction_v5.py.",
       "Reviewed the closeout regression diff to confirm the strict-ladder fix only normalizes legacy 2-tuple routes at the LLM seam, the hygiene detector still reports imported v5 roots correctly after the config seam, and the prescan classifier test fixture now matches its asserted app.py case.",
-      "Reviewed the post-PR audit diff to confirm cli.py no longer overwrites existing extractor subcommands at import time, the legacy extractor status command now exposes the runtime alias explicitly when version/run options are supplied, and the CLI alias tests patch the authoritative helper path."
+      "Reviewed the post-PR audit diff to confirm cli.py no longer overwrites existing extractor subcommands at import time, the legacy extractor status command now exposes the runtime alias explicitly when version/run options are supplied, and the CLI alias tests patch the authoritative helper path.",
+      "Reviewed the PR comment remediation diff to confirm the router brief helper no longer masks non-import initialization failures and the llm_runtime ladder annotations now match the normalized route contract used by strict ladders."
     ]
   },
   "precommit": {
