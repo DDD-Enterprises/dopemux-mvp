@@ -193,7 +193,7 @@ def legacy_phase_prompt_specs(
 
     specs: List[Any] = []
     for step_id in sorted(grouped.keys(), key=step_sort_key):
-        candidates = sorted(grouped[step_id], key=lambda path: str(path))
+        candidates = sorted(grouped[step_id], key=str)
         if len(candidates) > 1:
             raise RuntimeError(
                 f"Duplicate prompts for {step_id}: {[str(path) for path in candidates]}. "
