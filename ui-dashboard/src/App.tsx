@@ -17,7 +17,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Bell, Brain, Droplet, Eye, TrendingUp, Zap } from 'lucide-react';
+import { Bell, Brain, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -271,7 +271,7 @@ function App() {
           fontWeight: 'bold',
           textDecoration: 'none',
           transition: 'top 0.2s',
-          '&:focus': {
+          '&:focus-visible': {
             top: 0,
             outline: `2px solid ${brandTokens.text.primary}`,
           },
@@ -449,7 +449,27 @@ function App() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
             <Bell size={18} aria-hidden="true" />
             <Typography variant="h6">Live Signal Feed</Typography>
-            {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
+            {isLoading && <CircularProgress size={16} sx={{ ml: 2 }} />}
+            {notifications.length > 0 && (
+              <Tooltip title="Clear all notifications to reduce visual noise" arrow>
+                <Chip
+                  size="small"
+                  icon={<Trash2 size={14} />}
+                  label="Clear"
+                  onClick={() => setNotifications([])}
+                  sx={{
+                    ml: 'auto',
+                    cursor: 'pointer',
+                    bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
+                    color: brandTokens.colors.gremlinPink,
+                    borderColor: brandTokens.colors.gremlinPink,
+                    '&:hover': {
+                      bgcolor: alpha(brandTokens.colors.gremlinPink, 0.2),
+                    },
+                  }}
+                />
+              </Tooltip>
+            )}
           </Box>
           {notifications.length > 0 ? (
             <Box
