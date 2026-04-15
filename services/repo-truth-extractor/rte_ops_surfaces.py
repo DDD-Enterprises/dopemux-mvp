@@ -275,6 +275,7 @@ def build_phase_cost_preview(
     project_preview_output_tokens: Callable[..., int],
     is_json_managed_step: Callable[[Any], bool],
     step_sort_key: Callable[[str], Any],
+    repo_root: Path,
 ) -> Dict[str, Any]:
     by_step: List[Dict[str, Any]] = []
     by_model: Dict[str, Dict[str, Any]] = {}
@@ -314,6 +315,7 @@ def build_phase_cost_preview(
                 partition=partition,
                 cfg=cfg,
                 max_files=max_files,
+                repo_root=repo_root,
             )
             input_tokens = max(128, int(usage.get("input_tokens", 0) or 0))
             output_tokens = project_preview_output_tokens(

@@ -6,6 +6,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from types import ModuleType
 
 import pytest
@@ -113,6 +114,33 @@ def test_output_layout_defaults_preserve_v5_contract_roots(tmp_path: Path) -> No
     assert layout.runs_root == (tmp_path / runner.V5_RUNS_ROOT).resolve()
     assert layout.doctor_root == (tmp_path / runner.V5_DOCTOR_ROOT).resolve()
     assert layout.latest_run_file == (tmp_path / runner.V5_LATEST_RUN_FILE).resolve()
+
+
+def test_run_phase_sp_requires_actual_r_inputs(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_v5()
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        runner,
+        "_plan_sp_phase_impl",
+        lambda dirs, to_items: {
+            "input_sources": {(tmp_path / "x.json"): "X"},
+            "r_input_count": 0,
+            "plan": SimpleNamespace(precollected_items=[]),
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_phase_inner",
+        lambda *args, **kwargs: captured.setdefault("run_phase_inner", True),
+    )
+
+    with pytest.raises(RuntimeError, match="Phase SP requires R norm outputs"):
+        runner.run_phase_SP({"root": tmp_path}, object())
+
+    assert "run_phase_inner" not in captured
 
 
 def test_v4_run_pipeline_preserves_s_int_prompt_root_and_sync_behavior(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -278,13 +278,16 @@ def plan_sp_phase(
 ) -> Dict[str, Any]:
     r_norm = dirs["R"] / "norm"
     input_sources: Dict[Path, str] = {}
+    r_input_count = 0
     if r_norm.exists():
         for path in sorted(r_norm.glob("*.json")) + sorted(r_norm.glob("*.md")):
             input_sources[path.resolve()] = "R"
+            r_input_count += 1
     extend_input_sources_with_phase_norms(input_sources, dirs, phases=["X", "T", "Z"])
     deduped_inputs = sorted(input_sources.keys(), key=str)
     return {
         "input_sources": input_sources,
+        "r_input_count": r_input_count,
         "deduped_inputs": deduped_inputs,
         "plan": PhaseWrapperPlan(
             collector=None,

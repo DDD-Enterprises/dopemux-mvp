@@ -1382,7 +1382,6 @@ def configure_output_layout(repo_root: Path, output_root: Optional[str]) -> Outp
         repo_root,
         output_root,
         extraction_root_rel=V5_EXTRACTION_ROOT,
-        active_output_layout=ACTIVE_OUTPUT_LAYOUT,
     )
     return ACTIVE_OUTPUT_LAYOUT
 
@@ -14207,6 +14206,7 @@ def _preview_partition_usage(
     partition: Dict[str, Any],
     cfg: RunnerConfig,
     max_files: int,
+    repo_root: Optional[Path] = None,
 ) -> Dict[str, int]:
     return _preview_partition_usage_impl(
         phase=phase,
@@ -14218,7 +14218,7 @@ def _preview_partition_usage(
         partition=partition,
         cfg=cfg,
         max_files=max_files,
-        repo_root=REPO_ROOT,
+        repo_root=repo_root or REPO_ROOT,
         build_output_envelope_instructions=build_output_envelope_instructions,
         build_partition_context=build_partition_context,
         build_chat_payload=build_chat_payload,
@@ -14251,6 +14251,7 @@ def build_phase_cost_preview(
         project_preview_output_tokens=_project_preview_output_tokens,
         is_json_managed_step=is_json_managed_step,
         step_sort_key=step_sort_key,
+        repo_root=REPO_ROOT,
     )
 
 
@@ -16991,7 +16992,7 @@ def run_phase_SP(
 ) -> None:
     logger.info("S_PROMPTS_MODE=registry (SP pipeline prompts)")
     plan_summary = _plan_sp_phase_impl(dirs, to_items=to_items)
-    if not plan_summary["input_sources"]:
+    if int(plan_summary.get("r_input_count", 0) or 0) <= 0:
         raise RuntimeError("Phase SP requires R norm outputs")
     _run_phase_inner(
         "SP",
