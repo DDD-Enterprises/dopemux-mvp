@@ -12,6 +12,9 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+RouteTuple = Tuple[str, str, str]
+RouteLike = Sequence[str]
+
 
 @dataclass(frozen=True)
 class LLMRuntimeDeps:
@@ -55,7 +58,7 @@ class LLMRuntimeDeps:
     runner_script: Path
     is_auth_classified_failure: Callable[[Optional[str]], bool]
     classify_escalation_class: Callable[..., str]
-    is_break_glass_opus_route: Callable[[Tuple[str, str, str]], bool]
+    is_break_glass_opus_route: Callable[[RouteTuple], bool]
     provider_api_key_env: Dict[str, str]
     max_files_for_phase: Callable[[str, Any], int]
     estimate_text_tokens: Callable[[str, str], int]
@@ -120,9 +123,9 @@ def is_auth_classified_failure(failure_type: Optional[str]) -> bool:
 
 
 def _normalize_ladder_route(
-    route: Sequence[str],
+    route: RouteLike,
     provider_api_key_env: Dict[str, str],
-) -> Tuple[str, str, str]:
+) -> RouteTuple:
     provider = str(route[0]) if len(route) > 0 else ""
     model_id = str(route[1]) if len(route) > 1 else ""
     api_key_env = (
@@ -691,9 +694,9 @@ def call_llm_with_ladder(
     partition_id: str,
     routing_policy: str,
     routing_tier: str,
-    ladder: Sequence[Tuple[str, str, str]],
+    ladder: Sequence[RouteLike],
     cfg: Any,
-    execute_attempt: Callable[[Tuple[str, str, str], int], Dict[str, Any]],
+    execute_attempt: Callable[[RouteTuple, int], Dict[str, Any]],
     ui: Optional[Any] = None,
 ) -> Dict[str, Any]:
     denylist = {str(provider).strip().lower() for provider in cfg.provider_denylist}

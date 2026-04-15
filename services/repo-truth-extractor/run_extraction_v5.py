@@ -6606,7 +6606,7 @@ def _apply_router_partition_hints(
         from lib.prescan.partition_brief_generator import PartitionBriefGenerator
 
         brief_gen = PartitionBriefGenerator(active_router.code_report, token_budget=2000)
-    except Exception:
+    except (ImportError, ModuleNotFoundError):
         brief_gen = None
     for partition in partitions:
         partition["paths"] = active_router.reorder_partition(partition["paths"])
