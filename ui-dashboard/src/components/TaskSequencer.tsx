@@ -344,7 +344,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label="Current task progress"
             aria-valuetext={
               isOvertime
-                ? `100% - Overtime: ${overtimeMinutes} minutes`
+                ? `100% - Overtime: ${overtimeMinutes} ${overtimeMinutes === 1 ? 'minute' : 'minutes'}`
                 : `${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`
             }
           />
