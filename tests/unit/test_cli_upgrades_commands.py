@@ -260,7 +260,7 @@ def test_upgrades_run_rejects_openrouter_batch_provider_choice() -> None:
 
 def test_extractor_alias_warns_and_executes() -> None:
     runner = CliRunner()
-    with patch("dopemux.cli._run_extractor_runner") as mocked:
+    with patch("dopemux.commands.extractor_commands._run_extractor_runner") as mocked:
         result = runner.invoke(
             cli,
             [

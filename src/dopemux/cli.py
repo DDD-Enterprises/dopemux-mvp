@@ -5198,12 +5198,17 @@ def truth_command(
     )
 
 
-extractor.add_command(extractor_list, "list")
-extractor.add_command(extractor_run, "run")
-extractor.add_command(extractor_doctor, "doctor")
-extractor.add_command(extractor_status, "status")
-extractor.add_command(extractor_preflight, "preflight")
-extractor.add_command(extractor_trace, "trace")
+def _add_extractor_alias_if_missing(command, name: str) -> None:
+    if name not in extractor.commands:
+        extractor.add_command(command, name)
+
+
+_add_extractor_alias_if_missing(extractor_list, "list")
+_add_extractor_alias_if_missing(extractor_run, "run")
+_add_extractor_alias_if_missing(extractor_doctor, "doctor")
+_add_extractor_alias_if_missing(extractor_status, "status")
+_add_extractor_alias_if_missing(extractor_preflight, "preflight")
+_add_extractor_alias_if_missing(extractor_trace, "trace")
 
 
 @extractor.group("promptset")

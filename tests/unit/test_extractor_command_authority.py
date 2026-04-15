@@ -31,6 +31,23 @@ def test_legacy_extractor_status_help_marks_promptset_scope() -> None:
     assert "not the canonical runtime run-status surface" in result.output.lower()
 
 
+def test_legacy_extractor_status_alias_warns_and_accepts_runtime_options() -> None:
+    from unittest.mock import patch
+
+    with patch("dopemux.commands.extractor_commands._run_extractor_runner") as mocked:
+        result = CliRunner().invoke(
+            extractor,
+            ["status", "--pipeline-version", "v4", "--run-id", "rid2"],
+        )
+
+    assert result.exit_code == 0
+    assert "legacy alias" in result.output.lower()
+    mocked.assert_called_once_with(
+        pipeline_version="v4",
+        args=["--status", "--run-id", "rid2"],
+    )
+
+
 def test_truth_run_help_remains_canonical_operator_surface() -> None:
     result = CliRunner().invoke(extract, ["truth-run", "--help"])
 
@@ -38,3 +55,13 @@ def test_truth_run_help_remains_canonical_operator_surface() -> None:
     assert "v5 extraction" in result.output.lower()
     assert "--doctor" in result.output
     assert "--import-v3" in result.output
+
+
+def test_cli_import_does_not_override_legacy_extractor_run_command() -> None:
+    import dopemux.cli  # noqa: F401
+
+    result = CliRunner().invoke(extractor, ["run"])
+
+    assert result.exit_code == 0
+    assert "legacy promptset tooling" in result.output
+    assert "direct execution is disabled" in result.output.lower()
