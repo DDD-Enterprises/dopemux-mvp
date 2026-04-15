@@ -313,8 +313,6 @@ def classify_authority(rel_path: str) -> str:
 _VERSION_RE = re.compile(r"run_extraction_v(\d+)\.py$")
 _V5_CONST_RE = re.compile(r'V5_EXTRACTION_ROOT\s*=\s*(?:Path\()?["\']([^"\']+)["\']')
 _V3_CONST_RE = re.compile(r'V3_EXTRACTION_ROOT\s*=\s*(?:Path\()?["\']([^"\']+)["\']')
-_V5_ROOT_SYMBOL_RE = re.compile(r"\bV5_EXTRACTION_ROOT\b")
-_V3_ROOT_SYMBOL_RE = re.compile(r"\bV3_EXTRACTION_ROOT\b")
 
 
 def check_version_path(
@@ -350,14 +348,7 @@ def check_version_path(
             cm = _V5_CONST_RE.search(content)
             if cm is None:
                 cm = _V3_CONST_RE.search(content)
-            if cm is not None:
-                output_path = cm.group(1)
-            elif _V5_ROOT_SYMBOL_RE.search(content):
-                output_path = "extraction/repo-truth-extractor/v5"
-            elif _V3_ROOT_SYMBOL_RE.search(content):
-                output_path = "extraction/repo-truth-extractor/v3"
-            else:
-                output_path = "unknown"
+            output_path = cm.group(1) if cm else "unknown"
         else:
             # Cannot find runner — infer as matching (no mismatch to report)
             output_path = f"extraction/repo-truth-extractor/{runner_version}"
