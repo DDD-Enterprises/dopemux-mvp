@@ -167,7 +167,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const isOvertime = currentTask ? taskTimer > currentTask.estimatedMinutes * 60 : false;
   const overtimeMinutes = isOvertime
-    ? Math.floor((taskTimer - currentTask!.estimatedMinutes * 60) / 60)
+  const overtimeMinutes = isOvertime && currentTask
+    ? Math.floor((taskTimer - currentTask.estimatedMinutes * 60) / 60)
+    : 0;
     : 0;
 
   const complexityColor = (complexity: number) => {
