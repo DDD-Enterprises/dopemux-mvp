@@ -326,8 +326,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             }
             aria-valuetext={
               isOvertime
-                ? `Overtime: ${Math.floor(taskTimer / 60 - currentTask.estimatedMinutes)} ${
-                    Math.floor(taskTimer / 60 - currentTask.estimatedMinutes) === 1 ? 'minute' : 'minutes'
+                ? `Overtime: ${Math.max(
+                    1,
+                    Math.ceil((taskTimer - currentTask.estimatedMinutes * 60) / 60)
+                  )} ${
+                    Math.max(1, Math.ceil((taskTimer - currentTask.estimatedMinutes * 60) / 60)) === 1
+                      ? 'minute'
+                      : 'minutes'
                   } past estimate`
                 : `${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`
             }
