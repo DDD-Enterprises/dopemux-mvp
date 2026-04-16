@@ -12,7 +12,12 @@ prelude: "D\xD8PEM\xDCX Brand System (v1.0) (explanation) for dopemux documentat
 ---
 # DØPEMÜX Brand System (v1.0)
 
-[LIVE] Operator, hands off the panic key. This is the canonical moodboard + spec sheet for making every surface of Dopemux feel like the Ritual Daemon just licked the interface and logged the aftercare.
+[LIVE] This document is a moodboard and flavor guide. It is not the production authority for operator-facing CLI or TUI behavior.
+
+Production authority for operator surfaces:
+- Visual and layout rules: [cli-ux-design-spec.md](cli-ux-design-spec.md)
+- Runtime voice enforcement: [src/dopemux/voice/core.py](../../../src/dopemux/voice/core.py) and [services/shared/brand_voice.py](../../../services/shared/brand_voice.py)
+- Release checklist: [brand-compliance-checklist.md](../../03-reference/brand-compliance-checklist.md)
 
 Use this doc before touching UI code, docs, tmux themes, CLI strings, or prompts. Every asset must align with:
 

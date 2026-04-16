@@ -14,12 +14,16 @@ prelude: Brand Compliance Checklist (reference) for dopemux documentation and de
 
 Status: [LOGGED] Brand compliance reference
 
-## Dopemux Brand Compliance Checklist
+## Dopemux Production Brand Compliance Checklist
+
+This checklist is the production release checklist for operator-facing Dopemux CLI and TUI surfaces.
+
+Authority order for production surfaces:
+- Visual and layout authority: [CLI UX Design Spec](../04-explanation/branding/cli-ux-design-spec.md)
+- Voice authority: [src/dopemux/voice/core.py](../../src/dopemux/voice/core.py) and [services/shared/brand_voice.py](../../services/shared/brand_voice.py)
+- Moodboard and non-runtime flavor guidance: [dopemux-brand-system.md](../04-explanation/branding/dopemux-brand-system.md)
 
 - Tokens come from [src/dopemux/ui/theme.py](../../src/dopemux/ui/theme.py), [src/dopemux/ui/dopemux.tcss](../../src/dopemux/ui/dopemux.tcss), [src/dopemux/ui/voice.py](../../src/dopemux/ui/voice.py), or [ui-dashboard/src/theme.ts](../../ui-dashboard/src/theme.ts).
-=======
-- Tokens come from [src/dopemux/ui/theme.py](src/dopemux/ui/theme.py), [src/dopemux/ui/dopemux.tcss](src/dopemux/ui/dopemux.tcss), [src/dopemux/ui/voice.py](src/dopemux/ui/voice.py), or [ui-dashboard/src/theme.ts](ui-dashboard/src/theme.ts).
->>>>>>> wt-collect-dopemux-pr321-20260330023335
 - No hardcoded hex colors live outside the approved theme files.
 - Rich CLI and TUI surfaces use `styled_panel()`, `styled_table()`, semantic style names, or `StatusChip` helpers instead of raw `Panel()` and `Table()` styling.
 - User-facing copy passes `validate_output()` directly or through a shared fail-closed helper.

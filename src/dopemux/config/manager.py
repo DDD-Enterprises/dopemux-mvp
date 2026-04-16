@@ -248,7 +248,7 @@ class DopemuxConfig(BaseModel):
     """Main Dopemux configuration."""
 
     version: str = "1.0"
-    theme: str = "pastel-neon-dreams"
+    theme: str = "mint-mojo"
     mcp_mode: Literal["auto", "docker", "local"] = "auto"
     adhd_profile: ADHDProfile = Field(default_factory=ADHDProfile)
     mcp_servers: Dict[str, MCPServerConfig] = Field(default_factory=dict)

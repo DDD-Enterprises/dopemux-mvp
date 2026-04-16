@@ -75,6 +75,8 @@ class VoiceEngine:
 
     def get_roast(self) -> str:
         """Get a deterministic self-aware or user-facing roast."""
+        if self.mode in {VoiceMode.CLINICAL_FORENSICS, VoiceMode.UI_STRICT}:
+            return "Signal drift detected. Keep the next step visible."
         roasts = [s for s in self.specimens if 'roast' in s.tags or 'UXScold' in s.tags]
         return self._deterministic_excerpt(
             roasts,
@@ -92,10 +94,14 @@ class VoiceEngine:
         """Generate a brand-mark banner with optional one-liner."""
         mark = Glyphs.BRAND_MARK
         one_liners = [s.excerpt for s in self.specimens if 'banner' in s.tags or 'tagline' in s.tags]
+        if self.mode in {VoiceMode.CLINICAL_FORENSICS, VoiceMode.UI_STRICT}:
+            fallback = "Telemetry live. Keep the next step visible."
+        else:
+            fallback = "All memory. No mercy."
         punch = self._deterministic_excerpt(
             [Specimen(str(index), excerpt, set(), 1.0) for index, excerpt in enumerate(one_liners)],
             seed=f"banner:{self.mode.value}:{title}",
-            fallback="All memory. No mercy.",
+            fallback=fallback,
         )
         
         banner = f"{mark}  {punch}"

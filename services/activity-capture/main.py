@@ -28,7 +28,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 def _configure_import_paths() -> Path:
     current = Path(__file__).resolve()
-candidates = current.parents
+    candidates = current.parents
     repo_root = next(
         (
             candidate for candidate in candidates
