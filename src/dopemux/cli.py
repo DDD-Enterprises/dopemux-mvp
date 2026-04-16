@@ -117,7 +117,6 @@ try:
 except ImportError:
     # Fallback if genetic agent service is not available
     genetic_group = None
-from .extractor.runner import PipelineRunner
 from .memory.capture_client import CaptureError, emit_capture_event
 from .roles.catalog import (
     RoleNotFoundError,
@@ -4658,6 +4657,24 @@ def _resolved_pipeline_version(
     return pipeline_version
 
 
+def _run_truth_v5_alias(
+    *,
+    phase: str = "ALL",
+    dry_run: bool,
+    resume: bool,
+    workers: int,
+    routing_policy: str,
+) -> None:
+    args: List[str] = ["--phase", phase or "ALL"]
+    if dry_run:
+        args.append("--dry-run")
+    if resume:
+        args.append("--resume")
+    args.extend(["--partition-workers", str(max(1, int(workers)))])
+    args.extend(["--routing-policy", routing_policy])
+    _run_extractor_runner(pipeline_version="v5", args=args)
+
+
 @upgrades.command("list")
 @_pipeline_version_options
 @click.pass_context
@@ -5131,23 +5148,22 @@ def extractor_promptset_audit(
     "--dry-run",
     is_flag=True,
     default=True,
-    help="Simulate execution by generating trace files only (default)",
+    help="Run the canonical v5 extractor in dry-run mode (default).",
 )
 @click.option(
-    "--execute", is_flag=True, help="Actually call LLM providers (if configured)"
+    "--execute", is_flag=True, help="Actually call LLM providers (if configured)."
 )
-@click.option("--phase", help="Run only a specific trace phase (A, H, D, C, R, S)")
+@click.option("--phase", help="Run only a specific phase (A, H, D, C, R, S, or ALL).")
 @click.pass_context
 def extractor_trace(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
-    """Legacy trace generation path for synthesis-input trace bundles."""
-    project_path = Path.cwd()
+    """Compatibility alias for canonical v5 dry-run extraction."""
+    del ctx
     if execute:
         dry_run = False
-    runner = PipelineRunner(project_path)
-    if phase:
-        runner.run_phase(phase, dry_run=dry_run)
-    else:
-        runner.run_all(dry_run=dry_run)
+    args: List[str] = ["--phase", phase or "ALL"]
+    if dry_run:
+        args.append("--dry-run")
+    _run_extractor_runner(pipeline_version="v5", args=args)
 
 
 @cli.command("truth")
@@ -5156,7 +5172,7 @@ def extractor_trace(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
 )
 @click.option("--execute", is_flag=True, help="⚡ Ignite Ritual: Actually call LLM providers for extraction.")
 @click.option(
-    "--deep", is_flag=True, help="🌊 Deep Harvest: Enable deep mode (includes historical/archived artifacts)."
+    "--deep", is_flag=True, help="🌊 Deep Harvest: Compatibility flag only; canonical v5 does not support legacy deep mode."
 )
 @click.option("--resume", is_flag=True, help="⏯️  Resume Sequence: Resume a previously suspended extraction run.")
 @click.option(
@@ -5179,19 +5195,21 @@ def truth_command(
     routing_policy: str,
 ):
     """
-    👁️  Truth Extraction: Universal Repo Truth Extractor (Shortcut)
+    👁️  Truth Extraction: Compatibility alias for canonical v5 extraction
 
-    Engages the high-fidelity intelligence harvesting ritual. This command 
-    synchronizes multiple extraction layers to materialise the canonical 
-    truth of the repository.
+    Routes directly to the canonical v5 extractor with ``--phase ALL``.
     """
-    project_path = Path.cwd()
+    del ctx
     if execute:
         dry_run = False
-    runner = PipelineRunner(project_path)
-    runner.run_all(
+    if deep:
+        raise click.ClickException(
+            "`dopemux truth --deep` is not supported on the canonical v5 path. "
+            "Use `dopemux upgrades run --pipeline-version v5` with explicit promptset and phase controls."
+        )
+    _run_truth_v5_alias(
+        phase="ALL",
         dry_run=dry_run,
-        deep=deep,
         resume=resume,
         workers=workers,
         routing_policy=routing_policy,

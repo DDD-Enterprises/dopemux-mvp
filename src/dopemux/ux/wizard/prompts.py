@@ -6,10 +6,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-import questionary
-
 from dopemux.console import console
 
+from ..questionary_support import MissingInteractiveDependencyError, require_questionary
 from .display import render_educational_panel, render_health_check
 from .stages import StageResult, StageStatus, WizardState
 
@@ -61,10 +60,18 @@ def run_prompt_setup(state: WizardState) -> StageResult:
         )
 
     # Offer to generate
-    style = questionary.Style([
-        ("selected", "fg:ansiblue bold"),
-        ("pointer", "fg:ansicyan"),
-    ])
+    try:
+        questionary = require_questionary()
+    except MissingInteractiveDependencyError as exc:
+        console.print(f"[red]{exc}[/red]")
+        return StageResult(status=StageStatus.FAILED, message=str(exc))
+
+    style = questionary.Style(
+        [
+            ("selected", "fg:ansiblue bold"),
+            ("pointer", "fg:ansicyan"),
+        ]
+    )
 
     action = questionary.select(
         "Generate promptset now?",

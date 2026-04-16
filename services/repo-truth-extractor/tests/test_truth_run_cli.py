@@ -382,38 +382,71 @@ class TestImportV3MigrationLogic(unittest.TestCase):
         if src_path not in sys.path:
             sys.path.insert(0, src_path)
         try:
-            from dopemux.commands.extract_commands import _find_runner
+            from dopemux.commands.extract_commands import _build_truth_run_command
         except ImportError:
             self.skipTest("dopemux package not importable")
 
-        # Simulate the command assembly logic from truth_run
-        import sys as _sys
         runner_path = Path("/fake/run_extraction_v5.py")
-        auto_run_id = "FULL_RUN"
-        phase = "ALL"
-        workers = 10
-        routing_policy = "balanced_openrouter"
-        resume = True
-        doctor = False
-
-        cmd = [_sys.executable, str(runner_path), "--phase", phase,
-               "--partition-workers", str(workers),
-               "--routing-policy", routing_policy, "--run-id", auto_run_id]
-        if doctor:
-            cmd.append("--doctor")
-        if resume:
-            cmd.append("--resume")
+        auto_run_id, display_run_id, cmd = _build_truth_run_command(
+            runner_path=runner_path,
+            run_id="FULL_RUN",
+            phase="ALL",
+            workers=10,
+            routing_policy="balanced_openrouter",
+            doctor=False,
+            resume=True,
+        )
 
         self.assertIn("--resume", cmd, "--resume must be in cmd when resume=True")
         self.assertIn("FULL_RUN", cmd, "--run-id FULL_RUN must be in cmd")
+        self.assertEqual(auto_run_id, "FULL_RUN")
+        self.assertEqual(display_run_id, "FULL_RUN")
 
     def test_no_resume_flag_without_flag(self):
         """When --resume is False, '--resume' must NOT appear in subprocess command."""
-        import sys as _sys
+        src_path = str(_REPO_ROOT / "src")
+        if src_path not in sys.path:
+            sys.path.insert(0, src_path)
+        try:
+            from dopemux.commands.extract_commands import _build_truth_run_command
+        except ImportError:
+            self.skipTest("dopemux package not importable")
+
         runner_path = Path("/fake/run_extraction_v5.py")
-        auto_run_id = "new-run"
-        resume = False
-        cmd = [_sys.executable, str(runner_path), "--run-id", auto_run_id]
-        if resume:
-            cmd.append("--resume")
+        auto_run_id, display_run_id, cmd = _build_truth_run_command(
+            runner_path=runner_path,
+            run_id=None,
+            phase="ALL",
+            workers=10,
+            routing_policy="balanced_openrouter",
+            doctor=False,
+            resume=False,
+        )
         self.assertNotIn("--resume", cmd)
+        self.assertIn("--run-id", cmd)
+        self.assertIsNotNone(auto_run_id)
+        self.assertEqual(display_run_id, auto_run_id)
+
+    def test_resume_without_explicit_run_id_omits_run_id_flag(self):
+        """Implicit resume must let v5 resolve latest_run_id.txt."""
+        src_path = str(_REPO_ROOT / "src")
+        if src_path not in sys.path:
+            sys.path.insert(0, src_path)
+        try:
+            from dopemux.commands.extract_commands import _build_truth_run_command
+        except ImportError:
+            self.skipTest("dopemux package not importable")
+
+        _auto_run_id, display_run_id, cmd = _build_truth_run_command(
+            runner_path=Path("/fake/run_extraction_v5.py"),
+            run_id=None,
+            phase="ALL",
+            workers=10,
+            routing_policy="balanced_openrouter",
+            doctor=False,
+            resume=True,
+        )
+
+        self.assertEqual(display_run_id, "latest_run_id.txt")
+        self.assertIn("--resume", cmd)
+        self.assertNotIn("--run-id", cmd)

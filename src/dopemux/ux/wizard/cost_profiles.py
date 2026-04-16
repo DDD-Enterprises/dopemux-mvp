@@ -9,11 +9,11 @@ from __future__ import annotations
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
-import questionary
 from rich.table import Table
 
 from dopemux.console import console
 
+from ..questionary_support import MissingInteractiveDependencyError, require_questionary
 from .display import render_cost_table, render_educational_panel
 from .stages import PROVIDER_COLORS, StageResult, StageStatus, WizardState
 
@@ -244,10 +244,18 @@ def run_cost_selection(state: WizardState) -> StageResult:
         )
 
     # Interactive selection
-    style = questionary.Style([
-        ("selected", "fg:ansiblue bold"),
-        ("pointer", "fg:ansicyan"),
-    ])
+    try:
+        questionary = require_questionary()
+    except MissingInteractiveDependencyError as exc:
+        console.print(f"[red]{exc}[/red]")
+        return StageResult(status=StageStatus.FAILED, message=str(exc))
+
+    style = questionary.Style(
+        [
+            ("selected", "fg:ansiblue bold"),
+            ("pointer", "fg:ansicyan"),
+        ]
+    )
 
     # Build choices — show cost + key status
     choices = []

@@ -278,6 +278,66 @@ def test_extractor_alias_warns_and_executes() -> None:
     mocked.assert_called_once()
 
 
+def test_upgrades_trace_routes_to_v5_dry_run_alias() -> None:
+    runner = CliRunner()
+    with patch("dopemux.cli._run_extractor_runner") as mocked:
+        result = runner.invoke(
+            cli,
+            [
+                "upgrades",
+                "trace",
+                "--phase",
+                "C",
+            ],
+        )
+
+    assert result.exit_code == 0, result.output
+    mocked.assert_called_once_with(
+        pipeline_version="v5",
+        args=["--phase", "C", "--dry-run"],
+    )
+
+
+def test_truth_command_routes_to_v5_all_phase() -> None:
+    runner = CliRunner()
+    with patch("dopemux.cli._run_extractor_runner") as mocked:
+        result = runner.invoke(
+            cli,
+            [
+                "truth",
+                "--resume",
+                "--workers",
+                "3",
+                "--routing-policy",
+                "balanced",
+            ],
+        )
+
+    assert result.exit_code == 0, result.output
+    mocked.assert_called_once_with(
+        pipeline_version="v5",
+        args=[
+            "--phase",
+            "ALL",
+            "--dry-run",
+            "--resume",
+            "--partition-workers",
+            "3",
+            "--routing-policy",
+            "balanced",
+        ],
+    )
+
+
+def test_truth_command_rejects_legacy_deep_mode() -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ["truth", "--deep"])
+
+    assert result.exit_code != 0
+    assert "not supported on the canonical v5 path" in result.output
+
+
 def test_upgrades_promptset_audit_routes_to_v4_runner() -> None:
     runner = CliRunner()
     with patch("dopemux.cli._run_extractor_runner") as mocked:
