@@ -9,6 +9,7 @@ import {
   CssBaseline,
   Divider,
   Grid,
+  IconButton,
   Link,
   Paper,
   ThemeProvider,
@@ -17,7 +18,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Bell, Brain, Droplet, Eye, TrendingUp, Zap } from 'lucide-react';
+import { Bell, Brain, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -449,6 +450,24 @@ function App() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
             <Bell size={18} aria-hidden="true" />
             <Typography variant="h6">Live Signal Feed</Typography>
+            {notifications.length > 0 && (
+              <Tooltip title="Clear all notifications" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() => setNotifications([])}
+                  aria-label="Clear all notifications"
+                  sx={{
+                    ml: 1,
+                    color: brandTokens.colors.gremlinPink,
+                    '&:focus-visible': {
+                      outline: `2px solid ${brandTokens.colors.gremlinPink}`,
+                    },
+                  }}
+                >
+                  <Trash2 size={16} aria-hidden="true" />
+                </IconButton>
+              </Tooltip>
+            )}
             {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
           </Box>
           {notifications.length > 0 ? (

@@ -33,3 +33,7 @@
 ## 2025-05-20 - [Combatting Time Blindness]
 **Learning:** For users with ADHD, seeing a list of tasks without an aggregate "time to finish" can lead to "time blindness" or feeling overwhelmed by an infinite-feeling backlog. Providing a "Total Remaining Duration" counter that updates in real-time creates a "light at the end of the tunnel" effect, making the workload feel finite and manageable.
 **Action:** Aggregate and display total remaining estimated duration in sequential task managers to help users maintain perspective on their progress.
+
+## 2026-03-12 - [Cognitive Load & Feed Management]
+**Learning:** In high-stimulation environments (like a live signal feed), accumulating notifications can contribute to "cognitive clutter," which is particularly taxing for users with ADHD. Providing a "Clear" button that is only visible when the feed is active allows users to reset their visual field and reduce overwhelm once information has been processed.
+**Action:** Always provide a conditional "Clear" or "Reset" mechanism for live data feeds to help users manage cognitive load and maintain a clean workspace.
