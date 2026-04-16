@@ -1005,12 +1005,20 @@ def truth_run(
         v5_latest.write_text(import_v3_run_id + "\n", encoding="utf-8")
         console.print(f"[dim]📝 Updated v5/latest_run_id.txt → {import_v3_run_id}[/dim]")
 
-    auto_run_id = run_id or datetime.now().strftime("RUN-%Y%m%dT%H%M%S")
+    auto_run_id, display_run_id, cmd = _build_truth_run_command(
+        runner_path=None,
+        run_id=run_id,
+        phase=phase,
+        workers=workers,
+        routing_policy=routing_policy,
+        doctor=doctor,
+        resume=resume,
+    )
 
     resume_indicator = " [success]+resume[/success]" if resume else ""
     console.print(styled_panel(
         f"[mint]🔬 dopemux extract truth-run[/mint]\n"
-        f"[text.dim]run_id=[/text.dim][bold]{auto_run_id}[/bold]  "
+        f"[text.dim]run_id=[/text.dim][bold]{display_run_id}[/bold]  "
         f"[text.dim]phase=[/text.dim][bold]{phase}[/bold]  "
         f"[text.dim]workers=[/text.dim][bold]{workers}[/bold]  "
         f"[text.dim]routing=[/text.dim][magenta]{routing_policy}[/magenta]"
@@ -1116,12 +1124,15 @@ def truth_run(
         console.print("[error]❌ run_extraction_v5.py not found. Check services/repo-truth-extractor/.[/error]")
         sys.exit(1)
 
-    cmd = [sys.executable, str(runner_path), "--phase", phase, "--partition-workers", str(workers),
-           "--routing-policy", routing_policy, "--run-id", auto_run_id]
-    if doctor:
-        cmd.append("--doctor")
-    if resume:
-        cmd.append("--resume")
+    auto_run_id, _, cmd = _build_truth_run_command(
+        runner_path=runner_path,
+        run_id=run_id,
+        phase=phase,
+        workers=workers,
+        routing_policy=routing_policy,
+        doctor=doctor,
+        resume=resume,
+    )
 
     console.print(f"[dim]$ {' '.join(cmd)}[/dim]")
     console.print()
@@ -1141,6 +1152,45 @@ def truth_run(
     except KeyboardInterrupt:
         console.print("\n[warning]⚠️  Interrupted.[/warning]")
         sys.exit(130)
+
+
+def _build_truth_run_command(
+    *,
+    runner_path: Optional[Path],
+    run_id: Optional[str],
+    phase: str,
+    workers: int,
+    routing_policy: str,
+    doctor: bool,
+    resume: bool,
+) -> tuple[Optional[str], str, list[str]]:
+    """Build the v5 runner command while preserving latest-run resume semantics."""
+    effective_run_id: Optional[str]
+    if run_id:
+        effective_run_id = run_id
+    elif resume:
+        effective_run_id = None
+    else:
+        effective_run_id = datetime.now().strftime("RUN-%Y%m%dT%H%M%S")
+
+    display_run_id = effective_run_id or "latest_run_id.txt"
+    cmd = [
+        sys.executable,
+        str(runner_path) if runner_path is not None else "<runner>",
+        "--phase",
+        phase,
+        "--partition-workers",
+        str(workers),
+        "--routing-policy",
+        routing_policy,
+    ]
+    if effective_run_id is not None:
+        cmd.extend(["--run-id", effective_run_id])
+    if doctor:
+        cmd.append("--doctor")
+    if resume:
+        cmd.append("--resume")
+    return effective_run_id, display_run_id, cmd
 
 
 def _find_runner(repo_root: Path) -> Optional[Path]:

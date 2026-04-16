@@ -11,10 +11,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-import questionary
-from questionary import Choice
-
 from ..console import console
+from .questionary_support import require_questionary
+
+
+def _questionary_parts():
+    questionary = require_questionary()
+    return questionary, questionary.Choice
 
 
 class InteractivePrompts:
@@ -50,6 +53,7 @@ class InteractivePrompts:
         display_actions = sorted_actions[:self.max_choices]
 
         # Create choices with descriptions
+        questionary, Choice = _questionary_parts()
         choices = []
         for action in display_actions:
             choice_text = f"{action['name']}: {action['description'][:50]}"
@@ -104,11 +108,13 @@ class InteractivePrompts:
             # High complexity - simple yes/no
             question = f"{message} (y/n)"
             try:
+                questionary, _Choice = _questionary_parts()
                 return questionary.confirm(question, default=default).ask()
             except KeyboardInterrupt:
                 return default
         else:
             # Normal complexity - show options
+            questionary, Choice = _questionary_parts()
             options = ["Yes", "No", "Show details"]
             result = questionary.select(
                 message,
@@ -142,6 +148,7 @@ class InteractivePrompts:
         # Limit activities to prevent overwhelm
         display_activities = activities[:self.max_choices]
 
+        questionary, Choice = _questionary_parts()
         choices = [Choice(activity, value=activity) for activity in display_activities]
         choices.append(Choice("Skip break", value="__skip__"))
 
@@ -178,6 +185,7 @@ class InteractivePrompts:
         # Offer to show more based on user level
         if user_level in ["intermediate", "expert"]:
             try:
+                questionary, _Choice = _questionary_parts()
                 show_more = questionary.confirm(
                     "Show detailed information?",
                     default=False
@@ -211,6 +219,7 @@ class InteractivePrompts:
             return None
 
         # Create choices
+        questionary, Choice = _questionary_parts()
         choices = []
         for option in options[:self.max_choices]:  # Limit choices
             choice_text = f"{option['name']}"
