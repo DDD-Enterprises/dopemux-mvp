@@ -14,6 +14,7 @@ prelude: Cli Ux Design Spec (explanation) for dopemux documentation and develope
 
 > Single source of truth for all CLI/TUI output styling across dopemux.
 > Implementation lives in `src/dopemux/ui/theme.py`.
+> Production operator surfaces must treat this document as the visual and layout authority.
 
 ---
 

@@ -40,7 +40,7 @@ def get_active_theme_name() -> str:
         return env_theme.lower()
 
     # Fallback default theme when no environment override is set.
-    return "pastel-neon-dreams"
+    return "mint-mojo"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Dynamic Color Palette (Legacy / Compatibility)
@@ -64,7 +64,7 @@ _PALETTES = {
     }
 }
 
-_active_palette = _PALETTES.get(get_active_theme_name(), _PALETTES["pastel-neon-dreams"])
+_active_palette = _PALETTES.get(get_active_theme_name(), _PALETTES["mint-mojo"])
 
 RITUAL_CYAN = _active_palette["cyan"]
 SERUM_MINT = _active_palette["mint"]

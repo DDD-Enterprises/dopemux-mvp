@@ -177,7 +177,28 @@ jobs:
         run: uv sync --frozen --extra test --extra services
 
       - name: ▶️ Run fast unit gate
-        run: uv run --frozen pytest tests/unit -n auto --maxfail=1 --disable-warnings --no-cov
+        run: |
+          uv run --frozen pytest tests/unit -n auto --maxfail=1 --disable-warnings --no-cov
+          uv run --frozen pytest tests/test_voice_core.py tests/test_brand_voice.py --maxfail=1 --disable-warnings --no-cov
+
+      - name: 🎨 Run brand lint gate
+        run: uv run --frozen python scripts/brand_lint.py
+
+      - name: 🧩 Run interactive import smoke
+        run: |
+          uv run --frozen python - <<'PY'
+          import importlib
+          modules = [
+              "dopemux.ux.interactive_prompts",
+              "dopemux.ux.wizard.extraction",
+              "dopemux.ux.wizard.prompts",
+              "dopemux.ux.wizard.cost_profiles",
+              "dopemux.ux.wizard.runner",
+          ]
+          for name in modules:
+              importlib.import_module(name)
+              print(f"import-ok {name}")
+          PY
 
   extractor-smoke:
     name: "🧪 Extractor Smoke"
@@ -208,9 +229,11 @@ jobs:
         run: >
           uv run --frozen pytest
           services/repo-truth-extractor/tests/test_run_extraction_v4_core.py
+          services/repo-truth-extractor/tests/test_rte_v5_characterization.py
           services/repo-truth-extractor/tests/test_truth_run_cli.py
           services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py
           services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py
+          tests/unit/test_cli_upgrades_commands.py
           -n auto --maxfail=1 --disable-warnings --no-cov
 
   extractor-full:

@@ -6,6 +6,7 @@ Launch via ``dopemux dashboard`` or ``dopemux dashboard --demo``.
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timezone
 import subprocess
 import sys
 from pathlib import Path
@@ -15,6 +16,7 @@ from textual.app import App, ComposeResult
 from textual.reactive import reactive
 from textual.widgets import DataTable, Footer, Header, Static
 
+from .service_endpoints import refresh_age_label, resolve_dashboard_endpoints
 from .theme import Glyphs, StatusChip, styled_panel, styled_table, styled_gauge
 from .voice import VoiceEngine, VoiceMode
 
@@ -31,17 +33,17 @@ DEMO_ADHD_STATE = {
 }
 
 DEMO_SERVICES = [
-    ("ConPort", "✓", "3ms", "v2.1"),
-    ("ADHD Engine", "✓", "12ms", "v1.4"),
-    ("Serena", "✓", "5ms", "v2.0"),
-    ("MCP Bridge", "✗", "timeout", "—"),
+    ("ConPort", "✓ LIVE", "3ms", "v2.1", "demo", "just now"),
+    ("ADHD Engine", "✓ LIVE", "12ms", "v1.4", "demo", "just now"),
+    ("Serena", "✓ LIVE", "5ms", "v2.0", "demo", "just now"),
+    ("MCP Bridge", "✗ BLOCKER", "timeout", "—", "demo", "just now"),
 ]
 
 DEMO_COGNITIVE_HISTORY = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.6, 0.5, 0.42, 0.38, 0.35, 0.40]
 DEMO_VELOCITY_HISTORY = [3, 4, 5, 5, 6, 7, 6, 5, 4, 6, 7, 8]
 DEMO_SWITCHES_HISTORY = [2, 1, 2, 3, 5, 3, 2, 1, 2, 1, 1, 0]
 
-VOICE = VoiceEngine(mode=VoiceMode.UX_SCOLD, is_scattered=True)
+VOICE = VoiceEngine(mode=VoiceMode.CLINICAL_FORENSICS, is_scattered=True)
 
 
 def _grid_table() -> object:
@@ -91,6 +93,9 @@ class ADHDStatePanel(Static):
     in_flow = reactive(False)
     break_in = reactive(15)
     is_connected = reactive(True)
+    source_label = reactive("unresolved")
+    endpoint_label = reactive("unresolved")
+    last_sampled_at = reactive(None)
 
     async def on_mount(self) -> None:
         self.set_interval(1.0, self.update_state)
@@ -99,15 +104,22 @@ class ADHDStatePanel(Static):
         app: DopemuxDashboard = self.app  # type: ignore[assignment]
         if app.demo:
             self._apply(DEMO_ADHD_STATE)
+            self.source_label = "demo"
+            self.endpoint_label = "demo://adhd-state"
+            self.last_sampled_at = datetime.now(timezone.utc)
             return
+        endpoint = resolve_dashboard_endpoints()["adhd"]
         async with httpx.AsyncClient() as client:
             try:
                 resp = await client.get(
-                    "http://localhost:8001/api/v1/state?user_id=default",
+                    endpoint.url("/api/v1/state?user_id=default"),
                     timeout=0.5,
                 )
                 if resp.status_code == 200:
                     self._apply(resp.json())
+                    self.source_label = endpoint.source
+                    self.endpoint_label = endpoint.base_url
+                    self.last_sampled_at = datetime.now(timezone.utc)
                 else:
                     self.is_connected = False
             except Exception:
@@ -126,8 +138,9 @@ class ADHDStatePanel(Static):
             return styled_panel(
                 (
                     f"{StatusChip.BLOCKER.render('ADHD Engine disconnected.')}\n\n"
-                    f"[magenta]{VOICE.get_roast()}[/]\n"
-                    f"[text.dim]NEXT:[/] Bring the telemetry service back online."
+                    f"[text.dim]source=[/] {self.source_label}\n"
+                    f"[text.dim]endpoint=[/] {self.endpoint_label}\n"
+                    f"[text.dim]NEXT:[/] Verify the resolved ADHD Engine endpoint or restart the service."
                 ),
                 title="ADHD STATE",
                 border_style="error",
@@ -164,8 +177,11 @@ class ADHDStatePanel(Static):
         )
         table.add_row("[label]Flow[/]", flow_status)
         table.add_row("[label]Aftercare[/]", break_warning)
+        table.add_row("[label]Endpoint[/]", f"[text.dim]{self.endpoint_label}[/]")
+        table.add_row("[label]Source[/]", f"[text.dim]{self.source_label}[/]")
+        table.add_row("[label]Updated[/]", f"[text.dim]{refresh_age_label(self.last_sampled_at)}[/]")
 
-        return styled_panel(table, title="[blink]🧠 ADHD STATE[/blink]", border_style=border_style)
+        return styled_panel(table, title="🧠 ADHD STATE", border_style=border_style)
 
 class ProductivityPanel(Static):
     """Tasks and velocity metrics (Tier 2)."""
@@ -174,6 +190,8 @@ class ProductivityPanel(Static):
     tasks_total = reactive(0)
     decisions_today = reactive(0)
     velocity = reactive([0, 0, 0, 0, 0, 0, 0, 0, 0])
+    source_label = reactive("unresolved")
+    last_sampled_at = reactive(None)
 
     async def on_mount(self) -> None:
         self.set_interval(30.0, self.update_metrics)
@@ -186,10 +204,15 @@ class ProductivityPanel(Static):
             self.tasks_total = 10
             self.decisions_today = 23
             self.velocity = DEMO_VELOCITY_HISTORY
+            self.source_label = "demo"
+            self.last_sampled_at = datetime.now(timezone.utc)
             return
+        endpoints = resolve_dashboard_endpoints()
+        adhd_endpoint = endpoints["adhd"]
+        bridge_endpoint = endpoints["bridge"]
         async with httpx.AsyncClient() as client:
             try:
-                resp = await client.get("http://localhost:8001/api/v1/tasks", timeout=1.0)
+                resp = await client.get(adhd_endpoint.url("/api/v1/tasks"), timeout=1.0)
                 if resp.status_code == 200:
                     data = resp.json()
                     self.tasks_completed = data.get("completed", 0)
@@ -198,12 +221,15 @@ class ProductivityPanel(Static):
                 pass
             try:
                 resp = await client.get(
-                    "http://localhost:8005/api/adhd/decisions/recent", timeout=1.0
+                    bridge_endpoint.url("/ddg/decisions?limit=20"), timeout=1.0
                 )
                 if resp.status_code == 200:
-                    self.decisions_today = len(resp.json().get("today", []))
+                    data = resp.json()
+                    self.decisions_today = int(data.get("count", len(data.get("items", []))))
             except Exception:
                 pass
+        self.source_label = f"tasks:{adhd_endpoint.source}; decisions:{bridge_endpoint.source}"
+        self.last_sampled_at = datetime.now(timezone.utc)
 
     def render(self) -> object:
         is_complete = self.tasks_completed >= self.tasks_total and self.tasks_total > 0
@@ -230,6 +256,8 @@ class ProductivityPanel(Static):
             "[label]Completion[/]",
             f"{StatusChip.LOGGED.render(f'{int(rate * 100)}% locked')} [text.dim](target: 85%)[/]",
         )
+        table.add_row("[label]Source[/]", f"[text.dim]{self.source_label}[/]")
+        table.add_row("[label]Updated[/]", f"[text.dim]{refresh_age_label(self.last_sampled_at)}[/]")
 
         return styled_panel(table, title="🚀 MISSION VELOCITY", border_style="info")
 
@@ -237,12 +265,14 @@ class ProductivityPanel(Static):
 class ServicesGrid(Static):
     """Service health matrix (Tier 2)."""
 
+    last_sampled_at = reactive(None)
+
     def compose(self) -> ComposeResult:
         yield DataTable(id="services-table")
 
     async def on_mount(self) -> None:
         table = self.query_one(DataTable)
-        table.add_columns("Service", "Status", "Latency", "Version")
+        table.add_columns("Service", "Status", "Latency", "Version", "Source", "Updated")
         self.set_interval(30.0, self.update_services)
         await self.update_services()
 
@@ -254,19 +284,21 @@ class ServicesGrid(Static):
         if app.demo:
             for row in DEMO_SERVICES:
                 table.add_row(*row)
+            self.last_sampled_at = datetime.now(timezone.utc)
             return
 
+        endpoints = resolve_dashboard_endpoints()
         services = [
-            ("ConPort", "http://localhost:8005/health"),
-            ("ADHD Engine", "http://localhost:8001/health"),
-            ("Serena", "http://localhost:8003/health"),
-            ("MCP Bridge", "http://localhost:3016/health"),
+            (endpoints["conport"], "/health"),
+            (endpoints["adhd"], "/health"),
+            (endpoints["serena"], "/health"),
+            (endpoints["bridge"], "/kg/health"),
         ]
 
         async with httpx.AsyncClient() as client:
-            for name, url in services:
+            for endpoint, health_path in services:
                 try:
-                    resp = await client.get(url, timeout=2.0)
+                    resp = await client.get(endpoint.url(health_path), timeout=2.0)
                     if resp.status_code == 200:
                         data = resp.json()
                         status = (
@@ -276,11 +308,33 @@ class ServicesGrid(Static):
                         )
                         latency = f"{data.get('latency_ms', 0)}ms"
                         version = data.get("version", "—")
-                        table.add_row(name, status, latency, version)
+                        table.add_row(
+                            endpoint.name,
+                            status,
+                            latency,
+                            version,
+                            endpoint.source,
+                            refresh_age_label(datetime.now(timezone.utc)),
+                        )
                     else:
-                        table.add_row(name, f"{Glyphs.ERROR} BLOCKER", "error", str(resp.status_code))
+                        table.add_row(
+                            endpoint.name,
+                            f"{Glyphs.ERROR} BLOCKER",
+                            "error",
+                            str(resp.status_code),
+                            endpoint.source,
+                            refresh_age_label(datetime.now(timezone.utc)),
+                        )
                 except Exception as exc:
-                    table.add_row(name, f"{Glyphs.ERROR} BLOCKER", "timeout", str(exc)[:20])
+                    table.add_row(
+                        endpoint.name,
+                        f"{Glyphs.ERROR} BLOCKER",
+                        "timeout",
+                        str(exc)[:20],
+                        endpoint.source,
+                        refresh_age_label(datetime.now(timezone.utc)),
+                    )
+        self.last_sampled_at = datetime.now(timezone.utc)
 
 
 class TrendsPanel(Static):

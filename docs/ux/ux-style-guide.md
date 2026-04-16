@@ -11,6 +11,9 @@ prelude: Ux Style Guide (explanation) for dopemux documentation and developer wo
 ---
 # UX Style Guide: Spaceage Operationalism
 
+This copy is retained for compatibility, but the production authority is [../04-explanation/branding/cli-ux-design-spec.md](../04-explanation/branding/cli-ux-design-spec.md).
+If this file drifts from the CLI UX spec or runtime voice gates, treat this file as non-authoritative.
+
 ## Design Philosophy
 The operator interface should feel like a futuristic cockpit: sleek, high-signal, and mission-focused. It must convey authority and technical precision without being distracting.
 
