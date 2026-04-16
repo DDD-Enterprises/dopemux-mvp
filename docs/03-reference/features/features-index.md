@@ -11,8 +11,20 @@ prelude: Features_Index (reference) for dopemux documentation and developer work
 ---
 # Dopemux Features Index
 
-**Last Updated**: 2025-10-25
-**Session**: Mega-session (16 commits, 7,630 lines, 6.25 hours)
+**Last Updated**: 2026-04-16
+**Session**: Production certification remediation
+
+---
+
+## Recent Platform Hardening
+
+### ✅ Operational Hardening
+
+**F-CERT-1: Extractor Production Certification Hardening**
+- Status: ✅ Implemented on `tp/rte-v5-seam-foundation-restart`
+- Scope: Canonical v5 wrapper authority, latest-run resume semantics, interactive dependency integrity, dashboard endpoint resolution, validation UI blocker parity, and production brand/theme enforcement
+- Operator Impact: Extractor-facing CLI, wizard, validation, dashboard, and certification gates now align to the canonical repo-truth runtime contract instead of mixed legacy behavior
+- Validation: `extractor-smoke`, voice and brand suites, interactive import smoke, `brand_lint.py`, and the machine-readable certification status artifact
 
 ---
 

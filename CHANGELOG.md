@@ -8,6 +8,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Run ID propagation across `queue-drain` and `flight` to ensure consistent artifact grouping.
 - Persistent `RUN_SUMMARY.md` writing at the end of `queue-drain` execution.
 - Git case-insensitivity warning in `preflight` for macOS environments.
+- Production certification audit artifacts and a machine-readable certification status for the repo-truth extractor and Dopemux operator surfaces.
 
 ### Changed
 - `stage_and_push_if_needed` now uses `git add -A` to detect case-only renames on macOS.
@@ -17,6 +18,10 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - `flight-deck` now delegates to the authoritative `flight` dashboard path so autopilot, remediation, and merge execution share the same runtime.
 - The docs workflow now runs on pull requests and `main` pushes only, preventing PR-branch push runs from re-failing on unrelated legacy docs debt.
 - Active extractor docs now describe the validated bounded v5 lane, the current reliability contract, and the upgrade-design reality check for this branch.
+- `dopemux truth`, `dopemux upgrades trace`, and `dopemux extractor trace` now delegate to the canonical v5 runtime contract instead of legacy `PipelineRunner` behavior.
+- Interactive wizard surfaces now load `questionary` through a deterministic dependency gate, and the production theme defaults to `mint-mojo`.
+- The dashboard and detail views now resolve service endpoints from repo environment authority instead of assuming fixed localhost ports.
+- CI now includes wrapper-authority coverage, interactive import smoke, and the production `brand_lint.py` gate.
 
 ### Fixed
 - Validation-only PRs are no longer shown as queued-for-merge before local verification is complete.
@@ -29,6 +34,9 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - `queue-drain --max-prs` now stops the execute loop at the requested bound instead of continuing through additional PRs in the same pass.
 - Docs template assets now use `template-*` filenames so the `docs-prohibited-patterns` hook no longer blocks active PRs on legacy template path names.
 - Repo-truth extractor docs now reflect `config/pricing.yaml` as cost authority, explicit output sanitization at the JSON sink, redacted auth-missing logging, and non-silent coverage parse warnings.
+- `dopemux extract truth-run --resume` no longer injects a fresh run ID when resume is implicit, so v5 latest-run semantics are preserved.
+- Wizard extraction no longer silently forces `--skip-hygiene`, and rich validation output now shows the full blocker set plus next actions.
+- `scripts/brand_lint.py` is runnable again on this checkout after repairing the `activity-capture` syntax failure and tightening the production authority checks.
 
 ## [0.1.0] - 2026-03-14
 ### Added
