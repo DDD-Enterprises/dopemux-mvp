@@ -1,0 +1,67 @@
+{
+  "audit_baseline": {
+    "json": "reports/rte-production-certification-audit-20260414.json",
+    "markdown": "docs/05-audit-reports/rte-production-certification-audit-20260414.md"
+  },
+  "branch": "tp/rte-v5-seam-foundation-restart",
+  "certification_artifact_note": "This artifact was committed after validating the code and doc changes at head_sha. The containing commit adds release metadata only.",
+  "executed_validation_commands": [
+    "UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py tests/unit/test_cli_upgrades_commands.py tests/unit/test_wizard_interactivity.py tests/unit/test_extractor_validation_ui.py tests/unit/test_dashboard_operator_ui.py tests/unit/test_launcher_wizard.py tests/unit/test_brand_lint.py tests/test_voice_core.py tests/test_brand_voice.py --maxfail=1 --disable-warnings --no-cov",
+    "UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest services/repo-truth-extractor/tests/test_run_extraction_v4_core.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py services/repo-truth-extractor/tests/test_run_extraction_v5_soft_gate_logging.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_v5_resume_smoke.py services/repo-truth-extractor/tests/test_phase_interaction.py services/repo-truth-extractor/tests/test_phase_execution_step_filter.py services/repo-truth-extractor/tests/test_phase_s_prompt_registry.py services/repo-truth-extractor/tests/test_phase_s_step_selection.py services/repo-truth-extractor/tests/test_v5_golden_fixture_smoke.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py tests/unit/test_cli_upgrades_commands.py tests/unit/test_wizard_interactivity.py tests/unit/test_extractor_validation.py tests/unit/test_extractor_validation_ui.py tests/unit/test_dashboard_operator_ui.py tests/unit/test_dashboard_api_client.py tests/unit/test_ui_dashboard_backend_api.py tests/unit/test_profile_wizard.py tests/unit/test_launcher_wizard.py tests/unit/test_brand_lint.py tests/test_voice_core.py tests/test_brand_voice.py --maxfail=1 --disable-warnings --no-cov",
+    "UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/brand_lint.py",
+    "UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python - <<'PY' import importlib; ... interactive module smoke ... PY",
+    "UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python -m dopemux.cli dashboard --help",
+    "python -m py_compile src/dopemux/cli.py src/dopemux/commands/extract_commands.py src/dopemux/commands/extractor_validation_ui.py src/dopemux/extractor/runner.py src/dopemux/ui/dashboard.py src/dopemux/ui/dashboard_detail.py src/dopemux/ui/service_endpoints.py src/dopemux/ui/theme.py src/dopemux/ui/voice.py src/dopemux/ux/interactive_prompts.py src/dopemux/ux/launcher_wizard.py src/dopemux/ux/questionary_support.py src/dopemux/ux/wizard/cost_profiles.py src/dopemux/ux/wizard/extraction.py src/dopemux/ux/wizard/prompts.py src/dopemux/ux/wizard/runner.py src/dopemux/voice/core.py src/dopemux/workflow/models.py services/activity-capture/main.py services/adhd_engine/api/routes.py services/shared/brand_voice.py",
+    "git diff --check",
+    "HOME=/tmp NPM_CONFIG_CACHE=/tmp/npm-cache npm_config_cache=/tmp/npm-cache PRE_COMMIT_HOME=/tmp/pre-commit-cache pre-commit run --all-files"
+  ],
+  "final_verdict": "GO",
+  "gates": {
+    "authoritative_brand_docs_clean": {
+      "detail": "No merge conflict markers remain in the authoritative brand docs, and the production authority stack is documented.",
+      "status": "PASS"
+    },
+    "brand_gate": {
+      "detail": "scripts/brand_lint.py passed after expanding the gate to syntax, theme default, merge marker, tone, and palette checks.",
+      "status": "PASS"
+    },
+    "canonical_runtime_suites": {
+      "detail": "The audit-critical RTE suite subset passed, including v4 compatibility, truth-run CLI, operator safety, promptset truth, reports, resume, and phase interactions.",
+      "status": "PASS"
+    },
+    "dashboard_and_validation_ui": {
+      "detail": "Dashboard endpoint resolution and offline messaging tests passed, and rich/plain validation UI parity is covered.",
+      "status": "PASS"
+    },
+    "dependency_integrity": {
+      "detail": "questionary is declared in pyproject and uv.lock, import smoke for the interactive modules passed, and missing-dependency handling is deterministic.",
+      "status": "PASS"
+    },
+    "precommit": {
+      "detail": "pre-commit run --all-files passed when caches and npm home were redirected into writable paths.",
+      "status": "PASS"
+    },
+    "wrapper_authority": {
+      "detail": "dopemux truth and trace aliases now route through canonical v5 behavior, and implicit resume preserves latest-run semantics.",
+      "status": "PASS"
+    }
+  },
+  "head_sha": "0d4848fa32a54e27a9fb8a5d961c5ee75d69830d",
+  "non_critical_unknowns": [
+    "Live paid-provider execution was not exercised in this remediation pass.",
+    "Dashboard behavior was verified through resolver tests and CLI help smoke, not against every alternate live service topology.",
+    "External non-repo consumers of emitted proof, status, and dashboard artifacts remain unknown."
+  ],
+  "resolved_audit_findings": [
+    "dopemux truth no longer depends on PipelineRunner.",
+    "Trace aliases use canonical v5 dry-run behavior instead of legacy trace-bundle generation.",
+    "truth-run implicit resume no longer injects a fresh run id.",
+    "questionary is a declared dependency and interactive imports now fail predictably.",
+    "Wizard extraction no longer silently forces --skip-hygiene.",
+    "Rich validation UI now shows the full blocker set plus next actions.",
+    "Dashboard endpoints resolve from repo env authority instead of fixed localhost ports.",
+    "Production theme default is mint-mojo and blink no longer carries active/error meaning.",
+    "Brand authority docs no longer contain merge conflicts or split production guidance."
+  ],
+  "worktree_dirty": true
+}

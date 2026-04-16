@@ -12,10 +12,10 @@ prelude: Exhaustive read-only certification audit for the canonical repo-truth e
 ---
 # RTE Production Certification Audit
 
-**Branch audited:** `tp/rte-v5-seam-foundation-restart`  
-**HEAD SHA:** `3d5c3c2fb944942c5c368e85481ce2723feb1282`  
-**Audit date:** `2026-04-14`  
-**Mode:** read-only audit plus patch-ready remediation backlog  
+**Branch audited:** `tp/rte-v5-seam-foundation-restart`
+**HEAD SHA:** `3d5c3c2fb944942c5c368e85481ce2723feb1282`
+**Audit date:** `2026-04-14`
+**Mode:** read-only audit plus patch-ready remediation backlog
 **Overall release verdict:** `NO-GO / BLOCKED`
 
 ## Executive Summary
