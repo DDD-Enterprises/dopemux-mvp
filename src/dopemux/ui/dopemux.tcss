@@ -84,28 +84,14 @@ Log {
     text-style: bold;
 }
 
-/* ── Animations ── */
-
-@keyframes blink {
-    0% { opacity: 1.0; }
-    50% { opacity: 0.3; }
-    100% { opacity: 1.0; }
-}
-
-.blink {
-    animation: blink 1.5s linear infinite;
-}
-
 .status-active {
     color: $blue;
     text-style: bold;
-    animation: blink 2.0s linear infinite;
 }
 
 .status-error {
     color: $red;
     text-style: bold;
-    animation: blink 1.0s linear infinite;
 }
 
 .status-warning {

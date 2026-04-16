@@ -28,6 +28,15 @@ import asyncio
 
 logger = logging.getLogger(__name__)
 
+from services.shared.brand_voice import (
+    StatusChip,
+    brand_error,
+    brand_log,
+    brand_payload,
+    tone_name,
+    voice_header,
+)
+
 # Import cache utility for Redis caching. Insert ahead of repo-root entries so
 # the engine-local shared cache module wins over unrelated top-level modules.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'docker', 'mcp-servers', 'shared'))
@@ -44,7 +53,7 @@ try:
         raise ImportError("prometheus_client missing metrics API")
 except ImportError:
     PROMETHEUS_AVAILABLE = False
-    logger.warning("Prometheus client not available - metrics disabled")
+    logger.warning(brand_log("Prometheus client not available - metrics disabled"))
 
 from . import schemas
 from ..core.models import ADHDProfile, EnergyLevel, AttentionState
@@ -72,15 +81,6 @@ from .schemas import (
 )
 from ..auth import verify_api_key
 from .websocket import manager, send_heartbeat
-from services.shared.brand_voice import (
-    StatusChip,
-    brand_error,
-    brand_log,
-    brand_payload,
-    tone_name,
-    voice_header,
-)
-
 # Import time for caching
 import time
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import textwrap
 from typing import Any, Dict, List
 
 from dopemux.console import console
@@ -66,8 +67,18 @@ class BatchValidationUI:
         checkpoint.add_row("Routing", str(payload.get("routing_policy") or ""))
         checkpoint.add_row("Consent", self._consent_state(payload))
         checkpoint.add_row("Spend", f"${float(spend.get('total_estimated_upper_bound_usd', 0.0)):.2f}")
+        checkpoint.add_row("Safe to spend", self._safe_to_spend(payload))
         checkpoint.add_row("Why stopped spending", self._why_stopped(payload))
         self._console.print(checkpoint)
+
+        blockers = payload.get("blockers") or []
+        if blockers:
+            blocker_table = Table(title="Blockers")
+            blocker_table.add_column("Blocker")
+            blocker_table.add_column("Next action")
+            for blocker in blockers:
+                blocker_table.add_row(str(blocker), self._next_action_for_blocker(str(blocker)))
+            self._console.print(blocker_table)
 
     def _render_plain(self, payload: Dict[str, Any]) -> str:
         lines: List[str] = []
@@ -117,3 +128,25 @@ class BatchValidationUI:
     def _why_stopped(self, payload: Dict[str, Any]) -> str:
         blockers = payload.get("blockers") or []
         return blockers[0] if blockers else "none"
+
+    def _safe_to_spend(self, payload: Dict[str, Any]) -> str:
+        blockers = payload.get("blockers") or []
+        return "yes" if not blockers else "no"
+
+    def _next_action_for_blocker(self, blocker: str) -> str:
+        lowered = blocker.lower()
+        if "prompt" in lowered:
+            return "Fix the promptset root or required prompt files, then rerun preflight."
+        if "auth" in lowered or "api key" in lowered or "provider" in lowered:
+            return "Verify provider credentials and rerun provider preflight before spending."
+        if "route" in lowered or "routing" in lowered:
+            return "Inspect the resolved routing policy and required step routes before continuing."
+        if "consent" in lowered or "spend" in lowered or "budget" in lowered:
+            return "Confirm live consent and spend caps, then rerun the validation gate."
+        if "artifact" in lowered or "phase" in lowered:
+            return "Inspect the missing phase artifacts and rerun the affected phase or resume path."
+        return textwrap.shorten(
+            "Inspect the blocker evidence in the validation report, correct the underlying cause, then rerun the gate.",
+            width=88,
+            placeholder="…",
+        )

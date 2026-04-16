@@ -1,0 +1,431 @@
+{
+  "metadata": {
+    "audit_id": "rte-production-certification-audit-20260414",
+    "branch": "tp/rte-v5-seam-foundation-restart",
+    "head_sha": "3d5c3c2fb944942c5c368e85481ce2723feb1282",
+    "date": "2026-04-14",
+    "mode": "read_only_audit_plus_patch_ready_backlog",
+    "scope": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/run_extraction_v4.py",
+      "services/repo-truth-extractor/run_extraction_v3.py",
+      "src/dopemux/cli.py",
+      "src/dopemux/commands/extract_commands.py",
+      "src/dopemux/commands/extractor_commands.py",
+      "src/dopemux/commands/extractor_validation.py",
+      "src/dopemux/commands/extractor_validation_ui.py",
+      "src/dopemux/ui/*",
+      "src/dopemux/ux/*",
+      "src/dopemux/voice/*",
+      "services/shared/brand_voice.py",
+      "docs/04-explanation/branding/*",
+      "docs/04-explanation/ux/*",
+      "docs/03-reference/brand-compliance-checklist.md"
+    ],
+    "overall_status": "BLOCKED",
+    "go_no_go": "NO_GO"
+  },
+  "certification_matrix": [
+    {
+      "gate": "runtime_baseline",
+      "status": "PASS",
+      "score": 7,
+      "summary": "Targeted canonical v5/v4/operator/reporting suites passed on this branch."
+    },
+    {
+      "gate": "artifact_and_fail_closed_contracts",
+      "status": "PASS",
+      "score": 8,
+      "summary": "Promptset fail-closed, proof/report contract, and resume smoke suites stayed green."
+    },
+    {
+      "gate": "wrapper_authority",
+      "status": "BLOCKED",
+      "score": 3,
+      "summary": "Wrapper plane is inconsistent; dopemux truth is non-canonical and broken, and truth-run resume semantics drift."
+    },
+    {
+      "gate": "dependency_and_install_integrity",
+      "status": "BLOCKED",
+      "score": 3,
+      "summary": "questionary-backed UX surfaces are imported but questionary is not declared in pyproject.toml."
+    },
+    {
+      "gate": "ui_ux_usability",
+      "status": "PARTIAL",
+      "score": 5,
+      "summary": "Core help surfaces are readable, but blocker visibility, wizard messaging, and dashboard portability are not certification-grade."
+    },
+    {
+      "gate": "brand_and_voice_coherence",
+      "status": "BLOCKED",
+      "score": 4,
+      "summary": "Theme defaults, brand docs, voice gates, and brand checklist do not agree on a production contract."
+    },
+    {
+      "gate": "accessibility_and_log_readability",
+      "status": "PARTIAL",
+      "score": 5,
+      "summary": "Text-first semantics exist, but blink-driven states and endpoint assumptions reduce clarity and accessibility."
+    },
+    {
+      "gate": "certification_tooling",
+      "status": "BLOCKED",
+      "score": 4,
+      "summary": "brand_lint.py is not runnable on this checkout and pre-commit coverage is still docs-heavy."
+    }
+  ],
+  "command_authority_map": [
+    {
+      "surface": "dopemux upgrades run --pipeline-version v5",
+      "target": "extractor runner helper -> run_extraction_v5.py",
+      "classification": "canonical_wrapper",
+      "status": "PARTIAL"
+    },
+    {
+      "surface": "dopemux upgrades doctor/status/preflight",
+      "target": "extractor runner helper -> extractor runtimes",
+      "classification": "canonical_wrapper_family",
+      "status": "PARTIAL"
+    },
+    {
+      "surface": "dopemux extract truth-run",
+      "target": "direct subprocess -> run_extraction_v5.py",
+      "classification": "canonical_wrapper_with_drift",
+      "status": "PARTIAL"
+    },
+    {
+      "surface": "dopemux extractor",
+      "target": "legacy group with mixed delegation to extractor runtimes",
+      "classification": "compatibility_wrapper",
+      "status": "PARTIAL"
+    },
+    {
+      "surface": "dopemux extractor trace",
+      "target": "PipelineRunner",
+      "classification": "legacy_non_canonical",
+      "status": "NON_PRODUCTION"
+    },
+    {
+      "surface": "dopemux truth",
+      "target": "PipelineRunner.run_all()",
+      "classification": "legacy_broken_shortcut",
+      "status": "BLOCKED"
+    },
+    {
+      "surface": "dopemux.ux.wizard.runner",
+      "target": "stage wrappers around extract truth-run",
+      "classification": "guided_operator_surface",
+      "status": "BLOCKED"
+    },
+    {
+      "surface": "dopemux dashboard",
+      "target": "Textual TUI with hard-coded service URLs",
+      "classification": "operator_monitoring_surface",
+      "status": "PARTIAL"
+    }
+  ],
+  "brand_direction_options": [
+    {
+      "name": "Operational Mint Production",
+      "recommended": true,
+      "production_fit": 9,
+      "distinctiveness": 7,
+      "operator_trust": 9,
+      "maintenance": 8,
+      "defaults": {
+        "theme": "mint-mojo",
+        "ui_voice": "UI_STRICT",
+        "ops_voice": "ClinicalForensics"
+      }
+    },
+    {
+      "name": "Balanced Ritual Daemon",
+      "recommended": false,
+      "production_fit": 7,
+      "distinctiveness": 8,
+      "operator_trust": 7,
+      "maintenance": 7
+    },
+    {
+      "name": "Maximalist Luxury Filth",
+      "recommended": false,
+      "production_fit": 4,
+      "distinctiveness": 10,
+      "operator_trust": 4,
+      "maintenance": 5
+    }
+  ],
+  "code_findings": [
+    {
+      "id": "P1-TRUTH-LEGACY",
+      "severity": "P1",
+      "title": "dopemux truth is a broken legacy path, not a production wrapper",
+      "observed_evidence": [
+        "src/dopemux/cli.py:5153-5198",
+        "src/dopemux/extractor/runner.py:75-86",
+        "src/dopemux/extractor/runner.py:232-238"
+      ],
+      "why_it_matters": "Operators can invoke a command that claims extractor authority but does not use the canonical v5 runtime contract.",
+      "recommended_minimal_fix": "Rewire dopemux truth to the canonical v5 wrapper or fail closed with an explicit legacy redirect.",
+      "validation": "Add a command-path test asserting canonical v5 delegation or explicit refusal."
+    },
+    {
+      "id": "P1-RESUME-RUN-ID",
+      "severity": "P1",
+      "title": "truth-run resume injects a fresh run id and defeats latest-run semantics",
+      "observed_evidence": [
+        "src/dopemux/commands/extract_commands.py:1008",
+        "src/dopemux/commands/extract_commands.py:1119-1124",
+        "services/repo-truth-extractor/rte_output_layout.py:206-230"
+      ],
+      "why_it_matters": "Resume semantics are contractual for run identity, checkpointing, and proof paths.",
+      "recommended_minimal_fix": "When --resume is set without an explicit --run-id, omit --run-id from the subprocess command.",
+      "validation": "Add wrapper tests that assert no --run-id is passed in the implicit-resume case."
+    },
+    {
+      "id": "P1-QUESTIONARY-INTEGRITY",
+      "severity": "P1",
+      "title": "Wizard and interactive UX paths depend on undeclared questionary",
+      "observed_evidence": [
+        "pyproject.toml:28-61",
+        "src/dopemux/ux/interactive_prompts.py:14-15",
+        "src/dopemux/ux/wizard/extraction.py:8",
+        "src/dopemux/ux/wizard/prompts.py:9",
+        "src/dopemux/ux/wizard/cost_profiles.py:12",
+        "src/dopemux/ux/wizard/runner.py:10-17",
+        "src/dopemux/ux/wizard/preflight.py:36-41"
+      ],
+      "why_it_matters": "Key operator flows fail before their own health checks, which blocks install integrity and UX certification.",
+      "recommended_minimal_fix": "Declare questionary or move to tested lazy imports with explicit fallback/refusal behavior.",
+      "validation": "Clean-environment import smoke for all operator surfaces."
+    },
+    {
+      "id": "P1-BRAND-LINT-BROKEN",
+      "severity": "P1",
+      "title": "brand_lint.py is not a usable certification gate on this checkout",
+      "observed_evidence": [
+        "scripts/brand_lint.py:118-154",
+        "services/activity-capture/main.py:29-43"
+      ],
+      "why_it_matters": "A broken gate cannot be counted as release evidence.",
+      "recommended_minimal_fix": "Repair the syntax error first, then treat brand lint as a real release gate.",
+      "validation": "python scripts/brand_lint.py exits 0"
+    },
+    {
+      "id": "P2-VALIDATION-UI-BLOCKERS",
+      "severity": "P2",
+      "title": "Rich validation UI hides blocker detail that plain mode preserves",
+      "observed_evidence": [
+        "src/dopemux/commands/extractor_validation_ui.py:61-70",
+        "src/dopemux/commands/extractor_validation_ui.py:84-88",
+        "src/dopemux/commands/extractor_validation_ui.py:117-119"
+      ],
+      "why_it_matters": "The richer UI path should not reduce operator access to blocker truth.",
+      "recommended_minimal_fix": "Render all blockers plus next actions in rich mode.",
+      "validation": "Rich/plain blocker parity rendering test."
+    },
+    {
+      "id": "P2-WIZARD-HYGIENE-COPY",
+      "severity": "P2",
+      "title": "Wizard extraction copy says hygiene is performed while forcing --skip-hygiene",
+      "observed_evidence": [
+        "src/dopemux/ux/wizard/extraction.py:53-59",
+        "src/dopemux/ux/wizard/extraction.py:96-105"
+      ],
+      "why_it_matters": "Safety copy and actual behavior diverge in a guided operator flow.",
+      "recommended_minimal_fix": "Align the help copy with the actual flags or stop forcing --skip-hygiene.",
+      "validation": "Wizard command-assembly test and transcript smoke."
+    }
+  ],
+  "ux_findings": [
+    {
+      "id": "P1-BRAND-AUTHORITY-SPLIT",
+      "severity": "P1",
+      "title": "Production brand authority is split across incompatible docs and runtime gates",
+      "observed_evidence": [
+        "docs/04-explanation/branding/dopemux-brand-system.md:15-22",
+        "src/dopemux/voice/core.py:143-145",
+        "src/dopemux/voice/core.py:217-230",
+        "services/shared/brand_voice.py:41-83"
+      ],
+      "recommended_minimal_fix": "Adopt Operational Mint Production as the runtime authority and scope spicier voice to non-critical surfaces."
+    },
+    {
+      "id": "P2-THEME-DEFAULT-DRIFT",
+      "severity": "P2",
+      "title": "Theme defaults do not match the documented production palette",
+      "observed_evidence": [
+        "src/dopemux/ui/theme.py:43",
+        "src/dopemux/ui/theme.py:90-140",
+        "src/dopemux/ui/dopemux.tcss:1-19",
+        "docs/04-explanation/branding/cli-ux-design-spec.md:22-55"
+      ],
+      "recommended_minimal_fix": "Make mint-mojo the default production theme and treat other palettes as opt-in themes."
+    },
+    {
+      "id": "P2-LAUNCHER-WIZARD-DRIFT",
+      "severity": "P2",
+      "title": "Launcher wizard bypasses shared theme and style rules",
+      "observed_evidence": [
+        "src/dopemux/ux/launcher_wizard.py:28-36",
+        "src/dopemux/ux/launcher_wizard.py:37-49"
+      ],
+      "recommended_minimal_fix": "Move the launcher wizard onto shared theme tokens, console, and status chips."
+    },
+    {
+      "id": "P2-DASHBOARD-PORTABILITY",
+      "severity": "P2",
+      "title": "Dashboard surfaces are visually strong but topology-bound and motion-heavy",
+      "observed_evidence": [
+        "src/dopemux/ui/dashboard.py:103-114",
+        "src/dopemux/ui/dashboard.py:190-206",
+        "src/dopemux/ui/dashboard.py:259-263",
+        "src/dopemux/ui/dashboard_detail.py:65-66",
+        "src/dopemux/ui/dashboard_detail.py:86-88",
+        "src/dopemux/ui/dashboard_detail.py:109-113",
+        "src/dopemux/ui/dashboard.py:168",
+        "src/dopemux/ui/dopemux.tcss:87-108"
+      ],
+      "recommended_minimal_fix": "Externalize endpoints, add connection age/source labels, and reduce blink-driven state signaling."
+    },
+    {
+      "id": "P2-BRAND-CHECKLIST-CONFLICT",
+      "severity": "P2",
+      "title": "Brand compliance checklist is merge-corrupted",
+      "observed_evidence": [
+        "docs/03-reference/brand-compliance-checklist.md:20-22"
+      ],
+      "recommended_minimal_fix": "Resolve conflict markers and reduce the checklist to current production assertions only."
+    }
+  ],
+  "validation_evidence": [
+    {
+      "command": "pytest -q services/repo-truth-extractor/tests/test_truth_run_cli.py ... services/repo-truth-extractor/tests/test_v5_golden_fixture_smoke.py",
+      "result": "exit_0"
+    },
+    {
+      "command": "pytest -q tests/test_voice_core.py tests/test_brand_voice.py tests/unit/test_extractor_validation.py tests/unit/test_ui_dashboard_backend_api.py tests/unit/test_dashboard_api_client.py tests/unit/test_profile_wizard.py",
+      "result": "exit_0"
+    },
+    {
+      "command": "python -m py_compile <runtime_and_ui_modules>",
+      "result": "exit_0"
+    },
+    {
+      "command": "PYTHONPATH=src python -m dopemux.cli dashboard --help",
+      "result": "exit_0"
+    },
+    {
+      "command": "python scripts/brand_lint.py",
+      "result": "exit_1_indentation_error_in_services/activity-capture/main.py"
+    },
+    {
+      "command": "PYTHONPATH=src python - <<'PY' import importlib; import dopemux.ux.wizard.runner; PY",
+      "result": "module_not_found_questionary"
+    },
+    {
+      "command": "CliRunner().invoke(cli, ['extract', 'truth-run', '--resume', '--skip-hygiene'])",
+      "result": "assembled_resume_with_generated_run_id"
+    }
+  ],
+  "remediation_backlog": [
+    {
+      "id": "CERT-01",
+      "severity": "P1",
+      "owner_surface": "src/dopemux/cli.py + src/dopemux/extractor/runner.py",
+      "task": "Repair command authority for dopemux truth and legacy trace surfaces.",
+      "smallest_validation": "wrapper-path tests proving canonical delegation or explicit refusal"
+    },
+    {
+      "id": "CERT-02",
+      "severity": "P1",
+      "owner_surface": "src/dopemux/commands/extract_commands.py",
+      "task": "Repair truth-run resume semantics to preserve latest-run behavior.",
+      "smallest_validation": "truth-run CLI test asserting implicit resume omits --run-id"
+    },
+    {
+      "id": "CERT-03",
+      "severity": "P1",
+      "owner_surface": "pyproject.toml + src/dopemux/ux/*",
+      "task": "Repair install integrity for questionary-backed operator UX surfaces.",
+      "smallest_validation": "clean-environment import smoke"
+    },
+    {
+      "id": "CERT-04",
+      "severity": "P1",
+      "owner_surface": "src/dopemux/ux/wizard/*",
+      "task": "Make wizard dependency preflight real instead of post-failure theater.",
+      "smallest_validation": "wizard stage-0 smoke in dep-present and dep-missing modes"
+    },
+    {
+      "id": "CERT-05",
+      "severity": "P1",
+      "owner_surface": "services/activity-capture/main.py + scripts/brand_lint.py",
+      "task": "Restore a runnable brand certification gate.",
+      "smallest_validation": "python scripts/brand_lint.py exits 0"
+    },
+    {
+      "id": "CERT-06",
+      "severity": "P2",
+      "owner_surface": "docs/03-reference/brand-compliance-checklist.md",
+      "task": "Resolve merge-conflicted brand checklist and reduce it to production assertions.",
+      "smallest_validation": "grep for conflict markers returns no matches"
+    },
+    {
+      "id": "CERT-07",
+      "severity": "P2",
+      "owner_surface": "src/dopemux/commands/extractor_validation_ui.py",
+      "task": "Restore blocker parity between rich and plain validation modes.",
+      "smallest_validation": "rich/plain parity UI rendering test"
+    },
+    {
+      "id": "CERT-08",
+      "severity": "P2",
+      "owner_surface": "src/dopemux/ux/wizard/extraction.py",
+      "task": "Align wizard copy with the actual hygiene behavior.",
+      "smallest_validation": "wizard command-assembly test"
+    },
+    {
+      "id": "CERT-09",
+      "severity": "P2",
+      "owner_surface": "src/dopemux/ui/dashboard.py + src/dopemux/ui/dashboard_detail.py",
+      "task": "Externalize dashboard endpoints and improve offline-mode trust.",
+      "smallest_validation": "dashboard config and offline-mode tests"
+    },
+    {
+      "id": "CERT-10",
+      "severity": "P2",
+      "owner_surface": "src/dopemux/ux/launcher_wizard.py",
+      "task": "Move launcher wizard onto shared theme and voice authority.",
+      "smallest_validation": "token/style compliance test"
+    },
+    {
+      "id": "CERT-11",
+      "severity": "P2",
+      "owner_surface": "src/dopemux/ui/theme.py + docs/04-explanation/branding/*",
+      "task": "Unify production palette authority on mint-mojo.",
+      "smallest_validation": "theme default test plus doc/token sync check"
+    },
+    {
+      "id": "CERT-12",
+      "severity": "P2",
+      "owner_surface": "src/dopemux/voice/* + services/shared/brand_voice.py + docs",
+      "task": "Unify runtime production voice on UI_STRICT plus ClinicalForensics and demote spicy voice elsewhere.",
+      "smallest_validation": "voice tests plus extended brand lint"
+    },
+    {
+      "id": "CERT-13",
+      "severity": "P2",
+      "owner_surface": "CI and .pre-commit-config.yaml",
+      "task": "Create a real certification workflow instead of relying on docs-centric hooks.",
+      "smallest_validation": "machine-readable certification run artifact"
+    }
+  ],
+  "residual_risks": [
+    "Live provider calls and paid validation stages were not exercised in this audit.",
+    "The canonical v5 runtime still needs a broader live-readiness pass beyond the wrapper and UX plane.",
+    "Legacy v3 and v4 surfaces remain active and enlarge long-tail maintenance burden.",
+    "External non-repo consumers of proof, status, and dashboard artifacts remain UNKNOWN."
+  ]
+}

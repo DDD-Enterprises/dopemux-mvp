@@ -11,6 +11,7 @@ import re
 from typing import Any, Dict, Iterable, List, Optional
 
 from dopemux.pm.models import PMTaskStatus
+from services.shared.brand_voice import StatusChip, tone_name, voice_header
 
 
 DEFAULT_COMPLETION_TOKEN = "WORKFLOW_COMPLETE"
@@ -35,6 +36,23 @@ def contains_completion_token(text: str, token: str) -> bool:
     # Check for promise wrapping
     pattern = rf"<promise\b[^>]*>.*?{re.escape(token)}.*?</promise>"
     return bool(re.search(pattern, text, re.DOTALL | re.IGNORECASE))
+
+
+def workflow_brand_meta(
+    chip: StatusChip = StatusChip.LOGGED,
+    *,
+    surface: str = "ui",
+) -> Dict[str, str]:
+    """Return additive operator metadata for workflow surfaces.
+
+    This helper is intentionally separate from ``to_dict`` payload emission so
+    existing workflow-state serialization contracts do not drift implicitly.
+    """
+    return {
+        "status_chip": chip.label,
+        "tone": tone_name(chip),
+        "voice_header": voice_header(surface),
+    }
 
 
 class WorkflowStatus(str, Enum):
