@@ -10,6 +10,7 @@ from types import SimpleNamespace
 from types import ModuleType
 
 import pytest
+from click.testing import CliRunner
 
 
 def _repo_root() -> Path:
@@ -65,12 +66,33 @@ def test_truth_run_finds_v5_runner_directly() -> None:
     assert runner_path == _repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
 
 
-def test_truth_cli_still_routes_through_pipeline_runner() -> None:
-    cli_source = (_repo_root() / "src" / "dopemux" / "cli.py").read_text(encoding="utf-8")
+def test_truth_cli_routes_to_v5_runner(monkeypatch: pytest.MonkeyPatch) -> None:
+    src_path = str(_repo_root() / "src")
+    if src_path not in sys.path:
+        sys.path.insert(0, src_path)
+    from dopemux.cli import cli
 
-    assert "def truth_command(" in cli_source
-    assert "runner = PipelineRunner(project_path)" in cli_source
-    assert "runner.run_all(" in cli_source
+    captured: dict[str, object] = {}
+
+    def _fake_run_extractor_runner(*, pipeline_version: str, args: list[str]) -> None:
+        captured["pipeline_version"] = pipeline_version
+        captured["args"] = list(args)
+
+    monkeypatch.setattr("dopemux.cli._run_extractor_runner", _fake_run_extractor_runner)
+
+    result = CliRunner().invoke(cli, ["truth"])
+
+    assert result.exit_code == 0, result.output
+    assert captured["pipeline_version"] == "v5"
+    assert captured["args"] == [
+        "--phase",
+        "ALL",
+        "--dry-run",
+        "--partition-workers",
+        "1",
+        "--routing-policy",
+        "cost",
+    ]
 
 
 def test_import_surface_stability_for_packet_symbols() -> None:

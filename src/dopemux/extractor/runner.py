@@ -1,3 +1,5 @@
+"""Deprecated legacy trace runner kept only for non-authoritative compatibility imports."""
+
 import os
 import logging
 from pathlib import Path
@@ -81,7 +83,7 @@ class PipelineRunner:
 
         if PRESCAN_AVAILABLE:
             # Initialize logic components
-            config = PrescanConfig(repo_root=project_root, output_dir=self.output_dir)
+            config = PrescanConfig(repo_root=self.project_root, output_dir=self.output_dir)
             self.code_prescan = CodePrescan(config)
             self.classifier = Classifier(config)
 
