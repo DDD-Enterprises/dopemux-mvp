@@ -202,6 +202,7 @@ from rte_reports import (
     update_run_manifest_contract_map as rte_update_run_manifest_contract_map,
     update_run_manifest_promptset_block as rte_update_run_manifest_promptset_block,
     write_blocked_promptset_proof_pack as rte_write_blocked_promptset_proof_pack,
+    write_certification_result as rte_write_certification_result,
     write_coverage_rollup as rte_write_coverage_rollup,
     write_failure_index_snapshot as rte_write_failure_index_snapshot,
     write_phase_coverage_manifest as rte_write_phase_coverage_manifest,
@@ -3444,6 +3445,22 @@ def write_run_dashboard_snapshot(
     )
 
 
+def write_certification_result(
+    run_root: Path,
+    *,
+    validator_payload: Optional[Dict[str, Any]] = None,
+    provider_preflight_payload: Optional[Dict[str, Any]] = None,
+    topology_payload: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    return rte_write_certification_result(
+        _reporting_deps(),
+        run_root,
+        validator_payload=validator_payload,
+        provider_preflight_payload=provider_preflight_payload,
+        topology_payload=topology_payload,
+    )
+
+
 def write_retry_cost_report_snapshot(
     run_root: Path,
     phase: str,
@@ -6439,6 +6456,10 @@ def run_doctor_full(
     doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "DOCTOR_FULL.json", payload)
+    write_certification_result(
+        dirs["root"],
+        topology_payload=payload,
+    )
     print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
 
     has_missing = any(missing_steps.values())
@@ -17191,6 +17212,11 @@ def write_confidence_ramp_artifacts(
         "provider_preflight_status": provider_status,
     }
     write_json(run_root / "PHASE_GATE_DECISION.json", gate_payload)
+    write_certification_result(
+        run_root,
+        validator_payload=validator_payload,
+        provider_preflight_payload=provider_preflight_payload,
+    )
 
 
 # --- Master Orchestrator ---
@@ -18618,6 +18644,10 @@ def main() -> None:
         dirs=dirs,
         ui=ui,
         source="run_complete",
+    )
+    write_certification_result(
+        dirs["root"],
+        topology_payload=final_status_payload,
     )
     if ui is not None:
         ui.status_table(final_status_payload, clear=False)
