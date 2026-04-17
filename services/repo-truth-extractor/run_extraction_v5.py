@@ -13463,19 +13463,18 @@ def execute_step_for_partitions(
             and str(row.get("provider") or "").strip()
             and str(row.get("model_id") or "").strip()
         ]
-        final_route_label = f"{final_provider}/{final_model}"
-        requested_route_label = f"{initial_provider}/{initial_model_id}"
         if attempt_routes and (
-            len(attempt_routes) > 1 or final_route_label != requested_route_label
+            len(attempt_routes) > 1
+            or final_provider != initial_provider
+            or final_model != initial_model_id
         ):
             logger.info(
-                "ROUTE_RESULT phase=%s step=%s partition=%s requested=%s final=%s attempts=%s",
+                "ROUTE_RESULT phase=%s step=%s partition=%s route_changed=%s attempt_count=%s",
                 phase,
                 step_id,
                 partition_id,
-                requested_route_label,
-                final_route_label,
-                attempt_routes,
+                True,
+                len(attempt_routes),
             )
         for level, message in result.logs:
             if level == "error":
