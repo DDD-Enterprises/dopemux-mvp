@@ -130,7 +130,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toMatch(/<Tooltip title="AI-generated recommendation based on current load" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toContain('aria-label="Clear all notifications"');
-  expect(appContent).toMatch(/<Tooltip title="Clear all notifications" arrow>/);
+  expect(appContent).toMatch(/<Tooltip title="Clear all notifications to reduce visual noise" arrow>/);
   expect(appContent).toContain('&:focus-visible');
   expect(appContent).toContain('ref={feedHeadingRef}');
   expect(appContent).toContain('tabIndex={-1}');

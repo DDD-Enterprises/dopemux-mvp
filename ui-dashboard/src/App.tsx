@@ -458,27 +458,6 @@ function App() {
             >
               Live Signal Feed
             </Typography>
-            {notifications.length > 0 && (
-              <Tooltip title="Clear all notifications" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    setNotifications([]);
-                    feedHeadingRef.current?.focus();
-                  }}
-                  aria-label="Clear all notifications"
-                  sx={{
-                    ml: 1,
-                    color: brandTokens.colors.gremlinPink,
-                    '&:focus-visible': {
-                      outline: `2px solid ${brandTokens.colors.gremlinPink}`,
-                    },
-                  }}
-                >
-                  <Trash2 size={16} aria-hidden="true" />
-                </IconButton>
-              </Tooltip>
-            )}
             {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
             {notifications.length > 0 && (
               <Tooltip title="Clear all notifications to reduce visual noise" arrow>
@@ -487,24 +466,13 @@ function App() {
                   variant="outlined"
                   icon={<Trash2 size={14} />}
                   label="Clear"
-                  onClick={() => setNotifications([])}
-                  sx={{
-                    ml: 'auto',
-                    cursor: 'pointer',
-                    bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
-                    color: brandTokens.colors.gremlinPink,
-                    borderColor: brandTokens.colors.gremlinPink,
-                    '&:hover': {
-                      bgcolor: alpha(brandTokens.colors.gremlinPink, 0.2),
-                    },
+                  onClick={() => {
+                    setNotifications([]);
+                    feedHeadingRef.current?.focus();
                   }}
-                />
-                  size="small"
-                  icon={<Trash2 size={14} />}
-                  label="Clear"
-                  onClick={() => setNotifications([])}
+                  aria-label="Clear all notifications"
                   sx={{
-                    ml: 1,
+                    ml: isLoading ? 1 : 'auto',
                     cursor: 'pointer',
                     bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
                     color: brandTokens.colors.gremlinPink,
