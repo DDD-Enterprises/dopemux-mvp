@@ -287,6 +287,87 @@ def test_classify_request_failure_preserves_upstream_payload_failure_when_schema
     assert failure["artifact_name"] is None
 
 
+def test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "H_home_control_plane"
+    (phase_dir / "raw").mkdir(parents=True, exist_ok=True)
+    prompt_path = tmp_path / "PROMPT_H3_TEST.md"
+    prompt_path.write_text("Return HOME_ROUTER_SURFACE.json", encoding="utf-8")
+    input_path = tmp_path / "home.txt"
+    input_path.write_text("home", encoding="utf-8")
+    prompt = runner.PromptSpec(
+        step_id="H3",
+        prompt_path=prompt_path,
+        output_artifacts=("HOME_ROUTER_SURFACE.json",),
+    )
+    partitions = [{"id": "H_P0001", "paths": [str(input_path)]}]
+
+    monkeypatch.setattr(runner, "_step_contract_for", lambda phase, step_id: None)
+    monkeypatch.setattr(
+        runner,
+        "build_partition_context",
+        lambda **kwargs: (
+            f"PARTITION_PATH={input_path}",
+            {
+                "files_included": 1,
+                "files_skipped": 0,
+                "context_bytes": 24,
+                "redaction_hits": 0,
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        runner,
+        "resolve_effective_step_route",
+        lambda *args, **kwargs: {
+            "step_tier": "extract",
+            "step_type": "extract",
+            "ladder": [
+                ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+                ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+            ],
+            "provider": "openrouter",
+            "model_id": "openai/gpt-5.3-codex",
+            "api_key_env": "OPENROUTER_API_KEY",
+            "reason": "test_override",
+            "strict_required": False,
+            "strict_route_attempts": [],
+        },
+    )
+
+    def fake_call_llm(**kwargs):  # type: ignore[no-untyped-def]
+        return {
+            "text": "",
+            "meta": {
+                "failure_type": "quota_or_billing",
+                "status_code": 402,
+                "provider_error_reason": "requires more credits",
+                "response_received": False,
+            },
+        }
+
+    monkeypatch.setattr(runner, "call_llm", fake_call_llm)
+
+    stats = runner.execute_step_for_partitions(
+        phase="H",
+        prompt_spec=prompt,
+        partitions=partitions,
+        phase_dir=phase_dir,
+        cfg=_make_cfg(runner),
+    )
+
+    assert stats["failed"] == 1
+    payload = json.loads(
+        (phase_dir / "raw" / "H3__H_P0001.FAILED.json").read_text(encoding="utf-8")
+    )
+    assert payload["request_meta"]["failure_type"] == "quota_or_billing"
+    assert payload["request_meta"]["escalation_trigger"] is None
+    assert payload["request_meta"]["route_attempts"][0]["escalation_trigger"] == "provider_failure"
+    assert payload["request_meta"]["route_attempts"][0]["escalation_class"] == "provider_transport"
+
+
 def test_normalize_step_keeps_parse_failures_at_threshold(tmp_path: Path) -> None:
     runner = _load_runner_module()
     phase_dir = tmp_path / "A_repo_control_plane"

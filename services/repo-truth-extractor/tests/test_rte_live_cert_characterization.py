@@ -111,9 +111,107 @@ def test_write_certification_result_rolls_up_split_gates_from_evidence(tmp_path:
     saved = json.loads((run_root / "CERTIFICATION_RESULT.json").read_text(encoding="utf-8"))
 
     assert result == saved
+    assert result["overall_status"] == "UNKNOWN"
+    assert result["gates"]["canonical_runner_correctness"]["source"] == "PRELIVE_VALIDATOR_RESULT.json"
+    assert result["gates"]["canonical_runner_correctness"]["status"] == "PASS"
+    assert result["gates"]["live_provider_readiness"]["status"] == "UNKNOWN"
+    assert result["gates"]["artifact_contract_stability"]["status"] == "PASS"
+    assert result["gates"]["operator_topology_resilience"]["status"] == "UNKNOWN"
+    assert result["gates"]["live_provider_readiness"]["evidence"]["topology_probes_observed"] == [
+        {"status_code": 200, "ready": True},
+        {"status_code": 200, "ready": True},
+    ]
+    assert result["gates"]["operator_topology_resilience"]["evidence"][
+        "required_artifact_groups"
+    ] == {"required_groups_present_pct": 100.0}
+
+
+def test_write_certification_result_requires_explicit_provider_and_topology_status(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "runs" / "strict_cert_probe"
+    telemetry_root = run_root / "telemetry"
+    telemetry_root.mkdir(parents=True, exist_ok=True)
+
+    for relative in [
+        "PROOF_PACK.json",
+        "COVERAGE_ROLLUP.json",
+        "RESUME_PROOF.json",
+        "PRELIVE_VALIDATOR_RESULT.json",
+        "telemetry/RUN_DASHBOARD.json",
+        "telemetry/STEP_METRICS.json",
+        "telemetry/FAILURE_INDEX.json",
+    ]:
+        path = run_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if relative == "PRELIVE_VALIDATOR_RESULT.json":
+            path.write_text(json.dumps({"status": "PASS"}), encoding="utf-8")
+        else:
+            path.write_text("{}", encoding="utf-8")
+
+    result = runner.write_certification_result(
+        run_root,
+        provider_preflight_payload={"status": "PASS", "layers": [{"phase": "A"}]},
+        topology_payload={
+            "status": "PASS",
+            "required_artifact_groups": {"required_groups_present_pct": 100.0},
+            "provider_reachability": {
+                "probes": [{"status_code": 200, "ready": True}],
+            },
+        },
+    )
+
     assert result["overall_status"] == "VERIFIED"
     assert {gate["status"] for gate in result["gates"].values()} == {"PASS"}
-    assert result["gates"]["canonical_runner_correctness"]["source"] == "PRELIVE_VALIDATOR_RESULT.json"
     assert result["gates"]["live_provider_readiness"]["status"] == "PASS"
-    assert result["gates"]["artifact_contract_stability"]["status"] == "PASS"
     assert result["gates"]["operator_topology_resilience"]["status"] == "PASS"
+
+
+def test_run_doctor_full_certification_stays_unknown_without_explicit_gate_statuses(
+    monkeypatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "artifact-root" / "runs" / "doctor_probe"
+    dirs = {"root": run_root}
+    cfg = runner.RunnerConfig.__new__(runner.RunnerConfig)
+    object.__setattr__(cfg, "routing_policy", "cost")
+
+    monkeypatch.setattr(runner, "collect_prompt_index", lambda: ({}, []))
+    monkeypatch.setattr(runner, "get_phase_prompts", lambda phase: [])
+    monkeypatch.setattr(
+        runner,
+        "get_required_artifact_status",
+        lambda dirs_arg, phases: {"required_groups_present_pct": 100.0},
+    )
+    monkeypatch.setattr(
+        runner,
+        "collect_provider_routes",
+        lambda **kwargs: {
+            "A:A0": {
+                "provider": "openrouter",
+                "model_id": "openai/gpt-5.4",
+                "api_key_env": "OPENROUTER_API_KEY",
+            }
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_provider_doctor_probe",
+        lambda **kwargs: {"provider": "openrouter", "status_code": 200, "ready": True},
+    )
+    monkeypatch.setattr(runner, "get_git_sha", lambda root: "deadbeef")
+
+    exit_code = runner.run_doctor_full(
+        tmp_path,
+        dirs,
+        run_id="doctor_probe",
+        phases=["A"],
+        cfg=cfg,
+    )
+
+    assert exit_code == 1
+    certification = json.loads(
+        (run_root / "CERTIFICATION_RESULT.json").read_text(encoding="utf-8")
+    )
+    assert certification["overall_status"] == "UNKNOWN"
+    assert certification["gates"]["live_provider_readiness"]["status"] == "UNKNOWN"
+    assert certification["gates"]["operator_topology_resilience"]["status"] == "UNKNOWN"

@@ -9873,6 +9873,22 @@ def classify_escalation_class(
         return "hard_reconciliation"
 
     if (
+        trigger == "provider_failure"
+        or failure_type
+        in {
+            "provider",
+            "network",
+            "timeout",
+            "rate_limit",
+            "quota_or_billing",
+            "api_key_missing_or_invalid",
+            "permission_denied",
+        }
+        or failure_type.startswith("auth_")
+    ):
+        return "provider_transport"
+
+    if (
         trigger.startswith("parse_failure")
         or "invalid_json" in normalized
         or schema_reason.startswith("schema_missing_key:")
@@ -9893,22 +9909,6 @@ def classify_escalation_class(
         or "payload_unshrinkable" in normalized
     ):
         return "payload"
-
-    if (
-        trigger == "provider_failure"
-        or failure_type
-        in {
-            "provider",
-            "network",
-            "timeout",
-            "rate_limit",
-            "quota_or_billing",
-            "api_key_missing_or_invalid",
-            "permission_denied",
-        }
-        or failure_type.startswith("auth_")
-    ):
-        return "provider_transport"
 
     return "none"
 
@@ -12777,7 +12777,11 @@ def execute_step_for_partitions(
                 artifacts_local, output_artifacts
             )
             escalation_trigger: Optional[str] = None
-            if not artifacts_local:
+            if should_escalate_for_failure_type(
+                request_meta_local.get("failure_type")
+            ):
+                escalation_trigger = "provider_failure"
+            elif not artifacts_local:
                 if step_tier != "bulk":
                     escalation_trigger = (
                         "parse_failure"
@@ -12786,10 +12790,6 @@ def execute_step_for_partitions(
                     )
             elif not schema_ok and not json_managed_step:
                 escalation_trigger = schema_reason or "schema_gate_failure"
-            elif should_escalate_for_failure_type(
-                request_meta_local.get("failure_type")
-            ):
-                escalation_trigger = "provider_failure"
             if escalation_trigger and cfg.disable_escalation:
                 escalation_trigger = None
             request_meta_local = {
