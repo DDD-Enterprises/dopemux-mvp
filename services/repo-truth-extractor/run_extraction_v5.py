@@ -12692,29 +12692,6 @@ def execute_step_for_partitions(
                                 completion_tokens=int(spend_record.get("output_tokens", 0) or 0),
                             )
                 request_meta_local.setdefault("request_payload_bytes", payload_bytes)
-                if cfg.ledger:
-                    prompt_toks = int(
-                        request_meta_local.get("prompt_tokens")
-                        or request_meta_local.get("tokens_prompt")
-                        or ((len(effective_user_prompt) + len(prompt_text)) // 4)
-                    )
-                    completion_toks = int(
-                        request_meta_local.get("completion_tokens")
-                        or request_meta_local.get("tokens_completion")
-                        or (len(response_text_local) // 4)
-                    )
-                    cfg.ledger.accumulate(phase, prompt_toks, completion_toks)
-                    if ui is not None:
-                        ui.spend_ledger_event(
-                            phase=phase,
-                            step_id=step_id,
-                            partition_id=partition_id,
-                            trace_id=str(request_meta_local.get("trace_id") or _new_trace_id()),
-                            span_id=_new_span_id(),
-                            parent_span_id=str(request_meta_local.get("span_id") or "") or None,
-                            prompt_tokens=prompt_toks,
-                            completion_tokens=completion_toks,
-                        )
                 return response_text_local, request_meta_local
 
             parse_retry_attempted = False
