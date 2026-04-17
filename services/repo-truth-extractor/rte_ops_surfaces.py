@@ -447,6 +447,8 @@ def derive_route_readiness_summary(
     is_strict_contract_step: Callable[[Any], bool],
     resolve_effective_step_tier: Callable[..., str],
     resolve_step_ladder_compat: Callable[..., List[Tuple[str, str, str]]],
+    resolve_effective_step_route: Optional[Callable[..., Dict[str, Any]]] = None,
+    provider_api_key_env: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     route_meta: Dict[str, Dict[str, Any]] = {}
     configured_route_meta: Dict[str, Dict[str, str]] = {}
@@ -469,37 +471,70 @@ def derive_route_readiness_summary(
                 continue
             step_id = str(prompt.step_id)
             tier_override = prompt.tier_override
-            benchmark_owned_route, _, _ = resolve_benchmark_owned_stage_route(
-                phase=phase,
-                step_id=step_id,
-                cfg=runner_config_factory(selected_policy),
-                stage="primary",
-                step_contract=prompt.contract,
-                strict_required=is_strict_contract_step(prompt.contract),
-            )
-            if benchmark_owned_route is not None:
-                configured_ladder = [
-                    (
-                        str(benchmark_owned_route["provider"]),
-                        str(benchmark_owned_route["model_id"]),
-                        str(benchmark_owned_route["api_key_env"]),
-                    )
-                ]
-                ladder = configured_ladder
-            else:
-                step_tier = resolve_effective_step_tier(
-                    selected_policy,
+            cfg = runner_config_factory(selected_policy)
+            if resolve_effective_step_route is not None:
+                route_info = resolve_effective_step_route(
                     phase,
                     step_id,
+                    cfg,
                     tier_override=tier_override,
+                    step_contract=prompt.contract,
+                )
+                step_tier = str(
+                    route_info.get("step_tier")
+                    or resolve_effective_step_tier(
+                        selected_policy,
+                        phase,
+                        step_id,
+                        tier_override=tier_override,
+                    )
                 )
                 configured_ladder = list(tiers.get(step_tier) or tiers.get("extract") or [])
-                ladder = resolve_step_ladder_compat(
-                    selected_policy,
+                ladder = [
+                    (
+                        str(row[0]),
+                        str(row[1]),
+                        str(row[2])
+                        if len(row) > 2
+                        else str(
+                            route_info.get("api_key_env")
+                            or (provider_api_key_env or {}).get(str(row[0]), "")
+                        ),
+                    )
+                    for row in route_info.get("ladder", [])
+                ]
+            else:
+                benchmark_owned_route, _, _ = resolve_benchmark_owned_stage_route(
                     phase,
-                    step_id,
-                    tier_override=tier_override,
+                    step_id=step_id,
+                    cfg=cfg,
+                    stage="primary",
+                    step_contract=prompt.contract,
+                    strict_required=is_strict_contract_step(prompt.contract),
                 )
+                if benchmark_owned_route is not None:
+                    configured_ladder = [
+                        (
+                            str(benchmark_owned_route["provider"]),
+                            str(benchmark_owned_route["model_id"]),
+                            str(benchmark_owned_route["api_key_env"]),
+                        )
+                    ]
+                    ladder = configured_ladder
+                else:
+                    step_tier = resolve_effective_step_tier(
+                        selected_policy,
+                        phase,
+                        step_id,
+                        tier_override=tier_override,
+                    )
+                    configured_ladder = list(tiers.get(step_tier) or tiers.get("extract") or [])
+                    ladder = resolve_step_ladder_compat(
+                        selected_policy,
+                        phase,
+                        step_id,
+                        tier_override=tier_override,
+                    )
             for provider, model_id, api_key_env in configured_ladder:
                 signature = f"{provider}:{model_id}:{api_key_env}"
                 configured_route_meta.setdefault(

@@ -6228,6 +6228,8 @@ def derive_route_readiness_summary(
         is_strict_contract_step=is_strict_contract_step,
         resolve_effective_step_tier=resolve_effective_step_tier,
         resolve_step_ladder_compat=_resolve_step_ladder_compat,
+        resolve_effective_step_route=resolve_effective_step_route,
+        provider_api_key_env=PROVIDER_API_KEY_ENV,
     )
 
 
