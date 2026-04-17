@@ -25,12 +25,12 @@ TONE_BY_CHIP = {
 
 
 def tone_name(chip: StatusChip, tone: str | None = None) -> str:
-    """Return a stable tone label for a chip."""
+    """Return a stable tone label for a chip from ``TONE_BY_CHIP``."""
     return tone or TONE_BY_CHIP.get(chip, "live")
 
 
 def voice_header(surface: str = "ui") -> str:
-    """Return the configured voice header for a surface."""
+    """Return a configured voice header for a surface from ``HEADERS``."""
     return HEADERS.get(surface, HEADERS["ui"])
 
 
