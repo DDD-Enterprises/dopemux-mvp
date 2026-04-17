@@ -1,11 +1,9 @@
 """
-Extractor Commands — Universal Repo-Truth-Extractor CLI.
+Legacy extractor promptset and prescan tooling.
 
-Provides the `dopemux extractor` command group with subcommands:
-  init    — Fingerprint + interactive feature discovery + prompt generation
-  run     — Execute extraction using generated (or v4) promptset
-  status  — Show extraction run status
-  validate — Validate a generated promptset for referential integrity
+`dopemux extractor` is not the canonical operator path for repo-truth runs.
+Operators should use `dopemux extract truth-run`, which launches the canonical
+`services/repo-truth-extractor/run_extraction_v5.py` runtime.
 """
 
 import json
@@ -31,15 +29,17 @@ from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusCh
 @click.group()
 @click.pass_context
 def extractor(ctx):
-    """🧪 Ritual Daemon: Universal Repo-Truth-Extractor flight-deck.
+    """🧪 Legacy promptset/prescan cockpit for repo-truth extraction support workflows.
 
-    Engage the universal cockpit for multi-layered codebase analysis and high-fidelity
-    intelligence harvesting. This system synchronizes fingerprinting, interactive
-    feature discovery, and automated prompt synthesis to prepare any repository
-    for intensive extraction rituals.
+    This group remains available for promptset generation, prescan, and validation
+    chores. It is not the canonical operator path for running extraction. Use
+    `dopemux extract truth-run` for canonical v5 execution.
     """
     if ctx.invoked_subcommand:
-        click.echo("`dopemux extractor` is legacy. Use `dopemux upgrades`.")
+        click.echo(
+            "`dopemux extractor` is legacy promptset tooling. "
+            "Use `dopemux extract truth-run` for canonical v5 execution."
+        )
 
 
 # ---- Prescan command ----
@@ -353,12 +353,10 @@ def init(
 def run(
     promptset_root: Optional[str], prescan: Optional[str], pipeline: str, runner_args: tuple
 ):
-    """🚀 Ritual Daemon: Run the extraction pipeline with a synthesized or default promptset.
+    """🚀 Legacy compatibility entrypoint for promptset-oriented extractor runs.
 
-    Engage the extraction engines using a generated promptset or legacy v4 configurations.
-    This command initiates the actual truth-extraction ritual across the specified
-    pipeline version. Note: Direct execution of extraction scripts from the cockpit
-    is typically restricted to prevent unintended provider telemetry costs.
+    This command is retained for legacy promptset workflows only. Canonical operator
+    execution should use `dopemux extract truth-run`, which launches the v5 runtime.
     """
     console.print(
         styled_panel(
@@ -370,9 +368,9 @@ def run(
 
     # SAFETY: Never execute extraction scripts — warn and exit
     console.print(
-        "[error]⚠ SAFETY NOTICE:[/error] Direct execution of extraction runners "
-        "is disabled in the CLI to prevent accidental provider costs.\n"
-        "Use the v5 runner directly with appropriate flags if you understand the costs."
+        "[error]⚠ SAFETY NOTICE:[/error] `dopemux extractor run` is a legacy surface and "
+        "direct execution is disabled to prevent accidental provider costs.\n"
+        "Use `dopemux extract truth-run` for the canonical operator path."
     )
     console.print(f"\nWould run: pipeline={pipeline}")
     if promptset_root:
@@ -393,13 +391,52 @@ def run(
     default=None,
     help="🔬 Archive Coordinate: Path to a generated promptset directory.",
 )
-def status(output_dir: Optional[str]):
+@click.option(
+    "--pipeline-version",
+    type=click.Choice(["v3", "v4", "v5"]),
+    default=None,
+    help="📊 Legacy alias mode: forward runtime status to a specific extractor pipeline version.",
+)
+@click.option(
+    "--run-id",
+    default=None,
+    help="🆔 Legacy alias mode: runtime extraction run identifier to query.",
+)
+@click.option(
+    "--json",
+    "status_json",
+    is_flag=True,
+    help="📊 Legacy alias mode: emit runtime status as machine-readable JSON.",
+)
+def status(
+    output_dir: Optional[str],
+    pipeline_version: Optional[str],
+    run_id: Optional[str],
+    status_json: bool,
+):
     """
-    📊 Ritual Status: Show status of a generated promptset
+    📊 Promptset Status: Show status of a generated promptset
 
-    Retrieves the current synchronization state and manifest telemetry
-    for a specific extraction promptset.
+    Retrieves synchronization state for generated promptset artifacts only.
+    This is not the canonical runtime run-status surface. When a pipeline version
+    or run identifier is supplied, this command acts as an explicit legacy alias
+    to the extractor runtime status command while continuing to point operators
+    at `dopemux extract truth-run` as the canonical path.
     """
+    if pipeline_version is not None or run_id is not None or status_json:
+        console.print(
+            "[warning]`dopemux extractor status` is a legacy alias.[/warning] "
+            "Use `dopemux extract truth-run` for the canonical operator path."
+        )
+        args: List[str] = ["--status-json" if status_json else "--status"]
+        if run_id:
+            args.extend(["--run-id", run_id])
+        _run_extractor_runner(
+            pipeline_version=pipeline_version or "v5",
+            args=args,
+        )
+        return
+
     if output_dir is None:
         console.print("[warning]No --output-dir specified. Looking for latest...[/warning]")
         # Try to find the most recent generated promptset

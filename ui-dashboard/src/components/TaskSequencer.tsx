@@ -167,12 +167,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const isOvertime = useMemo(() => {
     if (!currentTask) return false;
-    return taskTimer > currentTask.estimatedMinutes * 60;
+    return (taskTimer / 60) > currentTask.estimatedMinutes;
   }, [currentTask, taskTimer]);
-  const overtimeMinutes = useMemo(() => {
-    if (!currentTask || !isOvertime) return 0;
-    return Math.ceil((taskTimer - currentTask.estimatedMinutes * 60) / 60);
-  }, [currentTask, isOvertime, taskTimer]);
+
+  const overtimeMinutes = isOvertime
+    ? Math.floor(taskTimer / 60 - currentTask!.estimatedMinutes)
+    : 0;
 
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
@@ -344,7 +344,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label="Current task progress"
             aria-valuetext={
               isOvertime
-                ? `100% - Overtime: ${overtimeMinutes} ${overtimeMinutes === 1 ? 'minute' : 'minutes'}`
+                ? `Overtime: ${Math.floor(taskTimer / 60 - currentTask.estimatedMinutes)} ${
+                    Math.floor(taskTimer / 60 - currentTask.estimatedMinutes) === 1 ? 'minute' : 'minutes'
+                  } past estimate`
                 : `${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`
             }
           />
