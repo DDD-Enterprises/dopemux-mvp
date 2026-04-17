@@ -18,6 +18,26 @@ def _load_runner_module():
     return module
 
 
+def test_run_id_resolution_precedence_helper_is_resume_sensitive(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    latest_run_file = (tmp_path / "latest_run_id.txt").resolve()
+
+    assert runner.build_run_id_resolution_precedence(
+        resume=False,
+        latest_run_file=latest_run_file,
+    ) == [
+        "explicit(--run-id)",
+        "generated(new timestamp run id)",
+    ]
+    assert runner.build_run_id_resolution_precedence(
+        resume=True,
+        latest_run_file=latest_run_file,
+    ) == [
+        "explicit(--run-id)",
+        f"resume-only implicit({latest_run_file})",
+    ]
+
+
 def test_telemetry_snapshot_writers_are_deterministic(tmp_path: Path) -> None:
     runner = _load_runner_module()
 
