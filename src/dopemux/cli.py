@@ -4771,6 +4771,11 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     show_default=True,
     help="🔄 State Sync: Sync local artifacts before ignition (v4 only).",
 )
+@click.option("--skip-prescan", is_flag=True, help="⏩ Skip integrated Stage 0 prescan.")
+@click.option("--prescan-import-dir", type=click.Path(exists=True, file_okay=False), help="📥 Import external prescan artifacts.")
+@click.option("--prescan-online", is_flag=True, help="📡 Authorize online LLM passes in prescan.")
+@click.option("--prescan-allow-scope-reduction", is_flag=True, help="⚖️  Allow scope reduction.")
+@click.option("--allow-online-llm", is_flag=True, help="💸 Authorize online LLM spend for whole run.")
 @click.pass_context
 def extractor_run(
     ctx,
@@ -4804,6 +4809,11 @@ def extractor_run(
     quiet: bool,
     jsonl_events: bool,
     sync: bool,
+    skip_prescan: bool,
+    prescan_import_dir: Optional[str],
+    prescan_online: bool,
+    prescan_allow_scope_reduction: bool,
+    allow_online_llm: bool,
 ):
     """
     🚀 Ignite Pipeline: Run the Repo Truth Extractor (resumable)
@@ -4867,6 +4877,19 @@ def extractor_run(
         args.append("--jsonl-events")
     if effective_version == "v4":
         args.extend(["--sync" if sync else "--no-sync"])
+    
+    # ── Integrated Prescan Flags ──
+    if skip_prescan:
+        args.append("--skip-prescan")
+    if prescan_import_dir:
+        args.extend(["--prescan-import-dir", prescan_import_dir])
+    if prescan_online:
+        args.append("--prescan-online")
+    if prescan_allow_scope_reduction:
+        args.append("--prescan-allow-scope-reduction")
+    if allow_online_llm:
+        args.append("--allow-online-llm")
+
     _run_extractor_runner(pipeline_version=effective_version, args=args)
 
 

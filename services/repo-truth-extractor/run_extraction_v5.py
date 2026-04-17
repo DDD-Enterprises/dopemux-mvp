@@ -1351,11 +1351,15 @@ class RunnerConfig:
     compare_steps: Optional[Tuple[str, ...]] = None
     prescan_dir: Optional[str] = None  # Path to prescan output for intelligence routing
     router: Optional[Any] = None  # IntelligenceRouter instance
+    prescan_skip: bool = False
+    prescan_online: bool = False
+    prescan_import_dir: Optional[str] = None
+    prescan_allow_scope_reduction: bool = False
+    allow_online_llm: bool = False
     max_cost_usd: Optional[float] = None
     ledger: Optional[Any] = None
     fl_int_provider_timeout_seconds: int = 180
     fl_int_f0_batch_timeout_seconds: int = 210
-    prescan_allow_scope_reduction: bool = False
 
 
 @dataclass(frozen=True)
@@ -6363,6 +6367,90 @@ def run_provider_preflight(
     if persist_run_root:
         write_json(canonical_path, payload)
     return ok, payload
+
+
+def run_integrated_prescan_stage(
+    root: Path,
+    run_root: Path,
+    cfg: RunnerConfig,
+) -> Optional[Any]:
+    """Execute Stage 0: Integrated Prescan.
+
+    Returns IntelligenceRouter instance if successful.
+    """
+    if cfg.prescan_skip:
+        logger.info("⏭️  Stage 0: Prescan skipped via --skip-prescan.")
+        return None
+
+    prescan_output_dir = run_root / "prescan"
+    prescan_output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Use imported prescan if provided
+    if cfg.prescan_import_dir:
+        logger.info(f"📥 Stage 0: Importing prescan from {cfg.prescan_import_dir}")
+        if IntelligenceRouter:
+            router = IntelligenceRouter.from_dir(Path(cfg.prescan_import_dir))
+            if router:
+                _write_prescan_receipt(prescan_output_dir, "imported", cfg)
+                return router
+        logger.warning(f"Failed to import prescan from {cfg.prescan_import_dir}")
+        return None
+
+    # 2. Run local prescan
+    try:
+        from lib.prescan.engine import PrescanEngine
+        from lib.prescan.models import PrescanConfig as LibPrescanConfig
+    except ImportError as e:
+        logger.warning(f"Prescan library not available: {e}")
+        return None
+
+    logger.info("🔭 Stage 0: Integrated Prescan starting...")
+
+    # Map RunnerConfig to LibPrescanConfig
+    lib_cfg = LibPrescanConfig(
+        repo_root=root,
+        output_dir=prescan_output_dir,
+        online_authorized=cfg.prescan_online or cfg.allow_online_llm or cfg.live_ok,
+        allow_scope_reduction=cfg.prescan_allow_scope_reduction,
+        verbose=True,
+    )
+
+    engine = PrescanEngine(lib_cfg)
+    # Integrated prescan runs canonical passes by default
+    passes = ["dedup", "discover", "feasibility", "optimize"]
+    result = engine.run(passes=passes)
+
+    if result.success and result.intelligence_path:
+        if IntelligenceRouter:
+            router = IntelligenceRouter.from_dir(prescan_output_dir)
+            _write_prescan_receipt(prescan_output_dir, "integrated", cfg, result=result)
+            return router
+
+    logger.warning("Stage 0: Integrated Prescan failed or produced no intelligence.")
+    _write_prescan_receipt(prescan_output_dir, "failed", cfg)
+    return None
+
+
+def _write_prescan_receipt(
+    output_dir: Path, mode: str, cfg: RunnerConfig, result: Any = None
+) -> None:
+    receipt = {
+        "stage": "prescan",
+        "status": "success" if mode != "failed" else "failed",
+        "mode": mode,
+        "online_authorized": bool(
+            cfg.prescan_online or cfg.allow_online_llm or cfg.live_ok
+        ),
+        "artifacts_dir": str(output_dir.resolve()),
+        "scope_reduction_applied": bool(cfg.prescan_allow_scope_reduction),
+        "router_loaded": mode != "failed",
+        "generated_at": now_iso(),
+    }
+    if result:
+        receipt["duration_seconds"] = getattr(result, "duration_seconds", 0)
+        receipt["file_count"] = getattr(result, "file_count", 0)
+
+    write_json(output_dir / "prescan_stage_receipt.json", receipt)
 
 
 def phase_requires_provider_preflight(phase: str, cfg: RunnerConfig) -> bool:
@@ -17766,7 +17854,9 @@ def main() -> None:
             f"For live execution, rerun with --execute and {DPMX_LIVE_OK_ENV}=1."
         ),
     )
-    parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
+    parser.add_argument("--skip-prescan", action="store_true", help="Skip the integrated Stage 0 prescan.")
+    parser.add_argument("--prescan-import-dir", type=str, help="Import precomputed prescan from external directory.")
+    parser.add_argument("--prescan-online", action="store_true", help="Authorize online LLM passes during integrated prescan.")
     parser.add_argument(
         "--prescan-allow-scope-reduction",
         action="store_true",
@@ -17775,6 +17865,7 @@ def main() -> None:
             "so prescan remains non-authoritative for first baseline runs."
         ),
     )
+    parser.add_argument("--allow-online-llm", action="store_true", help="Authorize online LLM spend for the whole run.")
     parser.add_argument(
         "--preset",
         choices=[FIRST_LIVE_PRESET_NAME, STAGED_SAFE_PRESET_NAME],
@@ -18161,15 +18252,19 @@ def main() -> None:
         parser.error("--max-cost-usd must be > 0 when provided.")
     
     router = None
-    if args.prescan:
+    if args.prescan_import_dir:
         if IntelligenceRouter:
-            router = IntelligenceRouter.from_dir(Path(args.prescan))
+            router = IntelligenceRouter.from_dir(Path(args.prescan_import_dir))
             if router:
-                logger.info(f"Initialized IntelligenceRouter from {args.prescan}")
+                logger.info(f"Initialized IntelligenceRouter from {args.prescan_import_dir}")
             else:
-                logger.warning(f"Failed to initialize IntelligenceRouter from {args.prescan}")
+                logger.warning(
+                    f"Failed to initialize IntelligenceRouter from {args.prescan_import_dir}"
+                )
         else:
-            logger.warning("IntelligenceRouter class not available, skipping prescan logic.")
+            logger.warning(
+                "IntelligenceRouter class not available, skipping imported prescan logic."
+            )
 
     apply_model_overrides(args.gemini_model_id, args.routing_policy)
 
@@ -18666,11 +18761,14 @@ def main() -> None:
             if getattr(args, "compare_steps", None)
             else None
         ),
-        prescan_dir=getattr(args, "prescan_dir", None),
-        router=router,
+        prescan_skip=bool(args.skip_prescan),
+        prescan_online=bool(args.prescan_online),
+        prescan_import_dir=args.prescan_import_dir,
         prescan_allow_scope_reduction=bool(
             getattr(args, "prescan_allow_scope_reduction", False)
         ),
+        allow_online_llm=bool(args.allow_online_llm),
+        router=router,
     )
 
     if SpendLedger is not None:
@@ -18682,6 +18780,17 @@ def main() -> None:
                 max_cost_usd=cfg.max_cost_usd,
             ),
         )
+
+    # Stage 0: Integrated Prescan
+    if not cfg.prescan_skip and not cfg.prescan_import_dir:
+        integrated_router = run_integrated_prescan_stage(root, dirs["root"], cfg)
+        if integrated_router:
+            cfg = replace(cfg, router=integrated_router)
+            # Update global router as well for any legacy code
+            global _ACTIVE_INTELLIGENCE_ROUTER
+            _ACTIVE_INTELLIGENCE_ROUTER = integrated_router
+        else:
+            logger.info("Stage 0: No integrated router produced.")
 
     # --profile: load extraction profile and apply phase filtering + budget overrides
     if _active_profile:
