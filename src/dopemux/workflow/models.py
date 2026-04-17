@@ -2,16 +2,36 @@
 
 from __future__ import annotations
 
+import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-import json
-import re
 from typing import Any, Dict, Iterable, List, Optional
 
 from dopemux.pm.models import PMTaskStatus
-from services.shared.brand_voice import StatusChip, tone_name, voice_header
+from dopemux.ui.theme import StatusChip
+from dopemux.voice import HEADERS
+
+TONE_BY_CHIP = {
+    StatusChip.LIVE: "live",
+    StatusChip.BLOCKER: "blocker",
+    StatusChip.OVERRIDE: "override",
+    StatusChip.LOGGED: "logged",
+    StatusChip.AFTERCARE: "aftercare",
+    StatusChip.EDGE: "edge",
+}
+
+
+def tone_name(chip: StatusChip, tone: str | None = None) -> str:
+    """Return a stable tone label for a chip."""
+    return tone or TONE_BY_CHIP.get(chip, "live")
+
+
+def voice_header(surface: str = "ui") -> str:
+    """Return the configured voice header for a surface."""
+    return HEADERS.get(surface, HEADERS["ui"])
 
 
 DEFAULT_COMPLETION_TOKEN = "WORKFLOW_COMPLETE"
@@ -171,8 +191,13 @@ class WorkflowTask:
             status=str(payload.get("status", "todo")),
             source_artifact=payload.get("source_artifact"),
             artifact_dir=payload.get("artifact_dir"),
-            verification_commands=[str(cmd) for cmd in payload.get("verification_commands", [])],
-            required_artifacts=[str(item) for item in payload.get("required_artifacts", [])] or [
+            verification_commands=[
+                str(cmd) for cmd in payload.get("verification_commands", [])
+            ],
+            required_artifacts=[
+                str(item) for item in payload.get("required_artifacts", [])
+            ]
+            or [
                 "research",
                 "research_review",
                 "plan",
@@ -251,10 +276,14 @@ class WorkflowState:
             iteration=int(payload.get("iteration", 0)),
             max_iterations=int(payload.get("max_iterations", 0)),
             max_minutes=int(payload.get("max_minutes", 0)),
-            completion_token=str(payload.get("completion_token", DEFAULT_COMPLETION_TOKEN)),
+            completion_token=str(
+                payload.get("completion_token", DEFAULT_COMPLETION_TOKEN)
+            ),
             started_at=str(payload.get("started_at", utc_now_iso())),
             updated_at=str(payload.get("updated_at", utc_now_iso())),
-            status=WorkflowStatus(str(payload.get("status", WorkflowStatus.ACTIVE.value))),
+            status=WorkflowStatus(
+                str(payload.get("status", WorkflowStatus.ACTIVE.value))
+            ),
             history=list(payload.get("history", [])),
             active_workspace=payload.get("active_workspace"),
             workspace_family_root=payload.get("workspace_family_root"),
@@ -263,7 +292,10 @@ class WorkflowState:
             pm_authority=str(payload.get("pm_authority", "local-mirror")),
             pm_reachable=bool(payload.get("pm_reachable", False)),
             tasks=[WorkflowTask.from_dict(item) for item in payload.get("tasks", [])],
-            checkpoints=[WorkflowCheckpoint.from_dict(item) for item in payload.get("checkpoints", [])],
+            checkpoints=[
+                WorkflowCheckpoint.from_dict(item)
+                for item in payload.get("checkpoints", [])
+            ],
             required_artifacts=list(payload.get("required_artifacts", [])),
             worker_launches=list(payload.get("worker_launches", [])),
         )
@@ -320,15 +352,27 @@ class WorkflowState:
             }
         )
 
-    def record_event(self, event: str, message: str, details: Optional[Dict[str, Any]] = None) -> None:
+    def record_event(
+        self, event: str, message: str, details: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Record a generic event in history."""
         self.record_history(event=event, message=message, details=details)
 
-    def record_checkpoint(self, phase: str | WorkflowPhase, approved: bool, message: str = "", task_id: Optional[str] = None) -> None:
+    def record_checkpoint(
+        self,
+        phase: str | WorkflowPhase,
+        approved: bool,
+        message: str = "",
+        task_id: Optional[str] = None,
+    ) -> None:
         """Helper to create and add a checkpoint."""
         checkpoint = WorkflowCheckpoint(
             phase=WorkflowPhase(phase) if isinstance(phase, str) else phase,
-            status=WorkflowCheckpointStatus.APPROVED if approved else WorkflowCheckpointStatus.REJECTED,
+            status=(
+                WorkflowCheckpointStatus.APPROVED
+                if approved
+                else WorkflowCheckpointStatus.REJECTED
+            ),
             summary=message,
             task_id=task_id or self.current_task_id,
         )
@@ -345,19 +389,23 @@ class WorkflowState:
         # or if a completion token was seen in history.
         for h in self.history:
             msg = h.get("message", "")
-            if contains_completion_token(msg, self.completion_token) or (self.completion_token and self.completion_token in msg):
+            if contains_completion_token(msg, self.completion_token) or (
+                self.completion_token and self.completion_token in msg
+            ):
                 return True
-        
+
         latest = self.latest_checkpoint(phase=self.phase)
         if latest and latest.status.is_stop_safe:
             return True
-            
+
         return False
 
     def current_task(self) -> Optional[WorkflowTask]:
         if not self.current_task_id:
             return None
-        return next((task for task in self.tasks if task.task_id == self.current_task_id), None)
+        return next(
+            (task for task in self.tasks if task.task_id == self.current_task_id), None
+        )
 
     def add_checkpoint(self, checkpoint: WorkflowCheckpoint) -> None:
         self.checkpoints.append(checkpoint)
@@ -369,7 +417,9 @@ class WorkflowState:
             details=checkpoint.to_dict(),
         )
 
-    def latest_checkpoint(self, phase: Optional[WorkflowPhase] = None) -> Optional[WorkflowCheckpoint]:
+    def latest_checkpoint(
+        self, phase: Optional[WorkflowPhase] = None
+    ) -> Optional[WorkflowCheckpoint]:
         filtered = [c for c in self.checkpoints if phase is None or c.phase == phase]
         return filtered[-1] if filtered else None
 
@@ -395,7 +445,9 @@ def task_artifact_presence(task: WorkflowTask) -> Dict[str, bool]:
     presence: Dict[str, bool] = {}
     for stem in task.required_artifacts:
         normalized = stem.lower()
-        presence[stem] = any(name.startswith(normalized) and name.endswith(".md") for name in names)
+        presence[stem] = any(
+            name.startswith(normalized) and name.endswith(".md") for name in names
+        )
     return presence
 
 
@@ -414,7 +466,9 @@ def _checkpoint_status(
     )
 
 
-def validate_phase_entry(state: WorkflowState, target_phase: WorkflowPhase) -> List[str]:
+def validate_phase_entry(
+    state: WorkflowState, target_phase: WorkflowPhase
+) -> List[str]:
     """Return human-readable gate failures for a target phase."""
     task = state.current_task()
     task_id = task.task_id if task else None
@@ -440,7 +494,9 @@ def validate_phase_entry(state: WorkflowState, target_phase: WorkflowPhase) -> L
             phase=WorkflowPhase.RESEARCH_REVIEW,
             status=WorkflowCheckpointStatus.APPROVED,
         ):
-            failures.append("Cannot enter plan without an approved research_review checkpoint.")
+            failures.append(
+                "Cannot enter plan without an approved research_review checkpoint."
+            )
 
     if target_phase == WorkflowPhase.PLAN_REVIEW:
         if task is None:
@@ -462,7 +518,9 @@ def validate_phase_entry(state: WorkflowState, target_phase: WorkflowPhase) -> L
             phase=WorkflowPhase.PLAN_REVIEW,
             status=WorkflowCheckpointStatus.APPROVED,
         ):
-            failures.append("Cannot enter implement/refactor without an approved plan_review checkpoint.")
+            failures.append(
+                "Cannot enter implement/refactor without an approved plan_review checkpoint."
+            )
 
     if target_phase == WorkflowPhase.REFACTOR:
         if not _checkpoint_status(
@@ -474,8 +532,12 @@ def validate_phase_entry(state: WorkflowState, target_phase: WorkflowPhase) -> L
             failures.append("Refactor requires a completed implementation checkpoint.")
 
     if target_phase == WorkflowPhase.COMPLETE:
-        if any(t.status not in {PMTaskStatus.DONE, "done", "complete"} for t in state.tasks):
-            failures.append("Cannot complete while workflow tasks are still incomplete.")
+        if any(
+            t.status not in {PMTaskStatus.DONE, "done", "complete"} for t in state.tasks
+        ):
+            failures.append(
+                "Cannot complete while workflow tasks are still incomplete."
+            )
         root = Path(state.workspace_root)
         for artifact_rel_path in state.required_artifacts:
             if not (root / artifact_rel_path).exists():
@@ -493,7 +555,9 @@ def parse_workflow_checkpoint(text: str) -> Optional[WorkflowCheckpoint]:
     attrs_text = match.group("attrs")
     # Simple attribute parser
     attrs: Dict[str, str] = {}
-    for attr_match in re.finditer(r'(?P<key>\w+)=(?P<quote>["\'])(?P<val>.*?)(?P=quote)', attrs_text):
+    for attr_match in re.finditer(
+        r'(?P<key>\w+)=(?P<quote>["\'])(?P<val>.*?)(?P=quote)', attrs_text
+    ):
         attrs[attr_match.group("key")] = attr_match.group("val")
 
     try:
