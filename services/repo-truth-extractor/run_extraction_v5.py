@@ -6360,8 +6360,6 @@ def run_provider_preflight(
     canonical_path = run_root / "PROVIDER_PREFLIGHT.json"
     if persist_run_root:
         write_json(canonical_path, payload)
-    elif canonical_path.exists():
-        canonical_path.unlink()
     return ok, payload
 
 
@@ -6382,6 +6380,31 @@ def prepare_phase_provider_preflight(
     if not phase_requires_provider_preflight(normalized_phase, cfg):
         return cfg
 
+    run_root = current_runs_root(root) / run_id
+    canonical_path = run_root / "PROVIDER_PREFLIGHT.json"
+    if canonical_path.exists():
+        try:
+            canonical_payload = json.loads(canonical_path.read_text(encoding="utf-8"))
+        except Exception:
+            canonical_payload = None
+        canonical_phase_scope = (
+            [
+                str(entry).strip().upper()
+                for entry in canonical_payload.get("phase_scope", [])
+                if str(entry).strip()
+            ]
+            if isinstance(canonical_payload, dict)
+            and isinstance(canonical_payload.get("phase_scope"), list)
+            else []
+        )
+        if (
+            isinstance(canonical_payload, dict)
+            and bool(canonical_payload.get("scope_complete_for_launch"))
+            and str(canonical_payload.get("scope_kind") or "").strip() == "launch"
+            and normalized_phase in canonical_phase_scope
+        ):
+            return cfg
+
     ok, payload = run_provider_preflight(
         root,
         run_id,
@@ -6395,7 +6418,6 @@ def prepare_phase_provider_preflight(
         {str(provider) for provider in payload.get("failed_providers", []) if provider}
     )
     payload["denylisted_providers"] = list(denylisted)
-    run_root = current_runs_root(root) / run_id
     run_root.mkdir(parents=True, exist_ok=True)
     write_json(run_root / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
     doctor_dir = current_doctor_root(root)

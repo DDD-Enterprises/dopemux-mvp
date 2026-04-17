@@ -476,6 +476,32 @@ def test_prepare_phase_provider_preflight_writes_partial_scope_file_without_cano
 
     run_root = runner.current_runs_root(tmp_path) / "run_d_partial_scope"
     run_root.mkdir(parents=True, exist_ok=True)
+
+    updated_cfg = runner.prepare_phase_provider_preflight(
+        tmp_path,
+        "run_d_partial_scope",
+        "D",
+        cfg,
+    )
+
+    assert tuple(updated_cfg.provider_denylist) == ()
+    assert (run_root / "PROVIDER_PREFLIGHT.json").exists() is False
+    partial = json.loads((run_root / "PROVIDER_PREFLIGHT__D.json").read_text(encoding="utf-8"))
+    assert partial["status"] == "PASS"
+    assert partial["phase_scope"] == ["D"]
+    assert partial["scope_kind"] == "phase"
+    assert partial["scope_complete_for_launch"] is False
+
+
+def test_prepare_phase_provider_preflight_skips_redundant_probe_when_launch_scope_exists(
+    monkeypatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    object.__setattr__(cfg, "dry_run", False)
+
+    run_root = runner.current_runs_root(tmp_path) / "run_d_skip_preflight"
+    run_root.mkdir(parents=True, exist_ok=True)
     canonical = run_root / "PROVIDER_PREFLIGHT.json"
     canonical.write_text(
         json.dumps(
@@ -490,20 +516,33 @@ def test_prepare_phase_provider_preflight_writes_partial_scope_file_without_cano
         encoding="utf-8",
     )
 
+    monkeypatch.setattr(
+        runner,
+        "collect_provider_routes",
+        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+            "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
+                "provider": "openrouter",
+                "model_id": "openai/gpt-5.3-codex",
+                "api_key_env": "OPENROUTER_API_KEY",
+            }
+        },
+    )
+
+    def fail_probe(**kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError("phase preflight should be skipped when launch scope already covers D")
+
+    monkeypatch.setattr(runner, "run_provider_doctor_probe", fail_probe)
+
     updated_cfg = runner.prepare_phase_provider_preflight(
         tmp_path,
-        "run_d_partial_scope",
+        "run_d_skip_preflight",
         "D",
         cfg,
     )
 
     assert tuple(updated_cfg.provider_denylist) == ()
-    assert canonical.exists() is False
-    partial = json.loads((run_root / "PROVIDER_PREFLIGHT__D.json").read_text(encoding="utf-8"))
-    assert partial["status"] == "PASS"
-    assert partial["phase_scope"] == ["D"]
-    assert partial["scope_kind"] == "phase"
-    assert partial["scope_complete_for_launch"] is False
+    assert canonical.exists() is True
+    assert (run_root / "PROVIDER_PREFLIGHT__D.json").exists() is False
 
 
 def test_route_readiness_summary_distinguishes_required_fallback_and_configured(monkeypatch) -> None:
