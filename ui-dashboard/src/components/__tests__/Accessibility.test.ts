@@ -84,6 +84,14 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label="Ritual Complete: All tasks finished"');
 });
 
+test('TaskSequencer.tsx implements overtime visual cues', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
+  expect(content).toContain('const isOvertime = useMemo(() =>');
+  expect(content).toContain('color: isOvertime ? brandTokens.colors.gremlinPink : \'inherit\'');
+  expect(content).toContain('OVERTIME +{overtimeMinutes}M');
+  expect(content).toContain('bgcolor: alpha(isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold, 0.1)');
+});
+
 test('Components have aria-hidden="true" on decorative icons', () => {
   const files = ['CognitiveLoadGauge.tsx', 'PredictionPanel.tsx', 'TeamDashboard.tsx', 'TaskSequencer.tsx'];
   files.forEach(file => {
