@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -9,6 +9,7 @@ import {
   CssBaseline,
   Divider,
   Grid,
+  IconButton,
   Link,
   Paper,
   ThemeProvider,
@@ -116,6 +117,7 @@ function mapRealtimeState(message: Record<string, unknown>): CognitiveState | nu
 
 function App() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const feedHeadingRef = useRef<HTMLHeadingElement>(null);
   const [cognitiveState, setCognitiveState] = useState<CognitiveState>({
     energy: 0.7,
     attention: 0.6,
@@ -448,7 +450,35 @@ function App() {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
             <Bell size={18} aria-hidden="true" />
-            <Typography variant="h6">Live Signal Feed</Typography>
+            <Typography
+              variant="h6"
+              ref={feedHeadingRef}
+              tabIndex={-1}
+              sx={{ outline: 'none' }}
+            >
+              Live Signal Feed
+            </Typography>
+            {notifications.length > 0 && (
+              <Tooltip title="Clear all notifications" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setNotifications([]);
+                    feedHeadingRef.current?.focus();
+                  }}
+                  aria-label="Clear all notifications"
+                  sx={{
+                    ml: 1,
+                    color: brandTokens.colors.gremlinPink,
+                    '&:focus-visible': {
+                      outline: `2px solid ${brandTokens.colors.gremlinPink}`,
+                    },
+                  }}
+                >
+                  <Trash2 size={16} aria-hidden="true" />
+                </IconButton>
+              </Tooltip>
+            )}
             {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
             {notifications.length > 0 && (
               <Tooltip title="Clear all notifications to reduce visual noise" arrow>
