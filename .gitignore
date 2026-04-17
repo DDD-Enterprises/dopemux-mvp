@@ -357,6 +357,10 @@ extraction/prescan/
 !proof/
 proof/*
 !proof/rte-seam-extraction-foundation.proof.json
+!proof/rte-main-integration-audit-staging.proof.json
+!proof/rte-certification-overclaim-and-escalation-truth-hardening.proof.json
+!proof/rte-all-valid-work-branch-scan.proof.json
+!proof/rte-provider-preflight-scope-truth-hardening.proof.json
 
 # Extraction and Research artifacts
 _audit_out/
