@@ -1,3 +1,15 @@
+---
+id: rte-live-certification-gates
+title: Rte Live Certification Gates
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-16'
+last_review: '2026-04-16'
+next_review: '2026-07-15'
+prelude: Rte Live Certification Gates (reference) for dopemux documentation and developer
+  workflows.
+---
 # RTE Live Certification Gates
 
 `CERTIFICATION_RESULT.json` is the machine-readable split-gate result emitted by the RTE runtime when evidence is available.
