@@ -165,10 +165,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const currentTask = tasks.find((task) => task.id === currentTaskId);
   const statusTone = statusStyles[cognitiveState.status];
 
-  const isOvertime = currentTask ? taskTimer > currentTask.estimatedMinutes * 60 : false;
-  const overtimeMinutes = isOvertime
-    ? Math.floor((taskTimer - currentTask!.estimatedMinutes * 60) / 60)
-    : 0;
+  const isOvertime = useMemo(() => {
+    if (!currentTask) return false;
+    return taskTimer > currentTask.estimatedMinutes * 60;
+  }, [currentTask, taskTimer]);
+  const overtimeMinutes = useMemo(() => {
+    if (!currentTask || !isOvertime) return 0;
+    return Math.ceil((taskTimer - currentTask.estimatedMinutes * 60) / 60);
+  }, [currentTask, isOvertime, taskTimer]);
 
   const complexityColor = (complexity: number) => {
     if (complexity > 0.7) return brandTokens.colors.gremlinPink;
@@ -328,21 +332,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               mb: 2.5,
               height: 6,
               borderRadius: 3,
-              bgcolor: isOvertime
-                ? alpha(brandTokens.colors.gremlinPink, 0.1)
-                : alpha(brandTokens.colors.saintGold, 0.1),
+              bgcolor: alpha(isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold, 0.1),
               '& .MuiLinearProgress-bar': {
                 bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
                 borderRadius: 3,
                 boxShadow: isOvertime
-                  ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.4)}`
+                  ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}`
                   : brandTokens.shadows.goldBloom,
               },
             }}
             aria-label="Current task progress"
             aria-valuetext={
               isOvertime
-                ? `100% - Overtime: ${overtimeMinutes} minutes`
+                ? `100% - Overtime: ${overtimeMinutes} ${overtimeMinutes === 1 ? 'minute' : 'minutes'}`
                 : `${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`
             }
           />

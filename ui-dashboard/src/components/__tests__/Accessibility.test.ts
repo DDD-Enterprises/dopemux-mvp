@@ -8,7 +8,7 @@ const componentsDir = path.resolve(__dirname, '..');
 test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Tooltip', () => {
   const filePath = path.join(componentsDir, 'CognitiveLoadGauge.tsx');
   if (!fs.existsSync(filePath)) {
-    console.warn(`Skipping test: Component missing: ${filePath}`);
+    console.warn(`Skipping: Required component missing for accessibility test: ${filePath}`);
     return;
   }
   const content = fs.readFileSync(filePath, 'utf8');
@@ -21,7 +21,7 @@ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Toolti
 test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', () => {
   const filePath = path.join(componentsDir, 'PredictionPanel.tsx');
   if (!fs.existsSync(filePath)) {
-    console.warn(`Skipping test: Component missing: ${filePath}`);
+    console.warn(`Skipping: Required component missing for accessibility test: ${filePath}`);
     return;
   }
   const content = fs.readFileSync(filePath, 'utf8');
@@ -36,7 +36,7 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
   const filePath = path.join(componentsDir, 'TeamDashboard.tsx');
   if (!fs.existsSync(filePath)) {
-    console.warn(`Skipping test: Component missing: ${filePath}`);
+    console.warn(`Skipping: Required component missing for accessibility test: ${filePath}`);
     return;
   }
   const content = fs.readFileSync(filePath, 'utf8');
@@ -86,24 +86,24 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
 
 test('TaskSequencer.tsx implements overtime visual cues', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
-  expect(content).toContain('const isOvertime = currentTask ? taskTimer > currentTask.estimatedMinutes * 60 : false;');
+  expect(content).toContain('const isOvertime = useMemo(() =>');
   expect(content).toContain('color: isOvertime ? brandTokens.colors.gremlinPink : \'inherit\'');
   expect(content).toContain('OVERTIME +{overtimeMinutes}M');
-  expect(content).toContain('bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold');
+  expect(content).toContain('bgcolor: alpha(isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold, 0.1)');
   expect(content).toContain('aria-valuetext={');
-  expect(content).toContain('Overtime: ${overtimeMinutes} minutes');
+  expect(content).toContain('Overtime: ${overtimeMinutes} ${overtimeMinutes === 1 ? \'minute\' : \'minutes\'}');
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
   const files = ['CognitiveLoadGauge.tsx', 'PredictionPanel.tsx', 'TeamDashboard.tsx', 'TaskSequencer.tsx'];
   files.forEach(file => {
     const filePath = path.join(componentsDir, file);
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf8');
-      expect(content).toContain('aria-hidden="true"');
-    } else {
-      console.warn(`Skipping icon check: Component missing: ${filePath}`);
+    if (!fs.existsSync(filePath)) {
+      console.warn(`Skipping icon check for missing component: ${file}`);
+      return;
     }
+    const content = fs.readFileSync(filePath, 'utf8');
+    expect(content).toContain('aria-hidden="true"');
   });
 });
 
