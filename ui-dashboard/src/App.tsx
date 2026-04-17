@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -128,6 +128,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'live' | 'degraded'>('connecting');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const liveSignalFeedHeadingRef = useRef<HTMLHeadingElement | null>(null);
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    requestAnimationFrame(() => {
+      liveSignalFeedHeadingRef.current?.focus();
+    });
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -449,18 +457,16 @@ function App() {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
             <Bell size={18} aria-hidden="true" />
-            <Typography variant="h6">Live Signal Feed</Typography>
+            <Typography ref={liveSignalFeedHeadingRef} variant="h6" tabIndex={-1}>
+              Live Signal Feed
+            </Typography>
             {notifications.length > 0 && (
               <Tooltip title="Clear all notifications" arrow>
                 <IconButton
                   size="small"
-                  onClick={() => setNotifications([])}
+                  onClick={clearNotifications}
                   aria-label="Clear all notifications"
                   sx={{
-                  aria-label="Clear all notifications"
-                  sx={{
-                    color: brandTokens.colors.gremlinPink,
-                    '&:focus-visible': {
                     color: brandTokens.colors.gremlinPink,
                     '&:focus-visible': {
                       outline: `2px solid ${brandTokens.colors.gremlinPink}`,
