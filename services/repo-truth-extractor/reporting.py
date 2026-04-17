@@ -184,6 +184,19 @@ def _gate_payload(status: str, *, source: str, evidence: Dict[str, Any], notes: 
     return payload
 
 
+def build_run_id_resolution_precedence(
+    *,
+    resume: bool,
+    latest_run_file: Path,
+) -> List[str]:
+    precedence = ["explicit(--run-id)"]
+    if resume:
+        precedence.append(f"resume-only implicit({latest_run_file})")
+    else:
+        precedence.append("generated(new timestamp run id)")
+    return precedence
+
+
 def _normalized_phase_scope(values: Any) -> List[str]:
     if not isinstance(values, list):
         return []
@@ -524,11 +537,10 @@ def write_run_manifest(
             "run_id_override": args.run_id,
             "run_id_source": run_context.source,
             "max_cost_usd": args.max_cost_usd,
-            "run_id_resolution_precedence": [
-                "explicit(--run-id)",
-                f"implicit({layout.latest_run_file})",
-                "generated(new timestamp run id)",
-            ],
+            "run_id_resolution_precedence": build_run_id_resolution_precedence(
+                resume=bool(args.resume),
+                latest_run_file=layout.latest_run_file,
+            ),
             "no_write_latest": args.no_write_latest,
             "write_latest_even_on_dry_run": args.write_latest_even_on_dry_run,
             "latest_run_id_written": run_context.latest_written,
