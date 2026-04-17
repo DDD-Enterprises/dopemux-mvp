@@ -457,7 +457,10 @@ function App() {
                   onClick={() => setNotifications([])}
                   aria-label="Clear all notifications"
                   sx={{
-                    ml: 1,
+                  aria-label="Clear all notifications"
+                  sx={{
+                    color: brandTokens.colors.gremlinPink,
+                    '&:focus-visible': {
                     color: brandTokens.colors.gremlinPink,
                     '&:focus-visible': {
                       outline: `2px solid ${brandTokens.colors.gremlinPink}`,
